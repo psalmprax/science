@@ -456,7 +456,9 @@ class AgnosticClosedLoopAssuranceSystem:
 
         ``critical_values`` maps symbol name -> extra finite boundary points
         to probe in addition to 0 (e.g. ``{'v': [299792458.0]}`` for ``v→c``
-        or ``{'M': [1.0]}``). ``±oo`` is always probed via numeric fallback.
+        or ``{'M': [1.0]}``). Mach-like symbols additionally probe ±1 and
+        velocity-like symbols probe ``c_light`` when present; ±oo is not
+        probed (unbounded growth there is not a defect).
 
         All parsing uses :func:`apedp.safety.safe_parse_expr` and all
         ``sp.limit`` calls are bounded by ``limit_timeout`` seconds.
@@ -464,7 +466,53 @@ class AgnosticClosedLoopAssuranceSystem:
         (``max_distortion`` on an operational grid), the ``eps_*`` symbols
         introduced, and a ``validity_domain`` statement. Callers must supply
         numeric values for ``eps_*`` symbols when evaluating repaired models.
+
+        PDE/ODE residuals (``Derivative``/``Integral`` forms) are not repaired:
+        they are template-matched via :mod:`apedp.pde_templates` and returned
+        with ``status="OUT_OF_SCOPE"`` naming the shape (or unknown).
         """
+        if "Derivative" in formula_str or "Integral(" in formula_str:
+            from apedp.pde_templates import TEMPLATES, recognize_pde
+            from apedp.safety import safe_parse_pde
+
+            try:
+                pde_expr = safe_parse_pde(formula_str)
+            except (TypeError, ValueError) as e:
+                logger.warning("Stress test rejected PDE formula '%s': %s", formula_str[:80], e)
+                return {"status": "REJECTED", "error": str(e)}
+            hits = recognize_pde(pde_expr)
+            if hits:
+                primary = hits[0]
+                return {
+                    "status": "OUT_OF_SCOPE",
+                    "anomalies": [],
+                    "original_expression": pde_expr,
+                    "repaired_expression": pde_expr,
+                    "inferred_unit": "unknown",
+                    "eps_symbols": [],
+                    "distortion": {"max_distortion": None, "mean_distortion": None},
+                    "validity_domain": (
+                        f"PDE template {primary}: {TEMPLATES[primary]}. "
+                        "Class-level shape only; solve with eval_extended "
+                        "(residual/manufactured-solution or finite-difference)."
+                    ),
+                    "probe_errors": [],
+                    "probe_error_count": 0,
+                    "unresolved_probe_count": 0,
+                }
+            return {
+                "status": "OUT_OF_SCOPE",
+                "anomalies": [],
+                "original_expression": pde_expr,
+                "repaired_expression": pde_expr,
+                "inferred_unit": "unknown",
+                "eps_symbols": [],
+                "distortion": {"max_distortion": None, "mean_distortion": None},
+                "validity_domain": "PDE shape matched no known template; see eval_extended.",
+                "probe_errors": [],
+                "probe_error_count": 0,
+                "unresolved_probe_count": 0,
+            }
         try:
             expr = safe_parse_expr(formula_str)
             var_units = self.infer_units_for_expression(expr, variable_units, strict=strict_units)

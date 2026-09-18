@@ -129,6 +129,13 @@ from apedp.persistence import (
 )
 from apedp.pipeline import DiscoveryPipeline, run_pipeline
 from apedp.composer import Conjecture, HypothesisComposer
+from apedp.eval_extended import (
+    evaluate_implicit,
+    evaluate_ode_ivp,
+    evaluate_pde_residual,
+    evaluate_quadrature,
+    solve_heat_1d_explicit,
+)
 from apedp.pde_templates import TEMPLATES as PDE_TEMPLATES
 from apedp.pde_templates import recognize_pde
 from apedp.qec import (
@@ -209,16 +216,14 @@ __all__ = [
     "ExperimentLog",
     "FailureClass",
     "FailureSeverity",
-    "FalsificationAxis",
-    "FalsificationBenchResult",
+    "FalsificationAxis",    "FalsificationBenchResult",
     "FalsificationContract",
     "FalsificationReport",
     "FeynmanBenchmarkCase",
     "FundamentalConstantsRegistry",
     "GatedScientificAssuranceEngine",
     "HypothesisComposer",
-    "IndependentAdversarialFalsifier",
-    "InfeasibilityCertificate",
+    "IndependentAdversarialFalsifier",    "InfeasibilityCertificate",
     "KnillLaflammeAuditor",
     "KnownDiagnosticBenchmark",
     "LifecycleManager",
@@ -274,6 +279,10 @@ __all__ = [
     "create_hall_petch_benchmark_contract",
     "create_prandtl_glauert_benchmark_contract",
     "deserialize_model",
+    "evaluate_implicit",
+    "evaluate_ode_ivp",
+    "evaluate_pde_residual",
+    "evaluate_quadrature",
     "from_json",
     "limit_with_timeout",
     "map_feasibility_to_stance",
@@ -287,6 +296,7 @@ __all__ = [
     "run_pipeline",
     "safe_parse_expr",
     "serialize_model",
+    "solve_heat_1d_explicit",
     "to_json",
     "unrepairable_counterexamples",
     "ureg",

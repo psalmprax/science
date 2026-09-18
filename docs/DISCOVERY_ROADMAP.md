@@ -8,6 +8,7 @@ Status: implemented (commit after this edit). 301 tests green, ruff + mypy clean
 - **L1 PDE templates** (`apedp/pde_templates.py`, `safe_parse_pde`): DIFFUSION/HEAT_1D, WAVE_1D, LAPLACE_2D, POISSON_2D, CONTINUITY_1D, EULER_MOMENTUM_1D, NS_X_1D, SCHRODINGER_TD_1D, MAXWELL_FARADAY/AMPERE_1D. Class-level shape match only (coefficients/BCs NOT verified).
 - **L2 black-box:** no symbolic form needed — falsifier grids judge numerically.
 - **OUT_OF_SCOPE** (`NoveltyStatus.OUT_OF_SCOPE`): PDE with no template, integral forms beyond the allowlist, or unparseable input. Returned instead of a forced known/novel verdict.
+- **Extended evaluation** (`apedp/eval_extended.py`): bounded `evaluate_implicit` (nsolve), `evaluate_quadrature` (trapezoid), `evaluate_ode_ivp` (RK4), `evaluate_pde_residual` (manufactured-solution check), `solve_heat_1d_explicit` (Dirichlet FD, stability-refused). Repair routes PDE input to template `OUT_OF_SCOPE` instead of `REJECTED`.
 
 ## 1. Where we stand (measured)
 
