@@ -1,11 +1,10 @@
 """APEDP PDE solvers: explicit finite-difference schemes, numpy only.
 
-Covers the canonical second-order linear PDEs behind the L1 templates:
-
-- 1D wave ``u_tt = c^2 u_xx`` (leapfrog, ``C = c*dt/dx <= 1`` enforced),
-- 1D advection ``u_t + a u_x = 0`` (upwind, ``|C| <= 1`` enforced),
-- 2D heat ``u_t = D (u_xx + u_yy)`` (explicit, ``r <= 0.25`` enforced),
-- 2D Laplace / Poisson ``Δu = f`` (Jacobi to tolerance, Dirichlet BCs).
+Structured grids (1D wave/advection, 2D/3D heat, 2D/3D Laplace/Poisson) plus
+dimension-independent Monte Carlo for high dimensions: Feynman-Kac for free-
+space heat in any d and walk-on-spheres for Laplace-Dirichlet on the n-ball.
+A 31-point structured grid in 20D needs 31**20 ≈ 10**29 points and is refused;
+the Monte Carlo solvers cost O(n_paths · d) instead.
 
 Stability and convergence are *refused, not clamped*: violating grids raise
 ``ValueError`` and unconverged iterations raise ``ArithmeticError``, so a
@@ -508,6 +507,250 @@ def solve_laplace_3d(
             if delta < tol:
                 return {"x": x, "y": y, "z": z, "u": u, "iterations": it, "final_delta": delta}
         raise ArithmeticError(f"Jacobi-3D did not converge in {maxiter} iterations")
+
+    result = _run_bounded(_solve, timeout)
+    assert isinstance(result, dict)
+    return result
+
+
+_MAX_MC_DIM = 64
+
+
+def _mc_coords(dims: int) -> list[sp.Symbol]:
+    if not (1 <= int(dims) <= _MAX_MC_DIM):
+        raise ValueError(f"Need 1 <= dims <= {_MAX_MC_DIM} for Monte Carlo solvers")
+    return [sp.Symbol(f"x{i}") for i in range(int(dims))]
+
+
+def solve_heat_nd_feynman_kac(
+    x0: list[float],
+    total_time: float,
+    initial: str,
+    diffusivity: float = 1.0,
+    n_paths: int = 20000,
+    seed: int = 42,
+    timeout: float = _DEFAULT_TIMEOUT,
+) -> dict[str, object]:
+    """Free-space heat ``u_t = D Δu`` in d dimensions via Feynman-Kac.
+
+    ``u(x, t) = E[u0(x + √(2Dt)·Z)]`` with ``Z ~ N(0, I)``: cost is
+    ``O(n_paths · d)``, so 20D costs ~20x a 1D run instead of 31**20 grid
+    points. ``initial`` is a ``safe_parse_expr`` string in ``x0..x{d-1}``.
+    Returns mean, standard error, and path count — Monte Carlo evidence with
+    an error bar, not a mesh solution.
+    """
+    dims = len(list(x0))
+    syms = _mc_coords(dims)
+    if not (math.isfinite(total_time) and total_time > 0):
+        raise ValueError("Need finite total_time > 0")
+    if not (math.isfinite(diffusivity) and diffusivity > 0):
+        raise ValueError("Need finite diffusivity > 0")
+    if int(n_paths) < 100:
+        raise ValueError("Need n_paths >= 100")
+    start = np.asarray(list(x0), dtype=float)
+    if start.shape != (dims,) or not bool(np.all(np.isfinite(start))):
+        raise ValueError("x0 must be finite with one entry per dimension")
+    expr = safe_parse_expr(initial)
+    unknown = {str(s) for s in expr.free_symbols} - {str(s) for s in syms}
+    if unknown:
+        raise ValueError(f"Initial profile uses symbols outside x0..x{dims - 1}: {sorted(unknown)}")
+
+    def _solve() -> dict[str, object]:
+        f = sp.lambdify(syms, expr, modules=["numpy"])
+        rng = np.random.RandomState(int(seed))
+        spread = math.sqrt(2.0 * float(diffusivity) * float(total_time))
+        pts = start[None, :] + spread * rng.normal(size=(int(n_paths), dims))
+        try:
+            vals = np.asarray(f(*[pts[:, i] for i in range(dims)]), dtype=float).ravel()
+        except (ValueError, TypeError, ArithmeticError) as e:
+            raise ArithmeticError(f"Initial-profile evaluation failed: {e}") from e
+        if vals.shape != (int(n_paths),):
+            vals = np.full(int(n_paths), float(np.ravel(vals)[0]), dtype=float)
+        finite = vals[np.isfinite(vals)]
+        if finite.size == 0:
+            raise ArithmeticError("All Feynman-Kac draws non-finite")
+        se = float(np.std(finite, ddof=1) / math.sqrt(finite.size)) if finite.size > 1 else 0.0
+        return {
+            "value": float(np.mean(finite)),
+            "stderr": se,
+            "n_paths": int(n_paths),
+            "dims": dims,
+            "nonfinite_fraction": 1.0 - finite.size / int(n_paths),
+        }
+
+    result = _run_bounded(_solve, timeout)
+    assert isinstance(result, dict)
+    return result
+
+
+def solve_laplace_nd_walk_on_spheres(
+    x0: list[float],
+    boundary: str,
+    radius: float = 1.0,
+    eps: float = 1e-3,
+    n_paths: int = 20000,
+    max_steps: int = 100000,
+    seed: int = 42,
+    timeout: float = _DEFAULT_TIMEOUT,
+) -> dict[str, object]:
+    """Laplace-Dirichlet on the d-ball ``|x| < radius`` via walk-on-spheres.
+
+    From ``x`` jump uniformly to the largest inscribed sphere until within
+    ``eps`` of the boundary, then read ``boundary`` there; the average is the
+    solution (mean-value property). Cost is ``O(n_paths · d · steps)`` with
+    typically tens of steps — 20D is routine. ``boundary`` is a
+    ``safe_parse_expr`` string in ``x0..x{d-1}``.
+    """
+    dims = len(list(x0))
+    syms = _mc_coords(dims)
+    if not (math.isfinite(radius) and radius > 0):
+        raise ValueError("Need finite radius > 0")
+    if not (math.isfinite(eps) and 0 < eps < radius):
+        raise ValueError("Need 0 < eps < radius")
+    if int(n_paths) < 100:
+        raise ValueError("Need n_paths >= 100")
+    start = np.asarray(list(x0), dtype=float)
+    if start.shape != (dims,) or not bool(np.all(np.isfinite(start))):
+        raise ValueError("x0 must be finite with one entry per dimension")
+    if float(np.linalg.norm(start)) >= float(radius):
+        raise ValueError("x0 must lie strictly inside the ball")
+    expr = safe_parse_expr(boundary)
+    unknown = {str(s) for s in expr.free_symbols} - {str(s) for s in syms}
+    if unknown:
+        raise ValueError(f"Boundary uses symbols outside x0..x{dims - 1}: {sorted(unknown)}")
+
+    def _solve() -> dict[str, object]:
+        g = sp.lambdify(syms, expr, modules=["numpy"])
+        rng = np.random.RandomState(int(seed))
+        pos = np.tile(start, (int(n_paths), 1))
+        active = np.ones(int(n_paths), dtype=bool)
+        total_steps = 0
+        while bool(np.any(active)):
+            total_steps += 1
+            if total_steps > int(max_steps):
+                raise ArithmeticError("Walk-on-spheres exceeded max_steps: refusing")
+            norms = np.linalg.norm(pos[active], axis=1)
+            radii = float(radius) - norms
+            if bool(np.any(radii < 0)):
+                raise ArithmeticError("Walk escaped the ball")
+            done = radii < float(eps)
+            idx = np.where(active)[0]
+            active[idx[done]] = False
+            moving = idx[~done]
+            if moving.size:
+                dirs = rng.normal(size=(moving.size, dims))
+                dirs /= np.linalg.norm(dirs, axis=1, keepdims=True) + 1e-300
+                pos[moving] += dirs * radii[~done, None]
+        try:
+            vals = np.asarray(g(*[pos[:, i] for i in range(dims)]), dtype=float).ravel()
+        except (ValueError, TypeError, ArithmeticError) as e:
+            raise ArithmeticError(f"Boundary evaluation failed: {e}") from e
+        if vals.shape != (int(n_paths),):
+            vals = np.full(int(n_paths), float(np.ravel(vals)[0]), dtype=float)
+        finite = vals[np.isfinite(vals)]
+        if finite.size == 0:
+            raise ArithmeticError("All walk-on-spheres values non-finite")
+        se = float(np.std(finite, ddof=1) / math.sqrt(finite.size)) if finite.size > 1 else 0.0
+        return {
+            "value": float(np.mean(finite)),
+            "stderr": se,
+            "n_paths": int(n_paths),
+            "dims": dims,
+            "total_steps": total_steps,
+            "nonfinite_fraction": 1.0 - finite.size / int(n_paths),
+        }
+
+    result = _run_bounded(_solve, timeout)
+    assert isinstance(result, dict)
+    return result
+
+
+def solve_poisson_fem(
+    nodes: list[list[float]] | np.ndarray,
+    triangles: list[list[int]] | np.ndarray,
+    source: str = "0",
+    dirichlet: dict[int, float] | None = None,
+    timeout: float = _DEFAULT_TIMEOUT,
+) -> dict[str, object]:
+    """P1 finite-element solve of ``-Δu = f`` on a user-supplied triangle mesh.
+
+    Bring your own mesh: ``nodes`` is (N, 2), ``triangles`` is (M, 3) indices
+    into ``nodes``. ``source`` is a ``safe_parse_expr`` string in ``x``/``y``;
+    ``dirichlet`` maps node index -> pinned value (default: all boundary
+    nodes pinned to 0, where boundary = nodes on the bounding box). Linear
+    P1 elements with a 3-point (midpoint) quadrature for the load vector;
+    the system solves with ``numpy.linalg.solve`` and refuses singular or
+    non-finite assemblies instead of returning garbage. No mesher is bundled:
+    mesh generation stays out of scope, mesh *solution* is covered here.
+    """
+    pts = np.asarray(nodes, dtype=float)
+    tris = np.asarray(triangles, dtype=int)
+    if pts.ndim != 2 or pts.shape[1] != 2 or pts.shape[0] < 3:
+        raise ValueError("nodes must be (N, 2) with N >= 3")
+    if tris.ndim != 2 or tris.shape[1] != 3 or tris.shape[0] < 1:
+        raise ValueError("triangles must be (M, 3) with M >= 1")
+    if not bool(np.all(np.isfinite(pts))):
+        raise ValueError("nodes must be finite")
+    if bool(np.any(tris < 0)) or bool(np.any(tris >= len(pts))):
+        raise ValueError("triangle indices out of range")
+    f_expr = safe_parse_expr(source)
+
+    def _solve() -> dict[str, object]:
+        fx = sp.lambdify((sp.Symbol("x"), sp.Symbol("y")), f_expr, modules=["numpy"])
+        n = len(pts)
+        mat = np.zeros((n, n))
+        rhs = np.zeros(n)
+        for tri in tris:
+            p = pts[np.asarray(tri)]
+            # Twice the signed area; degenerate (collinear) elements refused.
+            area2 = abs(float(np.cross(p[1] - p[0], p[2] - p[0])))
+            if area2 <= 1e-300:
+                raise ValueError(f"Degenerate triangle {list(tri)}: zero area")
+            # Gradients of the three P1 hats: perpendicular edge rotations / 2A.
+            grads = np.empty((3, 2))
+            for i in range(3):
+                b, c = p[(i + 1) % 3], p[(i + 2) % 3]
+                grads[i] = np.array([c[1] - b[1], b[0] - c[0]]) / area2
+            ke = (area2 / 2) * (grads @ grads.T)
+            mids = (p + np.roll(p, -1, axis=0)) / 2
+            try:
+                fvals = np.asarray(fx(mids[:, 0], mids[:, 1]), dtype=float).ravel()
+            except (ValueError, TypeError, ArithmeticError) as e:
+                raise ValueError(f"Source evaluation failed: {e}") from e
+            if fvals.shape != (3,):
+                fvals = np.full(3, float(np.ravel(fvals)[0]), dtype=float)
+            fe = (area2 / 6) * fvals
+            for a in range(3):
+                rhs[tri[a]] += fe[a]
+                for b in range(3):
+                    mat[tri[a], tri[b]] += ke[a, b]
+        if dirichlet is None:
+            on_box = (
+                (np.abs(pts[:, 0] - pts[:, 0].min()) < 1e-12)
+                | (np.abs(pts[:, 0] - pts[:, 0].max()) < 1e-12)
+                | (np.abs(pts[:, 1] - pts[:, 1].min()) < 1e-12)
+                | (np.abs(pts[:, 1] - pts[:, 1].max()) < 1e-12)
+            )
+            pinned: dict[int, float] = {int(i): 0.0 for i in np.where(on_box)[0]}
+        else:
+            pinned = {}
+            for k, v in dirichlet.items():
+                if not (0 <= int(k) < n) or not math.isfinite(float(v)):
+                    raise ValueError(f"Bad Dirichlet pin {k!r}={v!r}")
+                pinned[int(k)] = float(v)
+        if not pinned:
+            raise ValueError("No Dirichlet nodes: pure-Neumann P1 system is singular by construction")
+        for idx, val in pinned.items():
+            mat[idx, :] = 0.0
+            mat[idx, idx] = 1.0
+            rhs[idx] = val
+        try:
+            u = np.linalg.solve(mat, rhs)
+        except np.linalg.LinAlgError as e:
+            raise ArithmeticError(f"FEM system singular: {e}") from e
+        if not bool(np.all(np.isfinite(u))):
+            raise ArithmeticError("FEM solution non-finite")
+        return {"u": u, "nodes": pts, "triangles": tris, "num_nodes": n, "num_elements": len(tris)}
 
     result = _run_bounded(_solve, timeout)
     assert isinstance(result, dict)

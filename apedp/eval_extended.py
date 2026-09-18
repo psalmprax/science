@@ -187,11 +187,16 @@ def evaluate_ode_ivp(
     stepping refuses (raises) when the error cannot be met within 100k
     accepted-plus-rejected steps — stiff systems that need implicit stepping
     fail loudly here instead of returning a wrong smooth curve.
+    ``method="backward_euler"`` solves each step implicitly
+    (``y_{n+1} = y_n + h·f(x_{n+1}, y_{n+1})`` via nsolve): first-order but
+    L-stable, so stiff decays like ``y' = -50·y`` stay bounded where explicit
+    schemes explode. Slow per step (one nsolve each) — use it for stiffness,
+    not speed.
 
     ``x_grid`` must be strictly increasing and finite.
     """
-    if method not in ("rk4", "rk45"):
-        raise ValueError("method must be 'rk4' or 'rk45'")
+    if method not in ("rk4", "rk45", "backward_euler"):
+        raise ValueError("method must be 'rk4', 'rk45' or 'backward_euler'")
     xs = np.asarray(list(x_grid), dtype=float)
     if xs.size < 2 or not bool(np.all(np.isfinite(xs))) or not bool(np.all(np.diff(xs) > 0)):
         raise ValueError("x_grid must be strictly increasing with >= 2 finite points")
@@ -265,10 +270,37 @@ def evaluate_ode_ivp(
             steps += 1
         return ys
 
+    def _backward_euler(f, xs: np.ndarray, y0: float) -> np.ndarray:
+        """L-stable implicit stepping: each step solves y-yi-h·f(xi+h,y) = 0."""
+        ys = np.empty_like(xs)
+        ys[0] = float(y0)
+        yy = sp.Symbol("_be_y")
+        for i in range(1, len(xs)):
+            h = float(xs[i] - xs[i - 1])
+            xi, yi = float(xs[i - 1]), float(ys[i - 1])
+            try:
+                fi = float(f(xi, yi))
+            except (ValueError, TypeError, ArithmeticError) as e:
+                raise ArithmeticError(f"RHS evaluation failed at step {i}: {e}") from e
+            if not math.isfinite(fi):
+                raise ArithmeticError(f"RHS non-finite at step {i} (x={xi})")
+            residual = yy - yi - h * expr.subs(subs).subs({x_sym: xs[i], y_sym: yy})
+            try:
+                sol = sp.nsolve(residual, yy, yi + h * fi, tol=1e-14, maxsteps=200)
+            except (ValueError, ArithmeticError, NotImplementedError) as e:
+                raise ArithmeticError(f"Backward-Euler nsolve failed at step {i}: {e}") from e
+            nxt = complex(sol)
+            if abs(nxt.imag) > 1e-9 or not math.isfinite(nxt.real):
+                raise ArithmeticError(f"Backward-Euler non-real root at step {i}: {sol}")
+            ys[i] = float(nxt.real)
+        return ys
+
     def _integrate() -> np.ndarray:
         f = sp.lambdify((x_sym, y_sym), expr.subs(subs), modules=["numpy"])
         if method == "rk45":
             return _rk45_dense(f, xs, float(y0))
+        if method == "backward_euler":
+            return _backward_euler(f, xs, float(y0))
         ys = np.empty_like(xs)
         ys[0] = float(y0)
         for i in range(1, len(xs)):
@@ -296,8 +328,9 @@ def evaluate_einsum(
     """Validated ``numpy.einsum``: shape-checked tensor contraction.
 
     Rejects subscript/operand-count mismatches and non-finite results instead
-    of broadcasting silently. This covers explicit tensor *contractions*;
-    index-notation parsing and unstructured meshes remain out of scope.
+    of broadcasting silently. Use :func:`evaluate_indexed` for Einstein
+    index-notation strings; unstructured meshes remain out of scope only for
+    mesh generation (see ``solve_poisson_fem`` for user-supplied meshes).
     """
     arrays = []
     for op in operands:
@@ -321,6 +354,91 @@ def evaluate_einsum(
     result = _run_bounded(_contract, timeout)
     assert isinstance(result, np.ndarray)
     return result
+
+
+def evaluate_indexed(
+    formula: str,
+    arrays: dict[str, list | np.ndarray],
+    timeout: float = _DEFAULT_TIMEOUT,
+) -> np.ndarray:
+    """Evaluate an explicit Einstein index-notation equation.
+
+    Form: ``"C[i,j] = A[i,k] * B[k,j]"`` — one output tensor, RHS a sum of
+    products of indexed tensors with optional scalar coefficients
+    (``"y[i] = 2*A[i,j]*x[j] - b[i]"``); a bare ``Name`` LHS takes a scalar
+    (``"t = A[i,i]"``). Single-letter indices, validated per term: a free
+    index appears exactly once in each term, any other index exactly twice
+    (trace ``A[i,i]`` counts twice). Anything else — differentials, function
+    calls, bare unindexed symbols on the RHS — raises ``ValueError``.
+    """
+    import re
+
+    if formula.count("=") != 1:
+        raise ValueError("Need exactly one '=' in an indexed equation")
+    lhs_raw, rhs_raw = (part.strip() for part in formula.split("="))
+    lhs = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*)(?:\[([A-Za-z](?:,[A-Za-z])*)\])?", lhs_raw)
+    if not lhs:
+        raise ValueError(f"Bad LHS '{lhs_raw}': want Name or Name[i,j,...]")
+    out_name = lhs.group(1)
+    out_idx = lhs.group(2).split(",") if lhs.group(2) else []
+    if len(set(out_idx)) != len(out_idx):
+        raise ValueError(f"Duplicate output index in '{lhs_raw}'")
+    rhs = rhs_raw.replace("-", "+-")
+    terms = [t.strip() for t in rhs.split("+") if t.strip()]
+    if not terms:
+        raise ValueError("Empty right-hand side")
+    factor_re = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)\[([A-Za-z](?:,[A-Za-z])*)\]")
+    num_re = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?\Z")
+    try:
+        operands = {k: np.asarray(v, dtype=float) for k, v in arrays.items()}
+    except (ValueError, TypeError) as e:
+        raise ValueError(f"Array not array-like: {e}") from e
+    parsed: list[tuple[float, list[str], list[np.ndarray]]] = []
+    for term in terms:
+        term_sign = 1.0
+        term = term.strip()
+        if term.startswith("-"):
+            term_sign = -1.0
+            term = term[1:].strip()
+        parts = [p.strip() for p in term.split("*") if p.strip()]
+        coeff = term_sign
+        subs: list[str] = []
+        ops: list[np.ndarray] = []
+        for part in parts:
+            m = factor_re.fullmatch(part)
+            if m:
+                name, idx = m.group(1), m.group(2).split(",")
+                if name not in operands:
+                    raise ValueError(f"Unknown tensor '{name}'")
+                arr = operands[name]
+                if arr.ndim != len(idx):
+                    raise ValueError(f"Tensor '{name}' rank {arr.ndim} != {len(idx)} indices")
+                subs.append("".join(idx))
+                ops.append(arr)
+            elif num_re.match(part):
+                coeff *= float(part)
+            else:
+                raise ValueError(f"Bad factor '{part}': want Name[i,j] or a scalar")
+        if not ops:
+            raise ValueError(f"Term '{term}' has no tensors")
+        counts: dict[str, int] = {}
+        for sub in subs:
+            for idx in sub:
+                counts[idx] = counts.get(idx, 0) + 1
+        for idx in out_idx:
+            if counts.get(idx, 0) != 1:
+                raise ValueError(f"Free index '{idx}' must appear exactly once in each term")
+        for idx, n in counts.items():
+            if idx not in out_idx and n != 2:
+                raise ValueError(f"Index '{idx}' appears {n}x in one term: must appear exactly twice")
+        parsed.append((coeff, subs, ops))
+    total: np.ndarray | None = None
+    for coeff, subs, ops in parsed:
+        part_result = evaluate_einsum(",".join(subs) + "->" + "".join(out_idx), *ops, timeout=timeout)
+        total = coeff * part_result if total is None else total + coeff * part_result
+    assert total is not None
+    _ = out_name
+    return total
 
 
 def simulate_sde_euler_maruyama(
