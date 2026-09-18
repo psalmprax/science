@@ -4,7 +4,8 @@ Status: implemented (commit after this edit). 298 tests green, ruff + mypy clean
 
 ## 1. Where we stand (measured)
 
-- Feynman curated: 5/120 in `ingestion/external_benchmarks.py:83-139` (`I.6.20a, I.12.1, I.15.3x, I.27.6, I.34.8`), each with units + ranges + `generate_data(noise)`.
+- Prior-art corpus: **106 named laws** (`epistemic.py` v3, all parseable): 10 structural families + mechanics, EM/electronics, thermo/fluids/heat, waves/optics/QM/relativity, chemistry/materials, engineering/control.
+- Feynman curated: 5/120 in `ingestion/external_benchmarks.py:83-139`, each with units + ranges + `generate_data(noise)`.
 - Scenarios: 22 in `scenarios.py:49-70`. Benchmarks: 25-case + 100-case (`benchmarks.py`), 6 adversarial traps, 5 gated contracts, NACA 11 pts + nano 11 pts (only real measured data), `anscombe.json` 44 rows, 289 pytest tests green.
 - Repair demo: `REPAIRED` → `1/x`, `sqrt/log/sin(x)/x`, Lorentz `gamma`, rel-KE; `APPROVED` → `1/(x²+1)`, `exp`, `x+y`, `x²`. `1/(1-x)` needs `critical_values={'x':[1.0]}` (default probes `[0]` + auto `M=±1`, `v→c`).
 - Discovery demo: Ohm → `I*R R²=1.0`, kinetic → `m*v²/2 R²=1.0`, Stefan-Boltzmann → `0.9999·T⁴σ R²=1.0`; constant `y=5` correctly `REFUSED`.
