@@ -494,7 +494,8 @@ class AgnosticClosedLoopAssuranceSystem:
                     "validity_domain": (
                         f"PDE template {primary}: {TEMPLATES[primary]}. "
                         "Class-level shape only; solve with eval_extended "
-                        "(residual/manufactured-solution or finite-difference)."
+                        "(residual/manufactured-solution) or pde_solvers "
+                        "(wave/advection/heat-2D/Laplace/Poisson FD)."
                     ),
                     "probe_errors": [],
                     "probe_error_count": 0,

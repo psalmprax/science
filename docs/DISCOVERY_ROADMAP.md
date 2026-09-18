@@ -9,6 +9,7 @@ Status: implemented (commit after this edit). 301 tests green, ruff + mypy clean
 - **L2 black-box:** no symbolic form needed — falsifier grids judge numerically.
 - **OUT_OF_SCOPE** (`NoveltyStatus.OUT_OF_SCOPE`): PDE with no template, integral forms beyond the allowlist, or unparseable input. Returned instead of a forced known/novel verdict.
 - **Extended evaluation** (`apedp/eval_extended.py`): bounded `evaluate_implicit` (nsolve), `evaluate_quadrature` (trapezoid), `evaluate_ode_ivp` (RK4), `evaluate_pde_residual` (manufactured-solution check), `solve_heat_1d_explicit` (Dirichlet FD, stability-refused). Repair routes PDE input to template `OUT_OF_SCOPE` instead of `REJECTED`.
+- **Full-PDE solvers** (`apedp/pde_solvers.py`, numpy only): `solve_wave_1d` (leapfrog, CFL≤1), `solve_advection_1d` (upwind, |C|≤1), `solve_heat_2d` (explicit, r≤0.25), `solve_laplace_2d` / `solve_poisson_2d` (Jacobi to tolerance, Dirichlet). Unstable grids refused, non-convergence raises. Verified: wave 4e-6 vs standing mode, Laplace recovers `x+y` to 8e-5, Poisson sine to 1.3e-3.
 
 ## 1. Where we stand (measured)
 

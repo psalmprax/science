@@ -138,6 +138,13 @@ from apedp.eval_extended import (
 )
 from apedp.pde_templates import TEMPLATES as PDE_TEMPLATES
 from apedp.pde_templates import recognize_pde
+from apedp.pde_solvers import (
+    solve_advection_1d,
+    solve_heat_2d,
+    solve_laplace_2d,
+    solve_poisson_2d,
+    solve_wave_1d,
+)
 from apedp.qec import (
     ConcatenatedThresholdRecursion,
     KnillLaflammeAuditor,
@@ -296,7 +303,12 @@ __all__ = [
     "run_pipeline",
     "safe_parse_expr",
     "serialize_model",
+    "solve_advection_1d",
     "solve_heat_1d_explicit",
+    "solve_heat_2d",
+    "solve_laplace_2d",
+    "solve_poisson_2d",
+    "solve_wave_1d",
     "to_json",
     "unrepairable_counterexamples",
     "ureg",
