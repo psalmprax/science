@@ -131,9 +131,12 @@ from apedp.pipeline import DiscoveryPipeline, run_pipeline
 from apedp.composer import Conjecture, HypothesisComposer
 from apedp.eval_extended import (
     evaluate_implicit,
+    evaluate_implicit_system,
     evaluate_ode_ivp,
     evaluate_pde_residual,
     evaluate_quadrature,
+    evaluate_einsum,
+    simulate_sde_euler_maruyama,
     solve_heat_1d_explicit,
 )
 from apedp.pde_templates import TEMPLATES as PDE_TEMPLATES
@@ -141,7 +144,9 @@ from apedp.pde_templates import recognize_pde
 from apedp.pde_solvers import (
     solve_advection_1d,
     solve_heat_2d,
+    solve_heat_3d,
     solve_laplace_2d,
+    solve_laplace_3d,
     solve_poisson_2d,
     solve_wave_1d,
 )
@@ -286,7 +291,9 @@ __all__ = [
     "create_hall_petch_benchmark_contract",
     "create_prandtl_glauert_benchmark_contract",
     "deserialize_model",
+    "evaluate_einsum",
     "evaluate_implicit",
+    "evaluate_implicit_system",
     "evaluate_ode_ivp",
     "evaluate_pde_residual",
     "evaluate_quadrature",
@@ -303,10 +310,13 @@ __all__ = [
     "run_pipeline",
     "safe_parse_expr",
     "serialize_model",
+    "simulate_sde_euler_maruyama",
     "solve_advection_1d",
     "solve_heat_1d_explicit",
     "solve_heat_2d",
+    "solve_heat_3d",
     "solve_laplace_2d",
+    "solve_laplace_3d",
     "solve_poisson_2d",
     "solve_wave_1d",
     "to_json",

@@ -364,3 +364,151 @@ def solve_poisson_2d(
     result = _run_bounded(_solve, timeout)
     assert isinstance(result, dict)
     return result
+
+
+_MAX_3D_POINTS = 31**3
+
+
+def _check_3d_budget(nx: int, ny: int, nz: int) -> None:
+    if nx < 5 or ny < 5 or nz < 5:
+        raise ValueError("Need nx, ny, nz >= 5")
+    if nx * ny * nz > _MAX_3D_POINTS:
+        raise ValueError(
+            f"Grid {nx}x{ny}x{nz} exceeds the structured-3D budget "
+            f"({_MAX_3D_POINTS} points): coarsen or solve out-of-core. "
+            "Unstructured meshes remain out of scope."
+        )
+
+
+def solve_heat_3d(
+    lx: float,
+    ly: float,
+    lz: float,
+    total_time: float,
+    nx: int = 15,
+    ny: int = 15,
+    nz: int = 15,
+    nt: int = 100,
+    diffusivity: float = 1.0,
+    bc: float = 0.0,
+    timeout: float = _DEFAULT_TIMEOUT,
+) -> dict[str, object]:
+    """Explicit solve of ``u_t = D Δu`` on a box with zero Dirichlet BCs.
+
+    Sine-product initial profile ``sin(πx/Lx)·sin(πy/Ly)·sin(πz/Lz)`` (exact
+    decay rate ``π²D(1/Lx²+1/Ly²+1/Lz²)``). Refuses ``r > 1/6`` and grids
+    over the structured-3D budget instead of swapping or blowing up.
+    """
+    for name, val in (("lx", lx), ("ly", ly), ("lz", lz), ("total_time", total_time), ("diffusivity", diffusivity)):
+        if not (math.isfinite(val) and val > 0):
+            raise ValueError(f"Need finite {name} > 0")
+    _check_3d_budget(nx, ny, nz)
+    if nt < 2:
+        raise ValueError("Need nt >= 2")
+    dx = float(lx) / (nx - 1)
+    for L, n in (("ly", ny), ("lz", nz)):
+        d = {"ly": float(ly), "lz": float(lz)}[L] / (n - 1)
+        if abs(d - dx) / max(d, dx) > 0.05:
+            raise ValueError("Need near-cubic grid for the explicit 3D stencil")
+    dt = float(total_time) / nt
+    r = float(diffusivity) * dt / dx**2
+    if r > 1 / 6:
+        raise ValueError(f"Unstable heat-3D grid r={r:.3f} > 1/6")
+
+    def _solve() -> dict[str, object]:
+        x = np.linspace(0.0, float(lx), nx)
+        y = np.linspace(0.0, float(ly), ny)
+        z = np.linspace(0.0, float(lz), nz)
+        xx, yy, zz = np.meshgrid(x, y, z, indexing="ij")
+        u = np.sin(np.pi * xx / float(lx)) * np.sin(np.pi * yy / float(ly)) * np.sin(np.pi * zz / float(lz))
+        u[0, :, :] = u[-1, :, :] = u[:, 0, :] = u[:, -1, :] = u[:, :, 0] = u[:, :, -1] = float(bc)
+        for _ in range(nt):
+            nxt = u.copy()
+            nxt[1:-1, 1:-1, 1:-1] = u[1:-1, 1:-1, 1:-1] + r * (
+                u[2:, 1:-1, 1:-1] + u[:-2, 1:-1, 1:-1]
+                + u[1:-1, 2:, 1:-1] + u[1:-1, :-2, 1:-1]
+                + u[1:-1, 1:-1, 2:] + u[1:-1, 1:-1, :-2]
+                - 6 * u[1:-1, 1:-1, 1:-1]
+            )
+            nxt[0, :, :] = nxt[-1, :, :] = nxt[:, 0, :] = nxt[:, -1, :] = nxt[:, :, 0] = nxt[:, :, -1] = float(bc)
+            if not bool(np.all(np.isfinite(nxt))):
+                raise ArithmeticError("Heat-3D solve went non-finite")
+            u = nxt
+        return {"x": x, "y": y, "z": z, "u": u, "dx": dx, "dt": dt, "r": r}
+
+    result = _run_bounded(_solve, timeout)
+    assert isinstance(result, dict)
+    return result
+
+
+def solve_laplace_3d(
+    lx: float = 1.0,
+    ly: float = 1.0,
+    lz: float = 1.0,
+    nx: int = 15,
+    ny: int = 15,
+    nz: int = 15,
+    bc: str = "linear",
+    tol: float = 1e-5,
+    maxiter: int = 20000,
+    timeout: float = _DEFAULT_TIMEOUT,
+) -> dict[str, object]:
+    """Jacobi solve of ``Δu = 0`` on a box with Dirichlet BCs.
+
+    ``bc="linear"`` pins ``x + y + z`` (harmonic: the exact interior);
+    ``bc="zero"`` pins zero; otherwise a ``safe_parse_expr`` profile in
+    ``x``/``y``/``z`` used on the boundary only (interior starts at zero).
+    Raises on non-convergence; refuses grids over the 3D budget.
+    """
+    for name, val in (("lx", lx), ("ly", ly), ("lz", lz)):
+        if not (math.isfinite(val) and val > 0):
+            raise ValueError(f"Need finite {name} > 0")
+    _check_3d_budget(nx, ny, nz)
+    if not (math.isfinite(tol) and tol > 0):
+        raise ValueError("Need finite tol > 0")
+
+    def _solve() -> dict[str, object]:
+        x = np.linspace(0.0, float(lx), nx)
+        y = np.linspace(0.0, float(ly), ny)
+        z = np.linspace(0.0, float(lz), nz)
+        xx, yy, zz = np.meshgrid(x, y, z, indexing="ij")
+        if bc == "linear":
+            edge = xx + yy + zz
+        elif bc == "zero":
+            edge = np.zeros_like(xx)
+        else:
+            expr = safe_parse_expr(bc)
+            f = sp.lambdify((sp.Symbol("x"), sp.Symbol("y"), sp.Symbol("z")), expr, modules=["numpy"])
+            try:
+                edge = np.asarray(f(xx, yy, zz), dtype=float)
+            except (ValueError, TypeError, ArithmeticError) as e:
+                raise ValueError(f"Bad BC profile: {e}") from e
+            if edge.shape != xx.shape:
+                raise ValueError("BC profile shape mismatch")
+        u = np.zeros_like(edge)
+        u[0, :, :] = edge[0, :, :]
+        u[-1, :, :] = edge[-1, :, :]
+        u[:, 0, :] = edge[:, 0, :]
+        u[:, -1, :] = edge[:, -1, :]
+        u[:, :, 0] = edge[:, :, 0]
+        u[:, :, -1] = edge[:, :, -1]
+        it = 0
+        while it < maxiter:
+            nxt = u.copy()
+            nxt[1:-1, 1:-1, 1:-1] = (
+                u[2:, 1:-1, 1:-1] + u[:-2, 1:-1, 1:-1]
+                + u[1:-1, 2:, 1:-1] + u[1:-1, :-2, 1:-1]
+                + u[1:-1, 1:-1, 2:] + u[1:-1, 1:-1, :-2]
+            ) / 6.0
+            delta = float(np.max(np.abs(nxt - u)))
+            u = nxt
+            it += 1
+            if not math.isfinite(delta):
+                raise ArithmeticError("Jacobi-3D went non-finite")
+            if delta < tol:
+                return {"x": x, "y": y, "z": z, "u": u, "iterations": it, "final_delta": delta}
+        raise ArithmeticError(f"Jacobi-3D did not converge in {maxiter} iterations")
+
+    result = _run_bounded(_solve, timeout)
+    assert isinstance(result, dict)
+    return result

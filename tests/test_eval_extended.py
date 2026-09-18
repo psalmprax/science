@@ -5,10 +5,13 @@ import numpy as np
 import pytest
 
 from apedp.eval_extended import (
+    evaluate_einsum,
     evaluate_implicit,
+    evaluate_implicit_system,
     evaluate_ode_ivp,
     evaluate_pde_residual,
     evaluate_quadrature,
+    simulate_sde_euler_maruyama,
     solve_heat_1d_explicit,
 )
 
@@ -93,3 +96,46 @@ def test_repair_routes_pde_to_template():
     assert "DIFFUSION" in r["validity_domain"]
     r2 = s.autonomous_stress_test_and_repair("1/x")
     assert r2["status"] == "REPAIRED"
+
+
+def test_implicit_system_two_by_two():
+    r = evaluate_implicit_system(["x + y - 3", "x - y - 1"], ["x", "y"], [1.0, 1.0])
+    assert r["x"] == pytest.approx(2.0)
+    assert r["y"] == pytest.approx(1.0)
+    assert r["residual"] < 1e-9
+
+
+def test_implicit_system_mismatched_lengths_raises():
+    with pytest.raises(ValueError, match="len\\(formulas\\)"):
+        evaluate_implicit_system(["x - 1"], ["x", "y"], [1.0, 1.0])
+
+
+def test_ode_rk45_matches_exp_decay():
+    ys = evaluate_ode_ivp("-y", 1.0, np.linspace(0, 1, 11), method="rk45")
+    assert ys[-1] == pytest.approx(np.exp(-1), rel=1e-4)
+
+
+def test_ode_bad_method_raises():
+    with pytest.raises(ValueError, match="method"):
+        evaluate_ode_ivp("-y", 1.0, [0.0, 1.0], method="euler")
+
+
+def test_einsum_trace():
+    assert float(evaluate_einsum("ii->", np.ones((3, 3)))) == pytest.approx(3.0)
+
+
+def test_einsum_mismatch_raises():
+    with pytest.raises(ValueError, match="einsum failed"):
+        evaluate_einsum("ii->", np.ones((2, 3)))
+
+
+def test_sde_wiener_statistics():
+    s = simulate_sde_euler_maruyama("0.0", "1.0", 0.0, 1.0, 0.01, n_paths=2000, seed=1)
+    assert s["terminal_mean"] == pytest.approx(0.0, abs=0.1)
+    assert s["terminal_std"] == pytest.approx(1.0, rel=0.1)
+
+
+def test_sde_reproducible_seed():
+    a = simulate_sde_euler_maruyama("0.0", "1.0", 0.0, 0.1, 0.01, n_paths=50, seed=7)
+    b = simulate_sde_euler_maruyama("0.0", "1.0", 0.0, 0.1, 0.01, n_paths=50, seed=7)
+    assert np.array_equal(a["paths"], b["paths"])

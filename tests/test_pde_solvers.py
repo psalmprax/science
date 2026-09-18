@@ -7,7 +7,9 @@ import pytest
 from apedp.pde_solvers import (
     solve_advection_1d,
     solve_heat_2d,
+    solve_heat_3d,
     solve_laplace_2d,
+    solve_laplace_3d,
     solve_poisson_2d,
     solve_wave_1d,
 )
@@ -67,3 +69,23 @@ def test_poisson_manufactured_sine():
 def test_poisson_nonconvergence_raises():
     with pytest.raises(ArithmeticError, match="did not converge"):
         solve_poisson_2d("-sin(x)*sin(y)", nx=21, ny=21, tol=1e-15, maxiter=3)
+
+
+def test_heat_3d_decays():
+    h = solve_heat_3d(1.0, 1.0, 1.0, 0.002, nx=11, ny=11, nz=11, nt=20)
+    assert bool(np.all(np.isfinite(h["u"])))
+    assert 0.0 < float(np.max(h["u"])) < 1.0
+    assert h["r"] <= 1 / 6
+
+
+def test_heat_3d_refuses_unstable_and_oversize():
+    with pytest.raises(ValueError, match="r="):
+        solve_heat_3d(1.0, 1.0, 1.0, 1.0, nx=11, ny=11, nz=11, nt=5)
+    with pytest.raises(ValueError, match="budget"):
+        solve_heat_3d(1.0, 1.0, 1.0, 0.001, nx=41, ny=41, nz=41, nt=5)
+
+
+def test_laplace_3d_linear_is_harmonic():
+    sol = solve_laplace_3d(nx=11, ny=11, nz=11, bc="linear", tol=1e-5)
+    xx, yy, zz = np.meshgrid(sol["x"], sol["y"], sol["z"], indexing="ij")
+    assert np.max(np.abs(sol["u"] - (xx + yy + zz))) < 1e-3
