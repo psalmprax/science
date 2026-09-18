@@ -129,6 +129,8 @@ from apedp.persistence import (
 )
 from apedp.pipeline import DiscoveryPipeline, run_pipeline
 from apedp.composer import Conjecture, HypothesisComposer
+from apedp.pde_templates import TEMPLATES as PDE_TEMPLATES
+from apedp.pde_templates import recognize_pde
 from apedp.qec import (
     ConcatenatedThresholdRecursion,
     KnillLaflammeAuditor,
@@ -237,6 +239,7 @@ __all__ = [
     "NumberLike",
     "OperationalGateAuditor",
     "OperationalReadinessReport",
+    "PDE_TEMPLATES",
     "ParetoFrontierTracker",
     "PathologicalCase",
     "PathologicalEquationBenchmark",
@@ -280,6 +283,7 @@ __all__ = [
     "plot_regression_fitness",
     "plot_scenario_results",
     "plot_uncertainty_propagation",
+    "recognize_pde",
     "run_pipeline",
     "safe_parse_expr",
     "serialize_model",

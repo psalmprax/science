@@ -204,6 +204,74 @@ def safe_parse_expr(
     return expr
 
 
+_PDE_FUNCS = ("Derivative", "Integral", "Function")
+
+
+def safe_parse_pde(
+    formula_str: str,
+    max_length: int = MAX_FORMULA_LENGTH,
+) -> sp.Expr:
+    """Parse a PDE/ODE residual string (``= 0`` form) with a tight allowlist.
+
+    Same forbidden-token, length-cap, and no-attribute-access policy as
+    :func:`safe_parse_expr`, plus ``Derivative`` / ``Integral`` / named
+    ``Function`` heads. Unknown callables (``T(x, t)``) become undefined
+    functions; bare identifiers become symbols. Anything else that survives
+    as a function application must be in the scalar allowlist or be an
+    undefined function / Derivative / Integral, else ``ValueError``.
+    """
+    if not isinstance(formula_str, str):
+        raise TypeError(f"Formula must be a string, got {type(formula_str)}")
+    s = formula_str.strip()
+    if not s:
+        raise ValueError("Empty formula string")
+    if len(s) > max_length:
+        raise ValueError(f"Formula exceeds max length {max_length} (got {len(s)})")
+    lowered = s.lower()
+    for token in _FORBIDDEN_SUBSTRINGS:
+        if token.lower() in lowered:
+            raise ValueError(f"Forbidden token in formula: {token!r}")
+    for identifier in _FORBIDDEN_IDENTIFIERS:
+        if re.search(rf"\b{identifier}\b", lowered):
+            raise ValueError(f"Forbidden identifier in formula: {identifier!r}")
+    if _rejects_attribute_access(s):
+        raise ValueError("Attribute access ('.') is not allowed in formulas")
+    _PARSER_INTERNALS = {"Integer", "Float", "Rational", "Symbol", "I", "oo", "nan", "zoo"}
+    local_dict: dict = dict(_SAFE_FUNCS)
+    local_dict.update({"Derivative": sp.Derivative, "Integral": sp.Integral, "Function": sp.Function})
+    called = set(re.findall(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(", s))
+    for ident in called:
+        if ident in ("E", "pi", "EulerGamma", "I"):
+            # Field call form (E(x,t), B(x,t)) beats the scalar constant.
+            local_dict[ident] = sp.Function(ident)
+        elif ident not in local_dict and ident not in _PARSER_INTERNALS:
+            local_dict[ident] = sp.Function(ident)
+    for ident in set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", s)):
+        if ident not in local_dict and ident not in _PARSER_INTERNALS:
+            local_dict[ident] = sp.Symbol(ident)
+    try:
+        expr = sp.parse_expr(s, local_dict=local_dict, transformations=_TRANSFORMATIONS)
+    except Exception as e:
+        raise ValueError(f"Unparseable PDE formula {s!r}: {e}") from e
+    for atom in expr.atoms(sp.Function):
+        func_type = type(atom)
+        name = getattr(func_type, "__name__", str(func_type))
+        if name in {
+            "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
+            "exp", "log", "sqrt", "Abs", "sign", "Min", "Max", "min", "max",
+            "Heaviside", "re", "im", "conjugate", "sinh", "cosh", "tanh",
+            "erf", "erfc", "Derivative",
+        }:
+            continue
+        # Undefined functions (T, u, psi, ...) are the point of PDE input.
+        from sympy.core.function import AppliedUndef
+
+        if isinstance(atom, AppliedUndef):
+            continue
+        raise ValueError(f"Function {name!r} is not in the PDE allowlist")
+    return expr
+
+
 class LimitTimeout(Exception):
     """Raised when a symbolic limit exceeds its wall-clock budget."""
 

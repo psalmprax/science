@@ -1,6 +1,13 @@
 # APEDP Discovery Roadmap: Certification + Data-Free Conjecture
 
-Status: implemented (commit after this edit). 298 tests green, ruff + mypy clean.
+Status: implemented (commit after this edit). 301 tests green, ruff + mypy clean.
+
+## Coverage ladder (all equations)
+
+- **L0 algebraic:** 193 named laws in `PriorArtAuditor` (v3+), all parse-gated: mechanics, EM/electronics, thermo/fluids/heat, waves/optics/QM/relativity, chemistry/materials, vibrations/acoustics, signals, cycles/combustion, mass transfer, electrochem/semiconductors, structures/geo/astro, turbomachinery, bio/misc rates.
+- **L1 PDE templates** (`apedp/pde_templates.py`, `safe_parse_pde`): DIFFUSION/HEAT_1D, WAVE_1D, LAPLACE_2D, POISSON_2D, CONTINUITY_1D, EULER_MOMENTUM_1D, NS_X_1D, SCHRODINGER_TD_1D, MAXWELL_FARADAY/AMPERE_1D. Class-level shape match only (coefficients/BCs NOT verified).
+- **L2 black-box:** no symbolic form needed — falsifier grids judge numerically.
+- **OUT_OF_SCOPE** (`NoveltyStatus.OUT_OF_SCOPE`): PDE with no template, integral forms beyond the allowlist, or unparseable input. Returned instead of a forced known/novel verdict.
 
 ## 1. Where we stand (measured)
 

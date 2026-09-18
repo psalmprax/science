@@ -203,6 +203,7 @@ class NoveltyStatus(str, Enum):
     KNOWN_MODEL = "KNOWN_MODEL"                              # Exact symbolic or linear/scale isomorphism to cataloged literature model
     RELATED_STRUCTURE = "RELATED_STRUCTURE"                  # Parametric variation or common structural family (e.g. rational saturation)
     APPARENTLY_NOVEL_WITHIN_CORPUS = "APPARENTLY_NOVEL_WITHIN_CORPUS"  # No algebraic isomorphism or family match in corpus
+    OUT_OF_SCOPE = "OUT_OF_SCOPE"                            # Not an algebraic scalar law (PDE/integral/unparseable): no novelty verdict possible
 
 
 @dataclass(frozen=True)
@@ -347,6 +348,101 @@ class PriorArtAuditor:
         "THRUST": "m_dot * ve",
         "ROCKET_IDEAL": "ve * log(m0 / mf)",
         "LIFT_COEFFICIENT": "2 * L / (rho * v**2 * S)",
+        # Vibrations / rotordynamics / acoustics.
+        "NATURAL_FREQ": "sqrt(k / m)",
+        "DAMPED_FREQ": "wn * sqrt(1 - z**2)",
+        "LOG_DECREMENT": "2 * pi * z / sqrt(1 - z**2)",
+        "TRANSMISSIBILITY": "sqrt(1 + (2 * z * r)**2) / sqrt((1 - r**2)**2 + (2 * z * r)**2)",
+        "CRITICAL_SPEED": "sqrt(k / m)",
+        "SOUND_SPEED": "sqrt(gamma * R * T / M)",
+        "SOUND_INTENSITY": "p**2 / (rho * c)",
+        "DECIBEL": "10 * log(I / I0)",
+        "STRING_FREQ": "sqrt(T / mu) / (2 * L)",
+        "BEAT_FREQ": "f1 - f2",
+        "RESONANCE_Q": "wn / dW",
+        # AC circuits / signals.
+        "IMPEDANCE_RLC": "sqrt(R**2 + (w * L - 1 / (w * C))**2)",
+        "RESONANT_FREQ_LC": "1 / sqrt(L * C)",
+        "BANDWIDTH_RLC": "R / L",
+        "GAIN_DB": "20 * log(V / V0)",
+        "NYQUIST_RATE": "2 * B",
+        "SHANNON_CAPACITY": "B * log(1 + S / N)",
+        "SKIN_DEPTH": "sqrt(2 * rho / (w * mu))",
+        "COAX_IMPEDANCE": "log(D / d)",
+        "DIODE": "Is * (exp(V / (n * Vt)) - 1)",
+        "MOS_SAT": "k * (Vgs - Vth)**2 / 2",
+        # Thermo cycles / phase change / combustion.
+        "OTTO_EFFICIENCY": "1 - 1 / r**(gamma - 1)",
+        "BRAYTON_EFFICIENCY": "1 - 1 / rp**((gamma - 1) / gamma)",
+        "RANKINE_EFFICIENCY": "(h1 - h2) / (h1 - h3)",
+        "LMTD": "(dT1 - dT2) / log(dT1 / dT2)",
+        "NTU": "U * A / Cmin",
+        "EFFECTIVENESS_PARALLEL": "(1 - exp(-NTU * (1 + Cr))) / (1 + Cr)",
+        "CLAUSIUS_CLAPEYRON": "L / (R * T**2)",
+        "KELVIN_EQUATION": "2 * gamma * Vm / (r * R * T)",
+        "ADIABATIC": "P * V**gamma",
+        "FLAME_SPEED": "sqrt(alpha * RR)",
+        "EQUIVALENCE_RATIO": "(F / A) / phi_st",
+        # Mass transfer / reaction engineering.
+        "SHERWOOD": "k * L / D",
+        "SCHMIDT": "eta / (rho * D)",
+        "MASS_TRANSFER_FLUX": "k * (C - Ceq)",
+        "CSTR_CONVERSION": "k * tau / (1 + k * tau)",
+        "PFR_CONVERSION": "1 - exp(-k * tau)",
+        "THIELE": "L * sqrt(k / D)",
+        "EFFECTIVENESS_FACTOR": "tanh(phi) / phi",
+        "ARIS_NUMBER": "k * C**(n - 1) * L**2 / D",
+        "HENRY": "kH * P",
+        "RAOULT": "x * Psat",
+        # Electrochemistry / semiconductors / photonics.
+        "BUTLER_VOLMER": "i0 * (exp(a * n * F * eta / (R * T)) - exp(-c * n * F * eta / (R * T)))",
+        "TAFEL": "a + b * log(i)",
+        "DEBYE_LENGTH": "sqrt(eps * R * T / (2 * F**2 * C))",
+        "MOTT_SCHOTTKY": "1 / C**2",
+        "BANDGAP_TEMP": "Eg0 - a * T**2 / (T + b)",
+        "CARRIER_INTRINSIC": "sqrt(Nc * Nv) * exp(-Eg / (2 * k * T))",
+        "RESISTIVITY_SEMI": "1 / (q * (n * mu_n + p * mu_p))",
+        "FRESNEL_R": "(n1 - n2) / (n1 + n2)",
+        "BREWSTER": "atan(n2 / n1)",
+        "GRATING": "d * sin(t)",
+        "FABRY_FINESSSE": "pi * sqrt(R) / (1 - R)",
+        "BEER_ABSORBANCE": "a * b * c",
+        # Structures / geophysics / astro.
+        "BENDING_STRESS": "M * y / I",
+        "DEFLECTION_CANTILEVER": "F * L**3 / (3 * E * I)",
+        "BUCKLING_EULER": "pi**2 * E * I / L**2",
+        "HERTZ_CONTACT": "F / (pi * a**2)",
+        "GRAVITY_ANOMALY": "G * M / r**2",
+        "HYDROSTATIC_PRESSURE": "rho * g * z",
+        "MAGNITUDE_ENERGY": "a * exp(b * M)",
+        "HUBBLE": "H0 * d",
+        "SCHWARZSCHILD": "2 * G * M / c**2",
+        "EDDINGTON_LUMINOSITY": "M",
+        "JEANS_LENGTH": "sqrt(pi * cs**2 / (G * rho))",
+        "ORBITAL_PERIOD": "2 * pi * sqrt(a**3 / (G * M))",
+        # Fluids / turbomachinery /imetrics.
+        "EULER_TURBINE": "rho * Q * (u2 * v2 - u1 * v1)",
+        "AFFINITY_FLOW": "Q2 / Q1",
+        "AFFINITY_HEAD": "(N2 / N1)**2",
+        "CAVITATION_NUMBER": "(P - Pv) / (rho * v**2 / 2)",
+        "FROUDE": "v / sqrt(g * L)",
+        "WEBER": "rho * v**2 * L / sigma",
+        "NUSSELT": "h * L / k",
+        "PRANDTL_NUMBER": "eta * cp / k",
+        "GRASHOF": "g * beta * dT * L**3 / nu**2",
+        "COLEBROOK_RHS": "-2 * log(eps / (3.7 * D) + 2.51 / (Re * sqrt(f)))",
+        # Biophysics / misc rates.
+        "HILL_FRACTION": "x**n / (Kd + x**n)",
+        "MONOD_GROWTH": "mu_max * S / (Ks + S)",
+        "LOGISTIC_GROWTH": "r * N * (1 - N / K)",
+        "GOMPERTZ": "a * exp(-b * exp(-c * t))",
+        "WEIBULL_RELIABILITY": "exp(-(t / lam)**k)",
+        "ARPS_DECLINE": "qi / (1 + b * Di * t)**(1 / b)",
+        "LEARNING_CURVE": "a * x**(-b)",
+        "PARETO": "(xm / x)**a",
+        "BLACK_SCHOLES_D1": "(log(S / K) + (r + s**2 / 2) * T) / (s * sqrt(T))",
+        "SHARPE": "(Rp - Rf) / sp",
+        "CAPM": "Rf + b * (Rm - Rf)",
     }
 
     @staticmethod
@@ -426,6 +522,53 @@ class PriorArtAuditor:
             return False, f"COMPARISON_ERROR: {e}"
 
     @classmethod
+    def _audit_pde(cls, candidate_str: str, corpus_size: int) -> NoveltyAuditResult:
+        """Template-match a PDE/ODE residual; OUT_OF_SCOPE when the shape is unknown."""
+        from apedp.pde_templates import TEMPLATES, recognize_pde
+        from apedp.safety import safe_parse_pde
+
+        try:
+            expr = safe_parse_pde(candidate_str)
+        except (TypeError, ValueError) as e:
+            return NoveltyAuditResult(
+                status=NoveltyStatus.OUT_OF_SCOPE,
+                closest_reference_id=None,
+                reference_formula=None,
+                isomorphism_type=None,
+                searched_corpus_size=corpus_size,
+                epistemic_disclaimer=(
+                    f"PDE-class input could not be parsed ({e}). No novelty verdict possible."
+                ),
+            )
+        hits = recognize_pde(expr)
+        if hits:
+            primary = hits[0]
+            return NoveltyAuditResult(
+                status=NoveltyStatus.KNOWN_MODEL,
+                closest_reference_id=f"PDE_TEMPLATE_{primary}",
+                reference_formula=TEMPLATES[primary],
+                isomorphism_type="PDE_TEMPLATE_FORM",
+                searched_corpus_size=corpus_size,
+                epistemic_disclaimer=(
+                    f"Residual matches the {primary} template shape ({TEMPLATES[primary]}). "
+                    "Class-level match only: coefficients, domains, and boundary conditions "
+                    "were NOT verified, so this is not a law-level identification."
+                ),
+            )
+        return NoveltyAuditResult(
+            status=NoveltyStatus.OUT_OF_SCOPE,
+            closest_reference_id=None,
+            reference_formula=None,
+            isomorphism_type=None,
+            searched_corpus_size=corpus_size,
+            epistemic_disclaimer=(
+                "PDE-class input parsed but matched no known template (diffusion, wave, "
+                "Laplace/Poisson, continuity, Euler/NS, Schrodinger, Maxwell 1D). "
+                "No novelty verdict possible; extend pde_templates.py or supply data."
+            ),
+        )
+
+    @classmethod
     def audit_novelty(
         cls,
         candidate_expr: str | sp.Expr,
@@ -433,24 +576,42 @@ class PriorArtAuditor:
         custom_corpus: dict[str, str] | None = None,
     ) -> NoveltyAuditResult:
         """Audits candidate against reference corpus, preventing false claims of novelty.
-        
-        Classifies strictly into KNOWN_MODEL, RELATED_STRUCTURE, or APPARENTLY_NOVEL_WITHIN_CORPUS.
-        Always outputs an epistemic disclaimer that novelty is relative to the searched corpus.
+
+        Classes: KNOWN_MODEL, RELATED_STRUCTURE, APPARENTLY_NOVEL_WITHIN_CORPUS
+        for algebraic scalar laws; PDE/integral/unparseable input returns
+        OUT_OF_SCOPE (matched PDE templates cite the template instead).
+        Always outputs an epistemic disclaimer that novelty is relative to
+        the searched corpus.
         """
         corpus = dict(cls.STANDARD_PHYSICS_CORPUS)
         if custom_corpus:
             corpus.update(custom_corpus)
 
-        x_sym = sp.Symbol(variable_name)
-        from apedp.safety import safe_parse_expr
+        if isinstance(candidate_expr, str) and (
+            "Derivative" in candidate_expr or "Integral(" in candidate_expr
+        ):
+            return cls._audit_pde(candidate_expr, len(corpus))
 
+        x_sym = sp.Symbol(variable_name)
         if isinstance(candidate_expr, str):
             try:
                 s_cand = cls._parse_physics(candidate_expr)
-            except (TypeError, ValueError):
-                s_cand = safe_parse_expr(candidate_expr, extra_symbols={variable_name: x_sym})
+            except (TypeError, ValueError) as e:
+                return NoveltyAuditResult(
+                    status=NoveltyStatus.OUT_OF_SCOPE,
+                    closest_reference_id=None,
+                    reference_formula=None,
+                    isomorphism_type=None,
+                    searched_corpus_size=len(corpus),
+                    epistemic_disclaimer=(
+                        f"Input is not an algebraic scalar law ({e}). No novelty verdict possible; "
+                        "supply a PDE residual for template matching or a parseable expression."
+                    ),
+                )
         else:
             s_cand = candidate_expr
+            if s_cand.has(sp.Derivative, sp.Integral):
+                return cls._audit_pde(str(s_cand), len(corpus))
 
         # 1. Direct symbolic equivalence against corpus models
         for ref_id, ref_str in corpus.items():

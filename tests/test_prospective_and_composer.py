@@ -129,3 +129,36 @@ def test_b_composer_returns_ranked_speculation():
         target_unit_str="joule", template_priors=priors,
     )
     assert isinstance(sre.template_exprs, list)
+
+
+def test_corpus_covers_broad_law_classes():
+    from apedp.epistemic import PriorArtAuditor
+
+    assert len(PriorArtAuditor.STANDARD_PHYSICS_CORPUS) >= 150
+    for expr, ref in [
+        ("m*v**2/2", "KINETIC_ENERGY"),
+        ("2*pi*sqrt(L/g)", "PENDULUM_PERIOD"),
+        ("A*exp(-Ea/(R*T))", "ARRHENIUS_RATE"),
+    ]:
+        r = PriorArtAuditor.audit_novelty(expr)
+        assert r.status.value == "KNOWN_MODEL", (expr, r.status)
+        assert r.closest_reference_id == ref
+
+
+def test_pde_templates_match_canonical_shapes():
+    from apedp import recognize_pde
+    from apedp.safety import safe_parse_pde
+
+    assert "DIFFUSION_1D" in recognize_pde(safe_parse_pde("Derivative(T(x,t),t) - D*Derivative(T(x,t),x,2)"))
+    assert "WAVE_1D" in recognize_pde(safe_parse_pde("Derivative(u(x,t),t,2) - c**2*Derivative(u(x,t),x,2)"))
+    assert "LAPLACE_2D" in recognize_pde(safe_parse_pde("Derivative(u(x,t),x,2) + Derivative(u(x,t),y,2)"))
+
+
+def test_pde_audit_and_out_of_scope():
+    from apedp.epistemic import PriorArtAuditor
+
+    r = PriorArtAuditor.audit_novelty("Derivative(T(x,t),t) - D*Derivative(T(x,t),x,2)")
+    assert r.status.value == "KNOWN_MODEL"
+    assert (r.closest_reference_id or "").startswith("PDE_TEMPLATE_")
+    r2 = PriorArtAuditor.audit_novelty("not (( a formula")
+    assert r2.status.value == "OUT_OF_SCOPE"
