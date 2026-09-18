@@ -676,12 +676,14 @@ def solve_poisson_fem(
 
     Bring your own mesh: ``nodes`` is (N, 2), ``triangles`` is (M, 3) indices
     into ``nodes``. ``source`` is a ``safe_parse_expr`` string in ``x``/``y``;
-    ``dirichlet`` maps node index -> pinned value (default: all boundary
-    nodes pinned to 0, where boundary = nodes on the bounding box). Linear
-    P1 elements with a 3-point (midpoint) quadrature for the load vector;
-    the system solves with ``numpy.linalg.solve`` and refuses singular or
-    non-finite assemblies instead of returning garbage. No mesher is bundled:
-    mesh generation stays out of scope, mesh *solution* is covered here.
+    ``dirichlet`` maps node index -> pinned value (default: every node on the
+    mesh hull loop pinned to 0 — the true mesh boundary, not the bounding
+    box, so scattered point sets get a closed problem). Linear P1 elements
+    with exact nodal load quadrature; the system solves with
+    ``numpy.linalg.solve`` and refuses singular or non-finite assemblies
+    instead of returning garbage. No mesher is bundled: mesh generation lives
+    in :mod:`apedp.meshing`; only exotic (anisotropic, curved-boundary)
+    meshing stays out.
     """
     pts = np.asarray(nodes, dtype=float)
     tris = np.asarray(triangles, dtype=int)
@@ -698,6 +700,14 @@ def solve_poisson_fem(
     def _solve() -> dict[str, object]:
         fx = sp.lambdify((sp.Symbol("x"), sp.Symbol("y")), f_expr, modules=["numpy"])
         n = len(pts)
+        try:
+            fnodes = np.asarray(fx(pts[:, 0], pts[:, 1]), dtype=float).ravel()
+        except (ValueError, TypeError, ArithmeticError) as e:
+            raise ValueError(f"Source evaluation failed: {e}") from e
+        if fnodes.shape != (n,):
+            fnodes = np.full(n, float(np.ravel(fnodes)[0]), dtype=float)
+        if not bool(np.all(np.isfinite(fnodes))):
+            raise ValueError("Source non-finite at mesh nodes")
         mat = np.zeros((n, n))
         rhs = np.zeros(n)
         for tri in tris:
@@ -712,26 +722,36 @@ def solve_poisson_fem(
                 b, c = p[(i + 1) % 3], p[(i + 2) % 3]
                 grads[i] = np.array([c[1] - b[1], b[0] - c[0]]) / area2
             ke = (area2 / 2) * (grads @ grads.T)
-            mids = (p + np.roll(p, -1, axis=0)) / 2
-            try:
-                fvals = np.asarray(fx(mids[:, 0], mids[:, 1]), dtype=float).ravel()
-            except (ValueError, TypeError, ArithmeticError) as e:
-                raise ValueError(f"Source evaluation failed: {e}") from e
-            if fvals.shape != (3,):
-                fvals = np.full(3, float(np.ravel(fvals)[0]), dtype=float)
-            fe = (area2 / 6) * fvals
+            # Exact load for the linear interpolant: ∫λ_a f = (A/12)(f_a + Σf).
+            s_tri = float(fnodes[tri[0]] + fnodes[tri[1]] + fnodes[tri[2]])
+            area = area2 / 2
             for a in range(3):
-                rhs[tri[a]] += fe[a]
+                rhs[tri[a]] += (area / 12) * (fnodes[tri[a]] + s_tri)
                 for b in range(3):
                     mat[tri[a], tri[b]] += ke[a, b]
         if dirichlet is None:
-            on_box = (
-                (np.abs(pts[:, 0] - pts[:, 0].min()) < 1e-12)
-                | (np.abs(pts[:, 0] - pts[:, 0].max()) < 1e-12)
-                | (np.abs(pts[:, 1] - pts[:, 1].min()) < 1e-12)
-                | (np.abs(pts[:, 1] - pts[:, 1].max()) < 1e-12)
-            )
-            pinned: dict[int, float] = {int(i): 0.0 for i in np.where(on_box)[0]}
+            from apedp.meshing import _convex_hull_ordered
+
+            hull = _convex_hull_ordered(pts)
+            # Exact integer on-segment test on a per-call lattice: hull-loop
+            # nodes (collinear-inclusive), not the bounding box, so scattered
+            # sets get a closed boundary and box meshes behave as before.
+            qx = [int(round(float(p[0]) * (1 << 30))) for p in pts]
+            qy = [int(round(float(p[1]) * (1 << 30))) for p in pts]
+            on_loop = set()
+            for k in range(len(hull)):
+                ax, ay = qx[hull[k]], qy[hull[k]]
+                bx, by = qx[hull[(k + 1) % len(hull)]], qy[hull[(k + 1) % len(hull)]]
+                abx, aby = bx - ax, by - ay
+                seg2 = abx * abx + aby * aby
+                for i in range(n):
+                    px, py = qx[i] - ax, qy[i] - ay
+                    if px * aby != py * abx:
+                        continue
+                    dot = px * abx + py * aby
+                    if 0 <= dot <= seg2:
+                        on_loop.add(i)
+            pinned: dict[int, float] = {int(i): 0.0 for i in on_loop}
         else:
             pinned = {}
             for k, v in dirichlet.items():

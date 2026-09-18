@@ -119,6 +119,12 @@ from apedp.metrology import (
     MetrologySensorStream,
     UncertaintyReport,
 )
+from apedp.meshing import (
+    delaunay_triangulate,
+    refine_mesh_2d,
+    smooth_mesh_2d,
+    uniform_mesh_2d,
+)
 from apedp.persistence import (
     ExperimentLog,
     ModelStore,
@@ -132,12 +138,16 @@ from apedp.composer import Conjecture, HypothesisComposer
 from apedp.eval_extended import (
     evaluate_implicit,
     evaluate_implicit_system,
+    evaluate_indexed,
     evaluate_ode_ivp,
+    evaluate_ode_system,
     evaluate_pde_residual,
     evaluate_quadrature,
     evaluate_einsum,
+    parse_indexed_to_sympy,
     simulate_sde_euler_maruyama,
     solve_heat_1d_explicit,
+    symbolic_contract,
 )
 from apedp.pde_templates import TEMPLATES as PDE_TEMPLATES
 from apedp.pde_templates import recognize_pde
@@ -166,7 +176,7 @@ from apedp.repair import (
     PhysicalAnomalyRepairEngine,
     RegularizationAuditor,
 )
-from apedp.safety import LimitTimeout, limit_with_timeout, safe_parse_expr
+from apedp.safety import LimitTimeout, limit_with_timeout, safe_parse_expr, safe_parse_pde
 from apedp.scenarios import APEDPScenarioSuite
 from apedp.symbolic_regression import (
     RegressionConfig,
@@ -293,16 +303,20 @@ __all__ = [
     "create_gibbs_thomson_benchmark_contract",
     "create_hall_petch_benchmark_contract",
     "create_prandtl_glauert_benchmark_contract",
+    "delaunay_triangulate",
     "deserialize_model",
     "evaluate_einsum",
     "evaluate_implicit",
     "evaluate_implicit_system",
+    "evaluate_indexed",
     "evaluate_ode_ivp",
+    "evaluate_ode_system",
     "evaluate_pde_residual",
     "evaluate_quadrature",
     "from_json",
     "limit_with_timeout",
     "map_feasibility_to_stance",
+    "parse_indexed_to_sympy",
     "plot_calibration_curve",
     "plot_dimensional_analysis",
     "plot_epistemic_graph",
@@ -310,10 +324,13 @@ __all__ = [
     "plot_scenario_results",
     "plot_uncertainty_propagation",
     "recognize_pde",
+    "refine_mesh_2d",
     "run_pipeline",
     "safe_parse_expr",
+    "safe_parse_pde",
     "serialize_model",
     "simulate_sde_euler_maruyama",
+    "smooth_mesh_2d",
     "solve_advection_1d",
     "solve_heat_1d_explicit",
     "solve_heat_2d",
@@ -325,7 +342,9 @@ __all__ = [
     "solve_poisson_2d",
     "solve_poisson_fem",
     "solve_wave_1d",
+    "symbolic_contract",
     "to_json",
+    "uniform_mesh_2d",
     "unrepairable_counterexamples",
     "ureg",
 ]

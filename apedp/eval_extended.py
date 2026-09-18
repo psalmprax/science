@@ -320,6 +320,99 @@ def evaluate_ode_ivp(
     return result
 
 
+def evaluate_ode_system(
+    rhs_list: list[str],
+    y0_list: list[float],
+    x_grid: list[float] | np.ndarray,
+    var_names: list[str] | None = None,
+    params: dict[str, float] | None = None,
+    timeout: float = _DEFAULT_TIMEOUT,
+    method: str = "rk4",
+) -> np.ndarray:
+    """Solve a square ODE system ``dY/dx = F(x, Y, params)``, ``Y(x0) = y0``.
+
+    ``rhs_list[k]`` is the RHS for ``var_names[k]`` (default ``y1..yn``) as a
+    ``safe_parse_expr`` string in ``x`` + state vars + params. ``method="rk4"``
+    is fixed-step vector RK4; ``method="backward_euler"`` solves each step
+    implicitly via nsolve (L-stable for stiff systems; refuses on
+    non-convergence instead of exploding). Returns shape ``(len(grid), n)``.
+    """
+    if method not in ("rk4", "backward_euler"):
+        raise ValueError("method must be 'rk4' or 'backward_euler'")
+    n = len(rhs_list)
+    if n < 1:
+        raise ValueError("Need at least one equation")
+    if len(y0_list) != n:
+        raise ValueError("Need len(y0_list) == len(rhs_list)")
+    names = list(var_names) if var_names else [f"y{k + 1}" for k in range(n)]
+    if len(names) != n or len(set(names)) != n:
+        raise ValueError("var_names must be n distinct names")
+    if "x" in names:
+        raise ValueError("var_names must not contain 'x'")
+    xs = np.asarray(list(x_grid), dtype=float)
+    if xs.size < 2 or not bool(np.all(np.isfinite(xs))) or not bool(np.all(np.diff(xs) > 0)):
+        raise ValueError("x_grid must be strictly increasing with >= 2 finite points")
+    y0 = np.asarray(list(y0_list), dtype=float)
+    if not bool(np.all(np.isfinite(y0))):
+        raise ValueError("y0_list must be finite")
+    exprs = [safe_parse_expr(r) for r in rhs_list]
+    x_sym = sp.Symbol("x")
+    syms = [sp.Symbol(v) for v in names]
+    subs = {sp.Symbol(k): float(v) for k, v in (params or {}).items()}
+
+    def _integrate() -> np.ndarray:
+        f = sp.lambdify([x_sym, *syms], [e.subs(subs) for e in exprs], modules=["numpy"])
+        ys = np.empty((len(xs), n))
+        ys[0] = y0
+        if method == "rk4":
+            for i in range(1, len(xs)):
+                h = float(xs[i] - xs[i - 1])
+                xi, yi = float(xs[i - 1]), ys[i - 1]
+                try:
+                    k1 = np.asarray(f(xi, *yi), dtype=float).ravel()
+                    k2 = np.asarray(f(xi + h / 2, *(yi + h * k1 / 2)), dtype=float).ravel()
+                    k3 = np.asarray(f(xi + h / 2, *(yi + h * k2 / 2)), dtype=float).ravel()
+                    k4 = np.asarray(f(xi + h, *(yi + h * k3)), dtype=float).ravel()
+                except (ValueError, TypeError, ArithmeticError) as e:
+                    raise ArithmeticError(f"RHS evaluation failed at step {i}: {e}") from e
+                if any(v.shape != (n,) for v in (k1, k2, k3, k4)):
+                    raise ArithmeticError(f"RHS must return {n} components at step {i}")
+                nxt = yi + h * (k1 + 2 * k2 + 2 * k3 + k4) / 6
+                if not bool(np.all(np.isfinite(nxt))):
+                    raise ArithmeticError(f"ODE system went non-finite at step {i}")
+                ys[i] = nxt
+            return ys
+        yy = [sp.Symbol(f"_be{i}") for i in range(n)]
+        for i in range(1, len(xs)):
+            h = float(xs[i] - xs[i - 1])
+            xi, yi = float(xs[i - 1]), ys[i - 1]
+            try:
+                fwd = np.asarray(f(xi, *yi), dtype=float).ravel()
+            except (ValueError, TypeError, ArithmeticError) as e:
+                raise ArithmeticError(f"RHS evaluation failed at step {i}: {e}") from e
+            if fwd.shape != (n,):
+                raise ArithmeticError(f"RHS must return {n} components at step {i}")
+            guess = yi + h * fwd
+            eqs = [
+                yy[k] - yi[k] - h * exprs[k].subs(subs).subs({x_sym: float(xs[i])})
+                for k in range(n)
+            ]
+            eqs = [e.subs(dict(zip(syms, yy))) for e in eqs]
+            try:
+                sol = sp.nsolve(eqs, yy, list(guess), tol=1e-14, maxsteps=200)
+            except (ValueError, ArithmeticError, NotImplementedError) as e:
+                raise ArithmeticError(f"Backward-Euler nsolve failed at step {i}: {e}") from e
+            nxt = np.asarray([complex(v) for v in sol])
+            if bool(np.any(np.abs(nxt.imag) > 1e-9)) or not bool(np.all(np.isfinite(nxt.real))):
+                raise ArithmeticError(f"Backward-Euler non-real root at step {i}")
+            ys[i] = nxt.real.astype(float)
+        return ys
+
+    result = _run_bounded(_integrate, timeout)
+    assert isinstance(result, np.ndarray)
+    return result
+
+
 def evaluate_einsum(
     subscripts: str,
     *operands: list | np.ndarray,
@@ -439,6 +532,128 @@ def evaluate_indexed(
     assert total is not None
     _ = out_name
     return total
+
+
+def parse_indexed_to_sympy(
+    formula: str,
+    dims: dict[str, int],
+) -> tuple[sp.Basic, sp.Basic]:
+    """Parse ``"C[i,j] = A[i,k]*B[k,j]"`` into (lhs, rhs) sympy indexed forms.
+
+    Free indices stay symbolic; contracted indices become explicit
+    :class:`~sympy.Sum` over ``0..dims[idx]-1``. Tensor names (plus
+    ``delta`` → :class:`~sympy.KroneckerDelta`) become
+    :class:`~sympy.IndexedBase`. ``dims`` must cover every index. Raises
+    ``ValueError`` on the same malformed input :func:`evaluate_indexed`
+    refuses. Levi-Civita and derivatives stay out of scope.
+    """
+    import re
+
+    if formula.count("=") != 1:
+        raise ValueError("Need exactly one '=' in an indexed equation")
+    lhs_raw, rhs_raw = (part.strip() for part in formula.split("="))
+    lhs = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*)(?:\[([A-Za-z](?:,[A-Za-z])*)\])?", lhs_raw)
+    if not lhs:
+        raise ValueError(f"Bad LHS '{lhs_raw}': want Name or Name[i,j,...]")
+    out_name = lhs.group(1)
+    out_idx = lhs.group(2).split(",") if lhs.group(2) else []
+    rhs_indices = [
+        idx
+        for name_idx in re.findall(r"[A-Za-z_][A-Za-z0-9_]*\[([A-Za-z](?:,[A-Za-z])*)\]", rhs_raw)
+        for idx in name_idx.split(",")
+    ]
+    for idx in out_idx + rhs_indices:
+        if idx not in dims or int(dims[idx]) < 1:
+            raise ValueError(f"Index '{idx}' needs a positive size in dims")
+
+    def _indexed(name: str, idx: list[str]) -> sp.Basic:
+        if name == "delta":
+            raise ValueError("delta must be eliminated before construction")
+        if not idx:
+            return sp.Symbol(name)
+        base = sp.IndexedBase(sp.Symbol(name))
+        return base[tuple(sp.Symbol(i) for i in idx)]
+
+    out_expr: sp.Basic = _indexed(out_name, out_idx)
+    rhs = rhs_raw.replace("-", "+-")
+    total: sp.Basic | None = None
+    factor_re = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)\[([A-Za-z](?:,[A-Za-z])*)\]")
+    num_re = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?\Z")
+    for term in [t.strip() for t in rhs.split("+") if t.strip()]:
+        sign = 1
+        if term.startswith("-"):
+            sign, term = -1, term[1:].strip()
+        factors: list[tuple[str, list[str]]] = []
+        scalars: list[sp.Basic] = []
+        for part in [p.strip() for p in term.split("*") if p.strip()]:
+            m = factor_re.fullmatch(part)
+            if m:
+                factors.append((m.group(1), m.group(2).split(",")))
+            elif num_re.match(part):
+                scalars.append(sp.sympify(part))
+            else:
+                raise ValueError(f"Bad factor '{part}': want Name[i,j] or a scalar")
+        if not factors:
+            raise ValueError(f"Term '{term}' has no tensors")
+        # Eliminate KroneckerDelta by index renaming (δ(a,b) kills one index).
+        rename: dict[str, str] = {}
+        kept: list[tuple[str, list[str]]] = []
+        for name, idx in factors:
+            if name == "delta":
+                if len(idx) != 2:
+                    raise ValueError("delta needs exactly two indices")
+                a, b = (i if not (s := rename.get(i)) else s for i in idx)
+                if a == b:
+                    continue  # δ(a,a) sums to dims(a): folded into the sum below
+                victim, survivor = (b, a) if b not in out_idx else ((a, b) if a not in out_idx else (None, None))
+                if victim is None:
+                    kept.append((name, idx))  # both free: stays symbolic
+                else:
+                    rename[victim] = survivor  # type: ignore[assignment]
+            else:
+                kept.append((name, idx))
+
+        def _apply(idx: list[str]) -> list[str]:
+            seen: set[str] = set()
+            mapped = []
+            for i in idx:
+                while i in rename:
+                    if i in seen:
+                        break
+                    seen.add(i)
+                    i = rename[i]
+                mapped.append(i)
+            return mapped
+
+        pieces: list[sp.Basic] = list(scalars)
+        term_idx: list[str] = []
+        for name, idx in kept:
+            mapped = _apply(idx)
+            pieces.append(_indexed(name, mapped))
+            term_idx.extend(mapped)
+        prod: sp.Basic = pieces[0]
+        for piece in pieces[1:]:
+            prod = prod * piece
+        for idx in set(term_idx) - set(out_idx):
+            prod = sp.Sum(prod, (sp.Symbol(idx), 0, int(dims[idx]) - 1))
+        total = sign * prod if total is None else total + sign * prod
+    assert total is not None
+    return out_expr, total
+
+
+def symbolic_contract(formula: str, dims: dict[str, int]) -> sp.Basic:
+    """Evaluate the explicit sums of :func:`parse_indexed_to_sympy`.
+
+    Returns the simplified ``lhs - rhs``: exactly ``0`` proves the identity
+    (e.g. ``"y[i] = delta[i,j]*x[j]"`` → ``y[i] - x[i]``). KroneckerDelta
+    sums evaluate; anything left symbolic is a genuine residual, not a
+    matcher failure.
+    """
+    lhs, rhs = parse_indexed_to_sympy(formula, dims)
+    try:
+        return sp.simplify(lhs - rhs.doit())
+    except (ValueError, TypeError, ArithmeticError) as e:
+        raise ArithmeticError(f"Symbolic contraction failed: {e}") from e
 
 
 def simulate_sde_euler_maruyama(

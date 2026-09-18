@@ -8,11 +8,14 @@ from apedp.eval_extended import (
     evaluate_einsum,
     evaluate_implicit,
     evaluate_implicit_system,
+    evaluate_indexed,
     evaluate_ode_ivp,
+    evaluate_ode_system,
     evaluate_pde_residual,
     evaluate_quadrature,
     simulate_sde_euler_maruyama,
     solve_heat_1d_explicit,
+    symbolic_contract,
 )
 
 
@@ -139,3 +142,51 @@ def test_sde_reproducible_seed():
     a = simulate_sde_euler_maruyama("0.0", "1.0", 0.0, 0.1, 0.01, n_paths=50, seed=7)
     b = simulate_sde_euler_maruyama("0.0", "1.0", 0.0, 0.1, 0.01, n_paths=50, seed=7)
     assert np.array_equal(a["paths"], b["paths"])
+
+
+def test_ode_system_stiff_pair_backward_euler():
+    xs = np.linspace(0, 1, 11)
+    r = evaluate_ode_system(["-0.5*y1", "-50*y2"], [1.0, 1.0], xs, method="backward_euler")
+    assert r.shape == (11, 2)
+    assert bool(np.all(np.abs(r) <= 1.0))
+    assert r[-1, 0] == pytest.approx(np.exp(-0.5), rel=0.05)
+
+
+def test_ode_system_rk4_vector_matches_scalar():
+    xs = np.linspace(0, 1, 11)
+    vec = evaluate_ode_system(["-0.5*y1", "-0.5*y2"], [1.0, 2.0], xs, method="rk4")
+    assert vec[-1, 0] == pytest.approx(np.exp(-0.5), rel=1e-3)
+    assert vec[-1, 1] == pytest.approx(2 * np.exp(-0.5), rel=1e-3)
+
+
+def test_indexed_matmul_affine_trace():
+    a = np.array([[1.0, 2.0], [3.0, 4.0]])
+    b = np.array([[5.0, 6.0], [7.0, 8.0]])
+    assert bool((evaluate_indexed("C[i,j] = A[i,k] * B[k,j]", {"A": a, "B": b}) == a @ b).all())
+    assert list(evaluate_indexed("y[i] = 2*A[i,j]*x[j] - b[i]", {"A": a, "x": [1.0, 1.0], "b": [1.0, 1.0]})) == pytest.approx([5.0, 13.0])
+    assert float(evaluate_indexed("t = A[i,i]", {"A": a})) == pytest.approx(5.0)
+
+
+def test_indexed_bad_contraction_raises():
+    a = np.ones((2, 2))
+    with pytest.raises(ValueError, match="exactly once in each term"):
+        evaluate_indexed("C[i,j] = A[i,k] * B[k,l]", {"A": a, "B": a})
+
+
+def test_symbolic_delta_identity():
+    import sympy as sp
+
+    # y[i] - x[i]: the delta is eliminated, no sums or deltas remain.
+    res = symbolic_contract("y[i] = delta[i,j]*x[j]", {"i": 3, "j": 3})
+    _y = sp.IndexedBase(sp.Symbol("y"))
+    _x = sp.IndexedBase(sp.Symbol("x"))
+    assert res == _y[sp.Symbol("i")] - _x[sp.Symbol("i")]
+    assert not res.has(sp.Sum) and not res.has(sp.KroneckerDelta)
+
+
+def test_symbolic_trace_expands():
+    import sympy as sp
+
+    res = symbolic_contract("t = A[i,i]", {"i": 2})
+    _A = sp.IndexedBase(sp.Symbol("A"))
+    assert res == sp.Symbol("t") - (_A[0, 0] + _A[1, 1])

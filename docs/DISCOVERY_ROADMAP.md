@@ -1,55 +1,28 @@
 # APEDP Discovery Roadmap: Certification + Data-Free Conjecture
 
-Status: implemented (commit after this edit). 301 tests green, ruff + mypy clean.
+Status: implemented. 354 tests green (289 baseline + 65 new), ruff + mypy clean.
 
 ## Coverage ladder (all equations)
 
-- **L0 algebraic:** 193 named laws in `PriorArtAuditor` (v3+), all parse-gated: mechanics, EM/electronics, thermo/fluids/heat, waves/optics/QM/relativity, chemistry/materials, vibrations/acoustics, signals, cycles/combustion, mass transfer, electrochem/semiconductors, structures/geo/astro, turbomachinery, bio/misc rates.
+- **L0 algebraic:** 193 named laws in `PriorArtAuditor` (v3), all parse-gated: mechanics, EM/electronics, thermo/fluids/heat, waves/optics/QM/relativity, chemistry/materials, vibrations/acoustics, signals, cycles/combustion, mass transfer, electrochem/semiconductors, structures/geo/astro, turbomachinery, bio/misc rates. Rename-isomorphism matches `I*R`, `m*v²/2`, `σT⁴`, `2π√(L/g)`; bare `x²` stays novel.
 - **L1 PDE templates** (`apedp/pde_templates.py`, `safe_parse_pde`): DIFFUSION/HEAT_1D, WAVE_1D, LAPLACE_2D, POISSON_2D, CONTINUITY_1D, EULER_MOMENTUM_1D, NS_X_1D, SCHRODINGER_TD_1D, MAXWELL_FARADAY/AMPERE_1D. Class-level shape match only (coefficients/BCs NOT verified).
 - **L2 black-box:** no symbolic form needed — falsifier grids judge numerically.
 - **OUT_OF_SCOPE** (`NoveltyStatus.OUT_OF_SCOPE`): PDE with no template, integral forms beyond the allowlist, or unparseable input. Returned instead of a forced known/novel verdict.
-- **Extended evaluation** (`apedp/eval_extended.py`): bounded `evaluate_implicit` (nsolve), `evaluate_quadrature` (trapezoid), `evaluate_ode_ivp` (RK4), `evaluate_pde_residual` (manufactured-solution check), `solve_heat_1d_explicit` (Dirichlet FD, stability-refused). Repair routes PDE input to template `OUT_OF_SCOPE` instead of `REJECTED`.
-- **Full-PDE solvers** (`apedp/pde_solvers.py`, numpy only): `solve_wave_1d` (leapfrog, CFL≤1), `solve_advection_1d` (upwind, |C|≤1), `solve_heat_2d` (explicit, r≤0.25), `solve_laplace_2d` / `solve_poisson_2d` (Jacobi to tolerance, Dirichlet), `solve_heat_3d` (explicit, r≤1/6, structured-grid budget), `solve_laplace_3d` (Jacobi-3D), `solve_poisson_fem` (P1 FEM on user meshes; degenerate elements refused). Unstable grids refused, non-convergence raises. Verified: wave 4e-6 vs standing mode, Laplace recovers `x+y` to 8e-5, Poisson sine to 1.3e-3, Laplace-3D linear to 2e-4, FEM sine to 1.3e-2.
-- **High-D Monte Carlo** (same module, `O(n·d)` not `N^d`): `solve_heat_nd_feynman_kac` (free-space heat to 20D verified: 5D linear and 10D Gaussian match closed forms within MC error), `solve_laplace_nd_walk_on_spheres` (d-ball Dirichlet; 5D and 20D linear verified). Structured 31-point grids stop at 3D by budget refusal.
-- **Out-of-scope closure** (`apedp/eval_extended.py`): implicit *systems* (`evaluate_implicit_system`, nsolve + residual), adaptive RK45 (`method="rk45"`, 100k-step refusal), L-stable `backward_euler` (stiff `y'=-50y` stays bounded where RK4 explodes to 2e11), Einstein index strings (`evaluate_indexed`: matmul/affine/trace verified, bad indices raise), tensor `einsum`, seeded SDE Euler-Maruyama. Still out: mesh *generation*, stiff-implicit *systems*, symbolic tensor calculus.
-- **Out-of-scope closure**: implicit *systems* (`evaluate_implicit_system`, nsolve + residual), adaptive RK45 ODE (`method="rk45"`, 100k-step refusal for stiff cases), tensor contractions (`evaluate_einsum`, shape-checked), diagonal-noise SDEs (`simulate_sde_euler_maruyama`, seeded Euler-Maruyama). Still out: unstructured meshes (no mesh backend), stiff-implicit stepping, index-notation parsing.
+- **Extended evaluation** (`apedp/eval_extended.py`, all bounded): `evaluate_implicit` (nsolve) + implicit *systems* (nsolve + residual norm), `evaluate_quadrature` (trapezoid), `evaluate_ode_ivp` (`rk4` / adaptive `rk45` with 100k-step refusal / L-stable `backward_euler` scalar + `evaluate_ode_system` vector — stiff `y'=-50y` stays bounded where RK4 explodes to 2e11), `evaluate_pde_residual` (manufactured-solution check), `solve_heat_1d_explicit` (Dirichlet FD, stability-refused), Einstein index strings (`evaluate_indexed`: matmul/affine/trace verified, bad indices raise), symbolic index calculus (`parse_indexed_to_sympy`/`symbolic_contract`: δ-identities prove, traces expand), tensor `einsum`, seeded SDE Euler-Maruyama. Repair routes PDE input to template `OUT_OF_SCOPE` instead of `REJECTED`.
+- **Full-PDE solvers** (`apedp/pde_solvers.py`, numpy only): `solve_wave_1d` (leapfrog, CFL≤1), `solve_advection_1d` (upwind, |C|≤1), `solve_heat_2d` (explicit, r≤0.25), `solve_laplace_2d` / `solve_poisson_2d` (Jacobi to tolerance, Dirichlet), `solve_heat_3d` (explicit, r≤1/6, structured-grid budget), `solve_laplace_3d` (Jacobi-3D), `solve_poisson_fem` (P1 FEM, exact nodal loads, hull-loop Dirichlet). Verified: wave 4e-6 vs standing mode, Laplace recovers `x+y` to 8e-5, Poisson sine to 1.3e-3 (structured) / 0.02–0.05 (unstructured), Laplace-3D linear to 2e-4.
+- **High-D Monte Carlo** (same module, `O(n·d)` not `N^d`): `solve_heat_nd_feynman_kac` (free-space heat to 20D: 5D linear and 10D Gaussian match closed forms within MC error), `solve_laplace_nd_walk_on_spheres` (d-ball Dirichlet; 5D and 20D linear verified). Structured 31-point grids stop at 3D by budget refusal.
+- **Meshing** (`apedp/meshing.py`, numpy only): exact-integer Bowyer-Watson Delaunay (Bareiss predicates), combinatorial validation (point coverage + manifold edges + single boundary cycle + area, with hole ear-filling and seed retries), hull-edge snapping for boundary-cluster slivers, Laplacian smoothing, max-angle-driven Ruppert refinement (insert / encroach-split / interior decimate, champion tracking). Verified end-to-end: clipped-jitter unstructured FEM 0.02–0.05. Known caveat: extreme near-collinear boundary clusters may keep obtuse corners past 150° — reported, never silently meshed.
 
-## 1. Where we stand (measured)
+## Certification (Track A)
 
-- Prior-art corpus: **106 named laws** (`epistemic.py` v3, all parseable): 10 structural families + mechanics, EM/electronics, thermo/fluids/heat, waves/optics/QM/relativity, chemistry/materials, engineering/control.
-- Feynman curated: 5/120 in `ingestion/external_benchmarks.py:83-139`, each with units + ranges + `generate_data(noise)`.
-- Scenarios: 22 in `scenarios.py:49-70`. Benchmarks: 25-case + 100-case (`benchmarks.py`), 6 adversarial traps, 5 gated contracts, NACA 11 pts + nano 11 pts (only real measured data), `anscombe.json` 44 rows, 289 pytest tests green.
-- Repair demo: `REPAIRED` → `1/x`, `sqrt/log/sin(x)/x`, Lorentz `gamma`, rel-KE; `APPROVED` → `1/(x²+1)`, `exp`, `x+y`, `x²`. `1/(1-x)` needs `critical_values={'x':[1.0]}` (default probes `[0]` + auto `M=±1`, `v→c`).
-- Discovery demo: Ohm → `I*R R²=1.0`, kinetic → `m*v²/2 R²=1.0`, Stefan-Boltzmann → `0.9999·T⁴σ R²=1.0`; constant `y=5` correctly `REFUSED`.
-- Verdict: all of the above are **rediscoveries** (law-generated data fitted back), not new laws. `PriorArtAuditor.audit_novelty('I*R')` returns `APPARENTLY_NOVEL_WITHIN_CORPUS` over a 10-model corpus with an explicit not-proof disclaimer.
+- `run_prospective(train, holdout)`: discover on train only, freeze hashes, single locked-holdout eval via `DataPartitionVault`; non-generalizing models refused and removed from the store.
+- `Fraction` thirds (`±1/3, ±2/3`) in search + monomials; `erf`/`erfc` end-to-end.
+- `run(..., param_uncertainties=)` attaches GUM/Monte-Carlo metrology; elite `lambdify` memoized.
 
-## 2. Track A — certify real discoveries
+## Conjecture (Track B)
 
-Goal: `PERSISTED` means prior-art searched + predicted on locked data + survived falsification.
+`HypothesisComposer` (crossover / saturate / correspondence mutants) emits ranked `THEORETICAL_SPECIFICATION` conjectures usable as `template_priors`. Data-free tests only: homogeneity, Pi-groups, limit lattice, repair audit, falsifier axes.
 
-### A1. Prior art 10 → literature scale (`epistemic.py`)
-Expand `STANDARD_PHYSICS_CORPUS` with full Feynman-120 + `harvest_all_disciplines()` + 1 versioned textbook CSV (hashed). Add structural matcher next to `check_symbolic_equivalence`: sympy canonical + param-rename isomorphism, plus Pi-group signature via `BuckinghamPiEngine.compute_pi_groups_symbolic`. Keep `NoveltyAuditResult` shape; report real `searched_corpus_size`. Accept: `I*R` matches `V=IR`; `x²` does not match `σT⁴`.
+## Rediscovery vs novelty
 
-### A2. Prospective loop (`pipeline.py`, `epistemic.py:DataPartitionVault`)
-New `run_prospective(train_csv, holdout_csv)`: discover on train only → freeze `ScientificProvenanceChain` hash → single locked-holdout eval → refuse on R²/distortion regression. Discover must not import the holdout. Accept: a train-fit/holdout-refused test exists.
-
-### A3. Operator ceiling (`discovery.py:652-704`, `safety.py:_SAFE_FUNCS`)
-`Fraction`-based `±1/3, ±2/3` (halves stay float-exact; thirds must not use `acc == target` float compare), add `erf` (`erfc` if needed), dimensionless-args gate unchanged. Accept: pendulum/Hall-Petch + 1 erf-law rediscovered; seeded legacy tests unchanged or re-baselined.
-
-### A4. Real-data + scale
-`ingest_csv`: per-column units + uncertainty passthrough to `propagate_uncertainty_monte_carlo`. Memoize `lambdify` per elite per generation (`discovery.py:851-919`). Accept: NACA + nano end-to-end via pipeline; same winners, lower wall-time.
-
-## 3. Track B — data-free composer (conjecture engine)
-
-Goal: ranked testable conjectures tagged `THEORETICAL_SPECIFICATION`, feedable as `template_priors` into Track A. No R², never higher maturity without data.
-
-- Generators (corpus in, candidates out): crossover via `_monomial_for_dim`; generalize (const→field, `x`→`x/(1+x/K)`); correspondence mutant (must reduce to parent via `limit_with_timeout`, e.g. `v/c→0` → Newton).
-- Data-free tests (existing probes only): homogeneity + Pi-groups; limit lattice recovers parents; `ConservationInvariantRegistry` clean; repair audit recorded; `IndependentAdversarialFalsifier` boundary/numerical axes on declared domains.
-- Score by simplicity + symmetry + correspondence depth. Output `list[str]` accepted as `template_priors` with `ModelEvidenceRecord` + provenance.
-- Accept: 3+ conjectures passing B-tests, corpus-novel per A1, runnable through A2 once data arrives.
-
-## 4. Order, risks, verification
-
-1. A1 → B1/B2 (composer without big corpus "discovers" Ohm weekly). 2. A2 (makes both honest). 3. A3 → A4.
-- Risks: thirds float compare → `Fraction`; composer explosion → cap + Pi-signature dedupe; holdout leakage → vault enforcement + test.
-- Verification: 289 existing tests green + new: structural-isomorphism, train/holdout refusal, thirds-law, composer-correspondence. `ruff check apedp/`, `mypy apedp/ --ignore-missing-imports` clean.
+Pipeline demos (Ohm `I*R`, kinetic `m*v²/2`, Stefan-Boltzmann) are round-trips, not discoveries. Novelty verdicts are corpus-relative by principle; the corpus is now 193 laws plus PDE templates, and anything outside answers `OUT_OF_SCOPE` with the reason.
