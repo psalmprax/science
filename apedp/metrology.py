@@ -35,7 +35,10 @@ def has_singularity_risk(expr: sp.Expr) -> bool:
         # A symbolic exponent (``x**n``) can be anything, so it is a risk too.
         if not (exponent.is_Integer and exponent > 0):
             return True
-    return bool(expr.has(sp.log, sp.tan, sp.asin, sp.acos, sp.acot))
+    return bool(expr.has(
+        sp.log, sp.tan, sp.asin, sp.acos, sp.acot,
+        sp.bessely, sp.besselk, sp.gamma, sp.zeta,
+    ))
 
 
 @dataclass

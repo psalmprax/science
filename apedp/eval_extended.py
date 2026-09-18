@@ -851,3 +851,226 @@ def solve_heat_1d_explicit(
     result = _run_bounded(_solve, timeout)
     assert isinstance(result, dict)
     return result
+
+
+def solve_eigen(
+    matrix: list[list[float]] | np.ndarray,
+    symmetric: bool = False,
+    timeout: float = _DEFAULT_TIMEOUT,
+) -> dict[str, object]:
+    """Validated eigendecomposition of a real square matrix.
+
+    Uses ``eigh`` for ``symmetric=True`` (orthonormal vectors guaranteed) and
+    ``eig`` otherwise. Every pair is residual-checked
+    (``||Av - λv|| ≤ 1e-8·(1 + |λ|·||v||)``); complex eigenpairs of a real
+    matrix are returned as magnitude/phase-agnostic real+imag parts with the
+    residual still enforced. Non-finite input, non-square input, or a failed
+    residual raises instead of returning unchecked numbers. Eigenvalues are
+    sorted by descending magnitude.
+    """
+    try:
+        mat = np.asarray(matrix, dtype=float)
+    except (ValueError, TypeError) as e:
+        raise ValueError(f"Matrix not array-like: {e}") from e
+    if mat.ndim != 2 or mat.shape[0] != mat.shape[1] or mat.shape[0] < 1:
+        raise ValueError(f"Need a nonempty square matrix, got shape {mat.shape}")
+    if not bool(np.all(np.isfinite(mat))):
+        raise ValueError("Matrix must be finite")
+
+    def _decompose() -> dict[str, object]:
+        try:
+            if symmetric:
+                vals, vecs = np.linalg.eigh((mat + mat.T) / 2)
+            else:
+                vals, vecs = np.linalg.eig(mat)
+        except np.linalg.LinAlgError as e:
+            raise ArithmeticError(f"Eigendecomposition failed: {e}") from e
+        order = np.argsort(-np.abs(vals), kind="stable")
+        vals, vecs = vals[order], vecs[:, order]
+        residuals = []
+        for k in range(len(vals)):
+            lam, vec = vals[k], vecs[:, k]
+            norm = float(np.linalg.norm(vec))
+            if not math.isfinite(norm) or norm == 0.0:
+                raise ArithmeticError(f"Eigenvector {k} degenerate")
+            res = float(np.linalg.norm(mat @ vec - lam * vec))
+            if res > 1e-8 * (1.0 + abs(complex(lam)) * norm):
+                raise ArithmeticError(f"Eigenpair {k} failed residual check ({res:.2e})")
+            residuals.append(res)
+        return {
+            "eigenvalues": np.asarray(vals),
+            "eigenvectors": np.asarray(vecs),
+            "residuals": residuals,
+            "symmetric": bool(symmetric),
+        }
+
+    result = _run_bounded(_decompose, timeout)
+    assert isinstance(result, dict)
+    return result
+
+
+def _scan_events(
+    g_vals: list[np.ndarray],
+    xs: np.ndarray,
+    ys: np.ndarray,
+    event_names: list[str],
+) -> dict[str, object] | None:
+    """First strict sign change across the sampled trajectory, if any."""
+    for k, name in enumerate(event_names):
+        col = np.asarray([float(v[k]) if np.ndim(v) else float(v) for v in g_vals])
+        for i in range(1, len(xs)):
+            if col[i - 1] == 0.0:
+                return {"event": name, "index": i - 1, "x": float(xs[i - 1]), "bracket": None}
+            if col[i] == 0.0 or col[i - 1] * col[i] < 0:
+                return {"event": name, "index": i, "x": float(xs[i]), "bracket": (float(xs[i - 1]), float(xs[i]))}
+    return None
+
+
+def _hit_int(hit: dict[str, object], key: str) -> int:
+    """Typed access into scan-hit dicts (mypi-safe)."""
+    v = hit[key]
+    assert isinstance(v, int)
+    return v
+
+def evaluate_ode_events(
+    rhs_str: str,
+    y0: float,
+    x_grid: list[float] | np.ndarray,
+    events: list[str],
+    params: dict[str, float] | None = None,
+    timeout: float = _DEFAULT_TIMEOUT,
+    method: str = "rk45",
+    refine_substeps: int = 100,
+) -> dict[str, object]:
+    """Integrate ``dy/dx = rhs`` and stop at the first zero of ``events``.
+
+    Each event is a ``safe_parse_expr`` string in ``x``/``y`` meaning
+    ``g(x, y) = 0``. The trajectory is integrated with ``method`` (default
+    adaptive ``rk45``), scanned for the first strict sign change, then the
+    bracketing interval is re-integrated with 100 fine RK4 substeps and the
+    crossing linearly interpolated (precision ~bracket/100 — reported, not
+    hidden). Grazing touches without sign change are NOT detected (stated,
+    not silently missed). Returns ``xs``, ``ys`` (truncated past the event),
+    and ``event`` (``None`` when nothing fires).
+    """
+    if not events:
+        raise ValueError("Need at least one event expression")
+    for g in events:
+        safe_parse_expr(g)
+    xs = np.asarray(list(x_grid), dtype=float)
+    ys = evaluate_ode_ivp(rhs_str, y0, xs, params=params, timeout=timeout, method=method)
+    x_sym, y_sym = sp.Symbol("x"), sp.Symbol("y")
+    subs = {sp.Symbol(k): float(v) for k, v in (params or {}).items()}
+    g_funcs = [sp.lambdify((x_sym, y_sym), safe_parse_expr(g).subs(subs), modules=["numpy"]) for g in events]
+    g_vals = []
+    for xi, yi in zip(xs, ys):
+        try:
+            g_vals.append(np.asarray([float(g(float(xi), float(yi))) for g in g_funcs], dtype=float))
+        except (ValueError, TypeError, ArithmeticError) as e:
+            raise ArithmeticError(f"Event evaluation failed: {e}") from e
+    hit = _scan_events(g_vals, xs, ys, list(events))
+    if hit is None:
+        return {"xs": xs, "ys": ys, "event": None}
+    hit_index = _hit_int(hit, "index")
+    if hit["bracket"] is None:
+        i = hit_index
+        return {"xs": xs[: i + 1], "ys": ys[: i + 1], "event": hit}
+    bracket = hit["bracket"]
+    assert isinstance(bracket, tuple) and len(bracket) == 2
+    xa, xb = float(bracket[0]), float(bracket[1])
+    ev_name = str(hit["event"])
+    i = _hit_int(hit, "index")
+    ya = float(ys[i - 1])
+    fine_x = np.linspace(xa, xb, max(3, int(refine_substeps) + 1))
+    fine_y = evaluate_ode_ivp(rhs_str, ya, fine_x, params=params, timeout=timeout, method="rk4")
+    g = g_funcs[list(events).index(ev_name)]
+    try:
+        fine_g = np.asarray([float(g(float(x), float(y))) for x, y in zip(fine_x, fine_y)])
+    except (ValueError, TypeError, ArithmeticError) as e:
+        raise ArithmeticError(f"Event refinement failed: {e}") from e
+    cross = None
+    for j in range(1, len(fine_x)):
+        if fine_g[j - 1] * fine_g[j] <= 0 and fine_g[j - 1] != fine_g[j]:
+            t = abs(fine_g[j - 1]) / (abs(fine_g[j - 1]) + abs(fine_g[j]))
+            cross = (float(fine_x[j - 1] + t * (fine_x[j] - fine_x[j - 1])), j, t)
+            break
+    if cross is None:
+        ii = _hit_int(hit, "index")
+        return {"xs": xs[: ii + 1], "ys": ys[: ii + 1], "event": hit}
+    x_star, j, t = cross
+    keep = np.concatenate([xs[:i], [x_star]])
+    return {
+        "xs": keep,
+        "ys": np.concatenate([ys[:i], [fine_y[j - 1] + t * (fine_y[j] - fine_y[j - 1])]]),
+        "event": {**hit, "x": x_star, "precision": float(xb - xa) / max(1, int(refine_substeps))},
+    }
+
+
+def evaluate_ode_system_events(
+    rhs_list: list[str],
+    y0_list: list[float],
+    x_grid: list[float] | np.ndarray,
+    events: list[str],
+    var_names: list[str] | None = None,
+    params: dict[str, float] | None = None,
+    timeout: float = _DEFAULT_TIMEOUT,
+    method: str = "rk4",
+    refine_substeps: int = 100,
+) -> dict[str, object]:
+    """Vector version of :func:`evaluate_ode_events` for ODE systems.
+
+    Events are strings in ``x`` + state vars (default ``y1..yn``). Same
+    scan-then-refine contract; truncated ``xs``/``ys`` (shape ``(m, n)``)
+    plus the firing ``event`` (``None`` when quiet).
+    """
+    if not events:
+        raise ValueError("Need at least one event expression")
+    n = len(rhs_list)
+    names = list(var_names) if var_names else [f"y{k + 1}" for k in range(n)]
+    for g in events:
+        safe_parse_expr(g)
+    xs = np.asarray(list(x_grid), dtype=float)
+    ys = evaluate_ode_system(rhs_list, y0_list, xs, var_names=names, params=params, timeout=timeout, method=method)
+    x_sym = sp.Symbol("x")
+    syms = [sp.Symbol(v) for v in names]
+    subs = {sp.Symbol(k): float(v) for k, v in (params or {}).items()}
+    g_funcs = [sp.lambdify([x_sym, *syms], safe_parse_expr(g).subs(subs), modules=["numpy"]) for g in events]
+    g_vals = []
+    for xi, row in zip(xs, ys):
+        try:
+            g_vals.append(np.asarray([float(g(float(xi), *[float(v) for v in row])) for g in g_funcs], dtype=float))
+        except (ValueError, TypeError, ArithmeticError) as e:
+            raise ArithmeticError(f"Event evaluation failed: {e}") from e
+    hit = _scan_events(g_vals, xs, ys, list(events))
+    if hit is None:
+        return {"xs": xs, "ys": ys, "event": None}
+    hit_index = _hit_int(hit, "index")
+    if hit["bracket"] is None:
+        i = hit_index
+        return {"xs": xs[: i + 1], "ys": ys[: i + 1, :], "event": hit}
+    bracket = hit["bracket"]
+    assert isinstance(bracket, tuple) and len(bracket) == 2
+    xa, xb = float(bracket[0]), float(bracket[1])
+    ev_name = str(hit["event"])
+    i = _hit_int(hit, "index")
+    fine_x = np.linspace(xa, xb, max(3, int(refine_substeps) + 1))
+    fine_y = evaluate_ode_system(rhs_list, list(ys[i - 1]), fine_x, var_names=names, params=params, timeout=timeout, method="rk4")
+    g = g_funcs[list(events).index(ev_name)]
+    try:
+        fine_g = np.asarray([float(g(float(x), *[float(v) for v in row])) for x, row in zip(fine_x, fine_y)])
+    except (ValueError, TypeError, ArithmeticError) as e:
+        raise ArithmeticError(f"Event refinement failed: {e}") from e
+    cross = None
+    for j in range(1, len(fine_x)):
+        if fine_g[j - 1] * fine_g[j] <= 0 and fine_g[j - 1] != fine_g[j]:
+            t = abs(fine_g[j - 1]) / (abs(fine_g[j - 1]) + abs(fine_g[j]))
+            cross = (float(fine_x[j - 1] + t * (fine_x[j] - fine_x[j - 1])), j, t)
+            break
+    if cross is None:
+        return {"xs": xs[: i + 1], "ys": ys[: i + 1, :], "event": hit}
+    x_star, j, t = cross
+    return {
+        "xs": np.concatenate([xs[:i], [x_star]]),
+        "ys": np.vstack([ys[:i, :], fine_y[j - 1] + t * (fine_y[j] - fine_y[j - 1])]),
+        "event": {**hit, "x": x_star, "precision": float(xb - xa) / max(1, int(refine_substeps))},
+    }

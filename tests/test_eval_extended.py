@@ -9,11 +9,14 @@ from apedp.eval_extended import (
     evaluate_implicit,
     evaluate_implicit_system,
     evaluate_indexed,
+    evaluate_ode_events,
     evaluate_ode_ivp,
     evaluate_ode_system,
+    evaluate_ode_system_events,
     evaluate_pde_residual,
     evaluate_quadrature,
     simulate_sde_euler_maruyama,
+    solve_eigen,
     solve_heat_1d_explicit,
     symbolic_contract,
 )
@@ -190,3 +193,52 @@ def test_symbolic_trace_expands():
     res = symbolic_contract("t = A[i,i]", {"i": 2})
     _A = sp.IndexedBase(sp.Symbol("A"))
     assert res == sp.Symbol("t") - (_A[0, 0] + _A[1, 1])
+
+
+def test_special_functions_parse_and_gate():
+    from apedp.core import DimensionalAssuranceEngine
+    from apedp.metrology import has_singularity_risk
+    from apedp.safety import safe_parse_expr
+
+    eng = DimensionalAssuranceEngine()
+    eng.register_variable("x", "dimensionless")
+    for f in ["besselj(0,x)", "bessely(1,x)", "besseli(0,x)", "besselk(1,x)", "gamma(x)", "zeta(x)"]:
+        eng.check_expression_consistency(safe_parse_expr(f))
+    eng.register_variable("m", "meter")
+    with pytest.raises(TypeError):
+        eng.check_expression_consistency(safe_parse_expr("besselj(0,m)"))
+    import sympy as sp
+
+    assert has_singularity_risk(sp.sympify("bessely(0,x)")) is True
+    assert has_singularity_risk(sp.sympify("besselj(0,x)")) is False
+
+
+def test_solve_eigen_symmetric():
+    r = solve_eigen([[2.0, 1.0], [1.0, 2.0]], symmetric=True)
+    assert list(r["eigenvalues"]) == pytest.approx([3.0, 1.0])
+    assert all(v < 1e-8 for v in r["residuals"])
+
+
+def test_solve_eigen_rejects_nonsquare():
+    with pytest.raises(ValueError, match="square"):
+        solve_eigen([[1.0, 2.0, 3.0]])
+
+
+def test_ode_event_fires_at_ln2():
+    r = evaluate_ode_events("-y", 1.0, np.linspace(0, 2, 21), ["y - 0.5"])
+    assert r["event"] is not None
+    assert r["event"]["x"] == pytest.approx(0.6931471805599453, rel=1e-3)
+    assert len(r["xs"]) < 21
+
+
+def test_ode_event_quiet_when_no_crossing():
+    r = evaluate_ode_events("-y", 1.0, np.linspace(0, 0.5, 11), ["y - 0.5"])
+    assert r["event"] is None
+    assert len(r["xs"]) == 11
+
+
+def test_ode_system_event_fires():
+    r = evaluate_ode_system_events(["-0.5*y1", "-0.5*y2"], [1.0, 2.0], np.linspace(0, 2, 21), ["y1 - 0.7"])
+    assert r["event"] is not None
+    assert r["event"]["x"] == pytest.approx(0.7133498878774649, rel=1e-3)
+    assert r["ys"].shape[1] == 2

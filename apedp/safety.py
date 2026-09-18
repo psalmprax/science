@@ -125,6 +125,12 @@ _SAFE_FUNCS = {
     "tanh": sp.tanh,
     "erf": sp.erf,
     "erfc": sp.erfc,
+    "gamma": sp.gamma,
+    "zeta": sp.zeta,
+    "besselj": sp.besselj,
+    "bessely": sp.bessely,
+    "besseli": sp.besseli,
+    "besselk": sp.besselk,
     "pi": sp.pi,
     "E": sp.E,
     "EulerGamma": sp.EulerGamma,
@@ -198,7 +204,8 @@ def safe_parse_expr(
                 "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
                 "exp", "log", "sqrt", "Abs", "sign", "Min", "Max", "min", "max",
                 "Heaviside", "re", "im", "conjugate", "sinh", "cosh", "tanh",
-                "erf", "erfc",
+                "erf", "erfc", "gamma", "zeta",
+                "besselj", "bessely", "besseli", "besselk",
             }:
                 raise ValueError(f"Function {name!r} is not in the allowlist")
     return expr
@@ -260,7 +267,8 @@ def safe_parse_pde(
             "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
             "exp", "log", "sqrt", "Abs", "sign", "Min", "Max", "min", "max",
             "Heaviside", "re", "im", "conjugate", "sinh", "cosh", "tanh",
-            "erf", "erfc", "Derivative",
+            "erf", "erfc", "gamma", "zeta",
+            "besselj", "bessely", "besseli", "besselk", "Derivative",
         }:
             continue
         # Undefined functions (T, u, psi, ...) are the point of PDE input.

@@ -371,10 +371,17 @@ class AgnosticClosedLoopAssuranceSystem:
         if hasattr(expr, 'func'):
             if expr.func == sp.sqrt:
                 return self.compute_expression_dimensionality(expr.args[0], variable_units) ** 0.5
+            bessel_family = {
+                sp.besselj, sp.bessely, sp.besseli, sp.besselk,
+            }
+            if expr.func in bessel_family:
+                for arg in expr.args:
+                    self.compute_expression_dimensionality(arg, variable_units)
+                return self.ureg.dimensionless
             transcendental = {
                 sp.exp, sp.log, sp.sin, sp.cos, sp.tan,
                 sp.sinh, sp.cosh, sp.tanh, sp.asin, sp.acos, sp.atan,
-                sp.erf, sp.erfc,
+                sp.erf, sp.erfc, sp.gamma, sp.zeta,
             }
             if expr.func in transcendental:
                 self.compute_expression_dimensionality(expr.args[0], variable_units)

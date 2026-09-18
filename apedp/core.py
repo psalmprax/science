@@ -235,10 +235,18 @@ class DimensionalAssuranceEngine:
                     raise TypeError(f"Dimensional Error: Arguments to atan2 must have matching dimensions, got {u1} and {u2}.")
                 return self.registry.dimensionless
 
+            bessel_family = {sp.besselj, sp.bessely, sp.besseli, sp.besselk}
+            if func in bessel_family:
+                for arg in expr.args:
+                    arg_unit = self.check_expression_consistency(arg)
+                    if arg_unit.dimensionality != self.registry.dimensionless.dimensionality:
+                        raise TypeError(f"Dimensional Error: Arguments to {func.__name__} must be dimensionless, got {arg_unit}.")
+                return self.registry.dimensionless
+
             transcendental = {
                 sp.exp, sp.log, sp.sin, sp.cos, sp.tan,
                 sp.sinh, sp.cosh, sp.tanh, sp.asin, sp.acos, sp.atan,
-                sp.erf, sp.erfc,
+                sp.erf, sp.erfc, sp.gamma, sp.zeta,
             }
             if func in transcendental:
                 if len(expr.args) != 1:
