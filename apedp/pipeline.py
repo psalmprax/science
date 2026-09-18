@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import logging
 from pathlib import Path
@@ -11,12 +12,21 @@ import sympy as sp
 
 from apedp.core import ClosedLoopAssuranceSystem, DimensionalAssuranceEngine
 from apedp.discovery import BayesianRefinementEngine, MultiVariableSRE
+from apedp.epistemic import DataPartitionVault
 from apedp.metrology import AnalyticalUncertaintyPropagator
 from apedp.persistence import ExperimentLog, ModelStore
 from apedp.repair import AgnosticClosedLoopAssuranceSystem
 from apedp.safety import safe_parse_expr
 
 logger = logging.getLogger(__name__)
+
+
+def _sha256_file(path: str) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 #: Fraction of unparseable rows above which CSV ingest refuses the file.
 #:
@@ -254,6 +264,7 @@ class DiscoveryPipeline:
         variable_units: dict[str, str] | None = None,
         min_r_squared: float = 0.1,
         strict_units: bool | None = None,
+        param_uncertainties: dict[str, float] | None = None,
     ) -> dict:
         """Execute the full pipeline: ingest → discover → validate → repair → persist.
 
@@ -262,6 +273,10 @@ class DiscoveryPipeline:
         the run returns ``status="REFUSED"`` with no ``model_id`` and no
         ``0`` fallback expression. Repair ``REJECTED`` status is propagated
         the same way instead of being silently recorded.
+
+        When ``param_uncertainties`` is supplied, the persisted result also
+        carries a ``metrology`` report (GUM first-order, or Monte Carlo when
+        ``has_singularity_risk`` fires) evaluated at the data means.
         """
         logger.info("Starting discovery pipeline for %s (target: %s)", csv_path, target_column)
 
@@ -411,6 +426,34 @@ class DiscoveryPipeline:
             },
         )
 
+        metrology: dict | None = None
+        if param_uncertainties:
+            try:
+                from apedp.metrology import has_singularity_risk
+
+                nominal = {k: float(np.mean(data[k])) for k in variables}
+                if has_singularity_risk(expr):
+                    mc = self.propagator.propagate_uncertainty_monte_carlo(
+                        expr, param_values=nominal,
+                        param_uncertainties=dict(param_uncertainties),
+                    )
+                    metrology = {"method": "monte_carlo", **{k: v for k, v in mc.items() if k != "num_samples" or True}}
+                else:
+                    rep = self.propagator.propagate_uncertainty(
+                        expr, param_values=nominal,
+                        param_uncertainties=dict(param_uncertainties),
+                    )
+                    metrology = {
+                        "method": "gum",
+                        "evaluated_value": rep.evaluated_value,
+                        "combined_uncertainty": rep.combined_uncertainty,
+                        "expanded_uncertainty_95": rep.expanded_uncertainty_95,
+                        "relative_uncertainty": rep.relative_uncertainty,
+                    }
+            except (ValueError, TypeError, ArithmeticError) as e:
+                logger.warning("Metrology passthrough failed (%s)", e)
+                metrology = {"method": "failed", "error": str(e)}
+
         self.experiment.log(
             experiment_type="discovery_pipeline",
             parameters={"csv_path": csv_path, "target_column": target_column, "output_unit": output_unit},
@@ -435,6 +478,7 @@ class DiscoveryPipeline:
             "variables": variables,
             "dimensional_validation": validation,
             "anomaly_repair": repair_result,
+            "metrology": metrology,
             "search_stagnated": bool(stagnation.get("stagnated")),
             "stagnation": stagnation,
         }
@@ -446,6 +490,82 @@ class DiscoveryPipeline:
         logger.info("Pipeline complete. Result saved to %s", out_path)
         return result
 
+    def run_prospective(
+        self,
+        train_csv: str,
+        holdout_csv: str,
+        target_column: str,
+        output_unit: str = "dimensionless",
+        variable_units: dict[str, str] | None = None,
+        min_r_squared: float = 0.1,
+        max_r2_drop: float = 0.1,
+        strict_units: bool | None = None,
+    ) -> dict:
+        """Discover on train, freeze, then evaluate once on a locked holdout.
+
+        The holdout file is hashed before discovery and never passed to
+        ``discover()``: ``DataPartitionVault`` raises if the development phase
+        touches it. A train-`PERSISTED` model that scores below
+        ``min_r_squared`` on holdout, or drops more than ``max_r2_drop``
+        vs train, is `REFUSED` and removed from the store — a fit that does
+        not generalize is not filed as a discovery.
+        """
+        train_hash = _sha256_file(train_csv)
+        holdout_hash = _sha256_file(holdout_csv)
+        vault = DataPartitionVault(
+            development_data_hash=train_hash,
+            selection_data_hash=train_hash,
+            falsification_data_hash=holdout_hash,
+            locked_external_test_hash=holdout_hash,
+        )
+        vault.verify_isolation(train_hash, "development")
+
+        train_result = self.run(
+            train_csv, target_column, output_unit,
+            variable_units=variable_units, min_r_squared=min_r_squared,
+            strict_units=strict_units,
+        )
+        base: dict = {
+            "train_status": train_result.get("status"),
+            "train_hash": train_hash,
+            "holdout_hash": holdout_hash,
+        }
+        if train_result.get("status") != "PERSISTED":
+            self.experiment.log(
+                experiment_type="prospective_validation",
+                parameters={"train_csv": train_csv, "holdout_csv": holdout_csv},
+                results={**base, "status": "REFUSED", "reason": "train refused"},
+                status="refused",
+            )
+            return {**base, "status": "REFUSED", "reason": f"train {train_result.get('status')}: {train_result.get('reason')}"}
+
+        expr = safe_parse_expr(str(train_result["expression"]))
+        holdout = self.ingest_csv(holdout_csv, target_column)
+        holdout_vars = [v for v in holdout["variables"]]
+        if set(holdout_vars) != set(train_result["variables"]):
+            self.store.delete_model(train_result["model_id"])
+            reason = f"holdout variables {holdout_vars} != train {train_result['variables']}"
+            self.experiment.log("prospective_validation", {"train_csv": train_csv}, {**base, "status": "REFUSED", "reason": reason}, "refused")
+            return {**base, "status": "REFUSED", "reason": reason}
+        y_true = holdout["data"][target_column]
+        y_pred = self._predict_expression(expr, {k: holdout["data"][k] for k in holdout_vars})
+        holdout_r2 = BayesianRefinementEngine.compute_r_squared(y_true, y_pred)
+        train_r2 = float(train_result.get("r_squared", float("nan")))
+        drop = (train_r2 - holdout_r2) if np.isfinite(train_r2) and np.isfinite(holdout_r2) else float("inf")
+        ok = np.isfinite(holdout_r2) and holdout_r2 >= min_r_squared and drop <= max_r2_drop
+        if not ok:
+            self.store.delete_model(train_result["model_id"])
+            reason = f"holdout R²={holdout_r2:.4f} (train {train_r2:.4f}, drop {drop:.4f}) below bar"
+            self.experiment.log("prospective_validation", {"train_csv": train_csv}, {**base, "status": "REFUSED", "reason": reason, "holdout_r_squared": holdout_r2}, "refused")
+            return {**base, "status": "REFUSED", "reason": reason, "holdout_r_squared": holdout_r2, "train_r_squared": train_r2}
+        result = {
+            **base, "status": "PERSISTED", "model_id": train_result["model_id"],
+            "expression": train_result["expression"], "train_r_squared": train_r2,
+            "holdout_r_squared": holdout_r2, "r2_drop": drop,
+        }
+        self.experiment.log("prospective_validation", {"train_csv": train_csv, "holdout_csv": holdout_csv}, result, "success")
+        return result
+
 
 def run_pipeline(
     csv_path: str,
@@ -455,11 +575,12 @@ def run_pipeline(
     min_r_squared: float = 0.1,
     strict_units: bool = False,
     output_dir: str = "pipeline_results",
+    param_uncertainties: dict[str, float] | None = None,
 ) -> dict:
     """Convenience function to run a full discovery pipeline."""
     pipeline = DiscoveryPipeline(output_dir=output_dir, strict_units=strict_units)
     return pipeline.run(
         csv_path, target_column, output_unit,
         variable_units=variable_units, min_r_squared=min_r_squared,
-        strict_units=strict_units,
+        strict_units=strict_units, param_uncertainties=param_uncertainties,
     )

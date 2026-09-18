@@ -237,7 +237,8 @@ class DimensionalAssuranceEngine:
 
             transcendental = {
                 sp.exp, sp.log, sp.sin, sp.cos, sp.tan,
-                sp.sinh, sp.cosh, sp.tanh, sp.asin, sp.acos, sp.atan
+                sp.sinh, sp.cosh, sp.tanh, sp.asin, sp.acos, sp.atan,
+                sp.erf, sp.erfc,
             }
             if func in transcendental:
                 if len(expr.args) != 1:

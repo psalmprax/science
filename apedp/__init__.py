@@ -128,6 +128,7 @@ from apedp.persistence import (
     to_json,
 )
 from apedp.pipeline import DiscoveryPipeline, run_pipeline
+from apedp.composer import Conjecture, HypothesisComposer
 from apedp.qec import (
     ConcatenatedThresholdRecursion,
     KnillLaflammeAuditor,
@@ -188,6 +189,7 @@ __all__ = [
     "CalibrationTraceabilityChain",
     "ClaimEvidenceProfile",
     "ClosedLoopAssuranceSystem",
+    "Conjecture",
     "ConcatenatedThresholdRecursion",
     "ConservationInvariantRegistry",
     "ContradictoryConstraintEngine",
@@ -212,6 +214,7 @@ __all__ = [
     "FeynmanBenchmarkCase",
     "FundamentalConstantsRegistry",
     "GatedScientificAssuranceEngine",
+    "HypothesisComposer",
     "IndependentAdversarialFalsifier",
     "InfeasibilityCertificate",
     "KnillLaflammeAuditor",

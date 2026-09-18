@@ -123,6 +123,8 @@ _SAFE_FUNCS = {
     "sinh": sp.sinh,
     "cosh": sp.cosh,
     "tanh": sp.tanh,
+    "erf": sp.erf,
+    "erfc": sp.erfc,
     "pi": sp.pi,
     "E": sp.E,
     "EulerGamma": sp.EulerGamma,
@@ -196,6 +198,7 @@ def safe_parse_expr(
                 "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
                 "exp", "log", "sqrt", "Abs", "sign", "Min", "Max", "min", "max",
                 "Heaviside", "re", "im", "conjugate", "sinh", "cosh", "tanh",
+                "erf", "erfc",
             }:
                 raise ValueError(f"Function {name!r} is not in the allowlist")
     return expr

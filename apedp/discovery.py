@@ -659,11 +659,12 @@ class MultiVariableSRE:
         op = random.choice(choices)  # nosec B311
         if op == sp.Pow:
             base = self._generate_candidate(depth + 1, max_depth)
-            # Half-integer exponents included so laws with fractional powers
-            # (e.g. the b/sqrt(d) term of Hall-Petch) are representable.
+            # Half- and third-integer exponents so laws with fractional powers
+            # (Hall-Petch b/sqrt(d), cube-root scalings) are representable.
             exponent = random.choice(  # nosec B311
                 [-2, -1, 1, 2, 3, 4, sp.Rational(1, 2), sp.Rational(-1, 2),
-                 sp.Rational(3, 2), sp.Rational(-3, 2)]
+                 sp.Rational(3, 2), sp.Rational(-3, 2), sp.Rational(1, 3),
+                 sp.Rational(-1, 3), sp.Rational(2, 3), sp.Rational(-2, 3)]
             )
             return sp.Pow(base, exponent)
         if op == sp.sqrt:
@@ -735,24 +736,43 @@ class MultiVariableSRE:
         # Integer exponents are searched first: they cover the bulk of
         # dimensional targets, and widening the alphabet dilutes this
         # exact-match search (measured: 13.3% -> 6.1% hit rate on a joule
-        # target). Half-integer exponents keep fractional-power laws such as
-        # the b/sqrt(d) term of Hall-Petch reachable. Halves are exact in
-        # binary, so ``acc == target`` stays valid here; thirds would not be
-        # (switch to Fraction before adding them).
-        integer_exps: list[float] = [-2, -1, 1, 1, 2]
-        extended_exps: list[float] = integer_exps + [0.5, -0.5]
+        # target). Halves keep Hall-Petch reachable; thirds keep cube-root
+        # scalings reachable. All arithmetic here is exact Fraction so thirds
+        # compare exactly (float 1/3 would not).
+        from fractions import Fraction
+
+        def _f(d: dict[str, float]) -> dict[str, Fraction]:
+            # limit_denominator maps float 1/3 (0.333...) to exact 1/3 so
+            # thirds compare exactly; ints and halves are unaffected.
+            return {k: Fraction(v).limit_denominator(12) for k, v in d.items()}
+
+        def _add(a: dict[str, Fraction], b: dict[str, Fraction]) -> dict[str, Fraction]:
+            out = dict(a)
+            for k, v in b.items():
+                out[k] = out.get(k, Fraction(0)) + v
+                if out[k] == 0:
+                    del out[k]
+            return out
+
+        target_f = _f(target)
+        items_f = [(b, _f(d)) for b, d in items]
+        integer_exps: list[Fraction] = [Fraction(-2), Fraction(-1), Fraction(1), Fraction(1), Fraction(2)]
+        extended_exps: list[Fraction] = integer_exps + [
+            Fraction(1, 2), Fraction(-1, 2),
+            Fraction(1, 3), Fraction(-1, 3), Fraction(2, 3), Fraction(-2, 3),
+        ]
         integer_budget = int(tries * 0.7)
         for attempt in range(tries):
             exps_pool = integer_exps if attempt < integer_budget else extended_exps
-            picks = [random.choice(items) for _ in range(random.randint(1, 4))]  # nosec B311
+            picks = [random.choice(items_f) for _ in range(random.randint(1, 4))]  # nosec B311
             exps = [random.choice(exps_pool) for _ in picks]  # nosec B311
-            acc: dict[str, float] = {}
+            acc: dict[str, Fraction] = {}
             for (_, dim), power in zip(picks, exps):
-                acc = _dim_add(acc, _dim_scale(dim, power))
-            if acc == target:
+                acc = _add(acc, {k: v * power for k, v in dim.items() if v * power != 0})
+            if acc == target_f:
                 expr: sp.Expr = sp.Integer(1)
                 for (block, _), power in zip(picks, exps):
-                    expr = expr * sp.Pow(block, power)
+                    expr = expr * sp.Pow(block, sp.Rational(power.numerator, power.denominator))
                 return expr
         return None
 
@@ -846,6 +866,18 @@ class MultiVariableSRE:
             found.update(s for s in node.args[0].free_symbols if s in erc_set)
         return sorted(found, key=str)
 
+    def _lambdify_cached(self, syms: list[sp.Symbol], expr: sp.Expr):
+        """Memoized ``sp.lambdify``: elites are re-scored every generation."""
+        cache: dict = self.__dict__.setdefault("_lambda_cache", {})
+        if len(cache) > 2000:
+            cache.clear()
+        key = (str(expr), tuple(str(s) for s in syms))
+        fn = cache.get(key)
+        if fn is None:
+            fn = sp.lambdify(syms, expr, modules=["numpy"])
+            cache[key] = fn
+        return fn
+
     def _linear_outer_fit(
         self,
         candidate: sp.Expr,
@@ -867,7 +899,7 @@ class MultiVariableSRE:
             args = [x_data[k] for k in var_names]
 
             def evaluate(expr: sp.Expr) -> np.ndarray:
-                f = sp.lambdify(syms, expr.subs(subs), modules=['numpy'])
+                f = self._lambdify_cached(syms, expr.subs(subs))
                 # Fitting the outer coefficients evaluates candidate parts on the
                 # data, and an exp/inner-scale term routinely overflows. The
                 # non-finite design matrix below rejects the candidate outright,

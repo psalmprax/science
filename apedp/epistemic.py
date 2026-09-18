@@ -229,7 +229,10 @@ class NoveltyAuditResult:
 class PriorArtAuditor:
     """Audits candidate expressions against prior art databases, structural families, and symbolic isomorphisms."""
 
+    CORPUS_VERSION = "2026.09-v2"
+
     STANDARD_PHYSICS_CORPUS: ClassVar[dict[str, str]] = {
+        # Single-variable structural families (legacy, kept for compat).
         "LANGMUIR_MICHAELIS_MENTEN": "a * x / (1 + b * x)",
         "HILL_EQUATION": "a * x**2 / (1 + b * x**2)",
         "ARRHENIUS_BOLTZMANN": "a * exp(-b / x)",
@@ -240,7 +243,83 @@ class PriorArtAuditor:
         "HALL_PETCH": "a + b / sqrt(x)",
         "NEWTON_GRAVITATION_COULOMB": "a / x**2",
         "CASIMIR_FORCE": "a / x**4",
+        # Multi-variable textbook laws (rename-insensitive match covers
+        # I*R vs V=I*R, m*v**2/2 vs kinetic energy, etc.).
+        "OHMIC_PRODUCT": "x * y",
+        "KINETIC_ENERGY": "m * v**2 / 2",
+        "EINSTEIN_MASS_ENERGY": "m * c**2",
+        "NEWTON_GRAVITY": "G * m1 * m2 / r**2",
+        "COULOMB_LAW": "q1 * q2 / (4 * pi * eps * r**2)",
+        "STEFAN_BOLTZMANN": "sigma * T**4",
+        "IDEAL_GAS": "P * V / (R * T)",
+        "LORENTZ_GAMMA": "1 / sqrt(1 - (v / c)**2)",
+        "PENDULUM_PERIOD": "2 * pi * sqrt(L / g)",
+        "WAVE_SPEED": "f * lam",
+        "FIRST_ORDER_DECAY": "N0 * exp(-k * t)",
+        "BEER_LAMBERT": "eps * l * c",
+        "KEPLER_THIRD": "a**3 / T**2",
+        "BERNOULLI": "P + rho * v**2 / 2",
+        "CARNOT": "1 - Tc / Th",
+        "PLANCK_RADIATION": "a * x**3 / (exp(b * x) - 1)",
     }
+
+    @staticmethod
+    def corpus_hash(corpus: dict[str, str] | None = None) -> str:
+        """SHA-256 over the sorted corpus, so audits cite what was searched."""
+        import hashlib
+        import json
+
+        body = json.dumps(
+            {"version": PriorArtAuditor.CORPUS_VERSION, "corpus": dict(sorted((corpus or PriorArtAuditor.STANDARD_PHYSICS_CORPUS).items()))},
+            sort_keys=True,
+        )
+        return hashlib.sha256(body.encode()).hexdigest()[:16]
+
+    @staticmethod
+    def _canonical_rename(expr: sp.Expr) -> sp.Expr:
+        """Map free symbols to positional _v0.._vn so I*R matches x*y."""
+        syms = sorted(expr.free_symbols, key=str)
+        mapping = {s: sp.Symbol(f"_v{i}") for i, s in enumerate(syms)}
+        return expr.xreplace(mapping)
+
+    @staticmethod
+    def _parse_physics(expr_str: str) -> sp.Expr:
+        """Parse with every identifier forced to a Symbol (physics `I` is current, not sqrt(-1))."""
+        import re
+
+        from apedp.safety import _SAFE_FUNCS, safe_parse_expr
+
+        idents = set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", expr_str))
+        extra = {
+            ident: sp.Symbol(ident)
+            for ident in idents
+            if ident not in _SAFE_FUNCS and ident not in ("pi", "E", "EulerGamma")
+        }
+        return safe_parse_expr(expr_str, extra_symbols=extra)
+
+    @classmethod
+    def check_rename_isomorphism(cls, expr1: str | sp.Expr, expr2: str | sp.Expr) -> tuple[bool, str]:
+        """Structural match under variable renaming (plus scalar multiple)."""
+        try:
+            s1 = cls._parse_physics(expr1) if isinstance(expr1, str) else expr1
+            s2 = cls._parse_physics(expr2) if isinstance(expr2, str) else expr2
+            if len(s1.free_symbols) != len(s2.free_symbols):
+                return False, "ARITY_MISMATCH"
+            c1, c2 = cls._canonical_rename(s1), cls._canonical_rename(s2)
+            return cls.check_symbolic_equivalence(c1, c2)
+        except (sp.SympifyError, TypeError, ValueError, ZeroDivisionError, AttributeError, ArithmeticError) as e:
+            return False, f"COMPARISON_ERROR: {e}"
+
+    @staticmethod
+    def pi_signature(expr: sp.Expr) -> tuple[tuple[str, ...], int, tuple[str, ...]]:
+        """Coarse structural signature: (sorted func names, total poly degree, sorted symbols)."""
+        funcs = sorted({type(a).__name__ for a in expr.atoms(sp.Function)})
+        try:
+            poly = sp.Poly(expr.as_numer_denom()[0] * expr.as_numer_denom()[1], *expr.free_symbols)
+            degree = int(poly.total_degree()) if poly is not None else -1
+        except (ValueError, TypeError, ArithmeticError, NotImplementedError, sp.PolynomialError):
+            degree = -1
+        return (tuple(funcs), degree, tuple(sorted(str(s) for s in expr.free_symbols)))
 
     @staticmethod
     def check_symbolic_equivalence(expr1: str | sp.Expr, expr2: str | sp.Expr) -> tuple[bool, str]:
@@ -279,11 +358,13 @@ class PriorArtAuditor:
         x_sym = sp.Symbol(variable_name)
         from apedp.safety import safe_parse_expr
 
-        s_cand = (
-            safe_parse_expr(candidate_expr, extra_symbols={variable_name: x_sym})
-            if isinstance(candidate_expr, str)
-            else candidate_expr
-        )
+        if isinstance(candidate_expr, str):
+            try:
+                s_cand = cls._parse_physics(candidate_expr)
+            except (TypeError, ValueError):
+                s_cand = safe_parse_expr(candidate_expr, extra_symbols={variable_name: x_sym})
+        else:
+            s_cand = candidate_expr
 
         # 1. Direct symbolic equivalence against corpus models
         for ref_id, ref_str in corpus.items():
@@ -297,6 +378,25 @@ class PriorArtAuditor:
                     searched_corpus_size=len(corpus),
                     epistemic_disclaimer=(
                         f"Model is algebraically isomorphic to known reference '{ref_id}' ({ref_str}). "
+                        "Categorized as re-discovered prior art; novelty claim is refused."
+                    ),
+                )
+
+        # 1b. Rename-insensitive structural match (I*R vs x*y, m*v**2/2 vs kinetic).
+        for ref_id, ref_str in corpus.items():
+            try:
+                equiv, _ = cls.check_rename_isomorphism(s_cand, ref_str)
+            except (sp.SympifyError, TypeError, ValueError, ZeroDivisionError, AttributeError, ArithmeticError):
+                continue
+            if equiv:
+                return NoveltyAuditResult(
+                    status=NoveltyStatus.KNOWN_MODEL,
+                    closest_reference_id=ref_id,
+                    reference_formula=ref_str,
+                    isomorphism_type="RENAME_ISOMORPHISM",
+                    searched_corpus_size=len(corpus),
+                    epistemic_disclaimer=(
+                        f"Model matches reference '{ref_id}' ({ref_str}) up to variable renaming/scale. "
                         "Categorized as re-discovered prior art; novelty claim is refused."
                     ),
                 )
@@ -371,7 +471,8 @@ class PriorArtAuditor:
             isomorphism_type=None,
             searched_corpus_size=len(corpus),
             epistemic_disclaimer=(
-                f"Candidate expression is apparently novel within the searched reference corpus ({len(corpus)} cataloged models). "
+                f"Candidate expression is apparently novel within the searched reference corpus ({len(corpus)} cataloged models, "
+                f"version {cls.CORPUS_VERSION} hash {cls.corpus_hash(corpus)}). "
                 "NOTICE: This designation certifies novelty only relative to the checked corpus and does NOT constitute "
                 "proof of absolute novelty or discovery of a new physical law."
             ),
