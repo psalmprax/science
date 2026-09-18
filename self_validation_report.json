@@ -1,0 +1,276 @@
+{
+  "total": 38,
+  "passed": 38,
+  "failed": 0,
+  "pass_rate": "100.0%",
+  "checks_with_independent_oracle": 37,
+  "self_referential_checks": 1,
+  "results": [
+    {
+      "test": "Bayesian: quadrature evidence equals the conjugate closed form",
+      "passed": true,
+      "details": "log p(D)=-10.140207057238, closed form=-10.140207057238, delta=1.78e-15",
+      "error": "",
+      "oracle": "Gaussian-Gaussian conjugacy, closed form derived by hand"
+    },
+    {
+      "test": "Bayesian: Laplace evidence equals the closed form for a Gaussian posterior",
+      "passed": true,
+      "details": "Laplace=-10.140207055, closed form=-10.140207057 (exact for this posterior, so any gap is approximation error)",
+      "error": "",
+      "oracle": "Gaussian-Gaussian conjugacy, closed form derived by hand"
+    },
+    {
+      "test": "Bayesian: Bayes factor equals the ratio of the closed-form evidences",
+      "passed": true,
+      "details": "BF=59.794225390, closed form=59.794225390, log10BF=1.776659",
+      "error": "",
+      "oracle": "Gaussian-Gaussian conjugacy, closed form derived by hand"
+    },
+    {
+      "test": "Bayesian: matching prior is preferred and the verdict names its method",
+      "passed": true,
+      "details": "BF=59.79, verdict=Strong evidence for Model 1 (quadrature vs quadrature)",
+      "error": "",
+      "oracle": "the data were generated under the Model 1 prior, not the Model 2 prior"
+    },
+    {
+      "test": "Bayesian: a summed-likelihood ratio is not reported as a Bayes factor",
+      "passed": true,
+      "details": "ratio=1.000000000000 (same point for both models) while BF=59.79; the two statistics disagree because only one integrates over a prior",
+      "error": "",
+      "oracle": "definition: equal inputs give ratio 1, a Bayes factor still discriminates"
+    },
+    {
+      "test": "Bayesian: grid quadrature refuses >2 parameters",
+      "passed": true,
+      "details": "raised ValueError: grid quadrature is implemented for 1-2 parameters, got 3; pass map_params for the Laplace approximation",
+      "error": "",
+      "oracle": "contract: the refusal is required; there is no value to compare"
+    },
+    {
+      "test": "Bayesian: negative likelihoods are rejected",
+      "passed": true,
+      "details": "raised ValueError: summed likelihoods must be non-negative, got -1 and 0.5; supply likelihoods, not log-likelihoods",
+      "error": "",
+      "oracle": "contract: the refusal is required; there is no value to compare"
+    },
+    {
+      "test": "Bayesian: Laplace refuses a point that is not a mode",
+      "passed": true,
+      "details": "raised ValueError: Laplace approximation needs map_params to be a mode of the log-posterior, but moving parameter 0 by 0.0001 from [0.0] increases it; optimise first, or pass bounds for quadrature",
+      "error": "",
+      "oracle": "contract: the refusal is required; there is no value to compare"
+    },
+    {
+      "test": "Bayesian: unmeasured evidence cannot form a Bayes factor",
+      "passed": true,
+      "details": "raised ValueError: model 1 log-evidence is not finite (nan); a Bayes factor cannot be formed from an unmeasured marginal likelihood",
+      "error": "",
+      "oracle": "contract: the refusal is required; there is no value to compare"
+    },
+    {
+      "test": "Evolutionary: quadratic held-out fit",
+      "passed": true,
+      "details": "R\u00b2=1.000000, penalized MSE=0.0003, expression=x**2",
+      "error": "",
+      "oracle": "the generating law (x^2, 2x+1) evaluated at held-out points"
+    },
+    {
+      "test": "Evolutionary: quadratic best score never worsens",
+      "passed": true,
+      "details": "",
+      "error": "",
+      "oracle": "monotonicity invariant of the search loop (no numeric oracle)"
+    },
+    {
+      "test": "Evolutionary: affine held-out fit",
+      "passed": true,
+      "details": "R\u00b2=1.000000, penalized MSE=0.0005, expression=2*x + 1",
+      "error": "",
+      "oracle": "the generating law (x^2, 2x+1) evaluated at held-out points"
+    },
+    {
+      "test": "Evolutionary: affine best score never worsens",
+      "passed": true,
+      "details": "",
+      "error": "",
+      "oracle": "monotonicity invariant of the search loop (no numeric oracle)"
+    },
+    {
+      "test": "Dimensional: F = ma is consistent",
+      "passed": true,
+      "details": "Got [length] * [mass] / [time] ** 2, expected [mass] * [length] / [time] ** 2",
+      "error": "",
+      "oracle": "pint SI base-dimension definitions (external to APEDP)"
+    },
+    {
+      "test": "Dimensional: F + m raises TypeError",
+      "passed": true,
+      "details": "Correctly rejected",
+      "error": "",
+      "oracle": "pint refuses addition of inconsistent dimensions (external)"
+    },
+    {
+      "test": "Dimensional: E = mc^2 is consistent",
+      "passed": true,
+      "details": "Got [mass] * [length] ** 2 / [time] ** 2, expected [mass] * [length] ** 2 / [time] ** 2",
+      "error": "",
+      "oracle": "pint SI base-dimension definitions (external to APEDP)"
+    },
+    {
+      "test": "Dimensional: 2\u03c0r is consistent",
+      "passed": true,
+      "details": "Got [length]",
+      "error": "",
+      "oracle": "pint SI base-dimension definitions (external to APEDP)"
+    },
+    {
+      "test": "Buckingham-Pi: group count equals n_vars - rank",
+      "passed": true,
+      "details": "count=1, expected 3 variables - rank 2 = 1; groups=['Pi_1 = (T^2 * g) / (L)']",
+      "error": "",
+      "oracle": "rank-nullity applied to the 2x3 dimension matrix (rank 2)"
+    },
+    {
+      "test": "Buckingham-Pi: every reported group is dimensionless under SI units",
+      "passed": true,
+      "details": "dimensionless flags=[True] for groups=['Pi_1 = (T^2 * g) / (L)']",
+      "error": "",
+      "oracle": "SI base-dimension definitions (second, meter) via pint"
+    },
+    {
+      "test": "Anomaly: unregularized Bayes factor diverges at the singular point",
+      "passed": true,
+      "details": "1/Z_j at Z_j=0.0 is not finite",
+      "error": "",
+      "oracle": "the published law's own pole (algebra, not the repair engine)"
+    },
+    {
+      "test": "Anomaly: unregularized Newtonian gravity diverges at the singular point",
+      "passed": true,
+      "details": "r**(-2) at r=0.0 is not finite",
+      "error": "",
+      "oracle": "the published law's own pole (algebra, not the repair engine)"
+    },
+    {
+      "test": "Anomaly: unregularized Coulomb field diverges at the singular point",
+      "passed": true,
+      "details": "r**(-2) at r=0.0 is not finite",
+      "error": "",
+      "oracle": "the published law's own pole (algebra, not the repair engine)"
+    },
+    {
+      "test": "Anomaly: repaired Bayes factor Z_i/Z_j at Z_j -> 0 is finite at the singularity",
+      "passed": true,
+      "details": "Bayes_Factor_Safe at the singular point evaluates to 1e+12",
+      "error": "",
+      "oracle": "finiteness at the modelled singularity, where the published law has a pole"
+    },
+    {
+      "test": "Anomaly: repaired Newtonian gravity 1/r^2 at r -> 0 is finite at the singularity",
+      "passed": true,
+      "details": "Newton_Gravity_Softened at the singular point evaluates to 6.6743e-11",
+      "error": "",
+      "oracle": "finiteness at the modelled singularity, where the published law has a pole"
+    },
+    {
+      "test": "Anomaly: repaired Coulomb 1/r^2 at r -> 0 is finite at the singularity",
+      "passed": true,
+      "details": "Coulomb_Debye_Shielded at the singular point evaluates to 8.98755e+09",
+      "error": "",
+      "oracle": "finiteness at the modelled singularity, where the published law has a pole"
+    },
+    {
+      "test": "Epistemic: Knowledge graph adds claims and edges",
+      "passed": true,
+      "details": "Nodes=2, Edges=1",
+      "error": "",
+      "oracle": "structural round-trip invariant (no numeric oracle)"
+    },
+    {
+      "test": "Epistemic: Graph is acyclic",
+      "passed": true,
+      "details": "",
+      "error": "",
+      "oracle": "graph-theoretic property of the constructed DAG"
+    },
+    {
+      "test": "Epistemic: Lifecycle state transition",
+      "passed": true,
+      "details": "State: Validated",
+      "error": "",
+      "oracle": "declared lifecycle transition table"
+    },
+    {
+      "test": "Epistemic: Complete traceability accepted",
+      "passed": true,
+      "details": "",
+      "error": "",
+      "oracle": "traceability completeness rule applied to a fully populated record"
+    },
+    {
+      "test": "Epistemic: Missing evidence rejected",
+      "passed": true,
+      "details": "",
+      "error": "",
+      "oracle": "traceability completeness rule applied to a record with a blank field"
+    },
+    {
+      "test": "Epistemic: Tournament lifecycle bookkeeping (not mathematical proof)",
+      "passed": true,
+      "details": "",
+      "error": "",
+      "oracle": "declared lifecycle states; the tournament proves no physics"
+    },
+    {
+      "test": "Persistence: ModelStore save/load",
+      "passed": true,
+      "details": "Loaded: x**2 + y",
+      "error": "",
+      "oracle": "round-trip invariant: the expression read back equals the one written"
+    },
+    {
+      "test": "Persistence: List models",
+      "passed": true,
+      "details": "Count: 1",
+      "error": "",
+      "oracle": "round-trip invariant (no numeric oracle)"
+    },
+    {
+      "test": "Persistence: Delete model",
+      "passed": true,
+      "details": "",
+      "error": "",
+      "oracle": "round-trip invariant: a deleted record must not load"
+    },
+    {
+      "test": "Persistence: Serialization round-trip",
+      "passed": true,
+      "details": "Restored: x**2 + y",
+      "error": "",
+      "oracle": "round-trip invariant: serialize then deserialize is the identity"
+    },
+    {
+      "test": "Persistence: to_json/from_json",
+      "passed": true,
+      "details": "Round-trip: {'key': 'value'}",
+      "error": "",
+      "oracle": "round-trip invariant: serialize then deserialize is the identity"
+    },
+    {
+      "test": "Metrology: Independent linear uncertainty",
+      "passed": true,
+      "details": "Value=32.0, uncertainty=1.25",
+      "error": "",
+      "oracle": "hand-derived: 2*10 + 3*4 = 32, and sqrt((2*0.5)^2 + (3*0.25)^2) = 1.25 for independent inputs"
+    },
+    {
+      "test": "Scenarios: 22/22 scenarios pass (self-referential)",
+      "passed": true,
+      "details": "Pass rate: 100.0%; no oracle is declared: this check asserts the system agrees with itself, not that it is right",
+      "error": "",
+      "oracle": ""
+    }
+  ]
+}
