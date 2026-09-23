@@ -18,6 +18,7 @@
 14. [Contributing](#14-contributing)
 15. [License](#15-license)
 16. [System Capabilities & Architectural Philosophy](SYSTEM_CAPABILITIES_AND_PHILOSOPHY.md)
+17. [Evidence, Adapters & Domain Limits](#17-evidence-adapters--domain-limits)
 
 ---
 
@@ -26,6 +27,106 @@
 APEDP (Autonomous Physics & Engineering Discovery Platform) is an end-to-end scientific computing platform for discovering, validating, and repairing physical equations from experimental data. It combines symbolic regression, dimensional analysis, Bayesian model selection, physical anomaly repair, epistemic tracking, quantum error correction, metrology, and applied defect auditing in a unified framework.
 
 For an in-depth breakdown of system capabilities and why the platform balances autonomous discovery with domain constraints, see [System Capabilities & Architectural Philosophy](SYSTEM_CAPABILITIES_AND_PHILOSOPHY.md).
+
+APEDP should be described as a **domain-general evidence and model-adjudication
+framework with domain-specific discovery adapters**, rather than as a fully
+domain-agnostic equation generator. The distinction is operational: the
+evidence layer is reusable, while units, search grammars, baselines, physical
+constraints, and ingestion rules must be declared for each domain.
+
+## 17. Evidence, Adapters & Domain Limits
+
+### Evidence statuses
+
+Benchmark and adapter outcomes use explicit scientific qualifications:
+
+| Status | Meaning |
+|---|---|
+| `ADMIT` | Candidate passed the declared admissibility and robustness requirements. |
+| `DOMAIN_LIMITED` | Candidate is supported in the tested domain, but extrapolation is not established. |
+| `CONDITIONAL` | Structure is supported, but a documented quantitative or contamination limitation remains. |
+| `PREDICTIVE_ONLY` | Predictive utility is supported; causal or mechanistic interpretation is not. |
+| `REFUSE` | A hard physical, statistical, numerical, or provenance requirement failed. |
+| `INCONCLUSIVE` | Evidence is incomplete, including insufficient seed or independent validation. |
+
+These statuses are not substitutes for the underlying measurements. Reports
+must retain holdout metrics, baselines, seed treatment, refusal reasons, and
+the information firewall.
+
+### Benchmark adapters
+
+`apedp.cross_domain_benchmark` defines the adapter boundary. An adapter owns:
+
+- locked train and holdout data;
+- canonical dataset hashing and provenance;
+- declared known, hidden, allowed, and forbidden information;
+- track configuration (`uninformed`, `weak_prior`, or `literature_informed`);
+- conversion of measured discovery/admission results into a benchmark outcome.
+
+Repeated seeds are robustness measurements, not independent scientific
+replications. A single-seed result without stability evidence should remain
+`INCONCLUSIVE`.
+
+### Sensitivity analysis
+
+`run_sensitivity_analysis()` preserves the primary result and records each
+variant with an independent rationale and rule. It reports `ROBUST`,
+`SENSITIVE`, or `UNRESOLVED`; a cleaned or filtered variant must never silently
+replace the primary analysis.
+
+### Rolling-origin identifiability
+
+`apedp.identifiability.rolling_origin_identifiability()` evaluates a caller-owned
+fit across multiple training endpoints. It records endpoint-wise parameter
+values, in-sample fit scores, and future forecast errors, then reports
+`POORLY_IDENTIFIED`, `STABLE`, or `UNRESOLVED`.
+
+This diagnostic does not create formal confidence intervals. It exposes the
+distinction:
+
+```text
+excellent forecast accuracy != long-run parameter identifiability
+```
+
+For logistic or saturation models, early growth-phase data may forecast the
+next observations accurately while leaving the asymptote weakly constrained.
+
+### Domain boundary
+
+The reusable core provides evidence handling, holdout isolation, dimensional
+checking, numerical conditioning, provenance, sensitivity reporting, and
+fail-closed admission. New domains still require an adapter for data shape,
+units or semantic quantities, physical constraints, meaningful baselines, and
+domain-specific validation regimes. This is extensibility, not proof of
+complete agnosticism.
+
+### External-science track: NIST WebBook
+
+`apedp.ingestion.NISTWebBookAdapter` and `NISTWebBookCase` provide an
+offline-first contract for NIST Chemistry WebBook exports. The caller supplies
+a versioned CSV export and source metadata; APEDP records the file hash,
+units, property, compound groups, and preprocessing. Whole-compound holdouts
+are required for transfer tests, and the literature equation is explicitly
+withheld from the discovery firewall.
+
+This adapter is infrastructure, not a benchmark result by itself. A scientific
+claim requires a pinned export, a declared property question, grouped holdout
+results, dimensional checks, identifiability diagnostics, and post-discovery
+literature comparison.
+
+`apply_noise_ladder()` adds controlled training-target perturbations at
+`0`, `0.1%`, `0.5%`, `1%`, `2%`, and `5%` of the clean training-target scale
+by default. It preserves the clean grouped holdout and records the noise seed
+and scale in provenance. This is robustness infrastructure; it does not imply
+that NIST noise robustness has been scientifically evaluated until a pinned
+export is run through discovery and adjudication.
+
+`build_nist_manifest()` records the pre-discovery experiment contract,
+including source/file hashes, groups, holdouts, seeds, grammar, and operator
+limits. `run_nist_blind_discovery()` then runs the uninformed candidate search,
+dimensional validation, locked holdout scoring, and fail-closed admission while
+returning `literature_comparison="NOT_RUN"`. Literature comparison belongs in a
+separate post-freeze step.
 
 ### Key Capabilities
 
@@ -184,6 +285,18 @@ print(f"Discovered: {expr} (score={best_score:.4g}, lower is better)")
 ```bash
 uvicorn apedp.api:create_app --host 0.0.0.0 --port 8000
 ```
+
+For a network-exposed deployment, start the factory with an API key:
+
+```bash
+APEDP_API_KEY='replace-with-a-secret' uvicorn apedp.api:create_app --factory --host 0.0.0.0 --port 8000
+```
+
+Dimensionful API discovery requires explicit `variable_units` by default.
+`allow_heuristic_units=true` is available only as an explicitly labelled
+exploratory escape hatch. Discovery responses include `data_adequacy`; use
+`DiscoveryPipeline.run_prospective()` with a locked holdout before treating a
+candidate as evidence beyond the observed data.
 
 ---
 

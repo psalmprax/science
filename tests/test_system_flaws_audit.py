@@ -1,3 +1,4 @@
+# Databricks notebook source
 """Regression tests for the flaws catalogued in docs/SYSTEM_FLAWS_AUDIT.md.
 
 Each test names the finding it covers and asserts the *behaviour* that was wrong,
@@ -59,8 +60,9 @@ def test_dockerfile_does_not_hide_a_failing_build_step():
     assert not any(line.startswith("COPY tests/") for line in instructions)
 
 
-def test_create_app_returns_a_servable_app():
+def test_create_app_returns_a_servable_app(monkeypatch):
     """The object uvicorn's factory flag is handed must be a routable app."""
+    monkeypatch.setenv("APEDP_ALLOW_UNAUTHENTICATED", "1")
     app = create_app()
     paths = set(app.openapi().get("paths", {}))
     assert "/health" in paths
@@ -74,12 +76,13 @@ def test_create_app_returns_a_servable_app():
 
 
 def _allow_origin_header(monkeypatch, env_value: str | None) -> tuple[str | None, str | None]:
+    monkeypatch.setenv("APEDP_ALLOW_UNAUTHENTICATED", "1")
     if env_value is None:
         monkeypatch.delenv("APEDP_CORS_ORIGINS", raising=False)
     else:
         monkeypatch.setenv("APEDP_CORS_ORIGINS", env_value)
     client = TestClient(create_app())
-    response = client.get("/healthz", headers={"Origin": "https://app.example"})
+    response = client.get("/health", headers={"Origin": "https://app.example"})
     return (
         response.headers.get("access-control-allow-origin"),
         response.headers.get("access-control-allow-credentials"),
@@ -99,9 +102,9 @@ def test_cors_allows_an_operator_named_origin(monkeypatch):
 
 
 def test_cors_never_pairs_a_wildcard_with_credentials(monkeypatch):
-    """Browsers reject that combination, so it cannot have been working."""
+    """Browsers reject wildcard with credentials; the server now rejects the wildcard entirely."""
     origin, credentials = _allow_origin_header(monkeypatch, "*")
-    assert origin == "*"
+    assert origin is None
     assert credentials is None
 
 
@@ -223,6 +226,40 @@ def test_stagnated_search_is_refused_instead_of_persisted(monkeypatch, tmp_path)
     assert "stagnated" in result["reason"]
     assert result["search_stagnated"] is True
     # Nothing reached the store: a seed artefact is not a discovery result.
+    assert pipeline.store.list_models() == []
+
+
+def test_failed_dimensional_validation_is_refused_before_persistence(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    csv_path = tmp_path / "data.csv"
+    _write_csv(csv_path)
+    pipeline = DiscoveryPipeline(output_dir=str(tmp_path / "results"))
+    monkeypatch.setattr(
+        pipeline,
+        "discover",
+        lambda *args, **kwargs: {
+            "best_expression": "x**2",
+            "best_score": 0.01,
+            "r_squared": 0.99,
+            "bic": -10.0,
+            "aic": -12.0,
+            "degenerate": False,
+            "degenerate_reason": "",
+            "search_stagnated": False,
+            "stagnation": {"stagnated": False},
+        },
+    )
+
+    result = pipeline.run(
+        str(csv_path),
+        "y",
+        output_unit="newton",
+        variable_units={"x": "meter"},
+    )
+
+    assert result["status"] == "REFUSED"
+    assert result["reason"] == "dimensional validation failed"
+    assert result["dimensional_validation"]["dimensionally_consistent"] is False
     assert pipeline.store.list_models() == []
 
 
@@ -355,6 +392,17 @@ def test_a_corrupt_record_is_reported_not_raised(tmp_path):
 
 
 def test_the_api_is_open_only_when_no_key_is_configured(monkeypatch):
+    """Without API key and without explicit unauthenticated mode, server refuses to start."""
+    monkeypatch.delenv("APEDP_API_KEY", raising=False)
+    monkeypatch.delenv("APEDP_ALLOW_UNAUTHENTICATED", raising=False)
+    import pytest
+    with pytest.raises(RuntimeError, match="Authentication required"):
+        create_app()
+
+
+def test_the_api_allows_unauthenticated_when_explicitly_opted_in(monkeypatch):
+    """With APEDP_ALLOW_UNAUTHENTICATED=1, the API is accessible without a key."""
+    monkeypatch.setenv("APEDP_ALLOW_UNAUTHENTICATED", "1")
     monkeypatch.delenv("APEDP_API_KEY", raising=False)
     assert TestClient(create_app()).get("/health").status_code == 200
 
@@ -378,6 +426,7 @@ def test_liveness_and_documentation_do_not_need_a_key(monkeypatch):
 
 
 def test_the_rate_limiter_answers_429_past_the_budget(monkeypatch):
+    monkeypatch.setenv("APEDP_ALLOW_UNAUTHENTICATED", "1")
     monkeypatch.delenv("APEDP_API_KEY", raising=False)
     monkeypatch.setenv("APEDP_RATE_LIMIT_PER_MINUTE", "3")
     client = TestClient(create_app())
@@ -390,6 +439,7 @@ def test_the_rate_limiter_answers_429_past_the_budget(monkeypatch):
 def test_a_nonsense_rate_limit_value_is_ignored_rather_than_fatal(monkeypatch):
     from apedp.api import DEFAULT_RATE_LIMIT_PER_MINUTE
 
+    monkeypatch.setenv("APEDP_ALLOW_UNAUTHENTICATED", "1")
     monkeypatch.setenv("APEDP_RATE_LIMIT_PER_MINUTE", "lots")
     assert rate_limit_per_minute() == DEFAULT_RATE_LIMIT_PER_MINUTE
     assert TestClient(create_app()).get("/health").status_code == 200
@@ -408,13 +458,13 @@ def test_an_unanswered_probe_cannot_read_as_approved(monkeypatch):
     system = AgnosticClosedLoopAssuranceSystem()
     with monkeypatch.context() as patched:
         patched.setattr(repair_module, "limit_with_timeout", _exploding_limit)
-        result = system.autonomous_stress_test_and_repair("exp(x)")
+        result = system.autonomous_stress_test_and_repair("exp(x)", variable_units={"x": "dimensionless"})
     assert result["status"] == "UNDETERMINED"
     assert result["probe_error_count"] >= 1
     assert result["unresolved_probe_count"] >= 1
     assert "not established" in result["validity_domain"]
     # The control: with the probes working, the same law is cleanly approved.
-    assert AgnosticClosedLoopAssuranceSystem().autonomous_stress_test_and_repair("exp(x)")["status"] == "APPROVED"
+    assert AgnosticClosedLoopAssuranceSystem().autonomous_stress_test_and_repair("exp(x)", variable_units={"x": "dimensionless"})["status"] == "APPROVED"
 
 
 def test_a_crashed_probe_with_a_measured_fallback_is_recorded_not_blocking(monkeypatch):
@@ -487,6 +537,7 @@ def test_gum_risk_covers_poles_and_branch_cuts(formula, risky):
 
 def test_the_metrology_route_warns_for_a_pole_it_now_recognises(monkeypatch):
     """The classifier has to reach the response, not just exist."""
+    monkeypatch.setenv("APEDP_ALLOW_UNAUTHENTICATED", "1")
     client = TestClient(create_app())
     response = client.post(
         "/metrology/propagate",
@@ -502,6 +553,7 @@ def test_the_metrology_route_warns_for_a_pole_it_now_recognises(monkeypatch):
 
 
 def test_the_metrology_auto_method_selects_monte_carlo_for_poles(monkeypatch):
+    monkeypatch.setenv("APEDP_ALLOW_UNAUTHENTICATED", "1")
     client = TestClient(create_app())
     response = client.post(
         "/metrology/propagate",

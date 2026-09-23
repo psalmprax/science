@@ -481,11 +481,15 @@ class VectorizedDimensionalEngine:
     @classmethod
     def batch_validate_multiplication(cls, dim_a: np.ndarray, dim_b: np.ndarray) -> np.ndarray:
         result: np.ndarray = dim_a + dim_b
+        if not np.all(np.isfinite(result)):
+            raise OverflowError(f"Dimension exponent overflow in multiplication: {dim_a} + {dim_b}")
         return result
 
     @classmethod
     def batch_validate_division(cls, dim_a: np.ndarray, dim_b: np.ndarray) -> np.ndarray:
         result: np.ndarray = dim_a - dim_b
+        if not np.all(np.isfinite(result)):
+            raise OverflowError(f"Dimension exponent overflow in division: {dim_a} - {dim_b}")
         return result
 
     @classmethod
@@ -504,7 +508,11 @@ class VectorizedDimensionalEngine:
 
     @classmethod
     def batch_validate_power(cls, dim_a: np.ndarray, power: float) -> np.ndarray:
-        return np.asarray(dim_a) * power
+        result = np.asarray(dim_a) * power
+        # Check for overflow
+        if not np.all(np.isfinite(result)):
+            raise OverflowError(f"Dimension exponent overflow in power operation: {dim_a} * {power}")
+        return result
 
     @classmethod
     def batch_check_homogeneity(cls, lhs_dims: np.ndarray, rhs_dims: np.ndarray) -> np.ndarray:

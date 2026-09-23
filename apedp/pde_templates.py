@@ -111,17 +111,13 @@ def recognize_pde(expr: sp.Expr) -> list[str]:
     # Euler vs Navier-Stokes on velocity-like fields.
     for f in funcs:
         orders = _orders_for(rec, f)
-        if orders.get("t", 0) >= 1 and orders.get("x", 0) >= 2:
-            if f.lower() in ("u", "v", "w", "vel") or f in funcs[:1]:
-                if "NS_X_1D" not in hits:
-                    # Only claim viscosity when a pressure gradient co-occurs.
-                    p_like = [g for g in funcs if g.lower() in ("p", "press", "pressure")]
-                    if p_like and any(_orders_for(rec, g).get("x", 0) >= 1 for g in p_like):
-                        hits.append("NS_X_1D")
-                    elif not p_like:
-                        pass
-        if orders.get("t", 0) >= 1 and orders.get("x", 0) == 1 and orders.get("x", 0) < 2:
-            pass
+        if (orders.get("t", 0) >= 1 and orders.get("x", 0) >= 2
+                and (f.lower() in ("u", "v", "w", "vel") or f in funcs[:1])
+                and "NS_X_1D" not in hits):
+            # Only claim viscosity when a pressure gradient co-occurs.
+            p_like = [g for g in funcs if g.lower() in ("p", "press", "pressure")]
+            if p_like and any(_orders_for(rec, g).get("x", 0) >= 1 for g in p_like):
+                hits.append("NS_X_1D")
     # Euler: first-order advection + pressure gradient, no second derivatives anywhere.
     if not any(v >= 2 for f in funcs for v in _orders_for(rec, f).values()):
         p_like = [g for g in funcs if g.lower() in ("p", "press", "pressure")]

@@ -1,11 +1,14 @@
+import functools
 import hashlib
 import hmac
 import json
 import logging
+import os
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
+from pathlib import Path
 from typing import Any, ClassVar
 
 import networkx as nx
@@ -13,6 +16,41 @@ import numpy as np
 import sympy as sp
 
 logger = logging.getLogger(__name__)
+
+
+def _equivalence_inner(a: str, b: str) -> tuple[bool, str]:
+    """Uncached core of check_symbolic_equivalence for string pairs."""
+    from apedp.safety import safe_parse_expr
+
+    s1 = safe_parse_expr(a)
+    s2 = safe_parse_expr(b)
+    diff = sp.simplify(s1 - s2)
+    if diff == 0:
+        return True, f"IDENTICAL_PRIOR_ART: Expression is isomorphic to reference model (difference: {diff})."
+    ratio = sp.simplify(s1 / s2)
+    if ratio.is_number and ratio != 0:
+        return True, f"SCALED_PRIOR_ART: Expression is scalar-multiple isomorphic (factor {ratio})."
+    return False, "DISTINCT: Expression represents an algebraically distinct functional form."
+
+
+@functools.lru_cache(maxsize=2048)
+def _cached_equivalence(a: str, b: str) -> tuple[bool, str]:
+    try:
+        return _equivalence_inner(a, b)
+    except (sp.SympifyError, TypeError, ValueError, ZeroDivisionError,
+            AttributeError, ArithmeticError) as e:
+        return False, f"COMPARISON_ERROR: {e}"
+
+
+def _json_safe(obj: Any) -> Any:
+    """Convert SymPy objects and other non-JSON-serializable types to strings."""
+    if isinstance(obj, sp.Basic):
+        return str(obj)
+    if isinstance(obj, dict):
+        return {k: _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple, set)):
+        return [_json_safe(v) for v in obj]
+    return obj
 
 
 class ModelInterventionClass(str, Enum):
@@ -108,6 +146,45 @@ class UncertaintyDecomposition:
     epistemic_total: float = 0.0            # Combined reducible uncertainty
     aleatoric_total: float = 0.0            # Irreducible stochastic noise
     combined_expanded_uncertainty: float = 0.0 # Total combined uncertainty (k=2, 95% confidence)
+
+    @classmethod
+    def from_components(
+        cls,
+        *,
+        measurement: float = 0.0,
+        parameter: float = 0.0,
+        model_discrepancy: float = 0.0,
+        structural: float = 0.0,
+        extrapolation: float = 0.0,
+        coverage_factor: float = 2.0,
+    ) -> "UncertaintyDecomposition":
+        """Build a labelled quadrature budget from standard uncertainties.
+
+        Components are standard uncertainties, not variances. The method keeps
+        aleatoric measurement noise separate from reducible epistemic sources and
+        rejects negative/non-finite inputs rather than silently clipping them.
+        """
+        import math
+
+        values = (measurement, parameter, model_discrepancy, structural, extrapolation)
+        if not all(math.isfinite(float(value)) and float(value) >= 0.0 for value in values):
+            raise ValueError("uncertainty components must be finite and non-negative")
+        if not math.isfinite(float(coverage_factor)) or coverage_factor <= 0.0:
+            raise ValueError("coverage_factor must be finite and positive")
+        epistemic = math.sqrt(parameter ** 2 + model_discrepancy ** 2
+                               + structural ** 2 + extrapolation ** 2)
+        aleatoric = float(measurement)
+        combined = math.sqrt(aleatoric ** 2 + epistemic ** 2)
+        return cls(
+            measurement_uncertainty=aleatoric,
+            parameter_uncertainty=float(parameter),
+            model_discrepancy=float(model_discrepancy),
+            structural_uncertainty=float(structural),
+            extrapolation_uncertainty=float(extrapolation),
+            epistemic_total=epistemic,
+            aleatoric_total=aleatoric,
+            combined_expanded_uncertainty=float(coverage_factor) * combined,
+        )
 
     def to_dict(self) -> dict[str, float]:
         return {
@@ -230,7 +307,7 @@ class NoveltyAuditResult:
 class PriorArtAuditor:
     """Audits candidate expressions against prior art databases, structural families, and symbolic isomorphisms."""
 
-    CORPUS_VERSION = "2026.09-v3"
+    CORPUS_VERSION = "2026.09-v4"
 
     STANDARD_PHYSICS_CORPUS: ClassVar[dict[str, str]] = {
         # Single-variable structural families (legacy, kept for compat).
@@ -443,6 +520,15 @@ class PriorArtAuditor:
         "BLACK_SCHOLES_D1": "(log(S / K) + (r + s**2 / 2) * T) / (s * sqrt(T))",
         "SHARPE": "(Rp - Rf) / sp",
         "CAPM": "Rf + b * (Rm - Rf)",
+        # --- v4 additions: validated empirical/consensus forms, scoped ---
+        # Brown lifter (Ianconesu 2011; in-air positive-corona scope only;
+        # vacuum extrapolation explicitly unsupported).
+        "BROWN_FORCE_CURRENT": "I*d/mu",
+        "BROWN_IV_CURVE": "K*V*(V-CIV)",
+        "BROWN_K1_GEOMETRY": "mu*C/b**2",
+        # Warp structural consensus (Pfenning-Ford/VdB/Lentz shared scaling;
+        # heuristic, not a law; wall-thickness dependence via 1/w).
+        "WARP_ENERGY_SCALING": "v_s**2*R**2/w",
     }
 
     @staticmethod
@@ -505,7 +591,14 @@ class PriorArtAuditor:
 
     @staticmethod
     def check_symbolic_equivalence(expr1: str | sp.Expr, expr2: str | sp.Expr) -> tuple[bool, str]:
-        """Checks if two expressions are mathematically identical despite cosmetic differences."""
+        """Checks if two expressions are mathematically identical despite cosmetic differences.
+
+        String-vs-string comparisons are memoized (bounded LRU): repeated
+        audits of the same candidate (benchmarks, ensembles) skip redundant
+        sympy simplifies. Cache stores verdicts only, never expressions.
+        """
+        if isinstance(expr1, str) and isinstance(expr2, str):
+            return _cached_equivalence(expr1, expr2)
         try:
             from apedp.safety import safe_parse_expr
 
@@ -574,6 +667,7 @@ class PriorArtAuditor:
         candidate_expr: str | sp.Expr,
         variable_name: str = "x",
         custom_corpus: dict[str, str] | None = None,
+        equivalence_budget_s: float = 30.0,
     ) -> NoveltyAuditResult:
         """Audits candidate against reference corpus, preventing false claims of novelty.
 
@@ -582,6 +676,12 @@ class PriorArtAuditor:
         OUT_OF_SCOPE (matched PDE templates cite the template instead).
         Always outputs an epistemic disclaimer that novelty is relative to
         the searched corpus.
+
+        The exact-equivalence sweep is time-boxed (equivalence_budget_s):
+        references sharing the candidate's function names are checked first
+        and the sweep stops at the budget, with truncation recorded in the
+        downstream disclaimer so a timeout can never silently strengthen a
+        novelty claim.
         """
         corpus = dict(cls.STANDARD_PHYSICS_CORPUS)
         if custom_corpus:
@@ -613,8 +713,36 @@ class PriorArtAuditor:
             if s_cand.has(sp.Derivative, sp.Integral):
                 return cls._audit_pde(str(s_cand), len(corpus))
 
-        # 1. Direct symbolic equivalence against corpus models
-        for ref_id, ref_str in corpus.items():
+        # 1. Direct symbolic equivalence against corpus models.
+        # Ordering: references sharing the candidate's function names go first
+        # (an exact/scaled match is implausible without shared functions, but
+        # they are still checked if budget remains -- ordering only, no skips).
+        # Time-box: sympy simplify can cost seconds per reference on
+        # transcendental forms, so the sweep stops at equivalence_budget_s and
+        # truncation is recorded downstream (a timeout must never silently
+        # strengthen a novelty claim).
+        import time as _time
+
+        try:
+            cand_funcs = {type(a).__name__.lower()
+                          for a in s_cand.atoms(sp.Function)}
+        except (TypeError, ValueError, AttributeError):
+            cand_funcs = set()
+
+        def _ref_priority(item: tuple[str, str]) -> int:
+            _, ref_str = item
+            if not cand_funcs:
+                return 0
+            lowered = ref_str.lower()
+            return 0 if any(fn in lowered for fn in cand_funcs) else 1
+
+        ordered_refs = sorted(corpus.items(), key=_ref_priority)
+        deadline = _time.monotonic() + max(0.0, float(equivalence_budget_s))
+        sweep_truncated = False
+        for ref_id, ref_str in ordered_refs:
+            if _time.monotonic() > deadline:
+                sweep_truncated = True
+                break
             equiv, _ = cls.check_symbolic_equivalence(s_cand, ref_str)
             if equiv:
                 return NoveltyAuditResult(
@@ -628,9 +756,23 @@ class PriorArtAuditor:
                         "Categorized as re-discovered prior art; novelty claim is refused."
                     ),
                 )
+        timebox_note = (
+            " Equivalence sweep time-boxed before all references were checked;"
+            " novelty claim is weaker accordingly."
+            if sweep_truncated else ""
+        )
 
         # 1b. Rename-insensitive structural match (I*R vs x*y, m*v**2/2 vs kinetic).
+        # Shares the stage-1 deadline: same time-box rationale applies, since a
+        # truncated rename sweep can equally miss a KNOWN match.
         for ref_id, ref_str in corpus.items():
+            if _time.monotonic() > deadline:
+                sweep_truncated = True
+                timebox_note = (
+                    " Equivalence sweep time-boxed before all references were checked;"
+                    " novelty claim is weaker accordingly."
+                )
+                break
             try:
                 equiv, _ = cls.check_rename_isomorphism(s_cand, ref_str)
             except (sp.SympifyError, TypeError, ValueError, ZeroDivisionError, AttributeError, ArithmeticError):
@@ -722,6 +864,7 @@ class PriorArtAuditor:
                 f"version {cls.CORPUS_VERSION} hash {cls.corpus_hash(corpus)}). "
                 "NOTICE: This designation certifies novelty only relative to the checked corpus and does NOT constitute "
                 "proof of absolute novelty or discovery of a new physical law."
+                + timebox_note
             ),
         )
 
@@ -864,20 +1007,41 @@ class EpistemicGraph:
         'TESTED_BY', 'INCONCLUSIVE_ON', 'DEPENDS_ON', 'INVALIDATED_BY',
     }
 
-    def __init__(self):
+    def __init__(self, persistence_path: str | None = None):
         self.graph = nx.DiGraph()
+        self.persistence_path = Path(persistence_path) if persistence_path else None
+        if self.persistence_path and self.persistence_path.exists():
+            self._load()
+
+    def _save(self) -> None:
+        if self.persistence_path:
+            tmp = self.persistence_path.with_name(f".{self.persistence_path.name}.tmp")
+            with open(tmp, "w") as f:
+                json.dump(self.export_graph(), f, indent=2, default=_json_safe)
+            os.replace(tmp, self.persistence_path)
+
+    def _load(self) -> None:
+        if self.persistence_path and self.persistence_path.exists():
+            with open(self.persistence_path) as f:
+                data = json.load(f)
+            for node in data.get('nodes', []):
+                self.graph.add_node(node['id'], entity_type=node['type'], metadata=node.get('metadata', {}))
+            for edge in data.get('edges', []):
+                self.graph.add_edge(edge['source'], edge['target'], relation=edge['relation'], metadata=edge.get('metadata', {}))
 
     def add_node(self, node_id: str, node_type: str, metadata: dict[str, Any] | None = None) -> None:
         if node_type not in self.ENTITY_TYPES:
             raise ValueError(f"Invalid Epistemic Type '{node_type}'. Must be one of {self.ENTITY_TYPES}")
-        self.graph.add_node(node_id, entity_type=node_type, metadata=metadata or {})
+        self.graph.add_node(node_id, entity_type=node_type, metadata=_json_safe(metadata or {}))
+        self._save()
 
     def add_edge(self, source_id: str, target_id: str, relation: str, metadata: dict[str, Any] | None = None) -> None:
         if relation not in self.EDGE_TYPES:
             raise ValueError(f"Invalid Lineage Edge relation '{relation}'. Must be one of {self.EDGE_TYPES}")
         if not self.graph.has_node(source_id) or not self.graph.has_node(target_id):
             raise ValueError(f"Both source '{source_id}' and target '{target_id}' must exist prior to edge creation.")
-        self.graph.add_edge(source_id, target_id, relation=relation, metadata=metadata or {})
+        self.graph.add_edge(source_id, target_id, relation=relation, metadata=_json_safe(metadata or {}))
+        self._save()
 
     def add_lineage_edge(self, source_id: str, target_id: str, edge_type: str, metadata: dict[str, Any] | None = None) -> None:
         """Alias for add_edge to support legacy caller signatures."""
@@ -969,11 +1133,11 @@ class EpistemicGraph:
         """Serializes the graph into a JSON-compatible dictionary."""
         return {
             'nodes': [
-                {'id': n, 'type': self.graph.nodes[n]['entity_type'], 'metadata': self.graph.nodes[n].get('metadata', {})}
+                {'id': n, 'type': self.graph.nodes[n]['entity_type'], 'metadata': _json_safe(self.graph.nodes[n].get('metadata', {}))}
                 for n in self.graph.nodes
             ],
             'edges': [
-                {'source': u, 'target': v, 'relation': data['relation'], 'metadata': data.get('metadata', {})}
+                {'source': u, 'target': v, 'relation': data['relation'], 'metadata': _json_safe(data.get('metadata', {}))}
                 for u, v, data in self.graph.edges(data=True)
             ]
         }
@@ -1001,9 +1165,26 @@ class LifecycleManager:
         'Retired': []
     }
 
-    def __init__(self):
+    def __init__(self, persistence_path: str | None = None):
         self.model_states: dict[str, str] = {}
         self.audit_log: list[dict[str, Any]] = []
+        self.persistence_path = Path(persistence_path) if persistence_path else None
+        if self.persistence_path and self.persistence_path.exists():
+            self._load()
+
+    def _save(self) -> None:
+        if self.persistence_path:
+            tmp = self.persistence_path.with_name(f".{self.persistence_path.name}.tmp")
+            with open(tmp, "w") as f:
+                json.dump({"model_states": self.model_states, "audit_log": self.audit_log}, f, indent=2, default=str)
+            os.replace(tmp, self.persistence_path)
+
+    def _load(self) -> None:
+        if self.persistence_path and self.persistence_path.exists():
+            with open(self.persistence_path) as f:
+                data = json.load(f)
+            self.model_states = data.get("model_states", {})
+            self.audit_log = data.get("audit_log", [])
 
     def get_state(self, model_name: str) -> str:
         return self.model_states.get(model_name, 'Draft')
@@ -1020,6 +1201,7 @@ class LifecycleManager:
             'checks_passed': True,
             'evidence_id': 'INIT'
         })
+        self._save()
 
     def promote(
         self,
@@ -1047,6 +1229,7 @@ class LifecycleManager:
             'checks_passed': checks_passed,
             'evidence_id': evidence_id or 'UNSPECIFIED'
         })
+        self._save()
 
 
 class RequirementsTraceabilityMatrix:
@@ -1095,11 +1278,12 @@ class AdversarialDeliberationTournament:
     """Multi-agent adversarial tournament: Generator -> Challenger -> Counterexample -> Regularization -> Promotion.
 
     .. warning::
-        This is lifecycle bookkeeping, NOT mathematical proof. The
-        ``boundary_flaw_detected`` flag must come from an actual check
-        (e.g. ``AgnosticClosedLoopAssuranceSystem``); the tournament only
-        records the state transitions. Returned dicts carry
-        ``mathematical_proof: False`` to prevent misreading.
+        This is lifecycle bookkeeping, NOT mathematical proof. The tournament
+        records state transitions and evidence. Promotion to Validated or
+        Operational requires explicit verification via
+        ``LifecycleManager.promote`` with ``checks_passed=True`` backed by
+        actual evidence (e.g., falsification report, empirical validation).
+        The tournament NEVER auto-promotes.
     """
 
     def __init__(self, epistemic_graph: EpistemicGraph, lifecycle: LifecycleManager):
@@ -1112,14 +1296,17 @@ class AdversarialDeliberationTournament:
         formula_str: str,
         adversarial_probe_name: str,
         boundary_flaw_detected: bool,
-        repaired_formula_str: str
+        repaired_formula_str: str,
+        falsification_report: dict | None = None,
+        variable_units: dict | None = None,
+        strict_units: bool = False,
     ) -> dict[str, Any]:
         """
         Executes deliberation lifecycle:
         1. Ingest Hypothesis
-        2. Challenger stress-tests boundary
-        3. If flaw detected, mark CONTRADICTED_BY and synthesize regularized Model
-        4. Validate repaired model and promote to Validated
+        2. Challenger stress-tests boundary (recorded via boundary_flaw_detected)
+        3. If flaw detected, mark CONTRADICTED_BY and register regularized Model
+        4. Return state for explicit verification by caller
         """
         # 1. Register Hypothesis
         self.graph.add_node(hypothesis_id, 'Hypothesis', {'formula': formula_str})
@@ -1141,26 +1328,31 @@ class AdversarialDeliberationTournament:
             self.graph.add_edge(repaired_id, hypothesis_id, 'APPROXIMATED_FROM')
             self.graph.add_edge(counter_id, repaired_id, 'CONSTRAINED_BY')
 
-            # 4. Lifecycle transition
+            # 4. Register as Candidate only - promotion requires explicit verification
             self.lifecycle.register_model(repaired_id, 'Candidate')
-            self.lifecycle.promote(repaired_id, 'Validated', checks_passed=True, evidence_id="REGULARIZATION-PASS")
+            if falsification_report:
+                self.graph.add_node(f"FalsificationReport_{repaired_id}", 'Evidence', falsification_report)
+                self.graph.add_edge(f"FalsificationReport_{repaired_id}", repaired_id, 'VALIDATED_BY')
 
             return {
-                'outcome': 'REPAIRED_AND_VALIDATED',
+                'outcome': 'REPAIRED_CANDIDATE',
                 'mathematical_proof': False,
                 'hypothesis': hypothesis_id,
                 'hypothesis_state': self.lifecycle.get_state(hypothesis_id),
                 'counterexample': counter_id,
                 'repaired_model': repaired_id,
-                'final_state': self.lifecycle.get_state(repaired_id)
+                'repaired_model_state': self.lifecycle.get_state(repaired_id),
+                'requires_explicit_validation': True,
             }
         else:
-            self.lifecycle.promote(hypothesis_id, 'Validated', checks_passed=True, evidence_id="TOURNAMENT-CLEAN-PASS")
+            # No flaw detected: hypothesis remains Candidate, not Validated
+            # Caller must explicitly verify and promote
             return {
-                'outcome': 'DIRECT_VALIDATION',
+                'outcome': 'CANDIDATE_NO_FLAW',
                 'mathematical_proof': False,
                 'hypothesis': hypothesis_id,
-                'final_state': self.lifecycle.get_state(hypothesis_id)
+                'hypothesis_state': self.lifecycle.get_state(hypothesis_id),
+                'requires_explicit_validation': True,
             }
 
 

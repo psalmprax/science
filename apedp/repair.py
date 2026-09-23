@@ -1,3 +1,4 @@
+# Databricks notebook source
 """APEDP Repair: Boundary Audits, Physical Singularity Repair, and Agnostic Regularization Engine.
 
 Security: all string-in entry points use :func:`apedp.safety.safe_parse_expr`
@@ -365,9 +366,13 @@ class AgnosticClosedLoopAssuranceSystem:
             try:
                 exp_val = float(exp)
                 return base_u ** exp_val
-            except (ValueError, TypeError, ArithmeticError) as e:
-                logger.warning("Could not parse exponent %r, returning dimensionless (%s)", exp, e)
-                return self.ureg.dimensionless
+            except (ValueError, TypeError, ArithmeticError):
+                exp_unit = self.compute_expression_dimensionality(exp, variable_units)
+                if exp_unit.dimensionality != self.ureg.dimensionless.dimensionality:
+                    raise TypeError(f"Dimensional Error: Exponent '{exp}' must be dimensionless, got {exp_unit}.")
+                if base_u.dimensionality == self.ureg.dimensionless.dimensionality:
+                    return self.ureg.dimensionless
+                raise NotImplementedError(f"Variable non-numeric exponent '{exp}' for dimensioned base '{base}' is not supported.")
         if hasattr(expr, 'func'):
             if expr.func == sp.sqrt:
                 return self.compute_expression_dimensionality(expr.args[0], variable_units) ** 0.5
@@ -384,7 +389,9 @@ class AgnosticClosedLoopAssuranceSystem:
                 sp.erf, sp.erfc, sp.gamma, sp.zeta,
             }
             if expr.func in transcendental:
-                self.compute_expression_dimensionality(expr.args[0], variable_units)
+                arg_unit = self.compute_expression_dimensionality(expr.args[0], variable_units)
+                if arg_unit.dimensionality != self.ureg.dimensionless.dimensionality:
+                    raise TypeError(f"Dimensional Error: Argument to {expr.func.__name__} must be dimensionless, got {arg_unit}.")
                 return self.ureg.dimensionless
             if expr.func in (sp.Abs, sp.re, sp.im, sp.conjugate):
                 return self.compute_expression_dimensionality(expr.args[0], variable_units)
@@ -632,6 +639,38 @@ class AgnosticClosedLoopAssuranceSystem:
                                 symbol=str(sym),
                                 point=const_name,
                             )
+                # Auto-find denominator roots within domain
+                if den.has(sym) and den != 1:
+                    try:
+                        other_syms = [s for s in den.free_symbols if s != sym]
+                        sub_dict = {}
+                        for s in other_syms:
+                            unit = var_units.get(s, self.ureg.dimensionless)
+                            mag = getattr(unit, "magnitude", 1.0)
+                            try:
+                                sub_dict[s] = float(mag)
+                            except (TypeError, ValueError):
+                                sub_dict[s] = 1.0
+                        eval_den = den.subs(sub_dict)
+                        if eval_den.is_polynomial(sym):
+                            roots = sp.real_roots(eval_den)
+                        elif not eval_den.has(sp.exp):
+                            roots = sp.solve(eval_den, sym)
+                        else:
+                            roots = []
+                        for r in roots:
+                            if r.is_real and r.is_number:
+                                r_val = float(r)
+                                # Check if root is within reasonable domain bounds
+                                domain = (critical_values or {}).get(str(sym))
+                                if domain:
+                                    low, high = domain[0] if domain else -100, domain[-1] if domain else 100
+                                else:
+                                    low, high = -100, 100
+                                if low <= r_val <= high and r_val not in probe_points:
+                                    probe_points.append(r_val)
+                    except PROBE_SWALLOWED_ERRORS:
+                        pass
                 for pt in probe_points:
                     lim, lim_error = _bounded_limit(expr, sym, pt, "singularity")
                     den_lim, den_error = (
@@ -859,8 +898,11 @@ class AgnosticClosedLoopAssuranceSystem:
             # nothing quantified the approximation error the softening
             # introduces; now every REPAIRED result carries it.
             distortion: dict[str, Any] = {"max_distortion": None, "mean_distortion": None}
-            validity_domain = "all probed boundaries finite" if not anomalies else (
-                "regularized; re-validate for |x| >> eps and re-fit eps_* on data"
+            validity_domain = (
+                "finite on the tested boundaries only; this is not a global proof"
+                if not anomalies else
+                "regularized; re-validate outside tested boundaries, for |x| >> eps, "
+                "and re-fit eps_* on data"
             )
             if anomalies:
                 try:

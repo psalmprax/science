@@ -1,3 +1,4 @@
+# Databricks notebook source
 """Tests for Independent Adversarial Falsifier and Pathological Equation Benchmark Suite."""
 import numpy as np
 import pytest
@@ -281,6 +282,25 @@ def test_incompatible_constraints_infeasibility_certificate(falsifier):
     assert rep.cannot_repair is True
     assert "Incompatible constraints: Proof of non-existence established" in rep.epistemic_qualification
     assert "CONTRADICTORY_CONSTRAINTS_PROOF" in rep.refusal_reason
+
+
+def test_unrepairable_classification_ignores_violation_wording():
+    original = Counterexample(
+        axis=FalsificationAxis.STRUCTURAL_INVARIANT,
+        probe_name="ContradictoryConstraintProbe",
+        counterexample_point=None,
+        violation_description="original wording",
+        failure_class=FailureClass.UNPHYSICAL_NEGATIVE,
+    )
+    rewritten = Counterexample(
+        axis=original.axis,
+        probe_name=original.probe_name,
+        counterexample_point=original.counterexample_point,
+        violation_description="completely unrelated wording",
+        failure_class=original.failure_class,
+    )
+    assert unrepairable_counterexamples([original])
+    assert unrepairable_counterexamples([rewritten])
 
 
 def test_100_case_frozen_benchmark_suite_execution():

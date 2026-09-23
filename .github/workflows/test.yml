@@ -2,13 +2,25 @@ name: APEDP CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [master, main, develop]
   pull_request:
-    branches: [main]
+    branches: [master, main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      APEDP_REDIS_URL: redis://localhost:6379/0
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
@@ -20,17 +32,24 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
           python -m venv .venv
           source .venv/bin/activate
-          pip install -e ".[dev,test]"
+          pip install --upgrade pip
+          pip install -e ".[dev,test,orchestration]"
 
-      - name: Run tests
+      - name: Run regression tests
         run: |
           source .venv/bin/activate
-          pytest tests/ -v --tb=short
+          pytest tests/ -v --tb=short -n auto -m "not integration"
+
+      - name: Run live integration tests
+        run: |
+          source .venv/bin/activate
+          pytest tests/ -v --tb=short -n auto -m integration
 
       - name: Lint with ruff
         run: |
@@ -51,24 +70,57 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: |
-          docker build -t apedp:${{ github.sha }} .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Push to container registry
-        run: |
-          echo "Docker image ready for deployment"
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-
+    environment: production
     steps:
-      - name: Deploy
+      - name: Deploy to Fly.io
+        uses: superfly/flyctl-actions@1.4
+        with:
+          args: "deploy --image ghcr.io/${{ github.repository }}:${{ github.sha }} --app apedp"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Health check deployment
         run: |
-          echo "Deployment triggered"
+          sleep 10
+          curl -f https://apedp.fly.dev/health || exit 1

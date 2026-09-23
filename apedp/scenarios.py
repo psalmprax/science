@@ -498,13 +498,16 @@ class APEDPScenarioSuite:
             formula_str="G * m1 * m2 / r**2",
             adversarial_probe_name="r_zero_probe",
             boundary_flaw_detected=True,
-            repaired_formula_str="G * m1 * m2 / (r**2 + eps**2)"
+            repaired_formula_str="G * m1 * m2 / (r**2 + eps**2)",
+            variable_units={"r": "meter", "eps": "meter", "m1": "kilogram", "m2": "kilogram", "G": "meter**3 / (kilogram * second**2)"},
+            strict_units=True,
         )
 
-        if not result['outcome'] == 'REPAIRED_AND_VALIDATED':
+        # The tournament now returns REPAIRED_CANDIDATE - promotion requires explicit validation
+        if not result['outcome'] == 'REPAIRED_CANDIDATE':
             raise AssertionError(f"Unexpected tournament outcome: {result['outcome']}")
-        if not result['final_state'] == 'Validated':
-            raise AssertionError(f"Unexpected final state: {result['final_state']}")
+        if not result['repaired_model_state'] == 'Candidate':
+            raise AssertionError(f"Unexpected repaired model state: {result['repaired_model_state']}")
         if not graph.validate_graph_acyclicity():
             raise AssertionError("Epistemic graph has illegal cycles!")
         return result

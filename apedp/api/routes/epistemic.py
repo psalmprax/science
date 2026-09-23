@@ -1,7 +1,10 @@
+# Databricks notebook source
 """Epistemic endpoints — knowledge graph and requirements traceability."""
 from __future__ import annotations
 
 import logging
+import os
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -10,6 +13,14 @@ from apedp.epistemic import EpistemicGraph, LifecycleManager, RequirementsTracea
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+# Persistence paths from environment
+PERSISTENCE_DIR = Path(os.environ.get("APEDP_PERSISTENCE_DIR", "apedp_persistence"))
+PERSISTENCE_DIR.mkdir(parents=True, exist_ok=True)
+
+_EPISTEMIC_GRAPH = EpistemicGraph(str(PERSISTENCE_DIR / "epistemic_graph.json"))
+_LIFECYCLE_MANAGER = LifecycleManager(str(PERSISTENCE_DIR / "lifecycle.json"))
+_REQUIREMENTS_MATRIX = RequirementsTraceabilityMatrix()
 
 
 class AddNodeRequest(BaseModel):
@@ -41,11 +52,8 @@ class TournamentRequest(BaseModel):
     adversarial_probe_name: str
     boundary_flaw_detected: bool
     repaired_formula_str: str
-
-
-_EPISTEMIC_GRAPH = EpistemicGraph()
-_LIFECYCLE_MANAGER = LifecycleManager()
-_REQUIREMENTS_MATRIX = RequirementsTraceabilityMatrix()
+    variable_units: dict[str, str] = Field(default_factory=dict)
+    strict_units: bool = False
 
 
 @router.post("/epistemic/node")
@@ -119,12 +127,39 @@ async def run_tournament(req: TournamentRequest) -> dict:
 
     tournament = AdversarialDeliberationTournament(_EPISTEMIC_GRAPH, _LIFECYCLE_MANAGER)
     try:
+        # Parse formula to get falsification report if available
+        from apedp.repair import AgnosticClosedLoopAssuranceSystem
+        from apedp.safety import safe_parse_expr
+        repair_system = AgnosticClosedLoopAssuranceSystem()
+        falsification_report = None
+        try:
+            safe_parse_expr(req.formula_str)  # validation parse; raises on bad input
+            repair_result = repair_system.autonomous_stress_test_and_repair(
+                req.formula_str,
+                variable_units=req.variable_units or None,
+                strict_units=req.strict_units,
+            )
+            falsification_report = {
+                "formula": req.formula_str,
+                "repair_result": repair_result,
+            }
+        except (RuntimeError, TypeError, ValueError, ArithmeticError,
+                KeyError, ImportError) as exc:
+            # An unevaluable falsification check is evidence of unavailable
+            # validation, never evidence that the candidate survived.
+            falsification_report = {
+                "formula": req.formula_str,
+                "status": "UNAVAILABLE",
+                "error": str(exc),
+            }
+        
         return tournament.run_tournament(
             hypothesis_id=req.hypothesis_id,
             formula_str=req.formula_str,
             adversarial_probe_name=req.adversarial_probe_name,
             boundary_flaw_detected=req.boundary_flaw_detected,
             repaired_formula_str=req.repaired_formula_str,
+            falsification_report=falsification_report,
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e

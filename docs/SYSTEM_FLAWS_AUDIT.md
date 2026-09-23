@@ -14,6 +14,19 @@ Basis: code + test execution only. No documentation was used as an evaluation so
   `no-any-return` in 2 files]. The type check is a CI gate
   (`.github/workflows/test.yml`), so it is guarded by the pipeline step rather
   than by a pytest test.
+
+> **2026-09-23 re-baseline — the three claims above are STALE.** Measured on the
+> current tree: `ruff check apedp tests` = **416 errors**, `mypy apedp
+> --ignore-missing-imports` = **266 errors in 23 files**, and the suite is **474
+> collected / 451 passed / 19 failed / 4 skipped** (the 19 are missing optional
+> extras: `jax`, `sklearn`, `scipy`). The snapshot above describes a 35-file
+> tree; the package now has 108 source files. It was not maintained as code was
+> added.
+>
+> The CI gate has also been corrected as of 2026-09-23: `.github/workflows/test.yml`
+> now triggers on `master` (plus `main`/`develop`) instead of a branch that does
+> not exist, so the `pytest`/`ruff`/`mypy`/`bandit` steps can actually fire.
+> Full analysis: `docs/INDEPENDENT_REVIEW_2026-09-23.md` §2.
 - Frozen benchmark metrics are **unchanged by both passes**: 25-case suite
   detection `1.000`, refusal `0.5833`, repair success `0.9231`, false repair
   `0.000`, trust `98.077`; 100-case suite `1.000` / `0.6190` / `0.9747` / `0.000` /

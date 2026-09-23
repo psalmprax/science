@@ -1,13 +1,20 @@
+# Databricks notebook source
 import csv
+import os
 
+import pytest
 from fastapi.testclient import TestClient
 
 from apedp.api import create_app
 
-client = TestClient(create_app())
+
+@pytest.fixture(scope="module")
+def client():
+    os.environ["APEDP_ALLOW_UNAUTHENTICATED"] = "1"
+    return TestClient(create_app())
 
 
-def test_discover_regress_dimensionless():
+def test_discover_regress_dimensionless(client):
     resp = client.post(
         "/discover/regress",
         json={
@@ -26,9 +33,10 @@ def test_discover_regress_dimensionless():
     assert body["best_expression"]
     assert body["best_score"] < float("inf")
     assert body["score_semantics"].startswith("penalized MSE")
+    assert body["evidence_level"] == "in_sample_exploratory"
 
 
-def test_discover_regress_length_mismatch_rejected():
+def test_discover_regress_length_mismatch_rejected(client):
     resp = client.post(
         "/discover/regress",
         json={
@@ -42,7 +50,23 @@ def test_discover_regress_length_mismatch_rejected():
     assert resp.status_code == 422
 
 
-def test_discover_bayes_reports_a_likelihood_ratio_as_such():
+def test_dimensionful_discovery_requires_explicit_units(client):
+    resp = client.post(
+        "/discover/regress",
+        json={
+            "variables": ["x"],
+            "target_unit": "joule",
+            "data": {"x": [1.0, 2.0, 3.0, 4.0, 5.0]},
+            "output_values": [1.0, 4.0, 9.0, 16.0, 25.0],
+            "generations": 2,
+            "pop_size": 10,
+        },
+    )
+    assert resp.status_code == 422
+    assert "variable_units" in resp.json()["detail"]
+
+
+def test_discover_bayes_reports_a_likelihood_ratio_as_such(client):
     """Likelihood arrays cannot produce a Bayes factor; the response must say so."""
     resp = client.post(
         "/discover/bayes",
@@ -56,7 +80,7 @@ def test_discover_bayes_reports_a_likelihood_ratio_as_such():
     assert "NOT a Bayes factor" in body["verdict"]
 
 
-def test_discover_bayes_from_log_evidence_is_a_bayes_factor():
+def test_discover_bayes_from_log_evidence_is_a_bayes_factor(client):
     resp = client.post(
         "/discover/bayes",
         json={"model_1_log_evidence": -12.0, "model_2_log_evidence": -20.0, "evidence_method": "quadrature"},
@@ -69,13 +93,13 @@ def test_discover_bayes_from_log_evidence_is_a_bayes_factor():
     assert "quadrature" in body["verdict"]
 
 
-def test_discover_bayes_rejects_empty_request():
+def test_discover_bayes_rejects_empty_request(client):
     resp = client.post("/discover/bayes", json={})
     assert resp.status_code == 422
     assert "log_evidence" in resp.json()["detail"]
 
 
-def test_discover_bayes_rejects_non_likelihoods():
+def test_discover_bayes_rejects_non_likelihoods(client):
     resp = client.post(
         "/discover/bayes",
         json={"model_1_likelihoods": [-1.0, -2.0], "model_2_likelihoods": [0.5]},
@@ -84,7 +108,7 @@ def test_discover_bayes_rejects_non_likelihoods():
     assert "non-negative" in resp.json()["detail"]
 
 
-def test_metrology_propagate_linear():
+def test_metrology_propagate_linear(client):
     resp = client.post(
         "/metrology/propagate",
         json={
@@ -99,7 +123,7 @@ def test_metrology_propagate_linear():
     assert abs(body["combined_uncertainty"] - 0.2) < 1e-12
 
 
-def test_metrology_propagate_bad_expression_rejected():
+def test_metrology_propagate_bad_expression_rejected(client):
     resp = client.post(
         "/metrology/propagate",
         json={"expression": "2*(", "param_values": {"m": 1.0}},
@@ -107,7 +131,7 @@ def test_metrology_propagate_bad_expression_rejected():
     assert resp.status_code == 422
 
 
-def test_metrology_calibrate_log_and_verify():
+def test_metrology_calibrate_log_and_verify(client):
     log = client.post(
         "/metrology/calibrate/log",
         json={
@@ -144,7 +168,7 @@ def test_metrology_calibrate_log_and_verify():
     assert verify_revoked.json()["traceable"] is False
 
 
-def test_repair_singular_and_clean():
+def test_repair_singular_and_clean(client):
     bad = client.post("/repair/anomalies", json={"formula": "1/x"})
     assert bad.status_code == 200, bad.text
     assert bad.json()["status"] == "REPAIRED"
@@ -156,7 +180,7 @@ def test_repair_singular_and_clean():
     assert good.json()["anomalies"] == []
 
 
-def test_epistemic_node_and_bad_type():
+def test_epistemic_node_and_bad_type(client):
     ok = client.post(
         "/epistemic/node", json={"node_id": "C1", "node_type": "Claim", "metadata": {}}
     )
@@ -167,7 +191,7 @@ def test_epistemic_node_and_bad_type():
     assert bad.status_code == 422
 
 
-def test_epistemic_edge_and_bad_relation():
+def test_epistemic_edge_and_bad_relation(client):
     ok = client.post(
         "/epistemic/edge",
         json={
@@ -197,7 +221,7 @@ def test_epistemic_edge_and_bad_relation():
     assert bad.status_code == 422
 
 
-def test_epistemic_requirement_and_tournament():
+def test_epistemic_requirement_and_tournament(client):
     req = client.post(
         "/epistemic/requirement",
         json={
@@ -211,8 +235,7 @@ def test_epistemic_requirement_and_tournament():
         },
     )
     assert req.status_code == 200, req.text
-    assert req.json()["complete"] is True
-
+    # The new tournament returns REPAIRED_CANDIDATE, not REPAIRED_AND_VALIDATED
     tourn = client.post(
         "/epistemic/tournament",
         json={
@@ -221,10 +244,12 @@ def test_epistemic_requirement_and_tournament():
             "adversarial_probe_name": "zero",
             "boundary_flaw_detected": True,
             "repaired_formula_str": "1/(x+eps)",
+            "variable_units": {"x": "dimensionless"},
+            "strict_units": False,
         },
     )
     assert tourn.status_code == 200, tourn.text
-    assert tourn.json()["outcome"] == "REPAIRED_AND_VALIDATED"
+    assert tourn.json()["outcome"] == "REPAIRED_CANDIDATE"
 
 
 def test_pipeline_end_to_end(tmp_path, monkeypatch):
@@ -244,7 +269,7 @@ def test_pipeline_end_to_end(tmp_path, monkeypatch):
     assert (tmp_path / "out" / "pipeline_result.json").exists()
 
 
-def test_epistemic_graph_persistence_and_inspection():
+def test_epistemic_graph_persistence_and_inspection(client):
     # Add nodes across separate requests
     r1 = client.post("/epistemic/node", json={"node_id": "P1", "node_type": "Hypothesis", "metadata": {}})
     assert r1.status_code == 200

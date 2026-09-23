@@ -1,6 +1,6 @@
 # APEDP System Capabilities & Architectural Philosophy
 
-This document details the functional capabilities of the **Autonomous Physics & Engineering Discovery Platform (APEDP)** and explains the design rationale behind balancing **autonomous/domain-agnostic computation** with **physical and domain constraints**.
+This document details the functional capabilities of the **Autonomous Physics & Engineering Discovery Platform (APEDP)** and explains the design rationale behind balancing **domain-general evidence computation** with **physical and domain constraints**.
 
 ---
 
@@ -58,7 +58,7 @@ APEDP bridges automated data-driven symbolic discovery, rigorous mathematical va
 ## 2. Architectural Philosophy: Autonomous & Agnostic vs. Constraints
 
 ### 2.1 The Core Question
-> *If APEDP is an autonomous and domain-agnostic discovery platform, why does it enforce physics constraints and domain-specific rules?*
+> *If APEDP is intended to generalize across domains, why does it enforce physics constraints and domain-specific rules?*
 
 The answer lies in avoiding the fatal traps of unconstrained machine learning while maintaining a general mathematical foundation.
 
@@ -81,7 +81,20 @@ Dimensional analysis is not a human prejudice—it is a consequence of **scale i
 - Enforcing dimensional consistency prunes **over 99.9% of invalid candidate expressions** before numerical evaluation ever begins.
 - It transforms an impossible combinatorial search into an efficient, physically grounded discovery process.
 
-### 2.4 How the Architecture IS Truly Domain-Agnostic
+### 2.4 What Is Domain-General and What Is Domain-Specific
+
+APEDP is not fully agnostic at every layer. Its evidence and adjudication
+machinery is reusable across domains, while discovery requires declared
+adapters and semantics. The reusable layer covers locked partitions, dataset
+hashes, information firewalls, provenance, holdout evaluation, numerical
+conditioning, sensitivity analysis, and qualified outcomes. Domain adapters
+provide units, variable meaning, constraints, baselines, search families, and
+validity regimes.
+
+This distinction prevents a misleading claim that a generic search grammar can
+understand every scientific domain without domain metadata.
+
+### 2.5 How the Architecture Generalizes Across Domains
 APEDP's core engines do not assume standard physics; they are abstract mathematical tools:
 
 1. **Configurable Basis Vector Spaces**:
@@ -105,11 +118,43 @@ Domain constraints are not rigid restrictions that prevent discovering new ideas
 
 | Layer | Responsibility | Agnostic vs. Domain-Specific | Key Components |
 |---|---|---|---|
-| **Layer 0: Exploration** | Propose candidate algebraic structures from data | **Purely Agnostic** (Numerical optimization & genetic tree search) | [`MultiVariableSRE`](../apedp/discovery.py), [`SymbolicRegressor`](../apedp/symbolic_regression.py) |
+| **Layer 0: Exploration** | Propose candidate algebraic structures from data | **General-purpose, grammar-dependent** (search behavior depends on enabled operators and priors) | [`MultiVariableSRE`](../apedp/discovery.py), [`SymbolicRegressor`](../apedp/symbolic_regression.py) |
 | **Layer 1: Structural Symmetries** | Filter dimensionally invalid expressions & enforce scaling invariance | **Agnostic Framework** (Configurable basis spaces: SI, Economics, CS) | [`DimensionalAssuranceEngine`](../apedp/core.py), [`VectorizedDimensionalEngine`](../apedp/core.py) |
 | **Layer 2: Mathematical Safety** | Eliminate singularities, branch cuts, and division-by-zero | **Purely Agnostic** (Symbolic limits & structural calculus) | [`AgnosticClosedLoopAssuranceSystem`](../apedp/repair.py) |
 | **Layer 3: Metrology & Statistical Selection** | Quantify uncertainty budgets and calculate Bayes factors | **Domain-Agnostic Metrology** (GUM ISO 98-3 calculus, Bayesian evidence) | [`AnalyticalUncertaintyPropagator`](../apedp/metrology.py), [`BayesianRefinementEngine`](../apedp/discovery.py) |
 | **Layer 4: Adversarial Reality Probes** | Stress-test models against known non-ideal real-world boundary regimes | **Domain-Specific Referees** (Aerodynamics, Electrochemistry, Materials, Nanotech, QEC) | [`UniversalAppliedDefectEngine`](../apedp/applied_defects.py), [`AdversarialDeliberationTournament`](../apedp/epistemic.py) |
+
+### 2.6 Evidence-qualified outcomes
+
+The current adjudication vocabulary is:
+
+- `ADMIT`: declared requirements and robustness evidence pass;
+- `DOMAIN_LIMITED`: support is restricted to the measured domain;
+- `CONDITIONAL`: structure is supported but a documented limitation remains;
+- `PREDICTIVE_ONLY`: prediction is supported without a causal-law claim;
+- `REFUSE`: a hard requirement fails;
+- `INCONCLUSIVE`: evidence is insufficient for a stronger claim.
+
+These labels qualify evidence; they do not prove truth. In particular,
+excellent fit does not establish parameter identifiability, causal mechanism,
+or independent replication.
+
+### 2.7 Rolling-origin identifiability: predictive accuracy versus parameter certainty
+
+Rolling-origin evaluation is a first-class diagnostic for saturation and
+long-horizon models:
+
+\[
+	ext{forecast accuracy}
+\not\Rightarrow
+	ext{long-run parameter identifiability}.
+\]
+
+When a parameter changes substantially across training origins while forecast
+error remains low, the correct interpretation is predictive usefulness with a
+poorly constrained parameter, not parameter recovery. This is an origin-
+sensitivity finding, not a formal confidence interval or proof of model
+uniqueness.
 
 ---
 

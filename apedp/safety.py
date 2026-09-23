@@ -150,16 +150,22 @@ def _rejects_attribute_access(s: str) -> bool:
     return "." in without_floats
 
 
-def safe_parse_expr(
-    formula_str: str,
-    extra_symbols: dict[str, sp.Symbol] | None = None,
-    max_length: int = MAX_FORMULA_LENGTH,
-) -> sp.Expr:
-    """Parse a user-supplied formula string with an allowlist policy.
+#: Names the parser itself needs to resolve; never shadowed with Symbols.
+_PARSER_INTERNALS = frozenset({"Integer", "Float", "Rational", "Symbol", "I", "oo", "nan", "zoo"})
+
+
+def _validate_formula_string(formula_str: str, max_length: int) -> str:
+    """Apply the shared string-in policy and return the stripped formula.
+
+    Single source of truth for the pre-parse checks: type, non-emptiness,
+    length cap, forbidden substrings/identifiers, and attribute access. Both
+    :func:`safe_parse_expr` and :func:`safe_parse_pde` call this, so the two
+    allow-lists cannot drift apart -- the duplication is the risk, not the
+    policy, which is deliberately identical for both entry points.
 
     Raises:
-        ValueError: on empty input, over-length input, forbidden tokens,
-            attribute access, or unparseable content.
+        ValueError: on empty input, over-length input, forbidden tokens, or
+            attribute access.
         TypeError: if ``formula_str`` is not a string.
     """
     if not isinstance(formula_str, str):
@@ -178,12 +184,27 @@ def safe_parse_expr(
             raise ValueError(f"Forbidden identifier in formula: {identifier!r}")
     if _rejects_attribute_access(s):
         raise ValueError("Attribute access ('.') is not allowed in formulas")
+    return s
+
+
+def safe_parse_expr(
+    formula_str: str,
+    extra_symbols: dict[str, sp.Symbol] | None = None,
+    max_length: int = MAX_FORMULA_LENGTH,
+) -> sp.Expr:
+    """Parse a user-supplied formula string with an allowlist policy.
+
+    Raises:
+        ValueError: on empty input, over-length input, forbidden tokens,
+            attribute access, or unparseable content.
+        TypeError: if ``formula_str`` is not a string.
+    """
+    s = _validate_formula_string(formula_str, max_length)
     # Power operator normalization: allow ^ as alias for **
     # (convert_xor transformation handles this too, kept explicit for clarity)
     # Shadow sympy globals (e.g. beta/gamma/zeta functions) with plain
     # Symbols so variable names like ``beta`` parse as symbols, not as
     # sympy special functions. Parser internals must keep resolving.
-    _PARSER_INTERNALS = {"Integer", "Float", "Rational", "Symbol", "I", "oo", "nan", "zoo"}
     local_dict: dict = dict(_SAFE_FUNCS)
     if extra_symbols:
         local_dict.update(extra_symbols)
@@ -227,23 +248,7 @@ def safe_parse_pde(
     as a function application must be in the scalar allowlist or be an
     undefined function / Derivative / Integral, else ``ValueError``.
     """
-    if not isinstance(formula_str, str):
-        raise TypeError(f"Formula must be a string, got {type(formula_str)}")
-    s = formula_str.strip()
-    if not s:
-        raise ValueError("Empty formula string")
-    if len(s) > max_length:
-        raise ValueError(f"Formula exceeds max length {max_length} (got {len(s)})")
-    lowered = s.lower()
-    for token in _FORBIDDEN_SUBSTRINGS:
-        if token.lower() in lowered:
-            raise ValueError(f"Forbidden token in formula: {token!r}")
-    for identifier in _FORBIDDEN_IDENTIFIERS:
-        if re.search(rf"\b{identifier}\b", lowered):
-            raise ValueError(f"Forbidden identifier in formula: {identifier!r}")
-    if _rejects_attribute_access(s):
-        raise ValueError("Attribute access ('.') is not allowed in formulas")
-    _PARSER_INTERNALS = {"Integer", "Float", "Rational", "Symbol", "I", "oo", "nan", "zoo"}
+    s = _validate_formula_string(formula_str, max_length)
     local_dict: dict = dict(_SAFE_FUNCS)
     local_dict.update({"Derivative": sp.Derivative, "Integral": sp.Integral, "Function": sp.Function})
     called = set(re.findall(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(", s))
@@ -347,7 +352,11 @@ def limit_with_timeout(
             f"workers (>= {_MAX_LIMIT_WORKERS}) in flight"
         )
     worker = threading.Thread(target=_worker, name="apedp-symbolic-limit", daemon=True)
-    worker.start()
+    try:
+        worker.start()
+    except Exception:
+        _LIMIT_SEMAPHORE.release()
+        raise
     worker.join(timeout)
 
     if not worker.is_alive():

@@ -1,3 +1,4 @@
+# Databricks notebook source
 """Discovery endpoints — symbolic regression and Bayesian model selection."""
 from __future__ import annotations
 
@@ -8,7 +9,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from apedp.core import ClosedLoopAssuranceSystem, DimensionalAssuranceEngine
-from apedp.discovery import BayesianRefinementEngine, MultiVariableSRE
+from apedp.discovery import BayesianRefinementEngine, MultiVariableSRE, check_data_adequacy
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -33,7 +34,11 @@ class RegressionRequest(BaseModel):
     variables: list[str] = Field(..., description="Independent variable names")
     variable_units: dict[str, str] = Field(
         default_factory=dict,
-        description="Variable name -> unit string. Unlisted variables default to dimensionless.",
+        description="Variable name -> unit string. Required for dimensionful targets unless heuristic units are explicitly enabled.",
+    )
+    allow_heuristic_units: bool = Field(
+        default=False,
+        description="Allow unlisted variables to default to dimensionless for exploratory use.",
     )
     target_unit: str = Field(default="dimensionless", description="Expected unit of the target")
     data: dict[str, list[float]] = Field(..., description="Variable -> values mapping")
@@ -59,6 +64,9 @@ class RegressionResponse(BaseModel):
     aic: float = float("inf")
     degenerate: bool = False
     degenerate_reason: str = ""
+    data_adequacy: dict = Field(default_factory=dict)
+    evidence_level: str = "in_sample_exploratory"
+    scientific_claim: str = "consistency_screening_only"
 
 
 class BayesRequest(BaseModel):
@@ -84,6 +92,14 @@ async def symbolic_regression(req: RegressionRequest) -> RegressionResponse:
     except (TypeError, ValueError) as e:
         raise HTTPException(status_code=422, detail=f"Non-numeric data: {e}") from e
     y_data = np.asarray(req.output_values, dtype=float)
+    adequacy = check_data_adequacy(
+        {k: x_data[k] for k in req.variables if k in x_data}, y_data
+    )
+    if adequacy["verdict"] == "INSUFFICIENT":
+        raise HTTPException(status_code=422, detail={
+            "message": "Insufficient data for discovery",
+            "adequacy": adequacy,
+        })
     for name, values in x_data.items():
         if len(values) != len(y_data):
             raise HTTPException(
@@ -93,6 +109,20 @@ async def symbolic_regression(req: RegressionRequest) -> RegressionResponse:
     missing = [v for v in req.variables if v not in x_data]
     if missing:
         raise HTTPException(status_code=422, detail=f"Missing data for variables: {missing}")
+    undeclared_units = [v for v in req.variables if v not in req.variable_units]
+    if (
+        undeclared_units
+        and req.target_unit != "dimensionless"
+        and not req.allow_heuristic_units
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Explicit variable_units are required for dimensionful discovery; "
+                f"missing: {undeclared_units}. Set allow_heuristic_units=true only "
+                "for exploratory work."
+            ),
+        )
 
     engine = DimensionalAssuranceEngine()
     for var in req.variables:
@@ -159,6 +189,7 @@ async def symbolic_regression(req: RegressionRequest) -> RegressionResponse:
         aic=float(scored.get("aic", float("inf"))),
         degenerate=False,
         degenerate_reason=reason,
+        data_adequacy=adequacy,
     )
 
 

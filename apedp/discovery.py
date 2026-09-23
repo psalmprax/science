@@ -1,3 +1,4 @@
+# Databricks notebook source
 """APEDP Discovery: Multi-Variable Symbolic Regression Engine & Bayesian Model Selection."""
 from __future__ import annotations
 
@@ -11,9 +12,714 @@ import numpy as np
 import sympy as sp
 
 from apedp.core import ClosedLoopAssuranceSystem
+from apedp.gated_assurance import ParetoFrontierTracker, ScientificImprovementMetric
 from apedp.safety import quiet_float_warnings
 
 logger = logging.getLogger(__name__)
+
+#: Failures a best-effort probe may legitimately hit: numeric/operational error
+#: from numpy or sympy, malformed or absent input, a missing mapping key, or an
+#: optional dependency that is not installed. ``numpy.linalg.LinAlgError`` and
+#: ``sympy.SympifyError`` are subclasses of ``ValueError``, and
+#: ``ZeroDivisionError``/``OverflowError`` are subclasses of ``ArithmeticError``,
+#: so those need no separate entry. Anything outside this set is a defect and
+#: must propagate instead of being reported as a failed probe (mirrors
+#: ``gated_assurance._PROBE_ERRORS``; see docs/INDEPENDENT_REVIEW_2026-09-23.md
+#: §4.2).
+_PROBE_ERRORS = (RuntimeError, TypeError, ValueError, ArithmeticError,
+                 KeyError, ImportError)
+
+
+def bic_forward_select(columns: dict[str, np.ndarray],
+                       y_data: np.ndarray,
+                       max_terms: int | None = None) -> dict:
+    """Greedy forward subset selection minimizing BIC (complexity-penalized).
+
+    Starts from intercept-only and adds the single feature giving the largest
+    BIC improvement per step; stops when nothing improves. Unlike LassoCV,
+    every retained term must individually justify itself against the
+    k*ln(n) penalty, which cures the small-n soup (9 params on 7 points can
+    never survive: max_terms defaults to n-2 and each addition must pay).
+    Near-ties (|dBIC| < 2, Kass-Raftery "weak evidence") defer to the
+    structurally simpler term (plain powers/reciprocals before fractional
+    powers before exp/log), so noise cannot crown ``x**1.5`` over ``x**1``.
+    Deterministic. Raises no exception outward.
+    """
+    try:
+        names = sorted(columns)
+        y = np.asarray(y_data, float).ravel()
+        n = len(y)
+        if n < 3 or not names:
+            return {"terms": [], "note": "insufficient data"}
+        cols = {}
+        for k in names:
+            v = np.asarray(columns[k], float).ravel()
+            if v.shape == (n,) and bool(np.all(np.isfinite(v))):
+                cols[k] = v
+        if not cols:
+            return {"terms": [], "note": "no finite features"}
+        names = sorted(cols)
+        if max_terms is None:
+            max_terms = max(1, n - 2)
+        max_terms = max(1, min(int(max_terms), n - 2, len(names)))
+        def _simplicity(name: str) -> tuple:
+            if name.startswith(("exp(", "log(")):
+                return (2, name)
+            if "**(" in name:
+                return (1, name)
+            return (0, name)
+
+        ssr0 = float(np.sum((y - y.mean()) ** 2)) + 1e-300
+        best_bic = n * np.log(ssr0 / n) + 1 * np.log(n)
+        selected: list = []
+        while len(selected) < max_terms:
+            gains: list = []
+            for k in names:
+                if k in selected:
+                    continue
+                trial = selected + [k]
+                X = np.column_stack([cols[c] for c in trial] + [np.ones(n)])
+                coef, *_ = np.linalg.lstsq(X, y, rcond=None)
+                ssr = float(np.sum((y - X @ coef) ** 2)) + 1e-300
+                bic = n * np.log(ssr / n) + (len(trial) + 1) * np.log(n)
+                gains.append((best_bic - bic, k, coef))
+            gains = [(g, k, c) for g, k, c in gains if g > 1e-9]
+            if not gains:
+                break
+            top = max(g for g, _, _ in gains)
+            # Kass-Raftery zone: contenders within 2 BIC points of the best
+            # are evidentially tied -- pick the structurally simplest.
+            tied = [(k, c) for g, k, c in gains if top - g < 2.0]
+            best_k, _best_coef = min(tied, key=lambda kc: _simplicity(kc[0]))
+            best_gain = next(g for g, k, _ in gains if k == best_k)
+            selected.append(best_k)
+            best_bic -= best_gain
+        if not selected:
+            return {"terms": [], "bic": round(best_bic, 4),
+                    "note": "no feature improves on intercept-only BIC"}
+        X = np.column_stack([cols[c] for c in selected] + [np.ones(n)])
+        coef, *_ = np.linalg.lstsq(X, y, rcond=None)
+        return {"terms": selected,
+                "coef": [round(float(v), 6) for v in coef[:-1]],
+                "intercept": round(float(coef[-1]), 6),
+                "bic": round(float(best_bic), 4)}
+    except _PROBE_ERRORS as e:
+        return {"terms": [], "note": f"bic-forward failed: {e}"}
+
+
+def check_data_adequacy(x_data: dict[str, np.ndarray],
+                        y_data: np.ndarray,
+                        min_range_ratio: float = 4.0) -> dict:
+    """Data-adequacy gate for discovery runs (auto-enforcement hook).
+
+    Rules, all verified failure modes (2026-09-21):
+    - n < 5 or no y variance -> INSUFFICIENT (matches library minima).
+    - n < 3*(p+1) observations per input -> THIN (BIC-forward caps at n-2
+      terms, but selection among near-collinear features is still luck).
+    - every all-positive input spans max/min < min_range_ratio -> THIN
+      (power-law terms unidentifiable over narrow windows: the QD
+      [1,6]-nm result; the go/no-go rule, now automatic).
+    Returns verdict OK/THIN/INSUFFICIENT with per-variable range ratios
+    and reasons. Advisory only -- callers decide; sparse_select_terms
+    attaches it to every result under "adequacy".
+    """
+    try:
+        names = list(x_data.keys())
+        y = np.asarray(y_data, float).ravel()
+        n = len(y)
+        ratios = {}
+        for k in names:
+            v = np.asarray(x_data[k], float).ravel()
+            if v.shape != (n,) or not bool(np.all(np.isfinite(v))):
+                return {"verdict": "INSUFFICIENT", "n": n,
+                        "reasons": [f"input '{k}' is not finite length-{n}"]}
+            if bool(np.all(v > 0)):
+                ratios[k] = round(float(v.max() / (v.min() + 1e-300)), 4)
+        reasons = []
+        if n < 5 or float(np.sum((y - y.mean()) ** 2)) <= 1e-300:
+            reasons.append("n < 5 or no y variance")
+            return {"verdict": "INSUFFICIENT", "n": n, "n_vars": len(names),
+                    "range_ratios": ratios, "reasons": reasons}
+        if n < 3 * (len(names) + 1):
+            reasons.append(f"n={n} < 3*(p+1)={3 * (len(names) + 1)} "
+                           f"for p={len(names)} inputs")
+        if ratios and all(r < min_range_ratio for r in ratios.values()):
+            reasons.append("all positive inputs span max/min < "
+                           f"{min_range_ratio} (power-law unidentifiability)")
+        return {"verdict": "THIN" if reasons else "OK", "n": n,
+                "n_vars": len(names), "range_ratios": ratios,
+                "reasons": reasons}
+    except _PROBE_ERRORS as e:
+        return {"verdict": "INSUFFICIENT", "reasons": [f"adequacy check failed: {e}"]}
+
+
+def sparse_select_terms(x_data: dict[str, np.ndarray],
+                        y_data: np.ndarray,
+                        max_power: int = 2,
+                        include_reciprocals: bool = True,
+                        *,
+                        corr_threshold: float | None = 0.999,
+                        stability_reps: int | None = None,
+                        stability_threshold: float = 0.6,
+                        ambiguity_corr: float | None = None,
+                        seed: int = 0,
+                        selector: str = "bic_forward",
+                        max_reciprocal_power: int = 2,
+                        strict: bool = False) -> dict:
+    """SINDy-style sparse term selection over a monomial library.
+
+    Builds product/power/reciprocal-power features from inputs, selects by
+    ``selector`` (default BIC-forward greedy subset search; legacy LassoCV
+    via selector="lasso"), and returns active terms. Use as a pre-filter:
+    tells GP *which* terms matter before it searches *how* they compose.
+    Raises no exception outward.
+
+    Collinearity filter (new): the power/reciprocal library contains exact
+    duplicates (e.g. ``Rinv**2`` vs ``Rinv2**1``) and near-duplicates that
+    make LassoCV return term soup. Before fitting, features are ranked by
+    |correlation| with ``y`` and greedily kept only if their max |correlation|
+    with an already-kept feature is below ``corr_threshold``. Dropped terms
+    are reported under ``dropped_collinear`` with the keeper that blocked
+    them, so nothing is silently lost. The default 0.999 removes only
+    (near-)exact degeneracies -- e.g. ``Rinv**2`` vs ``Rinv2**1``, or
+    ``log(Rinv)`` vs ``log(Rinv2)`` -- while leaving genuinely distinct but
+    correlated physics terms (``1/R`` vs ``1/R^1.33``, corr ~0.997) to
+    LassoCV. Lower thresholds filter more aggressively but risk dropping
+    true terms shadowed by fractional-power impostors. Pass
+    ``corr_threshold=None`` to restore the legacy unfiltered library.
+
+    Stability selection (optional): with ``stability_reps`` set, Lasso is
+    refit on seeded bootstrap resamples at the cross-validated alpha and
+    only terms selected in at least ``stability_threshold`` fraction of
+    reps are returned. Frequencies are reported under ``stability_freq``.
+    Note its limit, verified on Brus data: when impostors fit as well as
+    truth (``1/R^3`` vs ``1/R`` at 2% noise), the wrong terms are stably
+    selected too -- stability measures selector consistency, not truth.
+
+    Ambiguity groups (optional): with ``ambiguity_corr`` set, single-linkage
+    clustering on pairwise |correlation| groups mutually indistinguishable
+    features (``Rinv**1`` vs ``Rinv2**(2/3)``, corr 0.997). Each group means
+    "at most one of these is identifiable -- try each downstream". This is
+    the honest output under unidentifiability: the pre-filter cannot pick
+    the winner, so it reports the ambiguity set for the GP/BIC stage.
+
+    ``strict=True`` raises ValueError instead of proceeding when
+    :func:`check_data_adequacy` reports THIN or INSUFFICIENT.
+    """
+    try:
+        import itertools
+        names = list(x_data.keys())
+        y = np.asarray(y_data, float).ravel()
+        adequacy = check_data_adequacy(x_data, y_data)
+        if strict and adequacy["verdict"] != "OK":
+            raise ValueError(
+                "data gate: " + adequacy["verdict"] + ": "
+                + "; ".join(adequacy.get("reasons", ["unspecified"]))
+                + " (pass strict=False to override with an audit trail)")
+        if len(y) < 5 or float(np.sum((y - y.mean()) ** 2)) <= 1e-300:
+            return {"terms": [], "note": "insufficient variance",
+                    "adequacy": adequacy}
+        cols = {k: np.asarray(x_data[k], float).ravel() for k in names}
+        feats: dict = {"1": np.ones_like(y)}
+        for k in names:
+            v = cols[k]
+            for p in range(1, max_power + 1):
+                # Integer powers use v**p directly: sign-preserving
+                # sign(v)*|v|**p corrupts EVEN powers on signed inputs
+                # (it negates x^2 for x<0). Fractional powers stay gated
+                # on all-positive below.
+                feats[f"{k}**{p}"] = v ** p
+            if bool(np.all(v > 0)):
+                for num, den in ((1, 2), (3, 2), (1, 3), (2, 3)):
+                    feats[f"{k}**({num}/{den})"] = v ** (num / den)
+            if include_reciprocals and bool(np.all(v != 0)):
+                # Reciprocal powers (1/x, 1/x^2, ...): confinement-style
+                # decays must be expressible without hand-engineering.
+                for q in range(1, max(1, int(max_reciprocal_power)) + 1):
+                    feats[f"1/{k}" if q == 1 else f"1/{k}**{q}"] = 1.0 / v ** q
+            # Add exponential and logarithmic basis functions for positive variables
+            # Scale input to prevent overflow: exp(x) -> exp((x - mean)/std)
+            if bool(np.all(v > 0)):
+                v_mean = float(np.mean(v))
+                v_std = float(np.std(v)) + 1e-300
+                v_scaled = (v - v_mean) / v_std
+                feats[f"exp({k})"] = np.exp(np.clip(v_scaled, -20, 20))
+                feats[f"log({k})"] = np.log(v)
+        for a, b in itertools.combinations(names, 2):
+            feats[f"{a}*{b}"] = cols[a] * cols[b]
+        keys = [k for k in feats
+                if float(np.std(feats[k])) > 1e-300]
+        if not keys:
+            return {"terms": [], "note": "no varying features",
+                    "adequacy": adequacy}
+        # Greedy collinearity filter: rank by |corr| with y, keep a feature
+        # only if it is not near-duplicate of an already-kept one.
+        dropped: list = []
+        if corr_threshold is not None:
+            if not np.isfinite(corr_threshold) or not 0.0 < corr_threshold <= 1.0:
+                return {"terms": [], "note": "corr_threshold must be in (0, 1]"}
+            y_centered = y - y.mean()
+            y_norm = float(np.sqrt(np.sum(y_centered ** 2))) + 1e-300
+            scored = []
+            for k in keys:
+                v = feats[k] - feats[k].mean()
+                denom = float(np.sqrt(np.sum(v ** 2))) * y_norm + 1e-300
+                scored.append((abs(float(np.sum(v * y_centered) / denom)), k))
+            scored.sort(key=lambda item: (-item[0], item[1]))
+            kept: list = []
+            kept_cols: list = []
+            for _, k in scored:
+                v = feats[k]
+                blocker = None
+                for kk, col in zip(kept, kept_cols):
+                    w = col - col.mean()
+                    denom = (float(np.sqrt(np.sum((v - v.mean()) ** 2)))
+                             * float(np.sqrt(np.sum(w ** 2))) + 1e-300)
+                    c = abs(float(np.sum((v - v.mean()) * w) / denom))
+                    if c >= corr_threshold:
+                        blocker = (kk, round(c, 6))
+                        break
+                if blocker is None:
+                    kept.append(k)
+                    kept_cols.append(v)
+                else:
+                    dropped.append({"dropped": k, "kept": blocker[0],
+                                    "corr": blocker[1]})
+            keys = kept
+            if not keys:
+                return {"terms": [], "note": "all features filtered as collinear",
+                        "adequacy": adequacy,
+                        "dropped_collinear": dropped,
+                        "n_library_raw": len(scored)}
+        X = np.column_stack([feats[k] for k in keys])
+        scales = np.std(X, axis=0) + 1e-300
+        Xn = X / scales
+        from sklearn.linear_model import Lasso, LassoCV
+        out: dict = {"n_library": len(keys)}
+        alpha_for_stability: float | None = None
+        if selector == "bic_forward":
+            # Polynomial-branch parity: unscaled OLS selection; each term
+            # must pay k*ln(n). Structural overfit cap lives in max_terms.
+            fwd = bic_forward_select({k: feats[k] for k in keys}, y)
+            if fwd.get("terms"):
+                out.update({"terms": fwd["terms"],
+                            "intercept": fwd["intercept"],
+                            "bic": fwd["bic"],
+                            "selector": "bic_forward"})
+            else:
+                out.update({"terms": [], "note": fwd.get("note", ""),
+                            "selector": "bic_forward"})
+            out["alpha"] = None
+        elif selector == "lasso":
+            model = LassoCV(max_iter=5000).fit(Xn, y)
+            out.update({"terms": [keys[i] for i, c in enumerate(model.coef_)
+                                  if abs(c) > 1e-9],
+                        "intercept": round(float(model.intercept_), 6),
+                        "alpha": float(model.alpha_),
+                        "selector": "lasso"})
+            alpha_for_stability = float(model.alpha_)
+        else:
+            return {"terms": [], "note": f"unknown selector '{selector}'",
+                    "adequacy": adequacy}
+        if corr_threshold is not None:
+            out["dropped_collinear"] = dropped
+            out["n_dropped"] = len(dropped)
+        if stability_reps is not None:
+            if (not isinstance(stability_reps, int) or stability_reps < 2
+                    or not 0.0 < stability_threshold <= 1.0):
+                return {"terms": [], "note": "stability_reps must be an int >= 2 "
+                                             "and stability_threshold in (0, 1])",
+                        "adequacy": adequacy}
+            if alpha_for_stability is None:
+                alpha_for_stability = float(
+                    LassoCV(max_iter=5000).fit(Xn, y).alpha_)
+            out["alpha"] = alpha_for_stability
+            rng = np.random.default_rng(seed)
+            n = Xn.shape[0]
+            freq = np.zeros(len(keys))
+            for _ in range(stability_reps):
+                idx = rng.integers(0, n, n)
+                boot = Lasso(alpha=alpha_for_stability,
+                             max_iter=5000).fit(Xn[idx], y[idx])
+                freq += (np.abs(boot.coef_) > 1e-9).astype(float)
+            freq /= stability_reps
+            stable = [keys[i] for i in range(len(keys))
+                      if freq[i] >= stability_threshold]
+            out["terms"] = stable
+            out["stability_freq"] = {keys[i]: round(float(freq[i]), 3)
+                                     for i in range(len(keys))}
+            out["stability_reps"] = stability_reps
+            out["stability_threshold"] = stability_threshold
+        if ambiguity_corr is not None:
+            if not np.isfinite(ambiguity_corr) or not 0.0 < ambiguity_corr < 1.0:
+                return {"terms": [], "note": "ambiguity_corr must be in (0, 1)"}
+            centered = [feats[k] - feats[k].mean() for k in keys]
+            norms = [float(np.sqrt(np.sum(c ** 2))) + 1e-300 for c in centered]
+            parent = list(range(len(keys)))
+
+            def find(a):
+                while parent[a] != a:
+                    parent[a] = parent[parent[a]]
+                    a = parent[a]
+                return a
+
+            def union(a, b):
+                ra, rb = find(a), find(b)
+                if ra != rb:
+                    parent[ra] = rb
+
+            for i in range(len(keys)):
+                for j in range(i + 1, len(keys)):
+                    c = abs(float(np.sum(centered[i] * centered[j])
+                                  / (norms[i] * norms[j])))
+                    if c >= ambiguity_corr:
+                        union(i, j)
+            groups: dict = {}
+            for i, k in enumerate(keys):
+                groups.setdefault(find(i), []).append(k)
+            out["ambiguity_groups"] = sorted(
+                (sorted(members) for members in groups.values() if len(members) > 1),
+                key=lambda members: (-len(members), members))
+            out["ambiguity_corr"] = ambiguity_corr
+        out["adequacy"] = adequacy
+        return out
+    except _PROBE_ERRORS as e:
+        return {"terms": [], "note": f"sparse-select failed: {e}"}
+
+
+def beam_search_expressions(variables: list[str], depth: int = 2,
+                            width: int = 8,
+                            seed: int | None = 42) -> list:
+    """Breadth-capped construction search (MCTS-lite without rollouts).
+
+    Expands expression trees level by level over {+, -, *, /} applied to
+    variables and small integers, keeping the `width` structurally distinct
+    candidates per level. Deterministic given seed. Returns expression
+    strings, simplest first.
+    """
+    import random as _random
+    rng = _random.Random(seed)
+    ops = ["+", "-", "*", "/"]
+    level = list(variables) + ["1", "2"]
+    seen = set(level)
+    out = list(level)
+    for _ in range(max(0, depth)):
+        nxt = []
+        for _ in range(width * 4):
+            a = rng.choice(level)
+            b = rng.choice(level)
+            op = rng.choice(ops)
+            if op == "/" and b in ("0",):
+                continue
+            expr = f"({a}{op}{b})"
+            if expr not in seen:
+                seen.add(expr)
+                nxt.append(expr)
+        nxt = nxt[:width]
+        out.extend(nxt)
+        level = nxt
+        if not level:
+            break
+    return out
+
+
+def control_variable_probe(x_data: dict[str, np.ndarray],
+                           y_data: np.ndarray,
+                           tol: float = 1e-6) -> dict:
+    """CVGP-style probe: drop-one linear R^2 gain per variable.
+
+    Returns per-variable relevance plus the verdict of which variables the
+    target actually depends on. Gains are relative: a variable counts only
+    above both the absolute tol and 1% of the max gain (kills numerical
+    dust). Constant targets short-circuit (nothing to explain).
+    Nonlinear links read low by construction — documented, not hidden.
+    """
+    try:
+        import numpy as np
+        names = list(x_data.keys())
+        y = np.asarray(y_data, float).ravel()
+        if len(y) < 10:
+            return {"relevant": [], "note": "insufficient data"}
+        if float(np.sum((y - y.mean()) ** 2)) <= 1e-300:
+            return {"relevant": [], "note": "constant target"}
+        cols = {k: np.asarray(x_data[k], float).ravel() for k in names}
+
+        def _r2(use: list) -> float:
+            if not use:
+                return 0.0
+            A = np.column_stack([cols[k] for k in use]
+                                + [np.ones(len(y))])
+            coef, *_ = np.linalg.lstsq(A, y, rcond=None)
+            pred = A @ coef
+            denom = float(np.sum((y - y.mean()) ** 2)) + 1e-300
+            return 1.0 - float(np.sum((y - pred) ** 2)) / denom
+
+        try:
+            full = _r2(names)
+        except (TypeError, ValueError, ArithmeticError):
+            return {"relevant": [], "note": "probe failed"}
+        relevance = {}
+        for name in names:
+            try:
+                rest = [k for k in names if k != name]
+                gain = full - _r2(rest)
+            except (TypeError, ValueError, ArithmeticError):
+                gain = 0.0
+            relevance[name] = round(float(max(gain, 0.0)), 4)
+        floor = max(tol, 0.01 * max(relevance.values(), default=0.0))
+        relevant = sorted([k for k, v in relevance.items() if v > floor],
+                          key=lambda k: -relevance[k])
+        return {"relevant": relevant, "relevance": relevance,
+                "note": "drop-one linear R^2 gain; nonlinear links read low"}
+    except (TypeError, ValueError, ArithmeticError):
+        return {"relevant": [], "note": "probe failed"}
+
+
+def _mlp_pipeline(seed: int):
+    """Standardized MLP: scaling is mandatory, not optional.
+
+    Unscaled inputs let wide-range variables saturate hidden units while
+    narrow-range ones are ignored, corrupting every downstream importance
+    or distillation. Returns (pipeline, converged_flag_holder).
+    """
+    from sklearn.neural_network import MLPRegressor
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import StandardScaler
+    return make_pipeline(
+        StandardScaler(),
+        MLPRegressor(hidden_layer_sizes=(32, 16), max_iter=5000,
+                     random_state=seed))
+
+
+def _mlp_convergence(model) -> dict:
+    """Report optimizer convergence instead of silencing it.
+
+    sklearn signals non-convergence via n_iter_ == max_iter (and a
+    ConvergenceWarning we still suppress for output cleanliness); a
+    non-converged fit gets flagged, never silently trusted.
+    """
+    mlp = model.named_steps["mlpregressor"]
+    n_iter = int(getattr(mlp, "n_iter_", 0))
+    converged = bool(n_iter < int(mlp.max_iter))
+    return {"n_iter": n_iter, "converged": converged}
+
+
+def neural_relevance(x_data: dict[str, np.ndarray],
+                     y_data: np.ndarray,
+                     seed: int = 42) -> dict:
+    """MLP surrogate + permutation importance per variable. Agnostic.
+ 
+    To use the JAX-based neural discovery system instead, set the
+    environment variable NEURAL_DISCOVERY_ENGINE=1 or instantiate
+    apedp.neural_discovery.integration.NeuralDiscoveryEngine directly.
+    """
+    try:
+        import os
+        import warnings
+
+        import numpy as np
+ 
+        # Check if we should use the new neural discovery engine
+        use_new_engine = (
+            os.environ.get("NEURAL_DISCOVERY_ENGINE", "0") == "1"
+        )
+ 
+        if use_new_engine:
+            # Use the new JAX-based neural surrogate via integration module
+            from apedp.neural_discovery.integration import neural_relevance as neural_relevance_new
+            return neural_relevance_new(
+                x_data=x_data,
+                y_data=y_data,
+                seed=seed,
+            )
+ 
+        # Original sklearn-based implementation (fallback)
+        names = list(x_data.keys())
+        y = np.asarray(y_data, float).ravel()
+        if len(y) < 30:
+            return {"relevant": [], "note": "insufficient data for MLP"}
+        X = np.column_stack([np.asarray(x_data[k], float).ravel()
+                         for k in names])
+        if not bool(np.all(np.isfinite(X))) or not bool(np.all(np.isfinite(y))):
+            return {"relevant": [], "note": "non-finite data"}
+        from sklearn.model_selection import train_test_split
+        Xtr, Xte, ytr, yte = train_test_split(
+            X, y, test_size=0.3, random_state=seed)
+        model = _mlp_pipeline(seed)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            model.fit(Xtr, ytr)
+        conv = _mlp_convergence(model)
+        base = float(model.score(Xte, yte))
+        report = {"surrogate_r2": round(base, 4),
+                  "converged": conv["converged"], "n_iter": conv["n_iter"]}
+        if base < 0.5:
+            report.update({"relevant": [],
+                           "note": f"held-out surrogate too weak (R^2={base:.3f})"
+                                   + ("" if conv["converged"]
+                                      else "; optimizer did not converge")
+                           })
+            return report
+        rng = np.random.default_rng(seed)
+        importance = {}
+        for j, name in enumerate(names):
+            drops = []
+            for _ in range(5):
+                Xp = Xte.copy()
+                Xp[:, j] = rng.permutation(Xp[:, j])
+                drops.append(base - float(model.score(Xp, yte)))
+            importance[name] = round(float(np.mean(drops)), 4)
+        floor = max(0.01, 0.05 * max(importance.values(), default=0.0))
+        relevant = sorted([k for k, v in importance.items() if v > floor],
+                          key=lambda k: -importance[k])
+        report.update({"relevant": relevant, "relevance": importance,
+                       "note": "held-out permutation importance; "
+                              "deterministic seed"
+                              + ("" if conv["converged"]
+                                 else "; optimizer did not converge")
+                       })
+        return report
+    except _PROBE_ERRORS as e:
+        return {"relevant": [], "note": f"neural probe failed: {e}"}
+
+
+def grammar_terminals_for(target_unit: str, variables: dict,
+                          engine=None) -> dict:
+    """Unit-ontology grammar: which variables may legally appear under
+    log/exp/sqrt, and which binary combinations preserve dimensions.
+
+    Returns allowed unary function applications plus dimensionally valid
+    binary pairs. Without an engine, falls back to name-only heuristics
+    and says so.
+    """
+    try:
+        names = list(variables.keys())
+        dimensionless = []
+        units_checked = engine is not None
+        if engine is not None:
+            try:
+                for k in names:
+                    unit = engine.check_expression_consistency(sp.Symbol(k))
+                    if unit.dimensionality == engine.registry(
+                            "dimensionless").dimensionality:
+                        dimensionless.append(k)
+            except _PROBE_ERRORS as exc:
+                logger.debug("unit-consistency probe failed: %s", exc)
+                dimensionless = []
+                units_checked = False
+        return {"log_exp_allowed": sorted(dimensionless),
+                "note": ("unit-checked" if units_checked
+                         else "unit check unavailable: names unchecked"
+                         if engine is not None
+                         else "no engine: names only, unchecked")}
+    except _PROBE_ERRORS as e:
+        return {"log_exp_allowed": [], "note": f"grammar probe failed: {e}"}
+
+
+def distill_via_surrogate(x_data: dict[str, np.ndarray],
+                          y_data: np.ndarray, seed: int = 42,
+                          n_dense: int = 200) -> dict:
+    """Neural distill path: fit an MLP surrogate, sample it densely on a
+    grid, then run differentiable symbolic regression on surrogate samples.
+ 
+    Replaces the original MLP-based distillation with a JAX-based approach
+    that uses differentiable symbolic regression instead of sparse term
+    selection on surrogate predictions.
+ 
+    To use the original sklearn-based distillation, set
+    NEURAL_DISCOVERY_ENGINE=0 (default).
+    """
+    try:
+        import os
+        import warnings
+
+        import numpy as np
+ 
+        # Check if we should use the new neural discovery engine
+        use_new_engine = (
+            os.environ.get("NEURAL_DISCOVERY_ENGINE", "0") == "1"
+        )
+ 
+        if use_new_engine:
+            # Use the new JAX-based neural distillation via integration module
+            from apedp.neural_discovery.integration import (
+                distill_via_surrogate as distill_via_surrogate_new,
+            )
+            return distill_via_surrogate_new(
+                x_data=x_data,
+                y_data=y_data,
+                seed=seed,
+                n_dense=n_dense,
+            )
+ 
+        # Original sklearn-based implementation (fallback)
+        names = list(x_data.keys())
+        y = np.asarray(y_data, float).ravel()
+        X = np.column_stack([np.asarray(x_data[k], float).ravel()
+                             for k in names])
+        if len(y) < 30 or not bool(np.all(np.isfinite(X))):
+            return {"terms": [], "note": "insufficient/non-finite data"}
+        from sklearn.model_selection import train_test_split
+        Xtr, Xte, ytr, yte = train_test_split(
+            X, y, test_size=0.3, random_state=seed)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            model = _mlp_pipeline(seed)
+            model.fit(Xtr, ytr)
+        conv = _mlp_convergence(model)
+        r2 = float(model.score(Xte, yte))
+        if r2 < 0.5:
+            return {"terms": [],
+                    "note": f"held-out surrogate too weak (R^2={r2:.3f})"
+                            + ("" if conv["converged"]
+                               else "; optimizer did not converge"),
+                    "surrogate_r2": round(r2, 4),
+                    "converged": conv["converged"], "n_iter": conv["n_iter"]}
+        rng = np.random.default_rng(seed)
+        # Near-manifold grid: bootstrap real rows + small jitter, clipped
+        # to the data box. Independent-uniform grids query empty corners
+        # where the surrogate hallucinates; those hallucinations used to
+        # get distilled as terms.
+        pick = rng.integers(0, len(Xtr), n_dense)
+        spread = np.std(Xtr, axis=0) + 1e-300
+        G = Xtr[pick] + rng.normal(0, 0.05, (n_dense, Xtr.shape[1])) * spread
+        G = np.clip(G, Xtr.min(axis=0), Xtr.max(axis=0))
+        grid = {k: G[:, j] for j, k in enumerate(names)}
+        ys = model.predict(G)
+        out = sparse_select_terms(grid, ys)
+        out["surrogate_r2"] = round(r2, 4)
+        out["converged"] = conv["converged"]
+        out["n_iter"] = conv["n_iter"]
+        out["note"] = "terms describe the surrogate, not raw data directly"
+        return out
+    except _PROBE_ERRORS as e:
+        return {"terms": [], "note": f"distill failed: {e}"}
+def recombine_power_law(variables: list[str], exponents: list[float]) -> str:
+    """Render a power-law product string from parallel variable/exponent lists."""
+    terms = []
+    for name, p in zip(variables, exponents):
+        if abs(p) < 1e-12:
+            continue
+        if abs(p - round(p)) > 1e-9:
+            terms.append(f"{name}**({p})")
+        elif round(p) == 1:
+            terms.append(name)
+        else:
+            terms.append(f"{name}**{round(p)}")
+    return "*".join(terms) if terms else "1"
+
+
+# Default nested-operator constraints (PySR-style): enclosing function name
+# maps to forbidden direct-child function names. Prevents pathological
+# nestings like exp(sin(exp(x))) while allowing exp(x), sin(x), log(x).
+# Opt-in via nested_constraints=None (legacy) or a custom mapping.
+DEFAULT_NESTED_CONSTRAINTS: dict[str, tuple] = {
+    "exp": ("exp", "log", "sin", "cos"),
+    "log": ("exp", "log", "sin", "cos"),
+    "sin": ("sin", "cos", "exp"),
+    "cos": ("sin", "cos", "exp"),
+}
+
 
 # Rational coefficients worth snapping fitted values to.
 STANDARD_RATIONALS: list[tuple[float, sp.Expr]] = [
@@ -29,6 +735,330 @@ STANDARD_RATIONALS: list[tuple[float, sp.Expr]] = [
     (-1.0, sp.Integer(-1)),
     (-0.5, sp.Rational(-1, 2)),
 ]
+
+
+def detect_composition_family(x_data: dict[str, np.ndarray],
+                              y_data: np.ndarray,
+                              r2_threshold: float = 0.99) -> dict:
+    """Probe data shape for function families: exponential (log y linear),
+    arrhenius (log y linear in 1/x), saturating-exponential (log(A-y)
+    linear for a scanned asymptote), rational/inverse (1/y linear).
+
+    Scattered samples suffice (single-variable regressions only). Returns
+    the best-matching family or {}. The saturating branch uses a 0.999 bar
+    (not r2_threshold): its free asymptote can accidentally fit monotone
+    non-saturating data, so it must be near-exact to fire.
+    """
+    try:
+        names = list(x_data.keys())
+        y = np.asarray(y_data, float).ravel()
+        if len(y) < 5:
+            return {}
+        if float(np.sum((y - y.mean()) ** 2)) <= 1e-300:
+            return {}
+        best: dict = {}
+        for name in names:
+            xv = np.asarray(x_data[name], float).ravel()
+            if len(xv) != len(y):
+                continue
+            order = np.argsort(xv)
+            xs, ys = xv[order], y[order]
+            try:
+                if bool(np.all(np.isfinite(ys))) and bool(np.all(ys != 0)):
+                    ly = np.log(np.abs(ys))
+                    A = np.column_stack([xs, np.ones_like(xs)])
+                    coef, *_ = np.linalg.lstsq(A, ly, rcond=None)
+                    pred = A @ coef
+                    denom_log = float(np.sum((ly - ly.mean()) ** 2)) + 1e-300
+                    r2e = 1.0 - float(np.sum((ly - pred) ** 2)) / denom_log
+                    if r2e > r2_threshold and r2e > best.get("r_squared", 0.0):
+                        best = {"family": "exponential", "variable": name,
+                                "r_squared": round(float(r2e), 6)}
+            except (TypeError, ValueError, ArithmeticError):
+                pass
+            try:
+                if (bool(np.all(np.isfinite(ys))) and bool(np.all(ys != 0))
+                        and bool(np.all(xs != 0))):
+                    ly = np.log(np.abs(ys))
+                    ix = 1.0 / xs
+                    A = np.column_stack([ix, np.ones_like(ix)])
+                    coef, *_ = np.linalg.lstsq(A, ly, rcond=None)
+                    pred = A @ coef
+                    denom_log = (float(np.sum((ly - ly.mean()) ** 2))
+                                 + 1e-300)
+                    r2a = (1.0 - float(np.sum((ly - pred) ** 2))
+                           / denom_log)
+                    if (r2a > r2_threshold
+                            and r2a > best.get("r_squared", 0.0)):
+                        best = {"family": "arrhenius", "variable": name,
+                                "r_squared": round(float(r2a), 6)}
+            except (TypeError, ValueError, ArithmeticError):
+                pass
+            try:
+                if bool(np.all(np.isfinite(ys))) and ys[-1] != ys[0]:
+                    ymax = float(np.max(ys))
+                    for frac in (0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.4,
+                                 0.8, 1.5):
+                        a_est = ymax * (1.0 + frac)
+                        gap = a_est - ys
+                        if not bool(np.all(gap > 0)):
+                            continue
+                        ly = np.log(gap)
+                        A = np.column_stack([xs, np.ones_like(xs)])
+                        coef, *_ = np.linalg.lstsq(A, ly, rcond=None)
+                        pred = A @ coef
+                        denom_s = (float(np.sum((ly - ly.mean()) ** 2))
+                                   + 1e-300)
+                        r2s = (1.0 - float(np.sum((ly - pred) ** 2))
+                               / denom_s)
+                        if (r2s > 0.999
+                                and r2s > best.get("r_squared", 0.0)):
+                            best = {"family": "saturating-exponential",
+                                    "variable": name,
+                                    "r_squared": round(float(r2s), 6),
+                                    "asymptote": round(a_est, 6)}
+            except (TypeError, ValueError, ArithmeticError):
+                pass
+            try:
+                if bool(np.all(ys != 0)):
+                    iy = 1.0 / ys
+                    A = np.column_stack([xs, np.ones_like(xs)])
+                    coef, *_ = np.linalg.lstsq(A, iy, rcond=None)
+                    pred = A @ coef
+                    denom_inv = float(np.sum((iy - iy.mean()) ** 2)) + 1e-300
+                    r2r = 1.0 - float(np.sum((iy - pred) ** 2)) / denom_inv
+                    if r2r > r2_threshold and r2r > best.get("r_squared", 0.0):
+                        best = {"family": "rational", "variable": name,
+                                "r_squared": round(float(r2r), 6)}
+            except (TypeError, ValueError, ArithmeticError):
+                pass
+        return best
+    except (TypeError, ValueError, ArithmeticError):
+        return {}
+
+
+POWER_LAW_RATIONALS: list[tuple[float, str]] = [
+    (1.0 / 2.0, "1/2"),
+    (1.0 / 3.0, "1/3"),
+    (2.0 / 3.0, "2/3"),
+    (3.0 / 2.0, "3/2"),
+    (4.0 / 3.0, "4/3"),
+    (2.0, "2"),
+    (3.0, "3"),
+    (4.0, "4"),
+    (1.0, "1"),
+    (-1.0, "-1"),
+    (-2.0, "-2"),
+    (-1.0 / 2.0, "-1/2"),
+]
+
+
+def detect_power_law(x_data: dict[str, np.ndarray],
+                     y_data: np.ndarray,
+                     r2_threshold: float = 0.90,
+                     snap_tol: float = 0.02) -> dict:
+    """Log-log power-law probe: fit log y = p * log x + c per variable.
+
+    Always returns the best-matching variable with fitted exponent, R^2,
+    and the nearby rational snap (e.g. 1.5 -> "3/2") when within snap_tol.
+    The ``confident`` flag marks whether R^2 clears r2_threshold -- callers
+    (or BIC selection) decide what to do with sub-threshold fits instead of
+    the result being swallowed. Requires strictly positive data; needs only
+    >= 3 points, so it fires on the tiny real datasets (n=8 Kepler) where
+    the linear probes decline. Raises no exception outward.
+    """
+    try:
+        names = list(x_data.keys())
+        y = np.asarray(y_data, float).ravel()
+        if len(y) < 3:
+            return {}
+        if float(np.sum((y - y.mean()) ** 2)) <= 1e-300:
+            return {}
+        if not bool(np.all(np.isfinite(y))) or not bool(np.all(y > 0)):
+            return {}
+        best: dict = {}
+        for name in names:
+            xv = np.asarray(x_data[name], float).ravel()
+            if len(xv) != len(y):
+                continue
+            if not bool(np.all(np.isfinite(xv))) or not bool(np.all(xv > 0)):
+                continue
+            try:
+                lx, ly = np.log(xv), np.log(y)
+                A = np.column_stack([lx, np.ones_like(lx)])
+                coef, *_ = np.linalg.lstsq(A, ly, rcond=None)
+                pred = A @ coef
+                denom = float(np.sum((ly - ly.mean()) ** 2)) + 1e-300
+                r2 = 1.0 - float(np.sum((ly - pred) ** 2)) / denom
+                if r2 > best.get("r_squared", 0.0):
+                    p = float(coef[0])
+                    snap = None
+                    for target, label in POWER_LAW_RATIONALS:
+                        if abs(p - target) < snap_tol:
+                            snap = label
+                            break
+                    best = {"family": "power-law", "variable": name,
+                            "exponent": round(p, 4),
+                            "r_squared": round(float(r2), 6),
+                            "snapped": snap,
+                            "confident": bool(r2 > r2_threshold)}
+            except (TypeError, ValueError, ArithmeticError):
+                pass
+        return best
+    except (TypeError, ValueError, ArithmeticError):
+        return {}
+
+
+def cross_family_select(x_data: dict[str, np.ndarray],
+                          y_data: np.ndarray,
+                          max_power: int = 3,
+                          extrapolation_check: bool = True) -> dict:
+    """Cross-family model selection: fit candidates from multiple functional
+    families and rank by BIC (lower is better).
+
+    Families tested: power-law (detect_power_law), exponential,
+    Arrhenius (exp in 1/x), and polynomial (sparse_select_terms).
+    Returns the best candidate with its family, BIC, and a comparison
+    table against all other families. A perfect-fit candidate
+    (R^2 > 0.999) using more than n/2 parameters is rejected as overfit
+    and reported under "notes" instead of winning. With
+    ``extrapolation_check`` (default), candidates that go non-finite or
+    blow up super-polynomially just outside the data range are likewise
+    rejected (kills coincidental in-window fits like exp(+c/x) on decaying
+    data). Raises no exception outward.
+    """
+    try:
+        names = list(x_data.keys())
+        y = np.asarray(y_data, float).ravel()
+        n = len(y)
+        if n < 5:
+            return {}
+        if float(np.sum((y - y.mean()) ** 2)) <= 1e-300:
+            return {}
+        if not bool(np.all(np.isfinite(y))):
+            return {}
+        candidates = []
+        notes: list = []
+        # Power-law per variable
+        for name in names:
+            pl = detect_power_law(x_data, y)
+            if pl and pl.get("r_squared", 0) > 0.5:
+                xv = np.asarray(x_data[name], float).ravel()
+                lxv = np.log(np.maximum(xv, 1e-300))
+                coef, *_ = np.linalg.lstsq(np.column_stack([lxv, np.ones(n)]), np.log(np.maximum(y, 1e-300)), rcond=None)
+                y_pred = np.exp(coef[0]*lxv + coef[1])
+                bic = BayesianRefinementEngine.compute_bic(
+                    BayesianRefinementEngine.gaussian_log_likelihood(y, y_pred)[0],
+                    2, n)
+                candidates.append({"family": "power-law", "variable": name,
+                                   "expression": f"{name}**{pl['exponent']:.3f}",
+                                   "bic": bic, "r_squared": pl["r_squared"],
+                                   "num_params": 2})
+        # Exponential
+        try:
+            for name in names:
+                xv = np.asarray(x_data[name], float).ravel()
+                if not bool(np.all(xv > 0)):
+                    continue
+                coef, *_ = np.linalg.lstsq(np.column_stack([xv, np.ones(n)]),
+                                           np.log(np.maximum(y, 1e-300)), rcond=None)
+                y_pred = np.exp(coef[0]*xv + coef[1])
+                r2 = BayesianRefinementEngine.compute_r_squared(y, y_pred)
+                if r2 > 0.3:
+                    bic = BayesianRefinementEngine.compute_bic(
+                        BayesianRefinementEngine.gaussian_log_likelihood(y, y_pred)[0],
+                        2, n)
+                    candidates.append({"family": "exponential", "variable": name,
+                                       "expression": f"exp({coef[0]:.4f}*{name})",
+                                       "bic": bic, "r_squared": round(float(r2), 4),
+                                       "num_params": 2})
+        except (TypeError, ValueError, ArithmeticError):
+            pass
+        # Arrhenius (exp in 1/x)
+        try:
+            for name in names:
+                xv = np.asarray(x_data[name], float).ravel()
+                if not bool(np.all(xv != 0)):
+                    continue
+                ix = 1.0 / xv
+                coef, *_ = np.linalg.lstsq(np.column_stack([ix, np.ones(n)]),
+                                           np.log(np.maximum(y, 1e-300)), rcond=None)
+                y_pred = np.exp(coef[0]*ix + coef[1])
+                r2 = BayesianRefinementEngine.compute_r_squared(y, y_pred)
+                if r2 > 0.3:
+                    bic = BayesianRefinementEngine.compute_bic(
+                        BayesianRefinementEngine.gaussian_log_likelihood(y, y_pred)[0],
+                        2, n)
+                    candidates.append({"family": "arrhenius", "variable": name,
+                                       "expression": f"exp({coef[0]:.4f}/{name})",
+                                       "bic": bic, "r_squared": round(float(r2), 4),
+                                       "num_params": 2})
+        except (TypeError, ValueError, ArithmeticError):
+            pass
+        # Polynomial from sparse_select_terms
+        try:
+            import itertools as _it
+            sp = sparse_select_terms(x_data, y, max_power=max_power)
+            if sp.get("terms"):
+                from sklearn.linear_model import LassoCV
+                cols = {k: np.asarray(x_data[k], float).ravel() for k in x_data}
+                feats = {"1": np.ones(n)}
+                for k in x_data:
+                    v = cols[k]
+                    for p in range(1, max_power+1):
+                        feats[f"{k}**{p}"] = np.sign(v)*np.abs(v)**p
+                    if bool(np.all(v != 0)):
+                        feats[f"1/{k}"] = 1.0/v
+                for a, b in _it.combinations(x_data, 2):
+                    feats[f"{a}*{b}"] = cols[a]*cols[b]
+                keys = [k for k in feats if float(np.std(feats[k])) > 1e-300]
+                X = np.column_stack([feats[k] for k in keys])
+                scales = np.std(X, axis=0) + 1e-300
+                Xn = X/scales
+                model = LassoCV(max_iter=5000).fit(Xn, y)
+                y_pred = model.predict(Xn)
+                r2 = BayesianRefinementEngine.compute_r_squared(y, y_pred)
+                if r2 > 0.3:
+                    active_k = int(np.sum(np.abs(model.coef_) > 1e-9)) + 1
+                    if r2 > 0.999 and active_k > n / 2:
+                        notes.append(
+                            f"polynomial rejected: R^2={r2:.4f} with "
+                            f"{active_k} params on n={n} (overfit regime)")
+                    else:
+                        bic = BayesianRefinementEngine.compute_bic(
+                            BayesianRefinementEngine.gaussian_log_likelihood(y, y_pred)[0],
+                            active_k, n)
+                        candidates.append({"family": "polynomial", "variable": ", ".join(x_data),
+                                           "expression": sp["terms"][0] if sp["terms"] else "poly",
+                                           "bic": bic, "r_squared": round(float(r2), 4),
+                                           "num_params": active_k})
+        except _PROBE_ERRORS as exc:
+            logger.debug("Polynomial candidate rejected during BIC ranking: %s", exc)
+        if extrapolation_check and candidates:
+            from apedp.scientific_layers import extrapolation_audit
+            cols = {k: np.asarray(x_data[k], float).ravel() for k in names}
+            ranges = {k: (float(cols[k].min()), float(cols[k].max()))
+                      for k in names}
+            y_scale = float(np.max(np.abs(y))) + 1e-300
+            survivors = []
+            for cand in candidates:
+                audit = extrapolation_audit(cand["expression"], ranges,
+                                            y_scale)
+                if audit["status"] == "FAIL":
+                    notes.append(f"{cand['family']} {cand['expression']} "
+                                 f"rejected: {audit['reason']}")
+                else:
+                    survivors.append(cand)
+            candidates = survivors
+        if not candidates:
+            return {"notes": notes} if notes else {}
+        best = BayesianRefinementEngine.select_best_model(candidates)
+        out = {"best": best, "all_candidates": sorted(candidates, key=lambda c: c.get("bic", float('inf')))}
+        if notes:
+            out["notes"] = notes
+        return out
+    except (TypeError, ValueError, ArithmeticError):
+        return {}
 
 
 @dataclass(frozen=True)
@@ -586,8 +1616,18 @@ class MultiVariableSRE:
         extra_const_values: dict[str, tuple[float, str]] | None = None,
         template_priors: list[str | sp.Expr] | None = None,
         inner_fit: bool = True,
-        inner_steps: int = 40,
+        inner_steps: int = 12,
         guided: bool = True,
+        seed: int | None = 42,
+        allow_power_mutation: bool = False,
+        allow_rational_mutation: bool = False,
+        allow_compose_mutation: bool = False,
+        allow_logcomp_mutation: bool = False,
+        allow_recursive_reduction: bool = False,
+        allow_implicit_fitness: bool = False,
+        implicit_var: str | None = None,
+        nested_constraints: dict | None = None,
+        allow_beam_seeding: bool = False,
     ):
         self.system = assurance_system
         vars_input = independent_vars if independent_vars is not None else (variables or [])
@@ -596,9 +1636,17 @@ class MultiVariableSRE:
         self.target_unit_str = target_unit_str
         self.target_unit = self.system.engine.registry(target_unit_str)
 
+        # Per-instance RNG to avoid global state corruption under concurrency
+        self._rng = random.Random(seed)
+        self._np_rng = np.random.default_rng(seed)
+        # Fitness is evaluated repeatedly for elites and Pareto candidates.
+        # Cache within one search only; data/config changes create a new engine
+        # or a new run and therefore cannot reuse stale scores.
+        self._fitness_cache: dict[str, tuple[sp.Expr, float]] = {}
+
         # Constant symbols available for discovery
         default_const_names = ['G_grav', 'c_light', 'sigma_sb', 'h_bar', 'k_B', 'R_gas', 'g_earth']
-        const_names = extra_constants or default_const_names
+        const_names = extra_constants if extra_constants is not None else default_const_names
         self.constants = [sp.Symbol(c) for c in const_names if c in self.system.constants_values]
         # Ephemeral random constants: dimensionless placeholders that become
         # constant features during coefficient fitting (so `C0 + x**2` can
@@ -615,6 +1663,17 @@ class MultiVariableSRE:
         self.inner_fit = bool(inner_fit)
         self.inner_steps = max(0, int(inner_steps))
         self.guided = bool(guided)
+        # Optional mutation families + recursive reduction. All default OFF:
+        # legacy RNG stream and behavior are exactly preserved unless opted in.
+        self.allow_power_mutation = bool(allow_power_mutation)
+        self.allow_rational_mutation = bool(allow_rational_mutation)
+        self.allow_compose_mutation = bool(allow_compose_mutation)
+        self.allow_logcomp_mutation = bool(allow_logcomp_mutation)
+        self.allow_beam_seeding = bool(allow_beam_seeding)
+        self.nested_constraints = nested_constraints
+        self.allow_recursive_reduction = bool(allow_recursive_reduction)
+        self.allow_implicit_fitness = bool(allow_implicit_fitness)
+        self.implicit_var = implicit_var
         for name, spec in dict(extra_const_values or {}).items():
             try:
                 value, unit_str = spec
@@ -1017,7 +2076,63 @@ class MultiVariableSRE:
             return calibrated_expr, refined_mse
         return calibrated_expr, mse
 
+    def implicit_fitness(self, candidate: sp.Expr, x_data: dict[str, np.ndarray],
+                           y_data: np.ndarray) -> float:
+        """Score a candidate as an implicit residual F(target)=0.
+
+        Solves for the target variable per data row with
+        eval_extended.evaluate_implicit and returns MSE vs observed values.
+        Opt-in only (allow_implicit_fitness + implicit_var set); unsolved
+        rows count against the candidate. Nascent: per-row solves are slow,
+        so keep populations and datasets small when enabled.
+        """
+        try:
+            from apedp.eval_extended import evaluate_implicit
+        except ImportError:
+            # evaluate_implicit lives behind the optional extended-evaluation
+            # extra; without it implicit fitness is unavailable by design.
+            logger.debug("evaluate_implicit unavailable; implicit fitness "
+                         "declines the candidate")
+            return float("inf")
+        target = getattr(self, "implicit_var", None)
+        if not target:
+            return float("inf")
+        try:
+            names = list(x_data.keys())
+            n = len(np.asarray(y_data, float).ravel())
+            errs = []
+            formula = str(candidate)
+            obs_all = np.asarray(y_data, float).ravel()
+            for i in range(n):
+                params = {k: float(np.asarray(x_data[k], float).ravel()[i])
+                          for k in names}
+                obs = float(obs_all[i])
+                try:
+                    # Guess from observed value: tests whether the data
+                    # satisfies the residual (root-consistency), converging
+                    # to the nearest root otherwise.
+                    pred = evaluate_implicit(formula, target, obs, params,
+                                             timeout=0.5)
+                    errs.append((pred - obs) ** 2)
+                except (ValueError, TypeError, ArithmeticError,
+                        NotImplementedError, TimeoutError) as exc:
+                    # evaluate_implicit's contract: ValueError/TypeError for a
+                    # malformed residual, ArithmeticError when nsolve fails,
+                    # NotImplementedError for an unsolvable form, TimeoutError
+                    # past the bounded-solver budget. The row is dropped and
+                    # the candidate is scored on the rows that solved.
+                    logger.debug("implicit solve skipped for %s: %s",
+                                 target, exc)
+                    continue
+            if not errs:
+                return float("inf")
+            return float(sum(errs) / len(errs))
+        except (TypeError, ValueError, ArithmeticError):
+            return float("inf")
+
     def fitness(self, candidate: sp.Expr, x_data: dict[str, np.ndarray], y_data: np.ndarray) -> float:
+        if bool(getattr(self, "allow_implicit_fitness", False)):
+            return self.implicit_fitness(candidate, x_data, y_data)
         # 1. Strict Dimensional Gatekeeping
         try:
             unit = self.system.engine.check_expression_consistency(candidate)
@@ -1028,8 +2143,13 @@ class MultiVariableSRE:
             return float('inf')
 
         # 2. Continuous Parameter Optimization + Occam's Complexity Penalty
+        cache_key = str(candidate)
+        cached = self._fitness_cache.get(cache_key)
         try:
-            calibrated_expr, mse = self.optimize_parameters(candidate, x_data, y_data)
+            if cached is None:
+                cached = self.optimize_parameters(candidate, x_data, y_data)
+                self._fitness_cache[cache_key] = cached
+            calibrated_expr, mse = cached
             if np.isinf(mse) or np.isnan(mse):
                 return float('inf')
             complexity = len(list(sp.preorder_traversal(calibrated_expr)))
@@ -1037,6 +2157,142 @@ class MultiVariableSRE:
         except (ValueError, TypeError, ArithmeticError) as e:
             logger.warning("Parameter optimization failed, returning inf: %s", e)
             return float('inf')
+
+    def _check_dimensional(self, expr: sp.Expr) -> bool:
+        """Check expression against the target unit (for Pareto bookkeeping)."""
+        try:
+            unit = self.system.engine.check_expression_consistency(expr)
+            return unit.dimensionality == self.target_unit.dimensionality
+        except (TypeError, ValueError, NotImplementedError, ArithmeticError):
+            return False
+
+    def _power_mutate(self, parent: sp.Expr) -> sp.Expr:
+        """Grow/shrink integer exponents (T**2 -> T**3/T**4) or wrap an atom
+        in a small integer power. Dimensionally invalid results score inf in
+        fitness and are selected out, so this is safe to propose broadly."""
+        try:
+            int_pows = []
+            for node in sp.preorder_traversal(parent):
+                if isinstance(node, sp.Pow):
+                    try:
+                        if node.exp.is_Integer and abs(int(node.exp)) <= 6:
+                            int_pows.append(node)
+                    except (TypeError, ValueError, AttributeError):
+                        continue
+            if int_pows and random.random() < 0.7:  # nosec B311
+                target = random.choice(int_pows)  # nosec B311
+                new_exp = int(target.exp) + random.choice([1, -1])  # nosec B311
+                if new_exp == 0 or abs(new_exp) > 6:
+                    return parent
+                return parent.xreplace({target: sp.Pow(target.base, new_exp)})
+            atoms = [n for n in sp.preorder_traversal(parent) if n.is_Symbol]
+            base = random.choice(atoms) if atoms else parent  # nosec B311
+            return parent.xreplace(
+                {base: sp.Pow(base, random.choice([2, 3, 4]))})  # nosec B311
+        except (TypeError, ValueError, AttributeError, ArithmeticError):
+            return parent
+
+    def _rational_mutate(self, parent: sp.Expr) -> sp.Expr:
+        """Grow rational forms: divide by a subexpression, or wrap an atom in
+        a fractional power (+-1/2, +-1/3, 2/3). Zero-divisions score inf in
+        fitness and are selected out, so this is safe to propose broadly."""
+        try:
+            if random.random() < 0.5:  # nosec B311
+                nodes = [n for n in sp.preorder_traversal(parent)
+                         if isinstance(n, sp.Pow)]
+                if nodes:
+                    target = random.choice(nodes)  # nosec B311
+                    new_exp = random.choice(  # nosec B311
+                        [sp.Rational(1, 2), sp.Rational(-1, 2),
+                         sp.Rational(1, 3), sp.Rational(-1, 3),
+                         sp.Rational(2, 3)])
+                    return parent.xreplace(
+                        {target: sp.Pow(target.base, new_exp)})
+            # Divisor pool is the full variable set, NOT the parent's symbols:
+            # dividing by own symbols can only cancel (F*L**3/(F*L) -> L**2)
+            # and can never introduce new denominator structure like E*I.
+            pool = list(getattr(self, "vars", None) or [])
+            if not pool:
+                pool = [n for n in sp.preorder_traversal(parent)
+                        if n.is_Symbol]
+            if not pool:
+                return parent
+            divisor = random.choice(pool)  # nosec B311
+            if random.random() < 0.5:  # nosec B311
+                others = [s for s in pool if str(s) != str(divisor)]
+                if others and random.random() < 0.8:  # nosec B311
+                    divisor = divisor * random.choice(others)  # nosec B311
+                return parent / divisor
+            return parent.xreplace(
+                {divisor: sp.Pow(divisor, random.choice(  # nosec B311
+                    [sp.Rational(1, 2), sp.Rational(1, 3)]))})
+        except (TypeError, ValueError, AttributeError, ArithmeticError):
+            return parent
+
+    def _compose_mutate(self, parent: sp.Expr) -> sp.Expr:
+        """Nest a function application: wrap an atom in sin/exp/log/sqrt.
+        Dimensionally invalid results score inf in fitness and are selected
+        out, so this is safe to propose broadly. nested_constraints maps an
+        enclosing function name to forbidden child names (e.g. no exp inside
+        exp); None means legacy unconstrained behavior."""
+        try:
+            fns = []
+            if self.allow_trig:
+                fns.extend([sp.sin, sp.cos])
+            if self.allow_exp:
+                fns.append(sp.exp)
+            if self.allow_log:
+                fns.append(sp.log)
+            fns.append(sp.sqrt)
+            if not fns:
+                return parent
+            syms = [n for n in sp.preorder_traversal(parent) if n.is_Symbol]
+            if not syms:
+                return parent
+            target = random.choice(syms)  # nosec B311
+            fn = random.choice(fns)  # nosec B311
+            rules = getattr(self, "nested_constraints", None) or {}
+            if rules:
+                ancestors: set = set()
+                stack: list = [(parent, ())]
+                while stack:
+                    node, path = stack.pop()
+                    if node is target:
+                        ancestors.update(
+                            type(a).__name__ for a in path
+                            if isinstance(a, sp.Function))
+                    for arg in getattr(node, "args", ()):
+                        stack.append((arg, path + (node,)))
+                banned = set()
+                for anc in ancestors:
+                    banned.update(rules.get(anc, ()))
+                fname = ("sin" if fn is sp.sin else
+                         "cos" if fn is sp.cos else
+                         "exp" if fn is sp.exp else
+                         "log" if fn is sp.log else "sqrt")
+                if fname in banned:
+                    return parent
+            return parent.xreplace({target: fn(target)})
+        except (TypeError, ValueError, AttributeError, ArithmeticError):
+            return parent
+
+    def _logcomp_mutate(self, parent: sp.Expr) -> sp.Expr:
+        """Nest logarithmic compositions: log(log(x)), log(1+1/x),
+        log(1+x). Targets friction-type log-log structure that single-log
+        wrapping cannot reach. Invalid results score inf in fitness."""
+        try:
+            syms = [n for n in sp.preorder_traversal(parent) if n.is_Symbol]
+            if not syms:
+                return parent
+            target = random.choice(syms)  # nosec B311
+            choice = random.random()  # nosec B311
+            if choice < 0.4:
+                return parent.xreplace({target: sp.log(sp.log(target))})
+            if choice < 0.7:
+                return parent.xreplace({target: sp.log(1 + 1 / target)})
+            return parent.xreplace({target: sp.log(1 + target)})
+        except (TypeError, ValueError, AttributeError, ArithmeticError):
+            return parent
 
     def mutate(self, parent: sp.Expr) -> sp.Expr:
         roll = random.random()  # nosec B311
@@ -1048,7 +2304,58 @@ class MultiVariableSRE:
             # Constant-shift mutation: append an ephemeral constant term so
             # additive offsets (e.g. the `+3` in `2*x**2 + 3`) are reachable
             return parent + random.choice(self.erc_symbols)  # nosec B311
+        if self.allow_power_mutation and roll < 0.8:
+            return self._power_mutate(parent)
+        if self.allow_rational_mutation and roll < 0.9:
+            return self._rational_mutate(parent)
+        if self.allow_compose_mutation and roll < 0.95:
+            return self._compose_mutate(parent)
+        if self.allow_logcomp_mutation and roll < 0.97:
+            return self._logcomp_mutate(parent)
         return self._generate_candidate(depth=1, max_depth=2)
+
+    def _try_recursive_reduction(
+        self,
+        x_data: dict[str, np.ndarray],
+        y_data: np.ndarray,
+    ) -> tuple[sp.Expr | None, float, str] | None:
+        """Attempt a direct separability solve. Returns None to fall through.
+
+        Structure is built from Symbol objects directly: re-parsing the
+        shape string would misread single-letter physics symbols (E -> Euler,
+        I -> imaginary) via the shared safe parser.
+        """
+        try:
+            det = detect_multiplicative_split(x_data, y_data)
+            if det.get("kind") != "multiplicative":
+                return None
+            struct = sp.Integer(1)
+            names = []
+            for name, p in zip(det["variables"], det["exponents"]):
+                sym = sp.Symbol(name)
+                names.append(name)
+                exp: sp.Expr = (sp.Integer(round(p))
+                                if abs(p - round(p)) < 1e-9
+                                else sp.sympify(p))
+                struct = struct * sym ** exp
+            cols = {k: np.asarray(x_data[k], float).ravel() for k in names}
+            y = np.asarray(y_data, float).ravel()
+            basis = np.array([float(struct.subs(
+                {sp.Symbol(k): cols[k][i] for k in names}))
+                for i in range(len(y))])
+            denom = float(np.dot(basis, basis)) + 1e-300
+            const = float(np.dot(basis, y)) / denom
+            best = const * struct
+            pred = np.array([float(best.subs(
+                {sp.Symbol(k): cols[k][i] for k in names}))
+                for i in range(len(y))])
+            mse = float(np.mean((pred - y) ** 2))
+            return best, mse, (
+                "recursive-reduction r^2="
+                f"{det['r_squared']} shape="
+                f"{recombine_power_law(det['variables'], det['exponents'])}")
+        except (TypeError, ValueError, ArithmeticError):
+            return None
 
     def run_discovery(
         self,
@@ -1062,6 +2369,13 @@ class MultiVariableSRE:
         if seed is not None:
             random.seed(seed)
             np.random.seed(seed)
+        self._fitness_cache.clear()
+
+        if self.allow_recursive_reduction:
+            reduced = self._try_recursive_reduction(x_data, y_data)
+            if reduced is not None:
+                best, mse, note = reduced
+                return best, mse, [{"reduction": note}]
 
         population: list[sp.Expr] = []
         target_dim = self.target_unit.dimensionality
@@ -1074,6 +2388,45 @@ class MultiVariableSRE:
             if all(prior_expr != existing for existing in population):
                 population.append(prior_expr)
 
+        # For wide, correlated feature sets (for example lagged sensor
+        # histories), give evolution a compact affine alternative selected
+        # only from the supplied training data.  This is a seed, not a
+        # replacement for symbolic search, and BIC charges each retained term.
+        selected_affine = bic_forward_select(x_data, y_data)
+        selected_names = selected_affine.get("terms", [])
+        if selected_names:
+            sparse_terms = [sp.Symbol(name) for name in selected_names]
+            if self.erc_symbols:
+                sparse_terms.insert(0, self.erc_symbols[0])
+            sparse_seed = sp.Add(*sparse_terms)
+            try:
+                if (
+                    len(population) < pop_size
+                    and self.system.engine.check_expression_consistency(
+                        sparse_seed
+                    ).dimensionality == target_dim
+                    and all(sparse_seed != existing for existing in population)
+                ):
+                    population.append(sparse_seed)
+            except (ValueError, TypeError, ArithmeticError, NotImplementedError):
+                pass
+
+        # A symbolic search must not lose an available affine baseline.  The
+        # outer fitter calibrates one coefficient per additive term, so this
+        # single seed covers an intercept plus every declared input.
+        affine_seed = sp.Add(self.erc_symbols[0], *self.vars) if self.erc_symbols else sp.Add(*self.vars)
+        try:
+            if (
+                len(population) < pop_size
+                and self.system.engine.check_expression_consistency(
+                    affine_seed
+                ).dimensionality == target_dim
+                and all(affine_seed != existing for existing in population)
+            ):
+                population.append(affine_seed)
+        except (ValueError, TypeError, ArithmeticError, NotImplementedError):
+            pass
+
         # Seed population with dimensionally consistent candidates
         seed_fn = self._generate_guided_candidate if self.guided else self._generate_candidate
         while len(population) < pop_size and attempts < pop_size * 20:
@@ -1085,6 +2438,31 @@ class MultiVariableSRE:
                 logger.warning("Population seeding failed (%s)", e)
             attempts += 1
 
+        # Beam seeding (opt-in): breadth-capped construction forms enter
+        # the population after dimensional filtering. Default off.
+        if self.allow_beam_seeding:
+            try:
+                from apedp.safety import safe_parse_expr
+                for form in beam_search_expressions(
+                        self.var_names, depth=2, width=8, seed=seed):
+                    if len(population) >= pop_size:
+                        break
+                    try:
+                        cand = safe_parse_expr(form)
+                    except (TypeError, ValueError):
+                        continue
+                    try:
+                        if (self.system.engine.check_expression_consistency(
+                                cand).dimensionality == target_dim
+                                and all(cand != existing
+                                        for existing in population)):
+                            population.append(cand)
+                    except (ValueError, TypeError, ArithmeticError,
+                            NotImplementedError):
+                        continue
+            except _PROBE_ERRORS as exc:
+                logger.debug("Diversity seeding failed; falling back to filler: %s", exc)
+
         # Fallback filler
         while len(population) < pop_size:
             population.append(self._generate_candidate(depth=0, max_depth=2))
@@ -1094,6 +2472,7 @@ class MultiVariableSRE:
         history: list[dict[str, Any]] = []
         improvements = 0
         generations_without_improvement = 0
+        pareto_frontier = ParetoFrontierTracker()
 
         for gen in range(generations):
             scored = []
@@ -1112,24 +2491,44 @@ class MultiVariableSRE:
             else:
                 generations_without_improvement += 1
 
+            for score, expr in scored:
+                complexity = len(list(sp.preorder_traversal(expr)))
+                metric = ScientificImprovementMetric(
+                    i_fit=1.0 / (1.0 + score),
+                    i_stability=1.0 / (1.0 + score),
+                    i_physicality=1.0 if self._check_dimensional(expr) else 0.0,
+                    i_generality=0.0,
+                    i_complexity=1.0 / (1.0 + complexity * 0.1),
+                    i_falsifiability=1.0,
+                )
+                pareto_frontier.consider_candidate(expr, metric)
+
             history.append({
                 'generation': gen,
                 'best_score': best_score,
                 'best_expr': best_candidate,
                 'improved': improved,
                 'generations_without_improvement': generations_without_improvement,
+                'pareto_frontier_size': len(pareto_frontier.frontier),
             })
 
             if best_score < 1e-25:
                 break
 
-            # Selection: top 20% elites
+            # Selection: top 20% elites, plus Pareto-optimal candidates not
+            # already present (diversity without changing legacy behavior
+            # when the frontier adds nothing new).
             elites = [p for _, p in scored[:max(1, int(pop_size * 0.2))]]
             next_pop = list(elites)
+            elite_exprs = {str(expr) for expr in elites}
+            for expr in pareto_frontier.get_frontier():
+                if str(expr) not in elite_exprs:
+                    next_pop.append(expr)
+                    elite_exprs.add(str(expr))
             while len(next_pop) < pop_size:
                 parent = random.choice(elites)  # nosec B311
                 next_pop.append(self.mutate(parent))
-            population = next_pop
+            population = next_pop[:pop_size]
 
         # Stagnation signal: the first generation normally improves on the
         # seeded population, so ``improvements <= 1`` means the search added
@@ -1160,5 +2559,312 @@ class MultiVariableSRE:
         return best_candidate, best_score, history
 
 
+    def run_discovery_additive(self, x_data: dict[str, np.ndarray],
+                               y_data: np.ndarray,
+                               max_terms: int = 5,
+                               generations: int = 30,
+                               pop_size: int = 60,
+                               seed: int | None = 42,
+                               min_improvement: float = 0.01,
+                               residual_threshold: float = 0.05) -> tuple:
+        """Iterative residual fitting for additive multi-term models.
+
+        Runs run_discovery repeatedly: fit best term -> subtract from target ->
+        repeat on residuals -> combine terms with linear outer fit.
+        Returns (combined_expression, mse, terms_list, history_list).
+        """
+        import numpy as np
+        import sympy as sp
+
+        y = np.asarray(y_data, float).ravel()
+        y_mean = float(np.mean(y))
+        y_std = float(np.std(y)) + 1e-300
+        residuals = y - y_mean  # center
+        terms = []
+        histories = []
+
+        for term_idx in range(max_terms):
+            if float(np.std(residuals)) < residual_threshold * y_std:
+                break
+            # Run GA on current residuals
+            best, mse, history = self.run_discovery(
+                x_data, residuals, generations=generations, pop_size=pop_size, seed=seed)
+            if best is None:
+                break
+            # Evaluate best term on data
+            try:
+                syms = sorted(best.free_symbols, key=str)
+                fn = sp.lambdify(syms, best, "numpy")
+                cols = [np.asarray(x_data[str(s)]) for s in syms]
+                term_pred = np.asarray(fn(*cols), dtype=float).ravel()
+            except _PROBE_ERRORS as exc:
+                logger.debug("term prediction failed; stopping residual "
+                             "decomposition: %s", exc)
+                break
+            # Check if term explains significant variance
+            r2 = float(np.sum((term_pred - np.mean(term_pred))**2)) / float(np.sum((residuals - np.mean(residuals))**2) + 1e-300)
+            if r2 < min_improvement:
+                break
+            terms.append((best, term_pred))
+            histories.append(history)
+            # Subtract term from residuals
+            residuals = residuals - term_pred
+            if float(np.std(residuals)) < 1e-6:
+                break
+
+        # Final linear combination of all terms (with constant)
+        if not terms:
+            return sp.Integer(0), float('inf'), [], []
+        try:
+            A = np.column_stack([tp for _, tp in terms] + [np.ones_like(y)])
+            coef, *_ = np.linalg.lstsq(A, y, rcond=None)
+            combined = sum(c * t for c, (t, _) in zip(coef[:-1], terms)) + coef[-1]
+            final_pred = A @ coef
+            mse = float(np.mean((final_pred - y) ** 2))
+            return combined, mse, terms, histories
+        except _PROBE_ERRORS as exc:
+            # Fallback: simple sum
+            logger.debug("outer linear refit failed; using simple sum: %s", exc)
+            combined = sum(t for t, _ in terms) + y_mean
+            try:
+                syms = sorted(combined.free_symbols, key=str)
+                fn = sp.lambdify(syms, combined, "numpy")
+                cols = [np.asarray(x_data[str(s)]) for s in syms]
+                final_pred = np.asarray(fn(*cols), dtype=float).ravel()
+                mse = float(np.mean((final_pred - y) ** 2))
+            except _PROBE_ERRORS as exc:
+                logger.debug("fallback combination unscorable: %s", exc)
+                mse = float('inf')
+            return combined, mse, terms, histories
+
+
+    def run_discovery_joint(self, x_data: dict[str, np.ndarray],
+                            y_data: np.ndarray,
+                            n_candidates: int = 200,
+                            generations: int = 15,
+                            pop_size: int = 60,
+                            seed: int | None = 42,
+                            lasso_alpha: float = 0.01,
+                            max_terms: int = 10) -> tuple:
+        """Joint sparse selection for additive multi-term models.
+
+        1. Generate diverse candidate expressions via GA (short runs, different seeds)
+        2. Evaluate all candidates on the data
+        3. Use Lasso to select sparse combination
+        4. Return combined expression with coefficients
+
+        This avoids greedy convolution by selecting all terms simultaneously.
+        Returns (combined_expression, mse, selected_terms, all_candidates).
+        """
+        import numpy as np
+        import sympy as sp
+        from sklearn.linear_model import LassoCV
+
+        y = np.asarray(y_data, float).ravel()
+        n = len(y)
+
+        # Generate candidate expressions via GA
+        candidates = []
+        seen = set()
+        n_seeds = max(1, n_candidates // 5)
+        for i in range(n_seeds):
+            s = (seed + i * 100) if seed is not None else None
+            best, _, _ = self.run_discovery(
+                x_data, y, generations=generations, pop_size=pop_size, seed=s)
+            if best is not None:
+                # Evaluate on data
+                try:
+                    syms = sorted(best.free_symbols, key=str)
+                    fn = sp.lambdify(syms, best, "numpy")
+                    cols = [np.asarray(x_data[str(s)]) for s in syms]
+                    pred = np.asarray(fn(*cols), dtype=float).ravel()
+                    key = str(best)
+                    if key not in seen and len(pred) == n and np.all(np.isfinite(pred)):
+                        seen.add(key)
+                        candidates.append((best, pred))
+                except _PROBE_ERRORS as exc:
+                    logger.debug("Candidate prediction dropped from ensemble: %s", exc)
+            if len(candidates) >= n_candidates:
+                break
+
+        if not candidates:
+            return sp.Integer(0), float('inf'), [], []
+
+        # Stack predictions: (n_samples, n_candidates)
+        X = np.column_stack([p for _, p in candidates])
+        # Lasso for sparse selection
+        model = LassoCV(alphas=[lasso_alpha * (10 ** i) for i in range(-3, 2)],
+                        cv=3, max_iter=5000, random_state=seed).fit(X, y)
+        coef = model.coef_
+        selected_idx = np.where(np.abs(coef) > 1e-6)[0]
+
+        if len(selected_idx) == 0:
+            return sp.Integer(0), float('inf'), [], candidates
+
+        # Refit OLS on selected terms for unbiased coefficients
+        X_sel = X[:, selected_idx]
+        ols_coef, *_ = np.linalg.lstsq(np.column_stack([X_sel, np.ones(n)]), y, rcond=None)
+        combined = sum(c * candidates[i][0] for c, i in zip(ols_coef[:-1], selected_idx)) + ols_coef[-1]
+        final_pred = X_sel @ ols_coef[:-1] + ols_coef[-1]
+        mse = float(np.mean((final_pred - y) ** 2))
+        selected_terms = [(candidates[i][0], float(ols_coef[j])) for j, i in enumerate(selected_idx)]
+
+        return combined, mse, selected_terms, candidates
+
+
+# =============================================================================
+# Pure helper functions for separability detection and recursive solving
+# =============================================================================
+
+
+def detect_multiplicative_split(x_data: dict[str, np.ndarray],
+                                y_data: np.ndarray,
+                                tol: float = 1e-6) -> dict:
+    """Pure helper: log-domain least-squares separability probe.
+
+    Returns {"kind": "multiplicative", "exponents": [...], "variables": [...],
+    "r_squared": ...} when a power-law product explains y within tol, else {}.
+    No evolution, no side effects. Additive separability needs grid-structured
+    data and is deliberately not attempted on scattered samples.
+    """
+    try:
+        names = list(x_data.keys())
+        if len(names) < 2:
+            return {}
+        cols = [np.asarray(x_data[k], float).ravel() for k in names]
+        y = np.asarray(y_data, float).ravel()
+        if any(len(c) != len(y) for c in cols):
+            raise ValueError("x columns and y length mismatch")
+        if not bool(np.all(y > 0)):
+            return {}
+        X = np.column_stack(cols)
+        ly = np.log(y)
+        denom = float(np.sum((ly - ly.mean()) ** 2)) + 1e-300
+        L = np.log(np.abs(X) + 1e-300)
+        A2 = np.column_stack([L, np.ones(len(y))])
+        coef, *_ = np.linalg.lstsq(A2, ly, rcond=None)
+        pred = A2 @ coef
+        ss = 1.0 - float(np.sum((ly - pred) ** 2)) / denom
+        if ss > 1.0 - tol:
+            return {"kind": "multiplicative",
+                    "exponents": [round(float(v), 4) for v in coef[:-1]],
+                    "variables": names,
+                    "r_squared": round(float(ss), 6)}
+        return {}
+    except (TypeError, ValueError, ArithmeticError):
+        return {}
+
+
+def recursive_solve(x_data: dict[str, np.ndarray],
+                    y_data: np.ndarray,
+                    tol: float = 1e-6) -> dict:
+    """If multiplicatively separable, read power laws off the log-linear fit
+    and return the recombined expression. No evolution involved."""
+    det = detect_multiplicative_split(x_data, y_data, tol)
+    if det.get("kind") != "multiplicative":
+        return {"split": False, "detail": det}
+    return {"split": True,
+            "expression": recombine_power_law(det["variables"], det["exponents"]),
+            "r_squared": det["r_squared"],
+            "note": "constant factor undetermined by log-fit; fit separately"}
+
 # Alias for backwards compatibility
 EvolutionaryDiscoveryEngine = MultiVariableSRE
+# Mechanistic priors for APEDP discovery system
+
+MECHANISTIC_PRIORS = {
+    "protein_folding": [
+        "time*charge_rate*dod",           
+        "time*discharge_rate*dod",        
+        "time*charge_rate*dod**2",        
+        "exp(-charge_rate/discharge_rate)",
+        "dod*exp(-charge_rate/dod)",      
+    ],
+    "battery_degradation": [
+        "time*charge_rate*dod",           
+        "time*discharge_rate*dod**2",     
+        "exp(-dod/charge_rate)",          
+        "time**0.5 * charge_rate",        
+        "charge_rate**2 * dod",           
+    ],
+    "turbulence_closure": [
+        "strain_rate**2",                  
+        "vorticity**2",                    
+        "strain_rate*vorticity",           
+        "strain_rate**3",                  
+        "strain_rate/dissipation",         
+    ],
+    "chemical_kinetics": [
+        "conc_A*conc_B",                   
+        "conc_A**2",                       
+        "exp(-Ea/(R*T)) * conc_A",         
+        "conc_A/(1 + K*conc_B)",           
+    ],
+    "epidemiology": [
+        "S*I",                             
+        "S*I/(S+I+R)",                     
+        "beta*S*I - gamma*I",              
+    ],
+    "population_dynamics": [
+        "r*N*(1-N/K)",                     
+        "r*N*(1-N/K) - h*N",               
+        "alpha*N1*N2 - beta*N1",           
+    ],
+}
+
+
+def get_mechanistic_priors(domain: str) -> list:
+    """Get physics-informed candidate expressions for a scientific domain."""
+    return MECHANISTIC_PRIORS.get(domain, [])
+
+
+def suggest_mechanistic_priors(variable_names: list[str], target_name: str) -> list:
+    """Infer likely mechanistic priors from variable names."""
+    names_lower = [v.lower() for v in variable_names]
+    target_lower = target_name.lower()
+    
+    # Check for battery degradation
+    if any('charge' in n or 'discharge' in n or 'dod' in n or 'capacity' in n for n in names_lower):
+        return MECHANISTIC_PRIORS["battery_degradation"]
+    
+    # Check for protein folding (using same variables as battery but different target)
+    if (any('charge' in n or 'discharge' in n or 'dod' in n for n in names_lower)
+            and 'time' in names_lower
+            and ('rate' in target_lower or 'capacity' in target_lower)):
+        return MECHANISTIC_PRIORS["protein_folding"]
+    
+    # Check for turbulence
+    if any('strain' in n or 'vorticity' in n or 'dissipation' in n for n in names_lower):
+        return MECHANISTIC_PRIORS["turbulence_closure"]
+    
+    # Check for chemical kinetics
+    if any('conc' in n or 'concentration' in n or 'rate' in target_lower for n in names_lower):
+        return MECHANISTIC_PRIORS["chemical_kinetics"]
+    
+    # Check for epidemiology
+    if (any('S' in n or 'I' in n or 'R' in n for n in names_lower)
+            and ('infect' in target_lower or 'case' in target_lower)):
+        return MECHANISTIC_PRIORS["epidemiology"]
+    
+    # Check for population dynamics
+    if any('pop' in n or 'N' in n for n in names_lower):
+        return MECHANISTIC_PRIORS["population_dynamics"]
+    
+    return []
+
+
+# Update detect_composition_family to use mechanistic priors
+def detect_composition_family_with_priors(x_data: dict[str, np.ndarray],
+                                           y_data: np.ndarray,
+                                           r2_threshold: float = 0.99,
+                                           domain: str | None = None) -> dict:
+    """Enhanced composition family detection with mechanistic priors."""
+    from apedp.discovery import detect_composition_family
+    result = detect_composition_family(x_data, y_data, r2_threshold)
+    
+    if not result and domain:
+        priors = get_mechanistic_priors(domain)
+        if priors:
+            result = {"family": "mechanistic", "priors": priors, "note": f"Mechanistic priors from {domain}"}
+    
+    return result

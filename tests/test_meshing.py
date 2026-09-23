@@ -89,3 +89,11 @@ def test_refine_kills_hand_built_obtuse_corner():
         _triangle_max_angle(*np.asarray(rm["nodes"])[t]) for t in np.asarray(rm["triangles"])
     )
     assert after < before
+    assert rm["max_angle_deg"] == pytest.approx(after)
+    assert rm["target_max_angle_deg"] == pytest.approx(150.0)
+    assert rm["angle_limit_met"] is True
+    assert rm["refinement_status"] == "CONVERGED"
+
+    limited = refine_mesh_2d(nodes, tris, max_angle_deg=89.0, max_rounds=0)
+    assert limited["angle_limit_met"] is False
+    assert limited["max_angle_deg"] > limited["target_max_angle_deg"]

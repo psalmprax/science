@@ -1,12 +1,12 @@
 """APEDP Composer: data-free hypothesis generation from corpus laws.
 
 Combines known expressions into dimensionally-valid conjectures and tests
-them with symbolic probes only (no data): homogeneity, Pi-groups,
-correspondence limits (new -> parent), repair audit, and adversarial
-boundary/numerical falsification on declared domains.
+them with symbolic probes only (no data): homogeneity, correspondence limits
+(new -> parent), repair audit, and bounded boundary/numerical falsification.
 
 Every result is tagged THEORETICAL_SPECULATION — a ranked conjecture, never
-a validated law. Output strings feed directly into
+a validated law (maps to Classification.HEURISTIC in the 8-state ontology).
+Output strings feed directly into
 ``MultiVariableSRE(template_priors=...)`` once data arrives.
 """
 from __future__ import annotations
@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 
 import sympy as sp
 
-from apedp.core import BuckinghamPiEngine, DimensionalAssuranceEngine
+from apedp.core import DimensionalAssuranceEngine
 from apedp.repair import AgnosticClosedLoopAssuranceSystem
 from apedp.safety import limit_with_timeout, safe_parse_expr
 
@@ -115,7 +115,7 @@ class HypothesisComposer:
             return False
 
     def audit(self, expression: str, variable_units: dict[str, str] | None = None) -> dict:
-        """Symbolic-only test battery: homogeneity, Pi-shape, repair, limits."""
+        """Run dimensional homogeneity and bounded repair probes on an expression."""
         expr = self._parse(expression)
         if expr is None:
             return {"verdict": "UNPARSEABLE"}
@@ -163,6 +163,4 @@ class HypothesisComposer:
             if len(seen) >= max_candidates * 2:
                 break
         ranked = sorted(seen.values(), key=lambda c: c.score, reverse=True)
-        # Dedupe by Pi-signature shape is overkill here; string dedupe + rank suffices.
-        _ = BuckinghamPiEngine  # symbolic groups available to callers via core
         return ranked[:max_candidates]

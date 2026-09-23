@@ -504,7 +504,7 @@ def test_extended_anomaly_repair_logs_and_roots():
     agnostic = AgnosticClosedLoopAssuranceSystem()
 
     # 1. Logarithmic boundary anomaly
-    res_log = agnostic.autonomous_stress_test_and_repair("log(x_dist)")
+    res_log = agnostic.autonomous_stress_test_and_repair("log(x_dist)", variable_units={"x_dist": "dimensionless"})
     assert res_log['status'] == 'REPAIRED'
     assert any("Logarithmic" in err for _, err in res_log['anomalies'])
     # Check that repaired formula has no log(0) blowup
@@ -513,7 +513,7 @@ def test_extended_anomaly_repair_logs_and_roots():
     assert not np.isnan(subbed) and not np.isinf(subbed)
 
     # 2. Square-root branch-cut anomaly
-    res_sqrt = agnostic.autonomous_stress_test_and_repair("sqrt(h_height)")
+    res_sqrt = agnostic.autonomous_stress_test_and_repair("sqrt(h_height)", variable_units={"h_height": "dimensionless"})
     assert res_sqrt['status'] == 'REPAIRED'
     assert any("Square-root" in err for _, err in res_sqrt['anomalies'])
     repaired_sqrt = res_sqrt['repaired_expression']
@@ -672,15 +672,18 @@ def test_epistemic_adversarial_tournament_retirement():
         formula_str="G_grav * m1 * m2 / r**2",
         adversarial_probe_name="r_zero_limit",
         boundary_flaw_detected=True,
-        repaired_formula_str="G_grav * m1 * m2 / (r**2 + eps**2)"
+        repaired_formula_str="G_grav * m1 * m2 / (r**2 + eps**2)",
+        variable_units={"m1": "kilogram", "m2": "kilogram", "r": "meter", "eps": "meter", "G_grav": "meter**3 / (kilogram * second**2)"},
+        strict_units=True,
     )
 
-    assert result['outcome'] == 'REPAIRED_AND_VALIDATED'
+    # The tournament now returns REPAIRED_CANDIDATE - promotion requires explicit validation
+    assert result['outcome'] == 'REPAIRED_CANDIDATE'
     # The original hypothesis MUST be Retired
     assert result['hypothesis_state'] == 'Retired'
     assert lifecycle.get_state("Newton_Gravity_Hyp") == 'Retired'
-    # The regularized model MUST be Validated
-    assert result['final_state'] == 'Validated'
+    # The repaired model is a Candidate (not auto-promoted to Validated)
+    assert result['repaired_model_state'] == 'Candidate'
 
 
 def test_requirements_traceability_matrix_empty_guard():

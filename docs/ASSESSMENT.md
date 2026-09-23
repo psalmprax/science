@@ -1,5 +1,40 @@
 # APEDP — Project Understanding and Flaw Assessment
 
+## Current assessment
+
+APEDP is best characterized as a **domain-general scientific evidence and
+model-adjudication framework with domain-specific discovery components**. It
+has demonstrated candidate generation, locked prospective validation,
+physical refusal, domain qualification, explicit information firewalls, and
+documented sensitivity analysis. These capabilities support meaningful
+cross-domain evaluation, but do not establish universal correctness or
+general novel-law discovery.
+
+The real-RINEX GPS benchmark strengthens this assessment: APEDP recovered the
+Euclidean geometric-range structure from raw coordinate differences in a large
+real dataset and passed grouped unseen-satellite validation (grouped satellite validation). The result is
+still qualified by the declared feature grammar, dimensional-layer coverage,
+external replication status, and inverse-problem conditioning. In particular,
+low pseudorange residuals do not imply a well-identified receiver position
+under singular satellite geometry.
+
+Current reports should separate:
+
+- numerical discovery from scientific admission;
+- structural recovery from parameter identifiability;
+- short-horizon forecast accuracy from long-run parameter knowledge;
+- cross-observable validation from independent replication;
+- domain-specific adapters from an agnostic core.
+
+The remaining high-value evidence gap is a genuinely blind candidate that is
+frozen before literature comparison and then validated on an independent
+dataset or prospective experiment.
+
+Rolling-origin diagnostics add a separate limitation check: parameter drift
+across training origins is evidence of origin sensitivity, not a formal
+uncertainty interval. Profile likelihood, bootstrap, or another declared
+uncertainty procedure is required before reporting parameter intervals.
+
 *Scope: the full `apedp/` package, `tests/`, `self_validation.py`, API server, and pipeline.
 Evidence base: equation census (~30 distinct laws), head-to-head discovery benchmarks,
 an exp-operator prototype, two integrated features (`allow_exp`/`template_priors`/`inner_fit`,

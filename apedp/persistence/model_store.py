@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -13,6 +14,22 @@ import sympy as sp
 from apedp.safety import safe_parse_expr
 
 logger = logging.getLogger(__name__)
+
+# Regex to detect path traversal attempts
+_PATH_TRAVERSAL_RE = re.compile(r'(\.\.|//|\\\\|%2e%2e|%2f|%5c)', re.IGNORECASE)
+
+
+def _sanitize_path_component(name: str) -> str:
+    """Sanitize a path component to prevent directory traversal."""
+    # Remove any path separators and traversal sequences
+    sanitized = re.sub(r'[\\/]+', '_', name)
+    sanitized = _PATH_TRAVERSAL_RE.sub('', sanitized)
+    # Limit length
+    if len(sanitized) > 200:
+        sanitized = sanitized[:200]
+    if not sanitized:
+        sanitized = "unnamed"
+    return sanitized
 
 
 def _atomic_write_text(path: Path, text: str) -> None:
@@ -26,7 +43,7 @@ def _atomic_write_text(path: Path, text: str) -> None:
     swap atomic on POSIX and on same-volume Windows renames — a reader sees
     either the old file or the complete new one, never a half-written one.
     """
-    tmp_path = path.with_name(f".{path.name}.tmp")
+    tmp_path = path.with_name(f".{path.name}.{os.getpid()}.tmp")
     with open(tmp_path, "w", encoding="utf-8") as f:
         f.write(text)
         f.flush()
@@ -52,8 +69,9 @@ class ModelStore:
         metadata: dict | None = None,
     ) -> str:
         """Save a discovered model to disk."""
+        safe_name = _sanitize_path_component(model_name)
         model_entry = {
-            "model_name": model_name,
+            "model_name": safe_name,
             "expression": str(expression),
             "variables": variables,
             "r_squared": r_squared,
@@ -61,11 +79,11 @@ class ModelStore:
             "metadata": metadata or {},
             "sympy_expr": sp.latex(expression),
         }
-        model_id = f"{model_name}_{self._timestamp()}"
+        model_id = f"{safe_name}_{self._timestamp()}"
         filepath = self.base_dir / f"{model_id}.json"
         _atomic_write_text(filepath, json.dumps(model_entry, indent=2, default=str))
         self._registry[model_id] = model_entry
-        logger.info("Saved model '%s' to %s", model_name, filepath)
+        logger.info("Saved model '%s' to %s", safe_name, filepath)
         return model_id
 
     def load_model(self, model_id: str) -> dict | None:
@@ -75,15 +93,16 @@ class ModelStore:
         expression. Use :meth:`load_model_expr` when you want something
         symbolically manipulable.
         """
-        if model_id in self._registry:
-            return self._registry[model_id]
-        filepath = self.base_dir / f"{model_id}.json"
+        safe_id = _sanitize_path_component(model_id)
+        if safe_id in self._registry:
+            return self._registry[safe_id]
+        filepath = self.base_dir / f"{safe_id}.json"
         if not filepath.exists():
-            logger.warning("Model '%s' not found", model_id)
+            logger.warning("Model '%s' not found", safe_id)
             return None
         with open(filepath, encoding="utf-8") as f:
             model: dict[str, Any] = json.load(f)
-        self._registry[model_id] = model
+        self._registry[safe_id] = model
         return model
 
     def load_model_expr(self, model_id: str) -> sp.Expr | None:
@@ -118,17 +137,18 @@ class ModelStore:
         reported an empty store while the files were there -- the caller could not
         discover a saved model without already knowing its ID.
         """
-        on_disk = sorted(path.stem for path in self.base_dir.glob("*.json"))
+        on_disk = sorted(path.stem for path in self.base_dir.glob("*.json") if not path.name.startswith("."))
         known = set(on_disk) | set(self._registry)
         return sorted(known)
 
     def delete_model(self, model_id: str) -> bool:
         """Delete a model by ID."""
-        filepath = self.base_dir / f"{model_id}.json"
+        safe_id = _sanitize_path_component(model_id)
+        filepath = self.base_dir / f"{safe_id}.json"
         if filepath.exists():
             filepath.unlink()
-        self._registry.pop(model_id, None)
-        logger.info("Deleted model '%s'", model_id)
+        self._registry.pop(safe_id, None)
+        logger.info("Deleted model '%s'", safe_id)
         return True
 
     def _timestamp(self) -> str:

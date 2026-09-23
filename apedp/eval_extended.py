@@ -83,7 +83,9 @@ def evaluate_implicit(
         return float(val.real)
 
     result = _run_bounded(_solve, timeout)
-    assert isinstance(result, float)
+    if not isinstance(result, float):
+        raise TypeError(f"Bounded solver returned {type(result).__name__}, expected float")
+
     return result
 
 
@@ -128,7 +130,9 @@ def evaluate_implicit_system(
         return out
 
     result = _run_bounded(_solve, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Bounded solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -161,11 +165,16 @@ def evaluate_quadrature(
         if not bool(np.all(finite)):
             bad = int(np.sum(~finite))
             raise ArithmeticError(f"Integrand non-finite at {bad}/{len(vals)} points")
-        trapz = getattr(np, "trapezoid", None) or np.trapz
+        # numpy >= 2.0 renamed ``trapz`` -> ``trapezoid``. Reaching the 1.x name
+        # through getattr keeps both working while avoiding a direct attribute
+        # access that the 2.x stubs no longer define (the B009 cost of that).
+        trapz = getattr(np, "trapezoid", None) or getattr(np, "trapz")  # noqa: B009
         return float(trapz(vals, xs))
 
     result = _run_bounded(_quad, timeout)
-    assert isinstance(result, float)
+    if not isinstance(result, float):
+        raise TypeError(f"Bounded solver returned {type(result).__name__}, expected float")
+
     return result
 
 
@@ -316,7 +325,9 @@ def evaluate_ode_ivp(
         return ys
 
     result = _run_bounded(_integrate, timeout)
-    assert isinstance(result, np.ndarray)
+    if not isinstance(result, np.ndarray):
+        raise TypeError(f"Bounded solver returned {type(result).__name__}, expected ndarray")
+
     return result
 
 
@@ -409,7 +420,9 @@ def evaluate_ode_system(
         return ys
 
     result = _run_bounded(_integrate, timeout)
-    assert isinstance(result, np.ndarray)
+    if not isinstance(result, np.ndarray):
+        raise TypeError(f"Bounded solver returned {type(result).__name__}, expected ndarray")
+
     return result
 
 
@@ -445,7 +458,9 @@ def evaluate_einsum(
         return out
 
     result = _run_bounded(_contract, timeout)
-    assert isinstance(result, np.ndarray)
+    if not isinstance(result, np.ndarray):
+        raise TypeError(f"Bounded solver returned {type(result).__name__}, expected ndarray")
+
     return result
 
 
@@ -529,7 +544,9 @@ def evaluate_indexed(
     for coeff, subs, ops in parsed:
         part_result = evaluate_einsum(",".join(subs) + "->" + "".join(out_idx), *ops, timeout=timeout)
         total = coeff * part_result if total is None else total + coeff * part_result
-    assert total is not None
+    if total is None:
+        raise ValueError("Integration produced no total")
+
     _ = out_name
     return total
 
@@ -613,7 +630,7 @@ def parse_indexed_to_sympy(
             else:
                 kept.append((name, idx))
 
-        def _apply(idx: list[str]) -> list[str]:
+        def _apply(idx: list[str], rename: dict[str, str]) -> list[str]:
             seen: set[str] = set()
             mapped = []
             for i in idx:
@@ -628,7 +645,7 @@ def parse_indexed_to_sympy(
         pieces: list[sp.Basic] = list(scalars)
         term_idx: list[str] = []
         for name, idx in kept:
-            mapped = _apply(idx)
+            mapped = _apply(idx, rename)
             pieces.append(_indexed(name, mapped))
             term_idx.extend(mapped)
         prod: sp.Basic = pieces[0]
@@ -637,7 +654,9 @@ def parse_indexed_to_sympy(
         for idx in set(term_idx) - set(out_idx):
             prod = sp.Sum(prod, (sp.Symbol(idx), 0, int(dims[idx]) - 1))
         total = sign * prod if total is None else total + sign * prod
-    assert total is not None
+    if total is None:
+        raise ValueError("Integration produced no total")
+
     return out_expr, total
 
 
@@ -690,7 +709,7 @@ def simulate_sde_euler_maruyama(
         fa = sp.lambdify((x_sym, y_sym), a_expr.subs(subs), modules=["numpy"])
         fb = sp.lambdify((x_sym, y_sym), b_expr.subs(subs), modules=["numpy"])
         rng = np.random.RandomState(int(seed))
-        n_steps = int(round(float(total_time) / float(dt)))
+        n_steps = round(float(total_time) / float(dt))
         xs = np.linspace(0.0, float(total_time), n_steps + 1)
         paths = np.empty((int(n_paths), n_steps + 1))
         paths[:, 0] = float(y0)
@@ -714,7 +733,9 @@ def simulate_sde_euler_maruyama(
         }
 
     result = _run_bounded(_simulate, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Bounded solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -785,7 +806,9 @@ def evaluate_pde_residual(
         }
 
     result = _run_bounded(_residual, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Bounded solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -849,7 +872,9 @@ def solve_heat_1d_explicit(
         return {"x": x, "u": u, "dx": dx, "dt": dt, "r": r}
 
     result = _run_bounded(_solve, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Bounded solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -905,7 +930,9 @@ def solve_eigen(
         }
 
     result = _run_bounded(_decompose, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Bounded solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -929,7 +956,9 @@ def _scan_events(
 def _hit_int(hit: dict[str, object], key: str) -> int:
     """Typed access into scan-hit dicts (mypi-safe)."""
     v = hit[key]
-    assert isinstance(v, int)
+    if not isinstance(v, int):
+        raise TypeError(f"Expected an int grid index, got {type(v).__name__}")
+
     return v
 
 def evaluate_ode_events(
@@ -976,7 +1005,9 @@ def evaluate_ode_events(
         i = hit_index
         return {"xs": xs[: i + 1], "ys": ys[: i + 1], "event": hit}
     bracket = hit["bracket"]
-    assert isinstance(bracket, tuple) and len(bracket) == 2
+    if not (isinstance(bracket, tuple) and len(bracket) == 2):
+        raise ValueError(f"Expected a (low, high) bracket tuple, got {bracket!r}")
+
     xa, xb = float(bracket[0]), float(bracket[1])
     ev_name = str(hit["event"])
     i = _hit_int(hit, "index")
@@ -1049,7 +1080,9 @@ def evaluate_ode_system_events(
         i = hit_index
         return {"xs": xs[: i + 1], "ys": ys[: i + 1, :], "event": hit}
     bracket = hit["bracket"]
-    assert isinstance(bracket, tuple) and len(bracket) == 2
+    if not (isinstance(bracket, tuple) and len(bracket) == 2):
+        raise ValueError(f"Expected a (low, high) bracket tuple, got {bracket!r}")
+
     xa, xb = float(bracket[0]), float(bracket[1])
     ev_name = str(hit["event"])
     i = _hit_int(hit, "index")

@@ -1,17 +1,20 @@
-"""APEDP meshing: Delaunay triangulation and structured helpers, numpy only.
+"""APEDP meshing: exact-predicate 2D/3D Delaunay and structured helpers.
 
 Bowyer-Watson Delaunay over user points (bounded size, seeded insertion
-order, determinant circumcircle predicate) plus a uniform-grid triangulator.
+order, determinant circumcircle predicate) plus exact-predicate 3D
+tetrahedralization and a uniform-grid triangulator.
 Every Bowyer-Watson result is *validated* (Euler count ``T = 2n-2-k`` plus
 area-vs-hull match) across successive seeds — near-cocircular inputs can
 defeat any float predicate, so a triangulation that fails validation is
 retried, and persistent failure raises instead of returning a mesh with
-holes or overlaps. Output ``(nodes, triangles)`` feeds
+holes or overlaps. The 3D path adds exact Bareiss orientation/insphere
+predicates and returns ``(nodes, tetrahedra)``; the 2D output feeds
 :func:`apedp.pde_solvers.solve_poisson_fem` directly.
 """
 from __future__ import annotations
 
 import logging
+import math
 
 import numpy as np
 
@@ -52,7 +55,7 @@ def _quantize_global(pts: list[np.ndarray]) -> list[tuple[int, int]]:
     lox, loy = min(xs), min(ys)
     span = max(max(xs) - lox, max(ys) - loy, 1e-300)
     return [
-        (int(round((x - lox) / span * _QUANTUM)), int(round((y - loy) / span * _QUANTUM)))
+        (round((x - lox) / span * _QUANTUM), round((y - loy) / span * _QUANTUM))
         for x, y in zip(xs, ys)
     ]
 
@@ -162,7 +165,8 @@ def _convex_hull_ordered(pts: np.ndarray) -> list[int]:
                 and float(np.sum((pts[i] - pts[cur]) ** 2)) > float(np.sum((pts[nxt] - pts[cur]) ** 2))
             ):
                 nxt = i
-        assert nxt is not None
+        if nxt is None:  # invariant: assigned inside the scan above
+            raise RuntimeError("Convex-hull walk selected no next point")
         if nxt == start:
             break
         hull.append(nxt)
@@ -381,7 +385,9 @@ def _validate_tris(pts: np.ndarray, tris: np.ndarray, hull_area: float) -> bool:
                 return False
             covered[int(i)] = True
         p = pts[np.asarray(t)]
-        area = abs(float(np.cross(p[1] - p[0], p[2] - p[0]))) / 2
+        edge_a = p[1] - p[0]
+        edge_b = p[2] - p[0]
+        area = abs(float(edge_a[0] * edge_b[1] - edge_a[1] * edge_b[0])) / 2
         if area <= 1e-300:
             return False
         area_sum += area
@@ -459,9 +465,9 @@ def smooth_mesh_2d(
             | (np.abs(pts[:, 1] - pts[:, 1].min()) < 1e-12)
             | (np.abs(pts[:, 1] - pts[:, 1].max()) < 1e-12)
         )
-        fixed_set = set(int(i) for i in np.where(on_box)[0])
+        fixed_set = {int(i) for i in np.where(on_box)[0]}
     else:
-        fixed_set = set(int(i) for i in np.asarray(fixed).ravel())
+        fixed_set = {int(i) for i in np.asarray(fixed).ravel()}
     adj: dict[int, set[int]] = {i: set() for i in range(n)}
     for t in tris:
         for a, b in ((t[0], t[1]), (t[1], t[2]), (t[2], t[0])):
@@ -554,8 +560,10 @@ def refine_mesh_2d(
     a no-op on its output; obtuse corners are the real FEM killer. While any
     triangle exceeds ``max_angle_deg``, insert its circumcenter (or split the
     encroached boundary segment, or decimate an extreme interior obtuse
-    apex) and re-triangulate. Returns the best validated mesh seen — never an
-    error unless even the input cannot be triangulated.
+    apex) and re-triangulate. Returns the best validated mesh seen, together
+    with ``max_angle_deg``, ``target_max_angle_deg``, ``angle_limit_met``, and
+    ``refinement_status`` so unresolved obtuse corners are explicit rather
+    than silently accepted.
     """
     pts = np.asarray(nodes, dtype=float)
     tris = np.asarray(triangles, dtype=int)
@@ -624,17 +632,17 @@ def refine_mesh_2d(
         if worst_ang > 170.0:
             # Extreme obtuse corner: decimate its vertex when interior (the
             # circumcenter lies uselessly far outside for such needles).
-            def _angle_at(k: int) -> float:
+            def _angle_at(k: int, pts) -> float:
                 import math
 
-                u = p[(k + 1) % 3] - p[k]
-                v = p[(k + 2) % 3] - p[k]
+                u = pts[(k + 1) % 3] - pts[k]
+                v = pts[(k + 2) % 3] - pts[k]
                 nu, nv = float(np.linalg.norm(u)), float(np.linalg.norm(v))
                 if nu <= 0 or nv <= 0:
                     return 180.0
                 return math.degrees(math.acos(max(-1.0, min(1.0, float(u @ v) / (nu * nv)))))
 
-            apex_local = int(np.argmax([_angle_at(k) for k in range(3)]))
+            apex_local = int(np.argmax([_angle_at(k, p) for k in range(3)]))
             apex_global = _global_index(cur_pts, points, worst_tri[apex_local])
             hull_now = set(_convex_hull_ordered(cur_pts))
             if apex_global is not None and len(points) > 4 and worst_tri[apex_local] not in hull_now:
@@ -691,7 +699,301 @@ def refine_mesh_2d(
                 if cur_ang < champion[1]:
                     champion = (cand, cur_ang)
     out, _ = champion
-    if champion[1] >= 180.0:
+    no_progress = champion[1] >= 180.0
+    if no_progress:
         logger.warning("Refinement made no progress; returning input mesh")
-        return {"nodes": pts, "triangles": tris, "num_nodes": len(pts), "num_elements": len(tris)}
+        out = {"nodes": pts, "triangles": tris, "num_nodes": len(pts), "num_elements": len(tris)}
+    out = dict(out)
+    result_nodes = np.asarray(out["nodes"], dtype=float)
+    result_triangles = np.asarray(out["triangles"], dtype=int)
+    reported_angle = (
+        180.0
+        if result_triangles.size == 0
+        else max(_triangle_max_angle(*result_nodes[t]) for t in result_triangles)
+    )
+    if no_progress:
+        status = "NO_PROGRESS"
+    elif reported_angle <= float(max_angle_deg):
+        status = "CONVERGED"
+    else:
+        status = "LIMIT_REACHED"
+        logger.warning(
+            "Refinement stopped with max angle %.3f° above target %.3f°",
+            float(reported_angle),
+            float(max_angle_deg),
+        )
+    out.update(
+        {
+            "max_angle_deg": float(reported_angle),
+            "target_max_angle_deg": float(max_angle_deg),
+            "angle_limit_met": bool(status == "CONVERGED"),
+            "refinement_status": status,
+        }
+    )
     return out
+def _bareiss_det_int(matrix: list[list[int]]) -> int:
+    """Exact determinant of a square integer matrix using Bareiss elimination."""
+    if not matrix or any(len(row) != len(matrix) for row in matrix):
+        raise ValueError("matrix must be a non-empty square matrix")
+    a = [list(row) for row in matrix]
+    n = len(a)
+    sign = 1
+    previous = 1
+    for pivot_col in range(n - 1):
+        pivot_row = next(
+            (row for row in range(pivot_col, n) if a[row][pivot_col] != 0),
+            None,
+        )
+        if pivot_row is None:
+            return 0
+        if pivot_row != pivot_col:
+            a[pivot_col], a[pivot_row] = a[pivot_row], a[pivot_col]
+            sign = -sign
+        pivot = a[pivot_col][pivot_col]
+        for row in range(pivot_col + 1, n):
+            for col in range(pivot_col + 1, n):
+                numerator = a[row][col] * pivot - a[row][pivot_col] * a[pivot_col][col]
+                if previous != 1:
+                    if numerator % previous != 0:
+                        raise ArithmeticError("Bareiss elimination lost exact divisibility")
+                    numerator //= previous
+                a[row][col] = numerator
+            a[row][pivot_col] = 0
+        previous = pivot
+    return sign * a[-1][-1]
+
+
+def _orient3d_q(
+    a: tuple[int, int, int],
+    b: tuple[int, int, int],
+    c: tuple[int, int, int],
+    d: tuple[int, int, int],
+) -> int:
+    """Exact signed orientation determinant for four integer-lattice points."""
+    return _bareiss_det_int([
+        [a[0], a[1], a[2], 1],
+        [b[0], b[1], b[2], 1],
+        [c[0], c[1], c[2], 1],
+        [d[0], d[1], d[2], 1],
+    ])
+
+
+def _insphere_q(
+    a: tuple[int, int, int],
+    b: tuple[int, int, int],
+    c: tuple[int, int, int],
+    d: tuple[int, int, int],
+    e: tuple[int, int, int],
+) -> bool:
+    """Exact in-sphere predicate, normalized for either tetra orientation."""
+    orientation = _orient3d_q(a, b, c, d)
+    if orientation == 0:
+        return False
+    def row(point: tuple[int, int, int]) -> list[int]:
+        x, y, z = point
+        return [x, y, z, x * x + y * y + z * z, 1]
+
+    determinant = _bareiss_det_int([row(a), row(b), row(c), row(d), row(e)])
+    return determinant * (1 if orientation > 0 else -1) > 0
+
+
+def _quantize_global_3d(points: list[np.ndarray]) -> list[tuple[int, int, int]]:
+    """Map one 3D point set to a shared exact integer lattice."""
+    data = np.asarray(points, dtype=float)
+    lower = data.min(axis=0)
+    span = max(float(np.ptp(data, axis=0).max()), 1e-300)
+    return [
+        (
+            round((float(point[0]) - float(lower[0])) / span * _QUANTUM),
+            round((float(point[1]) - float(lower[1])) / span * _QUANTUM),
+            round((float(point[2]) - float(lower[2])) / span * _QUANTUM),
+        )
+        for point in data
+    ]
+
+
+def _tetra_volume6(points: np.ndarray, tetrahedron: np.ndarray) -> float:
+    """Return six times the absolute tetrahedron volume."""
+    a, b, c, d = points[np.asarray(tetrahedron, dtype=int)]
+    return abs(float(np.linalg.det(np.vstack((b - a, c - a, d - a)))))
+
+
+def _sorted_pair(a: int, b: int) -> tuple[int, int]:
+    ordered = sorted((a, b))
+    return ordered[0], ordered[1]
+
+
+def _sorted_triple(values: tuple[int, int, int]) -> tuple[int, int, int]:
+    ordered = sorted(values)
+    return ordered[0], ordered[1], ordered[2]
+
+
+def _validate_tetrahedra(points: np.ndarray, tetrahedra: np.ndarray) -> bool:
+    """Validate coverage, manifold faces, connected boundary, and Euler count."""
+    if tetrahedra.ndim != 2 or tetrahedra.shape[1] != 4 or len(tetrahedra) == 0:
+        return False
+    n = len(points)
+    covered = np.zeros(n, dtype=bool)
+    seen: set[tuple[int, int, int, int]] = set()
+    faces: dict[tuple[int, int, int], int] = {}
+    edges: set[tuple[int, int]] = set()
+    volume6 = 0.0
+    scale = max(float(np.ptp(points, axis=0).max()), 1.0) ** 3
+    for tetrahedron in tetrahedra:
+        indices = (int(tetrahedron[0]), int(tetrahedron[1]), int(tetrahedron[2]), int(tetrahedron[3]))
+        if len(set(indices)) != 4 or any(value < 0 or value >= n for value in indices):
+            return False
+        ordered = sorted(indices)
+        canonical = (ordered[0], ordered[1], ordered[2], ordered[3])
+        if canonical in seen:
+            return False
+        seen.add(canonical)
+        covered[list(indices)] = True
+        volume = _tetra_volume6(points, np.asarray(indices))
+        if not math.isfinite(volume) or volume <= 1e-14 * scale:
+            return False
+        volume6 += volume
+        faces_of_tetra: tuple[tuple[int, int, int], ...] = (
+            (indices[0], indices[1], indices[2]),
+            (indices[0], indices[3], indices[1]),
+            (indices[0], indices[2], indices[3]),
+            (indices[1], indices[3], indices[2]),
+        )
+        for face in faces_of_tetra:
+            key = _sorted_triple(face)
+            faces[key] = faces.get(key, 0) + 1
+            if faces[key] > 2:
+                return False
+        edges_of_tetra: tuple[tuple[int, int], ...] = (
+            (indices[0], indices[1]),
+            (indices[0], indices[2]),
+            (indices[0], indices[3]),
+            (indices[1], indices[2]),
+            (indices[1], indices[3]),
+            (indices[2], indices[3]),
+        )
+        for edge in edges_of_tetra:
+            edges.add(_sorted_pair(edge[0], edge[1]))
+    if not bool(np.all(covered)) or not math.isfinite(volume6) or volume6 <= 0:
+        return False
+    boundary = [face for face, count in faces.items() if count == 1]
+    if not boundary:
+        return False
+    boundary_vertices = {vertex for face in boundary for vertex in face}
+    boundary_adjacency: dict[int, set[int]] = {vertex: set() for vertex in boundary_vertices}
+    for a, b, c in boundary:
+        boundary_adjacency[a].update((b, c))
+        boundary_adjacency[b].update((a, c))
+        boundary_adjacency[c].update((a, b))
+    reached = {min(boundary_vertices)}
+    frontier = list(reached)
+    while frontier:
+        vertex = frontier.pop()
+        for neighbor in boundary_adjacency[vertex]:
+            if neighbor not in reached:
+                reached.add(neighbor)
+                frontier.append(neighbor)
+    if reached != boundary_vertices:
+        return False
+    vertices, face_count, tetra_count = n, len(faces), len(tetrahedra)
+    return vertices - len(edges) + face_count - tetra_count == 1
+
+
+def _bowyer_watson_3d(points: np.ndarray, seed: int) -> np.ndarray | None:
+    """One exact-predicate 3D Bowyer-Watson pass."""
+    lower, upper = points.min(axis=0), points.max(axis=0)
+    span = max(float(np.ptp(points, axis=0).max()), 1e-9)
+    center = (lower + upper) / 2
+    extent = 20.0 * span
+    supertetra = np.asarray([
+        center + [-extent, -extent, -extent],
+        center + [extent, -extent, extent],
+        center + [-extent, extent, extent],
+        center + [extent, extent, -extent],
+    ])
+    vertices = [np.asarray(point) for point in supertetra] + [np.asarray(point) for point in points]
+    qvertices = _quantize_global_3d(vertices)
+    tetrahedra: list[tuple[int, int, int, int]] = [(0, 1, 2, 3)]
+    rng = np.random.RandomState(int(seed))
+    insertion_order = list(range(4, len(vertices)))
+    rng.shuffle(insertion_order)
+    for index in insertion_order:
+        bad = [
+            tetrahedron for tetrahedron in tetrahedra
+            if _insphere_q(
+                qvertices[tetrahedron[0]], qvertices[tetrahedron[1]],
+                qvertices[tetrahedron[2]], qvertices[tetrahedron[3]], qvertices[index],
+            )
+        ]
+        if not bad:
+            return None
+        face_counts: dict[tuple[int, int, int], int] = {}
+        face_orientations: dict[tuple[int, int, int], tuple[int, int, int]] = {}
+        for tetrahedron in bad:
+            faces_of_tetra: tuple[tuple[int, int, int], ...] = (
+                (tetrahedron[0], tetrahedron[1], tetrahedron[2]),
+                (tetrahedron[0], tetrahedron[3], tetrahedron[1]),
+                (tetrahedron[0], tetrahedron[2], tetrahedron[3]),
+                (tetrahedron[1], tetrahedron[3], tetrahedron[2]),
+            )
+            for face in faces_of_tetra:
+                key = _sorted_triple(face)
+                face_counts[key] = face_counts.get(key, 0) + 1
+                face_orientations[key] = face
+        bad_set = set(bad)
+        tetrahedra = [tetrahedron for tetrahedron in tetrahedra if tetrahedron not in bad_set]
+        for key, count in face_counts.items():
+            if count != 1:
+                continue
+            face = face_orientations[key]
+            candidate = (face[0], face[1], face[2], index)
+            if _orient3d_q(*[qvertices[value] for value in candidate]) != 0:
+                tetrahedra.append(candidate)
+    result = [tetrahedron for tetrahedron in tetrahedra if all(value >= 4 for value in tetrahedron)]
+    if not result:
+        return None
+    return np.asarray([(a - 4, b - 4, c - 4, d - 4) for a, b, c, d in result], dtype=int)
+
+
+def delaunay_triangulate_3d(
+    points: list[list[float]] | np.ndarray,
+    seed: int = 0,
+) -> dict[str, object]:
+    """Exact-predicate 3D Delaunay tetrahedralization of a point cloud.
+
+    Returns ``nodes`` and ``tetrahedra`` (index quadruples), with deterministic
+    seed retries for cospherical inputs. Inputs are deduplicated and bounded;
+    coplanar or persistently invalid point sets raise instead of returning a
+    mesh with missing volume. The predicates use a shared integer lattice and
+    Bareiss determinants, matching the 2D mesher's exact-predicate contract.
+    """
+    pts = np.asarray(points, dtype=float)
+    if pts.ndim != 2 or pts.shape[1] != 3:
+        raise ValueError("points must be (N, 3)")
+    if not bool(np.all(np.isfinite(pts))):
+        raise ValueError("points must be finite")
+    pts = np.unique(np.round(pts, decimals=12), axis=0)
+    n = len(pts)
+    if n < 4:
+        raise ValueError("Need at least 4 points")
+    if n > 2000:
+        raise ValueError("Need N <= 2000 for 3D Bowyer-Watson insertion")
+    centered = pts - pts.mean(axis=0)
+    _, singular, _ = np.linalg.svd(centered, full_matrices=False)
+    if singular[2] <= 1e-12 * max(singular[0], 1e-300):
+        raise ValueError("Points are coplanar: no tetrahedralization exists")
+    for attempt in range(_MAX_SEED_RETRIES):
+        tetrahedra = _bowyer_watson_3d(pts, int(seed) + attempt)
+        if tetrahedra is not None and _validate_tetrahedra(pts, tetrahedra):
+            if attempt:
+                logger.info("3D triangulation validated on seed retry %d", attempt)
+            return {
+                "nodes": pts,
+                "tetrahedra": tetrahedra,
+                "num_nodes": n,
+                "num_elements": len(tetrahedra),
+            }
+    raise ArithmeticError(
+        f"No valid 3D tetrahedralization in {_MAX_SEED_RETRIES} seed retries "
+        "(holes, degeneracies, or non-manifold faces persisted)"
+    )

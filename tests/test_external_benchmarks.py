@@ -1,5 +1,8 @@
+# Databricks notebook source
 """Tests for APEDP External Benchmark Ingestion & Empirical Ground-Truth Adapters."""
 from __future__ import annotations
+
+import csv
 
 import numpy as np
 import pytest
@@ -16,6 +19,11 @@ from apedp.ingestion import (
     FeynmanBenchmarkCase,
     NACA0012TransonicBenchmark,
     NanocrystallineMicrocompressionBenchmark,
+    NISTWebBookAdapter,
+    NISTWebBookCase,
+    apply_noise_ladder,
+    build_nist_manifest,
+    run_nist_blind_discovery,
 )
 
 
@@ -207,3 +215,91 @@ def test_nanocrystalline_microcompression_benchmark():
     assert bench_result.worst_severity == FailureSeverity.PASS
     assert bench_result.epistemic_consequence == "CONTRACT_VALIDATED"
     assert lm.get_state("HP-EXP-001") == "Contract_Validated"
+
+
+def test_nist_adapter_uses_grouped_compound_holdout(tmp_path):
+    path = tmp_path / "nist_export.csv"
+    with open(path, "w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["compound", "T", "Cp"])
+        writer.writeheader()
+        writer.writerows([
+            {"compound": "water", "T": 300, "Cp": 75.3},
+            {"compound": "water", "T": 350, "Cp": 75.5},
+            {"compound": "ethanol", "T": 300, "Cp": 112.4},
+            {"compound": "ethanol", "T": 350, "Cp": 115.0},
+        ])
+    case = NISTWebBookCase(
+        case_id="nist_cp_demo",
+        compound="water+ethanol",
+        property_name="Cp",
+        property_unit="joule / mole / kelvin",
+        variable_units={"T": "kelvin"},
+        literature_equation="withheld",
+    )
+    dataset = NISTWebBookAdapter().load_csv(
+        path,
+        case,
+        feature_columns=("T",),
+        target_column="Cp",
+        group_column="compound",
+        holdout_groups=("ethanol",),
+    )
+    assert dataset.y_train.tolist() == [75.3, 75.5]
+    assert dataset.y_holdout.tolist() == [112.4, 115.0]
+    assert dataset.provenance["holdout_groups"] == ["ethanol"]
+    assert "literature_equation" in dataset.firewall.forbidden
+
+
+def test_nist_noise_ladder_changes_training_only(tmp_path):
+    path = tmp_path / "nist_export.csv"
+    with open(path, "w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["compound", "T", "Cp"])
+        writer.writeheader()
+        writer.writerows([
+            {"compound": "water", "T": 300, "Cp": 75.3},
+            {"compound": "water", "T": 350, "Cp": 75.5},
+            {"compound": "ethanol", "T": 300, "Cp": 112.4},
+            {"compound": "ethanol", "T": 350, "Cp": 115.0},
+        ])
+    case = NISTWebBookCase("nist_noise", "water+ethanol", "Cp", property_unit="joule / mole / kelvin")
+    dataset = NISTWebBookAdapter().load_csv(path, case, feature_columns=("T",), target_column="Cp", group_column="compound", holdout_groups=("ethanol",))
+    variants = apply_noise_ladder(dataset, noise_levels=(0.0, 0.05), seed=11)
+    assert variants[0].y_train.tolist() == dataset.y_train.tolist()
+    assert variants[1].y_train.tolist() != dataset.y_train.tolist()
+    assert variants[1].y_holdout.tolist() == dataset.y_holdout.tolist()
+    assert variants[1].provenance["clean_holdout_preserved"] is True
+
+
+def test_nist_manifest_is_pre_discovery_and_withholds_literature(tmp_path):
+    path = tmp_path / "nist_export.csv"
+    with open(path, "w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["compound", "T", "Cp"])
+        writer.writeheader()
+        writer.writerows([
+            {"compound": "water", "T": 300, "Cp": 75.3},
+            {"compound": "ethanol", "T": 300, "Cp": 112.4},
+        ])
+    case = NISTWebBookCase("nist_manifest", "water+ethanol", "Cp", property_unit="dimensionless", literature_equation="hidden")
+    dataset = NISTWebBookAdapter().load_csv(path, case, feature_columns=("T",), target_column="Cp", group_column="compound", holdout_groups=("ethanol",))
+    manifest = build_nist_manifest(dataset, case, seeds=(7, 42), grammar={"track": "uninformed"}, operator_limits={"max_depth": 6})
+    assert manifest["protocol_status"] == "INFRASTRUCTURE_ONLY"
+    assert manifest["source_sha256"]
+    assert manifest["literature_equation_withheld"] is True
+    assert manifest["holdout_groups"] == ["ethanol"]
+
+
+def test_nist_blind_runner_scores_locked_holdout_without_literature(tmp_path):
+    path = tmp_path / "nist_runner.csv"
+    with open(path, "w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["compound", "T", "Cp"])
+        writer.writeheader()
+        for compound, offset in (("water", 0.0), ("ethanol", 10.0)):
+            for temperature in range(300, 351, 5):
+                writer.writerow({"compound": compound, "T": temperature, "Cp": 2.0 * temperature + offset})
+    case = NISTWebBookCase("nist_runner", "water+ethanol", "Cp", property_unit="dimensionless", variable_units={"T": "dimensionless"}, literature_equation="2*T+offset")
+    dataset = NISTWebBookAdapter().load_csv(path, case, feature_columns=("T",), target_column="Cp", group_column="compound", holdout_groups=("ethanol",))
+    result = run_nist_blind_discovery(dataset, case, seed=7, generations=2, pop_size=12)
+    assert result["dataset_hash"] == dataset.dataset_hash
+    assert result["literature_comparison"] == "NOT_RUN"
+    assert "holdout_r_squared" in result
+    assert result["dimensional_validation"]["consistent"] is True

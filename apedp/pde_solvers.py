@@ -118,7 +118,9 @@ def solve_wave_1d(
         return {"x": x, "u": u, "dx": dx, "dt": dt, "courant": courant}
 
     result = _run_bounded(_solve, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -167,7 +169,9 @@ def solve_advection_1d(
         return {"x": x, "u": u, "dx": dx, "dt": dt, "courant": courant}
 
     result = _run_bounded(_solve, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -235,7 +239,9 @@ def solve_heat_2d(
         return {"x": x, "y": y, "u": u, "dx": dx, "dt": dt, "r": r}
 
     result = _run_bounded(_solve, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -313,19 +319,21 @@ def solve_laplace_2d(
 
     def _solve() -> dict[str, object]:
         if bc == "linear":
-            bc_fn = lambda xx, yy: xx + yy  # noqa: E731
+            bc_fn = lambda xx, yy: xx + yy
         elif bc == "zero":
-            bc_fn = lambda xx, yy: np.zeros_like(xx)  # noqa: E731
+            bc_fn = lambda xx, yy: np.zeros_like(xx)
         else:
             expr = safe_parse_expr(bc)
             f = sp.lambdify((sp.Symbol("x"), sp.Symbol("y")), expr, modules=["numpy"])
-            bc_fn = lambda xx, yy: np.asarray(f(xx, yy), dtype=float)  # noqa: E731
+            bc_fn = lambda xx, yy: np.asarray(f(xx, yy), dtype=float)
         out = _jacobi_elliptic(nx, ny, float(lx), float(ly), bc_fn, lambda xx, yy: np.zeros_like(xx), tol, maxiter)
         out["bc"] = bc
         return out
 
     result = _run_bounded(_solve, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -361,7 +369,9 @@ def solve_poisson_2d(
         )
 
     result = _run_bounded(_solve, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -436,7 +446,9 @@ def solve_heat_3d(
         return {"x": x, "y": y, "z": z, "u": u, "dx": dx, "dt": dt, "r": r}
 
     result = _run_bounded(_solve, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -509,7 +521,9 @@ def solve_laplace_3d(
         raise ArithmeticError(f"Jacobi-3D did not converge in {maxiter} iterations")
 
     result = _run_bounded(_solve, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -579,7 +593,9 @@ def solve_heat_nd_feynman_kac(
         }
 
     result = _run_bounded(_solve, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -661,7 +677,9 @@ def solve_laplace_nd_walk_on_spheres(
         }
 
     result = _run_bounded(_solve, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Solver returned {type(result).__name__}, expected dict")
+
     return result
 
 
@@ -712,8 +730,12 @@ def solve_poisson_fem(
         rhs = np.zeros(n)
         for tri in tris:
             p = pts[np.asarray(tri)]
-            # Twice the signed area; degenerate (collinear) elements refused.
-            area2 = abs(float(np.cross(p[1] - p[0], p[2] - p[0])))
+            # Twice the signed area; use the 2D determinant explicitly. NumPy 2
+            # removed the implicit 2D-vector form of ``np.cross`` and raises
+            # before the intended degenerate-element check can run.
+            edge_a = p[1] - p[0]
+            edge_b = p[2] - p[0]
+            area2 = abs(float(edge_a[0] * edge_b[1] - edge_a[1] * edge_b[0]))
             if area2 <= 1e-300:
                 raise ValueError(f"Degenerate triangle {list(tri)}: zero area")
             # Gradients of the three P1 hats: perpendicular edge rotations / 2A.
@@ -736,8 +758,8 @@ def solve_poisson_fem(
             # Exact integer on-segment test on a per-call lattice: hull-loop
             # nodes (collinear-inclusive), not the bounding box, so scattered
             # sets get a closed boundary and box meshes behave as before.
-            qx = [int(round(float(p[0]) * (1 << 30))) for p in pts]
-            qy = [int(round(float(p[1]) * (1 << 30))) for p in pts]
+            qx = [round(float(p[0]) * (1 << 30)) for p in pts]
+            qy = [round(float(p[1]) * (1 << 30)) for p in pts]
             on_loop = set()
             for k in range(len(hull)):
                 ax, ay = qx[hull[k]], qy[hull[k]]
@@ -773,5 +795,7 @@ def solve_poisson_fem(
         return {"u": u, "nodes": pts, "triangles": tris, "num_nodes": n, "num_elements": len(tris)}
 
     result = _run_bounded(_solve, timeout)
-    assert isinstance(result, dict)
+    if not isinstance(result, dict):
+        raise TypeError(f"Solver returned {type(result).__name__}, expected dict")
+
     return result

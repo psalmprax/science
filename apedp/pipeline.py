@@ -1,3 +1,4 @@
+# Databricks notebook source
 """APEDP Pipeline — end-to-end discovery pipeline: ingest → discover → validate → repair → export."""
 from __future__ import annotations
 
@@ -5,18 +6,23 @@ import csv
 import hashlib
 import json
 import logging
+import os
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import sympy as sp
 
 from apedp.core import ClosedLoopAssuranceSystem, DimensionalAssuranceEngine
-from apedp.discovery import BayesianRefinementEngine, MultiVariableSRE
+from apedp.discovery import BayesianRefinementEngine, check_data_adequacy
+from apedp.discovery import MultiVariableSRE as _BaseMultiVariableSRE
+from apedp.discovery_admission import admit_candidate, numeric_conditioning_report
 from apedp.epistemic import DataPartitionVault
 from apedp.metrology import AnalyticalUncertaintyPropagator
 from apedp.persistence import ExperimentLog, ModelStore
 from apedp.repair import AgnosticClosedLoopAssuranceSystem
 from apedp.safety import safe_parse_expr
+from apedp.source_audit import SourceMetadata, audit_dataset
 
 logger = logging.getLogger(__name__)
 
@@ -158,11 +164,29 @@ class DiscoveryPipeline:
                 self.engine.register_variable(var, unit_str)
             except (ValueError, TypeError, AttributeError) as e:
                 logger.warning("Variable registration failed for '%s': %s", var, e)
-        sre = MultiVariableSRE(
+        sre = _BaseMultiVariableSRE(
             assurance_system=self.platform,
             independent_vars=variables,
             target_unit_str=output_unit,
         )
+        adequacy = check_data_adequacy(
+            {k: data[k] for k in variables}, target_values
+        )
+        if adequacy["verdict"] == "INSUFFICIENT":
+            return {
+                "best_expression": "None",
+                "best_score": float("inf"),
+                "generations_run": 0,
+                "variables": variables,
+                "r_squared": float("nan"),
+                "bic": float("inf"),
+                "aic": float("inf"),
+                "degenerate": True,
+                "degenerate_reason": "; ".join(adequacy["reasons"]),
+                "search_stagnated": False,
+                "stagnation": {},
+                "data_adequacy": adequacy,
+            }
         best_expr, best_score, history = sre.run_discovery(
             x_data={k: data[k] for k in variables},
             y_data=target_values,
@@ -209,6 +233,7 @@ class DiscoveryPipeline:
             "degenerate_reason": str(degenerate_reason),
             "search_stagnated": bool(stagnation.get("stagnated")),
             "stagnation": stagnation,
+            "data_adequacy": adequacy,
         }
 
     def _predict_expression(self, expr: sp.Expr, x_data: dict[str, np.ndarray]) -> np.ndarray:
@@ -217,6 +242,12 @@ class DiscoveryPipeline:
         subs = {sp.Symbol(k): v for k, v in self.platform.constants_values.items()}
         f = sp.lambdify(syms, expr.subs(subs), modules=["numpy"])
         args = [np.asarray(x_data[k], dtype=float) for k in var_names]
+        if not args:
+            # No independent variables: evaluate as scalar constant
+            y_pred = f()
+            if not isinstance(y_pred, np.ndarray):
+                return np.array([float(y_pred)], dtype=float)
+            return np.asarray(y_pred, dtype=float)
         y_pred = f(*args)
         if not isinstance(y_pred, np.ndarray):
             y_pred = np.full_like(args[0], float(y_pred), dtype=float)
@@ -265,6 +296,7 @@ class DiscoveryPipeline:
         min_r_squared: float = 0.1,
         strict_units: bool | None = None,
         param_uncertainties: dict[str, float] | None = None,
+        source_metadata: SourceMetadata | dict[str, Any] | None = None,
     ) -> dict:
         """Execute the full pipeline: ingest → discover → validate → repair → persist.
 
@@ -284,6 +316,27 @@ class DiscoveryPipeline:
         variables = ingested["variables"]
         data = ingested["data"]
         target_values = data[target_column]
+
+        source_audit = None
+        if source_metadata is not None:
+            source = (SourceMetadata(**source_metadata)
+                      if isinstance(source_metadata, dict) else source_metadata)
+            rows = [
+                {column: float(data[column][index]) for column in [*variables, target_column]}
+                for index in range(len(target_values))
+            ]
+            source_audit = audit_dataset(
+                rows,
+                source,
+                required_columns=[*variables, target_column],
+            )
+            if source_audit.errors:
+                return {
+                    "status": "REFUSED",
+                    "reason": "source audit failed: " + "; ".join(source_audit.errors),
+                    "source_audit": source_audit.to_dict(),
+                    "variables": variables,
+                }
 
         discovery = self.discover(
             variables, data, target_values, output_unit, variable_units, min_r_squared=min_r_squared
@@ -383,7 +436,47 @@ class DiscoveryPipeline:
                 status="refused",
             )
             return result
+        # Validation must not depend on ``discover`` having performed a
+        # registration side effect; callers may replace discovery or resume a
+        # candidate from persistence.
+        for variable in variables:
+            unit_str = (variable_units or {}).get(variable, "dimensionless")
+            try:
+                self.engine.register_variable(variable, unit_str)
+            except (ValueError, TypeError, AttributeError) as exc:
+                result = {
+                    "status": "REFUSED",
+                    "reason": f"variable registration failed for '{variable}': {exc}",
+                    "expression": str(expr),
+                    "variables": variables,
+                    "search_stagnated": bool(stagnation.get("stagnated")),
+                    "stagnation": stagnation,
+                }
+                self.experiment.log(
+                    experiment_type="discovery_pipeline",
+                    parameters={"csv_path": csv_path, "target_column": target_column, "output_unit": output_unit},
+                    results={"status": "REFUSED", "reason": result["reason"]},
+                    status="refused",
+                )
+                return result
         validation = self.validate_dimensions(expr, output_unit)
+        if not validation.get("dimensionally_consistent", False):
+            result = {
+                "status": "REFUSED",
+                "reason": "dimensional validation failed",
+                "expression": str(expr),
+                "dimensional_validation": validation,
+                "variables": variables,
+                "search_stagnated": bool(stagnation.get("stagnated")),
+                "stagnation": stagnation,
+            }
+            self.experiment.log(
+                experiment_type="discovery_pipeline",
+                parameters={"csv_path": csv_path, "target_column": target_column, "output_unit": output_unit},
+                results={"status": "REFUSED", "reason": result["reason"]},
+                status="refused",
+            )
+            return result
         repair_result = self.audit_repair(expr, variable_units, strict_units=strict_units)
         # ``UNDETERMINED`` is a kill signal too: the boundary audit could not
         # answer its own question, so the repaired model is unverified. Filing it
@@ -420,9 +513,12 @@ class DiscoveryPipeline:
                 "validation": validation,
                 "repair": repair_result,
                 "score": discovery["best_score"],
+                "evidence_level": "in_sample_exploratory",
+                "scientific_claim": "consistency_screening_only",
                 "bic": discovery.get("bic"),
                 "aic": discovery.get("aic"),
                 "stagnation": stagnation,
+                "source_audit": source_audit.to_dict() if source_audit else None,
             },
         )
 
@@ -437,7 +533,7 @@ class DiscoveryPipeline:
                         expr, param_values=nominal,
                         param_uncertainties=dict(param_uncertainties),
                     )
-                    metrology = {"method": "monte_carlo", **{k: v for k, v in mc.items() if k != "num_samples" or True}}
+                    metrology = {"method": "monte_carlo", **{k: v for k, v in mc.items() if True}}
                 else:
                     rep = self.propagator.propagate_uncertainty(
                         expr, param_values=nominal,
@@ -472,6 +568,8 @@ class DiscoveryPipeline:
             "expression": str(expr),
             "best_score": discovery["best_score"],
             "score_semantics": "penalized MSE (lower is better); not R²",
+            "evidence_level": "in_sample_exploratory",
+            "scientific_claim": "consistency_screening_only",
             "r_squared": discovery.get("r_squared"),
             "bic": discovery.get("bic"),
             "aic": discovery.get("aic"),
@@ -481,12 +579,16 @@ class DiscoveryPipeline:
             "metrology": metrology,
             "search_stagnated": bool(stagnation.get("stagnated")),
             "stagnation": stagnation,
+            "source_audit": source_audit.to_dict() if source_audit else None,
         }
         self._results.append(result)
 
+        # Write result atomically before returning (durability)
         out_path = self.output_dir / "pipeline_result.json"
-        with open(out_path, "w") as f:
+        tmp_path = out_path.with_name(f".{out_path.name}.tmp")
+        with open(tmp_path, "w") as f:
             json.dump(result, f, indent=2, default=str)
+        os.replace(tmp_path, out_path)
         logger.info("Pipeline complete. Result saved to %s", out_path)
         return result
 
@@ -500,6 +602,8 @@ class DiscoveryPipeline:
         min_r_squared: float = 0.1,
         max_r2_drop: float = 0.1,
         strict_units: bool | None = None,
+        coefficient_magnitude_limit: float | None = None,
+        cancellation_ratio_limit: float = 1.0e8,
     ) -> dict:
         """Discover on train, freeze, then evaluate once on a locked holdout.
 
@@ -508,7 +612,9 @@ class DiscoveryPipeline:
         touches it. A train-`PERSISTED` model that scores below
         ``min_r_squared`` on holdout, or drops more than ``max_r2_drop``
         vs train, is `REFUSED` and removed from the store — a fit that does
-        not generalize is not filed as a discovery.
+        not generalize is not filed as a discovery. Callers may additionally
+        declare coefficient-scale and cancellation limits for the benchmark;
+        these are measured on the locked holdout before admission.
         """
         train_hash = _sha256_file(train_csv)
         holdout_hash = _sha256_file(holdout_csv)
@@ -540,6 +646,13 @@ class DiscoveryPipeline:
             return {**base, "status": "REFUSED", "reason": f"train {train_result.get('status')}: {train_result.get('reason')}"}
 
         expr = safe_parse_expr(str(train_result["expression"]))
+        # Re-hash holdout immediately before evaluation to detect tampering
+        holdout_hash_now = _sha256_file(holdout_csv)
+        if holdout_hash_now != holdout_hash:
+            self.store.delete_model(train_result["model_id"])
+            reason = "holdout file modified after initial hash (tampering detected)"
+            self.experiment.log("prospective_validation", {"train_csv": train_csv, "holdout_csv": holdout_csv}, {**base, "status": "REFUSED", "reason": reason}, "refused")
+            return {**base, "status": "REFUSED", "reason": reason}
         holdout = self.ingest_csv(holdout_csv, target_column)
         holdout_vars = [v for v in holdout["variables"]]
         if set(holdout_vars) != set(train_result["variables"]):
@@ -548,20 +661,40 @@ class DiscoveryPipeline:
             self.experiment.log("prospective_validation", {"train_csv": train_csv}, {**base, "status": "REFUSED", "reason": reason}, "refused")
             return {**base, "status": "REFUSED", "reason": reason}
         y_true = holdout["data"][target_column]
-        y_pred = self._predict_expression(expr, {k: holdout["data"][k] for k in holdout_vars})
+        holdout_x = {k: holdout["data"][k] for k in holdout_vars}
+        y_pred = self._predict_expression(expr, holdout_x)
         holdout_r2 = BayesianRefinementEngine.compute_r_squared(y_true, y_pred)
         train_r2 = float(train_result.get("r_squared", float("nan")))
         drop = (train_r2 - holdout_r2) if np.isfinite(train_r2) and np.isfinite(holdout_r2) else float("inf")
-        ok = np.isfinite(holdout_r2) and holdout_r2 >= min_r_squared and drop <= max_r2_drop
-        if not ok:
+        admission = admit_candidate(
+            expr,
+            x_holdout=holdout_x,
+            y_holdout=y_true,
+            train_r_squared=train_r2,
+            min_holdout_r_squared=min_r_squared,
+            max_r2_drop=max_r2_drop,
+            dimensionally_consistent=bool(train_result.get("dimensional_validation", {}).get("dimensionally_consistent")),
+            repair_status=train_result.get("anomaly_repair", {}).get("status"),
+            conditioning=numeric_conditioning_report(
+                expr,
+                holdout_x,
+                coefficient_magnitude_limit=coefficient_magnitude_limit,
+                cancellation_ratio_limit=cancellation_ratio_limit,
+            ),
+        )
+        if admission.status.value != "PERSISTED":
             self.store.delete_model(train_result["model_id"])
-            reason = f"holdout R²={holdout_r2:.4f} (train {train_r2:.4f}, drop {drop:.4f}) below bar"
-            self.experiment.log("prospective_validation", {"train_csv": train_csv}, {**base, "status": "REFUSED", "reason": reason, "holdout_r_squared": holdout_r2}, "refused")
-            return {**base, "status": "REFUSED", "reason": reason, "holdout_r_squared": holdout_r2, "train_r_squared": train_r2}
+            reason = "; ".join(admission.reasons)
+            refusal = {**base, "status": "REFUSED", "reason": reason, "holdout_r_squared": holdout_r2, "train_r_squared": train_r2, "admission": admission.to_dict()}
+            self.experiment.log("prospective_validation", {"train_csv": train_csv}, refusal, "refused")
+            return refusal
         result = {
             **base, "status": "PERSISTED", "model_id": train_result["model_id"],
             "expression": train_result["expression"], "train_r_squared": train_r2,
             "holdout_r_squared": holdout_r2, "r2_drop": drop,
+            "evidence_level": "locked_holdout_prospective",
+            "scientific_claim": "prospective_generalization_on_one_holdout",
+            "admission": admission.to_dict(),
         }
         self.experiment.log("prospective_validation", {"train_csv": train_csv, "holdout_csv": holdout_csv}, result, "success")
         return result
@@ -576,6 +709,7 @@ def run_pipeline(
     strict_units: bool = False,
     output_dir: str = "pipeline_results",
     param_uncertainties: dict[str, float] | None = None,
+    source_metadata: SourceMetadata | dict[str, Any] | None = None,
 ) -> dict:
     """Convenience function to run a full discovery pipeline."""
     pipeline = DiscoveryPipeline(output_dir=output_dir, strict_units=strict_units)
@@ -583,4 +717,15 @@ def run_pipeline(
         csv_path, target_column, output_unit,
         variable_units=variable_units, min_r_squared=min_r_squared,
         strict_units=strict_units, param_uncertainties=param_uncertainties,
+        source_metadata=source_metadata,
     )
+
+
+# COMMAND ----------
+
+# Use generic family proposals automatically for compatible pipeline discovery.
+from apedp.family_guided_discovery import FamilyGuidedMultiVariableSRE
+
+# Intentional notebook-cell swap: the base engine is used under its alias above
+# this cell; downstream code should use the family-guided engine by default.
+MultiVariableSRE = FamilyGuidedMultiVariableSRE

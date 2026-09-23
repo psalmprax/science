@@ -4,6 +4,12 @@ A scientific computing platform for dimensional assurance, symbolic regression,
 Bayesian model selection, physical anomaly repair, epistemic tracking,
 metrology analysis, quantum error correction, and applied defect auditing.
 
+APEDP is domain-general at its evidence and adjudication layer, not fully
+domain-agnostic at discovery. The core can evaluate provenance, locked
+holdouts, dimensional consistency, numerical conditioning, sensitivity, and
+refusal across domains; discovery grammars, units, physical constraints,
+baselines, and data adapters remain domain-specific where needed.
+
 ## Architecture
 
 ```
@@ -50,8 +56,13 @@ result = pipeline.run("data.csv", "target_column")
 ## API Server
 
 ```bash
-uvicorn apedp.api:create_app --host 0.0.0.0 --port 8000
+APEDP_API_KEY='replace-with-a-secret' uvicorn apedp.api:create_app --factory --host 0.0.0.0 --port 8000
 ```
+
+The API requires `APEDP_API_KEY` by default. For local-only development, set
+`APEDP_ALLOW_UNAUTHENTICATED=1`; do not use that mode on a network-exposed
+deployment. Discovery responses include a data-adequacy report, and production
+claims should use `DiscoveryPipeline.run_prospective()` with a locked holdout.
 
 Available endpoints (all verified against the real module APIs; see `docs/DOCUMENTATION.md`):
 - `GET /health` — Service health
@@ -86,6 +97,10 @@ pytest tests/ -v
 - **Visualization**: Fitness landscapes, uncertainty plots, calibration curves, epistemic graphs
 - **Persistence**: Save/load discovered models with versioning
 - **Pipeline**: End-to-end ingest → discover → validate → repair → persist
+- **Evidence adjudication**: `ADMIT`, `DOMAIN_LIMITED`, `CONDITIONAL`, `PREDICTIVE_ONLY`, `REFUSE`, and `INCONCLUSIVE` outcomes
+- **Benchmark protocol**: Locked datasets, information firewalls, separated prior tracks, adapters, and documented sensitivity variants
+- **Identifiability diagnostics**: Rolling-origin parameter drift reported separately from forecast accuracy
+- **Real-data inverse validation**: Real-RINEX (real-rinex) GPS structural recovery with grouped satellite holdout and grouped satellite validation diagnostics
 - **Docker**: Containerized deployment
 - **CI/CD**: GitHub Actions with testing, linting, type checking, security scanning
 
@@ -93,6 +108,13 @@ pytest tests/ -v
 
 - Full documentation is available at [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md).
 - System capabilities and architectural philosophy: [docs/SYSTEM_CAPABILITIES_AND_PHILOSOPHY.md](docs/SYSTEM_CAPABILITIES_AND_PHILOSOPHY.md).
+- Discovery engine ownership and evidence boundaries: [docs/DISCOVERY_ENGINE_BOUNDARIES.md](docs/DISCOVERY_ENGINE_BOUNDARIES.md).
+- Publication-data discovery findings: [docs/PUBLICATION_DATA_FINDINGS.md](docs/PUBLICATION_DATA_FINDINGS.md).
+
+Current scientific claims should distinguish candidate generation from
+admission. A low-error equation is not automatically a scientific law:
+prospective holdout validation, physical admissibility, robustness, and
+provenance determine the qualified outcome.
 
 ## Small Physics LLM (Proposed)
 

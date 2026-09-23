@@ -1,0 +1,119 @@
+{
+  "nodes": [
+    {
+      "id": "C1",
+      "type": "Claim",
+      "metadata": {}
+    },
+    {
+      "id": "A",
+      "type": "Hypothesis",
+      "metadata": {}
+    },
+    {
+      "id": "B",
+      "type": "Claim",
+      "metadata": {}
+    },
+    {
+      "id": "H1",
+      "type": "Hypothesis",
+      "metadata": {
+        "formula": "1/x"
+      }
+    },
+    {
+      "id": "Evidence_Flaw_zero",
+      "type": "Evidence",
+      "metadata": {
+        "probe": "zero",
+        "result": "Singularity/Divergence"
+      }
+    },
+    {
+      "id": "Model_H1_Regularized",
+      "type": "Model",
+      "metadata": {
+        "formula": "1/(x+eps)"
+      }
+    },
+    {
+      "id": "FalsificationReport_Model_H1_Regularized",
+      "type": "Evidence",
+      "metadata": {
+        "formula": "1/x",
+        "repair_result": {
+          "status": "REPAIRED",
+          "anomalies": [
+            [
+              "x",
+              "Division-by-zero singularity at 0"
+            ]
+          ],
+          "original_expression": "1/x",
+          "repaired_expression": "1/sqrt(eps_x**2 + x**2)",
+          "inferred_unit": "",
+          "eps_symbols": [
+            "eps_x"
+          ],
+          "distortion": {
+            "max_distortion": 5.000000413701855e-11,
+            "mean_distortion": 8.77499924574939e-12
+          },
+          "validity_domain": "regularized; re-validate outside tested boundaries, for |x| >> eps, and re-fit eps_* on data",
+          "probe_errors": [],
+          "probe_error_count": 0,
+          "unresolved_probe_count": 0
+        }
+      }
+    },
+    {
+      "id": "P1",
+      "type": "Hypothesis",
+      "metadata": {}
+    },
+    {
+      "id": "P2",
+      "type": "Claim",
+      "metadata": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "A",
+      "target": "B",
+      "relation": "DERIVED_FROM",
+      "metadata": {}
+    },
+    {
+      "source": "Evidence_Flaw_zero",
+      "target": "H1",
+      "relation": "CONTRADICTED_BY",
+      "metadata": {}
+    },
+    {
+      "source": "Evidence_Flaw_zero",
+      "target": "Model_H1_Regularized",
+      "relation": "CONSTRAINED_BY",
+      "metadata": {}
+    },
+    {
+      "source": "Model_H1_Regularized",
+      "target": "H1",
+      "relation": "APPROXIMATED_FROM",
+      "metadata": {}
+    },
+    {
+      "source": "FalsificationReport_Model_H1_Regularized",
+      "target": "Model_H1_Regularized",
+      "relation": "VALIDATED_BY",
+      "metadata": {}
+    },
+    {
+      "source": "P1",
+      "target": "P2",
+      "relation": "DERIVED_FROM",
+      "metadata": {}
+    }
+  ]
+}

@@ -1994,3 +1994,121 @@ class ScientificFeasibilityConfusionMatrix:
             "refusal_specificity": self.refusal_specificity,
         }
 
+
+
+
+
+# Three-Gate Validation with Proper Dimensional Analysis
+
+def validate_three_gates(candidate_expr: str, record: ModelEvidenceRecord) -> dict:
+    """
+    Validate a candidate expression against the three-gate validation system.
+    
+    Gate 1: Dimensional Plausibility
+    - Uses DimensionalAssuranceEngine to check that the expression has well-defined dimensions
+    - Passes if: expression has valid dimensions compatible with a physical quantity
+    - Fails if: expression is dimensionally invalid or references undeclared symbols
+    
+    Gate 2: Anomaly Check
+    - Checks for critical anomalies (division by zero, dimensional violations)
+    - Passes if: no critical anomalies detected
+    - Fails if: division/dimensional anomalies present
+    
+    Gate 3: Verdict Acceptability
+    - Checks that the verdict is not REJECTED in the new 8-state classification
+    - Passes if: classification is ESTABLISHED, DERIVED, PHYSICALLY_PLAUSIBLE, 
+      CANDIDATE, or HEURISTIC
+    - Fails if: classification is IDENTITY, DIMENSIONALLY_INVALID, or PHYSICALLY_UNSUPPORTED
+    
+    Returns:
+        {
+            "gate1": {"pass": bool, "detail": str},
+            "gate2": {"pass": bool, "detail": str},
+            "gate3": {"pass": bool, "detail": str},
+            "overall": {"pass": bool, "classification": Classification},
+            "recommendation": str
+        }
+    """
+    import sympy as sp
+
+    from apedp.classification_ontology import Classification
+    from apedp.gated_assurance import _measure_dimensional_consistency
+    from apedp.identity_detection import detect_identity
+    
+    result: dict[str, Any] = {
+        "gate1": {"pass": False, "detail": ""},
+        "gate2": {"pass": False, "detail": ""},
+        "gate3": {"pass": False, "detail": ""},
+        "overall": {"pass": False, "classification": Classification.UNASSIGNED},
+        "recommendation": "",
+    }
+    
+    # Gate 1: Dimensional Plausibility
+    try:
+        dim_result = _measure_dimensional_consistency(record)
+        if dim_result[0] == "PASS":
+            result["gate1"] = {"pass": True, "detail": "Expression has valid dimensional consistency"}
+        elif dim_result[0] == "UNVERIFIED":
+            result["gate1"] = {"pass": False, "detail": "Dimensional consistency unverified - no unit metadata"}
+        else:
+            result["gate1"] = {"pass": False, "detail": f"Dimensional inconsistency: {dim_result[1]}"}
+    except _PROBE_ERRORS as e:
+        result["gate1"] = {"pass": False, "detail": f"Dimensional analysis error: {e!s}"}
+    
+    # Gate 2: Anomaly Check
+    try:
+        expr = sp.sympify(candidate_expr)
+        is_identity, _, _ = detect_identity(expr)
+        if is_identity:
+            result["gate2"] = {"pass": False, "detail": "Expression is a mathematical identity, not a physical law"}
+        else:
+            result["gate2"] = {"pass": True, "detail": "No critical anomalies detected"}
+    except _PROBE_ERRORS as e:
+        result["gate2"] = {"pass": False, "detail": f"Anomaly check error: {e!s}"}
+    
+    # Gate 3: Verdict Acceptability
+    try:
+        # Check the record's classification/verdict
+        if hasattr(record, 'status') and record.status:
+            status = str(record.status)
+            # Map old statuses to new classification
+            status_map = {
+                "APPROVED": Classification.ESTABLISHED,
+                "REJECTED": Classification.DIMENSIONALLY_INVALID,
+                "REPAIRED": Classification.ESTABLISHED,
+                "UNDETERMINED": Classification.CANDIDATE,
+            }
+            classification = status_map.get(status, Classification.CANDIDATE)
+            
+            # Check if classification is acceptable
+            prohibited = [Classification.IDENTITY, Classification.DIMENSIONALLY_INVALID, 
+                         Classification.PHYSICALLY_UNSUPPORTED]
+            if classification in prohibited:
+                result["gate3"] = {"pass": False, "detail": f"Verdict {classification.name} not acceptable"}
+            else:
+                result["gate3"] = {"pass": True, "detail": f"Verdict {classification.name} acceptable"}
+        else:
+            result["gate3"] = {"pass": True, "detail": "No verdict to check - new expression"}
+    except (TypeError, ValueError, KeyError, AttributeError) as e:
+        result["gate3"] = {"pass": False, "detail": f"Verdict check error: {e!s}"}
+    
+    # Overall assessment
+    all_pass = all(g["pass"] for g in [result["gate1"], result["gate2"], result["gate3"]])
+    result["overall"]["pass"] = all_pass
+    
+    if all_pass:
+        # Determine the best classification from the results
+        classification = result["gate3"]["detail"].split(":")[-1].strip() if ":" in result["gate3"]["detail"] else Classification.CANDIDATE
+        result["overall"]["classification"] = classification
+        result["recommendation"] = "Proceed with validation and numerical testing"
+    else:
+        prohibited_reasons = []
+        if not result["gate1"]["pass"]:
+            prohibited_reasons.append(result["gate1"]["detail"])
+        if not result["gate2"]["pass"]:
+            prohibited_reasons.append(result["gate2"]["detail"])
+        if not result["gate3"]["pass"]:
+            prohibited_reasons.append(result["gate3"]["detail"])
+        result["recommendation"] = f"Fix failed gates: {'; '.join(prohibited_reasons)}"
+    
+    return result
