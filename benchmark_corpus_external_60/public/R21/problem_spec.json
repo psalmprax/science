@@ -1,0 +1,15 @@
+{
+  "problem_id": "R21",
+  "block": "R",
+  "name": "sat-1",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "dataset_sizes": {
+    "train": 15,
+    "validation": 5,
+    "near_ood": 30,
+    "far_ood": 30
+  }
+}

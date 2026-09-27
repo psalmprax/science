@@ -1,0 +1,13 @@
+{
+  "problem_id": "X50",
+  "block": "X",
+  "canonical_structural_family": "damped_oscillation",
+  "ground_truth_formula": "2.0*exp(-0.2*x)*cos(2.8*x)",
+  "true_parameters": {
+    "A": 2.0,
+    "k": 0.2,
+    "w": 2.8
+  },
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "EXTRAPOLATE"
+}

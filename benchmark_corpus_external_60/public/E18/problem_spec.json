@@ -1,0 +1,15 @@
+{
+  "problem_id": "E18",
+  "block": "E",
+  "name": "log-2",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "dataset_sizes": {
+    "train": 15,
+    "validation": 5,
+    "near_ood": 30,
+    "far_ood": 30
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "problem_id": "A55",
+  "block": "A",
+  "canonical_structural_family": "power_law",
+  "ground_truth_formula": "2.5*x**1.5",
+  "true_parameters": {
+    "A": 2.5,
+    "p": 1.5
+  },
+  "oracle_epistemic_class": "C3",
+  "expected_outcome": "ABSTAIN"
+}

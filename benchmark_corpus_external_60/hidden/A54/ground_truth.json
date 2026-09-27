@@ -1,0 +1,9 @@
+{
+  "problem_id": "A54",
+  "block": "A",
+  "canonical_structural_family": "constant_identity",
+  "ground_truth_formula": "sin(x)**2+cos(x)**2",
+  "true_parameters": {},
+  "oracle_epistemic_class": "C4",
+  "expected_outcome": "CERTIFY"
+}

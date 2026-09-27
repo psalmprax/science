@@ -1,0 +1,13 @@
+{
+  "problem_id": "O31",
+  "block": "O",
+  "canonical_structural_family": "damped_oscillation",
+  "ground_truth_formula": "3.0*exp(-0.1*x)*cos(3.5*x)",
+  "true_parameters": {
+    "A": 3.0,
+    "k": 0.1,
+    "w": 3.5
+  },
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER"
+}

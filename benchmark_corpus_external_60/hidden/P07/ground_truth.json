@@ -1,0 +1,12 @@
+{
+  "problem_id": "P07",
+  "block": "P",
+  "canonical_structural_family": "power_law",
+  "ground_truth_formula": "3.0*x**0.5",
+  "true_parameters": {
+    "A": 3.0,
+    "p": 0.5
+  },
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER"
+}

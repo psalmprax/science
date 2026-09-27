@@ -1,0 +1,13 @@
+{
+  "problem_id": "A60",
+  "block": "A",
+  "canonical_structural_family": "saturating_exponential",
+  "ground_truth_formula": "10.0/(1 + 9.0*exp(-1.2*x))",
+  "true_parameters": {
+    "K": 10.0,
+    "A": 9.0,
+    "r": 1.2
+  },
+  "oracle_epistemic_class": "C5",
+  "expected_outcome": "GRAMMAR_GAP"
+}

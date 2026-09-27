@@ -1,0 +1,15 @@
+{
+  "problem_id": "X46",
+  "block": "X",
+  "name": "x-pow15",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 10,
+    "near_ood": 30,
+    "far_ood": 30
+  }
+}

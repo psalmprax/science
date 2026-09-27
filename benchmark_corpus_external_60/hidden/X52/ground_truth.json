@@ -1,0 +1,12 @@
+{
+  "problem_id": "X52",
+  "block": "X",
+  "canonical_structural_family": "exponential_decay",
+  "ground_truth_formula": "4.0*exp(-0.37*x)",
+  "true_parameters": {
+    "A": 4.0,
+    "k": 0.37
+  },
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "EXTRAPOLATE"
+}

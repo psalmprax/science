@@ -1,0 +1,12 @@
+{
+  "problem_id": "X48",
+  "block": "X",
+  "canonical_structural_family": "logarithmic_boundary_layer",
+  "ground_truth_formula": "3.0*log(1 + 2.0*x)",
+  "true_parameters": {
+    "A": 3.0,
+    "B": 2.0
+  },
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "EXTRAPOLATE"
+}

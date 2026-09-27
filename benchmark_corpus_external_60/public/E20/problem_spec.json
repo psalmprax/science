@@ -1,0 +1,15 @@
+{
+  "problem_id": "E20",
+  "block": "E",
+  "name": "log-pow",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "dataset_sizes": {
+    "train": 60,
+    "validation": 20,
+    "near_ood": 30,
+    "far_ood": 30
+  }
+}

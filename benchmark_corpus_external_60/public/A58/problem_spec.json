@@ -1,0 +1,15 @@
+{
+  "problem_id": "A58",
+  "block": "A",
+  "name": "adv-narrow-exp",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "dataset_sizes": {
+    "train": 22,
+    "validation": 8,
+    "near_ood": 30,
+    "far_ood": 30
+  }
+}
