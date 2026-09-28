@@ -323,12 +323,16 @@ wrong surrogate does not mathematically prove the truth is unidentifiable.
 failure rather than a data limit. ΔBIC ≈ 0 / KL < ε_noise are neither asserted
 nor measured here — they are the mechanistic hypothesis for the stage-5
 likelihood/bootstrap distinguishability analysis, not an observed result.)
-The agreement supports treating E16/P07 as empirical ambiguity cases pending
-that analysis, rather than as confirmed algorithm-specific failures — and it
-sharpens, rather than weakens, the §9.5 next-round hypothesis (BIC re-rank):
-the fix must come from the selection criterion, since the candidate libraries
-of both methods already contain the truth. Re-labeling oracle truth post-hoc
-remains out of bounds regardless.
+No empirical-selection-boundary claim is made here: whether E16/P07 reflect a
+data limit or a criterion failure stays genuinely open until production
+evidence lands. The preregistered hypothesis is: **production PySR will be
+tested for whether increased search budget resolves the observed pilot
+selections (polynomial on E16, rational on P07) or preserves them** — with
+resolution implicating budget, and preservation implicating the
+selection/identifiability structure shared (or not) across methods. The §9.5
+BIC re-rank proposal stands as a next-round hypothesis either way, since the
+candidate libraries of both methods already contain the truth. Re-labeling
+oracle truth post-hoc remains out of bounds regardless.
 
 **Caveats (load-bearing):** pilot settings are NOT the preregistered defaults,
 so this table is feasibility + signal evidence, never round evidence. A
