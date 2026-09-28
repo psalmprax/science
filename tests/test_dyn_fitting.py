@@ -4,6 +4,7 @@ D1.6 regression scenarios: deliberately incomplete candidates must not bypass
 the gates merely by fitting the training trajectory.
 """
 import numpy as np
+import pytest
 
 from apedp_dyn import (
     DynamicalEquation,
@@ -47,8 +48,6 @@ def test_msd_lumped_maps_to_physical_where_identifiable():
     from apedp_dyn.problems.mass_spring_damper import resolve_physical
 
     assert resolve_physical(4.0, 0.2, 1.0) == {"m": 1.0, "c": 0.2, "k": 4.0}
-    import pytest
-
     with pytest.raises(ValueError):
         resolve_physical(4.0, 0.2, 0.0)  # unexcited input: ratios only, no claim
 
@@ -115,3 +114,26 @@ def test_fit_refuses_inadmissible_without_integrating():
     assert res.fit is None
     assert "sin" in res.provenance["rejection_reason"], res.provenance
     assert res.train_loss is None and res.holdout_rmse is None
+
+
+def test_parameter_binding_refuses_length_mismatch():
+    """Estimates must never bind to the wrong parameter names."""
+    from apedp_dyn.fitting.parameter_fit import _bind
+
+    assert _bind(["a", "b"], [1.0, 2.0]) == {"a": 1.0, "b": 2.0}
+    # A bare zip() truncates to the shorter side, silently attaching numbers
+    # to the wrong parameters or dropping them; the mismatch must be loud.
+    with pytest.raises(ValueError, match="parameter binding mismatch"):
+        _bind(["a", "b"], [1.0])
+    with pytest.raises(ValueError, match="parameter binding mismatch"):
+        _bind(["a"], [1.0, 2.0])
+
+
+def test_fit_candidate_rejects_wrong_length_warm_start():
+    prob = mass_spring_damper.load()
+    truth = [s for s in prune_admissible(prob, enumerate_candidates(
+        required=("u",), optional=("x", "v"), max_terms=3))
+        if set(s.candidate.term_set()) == {"u", "x", "v"}][0]
+    assert len(truth.candidate.parameter_names()) == 3
+    with pytest.raises(ValueError, match="parameter binding mismatch"):
+        fit_candidate(prob, truth.candidate, x0=np.array([1.0, 2.0]))

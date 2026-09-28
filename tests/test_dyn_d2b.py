@@ -14,13 +14,13 @@ from apedp_dyn.problems import coupled, duffing
 
 
 def _pmap(scored):
-    out = {}
+    """Term-name -> fitted value, for single-DOF candidates ({} otherwise)."""
+    from apedp_dyn.grammar import CandidateDynamics
+
     cand = scored.candidate
-    terms = cand.terms if hasattr(cand, "terms") else None
-    if terms is not None:
-        for t in terms:
-            out[t.name] = scored.fit.param_values[t.parameter]
-    return out
+    if not isinstance(cand, CandidateDynamics):
+        return {}
+    return {t.name: scored.fit.param_values[t.parameter] for t in cand.terms}
 
 
 def test_duffing_chain_truth_wins():

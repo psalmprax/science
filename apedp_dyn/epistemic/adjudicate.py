@@ -85,19 +85,25 @@ def _identity(sc) -> Any:
     """Structural identity: canonical form + parameter-binding signature.
 
     Same term sets with different sharing (reciprocal kc vs independent
-    k12/k21) are distinct hypotheses, not duplicates.
+    k12/k21) are distinct hypotheses, not duplicates. Dispatch on the IR type,
+    not on which attributes happen to exist: a hasattr probe silently
+    misclassifies any IR that grows the other shape, and the coupled branch
+    reaches ``.equations``/``.terms`` that must exist by contract.
     """
-    c = sc.candidate
-    if hasattr(c, "equations") and not hasattr(c, "terms"):
-        from apedp_dyn.grammar.coupled import canonical_system
+    # Imported lazily: apedp_dyn.grammar imports the fitter, which imports this
+    # package's siblings, so the module-level import order is deliberate.
+    from apedp_dyn.grammar.candidate_ir import CandidateDynamics, SystemCandidate
+    from apedp_dyn.grammar.canonicalize import canonical_form
+    from apedp_dyn.grammar.coupled import canonical_system
 
-        canon = canonical_system(c)
+    c = sc.candidate
+    if isinstance(c, SystemCandidate):
         sharing = tuple(sorted(
             (i, t.name, t.parameter) for i, e in enumerate(c.equations)
             for t in e.terms))
-        return (canon, sharing)
-    from apedp_dyn.grammar.canonicalize import canonical_form
-
+        return (canonical_system(c), sharing)
+    if not isinstance(c, CandidateDynamics):
+        raise TypeError(f"unknown candidate IR type: {type(c).__name__}")
     return (canonical_form(c),
             tuple(sorted((t.name, t.parameter) for t in c.terms)))
 

@@ -14,6 +14,7 @@ import pytest
 from apedp_dyn import (
     REL_FLOOR,
     EpistemicStatus,
+    ScoredCandidate,
     adjudicate,
     enumerate_candidates,
     enumerate_coupled,
@@ -162,6 +163,56 @@ def test_absent_holdout_scale_abstains_instead_of_promoting():
     assert adj.status is EpistemicStatus.INSUFFICIENT_EVIDENCE, adj
     assert adj.promoted is None
     assert "no scale" in adj.reason
+
+
+def test_identity_distinguishes_parameter_sharing_not_just_term_sets():
+    """Reciprocal kc vs independent k12/k21 are distinct hypotheses.
+
+    Both have the SAME term sets, so the canonical form cannot separate them;
+    the parameter-binding signature is what must.
+    """
+    from apedp_dyn.epistemic.adjudicate import _identity
+    from apedp_dyn.grammar import Term, canonical_system
+
+    prob = coupled.load()
+    wanted = [{"u", "x", "v", "xr"}, {"u", "x", "v", "xr"}]
+    base = [s for s in prune_admissible(prob, enumerate_coupled(
+        required=("u",), optional=("x", "v", "xr"), max_terms=4))
+        if [set(e) for e in s.candidate.term_sets()] == wanted][0]
+
+    # Rewrite the second DOF's coupling term to share the first's parameter.
+    e0, e1 = base.candidate.equations
+    remote0 = next(t for t in e0.terms if t.name == "xr")
+    e1_shared = dataclasses.replace(
+        e1,
+        terms=tuple(Term(t.name,
+                         remote0.parameter if t.name == "xr" else t.parameter)
+                    for t in e1.terms),
+        parameter_bounds={**e0.parameter_bounds, **e1.parameter_bounds})
+    reciprocal = dataclasses.replace(base.candidate, equations=(e0, e1_shared))
+
+    assert base.candidate.term_sets() == reciprocal.term_sets()
+    assert canonical_system(base.candidate) == canonical_system(reciprocal)
+    assert _identity(base) != _identity(ScoredCandidate(candidate=reciprocal))
+
+
+def test_identity_dispatches_on_ir_type_and_rejects_unknown():
+    from apedp_dyn.epistemic.adjudicate import _identity
+    from apedp_dyn.grammar import CandidateDynamics, SystemCandidate
+
+    single = _duffing_pair_for(duffing.load())[0]
+    assert isinstance(single.candidate, CandidateDynamics)
+    assert _identity(single)  # resolves without attribute probing
+
+    cprob = coupled.load()
+    system = prune_admissible(cprob, enumerate_coupled(
+        required=("u",), optional=("x", "v"), max_terms=3))[0]
+    assert isinstance(system.candidate, SystemCandidate)
+    assert _identity(system)
+
+    unknown = ScoredCandidate(candidate=object())  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="unknown candidate IR type"):
+        _identity(unknown)
 
 
 def test_gate4_records_observation_scale():

@@ -13,6 +13,7 @@ optimizer makes it fit.
 from __future__ import annotations
 
 import dataclasses
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -39,6 +40,22 @@ class FitResult:
     nfev: int
     success: bool
     message: str
+
+
+def _bind(names: Sequence[str],
+          values: np.ndarray | Sequence[float]) -> dict[str, float]:
+    """Bind parameter names to values, refusing any length mismatch.
+
+    ``dict(zip(names, values))`` silently truncates to the shorter side: fitted
+    numbers would be attached to the wrong parameters, or dropped. The mapping
+    from estimates to parameter identity is load-bearing, so the invariant is
+    enforced here rather than assumed across the lines that build the arrays.
+    """
+    if len(names) != len(values):
+        raise ValueError(
+            f"parameter binding mismatch: {len(names)} names {list(names)} "
+            f"vs {len(values)} values")
+    return {n: float(v) for n, v in zip(names, values, strict=True)}
 
 
 def _with_values(model, values: dict[str, float]):
@@ -90,8 +107,13 @@ def _warm_start(problem, model0):
                 col = np.full(len(t), col[0])
             cols.append(col)
         coef, *_ = np.linalg.lstsq(np.column_stack(cols), target, rcond=None)
-        for p, c in zip(eq_params, coef):
+        for p, c in zip(eq_params, coef, strict=True):
             values[p.name] = float(c)
+    missing = [p.name for p in model0.parameters if p.name not in values]
+    if missing:
+        # A parameter in no equation has no derivative estimate; guessing a
+        # value here would silently plant a number the data never constrained.
+        raise ValueError(f"warm start left parameters uninitialized: {missing}")
     return np.array([values[p.name] for p in model0.parameters])
 
 
@@ -125,8 +147,16 @@ def fit_candidate(problem, candidate,
               for p in model0.parameters]
     # Gate 2 needs values to check finiteness at IC; warm start provides them
     # (numeric initialization for the frozen structure, not structure search).
-    probe = np.asarray(x0, dtype=float) if x0 is not None else _warm_start(problem, model0)
-    g2 = equation_admissibility(_with_values(model0, dict(zip(names, probe))))
+    if x0 is not None:
+        probe = np.asarray(x0, dtype=float)
+    else:
+        try:
+            probe = _warm_start(problem, model0)
+        except (ValueError, np.linalg.LinAlgError) as e:
+            # Un-initializable structure: reject it and keep the search alive.
+            prov["rejection_reason"] = f"warm start: {e}"
+            return ScoredCandidate(candidate, prov)
+    g2 = equation_admissibility(_with_values(model0, _bind(names, probe)))
     prov["gate2_status"] = {"passed": g2.passed, "detail": g2.detail}
     if not g2.passed:
         prov["rejection_reason"] = f"gate2: {g2.detail}"
@@ -141,7 +171,7 @@ def fit_candidate(problem, candidate,
     hi = np.array([b[1] for b in bounds], dtype=float)
 
     def residuals(p):
-        m = _with_values(model0, dict(zip(names, p)))
+        m = _with_values(model0, _bind(names, p))
         res = simulate(m, reg["t_span"], reg["u_of_t"],
                        np.asarray(reg["x0"], dtype=float), n_eval=len(t_eval))
         if not res.success:
@@ -150,7 +180,7 @@ def fit_candidate(problem, candidate,
 
     sol = least_squares(residuals, probe, bounds=(lo, hi), max_nfev=max_nfev,
                         xtol=1e-10, ftol=1e-10, gtol=1e-10)
-    values = dict(zip(names, [float(v) for v in sol.x]))
+    values = _bind(names, sol.x)
     model = _with_values(model0, values)
     train_loss = float(np.mean(residuals(sol.x) ** 2))
     fit = FitResult(values, train_loss, int(sol.nfev), bool(sol.success),

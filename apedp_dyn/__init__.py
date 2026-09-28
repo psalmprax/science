@@ -65,11 +65,18 @@ from apedp_dyn.model import (
 from apedp_dyn.problems.base import make_signal
 from apedp_dyn.simulation import SimulateResult, compile_rhs, simulate
 from apedp_dyn.validation import (
+    EnergyLaw,
+    check_conservative,
     check_conservative_core,
     check_damped_decay,
+    check_dissipative,
+    derive_energy_law,
     energy_drift,
+    energy_drift_from_law,
     mechanical_energy,
     simulate_pair,
+    simulate_trajectory,
+    total_energy,
 )
 
 __all__ = [
@@ -83,6 +90,7 @@ __all__ = [
     "SimulateResult",
     "CandidateDynamics",
     "DynamicalEquation",
+    "EnergyLaw",
     "InputVariable",
     "Parameter",
     "PhysicalModel",
@@ -99,12 +107,16 @@ __all__ = [
     "bump_deriv",
     "canonical_form",
     "canonical_system",
+    "check_conservative",
     "check_conservative_core",
     "check_damped_decay",
+    "check_dissipative",
     "compile_rhs",
     "deduplicate",
+    "derive_energy_law",
     "dimensional_validity",
     "energy_drift",
+    "energy_drift_from_law",
     "enumerate_candidates",
     "enumerate_coupled",
     "equation_admissibility",
@@ -123,7 +135,9 @@ __all__ = [
     "select_by_train_loss",
     "simulate",
     "simulate_pair",
+    "simulate_trajectory",
     "spline_coefficients",
     "square_window_coefficients",
+    "total_energy",
     "weak_coefficients",
 ]

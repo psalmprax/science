@@ -202,8 +202,9 @@ def select_by_train_loss(fitted: list[ScoredCandidate]) -> ScoredCandidate:
         raise ValueError("nothing to select from")
 
     def n_terms(s: ScoredCandidate) -> int:
-        c = s.candidate
-        return len(c.parameter_names()) if hasattr(c, "parameter_names") else len(c.terms)
+        # Both IR forms expose parameter_names() by contract; probing for it
+        # left the other arm (candidate.terms) untypeable and unreachable.
+        return len(s.candidate.parameter_names())
 
     ordered = sorted(fitted, key=lambda s: (s.train_loss if s.train_loss is not None
                                             else float("inf")))
