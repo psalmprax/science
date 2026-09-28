@@ -249,17 +249,24 @@ is observed, and the freeze is respected.
   subprocess per problem with a hard 1500 s cap, driver
   `/tmp/opencode/aif_full_sweep.py`, progress in
   `/tmp/opencode/aif_full_progress.jsonl`.
-- **STAGE-1 OUTCOME (2026-09-28): batch executed, baseline NOT established.**
-  60/60 subprocesses exited `ok`, zero timeouts, 270 s total — but all 180
-  solution files (3/problem) are **0 bytes**. The pipeline runs end-to-end
-  (NN training, separability/symmetry checks, brute-force + polyfit branches)
-  yet saves no solution at this operating point on 22–80-point noisy data;
-  only inputs and transform copies are non-empty on disk. Zero usable
-  expressions means none of the 9 stage-4 quantities can be emitted.
-  Next: single-problem operating-point search (escalate `BF_try_time` /
-  `NN_epochs` toward the code default 4000 on P01) to find the regime that
-  yields solutions, then re-run the 60. **Stage-2 gate is NOT satisfied**:
-  no verified artifacts exist to freeze, so PySR production stays held.
+- **STAGE-1 OUTCOME (2026-09-28): first batch executed, baseline NOT established —
+  root cause found in the harness, not the method.** 60/60 subprocesses exited
+  `ok`, zero timeouts, 270 s total — but all 180 solution files were **0 bytes**.
+  Escalation test on P01 (`BF_try_time=120`, `NN_epochs=4000`) reproduced the
+  empty Pareto, and direct probing exposed the mechanism: `getBest` in the
+  pinned `S_polyfit_utils.py` builds `np.array()` over per-degree ragged
+  tuples, which raises `ValueError` on numpy≥1.24; the caller's bare
+  `except: pass` then swallows it on every branch, so polyfit never contributes
+  a point. One-line compat shim in the `/tmp` clone (argmin over the rms list;
+  identical selection semantics — provisioning, not tuning) fixed it: P01 now
+  returns `2*x0 + 1` exactly in 6.7 s. Separately, the Fortran brute-force
+  binary was never built (no gfortran in this env, no root to install it), so
+  BF branches are inert here — a disclosed constraint on this baseline
+  (polyfit + NN symmetry/compositionality paths only).
+  **Re-run launched at the unchanged documented operating point**
+  (`BF_try_time=30`, `NN_epochs=500`); only the crash-compat shim changed.
+  **Stage-2 gate is NOT satisfied** until the re-run's artifacts verify, so
+  PySR production stays held.
 - **STAGE 2 — HELD**: PySR production (`niterations=300, populations=30`,
   `maxsize` unset, seed 20260926), driver `/tmp/opencode/pysr_production_sweep.py`
   written but **not executed** until the stage-1 baseline exists, preserving
