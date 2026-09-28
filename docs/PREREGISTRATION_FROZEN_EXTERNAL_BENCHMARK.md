@@ -241,10 +241,22 @@ is observed, and the freeze is respected.
 - **AI-Feynman @ a05bc4a**: cloned at the frozen pin (`/tmp/opencode/aifeynman`,
   HEAD == `a05bc4a5be23d6eb3e1d0b2f7eb1ab5b78a920ad`) with an isolated env
   (`/tmp/opencode/aifeynman_iso`: torch CPU, sympy 1.4, sklearn). Import
-  verified; reduced-budget smoke on P01 runs end-to-end without crashing but
-  yields empty solution files — full-budget validation (NN_epochs in the
-  thousands, BF_try_time ≥ 30) is still pending and, at ~10 min/problem, is
-  likewise batch-scale.
+  verified; reduced-budget smoke runs end-to-end but yields empty solution
+  files — correctly treated as diagnostic, never as performance evidence.
+- **STAGE 1 — LAUNCHED 2026-09-28**: AI-Feynman full-budget sweep over all 60
+  at the example-intended operating point (`BF_try_time=30`, `14ops.txt`,
+  `polyfit_deg=3`, `NN_epochs=500`, `test_percentage=20` default), one
+  subprocess per problem with a hard 1500 s cap, driver
+  `/tmp/opencode/aif_full_sweep.py`, progress in
+  `/tmp/opencode/aif_full_progress.jsonl`. Early pace (A-block, N≤8) is
+  ~5–9 s/problem; larger problems will dominate the total. Solution parsing
+  (family, val/far-OOD MSE, timeouts, domain violations, equivalence) happens
+  at stage 4 against these artifacts — the batch records wall time, status,
+  and solution files only.
+- **STAGE 2 — HELD**: PySR production (`niterations=300, populations=30`,
+  `maxsize` unset, seed 20260926), driver `/tmp/opencode/pysr_production_sweep.py`
+  written but **not executed** until the stage-1 baseline exists, preserving
+  comparison symmetry.
 - **Frozen-adapter note**: `PySRAdapter.run` / `AIFeynmanAdapter.run` still raise
   `NotImplementedError` by design. Wiring the run paths would modify frozen
   adapters after scores were observed (§6.1); it is recorded here as a defined
@@ -277,12 +289,20 @@ for the protocol's weighting of block X highest.
 
 Cross-method agreement on APEDP's two genuine misses: pilot PySR independently
 selected polynomial on E16 and rational on P07 — the same non-truth families
-APEDP chose. Two independent methods converging off-truth on the same two
-realizations is evidence these are noise-level identifiability limits rather
-than APEDP-specific bugs, and sharpens the §9.5 next-round hypothesis (BIC
-re-rank) rather than weakening it: the fix must come from the selection
-criterion, since the candidate libraries of both methods already contain the
-truth.
+APEDP chose. This convergence is evidence *consistent with* an identifiability
+limitation, but it does not establish one: two procedures selecting the same
+wrong surrogate does not mathematically prove the truth is unidentifiable.
+(Note the tension in the measured numbers: upstream ΔBIC ≈ 53/57 points
+*in favor of the truth* on E16/P07, which points toward a selection-criterion
+failure rather than a data limit. ΔBIC ≈ 0 / KL < ε_noise are neither asserted
+nor measured here — they are the mechanistic hypothesis for the stage-5
+likelihood/bootstrap distinguishability analysis, not an observed result.)
+The agreement supports treating E16/P07 as empirical ambiguity cases pending
+that analysis, rather than as confirmed algorithm-specific failures — and it
+sharpens, rather than weakens, the §9.5 next-round hypothesis (BIC re-rank):
+the fix must come from the selection criterion, since the candidate libraries
+of both methods already contain the truth. Re-labeling oracle truth post-hoc
+remains out of bounds regardless.
 
 **Caveats (load-bearing):** pilot settings are NOT the preregistered defaults,
 so this table is feasibility + signal evidence, never round evidence. A
