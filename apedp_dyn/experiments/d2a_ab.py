@@ -63,11 +63,11 @@ def _template(problem_id: str) -> CandidateDynamics:
 
 def _truth_candidate(problem, problem_id: str):
     names = sorted(TRUTH[problem_id][1])
-    pool = enumerate_candidates(required=tuple(), optional=tuple(names),
+    pool = enumerate_candidates(required=(), optional=tuple(names),
                                 max_terms=len(names), id_prefix="d2a")
     want = set(names)
-    c = [x for x in pool if set(x.term_set()) == want][0]
-    kept = [s for s in prune_admissible(problem, [c])]
+    c = next(x for x in pool if set(x.term_set()) == want)
+    kept = list(prune_admissible(problem, [c]))
     assert len(kept) == 1
     return kept[0].candidate
 
@@ -79,7 +79,7 @@ def _observe(Y: np.ndarray, pct: float):
     return Y + rng.normal(0, pct / 100 * np.std(Y, axis=0), Y.shape)
 
 
-def _max_rel_error(est: dict, true: dict) -> float:
+def _max_rel_error(est: dict[str, float], true: dict[str, float]) -> float:
     return max(abs(est[k] - v) / max(abs(v), 1e-12)
                for k, v in true.items() if k in est)
 
@@ -113,7 +113,7 @@ def _normalized_support(full: dict, labels: list[str], cols: np.ndarray,
     """Threshold |coef|*||column|| (explained-variance scale), not raw magnitude."""
     pnames = [f"b{i}" for i in range(len(template_names))]
     strength = {n: abs(full[p]) * float(np.linalg.norm(cols[:, i]))
-                for i, (n, p) in enumerate(zip(template_names, pnames))}
+                for i, (n, p) in enumerate(zip(template_names, pnames, strict=True))}
     m = max(strength.values())
     return sorted(n for n, s in strength.items() if s >= SUPPORT_THRESHOLD * m)
 
@@ -153,7 +153,8 @@ def run() -> dict:
                 full = (spline_coefficients if arm == "spline" else weak_coefficients)(
                     prob, template, t, Yn, U)
                 sup = {n for n, p in
-                       zip(template_names, [f"b{i}" for i in range(len(template_names))])
+                       zip(template_names,
+                           [f"b{i}" for i in range(len(template_names))], strict=True)
                        if abs(full[p]) >= SUPPORT_THRESHOLD * max(abs(v) for v in full.values())}
                 nsup = set(_normalized_support(full, tmpl_labels, tmpl_cols, template_names))
                 row[arm]["support"] = sorted(sup)

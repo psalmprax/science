@@ -104,13 +104,15 @@ def weak_coefficients(problem, candidate, t: np.ndarray, Y: np.ndarray, U: np.nd
         if col.size == 1 and n > 1:
             col = np.full(n, col[0])
         cols.append(col)
-    cols = np.column_stack(cols)
+    # Distinct name: reusing `cols` for the stacked matrix made the element
+    # list and the array the same inferred type, which is not what either is.
+    columns = np.column_stack(cols)
     G = np.zeros((n_w, n_p))
     b = np.zeros(n_w)
     for j in range(n_w):
         phi = windows.phi(t, j)
         phid = windows.phi_dot(t, j)
-        G[j, :] = np.trapezoid(cols * phi[:, None], t, axis=0)
+        G[j, :] = np.trapezoid(columns * phi[:, None], t, axis=0)
         b[j] = -np.trapezoid(v_obs * phid, t)
         b[j] += boundary_term((float(v_obs[0]), float(v_obs[-1])),
                               (float(phi[0]), float(phi[-1])))

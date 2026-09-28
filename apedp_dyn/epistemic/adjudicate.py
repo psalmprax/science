@@ -40,7 +40,25 @@ class EpistemicStatus(str, Enum):
 REL_FLOOR = 0.05
 """Amplitude resolution floor: a rival whose holdout RMSE differs by less than
 REL_FLOOR of the observed signal RMS is not resolved by the intervention
-available. Dimensionless by construction, so it does not track problem units."""
+available. Dimensionless by construction, so it does not track problem units.
+
+Calibrated, not chosen. Two recorded constraints bracket it:
+
+  lower  Two fits of the *same* structure that differ only by estimator choice
+         differ by estimator noise, not evidence. Across the D2a A/B grid
+         (outputs/d2a_ab_report.json, 2 problems x 6 noise levels) the largest
+         holdout-RMSE gap between the spline and weak-form arms, relative to
+         the holdout RMS, is 0.0121. A stricter live floor comes from the
+         small-amplitude Duffing pair (linear vs cubic, ratio 0.0245), which
+         must stay MULTI_HYPOTHESIS — the floor has to exceed it to abstain.
+  upper  The decisive Duffing pair (ratio 0.700) must stay UNIQUE_SUPPORT, so
+         the floor has to stay below it.
+
+Admissible window (0.0245, 0.700). 0.05 sits 2.0x above the binding lower edge
+and 14x below the upper. tests/test_dyn_epistemic.py re-derives the lower and
+upper edges from the live problems, so this constant cannot drift out of its
+window silently.
+"""
 
 
 def resolution_floor(obs_rms: float | None, noise_sigma: float | None,

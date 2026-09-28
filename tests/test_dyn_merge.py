@@ -6,6 +6,7 @@ apedp/dyn itself is retired by this commit; its duplicated MSD/pendulum
 roundtrips are superseded by test_dyn_problems/test_dyn_fitting.
 """
 import numpy as np
+import pytest
 from scipy.integrate import solve_ivp
 
 from apedp_dyn import (
@@ -19,10 +20,12 @@ from apedp_dyn import (
     enumerate_candidates,
     make_signal,
     materialize,
+    observation_scale,
     prune_admissible,
     simulate,
     square_window_coefficients,
 )
+from apedp_dyn.problems import coupled
 from apedp_dyn.problems import mass_spring_damper as msd
 from apedp_dyn.problems.base import DynProblem, finalize
 from apedp_dyn.validation import (
@@ -95,6 +98,86 @@ def test_auto_tolerance_tracks_noise_floor():
     tol = auto_tolerance(noisy)
     assert tol >= 1.5 * 0.03, tol  # sees the floor
     assert tol <= 0.10 * np.sqrt(np.mean(noisy ** 2)) + 0.10, tol  # stays tight
+
+
+def test_observation_scale_covers_all_channels():
+    """Gate 4's RMSE mixes every state, so its scale must too."""
+    rng = np.random.default_rng(5)
+    base = rng.normal(size=50)
+    one = observation_scale(base)
+    assert one["n_channels"] == 1
+    # (n,) and (n, 1) are the same record.
+    assert one["obs_rms"] == pytest.approx(observation_scale(base.reshape(-1, 1))["obs_rms"])
+    two = observation_scale(np.column_stack([base, np.zeros(50)]))
+    assert two["n_channels"] == 2
+    # A silent second channel halves the per-entry RMS: the scale is taken
+    # over the whole record, not from channel 0 alone.
+    assert two["obs_rms"] == pytest.approx(one["obs_rms"] / np.sqrt(2.0))
+
+
+def test_gate4_records_margin_ratio_not_just_verdict():
+    """A bare `passed` saturates; rmse/tol says how much headroom was left."""
+    prob = msd.load()
+    model = PhysicalModel(prob.states, prob.inputs, prob.parameters, prob.truth_equations)
+    from apedp_dyn import intervention_holdout
+
+    res = intervention_holdout(model, prob)
+    assert res.passed, res.detail
+    assert res.metrics["margin_ratio"] == pytest.approx(
+        res.metrics["rmse"] / res.metrics["tolerance"])
+    assert res.metrics["margin_ratio"] < 1.0
+    assert res.metrics["margin"] > 0.0
+    assert "margin_ratio" in res.detail
+
+
+def test_make_signal_multi_input_forms_agree():
+    a = {"kind": "sine", "amplitude": 1.0, "frequency": 1.0}
+    b = {"kind": "sine", "amplitude": 0.8, "frequency": 0.6}
+    as_list = make_signal([a, b])
+    as_vector = make_signal({"kind": "vector", "signals": [a, b]})
+    for tt in (0.0, 0.7, 3.3):
+        want = np.array([np.sin(tt), 0.8 * np.sin(0.6 * tt)])
+        assert np.allclose(as_list(tt), want)
+        assert np.allclose(as_vector(tt), want)
+    assert make_signal({"kind": "zero", "n": 3})(1.0).shape == (3,)
+
+
+def test_coupled_drive_declares_two_inputs():
+    """The 2-DOF problem's excitation is declarative, not a hand-rolled lambda."""
+    prob = coupled.load()
+    assert len(prob.inputs) == 2
+    u = prob.train["u_of_t"](1.7)
+    assert u.shape == (2,)
+    assert np.allclose(u, [np.sin(1.7), 0.8 * np.sin(0.6 * 1.7)])
+
+
+def _free_oscillator():
+    """0-input model, for the compile-probe arity path."""
+    states = (StateVariable("x", "meter", 0.5),
+              StateVariable("v", "meter/second", 0.0))
+    eqs = (DynamicalEquation("x", "v"), DynamicalEquation("v", "-k*x"))
+    return PhysicalModel(states, (), (Parameter("k", "1/second**2", 4.0),), eqs)
+
+
+def test_simulate_reports_input_arity_mismatch_instead_of_raising():
+    """A wrong-length drive is a spec error, reported, not a TypeError escape."""
+    dmp = _oscillator(0.2)
+    model = PhysicalModel(dmp.states, dmp.inputs, dmp.parameters, dmp.truth_equations)
+    reg = dmp.train
+    res = simulate(model, reg["t_span"], lambda t: np.zeros(2),
+                   np.asarray(reg["x0"]), n_eval=50)
+    assert not res.success
+    assert "input arity mismatch" in res.detail, res.detail
+    assert res.metrics["rhs_path"] == "not-attempted"
+
+
+def test_zero_input_model_keeps_the_compiled_rhs():
+    """The compile probe padded 0-input models to one dummy and dropped them."""
+    model = _free_oscillator()
+    res = simulate(model, (0.0, 5.0), lambda t: np.zeros(0),
+                   np.array([0.5, 0.0]), n_eval=50)
+    assert res.success, res.detail
+    assert res.metrics["rhs_path"] == "compiled", res.metrics
 
 
 def test_auto_tolerance_wiring_passes_truth():

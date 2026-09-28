@@ -15,15 +15,25 @@ cubic-restoring Duffing oscillator and multi-DOF coupled systems:
     E = ½ Σ v_i² + U(q),        F_i(q) = −∂U/∂q_i
 
 F_i(q) is the position-only part of each acceleration law (velocities, inputs
-and time zeroed; parameters substituted numerically). U is recovered by radial
-integration, U(q) = −∫₀¹ Σ F_i(s·q) q_i ds, which requires the restoring
+and time zeroed; parameters substituted numerically). U is recovered by
+integrating that 1-form along the axis path, which requires the restoring
 1-form to be exact (∂F_i/∂q_j = ∂F_j/∂q_i) — a genuine physical property, and a
 failure is reported rather than guessed around. Kinetic energy assumes the
 grammar's unit-mass normalization (an RHS is force per unit mass), so no mass
 appears in E.
+
+The symbolic derivation is BOUNDED. Exact integration has no natural stopping
+point, so an exotic restoring force could hang the gate instead of failing it;
+a validator that hangs is worse than one that refuses. Only restoring forces
+that are polynomial in the positions and a whitelist of elementary functions
+are admitted (which is every mechanical form the grammar emits: polynomial
+stiffness, polynomial-plus-cubic Duffing, linear coupling, sin θ pendulum),
+with size and degree budgets and a wall-clock budget across the DOF loop.
+Anything else returns ``conservative=False`` with the reason.
 """
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from typing import Any
 
@@ -31,6 +41,18 @@ import numpy as np
 import sympy as sp
 
 from apedp_dyn.model.variables import TIME_SYMBOL
+
+RESTORING_FUNCTIONS = ("sin", "cos", "tan", "sinh", "cosh", "tanh")
+"""Elementary functions a restoring force may use and still be integrated in
+closed form along the axis path. Anything else (exp, erf, Bessel, ...) is
+refused rather than integrated on a hope."""
+
+RESTORING_DEGREE_BUDGET = 8
+RESTORING_OPS_BUDGET = 120
+DERIVATION_SECONDS = 5.0
+"""Derivation budgets. Recorded heuristics, not derived bounds: measured
+restoring forces here sit at degree ≤ 4 and ~20 ops, so these clear them by
+a wide margin while keeping expand/simplify/integrate cheap."""
 
 
 @dataclass(frozen=True)
@@ -66,6 +88,39 @@ def _pairs(model) -> list[tuple[int, int, sp.Symbol, sp.Symbol]]:
     return pairs
 
 
+def _restoring_admissible(expr: Any, qs: tuple[Any, ...]) -> str | None:
+    """None if `expr` is inside the bounded-derivation class, else the reason.
+
+    Replacing the positions and any elementary function atoms by fresh symbols
+    must leave a POLYNOMIAL. Polynomial stiffness (MSD, coupled), polynomial
+    nonlinearity (Duffing) and sin θ (pendulum) all qualify; a non-elementary or
+    rational integrand does not, and is refused instead of integrated.
+    """
+    funcs = sorted(expr.atoms(sp.Function), key=str)
+    for f in funcs:
+        if f.func.__name__ not in RESTORING_FUNCTIONS:
+            return (f"restoring force uses {f.func.__name__}(), outside the "
+                    f"derivable class {RESTORING_FUNCTIONS}")
+    ops = int(sp.count_ops(expr))
+    if ops > RESTORING_OPS_BUDGET:
+        return (f"restoring force complexity {ops} exceeds budget "
+                f"{RESTORING_OPS_BUDGET}")
+    symbols = ([sp.Symbol(f"_q{i}") for i in range(len(qs))]
+               + [sp.Symbol(f"_f{i}") for i in range(len(funcs))])
+    probe = expr.subs({**{q: sp.Symbol(f"_q{i}") for i, q in enumerate(qs)},
+                       **{f: sp.Symbol(f"_f{i}") for i, f in enumerate(funcs)}})
+    try:
+        degree = sp.Poly(sp.expand(probe), *symbols).total_degree()
+    except (sp.PolynomialError, sp.GeneratorsNeeded, TypeError):
+        return ("restoring force is not polynomial in the positions and their "
+                "elementary functions; the potential would need a "
+                "non-elementary integral")
+    if degree > RESTORING_DEGREE_BUDGET:
+        return (f"restoring force degree {degree} exceeds budget "
+                f"{RESTORING_DEGREE_BUDGET}")
+    return None
+
+
 def derive_energy_law(model) -> EnergyLaw:
     """Derive E = ½ Σ v² + U(q) from the model's own acceleration laws."""
     pairs = _pairs(model)
@@ -97,6 +152,12 @@ def derive_energy_law(model) -> EnergyLaw:
             "restoring part depends on non-position symbols: "
             f"{[str(s) for s in stray]}", None, pos, vel, qs)
 
+    # Refuse anything the bounded derivation cannot handle, BEFORE integrating.
+    for i, force in enumerate(forces):
+        why = _restoring_admissible(force, qs)
+        if why is not None:
+            return EnergyLaw(False, f"DOF {i}: {why}", None, pos, vel, qs)
+
     for i in range(len(qs)):
         for j in range(i + 1, len(qs)):
             gap = sp.simplify(sp.diff(forces[i], qs[j]) - sp.diff(forces[j], qs[i]))
@@ -111,7 +172,13 @@ def derive_energy_law(model) -> EnergyLaw:
     # better conditioned than a radial integral, which produces sign-split
     # Piecewise results for trigonometric restoring forces like the pendulum's.
     potential = sp.Integer(0)
+    deadline = time.monotonic() + DERIVATION_SECONDS
     for i, q in enumerate(qs):
+        if time.monotonic() > deadline:
+            return EnergyLaw(
+                False,
+                f"potential integration exceeded the {DERIVATION_SECONDS:g}s "
+                f"budget at DOF {i}/{len(qs)}", None, pos, vel, qs)
         earlier_zeroed = forces[i].subs({qs[k]: sp.Integer(0)
                                         for k in range(i + 1, len(qs))})
         sweep = sp.Symbol(f"_sweep{i}", real=True)

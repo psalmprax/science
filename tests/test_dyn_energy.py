@@ -8,6 +8,7 @@ restoring force is not a gradient field.
 import dataclasses
 
 import numpy as np
+import pytest
 import sympy as sp
 
 from apedp_dyn import (
@@ -137,6 +138,42 @@ def test_dissipative_balance_on_duffing_and_coupled():
     damped_cpl = _model(coupled.load(), {"g1": 0.0, "g2": 0.0})
     ok, info = check_dissipative(damped_cpl, _free(damped_cpl, (0.4, 0.0, -0.3, 0.0)))
     assert ok, info
+
+
+def _restoring_model(expr: str) -> PhysicalModel:
+    """1-DOF model whose acceleration law is the given expression."""
+    states = (StateVariable("x", "meter", 0.5),
+              StateVariable("v", "meter/second", 0.0))
+    return PhysicalModel(states, (), (Parameter("k", "1/second**2", 4.0),),
+                         (DynamicalEquation("x", "v"),
+                          DynamicalEquation("v", expr)))
+
+
+@pytest.mark.parametrize(("expr", "needle"), [
+    ("-k*x - exp(x)", "outside the derivable class"),
+    ("-k*x - erf(x)", "outside the derivable class"),
+    ("-k*x - x**9", "exceeds budget"),
+    ("-k*x - sin(x)/x", "not polynomial"),
+])
+def test_bounded_derivation_refuses_instead_of_hanging(expr: str, needle: str):
+    """Exact integration has no natural stopping point, so it must be bounded.
+
+    A validator that hangs is worse than one that refuses: the gate would never
+    return, and nothing would report why. Anything outside the admitted class
+    comes back as ``conservative=False`` with the reason.
+    """
+    law = derive_energy_law(_restoring_model(expr))
+    assert not law.conservative
+    assert law.potential is None
+    assert needle in law.detail, law.detail
+
+
+def test_bounded_derivation_still_admits_every_real_problem():
+    """The budgets must not refuse the mechanical forms the grammar emits."""
+    for prob in (mass_spring_damper.load(), duffing.load(), pendulum.load(),
+                 coupled.load()):
+        law = derive_energy_law(_model(prob))
+        assert law.conservative, (prob.problem_id, law.detail)
 
 
 def test_pendulum_potential_and_conservation():

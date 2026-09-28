@@ -48,9 +48,17 @@ class PhysicalModel:
         eq_by_state = {e.state: e.sympy_expr for e in self.equations}
         u_vec = np.atleast_1d(np.asarray(u_of_t(t), dtype=float))
         subs: dict = {sp.Symbol(TIME_SYMBOL): t}
-        subs.update({sp.Symbol(n): v for n, v in zip(order, x)})
+        subs.update({sp.Symbol(n): v for n, v in zip(order, x, strict=True)})
         inames = [u.name for u in self.inputs]
-        subs.update({sp.Symbol(n): v for n, v in zip(inames, u_vec)})
+        if inames:
+            # Checked rather than truncated: an arity mismatch must be an error,
+            # not a silently dropped input.
+            if len(u_vec) != len(inames):
+                raise ValueError(
+                    f"input arity mismatch: expected {len(inames)} input(s) "
+                    f"{inames}, got {len(u_vec)}")
+            subs.update({sp.Symbol(n): v
+                         for n, v in zip(inames, u_vec, strict=True)})
         subs.update({sp.Symbol(k): v for k, v in self.param_values().items()})
         out = np.empty(len(order))
         for i, name in enumerate(order):

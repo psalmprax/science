@@ -39,7 +39,7 @@ def square_window_coefficients(problem, candidate, t: np.ndarray, Y: np.ndarray,
     # Prefilter spans a fixed time fraction (~0.4 s default), not a fixed
     # sample count: the upstream constant (61 @ dt=0.01) over-smooths coarser
     # grids and attenuates every weight uniformly (~0.75x measured at dt=0.025).
-    w1 = max(15, int(round(prefilter_seconds / dt)) | 1)
+    w1 = max(15, round(prefilter_seconds / dt) | 1)
     w1 = min(w1, (n // 4) | 1)
     x_f = savgol_filter(Y[:, 0], w1, 2)
     v_f = savgol_filter(Y[:, 0], w1, 2, deriv=1, delta=dt)
@@ -74,8 +74,7 @@ def square_window_coefficients(problem, candidate, t: np.ndarray, Y: np.ndarray,
     for row, i in enumerate(starts):
         j = i + w
         rows_y[row] = v_f[j] - v_f[i]
-        for col, nm in enumerate(names):
-            rows_phi[row, col] = np.trapezoid(cols[nm][i:j + 1], dx=dt)
-    cond = float(np.linalg.cond(rows_phi))
+        for cidx, nm in enumerate(names):
+            rows_phi[row, cidx] = np.trapezoid(cols[nm][i:j + 1], dx=dt)
     weights, *_ = np.linalg.lstsq(rows_phi, rows_y, rcond=None)
     return {nm: float(weights[k]) for k, nm in enumerate(names)}

@@ -4,8 +4,8 @@ m x'' + c x' + k x = u(t), first-order form (x, v).
 Train: sine forcing A=1.0, w=1.0. Holdout intervention: stronger, faster
 forcing A=2.0, w=2.5 — a memorized response cannot transfer; the law must.
 """
-from apedp_dyn.problems.base import DynProblem, finalize, make_signal
 from apedp_dyn.model import DynamicalEquation, InputVariable, Parameter, StateVariable
+from apedp_dyn.problems.base import DynProblem, finalize, make_signal
 
 PROBLEM_ID = "D1-MSD"
 
@@ -29,7 +29,7 @@ def spec() -> DynProblem:
     holdout = {"t_span": (0.0, 10.0),
                "u_of_t": make_signal({"kind": "sine", "amplitude": 2.0, "frequency": 2.5}),
                "x0": (0.5, 0.0),
-               "tolerance": 5e-2}
+               "tolerance": "auto"}
     return DynProblem(PROBLEM_ID, "mass-spring-damper", states, inputs,
                       parameters, truth, train, holdout)
 

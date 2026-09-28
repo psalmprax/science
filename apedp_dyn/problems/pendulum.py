@@ -7,8 +7,8 @@ unidentifiable from the train record). Holdout intervention: stronger, faster
 drive A=1.5, w=2.0 — unreachable from the train record without the true
 nonlinear law (linearized models diverge under drive).
 """
-from apedp_dyn.problems.base import DynProblem, finalize, make_signal
 from apedp_dyn.model import DynamicalEquation, InputVariable, Parameter, StateVariable
+from apedp_dyn.problems.base import DynProblem, finalize, make_signal
 
 PROBLEM_ID = "D1-PEND"
 
@@ -32,7 +32,7 @@ def spec() -> DynProblem:
     holdout = {"t_span": (0.0, 10.0),
                "u_of_t": make_signal({"kind": "sine", "amplitude": 1.5, "frequency": 2.0}),
                "x0": (0.6, 0.0),
-               "tolerance": 5e-2}
+               "tolerance": "auto"}
     return DynProblem(PROBLEM_ID, "nonlinear-pendulum", states, inputs,
                       parameters, truth, train, holdout)
 

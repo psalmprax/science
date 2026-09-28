@@ -1,4 +1,7 @@
 """D2b tests: nonlinear restoring (Duffing) + coupling topology (2-DOF)."""
+import inspect
+from itertools import combinations
+
 import numpy as np
 
 from apedp_dyn import (
@@ -70,13 +73,25 @@ def test_xr_is_coupling_family_and_rejected_single_dof():
 def test_coupled_enumeration_and_prune():
     prob = coupled.load()
     allc = enumerate_coupled()
-    # Raw enumeration: Per-DOF C(4,0..3) = 15 with required u and max 4 terms → 225 systems.
-    assert len(allc) == 225
+    # Derive the raw count from the DECLARED optional terms rather than
+    # hardcoding it. A literal rots whenever the grammar grows: this read 225
+    # until c1/c2 were added for D3, when it became 1764 with no real change in
+    # behaviour. Per-DOF subsets of size <= (max_terms - |required|), squared
+    # over the two DOFs.
+    sig = inspect.signature(enumerate_coupled)
+    optional = sig.parameters["optional"].default
+    required = sig.parameters["required"].default
+    max_terms = sig.parameters["max_terms"].default
+    per_dof = sum(len(list(combinations(optional, k)))
+                  for k in range(max_terms - len(required) + 1))
+    assert len(allc) == per_dof ** 2
+
     kept = prune_admissible(prob, allc)
-    # After pruning (dimensional + admissibility gates): 64 survive.
-    assert len(kept) == 64
+    # Measured 2026-09-28 against the D3-widened grammar (optional gained
+    # c1/c2): 676 of the 1764 survive dimensional + admissibility pruning.
+    assert len(kept) == 676
     keys = [canonical_system(s.candidate) for s in kept]
-    assert len(set(keys)) == 64
+    assert len(set(keys)) == len(keys)  # pruning keeps distinct hypotheses only
     # DOF-labeled canonicals: a swapped pair are distinct hypotheses, both kept.
     assert canonical_system(kept[0].candidate) != canonical_system(kept[-1].candidate)
     truth = [s for s in kept if [set(e) for e in s.candidate.term_sets()]

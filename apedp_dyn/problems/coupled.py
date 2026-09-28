@@ -8,13 +8,18 @@ drives and perturbs the ICs. The uncoupled rival (no xr terms) can absorb
 the coupling into shifted local stiffness on train, but cannot transfer —
 coupling topology is what gate 4 tests.
 """
-from apedp_dyn.problems.base import DynProblem, finalize, make_signal
 from apedp_dyn.model import DynamicalEquation, InputVariable, Parameter, StateVariable
+from apedp_dyn.problems.base import DynProblem, finalize, make_signal
 
 PROBLEM_ID = "D2-COUPLED"
 
 _K1, _K2, _KC = 4.0, 6.0, 1.5  # 1/second**2 (normalized by unit masses)
 _C1, _C2 = 0.15, 0.15  # 1/second
+
+_TRAIN_SIGNALS = ({"kind": "sine", "amplitude": 1.0, "frequency": 1.0},
+                  {"kind": "sine", "amplitude": 0.8, "frequency": 0.6})
+_HOLDOUT_SIGNALS = ({"kind": "sine", "amplitude": 1.5, "frequency": 2.2},
+                    {"kind": "sine", "amplitude": 1.2, "frequency": 1.3})
 
 
 def spec() -> DynProblem:
@@ -35,25 +40,17 @@ def spec() -> DynProblem:
              DynamicalEquation("v1", "-k1*x1 - kc*(x1 - x2) - c1*v1 + g1*u1"),
              DynamicalEquation("x2", "v2"),
              DynamicalEquation("v2", "-k2*x2 - kc*(x2 - x1) - c2*v2 + g2*u2"))
+    # Declarative, serializable two-input excitation: each mass is driven at a
+    # distinct frequency on train, and the holdout changes both drives.
     train = {"t_span": (0.0, 10.0),
-             "u_of_t": lambda t: _u_train(t),
+             "u_of_t": make_signal(_TRAIN_SIGNALS),
              "x0": (0.4, 0.0, -0.3, 0.0)}
     holdout = {"t_span": (0.0, 10.0),
-               "u_of_t": lambda t: _u_hold(t),
+               "u_of_t": make_signal(_HOLDOUT_SIGNALS),
                "x0": (0.7, 0.0, -0.5, 0.1),
-               "tolerance": 5e-2}
+               "tolerance": "auto"}
     return DynProblem(PROBLEM_ID, "coupled-2dof", states, inputs,
                       parameters, truth, train, holdout)
-
-
-def _u_train(t):
-    import numpy as np
-    return np.array([1.0 * np.sin(1.0 * t), 0.8 * np.sin(0.6 * t)])
-
-
-def _u_hold(t):
-    import numpy as np
-    return np.array([1.5 * np.sin(2.2 * t), 1.2 * np.sin(1.3 * t)])
 
 
 def load() -> DynProblem:

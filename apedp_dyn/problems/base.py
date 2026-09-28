@@ -7,19 +7,48 @@ gate 4 (intervention_holdout) scores against holdout truth.
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
 
 from apedp_dyn.model import DynamicalEquation, InputVariable, Parameter, StateVariable
 
 
-def make_signal(spec: dict[str, Any]) -> Callable[[float], np.ndarray]:
-    """Materialize a serializable input-signal spec to u(t). Single input (D1)."""
+def _vector_signal(components: list[Callable[[float], np.ndarray]]) -> Callable[[float], np.ndarray]:
+    """Concatenate per-input callables into one length-n_inputs vector."""
+    def u(t: float) -> np.ndarray:
+        return np.concatenate([np.atleast_1d(np.asarray(c(t), dtype=float)).ravel()
+                               for c in components])
+    return u
+
+
+def make_signal(spec: Any) -> Callable[[float], np.ndarray]:
+    """Materialize a serializable input-signal spec to u(t).
+
+    One input: a dict spec. Several inputs: a list/tuple of specs, or
+    ``{"kind": "vector", "signals": [...]}``. The result is always a vector of
+    length n_inputs, so multi-DOF problems describe excitation declaratively
+    instead of hand-rolling lambdas — which also keeps a problem spec
+    serializable, so a run can be replayed from its recorded experiment design.
+    """
+    if isinstance(spec, (list, tuple)):
+        return _vector_signal([make_signal(s) for s in spec])
+    if not isinstance(spec, dict):
+        raise TypeError(
+            f"signal spec must be a dict or a list of dicts, got {type(spec).__name__}")
     kind = spec["kind"]
+    if kind == "vector":
+        subs = spec.get("signals")
+        if not isinstance(subs, (list, tuple)) or not subs:
+            raise ValueError("vector signal needs a non-empty 'signals' list")
+        return _vector_signal([make_signal(s) for s in subs])
     if kind == "zero":
-        return lambda t: np.zeros(1)
+        # 'n' lets a multi-input problem declare an all-zero drive of the
+        # right arity without repeating the spec per channel.
+        n = int(spec.get("n", 1))
+        return lambda t: np.zeros(n)
     if kind == "sine":
         a, w, ph = spec["amplitude"], spec["frequency"], spec.get("phase", 0.0)
         return lambda t: np.array([a * np.sin(w * t + ph)])
@@ -81,7 +110,7 @@ def generate_truth(problem: DynProblem, regime: str,
 
     def f(t, x):
         u = np.atleast_1d(np.asarray(u_of_t(t), dtype=float))
-        args = (t,) + tuple(x) + tuple(u) + tuple(params[k] for k in params)
+        args = (t, *x, *u, *(params[k] for k in params))
         return np.array([float(c(*args)) for _, c in compiled])
 
     sol = solve_ivp(f, reg["t_span"], x0, method="DOP853",

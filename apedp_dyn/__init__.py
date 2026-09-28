@@ -8,6 +8,13 @@ The optimizer never invents structure: the mechanical grammar emits a typed
 CandidateDynamics IR; gates 1-2 prune before any integration; the fitter only
 estimates numbers for frozen structures; gate 4 (held-out intervention) decides.
 """
+from apedp_dyn.epistemic import (
+    REL_FLOOR,
+    Adjudication,
+    EpistemicStatus,
+    adjudicate,
+    resolution_floor,
+)
 from apedp_dyn.estimation import (
     WeakWindows,
     boundary_term,
@@ -17,13 +24,6 @@ from apedp_dyn.estimation import (
     spline_coefficients,
     square_window_coefficients,
     weak_coefficients,
-)
-from apedp_dyn.epistemic import (
-    REL_FLOOR,
-    Adjudication,
-    EpistemicStatus,
-    adjudicate,
-    resolution_floor,
 )
 from apedp_dyn.fitting import FitResult, fit_candidate
 from apedp_dyn.gates import (
@@ -80,24 +80,24 @@ from apedp_dyn.validation import (
 )
 
 __all__ = [
-    "Adjudication",
-    "EpistemicStatus",
-    "FitResult",
-    "GateResult",
     "GRAMMAR_VERSION",
     "REL_FLOOR",
-    "ScoredCandidate",
-    "SimulateResult",
+    "TERM_FAMILIES",
+    "TIME_SYMBOL",
+    "Adjudication",
     "CandidateDynamics",
     "DynamicalEquation",
     "EnergyLaw",
+    "EpistemicStatus",
+    "FitResult",
+    "GateResult",
     "InputVariable",
     "Parameter",
     "PhysicalModel",
+    "ScoredCandidate",
+    "SimulateResult",
     "StateVariable",
     "SystemCandidate",
-    "TIME_SYMBOL",
-    "TERM_FAMILIES",
     "Term",
     "WeakWindows",
     "adjudicate",
@@ -125,6 +125,7 @@ __all__ = [
     "full_topology_candidate",
     "intervention_holdout",
     "make_signal",
+    "make_windows",
     "materialize",
     "materialize_system",
     "mechanical_energy",

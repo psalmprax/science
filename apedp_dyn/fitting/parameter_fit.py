@@ -5,32 +5,47 @@ is numerical parameter estimation, solved with trust-region reflective
 least squares (scipy), not a GA. Residuals are per-state normalized trajectory
 errors on the TRAIN regime only.
 
-D1.3 invariant: the simulator stays downstream of gates 1-2. fit_candidate()
-re-verifies gates 1-2 on the materialized model and refuses to integrate
-inadmissible candidates — a bad structure can never win merely because the
-optimizer makes it fit.
+D1.3 invariant: the simulator stays downstream of the structural gates.
+fit_candidate() re-verifies them on the materialized model and refuses to
+integrate inadmissible candidates — a bad structure can never win merely
+because the optimizer makes it fit.
+
+Every gate that run_all_gates() evaluates is evaluated here too. A gate wired
+into the audit path but not the promotion path is decorative, so the two sets
+are kept equal by _GATE_PROVENANCE_KEY and asserted by a contract test.
 """
 from __future__ import annotations
 
 import dataclasses
 from collections.abc import Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
 
 from apedp_dyn.gates import (
+    dao_validity,
     dimensional_validity,
     equation_admissibility,
     forward_simulation_validity,
     intervention_holdout,
 )
-from apedp_dyn.grammar import (
-    CandidateDynamics,
-    ScoredCandidate,
-    materialize,
-)
+from apedp_dyn.grammar import ScoredCandidate, materialize
 from apedp_dyn.simulation import simulate
+
+_GATE_PROVENANCE_KEY = {
+    "dimensional_validity": "gate1_status",
+    "equation_admissibility": "gate2_status",
+    "forward_simulation_validity": "gate3_status",
+    "intervention_holdout": "gate4_status",
+    "dao_validity": "dao_status",
+}
+"""Gate name -> provenance key, for every gate run_all_gates() evaluates.
+
+Single source of truth: the promotion path and the audit path must not be
+allowed to drift apart, because a gate that only the audit path runs cannot
+prevent anything being promoted.
+"""
 
 
 @dataclass(frozen=True)
@@ -81,9 +96,8 @@ def _warm_start(problem, model0):
     starting point inside the stable basin; trajectory refinement (below)
     does the actual fitting. General over 1-DOF and multi-DOF models.
     """
-    from scipy.interpolate import CubicSpline
-
     import sympy as sp
+    from scipy.interpolate import CubicSpline
 
     _, t, Y, U = _train_arrays(problem)
     order = [s.name for s in model0.states]
@@ -141,6 +155,15 @@ def fit_candidate(problem, candidate,
     prov["gate1_status"] = {"passed": g1.passed, "detail": g1.detail}
     if not g1.passed:
         prov["rejection_reason"] = f"gate1: {g1.detail}"
+        return ScoredCandidate(candidate, prov)
+    # Gate 1.5 (dao_validity) is structural, so it belongs with gates 1-2 and
+    # not after the fit: a DAE-invalid structure should never be integrated.
+    # Running it here (not only in run_all_gates) keeps it on the path that
+    # actually decides promotion.
+    g15 = dao_validity(model0)
+    prov["dao_status"] = {"passed": g15.passed, "detail": g15.detail}
+    if not g15.passed:
+        prov["rejection_reason"] = f"dao_validity: {g15.detail}"
         return ScoredCandidate(candidate, prov)
     names = [p.name for p in model0.parameters]
     bounds = [p.bounds if p.bounds is not None else (-np.inf, np.inf)

@@ -41,6 +41,20 @@ jobs:
           pip install --upgrade pip
           pip install -e ".[dev,test,orchestration]"
 
+      # Fast tier first: seconds, not minutes. It parses every source file and
+      # imports every apedp_dyn module, so a syntax or import-time break fails
+      # in ~2s instead of after a ten-minute suite run. It also imports every
+      # test module (collection), which the full run only reaches late.
+      - name: Fast smoke tier (syntax + imports)
+        run: |
+          source .venv/bin/activate
+          pytest tests/test_smoke_imports.py -q
+
+      - name: Collection smoke (import every test module)
+        run: |
+          source .venv/bin/activate
+          pytest tests/ --collect-only -q
+
       - name: Run regression tests
         run: |
           source .venv/bin/activate
@@ -51,15 +65,33 @@ jobs:
           source .venv/bin/activate
           pytest tests/ -v --tb=short -n auto -m integration
 
+      # The dynamical package owns the doctrine, so it is gated on its own and
+      # kept at zero. These two steps run first because they are the ones that
+      # are currently green; the broader steps below cover apedp/ too, which is
+      # not yet clean (see the note under them).
+      - name: Lint apedp_dyn with ruff
+        run: |
+          source .venv/bin/activate
+          ruff check apedp_dyn/
+
+      - name: Type check apedp_dyn with mypy
+        run: |
+          source .venv/bin/activate
+          mypy apedp_dyn/ --ignore-missing-imports
+
+      # NOTE: these two still fail on pre-existing findings in apedp/ and
+      # tests/ (16 + 28 ruff, 11 mypy as of 2026-09-28), so the job is red
+      # until that backlog is cleared. apedp_dyn/ is included so it stays
+      # covered once the rest reaches zero.
       - name: Lint with ruff
         run: |
           source .venv/bin/activate
-          ruff check apedp/ tests/
+          ruff check apedp/ apedp_dyn/ tests/
 
       - name: Type check with mypy
         run: |
           source .venv/bin/activate
-          mypy apedp/ --ignore-missing-imports
+          mypy apedp/ apedp_dyn/ --ignore-missing-imports
 
       - name: Security scan with bandit
         run: |
