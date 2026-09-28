@@ -248,11 +248,18 @@ is observed, and the freeze is respected.
   `polyfit_deg=3`, `NN_epochs=500`, `test_percentage=20` default), one
   subprocess per problem with a hard 1500 s cap, driver
   `/tmp/opencode/aif_full_sweep.py`, progress in
-  `/tmp/opencode/aif_full_progress.jsonl`. Early pace (A-block, N≤8) is
-  ~5–9 s/problem; larger problems will dominate the total. Solution parsing
-  (family, val/far-OOD MSE, timeouts, domain violations, equivalence) happens
-  at stage 4 against these artifacts — the batch records wall time, status,
-  and solution files only.
+  `/tmp/opencode/aif_full_progress.jsonl`.
+- **STAGE-1 OUTCOME (2026-09-28): batch executed, baseline NOT established.**
+  60/60 subprocesses exited `ok`, zero timeouts, 270 s total — but all 180
+  solution files (3/problem) are **0 bytes**. The pipeline runs end-to-end
+  (NN training, separability/symmetry checks, brute-force + polyfit branches)
+  yet saves no solution at this operating point on 22–80-point noisy data;
+  only inputs and transform copies are non-empty on disk. Zero usable
+  expressions means none of the 9 stage-4 quantities can be emitted.
+  Next: single-problem operating-point search (escalate `BF_try_time` /
+  `NN_epochs` toward the code default 4000 on P01) to find the regime that
+  yields solutions, then re-run the 60. **Stage-2 gate is NOT satisfied**:
+  no verified artifacts exist to freeze, so PySR production stays held.
 - **STAGE 2 — HELD**: PySR production (`niterations=300, populations=30`,
   `maxsize` unset, seed 20260926), driver `/tmp/opencode/pysr_production_sweep.py`
   written but **not executed** until the stage-1 baseline exists, preserving
