@@ -284,7 +284,35 @@ is observed, and the freeze is respected.
   `/tmp/opencode/pysr_production_sweep.py`. Comparison symmetry preserved:
   production PySR was held until the stage-1 baseline verified and froze.
 
-## 12. Final Frozen Comparison (2026-09-28 — all competitors scored, blind)
+## 12. N10 Phase-B Report (2026-09-28 — frozen APEDP, zero code changes)
+
+APEDP ran all 10 N-cases via the frozen adapter (140.3 s total) with full
+top-25 candidate archives (`apedp_N.json`, `apedp_N_candidates.json`).
+Blind mechanical score: **5 attempted / 5 abstained; family 4/5 = 80%** on
+attempted; 0 false discoveries; median val MSE 3.87e-03. Attempted: N01✓ N03✓
+N08✓ N10✓ (bucket-level), N06✗ — the miss is the already-known fractional-power
+canonicalizer gap (`transcendental_composite` vs `exponential_relaxation`),
+not a new failure mode.
+
+Abstention forensics (read-only, all quantified pre-fix):
+- **N02/N07/N09 — gate miscalibration, not epistemics.** `_regime_identifiability`
+  estimates the noise floor as median|slope| of first differences, which
+  measures signal gradient on steep monotonic data: estimates 1.48/4.28/0.93
+  vs true σ ≈ 0.043/0.13/0.03 (~30× inflation in all three). Refusal margins
+  were knife-edge: span vs 3×estimate = 4.29/4.45 (N02), 12.6/12.8 (N07),
+  2.37/2.78 (N09). N01 carries the same pathology (estimate 4.07 vs σ≈0.15)
+  and passed by only 8%. Next-round fix: residual-after-detrend noise estimate
+  (frozen now).
+- **N04 — generation failure, gates correct.** Library holds 10 undamped
+  templates, but the grid offers `A*cos(1.5*x)` against truth `3*sin(1.7x+0.4)`:
+  coarse frequency × no phase DOF → best fit R²=0.04 → Stage-C correctly
+  rejected everything → NO_VALID_CANDIDATE. Truth-adjacent structure was never
+  produced at usable quality. Next-round fix: frequency refinement + sin/cos
+  (phase-carrying) pairs.
+- **N05 — genuine grammar gap** (`cos²` absent): refusal with linear fallback
+  is the defensible behavior; counts as abstention, correctly.
+
+## 13. Final Frozen Comparison (60-corpus — all competitors scored, blind)
 
 Termination integrity: PySR production 60/60, zero errors, 2161.7 s total;
 AI-Feynman 60/60 clean exits (59 models + 1 empty set); PySINDy O-block only
