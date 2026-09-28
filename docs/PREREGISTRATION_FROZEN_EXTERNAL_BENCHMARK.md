@@ -433,3 +433,59 @@ synthesis kept separate), plus a threats-to-validity section following the
 `PHYSICAL_BENCHMARK_METHODOLOGY_AND_THREATS_TO_VALIDITY.md` precedent. Raw outputs,
 seeds, container pins, and hashes are archived with the report for independent
 re-execution.
+
+## 14. N10 Four-Way Tournament (2026-09-28 — provisioned competitors, blind)
+
+N10 competitors were provisioned in `/tmp/opencode` (PySR env + Julia backend at
+`/tmp/opencode/pysr_env`, `JULIA_DEPOT_PATH=/tmp/opencode/julia_depot`; AI-Feynman
+clone @ `a05bc4a` + iso env at `/tmp/opencode/aifeynman` / `aifeynman_iso`) and run
+against PUBLIC data only via external scripts; frozen adapters untouched. Artifacts
+(session-local, uncommitted at write time): `tournament_results_external_60/pysr_N.json`
+(production-mirror settings `niterations=300, populations=30, seed 20260926`, 8 threads,
+nondeterministic search disclosed), `aifeynman_N.json` (BF_try_time=30, 14ops,
+polyfit_deg=3, NN_epochs=500, test 20%, split seeded 20260928+num; no gfortran so BF
+branches inert — same disclosed constraint as stage-1; `getBest` ragged-array shim,
+identical selection semantics), `pysindy_N.json` (contract scope, O-block only),
+`n10_blind_report_4way_INTERNAL.json` (blind `evaluate_round` over all four).
+
+| | APEDP (frozen) | PySR | AI-Feynman (doc. config) | PySINDy |
+|---|---|---|---|---|
+| Attempted / abstained | 5 / 5 | 10 / 0 | 10 / 0 | 0 / 10 (out-of-scope) |
+| Family accuracy | 80% (4/5 attempted) | 20% (N03, N09) | 20% (N04, N05) | NOT_APPLICABLE (null) |
+| Median val MSE | 3.87e-03 | 3.77e-03 | 3.28e-02 | — |
+| Median far-OOD MSE | 1.47e-03 | 3.90 | 16.8 | — |
+| False discoveries | 0 | 0 | 0 | 0 |
+
+Per-problem family (APEDP/PySR/AIF; `-` = abstain): N01 1/0/0, N02 -/0/0,
+N03 1/1/0, N04 -/0/1, N05 -/0/1, N06 0/0/0, N07 -/0/0, N08 1/0/0, N09 -/1/0,
+N10 1/0/0. Wilcoxon val-MSE: APEDP-vs-PySR p=0.049 (n=10); AIF-vs-APEDP p=1.0;
+AIF-vs-PySR p=0.0039.
+
+Wording constraints (binding on manuscript use):
+
+1. **Replication, not proof.** Interpolation is a near-tie (3.87e-03 vs 3.77e-03)
+   with far-OOD separation of 3+ orders (1.47e-03 vs 3.90 vs 16.8): similar
+   validation error ⇏ similar extrapolation behavior. At N=10 this replicates the
+   60-corpus pattern as **secondary evidence**; it is not stated as a universal
+   architectural theorem.
+2. **Abstentions are false negatives here.** All ten N10 oracles are C1/RECOVER, so
+   APEDP's five abstentions score abstention_precision 0.0 *by construction*. The
+   evidence supports a **recall–abstention trade-off** (4/10 recovered overall, 80%
+   precision on attempted, zero forced fits — APEDP abstains rather than forcing
+   structural claims, at the cost of missed recoveries). It does not establish the
+   epistemic correctness of those abstentions; that requires ABSTAIN-oracle cases
+   (cf. 60-corpus block A).
+3. **Column attribution (audit guard).** PySINDy emitted `OUT_OF_SCOPE` on all ten
+   problems (0 attempted, family_accuracy null = NOT_APPLICABLE); the 20% N04/N05
+   figure belongs to **AI-Feynman** (bucket-level `trigonometric_oscillatory`
+   matches for `acos`/`tan` outputs — same canonicalizer caveat as §12, not
+   structural recovery claims). No contradictory counts exist in the artifacts.
+
+Follow-up, not a freeze change: PySR recovered the translated rational pole on N09
+(`0.393+2.55/(x+0.72)` vs truth `2.5/(x+0.7)+0.4`) where APEDP abstained — recorded
+as a **future grammar-expansion question**. The static architecture was not modified
+in response to N10.
+
+Record status: the **60-case tournament (§13) is the authoritative 4-way benchmark**;
+**N10 is an independent micro-benchmark / architectural stress test**. Static
+discovery is closed on this record; next generation is `apedp-dyn`.
