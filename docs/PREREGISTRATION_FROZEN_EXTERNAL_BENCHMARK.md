@@ -251,6 +251,45 @@ is observed, and the freeze is respected.
   next-round task to be executed once, with defaults, and without
   result-iteration.
 
+## 11. PySR Reduced-Budget Pilot (2026-09-28 — PILOT, not round evidence)
+
+Because the isolated PySR env ran hot (~1.6 s/problem after Julia warmup; 98 s
+for all 60), a full-corpus pilot was executed with explicitly reduced settings
+(`niterations=40, populations=8, maxsize=15, seed=20260926`) via an external
+script — frozen adapters untouched. Archived at
+`tournament_results_external_60/pysr_pilot_60.json` (flagged `"pilot": true`).
+Head-to-head against the frozen APEDP round via `evaluate_round`:
+
+| Metric | APEDP (frozen round) | PySR pilot (reduced budget) |
+|---|---|---|
+| Attempted | 56/60 (4 correct abstentions) | 60/60 (never abstains — no epistemic layer) |
+| Family accuracy | **91.1%** (51/56) | **21.7%** (13/60) |
+| False discoveries | 1 (A53) | 0 (no epistemic states to audit) |
+| Median val MSE | **1.20e-04** | 2.39e-03 (~20×) |
+| Median far-OOD MSE | **3.47e-06** | 1.45e-01 (~7 orders of magnitude) |
+| Wilcoxon val-MSE (paired, n=57) | p = **3.9e-07** (significant) | — |
+
+PySR pilot matches cluster in P-block polynomials and R-block rationals
+(7/8 R-block incl. R25/R26, which APEDP missed with envelopes). The far-OOD
+column is the striking result: hall-of-fame picks fit the train slice but
+extrapolate catastrophically, while APEDP's forms hold — quantitative support
+for the protocol's weighting of block X highest.
+
+Cross-method agreement on APEDP's two genuine misses: pilot PySR independently
+selected polynomial on E16 and rational on P07 — the same non-truth families
+APEDP chose. Two independent methods converging off-truth on the same two
+realizations is evidence these are noise-level identifiability limits rather
+than APEDP-specific bugs, and sharpens the §9.5 next-round hypothesis (BIC
+re-rank) rather than weakening it: the fix must come from the selection
+criterion, since the candidate libraries of both methods already contain the
+truth.
+
+**Caveats (load-bearing):** pilot settings are NOT the preregistered defaults,
+so this table is feasibility + signal evidence, never round evidence. A
+full-budget PySR run (defaults) would score higher on family accuracy; the
+far-OOD pattern may or may not persist. Do not cite pilot numbers as benchmark
+outcomes.
+
 > **Note**: The family-match metric in `evaluate_external_60.py` compares both sides through `canonical_family()`, but the corpus stores `canonical_structural_family` in a different bucketing system (see the code comment: *"the corpus's hand-written family label lives in a different taxonomy and must never be compared directly"*). The 91.1% family accuracy therefore includes 2/5 cases that are bucket-level equivalence rather than structural mismatches. A fingerprint-identity metric (not currently implemented) would be needed to cleanly separate these.
 
 ### 9.6 Threats to Validity (as-reported)
