@@ -267,10 +267,22 @@ is observed, and the freeze is respected.
   (`BF_try_time=30`, `NN_epochs=500`); only the crash-compat shim changed.
   **Stage-2 gate is NOT satisfied** until the re-run's artifacts verify, so
   PySR production stays held.
-- **STAGE 2 — HELD**: PySR production (`niterations=300, populations=30`,
-  `maxsize` unset, seed 20260926), driver `/tmp/opencode/pysr_production_sweep.py`
-  written but **not executed** until the stage-1 baseline exists, preserving
-  comparison symmetry.
+- **STAGE-1 VERIFIED + FROZEN (2026-09-28): gate satisfied.** Termination audit
+  over `/tmp/opencode/aif_full_progress.jsonl` + solution files, using the
+  un-collapsed outcome taxonomy: **59 `successful_model_returned`** (clean exit,
+  genuine expressions), **1 `empty_candidate_set_after_clean_exit`** (A54 —
+  sole row is the trivial constant at test_err=1e6; no model returned),
+  **0 timeouts, 0 subprocess crashes**. All 60 processes terminated legitimately.
+  Artifacts frozen at `tournament_results_external_60/aifeynman_full_60.json`:
+  full Pareto rows per problem, mechanical primary (lowest test-error row,
+  documented per result; stage 4 may rescore), `aif_search_capability =
+  "polyfit_nn_only"`, exact commit/env/operating-point/shim record. Reported
+  henceforth as "AI-Feynman under the documented available configuration" —
+  never as full-featured AI-Feynman.
+- **STAGE 2 — LAUNCHED on gate satisfaction**: PySR production
+  (`niterations=300, populations=30`, `maxsize` unset, seed 20260926), driver
+  `/tmp/opencode/pysr_production_sweep.py`. Comparison symmetry preserved:
+  production PySR was held until the stage-1 baseline verified and froze.
 - **Frozen-adapter note**: `PySRAdapter.run` / `AIFeynmanAdapter.run` still raise
   `NotImplementedError` by design. Wiring the run paths would modify frozen
   adapters after scores were observed (§6.1); it is recorded here as a defined
