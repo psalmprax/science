@@ -194,25 +194,32 @@ and 2 genuine RECOVER misses:
 
 **Genuine RECOVER misses (2 cases = 2/56 = 3.6% true error rate):**
 - **E16** (oracle=RECOVER): truth `5.0·exp(−0.2·x)` on x∈[0.31,6.0].
-  APEDP returned a degree-4 polynomial (`−0.00445·x³+0.0857·x²−0.9686·x+4.9909`,
-  val MSE 2.3e-04) with MULTI_HYPOTHESIS/P0. The exponential candidate either
-  lost on BIC or its Stage-D refinement underfit. This is the clearest genuine
-  miss. **Recommendation (future round, not now):** run the E16 train slice
-  through `cross_family_select` with per-candidate BIC logging to determine
-  whether the exponential lost on fit quality (Stage-D issue) or on the
-  complexity penalty (MDL-calibration issue), then file the finding as a
-  preregistered hypothesis for the next round.
+  APEDP returned a degree-4 polynomial (val MSE 2.275e-04) with
+  MULTI_HYPOTHESIS/P0 while the true `5.0086·exp(−0.1999·x)` sat at **rank 2**
+  (val MSE 3.347e-04). Upstream `cross_family_select` had it right: exponential
+  BIC −173.96 vs polynomial −120.61 (53-point landslide). **Mechanism (verified
+  2026-09-28, read-only):** `AutonomousModelSynthesizer.synthesize` ranks by
+  raw val-MSE with no complexity penalty, so the 5-param polynomial edges out
+  the true 2-param form by ~1e-04 MSE on noisy validation data. This is the
+  clearest genuine miss.
 - **P07** (oracle=RECOVER): truth `3.0·x^0.5` on x∈[0.5,4.0]. APEDP returned
-  `220.7·x/(72.89·x^0.5+1)` (val MSE 2.9e-04) — asymptotically identical to
+  `220.7·x/(72.89·x^0.5+1)` (val MSE 2.882e-04) — asymptotically identical to
   `3.02·√x` (ratio → 220.7/72.89 ≈ 3.028) but filed under
-  `rational_transition` instead of `power_law`. Note the compounding
-  canonicalizer gap: `canonical_family('3.0*x**0.5')` returns
+  `rational_transition` instead of `power_law`, while the true
+  `3.0017·x^0.5` sat at **rank 2** (val MSE 3.743e-04; BIC −150.60 vs −93.40,
+  57-point landslide for the truth). Same rank-by-raw-MSE mechanism. Note the
+  compounding canonicalizer gap: `canonical_family('3.0*x**0.5')` returns
   `transcendental_composite` while the corpus's `canonical_structural_family`
   says `power_law`, so this case fails the match under *both* taxonomies.
-  **Recommendation (future round):** (a) check whether the pure `x^0.5`
-  candidate was in the library and its BIC gap vs the rational winner;
-  (b) fix the `x**0.5`-style fractional-power bucket in `canonical_family`
-  in a new round (evaluation-infrastructure change, equally frozen now).
+
+**Concrete next-round fix (proposed, NOT applied — §6.1 freeze):**
+re-rank the synthesizer's top-K by BIC (equivalently val-MSE + `k·ln(n)/n`)
+instead of raw val-MSE — both E16 and P07 flip to correct with no other change
+given 50+-point BIC margins — or carry the `cross_family_select` BIC winner as
+a protected candidate displaceable only on BIC, never on raw MSE. Either change
+alters selection globally and must go through a fresh preregistered round per
+§6.3. The P07 fractional-power bucket fix in `canonical_family` is a frozen
+evaluator-side change for the same next round.
 
 **Net assessment:** on rankable problems (excluding AMBIGUOUS + STABILITY_PROBE
 per §6.4), APEDP's genuine family error is **2/53 ≈ 3.8%**, i.e. **≈96%**
