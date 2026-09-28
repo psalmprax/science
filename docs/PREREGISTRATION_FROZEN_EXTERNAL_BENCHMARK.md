@@ -227,6 +227,30 @@ family recovery where the oracle demands recovery. No code changes are made in
 this round — §6.1 forbids APEDP modifications after the first competitor score
 is observed, and the freeze is respected.
 
+## 10. Competitor Provisioning Status (2026-09-28, no frozen files touched)
+
+- **PySINDy 2.1.0**: provisioned (repo venv), O-block 8/8 executed and archived
+  (`tournament_results_external_60/pysindy_O.json`). Out-of-scope abstention on
+  all other blocks per the frozen adapter contract.
+- **PySR 2.5.0**: provisioned in an isolated env outside the repo
+  (`/tmp/opencode/pysr_iso`; stock venv untouched). Import verified; smoke test
+  on P01 (niterations=40, populations=8, maxsize=15) recovered
+  `x0*1.9974927 + 1.0066323` (truth `2.0*x + 1.0`) in single-digit minutes.
+  Per-problem cost confirms a full 60-problem sweep is an hours-scale batch job,
+  not an in-session task.
+- **AI-Feynman @ a05bc4a**: cloned at the frozen pin (`/tmp/opencode/aifeynman`,
+  HEAD == `a05bc4a5be23d6eb3e1d0b2f7eb1ab5b78a920ad`) with an isolated env
+  (`/tmp/opencode/aifeynman_iso`: torch CPU, sympy 1.4, sklearn). Import
+  verified; reduced-budget smoke on P01 runs end-to-end without crashing but
+  yields empty solution files — full-budget validation (NN_epochs in the
+  thousands, BF_try_time ≥ 30) is still pending and, at ~10 min/problem, is
+  likewise batch-scale.
+- **Frozen-adapter note**: `PySRAdapter.run` / `AIFeynmanAdapter.run` still raise
+  `NotImplementedError` by design. Wiring the run paths would modify frozen
+  adapters after scores were observed (§6.1); it is recorded here as a defined
+  next-round task to be executed once, with defaults, and without
+  result-iteration.
+
 > **Note**: The family-match metric in `evaluate_external_60.py` compares both sides through `canonical_family()`, but the corpus stores `canonical_structural_family` in a different bucketing system (see the code comment: *"the corpus's hand-written family label lives in a different taxonomy and must never be compared directly"*). The 91.1% family accuracy therefore includes 2/5 cases that are bucket-level equivalence rather than structural mismatches. A fingerprint-identity metric (not currently implemented) would be needed to cleanly separate these.
 
 ### 9.6 Threats to Validity (as-reported)
