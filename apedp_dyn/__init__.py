@@ -8,6 +8,15 @@ The optimizer never invents structure: the mechanical grammar emits a typed
 CandidateDynamics IR; gates 1-2 prune before any integration; the fitter only
 estimates numbers for frozen structures; gate 4 (held-out intervention) decides.
 """
+from apedp_dyn.estimation import (
+    WeakWindows,
+    boundary_term,
+    bump,
+    bump_deriv,
+    make_windows,
+    spline_coefficients,
+    weak_coefficients,
+)
 from apedp_dyn.fitting import FitResult, fit_candidate
 from apedp_dyn.gates import (
     GateResult,
@@ -56,6 +65,10 @@ __all__ = [
     "TIME_SYMBOL",
     "TERM_FAMILIES",
     "Term",
+    "WeakWindows",
+    "boundary_term",
+    "bump",
+    "bump_deriv",
     "canonical_form",
     "deduplicate",
     "dimensional_validity",
@@ -70,4 +83,6 @@ __all__ = [
     "run_all_gates",
     "select_by_train_loss",
     "simulate",
+    "spline_coefficients",
+    "weak_coefficients",
 ]
