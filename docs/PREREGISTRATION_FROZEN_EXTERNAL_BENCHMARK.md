@@ -283,6 +283,56 @@ is observed, and the freeze is respected.
   (`niterations=300, populations=30`, `maxsize` unset, seed 20260926), driver
   `/tmp/opencode/pysr_production_sweep.py`. Comparison symmetry preserved:
   production PySR was held until the stage-1 baseline verified and froze.
+
+## 12. Final Frozen Comparison (2026-09-28 — all competitors scored, blind)
+
+Termination integrity: PySR production 60/60, zero errors, 2161.7 s total;
+AI-Feynman 60/60 clean exits (59 models + 1 empty set); PySINDy O-block only
+by contract. Artifacts: `pysr_production_60.json` (full determinism record:
+seed 20260926, 8 threads, pysr 2.5.0 / julia 1.11.9 /
+SymbolicRegression@d372acc, `deterministic=False` disclosed),
+`aifeynman_full_60.json` (+ grid predictions from frozen primaries),
+`pysr_pilot_60.json`. APEDP untouched throughout.
+
+| Metric | APEDP (frozen) | AI-Feynman (doc. config) | PySR pilot | PySR production |
+|---|---|---|---|---|
+| Family accuracy | **91.1%** (51/56) | 43.3% (26/60) | 21.7% (13/60) | 11.7% (7/60) |
+| Median val MSE | **1.20e-04** | 1.86e-03 | 2.39e-03 | 3.72e-04 |
+| Median far-OOD MSE | **3.47e-06** | 9.46e-01 | 1.45e-01 | 1.81e-02 |
+| Abstentions | 4 (75% precise) | 0 | 0 | 0 |
+| Wilcoxon val-MSE vs APEDP | — | p=1.2e-05 | p=3.9e-07 | p=0.022 |
+
+Failure-type answers (the production run's actual yield):
+- **Far-OOD**: budget improved PySR 8× (0.145 → 0.018) but the gap to APEDP
+  *widened in relative terms* (~7 orders). More search finds better
+  interpolators, not bounded extrapolators — the OOD instability is
+  architectural (no asymptotic/structural constraint), not budgetary.
+- **E16**: production did NOT resolve toward truth — it degenerated from
+  pilot-quadratic to `polynomial_deg_0` (constant). Budget moves the failure,
+  doesn't remove it. (Constrained AI-Feynman matched exponential here.)
+- **P07**: production preserved the pilot's rational surrogate. Resolution:
+  negative; preservation: confirmed — across budgets *and* across methods
+  (APEDP rational, pilot rational, production rational), implicating the
+  realization + criterion, not search depth.
+- **A54**: both PySR runs hallucinated `transcendental_composite` on the
+  trig-identity adversary; AI-Feynman returned nothing (empty set — the most
+  honest outcome of the three); APEDP abstained (conservative; incorrect only
+  against the CERTIFY oracle label).
+- **Caveat on AIF's 26**: it includes fits on ABSTAIN-oracle adversaries
+  (A53/A55–A57) that a gated system correctly refuses — family match there is
+  hallucination scored as success by a metric blind to abstention. APEDP's
+  abstention precision has no counterpart in any competitor (none abstain).
+
+Attribution (where the advantage comes from, in order of measured support):
+1. **Extrapolation control** — 6–7 orders of far-OOD separation, persistent
+   across competitor budgets; structural families with correct asymptotics.
+2. **Epistemic gating** — the only abstentions in the comparison (75% precise);
+   competitors convert adversaries into confident fits or empty sets.
+3. **Selection criterion** — the E16/P07 misses are rank-by-val-MSE artifacts
+   with the truth at rank 2 (§9.5); the BIC re-rank hypothesis stands.
+4. **Search** — explicitly *not* the differentiator: 7.5× production search
+   lowered PySR family accuracy (21.7% → 11.7%; nondeterministic trajectory
+   disclosed, family-level change acknowledged).
 - **Frozen-adapter note**: `PySRAdapter.run` / `AIFeynmanAdapter.run` still raise
   `NotImplementedError` by design. Wiring the run paths would modify frozen
   adapters after scores were observed (§6.1); it is recorded here as a defined
