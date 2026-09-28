@@ -1,0 +1,36 @@
+{
+  "problem_id": "N10",
+  "block": "N",
+  "name": "power-times-exponential",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "domain": [
+    0.2,
+    8.0
+  ],
+  "noise_model": "additive Gaussian sigma=0.0189124 (rel=0.01)",
+  "dataset_sizes": {
+    "train": 112,
+    "validation": 48,
+    "near_ood": 48,
+    "far_ood": 48
+  },
+  "near_ood_regions": [
+    [
+      0.02,
+      0.2
+    ]
+  ],
+  "far_ood_regions": [
+    [
+      0.001,
+      0.02
+    ],
+    [
+      8.0,
+      16.0
+    ]
+  ]
+}

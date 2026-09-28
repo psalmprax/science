@@ -1,0 +1,13 @@
+{
+  "problem_id": "N07",
+  "block": "N",
+  "ground_truth_formula": "0.7*x**1.8+1.2",
+  "canonical_structural_family": "shifted_power_law",
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER",
+  "case_seed": 20260935,
+  "noise_sigma": 0.1388364411435967,
+  "meta": {
+    "rule": "pure power law without +1.2 offset is NOT exact recovery"
+  }
+}

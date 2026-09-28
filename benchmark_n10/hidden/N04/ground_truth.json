@@ -1,0 +1,16 @@
+{
+  "problem_id": "N04",
+  "block": "N",
+  "ground_truth_formula": "3*sin(1.7*x+0.4)",
+  "canonical_structural_family": "sinusoidal",
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER",
+  "case_seed": 20260932,
+  "noise_sigma": 0.03,
+  "meta": {
+    "equivalence": [
+      "A*sin(k*x+phi)",
+      "cosine forms"
+    ]
+  }
+}

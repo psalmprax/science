@@ -1,0 +1,40 @@
+{
+  "problem_id": "N04",
+  "block": "N",
+  "name": "phase-shifted-sinusoid",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "domain": [
+    -4.0,
+    4.0
+  ],
+  "noise_model": "additive Gaussian sigma=0.03 (rel=0.01)",
+  "dataset_sizes": {
+    "train": 112,
+    "validation": 48,
+    "near_ood": 48,
+    "far_ood": 48
+  },
+  "near_ood_regions": [
+    [
+      -6.0,
+      -4.0
+    ],
+    [
+      4.0,
+      6.0
+    ]
+  ],
+  "far_ood_regions": [
+    [
+      -12.0,
+      -6.0
+    ],
+    [
+      6.0,
+      12.0
+    ]
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "problem_id": "N08",
+  "block": "N",
+  "ground_truth_formula": "6*(1-exp(-0.45*x))",
+  "canonical_structural_family": "exponential_saturation",
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER",
+  "case_seed": 20260936,
+  "noise_sigma": 0.05596766923561502,
+  "meta": {
+    "asymptote": 6.0
+  }
+}

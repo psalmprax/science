@@ -1,0 +1,11 @@
+{
+  "problem_id": "N01",
+  "block": "N",
+  "ground_truth_formula": "2.4*exp(0.37*x)",
+  "canonical_structural_family": "exponential",
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER",
+  "case_seed": 20260929,
+  "noise_sigma": 0.15263566854244395,
+  "meta": {}
+}

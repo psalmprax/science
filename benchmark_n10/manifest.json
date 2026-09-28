@@ -1,0 +1,58 @@
+{
+  "benchmark": "APEDP-N10",
+  "version": "1.0",
+  "master_seed": 20260928,
+  "status": "FROZEN",
+  "problems": [
+    {
+      "problem_id": "N01",
+      "block": "N",
+      "name": "exp-growth"
+    },
+    {
+      "problem_id": "N02",
+      "block": "N",
+      "name": "log-saturation"
+    },
+    {
+      "problem_id": "N03",
+      "block": "N",
+      "name": "rational-saturation"
+    },
+    {
+      "problem_id": "N04",
+      "block": "N",
+      "name": "phase-shifted-sinusoid"
+    },
+    {
+      "problem_id": "N05",
+      "block": "N",
+      "name": "squared-harmonic"
+    },
+    {
+      "problem_id": "N06",
+      "block": "N",
+      "name": "fractional-power-composite"
+    },
+    {
+      "problem_id": "N07",
+      "block": "N",
+      "name": "shifted-power-law"
+    },
+    {
+      "problem_id": "N08",
+      "block": "N",
+      "name": "exponential-saturation"
+    },
+    {
+      "problem_id": "N09",
+      "block": "N",
+      "name": "pole-boundary"
+    },
+    {
+      "problem_id": "N10",
+      "block": "N",
+      "name": "power-times-exponential"
+    }
+  ]
+}

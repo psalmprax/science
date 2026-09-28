@@ -1,0 +1,14 @@
+{
+  "problem_id": "N03",
+  "block": "N",
+  "ground_truth_formula": "4.2*x/(1+0.8*x)",
+  "canonical_structural_family": "saturating_rational",
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER",
+  "case_seed": 20260931,
+  "noise_sigma": 0.04540540540540541,
+  "meta": {
+    "singularity": -1.25,
+    "asymptote": 5.25
+  }
+}
