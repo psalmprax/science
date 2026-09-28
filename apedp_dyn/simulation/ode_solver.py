@@ -16,18 +16,60 @@ class SimulateResult:
     metrics: dict[str, Any] = field(default_factory=dict)
 
 
+def compile_rhs(model):
+    """Compile a model to a fast vector RHS (ported from apedp/dyn simulator).
+
+    Single lambdified f(t, x, params, inputs); identical trajectories to
+    PhysicalModel.rhs at a fraction of the per-step cost. Falls back to
+    model.rhs only if lambdification fails (never silently).
+    """
+    import sympy as sp
+
+    order = [s.name for s in model.states]
+    inames = [u.name for u in model.inputs]
+    pnames = [p.name for p in model.parameters]
+    eq_by_state = {e.state: e.sympy_expr for e in model.equations}
+    f = sp.lambdify(
+        [sp.Symbol("t")] + [sp.Symbol(n) for n in order]
+        + [sp.Symbol(n) for n in pnames] + [sp.Symbol(n) for n in inames],
+        [eq_by_state[n] for n in order], modules=["numpy"])
+
+    def rhs(t: float, x: np.ndarray, u_vec: np.ndarray, pdict: dict) -> np.ndarray:
+        out = np.asarray(f(t, *[float(v) for v in x],
+                           *[float(pdict[k]) for k in pnames],
+                           *[float(v) for v in np.atleast_1d(u_vec)]),
+                         dtype=float).ravel()
+        if out.shape != (len(order),) or not np.all(np.isfinite(out)):
+            raise ValueError("non-finite compiled RHS")
+        return out
+
+    # Eager validation: compile errors surface here, not mid-integration.
+    rhs(0.0, model.initial_vector(),
+        np.zeros(max(len(inames), 1)), model.param_values())
+    return rhs
+
+
 def simulate(model, t_span: tuple[float, float],
              u_of_t: Callable[[float], np.ndarray], x0: np.ndarray,
-             n_eval: int = 400) -> SimulateResult:
-    """Integrate an already-admissible model over the required span."""
+             n_eval: int = 400, rtol: float = 1e-3, atol: float = 1e-6) -> SimulateResult:
+    """Integrate an already-admissible model over the required span.
+
+    Default tolerances favor fitter throughput; physics-precision checks
+    (e.g. conservation) pass explicit tight tolerances.
+    """
     from scipy.integrate import solve_ivp
 
     t_eval = np.linspace(t_span[0], t_span[1], n_eval)
     empty = (np.empty(0), np.empty((len(x0), 0)))
     try:
-        sol = solve_ivp(lambda t, x: model.rhs(t, x, u_of_t), t_span,
-                        np.asarray(x0, dtype=float),
-                        method="LSODA", t_eval=t_eval)
+        crhs = compile_rhs(model)
+        pdict = model.param_values()
+        drift = lambda t, x: crhs(t, x, np.atleast_1d(np.asarray(u_of_t(t), dtype=float)), pdict)
+    except (ArithmeticError, ValueError, TypeError):
+        drift = lambda t, x: model.rhs(t, x, u_of_t)  # noqa: E731
+    try:
+        sol = solve_ivp(drift, t_span, np.asarray(x0, dtype=float),
+                        method="LSODA", t_eval=t_eval, rtol=rtol, atol=atol)
     except (ArithmeticError, ValueError) as e:
         return SimulateResult(False, f"integrator exception: {e}",
                               *empty, {"nfev": 0})

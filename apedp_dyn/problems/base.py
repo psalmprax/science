@@ -26,6 +26,13 @@ def make_signal(spec: dict[str, Any]) -> Callable[[float], np.ndarray]:
     if kind == "step":
         a, t0 = spec["amplitude"], spec.get("t0", 1.0)
         return lambda t: np.array([a if t >= t0 else 0.0])
+    if kind == "multisine":
+        # Persistent excitation: sum of separated sinusoids (ported from
+        # apedp/dyn experiment design — a single tone near resonance leaves
+        # x(t) and u(t) nearly collinear and the regression ill-conditioned).
+        comps = [(c[0], c[1], c[2] if len(c) > 2 else 0.0)
+                 for c in spec["components"]]
+        return lambda t: np.array([sum(a * np.sin(w * t + ph) for a, w, ph in comps)])
     raise ValueError(f"unknown signal kind {kind!r}")
 
 
