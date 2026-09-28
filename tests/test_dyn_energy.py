@@ -19,7 +19,10 @@ from apedp_dyn import (
     check_conservative,
     check_dissipative,
     derive_energy_law,
+    mass_normalized_energy,
+    mechanical_energy,
     simulate_trajectory,
+    total_energy,
 )
 from apedp_dyn.problems import coupled, duffing, mass_spring_damper, pendulum
 
@@ -174,6 +177,28 @@ def test_bounded_derivation_still_admits_every_real_problem():
                  coupled.load()):
         law = derive_energy_law(_model(prob))
         assert law.conservative, (prob.problem_id, law.detail)
+
+
+def test_derived_energy_is_mass_normalized_not_physical():
+    """E = physical/m. Named for what it is, and the factor is exactly m.
+
+    The grammar normalizes mass out of the RHS, so the derivation recovers
+    energy per unit mass. Relative drift is scale-invariant, so the
+    conservation verdict is unaffected -- but a caller reading the number as
+    physical energy would be wrong by m.
+    """
+    prob = mass_spring_damper.load()
+    m = 2.0
+    model = _model(prob, {"m": m, "c": 0.0, "k": 4.0})  # undamped: must conserve
+    law = derive_energy_law(model)
+    assert law.conservative, law.detail
+    Y = _free(model, (0.5, 0.0))
+    assert np.allclose(mass_normalized_energy(law, Y),
+                       mechanical_energy(Y[:, 0], Y[:, 1], m, 4.0) / m)
+    # The old name is the same function: no behaviour changed, only the name.
+    assert total_energy is mass_normalized_energy
+    ok, drift = check_conservative(model, Y)
+    assert ok and drift < 1e-6, drift
 
 
 def test_pendulum_potential_and_conservation():

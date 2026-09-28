@@ -20,7 +20,10 @@ integrating that 1-form along the axis path, which requires the restoring
 1-form to be exact (∂F_i/∂q_j = ∂F_j/∂q_i) — a genuine physical property, and a
 failure is reported rather than guessed around. Kinetic energy assumes the
 grammar's unit-mass normalization (an RHS is force per unit mass), so no mass
-appears in E.
+appears in E. That makes the derived value the physical energy DIVIDED BY the
+model's mass, which is why it is named :func:`mass_normalized_energy`:
+conservation checks are unaffected, because relative drift is invariant under a
+constant scale, but the number itself is not physical energy.
 
 The symbolic derivation is BOUNDED. Exact integration has no natural stopping
 point, so an exotic restoring force could hang the gate instead of failing it;
@@ -193,8 +196,15 @@ def derive_energy_law(model) -> EnergyLaw:
                      potential, pos, vel, qs)
 
 
-def total_energy(law: EnergyLaw, Y: np.ndarray) -> np.ndarray:
-    """Unit-mass mechanical energy along a trajectory (samples × states)."""
+def mass_normalized_energy(law: EnergyLaw, Y: np.ndarray) -> np.ndarray:
+    """Mass-normalized mechanical energy along a trajectory (samples × states).
+
+    Named for what it is: the derivation builds E = ½Σv² + U(q) from an RHS
+    that is force *per unit mass*, so for a model of mass m this is the
+    physical energy divided by m. Conservation and dissipation checks are
+    scale-invariant and are unaffected, but a caller reading the number as
+    physical energy would be wrong by exactly that factor m.
+    """
     Y = np.asarray(Y, dtype=float)
     E = 0.5 * sum(Y[:, i] ** 2 for i in law.velocity_indices)
     if law.potential is not None:
@@ -202,6 +212,11 @@ def total_energy(law: EnergyLaw, Y: np.ndarray) -> np.ndarray:
         cols = [Y[:, i] for i in law.position_indices]
         E = E + np.asarray(f(*cols), dtype=float)
     return np.atleast_1d(np.asarray(E, dtype=float))
+
+
+total_energy = mass_normalized_energy
+"""Backwards-compatible alias. The old name reads as physical energy, which it
+is not for any model with m != 1; prefer :func:`mass_normalized_energy`."""
 
 
 def _relative_drift(E: np.ndarray) -> float:
@@ -229,7 +244,7 @@ def _dissipation_verdict(E: np.ndarray, min_decay_fraction: float,
 
 def energy_drift_from_law(law: EnergyLaw, Y: np.ndarray) -> float:
     """Cumulative relative drift of a derived law's energy along a trajectory."""
-    return _relative_drift(total_energy(law, Y))
+    return _relative_drift(mass_normalized_energy(law, Y))
 
 
 def simulate_trajectory(model, t: np.ndarray, u_of_t, x0,
@@ -270,7 +285,8 @@ def check_dissipative(model, Y: np.ndarray, min_decay_fraction: float = 0.3,
     law = derive_energy_law(model)
     if not law.conservative:
         return False, {"reason": law.detail}
-    return _dissipation_verdict(total_energy(law, Y), min_decay_fraction, slack)
+    return _dissipation_verdict(mass_normalized_energy(law, Y),
+                                min_decay_fraction, slack)
 
 
 # --- Analytic 1-DOF helpers (explicit mass/stiffness, no model required) -----

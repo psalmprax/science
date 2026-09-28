@@ -24,6 +24,7 @@ from apedp_dyn import (
     make_signal,
     prune_admissible,
     resolution_floor,
+    scale_from_observations,
 )
 from apedp_dyn.problems import coupled, duffing
 
@@ -237,6 +238,40 @@ def test_absent_holdout_scale_abstains_instead_of_promoting():
     assert adj.status is EpistemicStatus.INSUFFICIENT_EVIDENCE, adj
     assert adj.promoted is None
     assert "no scale" in adj.reason
+
+
+def test_holdout_scale_can_be_supplied_without_gate4_provenance():
+    """The resolution floor's AVAILABILITY must not depend on the scoring path.
+
+    Mining the scale out of gate4_status coupled it to gate 4 having run, so a
+    candidate scored any other way could never earn UNIQUE_SUPPORT however
+    decisive its evidence. Supplying the problem's own holdout record unblocks
+    it, and which route was used is recorded.
+    """
+    prob = _small_holdout_duffing()
+    truth_s, linear_s = _duffing_pair_for(prob)
+    rt = fit_candidate(prob, truth_s.candidate)
+    rl = fit_candidate(prob, linear_s.candidate)
+
+    g4 = dict(rt.provenance["gate4_status"])
+    assert g4["passed"]
+    for key in ("holdout_obs_rms", "holdout_noise_sigma", "holdout_n_samples"):
+        g4.pop(key, None)
+    stripped = dataclasses.replace(
+        rt, provenance={**rt.provenance, "gate4_status": g4})
+
+    # With nothing to go on, the stripped record abstains ...
+    assert adjudicate([stripped, rl]).status is EpistemicStatus.INSUFFICIENT_EVIDENCE
+    # ... and the same candidate adjudicates once the scale is handed in.
+    adj = adjudicate(
+        [stripped, rl],
+        holdout_scale=scale_from_observations(
+            np.asarray(prob.holdout["truth_y"], dtype=float)))
+    assert adj.status is EpistemicStatus.MULTI_HYPOTHESIS, adj
+    assert adj.holdout_scale_source == "argument"
+    assert adj.tau_epi == pytest.approx(_expected_tau(prob))
+    # The provenance route still works, and says so.
+    assert adjudicate([rt, rl]).holdout_scale_source == "gate4_provenance"
 
 
 def test_identity_distinguishes_parameter_sharing_not_just_term_sets():

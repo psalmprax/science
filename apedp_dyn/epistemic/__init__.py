@@ -5,6 +5,14 @@ from apedp_dyn.epistemic.adjudicate import (
     EpistemicStatus,
     adjudicate,
     resolution_floor,
+    scale_from_observations,
 )
 
-__all__ = ["REL_FLOOR", "Adjudication", "EpistemicStatus", "adjudicate", "resolution_floor"]
+__all__ = [
+    "REL_FLOOR",
+    "Adjudication",
+    "EpistemicStatus",
+    "adjudicate",
+    "resolution_floor",
+    "scale_from_observations",
+]

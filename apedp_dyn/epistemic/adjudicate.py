@@ -20,6 +20,13 @@ amplitude and invert with gate-4 leniency: loosening gate 4 so the correct
 model passes at high noise also made adjudication more credulous about rivals.
 Later upgrades (bootstrap uncertainty, likelihood-ratio/BIC, trajectory CIs)
 slot in here without changing the architecture.
+
+The scale that τ_epi is built from can be passed in directly
+(:func:`scale_from_observations`). Reading it out of ``gate4_status``
+provenance is a fallback, not a requirement: otherwise the resolution floor's
+AVAILABILITY is silently coupled to gate 4 having run, and a candidate scored
+by a different path could never earn UNIQUE_SUPPORT however decisive its
+evidence. Which route supplied the scale is recorded on the Adjudication.
 """
 from __future__ import annotations
 
@@ -93,10 +100,22 @@ class Adjudication:
     second_rmse: float | None = None
     delta_rmse: float | None = None
     holdout_noise_scale: float | None = None
+    holdout_scale_source: str = ""
     epistemic_margin: float | None = None
     tau_epi: float | None = None
     tau_epi_source: str = ""
     reason: str = ""
+
+
+def scale_from_observations(obs: np.ndarray) -> dict[str, Any]:
+    """Scale of a holdout observation record, in the shape ``adjudicate`` takes.
+
+    Imported lazily for the same reason as :func:`_identity`: the module import
+    order in this package is deliberate.
+    """
+    from apedp_dyn.gates.intervention import observation_scale
+
+    return observation_scale(obs)
 
 
 def _identity(sc) -> Any:
@@ -128,7 +147,8 @@ def _identity(sc) -> Any:
 
 def adjudicate(fitted: list,
                tau_epi: float | None = None,
-               holdout_noise_scale: float | None = None) -> Adjudication:
+               holdout_noise_scale: float | None = None,
+               holdout_scale: dict[str, Any] | None = None) -> Adjudication:
     """Rank by train loss, then adjudicate on holdout evidence. Deterministic."""
     ranked = sorted(
         [s for s in fitted
@@ -141,11 +161,22 @@ def adjudicate(fitted: list,
     g4 = best.provenance.get("gate4_status", {})
     if holdout_noise_scale is None:
         holdout_noise_scale = g4.get("holdout_noise_sigma")
+
+    scale = holdout_scale
+    scale_source = "argument" if scale is not None else ""
+    if scale is None:
+        scale = {"obs_rms": g4.get("holdout_obs_rms"),
+                 "noise_sigma": g4.get("holdout_noise_sigma"),
+                 "n_samples": g4.get("holdout_n_samples")}
+        if any(v is not None for v in scale.values()):
+            scale_source = "gate4_provenance"
+
     if not g4.get("passed", False):
         return Adjudication(
             EpistemicStatus.INSUFFICIENT_EVIDENCE, ranking=tuple(ranked),
             best_rmse=best.holdout_rmse,
             holdout_noise_scale=holdout_noise_scale,
+            holdout_scale_source=scale_source,
             reason=f"rank-1 {best.candidate.candidate_id} fails gate 4: "
                    f"{g4.get('detail', 'no holdout evidence')}; "
                    "no promotion of least-bad models")
@@ -154,9 +185,8 @@ def adjudicate(fitted: list,
         tau = float(tau_epi)
         tau_source = "explicit"
     else:
-        tau = resolution_floor(g4.get("holdout_obs_rms"),
-                               g4.get("holdout_noise_sigma"),
-                               g4.get("holdout_n_samples"))
+        tau = resolution_floor(scale.get("obs_rms"), scale.get("noise_sigma"),
+                               scale.get("n_samples"))
         tau_source = "holdout-scale"
     if tau is None:
         # No scale means no resolution. Abstain; never fall back to a constant
@@ -165,9 +195,10 @@ def adjudicate(fitted: list,
             EpistemicStatus.INSUFFICIENT_EVIDENCE, ranking=tuple(ranked),
             best_rmse=best.holdout_rmse,
             holdout_noise_scale=holdout_noise_scale,
+            holdout_scale_source=scale_source,
             reason="rank-1 passes gate 4 but the holdout record carries no "
                    "scale (obs_rms/noise_sigma), so no rival can be resolved; "
-                   "pass tau_epi to override")
+                   "pass holdout_scale= or tau_epi= to supply one")
     best_rmse = best.holdout_rmse
     rivals = [s for s in ranked[1:]
               if _identity(s) != _identity(best) and s.holdout_rmse is not None
@@ -177,7 +208,8 @@ def adjudicate(fitted: list,
             EpistemicStatus.UNIQUE_SUPPORT, promoted=best, ranking=tuple(ranked),
             best_rmse=best_rmse, delta_rmse=None, tau_epi=tau,
             tau_epi_source=tau_source,
-            holdout_noise_scale=holdout_noise_scale, epistemic_margin=None,
+            holdout_noise_scale=holdout_noise_scale,
+            holdout_scale_source=scale_source, epistemic_margin=None,
             reason="no structurally distinct rival survived scoring")
     second = min(rivals, key=lambda s: s.holdout_rmse)
     delta = float(second.holdout_rmse - best_rmse)
@@ -187,7 +219,8 @@ def adjudicate(fitted: list,
             EpistemicStatus.MULTI_HYPOTHESIS, ranking=tuple(ranked),
             best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
             delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
-            holdout_noise_scale=holdout_noise_scale, epistemic_margin=margin,
+            holdout_noise_scale=holdout_noise_scale,
+            holdout_scale_source=scale_source, epistemic_margin=margin,
             reason=f"rival {second.candidate.candidate_id} within τ "
                    f"(Δ={delta:.3g} ≤ τ={tau:.3g} [{tau_source}]); structures "
                    "observationally indistinguishable under available "
@@ -196,6 +229,7 @@ def adjudicate(fitted: list,
         EpistemicStatus.UNIQUE_SUPPORT, promoted=best, ranking=tuple(ranked),
         best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
         delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
-        holdout_noise_scale=holdout_noise_scale, epistemic_margin=margin,
+        holdout_noise_scale=holdout_noise_scale,
+        holdout_scale_source=scale_source, epistemic_margin=margin,
         reason=f"nearest distinct rival separated by Δ={delta:.3g} > "
                f"τ={tau:.3g} [{tau_source}]")

@@ -39,6 +39,12 @@ Thumbs.db
 # Generated
 *.md.bak
 
+# Per-run experiment artifacts: one timestamped directory per run, each holding
+# that run's checkpoint, hall_of_fame and report files. 150+ of these accumulate
+# in a day and bury real work in `git status`. Results that are meant to be
+# compared or reproduced are copied out of here, not committed from here.
+outputs/
+
 # Colab sample datasets
 mnist_*.csv
 california_housing_*.csv

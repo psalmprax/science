@@ -14,6 +14,7 @@ from apedp_dyn.epistemic import (
     EpistemicStatus,
     adjudicate,
     resolution_floor,
+    scale_from_observations,
 )
 from apedp_dyn.estimation import (
     WeakWindows,
@@ -73,6 +74,7 @@ from apedp_dyn.validation import (
     derive_energy_law,
     energy_drift,
     energy_drift_from_law,
+    mass_normalized_energy,
     mechanical_energy,
     simulate_pair,
     simulate_trajectory,
@@ -126,6 +128,7 @@ __all__ = [
     "intervention_holdout",
     "make_signal",
     "make_windows",
+    "mass_normalized_energy",
     "materialize",
     "materialize_system",
     "mechanical_energy",
@@ -133,6 +136,7 @@ __all__ = [
     "prune_admissible",
     "resolution_floor",
     "run_all_gates",
+    "scale_from_observations",
     "select_by_train_loss",
     "simulate",
     "simulate_pair",
