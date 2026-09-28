@@ -47,52 +47,70 @@ def _with_values(model, values: dict[str, float]):
     return dataclasses.replace(model, parameters=params)
 
 
+def _train_arrays(problem):
+    reg = problem.train
+    t = np.asarray(reg["truth_t"], dtype=float)
+    Y = np.asarray(reg["truth_y"], dtype=float)
+    U = np.array([reg["u_of_t"](ti) for ti in t], dtype=float).reshape(len(t), -1)
+    return reg, t, Y, U
+
+
 def _warm_start(problem, model0):
     """Derivative least-squares initialization for a FIXED structure.
 
     Numeric initialization only: the term set comes solely from the IR.
-    Spline-estimated derivatives regressed onto the candidate's term columns
-    give a starting point inside the stable basin; trajectory refinement
-    (below) does the actual fitting.
+    Per parameterized equation (kinematic pass-throughs skipped), spline-
+    estimated derivatives regressed onto the equation's term columns give a
+    starting point inside the stable basin; trajectory refinement (below)
+    does the actual fitting. General over 1-DOF and multi-DOF models.
     """
     from scipy.interpolate import CubicSpline
 
     import sympy as sp
 
-    reg = problem.train
-    t = np.asarray(reg["truth_t"], dtype=float)
-    Y = np.asarray(reg["truth_y"], dtype=float)
-    U = np.array([reg["u_of_t"](ti) for ti in t], dtype=float).reshape(len(t), -1)
+    _, t, Y, U = _train_arrays(problem)
     order = [s.name for s in model0.states]
     inames = [u.name for u in model0.inputs]
-    vel = order[1]
-    dvel = CubicSpline(t, Y[:, 1]).derivative()(t)
-    accel_eq = next(e.sympy_expr for e in model0.equations if e.state == vel)
-    # Split the accel sum into per-parameter columns: d(sum)/dparam = term.
-    cols = []
-    for p in model0.parameters:
-        col = np.asarray(sp.lambdify(
-            [sp.Symbol(n) for n in order] + [sp.Symbol(n) for n in inames],
-            sp.diff(accel_eq, sp.Symbol(p.name)),
-            modules=["numpy"])(*[Y[:, i] for i in range(len(order))],
-                                *[U[:, i] for i in range(len(inames))]),
-            dtype=float).ravel()
-        cols.append(col)
-    cols = np.column_stack(cols)
-    coef, *_ = np.linalg.lstsq(cols, dvel, rcond=None)
-    return np.asarray(coef, dtype=float)
+    col_of_state = {n: i for i, n in enumerate(order)}
+    values: dict[str, float] = {}
+    for eq in model0.equations:
+        eq_params = [p for p in model0.parameters
+                     if sp.Symbol(p.name) in eq.sympy_expr.atoms(sp.Symbol)]
+        if not eq_params:
+            continue  # kinematic pass-through: no parameters to initialize
+        target = CubicSpline(t, Y[:, col_of_state[eq.state]]).derivative()(t)
+        syms = [sp.Symbol(n) for n in order] + [sp.Symbol(n) for n in inames]
+        args = [Y[:, i] for i in range(len(order))] + [U[:, i] for i in range(len(inames))]
+        cols = []
+        for p in eq_params:
+            col = np.asarray(sp.lambdify(
+                syms, sp.diff(eq.sympy_expr, sp.Symbol(p.name)),
+                modules=["numpy"])(*args), dtype=float).ravel()
+            if col.size == 1 and len(t) > 1:
+                col = np.full(len(t), col[0])
+            cols.append(col)
+        coef, *_ = np.linalg.lstsq(np.column_stack(cols), target, rcond=None)
+        for p, c in zip(eq_params, coef):
+            values[p.name] = float(c)
+    return np.array([values[p.name] for p in model0.parameters])
 
 
-def fit_candidate(problem, candidate: CandidateDynamics,
+def fit_candidate(problem, candidate,
                   x0: np.ndarray | None = None,
                   max_nfev: int = 300) -> ScoredCandidate:
     """Fit IR parameters on train trajectories; run gates 3-4 on the result."""
     from scipy.optimize import least_squares
 
+    from apedp_dyn.grammar.candidate_ir import SystemCandidate
+    from apedp_dyn.grammar.coupled import materialize_system
+
     prov: dict[str, Any] = ScoredCandidate(candidate=candidate,
                                            provenance={}).base_provenance()
     try:
-        model0 = materialize(problem, candidate)
+        if isinstance(candidate, SystemCandidate):
+            model0 = materialize_system(problem, candidate)
+        else:
+            model0 = materialize(problem, candidate)
     except (TypeError, ValueError) as e:
         # Dimensionally meaningless proposals die here: no integration, no fit.
         prov["rejection_reason"] = f"materialize: {e}"

@@ -14,7 +14,11 @@ from apedp_dyn.gates.dimensional import (
     _ureg,
     dimensional_validity,
 )
-from apedp_dyn.gates.intervention import auto_tolerance, intervention_holdout
+from apedp_dyn.gates.intervention import (
+    auto_tolerance,
+    intervention_holdout,
+    observation_scale,
+)
 from apedp_dyn.gates.simulation import forward_simulation_validity
 
 
@@ -43,5 +47,6 @@ __all__ = [
     "equation_admissibility_structure",
     "forward_simulation_validity",
     "intervention_holdout",
+    "observation_scale",
     "run_all_gates",
 ]

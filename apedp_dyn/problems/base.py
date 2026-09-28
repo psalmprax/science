@@ -70,7 +70,10 @@ def generate_truth(problem: DynProblem, regime: str,
     reg = problem.train if regime == "train" else problem.holdout
     order = [s.name for s in problem.states]
     inames = [u.name for u in problem.inputs]
-    params = {p.name: float(p.value) for p in problem.parameters}  # type: ignore[union-attr]
+    missing = [p.name for p in problem.parameters if p.value is None]
+    if missing:
+        raise ValueError(f"unidentified parameters: {missing}")
+    params = {p.name: float(p.value) for p in problem.parameters}  # type: ignore[arg-type]
     compiled = _truth_rhs(problem.truth_equations, order, inames, params)
     u_of_t = reg["u_of_t"]
     x0 = np.asarray(reg["x0"], dtype=float)

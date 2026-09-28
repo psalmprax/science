@@ -31,18 +31,22 @@ from apedp_dyn.grammar.candidate_ir import (
 from apedp_dyn.grammar.canonicalize import canonical_form, deduplicate
 from apedp_dyn.model import DynamicalEquation, Parameter, PhysicalModel
 
-# Grammar vocabulary: label -> builder over generic (X, V, U) symbols.
+# Grammar vocabulary: label -> builder over generic (X, V, U, XR) symbols,
+# where XR is the remote position (2-DOF coupling). Single-DOF materialize
+# leaves XR unmapped so xr-terms die loudly at gate 1, never silently.
 _TERM_BUILDERS = {
-    "one": lambda X, V, U: sp.Integer(1),
-    "x": lambda X, V, U: X,
-    "x2": lambda X, V, U: X ** 2,
-    "x3": lambda X, V, U: X ** 3,
-    "v": lambda X, V, U: V,
-    "abs_v_v": lambda X, V, U: sp.Abs(V) * V,
-    "v2": lambda X, V, U: V ** 2,
-    "u": lambda X, V, U: U,
-    "x_v": lambda X, V, U: X * V,
-    "sin_x": lambda X, V, U: sp.sin(X),
+    "one": lambda X, V, U, XR: sp.Integer(1),
+    "x": lambda X, V, U, XR: X,
+    "x2": lambda X, V, U, XR: X ** 2,
+    "x3": lambda X, V, U, XR: X ** 3,
+    "v": lambda X, V, U, XR: V,
+    "abs_v_v": lambda X, V, U, XR: sp.Abs(V) * V,
+    "v2": lambda X, V, U, XR: V ** 2,
+    "u": lambda X, V, U, XR: U,
+    "x_v": lambda X, V, U, XR: X * V,
+    "sin_x": lambda X, V, U, XR: sp.sin(X),
+    "xr": lambda X, V, U, XR: XR,
+    "dxr": lambda X, V, U, XR: XR - X,  # typed relative displacement Δx
 }
 
 DEFAULT_TOPOLOGY = ("one", "x", "x3", "v", "abs_v_v", "sin_x", "u")
@@ -112,14 +116,16 @@ def materialize(problem, candidate: CandidateDynamics) -> PhysicalModel:
     inp = problem.inputs[0] if problem.inputs else None
     X, V = sp.Symbol("gx"), sp.Symbol("gv")
     U = sp.Symbol("gu")
+    XR = sp.Symbol("gxr")
     real: dict[str, str] = dict(problem_symbol_units(problem))
     target_unit = _ureg.Unit(real[vel.name]) / _ureg.Unit("second")
     parts: list[str] = []
     parameters: list[Parameter] = []
     for t in candidate.terms:
-        built = _TERM_BUILDERS[t.name](X, V, U)
+        built = _TERM_BUILDERS[t.name](X, V, U, XR)
         gu_sym = sp.Symbol(inp.name) if inp is not None else U
-        rexpr = built.subs({X: sp.Symbol(pos.name), V: sp.Symbol(vel.name), U: gu_sym})
+        rexpr = built.subs({X: sp.Symbol(pos.name), V: sp.Symbol(vel.name),
+                            U: gu_sym, XR: sp.Symbol("gxr_remote")})
         if inp is None and U in rexpr.atoms(sp.Symbol):
             raise ValueError("candidate uses input but problem has none")
         term_unit = _unit_of(rexpr, real)
@@ -139,20 +145,25 @@ def problem_symbol_units(problem) -> dict[str, str]:
     return out
 
 
-def prune_admissible(problem, candidates: list[CandidateDynamics]
-                     ) -> list[ScoredCandidate]:
+def prune_admissible(problem, candidates: list) -> list[ScoredCandidate]:
     """D1.4 pruning before expensive integration.
 
     materialize -> gate 1 (dimension) -> gate 2 (admissibility) -> dedup.
+    Accepts single-DOF CandidateDynamics and D2b SystemCandidate.
     Survivors carry gate1/2 provenance; rejects carry rejection_reason.
     Only survivors may proceed to the fitter (enforced in fit_candidate).
     """
+    from apedp_dyn.grammar.candidate_ir import SystemCandidate
+    from apedp_dyn.grammar.coupled import canonical_system, materialize_system
+
     scored: list[ScoredCandidate] = []
     for c in candidates:
         prov: dict[str, Any] = ScoredCandidate(candidate=c, provenance={}).base_provenance()
-        prov["canonical_form"] = canonical_form(c)
+        prov["canonical_form"] = (canonical_system(c) if isinstance(c, SystemCandidate)
+                                  else canonical_form(c))
         try:
-            model = materialize(problem, c)
+            model = (materialize_system(problem, c) if isinstance(c, SystemCandidate)
+                     else materialize(problem, c))
         except (TypeError, ValueError) as e:
             prov["rejection_reason"] = f"materialize: {e}"
             scored.append(ScoredCandidate(c, prov))
@@ -189,13 +200,18 @@ def select_by_train_loss(fitted: list[ScoredCandidate]) -> ScoredCandidate:
     """Select lowest training loss; parsimony tiebreak within 1% (no weights)."""
     if not fitted:
         raise ValueError("nothing to select from")
+
+    def n_terms(s: ScoredCandidate) -> int:
+        c = s.candidate
+        return len(c.parameter_names()) if hasattr(c, "parameter_names") else len(c.terms)
+
     ordered = sorted(fitted, key=lambda s: (s.train_loss if s.train_loss is not None
                                             else float("inf")))
     best_loss = ordered[0].train_loss
     tied = [s for s in ordered
             if s.train_loss is not None and best_loss is not None
             and s.train_loss <= best_loss * 1.01]
-    return min(tied, key=lambda s: len(s.candidate.terms))
+    return min(tied, key=n_terms)
 
 
 __all__ = [

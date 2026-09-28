@@ -61,19 +61,23 @@ def simulate(model, t_span: tuple[float, float],
 
     t_eval = np.linspace(t_span[0], t_span[1], n_eval)
     empty = (np.empty(0), np.empty((len(x0), 0)))
+    metrics: dict[str, Any] = {"nfev": 0, "rhs_path": "compiled"}
     try:
         crhs = compile_rhs(model)
         pdict = model.param_values()
-        drift = lambda t, x: crhs(t, x, np.atleast_1d(np.asarray(u_of_t(t), dtype=float)), pdict)
-    except (ArithmeticError, ValueError, TypeError):
+        drift = lambda t, x: crhs(t, x, np.atleast_1d(np.asarray(u_of_t(t), dtype=float)), pdict)  # noqa: E731
+    except (ArithmeticError, ValueError, TypeError) as e:
+        # Degradation is recorded, never hidden: conformance asserts the
+        # compiled path, so which path actually ran must be visible in metrics.
+        metrics["rhs_path"] = f"interpreted ({type(e).__name__})"
         drift = lambda t, x: model.rhs(t, x, u_of_t)  # noqa: E731
     try:
         sol = solve_ivp(drift, t_span, np.asarray(x0, dtype=float),
                         method="LSODA", t_eval=t_eval, rtol=rtol, atol=atol)
     except (ArithmeticError, ValueError) as e:
         return SimulateResult(False, f"integrator exception: {e}",
-                              *empty, {"nfev": 0})
-    metrics = {"nfev": int(sol.nfev)}
+                              *empty, metrics)
+    metrics["nfev"] = int(sol.nfev)
     if not sol.success:
         return SimulateResult(False, f"integrator failed: {sol.message}",
                               *empty, metrics)

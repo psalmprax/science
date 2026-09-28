@@ -59,6 +59,9 @@ def test_compiled_rhs_matches_reference():
     got = simulate(model, reg["t_span"], reg["u_of_t"],
                    np.asarray(reg["x0"]), n_eval=len(t))
     assert got.success
+    # Equivalence is only evidence if the fast path actually ran: a silent
+    # fallback would make both sides the interpreted RHS and pass vacuously.
+    assert got.metrics.get("rhs_path") == "compiled", got.metrics
     assert np.allclose(got.y, ref.y, rtol=1e-8, atol=1e-10)
 
 

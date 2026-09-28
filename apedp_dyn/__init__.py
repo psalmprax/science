@@ -18,6 +18,13 @@ from apedp_dyn.estimation import (
     square_window_coefficients,
     weak_coefficients,
 )
+from apedp_dyn.epistemic import (
+    REL_FLOOR,
+    Adjudication,
+    EpistemicStatus,
+    adjudicate,
+    resolution_floor,
+)
 from apedp_dyn.fitting import FitResult, fit_candidate
 from apedp_dyn.gates import (
     GateResult,
@@ -26,6 +33,7 @@ from apedp_dyn.gates import (
     equation_admissibility,
     forward_simulation_validity,
     intervention_holdout,
+    observation_scale,
     run_all_gates,
 )
 from apedp_dyn.grammar import (
@@ -33,12 +41,16 @@ from apedp_dyn.grammar import (
     TERM_FAMILIES,
     CandidateDynamics,
     ScoredCandidate,
+    SystemCandidate,
     Term,
     canonical_form,
+    canonical_system,
     deduplicate,
     enumerate_candidates,
+    enumerate_coupled,
     full_topology_candidate,
     materialize,
+    materialize_system,
     prune_admissible,
     select_by_train_loss,
 )
@@ -61,9 +73,12 @@ from apedp_dyn.validation import (
 )
 
 __all__ = [
+    "Adjudication",
+    "EpistemicStatus",
     "FitResult",
     "GateResult",
     "GRAMMAR_VERSION",
+    "REL_FLOOR",
     "ScoredCandidate",
     "SimulateResult",
     "CandidateDynamics",
@@ -72,15 +87,18 @@ __all__ = [
     "Parameter",
     "PhysicalModel",
     "StateVariable",
+    "SystemCandidate",
     "TIME_SYMBOL",
     "TERM_FAMILIES",
     "Term",
     "WeakWindows",
+    "adjudicate",
     "auto_tolerance",
     "boundary_term",
     "bump",
     "bump_deriv",
     "canonical_form",
+    "canonical_system",
     "check_conservative_core",
     "check_damped_decay",
     "compile_rhs",
@@ -88,6 +106,7 @@ __all__ = [
     "dimensional_validity",
     "energy_drift",
     "enumerate_candidates",
+    "enumerate_coupled",
     "equation_admissibility",
     "fit_candidate",
     "forward_simulation_validity",
@@ -95,8 +114,11 @@ __all__ = [
     "intervention_holdout",
     "make_signal",
     "materialize",
+    "materialize_system",
     "mechanical_energy",
+    "observation_scale",
     "prune_admissible",
+    "resolution_floor",
     "run_all_gates",
     "select_by_train_loss",
     "simulate",

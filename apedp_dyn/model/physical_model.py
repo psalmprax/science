@@ -40,7 +40,7 @@ class PhysicalModel:
         missing = [p.name for p in self.parameters if p.value is None]
         if missing:
             raise ValueError(f"unidentified parameters: {missing}")
-        return {p.name: float(p.value) for p in self.parameters}  # type: ignore[union-attr]
+        return {p.name: float(p.value) for p in self.parameters}  # type: ignore[arg-type]
 
     def rhs(self, t: float, x: np.ndarray, u_of_t) -> np.ndarray:
         """Right-hand side f(t, x, u). u_of_t: callable t -> array-like per input."""
