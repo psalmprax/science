@@ -1,12 +1,9 @@
 """D1 contract + gate unit tests (problem-independent)."""
-import numpy as np
 
 from apedp_dyn import (
     DynamicalEquation,
-    InputVariable,
     Parameter,
     PhysicalModel,
-    StateVariable,
     dimensional_validity,
     equation_admissibility,
     run_all_gates,

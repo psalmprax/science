@@ -6,12 +6,40 @@ import logging
 import os
 import threading
 import uuid
+from collections.abc import Iterator
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
+from importlib import import_module
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 from apedp.pipeline import DiscoveryPipeline
+
+
+class _SyncRedis(Protocol):
+    """The synchronous ``redis.Redis`` surface :class:`RedisPipelineJobManager` relies on.
+
+    ``redis.Redis`` is annotated for both the sync and async clients, so every
+    command is typed as ``Awaitable | value`` and the variadic ``eval`` arguments
+    are declared as ``*keys_and_args: list[Any]``. Pinning the eight commands
+    actually used here keeps the manager type-checkable without asserts.
+    """
+
+    def ping(self) -> bool: ...
+
+    def get(self, name: str) -> Any: ...
+
+    def set(self, name: str, value: Any, **kwargs: Any) -> Any: ...
+
+    def mget(self, keys: list[str], *args: Any) -> list[Any]: ...
+
+    def rpush(self, name: str, *values: Any) -> int: ...
+
+    def scan_iter(self, match: str | None = None, count: int | None = None) -> Iterator[str]: ...
+
+    def eval(self, script: str, numkeys: int, *keys_and_args: Any) -> Any: ...
+
+    def blpop(self, keys: str, timeout: int = 0) -> tuple[Any, Any] | None: ...
 
 logger = logging.getLogger(__name__)
 _TERMINAL = frozenset({"SUCCEEDED", "REFUSED", "FAILED", "CANCELLED"})
@@ -246,13 +274,15 @@ class RedisPipelineJobManager:
     """
 
     def __init__(self, redis_url: str, queue_name: str = "apedp:pipeline", lease_seconds: int = 60):
+        # ``import_module`` rather than a local ``import redis``: the redis client
+        # is untyped at function scope, so mypy binds the name to ``None``.
         try:
-            import redis
+            redis = import_module("redis")
         except ImportError as exc:
             raise RuntimeError("Redis backend requires optional dependency: pip install 'apedp[orchestration]'") from exc
         if lease_seconds < 5:
             raise ValueError("lease_seconds must be at least 5 seconds")
-        self.redis = redis.Redis.from_url(redis_url, decode_responses=True)
+        self.redis: _SyncRedis = redis.Redis.from_url(redis_url, decode_responses=True)
         self.redis.ping()
         self.queue_name = queue_name
         self.prefix = f"{queue_name}:job:"

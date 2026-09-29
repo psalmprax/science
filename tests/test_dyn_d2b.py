@@ -2,8 +2,6 @@
 import inspect
 from itertools import combinations
 
-import numpy as np
-
 from apedp_dyn import (
     Term,
     canonical_system,
@@ -51,8 +49,8 @@ def test_duffing_linear_trap_is_real():
     # genuine. Only the large-amplitude holdout exposes the missing cubic.
     prob = duffing.load()
     cands = enumerate_candidates(required=("u",), optional=("x", "x3", "v"), max_terms=4)
-    lin = [s for s in prune_admissible(prob, cands)
-           if set(s.candidate.term_set()) == {"u", "v", "x"}][0]
+    lin = next(s for s in prune_admissible(prob, cands)
+               if set(s.candidate.term_set()) == {"u", "v", "x"})
     res = fit_candidate(prob, lin.candidate)
     assert res.train_loss < 1e-3, res.train_loss
     assert res.holdout_rmse > 0.1, res.holdout_rmse
@@ -104,7 +102,7 @@ def test_coupled_chain_topology_wins():
     kept = prune_admissible(prob, enumerate_coupled(
         required=("u",), optional=("x", "v", "xr"), max_terms=4))
     def get(sets):
-        return [s for s in kept if [set(e) for e in s.candidate.term_sets()] == sets][0]
+        return next(s for s in kept if [set(e) for e in s.candidate.term_sets()] == sets)
 
     truth = get([{"u", "x", "v", "xr"}, {"u", "x", "v", "xr"}])
     unc = get([{"u", "x", "v"}, {"u", "x", "v"}])

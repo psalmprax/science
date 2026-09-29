@@ -24,15 +24,16 @@ import dataclasses
 import numpy as np
 import pytest
 
-from apedp.discovery import BayesianRefinementEngine, bic_forward_select as legacy_bic_forward_select
 from apedp.discovery_types import (
     BicSelectionResult,
     CrossFamilyResult,
-    NeuralRelevanceResult,
-    SurrogateDistillationResult,
 )
 from apedp.feature_selection import bic_forward_select
-from apedp.numerical_policy import DEFAULT_POLICY, DiscoveryNumericalPolicy, get_neural_discovery_backend
+from apedp.numerical_policy import (
+    DEFAULT_POLICY,
+    DiscoveryNumericalPolicy,
+    get_neural_discovery_backend,
+)
 
 
 def test_dict_compatible_result_supports_both_attribute_and_dict_access():

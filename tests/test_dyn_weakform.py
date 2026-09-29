@@ -15,7 +15,6 @@ from apedp_dyn.estimation import (
     spline_coefficients,
     weak_coefficients,
 )
-from apedp_dyn.model import PhysicalModel
 from apedp_dyn.problems import mass_spring_damper as msd
 
 
@@ -25,8 +24,8 @@ def _msd_setup():
     t, Y = reg["truth_t"], reg["truth_y"]
     U = np.array([reg["u_of_t"](ti) for ti in t]).reshape(-1, 1)
     cands = enumerate_candidates(required=("u",), optional=("x", "v"), max_terms=3)
-    truth = [s for s in prune_admissible(prob, cands)
-             if set(s.candidate.term_set()) == {"u", "x", "v"}][0]
+    truth = next(s for s in prune_admissible(prob, cands)
+                 if set(s.candidate.term_set()) == {"u", "x", "v"})
     return prob, t, Y, U, truth
 
 
@@ -39,7 +38,7 @@ def test_bump_is_compact_and_edges_vanish():
     tau = np.linspace(-2, 2, 401)
     assert np.all(bump(tau[np.abs(tau) >= 1.0]) == 0.0)
     assert np.all(bump_deriv(tau[np.abs(tau) >= 1.0]) == 0.0)
-    prob, t, Y, U, _ = _msd_setup()
+    _, t, _, _, _ = _msd_setup()
     w = make_windows((t[0], t[-1]))
     for j in (0, len(w.centers) - 1):
         assert abs(w.phi(t, j)[0]) == 0.0 and abs(w.phi(t, j)[-1]) == 0.0

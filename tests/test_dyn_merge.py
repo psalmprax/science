@@ -16,7 +16,6 @@ from apedp_dyn import (
     PhysicalModel,
     StateVariable,
     auto_tolerance,
-    compile_rhs,
     enumerate_candidates,
     make_signal,
     materialize,
@@ -41,13 +40,13 @@ def _msd_truth():
     t, Y = reg["truth_t"], reg["truth_y"]
     U = np.array([reg["u_of_t"](ti) for ti in t]).reshape(-1, 1)
     cands = enumerate_candidates(required=("u",), optional=("x", "v"), max_terms=3)
-    truth = [s for s in prune_admissible(prob, cands)
-             if set(s.candidate.term_set()) == {"u", "x", "v"}][0]
+    truth = next(s for s in prune_admissible(prob, cands)
+                 if set(s.candidate.term_set()) == {"u", "x", "v"})
     return prob, t, Y, U, truth
 
 
 def test_compiled_rhs_matches_reference():
-    prob, t, Y, U, truth = _msd_truth()
+    prob, t, _, _, truth = _msd_truth()
     model = materialize(prob, truth.candidate)
     vals = {"a0": 1.0, "a1": -4.0, "a2": -0.2}
     import dataclasses

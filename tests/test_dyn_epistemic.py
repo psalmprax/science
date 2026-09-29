@@ -96,8 +96,8 @@ def test_insufficient_evidence_when_best_fails_holdout():
     kept = prune_admissible(prob, enumerate_coupled(
         required=("u",), optional=("x", "v", "xr", "dxr"), max_terms=4))
     # Uncoupled candidate (no xr/dxr terms) - guaranteed to survive pruning
-    unc = [s for s in kept if [set(e) for e in s.candidate.term_sets()]
-           == [{"u", "x", "v"}, {"u", "x", "v"}]][0]
+    unc = next(s for s in kept if [set(e) for e in s.candidate.term_sets()]
+               == [{"u", "x", "v"}, {"u", "x", "v"}])
     ru = fit_candidate(prob, unc.candidate)
     adj = adjudicate([ru])
     assert adj.status is EpistemicStatus.INSUFFICIENT_EVIDENCE, adj
@@ -285,9 +285,9 @@ def test_identity_distinguishes_parameter_sharing_not_just_term_sets():
 
     prob = coupled.load()
     wanted = [{"u", "x", "v", "xr"}, {"u", "x", "v", "xr"}]
-    base = [s for s in prune_admissible(prob, enumerate_coupled(
+    base = next(s for s in prune_admissible(prob, enumerate_coupled(
         required=("u",), optional=("x", "v", "xr"), max_terms=4))
-        if [set(e) for e in s.candidate.term_sets()] == wanted][0]
+        if [set(e) for e in s.candidate.term_sets()] == wanted)
 
     # Rewrite the second DOF's coupling term to share the first's parameter.
     e0, e1 = base.candidate.equations

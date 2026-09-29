@@ -12,6 +12,25 @@ from __future__ import annotations
 from apedp.symbolic_equivalence import SymbolicEquivalenceEngine
 
 
+def _dual_backend_available() -> bool:
+    """Whether the Rust evaluation kernel is compiled and usable.
+
+    ``certify_identity`` reserves P2 for an identity that numpy AND the Rust
+    backend both confirm; with a single backend the honest ceiling is P1. The
+    Rust kernel is an optional native extra, so the tier asserted here depends
+    on the build environment.
+    """
+    try:
+        from apedp.rust_bridge import RustKernelBridge
+    except ImportError:
+        return False
+    return bool(RustKernelBridge().use_rust)
+
+
+# The strongest tier a sympy-provable identity can honestly reach here.
+_PROVED_TIER = "P2" if _dual_backend_available() else "P1"
+
+
 def test_algebraic_identity_simplification():
     engine = SymbolicEquivalenceEngine()
     canon = engine.canonicalize("log(exp(x))", known_variables=["x"])
@@ -84,19 +103,30 @@ def test_group_by_structural_family():
 def test_certify_identity_tiers():
     engine = SymbolicEquivalenceEngine()
 
-    # Sympy-provable + dual-backend agreement -> P2.
-    assert engine.certify_identity("log(exp(2*x))", "2*x") == "P2"
-    assert engine.certify_identity("1.0*x+1.0*x", "2.0*x") == "P2"
+    # Sympy-provable, and as high a tier as the available backends support.
+    assert engine.certify_identity("log(exp(2*x))", "2*x") == _PROVED_TIER
+    assert engine.certify_identity("1.0*x+1.0*x", "2.0*x") == _PROVED_TIER
     # Distinct structures and unprovable pairs stay P0 (never inflated).
     assert engine.certify_identity("3*x**1.7", "22.1*x**1.25*log(0.144*x**0.5+1)") == "P0"
     assert engine.certify_identity("x**2", "x**3") == "P0"
 
 
+def test_p2_requires_a_second_backend():
+    """A single evaluation backend can corroborate nothing, so P2 needs two.
+
+    Without the Rust kernel the identity is still proven -- just not
+    *dually* corroborated, so the tier must land on P1 and not be inflated.
+    """
+    engine = SymbolicEquivalenceEngine()
+    tier = engine.certify_identity("1.0*x+1.0*x", "2.0*x")
+    assert tier == ("P2" if _dual_backend_available() else "P1")
+
+
 def test_certify_special_function_paths():
     engine = SymbolicEquivalenceEngine()
 
-    # True trigonometric identity, dual-backend corroborated -> P2.
-    assert engine.certify_identity("sin(x)**2+cos(x)**2", "1") == "P2"
+    # True trigonometric identity, corroborated by every available backend.
+    assert engine.certify_identity("sin(x)**2+cos(x)**2", "1") == _PROVED_TIER
     # zeta(s) self-identity on a domain containing the s=1 pole is rejected
     # by domain safety (P0), not certified: pole conflict != proof.
     assert (

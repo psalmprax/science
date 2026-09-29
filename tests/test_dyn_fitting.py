@@ -8,7 +8,6 @@ import pytest
 
 from apedp_dyn import (
     DynamicalEquation,
-    InputVariable,
     Parameter,
     StateVariable,
     enumerate_candidates,
@@ -17,7 +16,7 @@ from apedp_dyn import (
     select_by_train_loss,
 )
 from apedp_dyn.problems import mass_spring_damper
-from apedp_dyn.problems.base import DynProblem, finalize, make_signal
+from apedp_dyn.problems.base import DynProblem, finalize
 
 
 def _term_param_map(scored):
@@ -55,8 +54,8 @@ def test_msd_lumped_maps_to_physical_where_identifiable():
 def test_fitted_truth_recovers_msd_physical_parameters():
     prob = mass_spring_damper.load()
     cands = enumerate_candidates(required=("u",), optional=("x", "v"), max_terms=3)
-    truth = [s for s in prune_admissible(prob, cands)
-             if set(s.candidate.term_set()) == {"u", "x", "v"}][0]
+    truth = next(s for s in prune_admissible(prob, cands)
+                 if set(s.candidate.term_set()) == {"u", "x", "v"})
     res = fit_candidate(prob, truth.candidate)
     assert res.provenance["gate4_status"]["passed"]
     from apedp_dyn.problems.mass_spring_damper import resolve_physical
@@ -131,9 +130,9 @@ def test_parameter_binding_refuses_length_mismatch():
 
 def test_fit_candidate_rejects_wrong_length_warm_start():
     prob = mass_spring_damper.load()
-    truth = [s for s in prune_admissible(prob, enumerate_candidates(
+    truth = next(s for s in prune_admissible(prob, enumerate_candidates(
         required=("u",), optional=("x", "v"), max_terms=3))
-        if set(s.candidate.term_set()) == {"u", "x", "v"}][0]
+        if set(s.candidate.term_set()) == {"u", "x", "v"})
     assert len(truth.candidate.parameter_names()) == 3
     with pytest.raises(ValueError, match="parameter binding mismatch"):
         fit_candidate(prob, truth.candidate, x0=np.array([1.0, 2.0]))

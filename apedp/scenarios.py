@@ -74,7 +74,7 @@ class APEDPScenarioSuite:
             try:
                 res = func()
                 self.results[name] = {'status': 'PASS', 'details': res}
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 - one scenario must not abort the sweep
                 logger.warning("Scenario '%s' failed", name, exc_info=True)
                 self.results[name] = {'status': 'FAIL', 'error': str(e)}
 

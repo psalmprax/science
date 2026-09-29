@@ -175,7 +175,7 @@ class StageCDecisionEngine:
             tol = 1e-9 * span
             try:
                 components = engine.extract_singular_components(c.expression)
-            except Exception:
+            except Exception:  # noqa: BLE001 - sympy raises a wide, version-dependent set here
                 logger.debug("Pole extraction failed for '%s'", c.candidate_id, exc_info=True)
                 continue
             for base, kind in components:
@@ -201,7 +201,7 @@ class StageCDecisionEngine:
                     if not (np.isfinite(a1) and np.isfinite(b0)) or a1 == 0.0:
                         continue
                     roots = [-b0 / a1]
-                except Exception:
+                except Exception:  # noqa: BLE001 - sympy raises a wide, version-dependent set here
                     logger.debug("Singular-root search failed for '%s'", c.candidate_id, exc_info=True)
                     continue
                 for r in roots:
@@ -426,7 +426,7 @@ class StageCDecisionEngine:
                             mean_d = float(np.mean(d))
                             if abs(mean_d) <= 1.96 * se_d:
                                 is_noise_equiv = True
-                    except Exception:
+                    except Exception:  # noqa: BLE001 - optional metadata probe, never fatal
                         logger.debug("paired bootstrap SE probe failed", exc_info=True)
 
                 if is_noise_equiv:
