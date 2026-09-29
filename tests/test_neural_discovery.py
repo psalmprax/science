@@ -347,6 +347,7 @@ def test_predict_with_uncertainty():
 
     # Create test data
     x_test = np.random.randn(5, 10)
+    y_test = np.random.randn(5)
 
     # Test with ensemble method
     output = predict_with_uncertainty(
@@ -358,13 +359,23 @@ def test_predict_with_uncertainty():
     assert output.lower is not None
     assert output.upper is not None
 
-    # Test with conformal method (needs calibrated predictor)
+    # An uncalibrated conformal predictor has no quantile, so it must refuse
+    # rather than emit an interval with no coverage guarantee behind it.
+    # (This previously "passed" only because the ValueError was never checked.)
+    uncalibrated = ConformalPredictor(alpha=0.1)
+    with pytest.raises(ValueError, match="calibrate"):
+        predict_with_uncertainty(
+            model, params, x_test, method="conformal", conformal=uncalibrated
+        )
+
+    # Calibrated, it produces a real interval containing the point prediction.
     conformal = ConformalPredictor(alpha=0.1)
-    # Conformal requires calibration first, so we just test the interface
+    conformal.calibrate(model, params, x_test, y_test)
     output_conf = predict_with_uncertainty(
         model, params, x_test, method="conformal", conformal=conformal
     )
     assert isinstance(output_conf, UncertaintyOutput)
+    assert output_conf.lower is not None and output_conf.upper is not None
 
 
 def test_neural_discovery_engine_basic():
