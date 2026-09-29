@@ -6,11 +6,11 @@ import json
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from apedp.decision.stage_c import EpistemicState
 from apedp.model_synthesis import AutonomousModelSynthesizer, SynthesizedModel
-from benchmarks.generate_synthesis_50_corpus import CORPUS_50_DIR
-from benchmarks.synthetic_synthesis_generator import CORPUS_SYNTHESIS_DIR
+from benchmarks.corpus_paths import CORPUS_50_DIR, CORPUS_SYNTHESIS_DIR
 
 
 def load_synth_dataset(problem_id: str = "SYNTH_01"):
@@ -18,7 +18,7 @@ def load_synth_dataset(problem_id: str = "SYNTH_01"):
     assert prob_dir.exists(), f"Synthesis dataset {problem_id} does not exist"
 
     def read_csv(p: Path) -> tuple[np.ndarray, np.ndarray]:
-        with open(p, "r", encoding="utf-8") as f:
+        with open(p, encoding="utf-8") as f:
             reader = csv.reader(f)
             next(reader)
             rows = [[float(v) for v in r] for r in reader]
@@ -30,7 +30,7 @@ def load_synth_dataset(problem_id: str = "SYNTH_01"):
     x_near, y_near = read_csv(prob_dir / "near_ood.csv")
     x_far, y_far = read_csv(prob_dir / "far_ood.csv")
 
-    with open(prob_dir / "problem_spec.json", "r", encoding="utf-8") as f:
+    with open(prob_dir / "problem_spec.json", encoding="utf-8") as f:
         spec = json.load(f)
 
     return spec, (x_train, y_train), (x_val, y_val), (x_near, y_near), (x_far, y_far)
@@ -41,7 +41,7 @@ def load_synth50_dataset(problem_id: str):
     assert prob_dir.exists(), f"Synthesis 50 dataset {problem_id} does not exist"
 
     def read_csv(p: Path) -> tuple[np.ndarray, np.ndarray]:
-        with open(p, "r", encoding="utf-8") as f:
+        with open(p, encoding="utf-8") as f:
             reader = csv.reader(f)
             next(reader)
             rows = [[float(v) for v in r] for r in reader]
@@ -53,10 +53,150 @@ def load_synth50_dataset(problem_id: str):
     x_near, y_near = read_csv(prob_dir / "near_ood.csv")
     x_far, y_far = read_csv(prob_dir / "far_ood.csv")
 
-    with open(prob_dir / "problem_spec.json", "r", encoding="utf-8") as f:
+    with open(prob_dir / "problem_spec.json", encoding="utf-8") as f:
         spec = json.load(f)
 
     return spec, (x_train, y_train), (x_val, y_val), (x_near, y_near), (x_far, y_far)
+
+
+def test_regime_identifiability_is_derived_not_row_counted():
+    """The underspecified gate must measure identifiability, not count rows.
+
+    The old gate was a bare `len(x) <= 8`, which abstained on clean data for
+    exactly the same inputs it classified one sample longer. These cases pin
+    the two independent reasons the gate still refuses.
+    """
+    from apedp.model_synthesis import (
+        MIN_RESOLVABLE_REGIME_SAMPLES,
+        _regime_identifiability,
+    )
+
+    synthesizer = AutonomousModelSynthesizer()
+
+    # Too few samples to bracket an extremum and fit both branches.
+    for n in range(3, MIN_RESOLVABLE_REGIME_SAMPLES):
+        x = np.linspace(0.5, 4.0, n)
+        result = synthesizer.detect_regimes(x, 2.5 * x**1.5)
+        assert result["is_underspecified"] is True
+        assert "cannot resolve" in result["underspecification_reason"]
+
+    # Degenerate design: fewer than 3 distinct x values leave no local model
+    # estimable, even with plenty of rows.
+    xs = np.array([1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0])
+    assert _regime_identifiability(xs, np.arange(xs.size, dtype=float))[0] is True
+
+    # Signal buried under its own noise floor -> features not resolvable.
+    rng = np.random.default_rng(0)
+    xs = np.linspace(0.5, 4.0, 40)
+    noisy = 2.5 * xs**1.5 + rng.normal(0.0, 50.0, xs.size)
+    assert _regime_identifiability(xs, noisy)[0] is True
+
+    # A well-sampled clean curve is classified, and the exponent is recovered.
+    x = np.linspace(0.5, 4.0, 20)
+    result = synthesizer.detect_regimes(x, 2.5 * x**1.5)
+    assert result["is_underspecified"] is False
+    assert result["underspecification_reason"] == ""
+    assert result["alpha_est"] == pytest.approx(1.5, abs=1e-6)
+
+
+def test_regime_identifiability_is_invariant_to_x_rescaling():
+    """The gate must not depend on the units of x.
+
+    A regression guard, not a style rule. The noise floor was once estimated as
+    ``median(|dy/dx|)`` -- a slope, in y/x units -- and compared against
+    ``np.ptp(ys)``, a y-unit span. That comparison is dimensionally
+    meaningless, and its only saving grace was being stable for one particular
+    choice of units: rescaling x by 10 divided the "noise floor" by 10 and
+    flipped the verdict. On the EXT-BENCH-60 corpus this changed the answer on
+    11 of 60 problems -- the identical curve abstaining at x*1 and passing at
+    x*10, including a damped oscillation that lost its UNIQUE_SUPPORT.
+
+    Both terms of the span/noise comparison must now be in y units, so the
+    verdict is a property of the curve, not of how the curve was parameterised.
+    """
+    from apedp.model_synthesis import _regime_identifiability
+
+    curves = {
+        "clean power law": lambda x: 2.5 * x**1.5,
+        "damped cosine": lambda x: np.exp(-0.3 * x) * np.cos(3.0 * x),
+        "saturating": lambda x: 4.0 / (1.0 + x),
+        "with noise": None,
+    }
+    rng = np.random.default_rng(0)
+    xs = np.linspace(0.5, 4.0, 40)
+    curves["with noise"] = lambda x: 2.5 * x**1.5 + rng.normal(0.0, 0.05, x.size)
+
+    for name, f in curves.items():
+        ys = f(xs)
+        baseline, _ = _regime_identifiability(xs, ys)
+        for scale in (1e-3, 0.1, 10.0, 1e3):
+            scaled, _ = _regime_identifiability(xs * scale, ys)
+            assert scaled is baseline, (
+                f"{name}: verdict flipped under x*{scale:g} "
+                f"(baseline={baseline}, scaled={scaled})"
+            )
+
+    # Offsetting y must not matter either: a constant shift changes ptp not at
+    # all, but it does change a slope-based estimator's absolute values.
+    ys = 2.5 * xs**1.5
+    base, _ = _regime_identifiability(xs, ys)
+    shifted, _ = _regime_identifiability(xs, ys + 1000.0)
+    assert shifted is base
+
+
+def test_regime_identifiability_noise_floor_is_in_y_units():
+    """The noise floor must scale with y, not with the slope dy/dx.
+
+    Adding a constant offset leaves the noise untouched; stretching y by a
+    factor must stretch the floor by the same factor, since it is estimated
+    in y. This is the property that makes the span/noise comparison meaningful.
+    """
+    from apedp.model_synthesis import _robust_noise_floor
+
+    rng = np.random.default_rng(3)
+    xs = np.linspace(0.5, 4.0, 40)
+    ys = 2.5 * xs**1.5 + rng.normal(0.0, 0.05, xs.size)
+
+    base = _robust_noise_floor(ys)
+    assert base > 0.0, base
+    assert _robust_noise_floor(ys + 1000.0) == pytest.approx(base, rel=0.05)
+    assert _robust_noise_floor(ys * 10.0) == pytest.approx(base * 10.0, rel=0.05)
+
+    # A smooth record has almost no high-frequency content. Not exactly zero:
+    # a power law is not quadratic, so its second difference carries the real
+    # curvature at the sampling scale. What matters is that it is negligible
+    # next to the signal it is being compared against.
+    smooth = 2.5 * xs**1.5
+    assert _robust_noise_floor(smooth) < 1e-3 * float(np.ptp(smooth))
+    # An exactly constant record does have a second difference of exactly zero.
+    assert _robust_noise_floor(np.ones_like(xs)) == 0.0
+
+    # A coarse oscillation must NOT read as noise. This is what defeated a
+    # local-model residual estimator and forced an ad-hoc oscillation carve-out.
+    t = np.linspace(0.0, 6.0, 30)
+    for curve in (np.exp(-0.3 * t) * np.cos(3.0 * t), np.cos(3.0 * t)):
+        assert _robust_noise_floor(curve) < 0.1 * float(np.ptp(curve))
+
+
+def test_constant_record_is_unidentifiable():
+    """A record with no variation cannot identify anything, at any noise level.
+
+    Worth an explicit rule rather than falling out of the noise comparison: a
+    constant record yields a second difference of exactly 0.0, so the
+    span-vs-floor test is skipped (there is no floor to clear) and a flat
+    signal would otherwise reach synthesis and earn a confident expression.
+    This is the adv-trig-identity shape in EXT-BENCH block A.
+    """
+    from apedp.model_synthesis import _regime_identifiability
+
+    xs = np.linspace(0.5, 4.0, 40)
+    underspecified, reason = _regime_identifiability(xs, np.ones_like(xs))
+    assert underspecified is True
+    assert "no variation" in reason
+
+    # Scale-invariant: a constant is constant under any rescaling.
+    for scale in (1e-3, 10.0, 1e3):
+        assert _regime_identifiability(xs * scale, np.ones_like(xs))[0] is True
 
 
 def test_regime_detection():

@@ -58,6 +58,9 @@ class SynthesisDiagnostics(TypedDict, total=False):
     stage_d_params: dict[str, float]
     coarse_val_mse: float
     coarse_expression: str
+    stage_d2_evidence: dict[str, Any]
+    physics_compliance: dict[str, Any]
+    parameter_uncertainty: dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -102,6 +105,24 @@ class SynthesizedModel:
         return f"{self.epistemic_class},{self.proof_claim}"
 
 
+# Families whose leading amplitude is an asymptote that may lie far above
+# observed y (Arrhenius pre-exponential on the early foot, logistic
+# saturation level, envelope onsets). The generic amplitude cap would deny
+# identifiable truth (observed: A=1e5 excluded by cap 6350 at y_max=127).
+_ASYMPTOTE_AMPLITUDE_FAMILIES = frozenset({
+    "exponential_decay", "logistic_saturation", "exponential_envelope",
+    "rational_exponential_envelope",
+})
+
+
+def _amplitude_cap(y_max: float, family_label: str) -> float:
+    """Upper bound for amplitude-like parameters, asymptote-aware."""
+    cap = max(100.0, 50.0 * y_max)
+    if family_label in _ASYMPTOTE_AMPLITUDE_FAMILIES and y_max > 0.0:
+        cap = max(cap, 1000.0 * y_max)
+    return cap
+
+
 # Stage D amplitude/rate roles for input-normalization map-back:
 # P_true = P_tilde / x_scale**e, where e is either a constant (rates and
 # frequencies, which carry 1/x dimension) or the name of the form's fitted
@@ -117,6 +138,133 @@ _XSCALE_ROLES: dict[str, dict[str, str | float]] = {
     "exp_env": {"A": "p", "C": "r"},
     "logbound": {"A": "a", "B": "b"},
 }
+
+
+#: Minimum samples before :func:`_regime_identifiability` will let
+#: ``detect_regimes`` classify at all.
+#:
+#: This is derived from the sharpest feature the detector claims to resolve,
+#: not chosen by experiment. A turnover is reported only when an interior
+#: extremum is bracketed by samples on *both* sides, and each branch is then
+#: fitted with a 2-parameter local power law, which needs 3 points to identify
+#: an intercept and a slope. That is 3 (rising branch) + 2 (bracketing the
+#: extremum) + 3 (falling branch) = 8. Below 8 the detector cannot tell "no
+#: turnover" apart from "the turnover fell between two samples", so every
+#: other verdict it returns is a coin flip dressed as a measurement.
+MIN_RESOLVABLE_REGIME_SAMPLES = 8
+
+#: Signal span, in multiples of the local noise floor, required before the
+#: detector will report the *absence* of a regime feature.
+_NOISE_FLOOR_SPAN_RATIO = 3.0
+
+#: MAD-to-sigma scale factor for a Gaussian.
+_MAD_TO_SIGMA = 1.4826
+
+#: ``sqrt(6)``: the standard deviation of a second difference of iid noise with
+#: unit variance is ``sqrt(1 + 4 + 1)``.
+_SECOND_DIFF_SCALE = np.sqrt(6.0)
+
+
+def _robust_noise_floor(ys: np.ndarray) -> float:
+    """Noise scale in **y units**, invariant to any rescaling of ``x``.
+
+    Estimated from second differences: ``1.4826 * median(|diff(y, 2)|) / sqrt(6)``.
+    For iid noise the second difference has variance ``6 * sigma^2``, so this is
+    a consistent noise scale; for anything locally quadratic the second
+    difference annihilates it, leaving only the high-frequency content.
+
+    Why this estimator, given three rejected ones:
+
+    * ``median(|dy/dx|)`` (the original) is a *slope*, in y/x units. Compared
+      against a y-unit span it is dimensionally meaningless, and its verdict
+      depended on the units of x: rescaling x by 10 divided the "noise floor"
+      by 10 and flipped the answer on 11 of the 60 EXT-BENCH problems -- the
+      same curve abstaining at x*1 and passing at x*10, including a damped
+      oscillation that lost its UNIQUE_SUPPORT.
+    * A local-quadratic residual reads a *coarse oscillation* as noise, because
+      a quadratic tracks only part of a half-cycle. That inflated the floor for
+      exactly the damped/undamped block and required an ad-hoc "is this
+      oscillatory?" carve-out to undo.
+    * Second differences need no carve-out: a smooth oscillation is smooth at
+      the sampling scale, so it cancels. The same third-difference idea is
+      already used for the same purpose in ``apedp_dyn.gates.intervention``.
+
+    The median (not the mean) makes it robust to isolated spikes.
+    """
+    d2 = np.diff(np.asarray(ys, dtype=float), n=2)
+    d2 = d2[np.isfinite(d2)]
+    if d2.size == 0:
+        return 0.0
+    return float(_MAD_TO_SIGMA * np.median(np.abs(d2)) / _SECOND_DIFF_SCALE)
+
+
+def _regime_identifiability(xs: np.ndarray, ys: np.ndarray) -> tuple[bool, str]:
+    """Decide whether qualitative regime structure is estimable from ``(xs, ys)``.
+
+    Returns ``(is_underspecified, reason)``.
+
+    This deliberately replaces an earlier ``len(x) <= 8`` row-count gate. That
+    gate was a bare constant with no relation to the estimand: it abstained on
+    clean, well-separated data for exactly the same inputs it would classify
+    one sample longer, and it had been tuned to line up with the three
+    sparse problems in the benchmark corpus. Identifiability here is a
+    property of the *design and the noise*, so it is measured:
+
+    1. At least three distinct sampling points, or no local model is estimable
+       at all.
+    2. The signal must vary by more than the local noise floor, measured as a
+       robust span (IQR) against a robust floor. Below that, "there is no
+       turnover" is indistinguishable from "the turnover is under the noise".
+       Both terms are in y units (see :func:`_robust_noise_floor`), so this
+       comparison does not depend on the units of x.
+    3. Enough samples to resolve the sharpest feature (see
+       :data:`MIN_RESOLVABLE_REGIME_SAMPLES`).
+    """
+    n = xs.size
+    if n < 3 or np.unique(xs).size < 3:
+        return True, (
+            f"{n} samples over {np.unique(xs).size} distinct x values: "
+            "no local model is estimable"
+        )
+
+    noise = _robust_noise_floor(ys)
+    # Robust span: the interquartile range, not peak-to-peak. ptp(ys) is set
+    # by the two most extreme samples, which on noisy data are noise: a signal
+    # buried under its own noise floor then "passed" a span that the noise had
+    # already widened for it. The IQR ignores the tails, so it measures the
+    # bulk of the variation and is comparable to a MAD-based floor.
+    #
+    # The 3x ratio now carries real meaning: for a noise-dominated record the
+    # IQR is ~1.35 sigma while the floor is ~1.0 sigma, so 3x cannot be
+    # cleared by noise alone. It also makes a constant record abstain
+    # deterministically (IQR is exactly 0.0, never a round-off coin flip).
+    #
+    # No oscillation carve-out is needed. An earlier local-model estimator read
+    # a coarse oscillation as noise and needed one; second differences cancel
+    # any locally quadratic trend, so an oscillation no longer inflates its own
+    # floor and the exemption would only mask genuinely unresolvable records.
+    span = float(np.subtract(*np.percentile(ys, [75, 25])))
+    if span <= 0.0:
+        # A record with no variation at all is unidentifiable by definition,
+        # and independently of the noise estimate. Guarding it explicitly
+        # matters because the noise rule is skipped when noise == 0 (a
+        # perfectly constant record yields a second difference of exactly
+        # 0.0), which would otherwise let a flat signal through to synthesis
+        # and produce a confident expression for a record that says nothing.
+        # This is the adv-trig-identity shape in EXT-BENCH block A.
+        return True, "signal span is 0: no variation to identify a regime from"
+    if noise > 0.0 and span < _NOISE_FLOOR_SPAN_RATIO * noise:
+        return True, (
+            f"signal span {span:.3g} is under {_NOISE_FLOOR_SPAN_RATIO:g}x the local "
+            f"noise floor {noise:.3g}: regime features are not resolvable"
+        )
+
+    if n < MIN_RESOLVABLE_REGIME_SAMPLES:
+        return True, (
+            f"{n} samples cannot resolve the {MIN_RESOLVABLE_REGIME_SAMPLES} needed to "
+            "bracket an interior extremum and fit a power law to both branches"
+        )
+    return False, ""
 
 
 class AutonomousModelSynthesizer:
@@ -151,11 +299,12 @@ class AutonomousModelSynthesizer:
         ys = y[idx_sort]
         n = len(xs)
 
-        is_underspecified = bool(n <= 8)
+        is_underspecified, underspecification_reason = _regime_identifiability(xs, ys)
         if is_underspecified:
             return {
                 "n_samples": n,
                 "is_underspecified": True,
+                "underspecification_reason": underspecification_reason,
                 "alpha_est": 1.0,
                 "has_turnover": False,
                 "x_peak": float(xs[-1]),
@@ -263,6 +412,7 @@ class AutonomousModelSynthesizer:
         return {
             "n_samples": n,
             "is_underspecified": bool(is_underspecified),
+            "underspecification_reason": underspecification_reason,
             "alpha_est": float(alpha_est),
             "has_turnover": bool(has_turnover),
             "x_peak": float(x_peak),
@@ -294,6 +444,18 @@ class AutonomousModelSynthesizer:
         structures.append(("A * log(x) + B", "logarithmic_boundary_layer"))
         structures.append(("A * x + B", "linear_baseline"))
         structures.append(("A * x**2 + B * x + C", "polynomial_baseline"))
+        # Logistic saturation (A60-class): K/(1+A*exp(-r*x)) is monotone
+        # saturating growth with no power-law/rational representation; without
+        # it, saturating data loses to rational surrogates by proposal absence.
+        # Single 3-parameter form; the rate C fits continuously in coarse fit
+        # (no Stage D form needed). K takes y units (no x-mapping needed);
+        # C maps as a rate via the generic x**1 role.
+        structures.append(("A / (1.0 + B * exp(-C * x))", "logistic_saturation"))
+        # Arrhenius reciprocal-variable form: k = A*exp(-B/T) depends on 1/x,
+        # not x, so no power/exponential template can represent it (the search
+        # would need to discover the reciprocal transform). Single form; B is
+        # a rate in 1/x units and needs no x-mapping (it never multiplies x).
+        structures.append(("A * exp(-B / x)", "exponential_decay"))
         # Cubic/quartic reach (P03/P04-class): higher-degree polynomials are
         # genuine grammar, but each extra degree is an overfitting liability at
         # finite noise. They compete on equal terms; parsimony tiebreak, MDL,
@@ -482,7 +644,7 @@ class AutonomousModelSynthesizer:
         params = model.parameters
 
         y_max = float(np.max(np.abs(y_train))) if len(y_train) > 0 else 1.0
-        a_max = max(100.0, 50.0 * y_max)
+        a_max = _amplitude_cap(y_max, fam)
         a_min = min(1e-4, 0.01 * y_max) if y_max > 0 else 1e-6
 
         forms: list[tuple[str, tuple[str, ...], dict[str, tuple[float, float]], Any, list[float]]]
@@ -875,7 +1037,7 @@ class AutonomousModelSynthesizer:
         y_va = y_val if y_scale_n == 1.0 else y_val / y_scale_n
 
         # Precompile vectorized evaluation function
-        syms_all = [x_sym] + free_params
+        syms_all = [x_sym, *free_params]
         f_lamb_fast: Any = sp.lambdify(syms_all, parsed, modules=["numpy"])
 
         def eval_fn(params_vec: np.ndarray, x_data: np.ndarray) -> np.ndarray:
@@ -904,11 +1066,11 @@ class AutonomousModelSynthesizer:
                 return 1e12
 
 
-        # Initial bounds and guesses (normalized scale when y-gated, so the
+        # Initial bounds and guesses (normalized scale when gated, so the
         # bounds below are meaningful for fitted tildas in every regime)
         y_max = float(np.max(np.abs(y_tr))) if len(y_tr) > 0 else 1.0
         y_med = float(np.median(np.abs(y_tr))) if len(y_tr) > 0 else 1.0
-        a_max = max(100.0, 50.0 * y_max)
+        a_max = _amplitude_cap(y_max, family_label)
         a_min = min(1e-4, 0.01 * y_max) if y_max > 0 else 1e-6
         a_init = y_med if y_med > 0 else 1.0
 
@@ -947,7 +1109,7 @@ class AutonomousModelSynthesizer:
         if not p0:
             # Constant / parameter-free
             p_opt = np.array([])
-            param_dict = {}
+            param_dict: dict[str, float] = {}
         elif family_label in {"linear_baseline", "polynomial_baseline"}:
             # Linear least-squares fast path: baseline templates are linear in
             # A..E, so the optimum is closed-form. Iterative L-BFGS-B on the
@@ -1011,9 +1173,12 @@ class AutonomousModelSynthesizer:
                 xp_probe = np.asarray(x_tr[: min(10, len(x_tr))])
                 for i, s in enumerate(free_params):
                     sname = str(s)
-                    va = list(p0); va[i] = 0.0
-                    vb = list(p0); vb[i] = 1.0
-                    vm = list(p0); vm[i] = 0.5
+                    va = list(p0)
+                    va[i] = 0.0
+                    vb = list(p0)
+                    vb[i] = 1.0
+                    vm = list(p0)
+                    vm[i] = 0.5
                     fa = np.asarray(f_lamb_fast(xp_probe, *[float(t) for t in va]), dtype=float)
                     fb = np.asarray(f_lamb_fast(xp_probe, *[float(t) for t in vb]), dtype=float)
                     fm = np.asarray(f_lamb_fast(xp_probe, *[float(t) for t in vm]), dtype=float)
@@ -1065,7 +1230,8 @@ class AutonomousModelSynthesizer:
             # misdescribed this template: refuse rather than emit a model
             # whose expression disagrees with its own fit.
             try:
-                mapped_vec = [param_dict[str(p)] for p in free_params]
+                mapped_vec = np.asarray(
+                    [param_dict[str(p)] for p in free_params], dtype=float)
                 raw_tr_pred = np.asarray(eval_fn(mapped_vec, x_train), dtype=float)
                 raw_va_pred = np.asarray(eval_fn(mapped_vec, x_val), dtype=float)
                 chk_tr = y_scale_n * np.asarray(y_train_pred, dtype=float)
