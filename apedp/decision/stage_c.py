@@ -39,6 +39,67 @@ class EpistemicState(str, Enum):
     NO_VALID_CANDIDATE = "NO_VALID_CANDIDATE"
 
 
+class AbstentionReason(str, Enum):
+    """Which gate declined to endorse a model, and for what cause.
+
+    ``EpistemicState`` answers *whether* the synthesizer is withholding
+    endorsement. It cannot answer *why*, because one state covers several
+    conditions that call for opposite responses downstream. ``NO_VALID_
+    CANDIDATE`` is returned both when the data contains a shock front no
+    smooth family can express -- a true statement about the world, and the
+    right answer -- and when every template failed to converge, which is a
+    statement about the optimizer, not about the data. Reading the second as
+    the first is how a broken run gets reported as a scientific finding.
+
+    So the cause is a separate, machine-readable code, and the prose rationale
+    is generated from it rather than written alongside it. Two consumers
+    depend on the distinction: a benchmark that must not score an
+    infrastructure failure as out-of-grammar, and a human deciding whether
+    the next move is a new family or a different optimizer.
+
+    Members are ordered by specificity, which is also the order in which
+    :func:`apedp.model_synthesis._classify_adversarial` reports a primary
+    reason when several fire at once: the specific cause is more useful than
+    the catch-all, and the full set is always retained alongside it.
+    """
+
+    #: Nothing to explain yet -- the underspecified-data gate (N too small).
+    UNDERSPECIFIED_DATA = "UNDERSPECIFIED_DATA"
+    #: Every candidate template raised before producing a fit.
+    NO_CANDIDATE_FITTED = "NO_CANDIDATE_FITTED"
+    #: A discontinuity the smooth candidate grammar cannot represent.
+    SHOCK_DISCONTINUITY = "SHOCK_DISCONTINUITY"
+    #: Residuals are autocorrelated, so the smooth fit is misspecified.
+    RESIDUAL_AUTOCORRELATION = "RESIDUAL_AUTOCORRELATION"
+    #: The best fit does not beat the mean. The catch-all; least specific.
+    LOW_VALIDATION_R2 = "LOW_VALIDATION_R2"
+
+
+#: Human-readable text per reason, used to build the diagnostics rationale.
+#: Kept next to the enum so a code and its wording cannot drift apart.
+ABSTENTION_REASON_TEXT: dict[AbstentionReason, str] = {
+    AbstentionReason.UNDERSPECIFIED_DATA: (
+        "Severe data sparsity (N <= 8) precludes confident model selection."
+    ),
+    AbstentionReason.NO_CANDIDATE_FITTED: (
+        "No candidate structure produced a fit; the abstention reflects an "
+        "empty candidate set, not a property of the data."
+    ),
+    AbstentionReason.SHOCK_DISCONTINUITY: (
+        "A shock discontinuity is present and smooth families deviate "
+        "systematically from it."
+    ),
+    AbstentionReason.RESIDUAL_AUTOCORRELATION: (
+        "Residual autocorrelation exceeds 0.45: the residuals carry structure "
+        "the smooth candidate does not explain."
+    ),
+    AbstentionReason.LOW_VALIDATION_R2: (
+        "The best candidate does not beat the mean on held-out data "
+        "(validation R^2 < 0.85)."
+    ),
+}
+
+
 class ModelClass(str, Enum):
     """Model family class for Tri-Hypothesis discovery and adjudication."""
 
@@ -575,6 +636,8 @@ class StageCDecisionEngine:
 
 
 __all__ = [
+    "ABSTENTION_REASON_TEXT",
+    "AbstentionReason",
     "CandidateProfile",
     "EpistemicState",
     "ModelClass",

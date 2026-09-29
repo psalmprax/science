@@ -35,6 +35,8 @@ import scipy.optimize as opt
 import sympy as sp
 
 from apedp.decision.stage_c import (
+    ABSTENTION_REASON_TEXT,
+    AbstentionReason,
     CandidateProfile,
     EpistemicState,
     ModelClass,
@@ -85,8 +87,11 @@ def _bic_rerank(models: list[SynthesizedModel], n_val: int,
     k_max = min(top_k, len(models))
 
     def _bic(m: SynthesizedModel) -> float:
+        # float() around the product, not decoration: numpy's stubs type
+        # np.log(int) as Any, and an Any-valued return silently propagates
+        # into every comparison that sorts on it.
         k = max(len(m.parameters), 1)
-        return m.val_mse * (1.0 + k * np.log(max(n_val, 1)) / max(n_val, 1))
+        return float(m.val_mse * (1.0 + k * np.log(max(n_val, 1)) / max(n_val, 1)))
 
     head = models[:k_max]
     best_bic, best_idx, best_m = min(
@@ -113,6 +118,13 @@ class SynthesisDiagnostics(TypedDict, total=False):
     stage_d2_evidence: dict[str, Any]
     physics_compliance: dict[str, Any]
     parameter_uncertainty: dict[str, Any]
+    #: Primary abstention code, duplicated from the field of the same name so
+    #: a consumer reading a serialized diagnostics dict -- which is what the
+    #: benchmark writes -- does not have to know the dataclass exists.
+    abstention_reason: str
+    #: Every cause that fired, not just the primary. The gate is an OR over
+    #: three criteria, so reporting one of them loses the others.
+    abstention_reasons: list[str]
 
 
 @dataclass(frozen=True)
@@ -137,6 +149,11 @@ class SynthesizedModel:
     structural_family: str = "unknown"
     diagnostics: SynthesisDiagnostics = field(default_factory=SynthesisDiagnostics)
     proof_claim: str = "P0"
+    #: Which gate withheld endorsement, and why. ``None`` means the model was
+    #: not withheld -- a cleared model has no reason, and defaulting to a
+    #: placeholder here would make "cleared" and "abstained for an unknown
+    #: reason" indistinguishable to every consumer downstream.
+    abstention_reason: AbstentionReason | None = None
 
     @property
     def epistemic_class(self) -> str:
@@ -173,6 +190,81 @@ def _amplitude_cap(y_max: float, family_label: str) -> float:
     if family_label in _ASYMPTOTE_AMPLITUDE_FAMILIES and y_max > 0.0:
         cap = max(cap, 1000.0 * y_max)
     return cap
+
+
+# Adversarial-gate thresholds, named because they are now read in two places:
+# the classifier below, and any consumer that wants to reason about the gate
+# without re-deriving it. They were inline literals inside a single boolean,
+# which is exactly the shape that lets a threshold change without anyone
+# noticing the reason code stopped matching the decision.
+_SHOCK_R2_GATE = 0.96
+_AUTOCORR_GATE = 0.45
+_AUTOCORR_R2_GATE = 0.99
+_LOW_R2_GATE = 0.85
+
+#: Most-specific-first. The primary reported reason is the first member of the
+#: returned tuple that fired, so a shock front is reported as a shock front
+#: rather than as the low-R-squared that also happened to be true.
+_ABSTENTION_PRIORITY = (
+    AbstentionReason.NO_CANDIDATE_FITTED,
+    AbstentionReason.SHOCK_DISCONTINUITY,
+    AbstentionReason.RESIDUAL_AUTOCORRELATION,
+    AbstentionReason.LOW_VALIDATION_R2,
+)
+
+
+def _classify_adversarial(
+    *,
+    n_candidates: int,
+    has_shock: bool,
+    top_r2: float,
+    top_autocorr: float,
+) -> tuple[AbstentionReason | None, tuple[AbstentionReason, ...]]:
+    """Decides *and* explains the adversarial abstention gate, in one place.
+
+    Returns ``(primary, all_fired)``; ``primary is None`` means the gate
+    clears. The gate asks this function rather than evaluating its own
+    boolean, so the decision and the reported cause cannot disagree.
+
+    The empty-candidate case is special and was previously invisible. The gate
+    used to test ``not fitted_models`` alongside the R-squared criteria, and
+    the criteria were fed the ``-1.0`` sentinel that stands in for "no top
+    model" -- so a run in which every template failed to converge was
+    recorded as ``LOW_VALIDATION_R2``, a confident claim that the data is
+    chaotic, made by a model that does not exist. An empty candidate set is
+    now its own reason and short-circuits the rest, because there is no
+    residual to autocorrelate and no R-squared to be low.
+    """
+    if n_candidates == 0:
+        return AbstentionReason.NO_CANDIDATE_FITTED, (AbstentionReason.NO_CANDIDATE_FITTED,)
+
+    fired: set[AbstentionReason] = set()
+    if has_shock and top_r2 < _SHOCK_R2_GATE:
+        fired.add(AbstentionReason.SHOCK_DISCONTINUITY)
+    if top_autocorr > _AUTOCORR_GATE and top_r2 < _AUTOCORR_R2_GATE:
+        fired.add(AbstentionReason.RESIDUAL_AUTOCORRELATION)
+    if top_r2 < _LOW_R2_GATE:
+        fired.add(AbstentionReason.LOW_VALIDATION_R2)
+
+    if not fired:
+        return None, ()
+    ordered = tuple(r for r in _ABSTENTION_PRIORITY if r in fired)
+    return ordered[0], ordered
+
+
+def _abstention_rationale(reasons: tuple[AbstentionReason, ...]) -> str:
+    """Prose built from the codes, so a message cannot describe a different cause.
+
+    Every cause that fired is named. Reporting only the primary would lose
+    information the gate actually used -- a shock front that also blew the
+    R-squared floor is one finding, not two, and a reader who saw only
+    ``SHOCK_DISCONTINUITY`` would not know the fit was also bad.
+    """
+    if not reasons:
+        return ""
+    codes = ", ".join(r.value for r in reasons)
+    body = " ".join(ABSTENTION_REASON_TEXT[r] for r in reasons)
+    return f"Formal abstention [{codes}]: {body}"
 
 
 # Stage D amplitude/rate roles for input-normalization map-back:
@@ -1423,7 +1515,14 @@ class AutonomousModelSynthesizer:
                     val_mse=float(np.var(y_val)),
                     epistemic_state=EpistemicState.INSUFFICIENT_EVIDENCE,
                     structural_family="underspecified_data_regime",
-                    diagnostics={"rationale": "Severe data sparsity (N <= 8) precludes confident model selection."},
+                    abstention_reason=AbstentionReason.UNDERSPECIFIED_DATA,
+                    diagnostics={
+                        "rationale": _abstention_rationale(
+                            (AbstentionReason.UNDERSPECIFIED_DATA,)
+                        ),
+                        "abstention_reason": AbstentionReason.UNDERSPECIFIED_DATA.value,
+                        "abstention_reasons": [AbstentionReason.UNDERSPECIFIED_DATA.value],
+                    },
                 )
             ]
 
@@ -1620,17 +1719,20 @@ class AutonomousModelSynthesizer:
         top_autocorr = abs(top.diagnostics.get("residual_autocorr", 0.0)) if top else 0.0
         has_shock = regimes.get("has_shock_discontinuity", False)
 
-        # Adversary detection criteria:
-        # A) Shock front discontinuity where smooth models exhibit systematic deviation
-        # B) Non-elementary Bessel function where residual autocorrelation exceeds 0.45
-        # C) Chaotic / turbulent trajectory where validation R2 < 0.85
-        is_adversarial = (
-            (has_shock and top_r2 < 0.96)
-            or (top_autocorr > 0.45 and top_r2 < 0.99)
-            or (top_r2 < 0.85)
+        # Adversary detection criteria, and the reason each one fires:
+        # A) Shock front discontinuity where smooth models deviate systematically
+        # B) Residual structure the smooth candidate cannot explain
+        # C) A fit that does not beat the mean
+        # The classifier returns the same verdict and the cause, so the reason
+        # reported on the record cannot drift from the decision that produced it.
+        abstention_reason, abstention_reasons = _classify_adversarial(
+            n_candidates=len(fitted_models),
+            has_shock=has_shock,
+            top_r2=top_r2,
+            top_autocorr=top_autocorr,
         )
 
-        if is_adversarial or not fitted_models:
+        if abstention_reason is not None:
             fam_desc = "piecewise_shock_discontinuity" if has_shock else "missing_structural_mechanism"
             abstain_state = EpistemicState.NO_VALID_CANDIDATE
             top_ret = top or SynthesizedModel(
@@ -1653,9 +1755,12 @@ class AutonomousModelSynthesizer:
                     has_singularity_risk=True,
                     epistemic_state=abstain_state,
                     structural_family=fam_desc,
+                    abstention_reason=abstention_reason,
                     diagnostics={
                         **top_ret.diagnostics,
-                        "rationale": "Formal abstention: Residual autocorrelation or discontinuity indicates out-of-grammar phenomena.",
+                        "rationale": _abstention_rationale(abstention_reasons),
+                        "abstention_reason": abstention_reason.value,
+                        "abstention_reasons": [r.value for r in abstention_reasons],
                     },
                 )
             ]
