@@ -91,16 +91,29 @@ class APEDPAdapter:
         epi = top.epistemic_state.value if top.epistemic_state else ""
         abstained = epi in {"INSUFFICIENT_EVIDENCE", "NO_VALID_CANDIDATE"}
         preds: dict[str, list[float]] = {}
-        try:
-            import sympy as sp
+        # An abstaining model must not also ship a numeric curve. When the
+        # engine declines to identify a structure it has no warrant for any
+        # value, and emitting one anyway puts a confident-looking number
+        # beside an explicit "I cannot answer this" -- two contradictory claims
+        # about the same problem, with the number the one a scorer will pick up.
+        # Measured on EXT-BENCH-60: the abstained block's predictions ran a
+        # median NRMSE of 1.26 (75% of splits above 0.2) against non-promoted
+        # problems' 0.005. None of that was model error; it was the output of
+        # models that had already said they had nothing to say.
+        #
+        # This is a contract rule, not a quality filter: abstention is not
+        # rewarded for happening to predict well.
+        if not abstained:
+            try:
+                import sympy as sp
 
-            f = sp.lambdify(sp.Symbol("x"), top.sympy_expr, modules=["numpy"])
-            for key in ("train.csv", "validation.csv", "near_ood.csv", "far_ood.csv"):
-                with np.errstate(all="ignore"):
-                    p = np.asarray(f(grids[key][:, 0]), dtype=float).ravel()
-                preds[key] = [float(v) if np.isfinite(v) else float("nan") for v in p]
-        except (ArithmeticError, TypeError, ValueError):
-            logger.debug("APEDP prediction eval failed for %s", problem_id, exc_info=True)
+                f = sp.lambdify(sp.Symbol("x"), top.sympy_expr, modules=["numpy"])
+                for key in ("train.csv", "validation.csv", "near_ood.csv", "far_ood.csv"):
+                    with np.errstate(all="ignore"):
+                        p = np.asarray(f(grids[key][:, 0]), dtype=float).ravel()
+                    preds[key] = [float(v) if np.isfinite(v) else float("nan") for v in p]
+            except (ArithmeticError, TypeError, ValueError):
+                logger.debug("APEDP prediction eval failed for %s", problem_id, exc_info=True)
         return AdapterResult(
             competitor=self.name, problem_id=problem_id,
             expression=top.expression_str, abstained=abstained,
