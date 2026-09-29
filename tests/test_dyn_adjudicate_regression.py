@@ -359,3 +359,111 @@ class TestProvenanceFallbackFiresEndToEnd:
         assert via_provenance.status is via_argument.status
         assert via_provenance.promoted is None
         assert via_argument.promoted is None
+
+
+class TestConfPathReachesTheNote:
+    """The conf benchmarks hand-build provenance, so they must supply the series.
+
+    They fit by OLS rather than through fit_candidate, so no gate runs and
+    there is no gate-recorded series to inherit. Without an explicit series
+    they were silently excluded from the residual-whiteness diagnostic -- the
+    same class of gap as the sole-survivor one, on the note side.
+    """
+
+    def test_conf_records_the_series_and_stays_serializable(self):
+        """The series must be present and must survive the report write.
+
+        These records are json.dump'd into the sweep report, so a raw array
+        here would break the artifact exactly as it broke dyn_tournament.
+        """
+        import json
+
+        from apedp_dyn.conf import benchmark as cb
+
+        cell = cb.run_cell(seed=0, sigma=0.05)
+        assert cell["status"] in (
+            EpistemicStatus.UNIQUE_SUPPORT.value,
+            EpistemicStatus.MULTI_HYPOTHESIS.value,
+            EpistemicStatus.INSUFFICIENT_EVIDENCE.value)
+        json.dumps(cb.run_sweep(seeds=(0,), sigmas=(0.05,)))
+
+    def test_conf_note_fires_when_structure_exists(self):
+        """The note must be reachable on the conf path, not just present.
+
+        Injected systematic bias into the holdout record: the winner is still
+        decisively promoted (correct behaviour, the pair path does not demote),
+        but its residuals now carry structure and the note must say so.
+        """
+        from apedp_dyn.conf import benchmark as cb
+        from apedp_dyn.grammar import candidate_ir as ir
+
+        d = cb.synthesize(0, 0.05)
+        yho = d["yho"] + 0.3 * np.sin(
+            2 * np.pi * np.arange(len(d["yho"]), dtype=float) / 25.0)
+        obs_rms = float(np.sqrt(np.mean(yho**2)))
+        scored = []
+        for name, idx in cb.CANDIDATE_STRUCTURES.items():
+            coef = cb._fit_ols(d["Xtr"][:, list(idx)], d["ytr"])
+            pred_ho = (np.column_stack(
+                [np.ones(len(d["Xho"])), d["Xho"][:, list(idx)]]) @ coef)
+            sq = (pred_ho - yho) ** 2
+            terms = tuple(cb.Term(t, f"a{i}")
+                          for i, t in enumerate(cb.STRUCTURE_TERMS[name]))
+            cand = ir.CandidateDynamics(lhs="logPi0", terms=terms,
+                                        candidate_id=f"conf-{name}")
+            prov = {"gate4_status": {
+                "passed": True, "holdout_obs_rms": obs_rms,
+                "holdout_noise_sigma": 0.05, "holdout_n_samples": len(yho),
+                "holdout_sq_error": sq.tolist()}}
+            scored.append(ir.ScoredCandidate(
+                cand, prov, train_loss=float(np.sqrt(np.mean(sq))),
+                holdout_rmse=float(np.sqrt(np.mean(sq)))))
+
+        adj = adjudicate(scored)
+        assert "exceeds" in adj.reason, adj.reason
+
+    def test_frozen_conf_matrix_never_trips_the_flag(self):
+        """Adding the series must not have moved the frozen benchmark.
+
+        The conf sweep is a frozen matrix where false promotion is a REPORTED
+        outcome, not a tuning target. Supplying the series makes the note
+        reachable for the first time, so the question is whether any cell's
+        winner actually carries structure. Measured: the maximum winner rho1
+        across all 20 cells is ~0.41, under the 0.5 flag, so no note fires and
+        recovery / false-promotion / abstention are unchanged.
+        """
+        from apedp_dyn.conf import benchmark as cb
+
+        worst = 0.0
+        for seed in cb.SEEDS:
+            for sigma in cb.NOISE_SIGMAS:
+                d = cb.synthesize(seed, sigma)
+                best_rho = 0.0
+                for _name, idx in cb.CANDIDATE_STRUCTURES.items():
+                    coef = cb._fit_ols(d["Xtr"][:, list(idx)], d["ytr"])
+                    pred_ho = (np.column_stack(
+                        [np.ones(len(d["Xho"])), d["Xho"][:, list(idx)]]) @ coef)
+                    sq = (pred_ho - d["yho"]) ** 2
+                    c = sq - sq.mean()
+                    denom = float(np.dot(c, c))
+                    if denom > 0:
+                        best_rho = max(
+                            best_rho,
+                            abs(float(np.dot(c[:-1], c[1:]) / denom)))
+                worst = max(worst, best_rho)
+        assert worst < RESID_RHO_FLAG, worst
+
+    def test_conf_verdicts_are_unchanged_by_the_series(self):
+        """Recovery and false promotion must be exactly as before.
+
+        Guards the specific risk of populating provenance on a frozen
+        benchmark: the note is diagnostic, so no verdict may move.
+        """
+        from apedp_dyn.conf import benchmark as cb
+
+        sweep = cb.run_sweep(seeds=(0, 1), sigmas=(0.01, 0.05))
+        for sig, agg in sweep["by_sigma"].items():
+            assert agg["structural_recovery_rate"] == 1.0, (sig, agg)
+            assert agg["false_promotion_rate"] == 0.0, (sig, agg)
+        assert {c["status"] for c in sweep["cells"]} == {
+            EpistemicStatus.UNIQUE_SUPPORT.value}

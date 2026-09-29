@@ -241,6 +241,32 @@ def _sole_survivor_whiteness(resid: Any, threshold: float) -> tuple[bool, str]:
     return ok, f"|rho1|={abs(rho1):.3f} vs flag {threshold:g}"
 
 
+def _residual_series(sc: Any) -> Any:
+    """Per-timepoint holdout error series gate 4 recorded for ``sc``.
+
+    The single route by which a caller that never computes residuals can still
+    reach the whiteness check. Callers that fit through fit_candidate get this
+    for free; the conf benchmarks hand-build their provenance and populate the
+    same key, so both kinds of caller are covered by one lookup.
+    """
+    try:
+        return sc.provenance.get("gate4_status", {}).get("holdout_sq_error")
+    except AttributeError:
+        return None
+
+
+def _note_series(sc: Any, resid_best: Any) -> Any:
+    """Series for the diagnostic note: explicit argument, else gate 4's record.
+
+    The note reads the explicit argument first, then the series gate 4 recorded.
+    Callers that never compute residuals (the conf benchmarks hand-build their
+    provenance) would otherwise be silently excluded from a diagnostic that
+    exists to be read. Explicit None test, not truthiness: a numpy array has no
+    single boolean reading and ``or`` would misbehave on one.
+    """
+    return resid_best if resid_best is not None else _residual_series(sc)
+
+
 def _winner_structure_note(resid: Any, threshold: float) -> str:
     """Diagnostic-only annotation of residual structure on a promoted winner.
 
@@ -368,8 +394,7 @@ def adjudicate(fitted: list,
                 # Fall back to the series gate 4 records in provenance, so a
                 # caller that forwards its fits is not silently denied the
                 # evidence this guard needs.
-                series = best.provenance.get("gate4_status", {}).get(
-                    "holdout_sq_error")
+                series = _residual_series(best)
             ok2, why2 = _sole_survivor_whiteness(series, sole_rho_flag)
             if not ok2:
                 return Adjudication(
@@ -440,8 +465,9 @@ def adjudicate(fitted: list,
                    f"Δ={delta:.3g} > τ={tau:.3g} [{tau_source}] and confirmed "
                    f"by the paired block bootstrap (branch "
                    f"{tb.get('branch')!r})"
-                   f"{_winner_structure_note(resid_best, sole_rho_flag)}")
-    note = _winner_structure_note(resid_best, sole_rho_flag)
+                   f"{_winner_structure_note(_note_series(best, resid_best), sole_rho_flag)}")
+    note = _winner_structure_note(_note_series(best, resid_best),
+                                  sole_rho_flag)
     return Adjudication(
         EpistemicStatus.UNIQUE_SUPPORT, promoted=best, ranking=tuple(ranked),
         best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
