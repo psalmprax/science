@@ -24,6 +24,13 @@ class PhysicalModel:
     parameters: tuple[Parameter, ...] = ()
     equations: tuple[DynamicalEquation, ...] = ()
     t_units: str = "second"
+    # DAE provenance. The materializer knows which DAE mode it applied and
+    # which parameters carry constraint/timescale semantics; the model used to
+    # drop this, so gate 1.5 had no mode to dispatch on and its constrained and
+    # multi-timescale branches were unreachable.
+    dae_mode: str = "none"
+    dae_constraint_params: tuple[str, ...] = ()
+    dae_timescales: tuple[str, ...] = ()
 
     def symbol_units(self) -> dict[str, str]:
         """Map every known symbol (incl. time) to its unit string."""

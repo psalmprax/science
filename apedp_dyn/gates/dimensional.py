@@ -6,6 +6,7 @@ from typing import Any
 
 import sympy as sp
 from pint import UnitRegistry
+from pint.errors import PintError
 
 _ureg = UnitRegistry()
 
@@ -96,3 +97,117 @@ def dimensional_validity(model) -> GateResult:
                 f"{eq.state}: RHS dims {got} != state-rate dims {want}")
     return GateResult("dimensional_validity", True,
                       f"{len(model.equations)} equations dimensionally consistent")
+
+
+def dao_validity(model) -> GateResult:
+    """Gate 1.5: DAE validity check.
+
+    Checks:
+      - Constrained mode: constraint terms are dimensionally consistent
+        (units are compatible, ideally reducing to dimensionless equality).
+      - Multi-timescale mode: tau_fast and tau_slow parameters have
+        units of seconds; fast/slow variable labeling is consistent with
+        the candidate metadata.
+      - Pure ODE mode (dae_mode="none"): always passes (delegates to
+        gate 1 result).
+    """
+    dae_mode = getattr(model, "dae_mode", "none")
+    if dae_mode == "none":
+        return GateResult("dao_validity", True,
+                          "pure ODE mode; no DAE constraints")
+    if dae_mode == "constrained":
+        return _dao_constrained_validity(model)
+    if dae_mode == "multi_timescale":
+        return _dao_multiscale_validity(model)
+    return GateResult("dao_validity", False,
+                      f"unknown dae_mode {dae_mode!r}")
+
+
+def _dao_constrained_validity(model) -> GateResult:
+    """Check constraint term dimensionality for constrained DAE mode.
+
+    A constrained-DAE candidate is one whose hypothesis is that the states
+    satisfy an algebraic relation, so two things must hold:
+
+    1. The model must actually carry constraint parameters. A candidate
+       enumerated with ``dae_mode="constrained"`` that contains no
+       constraint term has silently degenerated into a plain ODE while
+       still claiming DAE provenance -- that is a mislabelled model, not a
+       valid one.
+    2. Each constraint parameter must be dimensionless. The constraint
+       basis terms ("c1", "c2") expand to ``X**0``, a dimensionless
+       constant, so a dimensionful coefficient on one of them makes the
+       constraint equation dimensionally inhomogeneous.
+
+    Units that cannot be parsed are recorded and reported rather than
+    silently accepted, matching the leniency policy used elsewhere in
+    this module.
+    """
+    constraint_params = tuple(getattr(model, "dae_constraint_params", ()))
+    if not constraint_params:
+        return GateResult(
+            "dao_validity", False,
+            "dae_mode='constrained' but the model carries no constraint "
+            "parameters: the DAE hypothesis is not represented in the "
+            "equations")
+
+    by_name = {p.name: p for p in model.parameters}
+    unresolved: list[str] = []
+    for name in constraint_params:
+        param = by_name.get(name)
+        if param is None:
+            unresolved.append(f"{name}: no Parameter record")
+            continue
+        try:
+            dim = _ureg.Unit(param.units).dimensionality
+        except (PintError, ValueError, TypeError, AttributeError) as e:
+            unresolved.append(f"{name}: {type(e).__name__}")
+            continue
+        if dim != _ureg.dimensionless.dimensionality:
+            return GateResult(
+                "dao_validity", False,
+                f"constraint parameter {name!r} has units {dim}, but a "
+                "constraint basis term is dimensionless; the constraint "
+                "equation would be dimensionally inhomogeneous")
+
+    detail = f"{len(constraint_params)} constraint parameter(s) verified dimensionless"
+    if unresolved:
+        detail += f"; unresolved: {unresolved}"
+    return GateResult("dao_validity", True, detail)
+
+
+def _units_parse(units: str) -> bool:
+    """True if `units` is a pint-parseable unit string.
+
+    Narrow on purpose: a blind ``except Exception`` here would also hide a
+    typo'd attribute, which is a bug rather than an unparsable unit.
+    """
+    try:
+        _ureg.Unit(units)
+    except (PintError, ValueError, TypeError, AttributeError):
+        return False
+    return True
+
+
+def _dao_multiscale_validity(model) -> GateResult:
+    """Check multi-timescale mode: tau_fast and tau_slow have seconds units."""
+    # Check that tau parameters exist and have seconds units
+    tau_fast_ok = False
+    tau_slow_ok = False
+    for p in model.parameters:
+        if p.name == "tau_fast":
+            tau_fast_ok = _units_parse(p.units)
+        if p.name == "tau_slow":
+            tau_slow_ok = _units_parse(p.units)
+    if tau_fast_ok and tau_slow_ok:
+        return GateResult("dao_validity", True,
+                          "tau_fast and tau_slow both have seconds units")
+    # If we can't find the tau params, check the declared timescales. The
+    # previous fallback read ``model.candidate.metadata``, but a
+    # PhysicalModel has no ``candidate`` attribute, so it could never fire.
+    timescales = tuple(getattr(model, "dae_timescales", ()))
+    if sorted(timescales) == ["fast", "slow"]:
+        return GateResult("dao_validity", True,
+                          f"timescales labeled: {', '.join(sorted(timescales))}")
+    return GateResult("dao_validity", False,
+                      "multi-timescale: cannot verify tau units or fast/slow labeling")

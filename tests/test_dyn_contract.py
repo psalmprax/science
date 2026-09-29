@@ -8,6 +8,7 @@ from apedp_dyn import (
     equation_admissibility,
     run_all_gates,
 )
+from apedp_dyn.gates import dao_validity
 from apedp_dyn.problems import mass_spring_damper
 
 
@@ -112,3 +113,83 @@ def test_fit_candidate_evaluates_every_gate_run_all_gates_evaluates():
     assert set(_GATE_PROVENANCE_KEY.values()) <= set(res.provenance), res.provenance
     # A gate that never runs cannot silently read as "passed".
     assert res.provenance["dao_status"]["passed"], res.provenance["dao_status"]
+
+
+# --- Gate 1.5 (dao_validity) -------------------------------------------------
+#
+# The DAE branches used to be unreachable: PhysicalModel carried no
+# ``dae_mode``, so dao_validity always took the pure-ODE early return, and
+# the constrained branch iterated ``eq.terms``, an attribute
+# DynamicalEquation does not have. The D3 tests wrapped every call in
+# ``try/except: pass``, so a gate that returned garbage still "passed".
+# These tests assert the verdicts instead.
+
+def _dae_model(**kwargs):
+    p = mass_spring_damper.spec()
+    base = {
+        "states": p.states, "inputs": p.inputs, "parameters": p.parameters,
+        "equations": p.truth_equations,
+    }
+    base.update(kwargs)
+    return PhysicalModel(**base)
+
+
+def test_dao_gate_passes_pure_ode():
+    g = dao_validity(_dae_model())
+    assert g.passed, g.detail
+    assert "pure ODE" in g.detail
+
+
+def test_dao_gate_rejects_constrained_model_with_no_constraint_terms():
+    """A constrained-mode model must actually carry a constraint parameter.
+
+    Otherwise the DAE hypothesis is a label with nothing behind it, and the
+    model is really just an ODE wearing a DAE badge.
+    """
+    g = dao_validity(_dae_model(dae_mode="constrained"))
+    assert not g.passed
+    assert "no constraint parameters" in g.detail
+
+
+def test_dao_gate_passes_constrained_model_with_dimensionless_constraint():
+    p = mass_spring_damper.spec()
+    m = PhysicalModel(
+        p.states, p.inputs, p.parameters, p.truth_equations,
+        dae_mode="constrained", dae_constraint_params=("con",),
+    )
+    g = dao_validity(m)
+    assert g.passed, g.detail
+    assert "dimensionless" in g.detail
+
+
+def test_dao_gate_rejects_dimensionful_constraint_parameter():
+    """The constraint basis term is X**0, so its coefficient must be unitless."""
+    p = mass_spring_damper.spec()
+    params = (Parameter("con", "newton", None, (-1e6, 1e6)),)
+    m = PhysicalModel(
+        p.states, p.inputs, params, p.truth_equations,
+        dae_mode="constrained", dae_constraint_params=("con",),
+    )
+    g = dao_validity(m)
+    assert not g.passed
+    assert "dimensionally inhomogeneous" in g.detail
+
+
+def test_dao_gate_rejects_unknown_dae_mode():
+    g = dao_validity(_dae_model(dae_mode="not_a_mode"))
+    assert not g.passed
+    assert "unknown dae_mode" in g.detail
+
+
+def test_dao_gate_multiscale_accepts_declared_timescales():
+    m = _dae_model(dae_mode="multi_timescale", dae_timescales=("fast", "slow"))
+    g = dao_validity(m)
+    assert g.passed, g.detail
+    assert "timescales labeled" in g.detail
+
+
+def test_dao_gate_multiscale_rejects_unlabeled_model():
+    m = _dae_model(dae_mode="multi_timescale")
+    g = dao_validity(m)
+    assert not g.passed
+    assert "cannot verify" in g.detail
