@@ -80,7 +80,8 @@ def intervention_holdout(model, problem) -> GateResult:
         return GateResult("intervention_holdout", False,
                           f"holdout simulation invalid: {res.detail}", res.metrics)
     obs = np.asarray(h["truth_y"])
-    rmse = float(np.sqrt(np.mean((res.y.T - obs) ** 2)))
+    sq_err = (res.y.T - obs) ** 2
+    rmse = float(np.sqrt(np.mean(sq_err)))
     tol = h["tolerance"]
     if isinstance(tol, str) and tol == "auto":
         tol = auto_tolerance(obs)
@@ -95,6 +96,15 @@ def intervention_holdout(model, problem) -> GateResult:
     # the tolerance above).
     metrics = {"rmse": rmse, "tolerance": tol, "margin": tol - rmse,
                "margin_ratio": margin_ratio,
+               # Per-timepoint squared error, meaned over channels. Carried
+               # here because gate 4 already computes it and adjudication's
+               # residual-whiteness guard needs it: evidence the gate has
+               # should not have to be reconstructed by each caller to be
+               # used. Until this existed, dyn_sweep hand-rolled it and every
+               # other call site did not, which left the whiteness guard
+               # unsatisfiable and the sole-survivor verdict structurally
+               # unreachable outside that one script.
+               "sq_error": sq_err.mean(axis=1),
                **observation_scale(obs), **res.metrics}
     verdict = (f"rmse {rmse:.3g} {'<=' if rmse <= tol else '>'} tol {tol:.3g} "
                f"(margin_ratio {margin_ratio:.3g})")
