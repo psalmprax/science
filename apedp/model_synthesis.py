@@ -111,7 +111,7 @@ class SynthesizedModel:
 # identifiable truth (observed: A=1e5 excluded by cap 6350 at y_max=127).
 _ASYMPTOTE_AMPLITUDE_FAMILIES = frozenset({
     "exponential_decay", "logistic_saturation", "exponential_envelope",
-    "rational_exponential_envelope",
+    "rational_exponential_envelope", "arrhenius_decay",
 })
 
 
@@ -303,6 +303,8 @@ class AutonomousModelSynthesizer:
         if is_underspecified:
             return {
                 "n_samples": n,
+                "x_min": float(xs[0]),
+                "x_max": float(xs[-1]),
                 "is_underspecified": True,
                 "underspecification_reason": underspecification_reason,
                 "alpha_est": 1.0,
@@ -411,6 +413,8 @@ class AutonomousModelSynthesizer:
 
         return {
             "n_samples": n,
+            "x_min": float(xs[0]),
+            "x_max": float(xs[-1]),
             "is_underspecified": bool(is_underspecified),
             "underspecification_reason": underspecification_reason,
             "alpha_est": float(alpha_est),
@@ -427,8 +431,15 @@ class AutonomousModelSynthesizer:
         }
 
     @staticmethod
-    def _s2_templates() -> list[tuple[str, str]]:
-        """Class S2 monotonic-growth template set (power / log-boundary / rational)."""
+    def _s2_templates(x_min: float | None = None) -> list[tuple[str, str]]:
+        """Class S2 monotonic-growth template set (power / log-boundary / rational).
+
+        ``x_min`` is the smallest observed x, used only to gate the reciprocal
+        Arrhenius template. ``None`` means "domain unknown", in which case the
+        template is proposed: guessing wrong there costs one rejected fit,
+        whereas silently withholding a legitimate form would hide a real
+        mechanism.
+        """
         structures: list[tuple[str, str]] = []
         alphas = [0.0, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
         betas = [0.5, 1.0, 1.5, 2.0]
@@ -447,15 +458,33 @@ class AutonomousModelSynthesizer:
         # Logistic saturation (A60-class): K/(1+A*exp(-r*x)) is monotone
         # saturating growth with no power-law/rational representation; without
         # it, saturating data loses to rational surrogates by proposal absence.
-        # Single 3-parameter form; the rate C fits continuously in coarse fit
-        # (no Stage D form needed). K takes y units (no x-mapping needed);
-        # C maps as a rate via the generic x**1 role.
+        # EARNED: on EXT-BENCH-60 this is the only template that can represent
+        # `adv-logistic` (10/(1+9*exp(-1.2x))), and it recovers it to ~4
+        # significant figures. K takes y units (no x-mapping needed); C maps
+        # as a rate via the generic x**1 role.
         structures.append(("A / (1.0 + B * exp(-C * x))", "logistic_saturation"))
         # Arrhenius reciprocal-variable form: k = A*exp(-B/T) depends on 1/x,
         # not x, so no power/exponential template can represent it (the search
-        # would need to discover the reciprocal transform). Single form; B is
-        # a rate in 1/x units and needs no x-mapping (it never multiplies x).
-        structures.append(("A * exp(-B / x)", "exponential_decay"))
+        # would need to discover the reciprocal transform). B is a rate in 1/x
+        # units and needs no x-mapping (it never multiplies x).
+        #
+        # Own family label, deliberately NOT "exponential_decay": the ordinary
+        # A*exp(-B*x) template carries that label, and sharing it would make
+        # family-accuracy scoring unable to distinguish an Arrhenius fit from
+        # an ordinary exponential fit, which are different claims about the
+        # world. It is a reciprocal in x, not a rate.
+        #
+        # Domain-gated on x > 0. exp(-B/x) has a pole at x = 0 and diverges
+        # for x -> 0+ whenever B > 0, so proposing it on a domain that reaches
+        # or crosses zero can only ever produce inf/NaN. Unconditionally
+        # proposed, it also emitted a divide-by-zero warning on every problem
+        # in the corpus while winning none of them: no EXT-BENCH truth uses
+        # the 1/x form. It is kept because it is a genuine physical form with a
+        # real use case, not because it has earned a place here -- and it is
+        # now measurable, so a corpus that does contain Arrhenius truth can
+        # use it.
+        if x_min is None or (np.isfinite(x_min) and x_min > 0.0):
+            structures.append(("A * exp(-B / x)", "arrhenius_decay"))
         # Cubic/quartic reach (P03/P04-class): higher-degree polynomials are
         # genuine grammar, but each extra degree is an overfitting liability at
         # finite noise. They compete on equal terms; parsimony tiebreak, MDL,
@@ -532,14 +561,14 @@ class AutonomousModelSynthesizer:
             edge_ratio = regime_info.get("critical_edge_ratio")
             strong = edge_ratio is not None and edge_ratio >= 1.5
             if not (self.domain_gaps and strong):
-                structures.extend(self._s2_templates())
+                structures.extend(self._s2_templates(regime_info.get("x_min")))
                 if regime_info.get("is_decaying", False):
                     structures.extend(self._exp_templates())
             return structures
 
         # Class S2: Monotonic Growth / Logarithmic Boundary Layer / Power Law
         if regime_info.get("is_monotonic_growth", False):
-            structures.extend(self._s2_templates())
+            structures.extend(self._s2_templates(regime_info.get("x_min")))
             return structures
 
         # Class S1: Multi-Regime Rational-Exponential Envelopes (and general turnover / decay)

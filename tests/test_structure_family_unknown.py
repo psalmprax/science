@@ -162,13 +162,16 @@ def test_blind_recovery_exponential_unseen_rate(synthesizer: AutonomousModelSynt
     assert top.epistemic_state in {EpistemicState.UNIQUE_SUPPORT, EpistemicState.MULTI_HYPOTHESIS}
 
 
-# Unknown-exponent blind 808 exposes a real engine limit: off-grid rational
-# exponents resolve to a neighbouring envelope family at overlapping validation
-# MSE (36% outside the 15% parsimony-tiebreak margin). Marked xfail to document
-# the boundary without breaking the suite. (606 power-law off-grid exponent was
-# fixed by Stage D + parsimony tiebreak; 909 damped off-grid frequency by Stage D;
-# both promoted to strict tests.)
-@pytest.mark.xfail(reason="off-grid rational exponents gain spurious exp envelope; needs continuous refinement")
+# Unknown-exponent blind 808 used to expose a real engine limit: off-grid
+# rational exponents resolved to a neighbouring envelope family at overlapping
+# validation MSE (36% outside the 15% parsimony-tiebreak margin). It was marked
+# xfail to document the boundary. That boundary no longer holds -- with the
+# logistic/Arrhenius grammar available the true rational_transition structure
+# now wins outright -- so it is promoted to a strict test. Strict xfail turns
+# an unexpected pass into a suite failure, so leaving the marker would have
+# masked the improvement as a regression.
+# (606 power-law off-grid exponent was fixed by Stage D + parsimony tiebreak;
+# 909 damped off-grid frequency by Stage D; both likewise promoted.)
 def test_blind_recovery_rational_unseen_exponents(synthesizer: AutonomousModelSynthesizer):
     """Blind recovery of unseen rational: y = (2.0 * x^1.3) / (1 + 0.7 * x^2.1)."""
     rng = np.random.default_rng(808)

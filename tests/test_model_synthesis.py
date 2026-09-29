@@ -199,6 +199,65 @@ def test_constant_record_is_unidentifiable():
         assert _regime_identifiability(xs * scale, np.ones_like(xs))[0] is True
 
 
+def test_arrhenius_template_is_own_family_and_domain_gated():
+    """The 1/x template must be distinguishable from the ordinary exponential.
+
+    Two separate properties, both load-bearing:
+
+    - Label. ``A*exp(-B/x)`` and ``A*exp(-B*x)`` are different claims about the
+      world -- a reciprocal in x versus a rate -- and were both labelled
+      ``exponential_decay``. Family-accuracy scoring cannot separate those, so
+      an Arrhenius fit was scored as though it were an ordinary exponential.
+    - Domain. ``exp(-B/x)`` has a pole at x=0 and diverges for x->0+ whenever
+      B>0, so on a domain reaching or crossing zero it can only yield inf/NaN.
+      Proposed unconditionally it also cost fitting budget and a divide-by-zero
+      warning on every EXT-BENCH problem while winning none of them.
+    """
+    from apedp.model_synthesis import AutonomousModelSynthesizer as _S
+
+    syn = _S()
+    reg = syn.detect_regimes(np.linspace(0.5, 4.0, 20), np.linspace(1, 2, 20))
+
+    pos = dict(reg, x_min=0.5, x_max=4.0)
+    forms = dict(syn.generate_candidate_structures(pos))
+    assert "arrhenius_decay" in forms.values(), "arrhenius form not proposed"
+    assert forms["A * exp(-B / x)"] == "arrhenius_decay"
+    # Must not collide with the ordinary exponential template, which lives in
+    # the oscillatory branch and is labelled "exponential_decay".
+    assert forms["A * exp(-B / x)"] != "exponential_decay"
+    osc = dict(reg, is_oscillatory=True)
+    osc_forms = dict(syn.generate_candidate_structures(osc))
+    assert osc_forms["A * exp(-B * x)"] == "exponential_decay"
+    assert forms["A * exp(-B / x)"] != osc_forms["A * exp(-B * x)"]
+
+    for x_min in (0.0, -1.0):
+        gated = dict(reg, x_min=x_min, x_max=4.0)
+        assert "arrhenius_decay" not in dict(
+            syn.generate_candidate_structures(gated)).values(), (
+            f"arrhenius proposed on a domain reaching x={x_min}")
+
+
+def test_logistic_template_recovers_saturating_truth():
+    """The logistic template must earn its place: it is the only one that can.
+
+    EXT-BENCH-60 `adv-logistic` is ``10/(1 + 9*exp(-1.2x))``. No power-law,
+    rational, or exponential form can represent a saturating level, so without
+    this template the truth loses to a surrogate by proposal absence rather
+    than by evidence.
+    """
+    from apedp.model_synthesis import AutonomousModelSynthesizer as _S
+
+    rng = np.random.default_rng(11)
+    x_tr = np.linspace(0.1, 6.0, 40)
+    y_tr = 10.0 / (1.0 + 9.0 * np.exp(-1.2 * x_tr)) + rng.normal(0.0, 0.01, x_tr.size)
+    x_va = np.linspace(0.15, 5.9, 20)
+    y_va = 10.0 / (1.0 + 9.0 * np.exp(-1.2 * x_va))
+
+    top = _S().synthesize(x_tr, y_tr, x_va, y_va)[0]
+    assert top.structural_family == "logistic_saturation", top.structural_family
+    assert top.val_mse < 1e-4, top.val_mse
+
+
 def test_regime_detection():
     synthesizer = AutonomousModelSynthesizer()
     x = np.linspace(0.1, 5.0, 50)
