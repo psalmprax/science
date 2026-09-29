@@ -89,7 +89,18 @@ def simulate(model, t_span: tuple[float, float],
     try:
         crhs = compile_rhs(model)
         pdict = model.param_values()
-        drift = lambda t, x: crhs(t, x, np.atleast_1d(np.asarray(u_of_t(t), dtype=float)), pdict)  # noqa: E731
+
+        def _u(t: float) -> np.ndarray:
+            # Same arity rule as the precheck above. An autonomous model still
+            # carries a problem-supplied u_of_t, and make_signal's "zero"
+            # defaults to arity 1, so splatting it handed a length-1 vector to
+            # a compiled RHS built for zero inputs -- an arity TypeError raised
+            # at call time inside solve_ivp, long after the guard had passed.
+            if not n_inputs:
+                return np.empty(0)
+            return np.atleast_1d(np.asarray(u_of_t(t), dtype=float))
+
+        drift = lambda t, x: crhs(t, x, _u(t), pdict)  # noqa: E731
     except (ArithmeticError, ValueError, TypeError) as e:
         # Degradation is recorded, never hidden: conformance asserts the
         # compiled path, so which path actually ran must be visible in metrics.

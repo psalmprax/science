@@ -109,8 +109,23 @@ def generate_truth(problem: DynProblem, regime: str,
     t_eval = np.linspace(reg["t_span"][0], reg["t_span"][1], n_eval)
 
     def f(t, x):
-        u = np.atleast_1d(np.asarray(u_of_t(t), dtype=float))
-        args = (t, *x, *u, *(params[k] for k in params))
+        # A problem with no inputs has no meaningful u(t), and splatting
+        # whatever the spec happened to return injected a spurious argument:
+        # make_signal's "zero" defaults to n=1, so every autonomous problem
+        # passed one argument to a RHS compiled for zero, surfacing as
+        # "_lambdifygenerated() takes N positional arguments but N+1 were
+        # given" from inside SymPy. Skip the signal entirely, and check the
+        # arity explicitly where inputs DO exist so a mis-sized drive is
+        # reported against the problem that declared it.
+        if not inames:
+            args = (t, *x, *(params[k] for k in params))
+        else:
+            u = np.atleast_1d(np.asarray(u_of_t(t), dtype=float))
+            if u.size != len(inames):
+                raise ValueError(
+                    f"{problem.problem_id}: input signal has arity {u.size} but "
+                    f"the problem declares {len(inames)} input(s) {inames}")
+            args = (t, *x, *u, *(params[k] for k in params))
         return np.array([float(c(*args)) for _, c in compiled])
 
     sol = solve_ivp(f, reg["t_span"], x0, method="DOP853",
