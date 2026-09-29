@@ -223,5 +223,139 @@ class TestPairPathWhitenessIsDiagnostic:
     def test_flag_is_the_documented_constant(self):
         """The note quotes RESID_RHO_FLAG; the flag must be the pinned 0.5."""
         assert RESID_RHO_FLAG == 0.5
+
+    def test_flag_survives_squaring_a_white_residual_series(self):
+        """The fallback's series is SQUARED error, so the flag must still
+        separate structure from a correct model after squaring.
+
+        This was worth measuring rather than assuming. Squaring a white
+        residual does not leave it white: e^2 is non-negative and skewed, so
+        its lag-1 correlation is a different quantity from e's. If its null
+        value sat at or above 0.5, every correct model would abstain roughly
+        half the time and the fallback would be a coin flip. Measured over 40
+        seeds, rho1(e^2) is ~0.01, far below the flag, and never once reached
+        it -- so the flag transfers and the abstention stays meaningful.
+        """
+        vals = []
+        for seed in range(40):
+            e = np.random.default_rng(seed).normal(0, 1, size=400)
+            sq = e ** 2
+            c = sq - sq.mean()
+            denom = float(np.dot(c, c))
+            vals.append(float(np.dot(c[:-1], c[1:]) / denom))
+        vals = np.asarray(vals)
+        assert vals.mean() < 0.1, vals.mean()
+        assert (np.abs(vals) >= RESID_RHO_FLAG).sum() == 0
         adj = _pair(resid_best=np.sin(2 * np.pi * np.arange(400) / 40.0))
         assert f"{RESID_RHO_FLAG:g} whiteness flag" in adj.reason
+
+
+class TestProvenanceFallbackFiresEndToEnd:
+    """Guard 2's provenance fallback, on a real fitted candidate.
+
+    The fallback is what makes the sole-survivor contract reachable outside
+    dyn_sweep: callers that forward their fits and pass no explicit series get
+    the one gate 4 already recorded. Every other test in this file feeds
+    hand-built candidates, which proves the key is read but not that a real
+    fitter-produced record drives it. This closes that gap.
+    """
+
+    @staticmethod
+    def _noisy_duffing(pct=5.0, seed=11):
+        """Duffing at 5% noise.
+
+        Noise level is load-bearing, not decoration. On the clean record the
+        third-difference sigma sits ~2e-5 while the true model still fits to
+        ~6e-4, so Guard 1 refuses and Guard 2 is never reached -- the two
+        guards are ordered, so Guard 1's verdict hides Guard 2's. 5% noise
+        lifts sigma (0.042) above a third of the fit error, so Guard 1 passes
+        and the fallback becomes observable.
+        """
+        import dataclasses
+
+        from apedp_dyn.problems import duffing
+
+        rng = np.random.default_rng(seed)
+        prob = duffing.load()
+        train, holdout = dict(prob.train), dict(prob.holdout)
+        for reg in (train, holdout):
+            y = np.asarray(reg["truth_y"], dtype=float)
+            reg["truth_y"] = y + rng.normal(0.0, pct / 100.0 * np.std(y, axis=0),
+                                           y.shape)
+        return dataclasses.replace(prob, train=train, holdout=holdout)
+
+    @classmethod
+    def _best_fit(cls):
+        from apedp_dyn.fitting.parameter_fit import fit_candidate
+        from apedp_dyn.grammar import enumerate_candidates, prune_admissible
+
+        prob = cls._noisy_duffing()
+        kept = prune_admissible(prob, enumerate_candidates(
+            required=("u",), optional=("x", "x3", "v"), max_terms=4))
+        scored = [fit_candidate(prob, k.candidate) for k in kept]
+        scored = [s for s in scored
+                  if s.train_loss is not None and np.isfinite(s.train_loss)]
+        return min(scored, key=lambda s: s.train_loss)
+
+    def test_gate4_records_the_series_in_provenance(self):
+        """Precondition: the series exists, as a JSON-safe list."""
+        import json
+
+        best = self._best_fit()
+        se = best.provenance["gate4_status"]["holdout_sq_error"]
+        assert len(se) == 400
+        # Must survive the artifact write path; a raw ndarray here silently
+        # breaks every provenance dump.
+        json.dumps(best.provenance)
+
+    def test_guard1_passes_so_guard2_is_reachable(self):
+        """Ordering precondition: the fidelity ceiling must admit this fit.
+
+        Asserted separately because it is the easy thing to break silently --
+        tighten the ceiling and this whole class degenerates into testing
+        Guard 1 while appearing to test the fallback.
+        """
+        from apedp_dyn.epistemic.adjudicate import _sole_survivor_fidelity
+        from apedp_dyn.epistemic.calibration import calibrated_sigma
+
+        best = self._best_fit()
+        g4 = best.provenance["gate4_status"]
+        scale = {"obs_rms": g4["holdout_obs_rms"],
+                 "noise_sigma": g4["holdout_noise_sigma"]}
+        ok, why = _sole_survivor_fidelity(best, scale, SOLE_SURVIVOR_GAMMA)
+        assert ok, why
+        # And the ceiling is genuinely tight, not vacuously satisfied.
+        assert best.holdout_rmse < SOLE_SURVIVOR_GAMMA * calibrated_sigma(
+            g4["holdout_noise_sigma"])
+
+    def test_fallback_abstains_without_any_explicit_series(self):
+        """The end-to-end claim: no resid_sole, real fit, guard-2 abstention.
+
+        adjudicate() is called with a single candidate and no residual series
+        at all. Any rho1 in the rationale can therefore only have come from
+        gate 4's recorded series, read through provenance.
+        """
+        best = self._best_fit()
+        adj = adjudicate([best])
+        assert adj.status is EpistemicStatus.INSUFFICIENT_EVIDENCE
+        assert adj.promoted is None
+        # Guard 1 passed, then Guard 2 refused -- both stated in the reason.
+        assert "absolute ceiling" in adj.reason
+        assert "rho1" in adj.reason
+
+    def test_fallback_reaches_the_same_verdict_as_an_explicit_series(self):
+        """Provenance and an explicit series must not disagree.
+
+        Two routes to the same evidence, one verdict. A divergence would mean
+        the fallback is judging something other than what callers pass
+        explicitly -- the exact inconsistency that made the guard unreachable
+        outside one script in the first place.
+        """
+        best = self._best_fit()
+        series = best.provenance["gate4_status"]["holdout_sq_error"]
+
+        via_provenance = adjudicate([best])
+        via_argument = adjudicate([best], resid_sole=series)
+        assert via_provenance.status is via_argument.status
+        assert via_provenance.promoted is None
+        assert via_argument.promoted is None
