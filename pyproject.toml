@@ -68,6 +68,17 @@ testpaths = ["tests"]
 addopts = ["-v", "--tb=short"]
 markers = [
     "integration: requires an external service such as Redis",
+    # Slow tests are excluded from the default run, which matters more than
+    # usual here: the full suite exceeds 600s, and an iteration loop that has
+    # to wait ten minutes to learn you broke something is a loop people stop
+    # running. Mark a test `slow` when it does real synthesis, a real
+    # benchmark round, or otherwise takes more than a couple of seconds.
+    "slow: takes more than a few seconds (real synthesis, full round); run with `-m slow`",
+    # The complement of `slow`: the fast suite, for a tight inner loop. This
+    # is a subset of unmarked tests, not a partition, so a test is either
+    # explicitly slow or implicitly fast. `-m 'not slow'` already gives the
+    # fast set; `fast` exists so intent is legible at the mark site.
+    "fast: runs in the default inner loop (the complement of `slow`)",
 ]
 
 [tool.ruff]
