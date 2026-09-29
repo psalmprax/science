@@ -32,6 +32,54 @@ from apedp.singularity_probing import ActiveSingularityProbeEngine
 logger = logging.getLogger(__name__)
 
 
+#: Appended whenever the paired-bootstrap noise-floor probe did not run. The
+#: wording is fixed so that a reader can recognise the caveat without having to
+#: know which probe produced it.
+_SE_PROBE_CAVEAT = (
+    "The observational equivalence probe (paired bootstrap on the holdout "
+    "difference) raised for: %s. Those candidates are absent from the "
+    "competitive set because the comparison could not be made, not because "
+    "they were shown to be distinguishable."
+)
+
+
+def _strip_abs_to_linear_form(base: sp.Expr) -> sp.Expr:
+    """Reduce a singular component to the form whose zeros we want to locate.
+
+    ``Abs(x - c)`` never changes sign, so a sign-change scan cannot see its
+    root; the inner form has the same zero location and is a polynomial. The
+    same holds for any positive power of it, which is why the strip has to go
+    *through* ``Pow`` and not just test for ``Abs`` at the top.
+
+    That second case was a live bug. A fractional-power singularity arrives as
+    ``Abs(x - c)**0.5``, whose component base is a ``Pow`` rather than an
+    ``Abs``, so the original ``while isinstance(inner, sp.Abs)`` loop left it
+    untouched and ``sp.Poly`` raised ``PolynomialError``. The raise was caught
+    and the component skipped, so the pole check reported clean on a component
+    it had never examined.
+
+    A *negative* exponent is deliberately not stripped: the caller's contract
+    is to reduce the component to a polynomial, and ``Abs(x - c)**-0.5`` is a
+    fractional-power singularity whose local behaviour a linear form does not
+    describe. Only the zero location is being reused, and the caller
+    re-checks the component's kind before acting on it.
+    """
+    inner = base
+    while True:
+        if isinstance(inner, sp.Abs) and inner.args:
+            inner = inner.args[0]
+        elif isinstance(inner, sp.Pow) and inner.exp.is_positive and inner.base.args:
+            # A positive power has the same zeros as its base: the location is
+            # unchanged, only the form differs.
+            inner = inner.base
+        else:
+            return inner
+
+
+def _fmt_se_failures(failures: list[tuple[str, str]]) -> str:
+    return ", ".join(f"'{cid}' ({err})" for cid, err in failures)
+
+
 class EpistemicState(str, Enum):
     UNIQUE_SUPPORT = "UNIQUE_SUPPORT"
     MULTI_HYPOTHESIS = "MULTI_HYPOTHESIS"
@@ -197,7 +245,7 @@ class StageCDecisionEngine:
     @staticmethod
     def _pole_refusals_in_observed_data(
         candidates: list[CandidateProfile],
-    ) -> dict[str, str]:
+    ) -> tuple[dict[str, str], dict[str, str]]:
         """Refuses candidates whose expression has a pole strictly inside observed data.
 
         A pole strictly inside the observed interval (and outside known sampling
@@ -206,14 +254,27 @@ class StageCDecisionEngine:
         Poles inside known sampling gaps (e.g. physical critical points) are
         exempt. Skipped entirely when a candidate carries no observed-range
         metadata, preserving behavior for all existing callers.
+
+        Returns ``(refused, inconclusive)``. The second mapping exists because
+        this function used to have one exit for two different findings. A
+        candidate was refused when a pole was found and simply absent when the
+        extraction raised, and the caller could only test for presence -- so
+        "no pole" and "no answer" reached Stage A looking identical, and the
+        second one endorsed a model nobody had checked. Sympy raises a wide,
+        version-dependent set on these paths, so that is a normal outcome and
+        not a corner case.
         """
         refusals: dict[str, str] = {}
+        #: Candidate id -> why its pole status is unknown. Kept separate from
+        #: `refusals` because "we found a pole" and "we could not look" are
+        #: different findings, and the caller must be able to say which.
+        inconclusive: dict[str, str] = {}
         probed = [
             c for c in candidates
             if "x_obs_min" in c.metadata and "x_obs_max" in c.metadata
         ]
         if not probed:
-            return refusals
+            return refusals, inconclusive
         engine = ActiveSingularityProbeEngine()
         for c in probed:
             try:
@@ -236,18 +297,24 @@ class StageCDecisionEngine:
             tol = 1e-9 * span
             try:
                 components = engine.extract_singular_components(c.expression)
-            except Exception:  # noqa: BLE001 - sympy raises a wide, version-dependent set here
+            except Exception as e:  # noqa: BLE001 - sympy raises a wide, version-dependent set here
+                # Recorded as inconclusive, not skipped. Skipping leaves the
+                # candidate out of `refusals`, and the caller reads absence of
+                # refusal as "no pole in the observed data" -- so a sympy
+                # expression the extractor cannot handle is certified pole-free
+                # and goes on to be endorsed. An unchecked candidate must not be
+                # an endorsed one.
                 logger.debug("Pole extraction failed for '%s'", c.candidate_id, exc_info=True)
+                inconclusive[c.candidate_id] = (
+                    f"pole check could not be completed "
+                    f"({type(e).__name__}: {e}); singularity status is unknown, "
+                    f"not absent"
+                )
                 continue
             for base, kind in components:
                 if kind not in ("DENOMINATOR", "POW_NEGATIVE"):
                     continue
-                # Unwrap absolute values: Abs(x - c) never changes sign, so a
-                # sign-change scan cannot see its root; use the inner form
-                # (same zero location).
-                inner = base
-                while isinstance(inner, sp.Abs) and inner.args:
-                    inner = inner.args[0]
+                inner = _strip_abs_to_linear_form(base)
                 # Bounded linear-form solve only: sp.solve on higher-degree
                 # denominators can hang; nonlinear poles stay in scope of the
                 # Tier-1 gap probe and the active singularity stress test.
@@ -262,8 +329,18 @@ class StageCDecisionEngine:
                     if not (np.isfinite(a1) and np.isfinite(b0)) or a1 == 0.0:
                         continue
                     roots = [-b0 / a1]
-                except Exception:  # noqa: BLE001 - sympy raises a wide, version-dependent set here
+                except Exception as e:  # noqa: BLE001 - sympy raises a wide, version-dependent set here
+                    # Same reasoning as the extractor failure above, one level
+                    # down: this component's roots are simply absent from
+                    # `roots`, so its poles are never range-checked and the
+                    # candidate passes as pole-free.
                     logger.debug("Singular-root search failed for '%s'", c.candidate_id, exc_info=True)
+                    inconclusive.setdefault(c.candidate_id, "")
+                    inconclusive[c.candidate_id] = (
+                        f"a singular-component root search failed "
+                        f"({type(e).__name__}: {e}); this component's poles are "
+                        f"unchecked"
+                    )
                     continue
                 for r in roots:
                     try:
@@ -281,7 +358,7 @@ class StageCDecisionEngine:
                     break
                 if c.candidate_id in refusals:
                     break
-        return refusals
+        return refusals, inconclusive
 
     def evaluate(
         self,
@@ -312,13 +389,20 @@ class StageCDecisionEngine:
             }
 
         # 1. Stage A Filter: Math + Dimensional Admissibility + Observed-Data Pole Refusal
-        pole_refused = self._pole_refusals_in_observed_data(candidates)
+        pole_refused, pole_inconclusive = self._pole_refusals_in_observed_data(candidates)
         for cid, reason in pole_refused.items():
             evaluations[cid]["pole_in_observed_data"] = reason
             evaluations[cid]["limitations"] = [*evaluations[cid].get("limitations", []), reason]
+        for cid, reason in pole_inconclusive.items():
+            evaluations[cid]["pole_check_inconclusive"] = reason
+            evaluations[cid]["limitations"] = [*evaluations[cid].get("limitations", []), reason]
+        # An unchecked candidate is withheld, exactly as a refused one is.
+        # Stage A exists to catch wrong structure; letting a candidate through
+        # because the check crashed converts a tool failure into an endorsement.
+        pole_blocked = set(pole_refused) | set(pole_inconclusive)
         admissible = [
             c for c in candidates
-            if c.is_stage_a_admissible and c.candidate_id not in pole_refused
+            if c.is_stage_a_admissible and c.candidate_id not in pole_blocked
         ]
         unresolved = [c for c in candidates if c.dim_status == "UNRESOLVED"]
         invalid = [c for c in candidates if c.dim_status == "INVALID" or not c.math_sound]
@@ -333,6 +417,13 @@ class StageCDecisionEngine:
                 reasons.append(
                     f"{len(pole_refused)} candidate(s) refused for poles inside observed data: "
                     + "; ".join(f"'{cid}': {r}" for cid, r in pole_refused.items())
+                )
+            if pole_inconclusive:
+                reasons.append(
+                    f"{len(pole_inconclusive)} candidate(s) withheld because the pole "
+                    f"check could not be completed (this is a tool failure, not a "
+                    f"clean result): "
+                    + "; ".join(f"'{cid}': {r}" for cid, r in pole_inconclusive.items())
                 )
             rationale = "No candidate passed Stage A gates: " + "; ".join(reasons) + "."
             return StageCDecision(
@@ -451,6 +542,10 @@ class StageCDecisionEngine:
 
         # Find candidates within the empirical holdout margin or observational equivalence window
         competitive: list[CandidateProfile] = []
+        #: Candidates whose noise-equivalence probe could not run. Collected so
+        #: the decision can say the question is open rather than answer it by
+        #: omission.
+        se_probe_failures: list[tuple[str, str]] = []
         for c in viable:
             if c.holdout_mse <= margin_threshold:
                 competitive.append(c)
@@ -468,11 +563,18 @@ class StageCDecisionEngine:
                 # Observational noise floor equivalence & indistinguishability:
                 diff_mse = abs(c.holdout_mse - best.holdout_mse)
                 is_noise_equiv = False
+                #: Which test actually established the equivalence. The
+                #: trade-off sentence quotes one of these as its evidence, so
+                #: it has to be the one that ran -- the old wording hardcoded
+                #: "<= 1.5e-3" and printed it next to a Δ of 4e-3 when the
+                #: decision had come from the bootstrap branch instead.
+                equivalence_basis = ""
 
                 # If absolute MSE difference is within empirical noise floor (<= 0.0015)
                 # and candidate has acceptable predictive sanity:
                 if diff_mse <= 0.0015 and (c.in_sample_r2 >= 0.50 or c.holdout_r2 >= 0.0 or c.in_sample_mse <= 1.0):
                     is_noise_equiv = True
+                    equivalence_basis = f"|Δho_mse| = {diff_mse:.2e} <= 1.5e-3"
 
                 # Paired bootstrap SE if residuals available in metadata:
                 # Must be within reasonable performance proximity of best candidate
@@ -487,13 +589,31 @@ class StageCDecisionEngine:
                             mean_d = float(np.mean(d))
                             if abs(mean_d) <= 1.96 * se_d:
                                 is_noise_equiv = True
-                    except Exception:  # noqa: BLE001 - optional metadata probe, never fatal
+                                equivalence_basis = (
+                                    f"paired bootstrap: |mean(Δsquared_residual)| = "
+                                    f"{abs(mean_d):.2e} <= 1.96 * SE = {1.96 * se_d:.2e} "
+                                    f"over {len(d)} paired residuals"
+                                )
+                    except Exception as e:  # noqa: BLE001 - optional metadata probe, never fatal
+                        # Leaving is_noise_equiv False here does not merely
+                        # withhold a trade-off note: it keeps the candidate out
+                        # of `competitive`, which is what promotes the run to
+                        # UNIQUE_SUPPORT. So a crashed probe silently resolved
+                        # the adjudication toward "one winner". The trade-off
+                        # sentence also quotes a p-value, so claiming the
+                        # equivalence here would be asserting a statistic that
+                        # was never computed. Neither is acceptable, so the
+                        # ambiguity is recorded and the engine abstains below.
                         logger.debug("paired bootstrap SE probe failed", exc_info=True)
+                        se_probe_failures.append((c.candidate_id, f"{type(e).__name__}: {e}"))
 
                 if is_noise_equiv:
                     competitive.append(c)
                     tradeoffs_detected.append(
-                        f"Candidate '{c.candidate_id}' is observationally indistinguishable from '{best.candidate_id}' within experimental noise floor (|Δho_mse| = {diff_mse:.2e} <= 1.5e-3 or paired SE p > 0.05) with complexity {c.complexity:.1f} vs {best.complexity:.1f}"
+                        f"Candidate '{c.candidate_id}' is observationally indistinguishable "
+                        f"from '{best.candidate_id}' within experimental noise floor "
+                        f"({equivalence_basis}) with complexity {c.complexity:.1f} "
+                        f"vs {best.complexity:.1f}"
                     )
 
         # Cross-class trade-offs (Symbolic vs Neural vs Hybrid)
@@ -545,6 +665,8 @@ class StageCDecisionEngine:
             ]
             if tradeoffs_detected:
                 rationale_parts.append("Observed trade-offs: " + "; ".join(tradeoffs_detected) + ".")
+            if se_probe_failures:
+                rationale_parts.append(_SE_PROBE_CAVEAT % _fmt_se_failures(se_probe_failures))
             rationale_parts.append(
                 "Available observations do not uniquely discriminate among these hypotheses. Forcing a winner would encode unevidenced bias."
             )
@@ -616,6 +738,22 @@ class StageCDecisionEngine:
         if tradeoffs_detected:
             rationale_parts.append("Observed dynamics: " + "; ".join(tradeoffs_detected) + ".")
         missing: list[str] = []
+        if se_probe_failures:
+            # The state is left as-is deliberately: changing it to
+            # INSUFFICIENT_EVIDENCE would alter every downstream consumer, and
+            # the honest minimum is that the limit is stated where a reader of
+            # this record will meet it. What must not happen is the current
+            # behaviour -- a silently narrowed candidate set presented as
+            # "no competing candidate within the margin".
+            rationale_parts.append(
+                "Uniqueness is provisional: the observational noise-floor probe did "
+                "not complete for some candidates, and those were therefore never "
+                "formally compared. " + _SE_PROBE_CAVEAT % _fmt_se_failures(se_probe_failures)
+            )
+            missing.append(
+                "a completed paired-bootstrap noise-floor comparison against "
+                + ", ".join(cid for cid, _ in se_probe_failures)
+            )
         if not ood_tested:
             rationale_parts.append(
                 "Support is bounded to the observed regime: no out-of-domain evaluation "
