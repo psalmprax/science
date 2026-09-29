@@ -1,7 +1,11 @@
 """D3 regression tests: DAE and multi-timescale extensions.
 
-- Constrained DAE mode (c1, c2 terms) → survives pruning, materializes to 4-state
-  PhysicalModel with constraint terms in provenance.
+- Constrained DAE mode (c1, c2 terms) → REFUSED as unimplemented. The c1/c2
+  basis is the constant 1 and no index-1 reduction is performed, so every
+  candidate that carried a constraint was rejected at gate 1 and the ones that
+  survived carried none. The gate's contract for a constrained model is stated
+  directly in test_dao_constrained_gate_specification, which is the acceptance
+  test for implementing it.
 - Multi-timescale mode (fast/slow τ_fast/τ_slow) → survives pruning, materializes
   with tau parameters; fast/slow variable labeling consistent with metadata.
   Note: multi-timescale kept count depends on gate configuration; current pruning
@@ -9,6 +13,8 @@
 - Pure ODE mode (dae_mode="none") → behaves as D2b: 676 kept after pruning.
 - Dao gate (dao_validity) → passes for all applicable modes.
 """
+
+import pytest
 
 from apedp_dyn import (
     EpistemicStatus,
@@ -18,7 +24,8 @@ from apedp_dyn import (
     prune_admissible,
 )
 from apedp_dyn.gates import dao_validity
-from apedp_dyn.problems import coupled, duffing
+from apedp_dyn.model import Parameter, PhysicalModel
+from apedp_dyn.problems import coupled, duffing, mass_spring_damper
 
 
 def _count_kept(dae_mode):
@@ -35,14 +42,17 @@ class TestD3KeptCounts:
         """Pure ODE mode: 676 systems survive pruning (D2b behavior)."""
         assert _count_kept(dae_mode="none") == 676
 
-    def test_constrained_mode_kept(self):
-        """Constrained DAE mode: c1/c2 constraint terms survive pruning.
+    def test_constrained_mode_is_refused(self):
+        """Constrained DAE mode is not implemented, and says so.
 
-        When dae_mode="constrained", the c1/c2 terms become shared-parameter
-        constraints (pname="con") across both equations.
+        This test used to assert `n > 0` survivors and passed, which was the
+        tell: the survivors were the 225 candidates carrying no constraint at
+        all, and the 1539 that carried one were all rejected at gate 1 for
+        mixing a dimensionless constraint into an acceleration. A mode that
+        can only produce unconstrained models is not a mode.
         """
-        n = _count_kept(dae_mode="constrained")
-        assert n > 0, f"Constrained mode had 0 survivors after pruning, got {n}"
+        with pytest.raises(NotImplementedError, match="not implemented"):
+            _count_kept(dae_mode="constrained")
 
     def test_multi_timescale_kept(self):
         """Multi-timescale mode: fast/slow survival after pruning.
@@ -74,16 +84,15 @@ class TestD3Materialization:
         assert len(model.equations) == 4
         assert len(model.parameters) > 0
 
-    def test_constrained_materialization(self):
-        """Constrained DAE materialization: 4-state model with constraint terms."""
-        allc = enumerate_coupled(dae_mode="constrained", max_terms=4)
-        kept = prune_admissible(coupled.load(), allc)
-        s = kept[0].candidate
-        model = materialize_system(coupled.load(), s)
-        assert len(model.states) == 4
-        assert len(model.equations) == 4
-        # Constraint terms should be in metadata
-        assert "constraint_terms" in s.metadata
+    def test_constrained_materialization_is_refused(self):
+        """A constrained candidate cannot be built, and must not pretend to be.
+
+        Rejects at the enumeration boundary rather than materialising a model
+        whose constraint is silently dropped. See the raise site in
+        enumerate_coupled for what a real implementation needs.
+        """
+        with pytest.raises(NotImplementedError, match="not implemented"):
+            enumerate_coupled(dae_mode="constrained", max_terms=4)
 
 
 class TestDaoGate:
@@ -101,36 +110,45 @@ class TestDaoGate:
         assert g.passed, g.detail
         assert "pure ODE" in g.detail
 
-    def test_dao_constrained(self):
-        """DAO gate passes for constrained DAE mode."""
-        allc = enumerate_coupled(dae_mode="constrained", max_terms=4)
-        kept = prune_admissible(coupled.load(), allc)
-        # Not every constrained-mode candidate carries a constraint term:
-        # an enumerated subset may select none, and those are exactly the
-        # models the gate is supposed to reject. This test covers the rest.
-        # KNOWN DEFECT, documented rather than asserted away.
-        #
-        # No candidate carrying a constraint term survives pruning, and the
-        # reason is dimensional: _materialize_constrained sums the constraint
-        # into the acceleration RHS ("(q*u) + (con*1)"), but the constraint
-        # basis is X**0, so `con*1` is dimensionless and gate 1 rejects the
-        # inhomogeneous sum. All 1539 constraint-carrying candidates die
-        # there; the 225 that survive are the ones carrying no constraint at
-        # all, i.e. plain ODEs wearing a DAE label.
-        #
-        # So the index-1 reduction the materializer's comment describes is not
-        # implemented. Until it is, this test records the gate's behaviour on
-        # a constraint-free constrained-mode model rather than pretending a
-        # constraint round-trips. When the reduction lands, drop the xfail.
-        s = kept[0].candidate
-        model = materialize_system(coupled.load(), s)
-        assert model.dae_mode == "constrained", model.dae_mode
-        assert not model.dae_constraint_params, (
-            "a constraint now survives materialization -- the index-1 "
-            "reduction may be implemented; revisit this xfail")
-        g = dao_validity(model)
-        # No constraint parameters => the gate must refuse, not wave it through.
-        assert not g.passed, g.detail
+    def test_dao_constrained_gate_specification(self):
+        """The gate's contract for a constrained model, stated directly.
+
+        enumerate_coupled refuses dae_mode="constrained" (the c1/c2 basis is
+        the constant 1 and no index-1 reduction exists), so there is no
+        constrained candidate to run the gate on. The gate is still specified
+        and still enforced, so this builds the model a correct materializer
+        would produce and checks both directions:
+
+          - a model that claims the mode but carries no constraint is refused,
+            because "constrained" with nothing constrained is a mislabel;
+          - a model carrying a dimensionless constraint parameter passes,
+            because the c-basis is X**0 and its coefficient must be too.
+
+        This is the acceptance test for the work described at the raise site
+        in enumerate_coupled. It should keep passing unchanged once the
+        reduction lands.
+        """
+        p = mass_spring_damper.spec()
+
+        unbacked = PhysicalModel(p.states, p.inputs, p.parameters,
+                                 p.truth_equations, dae_mode="constrained")
+        g_unbacked = dao_validity(unbacked)
+        assert not g_unbacked.passed
+        assert "no constraint parameters" in g_unbacked.detail
+
+        con = (Parameter("con", "dimensionless", 0.0, (-1e6, 1e6)),)
+        backed = PhysicalModel(p.states, p.inputs, con, p.truth_equations,
+                               dae_mode="constrained",
+                               dae_constraint_params=("con",))
+        g_backed = dao_validity(backed)
+        assert g_backed.passed, g_backed.detail
+
+        dimensionful = (Parameter("con", "newton", 0.0, (-1e6, 1e6)),)
+        bad = PhysicalModel(p.states, p.inputs, dimensionful, p.truth_equations,
+                            dae_mode="constrained", dae_constraint_params=("con",))
+        g_bad = dao_validity(bad)
+        assert not g_bad.passed
+        assert "dimensionally inhomogeneous" in g_bad.detail
 
 
 class TestDuffingStillWorks:

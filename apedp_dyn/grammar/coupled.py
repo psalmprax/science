@@ -80,6 +80,41 @@ def enumerate_coupled(required: tuple[str, ...] = ("u",),
         raise ValueError(f"unknown coupling_mode {coupling_mode!r}")
     if dae_mode not in ("none", "constrained", "multi_timescale"):
         raise ValueError(f"unknown dae_mode {dae_mode!r}")
+    if dae_mode == "constrained":
+        # Rejected here rather than enumerated and failed downstream.
+        # "constrained" is unimplemented, for two independent reasons, and
+        # the earlier behaviour hid both:
+        #
+        # 1. The constraint basis is degenerate. _TERM_BUILDERS maps c1 and
+        #    c2 to X**0, so a constraint reads `con * 1 = 0` -- constant in
+        #    the state, hence either trivially satisfied or infeasible. It
+        #    relates nothing, so there is no index-1 reduction to perform.
+        #    The docstring's stated intent (rod length, slider kinematics)
+        #    needs a basis that actually depends on the states.
+        #
+        # 2. Even with a real basis, nothing performs the reduction. The
+        #    materializer appended the constraint term to the acceleration
+        #    RHS, which is not a reduction: it sums a constraint into a
+        #    differential equation, makes the sum dimensionally
+        #    inhomogeneous, and gate 1 duly rejected all 1539
+        #    constraint-carrying candidates. The 225 that survived were the
+        #    ones carrying no constraint at all -- plain ODEs wearing a DAE
+        #    label, which is worse than an error because it looks like a
+        #    result.
+        #
+        # Implementing this properly means giving the basis a real state
+        # dependence and solving M(q) qdd = f + grad(g) * lambda for the
+        # constraint force, then substituting it back to get an explicit
+        # ODE. PhysicalModel is "one explicit first-order ODE per state" and
+        # has nowhere to record g or lambda, so that elimination has
+        # nowhere to live either. The DAE provenance fields and the gate 1.5
+        # checks that already exist are the specification for that work.
+        raise NotImplementedError(
+            "dae_mode='constrained' is not implemented: the c1/c2 constraint "
+            "basis is the constant 1, and no index-1 reduction is performed, "
+            "so a constrained candidate cannot be built. See the raise site "
+            "in enumerate_coupled for what implementing it requires. Use "
+            "dae_mode='none' (plain ODE) or 'multi_timescale'.")
     if dae_mode == "multi_timescale" and len(timescales) != 2:
         raise ValueError(
             f"multi_timescale dae_mode requires exactly 2 timescales, "
