@@ -66,8 +66,16 @@ def intervention_holdout(model, problem) -> GateResult:
     """Gate 4: under the held-out intervention, simulation matches truth."""
     h = problem.holdout
     n_eval = len(h["truth_t"])
+    # Physics precision, not fitter throughput. simulate() defaults to
+    # rtol=1e-3 for speed, which is right for ranking thousands of candidates
+    # and wrong for the gate that decides whether a model matches reality:
+    # the truth model on PS-GRAV2 failed its own holdout with rmse 0.139
+    # against a 0.117 tolerance, and every bit of that was integration error
+    # against a DOP853 truth (rtol 1e-11) rather than model error. A gate that
+    # can reject the exact truth is measuring the integrator.
     res = simulate(model, h["t_span"], h["u_of_t"],
-                   np.asarray(h["x0"], dtype=float), n_eval=n_eval)
+                   np.asarray(h["x0"], dtype=float), n_eval=n_eval,
+                   rtol=1e-9, atol=1e-11)
     if not res.success:
         return GateResult("intervention_holdout", False,
                           f"holdout simulation invalid: {res.detail}", res.metrics)

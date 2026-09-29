@@ -102,20 +102,12 @@ def test_input_signal_arity_matches_declared_inputs(pid: str, regime: str):
 #              Van der Pol's saturation is written for a normalised amplitude,
 #              so either x must be declared dimensionless or the equation needs
 #              an explicit amplitude scale. That is a modelling choice.
-#   PS-LOG,
-#   PS-LV   : both declare population units as "individual", which pint does
-#              not define, so the dimensional gate raises UndefinedUnitError
-#              instead of returning a verdict. Needs a population-unit
-#              convention (pure number, "count", or a registered custom unit).
-#   PS-GRAV2 : the truth model fails its own intervention_holdout
-#              (rmse 0.139 vs tol 0.117, margin_ratio 1.19). Either the
-#              holdout regime is too aggressive for the default tolerance or
-#              the noise is too high for a 2-body problem.
+# (PS-LOG and PS-LV declared "individual", which pint does not define; they
+# now use "count". PS-GRAV2 failed its own holdout at rmse 0.139 purely on
+# integration tolerance, because the gate integrated at the fitter's default
+# rtol=1e-3 against a DOP853 truth; it is now 5.4e-08.)
 _KNOWN_GATE_DEFECTS = {
     "PS-VDPOL": "truth has a dimensionless 1 added to x**2; needs an amplitude scale",
-    "PS-LOG": "declares unit 'individual', which pint does not define",
-    "PS-LV": "declares unit 'individual', which pint does not define",
-    "PS-GRAV2": "truth model fails its own intervention_holdout (margin_ratio 1.19)",
 }
 
 
