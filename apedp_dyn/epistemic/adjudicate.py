@@ -78,6 +78,54 @@ ABSOLUTE_EPS = 1e-12
 """Floor used when a record reports a degenerate (non-positive) noise scale."""
 
 
+CAPABILITY_ABSENT = "CAPABILITY_ABSENT"
+"""Marker raised when a requested adjudication capability is not compiled in.
+
+The restored guards exist as separate modules that this file imports lazily.
+That laziness is deliberate (import order in this package is circular), but it
+means a build can lack the bootstrap tiebreaker entirely and still import
+cleanly. A caller that opted into ``bootstrap=True`` would then have its
+request silently dropped and would receive a verdict indistinguishable from
+one where the tiebreaker ran and agreed.
+
+So the request fails loudly instead. Silently downgrading an explicit opt-in
+is worse than refusing it: the caller asked for a stronger guarantee, and the
+whole point of the tiebreaker is that a point margin can straddle zero.
+"""
+
+
+def bootstrap_available() -> bool:
+    """Whether the bootstrap tiebreaker is compiled into this build.
+
+    Probed by attempting the import the tiebreaker path actually performs,
+    not by inspecting this module's namespace: a lazy import means the
+    capability lives in another module, so the only honest test is whether
+    that module resolves and carries the entry point.
+    """
+    try:
+        from apedp_dyn.epistemic.bootstrap import tiebreak  # noqa: F401
+    except Exception:  # noqa: BLE001 -- any failure means not available
+        return False
+    return True
+
+
+class EpistemicContract(str, Enum):
+    """How complete the adjudication contract was for one verdict.
+
+    Separate from CAPABILITY_ABSENT, which is about whether code is present;
+    this is about what the caller actually asked for and got.
+
+    FULL        every guard the caller asked for ran and was applied.
+    INCOMPLETE  a verdict was returned through a deliberately weakened layer,
+                so it must not be read as the full contract's answer.
+    UNKNOWN     the contract's state could not be determined.
+    """
+
+    FULL = "full"
+    INCOMPLETE = "incomplete"
+    UNKNOWN = "unknown"
+
+
 REL_FLOOR = 0.05
 """Amplitude resolution floor: a rival whose holdout RMSE differs by less than
 REL_FLOOR of the observed signal RMS is not resolved by the intervention
@@ -141,6 +189,7 @@ class Adjudication:
     bootstrap_branch: str = ""
     bootstrap_lo: float | None = None
     bootstrap_hi: float | None = None
+    contract: EpistemicContract = EpistemicContract.UNKNOWN
     reason: str = ""
 
 
@@ -319,14 +368,40 @@ def adjudicate(fitted: list,
     Guard 2 (residual whiteness, RESID_RHO_FLAG). Pass
     sole_survivor_rule=False to reproduce the pre-hardening baseline (sole
     numerical survivor promoted unopposed).
+
+    Contract accounting (see :class:`EpistemicContract`): every returned
+    Adjudication carries how complete the contract was. sole_survivor_rule=False
+    returns a real verdict but through a deliberately weakened layer, so it is
+    recorded INCOMPLETE -- the pre-hardening baseline is a comparison tool, not
+    an answer the pipeline should cite as the full contract.
+
+    bootstrap=True is different in kind: the caller explicitly asked for a
+    stronger guarantee, so if the tiebreaker is not compiled in this raises
+    :data:`CAPABILITY_ABSENT` rather than quietly returning the weaker verdict.
     """
+    # Capability gate first: an explicit opt-in that cannot be honored must
+    # fail before any verdict is computed, so no caller can mistake the
+    # weaker result for the one they asked for.
+    if bootstrap and not bootstrap_available():
+        raise RuntimeError(
+            f"{CAPABILITY_ABSENT}: bootstrap tiebreaker not compiled into "
+            "this build; adjudicate(bootstrap=True) cannot be honored")
+
+    # Every exit below reports INCOMPLETE, never FULL, when the caller
+    # disabled the sole-survivor guards. A deliberately weakened layer must not
+    # be readable as the full contract's answer.
+    contract = (EpistemicContract.FULL if sole_survivor_rule
+                else EpistemicContract.INCOMPLETE)
+
     ranked = sorted(
         [s for s in fitted
          if s.train_loss is not None and np.isfinite(s.train_loss)],
         key=lambda s: s.train_loss)
 
     if not ranked:
-        return Adjudication(EpistemicStatus.NO_VALID_CANDIDATE, reason="no scored candidates")
+        return Adjudication(EpistemicStatus.NO_VALID_CANDIDATE,
+                            contract=contract,
+                            reason="no scored candidates")
     best = ranked[0]
     g4 = best.provenance.get("gate4_status", {})
     if holdout_noise_scale is None:
@@ -347,6 +422,7 @@ def adjudicate(fitted: list,
             best_rmse=best.holdout_rmse,
             holdout_noise_scale=holdout_noise_scale,
             holdout_scale_source=scale_source,
+            contract=contract,
             reason=f"rank-1 {best.candidate.candidate_id} fails gate 4: "
                    f"{g4.get('detail', 'no holdout evidence')}; "
                    "no promotion of least-bad models")
@@ -366,6 +442,7 @@ def adjudicate(fitted: list,
             best_rmse=best.holdout_rmse,
             holdout_noise_scale=holdout_noise_scale,
             holdout_scale_source=scale_source,
+            contract=contract,
             reason="rank-1 passes gate 4 but the holdout record carries no "
                    "scale (obs_rms/noise_sigma), so no rival can be resolved; "
                    "pass holdout_scale= or tau_epi= to supply one")
@@ -384,6 +461,7 @@ def adjudicate(fitted: list,
                     tau_epi_source=tau_source,
                     holdout_noise_scale=holdout_noise_scale,
                     holdout_scale_source=scale_source, epistemic_margin=None,
+                    contract=contract,
                     reason=f"sole survivor {best.candidate.candidate_id} passed "
                            f"numerical admissibility but failed the pre-specified "
                            f"absolute holdout-fidelity contract ({why1}); numerical "
@@ -403,6 +481,7 @@ def adjudicate(fitted: list,
                     tau_epi_source=tau_source,
                     holdout_noise_scale=holdout_noise_scale,
                     holdout_scale_source=scale_source, epistemic_margin=None,
+                    contract=contract,
                     reason=f"sole survivor {best.candidate.candidate_id} passed "
                            f"the fidelity ceiling ({why1}) but carries structured "
                            f"holdout residuals ({why2}); accuracy without whiteness "
@@ -413,6 +492,7 @@ def adjudicate(fitted: list,
             tau_epi_source=tau_source,
             holdout_noise_scale=holdout_noise_scale,
             holdout_scale_source=scale_source, epistemic_margin=None,
+            contract=contract,
             reason="no structurally distinct rival survived scoring")
     second = min(rivals, key=lambda s: s.holdout_rmse)
     delta = float(second.holdout_rmse - best_rmse)
@@ -424,6 +504,7 @@ def adjudicate(fitted: list,
             delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
             holdout_noise_scale=holdout_noise_scale,
             holdout_scale_source=scale_source, epistemic_margin=margin,
+            contract=contract,
             reason=f"rival {second.candidate.candidate_id} within τ "
                    f"(Δ={delta:.3g} ≤ τ={tau:.3g} [{tau_source}]); structures "
                    "observationally indistinguishable under available "
@@ -448,6 +529,7 @@ def adjudicate(fitted: list,
                 holdout_scale_source=scale_source, epistemic_margin=margin,
                 bootstrap_branch="multi", bootstrap_lo=tb.get("lo"),
                 bootstrap_hi=tb.get("hi"),
+                contract=contract,
                 reason=f"point margin over {second.candidate.candidate_id} "
                        f"(Δ={delta:.3g} > τ={tau:.3g}) does not survive the "
                        f"paired block bootstrap (CI [{tb.get('lo'):.3g}, "
@@ -461,6 +543,7 @@ def adjudicate(fitted: list,
             holdout_scale_source=scale_source, epistemic_margin=margin,
             bootstrap_branch=tb.get("branch", ""), bootstrap_lo=tb.get("lo"),
             bootstrap_hi=tb.get("hi"),
+            contract=contract,
             reason=f"rival {second.candidate.candidate_id} separated by "
                    f"Δ={delta:.3g} > τ={tau:.3g} [{tau_source}] and confirmed "
                    f"by the paired block bootstrap (branch "
@@ -474,5 +557,6 @@ def adjudicate(fitted: list,
         delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
         holdout_noise_scale=holdout_noise_scale,
         holdout_scale_source=scale_source, epistemic_margin=margin,
+        contract=contract,
         reason=f"nearest distinct rival separated by Δ={delta:.3g} > "
                f"τ={tau:.3g} [{tau_source}]{note}")

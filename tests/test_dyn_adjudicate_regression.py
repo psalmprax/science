@@ -33,10 +33,13 @@ import numpy as np
 import pytest
 
 from apedp_dyn.epistemic.adjudicate import (
+    CAPABILITY_ABSENT,
     RESID_RHO_FLAG,
     SOLE_SURVIVOR_GAMMA,
+    EpistemicContract,
     EpistemicStatus,
     adjudicate,
+    bootstrap_available,
 )
 from apedp_dyn.epistemic.calibration import CAL_SIGMA, calibrated_sigma
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
@@ -467,3 +470,134 @@ class TestConfPathReachesTheNote:
             assert agg["false_promotion_rate"] == 0.0, (sig, agg)
         assert {c["status"] for c in sweep["cells"]} == {
             EpistemicStatus.UNIQUE_SUPPORT.value}
+
+
+class TestCapabilityProbe:
+    """CAPABILITY_ABSENT: an explicit opt-in that cannot be honored must fail.
+
+    The guards live in lazily-imported sibling modules, so a build can lack the
+    bootstrap tiebreaker and still import cleanly. Without this gate a caller
+    that passed bootstrap=True would silently get the un-tiebroken verdict --
+    indistinguishable from one where the tiebreaker ran and agreed, which is
+    the one thing that must never happen silently.
+    """
+
+    def test_probe_reports_the_real_build(self):
+        """This build has bootstrap compiled in, and the probe must say so."""
+        assert bootstrap_available() is True
+
+    def test_probe_is_false_when_the_module_cannot_be_imported(self, monkeypatch):
+        """Probed by import failure, which is how absence actually manifests.
+
+        Setting the module entry to None makes `from apedp_dyn.epistemic.
+        bootstrap import tiebreak` raise ImportError, which is what a build
+        genuinely missing the module does. Patching the attribute instead
+        would NOT test this: the import would still succeed and bind the name.
+        """
+        import sys
+
+        monkeypatch.setitem(sys.modules, "apedp_dyn.epistemic.bootstrap", None)
+        assert bootstrap_available() is False
+
+    def test_bootstrap_true_raises_when_unavailable(self, monkeypatch):
+        """The load-bearing behavior: refuse rather than silently downgrade."""
+        import sys
+
+        adj_mod = sys.modules["apedp_dyn.epistemic.adjudicate"]
+        monkeypatch.setattr(adj_mod, "bootstrap_available", lambda: False)
+
+        with pytest.raises(RuntimeError) as exc:
+            adjudicate([_sole_candidate(0.5, 0.06)], resid_sole=_white(),
+                       bootstrap=True)
+        assert CAPABILITY_ABSENT in str(exc.value)
+        assert "not compiled into this build" in str(exc.value)
+
+    def test_default_path_is_untouched_by_the_gate(self, monkeypatch):
+        """With bootstrap off (the default) the absent capability is irrelevant.
+
+        Otherwise the gate would make every caller crash in a reduced build
+        that never asked for the tiebreaker, which would be worse than the
+        silence it prevents.
+        """
+        import sys
+
+        adj_mod = sys.modules["apedp_dyn.epistemic.adjudicate"]
+        monkeypatch.setattr(adj_mod, "bootstrap_available", lambda: False)
+        adj = adjudicate([_sole_candidate(0.075, 0.06)], resid_sole=_white())
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
+
+    def test_gate_precedes_any_verdict_computation(self, monkeypatch):
+        """Must raise before returning something weaker, not after.
+
+        Checked by asserting no Adjudication escapes: the point is that no
+        verdict is produced at all under an unhonored opt-in.
+        """
+        import sys
+
+        adj_mod = sys.modules["apedp_dyn.epistemic.adjudicate"]
+        monkeypatch.setattr(adj_mod, "bootstrap_available", lambda: False)
+        try:
+            adjudicate([_sole_candidate(0.075, 0.06)], resid_sole=_white(),
+                       bootstrap=True)
+        except RuntimeError:
+            pass
+        else:  # pragma: no cover - the assertion below is the real check
+            pytest.fail("unhonored bootstrap opt-in returned a verdict")
+
+
+class TestContractStatus:
+    """epistemic_contract_status: a weakened layer must not read as FULL.
+
+    Distinct from CAPABILITY_ABSENT, which is about code being present. This
+    is about what the caller asked for and got: a verdict returned with the
+    sole-survivor guards deliberately disabled is a real verdict through a
+    weaker layer, and must be recorded as such.
+    """
+
+    def test_default_path_is_full(self):
+        adj = adjudicate([_sole_candidate(0.075, 0.06)], resid_sole=_white())
+        assert adj.contract is EpistemicContract.FULL
+
+    def test_disabled_guards_are_incomplete_not_full(self):
+        """The core requirement: never masquerade as the full contract."""
+        adj = adjudicate([_sole_candidate(0.5, 0.06)],
+                         sole_survivor_rule=False)
+        assert adj.contract is EpistemicContract.INCOMPLETE
+        assert adj.contract is not EpistemicContract.FULL
+
+    def test_incomplete_still_returns_a_verdict(self):
+        """INCOMPLETE is a label on a real answer, not a refusal.
+
+        sole_survivor_rule=False exists to reproduce the pre-hardening
+        baseline for comparison; refusing to answer would defeat it.
+        """
+        adj = adjudicate([_sole_candidate(0.5, 0.06)],
+                         sole_survivor_rule=False)
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
+        assert adj.promoted is not None
+
+    @pytest.mark.parametrize("case", ["abstain", "multi", "unique"])
+    def test_every_verdict_reports_a_contract(self, case):
+        """No verdict may leave the contract unset.
+
+        UNKNOWN is the default, so a return path that forgot to thread it
+        would silently read as UNKNOWN rather than failing loudly.
+        """
+        if case == "abstain":
+            adj = _sole(0.5, 0.06, resid=_white())
+        else:
+            adj = _pair(resid_best=_white())
+        assert adj.contract in tuple(EpistemicContract)
+        assert adj.contract is not EpistemicContract.UNKNOWN, case
+
+    def test_unknown_is_the_unset_default(self):
+        """Documents why threading it everywhere is load-bearing.
+
+        A dataclass field defaults to UNKNOWN, so any return path that forgot
+        to set it would look like a deliberate "could not determine" rather
+        than an omission.
+        """
+        from apedp_dyn.epistemic.adjudicate import Adjudication
+
+        assert Adjudication(EpistemicStatus.UNIQUE_SUPPORT).contract \
+            is EpistemicContract.UNKNOWN

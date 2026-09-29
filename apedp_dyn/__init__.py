@@ -9,10 +9,13 @@ CandidateDynamics IR; gates 1-2 prune before any integration; the fitter only
 estimates numbers for frozen structures; gate 4 (held-out intervention) decides.
 """
 from apedp_dyn.epistemic import (
+    CAPABILITY_ABSENT,
     REL_FLOOR,
     Adjudication,
+    EpistemicContract,
     EpistemicStatus,
     adjudicate,
+    bootstrap_available,
     resolution_floor,
     scale_from_observations,
 )
@@ -82,6 +85,7 @@ from apedp_dyn.validation import (
 )
 
 __all__ = [
+    "CAPABILITY_ABSENT",
     "GRAMMAR_VERSION",
     "REL_FLOOR",
     "TERM_FAMILIES",
@@ -90,6 +94,7 @@ __all__ = [
     "CandidateDynamics",
     "DynamicalEquation",
     "EnergyLaw",
+    "EpistemicContract",
     "EpistemicStatus",
     "FitResult",
     "GateResult",
@@ -104,6 +109,7 @@ __all__ = [
     "WeakWindows",
     "adjudicate",
     "auto_tolerance",
+    "bootstrap_available",
     "boundary_term",
     "bump",
     "bump_deriv",
