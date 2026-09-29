@@ -55,22 +55,30 @@ class TestD3KeptCounts:
             _count_kept(dae_mode="constrained")
 
     def test_multi_timescale_kept(self):
-        """Multi-timescale mode: fast/slow survival after pruning.
+        """Multi-timescale mode: fast/slow candidates survive pruning.
 
-        Known issue: current pruning yields 0 survivors because the dimensional
-        scaling via tau division breaks gate 1. This is a known limitation to be
-        resolved in a follow-up (the materialization itself succeeds, but the
-        dimensional gate rejects the scaled terms).
+        This used to assert `len(kept) == 0`, documenting a known issue: the
+        materializer emits `(q / tau_slow) * term` but declared q with the
+        pure-ODE unit, target/term. The extra 1/time made every term
+        [length]/[time]**3 against a [length]/[time]**2 state rate, so gate 1
+        rejected all of them and the mode produced nothing at all.
+
+        The coefficient now carries the time factor, and all 225 enumerated
+        candidates survive.
         """
-        # Multi-timescale requires optional + timescales; test documents the
-        # current behavior (0 kept due to gate 1 dimensional issue).
         allc = enumerate_coupled(dae_mode="multi_timescale",
                                  optional=("x_f", "v_f", "x_s", "v_s"),
                                  timescales=("fast", "slow"),
                                  max_terms=4)
         kept = prune_admissible(coupled.load(), allc)
-        # Document the known issue: 0 kept after pruning
-        assert len(kept) == 0  # known issue: gate 1 dimensional validity
+        assert len(kept) == len(allc), (
+            f"{len(kept)} of {len(allc)} survived; the tau-scaled parameter "
+            "units are probably wrong again")
+        # And the models really do carry the timescale provenance.
+        model = materialize_system(coupled.load(), kept[0].candidate)
+        assert model.dae_mode == "multi_timescale"
+        assert model.dae_timescales == ("fast", "slow")
+        assert {"tau_fast", "tau_slow"} <= {p.name for p in model.parameters}
 
 
 class TestD3Materialization:

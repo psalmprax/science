@@ -25,6 +25,11 @@ from apedp_dyn.grammar.mechanical_grammar import (
 )
 from apedp_dyn.model import DynamicalEquation, Parameter, PhysicalModel
 
+# The multi-timescale materializer divides every term by tau_slow, so the
+# coefficient of a scaled term carries one extra time factor relative to the
+# same term in the pure-ODE path.
+_TAU_UNIT = _ureg.Unit("second")
+
 
 def enumerate_coupled(required: tuple[str, ...] = ("u",),
                       optional: tuple[str, ...] = ("x", "v", "xr", "dxr",
@@ -340,6 +345,12 @@ def _materialize_constrained(problem, candidate: SystemCandidate) -> PhysicalMod
                     sp.Symbol(pos[i].name), sp.Symbol(vel[i].name),
                     sp.Symbol(inp[i].name), sp.Symbol(remote.name))
                 term_unit = _unit_of(built, real)
+                # The emitted term is (q / tau_slow) * built, so q must carry
+                # the extra time factor. Declaring punit as target/term -- as
+                # the pure-ODE path does -- makes the term one extra 1/time,
+                # i.e. [length]/[time]**3 against a [length]/[time]**2 state
+                # rate. That is why every multi-timescale candidate was
+                # rejected at gate 1 and the mode yielded nothing.
                 punit = str(target_unit / term_unit)
                 bounds = candidate.equations[i].parameter_bounds.get(t.parameter, DEFAULT_BOUNDS)
                 if t.parameter in seen_units:
@@ -418,7 +429,13 @@ def _materialize_multiscale(problem, candidate: SystemCandidate,
                 # Scale the term by 1/tau_fast to make the fast dynamics
                 # have the correct time constant
                 term_unit = _unit_of(built, real)
-                punit = str(target_unit / term_unit)
+                # The emitted term is (q / tau_slow) * built, so q must carry
+                # the extra time factor. Declaring punit as target/term -- as
+                # the pure-ODE path does -- makes the term one extra 1/time,
+                # i.e. [length]/[time]**3 against a [length]/[time]**2 state
+                # rate. That is why every multi-timescale candidate was
+                # rejected at gate 1 and the mode yielded nothing.
+                punit = str(_ureg.Unit(target_unit / term_unit) * _TAU_UNIT)
                 bounds = candidate.equations[i].parameter_bounds.get(t.parameter, DEFAULT_BOUNDS)
                 if t.parameter in seen_units:
                     if seen_units[t.parameter] != punit:
@@ -436,7 +453,13 @@ def _materialize_multiscale(problem, candidate: SystemCandidate,
                     sp.Symbol(pos[i].name), sp.Symbol(vel[i].name),
                     sp.Symbol(inp[i].name), sp.Symbol(remote.name))
                 term_unit = _unit_of(built, real)
-                punit = str(target_unit / term_unit)
+                # The emitted term is (q / tau_slow) * built, so q must carry
+                # the extra time factor. Declaring punit as target/term -- as
+                # the pure-ODE path does -- makes the term one extra 1/time,
+                # i.e. [length]/[time]**3 against a [length]/[time]**2 state
+                # rate. That is why every multi-timescale candidate was
+                # rejected at gate 1 and the mode yielded nothing.
+                punit = str(_ureg.Unit(target_unit / term_unit) * _TAU_UNIT)
                 bounds = candidate.equations[i].parameter_bounds.get(t.parameter, DEFAULT_BOUNDS)
                 if t.parameter in seen_units:
                     if seen_units[t.parameter] != punit:
@@ -454,7 +477,13 @@ def _materialize_multiscale(problem, candidate: SystemCandidate,
                     sp.Symbol(pos[i].name), sp.Symbol(vel[i].name),
                     sp.Symbol(inp[i].name), sp.Symbol(remote.name))
                 term_unit = _unit_of(built, real)
-                punit = str(target_unit / term_unit)
+                # The emitted term is (q / tau_slow) * built, so q must carry
+                # the extra time factor. Declaring punit as target/term -- as
+                # the pure-ODE path does -- makes the term one extra 1/time,
+                # i.e. [length]/[time]**3 against a [length]/[time]**2 state
+                # rate. That is why every multi-timescale candidate was
+                # rejected at gate 1 and the mode yielded nothing.
+                punit = str(_ureg.Unit(target_unit / term_unit) * _TAU_UNIT)
                 bounds = candidate.equations[i].parameter_bounds.get(t.parameter, DEFAULT_BOUNDS)
                 if t.parameter in seen_units:
                     if seen_units[t.parameter] != punit:
