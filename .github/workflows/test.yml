@@ -79,12 +79,12 @@ jobs:
           source .venv/bin/activate
           mypy apedp_dyn/ --ignore-missing-imports
 
-      # NOTE: the mypy step is now clean. The ruff step still fails on ~95
-      # pre-existing findings, all in files that were untracked or
-      # in-flight from the concurrent apedp/apedp_dyn sessions as of
-      # 2026-09-29 (apedp/{singularity_probing,rust_bridge,mathematical},
-      # apedp_dyn/{conf,gates/scaling_invariance,problems}, tests/test_dyn_{conf,d3,d4,d5}).
-      # apedp_dyn/ is included so it stays covered once the rest reaches zero.
+      # NOTE: these two still fail, but only on untracked or in-flight files
+      # from the concurrent apedp/apedp_dyn sessions as of 2026-09-29:
+      # ~95 ruff and 2 mypy (apedp_dyn/conf/{benchmark,benchmark_v2}.py).
+      # Every finding in a committed file was cleared in ad96ee3. The ruff
+      # targets also include apedp_dyn/ so they stay covered once the
+      # remainder reaches zero.
       - name: Lint with ruff
         run: |
           source .venv/bin/activate
