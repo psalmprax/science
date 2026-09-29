@@ -455,6 +455,62 @@ class TestRootSearchFailureIsRecorded:
         assert inconclusive == {}
 
 
+class TestOutOfScopeIsNotAFailedCheck:
+    """A non-polynomial component is a scope limit, not a failed check.
+
+    Recording it as inconclusive withholds the candidate, and since almost
+    every fitted expression with an exponential in the denominator produces
+    one, that withholds nearly everything. It turns a documented limitation
+    of the bounded linear-form solve into a silent rejection -- which is the
+    same class of bug as the one being fixed, wearing the fix's clothes.
+
+    This was found by regression, not by reading: it broke
+    `test_autonomous_synthesis_on_synth_01`, whose winning expression carries
+    `exp(-0.30x)` in the denominator.
+    """
+
+    @staticmethod
+    def _exp_denominator() -> CandidateProfile:
+        return _candidate(
+            expr="2.4*x**1.5*exp(-0.3*x)/(0.84*x**2 + 1.0)",
+        )
+
+    def test_a_transcendental_denominator_is_not_inconclusive(self) -> None:
+        engine = StageCDecisionEngine()
+        refused, inconclusive = engine._pole_refusals_in_observed_data(
+            [self._exp_denominator()]
+        )
+        assert inconclusive == {}, (
+            "a documented scope limit must not withhold the candidate"
+        )
+        assert refused == {}
+
+    def test_such_a_candidate_is_still_evaluated(self) -> None:
+        """The over-correction guard, at the level that actually broke."""
+        decision = StageCDecisionEngine().evaluate([self._exp_denominator()])
+        assert decision.state is not EpistemicState.NO_VALID_CANDIDATE, (
+            decision.adjudication_rationale
+        )
+
+    def test_a_genuine_pole_is_still_refused(self) -> None:
+        """Scope must not become a blanket exemption for everything."""
+        engine = StageCDecisionEngine()
+        refused, _ = engine._pole_refusals_in_observed_data(
+            [_candidate(expr="1.0/(x - 5.0)")]
+        )
+        assert "cand" in refused
+
+    def test_a_linear_pole_alongside_a_transcendental_is_refused(
+        self,
+    ) -> None:
+        """The mixed case: one component out of scope, one squarely in it."""
+        engine = StageCDecisionEngine()
+        refused, inconclusive = engine._pole_refusals_in_observed_data(
+            [_candidate(expr="exp(-0.3*x)/(x - 5.0)")]
+        )
+        assert "cand" in refused, (refused, inconclusive)
+
+
 class TestEquivalenceSentenceIsTruthful:
     """The sentence quotes its evidence, so the evidence has to be real.
 

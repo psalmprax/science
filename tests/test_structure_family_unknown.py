@@ -34,6 +34,10 @@ def synthesizer() -> AutonomousModelSynthesizer:
     return AutonomousModelSynthesizer()
 
 
+# Measured 47.5s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_blind_recovery_pure_power_law(synthesizer: AutonomousModelSynthesizer):
     """Blind recovery of pure scaling law: y = 2.5 * x^1.5."""
     rng = np.random.default_rng(101)
@@ -54,6 +58,10 @@ def test_blind_recovery_pure_power_law(synthesizer: AutonomousModelSynthesizer):
     assert top.epistemic_state in {EpistemicState.UNIQUE_SUPPORT, EpistemicState.MULTI_HYPOTHESIS}
 
 
+# Measured 33.7s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_blind_recovery_logarithmic_boundary_layer(synthesizer: AutonomousModelSynthesizer):
     """Blind recovery of logarithmic boundary transport: y = 3.0 * log(1 + 2.0 * x)."""
     rng = np.random.default_rng(202)
@@ -71,6 +79,10 @@ def test_blind_recovery_logarithmic_boundary_layer(synthesizer: AutonomousModelS
     assert top.epistemic_state in {EpistemicState.UNIQUE_SUPPORT, EpistemicState.MULTI_HYPOTHESIS}
 
 
+# Measured 89.3s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_blind_recovery_exponential_relaxation(synthesizer: AutonomousModelSynthesizer):
     """Blind recovery of exponential dissipation: y = 4.0 * exp(-0.5 * x)."""
     rng = np.random.default_rng(303)
@@ -89,6 +101,10 @@ def test_blind_recovery_exponential_relaxation(synthesizer: AutonomousModelSynth
     assert top.epistemic_state in {EpistemicState.UNIQUE_SUPPORT, EpistemicState.MULTI_HYPOTHESIS}
 
 
+# Measured 35.5s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_blind_recovery_saturation_rational(synthesizer: AutonomousModelSynthesizer):
     """Blind recovery of Michaelis-Menten / Hill saturation: y = (3.0 * x^1.5) / (1 + 1.2 * x^1.5)."""
     rng = np.random.default_rng(404)
@@ -106,6 +122,10 @@ def test_blind_recovery_saturation_rational(synthesizer: AutonomousModelSynthesi
     assert top.epistemic_state in {EpistemicState.UNIQUE_SUPPORT, EpistemicState.MULTI_HYPOTHESIS}
 
 
+# Measured 75.1s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_blind_recovery_composite_envelope(synthesizer: AutonomousModelSynthesizer):
     """Blind recovery of rational-exponential transition: y = (2.45 * x^1.5 / (1 + 0.85 * x^2)) * exp(-0.3 * x)."""
     rng = np.random.default_rng(505)
@@ -127,6 +147,10 @@ def test_blind_recovery_composite_envelope(synthesizer: AutonomousModelSynthesiz
     assert top.epistemic_state in {EpistemicState.UNIQUE_SUPPORT, EpistemicState.MULTI_HYPOTHESIS}
 
 
+# Measured 29.9s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_blind_recovery_power_law_unseen_exponent(synthesizer: AutonomousModelSynthesizer):
     """Blind recovery of unseen power law: y = 3.0 * x^1.7."""
     rng = np.random.default_rng(606)
@@ -144,6 +168,10 @@ def test_blind_recovery_power_law_unseen_exponent(synthesizer: AutonomousModelSy
     assert top.epistemic_state in {EpistemicState.UNIQUE_SUPPORT, EpistemicState.MULTI_HYPOTHESIS}
 
 
+# Measured 78.5s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_blind_recovery_exponential_unseen_rate(synthesizer: AutonomousModelSynthesizer):
     """Blind recovery of unseen exponential rate: y = 4.0 * exp(-0.37 * x)."""
     rng = np.random.default_rng(707)
@@ -172,6 +200,10 @@ def test_blind_recovery_exponential_unseen_rate(synthesizer: AutonomousModelSynt
 # masked the improvement as a regression.
 # (606 power-law off-grid exponent was fixed by Stage D + parsimony tiebreak;
 # 909 damped off-grid frequency by Stage D; both likewise promoted.)
+# Measured 86.1s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_blind_recovery_rational_unseen_exponents(synthesizer: AutonomousModelSynthesizer):
     """Blind recovery of unseen rational: y = (2.0 * x^1.3) / (1 + 0.7 * x^2.1)."""
     rng = np.random.default_rng(808)

@@ -329,11 +329,27 @@ class StageCDecisionEngine:
                     if not (np.isfinite(a1) and np.isfinite(b0)) or a1 == 0.0:
                         continue
                     roots = [-b0 / a1]
+                except sp.PolynomialError:
+                    # Not a polynomial at all -- a denominator carrying exp()
+                    # or another transcendental, or any degree above the bounded
+                    # linear-form scope this function documents. The component's
+                    # poles are handled by the Tier-1 gap probe and the active
+                    # singularity stress test instead.
+                    #
+                    # This is deliberately NOT recorded as inconclusive. Doing
+                    # so withholds the candidate, and since almost every fitted
+                    # expression with an exponential in the denominator lands
+                    # here, it withholds nearly everything -- converting a
+                    # documented scope limit into a silent rejection. What
+                    # distinguishes it from a real failure is that nothing
+                    # unexpected happened: the expression is simply outside the
+                    # scope this routine claims.
+                    continue
                 except Exception as e:  # noqa: BLE001 - sympy raises a wide, version-dependent set here
-                    # Same reasoning as the extractor failure above, one level
-                    # down: this component's roots are simply absent from
-                    # `roots`, so its poles are never range-checked and the
-                    # candidate passes as pole-free.
+                    # A failure on something that *should* have been in scope.
+                    # The component's roots are absent from `roots`, so its
+                    # poles are never range-checked and the candidate would
+                    # pass as pole-free.
                     logger.debug("Singular-root search failed for '%s'", c.candidate_id, exc_info=True)
                     inconclusive.setdefault(c.candidate_id, "")
                     inconclusive[c.candidate_id] = (

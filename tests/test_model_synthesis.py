@@ -237,6 +237,10 @@ def test_arrhenius_template_is_own_family_and_domain_gated():
             f"arrhenius proposed on a domain reaching x={x_min}")
 
 
+# Measured 26.3s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_logistic_template_recovers_saturating_truth():
     """The logistic template must earn its place: it is the only one that can.
 
@@ -270,6 +274,10 @@ def test_regime_detection():
     assert regimes["is_decaying"] is True
 
 
+# Measured 22.4s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_uncertainty_enrichment_failure_never_fails_synthesis(monkeypatch):
     """A missing confidence interval must not discard a good model.
 
@@ -307,6 +315,10 @@ def test_uncertainty_enrichment_failure_never_fails_synthesis(monkeypatch):
     assert "synthetic uncertainty failure" in unc.get("reason", ""), unc
 
 
+# Measured 66.0s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_autonomous_synthesis_on_synth_01():
     spec, (x_train, y_train), (x_val, y_val), (x_near, y_near), (x_far, y_far) = load_synth_dataset("SYNTH_01")
     gaps = spec["physical_constraints"]["sampling_gaps"]
@@ -334,6 +346,10 @@ def test_autonomous_synthesis_on_synth_01():
     assert "x" in expr_str
 
 
+# Measured 28.1s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_class_s2_logarithmic_recovery():
     """Verify autonomous structural synthesis of Class S2 (Problem S11)."""
     _spec, (x_train, y_train), (x_val, y_val), (x_near, y_near), (x_far, y_far) = load_synth50_dataset("S11")
@@ -348,6 +364,10 @@ def test_class_s2_logarithmic_recovery():
     assert top.structural_family == "logarithmic_boundary_layer"
 
 
+# Measured 33.2s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_class_s3_critical_scaling_recovery():
     """Verify autonomous structural synthesis of Class S3 (Problem S21)."""
     spec, (x_train, y_train), (x_val, y_val), (x_near, y_near), (x_far, y_far) = load_synth50_dataset("S21")
@@ -376,6 +396,10 @@ def test_class_s4_damped_oscillation_recovery():
     assert top.structural_family == "damped_oscillation"
 
 
+# Measured 65.4s (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_class_s5_epistemic_abstentions():
     """Verify mandatory epistemic abstentions on Class S5 adversaries."""
     # S41: Discontinuous shock front -> NO_VALID_CANDIDATE (C5)

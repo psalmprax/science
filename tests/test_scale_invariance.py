@@ -21,6 +21,10 @@ def synthesizer() -> AutonomousModelSynthesizer:
 
 
 @pytest.mark.parametrize("scale_factor", [1e-6, 1e3, 1e9])
+# Measured 29.5 / 11.1 / 8.3 across its three parameter values (`--durations=0` on this file,
+# threshold 20s). The full suite exceeds 600s, and a test
+# nobody can wait for is a test that stops being run.
+@pytest.mark.slow
 def test_order_of_magnitude_scale_invariance(synthesizer: AutonomousModelSynthesizer, scale_factor: float):
     """Verify autonomous equation synthesis recovers identical structural family across 15 orders of magnitude."""
     rng = np.random.default_rng(42)
