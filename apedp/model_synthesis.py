@@ -44,6 +44,58 @@ from apedp.rust_bridge import RustKernelBridge
 
 logger = logging.getLogger("apedp.model_synthesis")
 
+# Bayesian Information Criterion penalty per free parameter, as a multiplier
+# on val_mse: BIC ranking is equivalent to ranking on
+#     val_mse + k * ln(n) / n
+# with k the free-parameter count and n the validation sample count. Expressed
+# as a multiplier so it composes with the existing val_mse-sorted lists
+# without changing their units.
+#
+# Provenance: the frozen EXT-BENCH-60 protocol diagnosed both genuine
+# RECOVER misses (E16, P07) as rank-by-raw-val-MSE artifacts, where a
+# 5-parameter polynomial edged out the true 2-parameter exponential by
+# ~1e-04 MSE on noisy validation data, and prescribes BIC re-ranking as the
+# next-round fix. See docs/PREREGISTRATION_FROZEN_EXTERNAL_BENCHMARK.md §9.5.
+# Not applied to the locked round.
+_BIC_RERANK_ENABLED = False
+_BIC_RERANK_TOP_K = 8
+
+
+def _bic_rerank(models: list[SynthesizedModel], n_val: int,
+                top_k: int = _BIC_RERANK_TOP_K) -> SynthesizedModel | None:
+    """Returns the model that wins a BIC-penalized contest, or None.
+
+    Extracted as a module-level function so the criterion is testable on its
+    own, without a full synthesis run per assertion.
+
+    Ranking is on ``val_mse * (1 + k*ln(n_val)/n_val)``, which is monotone in
+    the usual BIC ``n*ln(RSS/n) + k*ln(n)`` for fixed n. Three guards keep this
+    from doing harm, each of which is pinned by a test:
+
+    - **top-K only.** A candidate outside the val-MSE top-K has not earned the
+      right to displace the incumbent on a penalized criterion.
+    - **incumbent competes.** The current best is scored alongside the others
+      rather than assumed to win, so a penalty too coarse to separate a pair
+      leaves the incumbent in place.
+    - **strict margin.** A tie must not flip the result. Without this the
+      re-rank would be a coin toss dressed up as a criterion.
+    """
+    if not models:
+        return None
+    k_max = min(top_k, len(models))
+
+    def _bic(m: SynthesizedModel) -> float:
+        k = max(len(m.parameters), 1)
+        return m.val_mse * (1.0 + k * np.log(max(n_val, 1)) / max(n_val, 1))
+
+    head = models[:k_max]
+    best_bic, best_idx, best_m = min(
+        ((_bic(m), i, m) for i, m in enumerate(head)), key=lambda t: t[0],
+    )
+    if best_idx != 0 and best_bic < _bic(head[0]) * (1.0 - 1e-9):
+        return best_m
+    return head[0]
+
 
 class SynthesisDiagnostics(TypedDict, total=False):
     """Typed diagnostics payload for SynthesizedModel (replaces untyped dict)."""
@@ -1523,6 +1575,44 @@ class AutonomousModelSynthesizer:
             if best_idx != 0:
                 fitted_models.pop(best_idx)
                 fitted_models.insert(0, best)
+
+        # 1d. BIC re-rank over the top-K (opt-in; off by default).
+        #
+        # Raw val-MSE ranking is a maximum-likelihood criterion applied to a
+        # model class of unbounded capacity, so on finite validation noise it
+        # systematically prefers the more flexible member of a near-tied pair.
+        # On EXT-BENCH-60 this cost two genuine RECOVER misses (E16, P07): the
+        # truth sat at rank 2 behind a surrogate, separated by ~1e-04 MSE
+        # while trailing it by 53 and 57 BIC points respectively. The protocol
+        # prescribes this re-rank; it is gated off here because it changes
+        # selection globally and therefore requires a fresh preregistered round
+        # before its effect can be scored (§6.3).
+        #
+        # Scope guards, each of which is a way this could do harm:
+        # - top-K only: a candidate outside the val-MSE top-K has not earned
+        #   the right to displace the incumbent on a penalized criterion.
+        # - incumbent-protected: the current best is scored alongside the
+        #   others rather than being assumed to win, so a penalty too coarse
+        #   to separate the pair leaves the incumbent in place.
+        # - strict improvement required, with a margin: a tie must not flip
+        #   the result, or the re-rank would be a coin toss dressed as a
+        #   criterion.
+        if _BIC_RERANK_ENABLED and fitted_models:
+            k_max = min(_BIC_RERANK_TOP_K, len(fitted_models))
+            head = fitted_models[:k_max]
+            winner = _bic_rerank(head, n_val=len(y_val), top_k=k_max)
+            if winner is not None and winner is not head[0]:
+                logger.info(
+                    "BIC re-rank: %s (val_mse=%.3e, k=%d) displaces %s "
+                    "(val_mse=%.3e, k=%d) over top-%d.",
+                    winner.structural_family, winner.val_mse,
+                    len(winner.parameters),
+                    head[0].structural_family, head[0].val_mse,
+                    len(head[0].parameters), k_max,
+                )
+                head.remove(winner)
+                head.insert(0, winner)
+                fitted_models[:k_max] = head
 
         # 2. Epistemic Abstention Gate: Out-of-Grammar / High Residual Pattern / Shock Front (Class S5 / C5)
         top = fitted_models[0] if fitted_models else None
