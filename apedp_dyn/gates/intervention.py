@@ -104,7 +104,13 @@ def intervention_holdout(model, problem) -> GateResult:
                # other call site did not, which left the whiteness guard
                # unsatisfiable and the sole-survivor verdict structurally
                # unreachable outside that one script.
-               "sq_error": sq_err.mean(axis=1),
+               #
+               # tolist(), not the raw array: every other metric here is a
+               # plain scalar, and provenance is serialized into artifacts
+               # (dyn_tournament). A stray ndarray would make the whole
+               # provenance dict unserializable, which is a far worse
+               # failure than the one this key fixes.
+               "sq_error": sq_err.mean(axis=1).tolist(),
                **observation_scale(obs), **res.metrics}
     verdict = (f"rmse {rmse:.3g} {'<=' if rmse <= tol else '>'} tol {tol:.3g} "
                f"(margin_ratio {margin_ratio:.3g})")
