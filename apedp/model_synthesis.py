@@ -1686,8 +1686,26 @@ class AutonomousModelSynthesizer:
 
                     unc_rep = compute_parameter_uncertainty(p_eval, top.parameters, x_val, y_val)
                     unc_dict = unc_rep.to_dict()
-            except Exception:
-                logger.debug("Parameter uncertainty estimation skipped", exc_info=True)
+            except Exception as exc:  # noqa: BLE001 - best-effort enrichment
+                # Broad catch is deliberate and not laziness: this block spans
+                # sympy parsing and lambdify (which can raise a wide and
+                # poorly enumerated surface), numpy numerics, and attribute
+                # access. Uncertainty is a diagnostic add-on -- a model that
+                # fits well must not be discarded because its confidence
+                # intervals could not be formed. Narrowing the tuple risks
+                # turning an enrichment failure into a synthesis failure.
+                #
+                # What was wrong before was the silence, not the breadth: at
+                # logger.debug the degradation was invisible, so an artifact
+                # with no uncertainty analysis was indistinguishable from one
+                # where it ran. It now warns, and records why it is missing so
+                # a consumer can tell "not computed" from "empty".
+                logger.warning(
+                    "Parameter uncertainty estimation skipped for %s: %s: %s",
+                    top.candidate_id if hasattr(top, "candidate_id") else "<top>",
+                    type(exc).__name__, exc, exc_info=True)
+                unc_dict = {"status": "unavailable",
+                            "reason": f"{type(exc).__name__}: {exc}"}
 
         from apedp.parameter_diagnostics import make_stage_d2_evidence_report
         evidence_rep = make_stage_d2_evidence_report(

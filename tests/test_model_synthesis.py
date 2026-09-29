@@ -270,6 +270,43 @@ def test_regime_detection():
     assert regimes["is_decaying"] is True
 
 
+def test_uncertainty_enrichment_failure_never_fails_synthesis(monkeypatch):
+    """A missing confidence interval must not discard a good model.
+
+    Parameter-uncertainty estimation is a diagnostic add-on, not part of the
+    fit. The block that computes it spans sympy parsing/lambdify, numpy
+    numerics and attribute access, so its exception surface is wide and poorly
+    enumerated; the broad catch around it is therefore deliberate. What must
+    not happen is silence: the block used to log at debug level and leave
+    ``parameter_uncertainty`` empty, so an artifact carrying no uncertainty
+    analysis was indistinguishable from one where it had run.
+
+    Pinned here: synthesis still returns the model, the report records why the
+    uncertainty is absent, and the failure is surfaced rather than swallowed.
+    """
+    import apedp.parameter_diagnostics as pd_mod
+
+    def _boom(*_a, **_k):
+        raise RuntimeError("synthetic uncertainty failure")
+
+    monkeypatch.setattr(pd_mod, "compute_parameter_uncertainty", _boom)
+
+    rng = np.random.default_rng(21)
+    x_tr = np.linspace(0.5, 4.0, 30)
+    y_tr = 2.5 * x_tr**1.5 + rng.normal(0.0, 0.01, x_tr.size)
+    x_va = np.linspace(0.6, 3.9, 20)
+    y_va = 2.5 * x_va**1.5
+
+    models = AutonomousModelSynthesizer().synthesize(x_tr, y_tr, x_va, y_va)
+    assert len(models) > 0, "synthesis must survive a diagnostics failure"
+    top = models[0]
+    assert top.val_mse < 1e-4, top.val_mse
+
+    unc = top.diagnostics["stage_d2_evidence"]["parameter_uncertainty"]
+    assert unc.get("status") == "unavailable", unc
+    assert "synthetic uncertainty failure" in unc.get("reason", ""), unc
+
+
 def test_autonomous_synthesis_on_synth_01():
     spec, (x_train, y_train), (x_val, y_val), (x_near, y_near), (x_far, y_far) = load_synth_dataset("SYNTH_01")
     gaps = spec["physical_constraints"]["sampling_gaps"]
