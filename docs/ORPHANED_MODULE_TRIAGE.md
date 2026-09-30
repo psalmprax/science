@@ -167,6 +167,73 @@ that package. The `apedp/dyn/` row in the superseded table above may
 therefore be resolved by other hands; do not duplicate the work. Check
 `git status --porcelain -- apedp/dyn/` before starting it.
 
+## Cluster audit: is any lost cluster still referenced by live code?
+
+The "Lost — no live equivalent" table above asserts that nothing imports these
+modules. That was believed, not measured. The audit: extract every public name
+from each orphan's bytecode, then grep every *tracked* source file for it.
+
+**Zero of the nine clusters is referenced by live code.** No latent import
+break; all nine are capability gaps, as documented.
+
+Two apparent hits, both false positives worth recording because the naive grep
+reports them:
+
+* `CandidateEvidence` (from the lost `evidence_report`) appears in
+  `apedp/decision/models.py`, `apedp/hybrid.py` and `tests/test_decision.py` —
+  but it is **defined** in `apedp/decision/models.py:42`. The orphan's
+  identically-named class is a separate, earlier copy, not a dependency.
+* `IdentifiabilityReport` (from the lost `varpro`) appears in
+  `apedp/identifiability.py`, where it is **defined** at line 27. Same shape:
+  name collision, not a reference.
+* `tests/test_rh_benchmark.py` mentions `generate_or_load_zeta_zeros` and
+  `RiemannAdversarialEngine`, but reaches them through
+  `pytest.importorskip("apedp.mathematical.rh_dataset", reason=...)` — a
+  *loud skip* with a stated data-loss reason, not a live reference. That is the
+  correct pattern for a test whose subject is gone, and it is why the grep
+  reports a hit at all.
+
+A name appearing in tracked source is therefore not evidence of a dependency.
+The distinguishing question is whether the tracked file *defines* it or merely
+mentions it, and a substring grep cannot tell those apart.
+
+| cluster | public names | referenced by tracked source |
+| --- | --- | --- |
+| RH / identifiability frontier | 11 | no |
+| separability | 11 | no |
+| active discrimination | 5 | no |
+| dimensional grammar | 3 | no |
+| forensics / evidence reporting | 9 | no (3 name collisions) |
+| recovery classification | 4 | no |
+| in-loop guard | 2 | no |
+| varpro | 3 | no (1 name collision) |
+| guided search | 12 | no |
+
+## Re-run of EXT-BENCH-60 against current code
+
+`benchmarks/run_external_60_apedp.py --out-dir /tmp/rerun60` re-ran all 60
+problems at commit `689740e` and later. **This is a new measurement of current
+code, not a correction to the frozen round.** The frozen record in
+`tournament_results_external_60/` is protocol-frozen and was never written to:
+19 JSON files were sha256'd before the re-run and verified byte-identical
+afterwards (19/19 OK).
+
+| | frozen | re-run |
+| --- | --- | --- |
+| abstentions | 4 | 4 |
+| identical expression | — | 40/60 |
+| families changed | — | 11 |
+| family correct (27 named) | 24/27 | 22/27 |
+
+The near-OOD wiring (`689740e`) changed 10 of 60 recorded families and
+*lowered* named-family accuracy by 2. Investigating that produced two
+committed fixes and one open defect; see `docs/NEAR_OOD_PROMOTION.md` and
+`docs/SCALE_INVARIANCE_DEFECTS.md`. One of the 11 changes is a correction in
+the engine's favour: A54 now abstains as `INSUFFICIENT_EVIDENCE(underspecified)`
+rather than `NO_VALID_CANDIDATE`, because the record is exactly constant
+(IQR 0) and the span-is-zero rule in `_regime_identifiability` is the accurate
+criterion. The frozen record predates that rule.
+
 ## Reproducing this triage
 
 ```bash

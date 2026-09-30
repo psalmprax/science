@@ -138,6 +138,92 @@ class TestNearOodIsActuallyForwarded:
             "a value here would mean far-OOD leaked in after all")
 
 
+class TestNearOodVetoIsNoiseFloored:
+    """The near-OOD veto must not decide family identity below the noise.
+
+    The parsimony tiebreak makes two adjacent decisions in one loop, and only
+    one of them was calibrated: the margin adds a noise floor
+    (``max(0.15*val_mse, train_mse/n_val)``) while the veto beside it was a bare
+    1.5x ratio. A ratio has no absolute scale, so when the incumbent's near-OOD
+    MSE is small the threshold is small too.
+
+    EXT-BENCH P05 is the measured case. The veto compares 3.9136e-3 against
+    5.8819e-3 -- a 0.20% gap -- with a threshold of 5.8704e-3, and both values
+    sit ~25x below the data's own train noise floor. It fired, and the correct
+    one-parameter ``power_law`` lost to a four-parameter ``rational_transition``
+    whose validation advantage (0.00226) was well inside the tie margin
+    (0.01251). Measured over all 60 problems, flooring the veto changes exactly
+    one recorded family and lifts named-family accuracy 23/27 -> 24/27.
+
+    This runs the real selection on the real corpus problem rather than
+    re-deriving the arithmetic, so the assertion is about behaviour. It is slow
+    for that reason and marked as such; the cheap end of the claim -- that the
+    constant is wired to the noise floor and not to a hard-coded number -- is
+    pinned separately below.
+    """
+
+    #: P05 is ``power-1.5`` in the corpus manifest.
+    PROBLEM = "P05"
+    TRUTH_FAMILY = "power_law"
+
+    def _synthesize(self):
+        import numpy as np
+
+        from apedp.model_synthesis import AutonomousModelSynthesizer
+        from benchmarks.external_60_adapters import load_public_grids
+
+        g = load_public_grids(CORPUS, self.PROBLEM)
+        tr, va, near = g["train.csv"], g["validation.csv"], g["near_ood.csv"]
+        return AutonomousModelSynthesizer().synthesize(
+            np.asarray(tr[:, 0]), np.asarray(tr[:, 1]),
+            np.asarray(va[:, 0]), np.asarray(va[:, 1]),
+            np.asarray(near[:, 0]), np.asarray(near[:, 1]),
+        )[0]
+
+    @pytest.mark.slow
+    def test_the_floor_restores_the_true_family_on_p05(self, monkeypatch):
+        import apedp.model_synthesis as ms
+
+        monkeypatch.setattr(ms, "_NEAR_OOD_VETO_FLOOR", 0.0)
+        bare = self._synthesize().structural_family
+
+        monkeypatch.setattr(ms, "_NEAR_OOD_VETO_FLOOR", "auto")
+        floored = self._synthesize().structural_family
+
+        assert bare != self.TRUTH_FAMILY, (
+            f"{self.PROBLEM} is {self.TRUTH_FAMILY} in the corpus; if the bare "
+            f"veto already returns it, this test no longer covers the defect")
+        assert floored == self.TRUTH_FAMILY, (
+            f"noise-floored veto returned {floored}, expected "
+            f"{self.TRUTH_FAMILY} (bare returned {bare})")
+
+    def test_the_default_floor_is_the_measured_noise_floor(self):
+        """Not a tuned constant: 'auto' means train_mse / n_val.
+
+        A literal here would be one more number with no measured meaning, which
+        is how the bare ratio went wrong in the first place.
+        """
+        import apedp.model_synthesis as ms
+
+        assert ms._NEAR_OOD_VETO_FLOOR == "auto", (
+            "the shipped default must be the measured noise floor, not a "
+            f"literal: {ms._NEAR_OOD_VETO_FLOOR!r}")
+
+    def test_a_zero_floor_restores_the_bare_ratio_exactly(self):
+        """The escape hatch is exact, so the old behaviour is reproducible.
+
+        Needed to re-derive the 23/27 vs 24/27 measurement in
+        docs/NEAR_OOD_PROMOTION.md without editing the source.
+        """
+        import apedp.model_synthesis as ms
+
+        assert ms._NEAR_OOD_VETO_FLOOR == "auto"
+        best_near, challenger_near, noise_floor = 0.0039136, 0.0058819, 0.097
+        assert challenger_near > best_near * 1.5, "fixture drifted"
+        assert not (challenger_near > best_near * 1.5 + noise_floor), (
+            "fixture drifted: the floor must suppress this veto")
+
+
 def test_abstaining_model_emits_no_predictions(monkeypatch):
     """A model that refuses must not also ship a confident numeric curve.
 

@@ -308,6 +308,75 @@ _MAD_TO_SIGMA = 1.4826
 #: unit variance is ``sqrt(1 + 4 + 1)``.
 _SECOND_DIFF_SCALE = np.sqrt(6.0)
 
+#: Oscillation frequencies proposed as *periods across the observed window*
+#: rather than in the caller's x units. See the S4 branch of
+#: :meth:`AutonomousModelSynthesizer.generate_candidate_structures` for why an
+#: absolute grid alone is a prior on the caller's units.
+#:
+#: Range: 0.4 periods across the window (below this a single trough is not
+#: distinguishable from a peak) to 4 (past which a smooth trend is not separable
+#: from a fast oscillation without more resolution than these grids provide).
+#: Spacing is geometric at a ~1.24 ratio, coarser than the absolute grid's ~1.12
+#: over 1.5-4.0, because the same 12 slots have to cover a wider range: the
+#: absolute grid's range is fixed by the corpus, this one's is not.
+_SPAN_RELATIVE_OMEGA_PERIODS = (
+    0.4, 0.5, 0.6, 0.75, 0.9, 1.1, 1.3, 1.6, 2.0, 2.5, 3.2, 4.0,
+)
+
+#: Stage D's frequency box, *widened* to these many periods swept across the
+#: observed window and then unioned with the legacy absolute range. The lower
+#: end is well below the coarsest coarse candidate and the upper end above the
+#: finest, so widening to reach them cannot exclude anything the pool proposed.
+#: Both are in periods, not in 1/x, so they mean the same thing at every scale.
+_W_PERIODS_LO = 0.02
+_W_PERIODS_HI = 8.0
+
+#: Whether a challenger that is much better on the near-OOD split may displace
+#: the incumbent *even when it is more complex*.
+#:
+#: The benchmark adapter's stated contract for the near-OOD signal is that it
+#: "can only disqualify a more complex model (parsimony tiebreak) ... It never
+#: promotes anything" (benchmarks/external_60_adapters.py). ``False`` is that
+#: contract.
+#:
+#: Disabled because the contract forbids it and no evidence demands otherwise
+#: -- NOT because it was measured harmful. Refereed on all 60 EXT-BENCH
+#: problems with far-OOD MSE (which the selector never sees) as the judge: it
+#: changes 5 families, and on those it is mildly *positive* (far-OOD better on
+#: 7, worse on 1, median 2.19e-6 against 2.23e-6). It is also not the cause of
+#: the P05/P08 family regressions; the unfloored veto below is. Full account in
+#: docs/NEAR_OOD_PROMOTION.md. The constant stays so the decision is reversible
+#: by measurement rather than by re-deriving that argument.
+_NEAR_OOD_MAY_PROMOTE = False
+
+#: Additive floor on the near-OOD veto, in near-OOD MSE units. ``"auto"`` means
+#: the measured train noise floor, ``best.train_mse / n_val`` -- the same
+#: quantity the parsimony margin already uses. ``0.0`` restores the bare ratio.
+#:
+#: The veto this floors disqualifies a candidate when
+#: ``m.near_ood_mse > best.near_ood_mse * 1.5``. A ratio has no absolute scale,
+#: so when the incumbent's near-OOD MSE is small the threshold is small too, and
+#: the veto can be decided by a difference no measurement would support.
+#:
+#: EXT-BENCH P05 is the measured case. The two near-OOD MSEs the veto compares
+#: are 3.9136e-3 (a four-parameter ``rational_transition``) and 5.8819e-3 (the
+#: correct one-parameter ``power_law``, for ``power-1.5``). The threshold is
+#: 5.8704e-3. **The veto fires by 0.20%**, and both MSEs sit ~25x below the
+#: data's own train noise floor (~0.097), so the difference is not resolvable.
+#: The power law's validation MSE is 0.085677 against the incumbent's 0.083419,
+#: a gap of 0.00226 that is well inside the 0.01251 tie margin -- so the parsimony
+#: rule is entitled to prefer it and is overruled by a sub-noise ratio.
+#:
+#: The parsimony margin immediately above this veto is already floored, by the
+#: same noise estimate, for exactly this reason. Two adjacent decisions in one
+#: loop, one treating a sub-noise difference as evidence and the other not, is
+#: the defect.
+#:
+#: Measured on all 60: this changes exactly one recorded family (P05, back to
+#: ``power_law``), taking named-family accuracy 23/27 -> 24/27, with no
+#: abstention change. See docs/NEAR_OOD_PROMOTION.md.
+_NEAR_OOD_VETO_FLOOR: float | str = "auto"
+
 
 def _robust_noise_floor(ys: np.ndarray) -> float:
     """Noise scale in **y units**, invariant to any rescaling of ``x``.
@@ -672,9 +741,53 @@ class AutonomousModelSynthesizer:
         # Class S4: Oscillatory / Modulated Transport
         if regime_info.get("is_oscillatory", False):
             omegas = [1.5, 1.8, 2.0, 2.2, 2.5, 2.8, 3.0, 3.2, 3.5, 4.0]
+            # The absolute grid is in the caller's x units, so it is a prior on
+            # the frequency, not on the data: a fair prior only for callers whose
+            # x happens to be O(1). EXT-BENCH O29 (damped-2.8) shows what that
+            # costs. At x the grid holds a 2.8-rad oscillation, which is the
+            # truth. Rescale the same record by 0.1 and the truth becomes 28 rad
+            # -- a seventh of the period of the grid's *best* candidate -- so
+            # nothing in the pool can represent it and the engine reports
+            # `missing_structural_mechanism` on data containing the mechanism in
+            # full. Identical information, opposite verdict; the only thing that
+            # changed is the caller's units.
+            #
+            # The scale-free quantity is the phase swept across the observed
+            # window, w * (x_max - x_min), i.e. periods across the data. Gridded
+            # in periods, the candidates transform exactly the way the truth
+            # does under a positive rescaling of x, so the family stays
+            # reachable at any scale.
+            #
+            # The absolute grid is kept, not replaced. It is a fine-grained
+            # prior in the units this corpus uses, and dropping it would trade
+            # ten working candidates for an invariance the benchmark never
+            # asked for. The union only adds reachable optima; whether it
+            # changes any recorded answer is measured, not assumed.
+            x_lo = regime_info.get("x_min")
+            x_hi = regime_info.get("x_max")
+            if x_lo is not None and x_hi is not None:
+                span = float(x_hi) - float(x_lo)
+                if np.isfinite(span) and span > 0.0:
+                    # Only propose periods the absolute grid does not already
+                    # reach. Where the two grids overlap this adds nothing, so
+                    # the union cannot displace an existing winner for the sake
+                    # of proposing it twice.
+                    lo_w, hi_w = min(omegas), max(omegas)
+                    omegas = list(omegas) + [
+                        float(f"{2.0 * np.pi * p / span:.6g}")
+                        for p in _SPAN_RELATIVE_OMEGA_PERIODS
+                        if not (lo_w <= 2.0 * np.pi * p / span <= hi_w)
+                    ]
+            seen_omega: set[str] = set()
             for w in omegas:
-                structures.append((f"A * exp(-B * x) * cos({w} * x)", "damped_oscillation"))
-                structures.append((f"A * cos({w} * x)", "undamped_oscillation"))
+                w_str = f"{float(w):.6g}"
+                if w_str in seen_omega:
+                    continue
+                seen_omega.add(w_str)
+                structures.append(
+                    (f"A * exp(-B * x) * cos({w_str} * x)", "damped_oscillation")
+                )
+                structures.append((f"A * cos({w_str} * x)", "undamped_oscillation"))
             structures.append(("A * exp(-B * x)", "exponential_decay"))
             structures.append(("A * x + B", "linear_baseline"))
             # Polynomial baselines: zero-crossing trend data (e.g. cubic with
@@ -853,19 +966,49 @@ class AutonomousModelSynthesizer:
                            [float(params.get("A", 1.0)), float(k0e * x_scale_all)])]
             elif fam in {"damped_oscillation", "undamped_oscillation"}:
                 w0 = self._coarse_frequency(expr) or 2.8
+                # The frequency box was (0.2, 10.0) in units of 1/x, which is a
+                # prior on the caller's units rather than on the data: a record
+                # whose true frequency is 28 rad/unit-x -- an ordinary
+                # oscillation once the caller measures x in tenths -- cannot be
+                # refined at all, and worse, the coarse seed that represents it
+                # starts *outside* the box L-BFGS-B is asked to search. The
+                # scale-free box is stated in periods swept across the observed
+                # window, exactly as the coarse grid now is, so the box and the
+                # grid cannot disagree about what is reachable.
+                #
+                # It is the *union* of the legacy range and the periods range,
+                # not a replacement. Two reasons, both from the code: the coarse
+                # pool still proposes the absolute grid, so a box that excluded
+                # it would invalidate seeds the pool itself produced; and a
+                # replacement would narrow the box at large spans, turning a
+                # previously-valid refinement into an invalid one. A union can
+                # only add reachability, so it cannot break a start that worked.
+                _xspan = (
+                    float(np.max(x_train) - np.min(x_train)) if x_train.size else 1.0
+                )
+                _xspan_n = _xspan / x_scale_all
+                if not (np.isfinite(_xspan_n) and _xspan_n > 0.0):
+                    _xspan_n = 1.0
+                w_lo = min(
+                    0.2 * x_scale_all, _W_PERIODS_LO * 2.0 * np.pi / _xspan_n
+                )
+                w_hi = max(
+                    10.0 * x_scale_all, _W_PERIODS_HI * 2.0 * np.pi / _xspan_n
+                )
+                w0_n = float(np.clip(w0 * x_scale_all, w_lo, w_hi))
                 if fam == "undamped_oscillation":
                     forms = [("undamped", ("A", "w"),
-                               {"A": (a_min, a_max), "w": (0.2 * x_scale_all, 10.0 * x_scale_all)},
+                               {"A": (a_min, a_max), "w": (w_lo, w_hi)},
                                lambda x, A, w: A * np.cos(w * x),
-                               [float(params.get("A", 1.0)), float(w0 * x_scale_all)])]
+                               [float(params.get("A", 1.0)), w0_n])]
                 else:
                     k0d = float(params.get("B", 0.3))
                     forms = [("damped", ("A", "k", "w"),
                                {"A": (a_min, a_max), "k": (0.0, 5.0 * x_scale_all),
-                                "w": (0.2 * x_scale_all, 10.0 * x_scale_all)},
+                                "w": (w_lo, w_hi)},
                                lambda x, A, k, w: A * np.exp(-k * x) * np.cos(w * x),
                                [float(params.get("A", 1.0)), float(k0d * x_scale_all),
-                                float(w0 * x_scale_all)])]
+                                w0_n])]
             elif fam == "rational_transition":
                 exps = self._coarse_exponents(expr)
                 p0 = exps[0] if len(exps) > 0 else 1.5
@@ -1504,7 +1647,16 @@ class AutonomousModelSynthesizer:
 
         # 1. Epistemic Abstention Gate: Severely Underspecified Observations (Class S5 / C3)
         if regimes.get("is_underspecified", False):
-            logger.info("Epistemic Abstention: Dataset severely underspecified (N <= 8).")
+            # The row-count gate this message used to name ("N <= 8") is gone;
+            # _regime_identifiability replaced it with a measured span-vs-noise
+            # and sample-resolution test. Reporting the retired criterion here
+            # made the log contradict the function two hundred lines above it,
+            # and made a 30-sample record look like it had been rejected on
+            # sample count when it was rejected because the signal span is 0.
+            logger.info(
+                "Epistemic Abstention: %s",
+                regimes.get("underspecification_reason", "underspecified observations"),
+            )
             abstain_expr = sp.Symbol("x")
             return [
                 SynthesizedModel(
@@ -1638,16 +1790,22 @@ class AutonomousModelSynthesizer:
 
         # 1c. Parsimony tiebreak (Occam) with noise-calibrated margin: among
         # validation-tied candidates prefer strictly fewer parameters, provided
-        # near-OOD (when available) is not degraded >1.5x. The tie margin is
-        # calibrated to the measured train noise floor (best_train_mse/n_val):
-        # val differences below what train noise can resolve are not evidence.
-        # Falls back to a 15% relative margin when the noise estimate is
-        # degenerate (near-perfect train fit). Deterministic: val-ordered scan,
-        # first qualifier wins.
+        # near-OOD (when available) is not degraded >1.5x *beyond what the noise
+        # floor can resolve*. Both the margin and the veto are calibrated to the
+        # measured train noise floor (best_train_mse/n_val): differences below
+        # it are not evidence. The margin falls back to a 15% relative value when
+        # the noise estimate is degenerate (near-perfect train fit). The veto
+        # floor is _NEAR_OOD_VETO_FLOOR; 0.0 is the bare ratio this replaces.
+        # Deterministic: val-ordered scan, first qualifier wins.
         if fitted_models:
             best = fitted_models[0]
             noise_floor = best.train_mse / max(len(y_val), 1)
             tie_margin = max(0.15 * best.val_mse, noise_floor)
+            near_ood_floor = (
+                float(_NEAR_OOD_VETO_FLOOR)
+                if isinstance(_NEAR_OOD_VETO_FLOOR, (int, float))
+                else noise_floor
+            )
             best_idx = 0
             best_comp = self._model_complexity(best)
             for i in range(1, len(fitted_models)):
@@ -1657,7 +1815,8 @@ class AutonomousModelSynthesizer:
                 m_comp = self._model_complexity(m)
 
                 ood_superior = (
-                    best.near_ood_mse is not None and m.near_ood_mse is not None
+                    _NEAR_OOD_MAY_PROMOTE
+                    and best.near_ood_mse is not None and m.near_ood_mse is not None
                     and np.isfinite(best.near_ood_mse) and np.isfinite(m.near_ood_mse)
                     and m.near_ood_mse < best.near_ood_mse * 0.5
                 )
@@ -1666,7 +1825,7 @@ class AutonomousModelSynthesizer:
                     continue
                 if (best.near_ood_mse is not None and m.near_ood_mse is not None
                         and np.isfinite(best.near_ood_mse) and np.isfinite(m.near_ood_mse)
-                        and m.near_ood_mse > best.near_ood_mse * 1.5):
+                        and m.near_ood_mse > best.near_ood_mse * 1.5 + near_ood_floor):
                     continue
                 best_idx = i
                 best = m

@@ -43,6 +43,7 @@ from __future__ import annotations
 import json
 import pathlib
 import re
+from typing import ClassVar
 
 import numpy as np
 import pytest
@@ -545,3 +546,98 @@ class TestSelectedFamilyIsScaleFree:
             assert got == base, (
                 f"{pid}: family changed {base} -> {got} under x*{xs}"
             )
+
+
+class TestOscillationGridIsScaleFree:
+    """The S4 frequency pool must not be a prior on the caller's x units.
+
+    This is the cheap half of the O29 finding. ``TestSelectedFamilyIsScaleFree``
+    is the expensive half: it synthesises, so it is ``slow`` and sampled.
+    Here the claim is made directly against the pool, for every scale, in
+    milliseconds -- so a regression is caught by the default run rather than
+    only by the deep check.
+
+    The defect this pins: the frequency grid was a literal list in the
+    caller's units, ``[1.5 ... 4.0]``. EXT-BENCH O29 is a 2.8 rad oscillation,
+    which that list contains. Rescaled by 0.1 the same record is a 28 rad
+    oscillation, which the list cannot represent by a factor of seven, so the
+    engine reported ``missing_structural_mechanism`` -- "the mechanism is
+    absent" -- on data that contains the mechanism in full. Nothing about the
+    data had changed. The caller's units had.
+    """
+
+    #: Truth from the corpus: O29 damped-2.8, O30 damped-2.0, O34 damped-4.2.
+    #: Frequencies in rad per unit of the corpus's x.
+    TRUTH: ClassVar[dict[str, float]] = {"O29": 2.8, "O30": 2.0, "O34": 4.2}
+
+    @staticmethod
+    def _omegas(x_lo: float, x_hi: float) -> list[float]:
+        templates = AutonomousModelSynthesizer().generate_candidate_structures(
+            {
+                "is_underspecified": False,
+                "is_oscillatory": True,
+                "x_min": x_lo,
+                "x_max": x_hi,
+            }
+        )
+        out: set[float] = set()
+        for tmpl, _family in templates:
+            if "cos(" not in tmpl:
+                continue
+            out.add(float(tmpl.split("cos(")[1].split(" ")[0]))
+        return sorted(out)
+
+    @pytest.mark.parametrize("pid", sorted(TRUTH))
+    @pytest.mark.parametrize("scale", (0.1, 1.0, 10.0))
+    def test_the_true_frequency_is_reachable(self, pid: str, scale: float) -> None:
+        """Some candidate must be within 10% of the truth at every scale.
+
+        10% rather than exact: the grid is discrete by design, and Stage D
+        refines continuously from whatever the grid lands on. The claim is
+        reachability, not exactness -- an unreachable truth cannot be refined
+        either, which is the failure.
+        """
+        tr = np.genfromtxt(CORPUS / pid / "train.csv", delimiter=",", skip_header=1)
+        x = tr[:, 0] * scale
+        w = self.TRUTH[pid] / scale
+        omegas = self._omegas(float(x.min()), float(x.max()))
+        assert omegas, "no oscillation templates were proposed at all"
+        nearest = min(omegas, key=lambda o: abs(o - w))
+        assert abs(nearest - w) / w <= 0.10, (
+            f"{pid} at x*{scale}: truth is w={w:.4g}, nearest candidate is "
+            f"{nearest:.4g} ({abs(nearest - w) / w:.1%} away). The pool cannot "
+            f"represent this oscillation, so the family is unreachable."
+        )
+
+    @pytest.mark.parametrize("scale", (0.1, 1.0, 10.0))
+    def test_the_pool_does_not_duplicate_the_absolute_grid(self, scale: float) -> None:
+        """Adding a scale-free grid must not re-propose what was already there.
+
+        The union is only safe as an addition if the overlap is removed:
+        otherwise the same candidate appears twice, the tiebreak sees two
+        identical models, and parsimony bookkeeping is spent on nothing.
+        """
+        lo, hi = 0.5, 6.0
+        x = np.linspace(lo, hi, 40) * scale
+        omegas = self._omegas(float(x.min()), float(x.max()))
+        assert len(omegas) == len(set(omegas))
+
+    def test_stage_d_frequency_box_contains_every_proposed_frequency(self) -> None:
+        """Stage D's box must not exclude the grid that seeds it.
+
+        A box in absolute 1/x units (it was ``(0.2, 10.0)``) excludes any coarse
+        candidate outside it, so the seed handed to L-BFGS-B starts outside its
+        own search region. That is not a worse fit; it is an invalid start, and
+        it is the second half of the same O29 defect.
+        """
+        from apedp import model_synthesis as m
+
+        for scale, span in ((0.1, 0.585), (1.0, 5.848), (10.0, 58.48)):
+            lo = min(0.2, m._W_PERIODS_LO * 2.0 * np.pi / span)
+            hi = max(10.0, m._W_PERIODS_HI * 2.0 * np.pi / span)
+            assert lo < hi, f"degenerate box at x*{scale}"
+            for w in self._omegas(0.0, span):
+                assert lo <= w <= hi, (
+                    f"x*{scale}: coarse candidate w={w:.4g} is outside the "
+                    f"Stage D box ({lo:.4g}, {hi:.4g})"
+                )
