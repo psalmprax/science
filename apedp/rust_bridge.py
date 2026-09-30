@@ -161,7 +161,22 @@ class RustKernelBridge:
                         c = cast(Any, apedp_kernel).compile(expr_str, list(variable_names))
                         compiled_list.append(c)
                         valid_indices.append(idx)
-                    except Exception:
+                    except Exception:  # noqa: BLE001 - Class B, deliberately
+                        # NOT a verdict. The Rust kernel refusing to compile one
+                        # expression is a fallback to "this candidate is not
+                        # evaluable by the fast path", and the remaining
+                        # compiled_list is still scored normally. Nothing here
+                        # derives a pass/fail from the failure: the caller
+                        # scores what compiled and cannot see a candidate that
+                        # was dropped as though it had scored well. The gap
+                        # this leaves is observability -- a run cannot prove
+                        # which path executed -- and the fix for that is a
+                        # counter, not a log line.
+                        #
+                        # The same file's verdict-deriving paths are Class A and
+                        # were fixed; see physics_constraints.py and
+                        # singularity_probing.py for the _unverified() shape
+                        # used where a check does decide something.
                         logger.debug("Skipping uncompilable candidate %r", expr_str, exc_info=True)
 
                 if compiled_list:

@@ -16,10 +16,14 @@ def _fetch_page_html(page_title: str) -> str:
         encoded_title = urllib.parse.quote(page_title)
         url = f"https://en.wikipedia.org/w/api.php?action=parse&page={encoded_title}&prop=text&format=json"
         ctx = ssl.create_default_context()
-        req = urllib.request.Request(url, headers={'User-Agent': USER_AGENT})
         # URL scheme/host are hardcoded constants (https://en.wikipedia.org);
-        # only the page title (URL-quoted above) varies.
-        with urllib.request.urlopen(req, context=ctx, timeout=10) as response:  # nosec B310
+        # only the page title (URL-quoted above) varies. The noqa sits on this
+        # line because ruff anchors S310 to the Request/urlopen pair and the
+        # previous placement was one line below the reported column, so the
+        # suppression never applied and the finding had been sitting in CI as
+        # a permanently-red step.
+        req = urllib.request.Request(url, headers={'User-Agent': USER_AGENT})  # noqa: S310
+        with urllib.request.urlopen(req, context=ctx, timeout=10) as response:  # noqa: S310  # nosec B310 - hardcoded https host
             data = json.loads(response.read().decode('utf-8'))
         parsed = data.get('parse', {}) if isinstance(data, dict) else {}
         text = parsed.get('text', {}) if isinstance(parsed, dict) else {}

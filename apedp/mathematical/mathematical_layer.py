@@ -19,6 +19,18 @@ from apedp.safety import safe_parse_expr
 logger = logging.getLogger(__name__)
 
 
+def _unverified(check: str, exc: Exception) -> str:
+    """Wording for a check that raised rather than returning a verdict.
+
+    Same shape as ``apedp/physics_constraints.py`` and
+    ``apedp/singularity_probing.py``: name the check and the exception, and
+    let the report say so. A probe that logged and fell through left its
+    verdict at the initial value, so a crashed check reached the caller
+    looking exactly like a passed one.
+    """
+    return f"{check} could not be evaluated ({type(exc).__name__}: {exc})"
+
+
 class ProofBoundaryStatus(str, Enum):
     """Epistemic status regarding the boundary between empirical evidence and formal proof."""
 
@@ -57,6 +69,10 @@ class MathematicalDomainAudit:
     proof_claim: ProofClaimStatus = ProofClaimStatus.P0_NO_PROOF
     resolution_limit: float = 1e-12
     rationale: str = ""
+    # Checks that raised rather than returning a verdict. Non-empty means this
+    # audit is not a clearance even where is_admissible is True, and the
+    # field exists so "we found no pole" can be told from "we could not look".
+    unverified: list[str] = field(default_factory=list)
 
     @property
     def cp_label(self) -> str:
@@ -105,23 +121,54 @@ class MathematicalAssuranceEngine:
 
         # 1. Critical strip check for Riemann zeta candidates (0 < Re(s) < 1)
         in_strip = True
-        singularities = []
+        singularities: list[str] = []
+        # Checks that raised. Both probes below used to end in logger.debug
+        # and fall through with their verdict at its initial value, which made
+        # two failures indistinguishable from two passes:
+        #   - in_strip stayed True, asserting the candidate sits in the RH
+        #     critical strip on the strength of an evaluation that raised.
+        #   - singularities stayed empty, and is_admissible is computed as
+        #     len(singularities) == 0, so a sp.solve that raised certified the
+        #     domain "VALID" and the candidate admissible. A candidate with a
+        #     pole in the evaluated domain passed the audit because the search
+        #     for poles crashed.
+        # sp.solve and .evalf() raise on ordinary input, so these are expected
+        # paths. The record carries what did not run.
+        unverified: list[str] = []
+        # safe_parse_expr("gamma") returns sympy's gamma *FunctionClass*, not
+        # an Expr. On a class, `.is_number` is an unbound property object --
+        # which is truthy -- so the numeric branch was always taken and
+        # `.evalf()` then raised TypeError("missing 1 required positional
+        # argument: 'self'"). Every bare-function-name candidate, including
+        # the Euler gamma this engine exists to reason about, was crashing
+        # here and the crash was swallowed: in_strip kept its initial True and
+        # the audit reported an unverified candidate as admissible. Found by
+        # the disclosure change above, which turned a silently passing test
+        # into a visible failure.
+        #
+        # A FunctionClass is not a failed check, though. It has no free
+        # symbols, so there is no domain in which it could be singular and no
+        # value whose strip membership could be tested. Both checks are
+        # vacuous, not unrun, and vacuous is not the same as unknown.
+        is_expr = isinstance(expr, sp.Expr)
         try:
-            # Check if candidate evaluates to a constant or variable in [0, 1]
-            if expr.is_number:
+            if is_expr and expr.is_number:
+                # Check if candidate evaluates to a constant or variable in [0, 1]
                 val = float(expr.evalf())
                 if not (0.0 < val < 1.0):
                     in_strip = False
-            elif "beta" in [str(s) for s in expr.free_symbols]:
+            elif is_expr and "beta" in [str(s) for s in expr.free_symbols]:
                 # If evaluating real part expression
                 pass
-        except Exception:
-            logger.debug("critical strip probe failed", exc_info=True)
+        except Exception as e:  # noqa: BLE001 - sympy raises broadly on
+            # expressions with no limit or a non-numeric real part; the strip
+            # membership is unknown, not established.
+            unverified.append(_unverified("Critical-strip probe", e))
 
         # 2. Singularity detection on domain
         for var, (vmin, vmax) in variable_domains.items():
             sym = sp.Symbol(var)
-            if sym in expr.free_symbols:
+            if is_expr and sym in expr.free_symbols:
                 denom = sp.denom(sp.together(expr))
                 if denom != 1:
                     try:
@@ -131,8 +178,11 @@ class MathematicalAssuranceEngine:
                                 r_val = float(r.evalf())
                                 if vmin <= r_val <= vmax:
                                     singularities.append(f"Pole at {var} = {r_val}")
-                    except Exception:
-                        logger.debug("singularity detection probe failed for %s", var, exc_info=True)
+                    except Exception as e:  # noqa: BLE001 - sp.solve raises
+                    # broadly on transcendentals and multivariate denominators.
+                    # A root that was never found is not an absent root.
+                        unverified.append(
+                            _unverified(f"Singularity detection for '{var}'", e))
 
         # 3. Proof Boundary Enforcement:
         # A finite empirical sample N can NEVER prove a universal mathematical conjecture.
@@ -157,17 +207,33 @@ class MathematicalAssuranceEngine:
                 f"Formal proof remains unestablished (finite sample != universal proof)."
             )
 
-        is_admissible = len(singularities) == 0
+        # A pole search that did not complete cannot support a clearance. The
+        # direction is toward withholding, matching how every other failed
+        # check in this codebase is now handled.
+        is_admissible = len(singularities) == 0 and not unverified
+
+        if unverified and not singularities:
+            domain_status = "SINGULARITY_CHECK_INCOMPLETE"
+        elif unverified:
+            domain_status = "SINGULARITY_IN_DOMAIN"
+        else:
+            domain_status = "VALID"
+
+        if unverified:
+            rationale = (
+                rationale + " Not a full clearance: " + "; ".join(unverified)
+            ).strip()
 
         return MathematicalDomainAudit(
             is_admissible=is_admissible,
-            domain_status="VALID" if is_admissible else "SINGULARITY_IN_DOMAIN",
+            domain_status=domain_status,
             in_critical_strip=in_strip,
             singularities_encountered=singularities,
             proof_status=proof_status,
             proof_claim=ProofClaimStatus.P0_NO_PROOF,
             resolution_limit=self.default_precision,
             rationale=rationale,
+            unverified=unverified,
         )
 
     def assess_identifiability_resolution(
