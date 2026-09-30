@@ -66,9 +66,8 @@ jobs:
           pytest tests/ -v --tb=short -n auto -m integration
 
       # The dynamical package owns the doctrine, so it is gated on its own and
-      # kept at zero. These two steps run first because they are the ones that
-      # are currently green; the broader steps below cover apedp/ too, which is
-      # not yet clean (see the note under them).
+      # kept at zero. These two steps run before the broader apedp/ gates
+      # below; all four are blocking.
       - name: Lint apedp_dyn with ruff
         run: |
           source .venv/bin/activate
@@ -79,12 +78,16 @@ jobs:
           source .venv/bin/activate
           mypy apedp_dyn/ --ignore-missing-imports
 
-      # NOTE: these two still fail, but only on untracked or in-flight files
-      # from the concurrent apedp/apedp_dyn sessions as of 2026-09-29:
-      # ~95 ruff and 2 mypy (apedp_dyn/conf/{benchmark,benchmark_v2}.py).
-      # Every finding in a committed file was cleared in ad96ee3. The ruff
-      # targets also include apedp_dyn/ so they stay covered once the
-      # remainder reaches zero.
+      # Both of these gate. They were annotated as expected failures while
+      # the finding count was carried by untracked files from concurrent
+      # apedp/apedp_dyn sessions; every finding in a *committed* file is now
+      # clear (8c0be24), and CI only ever checks out committed files, so
+      # this is a real gate rather than a decoration.
+      #
+      # The findings that remain locally (~144 ruff, 21 mypy) all live in
+      # apedp_dyn/conf/benchmark_v2.py and five apedp_dyn/sandbox/ demos
+      # that are not yet in version control. They will surface here the
+      # moment they are committed, which is the right time to fix them.
       - name: Lint with ruff
         run: |
           source .venv/bin/activate
