@@ -392,18 +392,97 @@ class TestAgainstTheRealRepository:
     """
 
     def test_the_real_last_commit_reports_its_true_file_count(self):
+        """Every commit touching scanned code must report git's own file list.
+
+        This originally asserted the property of HEAD specifically. That was
+        wrong, and it failed on the first commit that touched only ``docs/``
+        and ``.github/`` -- because ``commits_since`` filters by path, HEAD
+        was correctly absent from the scan, and the test read that correct
+        behaviour as a bug.
+
+        The invariant worth pinning is per-commit, not per-HEAD: for whatever
+        commit most recently touched ``apedp/`` or ``tests/``, the tool's
+        path list equals ``git show --name-only`` filtered the same way. That
+        holds no matter what gets committed next, which is the point of a
+        real-repository test.
+        """
         repo = rp.resolve_repo(Path(__file__).resolve().parents[1])
-        head = rp.head_commit(repo)
-        found = rp.commits_since(repo, 0, ("apedp", "tests"))
-        match = [c for c in found if c.rev == head]
-        assert match, f"HEAD {head[:12]} not found in history scan"
-        truth = subprocess.run(
-            ["git", "show", "--name-only", "--format=", head],
+        scan = ("apedp", "tests")
+        found = rp.commits_since(repo, 0, scan)
+        assert found, "no commits touching scanned code found in history"
+
+        # git's own list of commits that touch a scanned path, newest first.
+        raw = subprocess.run(
+            ["git", "log", "--format=%H", "--name-only", "-n", "40"],
             cwd=repo, capture_output=True, text=True, check=True,
-        ).stdout.split()
-        assert sorted(match[0].paths) == sorted(
-            p for p in truth if p.startswith(("apedp/", "tests/"))
-        )
+        ).stdout.splitlines()
+        revs, current = [], None
+        for line in raw:
+            line = line.strip()
+            if not line:
+                continue
+            if len(line) == 40 and all(ch in "0123456789abcdef" for ch in line):
+                current = line
+                revs.append(current)
+            elif current is not None and line.startswith(scan):
+                revs.append(current)
+
+        checked = 0
+        for c in found:
+            if c.rev not in revs:
+                continue
+            truth = subprocess.run(
+                ["git", "show", "--name-only", "--format=", c.rev],
+                cwd=repo, capture_output=True, text=True, check=True,
+            ).stdout.split()
+            assert sorted(c.paths) == sorted(
+                p for p in truth if p.startswith(("apedp/", "tests/"))
+            ), f"{c.rev[:12]}: tool reported {sorted(c.paths)}, git says " \
+               f"{sorted(p for p in truth if p.startswith(('apedp/', 'tests/')))}"
+            checked += 1
+            if checked >= 5:
+                break
+        assert checked, "no scanned commit could be cross-checked against git"
+
+    def test_a_docs_only_commit_is_not_scanned(self):
+        """The path filter is the feature; assert it against the real repo.
+
+        Guards the behaviour the test above used to trip over. A commit
+        touching only docs/ says nothing about a test result, and treating it
+        as though it did would train people to ignore the warning.
+
+        Determines which commits are docs-only from git's own file list, not
+        from the commit subject. A first attempt grepped the subject line,
+        which does not contain paths, and so classified every commit as
+        docs-only -- including ones that plainly touched apedp/. The failure
+        was the right one for the wrong reason.
+        """
+        repo = rp.resolve_repo(Path(__file__).resolve().parents[1])
+        raw = subprocess.run(
+            ["git", "log", "--format=%x01%H", "--name-only", "-n", "80"],
+            cwd=repo, capture_output=True, text=True, check=True,
+        ).stdout
+        per_commit: dict[str, list[str]] = {}
+        current: str | None = None
+        for line in raw.splitlines():
+            if line.startswith("\x01"):
+                current = line[1:].strip()
+                per_commit.setdefault(current, [])
+            elif current and line.strip():
+                per_commit[current].append(line.strip())
+
+        docs_only = [rev for rev, paths in per_commit.items()
+                     if paths and not any(p.startswith(("apedp/", "tests/"))
+                                          for p in paths)]
+        assert docs_only, (
+            "expected at least one docs-only commit in recent history; if "
+            "the tree genuinely has none, drop this test rather than weaken it")
+
+        found = {c.rev for c in rp.commits_since(repo, 0, ("apedp", "tests"))}
+        for rev in docs_only[:5]:
+            assert rev not in found, (
+                f"{rev[:12]} touched {per_commit[rev]} -- no scanned path -- "
+                f"but was reported stale")
 
     def test_the_real_repo_scans_to_a_plausible_file_count(self):
         repo = rp.resolve_repo(Path(__file__).resolve().parents[1])
