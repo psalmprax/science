@@ -1,0 +1,21 @@
+{
+  "problem_id": "PS-DRAG",
+  "timestamp": "2026-09-30T11:00:04+0200",
+  "name": "quadratic-drag",
+  "n_states": 2,
+  "n_inputs": 1,
+  "n_params": 2,
+  "n_candidates": 11,
+  "n_scored": 11,
+  "n_valid": 11,
+  "epistemic_status": "multi_hypothesis",
+  "best_rmse": 0.0001451600276244299,
+  "second_rmse": 0.00017294457553977956,
+  "delta_rmse": 2.7784547915349664e-05,
+  "tau_epi": 0.3129255525078696,
+  "epistemic_margin": -0.3128977679599542,
+  "adjudication_reason": "rival mg1-0004 within \u03c4 (\u0394=2.78e-05 \u2264 \u03c4=0.313 [holdout-scale]); structures observationally indistinguishable under available interventions",
+  "n_ranking": 11,
+  "termination": "SUCCESS",
+  "wall_seconds": 4.746859788894653
+}

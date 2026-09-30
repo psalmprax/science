@@ -1,0 +1,31 @@
+{
+  "problem_id": "S10",
+  "problem_name": "Rational-Exponential Transition S10",
+  "class_id": 1,
+  "class_name": "Multi-Regime Envelopes",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "variable_units": {
+    "x": "meter",
+    "y": "pascal"
+  },
+  "physical_constraints": {
+    "origin_limit": 0.0,
+    "far_field_limit": 0.0,
+    "positivity": true,
+    "sampling_gaps": [
+      [
+        2.2,
+        3.0
+      ]
+    ]
+  },
+  "dataset_sizes": {
+    "train": 80,
+    "validation": 50,
+    "near_ood": 50,
+    "far_ood": 50
+  }
+}

@@ -131,6 +131,48 @@ def _warm_start(problem, model0):
     return np.array([values[p.name] for p in model0.parameters])
 
 
+MULTISTART_SCALES = (1.0, 0.5, 2.0, 0.25, -0.5)
+"""Frozen deterministic warm-start perturbations for multi-start refits."""
+
+
+def fit_candidate_multistart(problem, candidate, n_starts: int = 5,
+                             max_nfev: int = 300) -> tuple[ScoredCandidate, dict]:
+    """Refit from deterministic warm-start perturbations; keep the best.
+
+    Separates optimizer-luck failures from structural failures: if the
+    single-start fit fails gate 4 but a perturbation passes with the same
+    structure and thresholds, the FN was search luck, not physics. Returns
+    (best_scored, info). Never promotes anything itself; output feeds the
+    normal adjudication path.
+    """
+    from apedp_dyn.grammar.candidate_ir import SystemCandidate
+    from apedp_dyn.grammar.coupled import materialize_system
+
+    try:
+        model0 = (materialize_system(problem, candidate)
+                  if isinstance(candidate, SystemCandidate)
+                  else materialize(problem, candidate))
+        probe = _warm_start(problem, model0)
+    except (TypeError, ValueError, np.linalg.LinAlgError):
+        single = fit_candidate(problem, candidate, max_nfev=max_nfev)
+        return single, {"starts": ["fallback-single"], "reason": "warm start failed"}
+    bounds = [p.bounds if p.bounds is not None else (-np.inf, np.inf)
+              for p in model0.parameters]
+    starts = []
+    for s in MULTISTART_SCALES[:max(n_starts, 1)]:
+        x0 = probe * s
+        if all(lo <= v <= hi for v, (lo, hi) in zip(x0, bounds, strict=True)):
+            starts.append(np.asarray(x0, dtype=float))
+    if not starts:
+        starts = [np.asarray(probe, dtype=float)]
+    scored = [fit_candidate(problem, candidate, x0=x, max_nfev=max_nfev) for x in starts]
+    scored.sort(key=lambda sc: (sc.train_loss is None, sc.train_loss))
+    best = scored[0]
+    return best, {"starts": [f"scale-{s}" for s in MULTISTART_SCALES[:len(starts)]],
+                  "n_starts": len(starts),
+                  "best_train_loss": best.train_loss}
+
+
 def fit_candidate(problem, candidate,
                   x0: np.ndarray | None = None,
                   max_nfev: int = 300) -> ScoredCandidate:

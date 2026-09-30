@@ -1,0 +1,21 @@
+{
+  "problem_id": "D2-COUPLED",
+  "timestamp": "2026-09-30T10:59:00+0200",
+  "name": "coupled-2dof",
+  "n_states": 4,
+  "n_inputs": 2,
+  "n_params": 7,
+  "n_candidates": 49,
+  "n_scored": 49,
+  "n_valid": 49,
+  "epistemic_status": "insufficient_evidence",
+  "best_rmse": 0.34396879265385005,
+  "second_rmse": null,
+  "delta_rmse": null,
+  "tau_epi": null,
+  "epistemic_margin": null,
+  "adjudication_reason": "rank-1 mg2-0040 fails gate 4: rmse 0.344 > tol 0.118 (margin_ratio 2.91); no promotion of least-bad models",
+  "n_ranking": 49,
+  "termination": "SUCCESS",
+  "wall_seconds": 41.661306619644165
+}

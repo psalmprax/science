@@ -15,7 +15,7 @@ GRAMMAR_VERSION = "mechanical-2nd-order v1"
 # Term families. Restoring/dissipative/forcing tags drive physical
 # interpretation and future constraints; the fitter never sees them.
 TERM_FAMILIES: dict[str, tuple[str, ...]] = {
-    "restoring": ("x", "x2", "x3", "sin_x"),
+    "restoring": ("x", "x2", "x3", "sin_x", "grad_x", "laplacian_x"),
     "dissipative": ("v", "abs_v_v", "v2"),
     "forcing": ("u",),
     "coupling": ("x_v", "xr", "dxr"),

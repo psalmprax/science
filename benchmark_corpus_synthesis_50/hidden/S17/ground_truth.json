@@ -1,0 +1,14 @@
+{
+  "problem_id": "S17",
+  "class_id": 2,
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "2.2 * x**0.8 * ln(1.0 + 0.7 * x**1.2)",
+  "canonical_structural_family": "logarithmic_boundary_layer",
+  "true_parameters": {
+    "A": 2.2,
+    "alpha": 0.8,
+    "B": 0.7,
+    "beta": 1.2
+  }
+}

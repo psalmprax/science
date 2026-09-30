@@ -1,0 +1,21 @@
+{
+  "problem_id": "D2-DUFF",
+  "timestamp": "2026-09-30T10:59:42+0200",
+  "name": "duffing",
+  "n_states": 2,
+  "n_inputs": 1,
+  "n_params": 4,
+  "n_candidates": 11,
+  "n_scored": 11,
+  "n_valid": 11,
+  "epistemic_status": "insufficient_evidence",
+  "best_rmse": 0.32870049962075787,
+  "second_rmse": null,
+  "delta_rmse": null,
+  "tau_epi": null,
+  "epistemic_margin": null,
+  "adjudication_reason": "rank-1 mg1-0007 fails gate 4: rmse 0.329 > tol 0.0516 (margin_ratio 6.37); no promotion of least-bad models",
+  "n_ranking": 11,
+  "termination": "SUCCESS",
+  "wall_seconds": 9.99507737159729
+}

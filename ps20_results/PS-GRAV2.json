@@ -1,0 +1,21 @@
+{
+  "problem_id": "PS-GRAV2",
+  "timestamp": "2026-09-30T11:00:08+0200",
+  "name": "two-body-gravity",
+  "n_states": 2,
+  "n_inputs": 0,
+  "n_params": 2,
+  "n_candidates": 14,
+  "n_scored": 14,
+  "n_valid": 14,
+  "epistemic_status": "insufficient_evidence",
+  "best_rmse": 1.2048120784643062,
+  "second_rmse": null,
+  "delta_rmse": null,
+  "tau_epi": null,
+  "epistemic_margin": null,
+  "adjudication_reason": "rank-1 mg1-0016 fails gate 4: rmse 1.2 > tol 0.117 (margin_ratio 10.3); no promotion of least-bad models",
+  "n_ranking": 14,
+  "termination": "SUCCESS",
+  "wall_seconds": 5.729503393173218
+}

@@ -1,0 +1,10 @@
+{
+  "problem_id": "S41",
+  "class_id": 5,
+  "oracle_epistemic_class": "C5",
+  "expected_state": "MISSING_STRUCTURE",
+  "ground_truth_formula": "UNREPRESENTABLE_IN_ELEMENTARY_GRAMMAR",
+  "canonical_structural_family": "piecewise_shock_discontinuity",
+  "true_parameters": {},
+  "mandatory_action": "FORMAL_ABSTENTION_REQUIRED"
+}

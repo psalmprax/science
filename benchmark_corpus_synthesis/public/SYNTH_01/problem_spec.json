@@ -1,0 +1,31 @@
+{
+  "problem_id": "SYNTH_01",
+  "problem_name": "Multi-Regime Rational-Exponential Transition Law",
+  "class_id": 1,
+  "class_name": "Autonomous Model Synthesis",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "variable_units": {
+    "x": "meter",
+    "y": "pascal"
+  },
+  "physical_constraints": {
+    "origin_limit": 0.0,
+    "far_field_limit": 0.0,
+    "positivity": true,
+    "sampling_gaps": [
+      [
+        2.2,
+        3.0
+      ]
+    ]
+  },
+  "dataset_sizes": {
+    "train": 100,
+    "validation": 49,
+    "near_ood": 100,
+    "far_ood": 100
+  }
+}

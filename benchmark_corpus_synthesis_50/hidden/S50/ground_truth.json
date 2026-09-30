@@ -1,0 +1,10 @@
+{
+  "problem_id": "S50",
+  "class_id": 5,
+  "oracle_epistemic_class": "C3",
+  "expected_state": "INSUFFICIENT_EVIDENCE",
+  "ground_truth_formula": "UNREPRESENTABLE_IN_ELEMENTARY_GRAMMAR",
+  "canonical_structural_family": "underspecified_data_regime",
+  "true_parameters": {},
+  "mandatory_action": "FORMAL_ABSTENTION_REQUIRED"
+}

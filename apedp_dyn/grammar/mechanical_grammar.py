@@ -23,7 +23,6 @@ from apedp_dyn.gates import (
     equation_admissibility_structure,
 )
 from apedp_dyn.grammar.candidate_ir import (
-    GRAMMAR_VERSION,
     CandidateDynamics,
     ScoredCandidate,
     Term,
@@ -47,6 +46,14 @@ _TERM_BUILDERS = {
     "sin_x": lambda X, V, U, XR: sp.sin(X),
     "xr": lambda X, V, U, XR: XR,
     "dxr": lambda X, V, U, XR: XR - X,  # typed relative displacement Δx
+    "c1": lambda X, V, U, XR: X ** 0,  # constraint term 1 (dimensionless)
+    "c2": lambda X, V, U, XR: X ** 0,  # constraint term 2 (dimensionless)
+    "x_f": lambda X, V, U, XR: X,  # fast-state variable
+    "v_f": lambda X, V, U, XR: V,  # fast velocity
+    "x_s": lambda X, V, U, XR: X,  # slow-state variable
+    "v_s": lambda X, V, U, XR: V,  # slow velocity
+    "grad_x": lambda X, V, U, XR: sp.symbols("grad_x"),  # spatial gradient ∇x
+    "laplacian_x": lambda X, V, U, XR: sp.symbols("laplacian_x"),  # ∇²x
 }
 
 DEFAULT_TOPOLOGY = ("one", "x", "x3", "v", "abs_v_v", "sin_x", "u")

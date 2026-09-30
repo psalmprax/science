@@ -32,10 +32,15 @@ def _parse_physics_expr(expression: str) -> sp.Basic:
     written meaning. It also makes a typo'd function name a NameError at
     parse time rather than an attribute lookup deeper in the stack.
     """
+    # An identifier is only treated as an allowed function if it is explicitly
+    # called with parentheses, e.g. sin(x) or gamma(x). Uncalled identifiers
+    # like gamma*x or beta*y are algebraic variables/parameters.
+    called = set(re.findall(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(", expression))
+    all_idents = set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", expression))
     local: dict[str, object] = {
         ident: sp.Symbol(ident)
-        for ident in set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", expression))
-        if ident not in _ALLOWED_CALLS
+        for ident in all_idents
+        if not (ident in called and ident in _ALLOWED_CALLS)
     }
     return sp.parse_expr(expression, local_dict=local)
 

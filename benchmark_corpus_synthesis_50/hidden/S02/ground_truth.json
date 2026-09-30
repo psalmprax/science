@@ -1,0 +1,16 @@
+{
+  "problem_id": "S02",
+  "class_id": 1,
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "(1.8 * x**0.5 / (1.0 + 0.5 * x**1.0)) * exp(-0.2 * x**1.0)",
+  "canonical_structural_family": "rational_exponential_envelope",
+  "true_parameters": {
+    "A": 1.8,
+    "alpha": 0.5,
+    "B": 0.5,
+    "beta": 1.0,
+    "C": 0.2,
+    "gamma": 1.0
+  }
+}

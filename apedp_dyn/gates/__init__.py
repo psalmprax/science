@@ -12,6 +12,7 @@ from apedp_dyn.gates.dimensional import (
     _dims_of,
     _unit_of,
     _ureg,
+    dao_validity,
     dimensional_validity,
 )
 from apedp_dyn.gates.intervention import (
@@ -23,7 +24,7 @@ from apedp_dyn.gates.simulation import forward_simulation_validity
 
 
 def run_all_gates(model, problem) -> list[GateResult]:
-    """All four gates in fixed order. No short-circuit: full audit trail."""
+    """All five gates in fixed order. No short-circuit: full audit trail."""
     t = problem.train
     return [
         dimensional_validity(model),
@@ -31,6 +32,7 @@ def run_all_gates(model, problem) -> list[GateResult]:
         forward_simulation_validity(model, t["t_span"], t["u_of_t"],
                                     np.asarray(t["x0"], dtype=float)),
         intervention_holdout(model, problem),
+        dao_validity(model),
     ]
 
 
@@ -42,6 +44,7 @@ __all__ = [
     "_unit_of",
     "_ureg",
     "auto_tolerance",
+    "dao_validity",
     "dimensional_validity",
     "equation_admissibility",
     "equation_admissibility_structure",

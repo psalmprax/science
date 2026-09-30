@@ -1,0 +1,217 @@
+=== HEAD ===
+e563be11e2c501fd81f9c73f7ec7163ec22eced3 2026-09-23 13:14:06 +0200
+=== STATUS ===
+D  .freebuff/project-id
+ M .github/workflows/test.yml
+ M .gitignore
+D  .kilo/agents/data.md
+D  .planning/phase_sota_neural/PLAN.md
+D  .refact/buddy/briefings/2026-09-18.json
+D  .refact/buddy/briefings/2026-09-19.json
+D  .refact/buddy/briefings/2026-09-20.json
+D  .refact/buddy/briefings/2026-09-21.json
+D  .refact/buddy/briefings/2026-09-22.json
+D  .refact/buddy/briefings/2026-09-23.json
+D  .refact/buddy/chats/workflows/buddy_architecture_drift_watcher.json
+D  .refact/buddy/chats/workflows/buddy_daily_digest.json
+D  .refact/buddy/chats/workflows/buddy_docs_gardener.json
+D  .refact/buddy/chats/workflows/buddy_friday_retro.json
+D  .refact/buddy/chats/workflows/buddy_idle_suggester.json
+D  .refact/buddy/chats/workflows/buddy_memory_gardener.json
+D  .refact/buddy/chats/workflows/buddy_pr_issue_matchmaker.json
+D  .refact/buddy/chats/workflows/buddy_refactor_hunter.json
+D  .refact/buddy/chats/workflows/buddy_security_whisperer.json
+D  .refact/buddy/chats/workflows/buddy_setup_coach.json
+D  .refact/buddy/drafts.json
+D  .refact/buddy/main_prompt.md
+D  .refact/buddy/memory_ops.jsonl
+D  .refact/buddy/memory_ops.jsonl.lock
+D  .refact/buddy/runtime_queue.jsonl
+D  .refact/buddy/settings.json
+D  .refact/buddy/state.json
+D  .refact/knowledge/2026-09-18_213442_0bb6be1c_git-cochange-pattern-apedpinitpy-apedpevalextended.md
+D  .refact/knowledge/2026-09-18_213442_30f52b4c_git-hotspot-apedpdiscoverypy.md
+D  .refact/knowledge/2026-09-18_213442_3e536b40_git-hotspot-apedpbenchmarkspy.md
+D  .refact/knowledge/2026-09-18_213442_5bb7babd_git-hotspot-apedpfalsificationpy.md
+D  .refact/knowledge/2026-09-18_213442_6265d162_git-hotspot-antipatternsmd.md
+D  .refact/knowledge/2026-09-18_213442_656691cb_git-cochange-pattern-apedppdesolverspy-docsdiscove.md
+D  .refact/knowledge/2026-09-18_213442_6dd29ea4_git-decision-from-773f9003371c.md
+D  .refact/knowledge/2026-09-18_213442_75e0831a_git-hotspot-teststestgatedscientificassurancepy.md
+D  .refact/knowledge/2026-09-18_213442_787bb9ce_git-cochange-pattern-apedpevalextendedpy-docsdisco.md
+D  .refact/knowledge/2026-09-18_213442_8441bf4d_git-hotspot-teststestapedpsuitepy.md
+D  .refact/knowledge/2026-09-18_213442_966d6db3_git-cochange-pattern-apedpinitpy-apedprepairpy.md
+D  .refact/knowledge/2026-09-18_213442_97a543ab_git-hotspot-apedpgatedassurancepy.md
+D  .refact/knowledge/2026-09-18_213442_9a8ea29f_git-hotspot-apedpepistemicpy.md
+D  .refact/knowledge/2026-09-18_213442_cef0f7d7_git-cochange-pattern-apedpinitpy-apedppdesolverspy.md
+D  .refact/knowledge/2026-09-18_213442_ffe15ea1_git-lesson-from-f377a323277d.md
+D  .refact/project_information.yaml
+D  .refact/tasks/index.json
+ M apedp/__init__.py
+ M apedp/ablation.py
+ M apedp/adaptive_search.py
+ M apedp/api/routes/discovery.py
+ M apedp/api/routes/epistemic.py
+ M apedp/conformal.py
+M  apedp/core.py
+ M apedp/cross_domain_benchmark.py
+ M apedp/decay_models.py
+ M apedp/decision/__init__.py
+ M apedp/decision/policy.py
+ M apedp/decision_benchmark.py
+MM apedp/dimensional_layer.py
+ M apedp/discovery.py
+ M apedp/discovery_admission.py
+ M apedp/discovery_quality.py
+ M apedp/evolutionary_search.py
+ M apedp/experiment_designer.py
+ M apedp/expressiveness.py
+ M apedp/family_guided_discovery.py
+ M apedp/family_proposal.py
+ M apedp/hierarchical.py
+ M apedp/identifiability.py
+ M apedp/ingestion/__init__.py
+ M apedp/ingestion/external_science.py
+ M apedp/jax_pde_solver.py
+ M apedp/neural_discovery/active_learning.py
+ M apedp/neural_discovery/integration.py
+ M apedp/neural_discovery/symbolic.py
+ M apedp/neural_discovery/training.py
+ M apedp/neural_discovery/uncertainty.py
+ M apedp/neural_discovery/validation.py
+ M apedp/pathology_benchmarks.py
+MM apedp/pipeline.py
+ M apedp/priors.py
+ M apedp/qd_generation.py
+ M apedp/regime_diagnostics.py
+ M apedp/repair.py
+ M apedp/structured_priors.py
+ M apedp/time_series.py
+ M apedp/turnover_models.py
+ M apedp_persistence/lifecycle.json
+ M pyproject.toml
+ M tests/conftest.py
+ M tests/test_adaptive_search.py
+ M tests/test_api_routes.py
+ M tests/test_decay_models.py
+ M tests/test_discovery_benchmark.py
+ M tests/test_discovery_quality.py
+ M tests/test_evolutionary_search.py
+ M tests/test_external_benchmarks.py
+ M tests/test_falsification_and_benchmarks.py
+ M tests/test_family_proposal.py
+ M tests/test_jev_backend.py
+ M tests/test_neural_discovery.py
+ M tests/test_pathology_benchmarks.py
+ M tests/test_prospective_and_composer.py
+ M tests/test_regime_diagnostics.py
+ M tests/test_structured_priors.py
+ M tests/test_system_flaws_audit.py
+ M tests/test_time_series.py
+ M tests/test_validation_layers.py
+?? Cargo.lock
+?? Cargo.toml
+?? apedp/bayesian_refinement.py
+?? apedp/bootstrap_stability.py
+?? apedp/canonical_compiler.py
+?? apedp/constitution.py
+?? apedp/decision/stage_c.py
+?? apedp/discovery_types.py
+?? apedp/domain_forensics.py
+?? apedp/epistemic_pruning.py
+?? apedp/evidence_acquisition.py
+?? apedp/evidence_report.py
+?? apedp/family_detection.py
+?? apedp/feature_selection.py
+?? apedp/guided_search.py
+?? apedp/mathematical/
+?? apedp/model_synthesis.py
+?? apedp/neural_surrogate.py
+?? apedp/numerical_policy.py
+?? apedp/parameter_diagnostics.py
+?? apedp/physics_constraints.py
+?? apedp/rust_bridge.py
+?? apedp/self_improvement.py
+?? apedp/separability.py
+?? apedp/separability_calibration.py
+?? apedp/singularity_probing.py
+?? apedp/special_functions.py
+?? apedp/symbolic_equivalence.py
+?? apedp/typed_grammar.py
+?? apedp/varpro.py
+?? apedp_kernel
+?? benchmark_corpus/
+?? benchmark_corpus_external_60/
+?? benchmarks/
+?? crates/
+?? docs/APEDP_V4_50_TOURNAMENT_RESULTS.md
+?? docs/APEDP_V4_SYNTHESIS_BENCHMARK_REPORT.md
+?? docs/FROZEN_APEDP_V3_SPECIFICATION.md
+?? docs/FROZEN_APEDP_V4_1_SPECIFICATION.md
+?? docs/PHASE5A_FORENSIC_AUDIT.md
+?? docs/PHYSICAL_BENCHMARK_METHODOLOGY_AND_THREATS_TO_VALIDITY.md
+?? docs/PREREGISTRATION_ABSTENTION_TOURNAMENT.md
+?? docs/PREREGISTRATION_APEDP_BENCH_EXPANSION.md
+?? docs/PREREGISTRATION_APEDP_V4_EQUATION_SYNTHESIS.md
+?? docs/PREREGISTRATION_APEDP_V4_TOURNAMENT_50.md
+?? docs/PREREGISTRATION_FROZEN_EXTERNAL_BENCHMARK.md
+?? docs/PREREGISTRATION_PHASE4.md
+?? docs/PREREGISTRATION_RH_BENCHMARK.md
+?? docs/RUST_NUMERICAL_KERNEL_ARCHITECTURE_PLAN.md
+?? docs/TOURNAMENT_RESULTS_AND_STRATEGY.md
+?? docs/WRAPPED_TOURNAMENT_RESULTS.md
+?? mypy-neural.ini
+?? target/
+?? tests/test_abstention_wrapper.py
+?? tests/test_adversarial_dimensional_synthesis.py
+?? tests/test_benchmark_corpus_and_evaluator.py
+?? tests/test_bootstrap_stability.py
+?? tests/test_cross_implementation_conformance.py
+?? tests/test_decisive_benchmark_protocol.py
+?? tests/test_discovery_architecture.py
+?? tests/test_discovery_sign_correctness.py
+?? tests/test_epistemic_pruning.py
+?? tests/test_evidence_acquisition.py
+?? tests/test_evolutionary_integration.py
+?? tests/test_forensics.py
+?? tests/test_guided_search.py
+?? tests/test_identifiability_frontier.py
+?? tests/test_mdl_calibration.py
+?? tests/test_model_synthesis.py
+?? tests/test_multivariable_benchmark.py
+?? tests/test_parameter_diagnostics.py
+?? tests/test_physics_constraints.py
+?? tests/test_precision_scaling.py
+?? tests/test_rh_benchmark.py
+?? tests/test_scale_invariance.py
+?? tests/test_self_improvement.py
+?? tests/test_self_improvement_demo.py
+?? tests/test_separability.py
+?? tests/test_separability_calibration.py
+?? tests/test_singularity_probing.py
+?? tests/test_sparse_selection_parsimony.py
+?? tests/test_special_functions.py
+?? tests/test_stage_c_epistemic.py
+?? tests/test_structure_family_unknown.py
+?? tests/test_symbolic_equivalence.py
+?? tests/test_tier_bc_benchmark.py
+?? tests/test_tri_hypothesis_pipeline.py
+?? tests/test_typed_grammar.py
+?? tests/test_varpro.py
+=== PINS ===
+derivative==0.6.3
+jax==0.11.2
+jaxlib==0.11.2
+jaxopt==0.8.5
+jaxtyping==0.3.11
+numpy==2.5.3
+pandas==3.0.5
+Pint==0.26.1
+pysindy==2.1.0
+pytest==9.1.1
+scikit-learn==1.9.1
+scipy==1.18.1
+sympy==1.14.0
+=== COMPETITOR PINS (protocol) ===
+pysr==2.5.0 (requires Julia)
+pysindy==2.1.0 (installed 2.1.0)
+ai-feynman @ a05bc4a (not installed)

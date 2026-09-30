@@ -1,0 +1,14 @@
+{
+  "problem_id": "S22",
+  "class_id": 3,
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "1.5 * abs(x - 3.0)**(-0.75) + 0.5 * x",
+  "canonical_structural_family": "critical_scaling_divergence",
+  "true_parameters": {
+    "xc": 3.0,
+    "gamma": 0.75,
+    "A": 1.5,
+    "B": 0.5
+  }
+}

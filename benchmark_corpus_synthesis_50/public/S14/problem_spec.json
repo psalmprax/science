@@ -1,0 +1,24 @@
+{
+  "problem_id": "S14",
+  "problem_name": "Logarithmic Boundary Layer S14",
+  "class_id": 2,
+  "class_name": "Logarithmic & Boundary Layers",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "variable_units": {
+    "x": "meter",
+    "y": "meter / second"
+  },
+  "physical_constraints": {
+    "origin_limit": 0.0,
+    "positivity": true
+  },
+  "dataset_sizes": {
+    "train": 70,
+    "validation": 40,
+    "near_ood": 50,
+    "far_ood": 50
+  }
+}

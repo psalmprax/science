@@ -1,0 +1,28 @@
+{
+  "problem_id": "S21",
+  "problem_name": "Critical Scaling S21",
+  "class_id": 3,
+  "class_name": "Critical Exponents & Scaling",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "variable_units": {
+    "x": "kelvin",
+    "y": "joule / kelvin"
+  },
+  "physical_constraints": {
+    "sampling_gaps": [
+      [
+        2.3,
+        2.7
+      ]
+    ]
+  },
+  "dataset_sizes": {
+    "train": 70,
+    "validation": 40,
+    "near_ood": 50,
+    "far_ood": 50
+  }
+}

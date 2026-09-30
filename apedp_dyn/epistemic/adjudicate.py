@@ -44,7 +44,7 @@ class EpistemicStatus(str, Enum):
     NO_VALID_CANDIDATE = "no_valid_candidate"
 
 
-DYNAMIC_EPISTEMIC_VERSION = "bootstrap-v2+solefid-v4"
+DYNAMIC_EPISTEMIC_VERSION = "bootstrap-v3+solefid-v5"
 """Version stamp for the adjudication contract (bootstrap tiebreaker + the
 sole-survivor fidelity and whiteness guards). Recorded into artifacts by
 dyn_sweep and dyn_tournament so a stored verdict can be traced to the rules
@@ -126,6 +126,77 @@ class EpistemicContract(str, Enum):
     UNKNOWN = "unknown"
 
 
+class DataOrigin(str, Enum):
+    """Standardized provenance taxonomy for data records in APEDP-DYN.
+
+    Separates observational and experimental sources:
+      SYNTHETIC:          analytical formula evaluations with synthetic noise.
+      SIMULATION:         forward-integrated numerical ODE/PDE or analog quantum simulations.
+      REAL_OBSERVATIONAL: passive observational records from the field or markets without intervention.
+      EXPERIMENTAL:       active laboratory or physical interventions with controlled parameters.
+      UNKNOWN:            unannotated / legacy fallback.
+    """
+
+    SYNTHETIC = "synthetic"
+    SIMULATION = "simulation"
+    REAL_OBSERVATIONAL = "real_observational"
+    EXPERIMENTAL = "experimental"
+    UNKNOWN = "unknown"
+
+
+class BenchmarkLevel(str, Enum):
+    """Formal capability taxonomy for APEDP benchmark suites.
+
+    Explicitly declares which capability tier a benchmark is exercising:
+      L0_SELECTION:            Human/predefined candidates. Tests comparative adjudication without overclaiming.
+      L1_CONSTRAINED_DISCOVERY: Restricted grammar over known vocabulary. Tests candidate generation & supported term identification.
+      L2_OPEN_DISCOVERY:       Broad grammar + physical/dimensional invariance gates. Tests unconstrained equation discovery.
+      L3_ACTIVE_DISCOVERY:     L2 + optimal experimental intervention design to actively discriminate remaining hypotheses.
+      UNKNOWN:                 Unannotated / legacy fallback.
+    """
+
+    L0_SELECTION = "L0_selection"
+    L1_CONSTRAINED_DISCOVERY = "L1_constrained_discovery"
+    L2_OPEN_DISCOVERY = "L2_open_discovery"
+    L3_ACTIVE_DISCOVERY = "L3_active_discovery"
+    UNKNOWN = "unknown"
+
+
+class EpistemicAttribution(str, Enum):
+    """Diagnostic meta-evidence attributing WHY an epistemic verdict occurred.
+
+    Separates hypothesis-space insufficiency from intrinsic physical/observational
+    indistinguishability, measurement noise swamping, and misspecification:
+      HYPOTHESIS_SPACE_LIMITED:
+        Abstention occurred because the admissible candidate space was starved,
+        saturated, or lacked necessary functional expressiveness (model-space starvation).
+      INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY:
+        Multiple distinct mechanisms or parameterizations fit the data equally well
+        within resolution floor tau_epi because the observational regime lacks distinguishing power.
+      MEASUREMENT_NOISE_SWAMPED:
+        The observational noise scale sigma / sqrt(n) or amplitude floor overwhelms
+        the structural signal, rendering hypotheses unresolvable under available data.
+      OUT_OF_GRAMMAR_OR_MISSPECIFIED:
+        All candidates failed numerical admissibility or predictive adequacy ceilings.
+      DECISIVE_EVIDENTIAL_SUPPORT:
+        The winning candidate was decisively separated (Delta > tau_epi) and confirmed
+        by validation and bootstrap checks.
+      BOOTSTRAP_INSTABILITY:
+        Point estimate cleared tau_epi, but paired block-bootstrap confidence interval
+        straddled zero, indicating sampling instability.
+      UNKNOWN:
+        Unattributed fallback.
+    """
+
+    HYPOTHESIS_SPACE_LIMITED = "hypothesis_space_limited"
+    INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY = "intrinsic_observational_nonidentifiability"
+    MEASUREMENT_NOISE_SWAMPED = "measurement_noise_swamped"
+    OUT_OF_GRAMMAR_OR_MISSPECIFIED = "out_of_grammar_or_misspecified"
+    DECISIVE_EVIDENTIAL_SUPPORT = "decisive_evidential_support"
+    BOOTSTRAP_INSTABILITY = "bootstrap_instability"
+    UNKNOWN = "unknown"
+
+
 REL_FLOOR = 0.05
 """Amplitude resolution floor: a rival whose holdout RMSE differs by less than
 REL_FLOOR of the observed signal RMS is not resolved by the intervention
@@ -190,6 +261,9 @@ class Adjudication:
     bootstrap_lo: float | None = None
     bootstrap_hi: float | None = None
     contract: EpistemicContract = EpistemicContract.UNKNOWN
+    data_origin: str = "unknown"
+    benchmark_level: str = "unknown"
+    epistemic_attribution: str = "unknown"
     reason: str = ""
 
 
@@ -348,6 +422,24 @@ def _winner_structure_note(resid: Any, threshold: float) -> str:
             "distinct rival was separated on this holdout")
 
 
+def _bootstrap_refusal_detail(tb: dict) -> str:
+    """Reason detail for a bootstrap overturn, by branch.
+
+    A 'multi' CI straddles zero (no separation); a 'rival-favored' CI lies
+    entirely below zero (resampled evidence favors the rival), so promoting
+    the point-winner would contradict the bootstrap. Rank revision (promoting
+    the rival instead) is out of scope: both cases refuse promotion.
+    """
+    if tb.get("branch") == "rival-favored":
+        return (f"paired block bootstrap favors the rival (CI "
+                f"[{tb.get('lo'):.3g}, {tb.get('hi'):.3g}] entirely below 0); "
+                f"promoting the point-winner would contradict the resampled "
+                f"evidence (rank revision is out of scope)")
+    return (f"paired block bootstrap (CI [{tb.get('lo'):.3g}, "
+            f"{tb.get('hi'):.3g}] straddles 0); the holdout does "
+            f"not separate the two structures")
+
+
 def adjudicate(fitted: list,
                tau_epi: float | None = None,
                holdout_noise_scale: float | None = None,
@@ -360,7 +452,10 @@ def adjudicate(fitted: list,
                bootstrap_seed: int = 0,
                sole_survivor_rule: bool = True,
                sole_gamma: float = SOLE_SURVIVOR_GAMMA,
-               sole_rho_flag: float = RESID_RHO_FLAG) -> Adjudication:
+               sole_rho_flag: float = RESID_RHO_FLAG,
+                data_origin: str = "unknown",
+                benchmark_level: str = "unknown",
+                epistemic_attribution: str = "unknown") -> Adjudication:
     """Rank by train loss, then adjudicate on holdout evidence. Deterministic.
 
     sole_survivor_rule=True (default) enforces the frozen absolute-fidelity
@@ -378,6 +473,17 @@ def adjudicate(fitted: list,
     bootstrap=True is different in kind: the caller explicitly asked for a
     stronger guarantee, so if the tiebreaker is not compiled in this raises
     :data:`CAPABILITY_ABSENT` rather than quietly returning the weaker verdict.
+
+    data_origin labels the provenance source (e.g. "simulation", "experimental",
+    "synthetic", "real_observational"). Can be passed directly or read from candidate provenance.
+
+    benchmark_level declares the capability tier under test (L0_selection,
+    L1_constrained_discovery, L2_open_discovery, L3_active_discovery).
+
+    epistemic_attribution attributes why an epistemic verdict occurred (e.g.
+    "hypothesis_space_limited", "intrinsic_observational_nonidentifiability",
+    "measurement_noise_swamped", "out_of_grammar_or_misspecified", "decisive_evidential_support",
+    "bootstrap_instability"). Can be passed directly or read from candidate provenance.
     """
     # Capability gate first: an explicit opt-in that cannot be honored must
     # fail before any verdict is computed, so no caller can mistake the
@@ -399,10 +505,35 @@ def adjudicate(fitted: list,
         key=lambda s: s.train_loss)
 
     if not ranked:
+        attr = (epistemic_attribution if epistemic_attribution != "unknown"
+                else (EpistemicAttribution.HYPOTHESIS_SPACE_LIMITED.value if len(fitted) == 0
+                      else EpistemicAttribution.OUT_OF_GRAMMAR_OR_MISSPECIFIED.value))
         return Adjudication(EpistemicStatus.NO_VALID_CANDIDATE,
                             contract=contract,
+                            data_origin=data_origin,
+                            benchmark_level=benchmark_level,
+                            epistemic_attribution=attr,
                             reason="no scored candidates")
     best = ranked[0]
+
+    # If data_origin was not explicitly supplied, check best candidate provenance
+    if data_origin == "unknown":
+        prov_origin = best.provenance.get("data_origin")
+        if prov_origin:
+            data_origin = str(prov_origin)
+
+    # If benchmark_level was not explicitly supplied, check best candidate provenance
+    if benchmark_level == "unknown":
+        prov_lvl = best.provenance.get("benchmark_level")
+        if prov_lvl:
+            benchmark_level = str(prov_lvl)
+
+    # If epistemic_attribution was not explicitly supplied, check best candidate provenance
+    if epistemic_attribution == "unknown":
+        prov_attr = best.provenance.get("epistemic_attribution")
+        if prov_attr:
+            epistemic_attribution = str(prov_attr)
+
     g4 = best.provenance.get("gate4_status", {})
     if holdout_noise_scale is None:
         holdout_noise_scale = g4.get("holdout_noise_sigma")
@@ -417,12 +548,17 @@ def adjudicate(fitted: list,
             scale_source = "gate4_provenance"
 
     if not g4.get("passed", False):
+        attr = (epistemic_attribution if epistemic_attribution != "unknown"
+                else EpistemicAttribution.OUT_OF_GRAMMAR_OR_MISSPECIFIED.value)
         return Adjudication(
             EpistemicStatus.INSUFFICIENT_EVIDENCE, ranking=tuple(ranked),
             best_rmse=best.holdout_rmse,
             holdout_noise_scale=holdout_noise_scale,
             holdout_scale_source=scale_source,
             contract=contract,
+            data_origin=data_origin,
+            benchmark_level=benchmark_level,
+            epistemic_attribution=attr,
             reason=f"rank-1 {best.candidate.candidate_id} fails gate 4: "
                    f"{g4.get('detail', 'no holdout evidence')}; "
                    "no promotion of least-bad models")
@@ -437,12 +573,17 @@ def adjudicate(fitted: list,
     if tau is None:
         # No scale means no resolution. Abstain; never fall back to a constant
         # (a missing key must not read as "zero tolerance").
+        attr = (epistemic_attribution if epistemic_attribution != "unknown"
+                else EpistemicAttribution.MEASUREMENT_NOISE_SWAMPED.value)
         return Adjudication(
             EpistemicStatus.INSUFFICIENT_EVIDENCE, ranking=tuple(ranked),
             best_rmse=best.holdout_rmse,
             holdout_noise_scale=holdout_noise_scale,
             holdout_scale_source=scale_source,
             contract=contract,
+            data_origin=data_origin,
+            benchmark_level=benchmark_level,
+            epistemic_attribution=attr,
             reason="rank-1 passes gate 4 but the holdout record carries no "
                    "scale (obs_rms/noise_sigma), so no rival can be resolved; "
                    "pass holdout_scale= or tau_epi= to supply one")
@@ -455,6 +596,8 @@ def adjudicate(fitted: list,
             # Guard 1: absolute predictive adequacy (ceiling first).
             ok1, why1 = _sole_survivor_fidelity(best, scale, sole_gamma)
             if not ok1:
+                attr = (epistemic_attribution if epistemic_attribution != "unknown"
+                        else EpistemicAttribution.OUT_OF_GRAMMAR_OR_MISSPECIFIED.value)
                 return Adjudication(
                     EpistemicStatus.INSUFFICIENT_EVIDENCE, ranking=tuple(ranked),
                     best_rmse=best_rmse, delta_rmse=None, tau_epi=tau,
@@ -462,6 +605,9 @@ def adjudicate(fitted: list,
                     holdout_noise_scale=holdout_noise_scale,
                     holdout_scale_source=scale_source, epistemic_margin=None,
                     contract=contract,
+                    data_origin=data_origin,
+                    benchmark_level=benchmark_level,
+                    epistemic_attribution=attr,
                     reason=f"sole survivor {best.candidate.candidate_id} passed "
                            f"numerical admissibility but failed the pre-specified "
                            f"absolute holdout-fidelity contract ({why1}); numerical "
@@ -475,6 +621,8 @@ def adjudicate(fitted: list,
                 series = _residual_series(best)
             ok2, why2 = _sole_survivor_whiteness(series, sole_rho_flag)
             if not ok2:
+                attr = (epistemic_attribution if epistemic_attribution != "unknown"
+                        else EpistemicAttribution.HYPOTHESIS_SPACE_LIMITED.value)
                 return Adjudication(
                     EpistemicStatus.INSUFFICIENT_EVIDENCE, ranking=tuple(ranked),
                     best_rmse=best_rmse, delta_rmse=None, tau_epi=tau,
@@ -482,10 +630,15 @@ def adjudicate(fitted: list,
                     holdout_noise_scale=holdout_noise_scale,
                     holdout_scale_source=scale_source, epistemic_margin=None,
                     contract=contract,
+                    data_origin=data_origin,
+                    benchmark_level=benchmark_level,
+                    epistemic_attribution=attr,
                     reason=f"sole survivor {best.candidate.candidate_id} passed "
                            f"the fidelity ceiling ({why1}) but carries structured "
                            f"holdout residuals ({why2}); accuracy without whiteness "
                            f"is not explanatory support")
+        attr = (epistemic_attribution if epistemic_attribution != "unknown"
+                else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)
         return Adjudication(
             EpistemicStatus.UNIQUE_SUPPORT, promoted=best, ranking=tuple(ranked),
             best_rmse=best_rmse, delta_rmse=None, tau_epi=tau,
@@ -493,18 +646,31 @@ def adjudicate(fitted: list,
             holdout_noise_scale=holdout_noise_scale,
             holdout_scale_source=scale_source, epistemic_margin=None,
             contract=contract,
+            data_origin=data_origin,
+            benchmark_level=benchmark_level,
+            epistemic_attribution=attr,
             reason="no structurally distinct rival survived scoring")
+    # Pair contract accounting: a pair path that runs without bootstrap
+    # tiebreaking runs on point estimates alone and must not masquerade as FULL.
+    pair_contract = (contract if (bootstrap and resid_best is not None and resid_rival is not None)
+                     else EpistemicContract.INCOMPLETE)
+
     second = min(rivals, key=lambda s: s.holdout_rmse)
     delta = float(second.holdout_rmse - best_rmse)
     margin = float(delta - tau)
     if delta <= tau:
+        attr = (epistemic_attribution if epistemic_attribution != "unknown"
+                else EpistemicAttribution.INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY.value)
         return Adjudication(
             EpistemicStatus.MULTI_HYPOTHESIS, ranking=tuple(ranked),
             best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
             delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
             holdout_noise_scale=holdout_noise_scale,
             holdout_scale_source=scale_source, epistemic_margin=margin,
-            contract=contract,
+            contract=pair_contract,
+            data_origin=data_origin,
+            benchmark_level=benchmark_level,
+            epistemic_attribution=attr,
             reason=f"rival {second.candidate.candidate_id} within τ "
                    f"(Δ={delta:.3g} ≤ τ={tau:.3g} [{tau_source}]); structures "
                    "observationally indistinguishable under available "
@@ -520,21 +686,26 @@ def adjudicate(fitted: list,
         tb = tiebreak(delta, float(tau), np.asarray(resid_best, dtype=float),
                       np.asarray(resid_rival, dtype=float),
                       n_boot=bootstrap_n_boot, seed=bootstrap_seed)
-        if tb.get("branch") == "multi":
+        if tb.get("branch") in ("multi", "rival-favored"):
+            attr = (epistemic_attribution if epistemic_attribution != "unknown"
+                    else EpistemicAttribution.BOOTSTRAP_INSTABILITY.value)
             return Adjudication(
                 EpistemicStatus.MULTI_HYPOTHESIS, ranking=tuple(ranked),
                 best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
                 delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
                 holdout_noise_scale=holdout_noise_scale,
                 holdout_scale_source=scale_source, epistemic_margin=margin,
-                bootstrap_branch="multi", bootstrap_lo=tb.get("lo"),
+                bootstrap_branch=tb.get("branch", ""), bootstrap_lo=tb.get("lo"),
                 bootstrap_hi=tb.get("hi"),
                 contract=contract,
+                data_origin=data_origin,
+                benchmark_level=benchmark_level,
+                epistemic_attribution=attr,
                 reason=f"point margin over {second.candidate.candidate_id} "
                        f"(Δ={delta:.3g} > τ={tau:.3g}) does not survive the "
-                       f"paired block bootstrap (CI [{tb.get('lo'):.3g}, "
-                       f"{tb.get('hi'):.3g}] straddles 0); the holdout does "
-                       "not separate the two structures")
+                       f"{_bootstrap_refusal_detail(tb)}")
+        attr = (epistemic_attribution if epistemic_attribution != "unknown"
+                else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)
         return Adjudication(
             EpistemicStatus.UNIQUE_SUPPORT, promoted=best, ranking=tuple(ranked),
             best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
@@ -544,6 +715,9 @@ def adjudicate(fitted: list,
             bootstrap_branch=tb.get("branch", ""), bootstrap_lo=tb.get("lo"),
             bootstrap_hi=tb.get("hi"),
             contract=contract,
+            data_origin=data_origin,
+            benchmark_level=benchmark_level,
+            epistemic_attribution=attr,
             reason=f"rival {second.candidate.candidate_id} separated by "
                    f"Δ={delta:.3g} > τ={tau:.3g} [{tau_source}] and confirmed "
                    f"by the paired block bootstrap (branch "
@@ -551,12 +725,17 @@ def adjudicate(fitted: list,
                    f"{_winner_structure_note(_note_series(best, resid_best), sole_rho_flag)}")
     note = _winner_structure_note(_note_series(best, resid_best),
                                   sole_rho_flag)
+    attr = (epistemic_attribution if epistemic_attribution != "unknown"
+            else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)
     return Adjudication(
         EpistemicStatus.UNIQUE_SUPPORT, promoted=best, ranking=tuple(ranked),
         best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
         delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
         holdout_noise_scale=holdout_noise_scale,
         holdout_scale_source=scale_source, epistemic_margin=margin,
-        contract=contract,
+        contract=pair_contract,
+        data_origin=data_origin,
+        benchmark_level=benchmark_level,
+        epistemic_attribution=attr,
         reason=f"nearest distinct rival separated by Δ={delta:.3g} > "
-               f"τ={tau:.3g} [{tau_source}]{note}")
+        f"τ={tau:.3g} [{tau_source}]{note}")

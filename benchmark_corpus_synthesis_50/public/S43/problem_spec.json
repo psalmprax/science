@@ -1,0 +1,21 @@
+{
+  "problem_id": "S43",
+  "problem_name": "Discontinuous Shock Front S43",
+  "class_id": 5,
+  "class_name": "Epistemic Abstention Adversaries",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "variable_units": {
+    "x": "dimensionless",
+    "y": "dimensionless"
+  },
+  "physical_constraints": {},
+  "dataset_sizes": {
+    "train": 60,
+    "validation": 30,
+    "near_ood": 40,
+    "far_ood": 40
+  }
+}

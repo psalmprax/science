@@ -1,0 +1,190 @@
+{
+  "problem_id": "ADVERSARIAL-DUFFING-TOURNAMENT",
+  "slate_hash": "98ac77e181afc6cc06df382459abd6bcf9068735da67db8e39da1b42510e3abe",
+  "traces": [
+    {
+      "rep": 0,
+      "pct": 3,
+      "rows": {
+        "C1": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.24016531394095972,
+          "holdout_rmse": 0.12369538735399968,
+          "detail": "rmse 0.124 > tol 0.0515 (margin_ratio 2.4)"
+        },
+        "C2": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.6398959827405793,
+          "holdout_rmse": 0.3295737429878087,
+          "detail": "rmse 0.33 > tol 0.0515 (margin_ratio 6.4)"
+        },
+        "C3": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.7021895175233822,
+          "holdout_rmse": 0.3616575721976458,
+          "detail": "rmse 0.362 > tol 0.0515 (margin_ratio 7.02)"
+        },
+        "C4": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.14119967913030007,
+          "holdout_rmse": 0.07272386140063744,
+          "detail": "rmse 0.0727 > tol 0.0515 (margin_ratio 1.41)"
+        },
+        "C5": {
+          "eliminated_at": "gate1",
+          "rmse_rel": null,
+          "holdout_rmse": null,
+          "detail": "materialize rejected: TypeError: unknown symbol 'gxr_remote'"
+        },
+        "C6": {
+          "eliminated_at": "gate3",
+          "rmse_rel": null,
+          "holdout_rmse": null,
+          "detail": "holdout simulation invalid: integrator exception (ValueError): non-finite compiled RHS"
+        },
+        "C7": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.1268646360300095,
+          "holdout_rmse": 0.06534070235935045,
+          "detail": "wrong-regime transfer: rmse 0.0653 > tol 0.0515 (margin_ratio 1.27)"
+        },
+        "C8": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.12952839512928205,
+          "holdout_rmse": 0.0667126519893593,
+          "detail": "rmse 0.0667 > tol 0.0515 (margin_ratio 1.3)"
+        }
+      },
+      "adjudication": "no_valid_candidate",
+      "promoted": null,
+      "n_survivors": 0,
+      "slate_hash": "98ac77e181afc6cc06df382459abd6bcf9068735da67db8e39da1b42510e3abe",
+      "eps_phys": 0.05,
+      "adjudicator": "bootstrap-v2+solefid-v4",
+      "runtime_s": 18.218813696003053
+    },
+    {
+      "rep": 1,
+      "pct": 3,
+      "rows": {
+        "C1": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.1271879190908279,
+          "holdout_rmse": 0.0656659740938268,
+          "detail": "rmse 0.0657 > tol 0.0516 (margin_ratio 1.27)"
+        },
+        "C2": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.6391760396245492,
+          "holdout_rmse": 0.33000081736856757,
+          "detail": "rmse 0.33 > tol 0.0516 (margin_ratio 6.39)"
+        },
+        "C3": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.7150256150252206,
+          "holdout_rmse": 0.36916126821084755,
+          "detail": "rmse 0.369 > tol 0.0516 (margin_ratio 7.15)"
+        },
+        "C4": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.31524055962864245,
+          "holdout_rmse": 0.16275585424992386,
+          "detail": "rmse 0.163 > tol 0.0516 (margin_ratio 3.15)"
+        },
+        "C5": {
+          "eliminated_at": "gate1",
+          "rmse_rel": null,
+          "holdout_rmse": null,
+          "detail": "materialize rejected: TypeError: unknown symbol 'gxr_remote'"
+        },
+        "C6": {
+          "eliminated_at": "gate3",
+          "rmse_rel": null,
+          "holdout_rmse": null,
+          "detail": "holdout simulation invalid: integrator exception (ValueError): non-finite compiled RHS"
+        },
+        "C7": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.12870979682194458,
+          "holdout_rmse": 0.066451705823537,
+          "detail": "wrong-regime transfer: rmse 0.0665 > tol 0.0516 (margin_ratio 1.29)"
+        },
+        "C8": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.1078298400623094,
+          "holdout_rmse": 0.05567157269879196,
+          "detail": "rmse 0.0557 > tol 0.0516 (margin_ratio 1.08)"
+        }
+      },
+      "adjudication": "no_valid_candidate",
+      "promoted": null,
+      "n_survivors": 0,
+      "slate_hash": "98ac77e181afc6cc06df382459abd6bcf9068735da67db8e39da1b42510e3abe",
+      "eps_phys": 0.05,
+      "adjudicator": "bootstrap-v2+solefid-v4",
+      "runtime_s": 13.48576905799564
+    },
+    {
+      "rep": 2,
+      "pct": 3,
+      "rows": {
+        "C1": {
+          "eliminated_at": "adjudication",
+          "rmse_rel": 0.0838568104013051,
+          "holdout_rmse": 0.043239421330238136,
+          "detail": "rmse 0.0432 <= tol 0.0516 (margin_ratio 0.839)"
+        },
+        "C2": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.6324834785357555,
+          "holdout_rmse": 0.32612997658680953,
+          "detail": "rmse 0.326 > tol 0.0516 (margin_ratio 6.32)"
+        },
+        "C3": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.6530859496009562,
+          "holdout_rmse": 0.33675331084635335,
+          "detail": "rmse 0.337 > tol 0.0516 (margin_ratio 6.53)"
+        },
+        "C4": {
+          "eliminated_at": "adjudication",
+          "rmse_rel": 0.042459023808291925,
+          "holdout_rmse": 0.021893315652377517,
+          "detail": "rmse 0.0219 <= tol 0.0516 (margin_ratio 0.425)"
+        },
+        "C5": {
+          "eliminated_at": "gate1",
+          "rmse_rel": null,
+          "holdout_rmse": null,
+          "detail": "materialize rejected: TypeError: unknown symbol 'gxr_remote'"
+        },
+        "C6": {
+          "eliminated_at": "gate3",
+          "rmse_rel": null,
+          "holdout_rmse": null,
+          "detail": "holdout simulation invalid: integrator exception (ValueError): non-finite compiled RHS"
+        },
+        "C7": {
+          "eliminated_at": "gate4",
+          "rmse_rel": 0.12769708066575014,
+          "holdout_rmse": 0.0658449545972934,
+          "detail": "wrong-regime transfer: rmse 0.0658 > tol 0.0516 (margin_ratio 1.28)"
+        },
+        "C8": {
+          "eliminated_at": "adjudication",
+          "rmse_rel": 0.07452084855772353,
+          "holdout_rmse": 0.03842548211950746,
+          "detail": "rmse 0.0384 <= tol 0.0516 (margin_ratio 0.745)"
+        }
+      },
+      "adjudication": "multi_hypothesis",
+      "promoted": null,
+      "n_survivors": 3,
+      "slate_hash": "98ac77e181afc6cc06df382459abd6bcf9068735da67db8e39da1b42510e3abe",
+      "eps_phys": 0.05,
+      "adjudicator": "bootstrap-v2+solefid-v4",
+      "runtime_s": 11.226330835022964
+    }
+  ],
+  "termination": "SUCCESS"
+}

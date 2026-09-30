@@ -1,0 +1,28 @@
+{
+  "problem_id": "S27",
+  "problem_name": "Critical Scaling S27",
+  "class_id": 3,
+  "class_name": "Critical Exponents & Scaling",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "variable_units": {
+    "x": "kelvin",
+    "y": "joule / kelvin"
+  },
+  "physical_constraints": {
+    "sampling_gaps": [
+      [
+        3.0,
+        3.4
+      ]
+    ]
+  },
+  "dataset_sizes": {
+    "train": 70,
+    "validation": 40,
+    "near_ood": 50,
+    "far_ood": 50
+  }
+}
