@@ -38,6 +38,38 @@ rewrite wearing the original's filename, and is labelled as such.
 | --- | --- |
 | `tests/test_singularity_probing.py` | Re-authored. Verified verdict-identical to the bytecode original across 13 mutants by `tools/orphan_equivalence.py`. |
 | `tests/test_physics_constraints.py` | Re-authored against the current API. Could not be equivalence-verified: the subject API drifted and the original raises `TypeError` on six of eight tests. Four negative assertions added beyond the original. |
+| `apedp/constitution.py` | Re-authored. Verified over the auditor's entire distinguishable input space — 1027/1027 identical, including every `sha256` — by `tools/constitution_equivalence.py`. |
+| `apedp/self_improvement.py` | Re-authored. Verified 24/24 by `tools/self_improvement_equivalence.py`, covering all detector rules, all gatekeeper paths, and all dataclass shapes. |
+| `tests/test_constitution.py` | Written new, to pin the recovered governance layer. Found a real defect on the way in; see below. |
+
+## Unrecoverable against the current API — decided, not pending
+
+Three orphaned test files remain, and none of them is a re-authoring job.
+Each exercises an entry point that no longer exists, or a feature whose
+module is in the lost list above. Writing "recovered" versions against the
+replacements would produce tests that pass while asserting something other
+than what the originals asserted — lineage the file would not have.
+
+| File | Tests | Missing subject |
+| --- | --- | --- |
+| `test_evolutionary_integration` | 6 | `SearchConfig` no longer has `use_typed_grammar`, `use_varpro`, `in_loop_epistemic_guard`, or `use_separability`. These are the flags for `apedp/typed_grammar`, `apedp/varpro`, `apedp/epistemic_pruning`, and `apedp/separability` — all four lost. This file is the test suite for exactly the capability that is gone, and is the clearest single statement of what was lost. |
+| `test_tri_hypothesis_pipeline` | 2 | `DiscoveryPipeline.run_tri_hypothesis` no longer exists. The pipeline exposes only `run` and `run_prospective`. |
+| `test_decisive_benchmark_protocol` | 12 | `DiscoveryPipeline.run_scientific_investigation` no longer exists; the method is now `run`, with a different signature. This is the most valuable artifact in the set — the system's own 12 adversarial cases, with full docstrings surviving in the bytecode — and it is worth recovering as a design document even if it cannot be recovered as a test. |
+
+Recovering any of them is a capability-restoration task, not a bookkeeping
+one. The four modules behind `test_evolutionary_integration` would have to
+come back first.
+
+## Scratch files — not recoverable by intent
+
+`test_zzdebug_tmp`, `test_zzexact_tmp`, `test_zzwhich_tmp` contain one
+throwaway function each (`test_debug_counts`, `test_exact_copy`,
+`test_which`) with no module docstring. They are debugging leftovers. There
+is nothing to recover and nothing worth recovering; they are recorded here
+so the next triage pass does not count them as a loss. Their `__pycache__`
+entries were left in place rather than deleted — the tree is shared with
+concurrent sessions, and removing cache files for tidiness is not a trade
+worth making.
 
 ## Superseded — deliberately not reconstructed
 
@@ -60,7 +92,7 @@ the capability is simply absent.
 
 | Cluster | Modules | Absent |
 | --- | --- | --- |
-| Self-improvement governance | `constitution`, `self_improvement` | `ConstitutionalAuditor`, `ImprovementLedger`, `IndependentGatekeeper`, `ModificationProposal`. 1 of 13 public names live. `self_improvement` imports `constitution`, so these are one cluster. |
+| Self-improvement governance | `constitution`, `self_improvement` | **RECOVERED** — see above. Found a real defect on the way in: the gate is inert. |
 | RH / identifiability frontier | `rh_adversarial`, `rh_dataset`, `rh_evaluator`, `rh_precision`, `precision_scaling_experiment` | ~40 public names, ~4 live |
 | Multi-variable decomposability | `separability`, `separability_calibration` | 1 of 9 and **0 of 8** — the only module in the set with no surviving name at all |
 | Active discrimination | `evidence_acquisition` | `EvidenceAcquisitionEngine`, `find_discriminating_regime`, `find_bayesian_eig_regime`. 2 of 12. Note `apedp/decision/stage_c.py` still emits `discrimination_required`: the concept survives in the decision layer, the engine that answered it does not. |
@@ -74,9 +106,9 @@ the capability is simply absent.
 The seven remaining binding orphan test files
 (`test_decisive_benchmark_protocol`, `test_evolutionary_integration`,
 `test_tri_hypothesis_pipeline`, and the `test_zz*_tmp` scratch files) are
-unrecovered. The first three target superseded APIs and would need
-rewriting against current entry points; the `test_zz*` files are debugging
-scratch and should be discarded.
+dispositioned above: the first three are unrecoverable against the current
+API because the entry points they exercise no longer exist, and the `test_zz*`
+files are debugging scratch with nothing to recover.
 
 ## Separate finding, not a recovery target
 
@@ -99,6 +131,33 @@ something that looks like a result and is not. Implementing it needs
 `PhysicalModel` ("one explicit first-order ODE per state") has nowhere to
 record. The DAE provenance fields and the gate 1.5 checks are the
 specification for that work. Left alone deliberately.
+
+## A defect found by recovering the governance layer
+
+Worth recording here rather than only in a commit message, because it is the
+argument for having done the recovery.
+
+`ConstitutionalAuditor` reads seven boolean flags off a proposal.
+`ModificationProposal` can express two of them. The other five always take
+their default, and one of those defaults is the violating value:
+`supports_ambiguity_preservation` defaults to `False`, which trips INV-9.
+So every proposal is discarded, the gate never promotes, and the
+self-improvement architecture is inert — a constitutionally clean proposal
+that passes the full regression suite is rejected for the single reason that
+it did not affirm something it has no field to affirm.
+
+This is not a reconstruction artifact: the equivalence harness compares it
+against the orphaned bytecode across every reachable input and finds the
+behaviour identical, so the original discarded for the same reason.
+
+The gate is not supposed to be open unconditionally — INV-9 exists so a
+proposal that forces a winner is refused, and that is correct. The defect is
+the mismatch between the two types: the constitution demands a property the
+proposal cannot declare, so compliance is unreachable rather than merely
+uncommon. Pinned by `test_the_proposal_type_cannot_currently_satisfy_inv_9`,
+which asserts the current behaviour and names both repairs. Neither repair
+has been applied, because both are design changes to constitutional
+semantics rather than bug fixes.
 
 ## In progress elsewhere
 
