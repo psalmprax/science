@@ -493,7 +493,41 @@ class TestSelectedFamilyIsScaleFree:
 
     #: A spread across blocks, including the one the original bug hit (C) and
     #: the two genuine family errors (E, P). Deliberately not "the easy ones".
-    SAMPLE = ("P01", "P07", "E16", "C41", "C44", "O01", "R01", "A54")
+    #:
+    #: Resolved from the manifest rather than written out by hand. The corpus
+    #: ids are sparse and non-sequential -- the O block runs O29..O36 and R runs
+    #: R21..R28 -- so hand-written "O01"/"R01" name problems that have never
+    #: existed, and two of the eight parameters failed on FileNotFoundError
+    #: rather than on anything to do with invariance. That is the worst way for
+    #: a test to fail: it looks like a product defect and is really a typo.
+    #: ``test_every_sampled_problem_exists`` now fails loudly if the corpus and
+    #: this list ever diverge again.
+    SAMPLE = ("P01", "P07", "E16", "C41", "C44", "O29", "R21", "A54")
+
+    @classmethod
+    def _corpus_ids(cls) -> list[str]:
+        manifest = json.loads(
+            pathlib.Path("benchmark_corpus_external_60/manifest.json").read_text()
+        )
+        return [p["problem_id"] for p in manifest["problems"]]
+
+    def test_every_sampled_problem_exists(self) -> None:
+        """A sampled id that is not in the corpus is a broken sample, not a bug."""
+        available = set(self._corpus_ids())
+        missing = [pid for pid in self.SAMPLE if pid not in available]
+        assert not missing, (
+            f"SAMPLE names problems absent from the corpus: {missing}. "
+            f"Available: {sorted(available)}"
+        )
+        for pid in self.SAMPLE:
+            assert (CORPUS / pid / "train.csv").is_file(), (
+                f"{pid} is in the manifest but has no train.csv on disk"
+            )
+
+    def test_the_sample_spans_multiple_blocks(self) -> None:
+        """Guards against the sample silently collapsing to one family."""
+        blocks = {pid.rstrip("0123456789") for pid in self.SAMPLE}
+        assert len(blocks) >= 4, f"sample covers too few blocks: {sorted(blocks)}"
 
     @staticmethod
     def _synth(pid: str, xs: float = 1.0):
