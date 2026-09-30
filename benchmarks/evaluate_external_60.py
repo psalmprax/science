@@ -70,6 +70,35 @@ def grid_mse(public_dir: Path, grid_name: str, predictions: list[float]) -> floa
         return None
 
 
+#: A grid whose standard deviation is below this fraction of its own mean|y|
+#: is saturated -- the signal is flat, so a normalized score measures float
+#: noise rather than model quality. A60's far grid sits at 4.6e-05.
+_MIN_SPREAD_FRACTION = 1e-2
+
+
+def grid_nrmse_with_spread(
+    public_dir: Path, grid_name: str, predictions: list[float],
+) -> tuple[float, float] | None:
+    """``(nrmse, coefficient_of_variation)`` or None. See :func:`grid_nrmse`."""
+    mse = grid_mse(public_dir, grid_name, predictions)
+    if mse is None:
+        return None
+    try:
+        import csv
+
+        with open(public_dir / grid_name, encoding="utf-8") as f:
+            rows = list(csv.reader(f))
+        y_true = np.array([float(r[1]) for r in rows[1:]])
+        spread = float(np.std(y_true))
+        if not math.isfinite(spread) or spread <= 0.0:
+            return None
+        level = float(np.mean(np.abs(y_true)))
+        cv = spread / level if level > 0.0 else 0.0
+        return float(math.sqrt(mse) / spread), cv
+    except (ArithmeticError, TypeError, ValueError, OSError):
+        return None
+
+
 def grid_nrmse(public_dir: Path, grid_name: str, predictions: list[float]) -> float | None:
     """Root-mean-square error normalized by the spread of the true y.
 
@@ -83,29 +112,29 @@ def grid_nrmse(public_dir: Path, grid_name: str, predictions: list[float]) -> fl
     Dividing by the standard deviation of the *true* y removes the scale and
     makes 1.0 the meaningful line: a constant predictor equal to the grid mean
     scores exactly 1.0, so ``nrmse > 1.0`` means "worse than predicting the
-    mean". Three problems on EXT-BENCH-60 sit above that line (C44 at 174,
-    E16 at 77, A60 at 45) while their absolute MSE ranks them 14th, 53rd and
-    31st of 56 -- invisible until normalized.
+    mean". Two problems on EXT-BENCH-60 sit above that line for real reasons --
+    C44 (NRMSE 13.2) and E16 (8.8) -- while their absolute MSE ranks them 14th
+    and 53rd of 56, invisible until normalized.
+
+    The normalizer is std(y), not mean|y|, and on a *saturated* grid that
+    denominator is float noise: A60's far grid is y == 10 to within 4.6e-05 of
+    its own level, so std is 4.6e-04 and a model that is right to six figures
+    scores 6.7. Normalizing by the level rather than the spread would make that
+    case read ~1e-6 and stop it being called a failure, but it would break the
+    exact 1.0-is-the-mean-predictor property that makes the number interpretable
+    at all. So the saturated case is *reported*, not silently folded away:
+    ``grid_nrmse_with_spread`` returns the score plus the grid's own
+    coefficient of variation, and ``far_ood_worse_than_mean`` excludes grids
+    whose spread is under ``_MIN_SPREAD_FRACTION`` of their own level, with the
+    count of exclusions reported alongside. A check that quietly drops the
+    awkward cases is the same failure as one that reports nothing.
 
     Returns None when the grid is constant (zero spread leaves nothing to
     normalize by) or when the prediction is unusable, so a degenerate grid can
     never masquerade as a perfect or a failed score.
     """
-    mse = grid_mse(public_dir, grid_name, predictions)
-    if mse is None:
-        return None
-    try:
-        import csv
-
-        with open(public_dir / grid_name, encoding="utf-8") as f:
-            rows = list(csv.reader(f))
-        y_true = np.array([float(r[1]) for r in rows[1:]])
-        spread = float(np.std(y_true))
-        if not math.isfinite(spread) or spread <= 0.0:
-            return None
-        return float(math.sqrt(mse) / spread)
-    except (ArithmeticError, TypeError, ValueError, OSError):
-        return None
+    scored = grid_nrmse_with_spread(public_dir, grid_name, predictions)
+    return None if scored is None else scored[0]
 
 
 def score_one(problem_id: str, result: dict[str, Any], truth: dict[str, Any],
@@ -123,6 +152,14 @@ def score_one(problem_id: str, result: dict[str, Any], truth: dict[str, Any],
     # the headline interpretable across problems whose y scales differ by
     # orders of magnitude.
     out["far_ood_nrmse"] = grid_nrmse(public_dir, "far_ood.csv", preds.get("far_ood.csv", []))
+    scored = grid_nrmse_with_spread(public_dir, "far_ood.csv", preds.get("far_ood.csv", []))
+    # The grid's own signal-to-noise, so a large NRMSE can be read as "the
+    # model is wrong" rather than "the grid is flat and the denominator is
+    # noise". Recorded whether or not the score is meaningful.
+    out["far_ood_cv"] = None if scored is None else scored[1]
+    out["far_ood_grid_saturated"] = bool(
+        scored is not None and scored[1] < _MIN_SPREAD_FRACTION
+    )
     out["wall_seconds"] = result.get("wall_seconds", None)
     meta = result.get("metadata", {}) or {}
     out["proof_tier"] = meta.get("proof_claim", meta.get("proof_tier", None))
@@ -186,11 +223,16 @@ def evaluate_round(corpus_root: str | Path, results_by_competitor: dict[str, lis
             "median_far_ood_nrmse": _median([s.get("far_ood_nrmse") for s in attempted]),
             # The count that the absolute median cannot surface: attempts worse
             # than the constant mean predictor. Each one is a real failure that
-            # a small absolute MSE hides.
+            # a small absolute MSE hides. Saturated grids are excluded because
+            # their spread is float noise and the ratio is an artifact of the
+            # denominator -- the exclusions are counted, never dropped quietly.
             "far_ood_worse_than_mean": sum(
                 1 for s in attempted
                 if isinstance(s.get("far_ood_nrmse"), (int, float))
-                and math.isfinite(s["far_ood_nrmse"]) and s["far_ood_nrmse"] > 1.0),
+                and math.isfinite(s["far_ood_nrmse"]) and s["far_ood_nrmse"] > 1.0
+                and not s.get("far_ood_grid_saturated")),
+            "far_ood_saturated_grids": sum(
+                1 for s in attempted if s.get("far_ood_grid_saturated")),
             "over_budget": sum(
                 1 for s in scored.values()
                 if isinstance(s.get("wall_seconds"), (int, float)) and s["wall_seconds"] > 600
@@ -247,21 +289,31 @@ def _self_test() -> None:
     """Fixture end-to-end test on synthetic data (never touches real hidden/)."""
     import tempfile
 
-    from apedp.symbolic_equivalence import SymbolicEquivalenceEngine
-
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
-        truth_fam = SymbolicEquivalenceEngine.canonicalize("2.5*x**1.5").structural_family
-        for pid, fam, oracle in [("F01", truth_fam, "RECOVER"),
-                                 ("F02", "power_law", "ABSTAIN"),
-                                 ("F03", "power_law", "AMBIGUOUS")]:
+        # The fixture stores a ground-truth *formula*, which is what the real
+        # corpus stores and what score_one reads. It previously wrote
+        # ``canonical_structural_family`` instead, which the scorer never
+        # looks at: truth_fam canonicalized to None, family_match was False for
+        # every problem, and this self-test asserted True and so had been
+        # failing at HEAD. A fixture whose keys drift from the scorer's is a
+        # check that reports the wrong thing, which is worse than no check.
+        #
+        # The family is derived here through the same canonicalizer the scorer
+        # uses, so the two cannot drift apart again, and the expected value is
+        # asserted below rather than assumed.
+        fixtures = [("F01", "2.5*x**1.5", "RECOVER"),
+                    ("F02", "3.0*x**0.5", "ABSTAIN"),
+                    ("F03", "1.0*x + 0.0", "AMBIGUOUS")]
+        for pid, formula, oracle in fixtures:
             (root / "public" / pid).mkdir(parents=True)
             (root / "hidden" / pid).mkdir(parents=True)
             for grid in ("train.csv", "validation.csv", "near_ood.csv", "far_ood.csv"):
                 with open(root / "public" / pid / grid, "w", encoding="utf-8") as f:
                     f.write("x,y\n0.5,1.0\n1.0,2.0\n")
             with open(root / "hidden" / pid / "ground_truth.json", "w", encoding="utf-8") as f:
-                json.dump({"problem_id": pid, "canonical_structural_family": fam,
+                json.dump({"problem_id": pid, "ground_truth_formula": formula,
+                           "canonical_structural_family": canonical_family(formula),
                            "expected_outcome": oracle}, f)
         results = [
             {"problem_id": "F01", "expression": "2.5*x**1.5", "abstained": False,
@@ -277,9 +329,29 @@ def _self_test() -> None:
         ]
         rep = evaluate_round(root, {"demo": results})
         s = rep["per_competitor"]["demo"]
+        # The scorer must be able to read the truth it is given. If this is
+        # None the fixture and the scorer have drifted, and every family
+        # assertion below is vacuous -- so it is checked first, on its own.
+        # F02 abstains, so score_one returns before setting the key; an
+        # abstention carries no family verdict by design.
+        for pid, formula, _ in fixtures:
+            if rep["detail"]["demo"][pid]["abstained"]:
+                assert "truth_family_canonical" not in rep["detail"]["demo"][pid], (
+                    f"{pid} abstained but still carries a family verdict"
+                )
+                continue
+            got = rep["detail"]["demo"][pid]["truth_family_canonical"]
+            assert got == canonical_family(formula), (
+                f"{pid}: scorer read truth as {got!r}, expected "
+                f"{canonical_family(formula)!r} -- fixture/scorer key drift"
+            )
         assert rep["detail"]["demo"]["F01"]["family_match"] is True, rep
         assert rep["detail"]["demo"]["F02"]["abstention_correct"] is True, rep
         assert rep["detail"]["demo"]["F03"]["false_discovery"] is True, rep
+        # F03's expression is linear against a linear truth, so it matches the
+        # family and still counts as a false discovery: UNIQUE_SUPPORT on an
+        # AMBIGUOUS oracle. Matching the family does not excuse the claim.
+        assert rep["detail"]["demo"]["F03"]["family_match"] is True, rep
         assert s["n_attempted"] == 2 and s["n_abstained"] == 1, s
         assert s["false_discoveries"] == 1, s
         assert s["abstention_precision"] == 1.0, s
@@ -364,6 +436,29 @@ def _nrmse_unit_checks() -> None:
         assert grid_nrmse(d, "g.csv", [1.0, float("nan"), 3.0]) is None
         assert grid_nrmse(d, "g.csv", [1.0]) is None
         assert grid_nrmse(d, "missing.csv", [1.0, 2.0, 3.0]) is None
+
+        # A *saturated* grid -- the A60 case. y is 10 to within 4.6e-05 of its
+        # own level, so std is float noise. NRMSE is arithmetically finite and
+        # enormous (6.7) while the model is right to six figures, which is why
+        # the flag must be qualified rather than trusted raw.
+        write([10.0, 10.0 + 4e-4, 10.0 - 4e-4, 10.0 + 2e-4])
+        sat = grid_nrmse_with_spread(d, "g.csv", [10.0, 10.0, 10.0, 10.0])
+        assert sat is not None
+        sat_nrmse, sat_cv = sat
+        assert sat_cv < _MIN_SPREAD_FRACTION, sat_cv
+        assert sat_nrmse > 1.0, sat_nrmse
+        # The inflation is entirely the tiny denominator: predicting the
+        # grid's own mean still scores 1.0, because std(y_true) is exactly
+        # what the mean predictor's RMSE equals. (That grid is not symmetric
+        # about its mean, so 1.0 is the property to check, not a hand value.)
+        y_sat = [10.0, 10.0 + 4e-4, 10.0 - 4e-4, 10.0 + 2e-4]
+        write(y_sat)
+        mean_sat = sum(y_sat) / len(y_sat)
+        assert abs(nrmse([mean_sat] * 4) - 1.0) < 1e-9
+        # A healthy grid is not flagged.
+        write([1.0, 3.0, 5.0, 7.0])
+        healthy = grid_nrmse_with_spread(d, "g.csv", [1.0, 3.0, 5.0, 7.0])
+        assert healthy is not None and healthy[1] >= _MIN_SPREAD_FRACTION, healthy
     print("grid_nrmse unit checks OK")
 
 
