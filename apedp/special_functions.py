@@ -30,6 +30,16 @@ from apedp.safety import safe_parse_expr
 logger = logging.getLogger(__name__)
 
 
+def _unverified(check: str, exc: Exception) -> str:
+    """Wording for a check that raised rather than returning an answer.
+
+    Shared shape with ``apedp/physics_constraints.py``: name the check, name
+    the exception, and let the consumer score it as unevaluated rather than
+    as clean.
+    """
+    return f"{check} could not be completed ({type(exc).__name__}: {exc})"
+
+
 @dataclass(frozen=True)
 class SpecialFunctionMetadata:
     """Mathematical metadata and domain properties of a symbolic special function."""
@@ -221,8 +231,42 @@ class SpecialFunctionLibrary:
         cls,
         expr_input: str | sp.Expr,
         variable_data: dict[str, np.ndarray],
+        errors: list[str] | None = None,
     ) -> np.ndarray:
-        """Vectorized numerical evaluation supporting all special functions via scipy.special."""
+        """Vectorized numerical evaluation supporting all special functions via scipy.special.
+
+        On evaluation failure the result is an all-NaN array of the correct
+        shape, and -- this is the part that matters -- the reason is appended
+        to ``errors`` when the caller supplies a list.
+
+        The all-NaN fallback itself is right, and deliberately not changed: NaN
+        propagates through arithmetic, so a caller computing MSE over the
+        result gets NaN rather than a silently plausible number, and the shape
+        is preserved, so a caller zipping against the input grid does not
+        misalign. What was missing is any way to tell the two situations apart
+        that both produce all-NaN:
+
+        - a genuine domain restriction, e.g. ``log(x)`` over negative x, where
+          NaN is the correct mathematical answer and the caller usually wants
+          to keep going;
+        - a crash, e.g. ``lambdify`` failing to resolve an undefined function
+          name, where NaN is a fabricated value standing in for a question
+          nobody answered.
+
+        The second is not a smaller version of the first. ``check_domain_safety``
+        counts non-finite probe values to decide whether an interval is
+        hazardous, so a crash arriving as all-NaN reads as "the interval is
+        full of singularities" -- a measurement, in a report that feeds identity
+        certification. A caller that cannot distinguish the two is being handed
+        a number it cannot interpret.
+
+        ``docs/SILENT_DEGRADATION_HANDOFF.md`` records this site as a shape
+        change, claiming a 50-point probe degrades to a 1-point probe. That is
+        not what the code does: the ``n_pts`` fallback is present on both the
+        success and failure paths, so the shape is ``len(variable_data)`` either
+        way, and the empty-dict case is the only one that yields length 1. The
+        real defect is the one fixed here.
+        """
         expr = safe_parse_expr(expr_input) if isinstance(expr_input, str) else expr_input
         var_names = sorted(variable_data.keys())
         symbols = [sp.Symbol(v) for v in var_names]
@@ -231,20 +275,28 @@ class SpecialFunctionLibrary:
         f_lamb: Callable[..., Any] = sp.lambdify(symbols, expr, modules=["scipy", "numpy"])
         inputs = [variable_data[v] for v in var_names]
 
+        def _n_points() -> int:
+            return len(next(iter(variable_data.values()))) if variable_data else 1
+
         try:
             res: Any = f_lamb(*inputs)
             if np.isscalar(res):
-                n_pts = len(next(iter(variable_data.values()))) if variable_data else 1
                 # `np.isscalar` narrows to a union that includes `complex`, which
                 # `float()` rejects. Going through `np.asarray(...).item()`
                 # keeps the coercion identical to the array path below while
                 # still raising (and being caught) for genuinely non-real values.
-                return np.full(n_pts, float(np.asarray(res).item()))
+                return np.full(_n_points(), float(np.asarray(res).item()))
             return np.asarray(res, dtype=float)
         except Exception as e:
-            logger.debug("Vectorized evaluation error: %s", e)
-            n_pts = len(next(iter(variable_data.values()))) if variable_data else 1
-            return np.full(n_pts, np.nan)
+            if errors is not None:
+                errors.append(_unverified("Vectorized evaluation", e))
+            # Not debug: this is a value substitution on a scientific result,
+            # not a traceback. NaN is emitted so the failure cannot be mistaken
+            # for a number, and the reason travels alongside it so it cannot be
+            # mistaken for a domain restriction.
+            logger.warning("Vectorized evaluation returned NaN: %s: %s",
+                           type(e).__name__, e)
+            return np.full(_n_points(), np.nan)
 
 
 __all__ = [

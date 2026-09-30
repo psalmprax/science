@@ -22,16 +22,59 @@ from apedp.safety import safe_parse_expr
 
 logger = logging.getLogger("apedp.singularity_probing")
 
+# risk_type values beyond the four the original comment listed.
+#
+# PROBE_INCONCLUSIVE -- a pole was located, but evaluating the expression
+#   near it raised. The blowup is unknown, not absent and not confirmed.
+#   has_singularity_risk is True because that is the direction that withholds
+#   an endorsement; the rationale says why, and quotes no number.
+# UNVERIFIED -- no risk was found, but part of the search never completed.
+#   "No poles detected" is not a sentence this report is allowed to emit when
+#   a pole search crashed.
+_RISK_CONFIRMED = ("AVOIDED_POLE_IN_GAP", "UNOBSERVED_CRITICAL_REGIME",
+                   "POLE_IN_DOMAIN")
+
+
+def _unverified(check: str, exc: Exception) -> str:
+    """Wording for a check that raised rather than returning a verdict.
+
+    Every handler in this module used to end in ``logger.debug`` and continue.
+    That is one bug with two faces, and both are load-bearing.
+
+    The root-search and extraction handlers under-report: a failed search
+    returns *fewer* poles, so the probe reports "no singularity detected" and
+    a candidate with a real pole in the observed data walks past. Absence of
+    a finding would be recorded as absence of a singularity.
+
+    The probe-evaluation handler over-reports, which is worse. It set
+    ``max_probe_val = float("inf")`` on failure, and every downstream test
+    reads that number as a measurement: ``is_divergent`` is True, so the
+    report emitted AVOIDED_POLE_IN_GAP with a rationale asserting the
+    "candidate diverges to 1.00e+308" and UNOBSERVED_CRITICAL_REGIME with
+    "divergent probe behavior (1.00e+308 >> y_max)". A crashed evaluation was
+    published as a measured divergence, in a scientific record, with a
+    magnitude. That is not a missing log line; it is a fabricated datum.
+
+    So the same discipline as ``apedp/physics_constraints.py``: say which
+    check did not run, and let the verdict say so too.
+    """
+    return f"{check} could not be evaluated ({type(exc).__name__}: {exc})"
+
 
 @dataclass(frozen=True)
 class SingularityProbeReport:
     """Report detailing singularity stress testing and data gap analysis."""
 
     has_singularity_risk: bool
-    risk_type: str  # "NONE", "AVOIDED_POLE_IN_GAP", "UNOBSERVED_CRITICAL_REGIME", "POLE_IN_DOMAIN"
+    risk_type: str  # "NONE", "AVOIDED_POLE_IN_GAP", "UNOBSERVED_CRITICAL_REGIME",
+                    # "POLE_IN_DOMAIN", "PROBE_INCONCLUSIVE", "UNVERIFIED"
     pole_locations: list[dict[str, Any]] = field(default_factory=list)
     gap_details: dict[str, Any] | None = None
     rationale: str = ""
+    # Checks that raised. A non-empty list means this report is not a clean
+    # bill of health even where has_singularity_risk is False: something was
+    # not looked at, and the reader is entitled to know which.
+    unverified: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -40,7 +83,20 @@ class SingularityProbeReport:
             "pole_locations": self.pole_locations,
             "gap_details": self.gap_details,
             "rationale": self.rationale,
+            "unverified": list(self.unverified),
         }
+
+
+class _PartialExtraction(Exception):
+    """Raised when singular-component extraction is incomplete.
+
+    Carries the per-check failure strings so the caller can disclose which
+    part of the extraction did not run, rather than only that something did.
+    """
+
+    def __init__(self, failures: list[str]) -> None:
+        super().__init__("; ".join(failures))
+        self.failures = list(failures)
 
 
 class ActiveSingularityProbeEngine:
@@ -57,16 +113,37 @@ class ActiveSingularityProbeEngine:
         self.blowup_threshold_factor = blowup_threshold_factor
 
     def extract_singular_components(self, expr: sp.Expr | str) -> list[tuple[sp.Expr, str]]:
-        """Extracts subexpressions that can induce singular or undefined behavior."""
+        """Extracts subexpressions that can induce singular or undefined behavior.
+
+        Raises if the expression cannot be parsed. It used to swallow that
+        and return ``[]``, which is the same list a pole-free expression
+        returns, so a caller reading the empty result could only conclude
+        "no singular component" -- never "no answer". ``stage_c`` already has
+        a handler that records an extraction failure as inconclusive and
+        withholds the candidate; it could never fire, because nothing raised.
+        Letting it raise puts the decision where the handler is.
+        """
+        components, failures = self._extract_singular_components(expr)
+        if failures:
+            # A partial extraction is not a partial finding. The AST walk in
+            # step 2 does not depend on `together`, so a failure confined to
+            # step 1 loses only the DENOMINATOR form -- which for a rational
+            # expression is usually the one that matters. Report it rather
+            # than returning a short list that reads as complete.
+            raise _PartialExtraction(failures)
+        return components
+
+    def _extract_singular_components(
+        self, expr: sp.Expr | str,
+    ) -> tuple[list[tuple[sp.Expr, str]], list[str]]:
+        """Extraction plus the checks that raised, for callers that can record."""
         if isinstance(expr, str):
-            try:
-                parsed = safe_parse_expr(expr)
-            except Exception:  # noqa: BLE001 - best-effort probe must not crash
-                return []
+            parsed = safe_parse_expr(expr)
         else:
             parsed = expr
 
         singular_components: list[tuple[sp.Expr, str]] = []
+        failures: list[str] = []
 
         # 1. Denominators from together / fraction
         try:
@@ -74,8 +151,8 @@ class ActiveSingularityProbeEngine:
             _num, denom = sp.fraction(together_expr)
             if denom != 1 and denom != -1 and not denom.is_number:
                 singular_components.append((denom, "DENOMINATOR"))
-        except Exception:
-            logger.debug("Denominator extraction failed", exc_info=True)
+        except Exception as e:  # noqa: BLE001 - sympy raises a wide set here
+            failures.append(_unverified("Denominator extraction", e))
 
         # 2. Walk AST to find localized denominators, powers, logs, and roots
         for node in sp.preorder_traversal(parsed):
@@ -89,7 +166,7 @@ class ActiveSingularityProbeEngine:
                 arg = node.args[0]
                 singular_components.append((arg, "LOG_ARG"))
 
-        return singular_components
+        return singular_components, failures
 
     def find_singular_roots(
         self,
@@ -97,16 +174,37 @@ class ActiveSingularityProbeEngine:
         var_name: str,
         domain: tuple[float, float],
     ) -> list[float]:
-        """Finds real roots of component(var) = 0 within buffered domain."""
+        """Finds real roots of component(var) = 0 within buffered domain.
+
+        Returns only the roots it actually located. A partial search is not
+        signalled here because the return type has nowhere to put it; callers
+        that need the distinction use :meth:`_find_singular_roots`.
+        """
+        roots, _failures = self._find_singular_roots(component, var_name, domain)
+        return roots
+
+    def _find_singular_roots(
+        self,
+        component: sp.Expr,
+        var_name: str,
+        domain: tuple[float, float],
+    ) -> tuple[list[float], list[str]]:
+        """Root search plus the checks that raised.
+
+        Every failure here used to reduce the number of roots returned, and a
+        shorter root list is indistinguishable from a shorter pole list. The
+        report downstream then said "no singularity detected".
+        """
         vmin, vmax = domain
         span = vmax - vmin if vmax > vmin else 1.0
         buf_min = vmin - self.domain_buffer_ratio * span
         buf_max = vmax + self.domain_buffer_ratio * span
 
         roots: list[float] = []
+        failures: list[str] = []
         sym = sp.Symbol(var_name)
         if sym not in component.free_symbols:
-            return roots
+            return roots, failures
 
         # 1. Analytic solver
         try:
@@ -117,13 +215,13 @@ class ActiveSingularityProbeEngine:
                         val = float(sp.re(s.evalf()))
                         if buf_min <= val <= buf_max and not any(abs(val - r) < 1e-4 for r in roots):
                             roots.append(val)
-                except Exception:
-                    logger.debug("Analytic root conversion failed", exc_info=True)
-        except Exception:
-            logger.debug("Analytic solve failed for %s", component, exc_info=True)
+                except Exception as e:  # noqa: BLE001 - evalf/im raise broadly
+                    failures.append(_unverified("Analytic root conversion", e))
+        except Exception as e:  # noqa: BLE001 - sympy raises a wide set here
+            failures.append(_unverified("Analytic solve", e))
 
         if roots:
-            return roots
+            return roots, failures
 
         # 2. Numerical sign-change grid scan
         grid = np.linspace(buf_min, buf_max, 300)
@@ -145,12 +243,14 @@ class ActiveSingularityProbeEngine:
                         r_opt = opt.brentq(fn, grid[i], grid[i + 1])
                         if not any(abs(r_opt - r) < 1e-4 for r in roots):
                             roots.append(float(r_opt))
-                    except Exception:
-                        logger.debug("brentq refinement failed", exc_info=True)
-        except Exception:
-            logger.debug("Grid scan failed for %s", component, exc_info=True)
+                    except Exception as e:  # noqa: BLE001 - brentq raises on
+                        # non-convergence; the sign change is real but the root
+                        # is unresolved, so this loses a pole.
+                        failures.append(_unverified("Brent refinement", e))
+        except Exception as e:  # noqa: BLE001 - lambdify raises on undefined names
+            failures.append(_unverified("Sign-change grid scan", e))
 
-        return roots
+        return roots, failures
 
     def probe_candidate_singularity(
         self,
@@ -161,6 +261,7 @@ class ActiveSingularityProbeEngine:
         """Audits candidate and ensemble for avoided poles and unobserved singularity risks."""
         all_exprs = [candidate_expr, *list(competing_expressions)]
         pole_locations: list[dict[str, Any]] = []
+        unverified: list[str] = []
 
         target_vals = None
         if "y" in observed_data:
@@ -174,7 +275,8 @@ class ActiveSingularityProbeEngine:
         for expr_str in all_exprs:
             if not expr_str:
                 continue
-            singular_comps = self.extract_singular_components(expr_str)
+            singular_comps, extract_failures = self._extract_singular_components(expr_str)
+            unverified.extend(f"{expr_str}: {f}" for f in extract_failures)
             for comp, op_type in singular_comps:
                 for var in comp.free_symbols:
                     var_name = str(var)
@@ -184,7 +286,10 @@ class ActiveSingularityProbeEngine:
                     if len(obs) < 2:
                         continue
                     vmin, vmax = float(np.min(obs)), float(np.max(obs))
-                    r_list = self.find_singular_roots(comp, var_name, (vmin, vmax))
+                    r_list, root_failures = self._find_singular_roots(
+                        comp, var_name, (vmin, vmax))
+                    unverified.extend(
+                        f"{expr_str} [{op_type}]: {f}" for f in root_failures)
                     for r in r_list:
                         if not any(
                             p["variable"] == var_name and abs(p["root"] - r) < 1e-4
@@ -200,6 +305,22 @@ class ActiveSingularityProbeEngine:
                             )
 
         if not pole_locations:
+            if unverified:
+                # "No poles detected" is not available to this report. A
+                # search that crashed found no poles the same way a
+                # pole-free expression does, and the difference is the whole
+                # content of the check.
+                return SingularityProbeReport(
+                    has_singularity_risk=False,
+                    risk_type="UNVERIFIED",
+                    pole_locations=[],
+                    rationale=(
+                        "Singularity search did not complete, so no poles were "
+                        "found is not the same as there being none: "
+                        + "; ".join(unverified)
+                    ),
+                    unverified=unverified,
+                )
             return SingularityProbeReport(
                 has_singularity_risk=False,
                 risk_type="NONE",
@@ -218,6 +339,25 @@ class ActiveSingularityProbeEngine:
 
             # Check for Active Probe Blowup near r_val
             # Evaluate src_expr near r_val
+            #
+            # This handler used to be `except: max_probe_val = float("inf")`.
+            # That is the most consequential line in the file. inf makes
+            # `is_divergent` True by the explicit `not math.isfinite(...)`
+            # clause, so a probe that crashed was indistinguishable from a
+            # probe that measured a blowup -- and the report then published
+            # the fabricated magnitude in its rationale ("diverges to
+            # 1.00e+308", "divergent probe behavior (1.00e+308 >> y_max)").
+            # A tool failure became a quantitative scientific finding, in
+            # both AVOIDED_POLE_IN_GAP and UNOBSERVED_CRITICAL_REGIME.
+            #
+            # A genuine divergence is a real, finite-or-inf measurement, so
+            # the fix distinguishes "evaluated and got inf" (a legitimate
+            # pole) from "could not evaluate" (no measurement at all). The
+            # second case withholds the verdict -- has_singularity_risk is
+            # True, so the direction is toward not endorsing -- but under a
+            # distinct risk_type that quotes no number.
+            probe_failed = False
+            max_probe_val: float | None = None
             try:
                 sym_var = sp.Symbol(var_name)
                 parsed_src = safe_parse_expr(src_expr)
@@ -228,9 +368,39 @@ class ActiveSingularityProbeEngine:
                 probe_pts = r_val + probe_offsets
                 probe_vals = np.abs(np.asarray([float(fn_src(pt)) for pt in probe_pts]))
                 max_probe_val = float(np.max(probe_vals))
-            except Exception:  # noqa: BLE001 - best-effort probe must not crash
-                max_probe_val = float("inf")
+            except Exception as e:  # noqa: BLE001 - lambdify raises broadly on
+                # expressions with undefined names; the pole is real and
+                # located, the blowup is simply unmeasured.
+                probe_failed = True
+                unverified.append(
+                    f"Divergence probe at {var_name} = {r_val:.4g} "
+                    f"({src_expr}): {_unverified('probe evaluation', e)}")
 
+            if probe_failed:
+                return SingularityProbeReport(
+                    has_singularity_risk=True,
+                    risk_type="PROBE_INCONCLUSIVE",
+                    pole_locations=pole_locations,
+                    gap_details={
+                        "variable": var_name,
+                        "pole_location": r_val,
+                        "average_spacing": avg_spacing,
+                        # No max_probe_val key. A consumer must not be able to
+                        # read a divergence magnitude out of a failed probe.
+                    },
+                    rationale=(
+                        f"A mathematical singularity at {var_name} = {r_val:.4f} was "
+                        f"located in the candidate '{src_expr}', but evaluating the "
+                        f"expression near it did not complete, so whether it actually "
+                        f"diverges is unknown. This is a tool failure, not a "
+                        f"measurement: no blowup magnitude was obtained, and none is "
+                        f"claimed. Certification is withheld until the divergence can "
+                        f"be evaluated."
+                    ),
+                    unverified=unverified,
+                )
+
+            assert max_probe_val is not None  # probe_failed is False
             is_divergent = max_probe_val > self.blowup_threshold_factor * y_max or not math.isfinite(max_probe_val)
 
             # Check A: Pole inside domain range [vmin, vmax] with an avoided sampling gap (P19)
@@ -262,11 +432,24 @@ class ActiveSingularityProbeEngine:
                             f"{max_probe_val:.2e} (> {self.blowup_threshold_factor}x max observed). "
                             "Observations cannot confirm whether the system is smooth or singular in this gap."
                         ),
+                        unverified=unverified,
                     )
 
             # Check B: Asymptotic pole near domain boundary with unobserved critical regime (P20, P21)
+            #
+            # The threshold below is on the *absolute* distance, 0.005. That is
+            # scale-dependent, and the discarded statement that used to sit
+            # here was computing the relative distance and throwing it away --
+            # so the normalised form was evidently intended at some point and
+            # never wired in. Kept absolute deliberately: switching to the
+            # relative form would change which candidates are withheld, which
+            # is a protocol change and not a bug fix. The unused value is
+            # removed rather than left as a statement with no effect, and the
+            # relative distance is carried in gap_details so the record shows
+            # the scale the absolute threshold was applied at.
             min_dist_to_obs = float(np.min(np.abs(obs - r_val)))
-            min_dist_to_obs / (vmax - vmin) if vmax > vmin else 0.0
+            rel_dist_to_obs = (
+                min_dist_to_obs / (vmax - vmin) if vmax > vmin else 0.0)
 
             # If pole is near boundary and expression diverges to > threshold, but observations never saw the divergence:
             if is_divergent and (abs(r_val - vmin) <= 0.25 * (vmax - vmin) or abs(r_val - vmax) <= 0.25 * (vmax - vmin)):
@@ -281,6 +464,7 @@ class ActiveSingularityProbeEngine:
                             "variable": var_name,
                             "pole_location": r_val,
                             "min_distance": min_dist_to_obs,
+                            "min_distance_relative": rel_dist_to_obs,
                             "average_spacing": avg_spacing,
                             "max_probe_val": max_probe_val,
                         },
@@ -290,8 +474,25 @@ class ActiveSingularityProbeEngine:
                             f"entered the critical asymptotic divergence regime (min distance {min_dist_to_obs:.3f}). "
                             "Claiming unique discovery of critical singularity over smooth alternatives is epistemically unevidenced."
                         ),
+                        unverified=unverified,
                     )
 
+        # Poles were found and none of them triggered a risk. That conclusion
+        # is only as good as the searches behind it, so a partial search is
+        # disclosed here too rather than reading as full coverage.
+        if unverified:
+            return SingularityProbeReport(
+                has_singularity_risk=False,
+                risk_type="UNVERIFIED",
+                pole_locations=pole_locations,
+                rationale=(
+                    f"Poles detected at {[p['root'] for p in pole_locations]} but no "
+                    f"avoided-gap or unobserved-critical-regime signature was found. "
+                    f"Part of the search did not complete, so this is not a full "
+                    f"clearance: " + "; ".join(unverified)
+                ),
+                unverified=unverified,
+            )
         return SingularityProbeReport(
             has_singularity_risk=False,
             risk_type="NONE",
