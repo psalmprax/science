@@ -28,7 +28,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from benchmarks.evaluate_external_60 import evaluate_round  # noqa: E402
+from benchmarks.evaluate_external_60 import evaluate_round
 
 CORPUS = ROOT / "benchmark_corpus_external_60"
 RESULTS = ROOT / "tournament_results_external_60"
