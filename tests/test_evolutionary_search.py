@@ -66,15 +66,15 @@ def test_tune_nonlinear_deterministic():
 
 
 def _tiny_config(**overrides):
-    base = dict(islands=2, island_size=6, generations=3, migration_interval=2,
-                max_depth=3, seed=11, tune_restarts=1, tune_iters=6)
+    base = {"islands": 2, "island_size": 6, "generations": 3, "migration_interval": 2,
+                "max_depth": 3, "seed": 11, "tune_restarts": 1, "tune_iters": 6}
     base.update(overrides)
     return SearchConfig(**base)
 
 
 def test_evolve_deterministic_and_recovers_structure():
     x_dict, y = _quad_data()
-    kwargs = dict(variable_units={"x": "meter"}, target_unit="meter**2")
+    kwargs = {"variable_units": {"x": "meter"}, "target_unit": "meter**2"}
     first = evolve(x_dict, y, **kwargs, config=_tiny_config())
     second = evolve(x_dict, y, **kwargs, config=_tiny_config())
     assert first.best_expression == second.best_expression
@@ -187,8 +187,8 @@ def test_generation_hook_observes_without_altering():
     x = np.linspace(0.5, 3.0, 20)
     y = 2.0 * x**2 + rng.normal(0, 0.05, len(x))
     seen = []
-    cfg = dict(islands=2, island_size=6, generations=3, migration_interval=2,
-               max_depth=3, seed=11, tune_restarts=1, tune_iters=6)
+    cfg = {"islands": 2, "island_size": 6, "generations": 3, "migration_interval": 2,
+               "max_depth": 3, "seed": 11, "tune_restarts": 1, "tune_iters": 6}
     plain = evolve({"x": x}, y, config=SearchConfig(**cfg))
     hooked = evolve({"x": x}, y, config=SearchConfig(**cfg),
                     on_generation=lambda g, pop: seen.append((g, len(pop))))

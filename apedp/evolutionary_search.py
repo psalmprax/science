@@ -26,17 +26,21 @@ pre-assigned work items, never through shared global RNG state).
 """
 from __future__ import annotations
 
+import logging
 import random
 import zlib
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
 import sympy as sp
 
-from apedp.dimensional_layer import check_units
 from apedp.safety import safe_parse_expr
+
+logger = logging.getLogger("apedp.evolutionary_search")
+
 
 _TRANSCENDENTAL = (sp.exp, sp.log, sp.sin, sp.cos, sp.tan, sp.sinh, sp.cosh, sp.sqrt)
 
@@ -167,16 +171,21 @@ def partition_parameters(skeleton: sp.Expr, params: list[sp.Symbol]) -> tuple[li
     visit(skeleton, False)
     try:
         poly_degree = sp.Poly(skeleton, params).total_degree() if params else 0
-    except Exception:
+    except Exception as e:  # noqa: BLE001 - see rationale below; SymPy's failure modes here are version-dependent
         # Not polynomial in the parameters (transcendentals present):
         # only the transcendental-contained parameters are nonlinear.
+        # SymPy raises a wide and version-dependent set here (PolynomialError,
+        # GeneratorsNeeded, and its own internal types), so the broad catch is
+        # deliberate; it is logged rather than swallowed so a genuine failure
+        # in building the Poly is still visible.
+        logger.debug("Polynomial degree probe failed for %s: %s", skeleton, e)
         return sorted(inside, key=str), [p for p in params if p not in inside]
     if poly_degree <= 1:
         return sorted(inside, key=str), [p for p in params if p not in inside]
     return list(params), []
 
 
-def _lambdify_cached(cache: dict, expression: sp.Expr, symbols: list[sp.Symbol]) -> Callable:
+def _lambdify_cached(cache: dict[str, Callable], expression: sp.Expr, symbols: list[sp.Symbol]) -> Callable:
     key = sp.srepr(expression)
     cached = cache.get(key)
     if cached is None:
@@ -248,14 +257,14 @@ def evaluate_skeleton(
     * ``dense_check``: for single-variable data, finiteness on a 4x denser
       grid over the training interval (catches poles between observations).
     """
-    nonlinear, linear = partition_parameters(skeleton, params) if use_projection else (params, [])
+    _nonlinear, linear = partition_parameters(skeleton, params) if use_projection else (params, [])
     fixed = dict(nonlinear_values)
     for name in linear:
         fixed.setdefault(name, 0.0)
     design_cols = []
     for name in linear:
         probe = dict(fixed)
-        probe.update({other: 0.0 for other in linear})
+        probe.update(dict.fromkeys(linear, 0.0))
         probe[name] = 1.0
         substituted = skeleton.xreplace(probe)
         if _broken_after_substitution(substituted):
@@ -278,7 +287,7 @@ def evaluate_skeleton(
         coef, *_ = np.linalg.lstsq(design, target, rcond=None)
         if not np.all(np.isfinite(coef)) or bool(np.any(np.abs(coef) > coef_limit)):
             return float("inf"), fixed
-        for name, value in zip(linear, coef):
+        for name, value in zip(linear, coef, strict=False):
             fixed[name] = float(value)
     substituted = skeleton.xreplace(fixed)
     if _broken_after_substitution(substituted):
@@ -319,15 +328,15 @@ def tune_nonlinear(
     """
     nonlinear, _ = partition_parameters(skeleton, params) if use_projection else (params, [])
     rng = random.Random(seed)
-    best_map = {name: 0.0 for name in params}
+    best_map = dict.fromkeys(params, 0.0)
     best_mse, best_map = evaluate_skeleton(skeleton, params, best_map, data_symbols, arrays, target, cache, use_projection=use_projection)
     # Deterministic start grid: zeros, one-hot unit probes per nonlinear
     # parameter (both signs), then seeded random restarts. The grid matters:
     # pure random starts can miss narrow basins that unit probes bracket.
-    starts = [{name: 0.0 for name in params}]
+    starts = [dict.fromkeys(params, 0.0)]
     for name in nonlinear:
         for sign in (1.0, -1.0):
-            probe_start = {other: 0.0 for other in params}
+            probe_start = dict.fromkeys(params, 0.0)
             probe_start[name] = sign
             starts.append(probe_start)
     for _ in range(max(restarts - 1, 0)):
@@ -367,7 +376,7 @@ def node_count(expression: sp.Expr) -> int:
 
 
 def _complexity(expression: sp.Expr, params: list[sp.Symbol], coef_penalty: float) -> float:
-    concrete = expression.xreplace({name: 1.0 for name in params})
+    concrete = expression.xreplace(dict.fromkeys(params, 1.0))
     return float(node_count(concrete) + coef_penalty * len(params))
 
 
@@ -488,7 +497,7 @@ class _IslandSearch:
         def visit(node: sp.Expr, path: tuple[int, ...]) -> None:
             paths.append(path)
             for index, _ in enumerate(node.args):
-                visit(node.args[index], path + (index,))
+                visit(node.args[index], (*path, index))
 
         visit(expression, ())
         return paths
@@ -547,7 +556,7 @@ class _IslandSearch:
             )
         else:
             mse, param_map = evaluate_skeleton(
-                skeleton, params, {name: 0.0 for name in params},
+                skeleton, params, dict.fromkeys(params, 0.0),
                 self.data_symbols, self.arrays, self.target, self.cache,
                 use_projection=self.config.use_projection,
             )
@@ -687,7 +696,7 @@ def evolve(
                 results = list(pool.map(work, expressions))
         else:
             results = [work(expression) for expression in expressions]
-        for expression, (mse, _, param_map) in zip(expressions, results):
+        for expression, (mse, _, param_map) in zip(expressions, results, strict=False):
             key = str(expression)
             if key not in tuned or mse < tuned[key][0]:
                 tuned[key] = (mse, param_map)
@@ -734,7 +743,7 @@ def evolve(
             bests = []
             for population in islands:
                 scored = score_many([expression for expression, _ in population])
-                bests.append(min(zip(population, scored), key=lambda pair: pair[1][0])[0][0])
+                bests.append(min(zip(population, scored, strict=False), key=lambda pair: pair[1][0])[0][0])
             for index in range(len(islands)):
                 if islands[(index + 1) % len(islands)]:
                     islands[(index + 1) % len(islands)][-1] = (bests[index], 0)

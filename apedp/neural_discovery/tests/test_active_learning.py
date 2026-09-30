@@ -3,6 +3,7 @@
 import jax
 import jax.numpy as jnp
 import numpy as np
+import pytest
 
 from apedp.neural_discovery.active_learning import (
     BALD,
@@ -147,11 +148,8 @@ def test_acquisition_factory():
         print(f"Created {acq_type}: {type(acq_fn).__name__}")
 
     # Invalid type
-    try:
-        create_acquisition_function(config, "invalid")  # type: ignore
-        assert False, "Should have raised ValueError"
-    except ValueError:
-        pass
+    with pytest.raises(ValueError):
+        create_acquisition_function(config, "invalid")  # type: ignore[arg-type]
 
 
 def test_acquisition_select():

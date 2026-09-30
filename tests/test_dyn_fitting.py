@@ -136,3 +136,31 @@ def test_fit_candidate_rejects_wrong_length_warm_start():
     assert len(truth.candidate.parameter_names()) == 3
     with pytest.raises(ValueError, match="parameter binding mismatch"):
         fit_candidate(prob, truth.candidate, x0=np.array([1.0, 2.0]))
+
+
+def test_no_param_se_field():
+    """Negative result, pinned: Jacobian linearized SEs were measured and
+    REJECTED (13x undercoverage on the clean truth fit; up to ~1.8e5x on a
+    noisy bad-basin fit). Shipping them as diagnostics would manufacture
+    false uncertainty structure, so FitResult carries no SE field until a
+    validated UQ method (bootstrap/profile) lands."""
+    from apedp_dyn.fitting.parameter_fit import FitResult
+
+    assert "param_se" not in FitResult.__dataclass_fields__
+
+
+def test_multistart_never_worse_than_single():
+    from apedp_dyn import enumerate_candidates, fit_candidate, prune_admissible
+    from apedp_dyn.fitting.parameter_fit import MULTISTART_SCALES, fit_candidate_multistart
+    from apedp_dyn.problems import duffing
+
+    assert len(MULTISTART_SCALES) == 5 and MULTISTART_SCALES[0] == 1.0
+    prob = duffing.load()
+    cands = enumerate_candidates(required=("u",), optional=("x", "x3", "v"), max_terms=4)
+    kept = {tuple(sorted(s.candidate.term_set())): s for s in prune_admissible(prob, cands)}
+    ir = kept[("u", "v", "x", "x3")].candidate
+    single = fit_candidate(prob, ir)
+    best, info = fit_candidate_multistart(prob, ir)
+    assert info["n_starts"] == 5
+    assert best.train_loss <= single.train_loss + 1e-12
+    assert set(best.candidate.term_set()) == set(ir.term_set())

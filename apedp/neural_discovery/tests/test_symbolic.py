@@ -83,7 +83,6 @@ def test_batch_execution():
     print(f"Batch results:\n{results}")
 
 
-@pytest.mark.xfail(reason="Autoregressive decode is slow in tests")
 def test_neural_symbolic_regressor():
     """Test NeuralSymbolicRegressor initialization."""
     config = NeuralDiscoveryConfig(

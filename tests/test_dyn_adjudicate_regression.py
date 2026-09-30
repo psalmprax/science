@@ -576,6 +576,28 @@ class TestContractStatus:
         assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
         assert adj.promoted is not None
 
+    def test_pair_without_bootstrap_is_incomplete(self):
+        """A pair verdict without bootstrap cannot masquerade as FULL."""
+        adj = _pair(resid_best=_white())
+        assert adj.contract is EpistemicContract.INCOMPLETE
+        assert adj.contract is not EpistemicContract.FULL
+
+    def test_pair_with_bootstrap_is_full(self):
+        """A pair verdict with paired block bootstrap preserves FULL contract."""
+        ta = tuple(Term(n, f"a{i}") for i, n in enumerate(("one", "x", "x3", "v")))
+        tb = tuple(Term(n, f"a{i}") for i, n in enumerate(("one", "v", "abs_v_v")))
+        g4 = {"passed": True, "holdout_obs_rms": 1.0, "holdout_noise_sigma": 0.1,
+              "holdout_n_samples": 100}
+        best = ScoredCandidate(
+            CandidateDynamics(lhs="xddot", terms=ta, candidate_id="w1"),
+            {"gate4_status": g4}, train_loss=0.5, holdout_rmse=0.20)
+        rival = ScoredCandidate(
+            CandidateDynamics(lhs="xddot", terms=tb, candidate_id="w2"),
+            {"gate4_status": g4}, train_loss=0.55, holdout_rmse=0.80)
+        adj = adjudicate([best, rival], bootstrap=True, resid_best=_white(), resid_rival=_white())
+        assert adj.contract is EpistemicContract.FULL
+
+
     @pytest.mark.parametrize("case", ["abstain", "multi", "unique"])
     def test_every_verdict_reports_a_contract(self, case):
         """No verdict may leave the contract unset.

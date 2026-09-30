@@ -15,6 +15,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
+import sympy as _sp
 from flax import linen as nn
 from jax import grad, jit, random
 
@@ -44,9 +45,9 @@ TERMINALS_BASE = ['CONST']
 VAR_PREFIX = 'VAR_'
 
 # Build vocab
-VOCAB = ['PAD', 'EOS', 'BOS'] + list(OPERATORS.keys()) + TERMINALS_BASE
+VOCAB = ['PAD', 'EOS', 'BOS', *list(OPERATORS.keys()), *TERMINALS_BASE]
 VOCAB_TO_ID = {token: i for i, token in enumerate(VOCAB)}
-ID_TO_VOCAB = {i: token for i, token in enumerate(VOCAB)}
+ID_TO_VOCAB = dict(enumerate(VOCAB))
 
 PAD_ID = VOCAB_TO_ID['PAD']
 EOS_ID = VOCAB_TO_ID['EOS']
@@ -56,8 +57,8 @@ BOS_ID = VOCAB_TO_ID['BOS']
 def build_vocab(n_variables: int) -> tuple[dict[str, int], dict[int, str]]:
     """Build vocabulary for n variables."""
     terminals = TERMINALS_BASE + [f'{VAR_PREFIX}{i}' for i in range(n_variables)]
-    vocab = ['PAD', 'EOS', 'BOS'] + list(OPERATORS.keys()) + terminals
-    return {token: i for i, token in enumerate(vocab)}, {i: token for i, token in enumerate(vocab)}
+    vocab = ['PAD', 'EOS', 'BOS', *list(OPERATORS.keys()), *terminals]
+    return {token: i for i, token in enumerate(vocab)}, dict(enumerate(vocab))
 
 
 class ExpressionTokenizer:
@@ -78,7 +79,7 @@ class ExpressionTokenizer:
         if len(ids) < self.max_len:
             ids += [PAD_ID] * (self.max_len - len(ids))
         else:
-            ids = ids[:self.max_len - 1] + [EOS_ID]
+            ids = [*ids[:self.max_len - 1], EOS_ID]
         return ids
 
     def detokenize(self, ids: list[int]) -> str:
@@ -89,10 +90,40 @@ class ExpressionTokenizer:
         return self._prefix_to_infix(tokens)
 
     def _parse_to_prefix(self, expr: str) -> list[str]:
-        """Parse infix expression to prefix tokens (simplified)."""
-        # This is a placeholder; real implementation uses sympy
-        # For now, return a simple hardcoded example
-        return expr.replace(' ', '').replace('+', ' ADD ').replace('-', ' SUB ').split()
+        """Parse an infix expression string into prefix tokens via SymPy."""
+        # An empty expression is a legitimate input (nothing to encode), but
+        # sympify("") dies with IndexError from inside the parser's AST
+        # transform, which is a terrible error to hand a caller. Blank input
+        # is simply zero tokens; the BOS/EOS framing in tokenize() still runs.
+        if not expr or not expr.strip():
+            return []
+        parsed = _sp.sympify(expr, evaluate=False)
+
+        def visit(node: _sp.Expr) -> list[str]:
+            if node.is_Number:
+                return ["CONST"]
+            if node.is_Symbol:
+                name = str(node)
+                if name.startswith("x") and name[1:].isdigit():
+                    name = f"{VAR_PREFIX}{name[1:]}"
+                return [name]
+            if node.func in (_sp.Add, _sp.Mul):
+                operator = "ADD" if node.func is _sp.Add else "MUL"
+                values = list(node.args)
+                result = visit(values[0])
+                for value in values[1:]:
+                    result = [operator, *result, *visit(value)]
+                return result
+            if node.func is _sp.Pow:
+                if node.args[1] == _sp.Rational(1, 2):
+                    return ["SQRT", *visit(node.args[0])]
+                return ["POW", *visit(node.args[0]), *visit(node.args[1])]
+            unary = {_sp.sin: "SIN", _sp.cos: "COS", _sp.exp: "EXP", _sp.log: "LOG", _sp.sqrt: "SQRT"}
+            if node.func in unary:
+                return [unary[node.func], *visit(node.args[0])]
+            raise ValueError(f"unsupported symbolic node: {node.func}")
+
+        return visit(parsed)
 
     def _prefix_to_infix(self, tokens: list[str]) -> str:
         """Convert prefix tokens to infix string."""
@@ -164,6 +195,9 @@ class JAXSymbolicExecutor:
                     return self.operators[token](a)
             elif token == 'CONST':
                 if constants is not None and const_idx[0] < len(constants):
+                    # `const_idx` is a read cursor into the constant pool.
+                    # S105 is disabled for this file: Bandit reads parser
+                    # vocabulary ("token", "const_idx") as credential names.
                     val = constants[const_idx[0]]
                     const_idx[0] += 1
                     return val
@@ -248,7 +282,7 @@ class NeuralSymbolicRegressor(nn.Module):
 
         logits_list = []
 
-        for pos in range(self.config.max_seq_len - 1):
+        for _pos in range(self.config.max_seq_len - 1):
             # Decoder forward - pass latent for conditioning
             logits = self.decoder(tokens, latent, train=train)
             next_logits = logits[:, -1, :]  # (batch, vocab)
@@ -258,21 +292,28 @@ class NeuralSymbolicRegressor(nn.Module):
                 # Teacher forcing would go here
                 pass
             else:
-                # Sample next token
+                # Sample next token, or decode greedily when no PRNG was
+                # supplied. make_rng('sample') raises InvalidRngError unless
+                # the caller initialised and applied with rngs={'sample': ...},
+                # so without this branch evaluation mode was unreachable for
+                # every caller that did not know to thread an rng in. Greedy is
+                # also the right default: sampling at inference with no seed is
+                # not reproducible.
                 if rng is not None:
                     rng, sample_rng = random.split(rng)
+                    next_token = random.categorical(sample_rng, next_logits, axis=-1)
                 else:
-                    sample_rng = self.make_rng('sample')
-                next_token = random.categorical(sample_rng, next_logits, axis=-1)
+                    next_token = jnp.argmax(next_logits, axis=-1)
                 tokens = jnp.concatenate([tokens, next_token[:, None]], axis=1)
 
         logits = jnp.stack(logits_list, axis=1) if logits_list else jnp.zeros((batch_size, 0, self.vocab_size))
         return logits, tokens
 
-    def forward(self, x: Array, y: Array, train: bool = False) -> dict[str, Array]:
+    def forward(self, x: Array, y: Array, train: bool = False,
+                rng: PRNGKey | None = None) -> dict[str, Array]:
         """Full forward pass."""
         latent = self.encode(x, y)
-        logits, tokens = self.decode(latent, train=train)
+        logits, tokens = self.decode(latent, train=train, rng=rng)
 
         return {
             'latent': latent,
@@ -281,9 +322,10 @@ class NeuralSymbolicRegressor(nn.Module):
         }
 
     @nn.compact
-    def __call__(self, x: Array, y: Array, train: bool = False) -> dict[str, Array]:
+    def __call__(self, x: Array, y: Array, train: bool = False,
+                 rng: PRNGKey | None = None) -> dict[str, Array]:
         """Default call method - delegates to forward."""
-        return self.forward(x, y, train=train)
+        return self.forward(x, y, train=train, rng=rng)
 
     def loss_fn(self, params: Variables, x: Array, y: Array,
                 key: PRNGKey, baseline: Array | None = None) -> tuple[float, dict]:
@@ -436,39 +478,3 @@ __all__ = [
     "NeuralSymbolicRegressor",
     "discover_symbolic",
 ]
-
-# COMMAND ----------
-
-# Production parser override: keep the public tokenizer API but parse through SymPy.
-import sympy as _sp
-
-
-class ExpressionTokenizer(ExpressionTokenizer):
-    def _parse_to_prefix(self, expr: str) -> list[str]:
-        parsed = _sp.sympify(expr, evaluate=False)
-
-        def visit(node: _sp.Expr) -> list[str]:
-            if node.is_Number:
-                return ["CONST"]
-            if node.is_Symbol:
-                name = str(node)
-                if name.startswith("x") and name[1:].isdigit():
-                    name = f"{VAR_PREFIX}{name[1:]}"
-                return [name]
-            if node.func in (_sp.Add, _sp.Mul):
-                operator = "ADD" if node.func is _sp.Add else "MUL"
-                values = list(node.args)
-                result = visit(values[0])
-                for value in values[1:]:
-                    result = [operator, *result, *visit(value)]
-                return result
-            if node.func is _sp.Pow:
-                if node.args[1] == _sp.Rational(1, 2):
-                    return ["SQRT", *visit(node.args[0])]
-                return ["POW", *visit(node.args[0]), *visit(node.args[1])]
-            unary = {_sp.sin: "SIN", _sp.cos: "COS", _sp.exp: "EXP", _sp.log: "LOG", _sp.sqrt: "SQRT"}
-            if node.func in unary:
-                return [unary[node.func], *visit(node.args[0])]
-            raise ValueError(f"unsupported symbolic node: {node.func}")
-
-        return visit(parsed)

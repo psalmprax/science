@@ -33,7 +33,7 @@ def extract_text_from_docx(fp: str) -> str:
             xml_content = z.read('word/document.xml')
             # Input is a local user-supplied DOCX (same exposure as the python-docx
             # dependency); parse failures are contained by the handler below.
-            tree = ET.fromstring(xml_content)  # nosec B314
+            tree = ET.fromstring(xml_content)  # noqa: S314  # nosec B314 - local DOCX, guarded below
             paragraphs = []
             for p_node in tree.iter():
                 if p_node.tag.endswith('}p'):

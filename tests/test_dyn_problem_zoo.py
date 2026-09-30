@@ -91,24 +91,19 @@ def test_input_signal_arity_matches_declared_inputs(pid: str, regime: str):
         f"{pid}/{regime}: signal arity {u.size} != {n_inputs} declared input(s)")
 
 
-# Defects found by this test and NOT yet fixed, because each needs a domain
-# convention decision rather than a mechanical correction. They are recorded
-# here so the benchmark zoo stops being a place where truth models silently
-# fail their own gates. Delete an entry once the underlying spec is corrected:
-# strict=False means the xpass is not an error, so removal is the signal.
-#
-#   PS-VDPOL : the truth is ``mu*(1 - x**2)*v - x`` with x declared in metre.
-#              The bare ``1`` is dimensionless, so the term is inhomogeneous.
-#              Van der Pol's saturation is written for a normalised amplitude,
-#              so either x must be declared dimensionless or the equation needs
-#              an explicit amplitude scale. That is a modelling choice.
-# (PS-LOG and PS-LV declared "individual", which pint does not define; they
-# now use "count". PS-GRAV2 failed its own holdout at rmse 0.139 purely on
-# integration tolerance, because the gate integrated at the fitter's default
-# rtol=1e-3 against a DOP853 truth; it is now 5.4e-08.)
-_KNOWN_GATE_DEFECTS = {
-    "PS-VDPOL": "truth has a dimensionless 1 added to x**2; needs an amplitude scale",
-}
+# Defects this test has found, all now fixed. Kept as a record of what the
+# zoo looked like before it was checked, because every one of them was
+# invisible to the suite until a test loaded the problems and ran the gates:
+#   - 7 of 11 modules could not load at all (SymPy binding `I` to the
+#     imaginary unit; autonomous problems injecting a spurious input arg)
+#   - thermal_rc declared R as kelvin*second/watt, making R*C carry time^2
+#   - logistic / lotka_volterra declared "individual", a unit pint lacks
+#   - two_body_gravity failed its own holdout on integration tolerance alone
+#   - van_der_pol mixed a dimensionless 1 with x**2 and a bare -x against an
+#     acceleration, so the truth was never dimensionally homogeneous
+# The table below is empty by design. Re-add an entry, with its reason, the
+# moment a problem regresses -- that is what makes this file a ratchet.
+_KNOWN_GATE_DEFECTS: dict[str, str] = {}
 
 
 @pytest.mark.parametrize("pid", _ids())

@@ -332,7 +332,7 @@ class ModelDiscoveryEngine:
         values = np.asarray([log_evidence[name] for name in names])
         weights = np.exp(values - np.max(values))
         weights /= np.sum(weights)
-        base.structure_posterior = {name: float(weight) for name, weight in zip(names, weights)}
+        base.structure_posterior = {name: float(weight) for name, weight in zip(names, weights, strict=False)}
         base.exact_log_evidence = log_evidence
         base.parameter_posterior = parameter_posterior
         base.posterior_method = (
@@ -376,7 +376,7 @@ class ModelDiscoveryEngine:
         weights = np.exp(log_weights - np.max(log_weights[finite]))
         weights = weights / np.sum(weights)
         posterior = {candidate.name: float(weight)
-                     for candidate, weight in zip(base.ranked, weights)}
+                     for candidate, weight in zip(base.ranked, weights, strict=False)}
         rng = np.random.default_rng(seed)
         parameter_bootstrap: dict[str, list[str]] = {candidate.name: [] for candidate in base.ranked}
         n = len(np.asarray(y_train))

@@ -366,13 +366,17 @@ class AgnosticClosedLoopAssuranceSystem:
             try:
                 exp_val = float(exp)
                 return base_u ** exp_val
-            except (ValueError, TypeError, ArithmeticError):
+            except (ValueError, TypeError, ArithmeticError) as e:
                 exp_unit = self.compute_expression_dimensionality(exp, variable_units)
                 if exp_unit.dimensionality != self.ureg.dimensionless.dimensionality:
-                    raise TypeError(f"Dimensional Error: Exponent '{exp}' must be dimensionless, got {exp_unit}.")
+                    raise TypeError(
+                        f"Dimensional Error: Exponent '{exp}' must be dimensionless, got {exp_unit}."
+                    ) from e
                 if base_u.dimensionality == self.ureg.dimensionless.dimensionality:
                     return self.ureg.dimensionless
-                raise NotImplementedError(f"Variable non-numeric exponent '{exp}' for dimensioned base '{base}' is not supported.")
+                raise NotImplementedError(
+                    f"Variable non-numeric exponent '{exp}' for dimensioned base '{base}' is not supported."
+                ) from e
         if hasattr(expr, 'func'):
             if expr.func == sp.sqrt:
                 return self.compute_expression_dimensionality(expr.args[0], variable_units) ** 0.5

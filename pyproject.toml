@@ -48,7 +48,6 @@ neural = [
     "equinox>=0.11",      # PyTree-based models
     "blackjax>=1.0",      # MCMC/SVI
     "jaxopt>=0.8",        # Optimization
-    "optax>=0.2",         # Optimizers
     "optax-contrib>=0.1", # Extra schedulers
     "opendp>=0.1",        # Differential privacy (optional)
     "optuna>=3.5",        # Hyperopt
@@ -66,8 +65,13 @@ apedp = ["py.typed"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["-v", "--tb=short"]
+# A test marked xfail that starts passing is a real signal (the bug it pinned
+# was fixed, or the mark is stale). Without strict, pytest reports XPASS and
+# the suite stays green, so the mark silently rots. `strict` turns that red.
+xfail_strict = true
 markers = [
     "integration: requires an external service such as Redis",
+    "smoke: fast syntax/import gate (seconds); run alone with `pytest -m smoke`",
     # Slow tests are excluded from the default run, which matters more than
     # usual here: the full suite exceeds 600s, and an iteration loop that has
     # to wait ten minutes to learn you broke something is a loop people stop
@@ -85,8 +89,68 @@ markers = [
 target-version = "py310"
 line-length = 100
 
+[tool.ruff.lint]
+# Explicit rule set: the default (E4,E7,E9,F) is too thin to act as a CI gate,
+# and an implicit default means a ruff upgrade can silently change what blocks.
+select = ["E", "F", "W", "I", "UP", "B", "C4", "RUF", "BLE", "S"]
+ignore = [
+    # Line length is the formatter's job, not the linter's.
+    "E501",
+    # `assert` is how tests assert; S101 there is pure noise.
+    "S101",
+    # Domain convention, not sloppiness: physics notation is capitalised
+    # (R, A_C, k_B, sigma_1) and every occurrence is deliberate.
+    "N806", "N803", "N816", "N818", "N814", "N802",
+    # Trailing/blank-line whitespace: 131 sites predate this config and the
+    # fix is a repo-wide reformat that would bury every real change in diff.
+    "W291", "W293", "W292",
+    # `random` is deliberate: every stochastic path takes an explicit seed so
+    # runs are reproducible. Bandit cannot see the seeding.
+    "S311",
+    # Greek letters and math symbols in docstrings and messages are the physics
+    # notation itself (gamma, rho, sigma, en-dash as a minus). Ruff's confusable
+    # check reads them as homoglyph attacks; here they are the domain language.
+    "RUF001", "RUF002", "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Pure re-export surface: the unused imports ARE the public API.
+"apedp/__init__.py" = ["F401"]
+"apedp/pde_solvers.py" = ["E731"]
+"apedp/cross_domain_benchmark.py" = ["E731", "E402"]
+"apedp/neural_discovery/symbolic.py" = ["E402", "S105"]
+"apedp/pipeline.py" = ["E402"]
+"tests/*" = ["E731", "E402", "S101", "S603", "S607", "B011", "N802", "B017"]
+"benchmarks/*" = ["E731", "E701", "E402", "E741", "S101", "N802"]
+# Bandit rules on the deliberate best-effort probe paths are handled with a
+# per-call `noqa` and a reason, not a blanket file exemption.
+"apedp/rust_bridge.py" = ["S110"]
+# These two are physics evaluators that must degrade rather than crash: a
+# singular expression, a transcendental that will not simplify, or a domain
+# probe off the support are ordinary scientific outcomes, not bugs. Every
+# handler binds the exception and reports it -- to `logger.debug` or by
+# appending to the report's `violations`/`warnings` list -- so nothing is
+# swallowed. SymPy also raises a wide, version-dependent exception set on
+# these paths, so narrowing the type would be theatre.
+"apedp/physics_constraints.py" = ["BLE001"]
+"apedp/special_functions.py" = ["BLE001"]
+# `apedp/neural_discovery/symbolic.py` also ignores S105: it is a symbolic
+# tokenizer, so `token` is the domain word throughout (token stream, token
+# index, VAR_PREFIX token) and never a credential.
+
 [tool.mypy]
 python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+files = ["apedp"]
+# Blocking CI gate: core package must type-check clean. The neural stack
+# (jax/flax) carries its own advisory job (see mypy-neural.ini); flip it into
+# this default run once it reaches zero errors.
+exclude = ["neural_discovery/"]
+
+[[tool.mypy.overrides]]
+# `exclude` alone still follows imports into excluded files; `skip` makes the
+# neural package opaque (imported names resolve to Any) without touching runtime.
+module = "apedp.neural_discovery.*"
+follow_imports = "skip"

@@ -116,6 +116,13 @@ _SAFE_FUNCS = {
     "max": sp.Max,
     "Min": sp.Min,
     "Max": sp.Max,
+    # ``ln`` is the engineering spelling of the natural log and shows up in
+    # hand-written priors and in laws the search returns. Without the alias the
+    # parser resolves it to a plain Symbol, so ``ln(x)`` fails with "'Symbol'
+    # object is not callable" -- the same ergonomics gap as min/max above, and
+    # closed the same way: the allowlist bounds what survives parsing, so adding
+    # a name here widens the accepted vocabulary, not the executable surface.
+    "ln": sp.log,
     "Heaviside": sp.Heaviside,
     "re": sp.re,
     "im": sp.im,
@@ -136,7 +143,7 @@ _SAFE_FUNCS = {
     "EulerGamma": sp.EulerGamma,
 }
 
-_TRANSFORMATIONS = standard_transformations + (convert_xor,)
+_TRANSFORMATIONS = (*standard_transformations, convert_xor)
 
 
 def _rejects_attribute_access(s: str) -> bool:

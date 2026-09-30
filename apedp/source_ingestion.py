@@ -178,7 +178,7 @@ def load_ame_mass_table(
         raise ValueError("AME mass tables require source_kind='database' and value_kind='measured'")
     rows = tuple(
         {"Z": int(z), "N": int(n), "A": int(a), "BE_per_nucleon": float(be)}
-        for z, n, a, be in zip(data.Z, data.N, data.A, data.BE_per_nucleon)
+        for z, n, a, be in zip(data.Z, data.N, data.A, data.BE_per_nucleon, strict=False)
     )
     audit = audit_dataset(rows, metadata, required_columns=("Z", "N", "A", "BE_per_nucleon"))
     warnings = list(audit.warnings)

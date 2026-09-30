@@ -798,9 +798,9 @@ class ContradictoryConstraintEngine:
                 # relation against zero already implies a positive sign; a
                 # non-strict one does not (>= 0 allows equality), and "name >= c"
                 # implies positivity only when c itself is positive.
-                if rel == ">" and rhs >= 0 or rel == ">=" and rhs > 0:
+                if (rel == ">" and rhs >= 0) or (rel == ">=" and rhs > 0):
                     declared.setdefault(name, True)
-                elif rel == "<" and rhs <= 0 or rel == "<=" and rhs < 0:
+                elif (rel == "<" and rhs <= 0) or (rel == "<=" and rhs < 0):
                     declared.setdefault(name, False)
 
         # Pass 1: parse every constraint into typed claims.
@@ -1293,7 +1293,7 @@ class IndependentAdversarialFalsifier:
                     if low < 0:
                         try:
                             # Test evaluate at low
-                            test_sub = {s: 1.0 for s in base.free_symbols}
+                            test_sub = dict.fromkeys(base.free_symbols, 1.0)
                             test_sub[sym] = low
                             val = complex(base.subs(test_sub).evalf())
                             if val.real < 0:
@@ -1505,7 +1505,7 @@ class IndependentAdversarialFalsifier:
         y_vals: list[float] = []
         for x_val in primary_grid:
             try:
-                args = [x_val] + fixed_args
+                args = [x_val, *fixed_args]
                 res = float(fn(*args))
                 if math.isnan(res):
                     metrics["nan_count"] += 1
@@ -1581,7 +1581,7 @@ class IndependentAdversarialFalsifier:
                         d_fn = sp.lambdify(syms, d_expr, modules=["numpy", "math"])
                         for x_pt in [primary_grid[0], primary_grid[-1], 0.0, float(np.median(primary_grid))]:
                             if low_x <= x_pt <= high_x:
-                                test_args = [x_pt] + fixed_args
+                                test_args = [x_pt, *fixed_args]
                                 d_val = abs(float(d_fn(*test_args)))
                                 norm_d = d_val * x_range / (y_range + 1e-15)
                                 if norm_d > 1e4 and not any(c.axis == FalsificationAxis.BOUNDARY for c in ces):
@@ -1980,7 +1980,7 @@ class IndependentAdversarialFalsifier:
                     ces.append(Counterexample(
                         axis=FalsificationAxis.STRUCTURAL_INVARIANT,
                         probe_name="ThirdLawHeatCapacityProbe", failure_class=FailureClass.THIRD_LAW_HEAT_CAPACITY,
-                        counterexample_point=dict(zip([str(s) for s in syms], test_pts)),
+                        counterexample_point=dict(zip([str(s) for s in syms], test_pts, strict=False)),
                         violation_description=f"3RD_LAW_THERMODYNAMICS_VIOLATION: Heat capacity C_v(0) = {res_zero:.2e} != 0 at absolute zero.",
                         severity="FATAL",
                         metric_value=res_zero

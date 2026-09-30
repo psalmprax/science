@@ -114,7 +114,7 @@ def hybrid_discover(x_data: dict, y_data, variables: list,
     # Sparse pre-filter: active library terms become seed priors so the
     # GP starts from data-selected structure, not just generic templates.
     sparse = sparse_select_terms(
-        {k: v for k, v in x.items()}, y)
+        dict(x.items()), y)
     sparse_priors = [t for t in sparse.get("terms", [])
                      if t not in ("1",)]
     if sparse_priors:

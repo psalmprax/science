@@ -472,7 +472,7 @@ class AdversarialScienceBenchmarkSuite:
             details={
                 "is_mathematically_impossible": is_mathematically_impossible,
                 "lower_bound_samples": {
-                    f"{x_val:g}": float(bound) for x_val, bound in zip(shrinking_x, lower_bounds)
+                    f"{x_val:g}": float(bound) for x_val, bound in zip(shrinking_x, lower_bounds, strict=False)
                 },
                 "system_refused": system_refused,
                 "infeasibility_certificate": certificate.to_dict() if certificate else None,

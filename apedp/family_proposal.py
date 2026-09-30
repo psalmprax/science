@@ -25,7 +25,7 @@ def _bic(y: np.ndarray, prediction: np.ndarray, parameter_count: int) -> tuple[f
 
 
 def _fit(terms: list[np.ndarray], y: np.ndarray, shape_parameter_count: int = 0) -> tuple[np.ndarray, float, float]:
-    design = np.column_stack(terms + [np.ones_like(y)])
+    design = np.column_stack([*terms, np.ones_like(y)])
     coefficients, *_ = np.linalg.lstsq(design, y, rcond=None)
     mse, bic = _bic(y, design @ coefficients, len(coefficients) + shape_parameter_count)
     return coefficients, mse, bic

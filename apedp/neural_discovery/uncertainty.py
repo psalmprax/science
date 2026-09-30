@@ -154,7 +154,7 @@ class BayesianNN:
             mean = variational[f"param_{index}_mean"]
             log_std = variational[f"param_{index}_log_std"]
             leaves.append(mean + jnp.exp(log_std) * random.normal(
-                sample_key, (n_samples,) + mean.shape
+                sample_key, (n_samples, *mean.shape)
             ))
         samples = jax.tree_util.tree_unflatten(
             jax.tree_util.tree_structure(self._base_params), leaves
@@ -310,7 +310,7 @@ class DeepEnsemble:
             p = optax.apply_updates(p, updates)
             return p, opt_state, loss
 
-        for epoch in range(self.config.max_epochs):
+        for _epoch in range(self.config.max_epochs):
             # Shuffle
             perm = random.permutation(key, len(x_train))
             x_shuffled = x_train[perm]
@@ -340,7 +340,7 @@ class DeepEnsemble:
     def predict(self, x: Array) -> UncertaintyOutput:
         """Predict with ensemble uncertainty."""
         preds = []
-        for model, params in zip(self.models, self.params_list):
+        for model, params in zip(self.models, self.params_list, strict=False):
             pred = model.apply({'params': params}, x)
             preds.append(pred)
         preds = jnp.stack(preds, axis=0)  # (ensemble_size, batch, output_dim)
@@ -365,7 +365,7 @@ class DeepEnsemble:
     def pairwise_disagreement(self, x: Array) -> float:
         """Compute average pairwise disagreement among ensemble members."""
         preds = []
-        for model, params in zip(self.models, self.params_list):
+        for model, params in zip(self.models, self.params_list, strict=False):
             pred = model.apply({'params': params}, x)
             preds.append(pred)
         preds = jnp.stack(preds, axis=0)

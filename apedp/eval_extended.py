@@ -110,7 +110,7 @@ def evaluate_implicit_system(
     syms = [sp.Symbol(v) for v in variables]
     subs = {sp.Symbol(k): float(v) for k, v in (params or {}).items()}
     fs = [e.subs(subs) for e in exprs]
-    for s, e in zip(syms, fs):
+    for s, e in zip(syms, fs, strict=False):
         if s not in e.free_symbols:
             raise ValueError(f"Variable '{s}' not in its equation")
 
@@ -120,7 +120,7 @@ def evaluate_implicit_system(
         except (ValueError, ArithmeticError, NotImplementedError) as e:
             raise ArithmeticError(f"nsolve failed for system: {e}") from e
         out: dict[str, float] = {}
-        for s, r in zip(syms, roots):
+        for s, r in zip(syms, roots, strict=False):
             val = complex(r)
             if abs(val.imag) > 1e-9 or not math.isfinite(val.real):
                 raise ArithmeticError(f"Non-finite/non-real root for '{s}': {r}")
@@ -408,7 +408,7 @@ def evaluate_ode_system(
                 yy[k] - yi[k] - h * exprs[k].subs(subs).subs({x_sym: float(xs[i])})
                 for k in range(n)
             ]
-            eqs = [e.subs(dict(zip(syms, yy))) for e in eqs]
+            eqs = [e.subs(dict(zip(syms, yy, strict=False))) for e in eqs]
             try:
                 sol = sp.nsolve(eqs, yy, list(guess), tol=1e-14, maxsteps=200)
             except (ValueError, ArithmeticError, NotImplementedError) as e:
@@ -782,7 +782,7 @@ def evaluate_pde_residual(
     flat = [g.ravel() for g in grids]
 
     def _residual() -> dict[str, object]:
-        mapping = {call: cand_c for call in calls}
+        mapping = dict.fromkeys(calls, cand_c)
         residual = pde_c.xreplace(mapping)
         if residual.has(sp.Derivative):
             residual = residual.doit()
@@ -992,7 +992,7 @@ def evaluate_ode_events(
     subs = {sp.Symbol(k): float(v) for k, v in (params or {}).items()}
     g_funcs = [sp.lambdify((x_sym, y_sym), safe_parse_expr(g).subs(subs), modules=["numpy"]) for g in events]
     g_vals = []
-    for xi, yi in zip(xs, ys):
+    for xi, yi in zip(xs, ys, strict=False):
         try:
             g_vals.append(np.asarray([float(g(float(xi), float(yi))) for g in g_funcs], dtype=float))
         except (ValueError, TypeError, ArithmeticError) as e:
@@ -1016,7 +1016,7 @@ def evaluate_ode_events(
     fine_y = evaluate_ode_ivp(rhs_str, ya, fine_x, params=params, timeout=timeout, method="rk4")
     g = g_funcs[list(events).index(ev_name)]
     try:
-        fine_g = np.asarray([float(g(float(x), float(y))) for x, y in zip(fine_x, fine_y)])
+        fine_g = np.asarray([float(g(float(x), float(y))) for x, y in zip(fine_x, fine_y, strict=False)])
     except (ValueError, TypeError, ArithmeticError) as e:
         raise ArithmeticError(f"Event refinement failed: {e}") from e
     cross = None
@@ -1067,7 +1067,7 @@ def evaluate_ode_system_events(
     subs = {sp.Symbol(k): float(v) for k, v in (params or {}).items()}
     g_funcs = [sp.lambdify([x_sym, *syms], safe_parse_expr(g).subs(subs), modules=["numpy"]) for g in events]
     g_vals = []
-    for xi, row in zip(xs, ys):
+    for xi, row in zip(xs, ys, strict=False):
         try:
             g_vals.append(np.asarray([float(g(float(xi), *[float(v) for v in row])) for g in g_funcs], dtype=float))
         except (ValueError, TypeError, ArithmeticError) as e:
@@ -1090,7 +1090,7 @@ def evaluate_ode_system_events(
     fine_y = evaluate_ode_system(rhs_list, list(ys[i - 1]), fine_x, var_names=names, params=params, timeout=timeout, method="rk4")
     g = g_funcs[list(events).index(ev_name)]
     try:
-        fine_g = np.asarray([float(g(float(x), *[float(v) for v in row])) for x, row in zip(fine_x, fine_y)])
+        fine_g = np.asarray([float(g(float(x), *[float(v) for v in row])) for x, row in zip(fine_x, fine_y, strict=False)])
     except (ValueError, TypeError, ArithmeticError) as e:
         raise ArithmeticError(f"Event refinement failed: {e}") from e
     cross = None

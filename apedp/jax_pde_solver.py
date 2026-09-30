@@ -12,10 +12,27 @@ Key features:
 """
 
 
+from collections.abc import Callable
+from typing import Any, TypeVar, cast
+
 import jax
 import jax.numpy as jnp
 import numpy as np
 from jax import grad, jit, vmap
+
+# ``jax.jit`` returns a ``JitWrapped`` whose ``__call__`` is typed as returning
+# ``Any``, so a bare ``@jit`` decorator erases the array contract of every
+# solver and pushes ``no-any-return`` onto all of the thin wrappers below.
+# ``_jit_solver`` applies the jit itself and casts back to the *undecorated*
+# function's own signature, so the static types survive.
+_JitT = TypeVar("_JitT", bound=Callable[..., Any])
+
+
+def _jit_solver(*, static_argnames: tuple[str, ...] = ()) -> Callable[[_JitT], _JitT]:
+    def decorate(fn: _JitT) -> _JitT:
+        return cast(_JitT, jit(fn, static_argnames=static_argnames))
+
+    return decorate
 
 # ---------------------------------------------------------------------------
 # Heat equation solver
@@ -57,7 +74,7 @@ def validate_boundary_type(bctype: str) -> None:
         raise ValueError("bctype must be 'dirichlet' or 'neumann'")
 
 
-@jit(static_argnames=("bctype", "beta"))
+@_jit_solver(static_argnames=("bctype", "beta"))
 def _heat_1d_step(u: jnp.ndarray, D: float, dx: float, dt: float,
                   beta: float, bctype: str) -> jnp.ndarray:
     """One explicit-FD step for the 1D heat equation.
@@ -79,7 +96,7 @@ def _heat_1d_step(u: jnp.ndarray, D: float, dx: float, dt: float,
     return u
 
 
-@jit(static_argnames=("bctype", "beta", "nt"))
+@_jit_solver(static_argnames=("bctype", "beta", "nt"))
 def heat_1d_explicit_jit(
     u0: jnp.ndarray,
     D: float,
@@ -124,7 +141,7 @@ def heat_1d_explicit_jit(
 
 
 def heat_1d_manufactured_solution(
-    key: jax.random.PRNGKey,
+    key: jax.Array,
     D: float = 0.1,
     L: float = 1.0,
     T: float = 1.0,
@@ -183,7 +200,7 @@ def heat_1d_manufactured_solution(
 # Wave equation solver
 # ---------------------------------------------------------------------------
 
-@jit(static_argnames=("bctype",))
+@_jit_solver(static_argnames=("bctype",))
 def _wave_1d_step(u_curr: jnp.ndarray, u_prev: jnp.ndarray,
                   c: float, dx: float, rho2: float,
                   bctype: str) -> jnp.ndarray:
@@ -208,7 +225,7 @@ def _wave_1d_step(u_curr: jnp.ndarray, u_prev: jnp.ndarray,
     return u_next
 
 
-@jit(static_argnames=("bctype", "nt"))
+@_jit_solver(static_argnames=("bctype", "nt"))
 def wave_1d_explicit_jit(
     u0: jnp.ndarray,
     v0: jnp.ndarray,
@@ -312,12 +329,14 @@ def heat_1d_grad_initial(
     Returns:
         array of shape (nx,) with d(sum(u_final**2))/d(u0_i).
     """
-    def loss(u0_val):
+    def loss(u0_val: jnp.ndarray) -> jnp.ndarray:
         u_final = heat_1d_explicit_jit(u0_val, D, dx, dt, nt,
                                         bctype=bctype, beta=beta)
         return jnp.sum(u_final**2)
 
-    return grad(loss)(u0)
+    # `jax.grad`'s result is typed as Any; `loss` above is annotated, so the
+    # array contract is established even though the stub does not show it.
+    return cast("jnp.ndarray", grad(loss)(u0))
 
 
 # ---------------------------------------------------------------------------
@@ -389,7 +408,7 @@ def _apply_nd_boundary(u: jnp.ndarray, bctype: str, beta: float) -> jnp.ndarray:
     return u
 
 
-@jit(static_argnames=("bctype", "beta", "nt"))
+@_jit_solver(static_argnames=("bctype", "beta", "nt"))
 def heat_nd_explicit_jit(
     u0: jnp.ndarray,
     D: float,
@@ -404,14 +423,14 @@ def heat_nd_explicit_jit(
     u0 = _apply_nd_boundary(u0, bctype, beta)
     spacing = jnp.asarray(spacing)
 
-    def body(_, state):
+    def body(_, state: jnp.ndarray) -> jnp.ndarray:
         updated = state + D * dt * _nd_laplacian(state, spacing)
         return _apply_nd_boundary(updated, bctype, beta)
 
-    return jax.lax.fori_loop(0, nt, body, u0)
+    return cast("jnp.ndarray", jax.lax.fori_loop(0, nt, body, u0))
 
 
-@jit(static_argnames=("bctype", "nt"))
+@_jit_solver(static_argnames=("bctype", "nt"))
 def wave_nd_explicit_jit(
     u0: jnp.ndarray,
     v0: jnp.ndarray,
@@ -429,13 +448,15 @@ def wave_nd_explicit_jit(
     previous = _apply_nd_boundary(first, bctype, 0.0)
     current = previous
 
-    def body(_, state):
+    def body(_, state: tuple[jnp.ndarray, jnp.ndarray]) -> tuple[jnp.ndarray, jnp.ndarray]:
         previous, current = state
         nxt = 2.0 * current - previous + c ** 2 * dt ** 2 * _nd_laplacian(current, spacing)
         return current, _apply_nd_boundary(nxt, bctype, 0.0)
 
     _, result = jax.lax.fori_loop(0, nt - 1, body, (previous, current))
-    return result
+    # `fori_loop`'s tuple-valued overload is typed as returning Any; `body` is
+    # annotated above, so the array contract is established, just not visible.
+    return cast("jnp.ndarray", result)
 
 
 def solve_heat_nd(

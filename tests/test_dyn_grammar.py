@@ -24,7 +24,7 @@ def test_ir_rejects_unknown_terms_and_dup_params():
 
 
 def test_term_families_cover_vocabulary():
-    assert TERM_FAMILIES["restoring"] == ("x", "x2", "x3", "sin_x")
+    assert TERM_FAMILIES["restoring"] == ("x", "x2", "x3", "sin_x", "grad_x", "laplacian_x")
     assert TERM_FAMILIES["dissipative"] == ("v", "abs_v_v", "v2")
     assert TERM_FAMILIES["forcing"] == ("u",)
     assert Term("x", "k1").family == "restoring"

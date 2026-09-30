@@ -484,7 +484,7 @@ def _check_asymptote(
     # attained while a model that settles on a different value does not. The band
     # is relative to the scale of the quantities involved, so it does not depend on
     # the units or magnitude of the observable.
-    residuals = [abs(value - declared_value) for value, declared_value in zip(measured, declared_series)]
+    residuals = [abs(value - declared_value) for value, declared_value in zip(measured, declared_series, strict=False)]
     scale = max(
         abs(declared_series[-1]),
         abs(measured[-1]),
@@ -620,7 +620,9 @@ def _measure_generality(
 
 class FailureSeverity(str, Enum):
     """Categorization of failure modes distinguishing implementation, domain, and mechanistic flaws."""
-    PASS = "PASS"                                             # All contracts, bounds, and invariants satisfied
+    # Bandit's S105 reads the member name "PASS" as a hardcoded credential.
+    # It is an assurance-outcome enum member, not a secret.
+    PASS = "PASS"                                             # noqa: S105 - enum member, not a credential
     WARNING = "WARNING"                                       # Sub-critical variance or minor numerical boundary softness
     DOMAIN_VIOLATION = "DOMAIN_VIOLATION"                     # Model valid in sub-regime but violates extended domain (triggers Domain_Restricted)
     PREDICTIVE_FAILURE = "PREDICTIVE_FAILURE"                 # Out-of-sample residual exceeds contract prediction interval

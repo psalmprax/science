@@ -64,7 +64,7 @@ def particle_in_box(n_levels: int = 3, n_grid: int = 200,
     vals = sorted(float(v) for v in res.get("eigenvalues", []))[:n_levels]
     analytic = [(n + 1) ** 2 * np.pi ** 2 * hbar ** 2 / (2 * m * length ** 2)
                 for n in range(n_levels)]
-    errs = [abs(c - a) / a for c, a in zip(vals, analytic)]
+    errs = [abs(c - a) / a for c, a in zip(vals, analytic, strict=False)]
     keep: dict = {}
     for k, v in res.items():
         if k in ("eigenvalues", "eigenvectors"):

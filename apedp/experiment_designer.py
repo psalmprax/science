@@ -233,8 +233,8 @@ def _jax_coeffs(sub: dict) -> dict:
     """Numpy subsample dict -> JAX coefficient dict for priors.py."""
     import jax.numpy as jnp
 
-    out = {k: jnp.asarray(np.asarray(v, dtype=float)) for k, v in sub.items()
-           if k in ("a_v", "a_s", "a_c", "a_a")}
+    out: dict[str, Any] = {k: jnp.asarray(np.asarray(v, dtype=float)) for k, v in sub.items()
+                           if k in ("a_v", "a_s", "a_c", "a_a")}
     out["Delta"] = float(sub.get("Delta", 1.6))
     return out
 

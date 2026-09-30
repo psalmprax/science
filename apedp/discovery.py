@@ -6,7 +6,7 @@ import logging
 import random
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import sympy as sp
@@ -77,7 +77,7 @@ def bic_forward_select(columns: dict[str, np.ndarray],
             for k in names:
                 if k in selected:
                     continue
-                trial = selected + [k]
+                trial = [*selected, k]
                 X = np.column_stack([cols[c] for c in trial] + [np.ones(n)])
                 coef, *_ = np.linalg.lstsq(X, y, rcond=None)
                 ssr = float(np.sum((y - X @ coef) ** 2)) + 1e-300
@@ -271,7 +271,7 @@ def sparse_select_terms(x_data: dict[str, np.ndarray],
             for _, k in scored:
                 v = feats[k]
                 blocker = None
-                for kk, col in zip(kept, kept_cols):
+                for kk, col in zip(kept, kept_cols, strict=False):
                     w = col - col.mean()
                     denom = (float(np.sqrt(np.sum((v - v.mean()) ** 2)))
                              * float(np.sqrt(np.sum(w ** 2))) + 1e-300)
@@ -400,7 +400,7 @@ def beam_search_expressions(variables: list[str], depth: int = 2,
     import random as _random
     rng = _random.Random(seed)
     ops = ["+", "-", "*", "/"]
-    level = list(variables) + ["1", "2"]
+    level = [*list(variables), "1", "2"]
     seen = set(level)
     out = list(level)
     for _ in range(max(0, depth)):
@@ -527,10 +527,15 @@ def neural_relevance(x_data: dict[str, np.ndarray],
         if use_new_engine:
             # Use the new JAX-based neural surrogate via integration module
             from apedp.neural_discovery.integration import neural_relevance as neural_relevance_new
-            return neural_relevance_new(
-                x_data=x_data,
-                y_data=y_data,
-                seed=seed,
+            # `neural_discovery` is excluded from type checking (see pyproject),
+            # so the surrogate entry points are statically opaque here.
+            return cast(
+                "dict[Any, Any]",
+                neural_relevance_new(
+                    x_data=x_data,
+                    y_data=y_data,
+                    seed=seed,
+                ),
             )
  
         # Original sklearn-based implementation (fallback)
@@ -645,11 +650,14 @@ def distill_via_surrogate(x_data: dict[str, np.ndarray],
             from apedp.neural_discovery.integration import (
                 distill_via_surrogate as distill_via_surrogate_new,
             )
-            return distill_via_surrogate_new(
-                x_data=x_data,
-                y_data=y_data,
-                seed=seed,
-                n_dense=n_dense,
+            return cast(
+                "dict[Any, Any]",
+                distill_via_surrogate_new(
+                    x_data=x_data,
+                    y_data=y_data,
+                    seed=seed,
+                    n_dense=n_dense,
+                ),
             )
  
         # Original sklearn-based implementation (fallback)
@@ -697,7 +705,7 @@ def distill_via_surrogate(x_data: dict[str, np.ndarray],
 def recombine_power_law(variables: list[str], exponents: list[float]) -> str:
     """Render a power-law product string from parallel variable/exponent lists."""
     terms = []
-    for name, p in zip(variables, exponents):
+    for name, p in zip(variables, exponents, strict=False):
         if abs(p) < 1e-12:
             continue
         if abs(p - round(p)) > 1e-9:
@@ -1006,7 +1014,9 @@ def cross_family_select(x_data: dict[str, np.ndarray],
                 for k in x_data:
                     v = cols[k]
                     for p in range(1, max_power+1):
-                        feats[f"{k}**{p}"] = np.sign(v)*np.abs(v)**p
+                        # Integer powers must use v**p directly: sign(v)*|v|^p
+                        # inverts even powers on negative inputs ((-2)^2 -> -4).
+                        feats[f"{k}**{p}"] = v**p
                     if bool(np.all(v != 0)):
                         feats[f"1/{k}"] = 1.0/v
                 for a, b in _it.combinations(x_data, 2):
@@ -1712,7 +1722,7 @@ class MultiVariableSRE:
         if depth >= max_depth or random.random() < 0.3:  # nosec B311
             return random.choice(self.building_blocks)  # nosec B311
 
-        choices: list = list(self.operators + [sp.Pow])
+        choices: list = [*self.operators, sp.Pow]
         if self.allow_sqrt:
             choices.append(sp.sqrt)
         op = random.choice(choices)  # nosec B311
@@ -1816,21 +1826,18 @@ class MultiVariableSRE:
         target_f = _f(target)
         items_f = [(b, _f(d)) for b, d in items]
         integer_exps: list[Fraction] = [Fraction(-2), Fraction(-1), Fraction(1), Fraction(1), Fraction(2)]
-        extended_exps: list[Fraction] = integer_exps + [
-            Fraction(1, 2), Fraction(-1, 2),
-            Fraction(1, 3), Fraction(-1, 3), Fraction(2, 3), Fraction(-2, 3),
-        ]
+        extended_exps: list[Fraction] = [*integer_exps, Fraction(1, 2), Fraction(-1, 2), Fraction(1, 3), Fraction(-1, 3), Fraction(2, 3), Fraction(-2, 3)]
         integer_budget = int(tries * 0.7)
         for attempt in range(tries):
             exps_pool = integer_exps if attempt < integer_budget else extended_exps
             picks = [random.choice(items_f) for _ in range(random.randint(1, 4))]  # nosec B311
             exps = [random.choice(exps_pool) for _ in picks]  # nosec B311
             acc: dict[str, Fraction] = {}
-            for (_, dim), power in zip(picks, exps):
+            for (_, dim), power in zip(picks, exps, strict=False):
                 acc = _add(acc, {k: v * power for k, v in dim.items() if v * power != 0})
             if acc == target_f:
                 expr: sp.Expr = sp.Integer(1)
-                for (block, _), power in zip(picks, exps):
+                for (block, _), power in zip(picks, exps, strict=False):
                     expr = expr * sp.Pow(block, sp.Rational(power.numerator, power.denominator))
                 return expr
         return None
@@ -2262,7 +2269,7 @@ class MultiVariableSRE:
                             type(a).__name__ for a in path
                             if isinstance(a, sp.Function))
                     for arg in getattr(node, "args", ()):
-                        stack.append((arg, path + (node,)))
+                        stack.append((arg, (*path, node)))
                 banned = set()
                 for anc in ancestors:
                     banned.update(rules.get(anc, ()))
@@ -2331,7 +2338,7 @@ class MultiVariableSRE:
                 return None
             struct = sp.Integer(1)
             names = []
-            for name, p in zip(det["variables"], det["exponents"]):
+            for name, p in zip(det["variables"], det["exponents"], strict=False):
                 sym = sp.Symbol(name)
                 names.append(name)
                 exp: sp.Expr = (sp.Integer(round(p))
@@ -2583,7 +2590,7 @@ class MultiVariableSRE:
         terms = []
         histories = []
 
-        for term_idx in range(max_terms):
+        for _term_idx in range(max_terms):
             if float(np.std(residuals)) < residual_threshold * y_std:
                 break
             # Run GA on current residuals
@@ -2618,7 +2625,7 @@ class MultiVariableSRE:
         try:
             A = np.column_stack([tp for _, tp in terms] + [np.ones_like(y)])
             coef, *_ = np.linalg.lstsq(A, y, rcond=None)
-            combined = sum(c * t for c, (t, _) in zip(coef[:-1], terms)) + coef[-1]
+            combined = sum(c * t for c, (t, _) in zip(coef[:-1], terms, strict=False)) + coef[-1]
             final_pred = A @ coef
             mse = float(np.mean((final_pred - y) ** 2))
             return combined, mse, terms, histories
@@ -2704,7 +2711,7 @@ class MultiVariableSRE:
         # Refit OLS on selected terms for unbiased coefficients
         X_sel = X[:, selected_idx]
         ols_coef, *_ = np.linalg.lstsq(np.column_stack([X_sel, np.ones(n)]), y, rcond=None)
-        combined = sum(c * candidates[i][0] for c, i in zip(ols_coef[:-1], selected_idx)) + ols_coef[-1]
+        combined = sum(c * candidates[i][0] for c, i in zip(ols_coef[:-1], selected_idx, strict=False)) + ols_coef[-1]
         final_pred = X_sel @ ols_coef[:-1] + ols_coef[-1]
         mse = float(np.mean((final_pred - y) ** 2))
         selected_terms = [(candidates[i][0], float(ols_coef[j])) for j, i in enumerate(selected_idx)]

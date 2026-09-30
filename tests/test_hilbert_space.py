@@ -107,7 +107,7 @@ def test_vacuum_energy_diverges_with_cutoff():
     import numpy as np
     energies = [sum(0.5 * n * np.pi for n in range(1, N + 1))
                 for N in (10, 100, 1000)]
-    ratios = [e / N ** 2 for e, N in zip(energies, (10, 100, 1000))]
+    ratios = [e / N ** 2 for e, N in zip(energies, (10, 100, 1000), strict=False)]
     assert all(abs(r - 0.785) < 0.1 for r in ratios), ratios
     assert energies[0] < energies[1] < energies[2]
 

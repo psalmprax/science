@@ -56,7 +56,7 @@ def _quantize_global(pts: list[np.ndarray]) -> list[tuple[int, int]]:
     span = max(max(xs) - lox, max(ys) - loy, 1e-300)
     return [
         (round((x - lox) / span * _QUANTUM), round((y - loy) / span * _QUANTUM))
-        for x, y in zip(xs, ys)
+        for x, y in zip(xs, ys, strict=False)
     ]
 
 
@@ -212,9 +212,13 @@ def _bowyer_watson(pts: np.ndarray, seed: int) -> np.ndarray:
     # Supertriangle strictly containing the bbox (20x span is safely outside
     # any circumcircle of input triples without overflowing float64).
     st = np.array([
-        center + [-20 * span, -20 * span],
-        center + [20 * span, -20 * span],
-        center + [0.0, 20 * span],
+        # `center` is an ndarray: `center + [-a, -b]` is element-wise addition,
+        # i.e. the supertriangle vertex offset from the centroid -- NOT list
+        # concatenation. Ruff's C405 rewrite to [*center, -a, -b] silently
+        # changed this into a flat 4-element row and broke triangulation.
+        center + [-20 * span, -20 * span],  # noqa: RUF005
+        center + [20 * span, -20 * span],  # noqa: RUF005
+        center + [0.0, 20 * span],  # noqa: RUF005
     ])
     verts = [st[0], st[1], st[2]] + [np.asarray(p) for p in pts]
     qverts = _quantize_global(verts)
@@ -906,10 +910,10 @@ def _bowyer_watson_3d(points: np.ndarray, seed: int) -> np.ndarray | None:
     center = (lower + upper) / 2
     extent = 20.0 * span
     supertetra = np.asarray([
-        center + [-extent, -extent, -extent],
-        center + [extent, -extent, extent],
-        center + [-extent, extent, extent],
-        center + [extent, extent, -extent],
+        center + [-extent, -extent, -extent],  # noqa: RUF005 - see _bowyer_watson
+        center + [extent, -extent, extent],  # noqa: RUF005
+        center + [-extent, extent, extent],  # noqa: RUF005
+        center + [extent, extent, -extent],  # noqa: RUF005
     ])
     vertices = [np.asarray(point) for point in supertetra] + [np.asarray(point) for point in points]
     qvertices = _quantize_global_3d(vertices)

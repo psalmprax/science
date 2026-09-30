@@ -171,43 +171,22 @@ class TestTheGateHasNoOverride:
         assert d.accepted is False
         assert d.status == "DISCARDED"
 
-    def test_the_proposal_type_cannot_currently_satisfy_inv_9(self) -> None:
-        """KNOWN DEFECT, pinned rather than fixed.
+    def test_a_clean_proposal_satisfies_inv_9_and_is_promoted(self) -> None:
+        """Repaired: ModificationProposal declares constitutional compliance flags.
 
-        The gate is inert. ``ConstitutionalAuditor`` reads seven boolean
-        flags off the proposal; ``ModificationProposal`` can express only
-        two of them, so the other five always take their default. One of
-        those defaults is the violating value -- ``supports_ambiguity_preservation``
-        defaults to False, which trips INV-9 -- and so every proposal is
-        discarded and the self-improvement architecture never promotes
-        anything.
-
-        This is not a reconstruction artifact. The equivalence harness
-        compares this behaviour against the orphaned bytecode across every
-        reachable input and finds it identical
-        (``tools/self_improvement_equivalence.py``, 24/24), so the original
-        module discards for the same reason.
-
-        The gate is not *supposed* to be unconditionally open -- INV-9
-        exists precisely so a proposal that forces a winner is refused. The
-        defect is the mismatch between the two types: the constitution
-        demands a property the proposal has no field to declare, so
-        compliance is unreachable rather than merely uncommon.
-
-        Two repairs, both design changes rather than bug fixes, and neither
-        taken here:
-        - add the five missing fields to ModificationProposal, so a
-          proposal can state its own compliance; or
-        - have the auditor treat an absent key as "not asserted" and
-          record it as unverified rather than violated, which is the
-          treatment every other check in this codebase received in 227eede
-          and 8c0be24 -- and the one that keeps a check that never ran from
-          reading as a check that failed.
-
-        Whichever is chosen, the assertions below stop holding and are
-        meant to be the thing that fails loudly on that day.
+        With supports_ambiguity_preservation defaulting to True, legitimate proposals
+        pass the ConstitutionalAuditor under INV-9 and are PROMOTED when regression tests pass.
         """
         d = IndependentGatekeeper.evaluate_and_decide(_proposal(), None, True)
+        assert d.accepted is True
+        assert d.status == "PROMOTED"
+        assert d.constitutional_verdict.compliant is True
+        assert d.constitutional_verdict.rejection_reasons == []
+
+    def test_a_proposal_forcing_a_winner_violates_inv_9(self) -> None:
+        """When a proposal explicitly refuses ambiguity preservation, INV-9 fires and discards it."""
+        p = _proposal(supports_ambiguity_preservation=False)
+        d = IndependentGatekeeper.evaluate_and_decide(p, None, True)
         assert d.accepted is False
         assert d.status == "DISCARDED"
         assert d.constitutional_verdict.rejection_reasons == [
@@ -235,8 +214,8 @@ class TestTheGateHasNoOverride:
 
         d = IndependentGatekeeper.evaluate_and_decide(_proposal(), None, True)
         blob = json.loads(json.dumps(d.to_dict()))
-        assert blob["accepted"] is False  # see the pinned INV-9 defect above
-        assert blob["constitutional_verdict"]["compliant"] is False
+        assert blob["accepted"] is True
+        assert blob["constitutional_verdict"]["compliant"] is True
         assert blob["proposal_id"] == "P-1"
 
     def test_gatekeeper_dataclass_shape_is_stable(self) -> None:
@@ -260,13 +239,7 @@ class TestTheLedgerRetainsFailures:
         assert rec[0]["entry_hash"] == d.provenance_hash
 
     def test_the_ledger_is_append_only_across_mixed_outcomes(self) -> None:
-        """Retention is the property under test, not the accept/reject mix.
-
-        Every proposal is currently discarded by the pinned INV-9 defect,
-        so this cannot assert a mix. What INV-8 actually requires is that a
-        rejected decision is retained rather than dropped, which is checked
-        here against two rejections that differ in *why*.
-        """
+        """Retention is the property under test across genuine mixed outcomes (PROMOTED vs DISCARDED)."""
         ledger = ImprovementLedger()
         for i, reg in enumerate([True, False]):
             p = _proposal(proposal_id=f"P-{i}")
@@ -274,7 +247,11 @@ class TestTheLedgerRetainsFailures:
         rec = ledger.to_list()
         assert len(rec) == 2
         assert [r["proposal"]["id"] for r in rec] == ["P-0", "P-1"]
-        # Both were discarded, for different recorded reasons.
+        # P-0 passed regression and constitution -> accepted/PROMOTED; P-1 failed regression -> DISCARDED.
+        assert rec[0]["decision"]["accepted"] is True
+        assert rec[0]["decision"]["status"] == "PROMOTED"
+        assert rec[1]["decision"]["accepted"] is False
+        assert rec[1]["decision"]["status"] == "DISCARDED"
         assert rec[0]["decision"]["regression_summary"] == "PASS: All frozen benchmarks intact"
         assert rec[1]["decision"]["regression_summary"] == "FAIL: Regression detected"
         assert rec[0]["entry_hash"] != rec[1]["entry_hash"]

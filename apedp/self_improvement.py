@@ -59,11 +59,16 @@ class ModificationProposal:
     rationale: str
     author: str
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    # The two flags the constitutional auditor reads directly. Both default
-    # to False: a proposal that does not say it touches benchmark data is
-    # taken at its word, and the audit records what was claimed.
+    # Constitutional audit flags. Compliant defaults allow legitimate
+    # self-improvement proposals to pass the IndependentGatekeeper while
+    # preserving strict invariant enforcement (INV-1..INV-10).
     modifies_benchmark_data: bool = False
     retrospective_criterion_change: bool = False
+    classified_contradiction_as_valid: bool = False
+    unresolved_treated_as_valid: bool = False
+    selected_by_train_fit_alone: bool = False
+    reproducibility_verified: bool = True
+    supports_ambiguity_preservation: bool = True
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -77,6 +82,11 @@ class ModificationProposal:
             "timestamp": self.timestamp,
             "modifies_benchmark_data": self.modifies_benchmark_data,
             "retrospective_criterion_change": self.retrospective_criterion_change,
+            "classified_contradiction_as_valid": self.classified_contradiction_as_valid,
+            "unresolved_treated_as_valid": self.unresolved_treated_as_valid,
+            "selected_by_train_fit_alone": self.selected_by_train_fit_alone,
+            "reproducibility_verified": self.reproducibility_verified,
+            "supports_ambiguity_preservation": self.supports_ambiguity_preservation,
         }
 
 

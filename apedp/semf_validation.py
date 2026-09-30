@@ -51,12 +51,21 @@ class AmeDataset:
 
 
 def find_ame_file(explicit: str | None = None) -> str:
-    """Locate the AME2020 mass file without vendoring it into the repo."""
+    """Locate the AME2020 mass file without vendoring it into the repo.
+
+    Search order: explicit argument, ``APEDP_AME20_PATH``, the repository's
+    ``data/`` directory, then the standard temp directory. The previous entry
+    was a hardcoded ``/tmp/opencode/...`` path, which only existed on the
+    machine that generated it and made the lookup fail everywhere else.
+    """
+    import tempfile
+
     candidates = [
         explicit,
         os.environ.get("APEDP_AME20_PATH"),
-        "/tmp/opencode/mass_1.mas20.txt",
-        "data/mass_1.mas20.txt",
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "mass_1.mas20.txt"),
+        os.path.join("data", "mass_1.mas20.txt"),
+        os.path.join(tempfile.gettempdir(), "mass_1.mas20.txt"),
     ]
     for path in candidates:
         if path and os.path.isfile(path):
@@ -76,7 +85,7 @@ def parse_mas20(path: str) -> AmeDataset:
     """
     Z, N, A, BE = [], [], [], []
     n_extrap, n_missing = 0, 0
-    with open(path, "r", encoding="utf-8", errors="replace") as fh:
+    with open(path, encoding="utf-8", errors="replace") as fh:
         for line in fh:
             if len(line) < 67:
                 continue
@@ -148,7 +157,7 @@ def fit_semf(data: AmeDataset, min_A: int = 16) -> tuple[dict, dict]:
     y_total = data.BE_per_nucleon[keep] * data.A[keep]
     coef, _residuals, _rank, _ = np.linalg.lstsq(X, y_total, rcond=None)
     names = ["a_v", "a_s", "a_c", "a_a", "pair_scale"]
-    fitted = dict(zip(names, (float(c) for c in coef)))
+    fitted = dict(zip(names, (float(c) for c in coef), strict=False))
     pred_total = X @ coef
     pred_nuc = pred_total / data.A[keep]
     obs_nuc = data.BE_per_nucleon[keep]
@@ -171,7 +180,7 @@ def magic_residual_report(
     sel = np.ones(len(data), dtype=bool) if mask is None else mask
     resid = np.abs(data.BE_per_nucleon[sel] - pred_nuc)
     is_magic = np.array(
-        [z in MAGIC or n in MAGIC for z, n in zip(data.Z[sel], data.N[sel])]
+        [z in MAGIC or n in MAGIC for z, n in zip(data.Z[sel], data.N[sel], strict=False)]
     )
     return {
         "n_magic": int(is_magic.sum()),
@@ -223,7 +232,7 @@ def fit_semf_shell(data: AmeDataset, min_A: int = 16, width: float = 3.0,
     base = ["a_v", "a_s", "a_c", "a_a", "pair_scale"]
     shell_names = ([f"shellN_{m}" for m in MAGIC] + [f"shellZ_{m}" for m in MAGIC]
                    if per_magic else ["shellN", "shellZ"])
-    return dict(zip(base + shell_names, (float(c) for c in coef))), {
+    return dict(zip(base + shell_names, (float(c) for c in coef), strict=False)), {
         "n_fit": n, "n_params": k, "width": width, "per_magic": per_magic,
         "rmse_total_MeV": float(np.sqrt(ssr / n)),
         "rmse_per_nucleon_MeV": float(np.sqrt(np.mean((obs_nuc - pred_nuc) ** 2))),

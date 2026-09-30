@@ -13,8 +13,9 @@ noise, omitted variables, or grammar limits.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any
 
 import numpy as np
 
@@ -102,7 +103,7 @@ def audit_grammar_fit(
     if not stats:
         return ExpressivenessVerdict("INCONCLUSIVE", None, None, None, None, "no evaluable predictions")
     stats.sort(key=lambda item: (not np.isfinite(item[2]), item[2]))
-    best_form, best_r2, best_rmse = stats[0]
+    best_form, best_r2, _best_rmse = stats[0]
     if np.isfinite(best_r2) and best_r2 >= r_squared_threshold:
         return ExpressivenessVerdict("SUFFICIENT", best_form, best_r2, None, None, "best holdout R-squared clears the threshold")
     top = stats[: min(top_k, len(stats))]

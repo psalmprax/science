@@ -153,13 +153,13 @@ def bic_forward_select(
         beam_width = max(1, int(getattr(policy, "FORWARD_SELECT_BEAM_WIDTH", 6)))
         beam: list[list[str]] = [[]]
 
-        for depth in range(1, max_terms + 1):
+        for _depth in range(1, max_terms + 1):
             candidates: list[tuple[float, float, list[str], np.ndarray]] = []
             for current in beam:
                 for k in names:
                     if k in current:
                         continue
-                    trial = current + [k]
+                    trial = [*current, k]
                     X = np.column_stack([cols[c] for c in trial] + [np.ones(n)])
                     coef, *_ = np.linalg.lstsq(X, y, rcond=None)
                     ssr = float(np.sum((y - X @ coef) ** 2)) + policy.VARIANCE_EPSILON
@@ -174,7 +174,7 @@ def bic_forward_select(
             candidates.sort(key=lambda item: item[0])
             seen: set[tuple[str, ...]] = set()
             new_beam: list[list[str]] = []
-            for s, bic, cand, coef in candidates:
+            for _s, _bic, cand, _coef in candidates:
                 canon = tuple(sorted(cand))
                 if canon not in seen:
                     seen.add(canon)
@@ -241,7 +241,7 @@ def bic_forward_select(
                 for c in terms:
                     col = np.asarray(cols[c], float)
                     Mens.append(col / max(float(np.max(np.abs(col))), 1e-300))
-                Xm = np.column_stack(Mens + [np.ones(n)])
+                Xm = np.column_stack([*Mens, np.ones(n)])
                 cnd = float(np.linalg.cond(Xm))
                 return cnd if np.isfinite(cnd) else float("inf")
             except (np.linalg.LinAlgError, ArithmeticError, ValueError):
@@ -439,7 +439,7 @@ def sparse_select_terms(
             for _, k in scored:
                 v = feats[k]
                 blocker = None
-                for kk, col in zip(kept, kept_cols):
+                for kk, col in zip(kept, kept_cols, strict=False):
                     w = col - col.mean()
                     denom = (
                         float(np.sqrt(np.sum((v - v.mean()) ** 2)))
@@ -589,7 +589,7 @@ def beam_search_expressions(
 
     rng = _random.Random(seed)
     ops = ["+", "-", "*", "/"]
-    level = list(variables) + ["1", "2"]
+    level = [*list(variables), "1", "2"]
     seen = set(level)
     out = list(level)
 

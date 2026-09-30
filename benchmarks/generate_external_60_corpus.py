@@ -271,7 +271,7 @@ def build_problems(rng: np.random.Generator) -> list[dict]:
     _emit(ps, pid, "A", "adv-trig-identity", "constant_identity", FORMULAS["adv-trig-identity"],
           {}, "C4", "CERTIFY", x_tr, y_tr, x_va, y_va, x_near, fs, x_far, fs)
     # A3-A5: underspecified (N<=8)
-    for j, nn in enumerate([5, 6, 8]):
+    for nn in [5, 6, 8]:
         pid, _, _ = nxt("A")
         xu = np.linspace(0.5, 4.0, nn)
         fu = lambda x: 2.5 * x**1.5

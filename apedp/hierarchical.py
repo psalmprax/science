@@ -44,7 +44,7 @@ class HierarchicalFit:
 
 
 def _ols_with_se(design: np.ndarray, target: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    coef, residuals, rank, _ = np.linalg.lstsq(design, target, rcond=None)
+    coef, _residuals, rank, _ = np.linalg.lstsq(design, target, rcond=None)
     dof = max(int(design.shape[0] - rank), 1)
     rss = float(np.sum((target - design @ coef) ** 2))
     sigma2 = rss / dof
@@ -76,7 +76,7 @@ def partial_pool_linear(
     errors: dict[Any, np.ndarray] = {}
     counts: dict[Any, int] = {}
     n_params: int | None = None
-    for group, design, target in zip(ids, designs, targets):
+    for group, design, target in zip(ids, designs, targets, strict=False):
         design_arr = np.asarray(design, dtype=float)
         target_arr = np.asarray(target, dtype=float).ravel()
         if design_arr.ndim != 2 or design_arr.shape[0] != target_arr.shape[0] or design_arr.shape[0] == 0:

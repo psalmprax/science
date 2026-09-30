@@ -21,6 +21,7 @@ from apedp.epistemic import DataPartitionVault
 from apedp.metrology import AnalyticalUncertaintyPropagator
 from apedp.persistence import ExperimentLog, ModelStore
 from apedp.repair import AgnosticClosedLoopAssuranceSystem
+from apedp.rust_bridge import RustKernelBridge
 from apedp.safety import safe_parse_expr
 from apedp.source_audit import SourceMetadata, audit_dataset
 
@@ -45,6 +46,13 @@ def _sha256_file(path: str) -> str:
 #: ``DiscoveryPipeline(max_bad_row_fraction=...)``.
 DEFAULT_MAX_BAD_ROW_FRACTION = 0.2
 
+#: Expression-evaluation backends for :meth:`DiscoveryPipeline._predict_expression`.
+#:
+#: ``rust``  -- prefer the native ``apedp_kernel``, fall back to SymPy on error.
+#: ``python`` -- pin the SymPy fallback, never touching the native kernel.
+#: ``auto``   -- same as ``rust``; the default for ordinary runs.
+VALID_BACKENDS = frozenset({"auto", "python", "rust"})
+
 
 class DiscoveryPipeline:
     """End-to-end scientific discovery pipeline.
@@ -62,7 +70,15 @@ class DiscoveryPipeline:
         output_dir: str = "pipeline_results",
         max_bad_row_fraction: float = DEFAULT_MAX_BAD_ROW_FRACTION,
         strict_units: bool = False,
+        backend: str = "auto",
     ):
+        if backend not in VALID_BACKENDS:
+            raise ValueError(
+                f"backend must be one of {sorted(VALID_BACKENDS)}, got {backend!r}")
+        self.backend = backend
+        # "python" pins the SymPy fallback; "rust"/"auto" prefer the native
+        # kernel and only fall back when it is unavailable or errors.
+        self._bridge = RustKernelBridge(force_fallback=(backend == "python"))
         self.max_bad_row_fraction = max_bad_row_fraction
         self.strict_units = strict_units
         self.output_dir = Path(output_dir)
@@ -240,14 +256,31 @@ class DiscoveryPipeline:
         var_names = sorted(x_data.keys())
         syms = [sp.Symbol(k) for k in var_names]
         subs = {sp.Symbol(k): v for k, v in self.platform.constants_values.items()}
-        f = sp.lambdify(syms, expr.subs(subs), modules=["numpy"])
+        substituted = expr.subs(subs)
         args = [np.asarray(x_data[k], dtype=float) for k in var_names]
         if not args:
             # No independent variables: evaluate as scalar constant
+            f = sp.lambdify(syms, substituted, modules=["numpy"])
             y_pred = f()
             if not isinstance(y_pred, np.ndarray):
                 return np.array([float(y_pred)], dtype=float)
             return np.asarray(y_pred, dtype=float)
+        if self.backend != "python":
+            # Route through the Rust bridge (native kernel, SymPy fallback) so
+            # `backend` actually selects an evaluator. The direct lambdify
+            # path stays as a guard for expressions the string round-trip
+            # cannot represent.
+            try:
+                return np.asarray(
+                    self._bridge.evaluate_expression(str(substituted), var_names, args),
+                    dtype=float,
+                )
+            except Exception as e:  # noqa: BLE001 - bridge must not break discovery
+                logger.warning(
+                    "Backend evaluation failed for '%s' (%s); using direct lambdify.",
+                    expr, e,
+                )
+        f = sp.lambdify(syms, substituted, modules=["numpy"])
         y_pred = f(*args)
         if not isinstance(y_pred, np.ndarray):
             y_pred = np.full_like(args[0], float(y_pred), dtype=float)
@@ -654,7 +687,7 @@ class DiscoveryPipeline:
             self.experiment.log("prospective_validation", {"train_csv": train_csv, "holdout_csv": holdout_csv}, {**base, "status": "REFUSED", "reason": reason}, "refused")
             return {**base, "status": "REFUSED", "reason": reason}
         holdout = self.ingest_csv(holdout_csv, target_column)
-        holdout_vars = [v for v in holdout["variables"]]
+        holdout_vars = list(holdout["variables"])
         if set(holdout_vars) != set(train_result["variables"]):
             self.store.delete_model(train_result["model_id"])
             reason = f"holdout variables {holdout_vars} != train {train_result['variables']}"

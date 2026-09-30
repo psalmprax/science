@@ -50,3 +50,20 @@ def test_holdout_discriminates_structure_pendulum():
          DynamicalEquation("omega", "-(g/L)*theta - b*omega + u")))
     res = intervention_holdout(linear, prob)
     assert res.metrics["rmse"] > 10 * truth_rmse, res.metrics
+
+
+def test_vdp_loads_finite_regression():
+    """Van der Pol truth generation failed once transiently (TypeError in
+    compiled RHS arg count) and passed on every rerun since. Pinned: load
+    must succeed with finite trajectories; a recurrence fails loudly here
+    instead of surfacing as a confusing downstream error."""
+    import numpy as np
+
+    from apedp_dyn.problems import van_der_pol
+
+    prob = van_der_pol.load()
+    for regime in ("train", "holdout"):
+        reg = getattr(prob, regime)
+        assert reg["truth_t"].shape == (400,)
+        assert reg["truth_y"].shape == (400, 2)
+        assert np.all(np.isfinite(reg["truth_y"]))

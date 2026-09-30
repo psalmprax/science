@@ -77,9 +77,9 @@ def yu_cdse_rows() -> list[dict]:
     """
     lam = np.arange(440, 615, 15, dtype=float)
     D = 1.6122e-9 * lam**4 - 2.6575e-6 * lam**3 + 1.6242e-3 * lam**2 - 0.4277 * lam + 41.57
-    return [{"material": "CdSe", "D_nm": float(d), "lambda_peak_nm": float(l),
+    return [{"material": "CdSe", "D_nm": float(d), "lambda_peak_nm": float(lam_nm),
              "source": "Yu2003-sizing-curve(derived)", "ligand": "TOPO",
-             "solvent": "toluene", "T_K": 298.0} for d, l in zip(D, lam)]
+             "solvent": "toluene", "T_K": 298.0} for d, lam_nm in zip(D, lam, strict=False)]
 
 
 def to_arrays(rows: list[dict], with_anchor: bool = True):

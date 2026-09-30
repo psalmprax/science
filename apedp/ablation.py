@@ -13,8 +13,9 @@ is explicit rather than a hidden tradeoff.
 """
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
+from math import inf
 from typing import Any
 
 import numpy as np
@@ -79,6 +80,17 @@ def _finite(value: Any) -> float | None:
     return number if np.isfinite(number) else None
 
 
+def _sort_key(value: Any) -> float:
+    """Order candidates by error; missing or non-finite errors sort last.
+
+    ``min`` needs a totally ordered key, but the error fields are optional.
+    Callers filter non-finite entries out before ranking, so this only has to
+    stay total rather than faithful for the dropped entries.
+    """
+    number = _finite(value)
+    return number if number is not None else inf
+
+
 def selection_report(evaluations: Iterable[RungEvaluation]) -> dict[str, Any]:
     """Fit-cost ledger: raw error per candidate plus constraint satisfaction.
 
@@ -90,8 +102,8 @@ def selection_report(evaluations: Iterable[RungEvaluation]) -> dict[str, Any]:
     items = list(evaluations)
     test_errors = [(item.expression, item.test_error) for item in items if _finite(item.test_error) is not None]
     admitted = [(item.expression, item.test_error) for item in items if not item.refused and _finite(item.test_error) is not None]
-    best_raw = min(test_errors, key=lambda pair: pair[1]) if test_errors else (None, None)
-    best_adm = min(admitted, key=lambda pair: pair[1]) if admitted else (None, None)
+    best_raw = min(test_errors, key=lambda pair: _sort_key(pair[1])) if test_errors else (None, None)
+    best_adm = min(admitted, key=lambda pair: _sort_key(pair[1])) if admitted else (None, None)
     price = None
     if best_raw[1] is not None and best_adm[1] is not None:
         price = float(best_adm[1] - best_raw[1])
@@ -128,7 +140,12 @@ def run_ablation_ladder(
         if select not in ("train", "test"):
             raise ValueError("rung selection rule must be 'train' or 'test'")
         evaluations = tuple(evaluate(expression) for expression in candidates)
-        key = lambda item: item.test_error if select == "test" else item.train_error
+        # Bind the metric as a default argument rather than closing over `select`:
+        # a lambda capturing the loop variable would take the *final* rung's
+        # metric for every rung once the closure escaped the iteration.
+        def key(item: RungEvaluation, _select: str = select) -> float:
+            return _sort_key(item.test_error if _select == "test" else item.train_error)
+
         scored = [(item.expression, key(item)) for item in evaluations if _finite(key(item)) is not None]
         selected = min(scored, key=lambda pair: pair[1])[0] if scored else None
         ledger = selection_report(evaluations)

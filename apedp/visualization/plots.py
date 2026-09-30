@@ -80,7 +80,7 @@ def plot_dimensional_analysis(
     y_pos = range(len(variables))
     ax.barh(y_pos, [1] * len(variables), color="steelblue", alpha=0.8)
     ax.set_yticks(list(y_pos))
-    ax.set_yticklabels([f"{v}\n({d})" for v, d in zip(variables, dimensions)], fontsize=10)
+    ax.set_yticklabels([f"{v}\n({d})" for v, d in zip(variables, dimensions, strict=False)], fontsize=10)
     ax.set_xlabel("Dimensional Presence", fontsize=12)
     ax.set_title("Dimensional Analysis Map", fontsize=14)
     ax.grid(True, alpha=0.3, axis="x")

@@ -155,7 +155,7 @@ def test_conformal_coverage_sane_and_grouped():
         calib_group_ids=["a", "b", "c"], group_of_calib=groups[calib],
     )
     test = np.arange(120)[1::2]
-    lower, upper = interval.band((np.column_stack([x[test], np.ones(len(test))]) @ coef))
+    lower, upper = interval.band(np.column_stack([x[test], np.ones(len(test))]) @ coef)
     report = coverage_report(y[test], lower, upper, groups[test])
     assert report["coverage"] >= 0.75
     assert set(report["per_group"]) == {"a", "b", "c"}

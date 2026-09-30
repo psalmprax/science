@@ -292,8 +292,10 @@ class HyperparameterOptimizer:
         """
         try:
             import optuna
-        except ImportError:
-            raise ImportError("optuna required for hyperopt. Install with: pip install optuna")
+        except ImportError as e:
+            raise ImportError(
+                "optuna required for hyperopt. Install with: pip install optuna"
+            ) from e
 
         if key is None:
             key = random.PRNGKey(self.config.seed)

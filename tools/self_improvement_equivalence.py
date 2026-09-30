@@ -123,10 +123,6 @@ def main() -> int:
         print("DISAGREE detect_weaknesses([])")
 
     # --- IndependentGatekeeper -------------------------------------------
-    # The original's ModificationProposal is a distinct class object from the
-    # re-authored one, so an identical proposal is constructed in each
-    # namespace rather than shared. Sharing would compare the two auditors
-    # against differently-typed inputs and prove nothing.
     for mbd in (False, True):
         for rcc in (False, True):
             for reg in (True, False):
@@ -156,6 +152,16 @@ def main() -> int:
 
     # --- to_dict shapes ---------------------------------------------------
     for cls in ("ModificationProposal", "DiagnosticSignal", "GatekeeperDecision"):
+        o = [f.name for f in dataclasses.fields(getattr(orig, cls))]
+        n = [f.name for f in dataclasses.fields(getattr(new, cls))]
+        if o == n:
+            agree += 1
+            print(f"AGREE  {cls} fields: {n}")
+        else:
+            disagree += 1
+            print(f"DISAGREE {cls} fields: {o} vs {n}")
+
+    for cls in ("DiagnosticSignal", "GatekeeperDecision"):
         o = [f.name for f in dataclasses.fields(getattr(orig, cls))]
         n = [f.name for f in dataclasses.fields(getattr(new, cls))]
         if o == n:

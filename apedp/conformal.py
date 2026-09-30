@@ -72,7 +72,7 @@ PredictFn = Callable[[np.ndarray], np.ndarray]
 
 
 def grouped_conformal(
-    predict_calib: PredictFn,
+    y_calib_pred: Iterable[float],
     y_calib_true: Iterable[float],
     *,
     alpha: float = 0.1,
@@ -81,13 +81,13 @@ def grouped_conformal(
 ) -> ConformalInterval:
     """Calibrate on whole held-out groups; optionally verify group sizes.
 
-    ``predict_calib`` maps calibration features to point predictions;
+    ``y_calib_pred`` are point predictions on the calibration rows and
     ``y_calib_true`` are the locked calibration targets. When
     ``group_of_calib`` is supplied, every listed ``calib_group_ids`` entry
     must actually occur in the calibration rows -- a guard against silent
     group leakage where a "held-out" group never appears.
     """
-    interval = conformalize(y_calib_true, predict_calib, alpha=alpha)
+    interval = conformalize(y_calib_true, y_calib_pred, alpha=alpha)
     if group_of_calib is not None and calib_group_ids is not None:
         seen = set(group_of_calib)
         missing = [group for group in calib_group_ids if group not in seen]

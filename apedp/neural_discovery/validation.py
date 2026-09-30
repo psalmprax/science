@@ -168,7 +168,7 @@ class OODBenchmarkSuite:
         """
         results = []
 
-        for name, (x_test, y_test) in zip(dataset_names, target_datasets):
+        for name, (x_test, y_test) in zip(dataset_names, target_datasets, strict=False):
             preds = model.apply({'params': params}, x_test)
 
             mse = float(np.mean((preds - y_test) ** 2))

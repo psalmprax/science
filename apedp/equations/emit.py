@@ -6,7 +6,7 @@ from apedp.equations.schema import EquationRecord
 
 def build_records(groups: list, seed_meta: dict, classifications: list) -> list:
     records = []
-    for i, (g, c) in enumerate(zip(groups, classifications)):
+    for i, (g, c) in enumerate(zip(groups, classifications, strict=False)):
         base = seed_meta.get("name", f"eq_{i}").lower().replace(" ", "_").replace("'", "")
         records.append(EquationRecord(
             equation_id=f"{seed_meta.get('domain', 'gen')}.{base}.{i}",

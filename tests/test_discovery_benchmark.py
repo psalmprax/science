@@ -298,7 +298,7 @@ def test_implicit_fitness_orders_true_above_wrong():
         return f
 
     f = np.array([colebrook_f(np.array([r]), np.array([ee]))[0]
-                  for r, ee in zip(Re, e)])
+                  for r, ee in zip(Re, e, strict=False)])
     data = {"Re": Re, "e": e, "f": f}
     good = implicit_fitness(
         "1/sqrt(f) + 2*log(e/3.7 + 2.51/(Re*sqrt(f)))/log(10)",
@@ -335,7 +335,7 @@ def test_engine_implicit_fitness_orders_true_above_wrong():
         return ff
 
     fv = np.array([colebrook_f(np.array([r]), np.array([ee]))[0]
-                   for r, ee in zip(Rv, ev)])
+                   for r, ee in zip(Rv, ev, strict=False)])
     data = {"Re": Rv, "e": ev}
     good = sre.implicit_fitness(
         1 / sp.sqrt(f) + 2 * sp.log(e / 3.7 + 2.51 / (Re * sp.sqrt(f))) / sp.log(10),

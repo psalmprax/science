@@ -70,7 +70,7 @@ def _probe_limiting(expr_str: str) -> float | None:
         import itertools
         points = [0.5, 1.0, 2.0]
         for combo in itertools.product(points, repeat=min(len(syms), 3)):
-            subs = {s: v for s, v in zip(syms, combo)}
+            subs = dict(zip(syms, combo, strict=False))
             try:
                 val = complex(expr.subs(subs).evalf())
             except (TypeError, ValueError, ArithmeticError) as exc:

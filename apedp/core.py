@@ -377,7 +377,7 @@ class BuckinghamPiEngine:
         groups: list[sp.Expr] = []
         for int_powers in powers:
             expr: sp.Expr = sp.Integer(1)
-            for name, power in zip(var_names, int_powers):
+            for name, power in zip(var_names, int_powers, strict=False):
                 if power:
                     expr = expr * sp.Pow(syms[name], int(power))
             groups.append(expr)

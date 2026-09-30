@@ -255,7 +255,7 @@ if __name__ == "__main__":
     # Test 2: two reveal iterations improve or hold the fit (monotone data growth)
     plan = []
     pool_x, pool_y = xt[mask], truth[mask]
-    for k in range(2):
+    for _ in range(2):
         j = int(np.argmax(np.abs(pool_x - 1.0) > 0))  # deterministic pick
         plan.append(({"x": pool_x[j:j + 1]}, pool_y[j:j + 1]))
         keep = np.ones(len(pool_x), dtype=bool)

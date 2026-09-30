@@ -20,11 +20,21 @@ from apedp.decision.policy import (
     SearchAction,
     SearchDecision,
 )
+from apedp.decision.stage_c import (
+    CandidateProfile,
+    EpistemicState,
+    ModelClass,
+    StageCDecision,
+    StageCDecisionEngine,
+)
 
 __all__ = [
-    "CalibrationPolicy", "CandidateClass", "CandidateEvidence", "Decision",
+    "CalibrationPolicy", "CandidateClass", "CandidateEvidence",
+    "CandidateProfile", "Decision",
     "DecisionBackend", "DecisionEngine", "DecisionLog", "DecisionResult",
-    "EvidenceStrength", "JevBackend", "JevCompatibleBackend",
-    "LocalSearchController", "RuleBasedBackend", "SearchAction",
-    "SearchDecision", "ValidationResult", "run_hard_gates",
+    "EpistemicState", "EvidenceStrength", "JevBackend",
+    "JevCompatibleBackend", "LocalSearchController", "ModelClass",
+    "RuleBasedBackend", "SearchAction",
+    "SearchDecision", "StageCDecision", "StageCDecisionEngine",
+    "ValidationResult", "run_hard_gates",
 ]

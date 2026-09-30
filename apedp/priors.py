@@ -15,6 +15,8 @@ Typical usage:
 """
 
 
+from typing import Any
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -25,9 +27,9 @@ from jax import random
 # ---------------------------------------------------------------------------
 
 def semf_prior_samples(
-    key: jax.random.PRNGKey,
+    key: jax.Array,
     n_samples: int = 1000,
-) -> dict[str, jnp.ndarray]:
+) -> dict[str, Any]:
     """Draw samples from physics-informed priors over SEMF coefficients.
 
     Priors are informed by microscopic calculations and empirical systematics:
@@ -95,7 +97,7 @@ def semf_binding_energy(
     Returns:
         Binding energy per nucleon, shape (...,)
     """
-    def _col(x):
+    def _col(x) -> jnp.ndarray:
         arr = jnp.asarray(x)
         return arr[:, None] if arr.ndim == 1 else arr
 
@@ -189,10 +191,10 @@ def semf_log_likelihood(
 # ---------------------------------------------------------------------------
 
 def hierarchical_semf_prior(
-    key: jax.random.PRNGKey,
+    key: jax.Array,
     n_domains: int = 1,
     n_samples_per_domain: int = 1000,
-) -> dict[str, jnp.ndarray]:
+) -> dict[str, Any]:
     """Draw hierarchical SEMF priors across multiple domains.
 
     In a hierarchical model, the coefficient for each domain is drawn from
@@ -220,9 +222,9 @@ def hierarchical_semf_prior(
     coeff_names = ("a_v", "a_s", "a_c", "a_a")
     hyper_means = {
         name: mean + hyper_scales[index] * random.normal(subkeys[index], ())[()]
-        for index, (name, mean) in enumerate(zip(coeff_names, nominal_means))
+        for index, (name, mean) in enumerate(zip(coeff_names, nominal_means, strict=False))
     }
-    coeffs = {}
+    coeffs: dict[str, Any] = {}
     for coefficient_index, name in enumerate(coeff_names):
         domain_draws = []
         for domain in range(n_domains):
@@ -326,7 +328,7 @@ def build_semf_posterior(
     adapt: bool = False,
     proposal_cov=None,
     init_state: dict | None = None,
-) -> dict[str, jnp.ndarray]:
+) -> dict[str, Any]:
     """Sample a SEMF posterior with random-walk Metropolis-Hastings.
 
     ``likelihood_fn`` receives a coefficient dictionary plus ``Z``, ``N``,
@@ -392,8 +394,8 @@ def build_semf_posterior(
                              "over the sampled coefficients")
         try:
             fixed_chol = np.linalg.cholesky(mat * (2.38 ** 2 / dim))
-        except np.linalg.LinAlgError:
-            raise ValueError("proposal_cov must be positive definite")
+        except np.linalg.LinAlgError as e:
+            raise ValueError("proposal_cov must be positive definite") from e
     if init_state is not None:
         for key in order:
             arr = np.asarray(init_state[key], dtype=float).reshape(-1)
@@ -430,7 +432,7 @@ def build_semf_posterior(
         return np.array([float(state[key]) for key in order])
 
     def _to_dict(vec: np.ndarray, template: dict) -> dict:
-        out = {key: float(val) for key, val in zip(order, vec)}
+        out = {key: float(val) for key, val in zip(order, vec, strict=False)}
         out.update(template)
         return out
 
@@ -543,7 +545,7 @@ def two_stage_posterior(
     prior_logpdf=None,
     seed: int = 0,
     burn: int = 500,
-) -> dict[str, jnp.ndarray]:
+) -> dict[str, Any]:
     """Legacy warmup -> fixed-covariance MVN main run (the verified recipe).
 
     Stage 1 runs fixed independent steps from dispersed prior starts;
@@ -564,7 +566,7 @@ def two_stage_posterior(
         likelihood_fn, prior_sampler, Z, N, A, BE_exp,
         n_chain=n_chain, n_iter=n_warmup, proposal_scale=proposal_scale,
         prior_logpdf=prior_logpdf, seed=seed, burn=n_warmup // 3)
-    order = [k for k in stage1["samples"]]
+    order = list(stage1["samples"])
     pooled = np.column_stack([
         np.asarray(stage1["samples"][k]).reshape(-1) for k in order])
     oracle_cov = np.cov(pooled, rowvar=False)
@@ -626,8 +628,8 @@ def hmc_sample(logprob_fn, init: np.ndarray, n_iter: int,
     try:
         chol = np.linalg.cholesky(M)
         minv = np.linalg.inv(M)
-    except np.linalg.LinAlgError:
-        raise ValueError("mass must be positive definite")
+    except np.linalg.LinAlgError as e:
+        raise ValueError("mass must be positive definite") from e
     import jax
     # JIT once: per-step Python+dispatch overhead otherwise dominates on
     # small parameter vectors (measured ~40ms/eval unjitted).
@@ -697,7 +699,7 @@ def semf_hmc(likelihood_fn, prior_mean: dict, prior_sd: dict,
              n_chain: int = 2, n_iter: int = 500, step_size: float = 0.2,
              n_leapfrog: int = 10, seed: int = 0,
              burn: int = 100, mass_cov="auto",
-             jitter: bool = True) -> dict[str, jnp.ndarray]:
+             jitter: bool = True) -> dict[str, Any]:
     """HMC posterior over SEMF coefficients (Gaussian prior + likelihood).
 
     Wraps :func:`hmc_sample` with one chain per seed-stream, returning the

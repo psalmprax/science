@@ -171,7 +171,7 @@ def lindblad_step(rho, hamiltonian, jump_ops: list, dt: float,
     if gamma_list is None:
         gamma_list = [1.0] * len(jump_ops)
     drho = -1j * (h @ rho - rho @ h)
-    for op, g in zip(jump_ops, gamma_list):
+    for op, g in zip(jump_ops, gamma_list, strict=False):
         lop = np.asarray(op, dtype=complex)
         ldl = lop.conj().T @ lop
         drho = drho + float(g) * (lop @ rho @ lop.conj().T

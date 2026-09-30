@@ -282,7 +282,7 @@ def domain_audit(expr_str: str, var_ranges: dict,
         n_bad = 0
         n_total = 0
         for combo in itertools.product(*axes):
-            subs = dict(zip(syms, combo))
+            subs = dict(zip(syms, combo, strict=False))
             try:
                 val = float(expr.subs(subs).evalf())
             except (TypeError, ValueError, ArithmeticError, AttributeError):
@@ -718,4 +718,4 @@ DISCOVERY_TIERS = ("A_rediscovery", "B_transformations", "C_deceptive",
 
 def benchmark_tier_summary() -> dict:
     """Tier names for discovery benchmark (reviewer item 17)."""
-    return {t: "pending" for t in DISCOVERY_TIERS}
+    return dict.fromkeys(DISCOVERY_TIERS, "pending")
