@@ -80,9 +80,33 @@ scratch and should be discarded.
 
 ## Separate finding, not a recovery target
 
-`apedp_dyn/grammar/coupled.py:117` raises `NotImplementedError` for
-`dae_mode='constrained'`. That is a gap in *current, CI-gated* code,
-independent of anything in this document.
+An earlier draft of this document described
+`apedp_dyn/grammar/coupled.py:117` as "a gap in current, CI-gated code."
+That was wrong, and the code says so itself. `dae_mode='constrained'`
+raises `NotImplementedError` deliberately, with a 25-line comment
+explaining two independent reasons: `_TERM_BUILDERS` maps `c1`/`c2` to
+`X**0`, so a constraint reads `con * 1 = 0` and relates nothing; and
+nothing performs the index-1 reduction. The comment then records what the
+earlier behaviour actually did — the materializer summed the constraint
+into the acceleration RHS, gate 1 rejected all 1539 constraint-carrying
+candidates, and the 225 that survived were plain ODEs wearing a DAE label,
+"which is worse than an error because it looks like a result."
+
+That is the best-documented refusal in the repository, and it is the
+opposite of a defect: it is a measured decision to raise rather than ship
+something that looks like a result and is not. Implementing it needs
+`M(q) qdd = f + grad(g) * lambda` solved and substituted back, which
+`PhysicalModel` ("one explicit first-order ODE per state") has nowhere to
+record. The DAE provenance fields and the gate 1.5 checks are the
+specification for that work. Left alone deliberately.
+
+## In progress elsewhere
+
+`apedp/dyn/__init__.py` reappeared in the working tree at 10:31 on
+2026-09-30, untracked, written by a concurrent session that is rebuilding
+that package. The `apedp/dyn/` row in the superseded table above may
+therefore be resolved by other hands; do not duplicate the work. Check
+`git status --porcelain -- apedp/dyn/` before starting it.
 
 ## Reproducing this triage
 
