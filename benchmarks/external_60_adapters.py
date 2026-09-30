@@ -86,7 +86,32 @@ class APEDPAdapter:
         t0 = time.time()
         grids = load_public_grids(corpus_root, problem_id)
         tr, va = grids["train.csv"], grids["validation.csv"]
-        models = AutonomousModelSynthesizer().synthesize(tr[:, 0], tr[:, 1], va[:, 0], va[:, 1])
+        near = grids["near_ood.csv"]
+        # near-OOD is passed in, far-OOD deliberately is not. Both are public
+        # splits, so the contract permits either, but far-OOD MSE is the
+        # primary metric for block X (protocol §5.3) and block X *is* a
+        # re-split of P/E/R. Handing the selector the split it is scored on
+        # would make that number a training target. near-OOD is a weaker
+        # version of the same contamination -- metric §5.3 also reports
+        # near-OOD MSE -- so it is bounded and stated rather than hidden: it
+        # only ever breaks ties between candidates already inside the
+        # noise floor, and it can only disqualify a *more* complex model
+        # (parsimony tiebreak, model_synthesis.py:1660-1670). It never
+        # promotes anything.
+        #
+        # Passing it is not cosmetic. With near_ood_mse=None on every
+        # candidate, three consumers were running on a permanently-absent
+        # input: the parsimony tiebreak's OOD guard could never fire, the
+        # Stage C near-OOD trade-off probe could never record a trade-off,
+        # and `ood_tested` was False for all 60 problems, so every
+        # UNIQUE_SUPPORT rationale in the round opened by declaring
+        # extrapolation untested -- which was true, but was true of a grid
+        # the adapter had already loaded. The stage-D2 evidence report's
+        # OOD penalty likewise never applied.
+        models = AutonomousModelSynthesizer().synthesize(
+            tr[:, 0], tr[:, 1], va[:, 0], va[:, 1],
+            near[:, 0], near[:, 1],
+        )
         top = models[0]
         epi = top.epistemic_state.value if top.epistemic_state else ""
         abstained = epi in {"INSUFFICIENT_EVIDENCE", "NO_VALID_CANDIDATE"}
@@ -120,6 +145,13 @@ class APEDPAdapter:
             abstain_reason="" if not abstained else f"epistemic={epi}",
             predictions=preds, wall_seconds=time.time() - t0,
             metadata={"family": top.structural_family, "val_mse": top.val_mse,
+                      # The synthesizer's own OOD score, kept separate from
+                      # the grid MSE the blind evaluator computes. These two
+                      # should agree to within fit-vs-truth error; where they
+                      # do not, the adapter and the engine have diverged,
+                      # and this field is what makes that visible.
+                      "near_ood_mse": top.near_ood_mse,
+                      "far_ood_mse": top.far_ood_mse,
                       "epistemic_state": epi, "proof_claim": "P0"},
         )
 

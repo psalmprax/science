@@ -35,6 +35,9 @@ class _StubModel:
         self.sympy_expr = sympy_expr if sympy_expr is not None else sp.sympify(expr)
         self.structural_family = "linear_baseline"
         self.val_mse = 0.0
+        # Present on the real SynthesizedModel; the adapter reads them.
+        self.near_ood_mse = None
+        self.far_ood_mse = None
 
 
 class _Enum:
@@ -53,6 +56,86 @@ def _stubbed(monkeypatch, state: str, expr: str = "1.0*x + 0.0"):
 
     monkeypatch.setattr(ms, "AutonomousModelSynthesizer", _Stub)
     return APEDPAdapter().run(CORPUS, "P01")
+
+
+def _capturing_stub(monkeypatch) -> dict:
+    """Stubs the synthesizer and records how it was called."""
+    import apedp.model_synthesis as ms
+
+    seen: dict = {}
+
+    class _Stub:
+        def synthesize(self, *a, **k):
+            seen["args"] = a
+            seen["kwargs"] = k
+            return [_StubModel("UNIQUE_SUPPORT")]
+
+    monkeypatch.setattr(ms, "AutonomousModelSynthesizer", _Stub)
+    APEDPAdapter().run(CORPUS, "P01")
+    return seen
+
+
+class TestNearOodIsActuallyForwarded:
+    """The near-OOD grid is loaded and then, until now, discarded.
+
+    synthesize() takes x_near_ood/y_near_ood. The adapter read the CSV at
+    line 111 and never passed it, so near_ood_mse was None on all 60
+    problems and every consumer of that field was running on a permanently
+    absent input: the parsimony tiebreak's OOD guard could never fire, the
+    Stage C near-OOD trade-off probe could never record one, and ood_tested
+    was False for the whole round.
+    """
+
+    def test_near_ood_arrays_reach_the_synthesizer(self, monkeypatch):
+        import numpy as np
+
+        seen = _capturing_stub(monkeypatch)
+        args, kwargs = seen["args"], seen["kwargs"]
+
+        near_x = args[4] if len(args) > 4 else kwargs.get("x_near_ood")
+        near_y = args[5] if len(args) > 5 else kwargs.get("y_near_ood")
+        assert near_x is not None and near_y is not None, (
+            "near-OOD was not forwarded to synthesize(); the OOD parsimony "
+            "guard is dead code without it")
+
+        grids = load_public_grids(CORPUS, "P01")["near_ood.csv"]
+        assert np.array_equal(np.asarray(near_x), grids[:, 0])
+        assert np.array_equal(np.asarray(near_y), grids[:, 1])
+
+    def test_far_ood_is_withheld_from_selection(self, monkeypatch):
+        """far-OOD MSE is block X's primary metric, and X is a re-split of P/E/R.
+
+        Handing the selector the split it is scored on turns the headline
+        number into a training target. Withheld on purpose, not overlooked.
+        """
+        seen = _capturing_stub(monkeypatch)
+        assert len(seen["args"]) <= 6, (
+            f"far-OOD reached synthesize(): {seen['args'][6:]}")
+        assert "x_far_ood" not in seen["kwargs"]
+        assert "y_far_ood" not in seen["kwargs"]
+
+    def test_near_ood_scores_are_reported_in_metadata(self, monkeypatch):
+        """The engine's own OOD score is kept beside the grid MSE.
+
+        The blind evaluator recomputes OOD error from predictions against
+        hidden truth. Carrying the engine's number too makes a divergence
+        between the two visible instead of silent.
+        """
+        import apedp.model_synthesis as ms
+
+        class _Stub:
+            def synthesize(self, *_a, **_k):
+                m = _StubModel("UNIQUE_SUPPORT")
+                m.near_ood_mse = 0.25
+                m.far_ood_mse = None
+                return [m]
+
+        monkeypatch.setattr(ms, "AutonomousModelSynthesizer", _Stub)
+        res = APEDPAdapter().run(CORPUS, "P01")
+        assert res.metadata["near_ood_mse"] == 0.25
+        assert res.metadata["far_ood_mse"] is None, (
+            "far_ood_mse is withheld from selection, so it must stay None -- "
+            "a value here would mean far-OOD leaked in after all")
 
 
 def test_abstaining_model_emits_no_predictions(monkeypatch):
