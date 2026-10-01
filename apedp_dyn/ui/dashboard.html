@@ -675,6 +675,7 @@
       document.getElementById('tab-' + tabId + '-btn').setAttribute('aria-selected', 'true');
 
       if (tabId === 'physics') {
+        loadPhysicsCatalog();
         document.getElementById('tab-physics').classList.remove('hidden');
         document.getElementById('tab-physics-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 transition";
       } else if (tabId === 'market') {
@@ -773,6 +774,23 @@
     }
 
 
+    const DEMO_SYSTEMS = new Set(['pendulum', 'duffing', 'harmonic', 'kinetic']);
+    async function loadPhysicsCatalog() {
+      try {
+        const resp = await fetch('/api/physics/systems', {headers: apiHeaders()});
+        if (!resp.ok) return;
+        const items = await resp.json();
+        const sel = document.getElementById('phys-system-select');
+        sel.innerHTML = '';
+        for (const it of items) {
+          const o = document.createElement('option');
+          o.value = it.id;
+          o.textContent = `${it.name} [${(it.equations || []).join('; ') || it.id}]`;
+          sel.appendChild(o);
+        }
+      } catch (err) { console.error(err); }
+    }
+
     function onSystemChange() {
       const sys = document.getElementById('phys-system-select').value;
       const ampBox = document.getElementById('pendulum-amplitude-container');
@@ -791,6 +809,8 @@
     }
 
     async function executePhysicsDiscovery() {
+      const sys0 = document.getElementById('phys-system-select').value;
+      if (!DEMO_SYSTEMS.has(sys0)) { return executeRegistryDiscovery(sys0); }
       const sys = document.getElementById('phys-system-select').value;
       const theta0 = parseFloat(document.getElementById('theta0-slider').value);
       const noise = parseFloat(document.getElementById('noise-slider').value);
@@ -824,6 +844,30 @@
         spinner.classList.add('hidden');
         text.innerText = "⚡ RUN AUTONOMOUS DISCOVERY";
         btn.disabled = false;
+      }
+    }
+
+    async function executeRegistryDiscovery(sys0) {
+      const badge = document.getElementById('verdict-badge');
+      const text = document.getElementById('verdict-text');
+      badge.innerText = 'RUNNING…';
+      try {
+        const resp = await fetch('/api/discover/registry', {
+          method: 'POST', headers: apiHeaders(),
+          body: JSON.stringify({system: sys0}),
+        });
+        const data = await resp.json();
+        text.innerText = (data.verdict || 'unknown').toUpperCase();
+        document.getElementById('promoted-equation-box').innerText =
+          data.promoted_equation || "No promoted equation (refusal under uncertainty)";
+        document.getElementById('reason-text').innerText = data.reason || '';
+        document.getElementById('tau-val').innerText = 'registry';
+        document.getElementById('rho1-val').innerText = 'registry';
+        document.getElementById('r2-val').innerText = 'registry';
+        document.getElementById('rmse-val').innerText = 'registry';
+      } catch (err) {
+        text.innerText = 'ERROR';
+        console.error(err);
       }
     }
 

@@ -106,7 +106,7 @@ def to_jsonable(obj: Any) -> Any:
 
 
 class PhysicsRequest(BaseModel):
-    system: Literal["pendulum", "duffing", "harmonic", "kinetic"] = "pendulum"
+    system: str = "pendulum"
     theta0: float = 1.8
     noise: float = 0.01
     multiterm: bool = False
@@ -168,6 +168,90 @@ def status() -> dict[str, Any]:
             for w in WINDOWS
         ],
     }
+
+
+def _problem_modules():
+    """All importable problem modules exposing spec()."""
+    import importlib
+    import pkgutil
+
+    import apedp_dyn.problems as P
+    out = {}
+    for m in pkgutil.iter_modules(P.__path__):
+        if m.name.startswith("_") or m.name == "base":
+            continue
+        try:
+            mod = importlib.import_module(f"apedp_dyn.problems.{m.name}")
+            if hasattr(mod, "spec"):
+                out[m.name] = mod
+        except Exception as exc:  # noqa: BLE001 -- one bad module must not hide the rest
+            import logging
+            logging.getLogger(__name__).debug("skipping problem module %s: %s", m.name, exc)
+            continue
+    return out
+
+
+@app.get("/api/physics/systems", dependencies=[Depends(_require_api_key)])
+def physics_systems() -> list[dict[str, Any]]:
+    """Registry of every runnable problem module (not just the 4 demo systems)."""
+    items = []
+    for modname, mod in sorted(_problem_modules().items()):
+        try:
+            spec = mod.spec()
+            eqs = [f"{e.state}' = {e.sympy_expr}" for e in spec.truth_equations]
+        except Exception:  # noqa: BLE001
+            continue
+        items.append({"id": modname,
+                      "problem_id": getattr(spec, "problem_id", modname),
+                      "name": getattr(spec, "name", modname),
+                      "equations": eqs,
+                      "n_states": len(spec.states)})
+    return items
+
+
+@app.post("/api/discover/registry", dependencies=[Depends(_require_api_key)])
+def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
+    """Generic L2 discovery on any registered problem module.
+
+    Uses the problem's own ground-truth trajectories: features are the
+    state variables, target is the finite-difference derivative of the
+    last state (the acceleration/rate law -- the RHS discovery task).
+    Same guards, same adjudication, same audit as the demo systems.
+    """
+    from apedp_dyn.discovery_l2.dimensional_types import Dimension
+    from apedp_dyn.discovery_l2.l2_engine import L2DiscoveryEngine
+    from apedp_dyn.problems.base import finalize
+
+    modname = str(req.get("system", ""))
+    mods = _problem_modules()
+    if modname not in mods:
+        raise HTTPException(status_code=404, detail=f"Unknown problem module {modname}.")
+    prob = finalize(mods[modname].spec())
+    Y = np.asarray(prob.train["truth_y"], dtype=float)
+    t = np.asarray(prob.train["truth_t"], dtype=float)
+    names = [s.name for s in prob.states]
+    feats = {n: Y[:, i] for i, n in enumerate(names)}
+    target = np.gradient(Y[:, -1], t)
+    eng = L2DiscoveryEngine(operators=("+", "-", "*", "/", "pow"),
+                            max_depth=2, max_complexity=5)
+    res = eng.discover(X=feats, Y=target,
+                       dimensions={n: Dimension() for n in names},
+                       target_dimension=Dimension(), train_ratio=0.6,
+                       bootstrap=False, seed=42)
+    adj = res.adjudication
+    expr = ""
+    if adj.promoted is not None:
+        expr = (adj.promoted.provenance.get("canonical_expr")
+                or adj.promoted.candidate.metadata.get("canonical_expr")
+                or adj.promoted.candidate.candidate_id)
+    resp = to_jsonable({"system": modname, "verdict": adj.status.value,
+                        "promoted_equation": expr, "reason": adj.reason,
+                        "data_origin": "simulation"})
+    _audit("discover/registry", {"system": modname,
+                                 "verdict": resp.get("verdict"),
+                                 "promoted_equation": resp.get("promoted_equation"),
+                                 "data_origin": "registry-ground-truth"})
+    return resp
 
 
 @app.post("/api/discover/physics", dependencies=[Depends(_require_api_key)])
