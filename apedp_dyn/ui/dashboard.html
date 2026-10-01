@@ -794,6 +794,10 @@
     async function loadPhysicsCatalog() {
       try {
         const resp = await fetch('/api/physics/systems', {headers: apiHeaders()});
+        if (resp.status === 404) {
+          console.warn('physics catalog endpoint missing: server too old, restart uvicorn');
+          return;
+        }
         if (!resp.ok) return;
         const items = await resp.json();
         const sel = document.getElementById('phys-system-select');
@@ -1043,7 +1047,11 @@
       const sel = document.getElementById('market-window-select');
       try {
         const resp = await fetch(`/api/market/windows?asset=${asset}`, {headers: apiHeaders()});
-        if (!resp.ok) return;  // keep hardcoded fallback options
+        if (resp.status === 404) {
+          console.warn('market windows endpoint missing: server too old, restart uvicorn');
+          return;  // keep hardcoded fallback options
+        }
+        if (!resp.ok) return;
         const items = await resp.json();
         const cur = sel.value;
         sel.innerHTML = '';
