@@ -6,25 +6,30 @@
 //! parser that called into sympy would make the differential suite a tautology.
 //!
 //! The grammar covers what the search pipeline emits after
-//! `apedp.safety.safe_parse_expr` has allowlisted it, which is arithmetic plus a
-//! small transcendental set. Implicit multiplication (`2x`, `3(x+1)`) is
-//! accepted because sympy accepts it and the reference side will.
+//! `apedp.safety.safe_parse_expr` has allowlisted it: arithmetic plus a small
+//! transcendental set. Implicit multiplication (`2x`, `3(x+1)`) is accepted
+//! because sympy accepts it, so the reference side would evaluate it and this
+//! side has to agree.
 
 use std::collections::HashMap;
 use std::fmt;
 
 /// A node in the parsed expression tree.
+///
+/// `Ident` is the parser's output; `compile` rewrites it into `Var` or
+/// `Const` once the caller's variable table is known.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Node {
     Const(f64),
-    /// Index into the variable table, resolved at compile time.
+    Ident(String),
+    /// Index into the caller's variable table, resolved at compile time.
     Var(usize),
     Add(Box<Node>, Box<Node>),
     Sub(Box<Node>, Box<Node>),
     Mul(Box<Node>, Box<Node>),
     Div(Box<Node>, Box<Node>),
-    /// `**`. The exponent is always a scalar node in practice, but it is kept
-    /// as a full expression so `2**(x+1)` parses the way sympy parses it.
+    /// `**`. The exponent stays a full expression so `2**(x+1)` parses the way
+    /// Python and sympy parse it.
     Pow(Box<Node>, Box<Node>),
     Neg(Box<Node>),
     Call(Func, Box<Node>),
@@ -59,18 +64,14 @@ impl Func {
             "sin" => Func::Sin,
             "cos" => Func::Cos,
             "tan" => Func::Tan,
-            "asin" => Func::Asin,
-            "acos" => Func::Acos,
-            "atan" => Func::Atan,
-            "arcsin" => Func::Asin,
-            "arccos" => Func::Acos,
-            "arctan" => Func::Atan,
+            "asin" | "arcsin" => Func::Asin,
+            "acos" | "arccos" => Func::Acos,
+            "atan" | "arctan" => Func::Atan,
             "sinh" => Func::Sinh,
             "cosh" => Func::Cosh,
             "tanh" => Func::Tanh,
             "exp" => Func::Exp,
-            "log" => Func::Ln,
-            "ln" => Func::Ln,
+            "log" | "ln" => Func::Ln,
             "log10" => Func::Log10,
             "log2" => Func::Log2,
             "sqrt" => Func::Sqrt,
@@ -81,11 +82,11 @@ impl Func {
         })
     }
 
+    /// Domain behaviour follows the C library, which is what numpy also wraps,
+    /// so NaN/inf land in the same places on both sides of the differential.
     #[inline]
     pub fn apply(self, x: f64) -> f64 {
         match self {
-            // Domain behaviour must match numpy/sympy rather than Rust's
-            // default, because the differential test compares bit patterns.
             Func::Sin => x.sin(),
             Func::Cos => x.cos(),
             Func::Tan => x.tan(),
@@ -107,7 +108,7 @@ impl Func {
                 } else if x < 0.0 {
                     -1.0
                 } else {
-                    x // preserves -0.0 and NaN, as numpy does
+                    x // keeps -0.0 and NaN, as numpy does
                 }
             }
             Func::Floor => x.floor(),
@@ -115,33 +116,10 @@ impl Func {
     }
 }
 
-impl fmt::Display for Func {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let s = match self {
-            Func::Sin => "sin",
-            Func::Cos => "cos",
-            Func::Tan => "tan",
-            Func::Asin => "asin",
-            Func::Acos => "acos",
-            Func::Atan => "atan",
-            Func::Sinh => "sinh",
-            Func::Cosh => "cosh",
-            Func::Tanh => "tanh",
-            Func::Exp => "exp",
-            Func::Ln => "ln",
-            Func::Log10 => "log10",
-            Func::Log2 => "log2",
-            Func::Sqrt => "sqrt",
-            Func::Abs => "abs",
-            Func::Sign => "sign",
-            Func::Floor => "floor",
-        };
-        write!(f, "{s}")
-    }
-}
-
-/// Raised when an expression cannot be compiled. The bridge treats this as
-/// "this candidate is not evaluable by the fast path", never as a verdict.
+/// Raised when an expression cannot be compiled.
+///
+/// The bridge treats this as "this candidate is not evaluable by the fast
+/// path", never as a verdict about the candidate's quality.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ParseError {
     pub message: String,
@@ -150,11 +128,7 @@ pub struct ParseError {
 
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{} at position {}",
-            self.message, self.position
-        )
+        write!(f, "{} at position {}", self.message, self.position)
     }
 }
 
@@ -182,12 +156,12 @@ struct Spanned {
 }
 
 fn tokenize(src: &str) -> Result<Vec<Spanned>, ParseError> {
-    let bytes: Vec<char> = src.chars().collect();
+    let chars: Vec<char> = src.chars().collect();
     let mut out = Vec::new();
     let mut i = 0usize;
 
-    while i < bytes.len() {
-        let c = bytes[i];
+    while i < chars.len() {
+        let c = chars[i];
         if c.is_whitespace() {
             i += 1;
             continue;
@@ -204,8 +178,8 @@ fn tokenize(src: &str) -> Result<Vec<Spanned>, ParseError> {
                 Token::Minus
             }
             '*' => {
-                // `**` is power; a single `*` is multiplication.
-                if i + 1 < bytes.len() && bytes[i + 1] == '*' {
+                // `**` is power; a lone `*` is multiplication.
+                if i + 1 < chars.len() && chars[i + 1] == '*' {
                     i += 2;
                     Token::Pow
                 } else {
@@ -233,30 +207,32 @@ fn tokenize(src: &str) -> Result<Vec<Spanned>, ParseError> {
                 i += 1;
                 Token::Comma
             }
-            c if c.is_ascii_digit() || (c == '.' && i + 1 < bytes.len() && bytes[i + 1].is_ascii_digit()) => {
+            c if c.is_ascii_digit()
+                || (c == '.' && i + 1 < chars.len() && chars[i + 1].is_ascii_digit()) =>
+            {
                 let mut seen_dot = false;
                 let mut seen_exp = false;
-                while i < bytes.len() {
-                    let d = bytes[i];
+                while i < chars.len() {
+                    let d = chars[i];
                     if d.is_ascii_digit() {
                         i += 1;
                     } else if d == '.' && !seen_dot && !seen_exp {
                         seen_dot = true;
                         i += 1;
                     } else if (d == 'e' || d == 'E') && !seen_exp {
-                        // Only consume the exponent if it is well formed, so
-                        // that `2e` stays a parse error rather than silently
+                        // Consume the exponent only if it is well formed, so
+                        // `2e` stays a parse error instead of silently
                         // becoming `2 * e`.
                         let next = i + 1;
-                        if next < bytes.len()
-                            && (bytes[next].is_ascii_digit()
-                                || ((bytes[next] == '+' || bytes[next] == '-')
-                                    && next + 1 < bytes.len()
-                                    && bytes[next + 1].is_ascii_digit()))
+                        if next < chars.len()
+                            && (chars[next].is_ascii_digit()
+                                || ((chars[next] == '+' || chars[next] == '-')
+                                    && next + 1 < chars.len()
+                                    && chars[next + 1].is_ascii_digit()))
                         {
                             seen_exp = true;
                             i += 1;
-                            if bytes[i] == '+' || bytes[i] == '-' {
+                            if chars[i] == '+' || chars[i] == '-' {
                                 i += 1;
                             }
                         } else {
@@ -266,7 +242,7 @@ fn tokenize(src: &str) -> Result<Vec<Spanned>, ParseError> {
                         break;
                     }
                 }
-                let text: String = bytes[start..i].iter().collect();
+                let text: String = chars[start..i].iter().collect();
                 let value = text.parse::<f64>().map_err(|_| ParseError {
                     message: format!("malformed number {text:?}"),
                     position: start,
@@ -274,10 +250,10 @@ fn tokenize(src: &str) -> Result<Vec<Spanned>, ParseError> {
                 Token::Number(value)
             }
             c if c.is_ascii_alphabetic() || c == '_' => {
-                while i < bytes.len() && (bytes[i].is_ascii_alphanumeric() || bytes[i] == '_') {
+                while i < chars.len() && (chars[i].is_ascii_alphanumeric() || chars[i] == '_') {
                     i += 1;
                 }
-                Token::Ident(bytes[start..i].iter().collect())
+                Token::Ident(chars[start..i].iter().collect())
             }
             other => {
                 return Err(ParseError {
@@ -286,7 +262,10 @@ fn tokenize(src: &str) -> Result<Vec<Spanned>, ParseError> {
                 })
             }
         };
-        out.push(Spanned { token, position: start });
+        out.push(Spanned {
+            token,
+            position: start,
+        });
     }
 
     Ok(out)
@@ -297,8 +276,8 @@ fn tokenize(src: &str) -> Result<Vec<Spanned>, ParseError> {
 pub struct Compiled {
     root: Node,
     num_vars: usize,
-    /// Variable names in table order, so the evaluator can be checked against
-    /// the caller's `data` ordering at the boundary.
+    /// Variable names in table order, so the evaluator's indexing is checkable
+    /// against the caller's `data` ordering at the boundary.
     pub variables: Vec<String>,
     pub source: String,
 }
@@ -310,9 +289,9 @@ impl Compiled {
 
     /// Evaluate over `data`, one array per declared variable.
     ///
-    /// Returns a vector of length `data[0].len()`. Any arithmetic that numpy
-    /// would render as inf/NaN (division by zero, sqrt of a negative) renders
-    /// the same way here, because Rust's f64 does not trap.
+    /// Returns a vector of length `data[0].len()`. Arithmetic that numpy would
+    /// render as inf or NaN renders the same way here, because Rust's f64 does
+    /// not trap.
     pub fn evaluate(&self, data: &[Vec<f64>]) -> Result<Vec<f64>, String> {
         if data.len() != self.num_vars {
             return Err(format!(
@@ -322,19 +301,27 @@ impl Compiled {
                 data.len()
             ));
         }
-        let n = if data.is_empty() {
-            0
-        } else {
-            for (i, col) in data.iter().enumerate() {
-                if col.len() != data[0].len() {
-                    return Err(format!(
-                        "variable '{}' has length {} but '{}' has length {}; all data arrays must match",
-                        self.variables[i], col.len(), self.variables[0], data[0].len()
-                    ));
-                }
+        if data.is_empty() {
+            // Nothing to infer an output length from. Returning an empty array
+            // would look like a successful evaluation of zero points, which is
+            // a different claim.
+            return Err(format!(
+                "expression '{}' has no variables, so there is no data length to \
+                 evaluate over; a constant expression carries no row count",
+                self.source
+            ));
+        }
+        let expected = data[0].len();
+        for (i, col) in data.iter().enumerate() {
+            if col.len() != expected {
+                return Err(format!(
+                    "variable '{}' has length {} but '{}' has length {}; \
+                     all data arrays must have the same length",
+                    self.variables[i], col.len(), self.variables[0], expected
+                ));
             }
-            data[0].len()
-        };
+        }
+        let n = expected;
 
         let mut out = vec![0.0f64; n];
         for (idx, slot) in out.iter_mut().enumerate() {
@@ -353,38 +340,23 @@ fn eval_node(node: &Node, data: &[Vec<f64>], i: usize) -> f64 {
         Node::Sub(a, b) => eval_node(a, data, i) - eval_node(b, data, i),
         Node::Mul(a, b) => eval_node(a, data, i) * eval_node(b, data, i),
         Node::Div(a, b) => eval_node(a, data, i) / eval_node(b, data, i),
-        Node::Pow(a, b) => {
-            let base = eval_node(a, data, i);
-            let exp = eval_node(b, data, i);
-            base.powf(exp)
-        }
+        Node::Pow(a, b) => eval_node(a, data, i).powf(eval_node(b, data, i)),
         Node::Neg(a) => -eval_node(a, data, i),
         Node::Call(f, a) => f.apply(eval_node(a, data, i)),
+        // `compile` rejects unresolved identifiers, so an `Ident` surviving
+        // into evaluation would be a compiler bug rather than user input.
+        Node::Ident(name) => unreachable!("unresolved identifier {name:?} reached evaluation"),
     }
 }
 
-/// Every free identifier in the tree, in first-seen order.
-fn collect_vars(node: &Node, out: &mut Vec<usize>) {
-    match node {
-        Node::Const(_) => {}
-        Node::Var(v) => {
-            if !out.contains(v) {
-                out.push(*v)
-            }
-        }
-        Node::Add(a, b) | Node::Sub(a, b) | Node::Mul(a, b) | Node::Div(a, b) | Node::Pow(a, b) => {
-            collect_vars(a, out);
-            collect_vars(b, out);
-        }
-        Node::Neg(a) | Node::Call(_, a) => collect_vars(a, out),
-    }
-}
+const PI: f64 = std::f64::consts::PI;
+const E: f64 = std::f64::consts::E;
 
 /// Compile an expression string against a declared variable table.
 ///
-/// `variables` fixes the order of the `data` arrays. Names used by the
-/// expression but absent from the table are an error, so a typo becomes a
-/// visible compile failure instead of a silent constant.
+/// `variables` fixes the order of the `data` arrays. An identifier that is
+/// neither in the table nor a known constant is an error, so a typo becomes a
+/// visible compile failure rather than a silently-ignored term.
 pub fn compile(expr: &str, variables: &[String]) -> Result<Compiled, ParseError> {
     let tokens = tokenize(expr)?;
     if tokens.is_empty() {
@@ -396,25 +368,20 @@ pub fn compile(expr: &str, variables: &[String]) -> Result<Compiled, ParseError>
     let mut parser = Parser {
         tokens: &tokens,
         pos: 0,
-        constants: HashMap::new(),
     };
-    let root = parser.parse_expr()?;
+    let parsed = parser.parse_expr()?;
     if parser.pos != parser.tokens.len() {
-        let p = parser.tokens[parser.pos].position;
         return Err(ParseError {
             message: "trailing tokens after the expression".to_string(),
-            position: p,
+            position: parser.tokens[parser.pos].position,
         });
     }
 
-    // Resolve identifiers to slots. `pi` and `e` are constants, matching the
-    // reference engine's environment.
     let mut table: HashMap<String, usize> = HashMap::new();
     for (i, name) in variables.iter().enumerate() {
         table.insert(name.clone(), i);
     }
-    let root = resolve(&root, &table, &parser.constants)?;
-    debug_assert_eq!(collect_vars_checked(&root), root_var_count(&root));
+    let root = resolve(&parsed, &table)?;
 
     Ok(Compiled {
         root,
@@ -424,64 +391,57 @@ pub fn compile(expr: &str, variables: &[String]) -> Result<Compiled, ParseError>
     })
 }
 
-fn root_var_count(node: &Node) -> usize {
-    let mut out = Vec::new();
-    collect_vars(node, &mut out);
-    out.len()
-}
-
-fn collect_vars_checked(node: &Node) -> usize {
-    root_var_count(node)
-}
-
-fn resolve(
-    node: &Node,
-    table: &HashMap<String, usize>,
-    constants: &HashMap<String, f64>,
-) -> Result<Node, ParseError> {
+fn resolve(node: &Node, table: &HashMap<String, usize>) -> Result<Node, ParseError> {
     Ok(match node {
         Node::Const(c) => Node::Const(*c),
+        Node::Ident(name) => match name.as_str() {
+            "pi" | "Pi" => Node::Const(PI),
+            "E" => Node::Const(E),
+            _ => match table.get(name) {
+                Some(&slot) => Node::Var(slot),
+                None => {
+                    return Err(ParseError {
+                        message: format!("unknown identifier {name:?}; it is not a declared variable, a known constant, or a supported function"),
+                        position: 0,
+                    })
+                }
+            },
+        },
+        Node::Var(_) => {
+            return Err(ParseError {
+                message: "internal: already-resolved node reached resolution".to_string(),
+                position: 0,
+            })
+        }
         Node::Add(a, b) => Node::Add(
-            Box::new(resolve(a, table, constants)?),
-            Box::new(resolve(b, table, constants)?),
+            Box::new(resolve(a, table)?),
+            Box::new(resolve(b, table)?),
         ),
         Node::Sub(a, b) => Node::Sub(
-            Box::new(resolve(a, table, constants)?),
-            Box::new(resolve(b, table, constants)?),
+            Box::new(resolve(a, table)?),
+            Box::new(resolve(b, table)?),
         ),
         Node::Mul(a, b) => Node::Mul(
-            Box::new(resolve(a, table, constants)?),
-            Box::new(resolve(b, table, constants)?),
+            Box::new(resolve(a, table)?),
+            Box::new(resolve(b, table)?),
         ),
         Node::Div(a, b) => Node::Div(
-            Box::new(resolve(a, table, constants)?),
-            Box::new(resolve(b, table, constants)?),
+            Box::new(resolve(a, table)?),
+            Box::new(resolve(b, table)?),
         ),
         Node::Pow(a, b) => Node::Pow(
-            Box::new(resolve(a, table, constants)?),
-            Box::new(resolve(b, table, constants)?),
+            Box::new(resolve(a, table)?),
+            Box::new(resolve(b, table)?),
         ),
-        Node::Neg(a) => Node::Neg(Box::new(resolve(a, table, constants)?)),
-        Node::Call(f, a) => Node::Call(*f, Box::new(resolve(a, table, constants)?)),
-        // Resolved lazily below; see the Ident arm of the parser.
-        Node::Var(_) => return Err(ParseError {
-            message: "internal: unresolved node reached resolution".to_string(),
-            position: 0,
-        }),
+        Node::Neg(a) => Node::Neg(Box::new(resolve(a, table)?)),
+        Node::Call(f, a) => Node::Call(*f, Box::new(resolve(a, table)?)),
     })
 }
 
 struct Parser<'a> {
     tokens: &'a [Spanned],
     pos: usize,
-    /// Named constants discovered while parsing, checked after resolution.
-    constants: HashMap<String, f64>,
 }
-
-/// Pre-seeded constants. `pi` and `e` are the two the reference engine's
-/// fallback environment defines.
-const PI: f64 = std::f64::consts::PI;
-const E: f64 = std::f64::consts::E;
 
 impl<'a> Parser<'a> {
     fn peek(&self) -> Option<&Token> {
@@ -491,21 +451,15 @@ impl<'a> Parser<'a> {
     fn position(&self) -> usize {
         self.tokens
             .get(self.pos)
+            .or_else(|| self.tokens.last())
             .map(|s| s.position)
-            .unwrap_or_else(|| {
-                self.tokens
-                    .last()
-                    .map(|s| s.position)
-                    .unwrap_or_default()
-            })
+            .unwrap_or(0)
     }
 
-    fn bump(&mut self) -> Option<&'a Token> {
-        let t = self.tokens.get(self.pos).map(|s| &s.token);
-        if t.is_some() {
+    fn bump(&mut self) {
+        if self.pos < self.tokens.len() {
             self.pos += 1;
         }
-        t
     }
 
     fn error<T>(&self, message: &str) -> Result<T, ParseError> {
@@ -535,7 +489,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// term := unary (('*' | '/') unary | implicit-mul atom)*
+    /// term := unary (('*' | '/') unary | implicit-mul unary)*
     fn parse_term(&mut self) -> Result<Node, ParseError> {
         let mut lhs = self.parse_unary()?;
         loop {
@@ -550,10 +504,10 @@ impl<'a> Parser<'a> {
                     let rhs = self.parse_unary()?;
                     lhs = Node::Div(Box::new(lhs), Box::new(rhs));
                 }
-                // Implicit multiplication: sympy accepts `2x` and `3(x+1)`,
-                // so the reference side would accept them and this side must
-                // too, or the differential suite would report a divergence
-                // that is really just a grammar gap.
+                // Implicit multiplication. Without this the reference side
+                // would accept `2x` and return a number while this side raised,
+                // and the differential suite would report a divergence that is
+                // really only a grammar gap.
                 Some(Token::Number(_)) | Some(Token::Ident(_)) | Some(Token::LParen) => {
                     let rhs = self.parse_unary()?;
                     lhs = Node::Mul(Box::new(lhs), Box::new(rhs));
@@ -578,7 +532,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// power := atom ('**' unary)?   -- right associative, so `2**-1` works and
+    /// power := atom ('**' unary)? -- right associative, so `2**-1` parses and
     /// `2**3**2` is `2**(3**2)` as in Python and sympy.
     fn parse_power(&mut self) -> Result<Node, ParseError> {
         let base = self.parse_atom()?;
@@ -624,7 +578,7 @@ impl<'a> Parser<'a> {
                     if let Some(Token::Comma) = self.peek() {
                         return self.error(
                             "functions in this kernel take exactly one argument; \
-                             compound expressions must be written as calls on a single expression",
+                             multi-argument maths must be written as a single expression",
                         );
                     }
                     match self.peek() {
@@ -635,16 +589,7 @@ impl<'a> Parser<'a> {
                         _ => self.error("expected ')' after function argument"),
                     }
                 } else {
-                    // Bare identifier: a variable or a named constant. Resolved
-                    // against the caller's variable table in `compile`.
-                    match name.as_str() {
-                        "pi" | "Pi" => Ok(Node::Const(PI)),
-                        "E" => Ok(Node::Const(E)),
-                        _ => {
-                            self.constants.insert(name.clone(), 0.0);
-                            Ok(Node::Var(usize::MAX).named(name))
-                        }
-                    }
+                    Ok(Node::Ident(name))
                 }
             }
             Some(other) => Err(ParseError {
@@ -653,5 +598,89 @@ impl<'a> Parser<'a> {
             }),
             None => self.error("expression ended unexpectedly"),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn vars(names: &[&str]) -> Vec<String> {
+        names.iter().map(|s| s.to_string()).collect()
+    }
+
+    fn eval(expr: &str, names: &[&str], data: &[&[f64]]) -> Vec<f64> {
+        let v = vars(names);
+        let owned: Vec<Vec<f64>> = data.iter().map(|d| d.to_vec()).collect();
+        compile(expr, &v).unwrap().evaluate(&owned).unwrap()
+    }
+
+    /// Evaluate over a two-point dummy variable, so precedence is checked
+    /// without depending on how a constant-only expression sizes its output.
+    fn eval1(expr: &str) -> f64 {
+        eval(expr, &["x"], &[&[7.0, 7.0]])[0]
+    }
+
+    #[test]
+    fn arithmetic_follows_precedence() {
+        assert_eq!(eval1("1 + 2 * 3"), 7.0);
+        assert_eq!(eval1("(1 + 2) * 3"), 9.0);
+        assert_eq!(eval1("2 ** 3 ** 2"), 512.0, "power is right associative");
+        assert_eq!(eval("x - 1 - 1", &["x"], &[&[3.0]]), vec![1.0], "subtraction is left associative");
+        assert_eq!(eval("-x + 1", &["x"], &[&[1.0, 2.0]]), vec![0.0, -1.0]);
+        assert_eq!(eval1("2 ** -1"), 0.5);
+    }
+
+    #[test]
+    fn implicit_multiplication_matches_sympy() {
+        assert_eq!(eval("2x", &["x"], &[&[3.0]]), vec![6.0]);
+        assert_eq!(eval("3(x+1)", &["x"], &[&[1.0]]), vec![6.0]);
+        assert_eq!(eval("2x**2", &["x"], &[&[3.0]]), vec![18.0]);
+    }
+
+    #[test]
+    fn functions_and_constants() {
+        assert!(eval("sin(x)", &["x"], &[&[0.0]])[0].abs() < 1e-15);
+        assert!((eval("log(x)", &["x"], &[&[std::f64::consts::E]])[0] - 1.0).abs() < 1e-15);
+        assert!((eval("ln(x)", &["x"], &[&[std::f64::consts::E]])[0] - 1.0).abs() < 1e-15);
+        assert!((eval("sqrt(x)", &["x"], &[&[4.0]])[0] - 2.0).abs() < 1e-15);
+        assert!(eval("tanh(x)", &["x"], &[&[0.0]])[0].abs() < 1e-15);
+        assert!((eval("log(E)", &["x"], &[&[1.0]])[0] - 1.0).abs() < 1e-15, "`E` is a named constant");
+        assert!((eval("pi", &["x"], &[&[1.0]])[0] - std::f64::consts::PI).abs() < 1e-15);
+    }
+
+    #[test]
+    fn a_variable_free_expression_cannot_infer_a_row_count() {
+        // Silently returning an empty array would read as "evaluated zero
+        // points successfully", which is a different claim from "no length".
+        let c = compile("1 + 2*3", &vars(&[])).unwrap();
+        let e = c.evaluate(&[]).unwrap_err();
+        assert!(e.contains("no variables"), "{e}");
+    }
+
+    #[test]
+    fn domain_edges_are_inf_and_nan_not_panics() {
+        let r = eval("1.0/x", &["x"], &[&[0.0, 2.0]]);
+        assert!(r[0].is_infinite(), "1/0 must be inf, not a panic");
+        assert_eq!(r[1], 0.5);
+        assert!(eval("sqrt(x)", &["x"], &[&[-1.0]])[0].is_nan());
+    }
+
+    #[test]
+    fn unknown_identifiers_are_errors_not_silent_constants() {
+        let e = compile("y + 1", &vars(&["x"])).unwrap_err();
+        assert!(e.message.contains("unknown identifier"), "{e}");
+    }
+
+    #[test]
+    fn a_wrong_number_of_arrays_is_an_error_not_a_partial_read() {
+        let one = compile("x + 1", &vars(&["x"])).unwrap();
+        assert!(one.evaluate(&[vec![1.0, 2.0], vec![1.0, 2.0]]).is_err());
+
+        let two = compile("x + y", &vars(&["x", "y"])).unwrap();
+        assert!(two
+            .evaluate(&[vec![1.0, 2.0], vec![1.0, 2.0, 3.0]])
+            .unwrap_err()
+            .contains("same length"));
     }
 }

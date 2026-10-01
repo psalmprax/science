@@ -14,17 +14,19 @@ import pytest
 
 from apedp.rust_bridge import RustKernelBridge, is_rust_kernel_available
 
-# `apedp_kernel` is an external native extension, not a crate in this repo:
-# there is no Cargo.toml or .rs source for it here, so whether it is importable
-# is a property of the environment, not of the code under test. Every parity
-# test below already skips cleanly through the `rust_engine` fixture; these two
-# bypassed it and hard-required the import, which made the suite fail in any
-# Python-only checkout while the differential coverage it was protecting simply
-# went unrun. They now follow the same rule: assert when the kernel is present,
-# skip when it is not.
+# The kernel lives in `rust/apedp-kernel/` and is built with
+# `maturin develop --manifest-path rust/apedp-kernel/Cargo.toml`. CI builds it
+# before the regression tier and then asserts the import works, because a build
+# step that quietly stops building would otherwise turn every parity test below
+# into a skip -- sixteen green tests that never touched Rust.
+#
+# The skip guard stays for environments that genuinely have no toolchain (a
+# contributor's first `pytest`, say), but it is not the CI signal. Build the
+# kernel and these run.
 requires_rust_kernel = pytest.mark.skipif(
     not is_rust_kernel_available(),
-    reason="apedp_kernel native extension not built in this environment",
+    reason="apedp_kernel not built in this environment; "
+           "run: maturin develop --manifest-path rust/apedp-kernel/Cargo.toml",
 )
 
 
@@ -268,6 +270,98 @@ def test_precision_boundary_scaling_parity(rust_engine, python_fallback_engine):
 
 
 
+
+
+KERNEL_ENTRY_POINTS = (
+    "compile",
+    "evaluate_batch",
+    "compute_metrics",
+    "score_candidates_parallel",
+    "probe_singularity",
+    "compute_matrix_conditioning",
+    "solve_linear_coefficients",
+    "evaluate_precision_boundary",
+)
+
+
+def _drive_every_entry_point(engine, x):
+    """Exercise one call into each kernel entry point the bridge can take."""
+    engine.evaluate_expression("x**2 + sin(x)", ["x"], [x])
+    engine.compute_metrics(x, x + 0.01)
+    engine.score_candidates_batch(["x**2", "sin(x)", "exp(x)"], ["x"], [x], x)
+    engine.probe_singularity("1.0 / (x - 1.0)", ["x"], [(0.0, 3.0)], 2000)
+    engine.compute_matrix_conditioning(
+        [np.array([1.0, 2.0, 3.0]), np.array([2.0, 4.0, 6.0])], 1e-12
+    )
+    engine.solve_linear_coefficients([x, np.ones_like(x)], 2.0 * x + 1.0, 1e-9)
+    engine.evaluate_precision_boundary(1e-3, 1.0, 32)
+
+
+@requires_rust_kernel
+def test_the_differential_tests_actually_exercise_the_rust_path(monkeypatch):
+    """Guards the guard: parity means nothing if both sides are the same engine.
+
+    ``RustKernelBridge`` catches every kernel exception and falls back to the
+    NumPy reference. If a kernel entry point were broken, the *bridge* would
+    fall back silently and each parity assertion would compare Python against
+    Python -- passing, while testing nothing. Sixteen green tests that never
+    touched Rust is the same failure this suite was written to detect, one
+    level up.
+
+    So count the calls. If any entry point the bridge can reach is never
+    invoked, the corresponding parity assertion is vacuous.
+    """
+    import apedp_kernel
+
+    counts = {}
+    for name in KERNEL_ENTRY_POINTS:
+        original = getattr(apedp_kernel, name)
+
+        def counting(*args, _name=name, _original=original, **kwargs):
+            counts[_name] = counts.get(_name, 0) + 1
+            return _original(*args, **kwargs)
+
+        monkeypatch.setattr(apedp_kernel, name, counting)
+
+    engine = RustKernelBridge(force_fallback=False)
+    assert engine.use_rust is True, "the kernel is importable but the bridge is not using it"
+    _drive_every_entry_point(engine, np.linspace(-5.0, 5.0, 200))
+
+    never_called = sorted(set(KERNEL_ENTRY_POINTS) - set(counts))
+    assert not never_called, (
+        f"kernel entry point(s) {never_called} were never called, so the "
+        "parity tests covering them compared Python against Python"
+    )
+
+
+@requires_rust_kernel
+def test_a_broken_kernel_falls_back_rather_than_returning_wrong_numbers():
+    """The fallback must be a *different* answer source, verified by breaking it.
+
+    Making the kernel raise proves the bridge's `except` arms are live and that
+    the results a caller sees after a kernel fault come from the reference
+    engine. Without this, a bridge whose `use_rust` was permanently False would
+    pass every parity test above.
+    """
+    import apedp_kernel
+
+    real_evaluate = apedp_kernel.evaluate_batch
+
+    def exploding(*args, **kwargs):
+        raise RuntimeError("kernel fault injected by the test")
+
+    x = np.linspace(1.0, 5.0, 50)
+    engine = RustKernelBridge(force_fallback=False)
+    try:
+        apedp_kernel.evaluate_batch = exploding
+        out = engine.evaluate_expression("x**2 + 3.0*x", ["x"], [x])
+    finally:
+        apedp_kernel.evaluate_batch = real_evaluate
+
+    assert np.allclose(out, x**2 + 3.0 * x, atol=1e-12), (
+        "with the kernel faulted the bridge must still produce correct numbers "
+        "from the reference engine"
+    )
 
 
 def test_fallback_conditioning_degenerate_reports_ill_conditioned(python_fallback_engine):

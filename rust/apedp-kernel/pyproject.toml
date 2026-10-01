@@ -1,0 +1,16 @@
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "apedp-kernel"
+version = "0.1.0"
+description = "Native numerical and dimensional-analysis kernel for APEDP"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+[tool.maturin]
+# The import name is `apedp_kernel` (the underscore), which is what
+# `apedp/rust_bridge.py` imports and what
+# `tests/test_cross_implementation_conformance.py` reaches for.
+module-name = "apedp_kernel"
