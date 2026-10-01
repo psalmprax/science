@@ -19,7 +19,6 @@ from typing import Any
 import numpy as np
 
 
-
 def structural_distribution(structures: list[str]) -> dict[str, float]:
     """Empirical P(structure) over discovery seeds."""
     from collections import Counter

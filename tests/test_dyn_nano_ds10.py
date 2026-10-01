@@ -15,7 +15,8 @@ class TestNanoDS10CI:
     """Verifies the recovery vs identification separation on M4 nanoscale crossover."""
 
     def test_nano_ds10_stability_and_non_identification(self):
-        summary, details = run_nano_ds10(n_seeds=10)
+        summary, _details = run_nano_ds10(n_seeds=10)
+
 
         assert summary.fit_seeds == 10
         assert summary.winner_recurrence == {"piecewise_hp_inv": 1.0}

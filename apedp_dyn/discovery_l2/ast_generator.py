@@ -169,23 +169,36 @@ class BinaryOpNode(ASTNode):
 
 
 class UnaryOpNode(ASTNode):
-    """Unary operator node ('exp', 'log', 'sin', 'cos') strictly requiring dimensionless argument."""
+    """Unary operator node ('exp', 'log', 'sin', 'cos', 'abs').
+
+    Transcendentals (exp/log/sin/cos) strictly require dimensionless
+    arguments. 'abs' is dimensionally transparent (|x| keeps x's
+    dimension) and therefore takes any dimension -- it exists so that
+    sign-preserving physics (quadratic drag v*|v|, Coulomb friction)
+    is expressible at all. Nesting abs(abs(x)) is pointless but
+    harmless (idempotent); generation bounds depth regardless.
+    """
 
     def __init__(self, op: str, child: ASTNode) -> None:
-        if op not in ("exp", "log", "sin", "cos"):
+        if op not in ("exp", "log", "sin", "cos", "abs"):
             raise ValueError(f"Unsupported unary operator: '{op}'")
-        if not child.dimension.is_dimensionless():
-            raise DimensionalError(
-                f"Transcendental operator '{op}' requires strictly dimensionless input [0, 0, ...], "
-                f"got [{child.dimension}]"
-            )
+        if op == "abs":
+            self.dimension = child.dimension
+        else:
+            if not child.dimension.is_dimensionless():
+                raise DimensionalError(
+                    f"Transcendental operator '{op}' requires strictly dimensionless input [0, 0, ...], "
+                    f"got [{child.dimension}]"
+                )
+            self.dimension = DIMENSIONLESS
         self.op = op
         self.child = child
-        self.dimension = DIMENSIONLESS
         self.complexity = child.complexity + 1
 
     def evaluate(self, env: Mapping[str, np.ndarray]) -> np.ndarray:
         cv = self.child.evaluate(env)
+        if self.op == "abs":
+            return np.abs(cv)
         if self.op == "exp":
             with np.errstate(over="ignore", under="ignore"):
                 clipped = np.clip(cv, -100.0, 100.0)

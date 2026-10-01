@@ -29,7 +29,6 @@ from apedp_dyn.epistemic.adjudicate import (
     adjudicate,
 )
 from apedp_dyn.epistemic.discovery_stability import (
-
     coefficient_cv,
     compose_identifiability_stability_matrix,
     structural_distribution,

@@ -37,6 +37,14 @@ class TestAPEDPStudioAPI:
         assert "Plotly" in resp.text or "plotly" in resp.text
         assert "katex" in resp.text
 
+    def test_favicon_served(self, client):
+        """Verifies GET /favicon.ico returns 200 SVG to prevent 404 console errors."""
+        resp = client.get("/favicon.ico")
+        assert resp.status_code == 200
+        assert "image/svg+xml" in resp.headers.get("content-type", "")
+        assert "Ψ" in resp.text
+
+
     def test_status_endpoint(self, client):
         """Verifies GET /api/status reports online system metadata."""
         resp = client.get("/api/status")
@@ -152,4 +160,59 @@ class TestAPEDPStudioAPI:
         assert data["entropy_nats"] == 0.0
         assert data["k_hp_cv"] == pytest.approx(0.045, abs=0.005)
         assert data["adjudication_status"] == "multi_hypothesis"
+
+    def test_duffing_forensic_invariant_and_dashboard_consistency(self, client):
+        """Enforces the forensic binding invariant between promoted record and leaderboard table.
+
+        Guarantees:
+          1. summary.promoted_candidate_id == adjudication.promoted_candidate_id
+          2. summary.holdout_rmse == leaderboard[promoted_id].holdout_rmse
+          3. summary.gate4_r2 == leaderboard[promoted_id].gate4_r2
+          4. summary.whiteness == leaderboard[promoted_id].whiteness
+          5. delta_rmse == nearest_eligible_rival_rmse - promoted_rmse
+        """
+        resp = client.post("/api/discover/physics", json={
+            "system": "duffing",
+            "noise": 0.05,
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert data["verdict"] == "unique_support"
+        promoted = data["promoted_candidate"]
+        assert promoted is not None
+        assert promoted["id"] == "theta_1*(x) + theta_2*(v) + theta_3*((x)^(3))"
+        assert promoted["holdout_rmse"] == pytest.approx(0.0380, abs=0.005)
+        assert promoted["r2"] >= 0.99
+        assert promoted["residual_rho1"] == pytest.approx(-0.049, abs=0.02)
+
+        # Match leaderboard row
+        prow = next(c for c in data["pareto_candidates"] if c["id"] == promoted["id"])
+        assert prow["is_promoted"] is True
+        assert prow["rmse"] == promoted["holdout_rmse"]
+        assert prow["r2"] == pytest.approx(promoted["r2"], abs=1e-5)
+        assert prow["rho1"] == pytest.approx(promoted["residual_rho1"], abs=1e-5)
+        assert prow["is_white"] is True
+
+        # Check nearest eligible rival and delta_rmse precision
+        rival = next(c for c in data["pareto_candidates"] if c["id"] != promoted["id"] and c["complexity"] == 4 and "(x)^(3)" in c["id"])
+        assert promoted["delta_rmse"] == pytest.approx(rival["rmse"] - promoted["holdout_rmse"], abs=1e-4)
+
+    def test_registry_problem_discovery_endpoint(self, client):
+        """Verifies generic L2 discovery across registry problem modules with full visual schema."""
+        resp = client.post("/api/discover/registry", json={"system": "coupled"})
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert data["system"] == "coupled"
+        assert data["verdict"] == "multi_hypothesis"
+        assert "pareto_candidates" in data
+        assert len(data["pareto_candidates"]) >= 1
+        assert "plot_series" in data
+        assert len(data["plot_series"]["t"]) == len(data["plot_series"]["actual"])
+        assert "tau_epi" in data
+        assert data["tau_epi"] > 0
+        assert "reason" in data
+
+
 
