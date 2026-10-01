@@ -302,18 +302,24 @@ def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
     mods = _problem_modules()
     if modname not in mods:
         raise HTTPException(status_code=404, detail=f"Unknown problem module {modname}.")
-    prob = finalize(mods[modname].spec())
-    Y = np.asarray(prob.train["truth_y"], dtype=float)
-    t = np.asarray(prob.train["truth_t"], dtype=float)
-    names = [s.name for s in prob.states]
-    feats = {n: Y[:, i] for i, n in enumerate(names)}
-    target = np.gradient(Y[:, -1], t)
-    eng = L2DiscoveryEngine(operators=("+", "-", "*", "/", "pow"),
-                            max_depth=2, max_complexity=5)
-    res = eng.discover(X=feats, Y=target,
-                       dimensions={n: Dimension() for n in names},
-                       target_dimension=Dimension(), train_ratio=0.6,
-                       bootstrap=False, seed=42)
+    try:
+        prob = finalize(mods[modname].spec())
+        Y = np.asarray(prob.train["truth_y"], dtype=float)
+        t = np.asarray(prob.train["truth_t"], dtype=float)
+        names = [s.name for s in prob.states]
+        feats = {n: Y[:, i] for i, n in enumerate(names)}
+        target = np.gradient(Y[:, -1], t)
+        eng = L2DiscoveryEngine(operators=("+", "-", "*", "/", "pow"),
+                                max_depth=2, max_complexity=5)
+        res = eng.discover(X=feats, Y=target,
+                           dimensions={n: Dimension() for n in names},
+                           target_dimension=Dimension(), train_ratio=0.6,
+                           bootstrap=False, seed=42)
+    except Exception as e:  # noqa: BLE001 -- engine failure must be a 500 with reason, never empty
+        _audit("discover/registry", {"system": modname, "verdict": "error",
+                                     "reason": f"{type(e).__name__}: {e}"})
+        raise HTTPException(status_code=500,
+                            detail=f"Discovery failed for {modname}: {type(e).__name__}: {e}") from e
     adj = res.adjudication
     expr = ""
     if adj.promoted is not None:
@@ -937,7 +943,11 @@ class StabilityAuditRequest(BaseModel):
 def audit_stability(req: StabilityAuditRequest) -> dict[str, Any]:
     """Execute multi-seed discovery stability audit and return identifiability matrix."""
     if req.problem == "harmonic":
-        from apedp_dyn.discovery_l2 import Dimension, L2DiscoveryEngine, run_discovery_stability_audit
+        from apedp_dyn.discovery_l2 import (
+            Dimension,
+            L2DiscoveryEngine,
+            run_discovery_stability_audit,
+        )
 
         rng = np.random.default_rng(42)
         x = rng.uniform(0.1, 5.0, size=60)
@@ -963,7 +973,7 @@ def audit_stability(req: StabilityAuditRequest) -> dict[str, Any]:
     elif req.problem == "nano_crossover":
         from benchmarks.run_nano_ds10 import run_nano_ds10
 
-        summary, details = run_nano_ds10(n_seeds=req.n_seeds, noise_sigma=req.noise)
+        summary, _details = run_nano_ds10(n_seeds=req.n_seeds, noise_sigma=req.noise)
         resp = {
             "problem": "nano_crossover",
             "n_seeds": summary.fit_seeds,
