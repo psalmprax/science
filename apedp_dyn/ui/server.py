@@ -130,7 +130,8 @@ def _build_id() -> str:
         git = shutil.which("git")
         if git is None:
             return "unknown"
-        out = subprocess.run([git, "rev-parse", "--short", "HEAD"],
+        out = subprocess.run(  # noqa: S603 -- fixed argv, no shell, no user input
+            [git, "rev-parse", "--short", "HEAD"],
                              capture_output=True, text=True, timeout=5,
                              cwd=str(Path(__file__).resolve().parents[2]))
         return out.stdout.strip() or "unknown"
