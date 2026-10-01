@@ -1,8 +1,8 @@
 """Sandbox gallery endpoints: registry, runners, unknown-id handling."""
 from __future__ import annotations
 
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 
 from apedp_dyn.ui.server import app
 
@@ -89,7 +89,6 @@ class TestExternal60Endpoints:
 
     @pytest.mark.slow
     def test_run_block_p(self):
-        import json as _json
         from pathlib import Path as _P
         r = client.post("/api/benchmark/external60/run", json={"blocks": ["P"]})
         assert r.status_code == 200
@@ -99,3 +98,20 @@ class TestExternal60Endpoints:
         scratch = _P(d.get("scratch_dir", ""))
         assert (scratch / "apedp_P.json").exists()
         assert "frozen" not in str(scratch)
+
+
+class TestMarketWindowsRegistry:
+    def test_counts_per_asset(self):
+        c = TestClient(app, raise_server_exceptions=False)
+        for asset in ("sp500", "nasdaq100"):
+            items = c.get(f"/api/market/windows?asset={asset}").json()
+            frozen = [i for i in items if i["frozen"]]
+            rolling = [i for i in items if not i["frozen"]]
+            assert len(frozen) == 6
+            assert len(rolling) == 20
+            assert all(i["id"].startswith("SPX-ROLL" if asset == "sp500" else "NDX-ROLL")
+                       for i in rolling)
+
+    def test_bad_asset_400(self):
+        c = TestClient(app, raise_server_exceptions=False)
+        assert c.get("/api/market/windows?asset=xyz").status_code == 400

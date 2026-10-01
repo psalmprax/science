@@ -29,6 +29,7 @@ import numpy as np
 
 from apedp_dyn.discovery_l2.dimensional_types import Dimension
 from apedp_dyn.discovery_l2.l2_engine import L2DiscoveryEngine
+from apedp_dyn.discovery_l2.multiterm_engine import MultiTermL2Engine
 from apedp_dyn.epistemic.adjudicate import (
     DataOrigin,
 )
@@ -44,6 +45,31 @@ class WindowSpec:
     holdout_start: str
     holdout_end: str
     regime_description: str
+
+
+def generated_rolling_windows(asset: Literal["sp500", "nasdaq100"] = "sp500",
+                              train_days: int = 126,
+                              holdout_days: int = 126,
+                              step_days: int = 63) -> tuple[WindowSpec, ...]:
+    """Rolling train/holdout windows over the committed series.
+
+    The 6 curated WINDOWS above are the frozen benchmark splits and are
+    never altered by this generator. Generated ids carry an ROLL prefix
+    so frozen and rolling experiments cannot be confused downstream.
+    """
+    dates, _ = load_series_with_dates(asset)
+    prefix = "SPX" if asset == "sp500" else "NDX"
+    out: list[WindowSpec] = []
+    i = 0
+    k = 0
+    while i + train_days + holdout_days <= len(dates):
+        t0, t1 = dates[i], dates[i + train_days - 1]
+        h0, h1 = dates[i + train_days], dates[i + train_days + holdout_days - 1]
+        out.append(WindowSpec(f"{prefix}-ROLL{k:02d}", t0, t1, h0, h1,
+                              f"rolling {t0}..{h1}"))
+        k += 1
+        i += step_days
+    return tuple(out)
 
 
 WINDOWS: tuple[WindowSpec, ...] = (
@@ -143,6 +169,7 @@ def execute_window_discovery(
     window: WindowSpec,
     bootstrap: bool = True,
     seed: int = 42,
+    multiterm: bool = False,
 ) -> WindowDiscoveryRecord:
     """Run L2 open discovery on a specific rolling window under strict causal protocol."""
     dates, prices = load_series_with_dates(asset)
@@ -190,27 +217,51 @@ def execute_window_discovery(
 
     dim_map = {k: Dimension() for k in X_tr}
 
-    engine = L2DiscoveryEngine(
-        max_depth=2,
-        max_complexity=5,
-        operators=("+", "-", "*", "/", "pow"),
-    )
-
-    l2_res = engine.discover(
-        X=X_combined,
-        Y=y_combined,
-        dimensions=dim_map,
-        target_dimension=Dimension(),
-        train_ratio=train_ratio,
-        data_origin=DataOrigin.REAL_OBSERVATIONAL,
-        bootstrap=bootstrap,
-        seed=seed,
-    )
-
-    adj = l2_res.adjudication
-
-    # Extract metrics from top candidate (or best scored)
-    top_cand = adj.promoted if adj.promoted is not None else (l2_res.pareto_candidates[0] if l2_res.pareto_candidates else None)
+    if multiterm:
+        m_engine = MultiTermL2Engine(
+            max_depth=2,
+            max_term_complexity=3,
+            max_terms=3,
+            operators=("+", "-", "*", "/"),
+        )
+        m_res = m_engine.discover_multiterm(
+            X=X_combined,
+            Y=y_combined,
+            dimensions=dim_map,
+            target_dimension=Dimension(),
+            train_ratio=train_ratio,
+            data_origin=DataOrigin.REAL_OBSERVATIONAL,
+            bootstrap=bootstrap,
+            seed=seed,
+        )
+        adj = m_res.adjudication
+        top_cand = (
+            adj.promoted
+            if adj.promoted is not None
+            else (m_res.pareto_candidates[0] if m_res.pareto_candidates else None)
+        )
+    else:
+        engine = L2DiscoveryEngine(
+            max_depth=2,
+            max_complexity=5,
+            operators=("+", "-", "*", "/", "pow"),
+        )
+        l2_res = engine.discover(
+            X=X_combined,
+            Y=y_combined,
+            dimensions=dim_map,
+            target_dimension=Dimension(),
+            train_ratio=train_ratio,
+            data_origin=DataOrigin.REAL_OBSERVATIONAL,
+            bootstrap=bootstrap,
+            seed=seed,
+        )
+        adj = l2_res.adjudication
+        top_cand = (
+            adj.promoted
+            if adj.promoted is not None
+            else (l2_res.pareto_candidates[0] if l2_res.pareto_candidates else None)
+        )
 
     expr_str = ""
     complexity = 0

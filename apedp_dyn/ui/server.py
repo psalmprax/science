@@ -18,6 +18,7 @@ from apedp_dyn.discovery_l2.multiterm_engine import MultiTermL2Engine
 from apedp_dyn.sandbox.real_market_l2_sweep import (
     WINDOWS,
     execute_window_discovery,
+    generated_rolling_windows,
     load_series_with_dates,
 )
 
@@ -576,10 +577,34 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
     return resp
 
 
+@app.get("/api/market/windows", dependencies=[Depends(_require_api_key)])
+def market_windows(asset: str = "sp500") -> list[dict[str, Any]]:
+    """Frozen benchmark windows plus generated rolling windows for the asset.
+
+    Frozen W1..W6 keep their ids and semantics forever; ROLL ids are
+    generated deterministically from the committed series.
+    """
+    if asset not in ("sp500", "nasdaq100"):
+        raise HTTPException(status_code=400, detail=f"Unknown asset {asset}.")
+    out = [{"id": w.window_id, "desc": w.regime_description,
+            "train": f"{w.train_start} to {w.train_end}",
+            "holdout": f"{w.holdout_start} to {w.holdout_end}",
+            "frozen": True} for w in WINDOWS]
+    out += [{"id": w.window_id, "desc": w.regime_description,
+             "train": f"{w.train_start} to {w.train_end}",
+             "holdout": f"{w.holdout_start} to {w.holdout_end}",
+             "frozen": False} for w in generated_rolling_windows(asset)]
+    return out
+
+
 @app.post("/api/discover/market", dependencies=[Depends(_require_api_key)])
 def discover_market(req: MarketRequest) -> dict[str, Any]:
     """Execute rolling-window L2 open discovery on genuine market records."""
     matched = [w for w in WINDOWS if w.window_id == req.window_id]
+    if not matched:
+        # Fall back to the generated rolling registry (same asset).
+        matched = [w for w in generated_rolling_windows(req.asset)
+                   if w.window_id == req.window_id]
     if not matched:
         raise HTTPException(status_code=400, detail=f"Window {req.window_id} not found.")
     window = matched[0]
@@ -706,7 +731,7 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
     elif req.sandbox_id == "sir_break":
         from apedp_dyn.sandbox.epidemiology_sir import run_sir_forms, simulate_sir
         adj, scored = run_sir_forms(noise=0.02, seed=42)
-        t, S, I, inc = simulate_sir(noise=0.02, seed=42)
+        t, _s_arr, _i_arr, inc = simulate_sir(noise=0.02, seed=42)
         table = [{"id": c.candidate.candidate_id, "rmse": float(c.holdout_rmse)}
                  for c in sorted(scored, key=lambda c: c.holdout_rmse)]
         resp = {"sandbox_id": "sir_break", "verdict": adj.status.value,

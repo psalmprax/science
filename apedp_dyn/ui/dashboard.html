@@ -350,7 +350,7 @@
 
           <div class="space-y-1.5">
             <label class="block text-xs font-mono text-slate-300">Asset Series</label>
-            <select id="market-asset-select" class="w-full bg-[#070b13] border border-[#1b2640] rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
+            <select id="market-asset-select" onchange="loadMarketWindows()" class="w-full bg-[#070b13] border border-[#1b2640] rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
               <option value="nasdaq100">Nasdaq 100 Index (2018-2023)</option>
               <option value="sp500">S&P 500 Index (2018-2023)</option>
             </select>
@@ -693,6 +693,7 @@
         document.getElementById('tab-physics').classList.remove('hidden');
         document.getElementById('tab-physics-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 transition";
       } else if (tabId === 'market') {
+        loadMarketWindows();
         document.getElementById('tab-market').classList.remove('hidden');
         document.getElementById('tab-market-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 transition";
         executeMarketDiscovery();
@@ -1035,6 +1036,25 @@
       };
 
       Plotly.newPlot('plot-pareto', [traceScatter], layout, { responsive: true, displayModeBar: false });
+    }
+
+    async function loadMarketWindows() {
+      const asset = document.getElementById('market-asset-select').value;
+      const sel = document.getElementById('market-window-select');
+      try {
+        const resp = await fetch(`/api/market/windows?asset=${asset}`, {headers: apiHeaders()});
+        if (!resp.ok) return;  // keep hardcoded fallback options
+        const items = await resp.json();
+        const cur = sel.value;
+        sel.innerHTML = '';
+        for (const it of items) {
+          const o = document.createElement('option');
+          o.value = it.id;
+          o.textContent = `${it.frozen ? '' : '~'}${it.id}: ${it.desc}`;
+          sel.appendChild(o);
+        }
+        if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+      } catch (err) { console.error(err); }
     }
 
     async function executeMarketDiscovery() {
