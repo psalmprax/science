@@ -13,12 +13,30 @@ from collections.abc import Mapping
 
 import numpy as np
 
-from apedp_dyn.discovery_l2.ast_generator import ASTNode
+from apedp_dyn.discovery_l2.ast_generator import ASTNode, BinaryOpNode
 from apedp_dyn.discovery_l2.dimensional_types import Dimension
 from apedp_dyn.epistemic.adjudicate import BenchmarkLevel, DataOrigin
 from apedp_dyn.fitting.parameter_fit import FitResult
 from apedp_dyn.gates.intervention import observation_scale
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
+
+
+def _additive_terms(node: ASTNode, sign: float = 1.0) -> list[tuple[float, ASTNode]]:
+    """Split an expression into top-level additive terms with signs.
+
+    (+ a b) -> [(+1, a), (+1, b)]; (- a b) -> [(+1, a), (-1, b)], with
+    the sign threading through nested sums, so -(a+b) -> [(-1, a),
+    (-1, b)]. Anything else (products, powers, transcendentals, leaves)
+    is a single term. Each term gets its OWN fitted coefficient
+    downstream: fitting one global scale for a multi-term shape
+    collapses expressiveness (measured 5000x RMSE penalty on logistic
+    -x^2+x), so the design matrix carries one column per additive term.
+    """
+    if isinstance(node, BinaryOpNode) and node.op in ("+", "-"):
+        s_right = sign if node.op == "+" else -sign
+        return (_additive_terms(node.left, sign)
+                + _additive_terms(node.right, s_right))
+    return [(sign, node)]
 
 
 def gate_a_algebraic_validity(
@@ -141,17 +159,34 @@ def fit_and_score_candidate(
             },
         )
 
+    # Per-term design matrix: one OLS column per additive term so each
+    # summand gets its own coefficient. Single-scale fitting (one theta
+    # for the whole expression) collapses multi-term shapes (measured
+    # 5000x RMSE penalty); lstsq absorbs any collinearity (e.g. constant
+    # term vs intercept) via the minimum-norm solution.
+    cols_tr, cols_ho, terms = [], [], []
+    for sub in [s for _, s in _additive_terms(node)]:
+        try:
+            ctr = np.asarray(sub.evaluate(X_tr), dtype=float)
+            cho = np.asarray(sub.evaluate(X_ho), dtype=float)
+        except (ValueError, TypeError, ArithmeticError, KeyError, ZeroDivisionError):
+            continue
+        if not (np.all(np.isfinite(ctr)) and np.all(np.isfinite(cho))):
+            continue
+        cols_tr.append(ctr)
+        cols_ho.append(cho)
+        terms.append(Term(sub.to_str(), f"theta_{len(terms)}"))
+    if not cols_tr:
+        # Degenerate: nothing evaluable; single zero column so OLS still runs.
+        cols_tr, cols_ho = [np.zeros_like(y_tr)], [np.zeros_like(y_ho)]
+        terms = [Term(node.to_str(), "theta_0")]
     if fit_intercept:
-        M_tr = np.column_stack([np.ones_like(phi_tr), phi_tr])
-        M_ho = np.column_stack([np.ones_like(phi_ho), phi_ho])
-        terms = (
-            Term("one", "theta_0"),
-            Term(node.to_str(), "theta_1"),
-        )
+        M_tr = np.column_stack([np.ones_like(y_tr), *cols_tr])
+        M_ho = np.column_stack([np.ones_like(y_ho), *cols_ho])
+        terms = (Term("one", "theta_0"), *tuple(terms))
     else:
-        M_tr = phi_tr.reshape(-1, 1)
-        M_ho = phi_ho.reshape(-1, 1)
-        terms = (Term(node.to_str(), "theta_1"),)
+        M_tr = np.column_stack(cols_tr)
+        M_ho = np.column_stack(cols_ho)
 
     # OLS parameter fitting on train split
     try:
