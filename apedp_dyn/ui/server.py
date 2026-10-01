@@ -211,6 +211,79 @@ def physics_systems() -> list[dict[str, Any]]:
     return items
 
 
+EXT60_CORPUS = Path(__file__).resolve().parents[2] / "benchmark_corpus_external_60"
+
+
+@app.get("/api/benchmark/external60/blocks", dependencies=[Depends(_require_api_key)])
+def ext60_blocks() -> list[dict[str, Any]]:
+    """Public manifest only: block ids + problem counts (never hidden truth)."""
+    import json as _json
+
+    manifest = _json.loads((EXT60_CORPUS / "manifest.json").read_text())
+    counts: dict[str, int] = {}
+    for prob in manifest["problems"]:
+        counts[prob["block"]] = counts.get(prob["block"], 0) + 1
+    return [{"block": b, "n_problems": n,
+             "prereg_id": manifest.get("prereg_id", "")}
+            for b, n in sorted(counts.items())]
+
+
+class Ext60RunRequest(BaseModel):
+    blocks: list[str] = ["P"]
+
+
+@app.post("/api/benchmark/external60/run", dependencies=[Depends(_require_api_key)])
+def ext60_run(req: Ext60RunRequest) -> dict[str, Any]:
+    """Run APEDPAdapter on PUBLIC data for the requested blocks.
+
+    Writes ONLY to a scratch directory (never the frozen round dir):
+    a re-run measures the current tree, it must not overwrite or merge
+    with tournament_results_external_60/. Returns per-problem verdicts
+    inline; blind scoring against hidden truth stays a separate step.
+    """
+    import json as _json
+    import tempfile
+    import time
+
+    from benchmarks.external_60_adapters import APEDPAdapter
+
+    manifest = _json.loads((EXT60_CORPUS / "manifest.json").read_text())
+    valid = sorted({p["block"] for p in manifest["problems"]})
+    for b in req.blocks:
+        if b not in valid:
+            raise HTTPException(status_code=400, detail=f"Unknown block {b}.")
+    scratch = Path(tempfile.mkdtemp(prefix="ext60_"))
+    adapter = APEDPAdapter()
+    summary: list[dict[str, Any]] = []
+    t0 = time.time()
+    for block in req.blocks:
+        pids = [p["problem_id"] for p in manifest["problems"] if p["block"] == block]
+        results = []
+        for pid in pids:
+            try:
+                res = adapter.run(EXT60_CORPUS, pid)
+                row = res.to_dict() if hasattr(res, "to_dict") else dict(res)
+            except Exception as e:  # noqa: BLE001 -- one failure must not kill the block
+                row = {"competitor": "apedp", "problem_id": pid,
+                       "expression": "RUNNER_ERROR", "abstained": True,
+                       "abstain_reason": f"runner exception: {type(e).__name__}"}
+            results.append({"problem_id": pid,
+                            "abstained": bool(row.get("abstained")),
+                            "expression": str(row.get("expression", ""))[:120],
+                            "abstain_reason": str(row.get("abstain_reason", ""))[:200]})
+        with open(scratch / f"apedp_{block}.json", "w", encoding="utf-8") as f:
+            _json.dump({"block": block, "results": results}, f, indent=2)
+        summary.append({"block": block, "n": len(results),
+                        "abstained": sum(1 for r in results if r["abstained"])})
+    out = {"blocks": summary, "scratch_dir": str(scratch),
+           "elapsed_s": round(time.time() - t0, 1),
+           "note": "scratch only; frozen round untouched; blind scoring separate"}
+    _audit("benchmark/external60", {"blocks": [b["block"] for b in summary],
+                                    "verdict": "batch-complete",
+                                    "data_origin": "synthetic"})
+    return to_jsonable(out)
+
+
 @app.post("/api/discover/registry", dependencies=[Depends(_require_api_key)])
 def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
     """Generic L2 discovery on any registered problem module.

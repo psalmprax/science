@@ -490,6 +490,20 @@
           <div id="plot-sandbox" class="w-full h-64"></div>
         </div>
         <div id="sandbox-table" class="font-mono text-xs space-y-1"></div>
+        <div class="border-t border-[#1b2640] pt-4 mt-2">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h3 class="text-xs font-mono font-bold text-white">EXTERNAL-60 BLIND BENCHMARK</h3>
+              <p class="text-[11px] text-slate-400 mt-1">Public data only. Runs to scratch space; the frozen round is never touched. Blind scoring stays separate.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <select id="ext60-block-select" aria-label="Benchmark block" class="bg-[#070b13] border border-[#1b2640] rounded px-2 py-1.5 text-xs font-mono text-slate-200"></select>
+              <button onclick="runExt60()" class="px-3 py-1.5 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 rounded font-mono text-xs border border-cyan-500/40 transition">▶ Run block (~2 min)</button>
+            </div>
+          </div>
+          <div id="ext60-status" class="font-mono text-xs text-slate-400 mt-2"></div>
+          <div id="ext60-table" class="font-mono text-xs space-y-1 mt-2"></div>
+        </div>
       </div>
     </div>
 
@@ -690,6 +704,7 @@
         document.getElementById('tab-sandbox').classList.remove('hidden');
         document.getElementById('tab-sandbox-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 transition";
         loadSandboxCatalog();
+        loadExt60Blocks();
       } else if (tabId === 'audit') {
         document.getElementById('tab-audit').classList.remove('hidden');
         document.getElementById('tab-audit-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 transition";
@@ -1207,6 +1222,43 @@
         `<text x="${P}" y="${H - 8}" fill="#64748b" font-size="10" font-family="monospace">${series.x_label || 'x'}</text>` +
         `<text x="4" y="${P - 6}" fill="#64748b" font-size="10" font-family="monospace">observed (n=${ys.length})</text>` +
         `</svg>`;
+    }
+
+    async function loadExt60Blocks() {
+      const sel = document.getElementById('ext60-block-select');
+      if (sel.options.length) return;
+      try {
+        const resp = await fetch('/api/benchmark/external60/blocks', {headers: apiHeaders()});
+        if (resp.status === 404) return;
+        for (const b of await resp.json()) {
+          const o = document.createElement('option');
+          o.value = b.block;
+          o.textContent = `${b.block} (${b.n_problems} problems)`;
+          sel.appendChild(o);
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    async function runExt60() {
+      const block = document.getElementById('ext60-block-select').value;
+      if (!block) return;
+      const st = document.getElementById('ext60-status');
+      const tbl = document.getElementById('ext60-table');
+      st.innerText = `running block ${block}… (~2 min, scratch only)`;
+      tbl.innerHTML = '';
+      try {
+        const resp = await fetch('/api/benchmark/external60/run', {
+          method: 'POST', headers: apiHeaders(),
+          body: JSON.stringify({blocks: [block]}),
+        });
+        const data = await resp.json();
+        st.innerText = `done in ${data.elapsed_s}s → ${data.scratch_dir}`;
+        tbl.innerHTML = (data.blocks || []).map(b =>
+          `<div class="flex justify-between border-b border-[#1b2640] py-1"><span class="text-slate-300">block ${b.block}</span><span class="text-slate-400">n=${b.n} abstained=${b.abstained}</span></div>`).join('');
+      } catch (err) {
+        st.innerText = 'run failed';
+        console.error(err);
+      }
     }
 
     async function loadAudit() {

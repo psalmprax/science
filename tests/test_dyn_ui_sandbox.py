@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from fastapi.testclient import TestClient
+import pytest
 
 from apedp_dyn.ui.server import app
 
@@ -72,3 +73,29 @@ class TestSandboxGalleryExtended:
         d = client.post("/api/sandbox/run", json={"sandbox_id": "qec_threshold"}).json()
         assert d["verdict"] == "multi_hypothesis"
         assert len(d["series"]["x"]) == 60
+
+
+class TestExternal60Endpoints:
+    def test_blocks_manifest(self):
+        r = client.get("/api/benchmark/external60/blocks")
+        assert r.status_code == 200
+        blocks = {b["block"]: b["n_problems"] for b in r.json()}
+        assert set(blocks) == {"A", "C", "E", "O", "P", "R", "X"}
+        assert sum(blocks.values()) == 60
+
+    def test_unknown_block_400(self):
+        r = client.post("/api/benchmark/external60/run", json={"blocks": ["Z"]})
+        assert r.status_code == 400
+
+    @pytest.mark.slow
+    def test_run_block_p(self):
+        import json as _json
+        from pathlib import Path as _P
+        r = client.post("/api/benchmark/external60/run", json={"blocks": ["P"]})
+        assert r.status_code == 200
+        d = r.json()
+        assert d["blocks"][0]["n"] == 10
+        # frozen round untouched: results live only under scratch
+        scratch = _P(d.get("scratch_dir", ""))
+        assert (scratch / "apedp_P.json").exists()
+        assert "frozen" not in str(scratch)
