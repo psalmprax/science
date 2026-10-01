@@ -268,9 +268,22 @@ def commits_since(
     # what actually decides -- so two of the three guards here are
     # unkillable by mutation, and that is deliberate. Its job is to bound the
     # query git has to walk: a manifest from a week-old run should not make
-    # git diff the entire history on a repo this size. The floor at 1 avoids
-    # `--since=@0`, which git treats as no lower bound at all.
-    since_ts = max(1, int(since) - 1)
+    # git diff the entire history on a repo this size.
+    #
+    # The floor is 1973-03-03, not 1. The previous floor of 1 was chosen to
+    # dodge `--since=@0`, and it is a real value, but git 2.43 silently returns
+    # NOTHING for `--since` at or near the epoch: on this machine
+    # `--since=@1`, `@1000000` and `@31536000` each yield 0 commits while
+    # `@100000000` yields all 80. It is timezone-dependent too -- `@1` works
+    # under TZ=America/New_York and returns nothing under UTC or Europe/Berlin.
+    # So "since the beginning of time" reported zero commits, the tool
+    # concluded no code had changed, and
+    # test_the_real_last_commit_reports_its_true_file_count failed with "no
+    # commits touching scanned code found in history" -- a provenance check
+    # reporting that there is nothing to check. 1973 predates any repository
+    # this could run against, and is far enough past the epoch that git parses
+    # it as the instant it is.
+    since_ts = max(100_000_000, int(since) - 1)
     out = _git(["log", f"--format={fmt}", "--name-only", f"--since=@{since_ts}"],
                repo)
     if not out.strip():

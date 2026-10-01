@@ -42,6 +42,7 @@ import argparse
 import ast
 import json
 import os
+import re
 import sys
 from collections.abc import Iterator
 from dataclasses import dataclass, field
@@ -60,6 +61,20 @@ SKIP_DIRS = frozenset({
 #: "exercised"; the threshold is deliberately low, because the interesting
 #: signal is a hard zero, not a partial number.
 EXERCISED_FLOOR = 1
+
+#: Test files are not source modules, but ``--cov=apedp`` measures everything
+#: under the package directory, and apedp/neural_discovery/tests/ keeps its
+#: tests inside the package. Those files show 0% covered for the same reason
+#: apedp/closed_loop.py used to: nothing imports them, because pytest executes
+#: them under a different module name. Reporting them would add a permanent
+#: phantom finding to every audit, which is how a report stops being read.
+_TEST_FILE_NAMES = re.compile(r"^(test_.*|conftest)\.py$")
+
+
+def is_test_file(rel_path: str) -> bool:
+    """True for pytest-collected test modules, wherever they live."""
+    parts = Path(rel_path).parts
+    return bool(_TEST_FILE_NAMES.match(Path(rel_path).name)) or "tests" in parts[:-1]
 
 
 @dataclass(frozen=True)
@@ -210,6 +225,8 @@ def audit(coverage_json: str | Path, root: str | Path = ".",
 
     verdicts: list[ModuleVerdict] = []
     for rel, record in files.items():
+        if is_test_file(rel):
+            continue
         summary = record.get("summary", {})
         module = module_name_for(rel)
         # A package __init__ is imported by its own submodules; attribute the
@@ -247,6 +264,7 @@ def audit(coverage_json: str | Path, root: str | Path = ".",
     return {
         "totals": {
             "n_measured": len(verdicts),
+            "n_test_files_skipped": sum(1 for r in files if is_test_file(r)),
             "never_imported": len(buckets["NEVER_IMPORTED"]),
             "imported_not_executed": len(buckets["IMPORTED_NOT_EXECUTED"]),
             "exercised": len(buckets["EXERCISED"]),
@@ -268,6 +286,8 @@ def format_report(report: dict, show_all: bool = False) -> str:
         f"  measured {t['n_measured']}   never-imported {t['never_imported']}   "
         f"imported-not-executed {t['imported_not_executed']}   "
         f"exercised {t['exercised']}")
+    if t.get("n_test_files_skipped"):
+        lines.append(f"  ({t['n_test_files_skipped']} test file(s) skipped -- not source)")
     if not report["branch_coverage_present"]:
         lines.append("")
         lines.append("  !! NO BRANCH DATA. Re-run with --cov-branch, or every")

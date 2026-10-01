@@ -24,6 +24,7 @@ from tools.coverage_audit import (
     audit,
     collect_import_sites,
     format_report,
+    is_test_file,
     module_name_for,
 )
 
@@ -251,6 +252,36 @@ def test_from_package_import_resolves_only_real_submodules(tmp_path: Path) -> No
         "invented an importer for pkg.ghost, which does not exist -- that is "
         "how a dead module gets argued into looking alive")
     assert "pkg" in sites, "the package itself must be recorded"
+
+
+def test_in_package_test_files_are_not_reported_as_dead_source(tmp_path: Path) -> None:
+    """--cov=apedp measures apedp/neural_discovery/tests/*.py as source.
+
+    Nothing imports them because pytest runs them under a different module
+    name, so they score 0% forever. Counting them would put nine permanent
+    phantom findings in every audit of this repo, and a report with permanent
+    findings is a report nobody reads.
+    """
+    assert is_test_file("apedp/neural_discovery/tests/test_training.py")
+    assert is_test_file("apedp/neural_discovery/tests/conftest.py")
+    assert is_test_file("tests/test_coverage_audit.py")
+    assert not is_test_file("apedp/model_synthesis.py")
+    assert not is_test_file("apedp/closed_loop.py")
+
+    _write(tmp_path, "pkg/__init__.py", "")
+    _write(tmp_path, "pkg/thing.py", "A = 1\n")
+    _write(tmp_path, "pkg/tests/test_thing.py", "def test_a():\n    pass\n")
+    _write(tmp_path, "pkg/user.py", "from pkg import thing\n")
+    cov = tmp_path / "cov.json"
+    cov.write_text(json.dumps({"files": {
+        "pkg/thing.py": _cov_entry(2, 2, branches=(1, 1)),
+        "pkg/tests/test_thing.py": _cov_entry(2, 0),
+    }}), encoding="utf-8")
+
+    report = audit(cov, tmp_path, only_unexercised=False)
+    assert [v.module for v in report["_verdicts"]] == ["pkg.thing"], report["verdicts"]
+    assert report["totals"]["n_test_files_skipped"] == 1, report["totals"]
+    assert "1 test file(s) skipped" in format_report(report)
 
 
 def test_report_text_names_the_remedy_for_each_bucket(tmp_path: Path) -> None:
