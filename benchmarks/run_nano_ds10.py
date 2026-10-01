@@ -16,7 +16,7 @@ On the M4 nanoscale Hall-Petch crossover (dc = 15 nm):
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -28,8 +28,8 @@ from apedp_dyn.epistemic.adjudicate import (
     EpistemicStatus,
     adjudicate,
 )
-from apedp_dyn.epistemic.diagnosis import diagnose
 from apedp_dyn.epistemic.discovery_stability import (
+
     coefficient_cv,
     compose_identifiability_stability_matrix,
     structural_distribution,
@@ -74,7 +74,6 @@ def run_nano_ds10(
     k_global_vals: list[float] = []
     k_piecewise_vals: list[float] = []
     baseline_adj = None
-    baseline_cands = None
 
     # Track fits for 10x10 scoring matrix
     fitted_piecewise_weights: list[np.ndarray] = []
@@ -92,7 +91,6 @@ def run_nano_ds10(
 
         # Adjudicate baseline seed 0
         if s == 0:
-            baseline_cands = cands
             baseline_adj = adjudicate(
                 cands,
                 sole_survivor_rule=True,

@@ -1,0 +1,22 @@
+[package]
+name = "apedp-kernel"
+version = "0.1.0"
+edition = "2021"
+description = "Native numerical and dimensional-analysis kernel for APEDP"
+license = "MIT"
+
+[lib]
+name = "apedp_kernel"
+# cdylib is what maturin links into the Python extension module. rlib is kept
+# so `cargo test` can exercise the pure-Rust internals (parser, SVD, units)
+# without building a Python interpreter.
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.22.6", features = ["extension-module"] }
+numpy = "0.22.1"
+rayon = "1.12.0"
+
+[profile.release]
+opt-level = 3
+lto = true

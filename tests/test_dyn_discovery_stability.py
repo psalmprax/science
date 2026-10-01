@@ -146,7 +146,11 @@ class TestDiscoveryStability:
 
     def test_run_discovery_stability_audit_on_physical_system(self):
         """Verifies multi-seed audit on physical law discovery (harmonic force)."""
-        from apedp_dyn.discovery_l2 import Dimension, L2DiscoveryEngine, run_discovery_stability_audit
+        from apedp_dyn.discovery_l2 import (
+            Dimension,
+            L2DiscoveryEngine,
+            run_discovery_stability_audit,
+        )
 
         rng = np.random.default_rng(42)
         x = rng.uniform(0.1, 5.0, size=60)
