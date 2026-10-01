@@ -24,6 +24,7 @@ from tools.coverage_audit import (
     audit,
     collect_import_sites,
     format_report,
+    is_reexport_facade,
     is_test_file,
     module_name_for,
 )
@@ -301,6 +302,87 @@ def test_report_text_names_the_remedy_for_each_bucket(tmp_path: Path) -> None:
     assert "IMPORTED BUT NEVER EXECUTED" in text and "pkg.never_run" in text
     # The importer must be shown, because "who should call this" is the fix.
     assert "pkg/user.py" in text
+
+
+def test_reexport_facades_are_their_own_state_not_dead_code(tmp_path: Path) -> None:
+    """``apedp/dyn`` is a shim over ``apedp_dyn``; 0/6 forever is not a defect.
+
+    Commit 4cb17d2 retired the implementation into ``apedp_dyn`` and left
+    ``apedp/dyn/__init__.py`` re-exporting it, moving every in-tree caller to
+    the canonical package in the same commit. So nothing imports the shim --
+    correctly -- and it scored 0 of 6 in every run. That permanent 0 was the
+    sole remaining finding of an otherwise clean audit, and it was worthless:
+    the file contains no logic, so how much of it ran cannot distinguish a
+    working façade from a broken one.
+    """
+    _write(tmp_path, "pkg/__init__.py", "from pkg import shim\n")
+    _write(tmp_path, "pkg/shim.py", "from pkg.impl import *\n\n__all__ = ['thing']\n")
+    _write(tmp_path, "pkg/impl.py", "thing = 1\n")
+    _write(tmp_path, "pkg/dead.py", "def d():\n    return 1\n")
+
+    assert is_reexport_facade("pkg/shim.py", tmp_path)
+    cov = tmp_path / "cov.json"
+    cov.write_text(json.dumps({"files": {
+        "pkg/shim.py": _cov_entry(6, 0),
+        "pkg/impl.py": _cov_entry(2, 2, branches=(1, 1)),
+        "pkg/dead.py": _cov_entry(4, 0),
+    }}), encoding="utf-8")
+
+    report = audit(cov, tmp_path, only_unexercised=False)
+    by = {v.module: v for v in report["_verdicts"]}
+    assert by["pkg.shim"].status == "REEXPORT_FACADE"
+    assert by["pkg.shim"].is_facade is True
+    # The genuinely dead module is still reported. Reclassifying façades must
+    # not become a general escape hatch for things with no importer.
+    assert by["pkg.dead"].status == "NEVER_IMPORTED"
+    assert by["pkg.impl"].status == "EXERCISED"
+    # And a façade is not a finding. The default view still carries the one real
+    # finding, and nothing else.
+    assert [v["module"] for v in audit(cov, tmp_path)["verdicts"]] == ["pkg.dead"], (
+        "the default findings view must contain the genuinely dead module and "
+        "nothing else -- a façade appearing there restores the permanent "
+        "finding this state exists to remove")
+    # Still counted and still named under --all, so the information is not lost.
+    assert report["totals"]["reexport_facades"] == 1
+    text = format_report(report, show_all=True)
+    assert "RE-EXPORT FACADES" in text and "pkg.shim" in text
+    assert "test_facade_contracts.py" in text, (
+        "the report must point at the check that can actually fail on a shim")
+
+
+def test_a_reexport_facade_with_logic_is_not_a_facade(tmp_path: Path) -> None:
+    """One function is enough. Otherwise the rule can hide real code."""
+    _write(tmp_path, "pkg/almost.py", """
+        import os
+
+        __all__ = ["os"]
+
+        def helper():
+            return os.sep
+    """)
+    assert not is_reexport_facade("pkg/almost.py", tmp_path)
+
+    _write(tmp_path, "pkg/bare.py", "import os\n")
+    assert not is_reexport_facade("pkg/bare.py", tmp_path), (
+        "bare imports with no __all__ may still run work at import time")
+
+
+def test_a_coverage_report_measuring_nothing_is_declared(tmp_path: Path) -> None:
+    """``--cov=apedp`` with a typo used to audit to zero findings and look clean.
+
+    The detailed version of this, with the negative direction, lives in
+    tests/test_check_tools_fail_loudly.py. Kept here too because this is the
+    tool's own docstring claim, and a claim about a tool belongs in the tool's
+    tests.
+    """
+    _write(tmp_path, "pkg/__init__.py", "")
+    _write(tmp_path, "pkg/a.py", "A = 1\n")
+    cov = tmp_path / "cov.json"
+    cov.write_text(json.dumps({"files": {}}), encoding="utf-8")
+
+    report = audit(cov, tmp_path)
+    assert report["totals"]["measured_nothing"] is True
+    assert "NOTHING WAS AUDITED" in format_report(report)
 
 
 def test_audit_survives_unparseable_and_missing_files(tmp_path: Path) -> None:

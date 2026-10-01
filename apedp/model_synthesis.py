@@ -334,19 +334,34 @@ _W_PERIODS_HI = 8.0
 #: Whether a challenger that is much better on the near-OOD split may displace
 #: the incumbent *even when it is more complex*.
 #:
-#: The benchmark adapter's stated contract for the near-OOD signal is that it
+#: This is the engine default for callers with no protocol of their own. It
+#: used to be documented as though one global constant settled the matter,
+#: because the benchmark adapter's contract for the near-OOD signal is that it
 #: "can only disqualify a more complex model (parsimony tiebreak) ... It never
-#: promotes anything" (benchmarks/external_60_adapters.py). ``False`` is that
-#: contract.
+#: promotes anything" (benchmarks/external_60_adapters.py).
 #:
-#: Disabled because the contract forbids it and no evidence demands otherwise
-#: -- NOT because it was measured harmful. Refereed on all 60 EXT-BENCH
-#: problems with far-OOD MSE (which the selector never sees) as the judge: it
-#: changes 5 families, and on those it is mildly *positive* (far-OOD better on
-#: 7, worse on 1, median 2.19e-6 against 2.23e-6). It is also not the cause of
-#: the P05/P08 family regressions; the unfloored veto below is. Full account in
-#: docs/NEAR_OOD_PROMOTION.md. The constant stays so the decision is reversible
-#: by measurement rather than by re-deriving that argument.
+#: That conflated a protocol constraint with an engine capability, and the
+#: conflation had a measurable cost. SYNTH-50 S11 asserts recovery of
+#: ``logarithmic_boundary_layer`` and does not get it: the truth sits at rank 2
+#: behind a surrogate, separated by 1.4% relative val_mse, and the parsimony
+#: tiebreak prefers the surrogate. But S11 is a SYNTH-50 problem -- no adapter
+#: contract governs it, and nothing about it is scored by a round whose
+#: protocol says "val-MSE selection only". A rule that belongs to one frozen
+#: protocol does not belong in the engine, so it moved to where that protocol
+#: is: ``synthesize(allow_near_ood_promote=...)``, which APEDPAdapter pins to
+#: False. The frozen round is now protected by the adapter rather than by a
+#: constant any caller could flip.
+#:
+#: Nothing here says promotion is bad. Refereed on all 60 EXT-BENCH problems
+#: with far-OOD MSE (which the selector never sees) as the judge: it changes 5
+#: families (C41, C43, P08, R25, X52) and across the whole round is mildly
+#: *positive* -- far-OOD better on 13, worse on 5, unchanged on 34, median
+#: 2.19e-6 against 2.23e-6. But C41's far-OOD NRMSE regresses 0.0153 -> 0.347
+#: and X52 becomes a new abstention, so enabling it globally is a change to
+#: every caller in the repo and still wants the fresh preregistered round
+#: protocol §6.3 requires. It is also not the cause of the P05/P08 family
+#: regressions; the unfloored veto below is. Full account in
+#: docs/NEAR_OOD_PROMOTION.md.
 _NEAR_OOD_MAY_PROMOTE = False
 
 #: Additive floor on the near-OOD veto, in near-OOD MSE units. ``"auto"`` means
@@ -1641,8 +1656,29 @@ class AutonomousModelSynthesizer:
         y_far_ood: np.ndarray | None = None,
         *,
         enable_active_singularity_probe: bool = False,
+        allow_near_ood_promote: bool | None = None,
     ) -> list[SynthesizedModel]:
-        """Runs the autonomous synthesis loop, scoring and adjudicating candidates."""
+        """Runs the autonomous synthesis loop, scoring and adjudicating candidates.
+
+        ``allow_near_ood_promote`` is the *protocol* half of what
+        ``_NEAR_OOD_MAY_PROMOTE`` used to try to be. ``None`` (the default)
+        defers to that engine constant, so every existing caller keeps exactly
+        the selection behaviour it has today. Pass an explicit ``bool`` to pin
+        it -- that is what a caller with a written protocol should do, so the
+        constraint is enforced at the call site that owes it rather than by a
+        module global that any other caller may change underneath it.
+
+        The distinction earns its keep: SYNTH-50 S11 recovers the wrong family
+        without promotion and the right one with it, while EXT-BENCH-60's
+        frozen protocol permits val-MSE selection only and so pins this False.
+        One constant cannot be right for both, and guessing wrong for one of
+        them is what made an unrelated test fail.
+        """
+        promote_allowed = (
+            _NEAR_OOD_MAY_PROMOTE
+            if allow_near_ood_promote is None
+            else bool(allow_near_ood_promote)
+        )
         regimes = self.detect_regimes(x_train, y_train)
 
         # 1. Epistemic Abstention Gate: Severely Underspecified Observations (Class S5 / C3)
@@ -1815,7 +1851,7 @@ class AutonomousModelSynthesizer:
                 m_comp = self._model_complexity(m)
 
                 ood_superior = (
-                    _NEAR_OOD_MAY_PROMOTE
+                    promote_allowed
                     and best.near_ood_mse is not None and m.near_ood_mse is not None
                     and np.isfinite(best.near_ood_mse) and np.isfinite(m.near_ood_mse)
                     and m.near_ood_mse < best.near_ood_mse * 0.5

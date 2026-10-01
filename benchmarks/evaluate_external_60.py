@@ -264,12 +264,20 @@ def epistemic_calibration(scored: dict[str, dict[str, Any]]) -> dict[str, Any]:
     return {
         "by_state": buckets,
         "intervals_overlap": overlap,
+        # n_attempted is reported so a reader can tell "one state, nothing to
+        # compare" from "nothing was scored". Those are very different claims
+        # and the verdict text below used to make the second one while
+        # claiming the first: on an empty round this returned "single state
+        # present", naming a state that did not exist.
+        "n_attempted": sum(b["n"] for b in buckets.values()),
         "verdict": (
-            "not measurable on this corpus -- the per-state intervals overlap, "
-            "so no ordering of states by accuracy is supported"
-            if overlap else
-            ("single state present; nothing to compare" if not overlap and len(rates) < 2
-             else "intervals are disjoint; the ordering is supported by this corpus")
+            "nothing scored -- there is no calibration to report"
+            if not buckets else
+            ("not measurable on this corpus -- the per-state intervals overlap, "
+             "so no ordering of states by accuracy is supported"
+             if overlap else
+             ("single state present; nothing to compare" if len(rates) < 2
+              else "intervals are disjoint; the ordering is supported by this corpus"))
         ),
     }
 
@@ -288,6 +296,8 @@ def evaluate_round(corpus_root: str | Path, results_by_competitor: dict[str, lis
         per_competitor[competitor] = scored
 
     summary: dict[str, Any] = {}
+    expected = _expected_problem_ids(root)
+    not_fully_scored: dict[bool | None, list[str]] = {False: [], None: []}
     for competitor, scored in per_competitor.items():
         attempted = [s for s in scored.values() if not s["abstained"]]
         summary[competitor] = {
@@ -328,10 +338,81 @@ def evaluate_round(corpus_root: str | Path, results_by_competitor: dict[str, lis
             # uncertainty attached instead of left to a reader who will not
             # compute it. See epistemic_calibration.
             "epistemic_calibration": epistemic_calibration(scored),
+            # Coverage of the round itself. Without this, a run that scored
+            # 3 of 60 problems emits a summary structurally identical to a
+            # complete one -- every headline metric null or 0, nothing saying
+            # three.
+            #
+            # ``problems_missing`` is None when the manifest is unreadable,
+            # because the specific ids cannot be known. ``round_complete`` is
+            # still decidable in one case without it: a competitor that scored
+            # nothing has provably not returned every problem, whatever the
+            # corpus says, so that is False rather than None. Collapsing the
+            # two would let an empty competitor hide behind a missing file.
+            "problems_missing": (None if expected is None
+                                 else sorted(expected - set(scored))),
+            "round_complete": (
+                False if not scored else
+                None if expected is None else
+                not (expected - set(scored))),
         }
+        # Recorded while the summary dict is in hand. Reading it back out of
+        # ``summary`` later would have to exclude the non-competitor keys this
+        # dict also carries (wilcoxon, round_integrity), and getting that
+        # exclusion wrong reports a phantom partial round.
+        complete = summary[competitor]["round_complete"]
+        if complete is not True:
+            not_fully_scored[complete].append(competitor)
     summary["wilcoxon_val_mse"] = _paired_wilcoxon(per_competitor)
+    # Top-level, so it cannot be missed by a reader who only looks at the
+    # aggregate. A check that scores nothing must say so where it will be read.
+    #
+    # "Short" and "could not be checked" are kept apart. Collapsing them into
+    # one list would make an unreadable manifest read as a partial round --
+    # wrong, but at least alarming -- and the reverse mistake, rendering
+    # unknown as fine, is the silent one this whole block exists to prevent.
+    short = sorted(not_fully_scored[False])
+    unchecked = sorted(not_fully_scored[None])
+    problems: list[str] = []
+    if short:
+        problems.append(
+            f"{len(short)} competitor(s) did not return every problem "
+            f"({', '.join(short)}); their headline numbers describe a subset")
+    if unchecked:
+        problems.append(
+            f"{len(unchecked)} competitor(s) could not be checked for "
+            f"completeness ({', '.join(unchecked)}) because the corpus "
+            "manifest is unreadable")
+    summary["round_integrity"] = {
+        "n_competitors": len(per_competitor),
+        "n_expected_problems": None if expected is None else len(expected),
+        "competitors_scoring_a_subset": short,
+        "competitors_with_unknown_completeness": unchecked,
+        "verdict": (
+            "no competitor produced any result -- nothing was scored"
+            if not any(per_competitor.values()) else
+            ("every competitor scored the full corpus" if not problems else
+             "NOT A COMPLETE ROUND: " + "; ".join(problems))
+        ),
+    }
     return {"per_competitor": summary,
             "detail": dict(per_competitor)}
+
+
+def _expected_problem_ids(root: Path) -> set[str] | None:
+    """Problem ids the corpus manifest defines, or None if it cannot be read.
+
+    Returns None rather than an empty set on a missing or malformed manifest.
+    The difference is the point: an empty set would make every round look
+    complete, and "I could not check" must never render as "nothing to check".
+    """
+    manifest = root / "manifest.json"
+    try:
+        problems = json.loads(manifest.read_text(encoding="utf-8"))["problems"]
+        ids = {p["problem_id"] for p in problems}
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    return ids or None
 
 
 def _safe_ratio(items: list[dict], pred) -> float | None:

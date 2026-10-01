@@ -62,6 +62,15 @@ include = ["apedp*"]
 [tool.setuptools.package-data]
 apedp = ["py.typed"]
 
+[tool.coverage.run]
+# Branch data, not just line data. A module can execute every one of its
+# statements and still have most of its *outcomes* untested -- the never-true
+# guard, the except clause nobody triggers -- and those are where silent
+# failures live. tools/coverage_audit.py reports branch coverage separately
+# for exactly this reason, and until this was set it had no branch numbers to
+# report and could only declare their absence.
+branch = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["-v", "--tb=short"]

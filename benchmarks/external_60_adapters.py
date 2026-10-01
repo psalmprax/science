@@ -80,6 +80,27 @@ class APEDPAdapter:
 
     name = "apedp"
 
+    #: The frozen protocol's own selection constraint, pinned at the adapter
+    #: rather than inherited from an engine global.
+    #:
+    #: PREREG-APEDP-EXTBENCH-60 permits val-MSE selection only, and near-OOD
+    #: may disqualify a more complex candidate but never promote one. That was
+    #: previously enforced by ``model_synthesis._NEAR_OOD_MAY_PROMOTE``, a
+    #: module constant that every caller in the repo shares -- so the round's
+    #: protocol was really a statement about the engine, and any other caller
+    #: flipping it silently rewrote a frozen round. Keeping the two apart means
+    #: this round's guarantee is enforced where the promise is made, and a
+    #: later round can promote without asking this file's permission.
+    #:
+    #: Set it to True to run a round whose protocol allows promotion. Doing so
+    #: is a protocol change and needs its own preregistered round (§6.3); it is
+    #: not a tuning knob.
+    allow_near_ood_promote: bool = False
+
+    def __init__(self, allow_near_ood_promote: bool | None = None) -> None:
+        if allow_near_ood_promote is not None:
+            self.allow_near_ood_promote = bool(allow_near_ood_promote)
+
     def run(self, corpus_root: str | Path, problem_id: str) -> AdapterResult:
         from apedp.model_synthesis import AutonomousModelSynthesizer
 
@@ -97,7 +118,9 @@ class APEDPAdapter:
         # only ever breaks ties between candidates already inside the
         # noise floor, and it can only disqualify a *more* complex model
         # (parsimony tiebreak, model_synthesis.py:1660-1670). It never
-        # promotes anything.
+        # promotes anything -- enforced by ``allow_near_ood_promote = False``
+        # above, not by an engine global, so that this round's guarantee
+        # survives a change anywhere else in the tree.
         #
         # Passing it is not cosmetic. With near_ood_mse=None on every
         # candidate, three consumers were running on a permanently-absent
@@ -111,6 +134,7 @@ class APEDPAdapter:
         models = AutonomousModelSynthesizer().synthesize(
             tr[:, 0], tr[:, 1], va[:, 0], va[:, 1],
             near[:, 0], near[:, 1],
+            allow_near_ood_promote=self.allow_near_ood_promote,
         )
         top = models[0]
         epi = top.epistemic_state.value if top.epistemic_state else ""

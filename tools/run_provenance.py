@@ -58,14 +58,51 @@ DEFAULT_SCAN_DIRS = ("apedp", "tests")
 MANIFEST_NAME = "run_provenance.json"
 
 
+class GitCommandError(RuntimeError):
+    """A git invocation failed.
+
+    This type exists because the previous ``_git`` returned ``proc.stdout`` and
+    dropped both the return code and stderr, which made every git failure
+    indistinguishable from a git success that had nothing to say. Measured:
+    ``_git(["log", "--since=@NaN"])`` returned ``''`` -- git exited 128, wrote
+    the diagnosis to stderr, and the tool reported it as "no commits found".
+
+    That is not a hypothetical. It is the same defect as the ``--since=@1``
+    floor this file already documents, one level down: there, a near-epoch
+    ``--since`` made git legitimately return nothing and the tool concluded no
+    code had changed. Here git was never asked the question at all. Both
+    surface as the same silent pass, and fixing only the timestamp floor left
+    the mechanism live for every other malformed argument.
+
+    Raising is the right response for a check rather than a report: this tool
+    warns about staleness but must not be able to manufacture a clean result
+    from a command that failed.
+    """
+
+
 def _git(args: list[str], repo: Path | None = None) -> str:
+    """Run git and return stdout, or raise with git's own diagnosis attached."""
     # S607: this tool's entire purpose is to ask git about history, so resolving
     # `git` from PATH is the design. Arguments are fixed revs and paths from this
     # repository, never user input, and no shell is involved.
     proc = subprocess.run(  # noqa: S603
         ["git", *args], cwd=repo, capture_output=True, text=True, check=False,  # noqa: S607
     )
+    if proc.returncode != 0:
+        # Include stderr and the argv, because "git failed" with no argument
+        # list is not diagnosable and the whole cost of raising is the lost
+        # run. stdout is appended too: `git rev-parse <bad-rev>` exits 128 yet
+        # echoes the bad name back on stdout, so dropping stderr alone would
+        # have left that call still looking like it succeeded.
+        raise GitCommandError(
+            f"git {' '.join(args)} exited {proc.returncode}"
+            f"\nstderr: {proc.stderr.strip() or '(empty)'}"
+            f"\nstdout: {proc.stdout.strip() or '(empty)'}"
+        )
     return proc.stdout
+
+
+
 
 
 def resolve_repo(repo: Path | None = None) -> Path:

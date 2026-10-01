@@ -13,6 +13,91 @@ from apedp.model_synthesis import AutonomousModelSynthesizer, SynthesizedModel
 from benchmarks.corpus_paths import CORPUS_50_DIR, CORPUS_SYNTHESIS_DIR
 
 
+class TestNearOodPromotionIsAPerCallDecision:
+    """``allow_near_ood_promote`` must actually reach the parsimony tiebreak.
+
+    ``synthesize`` is one long function, so the flag is resolved once at the top
+    into ``promote_allowed`` and read in the tiebreak some hundreds of lines
+    later. That gap is where a well-named parameter goes to die: the signature
+    accepts it, the docstring explains it, the adapter passes it, and the
+    selection never consults it. Nothing about a real synthesis call would
+    catch that without a fixture engineered to contain a promotion opportunity,
+    which is expensive to build and brittle to keep.
+
+    So this is a structural check instead, in the same spirit as
+    ``test_adapter_never_reads_hidden_ground_truth``: it asserts on the AST
+    rather than on a number, and it is chosen so that deleting the tiebreak's
+    use of the flag -- or reverting it to the module global -- fails here.
+    """
+
+    def test_the_tiebreak_reads_the_resolved_flag_not_the_module_global(self):
+        import ast
+        import inspect
+
+        from apedp.model_synthesis import AutonomousModelSynthesizer
+
+        source = inspect.getsource(AutonomousModelSynthesizer.synthesize)
+        tree = ast.parse(inspect.cleandoc(source))
+
+        global_reads = [
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.Name)
+            and node.id == "_NEAR_OOD_MAY_PROMOTE"
+            and isinstance(node.ctx, ast.Load)
+        ]
+        # Exactly one read in the whole function: the `promote_allowed`
+        # assignment at the top. Any further read is the tiebreak consulting
+        # the global directly, which is the exact regression this parameter
+        # exists to end. (The docstring names the constant as a string
+        # constant, not a Name, so it does not count here.)
+        assert len(global_reads) == 1, (
+            f"_NEAR_OOD_MAY_PROMOTE is read {len(global_reads)} times inside "
+            "synthesize(); the parsimony tiebreak is consulting the module "
+            "global instead of the per-call flag, so a caller that pins the "
+            "flag changes nothing")
+
+        flag_reads = [
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.Name)
+            and node.id == "promote_allowed" and isinstance(node.ctx, ast.Load)
+        ]
+        assert len(flag_reads) >= 2, (
+            "promote_allowed is assigned but never read; the parameter is "
+            "accepted and then ignored")
+
+    def test_the_parameter_defaults_to_deferring_to_the_engine_constant(self):
+        import inspect
+
+        sig = inspect.signature(AutonomousModelSynthesizer.synthesize)
+        param = sig.parameters["allow_near_ood_promote"]
+        assert param.default is None, (
+            "the default must be None (defer to the engine constant) so every "
+            f"existing caller keeps its current selection behaviour; got "
+            f"{param.default!r}")
+        assert param.kind is inspect.Parameter.KEYWORD_ONLY
+
+    def test_the_engine_default_is_unchanged(self):
+        """Scoping must not have flipped selection for anyone else."""
+        import apedp.model_synthesis as ms
+
+        assert ms._NEAR_OOD_MAY_PROMOTE is False, (
+            "the engine default changed. Flipping it changes selection for "
+            "every caller in the repo -- SYNTH-50 included -- and needs the "
+            "fresh preregistered round protocol section 6.3 requires. The "
+            "EXT-BENCH-60 rule belongs in the adapter, not here.")
+
+    def test_the_argument_is_accepted_without_error(self):
+        """Cheap smoke: the keyword is real, not swallowed by **kwargs."""
+        import numpy as np
+
+        x = np.linspace(0.1, 2.0, 24)
+        models = AutonomousModelSynthesizer().synthesize(
+            x, 2.0 * x, x, 2.0 * x, x, 2.0 * x,
+            allow_near_ood_promote=False,
+        )
+        assert models, "synthesize returned nothing with an explicit flag"
+
+
 def load_synth_dataset(problem_id: str = "SYNTH_01"):
     prob_dir = CORPUS_SYNTHESIS_DIR / "public" / problem_id
     assert prob_dir.exists(), f"Synthesis dataset {problem_id} does not exist"

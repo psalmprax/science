@@ -22,6 +22,14 @@ the source with ``ast`` and asks a static question: does any file in the tree
 name this module in an import statement? That question has no collection-order
 blind spot, because it does not depend on when anything ran.
 
+A fourth state exists for the same reason the third does. A module that only
+re-exports another module -- a backwards-compatibility shim -- has no runtime
+behaviour of its own, so its coverage is uninformative in a way that "nothing
+imports it" is not: nothing importing a shim is expected, not a defect. Those
+are reported as REEXPORT_FACADE rather than as dead code. See
+``is_reexport_facade``, and tests/test_facade_contracts.py for the check that
+can actually fail on one.
+
 Branch coverage is reported alongside line coverage for the same reason one
 level down. A module at 100% lines with 40% branches has had every statement
 executed and most *outcomes* never taken -- the untested ``except`` clause, the
@@ -77,6 +85,58 @@ def is_test_file(rel_path: str) -> bool:
     return bool(_TEST_FILE_NAMES.match(Path(rel_path).name)) or "tests" in parts[:-1]
 
 
+#: A module that is nothing but imports and an ``__all__`` assignment.
+#:
+#: Its runtime behaviour is defined entirely by whatever it re-exports, so
+#: measuring how much of *it* executed says nothing about whether the code
+#: behind it works. ``apedp/dyn/__init__.py`` is the case in point: commit
+#: 4cb17d2 retired the implementation into ``apedp_dyn`` and left this as a
+#: backwards-compatibility shim. Nothing imports it -- every caller was moved to
+#: the canonical package in the same commit -- so it scores 0 of 6 forever, and
+#: that permanent 0 was the single remaining finding of an otherwise clean
+#: audit.
+#:
+#: Reporting it is not wrong exactly; it is useless, and a report whose only
+#: finding is permanently unfixable is a report whose findings get discounted.
+#: So façades are classified as their own state rather than deleted from the
+#: output: they are still counted, still named, and their target is still
+#: shown. What replaces a coverage number here is a contract test -- every
+#: name in ``__all__`` must resolve against the target package -- which is
+#: tests/test_facade_contracts.py. That test can actually fail; a coverage
+#: percentage on a shim cannot.
+def is_reexport_facade(rel_path: str, root: str | Path = ".") -> bool:
+    """True when a module's whole body is imports plus an ``__all__`` assignment.
+
+    Deliberately strict. Every top-level statement must be a docstring, an
+    import, or an assignment whose only target is ``__all__``. One function,
+    one class, one ``if`` and the module stops being a façade -- because the
+    risk here is classifying real logic out of the audit, and a shim pattern
+    that is merely *mostly* a shim still has statements worth executing.
+    """
+    path = Path(root) / rel_path
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8", errors="ignore"))
+    except (OSError, SyntaxError, ValueError):
+        return False
+    exports = False
+    for node in tree.body:
+        if isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant) \
+                and isinstance(node.value.value, str):
+            continue  # module docstring
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            continue
+        if isinstance(node, (ast.Assign, ast.AugAssign)):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            if all(isinstance(t, ast.Name) and t.id == "__all__" for t in targets):
+                exports = True
+                continue
+        return False
+    # Requires an explicit __all__: a module of bare imports with no declared
+    # export list is ambiguous enough that treating it as inert would hide a
+    # module that does real setup at import time.
+    return exports
+
+
 @dataclass(frozen=True)
 class ModuleVerdict:
     """One module, and the reason it is or is not exercised."""
@@ -91,6 +151,7 @@ class ModuleVerdict:
     branch_pct: float | None = None
     importers: tuple[str, ...] = ()
     missing_branch_lines: tuple[int, ...] = field(default=())
+    is_facade: bool = False
 
     @property
     def status(self) -> str:
@@ -107,6 +168,11 @@ class ModuleVerdict:
         """
         if self.statements == 0:
             return "EXERCISED"
+        if self.is_facade:
+            # Checked after the zero-statement case so an *empty* ``__init__``
+            # is still reported as EXERCISED (nothing to execute) rather than
+            # as a façade (nothing to re-export either).
+            return "REEXPORT_FACADE"
         if not self.importers:
             return "NEVER_IMPORTED"
         if self.covered_lines < EXERCISED_FLOOR:
@@ -118,8 +184,10 @@ class ModuleVerdict:
         """Statements ran, but outcomes did not. Silent-failure territory."""
         return self.num_branches > self.covered_branches
 
-    def to_dict(self) -> dict:    return {
+    def to_dict(self) -> dict:
+        return {
             "module": self.module, "path": self.path, "status": self.status,
+            "is_facade": self.is_facade,
             "statements": self.statements, "covered_lines": self.covered_lines,
             "line_pct": round(self.line_pct, 1),
             "num_branches": self.num_branches,
@@ -222,6 +290,20 @@ def audit(coverage_json: str | Path, root: str | Path = ".",
     data = json.loads(Path(coverage_json).read_text(encoding="utf-8"))
     files = data.get("files", data)
     sites = collect_import_sites(root)
+    # Whether the tree behind ``--root`` was actually readable.
+    #
+    # ``collect_import_sites`` walks with os.walk, which on a path that does not
+    # exist simply yields nothing and raises nothing. That empty result is then
+    # read as "no file in the tree imports anything", and every measured module
+    # is classified NEVER_IMPORTED -- so a mistyped root turns a clean audit into
+    # a confident report that 120 of 121 modules are dead code.
+    #
+    # Found by exactly that mistake: root passed as ". " with a trailing space.
+    # The audit dutifully reported 120 findings, all of them an artefact of a
+    # directory that never existed. An audit is an argument from absence, and
+    # this is absence of the tree rather than absence of importers -- so it has
+    # to be declared, exactly as ``measured_nothing`` declares the other end.
+    tree_scanned = root.is_dir()
 
     verdicts: list[ModuleVerdict] = []
     for rel, record in files.items():
@@ -249,15 +331,44 @@ def audit(coverage_json: str | Path, root: str | Path = ".",
             branch_pct=(100.0 * cov_b / num_b) if num_b else None,
             importers=tuple(sorted(importers)),
             missing_branch_lines=missing,
+            is_facade=is_reexport_facade(rel, root),
         ))
 
-    order = {"NEVER_IMPORTED": 0, "IMPORTED_NOT_EXECUTED": 1, "EXERCISED": 2}
+    order = {"NEVER_IMPORTED": 0, "IMPORTED_NOT_EXECUTED": 1, "REEXPORT_FACADE": 2,
+             "EXERCISED": 3}
+    # A coverage report that measured no source files is the loudest kind of
+    # nothing, and this tool used to render it as a clean bill of health:
+    # ``--cov=apedp`` with a typo, or a run where collection failed before any
+    # module was imported, produces ``{"files": {}}``, which audited to zero
+    # verdicts and a reassuring report. That is the same shape as the
+    # provenance bug where ``--since=@1`` made git return nothing and the tool
+    # concluded no code had changed -- a check reporting nothing is
+    # indistinguishable from a check that found nothing wrong, and only one of
+    # those means what it looks like.
+    #
+    # Note this is NOT the empty-__init__ case, which is handled by
+    # ``ModuleVerdict.status``: a module with no statements has nothing to
+    # execute and is complete. Here there is no *module* at all, so nothing was
+    # ever in scope to audit and the honest verdict is "not audited".
+    n_source_files = sum(1 for v in verdicts if v.status != "REEXPORT_FACADE")
+    measured_nothing = n_source_files == 0
+    # Computed *before* the ``only_unexercised`` filter below, and that order
+    # is load-bearing. A report whose modules are all EXERCISED also renders
+    # as zero verdicts in the default view, and that is a healthy result: there
+    # is simply nothing to fix. ``measured_nothing`` must fire only when there
+    # was no module in scope at all, or every clean audit would start
+    # screaming about its own absence of findings.
     if only_unexercised:
-        verdicts = [v for v in verdicts if v.status != "EXERCISED"]
+        # EXERCISED and REEXPORT_FACADE are both "nothing to do here". Keeping
+        # façades in the default view would restore exactly the permanent
+        # finding this state exists to remove; --all shows them.
+        verdicts = [v for v in verdicts
+                    if v.status not in ("EXERCISED", "REEXPORT_FACADE")]
     verdicts.sort(key=lambda v: (order[v.status], v.covered_lines, -v.statements))
 
     buckets: dict[str, list[ModuleVerdict]] = {
-        "NEVER_IMPORTED": [], "IMPORTED_NOT_EXECUTED": [], "EXERCISED": [],
+        "NEVER_IMPORTED": [], "IMPORTED_NOT_EXECUTED": [],
+        "REEXPORT_FACADE": [], "EXERCISED": [],
     }
     for v in verdicts:
         buckets[v.status].append(v)
@@ -265,7 +376,11 @@ def audit(coverage_json: str | Path, root: str | Path = ".",
         "totals": {
             "n_measured": len(verdicts),
             "n_test_files_skipped": sum(1 for r in files if is_test_file(r)),
+            "measured_nothing": measured_nothing,
+            "tree_scanned": tree_scanned,
+            "n_import_sites": len(sites),
             "never_imported": len(buckets["NEVER_IMPORTED"]),
+            "reexport_facades": sum(1 for v in verdicts if v.is_facade),
             "imported_not_executed": len(buckets["IMPORTED_NOT_EXECUTED"]),
             "exercised": len(buckets["EXERCISED"]),
             "exercised_with_unexercised_branches": sum(
@@ -278,6 +393,16 @@ def audit(coverage_json: str | Path, root: str | Path = ".",
 
 
 def format_report(report: dict, show_all: bool = False) -> str:
+    """Render a report.
+
+    ``totals["measured_nothing"]`` and ``totals["tree_scanned"]`` short-circuit the
+    normal layout. Both describe the *run* rather than the code: a report with
+    nothing in it, or one built from a tree that was never read, is a report
+    about the invocation. Burying either under a table of numbers is how a
+    broken run passes for a healthy codebase -- or, in the unreadable-tree
+    case, how one broken path produces 120 confident findings about working
+    code.
+    """
     lines: list[str] = []
     t = report["totals"]
     lines.append("module coverage audit (line + branch)")
@@ -285,9 +410,24 @@ def format_report(report: dict, show_all: bool = False) -> str:
     lines.append(
         f"  measured {t['n_measured']}   never-imported {t['never_imported']}   "
         f"imported-not-executed {t['imported_not_executed']}   "
-        f"exercised {t['exercised']}")
+        f"exercised {t['exercised']}"
+        + (f"   re-export facades {t['reexport_facades']}"
+           if t.get("reexport_facades") else ""))
     if t.get("n_test_files_skipped"):
         lines.append(f"  ({t['n_test_files_skipped']} test file(s) skipped -- not source)")
+    if not t.get("tree_scanned", True):
+        lines.append("")
+        lines.append("  !! THE TREE WAS NOT SCANNED. --root does not point at a")
+        lines.append("     directory, so no import could be found anywhere and every")
+        lines.append("     module below is reported as unimported. That is an artefact")
+        lines.append("     of the path, not a finding about the code.")
+    if t.get("measured_nothing"):
+        lines.append("")
+        lines.append("  !! NOTHING WAS AUDITED. The coverage report contains no")
+        lines.append("     source files, so every count above is 0 because nothing was")
+        lines.append("     measured -- not because the code is clean. Check that")
+        lines.append("     --cov=<package> named a real package and that collection")
+        lines.append("     actually imported something.")
     if not report["branch_coverage_present"]:
         lines.append("")
         lines.append("  !! NO BRANCH DATA. Re-run with --cov-branch, or every")
@@ -314,6 +454,16 @@ def format_report(report: dict, show_all: bool = False) -> str:
             if v.importers:
                 lines.append(f"      importers: {', '.join(v.importers[:4])}")
     if show_all:
+        facades = [v for v in report["_verdicts"] if v.is_facade]
+        if facades:
+            lines.append("")
+            lines.append(f"RE-EXPORT FACADES  ({len(facades)}) -- no behaviour of "
+                         "their own")
+            lines.append("-" * 74)
+            lines.append("  Coverage here is uninformative; what matters is that")
+            lines.append("  __all__ resolves. Checked by tests/test_facade_contracts.py.")
+            for v in facades:
+                lines.append(f"  {v.module:<46} {v.covered_lines:>4}/{v.statements:<4} lines")
         lines.append("")
         lines.append("EXERCISED (summary)")
         for v in report["_verdicts"]:

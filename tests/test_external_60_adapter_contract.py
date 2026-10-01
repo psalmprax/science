@@ -138,6 +138,89 @@ class TestNearOodIsActuallyForwarded:
             "a value here would mean far-OOD leaked in after all")
 
 
+class TestNearOodPromotionIsScopedToThisRound:
+    """EXT-BENCH-60's no-promotion rule is the round's, not the engine's.
+
+    The rule ("near-OOD may disqualify a more complex model, it never promotes
+    one") is a constraint of PREREG-APEDP-EXTBENCH-60. It used to be enforced
+    by ``model_synthesis._NEAR_OOD_MAY_PROMOTE``, a module constant shared by
+    every caller in the repo -- so the protocol was really a statement about the
+    engine, and any unrelated caller flipping that constant silently rewrote a
+    frozen round.
+
+    That conflation had a cost outside this round too. SYNTH-50 S11 asserts
+    recovery of ``logarithmic_boundary_layer`` and gets a surrogate instead,
+    because the truth sits at rank 2 behind a simpler-boundary candidate inside
+    the parsimony tie margin. S11 is a SYNTH-50 problem: no EXT-BENCH-60
+    contract governs it. One constant cannot be right for both, so the rule now
+    lives here.
+    """
+
+    def test_the_adapter_pins_no_promotion(self, monkeypatch):
+        seen = _capturing_stub(monkeypatch)
+        assert seen["kwargs"].get("allow_near_ood_promote") is False, (
+            "the frozen round must pin the no-promotion rule explicitly; an "
+            "absent kwarg leaves it to whatever the engine default happens to be")
+
+    def test_flipping_the_engine_constant_does_not_move_the_frozen_round(
+            self, monkeypatch):
+        """The property that makes the pinning worth anything.
+
+        This is the test that fails if someone reverts to a module constant: the
+        engine default is flipped at runtime, and the round's contract must be
+        unaffected. A frozen benchmark whose selection can be changed by an
+        unrelated edit to a shared constant is not frozen.
+        """
+        import apedp.model_synthesis as ms
+
+        seen: dict = {}
+
+        class _Stub:
+            def synthesize(self, *a, **k):
+                seen.update(k)
+                return [_StubModel("UNIQUE_SUPPORT")]
+
+        monkeypatch.setattr(ms, "AutonomousModelSynthesizer", _Stub)
+        monkeypatch.setattr(ms, "_NEAR_OOD_MAY_PROMOTE", True)
+        APEDPAdapter().run(CORPUS, "P01")
+
+        assert seen.get("allow_near_ood_promote") is False, (
+            "the engine default leaked into the frozen round; EXT-BENCH-60's "
+            "no-promotion guarantee is no longer enforced where it is promised")
+
+    def test_a_later_round_can_opt_in_explicitly(self, monkeypatch):
+        """Scoping has to be usable in both directions, or it is not scoping."""
+        import apedp.model_synthesis as ms
+
+        seen: dict = {}
+
+        class _Stub:
+            def synthesize(self, *a, **k):
+                seen.update(k)
+                return [_StubModel("UNIQUE_SUPPORT")]
+
+        monkeypatch.setattr(ms, "AutonomousModelSynthesizer", _Stub)
+        APEDPAdapter(allow_near_ood_promote=True).run(CORPUS, "P01")
+        assert seen.get("allow_near_ood_promote") is True
+
+    def test_the_default_is_the_frozen_protocol_value(self):
+        """Class-level, so a bare APEDPAdapter() -- what the runner uses -- is safe."""
+        assert APEDPAdapter.allow_near_ood_promote is False
+        assert APEDPAdapter().allow_near_ood_promote is False
+
+    def test_the_runner_constructs_the_adapter_with_no_arguments(self):
+        """If the runner passed a flag, the class default would be dead code."""
+        import inspect
+
+        from benchmarks.run_external_60_apedp import main
+
+        src = inspect.getsource(main)
+        assert "APEDPAdapter()" in src, (
+            "run_external_60_apedp.main no longer constructs a bare "
+            "APEDPAdapter(); if it now passes allow_near_ood_promote, that "
+            "value must be pinned here too")
+
+
 class TestNearOodVetoIsNoiseFloored:
     """The near-OOD veto must not decide family identity below the noise.
 
