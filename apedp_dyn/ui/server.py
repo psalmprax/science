@@ -199,7 +199,9 @@ def physics_systems() -> list[dict[str, Any]]:
         try:
             spec = mod.spec()
             eqs = [f"{e.state}' = {e.sympy_expr}" for e in spec.truth_equations]
-        except Exception:  # noqa: BLE001
+        except Exception as exc:  # noqa: BLE001 -- broken spec must not hide the rest
+            import logging
+            logging.getLogger(__name__).debug("skipping spec %s: %s", modname, exc)
             continue
         items.append({"id": modname,
                       "problem_id": getattr(spec, "problem_id", modname),
