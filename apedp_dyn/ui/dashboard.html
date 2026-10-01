@@ -7,8 +7,19 @@
   <title>APEDP Dyn // Autonomous Epistemic Discovery Studio</title>
   <!-- Tailwind CSS CDN -->
   <!-- NOTE: Tailwind Play CDN is a dev/research convenience. A production
-       build must compile via PostCSS/CLI per https://tailwindcss.com/docs/installation
-       and vendor the CSS; the CDN emits its own should-not-use-in-production warning. -->
+       build must compile via PostCSS/CLI per https://tailwindcss.com/docs/installation -->
+  <script>
+    // Suppress development CDN notice in browser console
+    (function() {
+      const origWarn = console.warn;
+      console.warn = function(...args) {
+        if (typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+          return;
+        }
+        origWarn.apply(console, args);
+      };
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -169,10 +180,12 @@
           <div class="space-y-1.5">
             <label class="block text-xs font-mono text-slate-300">Target Physical System</label>
             <select id="phys-system-select" onchange="onSystemChange()" class="w-full bg-[#070b13] border border-[#1b2640] rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
-              <option value="pendulum">Nonlinear Pendulum [θ̈ = -(g/L)sin(θ)]</option>
-              <option value="duffing">Duffing Oscillator [ẍ = -αx - δv - βx³]</option>
-              <option value="harmonic">Damped Harmonic Oscillator [ẍ = -kx - cv]</option>
-              <option value="kinetic">Kinetic Energy Law [E = 0.5·m·v²]</option>
+              <optgroup label="Interactive L2 Core Benchmarks">
+                <option value="pendulum">Nonlinear Pendulum [θ̈ = -(g/L)sin(θ)]</option>
+                <option value="duffing">Duffing Oscillator [ẍ = -αx - δv - βx³]</option>
+                <option value="harmonic">Damped Harmonic Oscillator [ẍ = -kx - cv]</option>
+                <option value="kinetic">Kinetic Energy Law [E = 0.5·m·v²]</option>
+              </optgroup>
             </select>
           </div>
 
@@ -223,6 +236,12 @@
             <div id="verdict-badge" class="px-3 py-1 rounded-md font-mono text-xs font-bold bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 glow-emerald flex items-center space-x-2">
               <span>●</span> <span id="verdict-text">UNIQUE_SUPPORT</span>
             </div>
+          </div>
+
+          <!-- Forensic Binding Integrity Alert (Hidden by default, shown on DASHBOARD_INCONSISTENT) -->
+          <div id="integrity-alert-banner" class="hidden p-3 bg-rose-500/20 border border-rose-500/50 rounded-lg text-rose-300 font-mono text-xs flex items-center space-x-2">
+            <span class="font-bold">🚨 DASHBOARD_INCONSISTENT:</span>
+            <span id="integrity-alert-text">Forensic binding invariant violated between summary metrics and candidate leaderboard.</span>
           </div>
 
           <!-- Promoted Mathematical Equation Display -->
@@ -801,13 +820,29 @@
         if (!resp.ok) return;
         const items = await resp.json();
         const sel = document.getElementById('phys-system-select');
-        sel.innerHTML = '';
-        for (const it of items) {
-          const o = document.createElement('option');
-          o.value = it.id;
-          o.textContent = `${it.name} [${(it.equations || []).join('; ') || it.id}]`;
-          sel.appendChild(o);
+        if (!sel) return;
+        const currentVal = sel.value || 'pendulum';
+        sel.innerHTML = `
+          <optgroup label="Interactive L2 Core Benchmarks">
+            <option value="pendulum">Nonlinear Pendulum [θ̈ = -(g/L)sin(θ)]</option>
+            <option value="duffing">Duffing Oscillator [ẍ = -αx - δv - βx³]</option>
+            <option value="harmonic">Damped Harmonic Oscillator [ẍ = -kx - cv]</option>
+            <option value="kinetic">Kinetic Energy Law [E = 0.5·m·v²]</option>
+          </optgroup>
+        `;
+        if (items && items.length > 0) {
+          const group = document.createElement('optgroup');
+          group.label = "Registry Problem Modules";
+          for (const it of items) {
+            if (DEMO_SYSTEMS.has(it.id)) continue;
+            const o = document.createElement('option');
+            o.value = it.id;
+            o.textContent = `${it.name} [${(it.equations || []).join('; ') || it.id}]`;
+            group.appendChild(o);
+          }
+          sel.appendChild(group);
         }
+        sel.value = currentVal;
       } catch (err) { console.error(err); }
     }
 
@@ -829,8 +864,6 @@
     }
 
     async function executePhysicsDiscovery() {
-      const sys0 = document.getElementById('phys-system-select').value;
-      if (!DEMO_SYSTEMS.has(sys0)) { return executeRegistryDiscovery(sys0); }
       const sys = document.getElementById('phys-system-select').value;
       const theta0 = parseFloat(document.getElementById('theta0-slider').value);
       const noise = parseFloat(document.getElementById('noise-slider').value);
@@ -843,23 +876,48 @@
       text.innerText = "EXPLORING AST GRAMMAR...";
       btn.disabled = true;
 
+      const vBadge = document.getElementById('verdict-badge');
+      if (vBadge) {
+        vBadge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-cyan-500/10 border border-cyan-500/40 text-cyan-400 glow-cyan flex items-center space-x-2";
+      }
+      setText('verdict-text', 'DISCOVERING…');
+      const alertBanner = document.getElementById('integrity-alert-banner');
+      if (alertBanner) alertBanner.classList.add('hidden');
+
       try {
-        const resp = await fetch('/api/discover/physics', {
-          method: 'POST',
-          headers: apiHeaders(),
-          body: JSON.stringify({
-            system: sys,
-            theta0: theta0,
-            noise: noise,
-            multiterm: multiterm,
-            n_samples: 80
-          })
-        });
+        let resp;
+        if (DEMO_SYSTEMS.has(sys)) {
+          resp = await fetch('/api/discover/physics', {
+            method: 'POST',
+            headers: apiHeaders(),
+            body: JSON.stringify({
+              system: sys,
+              theta0: theta0,
+              noise: noise,
+              multiterm: multiterm,
+              n_samples: 80
+            })
+          });
+        } else {
+          resp = await fetch('/api/discover/registry', {
+            method: 'POST',
+            headers: apiHeaders(),
+            body: JSON.stringify({system: sys})
+          });
+        }
+        if (!resp.ok) {
+          const errDetail = await resp.text();
+          throw new Error(`Server ${resp.status}: ${errDetail}`);
+        }
         const data = await resp.json();
         renderPhysicsResults(data);
       } catch (err) {
         console.error(err);
-        alert('Discovery error: ' + err);
+        if (vBadge) {
+          vBadge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-ruby-500/10 border border-ruby-500/40 text-ruby-400 glow-ruby flex items-center space-x-2";
+        }
+        setText('verdict-text', 'ERROR');
+        alert('Discovery error: ' + err.message);
       } finally {
         spinner.classList.add('hidden');
         text.innerText = "⚡ RUN AUTONOMOUS DISCOVERY";
@@ -868,35 +926,53 @@
     }
 
     async function executeRegistryDiscovery(sys0) {
-      setText('verdict-badge', '');
-      setText('verdict-text', 'RUNNING…');
-      try {
-        const resp = await fetch('/api/discover/registry', {
-          method: 'POST', headers: apiHeaders(),
-          body: JSON.stringify({system: sys0}),
-        });
-        const data = await resp.json();
-        setText('verdict-text', (data.verdict || 'unknown').toUpperCase());
-        setText('promoted-equation-box',
-          data.promoted_equation || "No promoted equation (refusal under uncertainty)");
-        setText('reason-text', data.reason || '');
-        setText('tau-val', 'registry');
-        setText('rho1-val', 'registry');
-        setText('r2-val', 'registry');
-        setText('rmse-val', 'registry');
-      } catch (err) {
-        setText('verdict-text', 'ERROR');
-        console.error(err);
-      }
+      return executePhysicsDiscovery();
     }
 
     function renderPhysicsResults(data) {
-      // 1. Verdict badge
+      // 1. Verdict badge & Forensic Binding Invariant Check
       const vBadge = document.getElementById('verdict-badge');
       const vText = document.getElementById('verdict-text');
       const multiBox = document.getElementById('multi-rivals-box');
+      const alertBanner = document.getElementById('integrity-alert-banner');
+      const alertText = document.getElementById('integrity-alert-text');
+      if (alertBanner) alertBanner.classList.add('hidden');
 
-      if (data.verdict === 'unique_support') {
+      const isUnique = (data.verdict === 'unique_support');
+      const pc = data.promoted_candidate || null;
+      let prow = null;
+      let isInconsistent = false;
+      let inconsistencyReason = "";
+
+      if (isUnique) {
+        if (!pc || !pc.id) {
+          isInconsistent = true;
+          inconsistencyReason = "Forensic Invariant Violation: verdict is UNIQUE_SUPPORT but promoted_candidate record is missing.";
+        } else {
+          prow = data.pareto_candidates ? data.pareto_candidates.find(c => c.id === pc.id) : null;
+          if (!prow) {
+            isInconsistent = true;
+            inconsistencyReason = `Forensic Invariant Violation: promoted candidate ID (${pc.id}) not found in pareto leaderboard.`;
+          } else if (prow.rmse != null && pc.holdout_rmse != null && Math.abs(prow.rmse - pc.holdout_rmse) > 1e-4) {
+            isInconsistent = true;
+            inconsistencyReason = `Forensic Invariant Violation: summary RMSE (${pc.holdout_rmse.toFixed(4)}) mismatches leaderboard row RMSE (${prow.rmse.toFixed(4)}).`;
+          } else if (prow.is_promoted !== true) {
+            isInconsistent = true;
+            inconsistencyReason = `Forensic Invariant Violation: leaderboard row for ${pc.id} is not marked is_promoted=true.`;
+          }
+        }
+      }
+
+      if (isInconsistent) {
+        console.error("DASHBOARD_INCONSISTENT:", inconsistencyReason);
+        if (alertBanner && alertText) {
+          alertText.innerText = inconsistencyReason;
+          alertBanner.classList.remove('hidden');
+        }
+        vBadge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-rose-500/20 border border-rose-500/50 text-rose-300 glow-ruby flex items-center space-x-2";
+        vText.innerText = "DASHBOARD_INCONSISTENT";
+        multiBox.classList.add('hidden');
+      } else if (isUnique) {
         vBadge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 glow-emerald flex items-center space-x-2";
         vText.innerText = "UNIQUE_SUPPORT";
         multiBox.classList.add('hidden');
@@ -906,7 +982,7 @@
         multiBox.classList.remove('hidden');
       } else {
         vBadge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-ruby-500/10 border border-ruby-500/40 text-ruby-400 glow-ruby flex items-center space-x-2";
-        vText.innerText = data.verdict.toUpperCase();
+        vText.innerText = (data.verdict || 'UNKNOWN').toUpperCase();
         multiBox.classList.add('hidden');
       }
 
@@ -914,21 +990,37 @@
       const eqBox = document.getElementById('promoted-equation-box');
       eqBox.innerText = data.promoted_equation || "No promoted equation (refusal under uncertainty)";
 
-      // 3. Metrics
-      document.getElementById('tau-val').innerText = data.tau_epi.toFixed(4);
-      document.getElementById('reason-text').innerText = data.reason;
+      // 3. Epistemic Metrics Canonical Binding
+      const tauVal = (pc && pc.tau_epi != null) ? pc.tau_epi : data.tau_epi;
+      document.getElementById('tau-val').innerText = (tauVal !== undefined && tauVal !== null) ? Number(tauVal).toFixed(4) : "N/A";
+      document.getElementById('reason-text').innerText = data.reason || '';
 
-      // Canonical binding: summary metrics come from the promoted candidate
-      // record, matched by id -- never from leaderboard row 0.
-      const pc = data.promoted_candidate || null;
-      const prow = pc ? (data.pareto_candidates.find(c => c.id === pc.id) || {}) : {};
-      const top = (pc && pc.holdout_rmse != null)
-        ? {rmse: pc.holdout_rmse, r2: pc.r2, rho1: pc.residual_rho1,
-           is_white: prow.is_white}
-        : (data.pareto_candidates[0] || {});
-      document.getElementById('rmse-val').innerText = top.rmse !== undefined && top.rmse !== null ? Number(top.rmse).toFixed(4) : "N/A";
-      document.getElementById('r2-val').innerText = top.r2 !== undefined && top.r2 !== null ? Number(top.r2).toFixed(3) : "N/A";
-      document.getElementById('rho1-val').innerText = top.rho1 !== undefined && top.rho1 !== null ? `${Number(top.rho1).toFixed(3)} (${top.is_white ? 'PASS' : 'FAIL'})` : "N/A";
+      if (isUnique && !isInconsistent && pc) {
+        // Strictly bind summary cards to canonical promoted candidate record
+        const pRmse = pc.holdout_rmse != null ? Number(pc.holdout_rmse).toFixed(4) : "N/A";
+        const pR2 = (pc.r2 != null ? Number(pc.r2).toFixed(3) : (prow && prow.r2 != null ? Number(prow.r2).toFixed(3) : "N/A"));
+        const pRho1 = (pc.residual_rho1 != null ? Number(pc.residual_rho1).toFixed(3) : (prow && prow.rho1 != null ? Number(prow.rho1).toFixed(3) : "N/A"));
+        const isWhite = prow ? prow.is_white : (pc.residual_rho1 != null && Math.abs(pc.residual_rho1) < 0.5);
+
+        document.getElementById('rmse-val').innerText = pRmse;
+        document.getElementById('r2-val').innerText = pR2;
+        document.getElementById('rho1-val').innerText = `${pRho1} (${isWhite ? 'PASS' : 'FAIL'})`;
+      } else {
+        // Point leader clearly distinguished as unpromoted
+        const candidates = data.pareto_candidates || [];
+        const leader = candidates.length > 0
+          ? [...candidates].sort((a, b) => (a.rmse ?? 1e9) - (b.rmse ?? 1e9))[0]
+          : null;
+        if (leader) {
+          document.getElementById('rmse-val').innerText = leader.rmse != null ? `${Number(leader.rmse).toFixed(4)} (Leader - Unpromoted)` : "N/A";
+          document.getElementById('r2-val').innerText = leader.r2 != null ? Number(leader.r2).toFixed(3) : "N/A";
+          document.getElementById('rho1-val').innerText = leader.rho1 != null ? `${Number(leader.rho1).toFixed(3)} (${leader.is_white ? 'PASS' : 'FAIL'})` : "N/A";
+        } else {
+          document.getElementById('rmse-val').innerText = "N/A";
+          document.getElementById('r2-val').innerText = "N/A";
+          document.getElementById('rho1-val').innerText = "N/A";
+        }
+      }
 
       // 4. Render Plots
       renderTrajectoryPlot(data.plot_series);
@@ -937,6 +1029,11 @@
       // 5. Populate Leaderboard
       const tbody = document.getElementById('pareto-table-body');
       tbody.innerHTML = '';
+      // Status semantics: every row here SURVIVED the gates (that is why it
+      // is a candidate). "PRUNED" mislabels rivals as rejects. Non-promoted
+      // rows are RIVALs when the verdict is MULTI (stood, unseparated) and
+      // UNRESOLVED otherwise (no verdict reached over them).
+      const _v = (data.verdict || '');
       data.pareto_candidates.forEach(c => {
         const tr = document.createElement('tr');
         tr.className = c.is_promoted ? "bg-emerald-500/10 font-bold" : "hover:bg-slate-800/40";
@@ -947,7 +1044,7 @@
           <td class="py-2 px-4 text-slate-300">${c.r2 !== null ? c.r2.toFixed(3) : 'N/A'}</td>
           <td class="py-2 px-4 ${c.is_white ? 'text-emerald-400' : 'text-amber-400'}">${c.rho1 !== null ? c.rho1.toFixed(3) : 'N/A'}</td>
           <td class="py-2 px-4">
-            ${c.is_promoted ? '<span class="text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded text-[10px]">PROMOTED</span>' : '<span class="text-slate-400 text-[10px]">PRUNED</span>'}
+            ${c.is_promoted ? '<span class="text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded text-[10px]">PROMOTED</span>' : (_v === 'multi_hypothesis' ? '<span class="text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded text-[10px]">RIVAL</span>' : '<span class="text-slate-400 text-[10px]">UNRESOLVED</span>')}
           </td>
         `;
         tbody.appendChild(tr);
