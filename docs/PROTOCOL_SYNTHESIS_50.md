@@ -2,10 +2,11 @@
 
 **Document ID:** PROTOCOL-APEDP-SYNTH50-2026-10-01
 **Date:** October 1, 2026
-**Status:** OPEN — §5 (the near-OOD promotion rule) is **pre-committed but
-unresolved**. The decision criterion in §5.3 is fixed before the SYNTH-50
-refereeing measurement and binds whatever it returns. §5.4 records the result
-once it lands.
+**Status:** RESOLVED — §5.4 records the refereeing result. All four conditions of
+the criterion fixed in §5.3 pass, and **near-OOD promotion is permitted for
+SYNTH-50**. Two caveats travel with that verdict and are stated in §5.4: the
+far-OOD conditions covered 31 of 50 problems and none of class 5, and the
+single regression (S17, 7.92x) cleared the 10x bound by only 1.26x.
 
 ---
 
@@ -248,12 +249,96 @@ Committing to criterion (c) at 10x rather than something looser is deliberate. I
 was chosen from EXT-BENCH-60's measured failure (23x), where a bound anywhere
 between 1x and 23x would have produced the same verdict on that evidence.
 
-### 5.4 Result — PENDING
+### 5.4 Result
 
-To be filled from the referee run: per-class family accuracy, far-OOD NRMSE
-distribution, and the count of problems breaching (c) and (d). Until this
-section carries a verdict, `allow_near_ood_promote` stays at its engine default
-for SYNTH-50 callers and S11 stays red.
+All 50 problems, both conditions, 0 errors. Judge: far-OOD NRMSE against the
+hidden formula, with the far-OOD split withheld from the selector.
+
+| | condition | result | verdict |
+|---|---|---|---|
+| (a) | family accuracy must not decrease | 0.560 → **0.640** (28/50 → 32/50) | **PASS** |
+| (b) | median far-OOD NRMSE must not increase | 0.0617 → **0.0210** (n=31) | **PASS** |
+| (c) | no problem regresses beyond 10x | 8 better, 1 worse, 22 equal, 19 unscoreable; worst 7.92x | **PASS** |
+| (d) | no `UNIQUE_SUPPORT` problem becomes an abstention | 0 new abstentions | **PASS** |
+
+**VERDICT: promotion is PERMITTED for SYNTH-50.**
+
+Per class, family accuracy — the breakdown §1 requires, since class 2 is one
+family worth 20% of the corpus:
+
+| class | name | OFF | ON | |
+|---|---|---|---|---|
+| 1 | Multi-Regime Envelopes | 6/10 | 7/10 | |
+| 2 | Logarithmic & Boundary Layers | **1/10** | **4/10** | the largest move |
+| 3 | Critical Exponents & Scaling | 6/10 | 6/10 | |
+| 4 | Modulated Transport | 10/10 | 10/10 | |
+| 5 | Epistemic Abstention Adversaries | 5/10 | 5/10 | unchanged |
+
+Families gained: S10, S11, S12, S16, S18. Families lost: S19. No epistemic state
+changed value on any problem.
+
+#### How close (c) actually was
+
+The single regression is **S17 at 7.92x** (far-OOD NRMSE 0.0074 → 0.0588),
+inside the 10x bound by a factor of 1.26. The criterion passes, but it passes
+narrowly, and any threshold between 1x and 7.92x would have produced the
+opposite verdict on this evidence. The 10x bound was chosen from EXT-BENCH-60's
+23x failure, where it was uninformative; applied to SYNTH-50 it is close to
+binding. A future round should re-derive it rather than inherit it.
+
+#### Coverage of the far-OOD conditions — read this before quoting (b) or (c)
+
+Conditions (b) and (c) were evaluated on **31 of 50 problems**, and on **none of
+class 5**. The 19 exclusions are:
+
+- **9 saturated grids** (S03, S07, S08, S09, S10, S33, S35, S37, S38) — the
+  far-OOD `y` barely varies, so the NRMSE denominator is float noise. Excluded
+  under §4 as written, counted here rather than dropped quietly.
+- **10 with no evaluable curve** (S41–S50) — which is *exactly* class 5, the
+  abstention adversaries. They produce no numeric expression to score. That is
+  correct behaviour, not a gap, but it means far-OOD NRMSE says nothing at all
+  about the class whose whole purpose is abstention.
+
+Conditions (a) and (d) are defined for all 50 and were evaluated on all 50.
+So the verdict rests on two conditions covering the whole corpus and two
+covering 62% of it, with the missing 38% being the problems least able to
+produce a far-OOD number at all. Note also that **S10 is among the saturated
+exclusions and is in the families-gained list** — that gain has no far-OOD
+corroboration.
+
+#### S19: far-OOD and the family label disagree
+
+S19 is the mirror image of S11, and the most consequential single result here.
+
+| | family | far-OOD NRMSE |
+|---|---|---|
+| promotion OFF | `logarithmic_boundary_layer` (**correct**) | 0.3588 |
+| promotion ON | `rational_transition` (**wrong**) | **0.0176** |
+
+Promotion made S19 extrapolate **20x better** on the far-OOD split while
+producing the wrong structural family. One of the two judges is wrong here.
+The far-OOD split is supposed to be outside the observed domain, so a model
+that extrapolates it 20x better is doing something real; yet the corpus labels
+`logarithmic_boundary_layer` as the truth for this problem.
+
+That is a question about the corpus, not about the selection rule, and this
+protocol does not resolve it. It is recorded here because (a) and (b) point in
+opposite directions on the same problem, and any single headline number hides
+that. Family accuracy is the criterion SYNTH-50 was built to measure; far-OOD
+NRMSE is the criterion used to referee the mechanism. Where they disagree, the
+labelled family is the one the benchmark is asking about.
+
+#### Consequence for S11
+
+With promotion permitted, SYNTH-50 callers pass `allow_near_ood_promote=True`
+and `test_class_s2_logarithmic_recovery` passes. The engine default stays
+`False` (§6 of `docs/NEAR_OOD_PROMOTION.md`), so no other caller's selection
+changes — the same scoping `08fccb0` established for EXT-BENCH-60.
+
+**This is a decision about SYNTH-50 only.** EXT-BENCH-60's frozen protocol
+still pins promotion off at its adapter, and nothing here disturbs it: the
+EXT-BENCH referee measured a different corpus and found a 23x regression
+(C41) and a lost correct answer (X52) that SYNTH-50 does not exhibit.
 
 ---
 
@@ -271,8 +356,8 @@ Recorded rather than fixed here, because each changes what the suite means.
    not sanction.** They pass far-OOD and omit the promotion flag, i.e. they run
    a configuration that exists nowhere else.
 4. **`xfail_strict` is on**, so S11 is a hard failure rather than a recorded
-   limitation. §5.4 resolves which it should be; until then red is correct,
-   because a protocol exists now and does not yet permit promotion.
+   limitation. §5.4 permits promotion, so S11 should pass once SYNTH-50
+   callers pass the flag; until that wiring exists red is correct.
 5. **The truth field is named `canonical_structural_family` but is not in the
    canonicalizer's taxonomy** (§4.0). The name is the defect: it reads as
    "the canonicalizer's answer" and is not, so any future attempt to score
