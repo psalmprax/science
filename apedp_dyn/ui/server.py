@@ -89,12 +89,15 @@ def to_jsonable(obj: Any) -> Any:
     """Recursively convert NumPy scalars and arrays to JSON-serializable Python primitives."""
     if isinstance(obj, np.ndarray):
         return [to_jsonable(x) for x in obj.tolist()]
+    # NOTE: bool check must precede int (bool subclasses int in Python);
+    # otherwise True/False serialize as 1/0 and clients cannot rely on
+    # boolean flags such as is_promoted.
+    if isinstance(obj, (np.bool_, bool)):
+        return bool(obj)
     if isinstance(obj, (np.floating, float)):
         return float(obj) if np.isfinite(obj) else None
     if isinstance(obj, (np.integer, int)):
         return int(obj)
-    if isinstance(obj, (np.bool_, bool)):
-        return bool(obj)
     if isinstance(obj, dict):
         return {str(k): to_jsonable(v) for k, v in obj.items()}
     if isinstance(obj, (list, tuple)):
@@ -375,10 +378,27 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
                 elif req.system == "harmonic":
                     pred_vals = coef * x
 
+    _pc = adj.promoted
+    _pcg4 = (_pc.provenance.get("gate4_status", {}) if _pc is not None else {})
+    _promoted_record = None
+    if _pc is not None:
+        _promoted_record = {
+            "id": _pc.candidate.candidate_id,
+            "holdout_rmse": (float(_pc.holdout_rmse)
+                             if _pc.holdout_rmse is not None else None),
+            "r2": (float(_pcg4.get("r2")) if _pcg4.get("r2") is not None else None),
+            "residual_rho1": (float(_pcg4.get("rho1"))
+                              if _pcg4.get("rho1") is not None else None),
+            "delta_rmse": (float(adj.delta_rmse)
+                           if adj.delta_rmse is not None else None),
+            "tau_epi": (float(adj.tau_epi)
+                        if adj.tau_epi is not None else None),
+        }
     resp = to_jsonable({
         "system": req.system,
         "verdict": adj.status.value,
         "promoted_equation": promoted_str,
+        "promoted_candidate": _promoted_record,
         "reason": adj.reason,
         "tau_epi": float(adj.tau_epi) if adj.tau_epi is not None else 0.05,
         "pareto_candidates": formatted_pareto,
@@ -392,6 +412,7 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
     _audit("discover/physics", {"system": req.system,
                                 "verdict": resp.get("verdict"),
                                 "promoted_equation": resp.get("promoted_equation"),
+                                "promoted_id": ((resp.get("promoted_candidate") or {}).get("id")),
                                 "data_origin": "simulation"})
     return resp
 
