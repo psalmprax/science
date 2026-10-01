@@ -863,25 +863,24 @@
     }
 
     async function executeRegistryDiscovery(sys0) {
-      const badge = document.getElementById('verdict-badge');
-      const text = document.getElementById('verdict-text');
-      badge.innerText = 'RUNNING…';
+      setText('verdict-badge', '');
+      setText('verdict-text', 'RUNNING…');
       try {
         const resp = await fetch('/api/discover/registry', {
           method: 'POST', headers: apiHeaders(),
           body: JSON.stringify({system: sys0}),
         });
         const data = await resp.json();
-        text.innerText = (data.verdict || 'unknown').toUpperCase();
-        document.getElementById('promoted-equation-box').innerText =
-          data.promoted_equation || "No promoted equation (refusal under uncertainty)";
-        document.getElementById('reason-text').innerText = data.reason || '';
-        document.getElementById('tau-val').innerText = 'registry';
-        document.getElementById('rho1-val').innerText = 'registry';
-        document.getElementById('r2-val').innerText = 'registry';
-        document.getElementById('rmse-val').innerText = 'registry';
+        setText('verdict-text', (data.verdict || 'unknown').toUpperCase());
+        setText('promoted-equation-box',
+          data.promoted_equation || "No promoted equation (refusal under uncertainty)");
+        setText('reason-text', data.reason || '');
+        setText('tau-val', 'registry');
+        setText('rho1-val', 'registry');
+        setText('r2-val', 'registry');
+        setText('rmse-val', 'registry');
       } catch (err) {
-        text.innerText = 'ERROR';
+        setText('verdict-text', 'ERROR');
         console.error(err);
       }
     }
@@ -1293,6 +1292,13 @@
         w.innerHTML = '<div class="max-w-7xl mx-auto px-4 py-2">Chart library (CDN) failed to load — charts disabled, verdicts unaffected.</div>';
         document.body.prepend(w);
       });
+    }
+
+    function setText(id, value) {
+      const el = document.getElementById(id);
+      if (el) { el.innerText = value; return true; }
+      console.warn('missing element #' + id);
+      return false;
     }
 
     function apiHeaders() {
