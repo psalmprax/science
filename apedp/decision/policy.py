@@ -2,6 +2,7 @@
 """Decision backends for evidence review and adaptive search control."""
 from __future__ import annotations
 
+import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
@@ -55,7 +56,37 @@ class RuleBasedBackend(DecisionBackend):
 
 
 class LocalSearchController:
-    """Offline adaptive policy and baseline for a Jev-compatible controller."""
+    """Offline adaptive policy and baseline for a Jev-compatible controller.
+
+    The policy is an escalation ladder, evaluated in this order:
+
+    1. no finite incumbent score -> HUMAN_REVIEW;
+    2. stagnated at the limit while still above the residual bar ->
+       EXPAND_GRAMMAR, because widening the search space is the right first
+       response to a stall;
+    3. the same, but the stall has now run to ``stagnation_limit *
+       ESCALATION_FACTOR`` -> STOP_STAGNATION;
+    4. large Pareto frontier -> RUN_VALIDATION;
+    5. mild stagnation -> INCREASE_EXPLORATION;
+    6. otherwise -> CONTINUE.
+
+    Rungs 2 and 3 both exist because "expand the grammar" is only useful
+    advice once. Handing out the same rung-2 advice on every chunk, forever,
+    is how a search that has plainly stalled goes on spending generations
+    while its ``stopped_reason`` stays ``None`` -- the caller has no way to
+    tell that from a search that is genuinely still making progress.
+
+    Rung 1 sits above the rest on purpose. Every other rung is conditioned on
+    a usable score: "above the residual bar", "large enough frontier", "not
+    improved". With a missing or NaN score none of those comparisons mean
+    anything, and ``nan > 1e-3`` is ``False``, so without this guard a NaN
+    falls through to CONTINUE and a search with no incumbent at all looks
+    healthy.
+    """
+
+    #: How far past ``stagnation_limit`` a stall must run before the
+    #: controller gives up on widening the grammar and stops the search.
+    ESCALATION_FACTOR = 2
 
     def __init__(self, stagnation_limit: int = 5, validation_frontier_limit: int = 25):
         if stagnation_limit < 1 or validation_frontier_limit < 1:
@@ -68,7 +99,11 @@ class LocalSearchController:
         normalized = float(state.get("final_normalized_score", float("inf")))
         frontier = int(state.get("pareto_frontier_size", 0))
         generation = int(state.get("generation", 0))
+        if not math.isfinite(normalized):
+            return SearchDecision(SearchAction.HUMAN_REVIEW, "no finite incumbent score: there is nothing for a policy to steer, and widening the grammar cannot invent one", {"requires_finite_incumbent": True})
         if stagnation >= self.stagnation_limit and normalized > 1e-3:
+            if stagnation >= self.stagnation_limit * self.ESCALATION_FACTOR:
+                return SearchDecision(SearchAction.STOP_STAGNATION, f"no improvement for {stagnation} generations, including after a wider grammar was requested; the incumbent is still above the residual bar", {"generations_without_improvement": float(stagnation)})
             return SearchDecision(SearchAction.EXPAND_GRAMMAR, "search stagnated above the residual bar", {"allow_power_mutation": True, "allow_rational_mutation": True})
         if frontier >= self.validation_frontier_limit:
             return SearchDecision(SearchAction.RUN_VALIDATION, "Pareto frontier is large enough for an independent check", {"frontier_size": float(frontier)})

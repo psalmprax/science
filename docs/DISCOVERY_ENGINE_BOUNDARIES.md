@@ -19,7 +19,8 @@ APEDP contains several discovery surfaces. They are complementary, not interchan
 3. Neural outputs are proposals, relevance signals, or surrogate approximations. They do not bypass dimensional, domain, holdout, or falsification gates.
 4. `HypothesisComposer` outputs theoretical specifications. Its score is not evidence of truth.
 5. `run_adaptive_discovery` changes search policy only. It cannot override scientific refusal gates.
-6. `JevCompatibleBackend` is optional. Local fallback decisions are recorded explicitly, and no network service is required.
+6. `LocalSearchController` escalates rather than repeating itself: a stall past `stagnation_limit` first widens the grammar, and only once it reaches `stagnation_limit * LocalSearchController.ESCALATION_FACTOR` does it emit `STOP_STAGNATION`. An incumbent score that is missing or NaN yields `HUMAN_REVIEW`, because no rung of the policy can be evaluated against a score that does not exist. A stopped search reports the reason in `AdaptiveSearchResult.stopped_reason`; `None` means the search was still making progress, not that stopping was unreachable.
+7. `JevCompatibleBackend` is optional. Local fallback decisions are recorded explicitly, and no network service is required.
 
 ## Evidence status
 

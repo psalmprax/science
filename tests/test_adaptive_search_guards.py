@@ -56,17 +56,17 @@ class _Stub:
     allow_compose_mutation = False
     allow_logcomp_mutation = False
 
-    def __init__(self, *, stagnant: bool = False, chunk_history: bool = True):
+    def __init__(self, *, stagnation: int = 0, chunk_history: bool = True):
         self.calls = 0
-        self.stagnant = stagnant
+        self.stagnation = stagnation
         self.give_history = chunk_history
         self.stagnation_report = {"generations_without_improvement": 0, "improvements": 1}
 
     def run_discovery(self, x_data, y_data, generations, pop_size, seed):
         self.calls += 1
         score = 1.0 / self.calls
-        if self.stagnant:
-            self.stagnation_report = {"generations_without_improvement": 9,
+        if self.stagnation:
+            self.stagnation_report = {"generations_without_improvement": self.stagnation,
                                       "improvements": 0}
         history = ([{"generation": i, "best_score": score, "pareto_frontier_size": 1}
                     for i in range(generations)] if self.give_history else [])
@@ -154,11 +154,13 @@ class TestSeedingDoesNotLeak:
 
 
 class _StopController:
-    """A controller that actually asks to stop.
+    """A hand-written controller that asks to stop, for both stop actions.
 
-    ``LocalSearchController`` cannot reach that branch at all -- see
-    ``TestTheRealControllerNeverStops`` -- so the break needs one of these to
-    be reachable from a test.
+    The shipped ``LocalSearchController`` can now ask to stop as well, and
+    ``TestTheShippedControllerCanStop`` drives the search with it. This class
+    stays for the narrower question: the break responds to whatever the
+    controller returns, not to the one decision rule that happens to be
+    shipped.
     """
 
     def __init__(self, action=SearchAction.STOP_STAGNATION, reason="stagnated"):
@@ -174,7 +176,7 @@ class TestLegacyPathGuards:
     @pytest.mark.parametrize("action", [SearchAction.STOP_STAGNATION,
                                         SearchAction.HUMAN_REVIEW])
     def test_stopping_stops_the_search_and_records_why(self, action):
-        engine = _Stub(stagnant=True)
+        engine = _Stub(stagnation=9)
         result = run_adaptive_discovery(engine, *_data(), generations=20,
                                         pop_size=4, chunk_size=2,
                                         controller=_StopController(action))
@@ -184,15 +186,23 @@ class TestLegacyPathGuards:
         assert engine.calls == 1, (
             f"the break did not stop the loop: {engine.calls} chunks ran")
 
-    def test_stagnation_alone_does_not_stop_the_built_in_controller(self):
-        """The guard above needs a *custom* controller; this is why."""
-        engine = _Stub(stagnant=True)
+    def test_a_mild_stall_widens_the_grammar_instead_of_stopping(self):
+        """Rung 2 of the escalation ladder, with the shipped controller.
+
+        A stall just past the limit gets exactly one chance to be answered by
+        a wider search space. Stopping here would be wrong in the other
+        direction: it is the behaviour that made the stop branch untestable
+        while also leaving a genuinely stalled search running.
+        """
+        engine = _Stub(stagnation=3)
         result = run_adaptive_discovery(engine, *_data(), generations=6,
                                         pop_size=4, chunk_size=2,
                                         controller=LocalSearchController(
                                             stagnation_limit=2))
         assert result.stopped_reason is None
-        assert result.actions[-1]["action"] == SearchAction.EXPAND_GRAMMAR.value
+        assert engine.calls == 3, engine.calls
+        assert {a["action"] for a in result.actions} == {
+            SearchAction.EXPAND_GRAMMAR.value}
 
     def test_a_healthy_search_keeps_going_and_reports_no_reason(self):
         engine = _Stub()
@@ -240,32 +250,74 @@ class TestTheMultiVariablePathIsDeclaredUntested:
             "the stub took the stateful path; the dispatch assumption this "
             "module's coverage gap rests on has changed")
 
-    def test_the_real_controller_never_asks_to_stop(self):
-        """The stop branch needs a controller other than the shipped one.
+    def test_a_permanently_stalled_search_is_stopped_by_the_shipped_controller(self):
+        """The gap this file used to declare, now closed.
 
-        ``LocalSearchController.decide`` can only return EXPAND_GRAMMAR,
-        RUN_VALIDATION, INCREASE_EXPLORATION, or CONTINUE. It never returns
-        STOP_STAGNATION or HUMAN_REVIEW, so with the default controller the
-        stop branch in ``_run_legacy_chunked`` is dead code -- a search that
-        has plainly stagnated keeps spending generations, and only
-        ``stopped_reason`` would have said so. This test pins the gap; if the
-        controller ever learns to stop, it fails and the stop tests should be
-        switched onto it.
+        ``LocalSearchController`` previously could only return EXPAND_GRAMMAR,
+        RUN_VALIDATION, INCREASE_EXPLORATION, or CONTINUE, which left the stop
+        branch in ``_run_legacy_chunked`` as dead code under the default
+        controller: a search that had plainly stagnated went on spending
+        generations and nothing ever populated ``stopped_reason``. The
+        controller now escalates to STOP_STAGNATION, and the default is what
+        this drives -- no stand-in.
+        """
+        engine = _Stub(stagnation=9)
+        result = run_adaptive_discovery(engine, *_data(), generations=20,
+                                        pop_size=4, chunk_size=2,
+                                        controller=LocalSearchController(
+                                            stagnation_limit=2))
+        assert result.actions[-1]["action"] == SearchAction.STOP_STAGNATION.value
+        assert result.stopped_reason, (
+            "the controller stopped the search but did not say why")
+        assert engine.calls == 1, (
+            f"the break did not stop the loop: {engine.calls} chunks ran")
+
+    @pytest.mark.parametrize("score", [float("inf"), float("nan")])
+    def test_an_unusable_incumbent_score_is_handed_to_a_human(self, score):
+        """A missing or NaN score must not read as a healthy search.
+
+        ``nan > 1e-3`` is False, so before the finite-score guard existed a
+        NaN fell past the residual-bar branch to a plain CONTINUE -- the one
+        answer that means "nothing is wrong here".
+        """
+        decision = LocalSearchController().decide({
+            "generations_without_improvement": 0,
+            "pareto_frontier_size": 0,
+            "generation": 3,
+            "final_normalized_score": score,
+        })
+        assert decision.action is SearchAction.HUMAN_REVIEW, decision
+        assert "finite" in decision.reason, decision.reason
+
+    def test_every_rung_of_the_ladder_is_reachable(self):
+        """The action set is a claim about the policy; check it is true.
+
+        The old version of this test asserted the opposite -- that
+        STOP_STAGNATION and HUMAN_REVIEW were *never* emitted -- which is the
+        same shape of test pointed at the bug instead of the fix.
+
+        INCREASE_EXPLOITATION is excluded deliberately: no rung of the local
+        ladder produces it, and until one does it is a client-facing value
+        that only ``JevCompatibleBackend`` can emit. Listing it here as
+        expected would be the kind of assertion that passes by accident.
         """
         emitted = set()
-        for stagnation in (0, 2, 9, 100):
-            for frontier in (0, 1, 25, 200):
-                for generation in (0, 1, 5):
-                    decision = LocalSearchController(stagnation_limit=2).decide({
-                        "generations_without_improvement": stagnation,
-                        "pareto_frontier_size": frontier,
-                        "generation": generation,
-                        "final_normalized_score": 1.0,
-                    })
-                    emitted.add(decision.action)
-        assert not (emitted & {SearchAction.STOP_STAGNATION,
-                               SearchAction.HUMAN_REVIEW}), (
-            "the shipped controller now stops; use it in the stop tests above")
+        for limit in (2, 5):
+            for stagnation in (0, 2, 3, 9, 100):
+                for frontier in (0, 1, 25, 200):
+                    for generation in (0, 1, 5):
+                        for score in (1.0, 1e-4, float("inf")):
+                            emitted.add(LocalSearchController(
+                                stagnation_limit=limit).decide({
+                                    "generations_without_improvement": stagnation,
+                                    "pareto_frontier_size": frontier,
+                                    "generation": generation,
+                                    "final_normalized_score": score,
+                                }).action)
+        assert emitted == set(SearchAction) - {
+            SearchAction.INCREASE_EXPLOITATION}, (
+            "emitted", sorted(a.name for a in emitted), "unreached",
+            sorted(a.name for a in set(SearchAction) - emitted))
 
     def test_the_untested_guards_are_named_where_they_can_be_found(self):
         """A guard that silently gains coverage is good; one that silently

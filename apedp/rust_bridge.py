@@ -4,6 +4,14 @@ Provides a unified interface with:
 1. Rust Kernel (`apedp_kernel`) as the primary first-line numerical engine.
 2. Pure Python reference engine as the transparent fallback.
 3. Dual-backend differential cross-validation (`dual_validate=True`).
+
+The kernel is a separate maturin package under `rust/apedp-kernel`, not built
+by the setuptools root `pyproject.toml`, so it is absent unless someone ran
+`maturin develop`. Item 1 is therefore conditional, not assumed: check
+`is_rust_kernel_available()` rather than inferring it. When the module is
+missing the Python reference engine answers every call and the results are
+still correct -- which is exactly why that is easy to miss, so the CI job
+asserts importability instead of trusting a skip.
 """
 from __future__ import annotations
 
