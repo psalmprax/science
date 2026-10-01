@@ -113,3 +113,43 @@ class TestAPEDPStudioAPI:
         for rung in ladder:
             assert rung["passed"] is True
             assert rung["status"] in ("unique_support", "multi_hypothesis", "insufficient_evidence")
+
+    def test_stability_audit_endpoint(self, client):
+        """POST /api/stability/audit returns multi-seed stability matrix."""
+        resp = client.post("/api/stability/audit", json={
+            "problem": "harmonic",
+            "n_seeds": 3,
+            "noise": 0.02,
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["n_seeds"] == 3
+        assert "matrix" in data
+        assert "discovery" in data["matrix"]
+        assert "identification" in data["matrix"]
+        assert data["matrix"]["discovery"]["structural_recurrence"] == 1.0
+
+    def test_trading_np93_benchmark_endpoint(self, client):
+        """GET /api/benchmarks/trading-np93 returns frozen 93-window benchmark."""
+        resp = client.get("/api/benchmarks/trading-np93")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["benchmark"] == "TRADING-NP93"
+        assert data["windows"] == 93
+        assert data["unique"] == 0
+        assert data["multi"] == 93
+        assert data["promotion"] == 0
+        assert data["false_promotion_rate"] == 0.0
+
+    def test_nano_ds10_benchmark_endpoint(self, client):
+        """GET /api/benchmarks/nano-ds10 returns frozen nanoscale stability scorecard."""
+        resp = client.get("/api/benchmarks/nano-ds10")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["benchmark"] == "NANO-DS10"
+        assert data["fit_seeds"] == 10
+        assert data["winner_recurrence"] == {"piecewise_hp_inv": 1.0}
+        assert data["entropy_nats"] == 0.0
+        assert data["k_hp_cv"] == pytest.approx(0.045, abs=0.005)
+        assert data["adjudication_status"] == "multi_hypothesis"
+

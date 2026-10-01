@@ -6,7 +6,7 @@ tags:
 - git
 - hotspot
 created: 2026-09-18
-updated: 2026-09-19
+updated: 2026-10-01
 filenames:
 - apedp/discovery.py
 links: []
@@ -14,7 +14,7 @@ kind: code
 status: proposed
 superseded_by: null
 deprecated_at: null
-review_after: 2026-09-19
+review_after: 2026-10-01
 source_chat_id: null
 created_at: 2026-09-18T19:34:42.574864858+00:00
 summary: null
@@ -35,7 +35,8 @@ last_injected_at: null
 dismissed_count: 0
 source_content_hash: 741d963f86f0237696953f5c93d502a8e99f2f984c00f820d9c1d2eaa5745682
 review_needed: true
-occurrences: 0
+occurrences: 2
+last_observed: 2026-09-29T13:44:21.841131788+00:00
 ---
 
 Git hotspot: apedp/discovery.py

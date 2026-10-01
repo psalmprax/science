@@ -15,23 +15,22 @@ selected from 22 grammar structures, not hand-picked.
 """
 from __future__ import annotations
 
-import sys
-sys.path.insert(0, '.')
-
 import csv
+from pathlib import Path
 
 import numpy as np
 
-from apedp_dyn.epistemic.adjudicate import EpistemicStatus, adjudicate
+from apedp_dyn.epistemic.adjudicate import adjudicate
 from apedp_dyn.epistemic.bootstrap import holdout_se_series
 from apedp_dyn.fitting.parameter_fit import fit_candidate
 from apedp_dyn.grammar.mechanical_grammar import enumerate_candidates, prune_admissible
 from apedp_dyn.problems.finance import spec_from_series
 
 FIN_TERMS = ("one", "x", "x3", "v", "abs_v_v", "sin_x")
+DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "market"
 
 
-def load_sp500(path="/tmp/sp500.csv"):
+def load_sp500(path: str | Path = DATA_DIR / "sp500.csv"):
     dates, px = [], []
     with open(path) as f:
         for row in csv.DictReader(f):

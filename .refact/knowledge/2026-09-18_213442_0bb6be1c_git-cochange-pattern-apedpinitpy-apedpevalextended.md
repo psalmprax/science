@@ -6,7 +6,7 @@ tags:
 - git
 - pattern
 created: 2026-09-18
-updated: 2026-09-19
+updated: 2026-10-01
 filenames:
 - apedp/__init__.py
 - apedp/eval_extended.py
@@ -15,7 +15,7 @@ kind: pattern
 status: proposed
 superseded_by: null
 deprecated_at: null
-review_after: 2026-09-19
+review_after: 2026-10-01
 source_chat_id: null
 created_at: 2026-09-18T19:34:42.465957509+00:00
 summary: null

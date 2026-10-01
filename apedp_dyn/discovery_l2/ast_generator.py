@@ -280,7 +280,7 @@ def _canonical_key_and_validity(node: ASTNode) -> tuple[bool, str]:
         if cancelled.has(sp.sin, sp.cos):
             try:
                 cancelled = sp.trigsimp(cancelled)
-            except Exception:
+            except (TypeError, ValueError, ArithmeticError, sp.SympifyError):
                 pass
         if cancelled.is_number:
             return False, str(cancelled)
@@ -290,6 +290,16 @@ def _canonical_key_and_validity(node: ASTNode) -> tuple[bool, str]:
         return True, str(monic)
     except (TypeError, ValueError, ArithmeticError, sp.SympifyError):
         return True, node.to_str()
+
+
+def _has_transcendental(n: ASTNode) -> bool:
+    if isinstance(n, UnaryOpNode):
+        return True
+    if isinstance(n, BinaryOpNode):
+        return _has_transcendental(n.left) or _has_transcendental(n.right)
+    if isinstance(n, PowNode):
+        return _has_transcendental(n.base)
+    return False
 
 
 def generate_dimensionally_typed_ast(
@@ -338,17 +348,13 @@ def generate_dimensionally_typed_ast(
         # 1. Unary operators (exp, log, sin, cos) on dimensionless nodes
         if unary_candidates:
             for node in current_frontier:
-                if node.dimension.is_dimensionless():
+                if node.dimension.is_dimensionless() and not _has_transcendental(node):
                     for uop in unary_candidates:
-                        if not (
-                            isinstance(node, UnaryOpNode)
-                            and node.op in ("exp", "log", "sin", "cos")
-                        ):
-                            try:
-                                un = UnaryOpNode(uop, node)
-                                try_register(un, next_frontier)
-                            except DimensionalError:
-                                pass
+                        try:
+                            un = UnaryOpNode(uop, node)
+                            try_register(un, next_frontier)
+                        except DimensionalError:
+                            pass
 
         # 2. Pow / Sqrt operator with constant rational exponents
         if "pow" in ops_set or "sqrt" in ops_set:

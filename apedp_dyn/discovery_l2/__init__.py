@@ -26,9 +26,17 @@ from apedp_dyn.discovery_l2.dimensional_types import (
     Dimension,
     DimensionalError,
 )
+from apedp_dyn.discovery_l2.discovery_stability_harness import (
+    StabilityAuditResult,
+    run_discovery_stability_audit,
+)
 from apedp_dyn.discovery_l2.l2_engine import (
     L2DiscoveryEngine,
     L2DiscoveryResult,
+)
+from apedp_dyn.discovery_l2.multiterm_engine import (
+    MultiTermDiscoveryResult,
+    MultiTermL2Engine,
 )
 from apedp_dyn.discovery_l2.ode_engine import (
     L2ODEDiscoveryEngine,
@@ -53,9 +61,12 @@ __all__ = [
     "L2DiscoveryEngine",
     "L2DiscoveryResult",
     "L2ODEDiscoveryEngine",
+    "MultiTermDiscoveryResult",
+    "MultiTermL2Engine",
     "ODEDiscoveryResult",
     "PowNode",
     "ProposedIntervention",
+    "StabilityAuditResult",
     "UnaryOpNode",
     "VariableNode",
     "compute_fisher_information_matrix",
@@ -64,6 +75,7 @@ __all__ = [
     "gate_a_algebraic_validity",
     "gate_b_physical_validity",
     "generate_dimensionally_typed_ast",
+    "run_discovery_stability_audit",
     "select_pareto_candidates",
     "synthesize_discriminating_intervention",
 ]

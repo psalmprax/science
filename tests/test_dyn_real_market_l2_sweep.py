@@ -28,3 +28,19 @@ class TestRealMarketL2Sweep:
         assert rec.epistemic_verdict == "unique_support"
         assert "vol" in rec.discovered_expression
         assert rec.out_of_grammar is False
+
+    def test_multiterm_market_sweep_calm_refuses_spurious_models(self):
+        """MultiTermL2Engine on W2_2019 calm market abstains with INSUFFICIENT_EVIDENCE."""
+        w2 = WINDOWS[1]  # W2_2019
+        rec = execute_window_discovery("sp500", w2, bootstrap=False, multiterm=True)
+        assert rec.window_id == "W2_2019"
+        assert rec.epistemic_verdict == "insufficient_evidence"
+
+    def test_multiterm_market_sweep_covid_promotes_parsimonious(self):
+        """MultiTermL2Engine on W3_COVID selects parsimonious interaction term under Pareto pruning."""
+        w3 = WINDOWS[2]  # W3_COVID
+        rec = execute_window_discovery("nasdaq100", w3, bootstrap=False, multiterm=True)
+        assert rec.window_id == "W3_COVID"
+        assert rec.epistemic_verdict == "unique_support"
+        assert "vol" in rec.discovered_expression
+

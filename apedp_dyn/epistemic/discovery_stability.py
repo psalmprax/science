@@ -14,22 +14,29 @@ this module tells those apart with numbers instead of adjectives.
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+
 
 
 def structural_distribution(structures: list[str]) -> dict[str, float]:
     """Empirical P(structure) over discovery seeds."""
+    from collections import Counter
+
     n = len(structures)
-    out: dict[str, float] = {}
-    for s in structures:
-        out[s] = out.get(s, 0.0) + 1.0 / n
-    return out
+    if n == 0:
+        return {}
+    counts = Counter(structures)
+    return {s: count / n for s, count in counts.items()}
+
 
 
 def structural_entropy(structures: list[str]) -> float:
     """Shannon entropy of the discovery distribution (nats)."""
     dist = structural_distribution(structures)
-    return float(-sum(p * np.log(p) for p in dist.values() if p > 0))
+    val = float(-sum(p * np.log(p) for p in dist.values() if p > 0))
+    return 0.0 if abs(val) < 1e-12 else val
 
 
 def coefficient_cv(values: list[float]) -> float | None:
@@ -69,3 +76,73 @@ def stability_report(structures: list[str],
     if transfer_matrix is not None:
         rep["transfer_variance"] = variance_split(np.asarray(transfer_matrix))
     return rep
+
+
+def compose_identifiability_stability_matrix(
+    search_scope: dict[str, Any],
+    stability_rep: dict[str, Any],
+    adjudication: Any,
+    transfer_scope: Any | None = None,
+) -> dict[str, Any]:
+    """Compose the Identifiability & Discovery Stability Matrix across orthogonal dimensions."""
+    dist = stability_rep.get("distribution", {})
+    max_rec = max(dist.values()) if dist else 1.0
+
+    status = getattr(adjudication.status, "value", str(adjudication.status))
+    promoted = getattr(adjudication, "promoted", None)
+    attribution = str(getattr(adjudication, "epistemic_attribution", "unknown"))
+
+    delta_rmse = getattr(adjudication, "delta_rmse", None)
+    tau_epi = getattr(adjudication, "tau_epi", None)
+
+    # Determine transfer status
+    if transfer_scope is not None:
+        if hasattr(transfer_scope, "status"):
+            t_status = transfer_scope.status
+        elif isinstance(transfer_scope, dict) and "status" in transfer_scope:
+            t_status = transfer_scope["status"]
+        else:
+            t_status = "NOT_ESTABLISHED"
+    else:
+        t_status = "NOT_ESTABLISHED"
+
+    # Secondary diagnoses
+    secondaries: list[str] = []
+    # If entropy is high (> 0.5) or recurrence < 0.7: discovery instability
+    if stability_rep.get("entropy_nats", 0.0) > 0.5 or max_rec < 0.7:
+        secondaries.append("DISCOVERY_INSTABILITY")
+
+    # If parameter CV is high (> 0.3 for any param)
+    param_cvs = stability_rep.get("parameter_cv", {})
+    if any(cv is not None and cv > 0.3 for cv in param_cvs.values()):
+        secondaries.append("PARAMETER_INSTABILITY")
+
+    if t_status == "cross_domain_failed":
+        secondaries.append("CROSS_DOMAIN_TRANSFER_FAILURE")
+
+    return {
+        "search_scope": search_scope,
+        "discovery": {
+            "structural_recurrence": float(max_rec),
+            "structural_entropy": float(stability_rep.get("entropy_nats", 0.0)),
+            "parameter_dispersion": param_cvs,
+            "transfer_variance": stability_rep.get("transfer_variance", {}),
+        },
+        "identification": {
+            "status": status,
+            "rival_margin": delta_rmse,
+            "tau_epi": tau_epi,
+        },
+        "transfer": {
+            "status": t_status,
+        },
+        "promotion": {
+            "status": "PROMOTED" if promoted is not None else "NOT_PROMOTED",
+            "promoted_candidate": getattr(promoted.candidate, "candidate_id", None) if promoted else None,
+        },
+        "diagnosis": {
+            "primary": attribution,
+            "secondary": secondaries,
+        },
+    }
+
