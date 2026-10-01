@@ -315,7 +315,7 @@ def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
                            dimensions={n: Dimension() for n in names},
                            target_dimension=Dimension(), train_ratio=0.6,
                            bootstrap=False, seed=42)
-    except Exception as e:  # noqa: BLE001 -- engine failure must be a 500 with reason, never empty
+    except Exception as e:  # engine failure must be a 500 with reason, never empty
         _audit("discover/registry", {"system": modname, "verdict": "error",
                                      "reason": f"{type(e).__name__}: {e}"})
         raise HTTPException(status_code=500,
