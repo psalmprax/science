@@ -121,11 +121,26 @@ class MarketRequest(BaseModel):
 
 
 @app.get("/", response_class=HTMLResponse)
-def index() -> str:
+def index() -> HTMLResponse:
     """Serve the dark-mode APEDP Visual Studio Dashboard."""
+    headers = {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+    }
     if STATIC_HTML_PATH.exists():
-        return STATIC_HTML_PATH.read_text(encoding="utf-8")
-    return "<h1>APEDP Visual Studio</h1><p>Dashboard HTML not found.</p>"
+        return HTMLResponse(content=STATIC_HTML_PATH.read_text(encoding="utf-8"), headers=headers)
+    return HTMLResponse(content="<h1>APEDP Visual Studio</h1><p>Dashboard HTML not found.</p>", status_code=404, headers=headers)
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> Any:
+    """Serve SVG favicon to eliminate 404 console errors."""
+    from fastapi.responses import Response
+
+    svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><text y="26" font-size="26" fill="#00f0ff">Ψ</text></svg>'
+    return Response(content=svg, media_type="image/svg+xml")
+
 
 
 def _build_id() -> str:
@@ -308,6 +323,20 @@ def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
         t = np.asarray(prob.train["truth_t"], dtype=float)
         names = [s.name for s in prob.states]
         feats = {n: Y[:, i] for i, n in enumerate(names)}
+        # Forced systems must offer the drive as evidence: discovering
+        # acceleration laws without the input series starves the search
+        # of the causing signal (measured 230x RMSE penalty on MSD).
+        for u in prob.inputs:
+            try:
+                feats[u.name] = np.asarray(
+                    [np.atleast_1d(np.asarray(prob.train["u_of_t"](ti), dtype=float))[0]
+                     for ti in t], dtype=float)
+                names = [*names, u.name]
+            except Exception as exc:  # noqa: BLE001 -- broken drive must not hide states
+                import logging
+                logging.getLogger(__name__).debug("skipping drive %s: %s",
+                                                  getattr(u, "name", "?"), exc)
+                continue
         target = np.gradient(Y[:, -1], t)
         eng = L2DiscoveryEngine(operators=("+", "-", "*", "/", "pow"),
                                 max_depth=2, max_complexity=5)
@@ -321,17 +350,88 @@ def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
         raise HTTPException(status_code=500,
                             detail=f"Discovery failed for {modname}: {type(e).__name__}: {e}") from e
     adj = res.adjudication
+    pareto_cands = res.pareto_candidates
+    n = len(t)
+    split_idx = int(n * 0.6)
+
+    # Format Pareto candidates
+    formatted_pareto = []
+    top_cand = adj.promoted if adj.promoted is not None else (pareto_cands[0] if pareto_cands else None)
+    for c in pareto_cands:
+        g4 = c.provenance.get("gate4_status", {})
+        cid = c.candidate.candidate_id
+        is_top = (top_cand is not None and top_cand.candidate.candidate_id == cid)
+        formatted_pareto.append({
+            "id": cid,
+            "complexity": int(c.candidate.metadata.get("complexity", 1)),
+            "rmse": float(c.holdout_rmse) if c.holdout_rmse is not None else None,
+            "r2": float(g4.get("r2", 0.0)) if g4.get("r2") is not None else None,
+            "rho1": float(g4.get("rho1", 1.0)) if g4.get("rho1") is not None else None,
+            "is_white": bool(g4.get("is_white", False)),
+            "is_promoted": bool(is_top and adj.promoted is not None),
+        })
+
+    # Prepare predicted series for the top candidate
+    pred_vals = np.zeros(n)
+    if top_cand is not None and top_cand.fit and top_cand.fit.param_values:
+        ast_node = top_cand.candidate.metadata.get("ast")
+        if ast_node is not None:
+            try:
+                base_v = ast_node.evaluate(feats)
+                coef = top_cand.fit.param_values.get("theta_1", 1.0)
+                pred_vals = np.asarray(coef * base_v, dtype=float)
+                if not np.all(np.isfinite(pred_vals)):
+                    pred_vals = np.zeros(n)
+            except Exception:  # noqa: BLE001 -- fallback to zero prediction on evaluation failure
+                pred_vals = np.zeros(n)
+
     expr = ""
+    last_state = names[-1] if names else "y"
     if adj.promoted is not None:
-        expr = (adj.promoted.provenance.get("canonical_expr")
-                or adj.promoted.candidate.metadata.get("canonical_expr")
-                or adj.promoted.candidate.candidate_id)
-    resp = to_jsonable({"system": modname, "verdict": adj.status.value,
-                        "promoted_equation": expr, "reason": adj.reason,
-                        "data_origin": "simulation"})
+        p_cand = adj.promoted
+        coef = p_cand.fit.param_values.get("theta_1", 1.0) if p_cand.fit else 1.0
+        can_expr = (p_cand.provenance.get("canonical_expr")
+                    or p_cand.candidate.metadata.get("canonical_expr")
+                    or p_cand.candidate.candidate_id)
+        expr = f"d({last_state})/dt = {coef:.4g} * ({can_expr})"
+
+    _pc = adj.promoted
+    _pcg4 = (_pc.provenance.get("gate4_status", {}) if _pc is not None else {})
+    _promoted_record = None
+    if _pc is not None:
+        _promoted_record = {
+            "id": _pc.candidate.candidate_id,
+            "holdout_rmse": (float(_pc.holdout_rmse)
+                             if _pc.holdout_rmse is not None else None),
+            "r2": (float(_pcg4.get("r2")) if _pcg4.get("r2") is not None else None),
+            "residual_rho1": (float(_pcg4.get("rho1"))
+                              if _pcg4.get("rho1") is not None else None),
+            "delta_rmse": (float(adj.delta_rmse)
+                           if adj.delta_rmse is not None else None),
+            "tau_epi": (float(adj.tau_epi)
+                        if adj.tau_epi is not None else None),
+        }
+
+    resp = to_jsonable({
+        "system": modname,
+        "verdict": adj.status.value,
+        "promoted_equation": expr or "No promoted equation (refusal under uncertainty)",
+        "promoted_candidate": _promoted_record,
+        "reason": adj.reason,
+        "tau_epi": float(adj.tau_epi) if adj.tau_epi is not None else 0.05,
+        "pareto_candidates": formatted_pareto,
+        "plot_series": {
+            "t": t,
+            "actual": target,
+            "predicted": pred_vals,
+            "split_index": split_idx,
+        },
+        "data_origin": "simulation",
+    })
     _audit("discover/registry", {"system": modname,
                                  "verdict": resp.get("verdict"),
                                  "promoted_equation": resp.get("promoted_equation"),
+                                 "promoted_id": ((resp.get("promoted_candidate") or {}).get("id")),
                                  "data_origin": "registry-ground-truth"})
     return resp
 
