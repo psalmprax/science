@@ -637,10 +637,11 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
                 "candidates": table, "extra": {},
                 "series": _qec_series()}
     elif req.sandbox_id == "finance_grammar":
-        from apedp_dyn.problems.finance import spec_from_series
-        from apedp_dyn.sandbox.finance_grammar import run_experiment
         import csv as _csv
         from pathlib import Path as _P
+
+        from apedp_dyn.problems.finance import spec_from_series
+        from apedp_dyn.sandbox.finance_grammar import run_experiment
         dates, px = [], []
         with open(str(_P(__file__).resolve().parents[2] / "data" / "market" / "sp500.csv")) as f:
             for row in _csv.DictReader(f):
