@@ -61,9 +61,23 @@ class TestNearOodPromotionIsAPerCallDecision:
             if isinstance(node, ast.Name)
             and node.id == "promote_allowed" and isinstance(node.ctx, ast.Load)
         ]
-        assert len(flag_reads) >= 2, (
-            "promote_allowed is assigned but never read; the parameter is "
-            "accepted and then ignored")
+        # Exactly one read: the tiebreak's ``ood_superior``. Zero is the
+        # failure worth catching -- the parameter would be accepted, documented
+        # and forwarded by the adapter, and then consulted by nothing.
+        #
+        # This assertion was originally written as ``>= 2``, on a guess that
+        # more than one line would consume the flag. There is only one, and the
+        # guess was not caught until a full-suite run a day later: the two
+        # targeted verification runs that day happened to name every test file
+        # except this one, so a permanently-red test was committed. A count
+        # assertion is only as good as the count, and it should be read off the
+        # source rather than estimated.
+        assert len(flag_reads) == 1, (
+            f"promote_allowed is read {len(flag_reads)} times inside "
+            "synthesize(); the parsimony tiebreak must consume it exactly "
+            "once. Zero means the parameter is accepted and then ignored; more "
+            "than one means the flag is being consulted somewhere other than "
+            "the documented parsimony decision")
 
     def test_the_parameter_defaults_to_deferring_to_the_engine_constant(self):
         import inspect
