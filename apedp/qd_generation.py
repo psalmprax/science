@@ -168,7 +168,15 @@ def admissibility(expr_str: str) -> dict:
         for monom, coeff in poly.as_dict().items():
             if monom[0] == -1 and float(coeff) > 0:
                 symptoms.append(f"positive 1/R coefficient {float(coeff):.4f}")
-    except (TypeError, ValueError, ArithmeticError, KeyError, AttributeError) as exc:
+    except (TypeError, ValueError, ArithmeticError, KeyError, AttributeError,
+            sp.PolynomialError) as exc:
+        # sp.PolynomialError descends from plain Exception, not from any of
+        # the builtins above, so it escaped this guard and propagated out of
+        # admissibility(). That matters because the very priors this module
+        # builds are non-polynomial: ambiguity_prior_templates emits inv_R and
+        # inv_R**2, and "1/R" is not a polynomial in R, so sp.Poly raises on
+        # the module's own intended input. An info-only diagnostic must never
+        # be the thing that fails the run.
         logger.debug("Coulomb-sign inspection skipped for %r: %s", expr_str, exc)
     checks["coulomb_sign_notes"] = symptoms
     checks["status"] = ("PASS" if checks["positive"] and checks["monotone_decreasing"]

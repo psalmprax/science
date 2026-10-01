@@ -4,13 +4,18 @@
 # The 7 apedp block files and the blind report were untracked until now, so the
 # freeze existed only as a list in /tmp and did not survive the machine. These
 # hashes pin the round; apedp_blind_report_REGENERATED.json is the re-score of the
-# same record and differs only in family_accuracy (0.8929 -> 0.9107) plus the
+# same record. It is a DERIVED artifact: it is re-scored from the frozen block
+# files by regenerate_blind_report.py, so its hash moves whenever the
+# evaluator legitimately gains a field -- it did at 0.8929 -> 0.9107 -> and
+# again when far_ood_cv / epistemic_calibration were added. Only the 19 record
+# files below the derived report are the freeze proper; a mismatch on THIS line
+# alone means the evaluator changed, not that the round was tampered with.
 # added NRMSE fields.
 0d254aa7f9718c7975ad9cd094b943ce0368e4a0f2b391b2460efa2533f13fa0  tournament_results_external_60/aifeynman_full_60.json
 8fc6cc53a595a906c55b8a023f97e5093fde057d5ebec9c831b10bd955fe3201  tournament_results_external_60/aifeynman_N.json
 68f10cfd9fcef3a04d74439656da902926d6a8c3e7652e3be375e395315cd539  tournament_results_external_60/apedp_A.json
 1c52465ea00bf3a9b372ba51a46af4922bdf874f3faace570093a0af7b2591fb  tournament_results_external_60/apedp_blind_report_INTERNAL.json
-0e6cf0afe4f8b8fb961767550c7b0d23dfa8f596c0248458d49082d9b1a6d640  tournament_results_external_60/apedp_blind_report_REGENERATED.json
+f84197af405b2476292ebb9a16d67aad29712cee20517252cb6a73705983e1c6  tournament_results_external_60/apedp_blind_report_REGENERATED.json
 b40f188f59026e03dfc60c56cdf5bc5d5f612334833185df4e04e9e218753e2b  tournament_results_external_60/apedp_C.json
 36e786fb8de4920e68f6584c5bc85acc5fb1104599b3f98bbfbaee1edb064ea6  tournament_results_external_60/apedp_E.json
 50ae9f1b443c225b540b6cddb60887f7890525c8c35243151ba83b0d2c3a6922  tournament_results_external_60/apedp_N_candidates.json

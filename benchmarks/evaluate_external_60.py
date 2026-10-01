@@ -164,6 +164,15 @@ def score_one(problem_id: str, result: dict[str, Any], truth: dict[str, Any],
     meta = result.get("metadata", {}) or {}
     out["proof_tier"] = meta.get("proof_claim", meta.get("proof_tier", None))
     out["epistemic_state"] = meta.get("epistemic_state", None)
+    # Why the engine declined, carried through from the runner's
+    # ``abstain_reason``. This used to be dropped on the floor, so the report
+    # could not tell "declined for lack of evidence" apart from "declined and
+    # nobody recorded why" -- and on a report whose whole purpose is honest
+    # accounting, those two are the same claim as far as a reader is concerned.
+    # SynthesizedModel.abstention_reason carries the same contract upstream:
+    # None means the model was NOT withheld, so a non-abstained record
+    # deliberately reports None here rather than a placeholder string.
+    out["abstention_reason"] = (result.get("abstain_reason") or None) if abstained else None
 
     if abstained:
         out["abstention_correct"] = oracle in (EXPECTED_ABSTAIN, EXPECTED_AMBIGUOUS)
@@ -185,6 +194,84 @@ def score_one(problem_id: str, result: dict[str, Any], truth: dict[str, Any],
         oracle in (EXPECTED_ABSTAIN, EXPECTED_AMBIGUOUS) and epi == "UNIQUE_SUPPORT"
     )
     return out
+
+
+def _wilson_interval(successes: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    """Wilson score interval for a binomial proportion.
+
+    Preferred over the normal approximation because the interesting buckets
+    here are tiny: at n=4 with 4 successes, a normal interval would claim
+    [0.51, 1.49] and clamp it to a point estimate of 100% with no visible
+    uncertainty at all. Wilson stays inside [0, 1] and keeps the width visible,
+    which is the entire point of attaching an interval to a 4-sample bucket.
+    """
+    if n <= 0:
+        return (0.0, 0.0)
+    p = successes / n
+    denom = 1.0 + z * z / n
+    centre = (p + z * z / (2 * n)) / denom
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
+    return (max(0.0, centre - half), min(1.0, centre + half))
+
+
+def epistemic_calibration(scored: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    """Family accuracy per epistemic state, with intervals and an overlap flag.
+
+    This exists because the state tally reads like a verdict and is not one.
+    On EXT-BENCH-60 the confident bucket (UNIQUE_SUPPORT) holds 4 of 56
+    attempts, so its accuracy carries an interval roughly [0.5, 1.0] -- wide
+    enough to sit entirely inside the cautious bucket's. Reporting the two
+    rates side by side without that would invite reading "confident is 100%
+    accurate" off a four-sample bucket, and would equally invite reading a
+    real effect out of the fact that the confident bucket contains the round's
+    single false discovery.
+
+    ``intervals_overlap`` is the honest summary and is reported explicitly
+    rather than left for the reader to work out: when it is true, the round
+    does not measure whether the state predicts correctness. It does not mean
+    the states are equivalent -- it means this corpus cannot tell.
+    """
+    buckets: dict[str, dict[str, Any]] = {}
+    for record in scored.values():
+        if record.get("abstained"):
+            continue
+        state = str(record.get("epistemic_state") or "UNSTATED")
+        bucket = buckets.setdefault(state, {"n": 0, "family_right": 0,
+                                            "false_discoveries": 0})
+        bucket["n"] += 1
+        if record.get("family_match") is True:
+            bucket["family_right"] += 1
+        if record.get("false_discovery"):
+            bucket["false_discoveries"] += 1
+
+    for bucket in buckets.values():
+        n, right = bucket["n"], bucket["family_right"]
+        lo, hi = _wilson_interval(right, n)
+        bucket["family_accuracy"] = (right / n) if n else None
+        bucket["family_accuracy_ci95"] = [lo, hi]
+        # An explicit sample-size warning: a rate read off a handful of cases
+        # should not be quoted without its n, so n travels with the rate.
+        bucket["too_small_to_rank"] = n < 10
+
+    overlap = None
+    rates = [b for b in buckets.values() if b["n"] > 0]
+    if len(rates) >= 2:
+        overlap = all(
+            not (a["family_accuracy_ci95"][1] < b["family_accuracy_ci95"][0]
+                 or b["family_accuracy_ci95"][1] < a["family_accuracy_ci95"][0])
+            for i, a in enumerate(rates) for b in rates[i + 1:]
+        )
+    return {
+        "by_state": buckets,
+        "intervals_overlap": overlap,
+        "verdict": (
+            "not measurable on this corpus -- the per-state intervals overlap, "
+            "so no ordering of states by accuracy is supported"
+            if overlap else
+            ("single state present; nothing to compare" if not overlap and len(rates) < 2
+             else "intervals are disjoint; the ordering is supported by this corpus")
+        ),
+    }
 
 
 def evaluate_round(corpus_root: str | Path, results_by_competitor: dict[str, list[dict]],
@@ -237,6 +324,10 @@ def evaluate_round(corpus_root: str | Path, results_by_competitor: dict[str, lis
                 1 for s in scored.values()
                 if isinstance(s.get("wall_seconds"), (int, float)) and s["wall_seconds"] > 600
             ),
+            # Whether the epistemic state predicts anything, stated with the
+            # uncertainty attached instead of left to a reader who will not
+            # compute it. See epistemic_calibration.
+            "epistemic_calibration": epistemic_calibration(scored),
         }
     summary["wilcoxon_val_mse"] = _paired_wilcoxon(per_competitor)
     return {"per_competitor": summary,
@@ -352,6 +443,18 @@ def _self_test() -> None:
         # family and still counts as a false discovery: UNIQUE_SUPPORT on an
         # AMBIGUOUS oracle. Matching the family does not excuse the claim.
         assert rep["detail"]["demo"]["F03"]["family_match"] is True, rep
+        # The report must preserve WHY an abstention happened. The fixture
+        # writes abstain_reason="sparse"; score_one used to discard it, so
+        # every abstention in the report read the same whether or not the
+        # engine had an actual reason. Asserted directly so a future rename on
+        # either side fails here instead of quietly flattening every
+        # abstention in the corpus to the same unexplained blank.
+        assert rep["detail"]["demo"]["F02"]["abstention_reason"] == "sparse", rep        # Non-abstained records report None, not a placeholder: "not withheld"
+        # and "withheld for an unknown reason" must stay distinguishable.
+        for pid in ("F01", "F03"):
+            assert rep["detail"]["demo"][pid]["abstention_reason"] is None, (
+                f"{pid} did not abstain but carries an abstention reason"
+            )
         assert s["n_attempted"] == 2 and s["n_abstained"] == 1, s
         assert s["false_discoveries"] == 1, s
         assert s["abstention_precision"] == 1.0, s
@@ -370,6 +473,54 @@ def _self_test() -> None:
                                  "median_far_ood_nrmse", "far_ood_worse_than_mean")})
 
     _nrmse_unit_checks()
+    _calibration_unit_checks()
+
+
+def _calibration_unit_checks() -> None:
+    """The calibration block must refuse to over-read a small bucket."""
+    # Uses the module's own globals rather than re-importing by package path:
+    # importing "benchmarks.evaluate_external_60" from inside the same module
+    # makes mypy see the file under two module names and refuse to check it.
+    _wilson_interval, epistemic_calibration = (
+        globals()["_wilson_interval"], globals()["epistemic_calibration"])
+
+    # Wilson stays inside [0,1] where the normal approximation would not: at
+    # n=4 with 4 successes the normal interval reaches 1.49 before clamping.
+    lo, hi = _wilson_interval(4, 4)
+    assert 0.0 <= lo < 1.0 and hi <= 1.0, (lo, hi)
+    assert hi - lo > 0.4, (lo, hi)  # uncertainty must stay visible
+    assert _wilson_interval(0, 0) == (0.0, 0.0)
+
+    def rec(state, match, false=False, abstained=False):
+        return {"abstained": abstained, "epistemic_state": state,
+                "family_match": match, "false_discovery": false}
+
+    # Two tiny buckets, both perfect-looking, different sizes: the intervals
+    # must overlap, so the verdict must say "not measurable" rather than
+    # promoting the smaller or the larger.
+    out = epistemic_calibration({
+        "a": rec("UNIQUE_SUPPORT", True), "b": rec("UNIQUE_SUPPORT", True),
+        "c": rec("MULTI_HYPOTHESIS", True), "d": rec("MULTI_HYPOTHESIS", False),
+    })
+    assert out["intervals_overlap"] is True, out
+    assert "not measurable" in out["verdict"], out["verdict"]
+    assert out["by_state"]["UNIQUE_SUPPORT"]["n"] == 2, out
+    assert out["by_state"]["UNIQUE_SUPPORT"]["too_small_to_rank"] is True, out
+
+    # A large, cleanly separated bucket is reportable. 100 vs 25 over 20 and
+    # 20 cases is far enough apart that the intervals do not touch.
+    big = {f"u{i}": rec("UNIQUE_SUPPORT", True) for i in range(20)}
+    big.update({f"m{i}": rec("MULTI_HYPOTHESIS", i >= 15) for i in range(20)})
+    out2 = epistemic_calibration(big)
+    assert out2["intervals_overlap"] is False, out2
+    assert out2["by_state"]["UNIQUE_SUPPORT"]["too_small_to_rank"] is False, out2
+
+    # Abstentions are excluded: they have no family verdict to score, and
+    # counting them as wrong would penalize the engine for declining.
+    out3 = epistemic_calibration({"a": rec("MULTI_HYPOTHESIS", True),
+                                  "b": rec("MULTI_HYPOTHESIS", None, abstained=True)})
+    assert out3["by_state"]["MULTI_HYPOTHESIS"]["n"] == 1, out3
+    print("epistemic_calibration unit checks OK")
 
 
 def _nrmse_unit_checks() -> None:
