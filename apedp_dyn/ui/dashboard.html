@@ -1340,6 +1340,8 @@
       if (inp) inp.value = localStorage.getItem('apedp_api_key') || '';
     });
     window.addEventListener('DOMContentLoaded', () => {
+      loadPhysicsCatalog();
+      loadMarketWindows();
       executePhysicsDiscovery();
     });
   </script>
