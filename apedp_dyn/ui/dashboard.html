@@ -858,6 +858,14 @@
       if (sel.options.length) return;
       try {
         const resp = await fetch('/api/sandbox/list', {headers: apiHeaders()});
+        if (resp.status === 404) {
+          const sel0 = document.getElementById('sandbox-select');
+          sel0.innerHTML = '';
+          const o = document.createElement('option');
+          o.textContent = 'server too old — restart uvicorn';
+          sel0.appendChild(o);
+          return;
+        }
         const items = await resp.json();
         for (const it of items) {
           const o = document.createElement('option');
@@ -925,6 +933,10 @@
       grid.innerHTML = '<div class="text-slate-500">loading…</div>';
       try {
         const resp = await fetch('/api/audit/recent?limit=50', {headers: apiHeaders()});
+        if (resp.status === 404) {
+          grid.innerHTML = '<div class="text-amber-400">server too old for audit endpoint — restart uvicorn</div>';
+          return;
+        }
         if (resp.status === 401) { grid.innerHTML = '<div class="text-amber-400">unauthorized: set API key</div>'; return; }
         const rows = await resp.json();
         if (!rows.length) { grid.innerHTML = '<div class="text-slate-500">no audited calls yet</div>'; return; }

@@ -122,11 +122,29 @@ def index() -> str:
     return "<h1>APEDP Visual Studio</h1><p>Dashboard HTML not found.</p>"
 
 
+def _build_id() -> str:
+    """Short git sha of the serving tree, else 'unknown' (stale-server detector)."""
+    try:
+        import shutil
+        import subprocess
+        git = shutil.which("git")
+        if git is None:
+            return "unknown"
+        out = subprocess.run([git, "rev-parse", "--short", "HEAD"],
+                             capture_output=True, text=True, timeout=5,
+                             cwd=str(Path(__file__).resolve().parents[2]))
+        return out.stdout.strip() or "unknown"
+    except Exception:  # noqa: BLE001 -- any failure means unknown, not fatal
+        return "unknown"
+
+
 @app.get("/api/status", dependencies=[Depends(_require_api_key)])
 def status() -> dict[str, Any]:
     """Return backend status, benchmark catalog, and available market windows."""
     return {
         "status": "online",
+        "build": _build_id(),
+        "api_endpoints": sorted({r.path for r in app.routes if hasattr(r, "path")}),
         "benchmark_level": "L2_OPEN_DISCOVERY",
         "engines": [
             "L2DiscoveryEngine",
