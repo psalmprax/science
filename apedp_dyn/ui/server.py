@@ -493,7 +493,6 @@ def _game_series():
             "x_label": "PD cooperator fraction from x0=0.5"}
 
 def _qec_series():
-    import numpy as _np
     from apedp_dyn.sandbox.qec_threshold import generate_qec_threshold_data
     p_, o_ = generate_qec_threshold_data(seed=42)[:2]
     return {"x": [float(v) for v in p_], "actual": [float(v) for v in o_],
