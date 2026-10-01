@@ -378,7 +378,7 @@ class RedisPipelineJobManager:
                 except KeyError:
                     return
 
-        thread = threading.Thread(target=heartbeat, daemon=True)
+        thread: threading.Thread | None = None
         try:
             if record.get("cancel_requested"):
                 self._update(job_id, status="CANCELLED", progress="cancelled before start", finished_at=_now())
@@ -386,6 +386,7 @@ class RedisPipelineJobManager:
             attempt = int(record.get("attempt", 0)) + 1
             self._update(job_id, status="RUNNING", progress="ingesting and discovering", attempt=attempt,
                          lease_owner=self.worker_id, heartbeat_at=_now(), error=None)
+            thread = threading.Thread(target=heartbeat, daemon=True)
             thread.start()
             parameters = dict(record["parameters"])
             pipeline = DiscoveryPipeline(
@@ -411,7 +412,20 @@ class RedisPipelineJobManager:
                              error=f"{type(exc).__name__}: {exc}", finished_at=_now())
         finally:
             heartbeat_stop.set()
-            thread.join(timeout=1.0)
+            # Joined only when it was actually started.
+            #
+            # The thread used to be constructed before the ``try``, so a job
+            # cancelled before it started reached this ``finally`` with an
+            # unstarted thread and ``join`` raised RuntimeError -- which is not
+            # caught here, so it propagated out of ``_run_one`` into
+            # ``run_worker``'s loop and killed the worker process. Worse, the
+            # lease release below the join never ran, so the job stayed locked
+            # for a full lease period. PipelineJobManager._execute already
+            # guards this with an ``is not None`` check on a thread it assigns
+            # later; this now does the same rather than relying on a Thread
+            # object that exists but was never run.
+            if thread is not None:
+                thread.join(timeout=1.0)
             release_script = (
                 "if redis.call('get', KEYS[1]) == ARGV[1] then "
                 "return redis.call('del', KEYS[1]) else return 0 end"
