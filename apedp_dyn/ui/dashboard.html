@@ -117,6 +117,9 @@
         <button id="tab-audit-btn" role="tab" aria-selected="false" aria-controls="tab-audit" onclick="switchTab('audit')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
           📜 Audit Log
         </button>
+        <button id="tab-sandbox-btn" role="tab" aria-selected="false" aria-controls="tab-sandbox" onclick="switchTab('sandbox')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
+          🧪 Sandbox
+        </button>
       </nav>
 
       <!-- System Status Indicators -->
@@ -455,6 +458,38 @@
     </div>
 
     <!-- ============================================================== -->
+    <!-- TAB: SANDBOX GALLERY (domain benchmarks)                        -->
+    <!-- ============================================================== -->
+    <div id="tab-sandbox" role="tabpanel" class="hidden space-y-6">
+      <div class="bg-[#0e1526] rounded-xl border border-[#1b2640] p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between border-b border-[#1b2640] pb-3 flex-wrap gap-2">
+          <div>
+            <h2 class="text-sm font-mono font-bold text-white flex items-center space-x-2">
+              <span class="text-cyan-400">04 //</span> <span>SANDBOX GALLERY</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Run domain benchmarks end to end: verdict, candidate table, observations.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="sandbox-select" aria-label="Sandbox benchmark" class="bg-[#070b13] border border-[#1b2640] rounded px-2 py-1.5 text-xs font-mono text-slate-200"></select>
+            <button onclick="runSandbox()" class="px-3 py-1.5 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 rounded font-mono text-xs border border-cyan-500/40 transition">
+              ▶ Run
+            </button>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 font-mono text-xs">
+          <span id="sandbox-verdict-badge" class="px-3 py-1 rounded-md font-bold bg-slate-500/10 border border-slate-500/40 text-slate-300">—</span>
+          <span id="sandbox-promoted" class="text-cyan-300"></span>
+          <span id="sandbox-origin" class="text-slate-500"></span>
+        </div>
+        <div id="sandbox-reason" class="bg-[#070b13]/60 p-3 rounded-lg border border-[#1b2640] text-xs font-mono text-slate-300"></div>
+        <div class="bg-[#070b13] rounded-lg border border-[#1b2640] p-3">
+          <div id="plot-sandbox" class="w-full h-64"></div>
+        </div>
+        <div id="sandbox-table" class="font-mono text-xs space-y-1"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
     <!-- TAB 4: AUDIT LOG (accountability surface)                       -->
     <!-- ============================================================== -->
     <div id="tab-audit" role="tabpanel" class="hidden space-y-6">
@@ -479,7 +514,7 @@
   <!-- Script Logic -->
   <script>
     function switchTab(tabId) {
-      for (const t of ['physics', 'market', 'ladder', 'audit']) {
+      for (const t of ['physics', 'market', 'ladder', 'audit', 'sandbox']) {
         document.getElementById('tab-' + t).classList.add('hidden');
         document.getElementById('tab-' + t + '-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition";
         document.getElementById('tab-' + t + '-btn').setAttribute('aria-selected', 'false');
@@ -497,6 +532,10 @@
         document.getElementById('tab-ladder').classList.remove('hidden');
         document.getElementById('tab-ladder-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/40 transition";
         loadLadder();
+      } else if (tabId === 'sandbox') {
+        document.getElementById('tab-sandbox').classList.remove('hidden');
+        document.getElementById('tab-sandbox-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 transition";
+        loadSandboxCatalog();
       } else if (tabId === 'audit') {
         document.getElementById('tab-audit').classList.remove('hidden');
         document.getElementById('tab-audit-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 transition";
@@ -814,6 +853,58 @@
     }
 
     // Auto-execute on load
+    async function loadSandboxCatalog() {
+      const sel = document.getElementById('sandbox-select');
+      if (sel.options.length) return;
+      try {
+        const resp = await fetch('/api/sandbox/list', {headers: apiHeaders()});
+        const items = await resp.json();
+        for (const it of items) {
+          const o = document.createElement('option');
+          o.value = it.id;
+          o.textContent = it.name;
+          sel.appendChild(o);
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    async function runSandbox() {
+      const id = document.getElementById('sandbox-select').value;
+      if (!id) return;
+      const badge = document.getElementById('sandbox-verdict-badge');
+      badge.innerText = 'RUNNING…';
+      try {
+        const resp = await fetch('/api/sandbox/run', {
+          method: 'POST', headers: apiHeaders(),
+          body: JSON.stringify({sandbox_id: id}),
+        });
+        const data = await resp.json();
+        badge.innerText = (data.verdict || 'unknown').toUpperCase();
+        document.getElementById('sandbox-promoted').innerText =
+          data.promoted ? ('promoted: ' + data.promoted) : 'promoted: none (abstention)';
+        document.getElementById('sandbox-origin').innerText =
+          'origin=' + (data.data_origin || 'unknown');
+        document.getElementById('sandbox-reason').innerText = data.reason || '';
+        document.getElementById('sandbox-table').innerHTML = (data.candidates || []).map(c =>
+          `<div class="flex justify-between border-b border-[#1b2640] py-1"><span class="text-slate-300">${c.id}</span><span class="text-slate-400">RMSE ${Number(c.rmse).toPrecision(4)}</span></div>`).join('');
+        if (data.series && typeof Plotly !== 'undefined') {
+          const tr = {x: data.series.x, y: data.series.actual, mode: 'lines+markers',
+                      marker: {size: 3}, line: {color: '#22d3ee', width: 1.5}, name: 'observations'};
+          const traces = [tr];
+          if (data.series.threshold != null) {
+            traces.push({x: [data.series.threshold, data.series.threshold], y: [Math.min(...data.series.actual), Math.max(...data.series.actual)],
+                         mode: 'lines', line: {color: '#f59e0b', dash: 'dash'}, name: 'threshold'});
+          }
+          Plotly.newPlot('plot-sandbox', traces, {paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+            margin: {l: 50, r: 20, t: 10, b: 40}, font: {family: 'JetBrains Mono, monospace', color: '#94a3b8', size: 10},
+            xaxis: {title: data.series.x_label || 'x'}, yaxis: {title: 'observed'}});
+        }
+      } catch (err) {
+        badge.innerText = 'ERROR';
+        console.error(err);
+      }
+    }
+
     async function loadAudit() {
       const grid = document.getElementById('audit-grid');
       grid.innerHTML = '<div class="text-slate-500">loading…</div>';

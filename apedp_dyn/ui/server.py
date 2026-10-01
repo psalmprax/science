@@ -430,6 +430,94 @@ def discover_market(req: MarketRequest) -> dict[str, Any]:
     return resp
 
 
+class SandboxRequest(BaseModel):
+    sandbox_id: str = "nano_m4"
+
+
+SANDBOX_CATALOG = [
+    {"id": "nano_m4", "name": "Nanoscale crossover M4 (materials)",
+     "desc": "Classical Hall-Petch vs inverse softening; threshold at 15nm"},
+    {"id": "sir_break", "name": "SIR vaccination break (epidemiology)",
+     "desc": "Mass-action vs rivals across a 70% transmission cut"},
+    {"id": "quantum_quench", "name": "String-breaking quench (quantum)",
+     "desc": "Decay vs oscillation vs ballistic regimes by string tension"},
+]
+
+
+@app.get("/api/sandbox/list", dependencies=[Depends(_require_api_key)])
+def sandbox_list() -> list[dict[str, Any]]:
+    """Sandbox registry: what's runnable through /api/sandbox/run."""
+    return SANDBOX_CATALOG
+
+
+@app.post("/api/sandbox/run", dependencies=[Depends(_require_api_key)])
+def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
+    """Run a registered sandbox end-to-end; audited like discovery calls."""
+    if req.sandbox_id == "nano_m4":
+        from apedp_dyn.sandbox.nano_crossover_m4 import (
+            generate_m4_data,
+            run_m4_nano_benchmark,
+        )
+        adj, scored, info = run_m4_nano_benchmark(noise_sigma=0.02)
+        d, obs = generate_m4_data(n_points=60, noise_sigma=0.02, seed=42)
+        table = [{"id": c.candidate.candidate_id, "rmse": float(c.holdout_rmse)}
+                 for c in sorted(scored, key=lambda c: c.holdout_rmse or 1e18)]
+        resp = {"sandbox_id": "nano_m4", "verdict": adj.status.value,
+                "promoted": (adj.promoted.candidate.candidate_id
+                             if adj.promoted else None),
+                "reason": adj.reason,
+                "data_origin": str(getattr(adj, "data_origin", "simulation")),
+                "candidates": table,
+                "extra": {"dc_hat_nm": info["dc_hat_nm"],
+                          "dc_true_nm": info["dc_true_nm"]},
+                "series": {"x": d.tolist(), "actual": obs.tolist(),
+                           "x_label": "grain size d (nm, log scale)",
+                           "threshold": info["dc_hat_nm"]}}
+    elif req.sandbox_id == "sir_break":
+        from apedp_dyn.sandbox.epidemiology_sir import run_sir_forms, simulate_sir
+        adj, scored = run_sir_forms(noise=0.02, seed=42)
+        t, S, I, inc = simulate_sir(noise=0.02, seed=42)
+        table = [{"id": c.candidate.candidate_id, "rmse": float(c.holdout_rmse)}
+                 for c in sorted(scored, key=lambda c: c.holdout_rmse)]
+        resp = {"sandbox_id": "sir_break", "verdict": adj.status.value,
+                "promoted": (adj.promoted.candidate.candidate_id
+                             if adj.promoted else None),
+                "reason": adj.reason,
+                "data_origin": str(getattr(adj, "data_origin", "simulation")),
+                "candidates": table, "extra": {"t_vax": 60.0},
+                "series": {"x": t.tolist(), "actual": inc.tolist(),
+                           "x_label": "days (vaccination at t=60)",
+                           "threshold": 60.0}}
+    elif req.sandbox_id == "quantum_quench":
+        from apedp_dyn.sandbox.quantum_vacuum_sandbox import (
+            QuantumVacuumConfig,
+            run_quench_dynamics_discovery,
+        )
+        cfg = QuantumVacuumConfig()
+        adj, times, p_obs = run_quench_dynamics_discovery(cfg, bootstrap=True)
+        resp = {"sandbox_id": "quantum_quench",
+                "verdict": adj.status.value,
+                "promoted": (adj.promoted.candidate.candidate_id
+                             if adj.promoted else None),
+                "reason": adj.reason,
+                "data_origin": str(getattr(adj, "data_origin", "simulation")),
+                "candidates": [],
+                "extra": {"tension_hz": cfg.string_tension_hz,
+                          "critical_field": cfg.critical_field_Ec},
+                "series": {"x": np.asarray(times).tolist(),
+                           "actual": np.asarray(p_obs).tolist(),
+                           "x_label": "time"}}
+    else:
+        raise HTTPException(status_code=404,
+                            detail=f"Unknown sandbox {req.sandbox_id}.")
+    resp = to_jsonable(resp)
+    _audit("sandbox/run", {"sandbox_id": resp.get("sandbox_id"),
+                           "verdict": resp.get("verdict"),
+                           "promoted_equation": resp.get("promoted"),
+                           "data_origin": resp.get("data_origin")})
+    return resp
+
+
 @app.get("/api/audit/recent", dependencies=[Depends(_require_api_key)])
 def audit_recent(limit: int = 50) -> list[dict[str, Any]]:
     """Return the most recent audit records (accountability surface).
