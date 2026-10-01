@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APEDP Dyn // Autonomous Epistemic Discovery Studio</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#070b13',
+              card: '#0e1526',
+              border: '#1b2640',
+              accent: '#00f0ff',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              ruby: '#ef4444',
+            }
+          },
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace', 'ui-monospace'],
+            sans: ['"Inter"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Plotly.js CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <!-- KaTeX CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <style>
+    body {
+      background-color: #070b13;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .glow-emerald {
+      box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.4);
+    }
+    .glow-amber {
+      box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.4);
+    }
+    .glow-ruby {
+      box-shadow: 0 0 25px -5px rgba(239, 68, 68, 0.4);
+    }
+    .glow-accent {
+      box-shadow: 0 0 20px -5px rgba(0, 240, 255, 0.3);
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #070b13;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+
+  <!-- Compliance banner: research tool, not financial advice.
+       Wording here is a placeholder and MUST be reviewed by counsel
+       before any public or commercial deployment. -->
+  <div class="bg-amber-500/10 border-b border-amber-500/30 text-amber-200 text-xs sm:text-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+      <strong>Research tool — not financial advice.</strong>
+      Outputs are epistemic model evaluations for research purposes only;
+      they are not recommendations to buy, sell, or hold any security.
+    </div>
+  </div>
+
+  <!-- Top Navigation Header -->
+  <header class="border-b border-[#1b2640] bg-[#090e1a]/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-mono font-bold text-lg">
+          Ψ
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-mono font-bold tracking-wider text-white text-base">APEDP<span class="text-cyan-400">_DYN</span></span>
+            <span class="px-2 py-0.5 text-xs font-mono rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">v2.0 L2_OPEN</span>
+          </div>
+          <p class="text-xs text-slate-400">Autonomous Epistemic Discovery & Adjudication Studio</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex space-x-1 bg-[#0e1628] p-1 rounded-lg border border-[#1b2640]">
+        <button id="tab-physics-btn" onclick="switchTab('physics')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 transition">
+          ⚛️ Physics Lab
+        </button>
+        <button id="tab-market-btn" onclick="switchTab('market')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
+          📈 Real Market Sweeps
+        </button>
+        <button id="tab-ladder-btn" onclick="switchTab('ladder')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
+          🪜 Certainty Ladder
+        </button>
+      </nav>
+
+      <!-- System Status Indicators -->
+      <div class="hidden sm:flex items-center space-x-3 text-xs font-mono">
+        <div class="flex items-center space-x-1.5 text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>SOVEREIGN ADJUDICATOR</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: PHYSICS LABORATORY                                       -->
+    <!-- ============================================================== -->
+    <div id="tab-physics" class="space-y-6">
+      
+      <!-- Top Grid: Controls + Adjudication Court -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Controls Column (4 cols) -->
+        <div class="lg:col-span-4 bg-[#0e1526] rounded-xl border border-[#1b2640] p-5 shadow-xl space-y-5">
+          <div class="flex items-center justify-between border-b border-[#1b2640] pb-3">
+            <h2 class="text-sm font-mono font-bold text-white flex items-center space-x-2">
+              <span class="text-cyan-400">01 //</span> <span>EXPERIMENT SETUP</span>
+            </h2>
+            <span class="text-xs font-mono text-slate-400">UNCONSTRAINED AST</span>
+          </div>
+
+          <!-- Physical System Selection -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-mono text-slate-300">Target Physical System</label>
+            <select id="phys-system-select" onchange="onSystemChange()" class="w-full bg-[#070b13] border border-[#1b2640] rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
+              <option value="pendulum">Nonlinear Pendulum [θ̈ = -(g/L)sin(θ)]</option>
+              <option value="duffing">Duffing Oscillator [ẍ = -αx - δv - βx³]</option>
+              <option value="harmonic">Damped Harmonic Oscillator [ẍ = -kx - cv]</option>
+              <option value="kinetic">Kinetic Energy Law [E = 0.5·m·v²]</option>
+            </select>
+          </div>
+
+          <!-- Pendulum Amplitude Slider (Crucial for Epistemic Demonstration) -->
+          <div id="pendulum-amplitude-container" class="space-y-2 bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+            <div class="flex justify-between items-center text-xs font-mono">
+              <span class="text-slate-300">Initial Angle θ₀</span>
+              <span id="theta0-val" class="text-cyan-400 font-bold">1.80 rad (103°)</span>
+            </div>
+            <input type="range" id="theta0-slider" min="0.2" max="2.4" step="0.1" value="1.8" oninput="updateThetaSlider(this.value)" class="w-full accent-cyan-400 bg-slate-800 cursor-pointer">
+            <div class="flex justify-between text-[10px] font-mono text-slate-400">
+              <span class="text-amber-400">Quasi-Linear (MULTI)</span>
+              <span class="text-emerald-400">Nonlinear (UNIQUE)</span>
+            </div>
+          </div>
+
+          <!-- Noise Injection Slider -->
+          <div class="space-y-2 bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+            <div class="flex justify-between items-center text-xs font-mono">
+              <span class="text-slate-300">Observational Noise</span>
+              <span id="noise-val" class="text-cyan-400 font-bold">1.0%</span>
+            </div>
+            <input type="range" id="noise-slider" min="0.0" max="0.05" step="0.005" value="0.01" oninput="document.getElementById('noise-val').innerText = (this.value * 100).toFixed(1) + '%'" class="w-full accent-cyan-400 bg-slate-800 cursor-pointer">
+          </div>
+
+          <!-- Multi-Term Superposition Toggle -->
+          <div class="flex items-center justify-between p-3 bg-[#070b13] rounded-lg border border-[#1b2640]">
+            <div>
+              <div class="text-xs font-mono font-medium text-white">Multi-Term Superposition</div>
+              <div class="text-[10px] text-slate-400">FIM Condition Gate (κ ≤ 10³)</div>
+            </div>
+            <input type="checkbox" id="multiterm-toggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+          </div>
+
+          <!-- Run Discovery Action Button -->
+          <button id="run-phys-btn" onclick="executePhysicsDiscovery()" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-lg shadow-lg glow-accent flex items-center justify-center space-x-2 transition">
+            <span id="run-phys-spinner" class="hidden animate-spin">🌀</span>
+            <span id="run-phys-text">⚡ RUN AUTONOMOUS DISCOVERY</span>
+          </button>
+        </div>
+
+        <!-- Epistemic Adjudication Court (8 cols) -->
+        <div class="lg:col-span-8 bg-[#0e1526] rounded-xl border border-[#1b2640] p-6 shadow-xl flex flex-col justify-between space-y-4">
+          <div class="flex items-center justify-between border-b border-[#1b2640] pb-3">
+            <h2 class="text-sm font-mono font-bold text-white flex items-center space-x-2">
+              <span class="text-cyan-400">02 //</span> <span>SOVEREIGN EPISTEMIC ADJUDICATION</span>
+            </h2>
+            <div id="verdict-badge" class="px-3 py-1 rounded-md font-mono text-xs font-bold bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 glow-emerald flex items-center space-x-2">
+              <span>●</span> <span id="verdict-text">UNIQUE_SUPPORT</span>
+            </div>
+          </div>
+
+          <!-- Promoted Mathematical Equation Display -->
+          <div class="bg-[#070b13] p-5 rounded-xl border border-[#1b2640] space-y-2">
+            <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Promoted Physical Law</div>
+            <div id="promoted-equation-box" class="text-xl sm:text-2xl font-mono text-cyan-300 overflow-x-auto py-2">
+              \ddot{\theta} = -9.81 \cdot \sin(\theta)
+            </div>
+          </div>
+
+          <!-- Epistemic Metrics Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+            <div class="bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+              <div class="text-slate-400 text-[10px]">RESOLUTION FLOOR τ</div>
+              <div id="tau-val" class="text-white text-sm font-bold mt-0.5">0.050</div>
+            </div>
+            <div class="bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+              <div class="text-slate-400 text-[10px]">RESIDUAL WHITENESS |ρ₁|</div>
+              <div id="rho1-val" class="text-emerald-400 text-sm font-bold mt-0.5">0.042 (PASS)</div>
+            </div>
+            <div class="bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+              <div class="text-slate-400 text-[10px]">GATE 4 PREDICTIVE R²</div>
+              <div id="r2-val" class="text-cyan-400 text-sm font-bold mt-0.5">0.999</div>
+            </div>
+            <div class="bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+              <div class="text-slate-400 text-[10px]">HOLDOUT RMSE</div>
+              <div id="rmse-val" class="text-white text-sm font-bold mt-0.5">0.0157</div>
+            </div>
+          </div>
+
+          <!-- Epistemic Reason & Attribution Card -->
+          <div id="reason-card" class="bg-[#070b13]/60 p-3.5 rounded-lg border border-[#1b2640] text-xs font-mono text-slate-300">
+            <span class="text-cyan-400 font-bold">Adjudication Detail: </span>
+            <span id="reason-text">Promoted to UNIQUE_SUPPORT: sole non-dominated candidate passing fidelity, whiteness, and Gate 4 predictive verification.</span>
+          </div>
+
+          <!-- Multi-Hypothesis Split-Screen (Visible only on MULTI_HYPOTHESIS) -->
+          <div id="multi-rivals-box" class="hidden p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-3">
+            <div class="flex items-center space-x-2 text-amber-400 font-mono text-xs font-bold">
+              <span>⚠ PERSISTENT OBSERVATIONAL AMBIGUITY (MULTI_HYPOTHESIS)</span>
+            </div>
+            <p class="text-xs text-slate-300">
+              In this quasi-linear regime, the empirical difference between models is smaller than the epistemic resolution floor (<span class="font-mono text-amber-300">Δ ≤ τ_epi</span>). The adjudicator sovereignly refuses to force an unjustified winner:
+            </p>
+            <div class="grid grid-cols-2 gap-3 font-mono text-xs">
+              <div class="bg-[#070b13] p-3 rounded-lg border border-amber-500/20">
+                <div class="text-slate-400 text-[10px]">CANDIDATE A (Trigonometric)</div>
+                <div class="text-amber-300 font-bold text-sm mt-1">sin(θ)</div>
+                <div class="text-[10px] text-slate-400 mt-1">RMSE: 0.0153</div>
+              </div>
+              <div class="bg-[#070b13] p-3 rounded-lg border border-amber-500/20">
+                <div class="text-slate-400 text-[10px]">CANDIDATE B (Linear Limit)</div>
+                <div class="text-amber-300 font-bold text-sm mt-1">θ</div>
+                <div class="text-[10px] text-slate-400 mt-1">RMSE: 0.1412</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Bottom Visualizations: Trajectory Fit & Pareto Frontier -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Plot 1: Dynamical Trajectory & Fit -->
+        <div class="bg-[#0e1526] rounded-xl border border-[#1b2640] p-4 shadow-xl space-y-2">
+          <div class="flex items-center justify-between border-b border-[#1b2640] pb-2 text-xs font-mono">
+            <span class="text-white font-bold">DYNAMICAL TRAJECTORY & HOLDOUT FIT</span>
+            <span class="text-slate-400">Actual vs Predicted</span>
+          </div>
+          <div id="plot-trajectory" class="w-full h-72"></div>
+        </div>
+
+        <!-- Plot 2: Pareto Complexity vs Holdout RMSE Frontier -->
+        <div class="bg-[#0e1526] rounded-xl border border-[#1b2640] p-4 shadow-xl space-y-2">
+          <div class="flex items-center justify-between border-b border-[#1b2640] pb-2 text-xs font-mono">
+            <span class="text-white font-bold">PARETO COMPLEXITY FRONTIER</span>
+            <span class="text-slate-400">Complexity vs Holdout RMSE</span>
+          </div>
+          <div id="plot-pareto" class="w-full h-72"></div>
+        </div>
+
+      </div>
+
+      <!-- Pareto Candidate Leaderboard Table -->
+      <div class="bg-[#0e1526] rounded-xl border border-[#1b2640] p-5 shadow-xl space-y-3">
+        <h3 class="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+          <span class="text-cyan-400">03 //</span> <span>PARETO NON-DOMINATED CANDIDATE LEADERBOARD</span>
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left font-mono text-xs">
+            <thead class="bg-[#070b13] text-slate-400 border-b border-[#1b2640]">
+              <tr>
+                <th class="py-2.5 px-4">Candidate Formula</th>
+                <th class="py-2.5 px-4">Complexity</th>
+                <th class="py-2.5 px-4">Holdout RMSE</th>
+                <th class="py-2.5 px-4">Gate 4 R²</th>
+                <th class="py-2.5 px-4">Whiteness |ρ₁|</th>
+                <th class="py-2.5 px-4">Status</th>
+              </tr>
+            </thead>
+            <tbody id="pareto-table-body" class="divide-y divide-[#1b2640]/50 text-slate-200">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: REAL MARKET SWEEPS                                       -->
+    <!-- ============================================================== -->
+    <div id="tab-market" class="hidden space-y-6">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Controls Column -->
+        <div class="lg:col-span-4 bg-[#0e1526] rounded-xl border border-[#1b2640] p-5 shadow-xl space-y-5">
+          <div class="flex items-center justify-between border-b border-[#1b2640] pb-3">
+            <h2 class="text-sm font-mono font-bold text-white flex items-center space-x-2">
+              <span class="text-cyan-400">01 //</span> <span>MARKET PROTOCOL</span>
+            </h2>
+            <span class="text-xs font-mono text-slate-400">CAUSAL HISTORY</span>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="block text-xs font-mono text-slate-300">Asset Series</label>
+            <select id="market-asset-select" class="w-full bg-[#070b13] border border-[#1b2640] rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
+              <option value="nasdaq100">Nasdaq 100 Index (2018-2023)</option>
+              <option value="sp500">S&P 500 Index (2018-2023)</option>
+            </select>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="block text-xs font-mono text-slate-300">Rolling Regime Window</label>
+            <select id="market-window-select" class="w-full bg-[#070b13] border border-[#1b2640] rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
+              <option value="W3_COVID" selected>W3: 2020 COVID Shock & Rebound</option>
+              <option value="W2_2019">W2: 2019 Calm Bull Market (Noise Swamped)</option>
+              <option value="W5_BEAR">W5: 2022 Bear Market (Rate Hikes)</option>
+              <option value="W1_2018">W1: 2018 Trade-war / Vol expansion</option>
+              <option value="W4_REBOUND">W4: 2021 Post-COVID Expansion</option>
+              <option value="W6_RECOVERY">W6: 2023 Tech Recovery</option>
+            </select>
+          </div>
+
+          <div class="flex items-center justify-between p-3 bg-[#070b13] rounded-lg border border-[#1b2640]">
+            <div>
+              <div class="text-xs font-mono font-medium text-white">Multi-Term Combination</div>
+              <div class="text-[10px] text-slate-400">Test Multi-Factor Superposition</div>
+            </div>
+            <input type="checkbox" id="market-multiterm-toggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+          </div>
+
+          <button id="run-market-btn" onclick="executeMarketDiscovery()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-lg shadow-lg flex items-center justify-center space-x-2 transition">
+            <span id="run-market-spinner" class="hidden animate-spin">🌀</span>
+            <span id="run-market-text">📊 EVALUATE CAUSAL DISCOVERY</span>
+          </button>
+        </div>
+
+        <!-- Market Epistemic Verdict Column -->
+        <div class="lg:col-span-8 bg-[#0e1526] rounded-xl border border-[#1b2640] p-6 shadow-xl space-y-4">
+          <div class="flex items-center justify-between border-b border-[#1b2640] pb-3">
+            <h2 class="text-sm font-mono font-bold text-white flex items-center space-x-2">
+              <span class="text-cyan-400">02 //</span> <span>FINANCIAL ADJUDICATION AUDIT</span>
+            </h2>
+            <div id="market-verdict-badge" class="px-3 py-1 rounded-md font-mono text-xs font-bold bg-cyan-500/10 border border-cyan-500/40 text-cyan-400">
+              <span id="market-verdict-text">UNIQUE_SUPPORT</span>
+            </div>
+          </div>
+
+          <div class="bg-[#070b13] p-5 rounded-xl border border-[#1b2640] space-y-2">
+            <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Discovered Causal Return Model</div>
+            <div id="market-equation-box" class="text-lg font-mono text-emerald-400 py-1">
+              r_t = -6.612 · (r_{t-1} · vol_{10d})
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+            <div class="bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+              <div class="text-slate-400 text-[10px]">TRAIN RMSE</div>
+              <div id="mkt-tr-err" class="text-white text-sm font-bold mt-0.5">0.0102</div>
+            </div>
+            <div class="bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+              <div class="text-slate-400 text-[10px]">HOLDOUT RMSE</div>
+              <div id="mkt-ho-err" class="text-white text-sm font-bold mt-0.5">0.0234</div>
+            </div>
+            <div class="bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+              <div class="text-slate-400 text-[10px]">RESIDUAL WHITENESS</div>
+              <div id="mkt-whiteness" class="text-emerald-400 text-sm font-bold mt-0.5">PASS (|ρ₁| = 0.08)</div>
+            </div>
+            <div class="bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+              <div class="text-slate-400 text-[10px]">COMPLEXITY</div>
+              <div id="mkt-comp" class="text-cyan-400 text-sm font-bold mt-0.5">3 (r_lag * vol)</div>
+            </div>
+          </div>
+
+          <div class="bg-[#070b13]/60 p-3.5 rounded-lg border border-[#1b2640] text-xs font-mono text-slate-300">
+            <span class="text-cyan-400 font-bold">Epistemic Attribution: </span>
+            <span id="market-reason-text">In calm regimes, APEDP refuses to promote spurious trend models (INSUFFICIENT_EVIDENCE). During crisis breaks, it isolates real volatility feedback.</span>
+          </div>
+
+          <!-- Market Price & Return Plot -->
+          <div class="bg-[#070b13] rounded-lg border border-[#1b2640] p-3">
+            <div id="plot-market" class="w-full h-64"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: FALSE CERTAINTY LADDER                                   -->
+    <!-- ============================================================== -->
+    <div id="tab-ladder" class="hidden space-y-6">
+      <div class="bg-[#0e1526] rounded-xl border border-[#1b2640] p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between border-b border-[#1b2640] pb-3">
+          <div>
+            <h2 class="text-sm font-mono font-bold text-white flex items-center space-x-2">
+              <span class="text-cyan-400">03 //</span> <span>THE 10-RUNG FALSE CERTAINTY LADDER</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Exhaustive adversarial stress-test verifying zero false certainty across all epistemic boundaries.</p>
+          </div>
+          <button onclick="loadLadder()" class="px-3 py-1.5 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 rounded font-mono text-xs border border-cyan-500/40 transition">
+            🔄 Refresh Audit
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="ladder-grid">
+          <!-- Dynamically populated rungs -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Script Logic -->
+  <script>
+    function switchTab(tabId) {
+      document.getElementById('tab-physics').classList.add('hidden');
+      document.getElementById('tab-market').classList.add('hidden');
+      document.getElementById('tab-ladder').classList.add('hidden');
+
+      document.getElementById('tab-physics-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition";
+      document.getElementById('tab-market-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition";
+      document.getElementById('tab-ladder-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition";
+
+      if (tabId === 'physics') {
+        document.getElementById('tab-physics').classList.remove('hidden');
+        document.getElementById('tab-physics-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 transition";
+      } else if (tabId === 'market') {
+        document.getElementById('tab-market').classList.remove('hidden');
+        document.getElementById('tab-market-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 transition";
+        executeMarketDiscovery();
+      } else if (tabId === 'ladder') {
+        document.getElementById('tab-ladder').classList.remove('hidden');
+        document.getElementById('tab-ladder-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/40 transition";
+        loadLadder();
+      }
+    }
+
+    function onSystemChange() {
+      const sys = document.getElementById('phys-system-select').value;
+      const ampBox = document.getElementById('pendulum-amplitude-container');
+      if (sys === 'pendulum') {
+        ampBox.classList.remove('hidden');
+      } else {
+        ampBox.classList.add('hidden');
+      }
+    }
+
+    function updateThetaSlider(val) {
+      const deg = Math.round(val * 180 / Math.PI);
+      const isLinear = val < 0.8;
+      document.getElementById('theta0-val').innerText = `${val} rad (${deg}°)`;
+      document.getElementById('theta0-val').className = isLinear ? 'text-amber-400 font-bold' : 'text-cyan-400 font-bold';
+    }
+
+    async function executePhysicsDiscovery() {
+      const sys = document.getElementById('phys-system-select').value;
+      const theta0 = parseFloat(document.getElementById('theta0-slider').value);
+      const noise = parseFloat(document.getElementById('noise-slider').value);
+      const multiterm = document.getElementById('multiterm-toggle').checked;
+
+      const btn = document.getElementById('run-phys-btn');
+      const spinner = document.getElementById('run-phys-spinner');
+      const text = document.getElementById('run-phys-text');
+      spinner.classList.remove('hidden');
+      text.innerText = "EXPLORING AST GRAMMAR...";
+      btn.disabled = true;
+
+      try {
+        const resp = await fetch('/api/discover/physics', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            system: sys,
+            theta0: theta0,
+            noise: noise,
+            multiterm: multiterm,
+            n_samples: 80
+          })
+        });
+        const data = await resp.json();
+        renderPhysicsResults(data);
+      } catch (err) {
+        console.error(err);
+        alert('Discovery error: ' + err);
+      } finally {
+        spinner.classList.add('hidden');
+        text.innerText = "⚡ RUN AUTONOMOUS DISCOVERY";
+        btn.disabled = false;
+      }
+    }
+
+    function renderPhysicsResults(data) {
+      // 1. Verdict badge
+      const vBadge = document.getElementById('verdict-badge');
+      const vText = document.getElementById('verdict-text');
+      const multiBox = document.getElementById('multi-rivals-box');
+
+      if (data.verdict === 'unique_support') {
+        vBadge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 glow-emerald flex items-center space-x-2";
+        vText.innerText = "UNIQUE_SUPPORT";
+        multiBox.classList.add('hidden');
+      } else if (data.verdict === 'multi_hypothesis') {
+        vBadge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-amber-500/10 border border-amber-500/40 text-amber-400 glow-amber flex items-center space-x-2";
+        vText.innerText = "MULTI_HYPOTHESIS";
+        multiBox.classList.remove('hidden');
+      } else {
+        vBadge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-ruby-500/10 border border-ruby-500/40 text-ruby-400 glow-ruby flex items-center space-x-2";
+        vText.innerText = data.verdict.toUpperCase();
+        multiBox.classList.add('hidden');
+      }
+
+      // 2. Promoted equation KaTeX
+      const eqBox = document.getElementById('promoted-equation-box');
+      eqBox.innerText = data.promoted_equation || "No promoted equation (refusal under uncertainty)";
+
+      // 3. Metrics
+      document.getElementById('tau-val').innerText = data.tau_epi.toFixed(4);
+      document.getElementById('reason-text').innerText = data.reason;
+
+      const top = data.pareto_candidates[0] || {};
+      document.getElementById('rmse-val').innerText = top.rmse !== undefined ? top.rmse.toFixed(4) : "N/A";
+      document.getElementById('r2-val').innerText = top.r2 !== undefined ? top.r2.toFixed(3) : "N/A";
+      document.getElementById('rho1-val').innerText = top.rho1 !== undefined ? `${top.rho1.toFixed(3)} (${top.is_white ? 'PASS' : 'FAIL'})` : "N/A";
+
+      // 4. Render Plots
+      renderTrajectoryPlot(data.plot_series);
+      renderParetoPlot(data.pareto_candidates, data.tau_epi);
+
+      // 5. Populate Leaderboard
+      const tbody = document.getElementById('pareto-table-body');
+      tbody.innerHTML = '';
+      data.pareto_candidates.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.className = c.is_promoted ? "bg-emerald-500/10 font-bold" : "hover:bg-slate-800/40";
+        tr.innerHTML = `
+          <td class="py-2 px-4 text-cyan-300">${c.id}</td>
+          <td class="py-2 px-4 text-slate-300">${c.complexity}</td>
+          <td class="py-2 px-4 text-white font-mono">${c.rmse !== null ? c.rmse.toFixed(4) : 'N/A'}</td>
+          <td class="py-2 px-4 text-slate-300">${c.r2 !== null ? c.r2.toFixed(3) : 'N/A'}</td>
+          <td class="py-2 px-4 ${c.is_white ? 'text-emerald-400' : 'text-amber-400'}">${c.rho1 !== null ? c.rho1.toFixed(3) : 'N/A'}</td>
+          <td class="py-2 px-4">
+            ${c.is_promoted ? '<span class="text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded text-[10px]">PROMOTED</span>' : '<span class="text-slate-400 text-[10px]">PRUNED</span>'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderTrajectoryPlot(series) {
+      if (!series || !series.t) return;
+      const split = series.split_index;
+      const t = series.t;
+
+      const traceActual = {
+        x: t,
+        y: series.actual,
+        mode: 'markers',
+        name: 'Observation Data',
+        marker: { color: '#94a3b8', size: 5, opacity: 0.7 }
+      };
+
+      const tracePred = {
+        x: t,
+        y: series.predicted,
+        mode: 'lines',
+        name: 'Discovered Model',
+        line: { color: '#00f0ff', width: 2.5 }
+      };
+
+      const layout = {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        margin: { l: 40, r: 20, t: 20, b: 35 },
+        font: { family: 'JetBrains Mono, monospace', color: '#94a3b8', size: 10 },
+        xaxis: { gridcolor: '#1b2640', zerolinecolor: '#1b2640', title: 'Time (s)' },
+        yaxis: { gridcolor: '#1b2640', zerolinecolor: '#1b2640' },
+        legend: { orientation: 'h', y: 1.15, x: 0.1 },
+        shapes: [
+          {
+            type: 'line',
+            x0: t[split],
+            x1: t[split],
+            y0: 0,
+            y1: 1,
+            yref: 'paper',
+            line: { color: '#f59e0b', width: 1.5, dash: 'dot' }
+          }
+        ],
+        annotations: [
+          {
+            x: t[split],
+            y: 0.95,
+            yref: 'paper',
+            text: 'Holdout Split',
+            showarrow: false,
+            font: { color: '#f59e0b', size: 10 }
+          }
+        ]
+      };
+
+      Plotly.newPlot('plot-trajectory', [traceActual, tracePred], layout, { responsive: true, displayModeBar: false });
+    }
+
+    function renderParetoPlot(candidates, tau) {
+      if (!candidates || !candidates.length) return;
+      const x = candidates.map(c => c.complexity);
+      const y = candidates.map(c => c.rmse);
+      const labels = candidates.map(c => c.id);
+
+      const traceScatter = {
+        x: x,
+        y: y,
+        text: labels,
+        mode: 'lines+markers+text',
+        textposition: 'top right',
+        marker: {
+          color: candidates.map(c => c.is_promoted ? '#10b981' : '#00f0ff'),
+          size: candidates.map(c => c.is_promoted ? 12 : 8),
+        },
+        line: { color: '#38bdf8', dash: 'dash' },
+        name: 'Pareto Candidates'
+      };
+
+      const layout = {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        margin: { l: 45, r: 20, t: 20, b: 35 },
+        font: { family: 'JetBrains Mono, monospace', color: '#94a3b8', size: 10 },
+        xaxis: { gridcolor: '#1b2640', zerolinecolor: '#1b2640', title: 'Complexity (Nodes + Terms)' },
+        yaxis: { gridcolor: '#1b2640', zerolinecolor: '#1b2640', title: 'Holdout RMSE' },
+        showlegend: false
+      };
+
+      Plotly.newPlot('plot-pareto', [traceScatter], layout, { responsive: true, displayModeBar: false });
+    }
+
+    async function executeMarketDiscovery() {
+      const asset = document.getElementById('market-asset-select').value;
+      const win = document.getElementById('market-window-select').value;
+      const multiterm = document.getElementById('market-multiterm-toggle').checked;
+
+      const btn = document.getElementById('run-market-btn');
+      const spinner = document.getElementById('run-market-spinner');
+      const text = document.getElementById('run-market-text');
+      spinner.classList.remove('hidden');
+      text.innerText = "AUDITING REGIME...";
+      btn.disabled = true;
+
+      try {
+        const resp = await fetch('/api/discover/market', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            asset: asset,
+            window_id: win,
+            multiterm: multiterm
+          })
+        });
+        const data = await resp.json();
+        renderMarketResults(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        spinner.classList.add('hidden');
+        text.innerText = "📊 EVALUATE CAUSAL DISCOVERY";
+        btn.disabled = false;
+      }
+    }
+
+    function renderMarketResults(data) {
+      const badge = document.getElementById('market-verdict-badge');
+      const text = document.getElementById('market-verdict-text');
+      text.innerText = data.epistemic_verdict.toUpperCase();
+
+      if (data.epistemic_verdict === 'unique_support') {
+        badge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 glow-emerald";
+      } else {
+        badge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-amber-500/10 border border-amber-500/40 text-amber-400 glow-amber";
+      }
+
+      document.getElementById('market-equation-box').innerText = data.discovered_expression || "Refused promotion (noise-dominated regime)";
+      document.getElementById('mkt-tr-err').innerText = data.train_error.toFixed(4);
+      document.getElementById('mkt-ho-err').innerText = data.holdout_error.toFixed(4);
+      document.getElementById('mkt-whiteness').innerText = data.whiteness_passed ? `PASS (|ρ₁|=${data.whiteness_rho1 ? data.whiteness_rho1.toFixed(3) : 0})` : 'FAIL';
+      document.getElementById('mkt-comp').innerText = data.expression_complexity;
+      document.getElementById('market-reason-text').innerText = data.full_reason;
+
+      // Render Price chart
+      if (data.market_series && data.market_series.prices) {
+        const tracePx = {
+          x: data.market_series.dates,
+          y: data.market_series.prices,
+          mode: 'lines',
+          line: { color: '#10b981', width: 2 },
+          name: 'Close Price'
+        };
+        const layout = {
+          paper_bgcolor: 'transparent',
+          plot_bgcolor: 'transparent',
+          margin: { l: 45, r: 20, t: 10, b: 35 },
+          font: { family: 'JetBrains Mono, monospace', color: '#94a3b8', size: 10 },
+          xaxis: { gridcolor: '#1b2640' },
+          yaxis: { gridcolor: '#1b2640', title: 'Price (USD)' },
+          showlegend: false
+        };
+        Plotly.newPlot('plot-market', [tracePx], layout, { responsive: true, displayModeBar: false });
+      }
+    }
+
+    async function loadLadder() {
+      try {
+        const resp = await fetch('/api/challenge/ladder');
+        const rungs = await resp.json();
+        const grid = document.getElementById('ladder-grid');
+        grid.innerHTML = '';
+        rungs.forEach(r => {
+          const card = document.createElement('div');
+          card.className = "bg-[#070b13] p-4 rounded-xl border border-[#1b2640] space-y-2";
+          card.innerHTML = `
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono font-bold text-cyan-400">${r.rung} // ${r.name}</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono rounded ${r.status === 'unique_support' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'} font-bold">
+                ${r.status.toUpperCase()}
+              </span>
+            </div>
+            <div class="text-[11px] font-mono text-slate-300">Regime: ${r.regime}</div>
+            <div class="text-[10px] text-slate-400 border-t border-[#1b2640] pt-2 mt-1">Defense: ${r.detail}</div>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Auto-execute on load
+    window.addEventListener('DOMContentLoaded', () => {
+      executePhysicsDiscovery();
+    });
+  </script>
+  <footer class="border-t border-[#1b2640] text-slate-400 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      APEDP Dyn Scientific Studio — research prototype. Model outputs describe
+      historical fit and identifiability only and do not predict future returns.
+      Past performance does not indicate future results.
+    </div>
+  </footer>
+</body>
+</html>

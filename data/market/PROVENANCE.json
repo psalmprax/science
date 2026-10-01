@@ -1,0 +1,10 @@
+{
+  "sp500.csv": {"source": "FRED series SP500 (Federal Reserve Bank of St. Louis)",
+                "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+                "coverage": "2018-01-01 to 2023-12-31 (daily closes)",
+                "fetched": "2026-09-30", "license_note": "FRED terms of use apply"},
+  "nasdaq100.csv": {"source": "FRED series NASDAQ100",
+                "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQ100",
+                "coverage": "2018-01-01 to 2023-12-31 (daily closes)",
+                "fetched": "2026-09-30", "license_note": "FRED terms of use apply"}
+}

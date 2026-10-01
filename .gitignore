@@ -48,3 +48,6 @@ outputs/
 # Colab sample datasets
 mnist_*.csv
 california_housing_*.csv
+
+# Audit logs (request/response records, unbounded growth)
+logs/
