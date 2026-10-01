@@ -887,22 +887,37 @@
         document.getElementById('sandbox-reason').innerText = data.reason || '';
         document.getElementById('sandbox-table').innerHTML = (data.candidates || []).map(c =>
           `<div class="flex justify-between border-b border-[#1b2640] py-1"><span class="text-slate-300">${c.id}</span><span class="text-slate-400">RMSE ${Number(c.rmse).toPrecision(4)}</span></div>`).join('');
-        if (data.series && typeof Plotly !== 'undefined') {
-          const tr = {x: data.series.x, y: data.series.actual, mode: 'lines+markers',
-                      marker: {size: 3}, line: {color: '#22d3ee', width: 1.5}, name: 'observations'};
-          const traces = [tr];
-          if (data.series.threshold != null) {
-            traces.push({x: [data.series.threshold, data.series.threshold], y: [Math.min(...data.series.actual), Math.max(...data.series.actual)],
-                         mode: 'lines', line: {color: '#f59e0b', dash: 'dash'}, name: 'threshold'});
-          }
-          Plotly.newPlot('plot-sandbox', traces, {paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-            margin: {l: 50, r: 20, t: 10, b: 40}, font: {family: 'JetBrains Mono, monospace', color: '#94a3b8', size: 10},
-            xaxis: {title: data.series.x_label || 'x'}, yaxis: {title: 'observed'}});
+        if (data.series) {
+          renderSandboxSVG(data.series);
         }
       } catch (err) {
         badge.innerText = 'ERROR';
         console.error(err);
       }
+    }
+
+    function renderSandboxSVG(series) {
+      // Dependency-free SVG line chart: no CDN, works offline/air-gapped.
+      const W = 720, H = 240, P = 34;
+      const xs = series.x, ys = series.actual;
+      const esc = (v) => Number(v);
+      const xmin = Math.min(...xs), xmax = Math.max(...xs);
+      const ymin = Math.min(...ys), ymax = Math.max(...ys);
+      const X = (v) => P + (esc(v) - xmin) / ((xmax - xmin) || 1) * (W - 2 * P);
+      const Y = (v) => H - P - (esc(v) - ymin) / ((ymax - ymin) || 1) * (H - 2 * P);
+      const pts = xs.map((x, i) => `${X(x).toFixed(1)},${Y(ys[i]).toFixed(1)}`).join(' ');
+      let thresh = '';
+      if (series.threshold != null && esc(series.threshold) >= xmin && esc(series.threshold) <= xmax) {
+        const tx = X(series.threshold).toFixed(1);
+        thresh = `<line x1="${tx}" y1="${P}" x2="${tx}" y2="${H - P}" stroke="#f59e0b" stroke-dasharray="5,4" stroke-width="1.5"><title>threshold ${series.threshold}</title></line>`;
+      }
+      document.getElementById('plot-sandbox').innerHTML =
+        `<svg viewBox="0 0 ${W} ${H}" class="w-full h-64" role="img" aria-label="Observations versus driver">` +
+        `<polyline points="${pts}" fill="none" stroke="#22d3ee" stroke-width="1.5" />` +
+        thresh +
+        `<text x="${P}" y="${H - 8}" fill="#64748b" font-size="10" font-family="monospace">${series.x_label || 'x'}</text>` +
+        `<text x="4" y="${P - 6}" fill="#64748b" font-size="10" font-family="monospace">observed (n=${ys.length})</text>` +
+        `</svg>`;
     }
 
     async function loadAudit() {
