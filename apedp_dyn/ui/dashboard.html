@@ -100,15 +100,18 @@
       </div>
 
       <!-- Navigation Tabs -->
-      <nav class="flex space-x-1 bg-[#0e1628] p-1 rounded-lg border border-[#1b2640]">
-        <button id="tab-physics-btn" onclick="switchTab('physics')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 transition">
+      <nav role="tablist" aria-label="Discovery workspaces" class="flex space-x-1 bg-[#0e1628] p-1 rounded-lg border border-[#1b2640]">
+        <button id="tab-physics-btn" role="tab" aria-selected="true" aria-controls="tab-physics" onclick="switchTab('physics')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 transition">
           ⚛️ Physics Lab
         </button>
-        <button id="tab-market-btn" onclick="switchTab('market')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
+        <button id="tab-market-btn" role="tab" aria-selected="false" aria-controls="tab-market" onclick="switchTab('market')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
           📈 Real Market Sweeps
         </button>
-        <button id="tab-ladder-btn" onclick="switchTab('ladder')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
+        <button id="tab-ladder-btn" role="tab" aria-selected="false" aria-controls="tab-ladder" onclick="switchTab('ladder')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
           🪜 Certainty Ladder
+        </button>
+        <button id="tab-audit-btn" role="tab" aria-selected="false" aria-controls="tab-audit" onclick="switchTab('audit')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
+          📜 Audit Log
         </button>
       </nav>
 
@@ -410,6 +413,11 @@
             <span id="market-reason-text">In calm regimes, APEDP refuses to promote spurious trend models (INSUFFICIENT_EVIDENCE). During crisis breaks, it isolates real volatility feedback.</span>
           </div>
 
+          <div class="bg-[#070b13]/60 p-3.5 rounded-lg border border-amber-500/30 text-xs font-mono text-slate-300" role="note" aria-label="Claim boundary">
+            <span class="text-amber-400 font-bold">Claim Boundary: </span>
+            <span id="market-boundary-text">Supported: observed regime only — no structural claim supported until discovery runs.</span>
+          </div>
+
           <!-- Market Price & Return Plot -->
           <div class="bg-[#070b13] rounded-lg border border-[#1b2640] p-3">
             <div id="plot-market" class="w-full h-64"></div>
@@ -442,18 +450,37 @@
       </div>
     </div>
 
+    <!-- ============================================================== -->
+    <!-- TAB 4: AUDIT LOG (accountability surface)                       -->
+    <!-- ============================================================== -->
+    <div id="tab-audit" role="tabpanel" class="hidden space-y-6">
+      <div class="bg-[#0e1526] rounded-xl border border-[#1b2640] p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between border-b border-[#1b2640] pb-3">
+          <div>
+            <h2 class="text-sm font-mono font-bold text-white flex items-center space-x-2">
+              <span class="text-amber-400">04 //</span> <span>RECOMMENDATION AUDIT TRAIL</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Every discovery response this server produced: endpoint, verdict, promoted equation, evidence origin. Nothing actionable is unlogged.</p>
+          </div>
+          <button onclick="loadAudit()" class="px-3 py-1.5 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 rounded font-mono text-xs border border-cyan-500/40 transition">
+            🔄 Refresh Audit
+          </button>
+        </div>
+        <div id="audit-grid" class="space-y-2 font-mono text-xs"></div>
+      </div>
+    </div>
+
   </main>
 
   <!-- Script Logic -->
   <script>
     function switchTab(tabId) {
-      document.getElementById('tab-physics').classList.add('hidden');
-      document.getElementById('tab-market').classList.add('hidden');
-      document.getElementById('tab-ladder').classList.add('hidden');
-
-      document.getElementById('tab-physics-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition";
-      document.getElementById('tab-market-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition";
-      document.getElementById('tab-ladder-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition";
+      for (const t of ['physics', 'market', 'ladder', 'audit']) {
+        document.getElementById('tab-' + t).classList.add('hidden');
+        document.getElementById('tab-' + t + '-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition";
+        document.getElementById('tab-' + t + '-btn').setAttribute('aria-selected', 'false');
+      }
+      document.getElementById('tab-' + tabId + '-btn').setAttribute('aria-selected', 'true');
 
       if (tabId === 'physics') {
         document.getElementById('tab-physics').classList.remove('hidden');
@@ -466,6 +493,11 @@
         document.getElementById('tab-ladder').classList.remove('hidden');
         document.getElementById('tab-ladder-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/40 transition";
         loadLadder();
+      }
+      } else if (tabId === 'audit') {
+        document.getElementById('tab-audit').classList.remove('hidden');
+        document.getElementById('tab-audit-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 transition";
+        loadAudit();
       }
     }
 
@@ -719,6 +751,17 @@
       document.getElementById('mkt-comp').innerText = data.expression_complexity;
       document.getElementById('market-reason-text').innerText = data.full_reason;
 
+      // Claim boundary (diagnostic abstention, computed client-side from verdict)
+      const v = data.epistemic_verdict;
+      const supported = v === 'unique_support'
+        ? 'observed regime: structural claim supported HERE'
+        : 'observed regime only: NO structural claim supported';
+      const unsupported = v === 'unique_support'
+        ? 'global validity (unproven beyond tested windows)'
+        : 'unique structure, global validity (withheld: rivals or noise)';
+      document.getElementById('market-boundary-text').innerText =
+        'Supported: ' + supported + ' | Withheld: ' + unsupported;
+
       // Render Price chart
       if (data.market_series && data.market_series.prices) {
         const tracePx = {
@@ -768,6 +811,36 @@
     }
 
     // Auto-execute on load
+    async function loadAudit() {
+      const grid = document.getElementById('audit-grid');
+      grid.innerHTML = '<div class="text-slate-500">loading…</div>';
+      try {
+        const resp = await fetch('/api/audit/recent?limit=50', {headers: apiHeaders()});
+        if (resp.status === 401) { grid.innerHTML = '<div class="text-amber-400">unauthorized: set API key</div>'; return; }
+        const rows = await resp.json();
+        if (!rows.length) { grid.innerHTML = '<div class="text-slate-500">no audited calls yet</div>'; return; }
+        grid.innerHTML = rows.map(r =>
+          `<div class="border border-[#1b2640] rounded px-3 py-2 flex flex-wrap gap-x-4 gap-y-1">` +
+          `<span class="text-slate-500">${r.ts || ''}</span>` +
+          `<span class="text-cyan-300">${r.endpoint || ''}</span>` +
+          `<span class="text-white">${r.verdict || ''}</span>` +
+          `<span class="text-slate-300">${r.promoted_equation || r.promoted || ''}</span>` +
+          `<span class="text-slate-500">origin=${r.data_origin || 'unknown'}</span>` +
+          `</div>`).join('');
+      } catch (err) {
+        grid.innerHTML = '<div class="text-red-400">audit log unavailable</div>';
+      }
+    }
+
+    if (typeof Plotly === 'undefined') {
+      document.addEventListener('DOMContentLoaded', () => {
+        const w = document.createElement('div');
+        w.className = 'bg-red-500/10 border-b border-red-500/30 text-red-200 text-xs';
+        w.innerHTML = '<div class="max-w-7xl mx-auto px-4 py-2">Chart library (CDN) failed to load — charts disabled, verdicts unaffected.</div>';
+        document.body.prepend(w);
+      });
+    }
+
     function apiHeaders() {
       const h = {'Content-Type': 'application/json'};
       const k = localStorage.getItem('apedp_api_key') || '';

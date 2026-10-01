@@ -430,6 +430,32 @@ def discover_market(req: MarketRequest) -> dict[str, Any]:
     return resp
 
 
+@app.get("/api/audit/recent", dependencies=[Depends(_require_api_key)])
+def audit_recent(limit: int = 50) -> list[dict[str, Any]]:
+    """Return the most recent audit records (accountability surface).
+
+    Records contain only endpoint, verdict, promoted equation, evidence
+    origin and timestamps -- never credentials or raw request secrets.
+    """
+    import json
+
+    if not _AUDIT_LOG.exists():
+        return []
+    rows: list[dict[str, Any]] = []
+    with open(_AUDIT_LOG, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            rec.pop("x-api-key", None)
+            rows.append(rec)
+    return rows[-max(1, min(limit, 500)):]
+
+
 @app.get("/api/challenge/ladder", dependencies=[Depends(_require_api_key)])
 def get_ladder() -> list[dict[str, Any]]:
     """Return the 10-Rung False Certainty Ladder scorecard."""
