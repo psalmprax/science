@@ -11,6 +11,8 @@ import pytest
 from apedp.decision.stage_c import EpistemicState
 from apedp.model_synthesis import AutonomousModelSynthesizer, SynthesizedModel
 from benchmarks.corpus_paths import CORPUS_50_DIR, CORPUS_SYNTHESIS_DIR
+from benchmarks.synth50_protocol import load_splits as synth50_load
+from benchmarks.synth50_protocol import synthesize as synth50_synthesize
 
 
 class TestNearOodPromotionIsAPerCallDecision:
@@ -451,9 +453,7 @@ def test_autonomous_synthesis_on_synth_01():
 @pytest.mark.slow
 def test_class_s2_logarithmic_recovery():
     """Verify autonomous structural synthesis of Class S2 (Problem S11)."""
-    _spec, (x_train, y_train), (x_val, y_val), (x_near, y_near), (x_far, y_far) = load_synth50_dataset("S11")
-    synthesizer = AutonomousModelSynthesizer()
-    models = synthesizer.synthesize(x_train, y_train, x_val, y_val, x_near, y_near, x_far, y_far)
+    _spec, models = synth50_synthesize("S11")
 
     assert len(models) > 0
     top = models[0]
@@ -469,10 +469,10 @@ def test_class_s2_logarithmic_recovery():
 @pytest.mark.slow
 def test_class_s3_critical_scaling_recovery():
     """Verify autonomous structural synthesis of Class S3 (Problem S21)."""
-    spec, (x_train, y_train), (x_val, y_val), (x_near, y_near), (x_far, y_far) = load_synth50_dataset("S21")
+    spec, _splits = synth50_load("S21")
     gaps = spec["physical_constraints"]["sampling_gaps"]
     synthesizer = AutonomousModelSynthesizer(domain_gaps=[(g[0], g[1]) for g in gaps])
-    models = synthesizer.synthesize(x_train, y_train, x_val, y_val, x_near, y_near, x_far, y_far)
+    _spec, models = synth50_synthesize("S21", synthesizer=synthesizer)
 
     assert len(models) > 0
     top = models[0]
@@ -483,9 +483,7 @@ def test_class_s3_critical_scaling_recovery():
 
 def test_class_s4_damped_oscillation_recovery():
     """Verify autonomous structural synthesis of Class S4 (Problem S31)."""
-    _spec, (x_train, y_train), (x_val, y_val), (x_near, y_near), (x_far, y_far) = load_synth50_dataset("S31")
-    synthesizer = AutonomousModelSynthesizer()
-    models = synthesizer.synthesize(x_train, y_train, x_val, y_val, x_near, y_near, x_far, y_far)
+    _spec, models = synth50_synthesize("S31")
 
     assert len(models) > 0
     top = models[0]
