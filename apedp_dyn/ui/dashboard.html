@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%CE%A8%3C/text%3E%3C/svg%3E" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>APEDP Dyn // Autonomous Epistemic Discovery Studio</title>
   <!-- Tailwind CSS CDN -->
+  <!-- NOTE: Tailwind Play CDN is a dev/research convenience. A production
+       build must compile via PostCSS/CLI per https://tailwindcss.com/docs/installation
+       and vendor the CSS; the CDN emits its own should-not-use-in-production warning. -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -493,7 +497,6 @@
         document.getElementById('tab-ladder').classList.remove('hidden');
         document.getElementById('tab-ladder-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/40 transition";
         loadLadder();
-      }
       } else if (tabId === 'audit') {
         document.getElementById('tab-audit').classList.remove('hidden');
         document.getElementById('tab-audit-btn').className = "px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 transition";
