@@ -123,6 +123,15 @@
   </header>
 
   <!-- Main Workspace -->
+  <div class="border-b border-[#1b2640] bg-[#090e1a]/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center gap-2 text-xs font-mono">
+      <label for="api-key-input" class="text-slate-400">API key</label>
+      <input id="api-key-input" type="password" placeholder="unset = localhost only"
+        class="bg-[#070b13] border border-[#1b2640] rounded px-2 py-1 text-slate-200 w-56"
+        oninput="localStorage.setItem('apedp_api_key', this.value)" />
+      <span class="text-slate-500">sent as x-api-key header; stored only in this browser</span>
+    </div>
+  </div>
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
     <!-- ============================================================== -->
@@ -493,7 +502,7 @@
       try {
         const resp = await fetch('/api/discover/physics', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: apiHeaders(),
           body: JSON.stringify({
             system: sys,
             theta0: theta0,
@@ -674,7 +683,7 @@
       try {
         const resp = await fetch('/api/discover/market', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: apiHeaders(),
           body: JSON.stringify({
             asset: asset,
             window_id: win,
@@ -734,7 +743,7 @@
 
     async function loadLadder() {
       try {
-        const resp = await fetch('/api/challenge/ladder');
+        const resp = await fetch('/api/challenge/ladder', {headers: apiHeaders()});
         const rungs = await resp.json();
         const grid = document.getElementById('ladder-grid');
         grid.innerHTML = '';
@@ -759,6 +768,16 @@
     }
 
     // Auto-execute on load
+    function apiHeaders() {
+      const h = {'Content-Type': 'application/json'};
+      const k = localStorage.getItem('apedp_api_key') || '';
+      if (k) h['x-api-key'] = k;
+      return h;
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const inp = document.getElementById('api-key-input');
+      if (inp) inp.value = localStorage.getItem('apedp_api_key') || '';
+    });
     window.addEventListener('DOMContentLoaded', () => {
       executePhysicsDiscovery();
     });
