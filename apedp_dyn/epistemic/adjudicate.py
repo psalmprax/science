@@ -248,6 +248,7 @@ def resolution_floor(obs_rms: float | None, noise_sigma: float | None,
 class Adjudication:
     status: EpistemicStatus
     promoted: Any = None
+    rival: Any = None
     ranking: tuple = ()
     best_rmse: float | None = None
     second_rmse: float | None = None
@@ -346,6 +347,9 @@ def _sole_survivor_whiteness(resid: Any, threshold: float) -> tuple[bool, str]:
     series against ``threshold``. Accuracy without whiteness is not
     explanatory support: a model can match the observation on average while
     its error remains structured, which means something is still unmodelled.
+
+    On heteroskedastic series (volatility clustering), evaluates standardized
+    innovations if raw residuals fail threshold.
     """
     if resid is None:
         return False, "no residual series; whiteness unassessable"
@@ -361,7 +365,26 @@ def _sole_survivor_whiteness(resid: Any, threshold: float) -> tuple[bool, str]:
                        "whiteness unassessable")
     rho1 = float(np.dot(centred[:-1], centred[1:]) / denom)
     ok = bool(abs(rho1) < threshold)
-    return ok, f"|rho1|={abs(rho1):.3f} vs flag {threshold:g}"
+    if ok:
+        return ok, f"|rho1|={abs(rho1):.3f} vs flag {threshold:g}"
+
+    if arr.size >= 8:
+        alpha = 0.8
+        curr_var = float(np.var(centred))
+        if curr_var > 1e-12:
+            var_est = np.empty_like(centred)
+            for t in range(len(centred)):
+                curr_var = alpha * curr_var + (1.0 - alpha) * (centred[t] ** 2)
+                var_est[t] = max(curr_var, 1e-12)
+            z = centred / np.sqrt(var_est)
+            z_centred = z - z.mean()
+            z_denom = float(np.dot(z_centred, z_centred))
+            if z_denom > 0.0:
+                rho1_z = float(np.dot(z_centred[:-1], z_centred[1:]) / z_denom)
+                if abs(rho1_z) < threshold:
+                    return True, f"|rho1_innov|={abs(rho1_z):.3f} vs flag {threshold:g} (standardized innovations)"
+
+    return False, f"|rho1|={abs(rho1):.3f} vs flag {threshold:g}"
 
 
 def _residual_series(sc: Any) -> Any:
@@ -662,7 +685,7 @@ def adjudicate(fitted: list,
         attr = (epistemic_attribution if epistemic_attribution != "unknown"
                 else EpistemicAttribution.INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY.value)
         return Adjudication(
-            EpistemicStatus.MULTI_HYPOTHESIS, ranking=tuple(ranked),
+            EpistemicStatus.MULTI_HYPOTHESIS, rival=second, ranking=tuple(ranked),
             best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
             delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
             holdout_noise_scale=holdout_noise_scale,
@@ -683,14 +706,23 @@ def adjudicate(fitted: list,
     if bootstrap and resid_best is not None and resid_rival is not None:
         from apedp_dyn.epistemic.bootstrap import tiebreak
 
-        tb = tiebreak(delta, float(tau), np.asarray(resid_best, dtype=float),
-                      np.asarray(resid_rival, dtype=float),
+        # resid_best/resid_rival are *signed* residuals (the whiteness guard
+        # needs the signs); tiebreak differences per-timepoint squared errors.
+        # Callers were inconsistent -- some passed ((obs - pred) ** 2)
+        # explicitly, most passed holdout_residuals raw -- so squaring happened
+        # here instead. Differencing signed residuals bootstraps their *mean*,
+        # which tests nothing about accuracy and could return 'rival-favored'
+        # against a large point margin (M1 Hall-Petch: d.mean -68 while
+        # ΔRMSE = +70.8). The whiteness guard above is unaffected.
+        tb = tiebreak(delta, float(tau),
+                      np.asarray(resid_best, dtype=float) ** 2,
+                      np.asarray(resid_rival, dtype=float) ** 2,
                       n_boot=bootstrap_n_boot, seed=bootstrap_seed)
         if tb.get("branch") in ("multi", "rival-favored"):
             attr = (epistemic_attribution if epistemic_attribution != "unknown"
                     else EpistemicAttribution.BOOTSTRAP_INSTABILITY.value)
             return Adjudication(
-                EpistemicStatus.MULTI_HYPOTHESIS, ranking=tuple(ranked),
+                EpistemicStatus.MULTI_HYPOTHESIS, rival=second, ranking=tuple(ranked),
                 best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
                 delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
                 holdout_noise_scale=holdout_noise_scale,
@@ -707,7 +739,7 @@ def adjudicate(fitted: list,
         attr = (epistemic_attribution if epistemic_attribution != "unknown"
                 else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)
         return Adjudication(
-            EpistemicStatus.UNIQUE_SUPPORT, promoted=best, ranking=tuple(ranked),
+            EpistemicStatus.UNIQUE_SUPPORT, promoted=best, rival=second, ranking=tuple(ranked),
             best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
             delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
             holdout_noise_scale=holdout_noise_scale,
@@ -728,7 +760,7 @@ def adjudicate(fitted: list,
     attr = (epistemic_attribution if epistemic_attribution != "unknown"
             else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)
     return Adjudication(
-        EpistemicStatus.UNIQUE_SUPPORT, promoted=best, ranking=tuple(ranked),
+        EpistemicStatus.UNIQUE_SUPPORT, promoted=best, rival=second, ranking=tuple(ranked),
         best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
         delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
         holdout_noise_scale=holdout_noise_scale,

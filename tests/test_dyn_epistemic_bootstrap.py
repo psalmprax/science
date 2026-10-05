@@ -154,9 +154,24 @@ class TestAdjudicateV2:
         sa, sb = _fake_pair(0.05, 0.12)  # point Δ=0.07 > τ≈0.05 → would-be UNIQUE
         v1 = adjudicate([sa, sb])
         assert v1.status is EpistemicStatus.UNIQUE_SUPPORT, v1
-        d = _flip_series()
+        # resid_best/resid_rival are *signed* residuals; adjudicate squares them
+        # for the tiebreak, which differences squared errors. A block where the
+        # rival is worse (riv^2 > top^2) and a block where it is better
+        # (riv^2 < top^2) is what makes the block bootstrap straddle zero, so
+        # the flip is constructed from |residuals| rather than from a
+        # pre-differenced series (squares cannot cancel, so passing one is not
+        # a valid way to express this).
+        rng = np.random.default_rng(7)
+        n = 400
+        top = np.full(n, np.sqrt(0.10))
+        riv = np.full(n, np.sqrt(0.45))          # d = +0.35: rival clearly worse
+        riv[180:230] = np.sqrt(0.10)             # d = 0 in that block
+        top[180:230] = np.sqrt(2.10)             # d = -2.0: point winner looks bad
+        top += rng.normal(0.0, 0.004, size=n)
+        riv += rng.normal(0.0, 0.004, size=n)
+        d = riv**2 - top**2
         assert float(np.mean(d)) > 0
-        v2 = adjudicate([sa, sb], resid_best=np.zeros(400), resid_rival=d,
+        v2 = adjudicate([sa, sb], resid_best=top, resid_rival=riv,
                         bootstrap=True, bootstrap_n_boot=1000, bootstrap_seed=5)
         assert v2.status is EpistemicStatus.MULTI_HYPOTHESIS, v2
         assert v2.promoted is None

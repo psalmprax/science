@@ -102,7 +102,14 @@ class TestAPEDPStudioAPI:
         assert len(data["market_series"]["prices"]) > 0
 
     def test_market_discovery_calm_refuses_spurious_models(self, client):
-        """W2_2019 calm bull market returns INSUFFICIENT_EVIDENCE."""
+        """W2_2019 calm bull market is refused, never promoted.
+
+        Refusal class is multi_hypothesis, not insufficient_evidence: once
+        gate A tolerates causally honest NaN padding the grammar does hold an
+        adequate, generalizing candidate for this window, and the surviving
+        rival is the same function reordered (representation equivalence).
+        What matters here is that nothing is promoted.
+        """
         resp = client.post("/api/discover/market", json={
             "asset": "sp500",
             "window_id": "W2_2019",
@@ -110,7 +117,8 @@ class TestAPEDPStudioAPI:
         })
         assert resp.status_code == 200
         data = resp.json()
-        assert data["epistemic_verdict"] == "insufficient_evidence"
+        assert data["epistemic_verdict"] != "unique_support"
+        assert data["epistemic_verdict"] == "multi_hypothesis"
 
     def test_challenge_ladder_endpoint(self, client):
         """GET /api/challenge/ladder returns all 10 verified rungs."""
@@ -199,13 +207,24 @@ class TestAPEDPStudioAPI:
         assert promoted["delta_rmse"] == pytest.approx(rival["rmse"] - promoted["holdout_rmse"], abs=1e-4)
 
     def test_registry_problem_discovery_endpoint(self, client):
-        """Verifies generic L2 discovery across registry problem modules with full visual schema."""
+        """Verifies generic L2 discovery across registry problem modules with full visual schema.
+
+        The coupled drive-term bug ([0] -> [idx]) used to leave the winner's
+        residuals a near-perfect AR(1); once fixed, the winner is separated from
+        its nearest distinct rival by Delta=0.656 against tau=0.178, so the
+        verdict is unique_support rather than the multi_hypothesis this test
+        used to pin. Per _winner_structure_note, residual structure on the
+        *pair* path is reported but deliberately not enforced (a rival was
+        beaten on holdout RMSE, which arbitrates the shape), so this test also
+        pins that the structural caveat survives into the response rather than
+        being silently dropped.
+        """
         resp = client.post("/api/discover/registry", json={"system": "coupled"})
         assert resp.status_code == 200
         data = resp.json()
 
         assert data["system"] == "coupled"
-        assert data["verdict"] == "multi_hypothesis"
+        assert data["verdict"] == "unique_support"
         assert "pareto_candidates" in data
         assert len(data["pareto_candidates"]) >= 1
         assert "plot_series" in data
@@ -213,6 +232,8 @@ class TestAPEDPStudioAPI:
         assert "tau_epi" in data
         assert data["tau_epi"] > 0
         assert "reason" in data
+        # The disclosure must not be lost.
+        assert "whiteness" in str(data["reason"]).lower()
 
 
 

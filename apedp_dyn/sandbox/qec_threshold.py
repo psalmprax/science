@@ -142,11 +142,19 @@ def run_qec_l3(seed: int = 42, probe_seed: int = 777):
 
     s1, p1 = frozen("threshold", ("one", "pratio"), wte, lambda e: (e / QEC_P_TH) ** QEC_EXP)
     s2, p2 = frozen("linear", ("one", "p"), wli, lambda e: e)
-    # NOTE: tiebreak contracts squared-error series, not signed residuals.
-    # Passing (op - pred) here (as an early draft did) decouples the branch
-    # label from the RMSE margin; SE series keep them consistent.
-    adj = adjudicate([s1, s2], resid_best=((op - p1) ** 2).tolist(),
-                     resid_rival=((op - p2) ** 2).tolist(),
+    # resid_best/resid_rival are SIGNED residuals; adjudicate squares them for
+    # the tiebreak, which differences per-timepoint squared errors.
+    #
+    # This call site used to pre-square -- with a comment diagnosing exactly the
+    # defect ("tiebreak contracts squared-error series, not signed residuals.
+    # Passing (op - pred) here decouples the branch label from the RMSE
+    # margin"). That was a correct diagnosis applied at the wrong layer: it
+    # repaired this one caller while leaving every other caller (materials,
+    # lynx, qec_threshold, the sweeps) passing signed residuals into a
+    # tiebreak that differences them. The conversion now lives in adjudicate,
+    # so pre-squaring here would double-square.
+    adj = adjudicate([s1, s2], resid_best=(op - p1).tolist(),
+                     resid_rival=(op - p2).tolist(),
                      bootstrap=True, bootstrap_n_boot=1000, bootstrap_seed=7,
                      data_origin=DataOrigin.SIMULATION,
                      benchmark_level=BenchmarkLevel.L1_CONSTRAINED_DISCOVERY)

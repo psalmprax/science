@@ -222,6 +222,12 @@ def tiebreak(
     resid_top / resid_rival: per-timepoint squared errors (mean over channels)
     on the SAME holdout record. Returns a dict with lo/hi/mean and the
     recommended branch: 'confirm' | 'multi' | 'rival-favored'.
+
+    Callers must pass *squared* errors. ``adjudicate`` owns that conversion
+    (it receives signed residuals for the whiteness guard and squares them
+    here), because squared-error series may legitimately be negative for a
+    caller deliberately constructing a differential series -- auto-detection
+    inside this function would corrupt that case.
     """
     top = np.asarray(resid_top, dtype=float).ravel()
     riv = np.asarray(resid_rival, dtype=float).ravel()

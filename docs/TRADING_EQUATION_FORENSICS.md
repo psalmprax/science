@@ -1587,6 +1587,72 @@ pre-existing failures in that file are also resolved.
 Net: 634 passed, 5 pre-existing failures unchanged, 0 regressions
 attributable to this work. Status: §83 DONE.
 
+## 84. Bootstrap tiebreak contract defect + four stale tests (all green)
+
+**Root-cause defect (real, not cosmetic).** `tiebreak` documents its inputs
+as *per-timepoint squared errors*, but `resid_best`/`resid_rival` are
+*signed* residuals — correctly so, since the sole-survivor whiteness guard
+needs the signs. Differencing signed residuals and bootstrapping their
+**mean** tests nothing about accuracy. Symptom: M1 Hall-Petch, ΔRMSE =
++70.8 with the point winner at RMSE 2.64 vs 73.43, returned
+`rival-favored` on a CI of [-81.6, -54.2] and refused the win. Fix: the
+conversion now lives in `adjudicate` (square at the tiebreak call site
+only; whiteness still sees signed series). `tiebreak` keeps its documented
+squared-error contract, with no auto-detection — auto-detecting by
+sign would corrupt callers that legitimately pass negative differentials.
+
+Corroboration: `qec_threshold.py` already carried a comment diagnosing
+exactly this ("tiebreak contracts squared-error series, not signed
+residuals. Passing (op - pred) here decouples the branch label from the
+RMSE margin") and worked around it **locally**, leaving every other caller
+(materials, lynx, the sweeps) broken. That workaround is removed so the
+contract is uniform; a pre-squaring call site in
+`test_dyn_zero_false_promotion.py` is likewise de-squared.
+
+**Four stale assertions updated, each with the reason recorded:**
+
+1. `test_stridge_recovers_duffing_truth` — the five terms added to
+   `_TERM_BUILDERS` for the crypto work (`sat_x/sat_v/sat_u/inv_x2/u_relax`)
+   are re-parameterizations of primitives already in the library
+   (`u_relax == u - v` exactly). Threshold-based STRidge is unstable under
+   that collinearity: it kept `u_relax` and dropped `v`. They stay in
+   `_TERM_BUILDERS` (crypto FIN_TERMS, the IR family map, the UI, and an
+   explicit test all reference them) but are out of the *default* sparse
+   vocabulary, matching `DEFAULT_TOPOLOGY`, and remain reachable via an
+   explicit `vocabulary=`.
+2. `test_single_window_sp500_calm_sweep` + the API twin
+   `test_market_discovery_calm_refuses_spurious_models` — expect
+   `insufficient_evidence`/`out_of_grammar=True`; now
+   `multi_hypothesis`/`out_of_grammar=False`. Once gate A tolerates
+   causally honest NaN padding, the grammar *does* hold an adequate
+   candidate (train RMSE 6.2e-03, holdout 4.7e-03 — it generalizes; whiteness
+   passes), and the surviving rival `ma_dev**(-2)+sqrt(ma_dev)` is the same
+   function reordered. Claiming "out of grammar" would be false; the
+   refusal is representation-equivalence, which is what the tests now pin,
+   with the anti-promotion intent kept explicit.
+3. `test_registry_problem_discovery_endpoint` (coupled) — expects
+   `multi_hypothesis`, now `unique_support` (Δ=0.656 vs τ=0.178, a clear
+   3.7x separation) after the coupled `[0]→[idx]` drive fix. The winner's
+   residuals are structured (|rho1|=0.998), which the pair path deliberately
+   reports but does not enforce (see `_winner_structure_note`); the test now
+   pins that the caveat survives into the response rather than being dropped.
+4. `test_lynx_real_data` — its `multi_hypothesis` was pinned to the buggy
+   differencing; corrected, the margin Δ=0.568 > τ=0.341 is confirmed and the
+   verdict is `unique_support`. Flagged for review: this promotion is
+   marginal (1.66x τ) with |rho1|=0.614.
+
+Also corrected: `test_would_be_unique_flips_to_multi` and
+`test_bootstrap_ci_straddling_zero_flips_to_multi` could no longer express
+"a straddling CI" by passing a pre-differenced series (squares cannot
+cancel); both now build the scenario from valid signed residuals. And one
+self-inflicted error is on the record: a gate-4 "generalization guard" was
+added on the belief that the sp500 candidate overfit 123x — that compared
+train **MSE** against holdout **RMSE`; the true ratio is 0.76, the guard was
+a no-op, and it was removed rather than left in on a false premise.
+
+Sweep: **639 passed, 0 failed** across `tests/test_dyn_*.py -m "not slow"`;
+ruff clean. Status: §84 DONE — the pre-existing-failure backlog is empty.
+
 ## 76. H-A/E5 coupling: persistence absorbs the rotation (case study, BTC)
 
 Frozen quad (H-A composite, rankV, logV, persistence-only) on d5 blocks,

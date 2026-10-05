@@ -184,7 +184,10 @@ class TestZeroFalsePromotionHardening:
         c2 = _make_candidate("model_2", ("one", "x3"), train_loss=0.03, holdout_rmse=rmse_2,
                              holdout_residuals=r_rival.tolist(), obs_rms=1.0)
 
-        adj = adjudicate([c1, c2], resid_best=r_best ** 2, resid_rival=r_rival ** 2,
+        # resid_best/resid_rival are SIGNED residuals; adjudicate squares them
+        # for the tiebreak. Passing them pre-squared (as an earlier draft did)
+        # squared twice and made the differential unable to straddle zero.
+        adj = adjudicate([c1, c2], resid_best=r_best, resid_rival=r_rival,
                          bootstrap=True, bootstrap_n_boot=1000, bootstrap_seed=42)
         assert adj.status == EpistemicStatus.MULTI_HYPOTHESIS
         assert adj.promoted is None

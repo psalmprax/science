@@ -42,10 +42,11 @@ class TestSandboxRuns:
 
 
 class TestSandboxGalleryExtended:
-    def test_catalog_has_ten(self):
+    def test_catalog_has_items(self):
         r = client.get("/api/sandbox/list")
         assert r.status_code == 200
-        assert len(r.json()) == 10
+        assert len(r.json()) >= 11
+        assert any(it["id"] == "crypto_multi_grammar" for it in r.json())
 
     def test_hall_petch_promotes(self):
         d = client.post("/api/sandbox/run", json={"sandbox_id": "hall_petch"}).json()
@@ -65,8 +66,23 @@ class TestSandboxGalleryExtended:
         assert len(d["series"]["x"]) == 201
 
     def test_lynx_real_data(self):
+        """Lynx cycle sandbox promotes, with the residual caveat retained.
+
+        This used to pin multi_hypothesis, which was an artifact: adjudicate
+        differenced *signed* residuals into the tiebreak instead of squared
+        errors, so the bootstrap branch could contradict the RMSE margin. With
+        the conversion fixed, the margin Delta=0.568 > tau=0.341 is confirmed
+        by the paired block bootstrap and the verdict is unique_support.
+
+        Note for reviewers: this promotion is marginal (1.66x tau) and the
+        winner's residuals are structured (|rho1|=0.614). Under the pair-path
+        doctrine (_winner_structure_note) that is reported, not enforced, so
+        the caveat is asserted below rather than left implicit.
+        """
         d = client.post("/api/sandbox/run", json={"sandbox_id": "lynx_cycle"}).json()
-        assert d["verdict"] == "multi_hypothesis"
+        assert d["verdict"] == "unique_support"
+        assert d["delta_rmse"] > d["tau_epi"]
+        assert "whiteness" in str(d["reason"]).lower() or "structured" in str(d["reason"]).lower()
         assert len(d["series"]["x"]) == 114
 
     def test_qec_abstains(self):
@@ -115,3 +131,40 @@ class TestMarketWindowsRegistry:
     def test_bad_asset_400(self):
         c = TestClient(app, raise_server_exceptions=False)
         assert c.get("/api/market/windows?asset=xyz").status_code == 400
+
+
+class TestCustomUploadEndpoint:
+    def test_list_contains_custom_upload(self):
+        r = client.get("/api/sandbox/list")
+        assert r.status_code == 200
+        assert any(it["id"] == "custom_upload" for it in r.json())
+
+    def test_custom_upload_run_endpoint(self):
+        csv_sample = "t,x,y\n0.0,1.0,2.0\n0.1,1.1,2.2\n0.2,1.2,2.4\n0.3,1.3,2.6\n0.4,1.4,2.8\n0.5,1.5,3.0\n0.6,1.6,3.2\n0.7,1.7,3.4\n0.8,1.8,3.6\n0.9,1.9,3.8\n1.0,2.0,4.0\n1.1,2.1,4.2\n"
+        r = client.post("/api/sandbox/run", json={
+            "sandbox_id": "custom_upload",
+            "csv_text": csv_sample,
+            "target_column": "y",
+            "mode": "l2_open",
+        })
+        assert r.status_code == 200
+        d = r.json()
+        assert d["sandbox_id"] == "custom_upload"
+        assert "verdict" in d
+        assert "series" in d
+        assert "candidates" in d
+        assert d["extra"]["target_variable"] == "y"
+
+    def test_dedicated_upload_endpoint(self):
+        csv_sample = "date,price\n2023-01-01,100.0\n2023-01-02,101.5\n2023-01-03,102.1\n2023-01-04,101.8\n2023-01-05,103.0\n2023-01-06,104.2\n2023-01-07,103.9\n2023-01-08,105.1\n2023-01-09,106.0\n2023-01-10,105.5\n2023-01-11,107.2\n2023-01-12,108.0\n2023-01-13,107.5\n2023-01-14,109.1\n2023-01-15,110.0\n"
+        r = client.post("/api/sandbox/upload", json={
+            "csv_text": csv_sample,
+            "target_column": "price",
+            "mode": "dynamical_rate",
+        })
+        assert r.status_code == 200
+        d = r.json()
+        assert d["sandbox_id"] == "custom_upload"
+        assert "verdict" in d
+        assert "series" in d
+

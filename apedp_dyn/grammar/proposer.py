@@ -125,8 +125,19 @@ class LibraryProposer:
         # x_v stays: evaluable here, rejected or kept on the merits.
         _nontrajectory = ("c1", "c2", "x_f", "v_f", "x_s", "v_s",
                             "grad_x", "laplacian_x", "xr", "dxr")
+        # Terms that re-parameterize primitives already in the library rather
+        # than adding a new shape: sat_x~x, sat_v~v, sat_u~u, inv_x2~const,
+        # and u_relax == u - v exactly. Threshold-based STRidge is unstable
+        # under that kind of collinearity -- on the Duffing recovery it kept
+        # u_relax and dropped v, because u_relax and u are near-duplicates on
+        # trajectory data. They stay in _TERM_BUILDERS (crypto FIN_TERMS, the
+        # IR family map and the UI all reference them) and remain reachable by
+        # passing an explicit vocabulary; they are simply not part of the
+        # *default* sparse library, matching DEFAULT_TOPOLOGY, which excludes
+        # them for the same reason.
+        _composite = ("u_relax", "sat_x", "sat_v", "sat_u", "inv_x2")
         self._vocabulary = tuple(vocabulary) if vocabulary is not None else tuple(
-            k for k in _TERM_BUILDERS if k not in _nontrajectory)
+            k for k in _TERM_BUILDERS if k not in _nontrajectory and k not in _composite)
         self._proposer_id = proposer_id
 
     @property
