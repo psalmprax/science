@@ -18,6 +18,6 @@ numpy = "0.22.1"
 ndarray = "0.16.1"
 rayon = "1.12.0"
 
-[profile.release]
-opt-level = 3
-lto = true
+# [profile.release] intentionally not here: cargo honours profiles only at
+# the workspace root, so these settings would be ignored (with a warning)
+# for a member crate. They are in the root Cargo.toml.
