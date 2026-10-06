@@ -5,7 +5,7 @@ tags:
 - decision
 - git
 created: 2026-10-01
-updated: 2026-10-01
+updated: 2026-10-02
 filenames:
 - tests/test_coverage_audit.py
 - tools/coverage_audit.py
@@ -14,7 +14,7 @@ kind: decision
 status: proposed
 superseded_by: null
 deprecated_at: null
-review_after: 2026-10-01
+review_after: 2026-10-02
 source_chat_id: null
 created_at: 2026-10-01T13:41:39.276853734+00:00
 summary: null

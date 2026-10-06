@@ -1,0 +1,15 @@
+{
+  "problem_id": "TIER_B_03",
+  "name": "Arrhenius Chemical Reaction Kinetics",
+  "tier": "TIER_B_ESTABLISHED_PHYSICS",
+  "domain": "Chemical Kinetics & Thermodynamics",
+  "input_variable": "normalized_temperature",
+  "target_variable": "reaction_rate_constant",
+  "physical_constraints": {
+    "origin_limit": 0.0,
+    "far_field_limit": 10.0,
+    "positivity": true,
+    "monotonicity": "increasing"
+  },
+  "description": "Temperature dependence of reaction rate coefficients according to transition-state theory."
+}

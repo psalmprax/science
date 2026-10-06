@@ -1,0 +1,16 @@
+{
+  "problem_id": "P18",
+  "problem_name": "High-Reynolds Number Drag Coefficient Plateau",
+  "class_id": 3,
+  "class_name": "Asymptotic & Extrapolation Regimes",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "0.44 + 24.0 / Re",
+  "canonical_structural_family": "drag_curve",
+  "true_parameters": {
+    "Cd_inf": 0.44,
+    "stokes": 24.0
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

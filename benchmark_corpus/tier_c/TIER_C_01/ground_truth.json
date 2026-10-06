@@ -1,0 +1,6 @@
+{
+  "problem_id": "TIER_C_01",
+  "is_empirical_unknown": true,
+  "description": "Genuinely empirical experimental data without analytic formula template.",
+  "bulk_limit_nm": 716.0
+}

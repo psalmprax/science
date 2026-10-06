@@ -1,0 +1,20 @@
+{
+  "problem_id": "P15",
+  "problem_name": "Nonlinear Oscillator Algebraic Decay",
+  "class_id": 3,
+  "class_name": "Asymptotic & Extrapolation Regimes",
+  "input_variables": [
+    "t"
+  ],
+  "target_variable": "x",
+  "variable_units": {
+    "t": "second",
+    "x": "meter"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

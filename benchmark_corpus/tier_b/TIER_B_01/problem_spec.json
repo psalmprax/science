@@ -1,0 +1,15 @@
+{
+  "problem_id": "TIER_B_01",
+  "name": "Planck Blackbody Radiation Spectrum",
+  "tier": "TIER_B_ESTABLISHED_PHYSICS",
+  "domain": "Thermodynamics & Quantum Optics",
+  "input_variable": "lambda_um",
+  "target_variable": "radiance",
+  "physical_constraints": {
+    "origin_limit": 0.0,
+    "far_field_limit": 0.0,
+    "positivity": true,
+    "monotonicity": null
+  },
+  "description": "Spectral radiance of an ideal blackbody radiator obeying Wien extinction and Rayleigh-Jeans tail."
+}

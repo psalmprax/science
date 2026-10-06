@@ -1,0 +1,16 @@
+{
+  "problem_id": "P15",
+  "problem_name": "Nonlinear Oscillator Algebraic Decay",
+  "class_id": 3,
+  "class_name": "Asymptotic & Extrapolation Regimes",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "4.0 / (1.0 + 0.5*t)",
+  "canonical_structural_family": "rational_decay",
+  "true_parameters": {
+    "A": 4.0,
+    "lambda": 0.5
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

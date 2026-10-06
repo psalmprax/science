@@ -6,7 +6,7 @@ tags:
 - git
 - pattern
 created: 2026-10-01
-updated: 2026-10-01
+updated: 2026-10-02
 filenames:
 - apedp/model_synthesis.py
 - tests/test_model_synthesis.py
@@ -15,7 +15,7 @@ kind: pattern
 status: proposed
 superseded_by: null
 deprecated_at: null
-review_after: 2026-10-01
+review_after: 2026-10-02
 source_chat_id: null
 created_at: 2026-10-01T07:22:02.481576400+00:00
 summary: null

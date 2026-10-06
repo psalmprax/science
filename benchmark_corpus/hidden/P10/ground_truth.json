@@ -1,0 +1,22 @@
+{
+  "problem_id": "P10",
+  "problem_name": "Arrhenius Reaction Rate in Narrow Temperature Band",
+  "class_id": 2,
+  "class_name": "Observationally Equivalent Regimes",
+  "oracle_epistemic_class": "C2",
+  "expected_state": "MULTI_HYPOTHESIS",
+  "ground_truth_formula": "exp(-600.0 / T)",
+  "canonical_structural_family": "arrhenius_exponential",
+  "true_parameters": {},
+  "competing_hypotheses": [
+    {
+      "id": "arrhenius",
+      "formula": "exp(-600.0 / T)"
+    },
+    {
+      "id": "linear_approximation",
+      "formula": "0.13759 + 0.00090217*(T - 302.5)"
+    }
+  ],
+  "pathology_details": {}
+}

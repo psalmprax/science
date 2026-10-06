@@ -1,0 +1,15 @@
+{
+  "problem_id": "P04",
+  "problem_name": "Ideal Gas Law",
+  "class_id": 1,
+  "class_name": "Canonical Physical Laws",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "8.314 * T / V",
+  "canonical_structural_family": "rational_multivariable",
+  "true_parameters": {
+    "nR": 8.314
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

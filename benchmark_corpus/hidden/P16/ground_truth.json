@@ -1,0 +1,16 @@
+{
+  "problem_id": "P16",
+  "problem_name": "Planck Blackbody Radiation Spectrum",
+  "class_id": 3,
+  "class_name": "Asymptotic & Extrapolation Regimes",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "2.0 * nu**3 / (exp(0.5*nu) - 1.0)",
+  "canonical_structural_family": "planck_distribution",
+  "true_parameters": {
+    "A": 2.0,
+    "beta": 0.5
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

@@ -1,0 +1,20 @@
+{
+  "problem_id": "P18",
+  "problem_name": "High-Reynolds Number Drag Coefficient Plateau",
+  "class_id": 3,
+  "class_name": "Asymptotic & Extrapolation Regimes",
+  "input_variables": [
+    "Re"
+  ],
+  "target_variable": "Cd",
+  "variable_units": {
+    "Re": "dimensionless",
+    "Cd": "dimensionless"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

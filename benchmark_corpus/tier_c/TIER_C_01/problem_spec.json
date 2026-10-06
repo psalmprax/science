@@ -1,0 +1,17 @@
+{
+  "problem_id": "TIER_C_01",
+  "name": "CdSe Quantum Dot Sizing Curve (Yu et al. 2003)",
+  "tier": "TIER_C_GENUINELY_UNKNOWN_EMPIRICAL",
+  "domain": "Nanotechnology & Colloidal Quantum Chemistry",
+  "source": "Yu et al., Chem. Mater. 2003, 15, 2854-2860",
+  "input_variable": "diameter_nm",
+  "target_variable": "lambda_peak_nm",
+  "is_empirical_unknown": true,
+  "physical_constraints": {
+    "origin_limit": null,
+    "positivity": true,
+    "monotonicity": "increasing",
+    "bulk_bandgap_asymptote_nm": 716.0
+  },
+  "description": "Authentic experimental optical absorption measurements of colloidal CdSe nanocrystals. Underlying relationship is governed by quantum confinement with dielectric and surface relaxation effects; no closed-form analytical law exists."
+}

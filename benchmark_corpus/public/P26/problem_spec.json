@@ -1,0 +1,22 @@
+{
+  "problem_id": "P26",
+  "problem_name": "Turbulent Kinetic Energy Dissipation Rate",
+  "class_id": 5,
+  "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+  "input_variables": [
+    "k",
+    "L"
+  ],
+  "target_variable": "eps",
+  "variable_units": {
+    "k": "meter**2_per_second**2",
+    "L": "meter",
+    "eps": "meter**2_per_second**3"
+  },
+  "dataset_sizes": {
+    "train": 35,
+    "validation": 14,
+    "near_ood": 16,
+    "far_ood": 16
+  }
+}

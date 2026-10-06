@@ -1,0 +1,20 @@
+{
+  "problem_id": "P19",
+  "problem_name": "Resonance Pole Avoidance Trap",
+  "class_id": 4,
+  "class_name": "Singular & Pathological Regimes",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "variable_units": {
+    "x": "meter",
+    "y": "meter"
+  },
+  "dataset_sizes": {
+    "train": 10,
+    "validation": 8,
+    "near_ood": 5,
+    "far_ood": 4
+  }
+}

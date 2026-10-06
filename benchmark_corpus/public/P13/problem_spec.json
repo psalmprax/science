@@ -1,0 +1,22 @@
+{
+  "problem_id": "P13",
+  "problem_name": "Relativistic Velocity Addition",
+  "class_id": 3,
+  "class_name": "Asymptotic & Extrapolation Regimes",
+  "input_variables": [
+    "u",
+    "w"
+  ],
+  "target_variable": "v",
+  "variable_units": {
+    "u": "meter_per_second",
+    "w": "meter_per_second",
+    "v": "meter_per_second"
+  },
+  "dataset_sizes": {
+    "train": 35,
+    "validation": 14,
+    "near_ood": 16,
+    "far_ood": 16
+  }
+}

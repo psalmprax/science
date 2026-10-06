@@ -1,0 +1,17 @@
+{
+  "problem_id": "P28",
+  "problem_name": "Non-Hermitian Quantum Damped Wavepacket Dispersion",
+  "class_id": 5,
+  "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+  "oracle_epistemic_class": "C5",
+  "expected_state": "MISSING_STRUCTURE",
+  "ground_truth_formula": "exp(-0.2*t) * exp(-(x - 1.5*t)**2 / 2.0)",
+  "canonical_structural_family": "gaussian_soliton_decay",
+  "true_parameters": {
+    "gamma": 0.2,
+    "v": 1.5,
+    "sigma2": 2.0
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

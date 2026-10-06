@@ -6,7 +6,7 @@ tags:
 - git
 - pattern
 created: 2026-10-01
-updated: 2026-10-01
+updated: 2026-10-06
 filenames:
 - apedp_dyn/ui/dashboard.html
 - apedp_dyn/ui/server.py
@@ -15,7 +15,7 @@ kind: pattern
 status: proposed
 superseded_by: null
 deprecated_at: null
-review_after: 2026-10-01
+review_after: 2026-10-06
 source_chat_id: null
 created_at: 2026-10-01T13:41:39.232843064+00:00
 summary: null

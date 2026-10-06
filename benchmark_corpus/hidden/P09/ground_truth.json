@@ -1,0 +1,22 @@
+{
+  "problem_id": "P09",
+  "problem_name": "Michaelis-Menten Kinetics in Substrate Saturation",
+  "class_id": 2,
+  "class_name": "Observationally Equivalent Regimes",
+  "oracle_epistemic_class": "C2",
+  "expected_state": "MULTI_HYPOTHESIS",
+  "ground_truth_formula": "10.0 * S / (1.0 + S)",
+  "canonical_structural_family": "rational_langmuir",
+  "true_parameters": {},
+  "competing_hypotheses": [
+    {
+      "id": "michaelis_menten",
+      "formula": "10.0*S / (1.0 + S)"
+    },
+    {
+      "id": "saturation_linear",
+      "formula": "9.6 + 0.007*S"
+    }
+  ],
+  "pathology_details": {}
+}

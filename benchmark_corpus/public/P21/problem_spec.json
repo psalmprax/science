@@ -1,0 +1,20 @@
+{
+  "problem_id": "P21",
+  "problem_name": "Viscous Boundary Layer Leading Edge Singularity",
+  "class_id": 4,
+  "class_name": "Singular & Pathological Regimes",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "tau",
+  "variable_units": {
+    "x": "meter",
+    "tau": "pascal"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

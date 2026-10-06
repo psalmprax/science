@@ -1,0 +1,20 @@
+{
+  "problem_id": "P27",
+  "problem_name": "Two-Compartment Pharmacokinetic Clearance",
+  "class_id": 5,
+  "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+  "input_variables": [
+    "t"
+  ],
+  "target_variable": "C",
+  "variable_units": {
+    "t": "hour",
+    "C": "milligram_per_liter"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

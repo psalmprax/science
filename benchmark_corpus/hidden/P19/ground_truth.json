@@ -1,0 +1,21 @@
+{
+  "problem_id": "P19",
+  "problem_name": "Resonance Pole Avoidance Trap",
+  "class_id": 4,
+  "class_name": "Singular & Pathological Regimes",
+  "oracle_epistemic_class": "C3",
+  "expected_state": "INSUFFICIENT_EVIDENCE",
+  "ground_truth_formula": "2.0*x + 1.0",
+  "canonical_structural_family": "linear",
+  "true_parameters": {},
+  "competing_hypotheses": [],
+  "pathology_details": {
+    "trap_type": "POLE_INSIDE_DOMAIN",
+    "pathological_candidate": "2.0*x + 1.0 / (x - 2.5001)",
+    "pole_location": 2.5001,
+    "domain": [
+      1.0,
+      5.0
+    ]
+  }
+}

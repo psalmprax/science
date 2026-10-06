@@ -1,0 +1,20 @@
+{
+  "problem_id": "P09",
+  "problem_name": "Michaelis-Menten Kinetics in Substrate Saturation",
+  "class_id": 2,
+  "class_name": "Observationally Equivalent Regimes",
+  "input_variables": [
+    "S"
+  ],
+  "target_variable": "v",
+  "variable_units": {
+    "S": "mole_per_meter**3",
+    "v": "mole_per_meter**3_second"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

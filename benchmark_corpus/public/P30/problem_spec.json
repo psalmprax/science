@@ -1,0 +1,20 @@
+{
+  "problem_id": "P30",
+  "problem_name": "Carreau-Yasuda Non-Newtonian Shear-Thinning Viscosity",
+  "class_id": 5,
+  "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+  "input_variables": [
+    "gamma_dot"
+  ],
+  "target_variable": "eta",
+  "variable_units": {
+    "gamma_dot": "per_second",
+    "eta": "pascal_second"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

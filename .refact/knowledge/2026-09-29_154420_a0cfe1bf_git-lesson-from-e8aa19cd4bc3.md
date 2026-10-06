@@ -5,7 +5,7 @@ tags:
 - git
 - lesson
 created: 2026-09-29
-updated: 2026-10-01
+updated: 2026-10-06
 filenames:
 - apedp_dyn/model/equations.py
 - apedp_dyn/problems/base.py
@@ -16,7 +16,7 @@ kind: lesson
 status: proposed
 superseded_by: null
 deprecated_at: null
-review_after: 2026-10-01
+review_after: 2026-10-06
 source_chat_id: null
 created_at: 2026-09-29T13:44:20.547975642+00:00
 summary: null

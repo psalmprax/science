@@ -1,0 +1,15 @@
+{
+  "problem_id": "P01",
+  "problem_name": "Kepler's Third Law",
+  "class_id": 1,
+  "class_name": "Canonical Physical Laws",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "a**1.5",
+  "canonical_structural_family": "power_law",
+  "true_parameters": {
+    "power": 1.5
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

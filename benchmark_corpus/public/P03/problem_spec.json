@@ -1,0 +1,20 @@
+{
+  "problem_id": "P03",
+  "problem_name": "Stefan-Boltzmann Radiation Law",
+  "class_id": 1,
+  "class_name": "Canonical Physical Laws",
+  "input_variables": [
+    "T"
+  ],
+  "target_variable": "P",
+  "variable_units": {
+    "T": "kelvin",
+    "P": "watt"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "problem_id": "P25",
+  "problem_name": "Aerodynamic Drag with Transonic Mach Rise",
+  "class_id": 5,
+  "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+  "oracle_epistemic_class": "C5",
+  "expected_state": "MISSING_STRUCTURE",
+  "ground_truth_formula": "0.02 + 0.15*alpha**2 + Delta_NN(M)",
+  "canonical_structural_family": "hybrid_physics_residual",
+  "true_parameters": {},
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

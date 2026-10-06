@@ -1,0 +1,22 @@
+{
+  "problem_id": "P29",
+  "problem_name": "Plasma Hall-MHD Coupled Drift Wave Velocity",
+  "class_id": 5,
+  "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+  "input_variables": [
+    "k_perp",
+    "k_par"
+  ],
+  "target_variable": "omega",
+  "variable_units": {
+    "k_perp": "per_meter",
+    "k_par": "per_meter",
+    "omega": "radian_per_second"
+  },
+  "dataset_sizes": {
+    "train": 35,
+    "validation": 14,
+    "near_ood": 16,
+    "far_ood": 16
+  }
+}

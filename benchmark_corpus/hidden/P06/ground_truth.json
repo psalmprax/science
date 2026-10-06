@@ -1,0 +1,16 @@
+{
+  "problem_id": "P06",
+  "problem_name": "Simple Harmonic Oscillator Period",
+  "class_id": 1,
+  "class_name": "Canonical Physical Laws",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "sqrt(m)",
+  "canonical_structural_family": "power_law",
+  "true_parameters": {
+    "coeff": 1.0,
+    "power": 0.5
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

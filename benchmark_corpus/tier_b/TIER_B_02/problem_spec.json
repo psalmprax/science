@@ -1,0 +1,15 @@
+{
+  "problem_id": "TIER_B_02",
+  "name": "Lennard-Jones 12-6 Interatomic Potential",
+  "tier": "TIER_B_ESTABLISHED_PHYSICS",
+  "domain": "Molecular Physics & Statistical Mechanics",
+  "input_variable": "r_angstrom",
+  "target_variable": "potential_energy_eV",
+  "physical_constraints": {
+    "origin_limit": null,
+    "far_field_limit": 0.0,
+    "positivity": false,
+    "potential_well_min": -1.0
+  },
+  "description": "Interatomic van der Waals attraction balanced by Pauli exclusion repulsion."
+}

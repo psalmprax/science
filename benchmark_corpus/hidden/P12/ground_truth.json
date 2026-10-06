@@ -1,0 +1,22 @@
+{
+  "problem_id": "P12",
+  "problem_name": "Damped Wave Near-Field Amplitude",
+  "class_id": 2,
+  "class_name": "Observationally Equivalent Regimes",
+  "oracle_epistemic_class": "C2",
+  "expected_state": "MULTI_HYPOTHESIS",
+  "ground_truth_formula": "exp(-0.5*x) * cos(1.2*x)",
+  "canonical_structural_family": "damped_oscillation",
+  "true_parameters": {},
+  "competing_hypotheses": [
+    {
+      "id": "true_damped_wave",
+      "formula": "exp(-0.5*x) * cos(1.2*x)"
+    },
+    {
+      "id": "quadratic_taylor",
+      "formula": "1.0 - 0.5*x - 0.595*x**2"
+    }
+  ],
+  "pathology_details": {}
+}

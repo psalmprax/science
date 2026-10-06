@@ -1,0 +1,9 @@
+{
+  "problem_id": "TIER_B_01",
+  "formula": "15.0 / (x**5 * (exp(4.8 / x) - 1.0))",
+  "canonical_family": "planck_blackbody_radiation",
+  "parameters": {
+    "A": 15.0,
+    "B": 4.8
+  }
+}

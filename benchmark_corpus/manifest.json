@@ -1,0 +1,346 @@
+{
+  "version": "1.0.0",
+  "seed": 42,
+  "num_classes": 5,
+  "problems_per_class": 6,
+  "total_problems": 30,
+  "problems": {
+    "P01": {
+      "problem_id": "P01",
+      "name": "Kepler's Third Law",
+      "class_id": 1,
+      "class_name": "Canonical Physical Laws",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "T",
+      "input_variables": [
+        "a"
+      ]
+    },
+    "P02": {
+      "problem_id": "P02",
+      "name": "Newton's Law of Gravitation",
+      "class_id": 1,
+      "class_name": "Canonical Physical Laws",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "F",
+      "input_variables": [
+        "r"
+      ]
+    },
+    "P03": {
+      "problem_id": "P03",
+      "name": "Stefan-Boltzmann Radiation Law",
+      "class_id": 1,
+      "class_name": "Canonical Physical Laws",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "P",
+      "input_variables": [
+        "T"
+      ]
+    },
+    "P04": {
+      "problem_id": "P04",
+      "name": "Ideal Gas Law",
+      "class_id": 1,
+      "class_name": "Canonical Physical Laws",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "P",
+      "input_variables": [
+        "T",
+        "V"
+      ]
+    },
+    "P05": {
+      "problem_id": "P05",
+      "name": "Relativistic Energy-Momentum Relation",
+      "class_id": 1,
+      "class_name": "Canonical Physical Laws",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "E",
+      "input_variables": [
+        "p"
+      ]
+    },
+    "P06": {
+      "problem_id": "P06",
+      "name": "Simple Harmonic Oscillator Period",
+      "class_id": 1,
+      "class_name": "Canonical Physical Laws",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "T",
+      "input_variables": [
+        "m"
+      ]
+    },
+    "P07": {
+      "problem_id": "P07",
+      "name": "Isobaric Heat Capacity (Shomate vs Quadratic)",
+      "class_id": 2,
+      "class_name": "Observationally Equivalent Regimes",
+      "oracle_epistemic_class": "C2",
+      "target_variable": "Cp",
+      "input_variables": [
+        "T"
+      ]
+    },
+    "P08": {
+      "problem_id": "P08",
+      "name": "Linear Hookean vs Nonlinear Neo-Hookean Elasticity",
+      "class_id": 2,
+      "class_name": "Observationally Equivalent Regimes",
+      "oracle_epistemic_class": "C2",
+      "target_variable": "stress",
+      "input_variables": [
+        "strain"
+      ]
+    },
+    "P09": {
+      "problem_id": "P09",
+      "name": "Michaelis-Menten Kinetics in Substrate Saturation",
+      "class_id": 2,
+      "class_name": "Observationally Equivalent Regimes",
+      "oracle_epistemic_class": "C2",
+      "target_variable": "v",
+      "input_variables": [
+        "S"
+      ]
+    },
+    "P10": {
+      "problem_id": "P10",
+      "name": "Arrhenius Reaction Rate in Narrow Temperature Band",
+      "class_id": 2,
+      "class_name": "Observationally Equivalent Regimes",
+      "oracle_epistemic_class": "C2",
+      "target_variable": "k",
+      "input_variables": [
+        "T"
+      ]
+    },
+    "P11": {
+      "problem_id": "P11",
+      "name": "Atmospheric Barometric Density",
+      "class_id": 2,
+      "class_name": "Observationally Equivalent Regimes",
+      "oracle_epistemic_class": "C2",
+      "target_variable": "rho",
+      "input_variables": [
+        "z"
+      ]
+    },
+    "P12": {
+      "problem_id": "P12",
+      "name": "Damped Wave Near-Field Amplitude",
+      "class_id": 2,
+      "class_name": "Observationally Equivalent Regimes",
+      "oracle_epistemic_class": "C2",
+      "target_variable": "y",
+      "input_variables": [
+        "x"
+      ]
+    },
+    "P13": {
+      "problem_id": "P13",
+      "name": "Relativistic Velocity Addition",
+      "class_id": 3,
+      "class_name": "Asymptotic & Extrapolation Regimes",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "v",
+      "input_variables": [
+        "u",
+        "w"
+      ]
+    },
+    "P14": {
+      "problem_id": "P14",
+      "name": "Yukawa Screened Potential",
+      "class_id": 3,
+      "class_name": "Asymptotic & Extrapolation Regimes",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "V",
+      "input_variables": [
+        "r"
+      ]
+    },
+    "P15": {
+      "problem_id": "P15",
+      "name": "Nonlinear Oscillator Algebraic Decay",
+      "class_id": 3,
+      "class_name": "Asymptotic & Extrapolation Regimes",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "x",
+      "input_variables": [
+        "t"
+      ]
+    },
+    "P16": {
+      "problem_id": "P16",
+      "name": "Planck Blackbody Radiation Spectrum",
+      "class_id": 3,
+      "class_name": "Asymptotic & Extrapolation Regimes",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "u",
+      "input_variables": [
+        "nu"
+      ]
+    },
+    "P17": {
+      "problem_id": "P17",
+      "name": "Fermi-Dirac Distribution High-Energy Tail",
+      "class_id": 3,
+      "class_name": "Asymptotic & Extrapolation Regimes",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "f",
+      "input_variables": [
+        "E"
+      ]
+    },
+    "P18": {
+      "problem_id": "P18",
+      "name": "High-Reynolds Number Drag Coefficient Plateau",
+      "class_id": 3,
+      "class_name": "Asymptotic & Extrapolation Regimes",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "Cd",
+      "input_variables": [
+        "Re"
+      ]
+    },
+    "P19": {
+      "problem_id": "P19",
+      "name": "Resonance Pole Avoidance Trap",
+      "class_id": 4,
+      "class_name": "Singular & Pathological Regimes",
+      "oracle_epistemic_class": "C3",
+      "target_variable": "y",
+      "input_variables": [
+        "x"
+      ]
+    },
+    "P20": {
+      "problem_id": "P20",
+      "name": "Critical Opalescence Susceptibility Divergence",
+      "class_id": 4,
+      "class_name": "Singular & Pathological Regimes",
+      "oracle_epistemic_class": "C3",
+      "target_variable": "chi",
+      "input_variables": [
+        "T"
+      ]
+    },
+    "P21": {
+      "problem_id": "P21",
+      "name": "Viscous Boundary Layer Leading Edge Singularity",
+      "class_id": 4,
+      "class_name": "Singular & Pathological Regimes",
+      "oracle_epistemic_class": "C3",
+      "target_variable": "tau",
+      "input_variables": [
+        "x"
+      ]
+    },
+    "P22": {
+      "problem_id": "P22",
+      "name": "Runge Polynomial Boundary Oscillation",
+      "class_id": 4,
+      "class_name": "Singular & Pathological Regimes",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "y",
+      "input_variables": [
+        "x"
+      ]
+    },
+    "P23": {
+      "problem_id": "P23",
+      "name": "Dimensional Incompatibility Trap",
+      "class_id": 4,
+      "class_name": "Singular & Pathological Regimes",
+      "oracle_epistemic_class": "C3",
+      "target_variable": "v",
+      "input_variables": [
+        "T",
+        "x"
+      ]
+    },
+    "P24": {
+      "problem_id": "P24",
+      "name": "Multi-Parameter Collinear Singularity Trap",
+      "class_id": 4,
+      "class_name": "Singular & Pathological Regimes",
+      "oracle_epistemic_class": "C3",
+      "target_variable": "y",
+      "input_variables": [
+        "x"
+      ]
+    },
+    "P25": {
+      "problem_id": "P25",
+      "name": "Aerodynamic Drag with Transonic Mach Rise",
+      "class_id": 5,
+      "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+      "oracle_epistemic_class": "C5",
+      "target_variable": "Cd",
+      "input_variables": [
+        "M",
+        "alpha"
+      ]
+    },
+    "P26": {
+      "problem_id": "P26",
+      "name": "Turbulent Kinetic Energy Dissipation Rate",
+      "class_id": 5,
+      "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "eps",
+      "input_variables": [
+        "k",
+        "L"
+      ]
+    },
+    "P27": {
+      "problem_id": "P27",
+      "name": "Two-Compartment Pharmacokinetic Clearance",
+      "class_id": 5,
+      "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "C",
+      "input_variables": [
+        "t"
+      ]
+    },
+    "P28": {
+      "problem_id": "P28",
+      "name": "Non-Hermitian Quantum Damped Wavepacket Dispersion",
+      "class_id": 5,
+      "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+      "oracle_epistemic_class": "C5",
+      "target_variable": "psi",
+      "input_variables": [
+        "x",
+        "t"
+      ]
+    },
+    "P29": {
+      "problem_id": "P29",
+      "name": "Plasma Hall-MHD Coupled Drift Wave Velocity",
+      "class_id": 5,
+      "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "omega",
+      "input_variables": [
+        "k_perp",
+        "k_par"
+      ]
+    },
+    "P30": {
+      "problem_id": "P30",
+      "name": "Carreau-Yasuda Non-Newtonian Shear-Thinning Viscosity",
+      "class_id": 5,
+      "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+      "oracle_epistemic_class": "C1",
+      "target_variable": "eta",
+      "input_variables": [
+        "gamma_dot"
+      ]
+    }
+  }
+}
