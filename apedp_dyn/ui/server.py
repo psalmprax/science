@@ -1,7 +1,9 @@
 """FastAPI Web Studio Server for APEDP Epistemic Discovery & Adjudication."""
 from __future__ import annotations
 
+import logging
 import os
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, Literal
 
@@ -15,11 +17,17 @@ from scipy.integrate import solve_ivp
 from apedp_dyn.discovery_l2.dimensional_types import Dimension
 from apedp_dyn.discovery_l2.l2_engine import L2DiscoveryEngine
 from apedp_dyn.discovery_l2.multiterm_engine import MultiTermL2Engine
-from apedp_dyn.sandbox.real_market_l2_sweep import (
-    WINDOWS,
+from apedp_dyn.market.assets import AVAILABLE_ASSETS, load_series_with_dates
+from apedp_dyn.market.regimes import REGIME_METADATA, MarketRegime
+from apedp_dyn.market.sweep import (
     execute_window_discovery,
+    run_market_sweep,
+)
+from apedp_dyn.market.windows import (
+    WINDOWS,
+    extensive_rolling_windows,
     generated_rolling_windows,
-    load_series_with_dates,
+    get_window_by_id,
 )
 
 UI_DIR = Path(__file__).resolve().parent
@@ -68,6 +76,12 @@ _AUDIT_LOG = Path(os.environ.get("APEDP_AUDIT_LOG",
                                  str(Path(__file__).resolve().parent.parent.parent
                                      / "logs" / "audit.jsonl")))
 
+# Diagnostics for degraded-but-continue paths. Debug level on purpose: these
+# are the branches where discovery still returns a usable (flatter) result, so
+# they must not spam request logs, but a silently dropped input channel should
+# still be greppable.
+_LOG = logging.getLogger("apedp_dyn.ui.server")
+
 
 def _audit(endpoint: str, payload: dict[str, Any]) -> None:
     """Append-only audit record for every discovery/recommendation response.
@@ -115,8 +129,14 @@ class PhysicsRequest(BaseModel):
 
 
 class MarketRequest(BaseModel):
-    asset: Literal["sp500", "nasdaq100"] = "nasdaq100"
+    asset: str = "nasdaq100"
     window_id: str = "W3_COVID"
+    multiterm: bool = False
+
+
+class MarketSweepRequest(BaseModel):
+    asset: str = "sp500"
+    max_windows: int = 5
     multiterm: bool = False
 
 
@@ -186,15 +206,15 @@ def status() -> dict[str, Any]:
     }
 
 
-def _problem_modules():
+def _problem_modules() -> dict[str, Any]:
     """All importable problem modules exposing spec()."""
     import importlib
     import pkgutil
 
     import apedp_dyn.problems as P
-    out = {}
+    out: dict[str, Any] = {}
     for m in pkgutil.iter_modules(P.__path__):
-        if m.name.startswith("_") or m.name == "base":
+        if m.name.startswith("_") or m.name == "base" or m.name == "catalog":
             continue
         try:
             mod = importlib.import_module(f"apedp_dyn.problems.{m.name}")
@@ -204,26 +224,78 @@ def _problem_modules():
             import logging
             logging.getLogger(__name__).debug("skipping problem module %s: %s", m.name, exc)
             continue
+    try:
+        from apedp_dyn.problems.catalog import get_catalog_modules
+        out.update(get_catalog_modules())
+    except Exception as exc:  # noqa: BLE001
+        import logging
+        logging.getLogger(__name__).debug("skipping catalog modules: %s", exc)
     return out
 
 
-@app.get("/api/physics/systems", dependencies=[Depends(_require_api_key)])
-def physics_systems() -> list[dict[str, Any]]:
-    """Registry of every runnable problem module (not just the 4 demo systems)."""
+_PHYSICS_SYSTEMS_CACHE: list[dict[str, Any]] | None = None
+
+
+def _get_all_physics_systems_items() -> list[dict[str, Any]]:
+    global _PHYSICS_SYSTEMS_CACHE
+    if _PHYSICS_SYSTEMS_CACHE is not None:
+        return _PHYSICS_SYSTEMS_CACHE
+
     items = []
     for modname, mod in sorted(_problem_modules().items()):
         try:
-            spec = mod.spec()
-            eqs = [f"{e.state}' = {e.sympy_expr}" for e in spec.truth_equations]
+            category = getattr(mod, "category", "classical")
+            name = getattr(mod, "name", modname)
+            problem_id = getattr(mod, "problem_id", getattr(mod, "PROBLEM_ID", modname))
+            if hasattr(mod, "equation_strings"):
+                eqs = mod.equation_strings
+                n_states = getattr(mod, "n_states", len(eqs))
+            else:
+                spec = mod.spec()
+                eqs = [f"{e.state}' = {e.sympy_expr}" for e in spec.truth_equations]
+                n_states = len(spec.states)
+                name = getattr(spec, "name", name)
+                problem_id = getattr(spec, "problem_id", problem_id)
         except Exception as exc:  # noqa: BLE001 -- broken spec must not hide the rest
             import logging
             logging.getLogger(__name__).debug("skipping spec %s: %s", modname, exc)
             continue
-        items.append({"id": modname,
-                      "problem_id": getattr(spec, "problem_id", modname),
-                      "name": getattr(spec, "name", modname),
-                      "equations": eqs,
-                      "n_states": len(spec.states)})
+        items.append({
+            "id": modname,
+            "problem_id": problem_id,
+            "name": name,
+            "category": category,
+            "equations": eqs,
+            "n_states": n_states,
+        })
+    _PHYSICS_SYSTEMS_CACHE = items
+    return items
+
+
+@app.get("/api/physics/systems", dependencies=[Depends(_require_api_key)])
+def physics_systems(
+    category: str | None = None,
+    search: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+) -> list[dict[str, Any]]:
+    """Registry of every runnable problem module with optional filtering and pagination."""
+    items = _get_all_physics_systems_items()
+    if category:
+        c_low = category.strip().lower()
+        items = [it for it in items if it.get("category", "").lower() == c_low]
+    if search:
+        s_low = search.strip().lower()
+        items = [
+            it for it in items
+            if s_low in it["name"].lower()
+            or s_low in it["id"].lower()
+            or any(s_low in eq.lower() for eq in it["equations"])
+        ]
+    if offset:
+        items = items[offset:]
+    if limit is not None:
+        items = items[:limit]
     return items
 
 
@@ -319,31 +391,105 @@ def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
         raise HTTPException(status_code=404, detail=f"Unknown problem module {modname}.")
     try:
         prob = finalize(mods[modname].spec())
+    except (AssertionError, ValueError) as e:
+        # Bad problem spec (e.g. truth trajectory blows up): client got a
+        # problem the server cannot build truth for -> 422, not engine 500.
+        _audit("discover/registry", {"system": modname, "verdict": "error",
+                                     "reason": f"truth generation failed: {e}"})
+        raise HTTPException(status_code=422,
+                            detail=f"Problem {modname} cannot generate ground truth: {e}") from e
+    try:
         Y = np.asarray(prob.train["truth_y"], dtype=float)
         t = np.asarray(prob.train["truth_t"], dtype=float)
-        names = [s.name for s in prob.states]
-        feats = {n: Y[:, i] for i, n in enumerate(names)}
+        state_names = [s.name for s in prob.states]
+        target_state = state_names[-1] if state_names else "y"
+        names = list(state_names)
+        feats = {n: Y[:, i] for i, n in enumerate(state_names)}
         # Forced systems must offer the drive as evidence: discovering
         # acceleration laws without the input series starves the search
         # of the causing signal (measured 230x RMSE penalty on MSD).
-        for u in prob.inputs:
+        for idx, u in enumerate(prob.inputs):
             try:
                 feats[u.name] = np.asarray(
-                    [np.atleast_1d(np.asarray(prob.train["u_of_t"](ti), dtype=float))[0]
+                    [np.atleast_1d(np.asarray(prob.train["u_of_t"](ti), dtype=float))[idx]
                      for ti in t], dtype=float)
-                names = [*names, u.name]
+                names.append(u.name)
             except Exception as exc:  # noqa: BLE001 -- broken drive must not hide states
                 import logging
                 logging.getLogger(__name__).debug("skipping drive %s: %s",
                                                   getattr(u, "name", "?"), exc)
                 continue
         target = np.gradient(Y[:, -1], t)
-        eng = L2DiscoveryEngine(operators=("+", "-", "*", "/", "pow"),
-                                max_depth=2, max_complexity=5)
-        res = eng.discover(X=feats, Y=target,
-                           dimensions={n: Dimension() for n in names},
-                           target_dimension=Dimension(), train_ratio=0.6,
-                           bootstrap=False, seed=42)
+        noise_level = float(req.get("noise", 0.0))
+        noise_sigma = None
+        if noise_level > 0.0:
+            rng = np.random.default_rng(int(req.get("seed", 42)))
+            t_std = float(np.std(target))
+            noise_sigma = noise_level * (t_std if t_std > 1e-12 else 1.0)
+            target = target + rng.normal(0, noise_sigma, size=len(target))
+
+        # Check for explicit holdout data from problem specification
+        X_ho = None
+        Y_ho = None
+        t_ho = None
+        has_explicit_holdout = (
+            isinstance(getattr(prob, "holdout", None), dict)
+            and "truth_y" in prob.holdout
+            and "truth_t" in prob.holdout
+        )
+        if has_explicit_holdout:
+            Y_h = np.asarray(prob.holdout["truth_y"], dtype=float)
+            t_h = np.asarray(prob.holdout["truth_t"], dtype=float)
+            if len(t_h) >= 4:
+                feats_ho = {n: Y_h[:, i] for i, n in enumerate(state_names)}
+                for idx, u in enumerate(prob.inputs):
+                    try:
+                        feats_ho[u.name] = np.asarray(
+                            [np.atleast_1d(np.asarray(prob.holdout["u_of_t"](ti), dtype=float))[idx]
+                             for ti in t_h], dtype=float)
+                    except (ValueError, TypeError, ArithmeticError, KeyError,
+                            IndexError) as exc:
+                        # A malformed input channel must not abort discovery;
+                        # the channel is dropped and the candidate simply loses
+                        # that feature. Surfaced so a silent drop is greppable.
+                        _LOG.debug("dropping input channel %s: %s", u.name, exc)
+                X_ho = feats_ho
+                t_ho = t_h
+                Y_ho = np.gradient(Y_h[:, -1], t_h)
+
+        is_multiterm = bool(req.get("multiterm", False))
+        if is_multiterm:
+            m_eng = MultiTermL2Engine(
+                max_depth=2,
+                max_term_complexity=4,
+                max_terms=3,
+                operators=('*', '/', 'pow', 'sin', 'cos', 'abs'),
+            )
+            res = m_eng.discover_multiterm(
+                X=feats,
+                Y=target,
+                dimensions={n: Dimension() for n in names},
+                target_dimension=Dimension(),
+                target_name=target_state,
+                train_ratio=0.6,
+                bootstrap=False,
+                noise_sigma=noise_sigma,
+                seed=42,
+                X_holdout=X_ho,
+                Y_holdout=Y_ho,
+            )
+        else:
+            eng = L2DiscoveryEngine(operators=("+", "-", "*", "/", "pow", "abs"),
+                                    max_depth=2, max_complexity=5)
+            res = eng.discover(X=feats, Y=target,
+                               dimensions={n: Dimension() for n in names},
+                               target_dimension=Dimension(),
+                               target_name=target_state,
+                               train_ratio=0.6,
+                               bootstrap=False, noise_sigma=noise_sigma, seed=42,
+                               X_holdout=X_ho,
+                               Y_holdout=Y_ho)
+
     except Exception as e:  # engine failure must be a 500 with reason, never empty
         _audit("discover/registry", {"system": modname, "verdict": "error",
                                      "reason": f"{type(e).__name__}: {e}"})
@@ -374,8 +520,20 @@ def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
     # Prepare predicted series for the top candidate
     pred_vals = np.zeros(n)
     if top_cand is not None and top_cand.fit and top_cand.fit.param_values:
+        nodes = top_cand.candidate.metadata.get("nodes")
         ast_node = top_cand.candidate.metadata.get("ast")
-        if ast_node is not None:
+        if nodes:
+            try:
+                pred_vals = np.zeros(n)
+                pv = top_cand.fit.param_values
+                for j, node in enumerate(nodes):
+                    w = pv.get(f"theta_{j+1}", 0.0)
+                    pred_vals += w * node.evaluate(feats)
+                if not np.all(np.isfinite(pred_vals)):
+                    pred_vals = np.zeros(n)
+            except Exception:  # noqa: BLE001 -- fallback to zero prediction on evaluation failure
+                pred_vals = np.zeros(n)
+        elif ast_node is not None:
             try:
                 base_v = ast_node.evaluate(feats)
                 coef = top_cand.fit.param_values.get("theta_1", 1.0)
@@ -385,15 +543,63 @@ def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
             except Exception:  # noqa: BLE001 -- fallback to zero prediction on evaluation failure
                 pred_vals = np.zeros(n)
 
+    plot_t = t
+    plot_actual = target
+    plot_pred = pred_vals
+    if X_ho is not None and Y_ho is not None and t_ho is not None:
+        pred_ho = np.zeros(len(t_ho))
+        if top_cand is not None and top_cand.fit and top_cand.fit.param_values:
+            nodes = top_cand.candidate.metadata.get("nodes")
+            ast_node = top_cand.candidate.metadata.get("ast")
+            if nodes:
+                try:
+                    pv = top_cand.fit.param_values
+                    for j, node in enumerate(nodes):
+                        w = pv.get(f"theta_{j+1}", 0.0)
+                        pred_ho += w * node.evaluate(X_ho)
+                    if not np.all(np.isfinite(pred_ho)):
+                        pred_ho = np.zeros(len(t_ho))
+                except (ValueError, TypeError, ArithmeticError, KeyError,
+                        IndexError) as exc:
+                    _LOG.debug("holdout rollout failed, using flat baseline: %s", exc)
+                    pred_ho = np.zeros(len(t_ho))
+            elif ast_node is not None:
+                try:
+                    base_v = ast_node.evaluate(X_ho)
+                    coef = top_cand.fit.param_values.get("theta_1", 1.0)
+                    pred_ho = np.asarray(coef * base_v, dtype=float)
+                    if not np.all(np.isfinite(pred_ho)):
+                        pred_ho = np.zeros(len(t_ho))
+                except (ValueError, TypeError, ArithmeticError, KeyError,
+                        IndexError) as exc:
+                    _LOG.debug("AST holdout rollout failed, using flat baseline: %s", exc)
+                    pred_ho = np.zeros(len(t_ho))
+
+        dt = float(t[1] - t[0]) if len(t) > 1 else 0.025
+        t_ho_offset = t_ho + float(t[-1]) + dt
+        plot_t = np.concatenate([t, t_ho_offset])
+        plot_actual = np.concatenate([target, Y_ho])
+        plot_pred = np.concatenate([pred_vals, pred_ho])
+        split_idx = len(t)
+
     expr = ""
-    last_state = names[-1] if names else "y"
+    last_state = target_state
     if adj.promoted is not None:
         p_cand = adj.promoted
-        coef = p_cand.fit.param_values.get("theta_1", 1.0) if p_cand.fit else 1.0
-        can_expr = (p_cand.provenance.get("canonical_expr")
-                    or p_cand.candidate.metadata.get("canonical_expr")
-                    or p_cand.candidate.candidate_id)
-        expr = f"d({last_state})/dt = {coef:.4g} * ({can_expr})"
+        if is_multiterm and hasattr(res, "promoted_equation") and res.promoted_equation:
+            eq = res.promoted_equation
+            target_var = target_state
+            if eq.startswith(f"{target_var} = "):
+                eq = eq[len(f"{target_var} = "):]
+            elif " = " in eq:
+                eq = eq.split(" = ", 1)[1]
+            expr = f"d({last_state})/dt = {eq}"
+        else:
+            coef = p_cand.fit.param_values.get("theta_1", 1.0) if p_cand.fit else 1.0
+            can_expr = (p_cand.provenance.get("canonical_expr")
+                        or p_cand.candidate.metadata.get("canonical_expr")
+                        or p_cand.candidate.candidate_id)
+            expr = f"d({last_state})/dt = {coef:.4g} * ({can_expr})"
 
     _pc = adj.promoted
     _pcg4 = (_pc.provenance.get("gate4_status", {}) if _pc is not None else {})
@@ -410,6 +616,28 @@ def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
                            if adj.delta_rmse is not None else None),
             "tau_epi": (float(adj.tau_epi)
                         if adj.tau_epi is not None else None),
+            # Diagnostic qualification of a promotion. Never changes `verdict`:
+            # the frozen gate is unchanged, and these fields only distinguish
+            # "the gate permits this" from "this is strong identification".
+            "promotion_confidence": adj.promotion_confidence or None,
+            "diagnostic_flags": list(adj.diagnostic_flags),
+        }
+
+    rival_a = None
+    rival_b = None
+    if adj.ranking:
+        lead = adj.ranking[0]
+        rival_a = {
+            "id": lead.candidate.candidate_id,
+            "rmse": float(lead.holdout_rmse) if lead.holdout_rmse is not None else None,
+            "complexity": int(lead.candidate.metadata.get("complexity", 1)),
+        }
+    if getattr(adj, "rival", None) is not None:
+        riv = adj.rival
+        rival_b = {
+            "id": riv.candidate.candidate_id,
+            "rmse": float(riv.holdout_rmse) if riv.holdout_rmse is not None else None,
+            "complexity": int(riv.candidate.metadata.get("complexity", 1)),
         }
 
     resp = to_jsonable({
@@ -419,11 +647,17 @@ def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
         "promoted_candidate": _promoted_record,
         "reason": adj.reason,
         "tau_epi": float(adj.tau_epi) if adj.tau_epi is not None else 0.05,
+        "delta_rmse": float(adj.delta_rmse) if adj.delta_rmse is not None else None,
+        # Diagnostics only -- `verdict` above is unchanged by these.
+        "promotion_confidence": adj.promotion_confidence or None,
+        "diagnostic_flags": list(adj.diagnostic_flags),
+        "rival_a": rival_a,
+        "rival_b": rival_b,
         "pareto_candidates": formatted_pareto,
         "plot_series": {
-            "t": t,
-            "actual": target,
-            "predicted": pred_vals,
+            "t": plot_t,
+            "actual": plot_actual,
+            "predicted": plot_pred,
             "split_index": split_idx,
         },
         "data_origin": "simulation",
@@ -660,6 +894,23 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
             "tau_epi": (float(adj.tau_epi)
                         if adj.tau_epi is not None else None),
         }
+    rival_a = None
+    rival_b = None
+    if adj.ranking:
+        lead = adj.ranking[0]
+        rival_a = {
+            "id": lead.candidate.candidate_id,
+            "rmse": float(lead.holdout_rmse) if lead.holdout_rmse is not None else None,
+            "complexity": int(lead.candidate.metadata.get("complexity", 1)),
+        }
+    if getattr(adj, "rival", None) is not None:
+        riv = adj.rival
+        rival_b = {
+            "id": riv.candidate.candidate_id,
+            "rmse": float(riv.holdout_rmse) if riv.holdout_rmse is not None else None,
+            "complexity": int(riv.candidate.metadata.get("complexity", 1)),
+        }
+
     resp = to_jsonable({
         "system": req.system,
         "verdict": adj.status.value,
@@ -667,6 +918,12 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
         "promoted_candidate": _promoted_record,
         "reason": adj.reason,
         "tau_epi": float(adj.tau_epi) if adj.tau_epi is not None else 0.05,
+        "delta_rmse": float(adj.delta_rmse) if adj.delta_rmse is not None else None,
+        # Diagnostics only -- `verdict` above is unchanged by these.
+        "promotion_confidence": adj.promotion_confidence or None,
+        "diagnostic_flags": list(adj.diagnostic_flags),
+        "rival_a": rival_a,
+        "rival_b": rival_b,
         "pareto_candidates": formatted_pareto,
         "plot_series": {
             "t": t,
@@ -684,36 +941,135 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
 
 
 @app.get("/api/market/windows", dependencies=[Depends(_require_api_key)])
-def market_windows(asset: str = "sp500") -> list[dict[str, Any]]:
-    """Frozen benchmark windows plus generated rolling windows for the asset.
+def market_windows(
+    asset: str = "sp500",
+    extensive: bool = False,
+    regime: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+) -> list[dict[str, Any]]:
+    """Frozen benchmark windows plus rolling windows for the asset.
 
     Frozen W1..W6 keep their ids and semantics forever; ROLL ids are
-    generated deterministically from the committed series.
+    generated deterministically from the committed series. When extensive=True,
+    generates multi-scale windows spanning short, quarterly, semi-annual, and annual horizons.
     """
-    if asset not in ("sp500", "nasdaq100"):
+    if asset not in AVAILABLE_ASSETS:
         raise HTTPException(status_code=400, detail=f"Unknown asset {asset}.")
-    out = [{"id": w.window_id, "desc": w.regime_description,
+    out = [
+        {
+            "id": w.window_id,
+            "desc": w.regime_description,
             "train": f"{w.train_start} to {w.train_end}",
             "holdout": f"{w.holdout_start} to {w.holdout_end}",
-            "frozen": True} for w in WINDOWS]
-    out += [{"id": w.window_id, "desc": w.regime_description,
-             "train": f"{w.train_start} to {w.train_end}",
-             "holdout": f"{w.holdout_start} to {w.holdout_end}",
-             "frozen": False} for w in generated_rolling_windows(asset)]
+            "frozen": True,
+            "regime": getattr(w, "regime", "general"),
+        }
+        for w in WINDOWS
+    ]
+    if extensive:
+        rolling_pool = extensive_rolling_windows(asset)
+    else:
+        rolling_pool = generated_rolling_windows(asset)
+
+    out += [
+        {
+            "id": w.window_id,
+            "desc": w.regime_description,
+            "train": f"{w.train_start} to {w.train_end}",
+            "holdout": f"{w.holdout_start} to {w.holdout_end}",
+            "frozen": False,
+            "regime": getattr(w, "regime", "general"),
+        }
+        for w in rolling_pool
+    ]
+
+    if regime:
+        r_low = regime.strip().lower()
+        out = [w for w in out if w.get("regime", "").lower() == r_low]
+
+    if offset:
+        out = out[offset:]
+    if limit is not None:
+        out = out[:limit]
     return out
+
+
+@app.get("/api/market/regimes", dependencies=[Depends(_require_api_key)])
+def market_regimes() -> dict[str, Any]:
+    """Taxonomy of macro-financial market regimes and supported assets."""
+    return to_jsonable({
+        "regimes": [
+            {
+                "id": r.value,
+                "name": REGIME_METADATA[r]["name"],
+                "description": REGIME_METADATA[r]["description"],
+                "expected_volatility": REGIME_METADATA[r]["expected_volatility"],
+            }
+            for r in MarketRegime
+        ],
+        "assets": list(AVAILABLE_ASSETS),
+    })
+
+
+@app.post("/api/market/sweep", dependencies=[Depends(_require_api_key)])
+def market_sweep(req: MarketSweepRequest) -> dict[str, Any]:
+    """Execute a batch open discovery sweep across market regimes."""
+    if req.asset not in AVAILABLE_ASSETS:
+        raise HTTPException(status_code=400, detail=f"Unknown asset {req.asset}.")
+    try:
+        summary = run_market_sweep(
+            asset=req.asset,
+            max_windows=req.max_windows,
+            multiterm=req.multiterm,
+        )
+        out = {
+            "asset": summary.asset,
+            "total_windows": summary.total_windows,
+            "unique_promotions": summary.unique_promotions,
+            "multi_hypotheses": summary.multi_hypotheses,
+            "insufficient_evidence": summary.insufficient_evidence,
+            "no_valid_candidates": summary.no_valid_candidates,
+            "false_promotion_rate": summary.false_promotion_rate,
+            "regime_breakdown": summary.regime_breakdown,
+            "records": [
+                {
+                    "window_id": r.window_id,
+                    "regime": r.regime_name,
+                    "train_period": r.train_period,
+                    "holdout_period": r.holdout_period,
+                    "discovered_expression": r.discovered_expression,
+                    "complexity": r.expression_complexity,
+                    "train_error": r.train_error,
+                    "holdout_error": r.holdout_error,
+                    "verdict": r.epistemic_verdict,
+                    "attribution": r.epistemic_attribution,
+                    "whiteness_passed": r.whiteness_passed,
+                }
+                for r in summary.records
+            ],
+        }
+        _audit("market/sweep", {
+            "asset": req.asset,
+            "total_windows": summary.total_windows,
+            "fpr": summary.false_promotion_rate,
+            "data_origin": "real_observational",
+        })
+        return to_jsonable(out)
+    except Exception as e:
+        _audit("market/sweep", {"asset": req.asset, "verdict": "error", "reason": str(e)})
+        raise HTTPException(status_code=500, detail=f"Market sweep failed: {e}") from e
 
 
 @app.post("/api/discover/market", dependencies=[Depends(_require_api_key)])
 def discover_market(req: MarketRequest) -> dict[str, Any]:
     """Execute rolling-window L2 open discovery on genuine market records."""
-    matched = [w for w in WINDOWS if w.window_id == req.window_id]
-    if not matched:
-        # Fall back to the generated rolling registry (same asset).
-        matched = [w for w in generated_rolling_windows(req.asset)
-                   if w.window_id == req.window_id]
-    if not matched:
+    if req.asset not in AVAILABLE_ASSETS:
+        raise HTTPException(status_code=400, detail=f"Unknown asset {req.asset}.")
+
+    window = get_window_by_id(req.asset, req.window_id)
+    if window is None:
         raise HTTPException(status_code=400, detail=f"Window {req.window_id} not found.")
-    window = matched[0]
 
     record = execute_window_discovery(
         asset=req.asset,
@@ -764,6 +1120,10 @@ def discover_market(req: MarketRequest) -> dict[str, Any]:
 
 class SandboxRequest(BaseModel):
     sandbox_id: str = "nano_m4"
+    asset: str | None = None
+    csv_text: str | None = None
+    target_column: str | None = None
+    mode: str = "auto"
 
 
 SANDBOX_CATALOG = [
@@ -787,6 +1147,12 @@ SANDBOX_CATALOG = [
      "desc": "Threshold-ratio vs lookalikes spanning p_th"},
     {"id": "finance_grammar", "name": "Grammar discovery on S&P 500 (finance)",
      "desc": "22 structures, calm vs crash holdouts", "slow": True},
+    {"id": "crypto_multi_grammar", "name": "Grammar discovery on Crypto 15-Asset Universe (BTC+ETH+SOL...)",
+     "desc": "29 structures (including empirical Order Flow OFI) on 15 synchronized crypto assets, bull vs LUNA crash holdout", "slow": True},
+    {"id": "custom_upload", "name": "Universal Custom Dataset Upload (Autonomous Discovery)",
+     "desc": "Upload or paste any CSV dataset; autonomous L2 discovery infers the governing equation and adjudicates validity.", "slow": True},
+    {"id": "volume_market", "name": "Volume-state vs future volatility (market microstructure)",
+     "desc": "Frozen V0 (persistence+|r|+Amihud) vs V1 (+logVolume), fit 2021-2022, OOS 2023+ with permutation control; sidecar volume data, repo benchmark untouched.", "slow": True},
 ]
 
 
@@ -811,6 +1177,256 @@ def _qec_series():
 
 
 
+SANDBOX_EXPRESSIONS: dict[str, dict[str, tuple[str, int]]] = {
+    "nano_m4": {
+        "constant_baseline": ("σ(d) = σ₀", 1),
+        "linear_grain": ("σ(d) = σ₀ + k·d", 2),
+        "inverse_soft": ("σ(d) = σ₀ + k·d^{1/2}", 3),
+        "hp_global": ("σ(d) = σ₀ + k·d^{-1/2}", 3),
+        "piecewise_hp_inv": ("σ(d ≥ dc) = s₀ + k·d^{-1/2},  σ(d < dc) = s₁ - m·(dc - d)", 6),
+    },
+    "hall_petch": {
+        "constant": ("σ(d) = σ₀", 1),
+        "linear": ("σ(d) = σ₀ + k·d", 2),
+        "hp_true": ("σ(d) = σ₀ + k·d^{-1/2}", 3),
+    },
+    "creep_law": {
+        "constant": ("dε/dt = ε̇₀", 1),
+        "linear_stress": ("dε/dt = A·σ", 2),
+        "exp_stress": ("dε/dt = A·exp(β·σ)", 3),
+        "power_law": ("dε/dt = A·σⁿ  (Norton)", 3),
+    },
+    "game_form": {
+        "constant": ("dx/dt = c", 1),
+        "linear": ("dx/dt = a·x", 2),
+        "quadratic": ("dx/dt = a·x + b·x²", 3),
+        "cubic": ("dx/dt = a·x + b·x² + c·x³  (Replicator)", 4),
+    },
+    "sir_break": {
+        "constant": ("dI/dt = c", 1),
+        "linear_I": ("dI/dt = -γ·I", 2),
+        "exponential_t": ("dI/dt = I₀·exp(-λt)", 3),
+        "mass_action": ("dI/dt = β·S·I - γ·I  (Kermack-McKendrick)", 4),
+    },
+    "quantum_quench": {
+        "constant_persistence": ("P(t) = P₀", 1),
+        "ballistic_linear": ("P(t) = P₀ - v·t", 2),
+        "coherent_oscillations": ("P(t) = P₀·cos(ωt)", 3),
+        "decay_string_breaking": ("P(t) = P₀·exp(-Γt)  (Schwinger quench)", 3),
+    },
+    "lynx_cycle": {
+        "constant": ("y(t) = c", 1),
+        "linear_trend": ("y(t) = a + b·t", 2),
+        "cycle_5yr": ("y(t) = a + b·cos(2πt / 5)", 3),
+        "cycle_10yr": ("y(t) = a + b·cos(2πt / 9.6) + c·sin(2πt / 9.6)", 4),
+    },
+    "qec_threshold": {
+        "constant": ("P_L = c", 1),
+        "plain_quad": ("P_L = a·p²", 2),
+        "cubic": ("P_L = a·p³", 2),
+        "threshold_ratio": ("P_L = C·(p / p_th)^{(d+1)/2}  (Ansatz)", 4),
+    },
+}
+
+TERM_MATH_MAP: dict[str, tuple[str, int]] = {
+    "one": ("c", 1),
+    "one_hi": ("s₀", 1),
+    "one_lo": ("s₁", 1),
+    "d_inv_half": ("k·d^{-1/2}", 2),
+    "d_lin": ("k·d", 1),
+    "d_half": ("k·d^{1/2}", 2),
+    "d_lin_lo": ("m·d", 1),
+    "x": ("θ₁·x", 1),
+    "x2": ("θ₂·x²", 2),
+    "x3": ("θ₃·x³", 2),
+    "sin_x": ("θ₄·sin(x)", 2),
+    "v": ("θ₅·v", 1),
+    "abs_v_v": ("θ₆·|v|v", 3),
+    "v2": ("θ₇·v²", 2),
+    "u": ("λ·u", 1),
+    "sat_x": ("θ₈·x/(1+|x|)", 2),
+    "sat_v": ("θ₉·v/(1+|v|)", 2),
+    "sat_u": ("λ₂·u/(1+|u|)", 2),
+    "inv_x2": ("θ₁₀/(1+x²)", 2),
+    "u_relax": ("λ₃·(u - v)", 2),
+}
+
+
+def _resolve_sandbox_formula_and_complexity(sandbox_id: str, c: Any) -> tuple[str, int]:
+    cid = c.candidate.candidate_id if hasattr(c, "candidate") else str(getattr(c, "id", "cand"))
+    if hasattr(c, "candidate") and getattr(c.candidate, "metadata", None):
+        if "canonical_expr" in c.candidate.metadata:
+            expr = str(c.candidate.metadata["canonical_expr"])
+            compl = int(c.candidate.metadata.get("complexity", 1))
+            return expr, compl
+    if sandbox_id in SANDBOX_EXPRESSIONS and cid in SANDBOX_EXPRESSIONS[sandbox_id]:
+        return SANDBOX_EXPRESSIONS[sandbox_id][cid]
+    if hasattr(c, "candidate") and getattr(c.candidate, "terms", None):
+        term_strs = [TERM_MATH_MAP.get(t.name, (t.name, 1))[0] for t in c.candidate.terms]
+        term_compls = [TERM_MATH_MAP.get(t.name, (t.name, 1))[1] for t in c.candidate.terms]
+        expr = " + ".join(term_strs)
+        compl = sum(term_compls) + max(0, len(term_strs) - 1)
+        return expr, compl
+    return cid, 1
+
+
+def _format_sandbox_adjudication(
+    sandbox_id: str,
+    adj: Any,
+    candidates: Sequence[Any] | None = None,
+    series: dict[str, Any] | None = None,
+    extra: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Format sandbox adjudication results into the canonical Physics Lab schema."""
+    pool = list(candidates) if candidates else list(getattr(adj, "ranking", ()))
+    top_cand = adj.promoted if adj.promoted is not None else (pool[0] if pool else None)
+
+    formatted_pareto = []
+    for c in pool:
+        g4 = c.provenance.get("gate4_status", {}) if hasattr(c, "provenance") else {}
+        cid = c.candidate.candidate_id if hasattr(c, "candidate") else str(getattr(c, "id", "cand"))
+        rmse = float(c.holdout_rmse) if hasattr(c, "holdout_rmse") and c.holdout_rmse is not None else None
+        r2 = float(g4.get("r2")) if g4.get("r2") is not None else None
+        rho1 = float(g4.get("rho1")) if g4.get("rho1") is not None else None
+        is_white = bool(g4.get("is_white", False))
+
+        resids = g4.get("holdout_residuals")
+        sq_err = g4.get("holdout_sq_error")
+        err_series = resids if resids is not None else sq_err
+        if rho1 is None and err_series is not None and len(err_series) >= 4:
+            arr = np.asarray(err_series, dtype=float).ravel()
+            arr_f = arr[np.isfinite(arr)]
+            if len(arr_f) >= 4:
+                centred = arr_f - float(np.mean(arr_f))
+                denom = float(np.dot(centred, centred))
+                if denom > 1e-12:
+                    rho1 = float(np.dot(centred[:-1], centred[1:]) / denom)
+                    is_white = bool(abs(rho1) < 0.50)
+
+        if r2 is None and resids is not None and len(resids) > 0:
+            arr = np.asarray(resids, dtype=float).ravel()
+            arr_f = arr[np.isfinite(arr)]
+            if len(arr_f) > 0:
+                ss_res = float(np.sum(arr_f ** 2))
+                n_samples = len(arr_f)
+                ss_tot = None
+                if series and "actual" in series:
+                    y_act = np.asarray(series["actual"], dtype=float).ravel()
+                    if len(y_act) >= n_samples:
+                        y_ho = y_act[-n_samples:]
+                        y_ho_f = y_ho[np.isfinite(y_ho)]
+                        if len(y_ho_f) == n_samples:
+                            ss_tot = float(np.sum((y_ho_f - float(np.mean(y_ho_f))) ** 2))
+                if ss_tot is None or ss_tot <= 1e-12:
+                    obs_rms = g4.get("holdout_obs_rms")
+                    if obs_rms is not None and float(obs_rms) > 0:
+                        ss_tot = float(n_samples * (float(obs_rms) ** 2))
+                if ss_tot is not None and ss_tot > 1e-12:
+                    r2 = float(1.0 - (ss_res / ss_tot))
+
+        if r2 is None and rmse is not None:
+            obs_rms = g4.get("holdout_obs_rms")
+            if obs_rms is not None and float(obs_rms) > 0:
+                r2 = float(1.0 - (rmse ** 2) / (float(obs_rms) ** 2))
+
+        formula, complexity = _resolve_sandbox_formula_and_complexity(sandbox_id, c)
+        is_top = (top_cand is not None and getattr(top_cand, "candidate", None) is not None and top_cand.candidate.candidate_id == cid)
+        formatted_pareto.append({
+            "id": cid,
+            "formula": formula,
+            "complexity": int(complexity),
+            "rmse": rmse,
+            "r2": r2,
+            "rho1": rho1,
+            "is_white": is_white,
+            "is_promoted": bool(is_top and adj.promoted is not None),
+        })
+
+    _pc = adj.promoted
+    _promoted_record = None
+    if _pc is not None:
+        _top_p = next((p for p in formatted_pareto if p["id"] == _pc.candidate.candidate_id), None)
+        _promoted_record = {
+            "id": _pc.candidate.candidate_id,
+            "formula": _top_p["formula"] if _top_p else _pc.candidate.candidate_id,
+            "holdout_rmse": float(_pc.holdout_rmse) if _pc.holdout_rmse is not None else None,
+            "r2": _top_p["r2"] if _top_p else None,
+            "residual_rho1": _top_p["rho1"] if _top_p else None,
+            "delta_rmse": float(adj.delta_rmse) if adj.delta_rmse is not None else None,
+            "tau_epi": float(adj.tau_epi) if adj.tau_epi is not None else None,
+        }
+
+    rival_a = None
+    rival_b = None
+    valid_cands = [c for c in pool if getattr(c, "holdout_rmse", None) is not None]
+    if valid_cands:
+        sorted_by_ho = sorted(valid_cands, key=lambda s: float(s.holdout_rmse))
+        lead = sorted_by_ho[0]
+        lead_id = lead.candidate.candidate_id if hasattr(lead, "candidate") else str(getattr(lead, "id", "cand"))
+        lead_form, lead_compl = _resolve_sandbox_formula_and_complexity(sandbox_id, lead)
+        rival_a = {
+            "id": lead_id,
+            "formula": lead_form,
+            "rmse": float(lead.holdout_rmse),
+            "complexity": int(lead_compl),
+        }
+        if len(sorted_by_ho) > 1:
+            riv = sorted_by_ho[1]
+            riv_id = riv.candidate.candidate_id if hasattr(riv, "candidate") else str(getattr(riv, "id", "cand"))
+            riv_form, riv_compl = _resolve_sandbox_formula_and_complexity(sandbox_id, riv)
+            rival_b = {
+                "id": riv_id,
+                "formula": riv_form,
+                "rmse": float(riv.holdout_rmse),
+                "complexity": int(riv_compl),
+            }
+            delta_val = abs(float(riv.holdout_rmse - lead.holdout_rmse))
+        else:
+            delta_val = abs(float(adj.delta_rmse)) if adj.delta_rmse is not None else None
+    else:
+        delta_val = abs(float(adj.delta_rmse)) if adj.delta_rmse is not None else None
+
+    if adj.promoted:
+        top_form, _ = _resolve_sandbox_formula_and_complexity(sandbox_id, adj.promoted)
+        promoted_str = top_form or adj.promoted.candidate.candidate_id
+    else:
+        promoted_str = "No promoted equation (refusal under uncertainty)"
+    reason_str = adj.reason
+    if delta_val is not None and rival_a and rival_b and getattr(adj, "delta_rmse", None) is not None:
+        _top_c = getattr(adj.promoted or (adj.ranking and adj.ranking[0]), "candidate", None)
+        _top_id = getattr(_top_c, "candidate_id", None) if _top_c is not None else None
+        if isinstance(_top_c, dict):
+            _top_id = _top_c.get("candidate_id")
+        if adj.delta_rmse < 0 or (_top_id and rival_a["id"] != _top_id):
+            tau_val = float(adj.tau_epi) if adj.tau_epi is not None else 0.05
+            tau_src = getattr(adj, "tau_epi_source", "holdout-scale")
+            reason_str = (
+                f"rival {rival_b['id']} within τ (Δ={delta_val:.4g} ≤ τ={tau_val:.4g} [{tau_src}]); "
+                "structures observationally indistinguishable under available interventions"
+            )
+
+    return {
+        "sandbox_id": sandbox_id,
+        "verdict": adj.status.value,
+        "promoted_equation": promoted_str,
+        "promoted": (adj.promoted.candidate.candidate_id if adj.promoted else None),
+        "promoted_candidate": _promoted_record,
+        "reason": reason_str,
+        "data_origin": str(getattr(adj, "data_origin", "simulation")),
+        "tau_epi": float(adj.tau_epi) if adj.tau_epi is not None else 0.05,
+        "delta_rmse": delta_val,
+        # Diagnostics only -- `verdict` above is unchanged by these.
+        "promotion_confidence": adj.promotion_confidence or None,
+        "diagnostic_flags": list(adj.diagnostic_flags),
+        "rival_a": rival_a,
+        "rival_b": rival_b,
+        "pareto_candidates": formatted_pareto,
+        "candidates": [{"id": c["id"], "rmse": c["rmse"]} for c in formatted_pareto],
+        "extra": extra or {},
+        "series": series or {},
+    }
+
+
 @app.post("/api/sandbox/run", dependencies=[Depends(_require_api_key)])
 def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
     """Run a registered sandbox end-to-end; audited like discovery calls."""
@@ -821,34 +1437,24 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
         )
         adj, scored, info = run_m4_nano_benchmark(noise_sigma=0.02)
         d, obs = generate_m4_data(n_points=60, noise_sigma=0.02, seed=42)
-        table = [{"id": c.candidate.candidate_id, "rmse": float(c.holdout_rmse)}
-                 for c in sorted(scored, key=lambda c: c.holdout_rmse or 1e18)]
-        resp = {"sandbox_id": "nano_m4", "verdict": adj.status.value,
-                "promoted": (adj.promoted.candidate.candidate_id
-                             if adj.promoted else None),
-                "reason": adj.reason,
-                "data_origin": str(getattr(adj, "data_origin", "simulation")),
-                "candidates": table,
-                "extra": {"dc_hat_nm": info["dc_hat_nm"],
-                          "dc_true_nm": info["dc_true_nm"]},
-                "series": {"x": d.tolist(), "actual": obs.tolist(),
-                           "x_label": "grain size d (nm, log scale)",
-                           "threshold": info["dc_hat_nm"]}}
+        resp = _format_sandbox_adjudication(
+            "nano_m4", adj, scored,
+            series={"x": d.tolist(), "actual": obs.tolist(),
+                    "x_label": "grain size d (nm, log scale)",
+                    "threshold": info["dc_hat_nm"]},
+            extra={"dc_hat_nm": info["dc_hat_nm"], "dc_true_nm": info["dc_true_nm"]},
+        )
     elif req.sandbox_id == "sir_break":
         from apedp_dyn.sandbox.epidemiology_sir import run_sir_forms, simulate_sir
         adj, scored = run_sir_forms(noise=0.02, seed=42)
         t, _s_arr, _i_arr, inc = simulate_sir(noise=0.02, seed=42)
-        table = [{"id": c.candidate.candidate_id, "rmse": float(c.holdout_rmse)}
-                 for c in sorted(scored, key=lambda c: c.holdout_rmse)]
-        resp = {"sandbox_id": "sir_break", "verdict": adj.status.value,
-                "promoted": (adj.promoted.candidate.candidate_id
-                             if adj.promoted else None),
-                "reason": adj.reason,
-                "data_origin": str(getattr(adj, "data_origin", "simulation")),
-                "candidates": table, "extra": {"t_vax": 60.0},
-                "series": {"x": t.tolist(), "actual": inc.tolist(),
-                           "x_label": "days (vaccination at t=60)",
-                           "threshold": 60.0}}
+        resp = _format_sandbox_adjudication(
+            "sir_break", adj, scored,
+            series={"x": t.tolist(), "actual": inc.tolist(),
+                    "x_label": "days (vaccination at t=60)",
+                    "threshold": 60.0},
+            extra={"t_vax": 60.0},
+        )
     elif req.sandbox_id == "quantum_quench":
         from apedp_dyn.sandbox.quantum_vacuum_sandbox import (
             QuantumVacuumConfig,
@@ -856,97 +1462,65 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
         )
         cfg = QuantumVacuumConfig()
         adj, times, p_obs = run_quench_dynamics_discovery(cfg, bootstrap=True)
-        resp = {"sandbox_id": "quantum_quench",
-                "verdict": adj.status.value,
-                "promoted": (adj.promoted.candidate.candidate_id
-                             if adj.promoted else None),
-                "reason": adj.reason,
-                "data_origin": str(getattr(adj, "data_origin", "simulation")),
-                "candidates": [],
-                "extra": {"tension_hz": cfg.string_tension_hz,
-                          "critical_field": cfg.critical_field_Ec},
-                "series": {"x": np.asarray(times).tolist(),
-                           "actual": np.asarray(p_obs).tolist(),
-                           "x_label": "time"}}
+        resp = _format_sandbox_adjudication(
+            "quantum_quench", adj, getattr(adj, "ranking", ()),
+            series={"x": np.asarray(times).tolist(),
+                    "actual": np.asarray(p_obs).tolist(),
+                    "x_label": "time"},
+            extra={"tension_hz": cfg.string_tension_hz,
+                   "critical_field": cfg.critical_field_Ec},
+        )
     elif req.sandbox_id == "hall_petch":
         from apedp_dyn.sandbox.hall_pecht_demo import run_hall_pecht_discovery
         adj, d, obs = run_hall_pecht_discovery(noise_sigma=0.03)
-        table = [{"id": adj.promoted.candidate.candidate_id
-                    if adj.promoted else "none",
-                    "rmse": float(adj.best_rmse or 0.0)}]  # winner only;
-        # full candidate table lives in hall_pecht_demo.fit_hall_pecht_candidates
-        resp = {"sandbox_id": "hall_petch", "verdict": adj.status.value,
-                "promoted": (adj.promoted.candidate.candidate_id
-                             if adj.promoted else None),
-                "reason": adj.reason,
-                "data_origin": str(getattr(adj, "data_origin", "simulation")),
-                "candidates": table, "extra": {},
-                "series": {"x": d.tolist(), "actual": obs.tolist(),
-                           "x_label": "grain size d (m, log scale)"}}
+        resp = _format_sandbox_adjudication(
+            "hall_petch", adj, getattr(adj, "ranking", ()),
+            series={"x": d.tolist(), "actual": obs.tolist(),
+                    "x_label": "grain size d (m, log scale)"},
+        )
     elif req.sandbox_id == "creep_law":
         from apedp_dyn.sandbox.creep_powerlaw import generate_creep_data, run_creep
         adj, scored, n_hat = run_creep()
         s_, e_ = generate_creep_data(seed=42)
-        table = [{"id": c.candidate.candidate_id, "rmse": float(c.holdout_rmse)}
-                 for c in sorted(scored, key=lambda c: c.holdout_rmse)]
-        resp = {"sandbox_id": "creep_law", "verdict": adj.status.value,
-                "promoted": (adj.promoted.candidate.candidate_id
-                             if adj.promoted else None),
-                "reason": adj.reason,
-                "data_origin": str(getattr(adj, "data_origin", "simulation")),
-                "candidates": table, "extra": {"n_hat": n_hat, "n_true": 4.5},
-                "series": {"x": s_.tolist(), "actual": e_.tolist(),
-                           "x_label": "stress (MPa, log scale)"}}
+        resp = _format_sandbox_adjudication(
+            "creep_law", adj, scored,
+            series={"x": s_.tolist(), "actual": e_.tolist(),
+                    "x_label": "stress (MPa, log scale)"},
+            extra={"n_hat": n_hat, "n_true": 4.5},
+        )
     elif req.sandbox_id == "game_form":
         from apedp_dyn.sandbox.game_theory import run_form_recovery
         adj, scored = run_form_recovery()
-        table = [{"id": c.candidate.candidate_id, "rmse": float(c.holdout_rmse)}
-                 for c in sorted(scored, key=lambda c: c.holdout_rmse)]
-        resp = {"sandbox_id": "game_form", "verdict": adj.status.value,
-                "promoted": (adj.promoted.candidate.candidate_id
-                             if adj.promoted else None),
-                "reason": adj.reason,
-                "data_origin": str(getattr(adj, "data_origin", "simulation")),
-                "candidates": table, "extra": {},
-                "series": _game_series()}
+        resp = _format_sandbox_adjudication(
+            "game_form", adj, scored,
+            series=_game_series(),
+        )
     elif req.sandbox_id == "pendulum_drag":
         from apedp_dyn.sandbox.pendulum_drag import run_pendulum, simulate_pendulum
-        adj = run_pendulum(noise=0.01)
+        adj, scored = run_pendulum(noise=0.01)
         _, th, _ = simulate_pendulum(0.6, noise=0.01, seed=23)
-        resp = {"sandbox_id": "pendulum_drag", "verdict": adj.status.value,
-                "promoted": (adj.promoted.candidate.candidate_id
-                             if adj.promoted else None),
-                "reason": adj.reason,
-                "data_origin": str(getattr(adj, "data_origin", "simulation")),
-                "candidates": [], "extra": {},
-                "series": {"x": list(range(len(th))), "actual": th.tolist(),
-                           "x_label": "timestep (unseen amplitude 0.6 rad)"}}
+        resp = _format_sandbox_adjudication(
+            "pendulum_drag", adj, scored,
+            series={"x": list(range(len(th))), "actual": th.tolist(),
+                    "x_label": "timestep (unseen amplitude 0.6 rad)"},
+        )
     elif req.sandbox_id == "lynx_cycle":
         from apedp_dyn.sandbox.lynx_hare import load_lynx, run_lynx
         adj, scored = run_lynx()
         t, y = load_lynx()
-        table = [{"id": c.candidate.candidate_id, "rmse": float(c.holdout_rmse)}
-                 for c in sorted(scored, key=lambda c: c.holdout_rmse)]
-        resp = {"sandbox_id": "lynx_cycle", "verdict": adj.status.value,
-                "promoted": (adj.promoted.candidate.candidate_id
-                             if adj.promoted else None),
-                "reason": adj.reason,
-                "data_origin": str(getattr(adj, "data_origin", "simulation")),
-                "candidates": table, "extra": {"split_year": 1878},
-                "series": {"x": t.tolist(), "actual": y.tolist(),
-                           "x_label": "year (real trappings 1821-1934)"}}
+        resp = _format_sandbox_adjudication(
+            "lynx_cycle", adj, scored,
+            series={"x": t.tolist(), "actual": y.tolist(),
+                    "x_label": "year (real trappings 1821-1934)"},
+            extra={"split_year": 1878},
+        )
     elif req.sandbox_id == "qec_threshold":
         from apedp_dyn.sandbox.qec_threshold import run_qec_threshold_stage1
         adj, scored = run_qec_threshold_stage1()
-        table = [{"id": c.candidate.candidate_id, "rmse": float(c.holdout_rmse)}
-                 for c in sorted(scored, key=lambda c: c.holdout_rmse)]
-        resp = {"sandbox_id": "qec_threshold", "verdict": adj.status.value,
-                "promoted": (adj.promoted.candidate.candidate_id
-                             if adj.promoted else None),
-                "reason": adj.reason,
-                "data_origin": str(getattr(adj, "data_origin", "simulation")),
-                "candidates": table, "extra": {},
-                "series": _qec_series()}
+        resp = _format_sandbox_adjudication(
+            "qec_threshold", adj, scored,
+            series=_qec_series(),
+        )
     elif req.sandbox_id == "finance_grammar":
         import csv as _csv
         from pathlib import Path as _P
@@ -971,14 +1545,80 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
                                 problem_id="FIN-UI")
         adj = run_experiment("UI calm->crash", prob)
         seg = px[idx["2020-02-19"]:idx["2020-03-23"] + 1]
-        resp = {"sandbox_id": "finance_grammar", "verdict": adj.status.value,
-                "promoted": (adj.promoted.candidate.candidate_id
-                             if adj.promoted else None),
-                "reason": adj.reason,
-                "data_origin": str(getattr(adj, "data_origin", "experimental")),
-                "candidates": [], "extra": {},
-                "series": {"x": list(range(len(seg))), "actual": seg.tolist(),
-                           "x_label": "S&P 500 crash window (USD)"}}
+        resp = _format_sandbox_adjudication(
+            "finance_grammar", adj, getattr(adj, "ranking", ()),
+            series={"x": list(range(len(seg))), "actual": seg.tolist(),
+                    "x_label": "S&P 500 crash window (USD)"},
+        )
+    elif req.sandbox_id == "crypto_multi_grammar":
+        from apedp_dyn.sandbox.crypto_grammar import (
+            CRYPTO_ASSETS,
+            run_crypto_experiment,
+        )
+        target_sym = req.asset or "COMPOSITE_TOP15"
+        adj, prob, series_data = run_crypto_experiment(target_asset=target_sym)
+        cands_pool = series_data.get("candidates") or getattr(adj, "ranking", ())
+        resp = _format_sandbox_adjudication(
+            "crypto_multi_grammar", adj, cands_pool,
+            series={
+                "x": series_data["x"],
+                "dates": series_data["dates"],
+                "actual": series_data["actual"],
+                "x_label": series_data["x_label"],
+            },
+            extra={
+                "target_asset": target_sym,
+                "total_assets": len(CRYPTO_ASSETS),
+                "available_assets": [*CRYPTO_ASSETS, "COMPOSITE_TOP15"],
+                "dataset_file": "data/market/crypto_top15.csv",
+                "orderflow_included": True,
+                "orderflow_feature": "Order Flow Imbalance (OFI)",
+                "total_grammar_structures": 29,
+                "train_regime": "2021 Bull Cycle (2021-01-01 to 2021-12-31)",
+                "holdout_regime": "2022 Terra-LUNA Shock (2022-05-05 to 2022-05-25)",
+            },
+        )
+    elif req.sandbox_id == "custom_upload":
+        from apedp_dyn.sandbox.custom_upload import run_upload_discovery
+        if not req.csv_text or not req.csv_text.strip():
+            # Generate clean illustrative sample if none provided
+            sample_t = np.linspace(0.0, 10.0, 60)
+            sample_y = 10.0 + 1.5 * sample_t + 2.0 * np.sin(sample_t)
+            csv_lines = ["t,y"] + [f"{ti:.3f},{yi:.4f}" for ti, yi in zip(sample_t, sample_y, strict=True)]
+            csv_data = "\n".join(csv_lines)
+        else:
+            csv_data = req.csv_text
+
+        adj, cands, series_info, extra = run_upload_discovery(
+            csv_data, target_col=req.target_column, mode=req.mode
+        )
+        resp = _format_sandbox_adjudication(
+            "custom_upload", adj, cands,
+            series=series_info,
+            extra=extra,
+        )
+    elif req.sandbox_id == "volume_market":
+        from apedp_dyn.sandbox.volume_sandbox import run_volume_adjudication
+        requested_sym = (req.asset or "BTC").upper()
+        target_sym = requested_sym
+        universe_note = "Universe: 15 assets (single-asset run)"
+        if target_sym == "COMPOSITE_TOP15":
+            target_sym = "BTC"
+            universe_note = ("Requested universe: TOP15 composite. "
+                             "Actual evaluated series: BTC (no basket volume series).")
+        adj, scored, series_data, vol_extra = run_volume_adjudication(target_sym)
+        resp = _format_sandbox_adjudication(
+            "volume_market", adj, scored,
+            series={"x": series_data["x"],
+                    "actual": series_data["actual"],
+                    "x_label": series_data["x_label"]},
+            extra={**vol_extra,
+                   "universe": "15 assets",
+                   "asset_run": target_sym,
+                   "asset_requested": requested_sym,
+                   "universe_note": universe_note,
+                   "gate_breakdown": _volume_gate_breakdown(vol_extra, scored, series_data.get("actual"))},
+        )
     else:
         raise HTTPException(status_code=404,
                             detail=f"Unknown sandbox {req.sandbox_id}.")
@@ -988,6 +1628,60 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
                            "promoted_equation": resp.get("promoted"),
                            "data_origin": resp.get("data_origin")})
     return resp
+
+
+
+def _volume_gate_breakdown(extra: dict, scored: list, y_actual: list | None = None) -> list[dict]:
+    """Explicit promotion-gate table for the volume benchmark (auditable)."""
+    rows = scored or []
+    # Best challenger = lowest holdout RMSE among non-baseline rows; never
+    # hardcode V1. Rank on RMSE here; gates below decide promotion.
+    chall_rows = [c for c in rows
+                  if "V0" not in (c.candidate.candidate_id if hasattr(c, "candidate") else "V0")]
+    v1 = min(chall_rows, key=lambda c: float(c.holdout_rmse or float("inf"))) if chall_rows else None
+    r2 = float("nan")
+    if v1 is not None and hasattr(v1, "provenance"):
+        g4 = v1.provenance.get("gate4_status", {})
+        resids = g4.get("holdout_residuals")
+        # Centered R2 against the TARGET variance (same derivation as the
+        # leaderboard rows): 1 - ss_res/SStot. Never the residual variance.
+        if resids and y_actual is not None:
+            import numpy as _np
+            arr = _np.asarray(resids, dtype=float)
+            arr = arr[_np.isfinite(arr)]
+            yh = _np.asarray(y_actual, dtype=float).ravel()
+            yh = yh[_np.isfinite(yh)][-len(arr):] if len(yh) >= len(arr) else yh
+            if len(arr) > 0 and len(yh) == len(arr):
+                ss_res = float(_np.sum(arr ** 2))
+                ss_tot = float(_np.sum((yh - float(_np.mean(yh))) ** 2))
+                r2 = float(1.0 - ss_res / ss_tot) if ss_tot > 1e-12 else float("nan")
+    def ok(x: bool) -> str:
+        return "✓" if x else "✗"
+    # Delta/perm follow the SELECTED challenger (V1 or V2 fills these keys).
+    is_v2 = v1 is not None and "V2" in (v1.candidate.candidate_id if hasattr(v1, "candidate") else "")
+    delta = float(extra.get("delta_r2_V2" if is_v2 else "delta_r2", float("nan")))
+    perm = float(extra.get("perm_p_V2" if is_v2 else "perm_p", float("nan")))
+    who = (v1.candidate.candidate_id if v1 is not None and hasattr(v1, "candidate") else "best challenger")
+    g_delta = bool(delta == delta and delta > 0)
+    g_perm = bool(perm == perm and perm < 0.05)
+    g_r2 = bool(r2 == r2 and r2 > 0)
+    out = [
+        {"gate": "ΔR² > 0", "result": ok(g_delta),
+         "detail": f"{who}: incremental ΔR² = {delta:+.4f}" if delta == delta else "n/a"},
+        {"gate": "perm p < 0.05", "result": ok(g_perm),
+         "detail": f"{who}: permutation p = {perm:.4f}" if perm == perm else "n/a"},
+        {"gate": "R² > 0", "result": ok(g_r2),
+         "detail": f"best-challenger R² = {r2:+.3f}" if r2 == r2 else "n/a"},
+    ]
+    out.append({"gate": "PROMOTION", "result": ok(g_delta and g_perm and g_r2),
+                "detail": "all gates pass" if (g_delta and g_perm and g_r2) else "at least one gate fails → no promotion"})
+    return out
+
+@app.post("/api/sandbox/upload", dependencies=[Depends(_require_api_key)])
+def sandbox_upload(req: SandboxRequest) -> dict[str, Any]:
+    """Execute autonomous open equation discovery on uploaded custom CSV data."""
+    req.sandbox_id = "custom_upload"
+    return sandbox_run(req)
 
 
 @app.get("/api/audit/recent", dependencies=[Depends(_require_api_key)])
@@ -1162,3 +1856,8 @@ def run_server(host: str = "127.0.0.1", port: int = 8000, reload: bool = False) 
     print(f"  APEDP Dyn Visual Studio Online at http://{host}:{port}")
     print("=======================================================\n")
     uvicorn.run("apedp_dyn.ui.server:app", host=host, port=port, reload=reload)
+
+
+if __name__ == "__main__":
+    run_server(host="127.0.0.1", port=8000, reload=True)
+

@@ -283,19 +283,19 @@
             <div class="flex items-center space-x-2 text-amber-400 font-mono text-xs font-bold">
               <span>⚠ PERSISTENT OBSERVATIONAL AMBIGUITY (MULTI_HYPOTHESIS)</span>
             </div>
-            <p class="text-xs text-slate-300">
-              In this quasi-linear regime, the empirical difference between models is smaller than the epistemic resolution floor (<span class="font-mono text-amber-300">Δ ≤ τ_epi</span>). The adjudicator sovereignly refuses to force an unjustified winner:
+            <p id="multi-rivals-desc" class="text-xs text-slate-300">
+              The empirical difference between models is smaller than the epistemic resolution floor (<span class="font-mono text-amber-300">Δ ≤ τ_epi</span>). The adjudicator sovereignly refuses to force an unjustified winner:
             </p>
             <div class="grid grid-cols-2 gap-3 font-mono text-xs">
               <div class="bg-[#070b13] p-3 rounded-lg border border-amber-500/20">
-                <div class="text-slate-400 text-[10px]">CANDIDATE A (Trigonometric)</div>
-                <div class="text-amber-300 font-bold text-sm mt-1">sin(θ)</div>
-                <div class="text-[10px] text-slate-400 mt-1">RMSE: 0.0153</div>
+                <div id="rival-a-tag" class="text-slate-400 text-[10px]">CANDIDATE A (Leader)</div>
+                <div id="rival-a-expr" class="text-amber-300 font-bold text-sm mt-1 truncate">sin(θ)</div>
+                <div id="rival-a-rmse" class="text-[10px] text-slate-400 mt-1">RMSE: 0.0153</div>
               </div>
               <div class="bg-[#070b13] p-3 rounded-lg border border-amber-500/20">
-                <div class="text-slate-400 text-[10px]">CANDIDATE B (Linear Limit)</div>
-                <div class="text-amber-300 font-bold text-sm mt-1">θ</div>
-                <div class="text-[10px] text-slate-400 mt-1">RMSE: 0.1412</div>
+                <div id="rival-b-tag" class="text-slate-400 text-[10px]">CANDIDATE B (Rival within τ)</div>
+                <div id="rival-b-expr" class="text-amber-300 font-bold text-sm mt-1 truncate">θ</div>
+                <div id="rival-b-rmse" class="text-[10px] text-slate-400 mt-1">RMSE: 0.1412</div>
               </div>
             </div>
           </div>
@@ -370,8 +370,12 @@
           <div class="space-y-1.5">
             <label class="block text-xs font-mono text-slate-300">Asset Series</label>
             <select id="market-asset-select" onchange="loadMarketWindows()" class="w-full bg-[#070b13] border border-[#1b2640] rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
-              <option value="nasdaq100">Nasdaq 100 Index (2018-2023)</option>
-              <option value="sp500">S&P 500 Index (2018-2023)</option>
+              <option value="nasdaq100">Nasdaq 100 Index (NDX)</option>
+              <option value="sp500">S&P 500 Index (SPX)</option>
+              <option value="russell2000">Russell 2000 Small-Cap Proxy (RUT)</option>
+              <option value="dow30">Dow Jones Industrial Average (DJIA)</option>
+              <option value="crypto_btc">Bitcoin Macro Proxy (BTC)</option>
+              <option value="treasury10y">10-Year US Treasury Yield Proxy (TNX)</option>
             </select>
           </div>
 
@@ -385,6 +389,14 @@
               <option value="W4_REBOUND">W4: 2021 Post-COVID Expansion</option>
               <option value="W6_RECOVERY">W6: 2023 Tech Recovery</option>
             </select>
+          </div>
+
+          <div class="flex items-center justify-between p-3 bg-[#070b13] rounded-lg border border-[#1b2640]">
+            <div>
+              <div class="text-xs font-mono font-medium text-white">Extensive Sweeps (>150 Windows)</div>
+              <div class="text-[10px] text-slate-400">Multi-Scale Horizons (30d, 63d, 126d, 252d)</div>
+            </div>
+            <input type="checkbox" id="market-extensive-toggle" onchange="loadMarketWindows()" class="w-4 h-4 accent-emerald-400 rounded cursor-pointer">
           </div>
 
           <div class="flex items-center justify-between p-3 bg-[#070b13] rounded-lg border border-[#1b2640]">
@@ -485,30 +497,201 @@
     <!-- ============================================================== -->
     <div id="tab-sandbox" role="tabpanel" class="hidden space-y-6">
       <div class="bg-[#0e1526] rounded-xl border border-[#1b2640] p-6 shadow-xl space-y-4">
-        <div class="flex items-center justify-between border-b border-[#1b2640] pb-3 flex-wrap gap-2">
-          <div>
-            <h2 class="text-sm font-mono font-bold text-white flex items-center space-x-2">
-              <span class="text-cyan-400">04 //</span> <span>SANDBOX GALLERY</span>
-            </h2>
-            <p class="text-xs text-slate-400 mt-1">Run domain benchmarks end to end: verdict, candidate table, observations.</p>
+        <div class="border-b border-[#1b2640] pb-3">
+          <h2 class="text-sm font-mono font-bold text-white flex items-center space-x-2">
+            <span class="text-cyan-400">04 //</span> <span>SANDBOX GALLERY</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Run domain benchmarks end to end: verdict, candidate table, observations.</p>
+        </div>
+
+        <!-- Benchmark Selection & Action Bar -->
+        <div class="bg-[#070b13] p-4 rounded-xl border border-[#1b2640] space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            <div class="flex-1 space-y-1.5">
+              <label for="sandbox-select" class="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Domain Benchmark Suite:</label>
+              <select id="sandbox-select" onchange="onSandboxSelectChange()" aria-label="Sandbox benchmark" class="w-full bg-[#0a101d] border border-[#1b2640] rounded px-3 py-2 text-xs font-mono text-slate-200 focus:border-cyan-500 focus:outline-none"></select>
+            </div>
+            <div class="shrink-0">
+              <button onclick="runSandbox()" class="w-full sm:w-auto px-5 py-2 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 rounded font-mono text-xs font-bold border border-cyan-500/40 transition flex items-center justify-center space-x-1.5 shadow-lg shadow-cyan-500/10 cursor-pointer">
+                <span>▶ Run Benchmark</span>
+              </button>
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-            <select id="sandbox-select" aria-label="Sandbox benchmark" class="bg-[#070b13] border border-[#1b2640] rounded px-2 py-1.5 text-xs font-mono text-slate-200"></select>
-            <button onclick="runSandbox()" class="px-3 py-1.5 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 rounded font-mono text-xs border border-cyan-500/40 transition">
-              ▶ Run
-            </button>
+
+          <!-- Secondary Target Asset Selector (Cleanly placed UNDER Grammar Discovery) -->
+          <div id="sandbox-crypto-asset-row" class="hidden pt-2.5 border-t border-[#1b2640]/70 flex flex-col sm:flex-row sm:items-center gap-2.5">
+            <label for="sandbox-crypto-asset" class="text-[11px] font-mono text-cyan-400 font-semibold whitespace-nowrap flex items-center space-x-1">
+              <span>🪙 Target Universe Asset / Index:</span>
+            </label>
+            <select id="sandbox-crypto-asset" aria-label="Target Asset" class="flex-1 sm:max-w-md bg-[#0a101d] border border-cyan-500/40 rounded px-3 py-1.5 text-xs font-mono text-cyan-300 focus:border-cyan-400 focus:outline-none">
+              <option value="COMPOSITE_TOP15">Combined Basket (15-Asset Index)</option>
+              <option value="BTC">BTC (Bitcoin)</option>
+              <option value="ETH">ETH (Ethereum)</option>
+              <option value="SOL">SOL (Solana)</option>
+              <option value="BNB">BNB (Binance Coin)</option>
+              <option value="AVAX">AVAX (Avalanche)</option>
+              <option value="DOGE">DOGE (Dogecoin)</option>
+              <option value="ADA">ADA (Cardano)</option>
+              <option value="XRP">XRP (Ripple)</option>
+              <option value="DOT">DOT (Polkadot)</option>
+              <option value="LINK">LINK (Chainlink)</option>
+              <option value="MATIC">MATIC (Polygon)</option>
+              <option value="NEAR">NEAR (Near)</option>
+              <option value="ATOM">ATOM (Cosmos)</option>
+              <option value="UNI">UNI (Uniswap)</option>
+              <option value="LTC">LTC (Litecoin)</option>
+            </select>
+            <span id="sandbox-asset-caption" class="text-[10px] font-mono text-slate-400 italic">Adjudicates bull expansion vs Terra-LUNA shock regime.</span>
           </div>
         </div>
-        <div class="flex flex-wrap items-center gap-3 font-mono text-xs">
-          <span id="sandbox-verdict-badge" class="px-3 py-1 rounded-md font-bold bg-slate-500/10 border border-slate-500/40 text-slate-300">—</span>
-          <span id="sandbox-promoted" class="text-cyan-300"></span>
-          <span id="sandbox-origin" class="text-slate-500"></span>
+
+        <!-- Universal Custom Dataset Upload Panel -->
+        <div id="sandbox-upload-panel" class="hidden bg-[#070b13] p-4 rounded-xl border border-cyan-500/30 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="text-xs font-mono text-cyan-300 font-bold uppercase tracking-wider flex items-center space-x-2">
+              <span>📂 Universal Dataset Upload (Autonomous Discovery)</span>
+            </div>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-[10px] font-mono text-slate-400">Load sample:</span>
+              <button type="button" onclick="loadSampleUpload('oscillator')" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">Damped Oscillator</button>
+              <button type="button" onclick="loadSampleUpload('kinetic')" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">Kinetic Energy</button>
+              <button type="button" onclick="loadSampleUpload('crypto')" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">Crypto Price</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="md:col-span-2 space-y-2">
+              <div class="flex items-center space-x-2">
+                <label class="text-[11px] font-mono text-slate-400">File upload (.csv):</label>
+                <input type="file" id="sandbox-file-input" accept=".csv,.txt" onchange="onSandboxFileUpload(event)" class="text-xs font-mono text-slate-300 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-mono file:bg-cyan-500/20 file:text-cyan-300 hover:file:bg-cyan-500/30 cursor-pointer">
+              </div>
+              <textarea id="sandbox-csv-text" rows="4" placeholder="Or paste CSV data here... (e.g.&#10;t,x,v,a&#10;0.0,1.0,0.0,-5.0&#10;0.1,0.95,-0.5,-4.7)" class="w-full bg-[#030712] border border-[#1b2640] rounded p-2 text-xs font-mono text-slate-200 focus:border-cyan-500 focus:outline-none"></textarea>
+            </div>
+            <div class="space-y-2 bg-[#0a101d] p-3 rounded border border-[#1b2640] text-xs font-mono">
+              <div>
+                <label class="text-slate-400 block mb-1">Target Column:</label>
+                <input type="text" id="sandbox-target-col" placeholder="Auto-detect (last column)" class="w-full bg-[#030712] border border-[#1b2640] rounded px-2 py-1 text-slate-200">
+              </div>
+              <div>
+                <label class="text-slate-400 block mb-1">Discovery Mode:</label>
+                <select id="sandbox-upload-mode" class="w-full bg-[#030712] border border-[#1b2640] rounded px-2 py-1 text-slate-200">
+                  <option value="auto">Auto (Detect Dynamics vs Multivariable)</option>
+                  <option value="l2_open">L2 Multiterm Superposition</option>
+                  <option value="dynamical_rate">1D Dynamical Rate Law</option>
+                </select>
+              </div>
+              <div id="sandbox-upload-status" class="text-[11px] text-cyan-400/80 italic mt-1">
+                Upload a CSV or select a sample above.
+              </div>
+            </div>
+          </div>
         </div>
-        <div id="sandbox-reason" class="bg-[#070b13]/60 p-3 rounded-lg border border-[#1b2640] text-xs font-mono text-slate-300"></div>
-        <div class="bg-[#070b13] rounded-lg border border-[#1b2640] p-3">
+
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-mono text-slate-400">SOVEREIGN VERDICT:</span>
+            <span id="sandbox-verdict-badge" class="px-3 py-1 rounded-md font-mono text-xs font-bold bg-slate-500/10 border border-slate-500/40 text-slate-300">—</span>
+          </div>
+          <div class="flex items-center space-x-3 text-xs font-mono">
+            <span id="sandbox-promoted" class="text-cyan-300"></span>
+            <span id="sandbox-origin" class="text-slate-500"></span>
+          </div>
+        </div>
+
+        <!-- Promoted Mathematical Equation Display -->
+        <div class="bg-[#070b13] p-5 rounded-xl border border-[#1b2640] space-y-2">
+          <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Promoted Structure / Model</div>
+          <div id="sandbox-promoted-equation-box" class="text-xl sm:text-2xl font-mono text-cyan-300 overflow-x-auto py-2">
+            No promoted equation (run benchmark to discover)
+          </div>
+        </div>
+
+        <!-- Epistemic Metrics Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+          <div class="bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+            <div class="text-slate-400 text-[10px]">RESOLUTION FLOOR τ</div>
+            <div id="sandbox-tau-val" class="text-white text-sm font-bold mt-0.5">—</div>
+          </div>
+          <div class="bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+            <div class="text-slate-400 text-[10px]">RESIDUAL WHITENESS |ρ₁|</div>
+            <div id="sandbox-rho1-val" class="text-emerald-400 text-sm font-bold mt-0.5">—</div>
+          </div>
+          <div class="bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+            <div class="text-slate-400 text-[10px]">GATE 4 PREDICTIVE R²</div>
+            <div id="sandbox-r2-val" class="text-cyan-400 text-sm font-bold mt-0.5">—</div>
+          </div>
+          <div class="bg-[#070b13] p-3 rounded-lg border border-[#1b2640]">
+            <div class="text-slate-400 text-[10px]">HOLDOUT RMSE</div>
+            <div id="sandbox-rmse-val" class="text-white text-sm font-bold mt-0.5">—</div>
+          </div>
+        </div>
+
+        <!-- Epistemic Reason & Attribution Card -->
+        <div id="sandbox-reason" class="bg-[#070b13]/60 p-3.5 rounded-lg border border-[#1b2640] text-xs font-mono text-slate-300">
+          <span class="text-cyan-400 font-bold">Adjudication Detail: </span><span>Select a domain benchmark and click ▶ Run to execute epistemic adjudication.</span>
+        </div>
+
+        <!-- Promotion Gate Breakdown (rendered when the response carries gate_breakdown) -->
+        <div id="sandbox-gate-box" class="hidden bg-[#070b13]/60 p-3.5 rounded-lg border border-[#1b2640]">
+          <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2">Promotion Gates</div>
+          <div id="sandbox-gate-rows" class="space-y-1 font-mono text-xs"></div>
+        </div>
+
+        <!-- Multi-Hypothesis Split-Screen (Visible only on MULTI_HYPOTHESIS) -->
+        <div id="sandbox-multi-rivals-box" class="hidden p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-3">
+          <div class="flex items-center space-x-2 text-amber-400 font-mono text-xs font-bold">
+            <span>⚠ PERSISTENT OBSERVATIONAL AMBIGUITY (MULTI_HYPOTHESIS)</span>
+          </div>
+          <p id="sandbox-multi-rivals-desc" class="text-xs text-slate-300">
+            The empirical difference between models is smaller than the epistemic resolution floor (<span class="font-mono text-amber-300">Δ ≤ τ_epi</span>). The adjudicator sovereignly refuses to force an unjustified winner:
+          </p>
+          <div class="grid grid-cols-2 gap-3 font-mono text-xs">
+            <div class="bg-[#070b13] p-3 rounded-lg border border-amber-500/20">
+              <div id="sandbox-rival-a-tag" class="text-slate-400 text-[10px]">CANDIDATE A (Leader)</div>
+              <div id="sandbox-rival-a-expr" class="text-amber-300 font-bold text-sm mt-1 truncate">—</div>
+              <div id="sandbox-rival-a-rmse" class="text-[10px] text-slate-400 mt-1">RMSE: —</div>
+            </div>
+            <div class="bg-[#070b13] p-3 rounded-lg border border-amber-500/20">
+              <div id="sandbox-rival-b-tag" class="text-slate-400 text-[10px]">CANDIDATE B (Rival within τ)</div>
+              <div id="sandbox-rival-b-expr" class="text-amber-300 font-bold text-sm mt-1 truncate">—</div>
+              <div id="sandbox-rival-b-rmse" class="text-[10px] text-slate-400 mt-1">RMSE: —</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Observational Trajectory & Phenomenon Fit Chart -->
+        <div class="bg-[#070b13] rounded-lg border border-[#1b2640] p-3 space-y-2">
+          <div class="flex items-center justify-between text-xs font-mono border-b border-[#1b2640] pb-2">
+            <span class="text-white font-bold">OBSERVATIONAL TRAJECTORY & PHENOMENON FIT</span>
+            <span class="text-slate-400 text-[11px]">Empirical Data vs Discovered Model</span>
+          </div>
           <div id="plot-sandbox" class="w-full h-64"></div>
         </div>
-        <div id="sandbox-table" class="font-mono text-xs space-y-1"></div>
+
+        <!-- Pareto Candidate Leaderboard Table -->
+        <div class="bg-[#070b13] rounded-xl border border-[#1b2640] p-4 space-y-3">
+          <h3 class="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+            <span class="text-cyan-400">03 //</span> <span>PARETO NON-DOMINATED CANDIDATE LEADERBOARD</span>
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left font-mono text-xs">
+              <thead class="bg-[#0e1526] text-slate-400 border-b border-[#1b2640]">
+                <tr>
+                  <th class="py-2.5 px-4">Candidate Formula / Hypothesis</th>
+                  <th class="py-2.5 px-4">Complexity</th>
+                  <th class="py-2.5 px-4">Holdout RMSE</th>
+                  <th class="py-2.5 px-4">Gate 4 R²</th>
+                  <th class="py-2.5 px-4">Whiteness |ρ₁|</th>
+                  <th class="py-2.5 px-4">Status</th>
+                </tr>
+              </thead>
+              <tbody id="sandbox-pareto-table-body" class="divide-y divide-[#1b2640]/50 text-slate-200">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+          <!-- Backward-compatible hidden container for tests expecting #sandbox-table -->
+          <div id="sandbox-table" class="hidden"></div>
+        </div>
         <div class="border-t border-[#1b2640] pt-4 mt-2">
           <div class="flex items-center justify-between flex-wrap gap-2">
             <div>
@@ -810,6 +993,17 @@
 
 
     const DEMO_SYSTEMS = new Set(['pendulum', 'duffing', 'harmonic', 'kinetic']);
+    const CATEGORY_NAMES = {
+      'classical': 'Classical Mechanics & Dynamics',
+      'feynman': 'Feynman Equations',
+      'kinetics': 'Chemical Kinetics & Reaction Networks',
+      'circuits': 'Oscillatory & Electronic Circuits',
+      'astrophysics': 'Astrophysics & Celestial Mechanics',
+      'biology': 'Biological Dynamics & Epidemiology',
+      'nonlinear': 'Nonlinear ODEs & Attractors',
+      'general': 'Core Benchmark Systems (PS20)'
+    };
+
     async function loadPhysicsCatalog() {
       try {
         const resp = await fetch('/api/physics/systems', {headers: apiHeaders()});
@@ -831,16 +1025,27 @@
           </optgroup>
         `;
         if (items && items.length > 0) {
-          const group = document.createElement('optgroup');
-          group.label = "Registry Problem Modules";
+          const groups = {};
           for (const it of items) {
             if (DEMO_SYSTEMS.has(it.id)) continue;
+            const cat = it.category || 'general';
+            if (!groups[cat]) {
+              const grp = document.createElement('optgroup');
+              grp.label = CATEGORY_NAMES[cat] || (cat.charAt(0).toUpperCase() + cat.slice(1));
+              groups[cat] = grp;
+            }
             const o = document.createElement('option');
             o.value = it.id;
-            o.textContent = `${it.name} [${(it.equations || []).join('; ') || it.id}]`;
-            group.appendChild(o);
+            const eqPreview = (it.equations || []).slice(0, 2).join('; ') || it.id;
+            o.textContent = `${it.name} [${eqPreview}]`;
+            groups[cat].appendChild(o);
           }
-          sel.appendChild(group);
+          for (const catKey of Object.keys(CATEGORY_NAMES)) {
+            if (groups[catKey]) sel.appendChild(groups[catKey]);
+          }
+          for (const [k, grp] of Object.entries(groups)) {
+            if (!CATEGORY_NAMES[k]) sel.appendChild(grp);
+          }
         }
         sel.value = currentVal;
       } catch (err) { console.error(err); }
@@ -902,7 +1107,7 @@
           resp = await fetch('/api/discover/registry', {
             method: 'POST',
             headers: apiHeaders(),
-            body: JSON.stringify({system: sys})
+            body: JSON.stringify({system: sys, multiterm: multiterm, noise: noise})
           });
         }
         if (!resp.ok) {
@@ -980,6 +1185,30 @@
         vBadge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-amber-500/10 border border-amber-500/40 text-amber-400 glow-amber flex items-center space-x-2";
         vText.innerText = "MULTI_HYPOTHESIS";
         multiBox.classList.remove('hidden');
+
+        // Dynamically bind top competing rival candidates from adjudicator
+        const delta = (data.delta_rmse != null) ? data.delta_rmse : (pc && pc.delta_rmse != null ? pc.delta_rmse : null);
+        const tau = (pc && pc.tau_epi != null) ? pc.tau_epi : (data.tau_epi != null ? data.tau_epi : 0.017);
+        const rA = data.rival_a || (data.pareto_candidates && data.pareto_candidates[0]);
+        const rB = data.rival_b || (data.pareto_candidates && data.pareto_candidates[1]);
+
+        const descEl = document.getElementById('multi-rivals-desc');
+        if (descEl) {
+          const deltaStr = delta != null ? delta.toFixed(4) : (rA && rB ? Math.abs((rB.rmse || 0) - (rA.rmse || 0)).toFixed(4) : "N/A");
+          descEl.innerHTML = `Empirical separation between rivals (<span class="font-mono text-amber-300">Δ = ${deltaStr}</span>) is within the epistemic resolution floor (<span class="font-mono text-amber-300">τ = ${Number(tau).toFixed(4)}</span>). Models are observationally indistinguishable under available interventions:`;
+        }
+        if (rA) {
+          const elAExpr = document.getElementById('rival-a-expr');
+          const elARmse = document.getElementById('rival-a-rmse');
+          if (elAExpr) elAExpr.innerText = rA.id || 'Candidate A';
+          if (elARmse) elARmse.innerText = `RMSE: ${rA.rmse != null ? rA.rmse.toFixed(4) : 'N/A'} (Compl: ${rA.complexity})`;
+        }
+        if (rB) {
+          const elBExpr = document.getElementById('rival-b-expr');
+          const elBRmse = document.getElementById('rival-b-rmse');
+          if (elBExpr) elBExpr.innerText = rB.id || 'Candidate B';
+          if (elBRmse) elBRmse.innerText = `RMSE: ${rB.rmse != null ? rB.rmse.toFixed(4) : 'N/A'} (Compl: ${rB.complexity})`;
+        }
       } else {
         vBadge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-ruby-500/10 border border-ruby-500/40 text-ruby-400 glow-ruby flex items-center space-x-2";
         vText.innerText = (data.verdict || 'UNKNOWN').toUpperCase();
@@ -1141,23 +1370,38 @@
 
     async function loadMarketWindows() {
       const asset = document.getElementById('market-asset-select').value;
+      const extToggle = document.getElementById('market-extensive-toggle');
+      const extensive = extToggle ? extToggle.checked : false;
       const sel = document.getElementById('market-window-select');
       try {
-        const resp = await fetch(`/api/market/windows?asset=${asset}`, {headers: apiHeaders()});
+        const resp = await fetch(`/api/market/windows?asset=${asset}&extensive=${extensive}`, {headers: apiHeaders()});
         if (resp.status === 404) {
           console.warn('market windows endpoint missing: server too old, restart uvicorn');
-          return;  // keep hardcoded fallback options
+          return;
         }
         if (!resp.ok) return;
         const items = await resp.json();
         const cur = sel.value;
         sel.innerHTML = '';
+
+        const frozenGroup = document.createElement('optgroup');
+        frozenGroup.label = "Frozen Benchmark Splits (W1..W6)";
+        const rollingGroup = document.createElement('optgroup');
+        rollingGroup.label = extensive ? "Extensive Multi-Scale Sweeps (>150 Windows)" : "Standard Rolling Sweeps";
+
         for (const it of items) {
           const o = document.createElement('option');
           o.value = it.id;
-          o.textContent = `${it.frozen ? '' : '~'}${it.id}: ${it.desc}`;
-          sel.appendChild(o);
+          const regTag = it.regime && it.regime !== 'general' ? ` [${it.regime.toUpperCase()}]` : '';
+          o.textContent = `${it.frozen ? '' : '~'}${it.id}: ${it.desc}${regTag}`;
+          if (it.frozen) {
+            frozenGroup.appendChild(o);
+          } else {
+            rollingGroup.appendChild(o);
+          }
         }
+        if (frozenGroup.children.length > 0) sel.appendChild(frozenGroup);
+        if (rollingGroup.children.length > 0) sel.appendChild(rollingGroup);
         if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
       } catch (err) { console.error(err); }
     }
@@ -1293,7 +1537,89 @@
           o.textContent = it.name;
           sel.appendChild(o);
         }
+        onSandboxSelectChange();
       } catch (err) { console.error(err); }
+    }
+
+    function onSandboxSelectChange() {
+      const id = document.getElementById('sandbox-select')?.value;
+      const assetRow = document.getElementById('sandbox-crypto-asset-row');
+      const uploadPanel = document.getElementById('sandbox-upload-panel');
+      if (assetRow) {
+        if (id === 'crypto_multi_grammar' || id === 'volume_market') {
+          assetRow.classList.remove('hidden');
+          const cap = document.getElementById('sandbox-asset-caption');
+          if (cap) {
+            cap.textContent = id === 'volume_market'
+              ? 'Frozen V0 vs V1 volume-state test on OOS future-vol target (control: contemporaneous log-volume, not rolling state).'
+              : 'Adjudicates bull expansion vs Terra-LUNA shock regime.';
+          }
+        } else {
+          assetRow.classList.add('hidden');
+        }
+      }
+      if (uploadPanel) {
+        if (id === 'custom_upload') {
+          uploadPanel.classList.remove('hidden');
+        } else {
+          uploadPanel.classList.add('hidden');
+        }
+      }
+    }
+
+    function onSandboxFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target.result;
+        const ta = document.getElementById('sandbox-csv-text');
+        if (ta) ta.value = text;
+        const status = document.getElementById('sandbox-upload-status');
+        if (status) status.innerText = `Loaded ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      };
+      reader.readAsText(file);
+    }
+
+    function loadSampleUpload(kind) {
+      let csv = "";
+      if (kind === 'oscillator') {
+        csv = "t,x,v,a\n";
+        let t = 0.0, x = 1.2, v = 0.0, dt = 0.05;
+        for (let i = 0; i < 60; i++) {
+          let a = -0.4 * v - 5.0 * Math.sin(x);
+          csv += `${t.toFixed(2)},${x.toFixed(4)},${v.toFixed(4)},${a.toFixed(4)}\n`;
+          v += a * dt;
+          x += v * dt;
+          t += dt;
+        }
+        document.getElementById('sandbox-target-col').value = "a";
+        document.getElementById('sandbox-upload-mode').value = "l2_open";
+      } else if (kind === 'kinetic') {
+        csv = "m,v,E\n";
+        for (let i = 0; i < 50; i++) {
+          let m = 1.0 + Math.random() * 4.0;
+          let v = 2.0 + Math.random() * 8.0;
+          let E = 0.5 * m * (v * v) + (Math.random() - 0.5) * 0.05;
+          csv += `${m.toFixed(3)},${v.toFixed(3)},${E.toFixed(4)}\n`;
+        }
+        document.getElementById('sandbox-target-col').value = "E";
+        document.getElementById('sandbox-upload-mode').value = "l2_open";
+      } else if (kind === 'crypto') {
+        csv = "date,price\n";
+        let p = 100.0;
+        for (let i = 1; i <= 60; i++) {
+          p = p * (1.0 + (Math.random() - 0.49) * 0.04);
+          let d = i < 10 ? `0${i}` : `${i}`;
+          csv += `2023-01-${d},${p.toFixed(2)}\n`;
+        }
+        document.getElementById('sandbox-target-col').value = "price";
+        document.getElementById('sandbox-upload-mode').value = "dynamical_rate";
+      }
+      const ta = document.getElementById('sandbox-csv-text');
+      if (ta) ta.value = csv;
+      const status = document.getElementById('sandbox-upload-status');
+      if (status) status.innerText = `Loaded sample: ${kind}`;
     }
 
     async function runSandbox() {
@@ -1301,26 +1627,199 @@
       if (!id) return;
       const badge = document.getElementById('sandbox-verdict-badge');
       badge.innerText = 'RUNNING…';
+      badge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-cyan-500/10 border border-cyan-500/40 text-cyan-400";
       try {
+        const payload = {sandbox_id: id};
+        if (id === 'crypto_multi_grammar' || id === 'volume_market') {
+          const assetSel = document.getElementById('sandbox-crypto-asset');
+          if (assetSel && assetSel.value) {
+            payload.asset = assetSel.value;
+          }
+        } else if (id === 'custom_upload') {
+          const csvText = document.getElementById('sandbox-csv-text')?.value;
+          const targetCol = document.getElementById('sandbox-target-col')?.value;
+          const modeVal = document.getElementById('sandbox-upload-mode')?.value;
+          if (csvText && csvText.trim()) {
+            payload.csv_text = csvText.trim();
+          }
+          if (targetCol && targetCol.trim()) {
+            payload.target_column = targetCol.trim();
+          }
+          if (modeVal) {
+            payload.mode = modeVal;
+          }
+        }
         const resp = await fetch('/api/sandbox/run', {
           method: 'POST', headers: apiHeaders(),
-          body: JSON.stringify({sandbox_id: id}),
+          body: JSON.stringify(payload),
         });
         const data = await resp.json();
-        badge.innerText = (data.verdict || 'unknown').toUpperCase();
-        document.getElementById('sandbox-promoted').innerText =
-          data.promoted ? ('promoted: ' + data.promoted) : 'promoted: none (abstention)';
-        document.getElementById('sandbox-origin').innerText =
-          'origin=' + (data.data_origin || 'unknown');
-        document.getElementById('sandbox-reason').innerText = data.reason || '';
-        document.getElementById('sandbox-table').innerHTML = (data.candidates || []).map(c =>
-          `<div class="flex justify-between border-b border-[#1b2640] py-1"><span class="text-slate-300">${c.id}</span><span class="text-slate-400">RMSE ${Number(c.rmse).toPrecision(4)}</span></div>`).join('');
-        if (data.series) {
-          renderSandboxSVG(data.series);
-        }
+        renderSandboxResults(data);
       } catch (err) {
         badge.innerText = 'ERROR';
+        badge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-rose-500/10 border border-rose-500/40 text-rose-400";
         console.error(err);
+      }
+    }
+
+    function renderSandboxResults(data) {
+      const badge = document.getElementById('sandbox-verdict-badge');
+      const v = (data.verdict || 'unknown').toLowerCase();
+      badge.innerText = v.toUpperCase();
+
+      const multiBox = document.getElementById('sandbox-multi-rivals-box');
+
+      if (v === 'unique_support') {
+        badge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 glow-emerald";
+        if (multiBox) multiBox.classList.add('hidden');
+      } else if (v === 'multi_hypothesis') {
+        badge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-amber-500/10 border border-amber-500/40 text-amber-400 glow-amber";
+        if (multiBox) {
+          multiBox.classList.remove('hidden');
+          const tau = data.tau_epi != null ? data.tau_epi : 0.05;
+          const delta = data.delta_rmse;
+          const rA = data.rival_a || (data.pareto_candidates && data.pareto_candidates[0]);
+          const rB = data.rival_b || (data.pareto_candidates && data.pareto_candidates[1]);
+
+          const descEl = document.getElementById('sandbox-multi-rivals-desc');
+          if (descEl) {
+            const deltaStr = delta != null ? Number(delta).toFixed(4) : (rA && rB && rA.rmse != null && rB.rmse != null ? Math.abs(rB.rmse - rA.rmse).toFixed(4) : "N/A");
+            descEl.innerHTML = `Empirical separation between rivals (<span class="font-mono text-amber-300">Δ = ${deltaStr}</span>) is within the epistemic resolution floor (<span class="font-mono text-amber-300">τ = ${Number(tau).toFixed(4)}</span>). Models are observationally indistinguishable under available interventions:`;
+          }
+          if (rA) {
+            const elA = document.getElementById('sandbox-rival-a-expr');
+            const elAR = document.getElementById('sandbox-rival-a-rmse');
+            if (elA) elA.innerText = rA.formula || rA.id || 'Candidate A';
+            if (elAR) elAR.innerText = `RMSE: ${rA.rmse != null ? Number(rA.rmse).toFixed(4) : 'N/A'} (Compl: ${rA.complexity || 1})`;
+          }
+          if (rB) {
+            const elB = document.getElementById('sandbox-rival-b-expr');
+            const elBR = document.getElementById('sandbox-rival-b-rmse');
+            if (elB) elB.innerText = rB.formula || rB.id || 'Candidate B';
+            if (elBR) elBR.innerText = `RMSE: ${rB.rmse != null ? Number(rB.rmse).toFixed(4) : 'N/A'} (Compl: ${rB.complexity || 1})`;
+          }
+        }
+      } else {
+        badge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-rose-500/10 border border-rose-500/40 text-rose-400";
+        if (multiBox) multiBox.classList.add('hidden');
+      }
+
+      // Promoted equation box & metadata
+      const eqBox = document.getElementById('sandbox-promoted-equation-box');
+      if (eqBox) {
+        eqBox.innerText = data.promoted_equation || (data.promoted ? data.promoted : "No promoted equation (refusal under uncertainty)");
+      }
+      const promText = document.getElementById('sandbox-promoted');
+      if (promText) {
+        promText.innerText = data.promoted ? ('promoted: ' + data.promoted) : 'promoted: none (abstention)';
+      }
+      const origText = document.getElementById('sandbox-origin');
+      if (origText) {
+        origText.innerText = 'origin=' + (data.data_origin || 'unknown');
+      }
+
+      // Reason card
+      const reasonEl = document.getElementById('sandbox-reason');
+      if (reasonEl) {
+        reasonEl.innerHTML = `<span class="text-cyan-400 font-bold">Adjudication Detail: </span><span>${data.reason || ''}</span>`;
+      }
+
+      // Gate breakdown (volume benchmark and any sandbox supplying extra.gate_breakdown)
+      try {
+        const gbox = document.getElementById('sandbox-gate-box');
+        const grows = document.getElementById('sandbox-gate-rows');
+        const gates = (data.extra && data.extra.gate_breakdown) || null;
+        if (gbox && grows) {
+          if (gates && gates.length) {
+            gbox.classList.remove('hidden');
+            grows.innerHTML = '';
+            gates.forEach(g => {
+              const pass = String(g.result || '') === '\u2713';
+              const row = document.createElement('div');
+              row.className = "flex items-center justify-between gap-3";
+              row.innerHTML = `<span class="${pass ? 'text-emerald-400' : 'text-rose-400'} font-bold">${g.result || '?'} ${g.gate || ''}</span><span class="text-slate-400 text-[10px] text-right">${g.detail || ''}</span>`;
+              grows.appendChild(row);
+            });
+          } else {
+            gbox.classList.add('hidden');
+          }
+        }
+        if (data.extra && data.extra.universe_note) {
+          const reasonEl2 = document.getElementById('sandbox-reason');
+          if (reasonEl2 && !reasonEl2.dataset.universeNote) {
+            reasonEl2.dataset.universeNote = '1';
+            const note = document.createElement('div');
+            note.className = "text-[10px] text-slate-500 mt-1";
+            note.innerText = data.extra.universe_note;
+            reasonEl2.appendChild(note);
+          }
+        }
+      } catch (err) { console.error(err); }
+
+      // Epistemic Metrics (4 cards)
+      const pc = data.promoted_candidate;
+      const candidates = data.pareto_candidates || [];
+      const leader = candidates.length > 0
+        ? [...candidates].sort((a, b) => ((a.rmse ?? 1e9) - (b.rmse ?? 1e9)))[0]
+        : null;
+
+      const tauVal = (pc && pc.tau_epi != null) ? pc.tau_epi : (data.tau_epi != null ? data.tau_epi : null);
+      const tauEl = document.getElementById('sandbox-tau-val');
+      if (tauEl) tauEl.innerText = (tauVal != null) ? Number(tauVal).toFixed(4) : "—";
+
+      const rmseEl = document.getElementById('sandbox-rmse-val');
+      const r2El = document.getElementById('sandbox-r2-val');
+      const rho1El = document.getElementById('sandbox-rho1-val');
+
+      if (v === 'unique_support' && pc) {
+        if (rmseEl) rmseEl.innerText = pc.holdout_rmse != null ? Number(pc.holdout_rmse).toFixed(4) : "N/A";
+        if (r2El) r2El.innerText = pc.r2 != null ? Number(pc.r2).toFixed(3) : "N/A";
+        const isWhite = pc.residual_rho1 != null && Math.abs(pc.residual_rho1) < 0.5;
+        if (rho1El) rho1El.innerText = pc.residual_rho1 != null ? `${Number(pc.residual_rho1).toFixed(3)} (${isWhite ? 'PASS' : 'FAIL'})` : "N/A";
+      } else if (leader) {
+        if (rmseEl) rmseEl.innerText = leader.rmse != null ? `${Number(leader.rmse).toFixed(4)} (Leader - Unpromoted)` : "N/A";
+        if (r2El) r2El.innerText = leader.r2 != null ? Number(leader.r2).toFixed(3) : "N/A";
+        if (rho1El) rho1El.innerText = leader.rho1 != null ? `${Number(leader.rho1).toFixed(3)} (${leader.is_white ? 'PASS' : 'FAIL'})` : "N/A";
+      } else {
+        if (rmseEl) rmseEl.innerText = "N/A";
+        if (r2El) r2El.innerText = "N/A";
+        if (rho1El) rho1El.innerText = "N/A";
+      }
+
+      // Populate Pareto table
+      const tbody = document.getElementById('sandbox-pareto-table-body');
+      if (tbody) {
+        tbody.innerHTML = '';
+        candidates.forEach(c => {
+          const tr = document.createElement('tr');
+          tr.className = c.is_promoted ? "bg-emerald-500/10 font-bold" : "hover:bg-slate-800/40";
+          tr.innerHTML = `
+            <td class="py-2 px-4">
+              <div class="text-cyan-300 font-mono font-medium">${c.formula || c.id}</div>
+              ${c.formula && c.formula !== c.id ? `<div class="text-[10px] text-slate-500 font-mono tracking-tight">${c.id}</div>` : ''}
+            </td>
+            <td class="py-2 px-4 text-slate-300">${c.complexity}</td>
+            <td class="py-2 px-4 text-white font-mono">${c.rmse !== null ? Number(c.rmse).toFixed(4) : 'N/A'}</td>
+            <td class="py-2 px-4 text-slate-300">${c.r2 !== null ? Number(c.r2).toFixed(3) : 'N/A'}</td>
+            <td class="py-2 px-4 ${c.is_white ? 'text-emerald-400' : 'text-amber-400'}">${c.rho1 !== null ? Number(c.rho1).toFixed(3) : 'N/A'}</td>
+            <td class="py-2 px-4">
+              ${c.is_promoted ? '<span class="text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded text-[10px]">PROMOTED</span>' : (v === 'multi_hypothesis' ? '<span class="text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded text-[10px]">RIVAL</span>' : '<span class="text-slate-400 text-[10px]">UNRESOLVED</span>')}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Backward compatible legacy container
+      const legacyTable = document.getElementById('sandbox-table');
+      if (legacyTable) {
+        legacyTable.innerHTML = (data.candidates || []).map(c =>
+          `<div class="flex justify-between border-b border-[#1b2640] py-1"><span class="text-slate-300">${c.id}</span><span class="text-slate-400">RMSE ${Number(c.rmse).toPrecision(4)}</span></div>`).join('');
+      }
+
+      // Render chart
+      if (data.series) {
+        renderSandboxSVG(data.series);
       }
     }
 
