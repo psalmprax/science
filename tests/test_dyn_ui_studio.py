@@ -234,6 +234,10 @@ class TestAPEDPStudioAPI:
         assert "reason" in data
         # The disclosure must not be lost.
         assert "whiteness" in str(data["reason"]).lower()
+        # |rho1|=0.998 at a clear 3.7x tau: a predictive win, explicitly not a
+        # complete dynamical explanation.
+        assert "RESIDUAL_STRUCTURE_UNRESOLVED" in data["diagnostic_flags"]
+        assert data["promotion_confidence"] is None  # margin is not thin
 
 
 

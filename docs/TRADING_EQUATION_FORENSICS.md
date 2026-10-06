@@ -1653,6 +1653,54 @@ a no-op, and it was removed rather than left in on a false premise.
 Sweep: **639 passed, 0 failed** across `tests/test_dyn_*.py -m "not slow"`;
 ruff clean. Status: §84 DONE — the pre-existing-failure backlog is empty.
 
+## 85. Frozen decision: 639/639 ACCEPT; two boundary cases labelled, gate unchanged
+
+**Suite: 639 passed, 0 failed — ACCEPT.** The promotion gate was
+deliberately **not** modified. Adding a margin requirement or enforcing
+whiteness on the pair path would be post-hoc rule modification driven by
+two inconvenient cases; the rule stays frozen and the *reporting* carries
+the qualification.
+
+**Central distinction made explicit:**
+
+> Predictive Winner != Complete Dynamical Explanation
+
+`delta > tau` answers "did this candidate beat that rival on unseen data?"
+Residual whiteness asks "has it captured all systematically recoverable
+structure?". These are not equivalent — `RMSE_A < RMSE_B` can hold while
+`|rho1(eps_A)| ~ 1`. **Holdout superiority does not imply dynamical
+completeness.** `coupled` is precisely the case that exposes it.
+
+New status-preserving diagnostics on `Adjudication`
+(`promotion_confidence`, `diagnostic_flags`), populated on both
+`UNIQUE_SUPPORT` branches and surfaced by the API. They never alter
+`status` — verified by re-running the full suite:
+
+| case | delta/tau | winner \|rho1\| | verdict | confidence | flags |
+|---|---|---|---|---|---|
+| lynx_cycle | 1.66 | 0.614 | unique_support | low_confidence | WEAK_PROMOTION_MARGIN, RESIDUAL_STRUCTURE_UNRESOLVED |
+| coupled | 3.67 | 0.998 | unique_support | (none) | RESIDUAL_STRUCTURE_UNRESOLVED |
+
+**lynx_cycle — boundary-case promotion.** Formally promoted under the
+frozen rule, but weak promotion margin and substantial residual
+autocorrelation make this a low-confidence identification. Its promotion
+establishes formal support under the current protocol, **not** strong
+identification.
+
+**coupled — predictive promotion only.** Formally promoted as a predictive
+winner under the existing holdout-arbitration doctrine, but `|rho1| =
+0.998` prevents interpreting the result as a complete dynamical
+identification. Claim table: predicts better than rival **yes**; wins the
+frozen holdout comparison **yes**; little residual dependence **no**;
+complete dynamical explanation **not established**; predictive winner
+**yes**; uniquely identified **no / conditional**.
+
+Both flags are now asserted in tests, so neither caveat can be silently
+dropped from a response later.
+
+Sweep after adding diagnostics: **639 passed, 0 failed** (unchanged, as
+required). Status: §85 DONE — gate frozen, boundary cases labelled.
+
 ## 76. H-A/E5 coupling: persistence absorbs the rotation (case study, BTC)
 
 Frozen quad (H-A composite, rankV, logV, persistence-only) on d5 blocks,

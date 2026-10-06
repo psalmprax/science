@@ -74,6 +74,19 @@ remains, so a numerically perfect fit is not yet explanatory support.
 """
 
 
+WEAK_MARGIN_MULTIPLE = 2.0
+"""Diagnostic threshold for a boundary-case promotion, in units of tau.
+
+A promotion whose separation clears tau by less than this multiple is still
+formally permitted by the frozen rule -- the gate is unchanged -- but is
+reported as WEAK_PROMOTION_MARGIN / promotion_confidence='low_confidence'.
+
+Diagnostic only, and deliberately *not* a gate: introducing a hard margin
+requirement now would be post-hoc rule modification driven by an
+inconvenient case. The threshold qualifies the reporting, not the verdict.
+"""
+
+
 ABSOLUTE_EPS = 1e-12
 """Floor used when a record reports a degenerate (non-positive) noise scale."""
 
@@ -265,6 +278,8 @@ class Adjudication:
     data_origin: str = "unknown"
     benchmark_level: str = "unknown"
     epistemic_attribution: str = "unknown"
+    promotion_confidence: str = ""
+    diagnostic_flags: tuple = ()
     reason: str = ""
 
 
@@ -411,6 +426,53 @@ def _note_series(sc: Any, resid_best: Any) -> Any:
     single boolean reading and ``or`` would misbehave on one.
     """
     return resid_best if resid_best is not None else _residual_series(sc)
+
+
+def _promotion_diagnostics(
+    delta: float,
+    tau: float | None,
+    resid: Any,
+    rho_flag: float,
+    weak_margin_multiple: float = WEAK_MARGIN_MULTIPLE,
+) -> tuple[str, tuple[str, ...]]:
+    """Diagnostic-only qualification of a would-be promotion. Never changes status.
+
+    Separates two questions the holdout comparison conflates:
+
+        predictive arbitration -- did this candidate beat that rival on unseen
+        data? (what ``delta > tau`` answers)
+
+        residual completeness  -- has it captured all systematically
+        recoverable structure? (what residual whiteness asks)
+
+    Holdout superiority does not imply completeness: RMSE_A < RMSE_B can hold
+    while A's residuals stay strongly autocorrelated. The frozen gate answers
+    the first question only, so this records where the second is unresolved.
+
+    Returns ``(promotion_confidence, diagnostic_flags)``:
+      WEAK_PROMOTION_MARGIN        -- separation clears tau by less than
+                                      ``weak_margin_multiple`` (a boundary-case
+                                      promotion: formally permitted, evidentially thin)
+      RESIDUAL_STRUCTURE_UNRESOLVED -- winner's lag-1 |rho1| exceeds the whiteness
+                                      flag, so a predictive win is not a complete
+                                      dynamical explanation
+    """
+    flags: list[str] = []
+    confidence = ""
+    if tau is not None and np.isfinite(tau) and tau > 0 and np.isfinite(delta):
+        if (delta / tau) < weak_margin_multiple:
+            flags.append("WEAK_PROMOTION_MARGIN")
+            confidence = "low_confidence"
+    if resid is not None:
+        arr = np.asarray(resid, dtype=float).ravel()
+        if arr.size >= 4 and np.all(np.isfinite(arr)):
+            centred = arr - arr.mean()
+            denom = float(np.dot(centred, centred))
+            if denom > 0.0:
+                rho1 = abs(float(np.dot(centred[:-1], centred[1:]) / denom))
+                if rho1 > rho_flag:
+                    flags.append("RESIDUAL_STRUCTURE_UNRESOLVED")
+    return confidence, tuple(flags)
 
 
 def _winner_structure_note(resid: Any, threshold: float) -> str:
@@ -738,6 +800,8 @@ def adjudicate(fitted: list,
                        f"{_bootstrap_refusal_detail(tb)}")
         attr = (epistemic_attribution if epistemic_attribution != "unknown"
                 else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)
+        boot_conf, boot_flags = _promotion_diagnostics(
+            delta, tau, _note_series(best, resid_best), sole_rho_flag)
         return Adjudication(
             EpistemicStatus.UNIQUE_SUPPORT, promoted=best, rival=second, ranking=tuple(ranked),
             best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
@@ -750,6 +814,8 @@ def adjudicate(fitted: list,
             data_origin=data_origin,
             benchmark_level=benchmark_level,
             epistemic_attribution=attr,
+            promotion_confidence=boot_conf,
+            diagnostic_flags=boot_flags,
             reason=f"rival {second.candidate.candidate_id} separated by "
                    f"Δ={delta:.3g} > τ={tau:.3g} [{tau_source}] and confirmed "
                    f"by the paired block bootstrap (branch "
@@ -757,6 +823,8 @@ def adjudicate(fitted: list,
                    f"{_winner_structure_note(_note_series(best, resid_best), sole_rho_flag)}")
     note = _winner_structure_note(_note_series(best, resid_best),
                                   sole_rho_flag)
+    diag_conf, diag_flags = _promotion_diagnostics(
+        delta, tau, _note_series(best, resid_best), sole_rho_flag)
     attr = (epistemic_attribution if epistemic_attribution != "unknown"
             else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)
     return Adjudication(
@@ -769,5 +837,7 @@ def adjudicate(fitted: list,
         data_origin=data_origin,
         benchmark_level=benchmark_level,
         epistemic_attribution=attr,
+        promotion_confidence=diag_conf,
+        diagnostic_flags=diag_flags,
         reason=f"nearest distinct rival separated by Δ={delta:.3g} > "
         f"τ={tau:.3g} [{tau_source}]{note}")

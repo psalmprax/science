@@ -83,6 +83,11 @@ class TestSandboxGalleryExtended:
         assert d["verdict"] == "unique_support"
         assert d["delta_rmse"] > d["tau_epi"]
         assert "whiteness" in str(d["reason"]).lower() or "structured" in str(d["reason"]).lower()
+        # Boundary-case qualification: the gate is unchanged, but a 1.66x tau
+        # separation with |rho1|=0.614 is a thin promotion and is labelled.
+        assert d["promotion_confidence"] == "low_confidence"
+        assert "WEAK_PROMOTION_MARGIN" in d["diagnostic_flags"]
+        assert "RESIDUAL_STRUCTURE_UNRESOLVED" in d["diagnostic_flags"]
         assert len(d["series"]["x"]) == 114
 
     def test_qec_abstains(self):
