@@ -112,6 +112,21 @@ def intervention_holdout(model, problem) -> GateResult:
                # failure than the one this key fixes.
                "sq_error": sq_err.mean(axis=1).tolist(),
                **observation_scale(obs), **res.metrics}
+    # Signed residuals of the primary observed channel (channel 0). The
+    # whiteness guard is defined on SIGNED residuals; squared error (above) is
+    # a different statistic (it also fires on volatility clustering and on any
+    # smooth error shape). Carried separately so callers can use the right one.
+    # Signs cannot be meaned across channels, hence channel 0 only.
+    resid0 = (res.y.T - obs)[:, 0]
+    metrics["residuals"] = resid0.tolist()
+    # R^2 against the holdout MEAN of the primary channel. Deliberately not
+    # against zero: 1 - rmse^2/rms^2 credits any series with a non-zero level
+    # for "explaining" its own mean (a constant model scored 0.64 that way on
+    # the crypto holdout while explaining ~10% of the variance about the mean).
+    y0 = np.asarray(obs, dtype=float)[:, 0]
+    ss_tot0 = float(np.sum((y0 - y0.mean()) ** 2))
+    metrics["r2"] = (float(1.0 - np.sum(resid0 ** 2) / ss_tot0)
+                     if ss_tot0 > 1e-12 else None)
     verdict = (f"rmse {rmse:.3g} {'<=' if rmse <= tol else '>'} tol {tol:.3g} "
                f"(margin_ratio {margin_ratio:.3g})")
     return GateResult("intervention_holdout", rmse <= tol, verdict, metrics)

@@ -11,6 +11,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum, auto
 
+import numpy as np
 import sympy as sp
 
 logger = logging.getLogger(__name__)
@@ -316,6 +317,134 @@ def domain_audit(expr_str: str, var_ranges: dict,
     except _PROBE_ERRORS as e:
         return {"status": "FAIL", "reason": f"audit error: {e}",
                 "n_bad": 0, "n_total": 0}
+
+
+def interior_pole_scan(expr, observed: dict, *,
+                       grid_points: int = 2001,
+                       pad_fraction: float = 0.02,
+                       spike_factor: float = 10.0,
+                       jump_factor: float = 100.0,
+                       jump_floor: float = 1e-9) -> str | None:
+    """Flag candidate forms carrying a pole inside the observed domain.
+
+    A form like ``1/(x - 2.5001)`` is well behaved at every sampled input
+    {1, 2, 3, 4, 5} while being singular inside the range it is asked to
+    model. Evaluating only where data exists cannot see that, and the fit then
+    looks excellent. So the form is swept on a dense grid spanning the
+    observed range (padded so a pole just outside is still caught).
+
+    The comparison is scale-free: the reference is the peak the form already
+    reached at the sampled inputs, so a smooth candidate scores about 1 and a
+    straddled pole scores orders of magnitude higher.
+
+    Returns a reason string when the form fails, else ``None``. A form with no
+    evaluable free symbol is not this function's business and returns ``None``.
+    """
+    if expr is None:
+        return None
+    names = [str(sym) for sym in expr.free_symbols]
+    if not names:
+        return None
+    # Only variables that actually have observations bound a domain. A free
+    # parameter symbol (c0, __target__) has no data, so it is held at a neutral
+    # value rather than being treated as an axis; columns of unequal length are
+    # truncated to the common prefix rather than being stacked.
+    columns: dict[str, np.ndarray] = {}
+    for name in names:
+        raw = observed.get(name)
+        if raw is None:
+            continue
+        arr = np.asarray(raw, dtype=float).reshape(-1)
+        if arr.size:
+            columns[name] = arr
+    if not columns:
+        return None
+    length = min(arr.size for arr in columns.values())
+    columns = {name: arr[:length] for name, arr in columns.items()}
+    axis_names = list(columns)
+    finite_rows = np.logical_and.reduce(
+        [np.isfinite(arr) for arr in columns.values()]
+    )
+    if not finite_rows.any():
+        return "no finite input rows to bound the domain"
+    lows = [float(np.min(columns[name][finite_rows])) for name in axis_names]
+    highs = [float(np.max(columns[name][finite_rows])) for name in axis_names]
+    spans = [high - low for low, high in zip(lows, highs, strict=True) if high > low]
+    pad = pad_fraction * (max(spans) if spans else 1.0)
+    axis = np.linspace(min(lows) - pad, max(highs) + pad, grid_points)
+    base = {name: float(np.mean(columns[name][finite_rows]))
+            for name in axis_names}
+    # Symbols with no observations are held at 1.0: neutral, and the sweep is
+    # about the geometry of the observed domain, not about parameter values.
+    held = {name: 1.0 for name in names if name not in columns}
+
+    def _call(cols_by_name: dict[str, np.ndarray]) -> np.ndarray:
+        ordered = [cols_by_name.get(n, held.get(n, 1.0)) for n in names]
+        return np.atleast_1d(
+            np.asarray(func(*ordered), dtype=float)
+        ).reshape(-1)
+
+    try:
+        func = sp.lambdify(names, expr, modules="numpy")
+        if len(axis_names) == 1:
+            only = axis_names[0]
+            sweeps = [_call({only: axis})]
+        else:
+            parts = []
+            for swept_name in axis_names:
+                cols = {name: base[name] for name in axis_names}
+                cols[swept_name] = axis
+                parts.append(_call(cols))
+            sweeps = parts
+    except _PROBE_ERRORS:
+        # Not symbolically evaluable on a sweep; other gates still apply.
+        return None
+    # Each axis sweep is kept separate. Concatenating them and taking
+    # successive differences would read the junction between two sweeps as an
+    # enormous step and condemn every smooth multi-variable form.
+    sweeps = [np.atleast_1d(part).reshape(-1) for part in sweeps]
+    sweeps = [part for part in sweeps if part.size]
+    if not sweeps:
+        return None
+    swept = np.concatenate(sweeps)
+    if not np.all(np.isfinite(swept)):
+        return "form is non-finite inside the observed domain (interior pole)"
+    try:
+        sampled = _call({name: columns[name] for name in axis_names})
+    except _PROBE_ERRORS:
+        sampled = None
+    if sampled is not None:
+        sampled = np.atleast_1d(sampled)
+        finite_sampled = sampled[np.isfinite(sampled)]
+        reference = (float(np.max(np.abs(finite_sampled)))
+                     if finite_sampled.size else 0.0)
+    else:
+        reference = 0.0
+    reference = max(reference, 1e-12)
+    peak = float(np.max(np.abs(swept)))
+    if peak > spike_factor * reference:
+        return (
+            f"interior singularity: peak |f| = {peak:.3g} on a dense sweep of the "
+            f"observed domain exceeds {spike_factor:g}x the {reference:.3g} reached "
+            f"at the sampled inputs, which do not resolve the pole"
+        )
+    # A pole small enough to hide inside a large background is invisible to the
+    # peak test: 0.001/(x - 1.5) added to 2x**2 + 1 never exceeds the
+    # polynomial. What it does produce is one enormous step in an otherwise
+    # smooth sequence, so the local jump is compared against the typical step.
+    for part in sweeps:
+        if part.size <= 4:
+            continue
+        steps = np.abs(np.diff(part))
+        typical = float(np.median(steps))
+        largest = float(np.max(steps))
+        if largest > jump_factor * typical and largest > jump_floor:
+            return (
+                f"interior singularity: the form jumps by {largest:.3g} between "
+                f"adjacent sweep points while the typical step is {typical:.3g}, "
+                f"a local blow-up the sampled inputs do not resolve"
+            )
+    return None
 
 
 def extrapolation_audit(expr_str: str, var_ranges: dict,

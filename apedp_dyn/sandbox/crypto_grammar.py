@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import csv
 import sys
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -30,7 +31,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from apedp_dyn.epistemic.adjudicate import Adjudication, adjudicate  # noqa: E402
-from apedp_dyn.epistemic.bootstrap import holdout_se_series  # noqa: E402
+from apedp_dyn.epistemic.bootstrap import holdout_residual_series  # noqa: E402
 from apedp_dyn.fitting.parameter_fit import fit_candidate  # noqa: E402
 from apedp_dyn.grammar.mechanical_grammar import (  # noqa: E402
     enumerate_candidates,
@@ -75,16 +76,18 @@ FIN_TERMS = (
     "u_relax",
 )
 
+# Shock regimes usable as holdout: key -> (label, first date, last date).
+HOLDOUT_WINDOWS: dict[str, tuple[str, str, str]] = {
+    "luna": ("Terra-LUNA shock", "2022-05-05", "2022-05-25"),
+    "ftx": ("FTX collapse", "2022-11-06", "2022-11-20"),
+}
+
 
 def load_crypto_dataset(path: str | Path | None = None) -> dict[str, Any]:
     """Load synchronized historical daily closes and order flow for 15 assets + composite basket."""
     fpath = Path(path) if path is not None else CRYPTO_DATA_FILE
     if not fpath.exists():
-        fallback = Path("/home/psalmprax/ALL_PROJECTS/science/data/market/crypto_top15.csv")
-        if fallback.exists():
-            fpath = fallback
-        else:
-            raise FileNotFoundError(f"Crypto multi-asset data file not found at {fpath}")
+        raise FileNotFoundError(f"Crypto multi-asset data file not found at {fpath}")
 
     dates: list[str] = []
     assets: dict[str, list[float]] = {sym: [] for sym in CRYPTO_ASSETS}
@@ -128,8 +131,14 @@ def run_crypto_experiment(
     target_asset: str = "COMPOSITE_TOP15",
     experiment_name: str = "Crypto Top-15 Basket Bull->Crash",
     path: str | Path | None = None,
+    holdout_window: str = "luna",
 ) -> tuple[Adjudication, DynProblem, dict[str, Any]]:
-    """Run grammar discovery on the designated crypto series across bull vs shock."""
+    """Run grammar discovery on the designated crypto series across bull vs shock.
+
+    ``holdout_window`` picks the shock regime ("luna" default, "ftx"). One verdict
+    on one 21-day event is thin evidence; running both windows and comparing
+    verdicts is the cheap robustness check.
+    """
     ds = load_crypto_dataset(path)
     dates = ds["dates"]
     assets = ds["assets"]
@@ -139,14 +148,23 @@ def run_crypto_experiment(
     px = assets[target_key]
     of = ofi.get(target_key)
 
+    if holdout_window not in HOLDOUT_WINDOWS:
+        raise ValueError(
+            f"unknown holdout_window {holdout_window!r}; choose from {sorted(HOLDOUT_WINDOWS)}")
+    ho_label, ho_start_date, ho_end_date = HOLDOUT_WINDOWS[holdout_window]
+
     idx = {d: i for i, d in enumerate(dates)}
     # Bull market train: 2021-01-01 to 2021-12-31
     i_tr_start = idx.get("2021-01-01", 0)
     i_tr_end = idx.get("2021-12-31", 364) + 1
 
-    # Shock holdout: 2022-05-05 to 2022-05-25 (Terra-LUNA liquidation cascade)
-    i_ho_start = idx.get("2022-05-05", 489)
-    i_ho_end = idx.get("2022-05-25", 509) + 1
+    # Shock holdout (default: 2022-05-05 to 2022-05-25, Terra-LUNA liquidation cascade)
+    if ho_start_date not in idx or ho_end_date not in idx:
+        raise ValueError(
+            f"holdout window {holdout_window!r} ({ho_start_date}..{ho_end_date}) "
+            "is outside the loaded dataset")
+    i_ho_start = idx[ho_start_date]
+    i_ho_end = idx[ho_end_date] + 1
 
     prob = spec_from_series(
         px,
@@ -166,13 +184,25 @@ def run_crypto_experiment(
     print(f"  gates 1-2 survivors: {len(kept)} (rejected: {rej})")
 
     fitted = []
-    for s in kept:
-        try:
-            f = fit_candidate(prob, s.candidate)
-        except Exception as e:  # noqa: BLE001
-            print(f"    fit failed {s.candidate.candidate_id}: {type(e).__name__}")
-            continue
-        fitted.append(f)
+    n_fit_failed = 0
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always", RuntimeWarning)
+        for s in kept:
+            try:
+                f = fit_candidate(prob, s.candidate)
+            except Exception as e:  # noqa: BLE001
+                n_fit_failed += 1
+                print(f"    fit failed {s.candidate.candidate_id}: {type(e).__name__}")
+                continue
+            fitted.append(f)
+    n_numeric_warnings = sum(
+        1 for w in caught
+        if issubclass(w.category, RuntimeWarning)
+        and any(k in str(w.message) for k in ("overflow", "invalid value", "divide by zero"))
+    )
+    if n_numeric_warnings:
+        print(f"  numeric warnings during fitting: {n_numeric_warnings} "
+              "(overflow/invalid; unstable candidate simulations)")
 
     g4 = [s for s in fitted if s.provenance.get("gate4_status", {}).get("passed", False)]
     print(f"  gate-4 survivors: {len(g4)} / {len(fitted)} fitted")
@@ -181,7 +211,7 @@ def run_crypto_experiment(
         try:
             if sc.fit is None:
                 return None
-            return holdout_se_series(prob, sc.candidate, sc.fit.param_values)
+            return holdout_residual_series(prob, sc.candidate, sc.fit.param_values)
         except (RuntimeError, ValueError, TypeError):
             return None
 
@@ -227,9 +257,20 @@ def run_crypto_experiment(
         "x": list(range(len(seg_px))),
         "dates": seg_dates,
         "actual": seg_px.tolist(),
-        "x_label": f"{target_key} LUNA shock window (USD)",
+        "x_label": f"{target_key} {ho_label} window (USD)",
         "target": target_key,
         "candidates": cand_pool,
+        "holdout_window": holdout_window,
+        "holdout_window_label": ho_label,
+        "holdout_n": len(seg_px),
+        # Run metadata. The server used to hard-code "29 structures"; the real
+        # enumeration was 46, then 79 after the grammar grew.
+        "n_structures": len(cands),
+        "n_gate12_survivors": len(kept),
+        "n_fit_attempted": len(kept),
+        "n_fit_failed": n_fit_failed,
+        "n_numeric_warnings": n_numeric_warnings,
+        "n_gate4_survivors": len(g4),
     }
 
     return adj, prob, series_info

@@ -161,7 +161,7 @@ def _run_1d_series_discovery(
     train_ratio: float = 0.6,
 ) -> tuple[Adjudication, list[ScoredCandidate], dict[str, Any], dict[str, Any]]:
     """Autonomous mechanical rate law discovery on 1D series."""
-    from apedp_dyn.epistemic.bootstrap import holdout_se_series
+    from apedp_dyn.epistemic.bootstrap import holdout_residual_series
     from apedp_dyn.fitting.parameter_fit import fit_candidate
     from apedp_dyn.grammar.mechanical_grammar import (
         enumerate_candidates,
@@ -208,9 +208,9 @@ def _run_1d_series_discovery(
         try:
             if sc.fit is None:
                 return None
-            return holdout_se_series(prob, sc.candidate, sc.fit.param_values)
-        except (ValueError, TypeError, ArithmeticError, KeyError, IndexError) as exc:
-            _LOG.debug("holdout SE series unavailable: %s", exc)
+            return holdout_residual_series(prob, sc.candidate, sc.fit.param_values)
+        except (ValueError, TypeError, ArithmeticError, KeyError, IndexError, RuntimeError) as exc:
+            _LOG.debug("holdout residual series unavailable: %s", exc)
             return None
 
     ranked = sorted(

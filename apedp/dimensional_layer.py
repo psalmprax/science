@@ -207,6 +207,176 @@ def check_units(
     return UnitVerdict("PASS", None, result_name, True)
 
 
+def _carries_explicit_coefficient(term: sp.Expr) -> bool:
+    """True when the term has a numeric factor that may carry units.
+
+    ``10.0*L**2`` -> True (the 10.0 can be a joule/meter**2); ``L**2`` ->
+    False (its dimension is fixed by the declared variable units); ``-0.5``
+    -> True (a bare constant is synthesizable by construction).
+
+    The sign is not a dimensional coefficient: sympy factors ``-M**3`` as
+    coeff ``-1``, so the magnitude is compared, otherwise a difference of
+    bare terms would look synthesizable and slip through as admissible.
+    """
+    coeff, rest = term.as_coeff_Mul()
+    return bool(abs(coeff) != 1) or not rest.free_symbols
+
+
+def _term_dimension(term: sp.Expr, engine: DimensionalAssuranceEngine) -> str:
+    return _dimensionality_name(engine.check_expression_consistency(term))
+
+
+def audit_dimensional_admissibility(
+    expression: sp.Expr | str,
+    variable_units: Mapping[str, str],
+    target_unit: str | None = None,
+) -> dict[str, Any]:
+    """Audit an expression under *dimensional constant synthesis*.
+
+    Answers a different question from :func:`check_units`. ``check_units``
+    asks "does this expression already have the target dimension?". This asks
+    "is this expression structurally admissible, given that its numeric
+    coefficients may carry units?" -- the question a discovery pipeline must
+    ask before fitting, since the fitted constants are exactly what would
+    supply those units.
+
+    The synthesis rule, stated rather than assumed:
+
+    * A term with an **explicit numeric coefficient** has a synthesizable
+      dimension: the coefficient is fitted, so it may carry whatever units
+      the term requires. ``10.0*L**2 + 5.0*T**2`` is therefore admissible
+      (both terms become joules) while the coefficient-free ``L**2 + T**2``
+      is not.
+    * A **bare** term -- variables and powers only, no numeric factor -- has
+      a dimension fixed by the declared variable units. Two bare terms in one
+      sum must agree; if they do not, no coefficient can repair the sum, so
+      the form is rejected. ``L + v*T`` is admissible because both sides are
+      lengths; ``M + L`` is not.
+    * A **bare dimensioned transcendental argument** (``sin(L)``,
+      ``exp(L/T)``) is unrepairable. A parameterized one is not: in
+      ``exp(-0.8*r)`` the 0.8 can carry inverse length, making the argument
+      dimensionless. ``sin(v*T/L)`` needs no coefficient at all -- its
+      argument is already dimensionless.
+    * A mismatch between the expression dimension and ``target_unit`` is
+      **repairable** by one overall multiplicative dimensional constant, so it
+      does not make a form inadmissible. ``a**1.5`` is the canonical case:
+      Kepler's ``T ~ a**1.5`` holds only because the constant carries units.
+
+    Returns a dict with ``admissible`` (bool), ``status`` (``"VALID"`` /
+    ``"INVALID"``), ``reason``, ``result_dimensionality`` and
+    ``requires_synthesis_constant``.
+    """
+    try:
+        expr = safe_parse_expr(_normalize_cbrt(expression)) if isinstance(expression, str) else expression
+    except (TypeError, ValueError) as exc:
+        return {"admissible": False, "status": "INVALID",
+                "reason": f"unparseable expression: {exc}",
+                "result_dimensionality": None, "requires_synthesis_constant": False}
+    if expr is None:
+        return {"admissible": False, "status": "INVALID", "reason": "missing expression",
+                "result_dimensionality": None, "requires_synthesis_constant": False}
+
+    engine = DimensionalAssuranceEngine()
+    symbols = sorted(str(symbol) for symbol in expr.free_symbols)
+    missing = [name for name in symbols if name not in variable_units]
+
+    def _invalid(reason: str) -> dict[str, Any]:
+        # Unassessable earns nothing: an expression we cannot audit is not
+        # admissible, matching check_units' UNEVALUATED-is-not-PASS rule.
+        return {"admissible": False, "status": "INVALID", "reason": reason,
+                "result_dimensionality": None, "requires_synthesis_constant": False}
+
+    if missing:
+        return _invalid(f"no declared unit for {', '.join(missing)}")
+
+    for name in symbols:
+        try:
+            engine.register_variable(name, variable_units[name])
+        except (KeyError, ValueError, TypeError) as exc:
+            return _invalid(f"cannot register unit for {name}: {exc}")
+
+    # 1. Transcendentals. A bare dimensioned argument is unrepairable; an
+    #    argument carrying an explicit numeric coefficient can be made
+    #    dimensionless by that coefficient, and an already-dimensionless
+    #    argument is fine as-is.
+    for node in sp.preorder_traversal(expr):
+        if not isinstance(node, sp.Function) or not node.args:
+            continue
+        name = getattr(type(node), "__name__", "")
+        if name not in _TRANSCENDENTAL_NAMES:
+            continue
+        argument = node.args[0]
+        if _carries_explicit_coefficient(argument):
+            continue
+        try:
+            argument_dim = _term_dimension(argument, engine)
+        except (TypeError, ValueError, KeyError, AttributeError,
+                ArithmeticError, NotImplementedError):
+            continue  # cannot judge; benefit of the doubt
+        if argument_dim != "dimensionless":
+            return _invalid(
+                f"Transcendental {name} applied to bare dimensioned "
+                f"expression ({argument} has dimension {argument_dim}); "
+                "no coefficient is present to supply inverse units"
+            )
+
+    # 2. Dimensioned exponents are unrepairable: no coefficient fixes x**t.
+    for node in sp.preorder_traversal(expr):
+        if isinstance(node, sp.Pow) and not node.exp.free_symbols:
+            try:
+                exp_dim = _term_dimension(node.exp, engine)
+            except (TypeError, ValueError, KeyError, AttributeError,
+                    ArithmeticError, NotImplementedError):
+                continue
+            if exp_dim != "dimensionless":
+                return _invalid(
+                    f"exponent must be dimensionless, got {exp_dim}; "
+                    "no coefficient can repair a dimensioned exponent"
+                )
+
+    # 3. Additive terms. Coefficient-free terms have fixed dimensions and must
+    #    agree; coefficient-bearing terms are free to carry the required units.
+    terms = sp.Add.make_args(sp.expand(expr)) or (expr,)
+    fixed_dims: dict[str, str] = {}
+    has_synthesizable_term = False
+    for term in terms:
+        if _carries_explicit_coefficient(term):
+            has_synthesizable_term = True
+            continue
+        try:
+            dim = _term_dimension(term, engine)
+        except TypeError as exc:
+            return _invalid(f"Dimensional Error: {exc}")
+        except (ValueError, KeyError, AttributeError, ArithmeticError,
+                NotImplementedError) as exc:
+            return _invalid(f"engine limit: {exc}")
+        if fixed_dims and dim not in fixed_dims:
+            return _invalid(
+                "Addition of incompatible bare variable terms: "
+                f"{sorted(fixed_dims)} and [{dim}] cannot be summed; "
+                "no coefficient can repair a sum of fixed dimensions"
+            )
+        fixed_dims[dim] = str(term)
+
+    result_dim = next(iter(fixed_dims)) if fixed_dims else None
+    if result_dim is None:
+        # Every term is synthesizable, so the expression has no fixed
+        # dimension of its own -- the target is reached by the coefficients.
+        result_dim = "synthesizable"
+        requires = True
+    else:
+        requires = has_synthesizable_term or (
+            target_unit is not None and result_dim != target_unit
+        )
+    return {
+        "admissible": True,
+        "status": "VALID",
+        "reason": None,
+        "result_dimensionality": result_dim,
+        "requires_synthesis_constant": bool(requires),
+    }
+
+
 @dataclass(frozen=True)
 class DimFilterResult:
     """Generation-time enforcement outcome over a candidate grammar."""

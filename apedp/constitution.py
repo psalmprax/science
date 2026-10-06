@@ -91,8 +91,8 @@ class ConstitutionalVerdict:
 class ConstitutionalAuditor:
     """Independent auditor verifying strict adherence to the 10 Epistemic Invariants."""
 
+    @staticmethod
     def audit(
-        self,
         proposal_dict: dict[str, Any],
         benchmark_results: dict[str, Any] | None = None,
         regression_passed: bool = True,
@@ -118,9 +118,21 @@ class ConstitutionalAuditor:
 
         proposal_dict = proposal_dict or {}
         provenance_trace = provenance_trace or {}
+        # INV-1, INV-2 and INV-3 are statements about how the pipeline *behaved*
+        # -- did it call a contradiction valid, collapse UNRESOLVED into VALID,
+        # pick a winner on training fit alone. That is audit evidence about the
+        # benchmark run, not a property of the proposal text, so it is read
+        # from the benchmark results with the proposal as a fallback for callers
+        # that inline the evidence. Reading only the proposal made all three
+        # silently vacuous: they saw nothing there and reported compliance.
+        evidence = dict(proposal_dict)
+        evidence.update(benchmark_results or {})
+
+        def _flag(name: str, default: bool) -> bool:
+            return bool(evidence.get(name, default))
 
         # INV-1: A dimensional contradiction must never be classified valid.
-        inv1_satisfied = not bool(proposal_dict.get("classified_contradiction_as_valid", False))
+        inv1_satisfied = not _flag("classified_contradiction_as_valid", False)
         checks.append(InvariantCheck(
             InvariantID.INV_1_NO_DIMENSIONAL_CONTRADICTION, inv1_satisfied,
             "No dimensional contradiction marked valid" if inv1_satisfied
@@ -129,7 +141,7 @@ class ConstitutionalAuditor:
             rejections.append("INV-1 violated: dimensional contradiction was classified as valid.")
 
         # INV-2: UNRESOLVED is never equivalent to VALID.
-        unresolved_as_valid = bool(proposal_dict.get("unresolved_treated_as_valid", False))
+        unresolved_as_valid = _flag("unresolved_treated_as_valid", False)
         inv2_satisfied = not unresolved_as_valid
         checks.append(InvariantCheck(
             InvariantID.INV_2_UNRESOLVED_NEVER_VALID, inv2_satisfied,
@@ -139,7 +151,7 @@ class ConstitutionalAuditor:
             rejections.append("INV-2 violated: UNRESOLVED status was treated as VALID.")
 
         # INV-3: Training fit alone cannot determine selection.
-        scalar_train_selection = bool(proposal_dict.get("selected_by_train_fit_alone", False))
+        scalar_train_selection = _flag("selected_by_train_fit_alone", False)
         inv3_satisfied = not scalar_train_selection
         checks.append(InvariantCheck(
             InvariantID.INV_3_TRAINING_FIT_INSUFFICIENT, inv3_satisfied,

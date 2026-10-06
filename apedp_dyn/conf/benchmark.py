@@ -111,6 +111,12 @@ def run_cell(seed: int, sigma: float) -> dict:
                 # point the error is, and travels with the candidate. tolist()
                 # because these records are json-dumped into the report.
                 "holdout_sq_error": sq_err.tolist(),
+                # Signed residuals alongside the squares. Lag-1 autocorrelation
+                # on squared errors measures volatility clustering, not residual
+                # whiteness; the whiteness checks require the signed series, so
+                # both are recorded and each consumer reads the one its statistic
+                # is defined on.
+                "holdout_residuals": (pred_ho - yho).tolist(),
             },
         }
         scored.append(ScoredCandidate(cand, prov, train_loss=train_rmse, holdout_rmse=ho_rmse))

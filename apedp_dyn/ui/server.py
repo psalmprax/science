@@ -1292,9 +1292,9 @@ def _format_sandbox_adjudication(
 
         resids = g4.get("holdout_residuals")
         sq_err = g4.get("holdout_sq_error")
-        err_series = resids if resids is not None else sq_err
-        if rho1 is None and err_series is not None and len(err_series) >= 4:
-            arr = np.asarray(err_series, dtype=float).ravel()
+        rho1_unassessable = None
+        if rho1 is None and resids is not None and len(resids) >= 4:
+            arr = np.asarray(resids, dtype=float).ravel()
             arr_f = arr[np.isfinite(arr)]
             if len(arr_f) >= 4:
                 centred = arr_f - float(np.mean(arr_f))
@@ -1302,6 +1302,15 @@ def _format_sandbox_adjudication(
                 if denom > 1e-12:
                     rho1 = float(np.dot(centred[:-1], centred[1:]) / denom)
                     is_white = bool(abs(rho1) < 0.50)
+        elif rho1 is None and sq_err is not None and len(sq_err) >= 4:
+            # Deliberately NOT computing lag-1 autocorrelation here. On squared
+            # errors that statistic measures volatility clustering, not residual
+            # whiteness, and presenting it as rho1 mislabels heteroskedastic
+            # noise as structured residuals. Leave rho1 empty and say why.
+            rho1_unassessable = (
+                "whiteness requires signed holdout residuals; "
+                "only squared errors recorded"
+            )
 
         if r2 is None and resids is not None and len(resids) > 0:
             arr = np.asarray(resids, dtype=float).ravel()
@@ -1339,6 +1348,7 @@ def _format_sandbox_adjudication(
             "r2": r2,
             "rho1": rho1,
             "is_white": is_white,
+            "rho1_unassessable": rho1_unassessable,
             "is_promoted": bool(is_top and adj.promoted is not None),
         })
 
@@ -1356,54 +1366,77 @@ def _format_sandbox_adjudication(
             "tau_epi": float(adj.tau_epi) if adj.tau_epi is not None else None,
         }
 
-    rival_a = None
-    rival_b = None
+    # Rival pair and reason come from the adjudicator, verbatim. An earlier
+    # version re-sorted candidates by holdout RMSE here and rebuilt both the
+    # pair and the message -- but the adjudicator ranks by train loss and
+    # arbitrates the pair on holdout, so the rebuilt text could name a
+    # different pair than the reason it replaced (cryp-0022/Δ=0.000333 shown
+    # where the adjudicator said cryp-0011/Δ=-0.0434). The display layer must
+    # not author adjudication prose; it quotes it.
+    def _cand_id(sc: Any) -> str:
+        cand = getattr(sc, "candidate", None)
+        if cand is not None and getattr(cand, "candidate_id", None) is not None:
+            return str(cand.candidate_id)
+        return str(getattr(sc, "id", "cand"))
+
+    def _rival_record(sc: Any) -> dict[str, Any] | None:
+        if sc is None or getattr(sc, "holdout_rmse", None) is None:
+            return None
+        form, compl = _resolve_sandbox_formula_and_complexity(sandbox_id, sc)
+        return {
+            "id": _cand_id(sc),
+            "formula": form,
+            "rmse": float(sc.holdout_rmse),
+            "complexity": int(compl),
+        }
+
+    ranking = list(getattr(adj, "ranking", ()) or ())
+    best_sc = ranking[0] if ranking else None
+    rival_sc = getattr(adj, "rival", None)
+    rival_a = _rival_record(best_sc)
+    rival_b = _rival_record(rival_sc)
+    # Holdout-leaderboard context, reported separately so the leaderboard order
+    # stays visible without being mistaken for the adjudicator's pair.
+    holdout_leader_id = None
     valid_cands = [c for c in pool if getattr(c, "holdout_rmse", None) is not None]
     if valid_cands:
-        sorted_by_ho = sorted(valid_cands, key=lambda s: float(s.holdout_rmse))
-        lead = sorted_by_ho[0]
-        lead_id = lead.candidate.candidate_id if hasattr(lead, "candidate") else str(getattr(lead, "id", "cand"))
-        lead_form, lead_compl = _resolve_sandbox_formula_and_complexity(sandbox_id, lead)
-        rival_a = {
-            "id": lead_id,
-            "formula": lead_form,
-            "rmse": float(lead.holdout_rmse),
-            "complexity": int(lead_compl),
-        }
-        if len(sorted_by_ho) > 1:
-            riv = sorted_by_ho[1]
-            riv_id = riv.candidate.candidate_id if hasattr(riv, "candidate") else str(getattr(riv, "id", "cand"))
-            riv_form, riv_compl = _resolve_sandbox_formula_and_complexity(sandbox_id, riv)
-            rival_b = {
-                "id": riv_id,
-                "formula": riv_form,
-                "rmse": float(riv.holdout_rmse),
-                "complexity": int(riv_compl),
-            }
-            delta_val = abs(float(riv.holdout_rmse - lead.holdout_rmse))
-        else:
-            delta_val = abs(float(adj.delta_rmse)) if adj.delta_rmse is not None else None
-    else:
-        delta_val = abs(float(adj.delta_rmse)) if adj.delta_rmse is not None else None
+        holdout_leader_id = _cand_id(
+            min(valid_cands, key=lambda s: float(s.holdout_rmse))
+        )
+    delta_val = (float(adj.delta_rmse)
+                 if getattr(adj, "delta_rmse", None) is not None else None)
 
     if adj.promoted:
         top_form, _ = _resolve_sandbox_formula_and_complexity(sandbox_id, adj.promoted)
         promoted_str = top_form or adj.promoted.candidate.candidate_id
     else:
         promoted_str = "No promoted equation (refusal under uncertainty)"
+    # Verbatim. When the holdout leaderboard orders the top two differently
+    # from the adjudicator's pair, say so in a clearly marked supplement --
+    # appended, never substituted -- so the reader is not confused by the
+    # table without being given a second, conflicting verdict.
     reason_str = adj.reason
-    if delta_val is not None and rival_a and rival_b and getattr(adj, "delta_rmse", None) is not None:
-        _top_c = getattr(adj.promoted or (adj.ranking and adj.ranking[0]), "candidate", None)
-        _top_id = getattr(_top_c, "candidate_id", None) if _top_c is not None else None
-        if isinstance(_top_c, dict):
-            _top_id = _top_c.get("candidate_id")
-        if adj.delta_rmse < 0 or (_top_id and rival_a["id"] != _top_id):
-            tau_val = float(adj.tau_epi) if adj.tau_epi is not None else 0.05
-            tau_src = getattr(adj, "tau_epi_source", "holdout-scale")
-            reason_str = (
-                f"rival {rival_b['id']} within τ (Δ={delta_val:.4g} ≤ τ={tau_val:.4g} [{tau_src}]); "
-                "structures observationally indistinguishable under available interventions"
-            )
+    if (best_sc is not None and holdout_leader_id is not None
+            and _cand_id(best_sc) != holdout_leader_id):
+        reason_str = (
+            f"{adj.reason} [display note: holdout-best on the leaderboard is "
+            f"{holdout_leader_id}; the pair above is the adjudicator's own]"
+        )
+
+    tau_for_rows = float(adj.tau_epi) if adj.tau_epi is not None else None
+    leader_rmse = (rival_a["rmse"] if rival_a and rival_a.get("rmse") is not None
+                   else None)
+    for row in formatted_pareto:
+        # A row is a genuine rival only if it lies within the adjudicator's
+        # resolution floor of the adjudicator's best. Labelling every
+        # non-promoted MULTI row RIVAL overstated how many structures the
+        # evidence actually failed to separate.
+        row_rmse = row.get("rmse")
+        row["within_tau"] = bool(
+            tau_for_rows is not None and leader_rmse is not None
+            and row_rmse is not None and row["id"] != (rival_a["id"] if rival_a else None)
+            and abs(float(row_rmse) - float(leader_rmse)) <= tau_for_rows
+        )
 
     return {
         "sandbox_id": sandbox_id,

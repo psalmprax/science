@@ -403,15 +403,23 @@ def _sole_survivor_whiteness(resid: Any, threshold: float) -> tuple[bool, str]:
 
 
 def _residual_series(sc: Any) -> Any:
-    """Per-timepoint holdout error series gate 4 recorded for ``sc``.
+    """Per-timepoint holdout residual series gate 4 recorded for ``sc``.
 
     The single route by which a caller that never computes residuals can still
     reach the whiteness check. Callers that fit through fit_candidate get this
     for free; the conf benchmarks hand-build their provenance and populate the
     same key, so both kinds of caller are covered by one lookup.
+
+    Signed residuals only. An earlier version fell back to ``holdout_sq_error``
+    when no signed series existed, but lag-1 autocorrelation on squared errors
+    measures volatility clustering, not residual whiteness -- a model with
+    perfectly white but heteroskedastic residuals fails that test for the wrong
+    reason. A candidate with no signed series therefore reports whiteness as
+    unassessable rather than as failed; silence must not read as structure.
     """
     try:
-        return sc.provenance.get("gate4_status", {}).get("holdout_sq_error")
+        g4 = sc.provenance.get("gate4_status", {})
+        return g4.get("holdout_residuals")
     except AttributeError:
         return None
 

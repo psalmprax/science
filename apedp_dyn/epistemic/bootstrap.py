@@ -143,6 +143,40 @@ def holdout_se_series(problem, candidate_ir, param_values: dict[str, float]):
     return np.mean((res.y.T - obs) ** 2, axis=1)
 
 
+def holdout_residual_series(problem, candidate_ir, param_values: dict[str, float]):
+    """Per-timepoint SIGNED holdout residual (model - truth), primary channel.
+
+    This is what ``adjudicate(resid_best=..., resid_rival=..., resid_sole=...)``
+    documents it expects: the whiteness guard needs the signs, and the bootstrap
+    tiebreak squares the series itself. Passing :func:`holdout_se_series` there
+    squares the errors twice (4th-power tiebreak) and measures whiteness on
+    squared error, which is a different statistic (it also fires on smooth error
+    shapes and volatility clustering). Channel 0 only: signs cannot be meaned
+    across channels.
+    """
+    import numpy as np
+
+    from apedp_dyn.fitting.parameter_fit import _with_values
+    from apedp_dyn.grammar import materialize
+    from apedp_dyn.grammar.candidate_ir import SystemCandidate
+    from apedp_dyn.simulation import simulate
+
+    if isinstance(candidate_ir, SystemCandidate):
+        from apedp_dyn.grammar.coupled import materialize_system
+
+        model0 = materialize_system(problem, candidate_ir)
+    else:
+        model0 = materialize(problem, candidate_ir)
+    model = _with_values(model0, {k: float(v) for k, v in param_values.items()})
+    h = problem.holdout
+    res = simulate(model, h["t_span"], h["u_of_t"],
+                   np.asarray(h["x0"], dtype=float), n_eval=len(h["truth_t"]))
+    if not res.success:
+        raise RuntimeError(f"holdout simulation invalid: {res.detail}")
+    obs = np.asarray(h["truth_y"], dtype=float)
+    return (res.y.T - obs)[:, 0]
+
+
 def param_bootstrap_ci(problem, candidate_ir, fitted_values: dict[str, float],
                        n_boot: int = 30, seed: int = 0) -> dict[str, tuple[float, float, float]]:
     """Residual-bootstrap parameter bands (experimental UQ, v1).

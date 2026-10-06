@@ -651,8 +651,19 @@ class StageCDecisionEngine:
             for other in competitive[1:]:
                 # Complexity trade-off: a simpler model that is competitive
                 if other.complexity < best.complexity * 0.85:
+                    # An exact holdout fit (holdout_mse == 0.0) is reachable --
+                    # with as many holdout points as free parameters the least
+                    # squares residual vanishes. Dividing by it raised
+                    # ZeroDivisionError, losing the whole adjudication, so the
+                    # percentage is only quoted when the denominator is usable.
+                    if best.holdout_mse > 0:
+                        gap = f"is within {((other.holdout_mse / best.holdout_mse - 1) * 100):.1f}% holdout error of"
+                    else:
+                        gap = ("matches the exact zero holdout error of"
+                               if other.holdout_mse <= 0
+                               else "exceeds the exact zero holdout error of")
                     tradeoffs_detected.append(
-                        f"Simpler candidate '{other.candidate_id}' (complexity {other.complexity:.1f}) is within {((other.holdout_mse/best.holdout_mse - 1)*100):.1f}% holdout error of '{best.candidate_id}' (complexity {best.complexity:.1f})"
+                        f"Simpler candidate '{other.candidate_id}' (complexity {other.complexity:.1f}) {gap} '{best.candidate_id}' (complexity {best.complexity:.1f})"
                     )
                 # In-sample vs out-of-sample reversal (overfitting suspicion)
                 if other.in_sample_mse < best.in_sample_mse * 0.9 and other.holdout_mse > best.holdout_mse:

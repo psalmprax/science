@@ -74,6 +74,27 @@ class SearchConfig:
     allow_sqrt: bool = True
     allow_inv: bool = False
 
+    # Discovery-upgrade flags. Each is independently switchable so the
+    # ablation ladder (B, B+S, B+T, B+V, B+E) can be run from one code path.
+    use_typed_grammar: bool = False
+    """Seed the initial population from the dimensionally typed production
+    grammar, so every seeded candidate is dimensionally valid by construction
+    instead of being generated and then filtered."""
+
+    use_varpro: bool = False
+    """Fit constants by variable projection (separating linear-in-parameter
+    structure) rather than generic numeric tuning."""
+
+    in_loop_epistemic_guard: bool = True
+    """Run the at-birth admissibility audit (dimensional validity, symmetry
+    violations, interior poles) on seeds, growers, and migrants. Default True
+    preserves the guard that was previously unconditional; switching it off is
+    the ablation that measures what the guard is worth."""
+
+    use_separability: bool = False
+    """Detect an additive separable structure and decompose the search per
+    variable instead of searching the joint form directly."""
+
 
 @dataclass
 class SearchResult:
@@ -398,6 +419,9 @@ class _IslandSearch:
     ) -> None:
         self.data_symbols = data_symbols
         self.arrays = arrays
+        #: The observed domain, keyed by variable name, as the interior-pole
+        #: sweep needs it.
+        self.observed = arrays
         self.target = target
         self.variable_units = variable_units or {}
         self.target_unit = target_unit
@@ -446,6 +470,13 @@ class _IslandSearch:
         if expression.has(sp.zoo, sp.nan, sp.oo):
             return False
         skeleton, _ = skeletonize(expression)
+        # A pole inside the observed domain is not visible at the sampled
+        # inputs, so a swept scan is required; without it a straddled pole
+        # enters the population and wins on in-sample error.
+        from apedp.scientific_layers import interior_pole_scan
+
+        if interior_pole_scan(expression, self.observed) is not None:
+            return False
         if self.variable_units:
             from apedp.dimensional_layer import check_units
 
@@ -461,6 +492,22 @@ class _IslandSearch:
 
             if symmetry_check(str(skeleton), symbol, transform) == "FAIL":
                 return False
+        return node_count(expression) <= self.config.max_complexity * 2
+
+    def _birth_ok(self, expression: sp.Expr) -> bool:
+        """Birth gate consulted by the search loop.
+
+        The epistemic half of the audit -- interior poles, dimensional
+        validity, symmetry violations -- runs only when
+        ``in_loop_epistemic_guard`` is enabled. The complexity budget always
+        applies, because it bounds the search rather than making any claim
+        about the model. Disabling the flag is the ablation that measures what
+        the guard is worth; it is not the default.
+        """
+        if self.config.in_loop_epistemic_guard:
+            return self._admissible_at_birth(expression)
+        if expression.has(sp.zoo, sp.nan, sp.oo):
+            return False
         return node_count(expression) <= self.config.max_complexity * 2
 
     def _pi_seeds(self) -> list[sp.Expr]:
@@ -613,6 +660,44 @@ def _pareto_front(records: list[tuple[str, float, float]]) -> list[tuple[str, fl
     return sorted(front, key=lambda item: item[1])
 
 
+def _separable_seed(
+    group: list[str],
+    arrays: dict[str, np.ndarray],
+    target: np.ndarray,
+    max_degree: int,
+) -> sp.Expr | None:
+    """Least-squares additive block for one separable group of variables.
+
+    Fits ``1 + sum_d sum_{s in group} c * s**d`` over the observed rows and
+    returns it as an explicit numeric expression. Numeric coefficients keep the
+    result directly evaluable, so a separable seed enters the population as a
+    scored candidate rather than as an unevaluated skeleton.
+    """
+    columns = [np.ones(len(target))]
+    powers: list[tuple[sp.Symbol, int]] = []
+    for name in group:
+        values = np.asarray(arrays[name], dtype=float).reshape(-1)
+        if values.size != target.shape[0]:
+            return None
+        for degree in range(1, max_degree + 1):
+            columns.append(values ** degree)
+            powers.append((sp.Symbol(name), degree))
+    if len(columns) == 1:
+        return None
+    design = np.column_stack(columns)
+    try:
+        coefficients, *_ = np.linalg.lstsq(design, target, rcond=None)
+    except np.linalg.LinAlgError:
+        return None
+    if not np.all(np.isfinite(coefficients)):
+        return None
+    expression = sp.Float(float(coefficients[0]))
+    for (symbol, degree), coefficient in zip(powers, coefficients[1:],
+                                             strict=False):
+        expression = expression + sp.Float(float(coefficient)) * symbol ** degree
+    return sp.expand(expression)
+
+
 def evolve(
     x_train: dict[str, np.ndarray],
     y_train: np.ndarray,
@@ -665,20 +750,98 @@ def evolve(
             scaling["__target__"] = [target_mu, target_sigma]
             target = (raw_target - target_mu) / target_sigma
             y_scale = target_sigma
+    separable_seeds: list[sp.Expr] = []
+    if cfg.use_separability and len(x_train) >= 2:
+        # Separability-guided seeding. When the target decomposes into
+        # independent per-variable blocks, each block is fitted by least
+        # squares and offered to the search as a starting structure, so the
+        # islands start from the additive geometry the data supports instead of
+        # rediscovering it by chance.
+        from apedp.separability import SeparabilityAnalyzer
+
+        try:
+            decomposition = SeparabilityAnalyzer().decompose(
+                {name: np.asarray(values, dtype=float).reshape(-1)
+                 for name, values in x_train.items()},
+                np.asarray(y_train, dtype=float).reshape(-1),
+            )
+        except (RuntimeError, TypeError, ValueError, ArithmeticError,
+                KeyError, ImportError):
+            decomposition = None
+        if decomposition is not None and (
+            decomposition.is_fully_additive or decomposition.additive_groups
+        ):
+            groups = decomposition.additive_groups or [
+                [name] for name in x_train
+            ]
+            blocks = [
+                _separable_seed(group, x_train, y_train, max(1, cfg.max_depth))
+                for group in groups
+            ]
+            blocks = [b for b in blocks if b is not None]
+            if blocks:
+                # One intercept for the sum, not one per block.
+                merged = blocks[0]
+                for block in blocks[1:]:
+                    merged = merged + block - sp.Float(1.0)
+                separable_seeds = [sp.expand(merged)]
+
     cache: dict = {}
     islands: list[list[tuple[sp.Expr, int]]] = []
-    for _ in range(cfg.islands):
+    for island_index in range(cfg.islands):
         population: list[tuple[sp.Expr, int]] = []
         search = _IslandSearch(data_symbols, arrays, target, variable_units, target_unit, cfg.symmetries, cfg, rng, cache, y_scale)
+        if island_index == 0:
+            for seed_expr in separable_seeds:
+                if search._birth_ok(seed_expr):
+                    population.append((seed_expr, 0))
         if cfg.pi_seed:
             for seed_expr in search._pi_seeds():
-                if search._admissible_at_birth(seed_expr):
+                if search._birth_ok(seed_expr):
                     population.append((seed_expr, 0))
+        if cfg.use_typed_grammar and variable_units and not population:
+            # Dimensionally typed seeding: draw expressions the production
+            # grammar guarantees have a declared dimension, so they enter the
+            # population already dimensionally grounded rather than being
+            # generated blind and then discarded by the birth gate. Draws are
+            # made at each terminal's own dimension and the birth gate still
+            # decides which match the actual target unit.
+            from apedp.typed_grammar import TypedProductionGrammar
+
+            grammar = TypedProductionGrammar(variable_units)
+            data_symbol_names = {str(symbol) for symbol in data_symbols}
+            drawn_exprs: list[sp.Expr] = []
+            for terminal in grammar.terminals:
+                for _ in range(cfg.island_size):
+                    # allow_constants=False: the draws are seeded structurally
+                    # and free of unresolved parameter symbols, because the
+                    # island's own tuning pass only resolves parameters it
+                    # introduced itself.
+                    # allow_constants=False keeps the leaves parameter-free,
+                    # but the recursive branch can still mint one, so the draw
+                    # is also filtered on its symbol set: the island's tuning
+                    # pass only resolves parameters it introduced itself, and a
+                    # foreign symbol reaching the evaluator would be passed to
+                    # numpy unevaluated.
+                    drawn = grammar.sample_expression(
+                        terminal.dim, cfg.max_depth, rng,
+                        allow_constants=False,
+                    )
+                    if all(str(sym) in data_symbol_names
+                           for sym in drawn.free_symbols):
+                        drawn_exprs.append(drawn)
+            seeded = 0
+            for drawn in drawn_exprs:
+                if len(population) >= cfg.island_size or seeded >= cfg.island_size:
+                    break
+                if search._birth_ok(drawn) and drawn not in [p[0] for p in population]:
+                    population.append((drawn, 0))
+                    seeded += 1
         attempts = 0
         while len(population) < cfg.island_size and attempts < cfg.island_size * 20:
             attempts += 1
             candidate = search._grow(cfg.max_depth)
-            if search._admissible_at_birth(candidate):
+            if search._birth_ok(candidate):
                 population.append((candidate, 0))
         islands.append(population)
     max_age = [4 * (2**index) for index in range(cfg.islands - 1)] + [10**9] if cfg.alps and cfg.islands > 1 else [10**9] * cfg.islands
@@ -686,6 +849,13 @@ def evolve(
     history: list[dict] = []
     evaluated = 0
     tuned: dict[str, tuple[float, dict[sp.Symbol, float]]] = {}
+    # Every expression that was actually scored, kept so the final Pareto front
+    # can be rebuilt from the whole run. Walking only the surviving populations
+    # let a candidate vanish from the front simply because the last generation
+    # bred it out -- including seeds that were scored once and then replaced,
+    # which made the front depend on the search's luck rather than on what was
+    # evaluated.
+    evaluated_exprs: dict[str, sp.Expr] = {}
 
     def score_many(expressions: list[sp.Expr]) -> list[tuple[float, float, dict]]:
         def work(expression: sp.Expr) -> tuple[float, float, dict]:
@@ -698,6 +868,7 @@ def evolve(
             results = [work(expression) for expression in expressions]
         for expression, (mse, _, param_map) in zip(expressions, results, strict=False):
             key = str(expression)
+            evaluated_exprs.setdefault(key, expression)
             if key not in tuned or mse < tuned[key][0]:
                 tuned[key] = (mse, param_map)
         return results
@@ -721,7 +892,7 @@ def evolve(
                 child = search.crossover(first, second) if rng.random() < 0.7 else first
                 if rng.random() < cfg.mutation_rate:
                     child = search.mutate(child)
-                if search._admissible_at_birth(child):
+                if search._birth_ok(child):
                     ages = [age for expression, age in population if expression == first or expression == second]
                     child_age = (max(ages) + 1) if ages else 1
                     children.append((child, child_age))
@@ -733,7 +904,7 @@ def evolve(
                 aged = [(expression, age) for expression, age in merged if age <= cap]
                 while len(aged) < cfg.island_size:
                     newcomer = search._grow(cfg.max_depth)
-                    if search._admissible_at_birth(newcomer):
+                    if search._birth_ok(newcomer):
                         aged.append((newcomer, 0))
                     else:
                         break
@@ -752,16 +923,14 @@ def evolve(
         if on_generation is not None:
             on_generation(generation, [str(expression) for population in islands for expression, _ in population])
     seen: dict[str, tuple[float, float]] = {}
-    for population in islands:
-        for expression, _ in population:
-            key = str(expression)
-            if key not in tuned:
-                continue
-            mse, _ = tuned[key]
-            skeleton, params = skeletonize(expression)
-            complexity = _complexity(expression, params, cfg.coef_penalty)
-            if key not in seen or mse < seen[key][0]:
-                seen[key] = (mse, complexity)
+    for key, (mse, _param_map) in tuned.items():
+        expression = evaluated_exprs.get(key)
+        if expression is None:
+            continue
+        skeleton, params = skeletonize(expression)
+        complexity = _complexity(expression, params, cfg.coef_penalty)
+        if key not in seen or mse < seen[key][0]:
+            seen[key] = (mse, complexity)
     front = _pareto_front([(key, mse, complexity) for key, (mse, complexity) in seen.items()])
     best = min(front, key=lambda item: item[1])[0] if front else None
     grouped_pick: str | None = None
