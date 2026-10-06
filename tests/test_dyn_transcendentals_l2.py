@@ -46,11 +46,14 @@ class TestDimensionlessTranscendentals:
         x_node = VariableNode("x", dim_length)
         p_node = VariableNode("p", dim_momentum)
 
-        # Applying sin or cos to dimensioned nodes must raise DimensionalError
-        with pytest.raises(DimensionalError, match="Transcendental operator 'sin' requires strictly dimensionless"):
+        # Applying sin or cos to dimensioned nodes must raise DimensionalError.
+        # Message generalized from "Transcendental operator ..." to
+        # "Operator ..." when sat/inv_quad joined the dimensionless-gated set;
+        # the offending dimension is now included.
+        with pytest.raises(DimensionalError, match="Operator 'sin' requires strictly dimensionless"):
             UnaryOpNode("sin", x_node)
 
-        with pytest.raises(DimensionalError, match="Transcendental operator 'cos' requires strictly dimensionless"):
+        with pytest.raises(DimensionalError, match="Operator 'cos' requires strictly dimensionless"):
             UnaryOpNode("cos", p_node)
 
         # Dimensionless node (e.g. angle in radians) succeeds

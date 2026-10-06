@@ -54,33 +54,36 @@ def simulate_pendulum(theta0, t_end=10.0, dt=0.02, noise=0.0, seed=0):
     return np.arange(n) * dt, th, om
 
 
-def build_problem(th_tr, om_tr, th_ho, om_ho, problem_id="PEND-DRAG"):
+def build_problem(dt=0.02, noise=0.01, tr_amp=0.7, ho_amp=0.6, problem_id="PEND-DRAG"):
+    t_tr, th_tr, om_tr = simulate_pendulum(tr_amp, t_end=10.0, dt=dt, noise=noise, seed=11)
+    t_ho, th_ho, om_ho = simulate_pendulum(ho_amp, t_end=10.0, dt=dt, noise=noise, seed=23)
     Ytr = np.column_stack([th_tr, om_tr])
     Yho = np.column_stack([th_ho, om_ho])
     states = (StateVariable("x", "radian", float(Ytr[0, 0])),
               StateVariable("v", "1/second", float(Ytr[0, 1])))
     inputs = (InputVariable("u", "dimensionless"),)
     truth = (DynamicalEquation("x", "v"), DynamicalEquation("v", "0"))
-    def mk(Y):
-        return {"t_span": (0.0, float(len(Y) - 1)),
-                "u_of_t": make_signal({"kind": "zero", "n": 1}),
-                "x0": tuple(float(v) for v in Y[0]),
-                "truth_t": np.arange(len(Y), dtype=float), "truth_y": Y}
-    train, holdout = mk(Ytr), mk(Yho)
-    holdout["tolerance"] = "auto"
+    train = {
+        "t_span": (0.0, 10.0),
+        "u_of_t": make_signal({"kind": "zero", "n": 1}),
+        "x0": (float(th_tr[0]), float(om_tr[0])),
+        "truth_t": t_tr,
+        "truth_y": Ytr,
+    }
+    holdout = {
+        "t_span": (0.0, 10.0),
+        "u_of_t": make_signal({"kind": "zero", "n": 1}),
+        "x0": (float(th_ho[0]), float(om_ho[0])),
+        "truth_t": t_ho,
+        "truth_y": Yho,
+        "tolerance": "auto",
+    }
     return DynProblem(problem_id, "pendulum-drag", states, inputs,
                       (), truth, train, holdout)
 
 
 def run_pendulum(noise=0.01):
-    tr_amps, ho_amps = (0.3, 0.5, 0.7), (0.4, 0.6, 0.9)
-    tr = [simulate_pendulum(a, noise=noise, seed=11)[1:] for a in tr_amps]
-    ho = [simulate_pendulum(a, noise=noise, seed=23)[1:] for a in ho_amps]
-    th_tr = np.concatenate([t for t, _ in tr])
-    om_tr = np.concatenate([o for _, o in tr])
-    th_ho = np.concatenate([t for t, _ in ho])
-    om_ho = np.concatenate([o for _, o in ho])
-    prob = build_problem(th_tr, om_tr, th_ho, om_ho)
+    prob = build_problem(dt=0.02, noise=noise, tr_amp=0.7, ho_amp=0.6)
     slate = enumerate_candidates(required=(), optional=PEND_TERMS,
                                  max_terms=2, id_prefix="pd")
     kept = prune_admissible(prob, slate)
@@ -104,7 +107,7 @@ def run_pendulum(noise=0.01):
         terms = "+".join(t.name for t in s.candidate.terms)
         print(f"  {s.candidate.candidate_id} {terms:18s} holdout RMSE={s.holdout_rmse:.4f}")
     print("reason:", adj.reason[:130])
-    return adj
+    return adj, g4
 
 
 if __name__ == "__main__":

@@ -244,7 +244,10 @@ def execute_window_discovery(
         engine = L2DiscoveryEngine(
             max_depth=2,
             max_complexity=5,
-            operators=("+", "-", "*", "/", "pow"),
+            # rollmean/rollstd: causal rolling aggregation (frozen W=40); see
+            # market/sweep.py note. Mechanical FIN_TERMS slate untouched:
+            # rolling terms are delay-differential (unintegrable ODE RHS).
+            operators=("+", "-", "*", "/", "pow", "rollmean", "rollstd"),
         )
         l2_res = engine.discover(
             X=X_combined,

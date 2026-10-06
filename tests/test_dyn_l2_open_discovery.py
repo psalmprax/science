@@ -35,8 +35,10 @@ import numpy as np
 import pytest
 
 from apedp_dyn.discovery_l2.ast_generator import (
+    ROLL_WINDOW,
     BinaryOpNode,
     PowNode,
+    RollingOpNode,
     UnaryOpNode,
     VariableNode,
     generate_dimensionally_typed_ast,
@@ -240,6 +242,41 @@ class TestPhysicallyTypedAST:
         # Non-rational exponent raises TypeError
         with pytest.raises(TypeError, match="constant rational exponent"):
             _ = PowNode(v_len, "non_rational")  # type: ignore
+
+
+class TestRollingOperators:
+    """Causal rolling mean/std: dimension-preserving, strictly causal,
+    non-nesting, and reachable from generation."""
+
+    def test_preserves_dimension(self):
+        v_dim = VariableNode("x", Dimension(l=1))
+        assert RollingOpNode("rollmean", v_dim).dimension == Dimension(l=1)
+        assert RollingOpNode("rollstd", v_dim).dimension == Dimension(l=1)
+
+    def test_causal_values_match_numpy(self):
+        v = VariableNode("x", DIMENSIONLESS)
+        x = np.arange(1.0, 101.0)
+        m = RollingOpNode("rollmean", v).evaluate({"x": x})
+        s = RollingOpNode("rollstd", v).evaluate({"x": x})
+        assert bool(np.isnan(m[: ROLL_WINDOW - 1]).all())
+        assert abs(float(m[ROLL_WINDOW - 1]) - float(x[:ROLL_WINDOW].mean())) < 1e-9
+        assert abs(float(s[ROLL_WINDOW - 1]) - float(x[:ROLL_WINDOW].std())) < 1e-9
+
+    def test_rejects_nesting_and_unknown_ops(self):
+        v = VariableNode("x", DIMENSIONLESS)
+        with pytest.raises(ValueError, match="do not nest"):
+            _ = RollingOpNode("rollmean", RollingOpNode("rollmean", v))
+        with pytest.raises(ValueError, match="Unsupported rolling"):
+            _ = RollingOpNode("median", v)
+
+    def test_generation_reaches_rolling_forms(self):
+        nodes = generate_dimensionally_typed_ast(
+            {"volume": DIMENSIONLESS},
+            operators=("+", "-", "/", "log", "rollmean", "rollstd"),
+            max_depth=4, max_complexity=10)
+        strs = [n.to_str() for n in nodes]
+        assert any("rollmean40(log(volume))" in s and "rollstd40(log(volume))" in s
+                   for s in strs)
 
 
 class TestPruningGates:

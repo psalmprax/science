@@ -30,6 +30,7 @@ import numpy as np
 
 from apedp_dyn.discovery_l2.ast_generator import (
     ASTNode,
+    VariableNode,
     generate_dimensionally_typed_ast,
 )
 from apedp_dyn.discovery_l2.dimensional_types import BaseDimension, Dimension
@@ -69,13 +70,15 @@ class MultiTermL2Engine:
         max_term_complexity: int = 4,
         max_terms: int = 3,
         max_condition_number: float = 1000.0,
-        operators: Sequence[str] = ("+", "-", "*", "/", "pow", "exp", "log", "sin", "cos"),
+        operators: Sequence[str] = ("+", "-", "*", "/", "pow", "exp", "log", "sin", "cos", "abs", "sat", "inv_quad"),
+        max_basis_terms: int = 28,
     ) -> None:
         self.max_depth = max_depth
         self.max_term_complexity = max_term_complexity
         self.max_terms = max_terms
         self.max_condition_number = max_condition_number
         self.operators = operators
+        self.max_basis_terms = max_basis_terms
 
     def discover_multiterm(
         self,
@@ -87,18 +90,28 @@ class MultiTermL2Engine:
         train_ratio: float = 0.6,
         data_origin: str = DataOrigin.SIMULATION,
         bootstrap: bool = False,
+        noise_sigma: float | None = None,
         seed: int = 42,
+        X_holdout: Mapping[str, np.ndarray] | None = None,
+        Y_holdout: np.ndarray | None = None,
     ) -> MultiTermDiscoveryResult:
+
         """Execute autonomous multi-term L2 discovery."""
         y_arr = np.asarray(Y, dtype=float).ravel()
         n_samples = len(y_arr)
         data_vars = {k: np.asarray(v, dtype=float).ravel() for k, v in X.items()}
 
-        n_train = max(4, int(n_samples * train_ratio))
-        X_tr = {k: v[:n_train] for k, v in data_vars.items()}
-        X_ho = {k: v[n_train:] for k, v in data_vars.items()}
-        y_tr = y_arr[:n_train]
-        y_ho = y_arr[n_train:]
+        if X_holdout is not None and Y_holdout is not None:
+            X_tr = data_vars
+            y_tr = y_arr
+            X_ho = {k: np.asarray(v, dtype=float).ravel() for k, v in X_holdout.items()}
+            y_ho = np.asarray(Y_holdout, dtype=float).ravel()
+        else:
+            n_train = max(4, int(n_samples * train_ratio))
+            X_tr = {k: v[:n_train] for k, v in data_vars.items()}
+            X_ho = {k: v[n_train:] for k, v in data_vars.items()}
+            y_tr = y_arr[:n_train]
+            y_ho = y_arr[n_train:]
 
         # Step 1: Autonomous Basis Term Generation via Physically Typed AST
         dim_dict = {k: (v if isinstance(v, Dimension) else Dimension()) for k, v in dimensions.items()}
@@ -119,7 +132,7 @@ class MultiTermL2Engine:
 
         for node in raw_nodes:
             ok_a_tr, _, _ = gate_a_algebraic_validity(node, X_tr, y_std=y_std)
-            ok_a_ho, _, _ = gate_a_algebraic_validity(node, X_ho, y_std=y_std)
+            ok_a_ho, _, _ = gate_a_algebraic_validity(node, X_ho, allow_constant=True)
             if not (ok_a_tr and ok_a_ho):
                 continue
             ok_b, _ = gate_b_physical_validity(node, target_dim)
@@ -147,14 +160,41 @@ class MultiTermL2Engine:
                 collinear_pruned_count=0,
             )
 
-        # Step 2: Form Combinations of 1 to max_terms Basis Functions
+        # Step 2: Screen Basis Library to prevent combinatorial explosion
+        if len(valid_basis_terms) > self.max_basis_terms:
+            scored_terms = []
+            std_y = float(np.std(y_tr))
+            for node, v_tr, v_ho in zip(valid_basis_terms, term_vectors_tr, term_vectors_ho, strict=True):
+                std_v = float(np.std(v_tr))
+                r = 0.0
+                if std_v > 1e-12 and std_y > 1e-12:
+                    try:
+                        r_val = float(np.corrcoef(v_tr, y_tr)[0, 1])
+                        r = abs(r_val) if np.isfinite(r_val) else 0.0
+                    except (ValueError, FloatingPointError):
+                        r = 0.0
+                # Preserve primitive state variables with priority
+                score = 100.0 if isinstance(node, VariableNode) else r
+                scored_terms.append((score, node, v_tr, v_ho))
+
+            scored_terms.sort(key=lambda item: item[0], reverse=True)
+            screened = scored_terms[: self.max_basis_terms]
+            valid_basis_terms = [item[1] for item in screened]
+            term_vectors_tr = [item[2] for item in screened]
+            term_vectors_ho = [item[3] for item in screened]
+
+        # Step 3: Form Combinations of 1 to max_terms Basis Functions
         scored_candidates: list[ScoredCandidate] = []
         collinear_pruned = 0
         obs_scale = observation_scale(y_ho)
         obs_rms = float(obs_scale.get("obs_rms", np.sqrt(np.mean(y_ho**2))))
-        noise_sigma = float(obs_scale.get("noise_sigma", 0.01))
-        if noise_sigma <= 0.0:
-            noise_sigma = 0.01
+        if noise_sigma is not None:
+            noise_est = float(noise_sigma)
+        else:
+            noise_est = float(obs_scale.get("noise_sigma", 0.01))
+            if noise_est <= 0.0:
+                noise_est = 0.01
+
 
         m_terms = len(valid_basis_terms)
         for k in range(1, min(self.max_terms + 1, m_terms + 1)):
@@ -163,10 +203,12 @@ class MultiTermL2Engine:
                 M_tr = np.column_stack([term_vectors_tr[i] for i in idx_tuple])
                 M_ho = np.column_stack([term_vectors_ho[i] for i in idx_tuple])
 
-                # FIM / Collinearity Gate: condition number of Gram matrix
+                # FIM / Collinearity Gate: condition number of column-scaled design matrix
                 if k > 1:
-                    gram = M_tr.T @ M_tr
-                    s_vals = np.linalg.svd(gram, compute_uv=False)
+                    norms = np.linalg.norm(M_tr, axis=0)
+                    safe_norms = np.where(norms < 1e-12, 1.0, norms)
+                    M_scaled = M_tr / safe_norms
+                    s_vals = np.linalg.svd(M_scaled, compute_uv=False)
                     cond = float(s_vals[0] / s_vals[-1]) if s_vals[-1] > 1e-15 else float("inf")
                     if cond > self.max_condition_number:
                         collinear_pruned += 1
@@ -218,6 +260,7 @@ class MultiTermL2Engine:
                         "n_terms": k,
                         "canonical_expr": " + ".join(node.canonical_str() for node in chosen_nodes),
                         "param_values": param_vals,
+                        "nodes": chosen_nodes,
                     },
                 )
 
@@ -261,10 +304,13 @@ class MultiTermL2Engine:
             bootstrap=bootstrap,
             bootstrap_n_boot=1000,
             bootstrap_seed=seed,
+            holdout_noise_scale=noise_est,
+            holdout_scale={"obs_rms": obs_rms, "noise_sigma": noise_est, "n_samples": len(y_ho)},
             sole_survivor_rule=True,
             data_origin=data_origin,
             benchmark_level=BenchmarkLevel.L2_OPEN_DISCOVERY,
         )
+
 
         inferred_eq = "[NO PROMOTED EQUATION]"
         if adj.promoted is not None:

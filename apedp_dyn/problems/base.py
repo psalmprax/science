@@ -62,6 +62,12 @@ def make_signal(spec: Any) -> Callable[[float], np.ndarray]:
         comps = [(c[0], c[1], c[2] if len(c) > 2 else 0.0)
                  for c in spec["components"]]
         return lambda t: np.array([sum(a * np.sin(w * t + ph) for a, w, ph in comps)])
+    if kind == "interpolated":
+        t_pts = np.asarray(spec["t"], dtype=float)
+        u_pts = np.asarray(spec["u"], dtype=float)
+        if u_pts.ndim == 1:
+            return lambda t: np.array([float(np.interp(t, t_pts, u_pts))])
+        return lambda t: np.array([float(np.interp(t, t_pts, u_pts[:, i])) for i in range(u_pts.shape[1])])
     raise ValueError(f"unknown signal kind {kind!r}")
 
 
@@ -145,3 +151,7 @@ def finalize(problem: DynProblem, n_eval: int = 400) -> DynProblem:
     return DynProblem(problem.problem_id, problem.name, problem.states,
                       problem.inputs, problem.parameters, problem.truth_equations,
                       train, holdout)
+
+
+ProblemSpec = DynProblem
+

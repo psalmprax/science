@@ -38,6 +38,7 @@ from apedp_dyn.epistemic.adjudicate import (
     DataOrigin,
     adjudicate,
 )
+from apedp_dyn.epistemic.term_necessity import GuardReport, guard_selection
 from apedp_dyn.grammar.candidate_ir import ScoredCandidate
 
 
@@ -51,6 +52,7 @@ class L2DiscoveryResult:
     generated_nodes: list[ASTNode] = field(default_factory=list)
     gate_a_passed: list[ASTNode] = field(default_factory=list)
     gate_b_passed: list[ASTNode] = field(default_factory=list)
+    guard_report: GuardReport | None = None
 
 
 class L2DiscoveryEngine:
@@ -58,7 +60,7 @@ class L2DiscoveryEngine:
 
     def __init__(
         self,
-        operators: Sequence[str] = ("+", "-", "*", "/", "pow", "exp", "log", "sin", "cos"),
+        operators: Sequence[str] = ("+", "-", "*", "/", "pow", "exp", "log", "sin", "cos", "abs"),
         max_depth: int = 2,
         max_complexity: int = 6,
     ) -> None:
@@ -80,6 +82,8 @@ class L2DiscoveryEngine:
         data_origin: str = DataOrigin.SIMULATION,
         fit_intercept: bool = False,
         seed: int = 42,
+        X_holdout: Mapping[str, np.ndarray] | None = None,
+        Y_holdout: np.ndarray | None = None,
     ) -> L2DiscoveryResult:
         """Execute unconstrained L2 discovery pipeline from raw data and dimensions."""
         y_arr = np.asarray(Y, dtype=float)
@@ -107,11 +111,17 @@ class L2DiscoveryEngine:
             )
             return L2DiscoveryResult(adjudication=adj)
 
-        n_train = max(2, int(n_samples * train_ratio))
-        X_tr = {k: v[:n_train] for k, v in data_vars.items()}
-        X_ho = {k: v[n_train:] for k, v in data_vars.items()}
-        y_tr = y_arr[:n_train]
-        y_ho = y_arr[n_train:]
+        if X_holdout is not None and Y_holdout is not None:
+            X_tr = data_vars
+            y_tr = y_arr
+            X_ho = {k: np.asarray(v, dtype=float).ravel() for k, v in X_holdout.items()}
+            y_ho = np.asarray(Y_holdout, dtype=float).ravel()
+        else:
+            n_train = max(2, int(n_samples * train_ratio))
+            X_tr = {k: v[:n_train] for k, v in data_vars.items()}
+            X_ho = {k: v[n_train:] for k, v in data_vars.items()}
+            y_tr = y_arr[:n_train]
+            y_ho = y_arr[n_train:]
         y_std = float(np.std(y_arr))
 
         # Step 1: Physically Typed AST Construction
@@ -129,7 +139,7 @@ class L2DiscoveryEngine:
             ok_tr, _why_tr, _ = gate_a_algebraic_validity(node, X_tr, y_std=y_std)
             if not ok_tr:
                 continue
-            ok_ho, _why_ho, _ = gate_a_algebraic_validity(node, X_ho, y_std=y_std)
+            ok_ho, _why_ho, _ = gate_a_algebraic_validity(node, X_ho, allow_constant=True)
             if ok_ho:
                 gate_a_passed.append(node)
 
@@ -174,11 +184,19 @@ class L2DiscoveryEngine:
         # Selects the non-dominated Pareto frontier and competitive candidates
         pareto_candidates = select_pareto_candidates(scored_candidates)
 
+        # Step 5b: Term-necessity / near-tie guard (Phase-1 wire-in, §68-§69).
+        # Purely restrictive additive layer: drops debris-carrying candidates,
+        # records the top near-tie class, never manufactures evidence.
+        # Empty in -> empty out -> adjudicate([]) -> NO_VALID path (rule 8).
+        guarded, guard_report = guard_selection(
+            pareto_candidates, X_tr, y_tr, X_ho, y_ho,
+        )
+
         # Step 6: Epistemic Adjudication
         ranked = sorted(
             [
                 s
-                for s in pareto_candidates
+                for s in guarded
                 if s.train_loss is not None and np.isfinite(s.train_loss)
             ],
             key=lambda s: s.train_loss,
@@ -192,7 +210,7 @@ class L2DiscoveryEngine:
             r_rival = ranked[1].provenance.get("gate4_status", {}).get("holdout_residuals")
 
         adj = adjudicate(
-            pareto_candidates,
+            guarded,
             resid_best=r_best,
             resid_rival=r_rival,
             bootstrap=bootstrap,
@@ -210,4 +228,5 @@ class L2DiscoveryEngine:
             generated_nodes=generated_nodes,
             gate_a_passed=gate_a_passed,
             gate_b_passed=gate_b_passed,
+            guard_report=guard_report,
         )

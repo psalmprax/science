@@ -1,10 +1,37 @@
 {
-  "sp500.csv": {"source": "FRED series SP500 (Federal Reserve Bank of St. Louis)",
-                "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
-                "coverage": "2018-01-01 to 2023-12-31 (daily closes)",
-                "fetched": "2026-09-30", "license_note": "FRED terms of use apply"},
-  "nasdaq100.csv": {"source": "FRED series NASDAQ100",
-                "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQ100",
-                "coverage": "2018-01-01 to 2023-12-31 (daily closes)",
-                "fetched": "2026-09-30", "license_note": "FRED terms of use apply"}
+  "sp500.csv": {
+    "source": "FRED series SP500 (Federal Reserve Bank of St. Louis)",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+    "coverage": "2018-01-01 to 2023-12-31 (daily closes)",
+    "fetched": "2026-09-30",
+    "license_note": "FRED terms of use apply"
+  },
+  "nasdaq100.csv": {
+    "source": "FRED series NASDAQ100",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQ100",
+    "coverage": "2018-01-01 to 2023-12-31 (daily closes)",
+    "fetched": "2026-09-30",
+    "license_note": "FRED terms of use apply"
+  },
+  "crypto_top15.csv": {
+    "source": "Binance Public Spot Klines (BTC, ETH, SOL, BNB, XRP, ADA, AVAX, DOGE, DOT, LINK, MATIC, NEAR, ATOM, UNI, LTC)",
+    "url": "https://api.binance.com/api/v3/klines",
+    "coverage": "2021-01-01 to 2023-12-31 (daily closes + Order Flow Imbalance (OFI), 15 synchronized assets + composite)",
+    "features": [
+      "observation_date",
+      "15 spot closing prices",
+      "COMPOSITE_TOP15 price index",
+      "15 asset Order Flow Imbalances (OFI = (V_buy - V_sell) / V_total)",
+      "COMPOSITE_TOP15_OFI equal-weighted basket order flow"
+    ],
+    "fetched": "2026-10-02",
+    "license_note": "Binance public market data terms apply"
+  },
+  "crypto_top15_orderflow.csv": {
+    "source": "Binance Public Spot Klines",
+    "url": "https://api.binance.com/api/v3/klines",
+    "coverage": "2021-01-01 to 2023-12-31 (daily volume, aggressive taker buy volume, taker sell volume, OFI)",
+    "fetched": "2026-10-02",
+    "license_note": "Binance public market data terms apply"
+  }
 }

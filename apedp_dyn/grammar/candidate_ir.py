@@ -20,6 +20,7 @@ TERM_FAMILIES: dict[str, tuple[str, ...]] = {
     "forcing": ("u",),
     "coupling": ("x_v", "xr", "dxr"),
     "constant": ("one",),
+    "saturation": ("sat_x", "sat_v", "sat_u", "inv_x2", "u_relax"),
 }
 
 TERM_FAMILY_OF: dict[str, str] = {

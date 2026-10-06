@@ -46,7 +46,7 @@ class Dimension:
       - j:  Luminous intensity (cd)
     """
 
-    __slots__ = ("_i", "_j", "_l", "_m", "_n", "_t", "_th")
+    __slots__ = ("_i", "_j", "_l", "_m", "_n", "_p", "_q", "_t", "_th")
 
     def __init__(
         self,
@@ -57,9 +57,15 @@ class Dimension:
         th: int | float | str | Fraction = 0,
         n: int | float | str | Fraction = 0,
         j: int | float | str | Fraction = 0,
+        p: int | float | str | Fraction = 0,  # Price / Currency [$]
+        q: int | float | str | Fraction = 0,  # Quantity / Volume [Q]
         length: int | float | str | Fraction | None = None,
+        price: int | float | str | Fraction | None = None,
+        quantity: int | float | str | Fraction | None = None,
     ) -> None:
         actual_l = l if length is None else length
+        actual_p = p if price is None else price
+        actual_q = q if quantity is None else quantity
         object.__setattr__(self, "_m", _to_fraction(m))
         object.__setattr__(self, "_l", _to_fraction(actual_l))
         object.__setattr__(self, "_t", _to_fraction(t))
@@ -67,6 +73,24 @@ class Dimension:
         object.__setattr__(self, "_th", _to_fraction(th))
         object.__setattr__(self, "_n", _to_fraction(n))
         object.__setattr__(self, "_j", _to_fraction(j))
+        object.__setattr__(self, "_p", _to_fraction(actual_p))
+        object.__setattr__(self, "_q", _to_fraction(actual_q))
+
+    @property
+    def p(self) -> Fraction:
+        return self._p
+
+    @property
+    def price(self) -> Fraction:
+        return self._p
+
+    @property
+    def q(self) -> Fraction:
+        return self._q
+
+    @property
+    def quantity(self) -> Fraction:
+        return self._q
 
     @property
     def m(self) -> Fraction:
@@ -110,6 +134,8 @@ class Dimension:
             and self._th == 0
             and self._n == 0
             and self._j == 0
+            and self._p == 0
+            and self._q == 0
         )
 
     def __eq__(self, other: object) -> bool:
@@ -123,10 +149,12 @@ class Dimension:
             and self._th == other._th
             and self._n == other._n
             and self._j == other._j
+            and self._p == other._p
+            and self._q == other._q
         )
 
     def __hash__(self) -> int:
-        sig = f"{self._m},{self._l},{self._t},{self._i},{self._th},{self._n},{self._j}"
+        sig = f"{self._m},{self._l},{self._t},{self._i},{self._th},{self._n},{self._j},{self._p},{self._q}"
         return int(zlib.crc32(sig.encode()))
 
     def __mul__(self, other: Dimension) -> Dimension:
@@ -141,6 +169,8 @@ class Dimension:
             th=self._th + other._th,
             n=self._n + other._n,
             j=self._j + other._j,
+            p=self._p + other._p,
+            q=self._q + other._q,
         )
 
     def __truediv__(self, other: Dimension) -> Dimension:
@@ -155,6 +185,8 @@ class Dimension:
             th=self._th - other._th,
             n=self._n - other._n,
             j=self._j - other._j,
+            p=self._p - other._p,
+            q=self._q - other._q,
         )
 
     def __pow__(self, exponent: int | float | str | Fraction) -> Dimension:
@@ -168,6 +200,8 @@ class Dimension:
             th=self._th * p,
             n=self._n * p,
             j=self._j * p,
+            p=self._p * p,
+            q=self._q * p,
         )
 
     def check_compatible(self, other: Dimension, op_name: str = "+") -> None:
@@ -230,6 +264,18 @@ class Dimension:
             "intensity": "j",
             "cd": "j",
             "candela": "j",
+            "p": "p",
+            "price": "p",
+            "usd": "p",
+            "currency": "p",
+            "quote": "p",
+            "q": "q",
+            "quantity": "q",
+            "vol": "q",
+            "volume": "q",
+            "shares": "q",
+            "contracts": "q",
+            "base": "q",
         }
         for k, v in d.items():
             norm_k = alias_map.get(k.lower())
@@ -239,7 +285,7 @@ class Dimension:
 
     def __repr__(self) -> str:
         non_zero = []
-        for name in ("m", "l", "t", "i", "th", "n", "j"):
+        for name in ("m", "l", "t", "i", "th", "n", "j", "p", "q"):
             val = getattr(self, f"_{name}")
             if val != 0:
                 val_str = (
@@ -264,6 +310,8 @@ class Dimension:
             ("Theta", self._th),
             ("N", self._n),
             ("J", self._j),
+            ("P", self._p),
+            ("Q", self._q),
         ]
         for label, p in labels:
             if p != 0:
@@ -274,3 +322,15 @@ class Dimension:
 
 DIMENSIONLESS = Dimension()
 BaseDimension = Dimension
+
+# Semantic Financial and Market Dimension Constants
+PRICE_DIMENSION = Dimension(p=1)
+LOG_PRICE_STATE = DIMENSIONLESS
+RETURN_VELOCITY = Dimension(t=-1)
+ACCELERATION_RATE = Dimension(t=-2)
+VOLATILITY = Dimension(t=Fraction(-1, 2))
+VOLUME_QUANTITY = Dimension(q=1)
+ORDER_FLOW = Dimension(q=1, t=-1)
+DOLLAR_FLOW = Dimension(p=1, q=1, t=-1)
+SPREAD_DIMENSION = Dimension(p=1)
+

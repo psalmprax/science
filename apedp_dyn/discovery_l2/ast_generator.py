@@ -28,6 +28,11 @@ from apedp_dyn.discovery_l2.dimensional_types import (
     DimensionalError,
     _to_fraction,
 )
+from apedp_dyn.discovery_l2.fingerprint import (
+    FingerprintDeduplicator,
+    make_bipolar_probe_grid,
+    make_probe_grid,
+)
 
 
 class ASTNode(ABC):
@@ -180,14 +185,14 @@ class UnaryOpNode(ASTNode):
     """
 
     def __init__(self, op: str, child: ASTNode) -> None:
-        if op not in ("exp", "log", "sin", "cos", "abs"):
+        if op not in ("exp", "log", "sin", "cos", "abs", "sat", "inv_quad"):
             raise ValueError(f"Unsupported unary operator: '{op}'")
         if op == "abs":
             self.dimension = child.dimension
         else:
             if not child.dimension.is_dimensionless():
                 raise DimensionalError(
-                    f"Transcendental operator '{op}' requires strictly dimensionless input [0, 0, ...], "
+                    f"Operator '{op}' requires strictly dimensionless input [0, 0, ...], "
                     f"got [{child.dimension}]"
                 )
             self.dimension = DIMENSIONLESS
@@ -199,6 +204,12 @@ class UnaryOpNode(ASTNode):
         cv = self.child.evaluate(env)
         if self.op == "abs":
             return np.abs(cv)
+        if self.op == "sat":
+            with np.errstate(all="ignore"):
+                return cv / (1.0 + np.abs(cv))
+        if self.op == "inv_quad":
+            with np.errstate(all="ignore"):
+                return 1.0 / (1.0 + cv**2)
         if self.op == "exp":
             with np.errstate(over="ignore", under="ignore"):
                 clipped = np.clip(cv, -100.0, 100.0)
@@ -217,10 +228,20 @@ class UnaryOpNode(ASTNode):
         raise ValueError(f"Unknown unary operator '{self.op}'")
 
     def to_str(self) -> str:
+        if self.op == "sat":
+            return f"sat({self.child.to_str()})"
+        if self.op == "inv_quad":
+            return f"inv_quad({self.child.to_str()})"
         return f"{self.op}({self.child.to_str()})"
 
     def to_sympy(self) -> sp.Expr:
         cs = self.child.to_sympy()
+        if self.op == "abs":
+            return sp.Abs(cs)
+        if self.op == "sat":
+            return cs / (1 + sp.Abs(cs))
+        if self.op == "inv_quad":
+            return 1 / (1 + cs**2)
         if self.op == "exp":
             return sp.exp(cs)
         if self.op == "log":
@@ -230,6 +251,120 @@ class UnaryOpNode(ASTNode):
         if self.op == "cos":
             return sp.cos(cs)
         raise ValueError(f"Unknown operator {self.op}")
+
+
+
+# Frozen causal lookback for rolling operators (matches the validated
+# volume-surprise experiment: trailing-40 bars; do not tune per search).
+ROLL_WINDOW = 40
+
+# Minimum history for the expanding z-score, matching the frozen H-A
+# construction (grammar_space.MIN_HISTORY); distinct from ROLL_WINDOW
+# because an expanding window is unbounded but must still warm up.
+MIN_ZSCORE_HISTORY = 60
+
+# Ops whose value is normalized (unitless), so any input dimension is legal.
+NORMALIZING_ROLL_OPS = ("rollrank", "rollzscore", "expanding_zscore")
+
+
+class RollingOpNode(ASTNode):
+    """Causal rolling operator ('rollmean', 'rollstd', 'rollrank', 'rollzscore',
+    'expanding_zscore').
+
+    Dimensionally transparent for moments (rollmean/rollstd keep the child's
+    dimension); normalizing ops (rollrank/rollzscore/expanding_zscore) output
+    DIMENSIONLESS from any input dimension -- this is what makes the
+    volume-family forms (H-RV rank, H-A z-scored components) generatable.
+    Strictly causal: output[t] uses child[t-W+1 .. t] for fixed-window ops and
+    child[0 .. t] for expanding_zscore; warm-up positions are NaN, so searches
+    must tolerate leading-NaN predictions exactly as for log-guards.
+    Only one rolling application per branch (no roll-of-roll): nesting adds
+    smoothing without new information and explodes the search.
+
+    expanding_zscore carries window=MIN_ZSCORE_HISTORY as its minimum-history
+    requirement (not a lookback): it is NaN until that many finite values are
+    available, then standardizes against the whole causal history.
+    """
+
+    def __init__(self, op: str, child: ASTNode, window: int = ROLL_WINDOW) -> None:
+        if op not in ("rollmean", "rollstd", "rollrank", "rollzscore", "expanding_zscore"):
+            raise ValueError(f"Unsupported rolling operator: '{op}'")
+        if isinstance(child, RollingOpNode):
+            raise ValueError("rolling operators do not nest (roll-of-roll rejected)")
+        if window < 2:
+            raise ValueError(f"rolling window must be >= 2, got {window}")
+        self.op = op
+        self.child = child
+        self.window = window
+        self.dimension = DIMENSIONLESS if op in NORMALIZING_ROLL_OPS else child.dimension
+        self.complexity = child.complexity + 1
+
+    def evaluate(self, env: Mapping[str, np.ndarray]) -> np.ndarray:
+        cv = np.asarray(self.child.evaluate(env), dtype=float)
+        w = self.window
+        out = np.full_like(cv, np.nan)
+        if len(cv) >= w:
+            c = np.concatenate([[0.0], np.nancumsum(np.where(np.isfinite(cv), cv, 0.0))])
+            n = np.concatenate([[0], np.cumsum(np.isfinite(cv).astype(float))])
+            tot = c[w:] - c[:-w]
+            cnt = n[w:] - n[:-w]
+            with np.errstate(invalid="ignore", divide="ignore"):
+                mean = tot / np.where(cnt > 0, cnt, np.nan)
+            if self.op == "rollmean":
+                out[w - 1:] = mean
+            elif self.op == "rollrank":
+                for t in range(w - 1, len(cv)):
+                    win = cv[t - w + 1:t + 1]
+                    if np.isfinite(win).all() and len(win) == w:
+                        out[t] = float(np.sum(win <= cv[t]) - 1) / (w - 1)
+            elif self.op == "rollzscore":
+                c2 = np.concatenate([[0.0], np.nancumsum(np.where(np.isfinite(cv), cv * cv, 0.0))])
+                tot2 = c2[w:] - c2[:-w]
+                with np.errstate(invalid="ignore", divide="ignore"):
+                    var = tot2 / np.where(cnt > 0, cnt, np.nan) - mean * mean
+                sd = np.sqrt(np.where(var > 0, var, np.nan))
+                with np.errstate(invalid="ignore", divide="ignore"):
+                    out[w - 1:] = (cv[w - 1:] - mean) / np.where(sd > 0, sd, np.nan)
+            elif self.op == "expanding_zscore":
+                # Causal expanding standardization with a minimum-history
+                # warm-up (window carries MIN_ZSCORE_HISTORY, not a lookback).
+                # ddof=1 matches pandas .expanding().std() used by the frozen
+                # grammar_space H-A construction, so generated forms stay
+                # comparable with the established panel.
+                fin = np.isfinite(cv)
+                cnt_e = np.cumsum(fin.astype(float))
+                # [1:] aligns element i to the inclusive sum through cv[i];
+                # the prepended 0.0 otherwise shifts the window by one.
+                cs = np.concatenate([[0.0], np.nancumsum(np.where(fin, cv, 0.0))])[1:]
+                cs2 = np.concatenate([[0.0], np.nancumsum(np.where(fin, cv * cv, 0.0))])[1:]
+                k = w
+                idx = np.arange(len(cv))
+                ready = (idx + 1 >= k) & (cnt_e >= k)
+                with np.errstate(invalid="ignore", divide="ignore"):
+                    mu_e = cs / np.where(cnt_e > 0, cnt_e, np.nan)
+                    var_e = ((cs2 - cnt_e * mu_e**2) / np.where(cnt_e > 1, cnt_e - 1, np.nan))
+                    sd_e = np.sqrt(np.where(var_e > 0, var_e, np.nan))
+                    z_e = (cv - mu_e) / np.where(sd_e > 0, sd_e, np.nan)
+                out[ready] = z_e[ready]
+            else:
+                c2 = np.concatenate([[0.0], np.nancumsum(np.where(np.isfinite(cv), cv * cv, 0.0))])
+                tot2 = c2[w:] - c2[:-w]
+                with np.errstate(invalid="ignore", divide="ignore"):
+                    var = tot2 / np.where(cnt > 0, cnt, np.nan) - mean * mean
+                out[w - 1:] = np.sqrt(np.where(var > 0, var, np.nan))
+        return out
+
+    def to_str(self) -> str:
+        if self.op == "expanding_zscore":
+            return f"expanding_zscore{self.window}({self.child.to_str()})"
+        return f"{self.op}{self.window}({self.child.to_str()})"
+
+    def to_sympy(self) -> sp.Expr:
+        cs = self.child.to_sympy()
+        names = {"rollmean": "RollMean", "rollstd": "RollStd",
+                 "rollrank": "RollRank", "rollzscore": "RollZscore",
+                 "expanding_zscore": "ExpandingZscore"}
+        return sp.Function(names[self.op])(cs, sp.Integer(self.window))
 
 
 class PowNode(ASTNode):
@@ -312,6 +447,8 @@ def _has_transcendental(n: ASTNode) -> bool:
         return _has_transcendental(n.left) or _has_transcendental(n.right)
     if isinstance(n, PowNode):
         return _has_transcendental(n.base)
+    if isinstance(n, RollingOpNode):
+        return _has_transcendental(n.child)
     return False
 
 
@@ -331,8 +468,21 @@ def generate_dimensionally_typed_ast(
     ops_set = set(operators)
     leaves: list[ASTNode] = [VariableNode(name, dim) for name, dim in variables.items()]
 
+    # Rolling operators need probes longer than ROLL_WINDOW: with the default
+    # 32-point grid every rolling response is all-NaN and dedup rejects it.
+    # expanding_zscore needs its full minimum history to be finite at all.
+    n_probe = 32
+    if {"rollmean", "rollstd", "rollrank", "rollzscore"} & ops_set:
+        n_probe = max(n_probe, ROLL_WINDOW + 8)
+    if "expanding_zscore" in ops_set:
+        n_probe = max(n_probe, MIN_ZSCORE_HISTORY + 8)
+    probe_grid = make_probe_grid(variables, n_points=n_probe)
+    bipolar_grid = make_bipolar_probe_grid(variables, n_points=n_probe)
+    dedup = FingerprintDeduplicator(probe_grid, bipolar_grid)
+
     canonical_map: dict[str, ASTNode] = {}
     for leaf in leaves:
+        dedup.is_novel(leaf)
         is_valid, c_key = _canonical_key_and_validity(leaf)
         if is_valid:
             canonical_map[c_key] = leaf
@@ -341,6 +491,8 @@ def generate_dimensionally_typed_ast(
 
     def try_register(candidate: ASTNode, next_f: list[ASTNode]) -> None:
         if candidate.complexity > max_complexity:
+            return
+        if not dedup.is_novel(candidate):
             return
         is_valid, c_key = _canonical_key_and_validity(candidate)
         if not is_valid:
@@ -353,12 +505,22 @@ def generate_dimensionally_typed_ast(
             canonical_map[c_key] = candidate
             next_f.append(candidate)
 
-    unary_candidates = [op for op in ("exp", "log", "sin", "cos") if op in ops_set]
+    unary_candidates = [op for op in ("exp", "log", "sin", "cos", "sat", "inv_quad") if op in ops_set]
 
     for _ in range(max_depth):
         next_frontier: list[ASTNode] = []
 
-        # 1. Unary operators (exp, log, sin, cos) on dimensionless nodes
+        # 1a. Unary abs operator (dimensionally transparent, e.g. for drag |v|v)
+        if "abs" in ops_set:
+            for node in current_frontier:
+                if not (isinstance(node, UnaryOpNode) and node.op == "abs"):
+                    try:
+                        an = UnaryOpNode("abs", node)
+                        try_register(an, next_frontier)
+                    except DimensionalError:
+                        pass
+
+        # 1b. Unary transcendental operators (exp, log, sin, cos) on dimensionless nodes
         if unary_candidates:
             for node in current_frontier:
                 if node.dimension.is_dimensionless() and not _has_transcendental(node):
@@ -369,11 +531,34 @@ def generate_dimensionally_typed_ast(
                         except DimensionalError:
                             pass
 
+        # 1c. Causal rolling operators (rollmean, rollstd, rollrank, rollzscore)
+        # on non-rolling nodes. Restricted to leaves and depth-1 transforms
+        # (complexity <= 2): rolling is a *feature constructor* (validated use:
+        # rolling moments/ranks of raw/transformed series, including the
+        # volume-family H-RV/H-A forms); rolling compound expressions adds
+        # smoothing without information and explodes the frontier.
+        _roll_ops = (("rollmean", ROLL_WINDOW), ("rollstd", ROLL_WINDOW),
+                     ("rollrank", ROLL_WINDOW), ("rollzscore", ROLL_WINDOW),
+                     ("expanding_zscore", MIN_ZSCORE_HISTORY))
+        if {name for name, _ in _roll_ops} & ops_set:
+            for node in current_frontier:
+                if isinstance(node, RollingOpNode) or node.complexity > 2:
+                    continue
+                for rop, rop_window in _roll_ops:
+                    if rop not in ops_set:
+                        continue
+                    try:
+                        rn = RollingOpNode(rop, node, rop_window)
+                        try_register(rn, next_frontier)
+                    except (DimensionalError, ValueError):
+                        pass
+
         # 2. Pow / Sqrt operator with constant rational exponents
         if "pow" in ops_set or "sqrt" in ops_set:
             powers_to_use = list(allowed_powers) if "pow" in ops_set else [Fraction(1, 2)]
             if "sqrt" in ops_set and Fraction(1, 2) not in powers_to_use:
                 powers_to_use.append(Fraction(1, 2))
+
             for node in current_frontier:
                 if not isinstance(node, (PowNode, ConstantNode)):
                     for p in powers_to_use:
@@ -387,46 +572,51 @@ def generate_dimensionally_typed_ast(
 
         # 3. Binary operators (+, -, *, /)
         candidate_pool = list(canonical_map.values())
-        for n1 in current_frontier:
-            for n2 in candidate_pool:
-                if n1.complexity + n2.complexity + 1 > max_complexity:
-                    continue
+        pairs = [
+            (n1, n2)
+            for n1 in current_frontier
+            for n2 in candidate_pool
+            if n1.complexity + n2.complexity + 1 <= max_complexity
+        ]
+        pairs.sort(key=lambda p: p[0].complexity + p[1].complexity)
 
-                # Multiplication: commutative deduplication
-                if "*" in ops_set:
-                    if n1.to_str() <= n2.to_str() and n1.to_str() != n2.to_str():
-                        try:
-                            bn = BinaryOpNode("*", n1, n2)
-                            try_register(bn, next_frontier)
-                        except DimensionalError:
-                            pass
+        for n1, n2 in pairs:
+            # Multiplication: commutative deduplication
+            if "*" in ops_set:
+                if n1.to_str() <= n2.to_str() and n1.to_str() != n2.to_str():
+                    try:
+                        bn = BinaryOpNode("*", n1, n2)
+                        try_register(bn, next_frontier)
+                    except DimensionalError:
+                        pass
 
-                # Division
-                if "/" in ops_set:
-                    if n1.to_str() != n2.to_str():
-                        try:
-                            bn = BinaryOpNode("/", n1, n2)
-                            try_register(bn, next_frontier)
-                        except DimensionalError:
-                            pass
+            # Division
+            if "/" in ops_set:
+                if n1.to_str() != n2.to_str():
+                    try:
+                        bn = BinaryOpNode("/", n1, n2)
+                        try_register(bn, next_frontier)
+                    except DimensionalError:
+                        pass
 
-                # Addition: requires identical dimensions [u] == [v]
-                if "+" in ops_set:
-                    if n1.dimension == n2.dimension and n1.to_str() < n2.to_str():
-                        try:
-                            bn = BinaryOpNode("+", n1, n2)
-                            try_register(bn, next_frontier)
-                        except DimensionalError:
-                            pass
+            # Addition: requires identical dimensions [u] == [v]
+            if "+" in ops_set:
+                if n1.dimension == n2.dimension and n1.to_str() < n2.to_str():
+                    try:
+                        bn = BinaryOpNode("+", n1, n2)
+                        try_register(bn, next_frontier)
+                    except DimensionalError:
+                        pass
 
-                # Subtraction: requires identical dimensions [u] == [v]
-                if "-" in ops_set:
-                    if n1.dimension == n2.dimension and n1.to_str() != n2.to_str():
-                        try:
-                            bn = BinaryOpNode("-", n1, n2)
-                            try_register(bn, next_frontier)
-                        except DimensionalError:
-                            pass
+            # Subtraction: requires identical dimensions [u] == [v]
+            if "-" in ops_set:
+                if n1.dimension == n2.dimension and n1.to_str() != n2.to_str():
+                    try:
+                        bn = BinaryOpNode("-", n1, n2)
+                        try_register(bn, next_frontier)
+                    except DimensionalError:
+                        pass
+
 
         current_frontier = next_frontier
         if not current_frontier:

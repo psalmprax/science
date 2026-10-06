@@ -54,6 +54,11 @@ _TERM_BUILDERS = {
     "v_s": lambda X, V, U, XR: V,  # slow velocity
     "grad_x": lambda X, V, U, XR: sp.symbols("grad_x"),  # spatial gradient ∇x
     "laplacian_x": lambda X, V, U, XR: sp.symbols("laplacian_x"),  # ∇²x
+    "sat_x": lambda X, V, U, XR: X / (1 + sp.Abs(X)),
+    "sat_v": lambda X, V, U, XR: V / (1 + sp.Abs(V)),
+    "sat_u": lambda X, V, U, XR: U / (1 + sp.Abs(U)),
+    "inv_x2": lambda X, V, U, XR: 1 / (1 + X ** 2),
+    "u_relax": lambda X, V, U, XR: U - V,  # relative relaxation impulse
 }
 
 DEFAULT_TOPOLOGY = ("one", "x", "x3", "v", "abs_v_v", "sin_x", "u")
