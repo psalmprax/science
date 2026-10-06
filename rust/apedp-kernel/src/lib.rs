@@ -13,14 +13,17 @@
 //! and keeps going.
 
 pub mod numeric;
+pub mod ode;
 pub mod parser;
 pub mod units;
 
-use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
+use ndarray::Array2;
+use numpy::{IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 
+use ode::OdeSystem;
 use parser::Compiled;
 use units::UnitVector as UnitVec;
 
@@ -361,6 +364,153 @@ impl UnitVector {
     }
 }
 
+/// A compiled ODE system for high-performance simulation.
+#[pyclass(module = "apedp_kernel")]
+#[derive(Clone)]
+pub struct CompiledOdeSystem {
+    inner: OdeSystem,
+}
+
+#[pymethods]
+impl CompiledOdeSystem {
+    #[new]
+    #[pyo3(signature = (equations, state_names, param_names, input_names=None))]
+    fn new(
+        equations: Vec<String>,
+        state_names: Vec<String>,
+        param_names: Vec<String>,
+        input_names: Option<Vec<String>>,
+    ) -> PyResult<Self> {
+        let inames = input_names.unwrap_or_default();
+        let inner = OdeSystem::compile(&equations, &state_names, &param_names, &inames)
+            .map_err(PyValueError::new_err)?;
+        Ok(CompiledOdeSystem { inner })
+    }
+
+    #[getter]
+    fn state_names(&self) -> Vec<String> {
+        self.inner.state_names.clone()
+    }
+
+    #[getter]
+    fn param_names(&self) -> Vec<String> {
+        self.inner.param_names.clone()
+    }
+
+    #[getter]
+    fn input_names(&self) -> Vec<String> {
+        self.inner.input_names.clone()
+    }
+
+    #[getter]
+    fn num_states(&self) -> usize {
+        self.inner.num_states
+    }
+
+    #[getter]
+    fn num_params(&self) -> usize {
+        self.inner.num_params
+    }
+
+    #[getter]
+    fn num_inputs(&self) -> usize {
+        self.inner.num_inputs
+    }
+
+    /// Simulate the ODE system using native Dormand-Prince 5(4) (RK45).
+    ///
+    /// Releases the Python GIL during integration steps.
+    /// Returns `(success, detail, nfev, t, y)` where `y` is a 2D float64 array of shape `(num_states, n_eval)`.
+    #[pyo3(signature = (t_span, x0, t_eval, param_values, input_values=None, rtol=1e-3, atol=1e-6, max_steps=100_000))]
+    fn simulate<'py>(
+        &self,
+        py: Python<'py>,
+        t_span: (f64, f64),
+        x0: Vec<f64>,
+        t_eval: Vec<f64>,
+        param_values: Vec<f64>,
+        input_values: Option<Vec<f64>>,
+        rtol: f64,
+        atol: f64,
+        max_steps: usize,
+    ) -> PyResult<(bool, String, usize, Bound<'py, PyArray1<f64>>, Bound<'py, PyArray2<f64>>)> {
+        let in_vals = input_values.unwrap_or_default();
+        let res = py.allow_threads(|| {
+            self.inner.integrate(t_span, &x0, &t_eval, &param_values, &in_vals, rtol, atol, max_steps)
+        });
+
+        let n_states = self.inner.num_states;
+        let n_eval = res.t.len();
+        let mut arr = Array2::<f64>::zeros((n_states, n_eval));
+        if res.success && res.y.len() == n_states {
+            for i in 0..n_states {
+                for j in 0..n_eval {
+                    arr[[i, j]] = res.y[i][j];
+                }
+            }
+        }
+
+        let py_t = res.t.into_pyarray_bound(py);
+        let py_y = arr.into_pyarray_bound(py);
+        Ok((res.success, res.detail, res.nfev, py_t, py_y))
+    }
+}
+
+/// Compile and simulate an ODE system in a single native call.
+#[pyfunction]
+#[pyo3(signature = (
+    equations,
+    state_names,
+    param_names,
+    param_values,
+    t_span,
+    x0,
+    t_eval,
+    input_names=None,
+    input_values=None,
+    rtol=1e-3,
+    atol=1e-6,
+    max_steps=100_000
+))]
+fn simulate_ode_rk45<'py>(
+    py: Python<'py>,
+    equations: Vec<String>,
+    state_names: Vec<String>,
+    param_names: Vec<String>,
+    param_values: Vec<f64>,
+    t_span: (f64, f64),
+    x0: Vec<f64>,
+    t_eval: Vec<f64>,
+    input_names: Option<Vec<String>>,
+    input_values: Option<Vec<f64>>,
+    rtol: f64,
+    atol: f64,
+    max_steps: usize,
+) -> PyResult<(bool, String, usize, Bound<'py, PyArray1<f64>>, Bound<'py, PyArray2<f64>>)> {
+    let inames = input_names.unwrap_or_default();
+    let ivals = input_values.unwrap_or_default();
+    let sys = OdeSystem::compile(&equations, &state_names, &param_names, &inames)
+        .map_err(PyValueError::new_err)?;
+    let res = py.allow_threads(|| {
+        sys.integrate(t_span, &x0, &t_eval, &param_values, &ivals, rtol, atol, max_steps)
+    });
+
+    let n_states = sys.num_states;
+    let n_eval = res.t.len();
+    let mut arr = Array2::<f64>::zeros((n_states, n_eval));
+    if res.success && res.y.len() == n_states {
+        for i in 0..n_states {
+            for j in 0..n_eval {
+                arr[[i, j]] = res.y[i][j];
+            }
+        }
+    }
+
+    let py_t = res.t.into_pyarray_bound(py);
+    let py_y = arr.into_pyarray_bound(py);
+    Ok((res.success, res.detail, res.nfev, py_t, py_y))
+}
+
 #[pymodule]
 fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(compile, m)?)?;
@@ -371,7 +521,9 @@ fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(compute_matrix_conditioning, m)?)?;
     m.add_function(wrap_pyfunction!(solve_linear_coefficients, m)?)?;
     m.add_function(wrap_pyfunction!(evaluate_precision_boundary, m)?)?;
+    m.add_function(wrap_pyfunction!(simulate_ode_rk45, m)?)?;
     m.add_class::<CompiledExpression>()?;
+    m.add_class::<CompiledOdeSystem>()?;
     m.add_class::<UnitVector>()?;
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     Ok(())

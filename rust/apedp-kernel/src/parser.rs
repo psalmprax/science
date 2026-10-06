@@ -60,7 +60,8 @@ pub enum Func {
 
 impl Func {
     fn from_name(name: &str) -> Option<Func> {
-        Some(match name {
+        let lower = name.to_ascii_lowercase();
+        Some(match lower.as_str() {
             "sin" => Func::Sin,
             "cos" => Func::Cos,
             "tan" => Func::Tan,
@@ -328,6 +329,30 @@ impl Compiled {
             *slot = eval_node(&self.root, data, idx);
         }
         Ok(out)
+    }
+
+    /// Evaluate over a single point, where `point[i]` is the value of `self.variables[i]`.
+    ///
+    /// Highly optimized for tight ODE inner integration loops: avoids all vector allocations.
+    #[inline]
+    pub fn eval_point(&self, point: &[f64]) -> f64 {
+        eval_node_point(&self.root, point)
+    }
+}
+
+#[inline]
+fn eval_node_point(node: &Node, point: &[f64]) -> f64 {
+    match node {
+        Node::Const(c) => *c,
+        Node::Var(v) => point[*v],
+        Node::Add(a, b) => eval_node_point(a, point) + eval_node_point(b, point),
+        Node::Sub(a, b) => eval_node_point(a, point) - eval_node_point(b, point),
+        Node::Mul(a, b) => eval_node_point(a, point) * eval_node_point(b, point),
+        Node::Div(a, b) => eval_node_point(a, point) / eval_node_point(b, point),
+        Node::Pow(a, b) => eval_node_point(a, point).powf(eval_node_point(b, point)),
+        Node::Neg(a) => -eval_node_point(a, point),
+        Node::Call(f, a) => f.apply(eval_node_point(a, point)),
+        Node::Ident(name) => unreachable!("unresolved identifier {name:?} reached evaluation"),
     }
 }
 
@@ -676,6 +701,11 @@ mod tests {
     fn a_wrong_number_of_arrays_is_an_error_not_a_partial_read() {
         let one = compile("x + 1", &vars(&["x"])).unwrap();
         assert!(one.evaluate(&[vec![1.0, 2.0], vec![1.0, 2.0]]).is_err());
+
+        let c = compile("a0 + a1 * x + a2 * Abs(v) * v", &vars(&["x", "v", "a0", "a1", "a2"])).unwrap();
+        let pt = [2.0, -3.0, 1.0, 4.0, 0.5];
+        let res = c.eval_point(&pt);
+        assert!((res - 4.5).abs() < 1e-12, "got {res}, expected 4.5");
 
         let two = compile("x + y", &vars(&["x", "y"])).unwrap();
         assert!(two
