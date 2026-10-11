@@ -13,6 +13,7 @@ import numpy as np
 
 N, L, LAM, C0, GAM = 10, 10, 0.8, 1.0, 1.0
 BW, SW, EPS = 100, 20, 1e-8
+NSW = 200
 LAMW = np.array([LAM ** l for l in range(L)])
 LAMW /= LAMW.sum()
 
@@ -106,7 +107,7 @@ def stage12(tag, seeds, delay):
         obs = float(np.corrcoef(fr, r)[0, 1])
         rng = np.random.RandomState(sd + 7)
         cnt = sum(float(np.corrcoef(np.concatenate([fr[s:], fr[:s]]), r)[0, 1]) >= obs
-                  for s in rng.randint(0, len(fr), size=nshift))
+                  for s in rng.randint(0, len(fr), size=NSW))
         p2.append(float(cnt / nshift))
     print(f"Stage1 p-values: {[f'{p:.3f}' for p in p1]}")
     print(f"Stage2 residual p-values: {[f'{p:.3f}' for p in p2]}")
