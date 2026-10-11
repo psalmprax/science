@@ -1,0 +1,24 @@
+--- Phase 1 development (ST1 paths) ---
+ols25: sharpe=-0.216 net=-0.3544 dd=0.7851 turn=1492
+ols50: sharpe=-0.083 net=-0.1429 dd=0.7727 turn=1323
+ols100: sharpe=-0.091 net=-0.1590 dd=0.7841 turn=1249
+ols200: sharpe=-0.057 net=-0.0985 dd=0.7866 turn=1196
+mom5: sharpe=+0.277 net=+0.4737 dd=0.5460 turn=1105
+mom20: sharpe=+0.096 net=+0.1647 dd=0.6794 turn=546
+bh: sharpe=+0.048 net=+0.0819 dd=0.6755 turn=1
+rev: sharpe=-0.536 net=-0.9156 dd=1.2523 turn=1105
+rnd: sharpe=-0.306 net=-0.5191 dd=0.9223 turn=2594
+delay ols25: median 1 steps
+delay ols50: median 1 steps
+delay ols100: median 2 steps
+delay ols200: median 3 steps
+Phase-1 Winner: ols200 (sharpe -0.057) — FROZEN
+--- Phase 2 independent ---
+ols200: sharpe=-0.108 net=-0.1859 dd=0.7852 turn=1188
+mom5: sharpe=+0.270 net=+0.4640 dd=0.5079 turn=1092
+bh: sharpe=-0.003 net=-0.0040 dd=0.6608 turn=1
+delay ols25: median 1 steps
+delay ols50: median 1 steps
+delay ols100: median 3 steps
+delay ols200: median 4 steps
+GATE1 sharpe>0: False | GATE2 beats mom5 p=0.0015 (<0.05: True) | GATE3 dd<2xBH: True
