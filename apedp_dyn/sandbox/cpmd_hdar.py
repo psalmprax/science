@@ -108,7 +108,7 @@ def stage12(tag, seeds, delay):
         rng = np.random.RandomState(sd + 7)
         cnt = sum(float(np.corrcoef(np.concatenate([fr[s:], fr[:s]]), r)[0, 1]) >= obs
                   for s in rng.randint(0, len(fr), size=NSW))
-        p2.append(float(cnt / nshift))
+        p2.append(float(cnt / NSW))
     print(f"Stage1 p-values: {[f'{p:.3f}' for p in p1]}")
     print(f"Stage2 residual p-values: {[f'{p:.3f}' for p in p2]}")
     return p1, p2
