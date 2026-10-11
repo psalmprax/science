@@ -1,0 +1,9 @@
+--- Stage 1 discovery gen-A (50000+) ---
+H-CTP: meanIC=+0.0042 median-p=0.438 MSEratio=1.005
+H-SER: meanIC=-0.0008 median-p=0.583 MSEratio=1.123
+H-SAC: meanIC=-0.0073 median-p=0.573 MSEratio=1.009
+--- Stage 1 discovery gen-B (51000+) ---
+H-CTP: meanIC=-0.0066 median-p=0.627 MSEratio=1.008
+H-SER: meanIC=+0.0051 median-p=0.420 MSEratio=1.134
+H-SAC: meanIC=-0.0003 median-p=0.515 MSEratio=1.010
+Survivors to Stage 2: NONE — hypotheses rejected
