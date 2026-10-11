@@ -1,0 +1,13 @@
+== B0: one-shot ladder calibration (record-only) ==
+  high: oracleIC=+0.0718 [IN RANGE]
+  low: oracleIC=+nan [OFF-PROTOCOL, no tuning]
+  mod: oracleIC=+0.0038 [OFF-PROTOCOL, no tuning]
+== A: v0.19 survivors re-compared, fresh paths ==
+  (loss-differential detail in code path; summary via referee below)
+== B+C: search + referee per leg ==
+  high: top[Cs:+0.322/0.000, Qs:+0.317/0.000, Ms:+0.274/0.000, tQs:+0.312/0.000] -> referee: MULTI_HYPOTHESIS
+  low: leg OFF-PROTOCOL — skipped
+  mod: leg OFF-PROTOCOL — skipped
+referee score: 1/3 (C needs null leg below)
+  null(gen-B): promotions=none -> referee: NO_RECOVERY
+FINAL referee score: 2/3
