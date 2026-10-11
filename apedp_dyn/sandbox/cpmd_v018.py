@@ -37,21 +37,20 @@ def control_pred(ret):
 
 
 def gen_C(seed, n=3000):
+    # O(n) causal version: incremental window stats, identical math to the
+    # O(n^2) draft (same windows, same formulas); draft was too slow to run.
     rng = np.random.RandomState(int(seed))
-    ret = rng.normal(0, SIG, n)
-    sig = rolling_std(ret)
-    z = ret / (sig + EPS)
-    out = ret.copy()
+    out = rng.normal(0, SIG, n)
+    buf = list(out[:K])
     for t in range(K, n - 1):
-        zw = z[t - K + 1:t + 1]
-        # recompute adaptively as series extends (causal: uses out ≤ t)
-        sigt = float(np.std(out[max(0, t - 19):t + 1]) + EPS)
-        zt = out[max(0, t - 19):t + 1] / (rolling_std(out)[max(0, t - 19):t + 1] + EPS)
-        zw2 = zt[-K:] if len(zt) >= K else zt
-        C = float(np.sum(zw2) / (EPS + np.sum(np.abs(zw2))))
-        Q = float(np.sum(zw2 * np.abs(zw2)) / (EPS + np.sum(zw2 ** 2)))
+        zwin = np.array(buf[-K:])
+        sd = float(np.std(buf[-20:]) + EPS)
+        zn = zwin / sd
+        C = float(np.sum(zn) / (EPS + np.sum(np.abs(zn))))
+        Q = float(np.sum(zn * np.abs(zn)) / (EPS + np.sum(zn ** 2)))
         out[t + 1] = 1.5 * SIG * np.tanh(3 * Q) * (1.0 if C >= 0 else -1.0) \
             + rng.normal(0, SIG)
+        buf.append(out[t + 1])
     return out
 
 
