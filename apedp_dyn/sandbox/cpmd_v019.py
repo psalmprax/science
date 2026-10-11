@@ -47,7 +47,7 @@ def grammar_forms():
     return {
         "C": lambda s, C, Q, V, Mm, dC, tQ, tC: C,
         "Q": lambda s, C, Q, V, Mm, dC, tQ, tC: Q,
-        "V": lambda s, C, Q, V, Mm, dC, tQ, tC: V - 1,
+        "V": lambda s, C, Q, V, Mm, dC, tQ, tC: V[0] - 1,
         "M": lambda s, C, Q, V, Mm, dC, tQ, tC: Mm,
         "aC": lambda s, C, Q, V, Mm, dC, tQ, tC: abs(C),
         "dC": lambda s, C, Q, V, Mm, dC, tQ, tC: dC,
