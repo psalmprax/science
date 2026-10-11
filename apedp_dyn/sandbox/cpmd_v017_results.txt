@@ -1,0 +1,11 @@
+== Step 1: oracle bounds ==
+gen-A oracle (true-regime rule): meanIC=+0.0053
+gen-B oracle: 0.0000 by construction (symmetric, zero-mean)
+== Step 2: harness calibration ==
+positive control on gen-C: meanIC=+0.4353 median-p=0.0000 n=20
+null case (control on gen-B): meanIC=+0.0078 median-p=0.2600 n=20
+harness: FIT
+== Step 3: H-CMD on untouched paths ==
+H-CMD gen-A: meanIC=+0.0038 median-p=0.3975 n=20
+H-CMD gen-B: meanIC=-0.0019 median-p=0.6050 n=20
+H-CMD: REJECTED; audit record stands as deliverable
