@@ -61,7 +61,8 @@ def stage1(tag, seeds, genfn):
     print(f"--- {tag} ---")
     ps = []
     for sd in seeds:
-        R = genfn(sd)
+        out = genfn(sd)
+        R = out[0] if isinstance(out, tuple) else out
         F = hlik_forecast(R)
         _, p = panel_ic_null(F, R, sd)
         ps.append(p)
