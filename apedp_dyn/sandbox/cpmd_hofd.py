@@ -53,9 +53,10 @@ def ic_null(F, R, seed):
 
 
 def evaluate(tag, R, O, seed, lo=0.0, hi=1.0):
+    assert R.shape == O.shape
     n = len(R)
     a, b = int(lo * n), int(hi * n)
-    F = hofd_forecast(R)
+    F = hofd_forecast(R, O)
     # restrict to window [a:b] on FORECAST index
     Fw = np.full_like(F, np.nan)
     Fw[a:b] = F[a:b]
