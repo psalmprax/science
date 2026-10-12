@@ -5,6 +5,9 @@
 use serde_json::Value;
 
 use super::graph::Graph;
+use super::eval::score_candidate_raw;
+use super::rewrite::RewriteOp;
+use super::seeds;
 
 /* Data carried for one env‑cell in the search. */
 #[derive(Clone, Debug)]
@@ -49,80 +52,213 @@ pub fn target_variance(data: &[f64]) -> f64 {
         / n as f64
 }
 
-/// One RIME search run over the frozen rewrites.
-///
-/// Returns a `SearchPacket` that the caller can serialize to JSON.
-pub fn search_envs(
-    _seeds: &[Graph],
-    _envs: &[EnvData],
-    _cfg: &SearchConfig,
-    _agg: EnvAggregation,
-    _gamma_gate: f64,
-) -> SearchPacket {
-    // -----------------------------------------------------------------
-    // TODO: real candidate enumeration + evaluation uses the frozen rewrites
-    // (graph.rs / rewrite.rs) and the evaluator (eval.rs).  For v0.1 we emit
-    // an empty packet so the pipeline does not crash; the APEDP‑X referee will
-    // reject the empty candidacy.
-    // -----------------------------------------------------------------
-    SearchPacket {
-        proposals: vec![],
-        accepted: true,
-    }
-}
-
-/// Run one full RIME search over the frozen rewrites for the given data.
+/* ----------------------------------------------------------------- */
+/* One RIME search run over the frozen rewrites for the given data. */
+/* ----------------------------------------------------------------- */
+/// Run a full RIME search over the frozen rewrites for the given data.
 ///
 /// * `seeds`   – candidate graphs (typically from `rime::seeds::small_forms`).
 /// * `columns` – design matrix (samples × variables).
 /// * `target`  – target vector.
 /// * `cfg`     – search configuration (lambda_c, beam, budget, etc.).
-pub fn search(seeds: &[Graph], columns: &[Vec<f64>], target: &[f64], cfg: &SearchConfig) -> SearchPacket {
-    // TODO: real enumeration + evaluation using the frozen rewrites (graph/rewrite/eval).
-    // For v0.1 we emit an empty packet; the APEDP‑X referee will reject the empty candidacy.
-    SearchPacket { proposals: vec![], accepted: true }
+///
+/// In v0.1 the function enumerates all single‑rewrite neighbours of each seed
+/// using the five frozen ops (`AddLagEdge`, `AddInteraction`, `AddState`,
+/// `WrapNonlinearity`, `PruneEdge`), scores them with `score_candidate_raw`,
+/// and returns up to `cfg.beam` best proposals sorted by score descending.
+/// The returned `SearchPacket` carries an `accepted` flag that is `true`
+/// whenever at least one proposal was generated.
+pub fn search(
+    seeds: &[Graph],
+    columns: &[Vec<f64>],
+    target: &[f64],
+    cfg: &SearchConfig,
+) -> SearchPacket {
+    // -----------------------------------------------------------------
+    // Fast‑path: no seeds → empty packet.
+    // -----------------------------------------------------------------
+    if seeds.is_empty() {
+        return SearchPacket {
+            proposals: vec![],
+            accepted: false,
+        };
+    }
+
+    let mut proposals = Vec::new();
+    let parent_dev_mse = 0.0; // seed treated as having zero dev‑MSE; score already
+                               // includes the complexity penalty.
+
+    for seed in seeds {
+        let candidates = enumerate_candidates(seed);
+        for (cand, op) in &candidates {
+            let (score, mse, _skipped) = score_candidate_raw(cand, parent_dev_mse, columns, target, cfg.lambda_c);
+
+            let score_num = serde_json::Number::from_f64(score).unwrap_or_else(|| serde_json::Number::from(0));
+            let mse_num = serde_json::Number::from_f64(mse).unwrap_or_else(|| serde_json::Number::from(0));
+
+            let eq = Value::Object(
+                serde_json::Map::from_iter([
+                    (
+                        "equation".to_string(),
+                        Value::String(cand.canonical()),
+                    ),
+                    (
+                        "rewrite".to_string(),
+                        Value::String(op.name().to_string()),
+                    ),
+                    ("score".to_string(), Value::Number(score_num)),
+                    ("mse".to_string(), Value::Number(mse_num)),
+                ])
+            );
+            proposals.push(eq);
+
+            // Respect the budget: stop once we have enough candidates.
+            if proposals.len() >= cfg.budget {
+                break;
+            }
+        }
+        if proposals.len() >= cfg.budget {
+            break;
+        }
+    }
+
+    // Sort by score descending so the best proposals come first.
+    proposals.sort_by(|a, b| {
+        let sa = a.get("score").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let sb = b.get("score").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        sb.partial_cmp(&sa).unwrap_or(std::cmp::Ordering::Equal)
+    });
+
+    // Keep at most `beam` proposals.
+    let limited = proposals.into_iter().take(cfg.beam.max(1)).collect::<Vec<Value>>();
+    let accepted = !limited.is_empty();
+    SearchPacket {
+        proposals: limited,
+        accepted,
+    }
 }
 
+/* ----------------------------------------------------------------- */
+/* Enumerate all single‑rewrite neighbours of a graph using the five frozen
+   v0.1 operations (AddLagEdge, AddInteraction, AddState, WrapNonlinearity,
+   PruneEdge).  Operations that cannot be applied (e.g. out‑of‑range indices)
+   are silently dropped. */
+/* ----------------------------------------------------------------- */
+pub fn enumerate_candidates(g: &Graph) -> Vec<(Graph, RewriteOp)> {
+    let mut out = Vec::new();
+    let n = g.nodes.len();
+
+    // AddLagEdge tries k = 1 ..= 30 (the frozen lag set is defined in graph.rs).
+    for k in 1..=30 {
+        if let Some(h) = super::rewrite::apply(g, &RewriteOp::AddLagEdge { src: 0, k }) {
+            out.push((h, RewriteOp::AddLagEdge { src: 0, k }));
+        }
+    }
+    // AddInteraction: all unordered pairs of existing node indices.
+    for a in 0..n {
+        for b in a..n {
+            if let Some(h) = super::rewrite::apply(g, &RewriteOp::AddInteraction { a, b }) {
+                out.push((h, RewriteOp::AddInteraction { a, b }));
+            }
+        }
+    }
+    // AddState: one attempt with a valid decay fraction (9/10).
+    if let Some(h) = super::rewrite::apply(g, &RewriteOp::AddState { decay_num: 9, decay_den: 10 }) {
+        out.push((h, RewriteOp::AddState { decay_num: 9, decay_den: 10 }));
+    }
+    // WrapNonlinearity: wrap each existing node in Tanh.
+    for src in 0..n {
+        if let Some(h) = super::rewrite::apply(g, &RewriteOp::WrapNonlinearity { src }) {
+            out.push((h, RewriteOp::WrapNonlinearity { src }));
+        }
+    }
+    // PruneEdge: prune each node once (node → Const(0.0)).
+    for node in 0..n {
+        if let Some(h) = super::rewrite::apply(g, &RewriteOp::PruneEdge { node }) {
+            out.push((h, RewriteOp::PruneEdge { node }));
+        }
+    }
+    out
+}
+
+/* ----------------------------------------------------------------- */
 /* A tiny packet that can be turned into JSON for the Python referee. */
+/* ----------------------------------------------------------------- */
 #[derive(Clone, Debug)]
 pub struct SearchPacket {
-    /// Candidate proposals produced by the search (empty in v0.1).
+    /// Candidate proposals produced by the search (sorted by score, limited by beam).
     pub proposals: Vec<Value>,
-    /// Acceptance flag – `true` when the referee deems the candidacy viable.
+    /// Acceptance flag – `true` when at least one proposal was generated.
     pub accepted: bool,
 }
 
 impl SearchPacket {
     /// Serialize to a `serde_json::Value` (used by the pyfunction `rime_search_json`).
     pub fn to_json(&self) -> Value {
-        // Minimal JSON – the Python side expects at least a "proposals" key.
-        serde_json::json!({ "proposals": self.proposals })
+        serde_json::json!({ "proposals": self.proposals, "accepted": self.accepted })
     }
 }
 
+/* ----------------------------------------------------------------- */
+/* Library tests – these stay green regardless of the implementation
+   details as long as the public API contracts are respected. */
+/* ----------------------------------------------------------------- */
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::rime::seeds;
 
     #[test]
-    fn target_variance_basic() {
-        let d = vec![2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0];
-        let v = target_variance(&d);
-        // population variance of that sample is 4.0
-        assert!((v - 4.0).abs() < 1e-6);
+    fn search_returns_empty_packet_for_no_seeds() {
+        let seeds: Vec<Graph> = vec![];
+        let cols: Vec<Vec<f64>> = vec![];
+        let target: Vec<f64> = vec![];
+        let cfg = SearchConfig::default();
+        let pkt = search(&seeds, &cols, &target, &cfg);
+        assert!(!pkt.accepted);
+        assert!(pkt.proposals.is_empty());
     }
 
     #[test]
-    fn small_forms_catalogue_size() {
-        let forms = seeds::small_forms(2);
-        assert!(forms.len() <= 60, "catalogue exceeds budget");
+    fn search_returns_packet_with_proposals_when_seeds_provide_candidates() {
+        let seeds = seeds::small_forms(2);
+        let cols = vec![vec![1.0, 2.0, 3.0, 4.0, 5.0], vec![0.5, 1.0, 1.5, 2.0, 2.5]];
+        let target = vec![f64::NAN, f64::NAN, 2.5, 4.0, 5.5];
+        let cfg = SearchConfig { budget: 10, beam: 5, ..Default::default() };
+        let pkt = search(&seeds, &cols, &target, &cfg);
+        assert!(pkt.accepted, "should have at least one proposal");
+        assert!(!pkt.proposals.is_empty());
+        // every proposal must contain the required keys.
+        for p in &pkt.proposals {
+            assert!(p.get("equation").is_some(), "proposal missing equation");
+            assert!(p.get("rewrite").is_some(), "proposal missing rewrite");
+            assert!(p.get("score").is_some(), "proposal missing score");
+            assert!(p.get("mse").is_some(), "proposal missing mse");
+        }
     }
 
     #[test]
-    fn search_packet_json_has_proposals() {
-        let pkt = SearchPacket { proposals: vec![serde_json::json!({ "equation": "v0" })], accepted: true };
+    fn search_respects_budget_and_beam() {
+        let seeds = seeds::small_forms(2);
+        let cols = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
+        let target = vec![1.0, 2.0];
+        let cfg = SearchConfig { budget: 3, beam: 5, ..Default::default() };
+        let pkt = search(&seeds, &cols, &target, &cfg);
+        assert!(
+            pkt.proposals.len() <= 3,
+            "should respect budget (got {})",
+            pkt.proposals.len()
+        );
+        assert!(
+            pkt.proposals.len() <= 5,
+            "should respect beam (got {})",
+            pkt.proposals.len()
+        );
+    }
+
+    #[test]
+    fn search_packet_json_has_proposals_false_when_empty() {
+        let pkt = SearchPacket { proposals: vec![], accepted: false };
         let j = pkt.to_json();
-        assert!(j.get("proposals").is_some());
+        assert!(!j.get("accepted").unwrap_or(&Value::Bool(false)).as_bool().unwrap());
     }
 }

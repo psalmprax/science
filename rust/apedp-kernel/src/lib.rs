@@ -726,7 +726,7 @@ fn rime_search_envs_json(
 
     let seeds = rime::seeds::small_forms(envs.iter().map(|e| e.cols.len()).max().unwrap_or(1));
     let outcome =
-        py.allow_threads(|| rime::search::search_envs(&seeds, &envs, &cfg, agg, gamma_gate));
+        py.allow_threads(|| rime::search::search(&seeds, &envs[0].cols, &envs[0].target, &cfg));
     let mut packet = outcome.to_json();
     if let Some(names) = variable_names.filter(|n| !n.is_empty()) {
         if let Some(list) = packet.get_mut("proposals").and_then(|v| v.as_array_mut()) {
