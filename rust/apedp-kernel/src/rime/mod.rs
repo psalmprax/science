@@ -8,4 +8,5 @@ pub mod graph;
 pub mod record;
 pub mod rewrite;
 pub mod search;
+pub mod referee;
 pub mod seeds;
