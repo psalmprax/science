@@ -1,7 +1,7 @@
 {
   "provenance": {
     "benchmark_version": "rime_vs_neural_v3",
-    "code_revision": "b9b519bc2bb53be8b6151592c612ebf589ab195e+dirty",
+    "code_revision": "d50a4e5b7fb948e4909a43fa705379da1834c88a",
     "kernel_version": "0.1.0",
     "config": {
       "quick": false,
@@ -23,7 +23,7 @@
       "budget": 200
     },
     "seed_policy": "deterministic hash noise; seeds only shift phases",
-    "generated_utc": "2026-10-12T18:05:41Z",
+    "generated_utc": "2026-10-12T19:05:27Z",
     "feature_availability_rule": "every candidate evaluates only columns present in its frame at prediction time; no peeking beyond the row being scored",
     "reporting_note": "symbolic recovery, prediction accuracy, compute cost and model complexity are reported as separate fields \u2014 never fused into a single superiority score"
   },
@@ -53,7 +53,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.7457187681786721,
       "mlp_ar_oos_r2": 0.8902201979963158,
-      "rime_seconds": 0.02884964942932129
+      "rime_seconds": 0.010852575302124023
     },
     {
       "mechanism": "lag",
@@ -76,7 +76,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.9793546411587218,
       "mlp_ar_oos_r2": 0.9491119962245657,
-      "rime_seconds": 0.04633040428161621
+      "rime_seconds": 0.015336847305297852
     },
     {
       "mechanism": "lag",
@@ -99,7 +99,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.9998716586165678,
       "mlp_ar_oos_r2": 0.9956627608116737,
-      "rime_seconds": 0.041045618057250974
+      "rime_seconds": 0.015495395660400391
     },
     {
       "mechanism": "lag",
@@ -122,7 +122,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.9999026084086939,
       "mlp_ar_oos_r2": 0.9997100880791658,
-      "rime_seconds": 0.05948781967163086
+      "rime_seconds": 0.02741236686706543
     },
     {
       "mechanism": "lag",
@@ -145,7 +145,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.9999319632074117,
       "mlp_ar_oos_r2": 0.999848049783545,
-      "rime_seconds": 0.08732609748840332
+      "rime_seconds": 0.0421903133392334
     },
     {
       "mechanism": "momentum",
@@ -168,7 +168,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.9410656948210422,
       "mlp_ar_oos_r2": 0.9399297576194098,
-      "rime_seconds": 0.027854251861572265
+      "rime_seconds": 0.011112165451049805
     },
     {
       "mechanism": "momentum",
@@ -191,7 +191,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.9912814896239228,
       "mlp_ar_oos_r2": 0.9739246282110454,
-      "rime_seconds": 0.03768677711486816
+      "rime_seconds": 0.01351628303527832
     },
     {
       "mechanism": "momentum",
@@ -214,7 +214,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.9997390489134247,
       "mlp_ar_oos_r2": 0.9941203476761409,
-      "rime_seconds": 0.04674134254455566
+      "rime_seconds": 0.019761085510253906
     },
     {
       "mechanism": "momentum",
@@ -237,7 +237,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.9998305121350863,
       "mlp_ar_oos_r2": 0.9996089755068075,
-      "rime_seconds": 0.058007669448852536
+      "rime_seconds": 0.018674182891845702
     },
     {
       "mechanism": "momentum",
@@ -260,7 +260,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.9998683447641759,
       "mlp_ar_oos_r2": 0.9997804053442578,
-      "rime_seconds": 0.08431177139282227
+      "rime_seconds": 0.044891643524169925
     },
     {
       "mechanism": "interaction",
@@ -283,7 +283,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": -2.072634394265164,
       "mlp_ar_oos_r2": -0.9824549712896854,
-      "rime_seconds": 0.034116268157958984
+      "rime_seconds": 0.009508037567138672
     },
     {
       "mechanism": "interaction",
@@ -306,7 +306,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": -0.3346719097529751,
       "mlp_ar_oos_r2": -0.4353123435462267,
-      "rime_seconds": 0.0337468147277832
+      "rime_seconds": 0.01376643180847168
     },
     {
       "mechanism": "interaction",
@@ -329,7 +329,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.9976116581494192,
       "mlp_ar_oos_r2": 0.7615263501973988,
-      "rime_seconds": 0.02662825584411621
+      "rime_seconds": 0.008597803115844727
     },
     {
       "mechanism": "interaction",
@@ -352,7 +352,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.9993702383071092,
       "mlp_ar_oos_r2": 0.9941177965665553,
-      "rime_seconds": 0.029688358306884766
+      "rime_seconds": 0.012144660949707032
     },
     {
       "mechanism": "interaction",
@@ -375,7 +375,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.9993110393251057,
       "mlp_ar_oos_r2": 0.9983734544079758,
-      "rime_seconds": 0.04229869842529297
+      "rime_seconds": 0.019826936721801757
     },
     {
       "mechanism": "state",
@@ -398,7 +398,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": -0.43303057810280776,
       "mlp_ar_oos_r2": 0.7704380910507497,
-      "rime_seconds": 0.04246969223022461
+      "rime_seconds": 0.013698911666870118
     },
     {
       "mechanism": "state",
@@ -421,7 +421,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": -1.2612871096714429,
       "mlp_ar_oos_r2": 0.9360814911544295,
-      "rime_seconds": 0.04094061851501465
+      "rime_seconds": 0.021623897552490234
     },
     {
       "mechanism": "state",
@@ -444,7 +444,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.20700988138148987,
       "mlp_ar_oos_r2": 0.9820573278993677,
-      "rime_seconds": 0.04236836433410644
+      "rime_seconds": 0.021633625030517578
     },
     {
       "mechanism": "state",
@@ -467,7 +467,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.6454046110254856,
       "mlp_ar_oos_r2": 0.9988025537824294,
-      "rime_seconds": 0.06769266128540039
+      "rime_seconds": 0.053841352462768555
     },
     {
       "mechanism": "state",
@@ -490,7 +490,7 @@
       "mlp_params": 961.0,
       "small_mlp_oos_r2": 0.738610809448385,
       "mlp_ar_oos_r2": 0.9993016051582142,
-      "rime_seconds": 0.09524617195129395
+      "rime_seconds": 0.0472832202911377
     }
   ],
   "null": [
