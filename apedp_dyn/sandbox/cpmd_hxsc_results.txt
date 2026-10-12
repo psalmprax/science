@@ -1,0 +1,6 @@
+EQUITY development[220:536]: n=316 b=+0.002534 R2=0.036 dR2=+0.0225 p=0.002 [PASS]
+CRYPTO development[220:741]: n=521 b=+0.004104 R2=0.331 dR2=+0.0088 p=0.002 [PASS]
+development: PASS both
+EQUITY confirmation[536:747]: n=211 b=+0.000581 R2=0.010 dR2=+0.0079 p=0.176 [FAIL]
+CRYPTO confirmation[741:1089]: n=348 b=+0.001496 R2=0.148 dR2=+0.0037 p=0.138 [FAIL]
+H-XSC: REJECTED at confirmation
