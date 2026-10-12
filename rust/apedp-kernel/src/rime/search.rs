@@ -52,6 +52,13 @@ pub fn target_variance(data: &[f64]) -> f64 {
         / n as f64
 }
 
+/// Estimate the effective number of degrees of freedom for a candidate set.
+/// In v0.1 this is a simple placeholder (n candidates → n dof); the EBIC‑style
+/// selection charge is applied per candidate in the `lag_score_config` helper.
+pub fn multiplicity_dof(n: usize) -> f64 {
+    n as f64
+}
+
 /* ----------------------------------------------------------------- */
 /* One RIME search run over the frozen rewrites for the given data. */
 /* ----------------------------------------------------------------- */
