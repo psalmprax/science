@@ -16,6 +16,8 @@ pub mod numeric;
 pub mod ode;
 pub mod parser;
 pub mod units;
+pub mod genetic;
+pub mod rime;
 
 use ndarray::Array2;
 use numpy::{IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1};
@@ -511,6 +513,99 @@ fn simulate_ode_rk45<'py>(
     Ok((res.success, res.detail, res.nfev, py_t, py_y))
 }
 
+/// Native Genetic Algorithm search over dataset: evolves equation trees in parallel.
+/// Returns list of (formula_str, mse, complexity, scale_a, bias_b) and total evaluations.
+#[pyfunction]
+#[pyo3(signature = (
+    data,
+    variable_names,
+    target,
+    population_size=100,
+    generations=25,
+    islands=4,
+    migration_interval=5,
+    max_depth=4,
+    tournament_size=4,
+    mutation_rate=0.35,
+    crossover_rate=0.70,
+    allow_trans=true,
+    seed=42
+))]
+fn evolve_native<'py>(
+    py: Python<'py>,
+    data: &Bound<'py, PyAny>,
+    variable_names: Vec<String>,
+    target: &Bound<'py, PyAny>,
+    population_size: usize,
+    generations: usize,
+    islands: usize,
+    migration_interval: usize,
+    max_depth: usize,
+    tournament_size: usize,
+    mutation_rate: f64,
+    crossover_rate: f64,
+    allow_trans: bool,
+    seed: u64,
+) -> PyResult<(Vec<(String, f64, usize, f64, f64)>, usize)> {
+    let columns = extract_columns(data, "data")?;
+    let target_vec = extract_vec1(target, "target")?;
+    let config = genetic::NativeSearchConfig {
+        population_size,
+        generations,
+        islands,
+        migration_interval,
+        max_depth,
+        tournament_size,
+        mutation_rate,
+        crossover_rate,
+        allow_trans,
+        seed,
+    };
+
+    let (pareto, total_evals) = py.allow_threads(|| {
+        genetic::run_native_evolutionary_search(&columns, &target_vec, &variable_names, &config)
+    });
+
+    let res: Vec<(String, f64, usize, f64, f64)> = pareto
+        .into_iter()
+        .map(|p| (p.formula, p.mse, p.complexity, p.scale_a, p.bias_b))
+        .collect();
+
+    Ok((res, total_evals))
+}
+
+#[pyfunction]
+fn rime_evaluate_json(
+    py: Python<'_>,
+    graph_json: &str,
+    data: &Bound<'_, PyAny>,
+    target: &Bound<'_, PyAny>,
+    parent_mse: f64,
+    lambda_c: f64,
+) -> PyResult<(String, f64, f64, usize)> {
+    let graph: rime::graph::Graph = serde_json::from_str(graph_json)
+        .map_err(|e| PyValueError::new_err(format!("rime: bad graph JSON: {}", e)))?;
+    let columns = extract_columns(data, "data")?;
+    let target_vec = extract_vec1(target, "target")?;
+    let (score, mse, skipped) = py.allow_threads(|| {
+        rime::eval::score_candidate(&graph, parent_mse, &columns, &target_vec, lambda_c)
+    });
+    Ok((graph.id(), score, mse, skipped))
+}
+
+#[pyfunction]
+fn rime_rewrite_json(graph_json: &str, op_json: &str) -> PyResult<String> {
+    let graph: rime::graph::Graph = serde_json::from_str(graph_json)
+        .map_err(|e| PyValueError::new_err(format!("rime: bad graph JSON: {}", e)))?;
+    let op: rime::rewrite::RewriteOp = serde_json::from_str(op_json)
+        .map_err(|e| PyValueError::new_err(format!("rime: bad op JSON: {}", e)))?;
+    match rime::rewrite::apply(&graph, &op) {
+        Some(h) => serde_json::to_string(&h)
+            .map_err(|e| PyValueError::new_err(format!("rime: serialize failed: {}", e))),
+        None => Err(PyValueError::new_err("rime: rewrite rejected (bad index or lag)")),
+    }
+}
+
 #[pymodule]
 fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(compile, m)?)?;
@@ -522,8 +617,11 @@ fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(solve_linear_coefficients, m)?)?;
     m.add_function(wrap_pyfunction!(evaluate_precision_boundary, m)?)?;
     m.add_function(wrap_pyfunction!(simulate_ode_rk45, m)?)?;
+    m.add_function(wrap_pyfunction!(evolve_native, m)?)?;
     m.add_class::<CompiledExpression>()?;
     m.add_class::<CompiledOdeSystem>()?;
+    m.add_function(wrap_pyfunction!(rime_evaluate_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_rewrite_json, m)?)?;
     m.add_class::<UnitVector>()?;
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     Ok(())

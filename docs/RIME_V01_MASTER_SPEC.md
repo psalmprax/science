@@ -54,6 +54,12 @@ numeric (regression/SVD), rayon (parallelism).
 5. `PruneEdge`: remove lowest-|coefficient| edge (complexity control).
 No other rewrites in v0.1. New rewrites = new RIME version.
 
+Output semantics (frozen): ops 1–4 make the new node the candidate output
+(the candidate under test IS the new expression); `AddState` likewise
+retargets output to the memory cell. `PruneEdge` edits in place (node →
+Const(0.0)) and preserves the output index so downstream references stay
+valid.
+
 ## 6. Residual diagnosis (competing remedies, never single-cause)
 
 Classifier maps residual patterns to CANDIDATE remedy sets:
