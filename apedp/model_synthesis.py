@@ -2076,7 +2076,7 @@ class AutonomousModelSynthesizer:
 
                     unc_rep = compute_parameter_uncertainty(p_eval, top.parameters, x_val, y_val)
                     unc_dict = unc_rep.to_dict()
-            except Exception as exc:  # noqa: BLE001 - best-effort enrichment
+            except Exception as exc:
                 # Broad catch is deliberate and not laziness: this block spans
                 # sympy parsing and lambdify (which can raise a wide and
                 # poorly enumerated surface), numpy numerics, and attribute

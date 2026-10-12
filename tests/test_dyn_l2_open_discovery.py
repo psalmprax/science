@@ -380,7 +380,10 @@ class TestEpistemicAdjudicationSuite:
         assert res.adjudication.delta_rmse is not None
         assert res.adjudication.tau_epi is not None
         assert res.adjudication.delta_rmse <= res.adjudication.tau_epi
-        assert "structures observationally indistinguishable" in res.adjudication.reason
+        # Reason reworded with the prespecified-resolution form; assert the
+        # claim itself rather than the retired "structures ... under available
+        # interventions" phrasing that no longer exists in adjudicate().
+        assert "observationally indistinguishable" in res.adjudication.reason
 
     def test_dataset_c_abstains_with_insufficient_evidence(self):
         """Dataset C (Too noisy): Signal overwhelmed by noise; epistemic layer returns INSUFFICIENT_EVIDENCE."""

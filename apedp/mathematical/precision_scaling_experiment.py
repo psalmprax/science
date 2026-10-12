@@ -226,7 +226,7 @@ class PrecisionScalingEngine:
 
                 # Prediction errors
                 sq_err_h0 = [(y - half) ** 2 for y in y_obs]
-                sq_err_heps = [(y - (half + eps_mp * s)) ** 2 for y, s in zip(y_obs, sin_vals)]
+                sq_err_heps = [(y - (half + eps_mp * s)) ** 2 for y, s in zip(y_obs, sin_vals, strict=True)]
 
                 err_h0 = sum(sq_err_h0) / len(sq_err_h0)
                 err_heps = sum(sq_err_heps) / len(sq_err_heps)

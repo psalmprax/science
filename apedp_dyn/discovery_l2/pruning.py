@@ -262,7 +262,9 @@ def fit_and_score_candidate(
     # for the whole expression) collapses multi-term shapes (measured
     # 5000x RMSE penalty); lstsq absorbs any collinearity (e.g. constant
     # term vs intercept) via the minimum-norm solution.
-    cols_tr, cols_ho, terms = [], [], []
+    cols_tr: list[np.ndarray] = []
+    cols_ho: list[np.ndarray] = []
+    terms: list[Term] = []
     for sub in [s for _, s in _additive_terms(node)]:
         try:
             ctr = np.asarray(sub.evaluate(X_tr), dtype=float)
@@ -290,7 +292,7 @@ def fit_and_score_candidate(
     if fit_intercept:
         M_tr = np.column_stack([np.ones_like(y_tr), *cols_tr])
         M_ho = np.column_stack([np.ones_like(y_ho), *cols_ho])
-        terms = (Term("one", "theta_0"), *tuple(terms))
+        terms = [Term("one", "theta_0"), *terms]
     else:
         M_tr = np.column_stack(cols_tr)
         M_ho = np.column_stack(cols_ho)
@@ -353,7 +355,7 @@ def fit_and_score_candidate(
 
     cand_dyn = CandidateDynamics(
         lhs=target_name,
-        terms=terms,
+        terms=tuple(terms),
         candidate_id=node.to_str(),
         metadata={
             "family": "open_discovery",

@@ -239,5 +239,70 @@ class TestAPEDPStudioAPI:
         assert "RESIDUAL_STRUCTURE_UNRESOLVED" in data["diagnostic_flags"]
         assert data["promotion_confidence"] is None  # margin is not thin
 
+    def test_physics_discovery_epistemic_framework_and_aeh_integration(self, client):
+        """Verifies Physics Lab endpoint emits Claim Ladder, EEDR, and AEH audit provenance."""
+        # 1. Large-angle nonlinear pendulum: Promoted at C4 Mechanistic Invariance
+        resp = client.post("/api/discover/physics", json={
+            "system": "pendulum",
+            "theta0": 2.0,
+            "noise": 0.01,
+            "multiterm": False,
+            "n_samples": 80,
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "epistemic_framework" in data
+        ef = data["epistemic_framework"]
+        assert ef["version"] == "APEDP-X v1.0-FROZEN"
+        assert ef["autonomy_level"] == "LEVEL_1_SELF_CORRECTING_REFEREE"
+        assert ef["claimed_tier"] == "C4_CAUSAL_MECHANISTIC"
+        assert ef["justified_tier"] == "C4_CAUSAL_MECHANISTIC"
+        assert ef["referee_verdict"] == "PROMOTED"
+        assert ef["eedr_status"] == "PROMOTED_ORIGINAL"
+        assert len(ef["aeh_manifest_hash"]) == 64
+        assert len(ef["aeh_ledger_hash"]) == 64
+        assert ef["eight_invariants_verified"] is True
+
+        # 2. Small-angle quasi-linear pendulum: Triggers EEDR Claim Calibration or Multi-Hypothesis
+        resp_small = client.post("/api/discover/physics", json={
+            "system": "pendulum",
+            "theta0": 0.4,
+            "noise": 0.01,
+            "multiterm": False,
+            "n_samples": 80,
+        })
+        assert resp_small.status_code == 200
+        data_small = resp_small.json()
+        assert "epistemic_framework" in data_small
+        ef_small = data_small["epistemic_framework"]
+        assert ef_small["eight_invariants_verified"] is True
+        assert ef_small["eedr_status"] in ("PROMOTED_REPAIRED", "TERMINAL_ABSTAIN")
+
+
+def test_ui_deepmind_challenge_endpoint():
+    """Verify API endpoint for /api/benchmarks/deepmind-challenge returns full report."""
+    client = TestClient(app, raise_server_exceptions=False)
+    resp = client.get("/api/benchmarks/deepmind-challenge")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total_cases"] == 12
+    assert data["valid_retention_rate"] == 100.0
+    assert data["false_promotion_rate"] == 0.0
+    assert len(data["outcomes"]) == 12
+
+
+def test_ui_ablation_study_endpoint():
+    """Verify API endpoint for /api/benchmarks/ablation-study returns full 3-arm scorecard."""
+    client = TestClient(app, raise_server_exceptions=False)
+    resp = client.get("/api/benchmarks/ablation-study")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total_cases"] == 8
+    assert data["arm_a_specialized"]["fpr"] == 0.0
+    assert data["arm_b_core_naive"]["fpr"] == 100.0
+    assert data["arm_c_agnostic"]["fpr"] == 0.0
+    assert data["arm_c_agnostic"]["vrr"] == 100.0
+
+
 
 

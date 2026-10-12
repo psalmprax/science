@@ -176,7 +176,7 @@ def run_m4_nano_benchmark(noise_sigma: float = 0.02,
                                               data_origin=data_origin)
     ranked = sorted(
         [s for s in candidates if s.train_loss is not None and np.isfinite(s.train_loss)],
-        key=lambda s: s.train_loss)
+        key=lambda s: s.train_loss if s.train_loss is not None else float("inf"))
     r_best = r_rival = None
     if len(ranked) >= 2:
         r_best = ranked[0].provenance.get("gate4_status", {}).get("holdout_residuals")

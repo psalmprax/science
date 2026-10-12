@@ -417,7 +417,14 @@ class TestConfPathReachesTheNote:
             prov = {"gate4_status": {
                 "passed": True, "holdout_obs_rms": obs_rms,
                 "holdout_noise_sigma": 0.05, "holdout_n_samples": len(yho),
-                "holdout_sq_error": sq.tolist()}}
+                "holdout_sq_error": sq.tolist(),
+                # The note reads the SIGNED series (`_residual_series` is
+                # signed-only since bdc1595: autocorrelation of squared errors
+                # measures volatility clustering, not residual whiteness). The
+                # real conf path records both keys -- see conf/benchmark.py --
+                # so the fixture must too, or the note is unreachable here for
+                # a reason that has nothing to do with the structure injected.
+                "holdout_residuals": (pred_ho - yho).tolist()}}
             scored.append(ir.ScoredCandidate(
                 cand, prov, train_loss=float(np.sqrt(np.mean(sq))),
                 holdout_rmse=float(np.sqrt(np.mean(sq)))))

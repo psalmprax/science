@@ -1,0 +1,270 @@
+{
+  "metadata": {
+    "title": "APEDP Corrected Forensic Accounting Scoreboard (Block B: 2024-2025, 502 bars)",
+    "annualization": "sqrt(252) trading sessions primary, sqrt(365) reported side-by-side",
+    "turnover_accounting": "Turnover_t = sum_i |w_{i,t} - w_{i,t-1}| directly on normalized weights sum |w_i|=1.0. Fee = 0.0005 * Turnover_t.",
+    "wealth_compounding": "W_t = W_{t-1} * (1 + r_net). Drawdown computed as (W_t - Peak_t) / Peak_t.",
+    "calendar": "502 trading bars across 2024-01-02 to 2025-12-31 (252 bars in 2024, 250 bars in 2025; 11 market closures in 2025)."
+  },
+  "scoreboard": {
+    "15": {
+      "buy_and_hold": {
+        "net_return": -2.36,
+        "gross_return": -2.36,
+        "sharpe_252": 0.32,
+        "sharpe_365": 0.38,
+        "max_drawdown": 54.2,
+        "mean_daily_turnover": 0.0,
+        "total_turnover": 0.0
+      },
+      "model_1_standalone_hbb": {
+        "net_return": 42.38,
+        "gross_return": 56.64,
+        "sharpe_252": 1.01,
+        "sharpe_365": 1.22,
+        "max_drawdown": 22.7,
+        "mean_daily_turnover": 0.3811,
+        "total_turnover": 190.9
+      },
+      "model_3_restrained_core": {
+        "net_return": 34.85,
+        "gross_return": 52.73,
+        "sharpe_252": 0.91,
+        "sharpe_365": 1.09,
+        "max_drawdown": 18.9,
+        "mean_daily_turnover": 0.4975,
+        "total_turnover": 249.2
+      },
+      "model_4b_canonical_block_a_frozen_oos": {
+        "net_return": 26.31,
+        "gross_return": 40.63,
+        "sharpe_252": 0.83,
+        "sharpe_365": 1.0,
+        "max_drawdown": 17.7,
+        "mean_daily_turnover": 0.4289,
+        "total_turnover": 214.9
+      },
+      "model_2b_strict_walk_forward_oos": {
+        "net_return": -9.23,
+        "gross_return": 1.88,
+        "sharpe_252": -0.15,
+        "sharpe_365": -0.19,
+        "max_drawdown": 33.0,
+        "mean_daily_turnover": 0.4607,
+        "total_turnover": 230.8
+      },
+      "model_4a_unconstrained_win5_insample_overlap": {
+        "net_return": 117.51,
+        "gross_return": 145.11,
+        "sharpe_252": 2.49,
+        "sharpe_365": 2.99,
+        "max_drawdown": 8.9,
+        "mean_daily_turnover": 0.4781,
+        "total_turnover": 239.5
+      }
+    },
+    "30": {
+      "buy_and_hold": {
+        "net_return": 3.76,
+        "gross_return": 3.76,
+        "sharpe_252": 0.36,
+        "sharpe_365": 0.43,
+        "max_drawdown": 55.4,
+        "mean_daily_turnover": 0.0,
+        "total_turnover": 0.0
+      },
+      "model_1_standalone_hbb": {
+        "net_return": 16.62,
+        "gross_return": 26.43,
+        "sharpe_252": 0.55,
+        "sharpe_365": 0.67,
+        "max_drawdown": 17.6,
+        "mean_daily_turnover": 0.3223,
+        "total_turnover": 161.5
+      },
+      "model_3_restrained_core": {
+        "net_return": 20.37,
+        "gross_return": 35.24,
+        "sharpe_252": 0.66,
+        "sharpe_365": 0.8,
+        "max_drawdown": 16.4,
+        "mean_daily_turnover": 0.4652,
+        "total_turnover": 233.0
+      },
+      "model_4b_canonical_block_a_frozen_oos": {
+        "net_return": 20.84,
+        "gross_return": 36.4,
+        "sharpe_252": 0.77,
+        "sharpe_365": 0.92,
+        "max_drawdown": 12.7,
+        "mean_daily_turnover": 0.4837,
+        "total_turnover": 242.3
+      },
+      "model_2b_strict_walk_forward_oos": {
+        "net_return": 34.89,
+        "gross_return": 51.63,
+        "sharpe_252": 1.13,
+        "sharpe_365": 1.36,
+        "max_drawdown": 13.7,
+        "mean_daily_turnover": 0.4671,
+        "total_turnover": 234.0
+      },
+      "model_4a_unconstrained_win5_insample_overlap": {
+        "net_return": 60.39,
+        "gross_return": 81.94,
+        "sharpe_252": 1.73,
+        "sharpe_365": 2.09,
+        "max_drawdown": 11.6,
+        "mean_daily_turnover": 0.504,
+        "total_turnover": 252.5
+      }
+    },
+    "60": {
+      "buy_and_hold": {
+        "net_return": -3.27,
+        "gross_return": -3.27,
+        "sharpe_252": 0.24,
+        "sharpe_365": 0.29,
+        "max_drawdown": 52.3,
+        "mean_daily_turnover": 0.0,
+        "total_turnover": 0.0
+      },
+      "model_1_standalone_hbb": {
+        "net_return": -1.4,
+        "gross_return": 6.71,
+        "sharpe_252": 0.02,
+        "sharpe_365": 0.03,
+        "max_drawdown": 21.0,
+        "mean_daily_turnover": 0.3153,
+        "total_turnover": 158.0
+      },
+      "model_3_restrained_core": {
+        "net_return": 0.08,
+        "gross_return": 11.64,
+        "sharpe_252": 0.08,
+        "sharpe_365": 0.09,
+        "max_drawdown": 19.2,
+        "mean_daily_turnover": 0.4364,
+        "total_turnover": 218.6
+      },
+      "model_4b_canonical_block_a_frozen_oos": {
+        "net_return": 8.36,
+        "gross_return": 19.14,
+        "sharpe_252": 0.45,
+        "sharpe_365": 0.55,
+        "max_drawdown": 11.8,
+        "mean_daily_turnover": 0.3786,
+        "total_turnover": 189.7
+      },
+      "model_2b_strict_walk_forward_oos": {
+        "net_return": 16.42,
+        "gross_return": 32.47,
+        "sharpe_252": 0.69,
+        "sharpe_365": 0.83,
+        "max_drawdown": 10.8,
+        "mean_daily_turnover": 0.5159,
+        "total_turnover": 258.5
+      },
+      "model_4a_unconstrained_win5_insample_overlap": {
+        "net_return": 48.15,
+        "gross_return": 69.56,
+        "sharpe_252": 1.91,
+        "sharpe_365": 2.3,
+        "max_drawdown": 8.3,
+        "mean_daily_turnover": 0.5393,
+        "total_turnover": 270.2
+      }
+    },
+    "90": {
+      "buy_and_hold": {
+        "net_return": 13.56,
+        "gross_return": 13.56,
+        "sharpe_252": 0.36,
+        "sharpe_365": 0.43,
+        "max_drawdown": 41.5,
+        "mean_daily_turnover": 0.0,
+        "total_turnover": 0.0
+      },
+      "model_1_standalone_hbb": {
+        "net_return": -9.4,
+        "gross_return": -1.72,
+        "sharpe_252": -0.47,
+        "sharpe_365": -0.57,
+        "max_drawdown": 18.0,
+        "mean_daily_turnover": 0.3247,
+        "total_turnover": 162.7
+      },
+      "model_3_restrained_core": {
+        "net_return": -5.61,
+        "gross_return": 5.28,
+        "sharpe_252": -0.27,
+        "sharpe_365": -0.33,
+        "max_drawdown": 13.7,
+        "mean_daily_turnover": 0.4359,
+        "total_turnover": 218.4
+      },
+      "model_4b_canonical_block_a_frozen_oos": {
+        "net_return": 3.88,
+        "gross_return": 12.71,
+        "sharpe_252": 0.28,
+        "sharpe_365": 0.34,
+        "max_drawdown": 8.4,
+        "mean_daily_turnover": 0.3258,
+        "total_turnover": 163.2
+      },
+      "model_2b_strict_walk_forward_oos": {
+        "net_return": -13.09,
+        "gross_return": -3.73,
+        "sharpe_252": -0.87,
+        "sharpe_365": -1.05,
+        "max_drawdown": 16.6,
+        "mean_daily_turnover": 0.4082,
+        "total_turnover": 204.5
+      },
+      "model_4a_unconstrained_win5_insample_overlap": {
+        "net_return": 28.06,
+        "gross_return": 42.69,
+        "sharpe_252": 1.76,
+        "sharpe_365": 2.12,
+        "max_drawdown": 4.5,
+        "mean_daily_turnover": 0.4319,
+        "total_turnover": 216.4
+      }
+    }
+  },
+  "sample_day_accounting_verification": {
+    "2024-01-03": {
+      "bar_index": 1,
+      "date": "2024-01-03",
+      "sum_abs_weights": 1.0,
+      "traded_weight_turnover": 0.6897,
+      "fee_deduction_bps": 3.448,
+      "gross_return_bps": -50.44,
+      "net_return_bps": -53.89,
+      "top_long_asset": "TRX (+0.091)",
+      "top_short_asset": "XMR (-0.066)"
+    },
+    "2024-03-14": {
+      "bar_index": 50,
+      "date": "2024-03-14",
+      "sum_abs_weights": 1.0,
+      "traded_weight_turnover": 0.8073,
+      "fee_deduction_bps": 4.037,
+      "gross_return_bps": -42.29,
+      "net_return_bps": -46.33,
+      "top_long_asset": "XMR (+0.191)",
+      "top_short_asset": "TRX (-0.103)"
+    },
+    "2024-10-17": {
+      "bar_index": 200,
+      "date": "2024-10-17",
+      "sum_abs_weights": 1.0,
+      "traded_weight_turnover": 0.1852,
+      "fee_deduction_bps": 0.926,
+      "gross_return_bps": -61.57,
+      "net_return_bps": -62.5,
+      "top_long_asset": "XMR (+0.207)",
+      "top_short_asset": "XLM (-0.056)"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+[package]
+name = "goldbach_verifier"
+version = "0.1.0"
+edition = "2021"
+description = "High-performance parallel Goldbach Conjecture empirical verifier in Rust with Rayon"
+
+[dependencies]
+rayon = "1.10"
+
+[workspace]

@@ -49,7 +49,9 @@ def test_audit_dimensional_admissibility_negative():
 
 def test_pipeline_validate_dimensions_with_synthesis():
     """Verify DiscoveryPipeline.validate_dimensions handles dimensional constant synthesis."""
-    pipeline = DiscoveryPipeline("/tmp/test_pipeline_val_dim")
+    # Fixed path under the system temp dir: harmless in a test process, and the
+    # pipeline only uses it as a persistence root.
+    pipeline = DiscoveryPipeline("/tmp/test_pipeline_val_dim")  # noqa: S108
     pipeline.engine.register_variable("a", "astronomical_unit")
     pipeline.engine.register_variable("T", "year")
 

@@ -1,0 +1,84 @@
+{
+  "N15_Crypto": {
+    "universe": "N15_Crypto",
+    "assets_count": 15,
+    "bars": 500,
+    "equation": "S_N15_Crypto = +0.1666*H-SQUEEZE +0.3293*NL_RISK_ADJ_MOM -0.1772*NL_HURST_ADAPT +0.1413*BODY_TO_RANGE +0.1179*EMA_SPREAD",
+    "threshold": 0.1274,
+    "fitness": 4.392,
+    "in_sample_sharpe": 3.079,
+    "active_terms": [
+      "H-SQUEEZE",
+      "NL_RISK_ADJ_MOM",
+      "NL_HURST_ADAPT",
+      "BODY_TO_RANGE",
+      "EMA_SPREAD"
+    ],
+    "weights_dict": {
+      "H-SQUEEZE": 0.1666,
+      "NL_RISK_ADJ_MOM": 0.3293,
+      "NL_HURST_ADAPT": -0.1772,
+      "BODY_TO_RANGE": 0.1413,
+      "EMA_SPREAD": 0.1179
+    }
+  },
+  "N30_Multi": {
+    "universe": "N30_Multi",
+    "assets_count": 30,
+    "bars": 500,
+    "equation": "S_N30_Multi = +1.1158*H-RV +0.3205*BB_WIDTH",
+    "threshold": 0.204,
+    "fitness": 2.491,
+    "in_sample_sharpe": 2.083,
+    "active_terms": [
+      "H-RV",
+      "BB_WIDTH"
+    ],
+    "weights_dict": {
+      "H-RV": 1.1158,
+      "BB_WIDTH": 0.3205
+    }
+  },
+  "N60_Multi": {
+    "universe": "N60_Multi",
+    "assets_count": 60,
+    "bars": 500,
+    "equation": "S_N60_Multi = +0.3893*H-RSI -0.7888*H-OBV_MOM +0.5316*ADX +0.7934*KELTNER_WIDTH -0.0626*SIGNED_VOL_MOM",
+    "threshold": 0.1397,
+    "fitness": 2.667,
+    "in_sample_sharpe": 2.278,
+    "active_terms": [
+      "H-RSI",
+      "H-OBV_MOM",
+      "ADX",
+      "KELTNER_WIDTH",
+      "SIGNED_VOL_MOM"
+    ],
+    "weights_dict": {
+      "H-RSI": 0.3893,
+      "H-OBV_MOM": -0.7888,
+      "ADX": 0.5316,
+      "KELTNER_WIDTH": 0.7934,
+      "SIGNED_VOL_MOM": -0.0626
+    }
+  },
+  "N90_Multi": {
+    "universe": "N90_Multi",
+    "assets_count": 90,
+    "bars": 500,
+    "equation": "S_N90_Multi = -0.0792*H-CROSS_MOM +0.2664*NL_SQUEEZE_TREND +0.6883*BB_WIDTH",
+    "threshold": 0.1344,
+    "fitness": 2.488,
+    "in_sample_sharpe": 2.107,
+    "active_terms": [
+      "H-CROSS_MOM",
+      "NL_SQUEEZE_TREND",
+      "BB_WIDTH"
+    ],
+    "weights_dict": {
+      "H-CROSS_MOM": -0.0792,
+      "NL_SQUEEZE_TREND": 0.2664,
+      "BB_WIDTH": 0.6883
+    }
+  }
+}

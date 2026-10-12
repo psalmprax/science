@@ -88,7 +88,7 @@ def trailing_rank(x: np.ndarray, window: int = 252) -> np.ndarray:
 
 def frozen_ols(Xtr: np.ndarray, ytr: np.ndarray) -> np.ndarray:
     w, *_ = np.linalg.lstsq(np.column_stack([np.ones(len(Xtr)), Xtr]), ytr, rcond=None)
-    return w
+    return np.asarray(w)
 
 
 def oos_r2(w: np.ndarray, Xte: np.ndarray, yte: np.ndarray) -> float:
@@ -214,7 +214,10 @@ def run_volume_adjudication(asset: str = "BTC") -> tuple[Any, list[Any], dict[st
              ("V2", res["delta2"], res["perm_p2"], res["V2"], scored[2])]
     passed = [(nm, sc) for nm, d, pp, r2, sc in chall
               if d > 0 and pp < 0.05 and r2 > 0]
-    win = min(passed, key=lambda t: t[1].holdout_rmse) if passed else (None, None)
+    win = (min(passed,
+               key=lambda t: t[1].holdout_rmse if t[1].holdout_rmse is not None
+               else float("inf"))
+           if passed else (None, None))
     ok = win[0] is not None
     r0, r1 = scored[0].holdout_rmse, scored[1].holdout_rmse
     # NOTE: delta_rmse deliberately left None: the shared formatter overwrites
@@ -228,7 +231,8 @@ def run_volume_adjudication(asset: str = "BTC") -> tuple[Any, list[Any], dict[st
         status=EpistemicStatus.UNIQUE_SUPPORT if ok else EpistemicStatus.INSUFFICIENT_EVIDENCE,
         promoted=win[1] if ok else None,
         ranking=(scored[1], scored[2], scored[0]),
-        best_rmse=win[1].holdout_rmse if ok else r1, second_rmse=r0,
+        best_rmse=(win[1].holdout_rmse if (ok and win[1] is not None) else r1),
+        second_rmse=r0,
         reason=((f"{win[0]} beats V0 OOS R2 with permutation control. " + scale_note)
                 if ok else (f"V1 delta {res['delta']:+.4f} (p={res['perm_p']:.4f}); V2-rank delta {res['delta2']:+.4f} (p={res['perm_p2']:.4f}) — none clears the bar. " + scale_note)),
         data_origin="real_observational")

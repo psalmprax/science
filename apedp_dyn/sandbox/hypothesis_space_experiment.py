@@ -22,6 +22,7 @@ Stage 3 (L3 Active Interventional Resolution):
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
@@ -65,7 +66,7 @@ class PersistentAmbiguityResult:
     l3_attribution: str
     demonstrates_persistent_ambiguity: bool
     l3_resolved_by_intervention: bool
-    optimal_probe: dict[str, float] = None
+    optimal_probe: dict[str, float] | None = None
 
 
 def run_model_space_starvation_experiment(seed: int = 42) -> StarvationExperimentResult:
@@ -260,12 +261,13 @@ def run_persistent_ambiguity_experiment(seed: int = 42) -> PersistentAmbiguityRe
     # -------------------------------------------------------------
     # Construct model prediction functions
     def fn_u(X: dict[str, np.ndarray]) -> np.ndarray:
-        return X["u"] * coef_u[0]
+        return np.asarray(X["u"] * coef_u[0])
 
     def fn_w(X: dict[str, np.ndarray]) -> np.ndarray:
-        return X["w"] * coef_w[0]
+        return np.asarray(X["w"] * coef_w[0])
 
-    models = [("mechanism_u", fn_u), ("mechanism_w", fn_w)]
+    models: list[tuple[str, Callable[[dict[str, np.ndarray]], np.ndarray]]] = [
+        ("mechanism_u", fn_u), ("mechanism_w", fn_w)]
     bounds = {"u": (1.0, 10.0), "w": (1.0, 10.0)}
 
     # Synthesize active intervention probe breaking collinearity w = 2*u

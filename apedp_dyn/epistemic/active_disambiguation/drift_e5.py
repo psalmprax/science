@@ -19,12 +19,14 @@ adjudication on all data so far. Frozen classifier (see classify()):
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
 
 from apedp_dyn.epistemic.active_disambiguation.trading_e4t1_v2 import _adjudicate, _score
 from apedp_dyn.epistemic.adjudicate import REL_FLOOR
+from apedp_dyn.grammar.candidate_ir import ScoredCandidate
 
 HIDS = ("H1", "H2", "H3")
 N_WINDOWS = 6
@@ -33,7 +35,7 @@ NOISE = 0.1
 SEED = 91
 
 
-def _forms(case: str) -> dict[str, object]:
+def _forms(case: str) -> dict[str, Callable[[np.ndarray], np.ndarray]]:
     if case == "B":
         return {"H1": lambda x: x**2, "H2": lambda x: x**2 + 1e-6 * x**3, "H3": lambda x: x**2 - 1e-6 * x**3}
     return {"H1": lambda x: x**2, "H2": lambda x: x**2 + 0.45 * x**3, "H3": lambda x: x**2 - 0.45 * x**3}
@@ -69,13 +71,15 @@ class Trajectory:
     windows: tuple[WindowOutcome, ...]
 
 
-def _margin(scored) -> float:
-    rms = sorted(float(s.holdout_rmse) for s in scored)
+def _margin(scored: list[ScoredCandidate]) -> float:
+    rms = sorted(float(s.holdout_rmse) for s in scored if s.holdout_rmse is not None)
     return rms[1] - rms[0]
 
 
-def _best(scored) -> str:
-    return min(scored, key=lambda s: float(s.holdout_rmse)).candidate.candidate_id
+def _best(scored: list[ScoredCandidate]) -> str:
+    return min(scored,
+               key=lambda s: s.holdout_rmse
+               if s.holdout_rmse is not None else float("inf")).candidate.candidate_id
 
 
 def run_case(case: str, seed: int = SEED) -> Trajectory:

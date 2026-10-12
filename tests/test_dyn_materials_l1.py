@@ -52,7 +52,10 @@ class TestMaterialsDiscoveryL1:
         # Verify point winner had lowest RMSE but did not earn UNIQUE_SUPPORT
         ranked = sorted(candidates, key=lambda c: c.holdout_rmse)
         assert ranked[0].candidate.candidate_id in ("dual_hp_precip", "hp_single")
-        assert "structures observationally indistinguishable" in adj.reason
+        # Reason reworded with the prespecified-resolution form; assert the
+        # claim itself rather than the retired "structures ... under available
+        # interventions" phrasing that no longer exists in adjudicate().
+        assert "observationally indistinguishable" in adj.reason
 
     def test_candidates_have_no_mock_losses(self):
         """Every candidate is fitted with real least-squares and real holdout residuals."""

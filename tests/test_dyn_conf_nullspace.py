@@ -64,7 +64,7 @@ def _annihilation_holds(
 class TestExactAnnihilation:
     def test_d_gamma_zero_exactly_all_cases(self):
         for name, spec in CASES.items():
-            D_int, var_order, _ = build_integer_dimension_matrix(spec)
+            D_int, _var_order, _ = build_integer_dimension_matrix(spec)
             basis = exact_nullspace_basis(D_int)
             assert basis, f"{name}: empty basis"
             for gamma in basis:
@@ -77,7 +77,7 @@ class TestExactAnnihilation:
 class TestIndependence:
     def test_rank_gamma_equals_k(self):
         for name, spec in CASES.items():
-            D_int, var_order, _ = build_integer_dimension_matrix(spec)
+            D_int, _var_order, _ = build_integer_dimension_matrix(spec)
             basis = exact_nullspace_basis(D_int)
             k = len(basis)
             assert k > 0, name

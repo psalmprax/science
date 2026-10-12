@@ -156,7 +156,8 @@ def run_trial(
         for hid, fn in hypotheses.items():
             resid = y_all - np.array([fn(x) for x in x_all])
             scored.append(_scored(hid, resid, float(np.sqrt(np.mean(resid**2)))))
-        scored.sort(key=lambda s: float(s.holdout_rmse))
+        scored.sort(key=lambda s: float(s.holdout_rmse)
+                    if s.holdout_rmse is not None else float("inf"))
         adj = adjudicate(list(scored), resid_best=np.asarray(scored[0].provenance["gate4_status"]["holdout_residuals"]),
                          resid_rival=np.asarray(scored[1].provenance["gate4_status"]["holdout_residuals"]),
                          bootstrap=False, data_origin="sim")

@@ -13,7 +13,9 @@ try:
 
     _RUST_AVAILABLE = hasattr(apedp_kernel, "CompiledOdeSystem")
 except ImportError:
-    apedp_kernel = None
+    # The optional-import idiom: `None` marks the absent kernel, which callers
+    # probe through is_rust_kernel_available().
+    apedp_kernel = None  # type: ignore[assignment]
     _RUST_AVAILABLE = False
 
 
@@ -36,7 +38,10 @@ def _get_cached_rust_system(eqs: tuple[str, ...],
                             states: tuple[str, ...],
                             params: tuple[str, ...],
                             inputs: tuple[str, ...]):
-    return apedp_kernel.CompiledOdeSystem(  # type: ignore[union-attr]
+    # `union-attr`: the kernel may be absent (the check above raised).
+    # `attr-defined`: the kernel ships as a compiled extension with no stubs, so
+    # mypy cannot see CompiledOdeSystem even though the module exports it.
+    return apedp_kernel.CompiledOdeSystem(  # type: ignore[union-attr, attr-defined]
         list(eqs), list(states), list(params), list(inputs)
     )
 

@@ -33,5 +33,31 @@
     "coverage": "2021-01-01 to 2023-12-31 (daily volume, aggressive taker buy volume, taker sell volume, OFI)",
     "fetched": "2026-10-02",
     "license_note": "Binance public market data terms apply"
+  },
+  "equity_top15.csv": {
+    "source": "Yahoo Finance Public Daily Bars (AAPL, MSFT, NVDA, AMZN, GOOGL, META, TSLA, JPM, V, JNJ, WMT, PG, XOM, UNH, SPY)",
+    "url": "https://query1.finance.yahoo.com/v8/finance/chart",
+    "coverage": "2021-01-04 to 2023-12-29 (753 synchronized trading days, close, high, low, volume, proxy OFI, taker buy proxy)",
+    "fetched": "2026-10-07",
+    "license_note": "Yahoo Finance public charts"
+  },
+  "multi_asset_30_orderflow.csv": {
+    "source": "Synchronized Cross-Asset Panel (15 Cryptocurrencies + 15 US Mega-Cap Equities)",
+    "coverage": "2021-01-04 to 2023-12-29 (753 trading days, 30 assets, 22,590 asset-day records)",
+    "constructed": "2026-10-07"
+  },
+  "multi_asset_60_orderflow.csv": {
+    "source": "Synchronized Cross-Asset Panel (30 Cryptocurrencies + 30 US Equities, ETFs & Macro Assets)",
+    "assets_crypto": "BTC, ETH, SOL, BNB, XRP, ADA, AVAX, DOGE, DOT, LINK, MATIC, NEAR, ATOM, UNI, LTC, BCH, XLM, TRX, ETC, FIL, VET, THETA, ALGO, AAVE, MKR, EOS, XMR, KSM, ZEC, MANA",
+    "assets_equity": "AAPL, MSFT, NVDA, AMZN, GOOGL, META, TSLA, JPM, V, JNJ, WMT, PG, XOM, UNH, SPY, QQQ, IWM, GLD, TLT, BAC, HD, CVX, LLY, ABBV, COST, MRK, KO, PEP, AMD, NFLX",
+    "coverage": "2021-01-04 to 2023-12-29 (753 synchronized trading days, 60 assets, 45,180 asset-day records)",
+    "constructed": "2026-10-08"
+  },
+  "multi_asset_90_5yr_orderflow.csv": {
+    "source": "Synchronized Cross-Asset Panel (45 Cryptocurrencies + 45 US Equities, Sector ETFs & Macro Assets)",
+    "coverage": "2021-01-04 to 2025-12-31 (1,255 synchronized trading days, 5 full calendar years, 90 assets, 112,950 asset-day records)",
+    "assets_crypto": "45 liquid crypto tokens (Layer 1s, Layer 2s, DeFi, Storage, Metaverse, Payments)",
+    "assets_equity": "45 traditional instruments (Mega-cap tech, value/defensive equities, sector ETFs, commodities, emerging markets, rates)",
+    "constructed": "2026-10-08"
   }
 }

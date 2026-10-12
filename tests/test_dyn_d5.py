@@ -76,7 +76,8 @@ class TestD5STAB:
         A cubic model may fit the zero-trajectory well but should not
         predict a transition.
         """
-        gamma_c = 0.5  # known threshold for this benchmark
+        # Known threshold for this benchmark: gamma_c = 0.5, and the parameter
+        # set built below is chosen to sit under it.
         prob = duffing.spec()
         # Use a parameter set that gives γ < γ_c
         holdout = dict(prob.holdout)

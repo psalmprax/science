@@ -8,6 +8,18 @@
 # bodies below must be re-verified before un-skipping. test_proof_boundary_*
 # and test_identifiability_* run against the surviving mathematical_layer
 # engine and are fully verified.
+#
+# RE-VERIFIED (2026-10-07): both modules are back in the worktree, and the two
+# reconstructed bodies below were rewritten against their restored APIs. The
+# recovered bodies called the pre-deletion API -- engine constructed with no
+# arguments, ``get_fake_rh_*(n, gamma)`` returning a bare ``beta`` array, and
+# zeros returned as objects with ``.beta``/``.gamma`` attributes -- none of
+# which exists now: the engine takes ``(base_n, base_gamma)``, the getters take
+# no temporal arguments and return ``{"n", "gamma", "beta"}`` dicts, and the
+# dataset returns ``list[dict[str, float]]``. The assertions that encoded the
+# *deleted* generators' numeric fingerprints (fake-2 peaking above 1.5, fake-3
+# truncating to 50 points) were replaced by oracles taken from the docstring'd
+# laws of the generators that actually exist, not from their implementation.
 from __future__ import annotations
 
 import numpy as np
@@ -31,9 +43,9 @@ def test_zeta_zeros_caching_and_properties():
     zeros = rh_dataset.generate_or_load_zeta_zeros(50)
     assert len(zeros) == 50
     for z in zeros:
-        assert 0.0 < z.beta < 1.0
-        assert z.beta == pytest.approx(0.5, abs=1e-12)
-        assert z.gamma > 14.0
+        assert 0.0 < z["beta"] < 1.0
+        assert z["beta"] == pytest.approx(0.5, abs=1e-12)
+        assert z["gamma"] > 14.0
 
 
 def test_proof_boundary_guard_enforcement():
@@ -79,13 +91,22 @@ def test_adversarial_fake_rh_generators():
     rh_adversarial = pytest.importorskip("apedp.mathematical.rh_adversarial", reason=_RH_MISSING_REASON)
     n_arr = np.arange(1, 101)
     gamma_arr = np.linspace(14.0, 250.0, 100)
-    adv = rh_adversarial.RiemannAdversarialEngine()
-    fake1 = adv.get_fake_rh_1(n_arr, gamma_arr)
-    assert np.max(np.abs(np.asarray(fake1) - 0.5)) > 0.0009
-    fake2 = adv.get_fake_rh_2(n_arr, gamma_arr)
-    assert np.max(np.asarray(fake2)) > 1.5
-    assert np.min(np.asarray(fake2)) < -1.0
-    assert float(np.mean(np.asarray(fake2)[:50])) == pytest.approx(0.509, abs=0.01)
-    fake3 = adv.get_fake_rh_3(n_arr, gamma_arr)
-    assert len(fake3) == 50
-    assert abs(float(np.mean(fake3)) - 0.51) < 0.05
+    adv = rh_adversarial.RiemannAdversarialEngine(n_arr, gamma_arr)
+
+    # Oracles are the docstring'd laws, evaluated here independently of the
+    # engine: deviation from the critical line must be real, not rounding.
+    fake1 = adv.get_fake_rh_1()["beta"]  # beta_n = 0.5 + 1e-3 * sin(n)
+    assert np.allclose(fake1, 0.5 + 1e-3 * np.sin(n_arr), atol=1e-12)
+    assert np.max(np.abs(fake1 - 0.5)) > 0.0009
+
+    fake2 = adv.get_fake_rh_2()["beta"]  # beta_n = 0.5 + 1 / n
+    assert np.allclose(fake2, 0.5 + 1.0 / n_arr, atol=1e-12)
+    # Decays like 1/n: largest at n=1, still nonzero at the last point.
+    assert float(np.max(fake2 - 0.5)) == pytest.approx(1.0)
+    assert float(np.min(fake2 - 0.5)) == pytest.approx(0.01)
+    assert np.all(fake2 > 0.5)  # every point departs from the critical line
+
+    fake3 = adv.get_fake_rh_3()["beta"]  # 0.5 for n <= 80, then 0.51
+    assert len(fake3) == len(n_arr)
+    assert np.all(fake3[n_arr <= 80] == 0.5)
+    assert np.all(fake3[n_arr > 80] == 0.51)

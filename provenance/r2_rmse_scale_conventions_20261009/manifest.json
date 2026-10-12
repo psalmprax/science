@@ -1,0 +1,16 @@
+{
+ "utc": "2026-10-09T12:36:48.138875+00:00",
+ "command": [
+  ".venv/bin/python3",
+  "scratch/reconcile_r2_rmse_conventions.py"
+ ],
+ "returncode": 0,
+ "commit": "d881d5cdbc3df4bc1d1d5e7a24e91b4adf3a96f8",
+ "script_hashes": {
+  "scratch/reconcile_r2_rmse_conventions.py": "fb6368e82198eb2fd9eeb999d371c6e3e6d38b167ee852d7573f2ee040ed5894"
+ },
+ "dataset_hashes": {
+  "data/market/multi_asset_90_5yr_orderflow.csv": "4729ad81f67cb1f430479fe02f1fc700980baf51e890b42cd0067856d273fa2e"
+ },
+ "note": "Tables must be generated from stdout.log/results artifacts in this directory."
+}

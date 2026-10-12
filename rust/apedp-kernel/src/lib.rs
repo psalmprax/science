@@ -574,7 +574,13 @@ fn evolve_native<'py>(
     Ok((res, total_evals))
 }
 
+/// Evaluate one graph against dev data on its **fitted** readout.
+///
+/// Returns (graph_id, score, mse, skipped, scale, intercept, r2, complexity).
+/// `score` is the spec §8 quantity: ΔMSE vs `parent_mse` minus the complexity
+/// charge (edges + the two readout parameters).
 #[pyfunction]
+#[pyo3(signature = (graph_json, data, target, parent_mse, lambda_c, ridge=1e-9))]
 fn rime_evaluate_json(
     py: Python<'_>,
     graph_json: &str,
@@ -582,15 +588,233 @@ fn rime_evaluate_json(
     target: &Bound<'_, PyAny>,
     parent_mse: f64,
     lambda_c: f64,
-) -> PyResult<(String, f64, f64, usize)> {
+    ridge: f64,
+) -> PyResult<(String, f64, f64, usize, f64, f64, f64, f64)> {
+    let graph: rime::graph::Graph = serde_json::from_str(graph_json)
+        .map_err(|e| PyValueError::new_err(format!("rime: bad graph JSON: {}", e)))?;
+    graph
+        .validate()
+        .map_err(|e| PyValueError::new_err(format!("rime: invalid graph: {}", e)))?;
+    let columns = extract_columns(data, "data")?;
+    let target_vec = extract_vec1(target, "target")?;
+    // Single-candidate evaluation: no selection charge is added here, because
+    // the caller knows how many candidates it looked at; the search sets it.
+    let score_cfg = rime::eval::ScoreConfig::new(lambda_c, ridge);
+    let s = py.allow_threads(|| {
+        rime::eval::score_candidate_fitted(&graph, parent_mse, &columns, &target_vec, &score_cfg)
+    });
+    Ok((graph.id(), s.score, s.mse, s.skipped, s.scale, s.intercept, s.r2, s.complexity))
+}
+
+/// Evaluate a graph's output series (spec §12 `evaluate(graph, data)`).
+///
+/// Proposers need the signal itself, not only its score, so the fitted readout
+/// can be applied by the caller. An invalid graph raises instead of returning
+/// NaNs: a non-topological arena is a bug in the caller, not a data gap.
+#[pyfunction]
+fn rime_evaluate_series_json(
+    py: Python<'_>,
+    graph_json: &str,
+    data: &Bound<'_, PyAny>,
+) -> PyResult<Vec<f64>> {
     let graph: rime::graph::Graph = serde_json::from_str(graph_json)
         .map_err(|e| PyValueError::new_err(format!("rime: bad graph JSON: {}", e)))?;
     let columns = extract_columns(data, "data")?;
+    py.allow_threads(|| graph.evaluate_checked(&columns))
+        .map_err(|e| PyValueError::new_err(format!("rime: invalid graph: {}", e)))
+}
+
+/// Multi-environment RIME search (spec §8 with per-environment scoring).
+///
+/// `envs` is a JSON array of `{"cols": [[...]], "target": [...]}` objects, one
+/// per environment. `config_json` additionally accepts `"aggregation"`
+/// (`"mean"` | `"median_worst_gated"`) and `"gamma_gate"`. The aggregation rule
+/// is part of the frozen protocol and is reported back in the packet.
+#[pyfunction]
+#[pyo3(signature = (envs_json, config_json, variable_names=None))]
+fn rime_search_envs_json(
+    py: Python<'_>,
+    envs_json: &str,
+    config_json: &str,
+    variable_names: Option<Vec<String>>,
+) -> PyResult<String> {
+    let raw: serde_json::Value = serde_json::from_str(envs_json)
+        .map_err(|e| PyValueError::new_err(format!("rime: bad envs JSON: {}", e)))?;
+    let arr = raw
+        .as_array()
+        .ok_or_else(|| PyValueError::new_err("rime: envs must be a JSON array"))?;
+    if arr.is_empty() {
+        return Err(PyValueError::new_err("rime: at least one environment is required"));
+    }
+    let mut envs = Vec::with_capacity(arr.len());
+    for (k, e) in arr.iter().enumerate() {
+        let cols_v = e
+            .get("cols")
+            .ok_or_else(|| PyValueError::new_err(format!("rime: env {k} missing cols")))?;
+        let tgt_v = e
+            .get("target")
+            .ok_or_else(|| PyValueError::new_err(format!("rime: env {k} missing target")))?;
+        let mut cols: Vec<Vec<f64>> = Vec::new();
+        let arr_cols = cols_v.as_array().ok_or_else(|| {
+            PyValueError::new_err(format!("rime: env {k} cols must be an array"))
+        })?;
+        for c in arr_cols {
+            let vals: Vec<f64> = c
+                .as_array()
+                .ok_or_else(|| {
+                    PyValueError::new_err(format!("rime: env {k} cols entries must be arrays"))
+                })?
+                .iter()
+                .map(|v| {
+                    v.as_f64().ok_or_else(|| {
+                        PyValueError::new_err(format!("rime: env {k} cols must be numeric"))
+                    })
+                })
+                .collect::<PyResult<Vec<f64>>>()?;
+            cols.push(vals);
+        }
+        let target: Vec<f64> = tgt_v
+            .as_array()
+            .ok_or_else(|| PyValueError::new_err(format!("rime: env {k} target must be an array")))?
+            .iter()
+            .map(|v| {
+                v.as_f64().ok_or_else(|| {
+                    PyValueError::new_err(format!("rime: env {k} target must be numeric"))
+                })
+            })
+            .collect::<PyResult<Vec<f64>>>()?;
+        envs.push(rime::search::EnvData { cols, target });
+    }
+    let cfg_raw: serde_json::Value = if config_json.trim().is_empty() {
+        serde_json::json!({})
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("rime: bad config JSON: {}", e)))?
+    };
+    let mut cfg = rime::search::SearchConfig::default();
+    if let Some(v) = cfg_raw.get("max_depth").and_then(|v| v.as_u64()) {
+        cfg.max_depth = v as usize;
+    }
+    if let Some(v) = cfg_raw.get("beam").and_then(|v| v.as_u64()) {
+        cfg.beam = (v as usize).max(1);
+    }
+    if let Some(v) = cfg_raw.get("budget").and_then(|v| v.as_u64()) {
+        cfg.budget = (v as usize).max(1);
+    }
+    if let Some(v) = cfg_raw.get("seed").and_then(|v| v.as_u64()) {
+        cfg.seed = v;
+    }
+    if let Some(v) = cfg_raw.get("ridge").and_then(|v| v.as_f64()) {
+        cfg.ridge = v;
+    }
+    if let Some(v) = cfg_raw.get("gamma").and_then(|v| v.as_f64()) {
+        // Σ over envs of their finite rows, calibrated on the pooled scale.
+        let mut all: Vec<f64> = Vec::new();
+        for e in &envs {
+            all.extend(e.target.iter().copied().filter(|t| t.is_finite()));
+        }
+        let n_pooled = all.len().max(1);
+        cfg.lambda_c = v * rime::search::target_variance(&all) / n_pooled as f64;
+    } else if let Some(v) = cfg_raw.get("lambda_c").and_then(|v| v.as_f64()) {
+        cfg.lambda_c = v;
+    }
+    let agg = match cfg_raw.get("aggregation").and_then(|v| v.as_str()) {
+        Some("median_worst_gated") => rime::search::EnvAggregation::MedianWorstGated,
+        _ => rime::search::EnvAggregation::MeanPerEnv,
+    };
+    let gamma_gate = cfg_raw.get("gamma_gate").and_then(|v| v.as_f64()).unwrap_or(1.5);
+
+    let seeds = rime::seeds::small_forms(envs.iter().map(|e| e.cols.len()).max().unwrap_or(1));
+    let outcome =
+        py.allow_threads(|| rime::search::search_envs(&seeds, &envs, &cfg, agg, gamma_gate));
+    let mut packet = outcome.to_json();
+    if let Some(names) = variable_names.filter(|n| !n.is_empty()) {
+        if let Some(list) = packet.get_mut("proposals").and_then(|v| v.as_array_mut()) {
+            for p in list.iter_mut() {
+                if let Some(eq) = p.get("equation").and_then(|v| v.as_str()).map(|s| s.to_string()) {
+                    let mut e = eq;
+                    for (i, name) in names.iter().enumerate() {
+                        e = e.replace(&format!("v{}", i), name);
+                    }
+                    p["equation"] = serde_json::Value::String(e);
+                }
+            }
+        }
+    }
+    serde_json::to_string(&packet)
+        .map_err(|e| PyValueError::new_err(format!("rime: serialize failed: {}", e)))
+}
+
+/// One RIME search (spec §8/§12) over the frozen rewrites.
+///
+/// `config_json` fields: max_depth, beam, budget, lambda_c, ridge, seed, and
+/// optionally `rel_penalty` to scale lambda_c to the target variance. Returns
+/// the full search packet as JSON (proposals + dev evidence).
+#[pyfunction]
+#[pyo3(signature = (data, target, config_json, variable_names=None))]
+fn rime_search_json(
+    py: Python<'_>,
+    data: &Bound<'_, PyAny>,
+    target: &Bound<'_, PyAny>,
+    config_json: &str,
+    variable_names: Option<Vec<String>>,
+) -> PyResult<String> {
+    let columns = extract_columns(data, "data")?;
     let target_vec = extract_vec1(target, "target")?;
-    let (score, mse, skipped) = py.allow_threads(|| {
-        rime::eval::score_candidate(&graph, parent_mse, &columns, &target_vec, lambda_c)
-    });
-    Ok((graph.id(), score, mse, skipped))
+    let requested: Vec<String> = variable_names.unwrap_or_default();
+
+    let mut cfg = rime::search::SearchConfig::default();
+    let raw: serde_json::Value = if config_json.trim().is_empty() {
+        serde_json::json!({})
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("rime: bad config JSON: {}", e)))?
+    };
+    if let Some(v) = raw.get("max_depth").and_then(|v| v.as_u64()) {
+        cfg.max_depth = v as usize;
+    }
+    if let Some(v) = raw.get("beam").and_then(|v| v.as_u64()) {
+        cfg.beam = (v as usize).max(1);
+    }
+    if let Some(v) = raw.get("budget").and_then(|v| v.as_u64()) {
+        cfg.budget = (v as usize).max(1);
+    }
+    if let Some(v) = raw.get("seed").and_then(|v| v.as_u64()) {
+        cfg.seed = v;
+    }
+    if let Some(v) = raw.get("ridge").and_then(|v| v.as_f64()) {
+        cfg.ridge = v;
+    }
+    if let Some(v) = raw.get("gamma").and_then(|v| v.as_f64()) {
+        // Sample-size-aware calibration: gamma * var(y) / n_dev.
+        let n_dev = target_vec.iter().filter(|t| t.is_finite()).count();
+        cfg.lambda_c = v * rime::search::target_variance(&target_vec) / n_dev.max(1) as f64;
+    } else if let Some(v) = raw.get("rel_penalty").and_then(|v| v.as_f64()) {
+        cfg.lambda_c = v * rime::search::target_variance(&target_vec);
+    } else if let Some(v) = raw.get("lambda_c").and_then(|v| v.as_f64()) {
+        cfg.lambda_c = v;
+    }
+
+    let seeds = rime::seeds::small_forms(columns.len());
+    let outcome = py.allow_threads(|| rime::search::search(&seeds, &columns, &target_vec, &cfg));
+    let mut packet = outcome.to_json();
+    // Name the variables in every equation so the referee packet is readable.
+    if !requested.is_empty() {
+        let names: Vec<&str> = requested.iter().map(|s| s.as_str()).collect();
+        if let Some(list) = packet.get_mut("proposals").and_then(|v| v.as_array_mut()) {
+            for p in list.iter_mut() {
+                if let Some(eq) = p.get("equation").and_then(|v| v.as_str()).map(|s| s.to_string()) {
+                    let mut e = eq;
+                    for (i, name) in names.iter().enumerate() {
+                        e = e.replace(&format!("v{}", i), name);
+                    }
+                    p["equation"] = serde_json::Value::String(e);
+                }
+            }
+        }
+    }
+    serde_json::to_string(&packet)
+        .map_err(|e| PyValueError::new_err(format!("rime: serialize failed: {}", e)))
 }
 
 #[pyfunction]
@@ -622,6 +846,9 @@ fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<CompiledOdeSystem>()?;
     m.add_function(wrap_pyfunction!(rime_evaluate_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_rewrite_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_search_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_search_envs_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_evaluate_series_json, m)?)?;
     m.add_class::<UnitVector>()?;
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     Ok(())

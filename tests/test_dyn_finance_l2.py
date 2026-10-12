@@ -1,9 +1,11 @@
 """Tests for APEDP Level 2 Financial Discovery & Epistemic Attribution Sandbox.
 
 Verifies:
-  1. L0 Model Starvation vs L2 Factor Discovery:
-     L0 linear AR(1) fails on volatility-scaled momentum with HYPOTHESIS_SPACE_LIMITED.
+  1. L2 Factor Discovery on volatility-scaled momentum:
      L2 open discovery constructs (r_prev / vol) and promotes with UNIQUE_SUPPORT.
+     L0 does NOT starve on this regime: see the note on
+     test_volatility_scaled_momentum_recovers_interaction_term for what changed
+     in bdc1595 and why a linear AR(1) is a legitimate survivor here.
   2. Immunity to Factor Zoo Overfitting:
      In pure random-walk regimes, epistemic guards prevent spurious factor promotion,
      allocating 0.0% capital.
@@ -30,12 +32,27 @@ class TestFinanceL2Sandbox:
     """Rigorous verification of L2 open discovery and epistemic attribution in finance."""
 
     def test_volatility_scaled_momentum_recovers_interaction_term(self):
-        """L0 starves; L2 discovers volatility-scaled momentum r_prev/vol with full sizing."""
+        """L2 discovers volatility-scaled momentum r_prev/vol with full sizing.
+
+        L0 no longer starves on this regime, and the old expectation is not
+        reachable through any of the guards. The demo hand-builds its gate-4
+        record, and `_residual_series` used to look up `holdout_sq_error`,
+        which that record does not populate -- so Guard 2 reported the winner's
+        whiteness *unassessable* and refused the sole survivor for the wrong
+        reason. bdc1595 made the lookup signed-only (`holdout_residuals`), the
+        series is now found, and its lag-1 autocorrelation is 0.157 against the
+        0.5 flag: white, so Guard 2 passes on the evidence. Guard 1 cannot
+        refuse it either -- the record's noise scale is the fit's own residual
+        scale, and `r_t = 0.015 * r_{t-1}/sigma_{t-1} + noise` is near-linear
+        here because the rolling sigma is ~= noise_sigma. An AR(1) on this data
+        is a legitimate survivor, so the starvation narrative is recorded as
+        not holding for these parameters rather than forced back into place.
+        """
         res = run_finance_l2_comparison("volatility_scaled_momentum", bootstrap=False, seed=42)
 
-        # L0 suffers hypothesis-space starvation
-        assert res.l0_status == EpistemicStatus.INSUFFICIENT_EVIDENCE
-        assert res.l0_attribution == EpistemicAttribution.HYPOTHESIS_SPACE_LIMITED
+        # L0: the AR(1) is the sole scored survivor and passes both guards.
+        assert res.l0_status == EpistemicStatus.UNIQUE_SUPPORT
+        assert res.l0_attribution == EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT
 
         # L2 discovers the non-linear interaction term
         assert res.l2_status == EpistemicStatus.UNIQUE_SUPPORT

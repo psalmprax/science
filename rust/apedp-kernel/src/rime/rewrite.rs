@@ -54,16 +54,16 @@ pub fn apply(g: &Graph, op: &RewriteOp) -> Option<Graph> {
             if *decay_den == 0 || *decay_num > *decay_den {
                 return None;
             }
-            // Persistent memory cell: state = d*state_prev + input.
-            // Represented structurally as decay constant × output feedback
-            // plus fresh input edge; evaluator treats Const + Mul + Add.
+            // Persistent memory cell (spec §4/§5): one State node whose
+            // recurrence is h[t] = d*h[t-1] + u[t], with the current output as
+            // its input `u` and h[-1] = init = 0 (a prior state is a parameter
+            // the caller may set through a fit, not a structural choice).
+            //
+            // v0.1.1: this used to expand to `d*output[t-1] - output[t]`,
+            // which is not a recursion (the input term has the wrong sign and
+            // the feedback is read from the parent series, not from the state).
             let d = (*decay_num as f64) / (*decay_den as f64);
-            let dc = h.push(Node::Const(d));
-            let fb = h.push(Node::Lag(h.output, 1));
-            let mem = h.push(Node::Mul(dc, fb));
-            let inp = h.push(Node::Neg(h.output));
-            let cell = h.push(Node::Add(mem, inp));
-            h.output = cell;
+            h.output = h.push(Node::State { src: g.output, decay: d, init: 0.0 });
         }
         RewriteOp::WrapNonlinearity { src } => {
             if !valid(src) {
@@ -126,6 +126,31 @@ mod tests {
         assert_ne!(w.output, g.output);
         let p = apply(&g, &RewriteOp::PruneEdge { node: 0 }).unwrap();
         assert_eq!(p.output, g.output);
+    }
+
+    #[test]
+    fn add_state_is_a_recursion_not_a_sign_flip() {
+        // Regression: AddState on an all-ones input with d = 0.5 previously
+        // evaluated to [NaN, -0.5, -0.5, -0.5]. A true decaying memory gives
+        // the geometric partial sums.
+        let mut g = Graph::new();
+        g.output = g.push(Node::Input(0));
+        let s = apply(&g, &RewriteOp::AddState { decay_num: 1, decay_den: 2 }).unwrap();
+        assert_eq!(s.evaluate(&[vec![1.0, 1.0, 1.0, 1.0]]), vec![1.0, 1.5, 1.75, 1.875]);
+    }
+
+    #[test]
+    fn add_state_state_node_keeps_parent_as_input() {
+        let g = base();
+        let s = apply(&g, &RewriteOp::AddState { decay_num: 9, decay_den: 10 }).unwrap();
+        match s.nodes[s.output] {
+            Node::State { src, decay, init } => {
+                assert_eq!(src, g.output);
+                assert!((decay - 0.9).abs() < 1e-12);
+                assert_eq!(init, 0.0);
+            }
+            ref other => panic!("AddState must push a State node, got {:?}", other),
+        }
     }
 
     #[test]

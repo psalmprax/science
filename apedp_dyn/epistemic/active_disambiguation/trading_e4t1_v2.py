@@ -61,7 +61,9 @@ def _score(hid: str, resid: np.ndarray) -> ScoredCandidate:
 
 
 def _adjudicate(scored: list[ScoredCandidate]) -> tuple[str, str | None]:
-    scored = sorted(scored, key=lambda s: float(s.holdout_rmse))
+    scored = sorted(scored,
+                    key=lambda s: float(s.holdout_rmse)
+                    if s.holdout_rmse is not None else float("inf"))
     adj = adjudicate(list(scored),
                      resid_best=np.asarray(scored[0].provenance["gate4_status"]["holdout_residuals"]),
                      resid_rival=np.asarray(scored[1].provenance["gate4_status"]["holdout_residuals"]),
@@ -73,11 +75,11 @@ def _adjudicate(scored: list[ScoredCandidate]) -> tuple[str, str | None]:
 
 def _blocks(n: int) -> np.ndarray:
     idx = np.arange(n)
-    return idx[idx % 5 == 0]
+    return np.asarray(idx[idx % 5 == 0])
 
 
 def _d5(sig: np.ndarray) -> np.ndarray:
-    return pd.Series(sig).shift(-1).rolling(5).mean().to_numpy()
+    return np.asarray(pd.Series(sig).shift(-1).rolling(5).mean().to_numpy())
 
 
 def _design(panel: pd.DataFrame, asset: str, coefs: dict[str, np.ndarray],
@@ -173,18 +175,18 @@ def run_origin(panels: dict[str, pd.DataFrame], origin: str, policy: str, seed: 
     elif policy == "persistence":
         mid, d = "m1", d_of["m1"]
     elif policy == "oracle":
-        mid, d = None, float("nan")
+        d = float("nan")
     else:
         raise ValueError(policy)
     if policy == "oracle":
-        best, best_margin = None, -1.0
+        best_c, best_margin = None, -1.0
         for mid_c in MEASUREMENT_IDS:
             rms, _ = _forward_rms(panels, coefs, mid_c, fw_idx, hi_cut, lo_cut, vr_cut)
             vals = sorted(rms.values())
             margin = vals[1] - vals[0]
             if np.isfinite(margin) and margin > best_margin:
-                best, best_margin = mid_c, margin
-        mid = best
+                best_c, best_margin = mid_c, margin
+        mid = best_c if best_c is not None else mid
     _, fwd = _forward_rms(panels, coefs, mid, fw_idx, hi_cut, lo_cut, vr_cut)
     post_status, winner = _adjudicate([_score(h, fwd[h]) for h in HIDS])
     return OriginResult(origin, pre_status, policy, mid, float(d), post_status, winner)

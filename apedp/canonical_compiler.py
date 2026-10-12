@@ -253,7 +253,11 @@ class DimensionalNullSpaceEngine:
         self.dim_engine = DimensionalAssuranceEngine()
 
     def _extract_dim_vector(self, unit_str: str) -> np.ndarray:
-        unit = self.dim_engine.parse_unit(unit_str)
+        # `DimensionalAssuranceEngine` exposes no unit parser of its own; its
+        # registry is the pint `UnitRegistry` that does. Calling a
+        # non-existent `parse_unit` here raised AttributeError on every
+        # monomial solve, so the engine's registry is used directly.
+        unit = self.dim_engine.registry.parse_units(unit_str)
         dim_dict = dict(unit.dimensionality)
         vec = np.zeros(len(self.base_dims), dtype=float)
         for i, b in enumerate(self.base_dims):
@@ -285,7 +289,7 @@ class DimensionalNullSpaceEngine:
             if np.allclose(diff, 0, atol=1e-5):
                 # Valid dimensional monomial!
                 terms = []
-                for v, exp in zip(var_names, combo):
+                for v, exp in zip(var_names, combo, strict=True):
                     if exp == 0:
                         continue
                     elif exp == 1.0:
@@ -297,7 +301,7 @@ class DimensionalNullSpaceEngine:
                 expr_str = " * ".join(terms) if terms else "1.0"
                 admissible.append({
                     "expression": expr_str,
-                    "exponents": {v: float(exp) for v, exp in zip(var_names, combo)},
+                    "exponents": {v: float(exp) for v, exp in zip(var_names, combo, strict=True)},
                 })
 
         return admissible

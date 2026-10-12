@@ -221,7 +221,7 @@ def run_full_calibration_experiment(
 
     for regime_name, scale_ratio, heteroscedastic in regimes:
         for noise in noise_levels:
-            for rep in range(n_trials_per_cell):
+            for _rep in range(n_trials_per_cell):
                 seed = base_seed + trial_idx
                 trial_idx += 1
                 res = run_single_calibration_trial(

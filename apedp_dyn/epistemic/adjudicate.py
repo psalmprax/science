@@ -42,6 +42,7 @@ class EpistemicStatus(str, Enum):
     MULTI_HYPOTHESIS = "multi_hypothesis"
     INSUFFICIENT_EVIDENCE = "insufficient_evidence"
     NO_VALID_CANDIDATE = "no_valid_candidate"
+    EXTRAPOLATION_UNJUSTIFIED = "extrapolation_unjustified"
 
 
 DYNAMIC_EPISTEMIC_VERSION = "bootstrap-v3+solefid-v5"
@@ -207,6 +208,7 @@ class EpistemicAttribution(str, Enum):
     OUT_OF_GRAMMAR_OR_MISSPECIFIED = "out_of_grammar_or_misspecified"
     DECISIVE_EVIDENTIAL_SUPPORT = "decisive_evidential_support"
     BOOTSTRAP_INSTABILITY = "bootstrap_instability"
+    EXTRAPOLATION_DIVERGENCE = "extrapolation_divergence"
     UNKNOWN = "unknown"
 
 
@@ -280,7 +282,9 @@ class Adjudication:
     epistemic_attribution: str = "unknown"
     promotion_confidence: str = ""
     diagnostic_flags: tuple = ()
+    admissible_equivalence_class: tuple[str, ...] = ()
     reason: str = ""
+
 
 
 def scale_from_observations(obs: np.ndarray) -> dict[str, Any]:
@@ -546,9 +550,10 @@ def adjudicate(fitted: list,
                sole_survivor_rule: bool = True,
                sole_gamma: float = SOLE_SURVIVOR_GAMMA,
                sole_rho_flag: float = RESID_RHO_FLAG,
-                data_origin: str = "unknown",
-                benchmark_level: str = "unknown",
-                epistemic_attribution: str = "unknown") -> Adjudication:
+               data_origin: str = "unknown",
+               benchmark_level: str = "unknown",
+               epistemic_attribution: str = "unknown",
+               extrapolation_gate: dict[str, Any] | None = None) -> Adjudication:
     """Rank by train loss, then adjudicate on holdout evidence. Deterministic.
 
     sole_survivor_rule=True (default) enforces the frozen absolute-fidelity
@@ -596,6 +601,29 @@ def adjudicate(fitted: list,
         [s for s in fitted
          if s.train_loss is not None and np.isfinite(s.train_loss)],
         key=lambda s: s.train_loss)
+
+    # Canonicalization: duplicate structures are not distinct hypotheses.
+    # Group by structural identity (canonical form + parameter-binding
+    # signature, so e.g. reciprocal-kc vs independent-k12/k21 stay
+    # distinct) and keep the best-fitting instance per group. Uniqueness
+    # is assessed over canonical hypotheses only; dropped duplicates can
+    # neither promote nor serve as rivals.
+    canonical: list = []
+    seen: dict = {}
+    dropped_duplicate_ids: list[str] = []
+    for s in ranked:
+        try:
+            key = _identity(s)
+        except TypeError:
+            key = ("untyped", s.candidate.candidate_id)
+        if key in seen:
+            dropped_duplicate_ids.append(s.candidate.candidate_id)
+            continue
+        seen[key] = True
+        canonical.append(s)
+    ranked = canonical
+    dup_flags = (tuple(f"canonicalized_duplicate:{i}" for i in dropped_duplicate_ids)
+                 if dropped_duplicate_ids else ())
 
     if not ranked:
         attr = (epistemic_attribution if epistemic_attribution != "unknown"
@@ -730,6 +758,19 @@ def adjudicate(fitted: list,
                            f"the fidelity ceiling ({why1}) but carries structured "
                            f"holdout residuals ({why2}); accuracy without whiteness "
                            f"is not explanatory support")
+        if extrapolation_gate is not None and not extrapolation_gate.get("passed", True):
+            reason_extrap = extrapolation_gate.get("reason", "divergence outside evidence regime")
+            return Adjudication(
+                EpistemicStatus.EXTRAPOLATION_UNJUSTIFIED, promoted=None, ranking=tuple(ranked),
+                best_rmse=best_rmse, delta_rmse=None, tau_epi=tau,
+                tau_epi_source=tau_source,
+                holdout_noise_scale=holdout_noise_scale,
+                holdout_scale_source=scale_source, epistemic_margin=None,
+                contract=contract,
+                data_origin=data_origin,
+                benchmark_level=benchmark_level,
+                epistemic_attribution=EpistemicAttribution.EXTRAPOLATION_DIVERGENCE.value,
+                reason=f"in-sample evidence does not justify extrapolation ({reason_extrap})")
         attr = (epistemic_attribution if epistemic_attribution != "unknown"
                 else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)
         return Adjudication(
@@ -754,20 +795,32 @@ def adjudicate(fitted: list,
     if delta <= tau:
         attr = (epistemic_attribution if epistemic_attribution != "unknown"
                 else EpistemicAttribution.INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY.value)
+        ho_candidates = [s for s in ranked if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)]
+        ho_best = min(ho_candidates, key=lambda s: s.holdout_rmse) if ho_candidates else best
+        min_ho_rmse = float(ho_best.holdout_rmse)
+        ho_rivals = [s for s in ho_candidates if _identity(s) != _identity(ho_best)]
+        closest_rival = min(ho_rivals, key=lambda s: s.holdout_rmse) if ho_rivals else second
+        delta_ho = float(closest_rival.holdout_rmse - min_ho_rmse)
+        margin = float(delta_ho - tau)
+
+        equiv = tuple(
+            s.candidate.candidate_id for s in ranked
+            if s.holdout_rmse is not None and (s.holdout_rmse - min_ho_rmse) <= tau
+        )
         return Adjudication(
-            EpistemicStatus.MULTI_HYPOTHESIS, rival=second, ranking=tuple(ranked),
-            best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
-            delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
+            EpistemicStatus.MULTI_HYPOTHESIS, rival=closest_rival, ranking=tuple(ranked),
+            best_rmse=min_ho_rmse, second_rmse=float(closest_rival.holdout_rmse),
+            delta_rmse=delta_ho, tau_epi=tau, tau_epi_source=tau_source,
             holdout_noise_scale=holdout_noise_scale,
             holdout_scale_source=scale_source, epistemic_margin=margin,
             contract=pair_contract,
             data_origin=data_origin,
             benchmark_level=benchmark_level,
             epistemic_attribution=attr,
-            reason=f"rival {second.candidate.candidate_id} within τ "
-                   f"(Δ={delta:.3g} ≤ τ={tau:.3g} [{tau_source}]); structures "
-                   "observationally indistinguishable under available "
-                   "interventions")
+            admissible_equivalence_class=equiv,
+            reason=f"rival candidates including {closest_rival.candidate.candidate_id} within τ "
+                   f"(Δ={delta_ho:.3g} ≤ τ={tau:.3g} [{tau_source}]); observationally "
+                   "indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion")
     # Bootstrap-v2 tiebreaker, on the would-be-UNIQUE branch only. A point
     # margin that clears tau is not by itself evidence: the per-timepoint
     # error difference can straddle zero blockwise, which means the two
@@ -791,6 +844,11 @@ def adjudicate(fitted: list,
         if tb.get("branch") in ("multi", "rival-favored"):
             attr = (epistemic_attribution if epistemic_attribution != "unknown"
                     else EpistemicAttribution.BOOTSTRAP_INSTABILITY.value)
+            min_ho_rmse = min((s.holdout_rmse for s in ranked if s.holdout_rmse is not None), default=best_rmse)
+            equiv = tuple(
+                s.candidate.candidate_id for s in ranked
+                if s.holdout_rmse is not None and (s.holdout_rmse - min_ho_rmse) <= tau
+            )
             return Adjudication(
                 EpistemicStatus.MULTI_HYPOTHESIS, rival=second, ranking=tuple(ranked),
                 best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
@@ -803,9 +861,23 @@ def adjudicate(fitted: list,
                 data_origin=data_origin,
                 benchmark_level=benchmark_level,
                 epistemic_attribution=attr,
+                admissible_equivalence_class=equiv,
                 reason=f"point margin over {second.candidate.candidate_id} "
                        f"(Δ={delta:.3g} > τ={tau:.3g}) does not survive the "
                        f"{_bootstrap_refusal_detail(tb)}")
+        if extrapolation_gate is not None and not extrapolation_gate.get("passed", True):
+            reason_extrap = extrapolation_gate.get("reason", "divergence outside evidence regime")
+            return Adjudication(
+                EpistemicStatus.EXTRAPOLATION_UNJUSTIFIED, promoted=None, rival=second, ranking=tuple(ranked),
+                best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
+                delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
+                holdout_noise_scale=holdout_noise_scale,
+                holdout_scale_source=scale_source, epistemic_margin=margin,
+                contract=contract,
+                data_origin=data_origin,
+                benchmark_level=benchmark_level,
+                epistemic_attribution=EpistemicAttribution.EXTRAPOLATION_DIVERGENCE.value,
+                reason=f"in-sample evidence does not justify extrapolation ({reason_extrap})")
         attr = (epistemic_attribution if epistemic_attribution != "unknown"
                 else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)
         boot_conf, boot_flags = _promotion_diagnostics(
@@ -823,7 +895,7 @@ def adjudicate(fitted: list,
             benchmark_level=benchmark_level,
             epistemic_attribution=attr,
             promotion_confidence=boot_conf,
-            diagnostic_flags=boot_flags,
+            diagnostic_flags=tuple(boot_flags) + dup_flags,
             reason=f"rival {second.candidate.candidate_id} separated by "
                    f"Δ={delta:.3g} > τ={tau:.3g} [{tau_source}] and confirmed "
                    f"by the paired block bootstrap (branch "
@@ -833,6 +905,19 @@ def adjudicate(fitted: list,
                                   sole_rho_flag)
     diag_conf, diag_flags = _promotion_diagnostics(
         delta, tau, _note_series(best, resid_best), sole_rho_flag)
+    if extrapolation_gate is not None and not extrapolation_gate.get("passed", True):
+        reason_extrap = extrapolation_gate.get("reason", "divergence outside evidence regime")
+        return Adjudication(
+            EpistemicStatus.EXTRAPOLATION_UNJUSTIFIED, promoted=None, rival=second, ranking=tuple(ranked),
+            best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
+            delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
+            holdout_noise_scale=holdout_noise_scale,
+            holdout_scale_source=scale_source, epistemic_margin=margin,
+            contract=pair_contract,
+            data_origin=data_origin,
+            benchmark_level=benchmark_level,
+            epistemic_attribution=EpistemicAttribution.EXTRAPOLATION_DIVERGENCE.value,
+            reason=f"in-sample evidence does not justify extrapolation ({reason_extrap})")
     attr = (epistemic_attribution if epistemic_attribution != "unknown"
             else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)
     return Adjudication(
@@ -845,7 +930,7 @@ def adjudicate(fitted: list,
         data_origin=data_origin,
         benchmark_level=benchmark_level,
         epistemic_attribution=attr,
-        promotion_confidence=diag_conf,
-        diagnostic_flags=diag_flags,
-        reason=f"nearest distinct rival separated by Δ={delta:.3g} > "
+            promotion_confidence=diag_conf,
+            diagnostic_flags=tuple(diag_flags) + dup_flags,
+            reason=f"nearest distinct rival separated by Δ={delta:.3g} > "
         f"τ={tau:.3g} [{tau_source}]{note}")

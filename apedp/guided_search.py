@@ -192,7 +192,7 @@ def targeted_mutations(expression: sp.Expr, rng: random.Random) -> list[sp.Expr]
     def visit(node: sp.Expr, path: tuple[int, ...]) -> None:
         paths.append((path, node))
         for index, arg in enumerate(node.args):
-            visit(arg, path + (index,))
+            visit(arg, (*path, index))
 
     visit(expression, ())
 
@@ -213,7 +213,7 @@ def targeted_mutations(expression: sp.Expr, rng: random.Random) -> list[sp.Expr]
     if not candidates:
         return out
     path, node = rng.choice(candidates)
-    symbols = [atom for atom in node.free_symbols]
+    symbols = list(node.free_symbols)
     if symbols:
         var = rng.choice(symbols)
         out.append(replace(path, node.xreplace({var: var**2})))

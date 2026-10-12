@@ -48,7 +48,7 @@ def _qvec(y: np.ndarray, pred: np.ndarray) -> np.ndarray:
     y = np.maximum(np.asarray(y, dtype=float), 1e-8)
     p = np.maximum(np.asarray(pred, dtype=float), 1e-8)
     r = y / p
-    return r - np.log(r) - 1.0
+    return np.asarray(r - np.log(r) - 1.0)
 
 
 def _dm_hac4(d: np.ndarray) -> tuple[float, float]:

@@ -1,0 +1,18 @@
+{
+ "utc": "2026-10-09T09:27:36.716967+00:00",
+ "command": [
+  ".venv/bin/python3",
+  "apedp_dyn/sandbox/multi_asset_signals_sandbox.py",
+  "--mode",
+  "grammar"
+ ],
+ "returncode": 0,
+ "commit": "d881d5cdbc3df4bc1d1d5e7a24e91b4adf3a96f8",
+ "script_hashes": {
+  "apedp_dyn/sandbox/multi_asset_signals_sandbox.py": "b4d30c0981e048a45242ed1cce063eeb66557df2e8aaa0106eb0bd7eb6e21853"
+ },
+ "dataset_hashes": {
+  "data/market/multi_asset_90_5yr_orderflow.csv": "4729ad81f67cb1f430479fe02f1fc700980baf51e890b42cd0067856d273fa2e"
+ },
+ "note": "Tables must be generated from stdout.log/results artifacts in this directory."
+}

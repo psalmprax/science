@@ -85,7 +85,8 @@ def run_nano_ds10(
 
         # Determine winner by best training loss among candidate families
         valid_cands = [c for c in cands if c.train_loss is not None and np.isfinite(c.train_loss)]
-        best_cand = min(valid_cands, key=lambda c: c.train_loss)
+        best_cand = min(valid_cands,
+                        key=lambda c: c.train_loss if c.train_loss is not None else float("inf"))
         winners.append(best_cand.candidate.candidate_id)
 
         # Adjudicate baseline seed 0
@@ -132,8 +133,9 @@ def run_nano_ds10(
 
     v_split = variance_split(scoring_matrix)
     dist = structural_distribution(winners)
-    entropy = structural_entropy(dist)
-    k_hp_cv = round(coefficient_cv(k_global_vals), 3)
+    entropy = structural_entropy(winners)
+    cv_global = coefficient_cv(k_global_vals)
+    k_hp_cv = round(cv_global, 3) if cv_global is not None else float("nan")
 
     stability_rep = {
         "structures": winners,
@@ -155,6 +157,7 @@ def run_nano_ds10(
     passed_contract = (
         dist.get("piecewise_hp_inv", 0.0) == 1.0
         and entropy == 0.0
+        and baseline_adj is not None
         and baseline_adj.status == EpistemicStatus.MULTI_HYPOTHESIS
     )
 
@@ -165,7 +168,8 @@ def run_nano_ds10(
         winner_recurrence=dist,
         entropy_nats=entropy,
         k_hp_cv=k_hp_cv,
-        adjudication_status=baseline_adj.status.value,
+        adjudication_status=(baseline_adj.status.value if baseline_adj is not None
+                             else "NONE"),
         variance_split=v_split,
         matrix=matrix,
         passed_contract=passed_contract,

@@ -15,7 +15,7 @@ def test_benchmark_corpus_exists_and_balanced():
     manifest_path = CORPUS_DIR / "manifest.json"
     assert manifest_path.exists()
 
-    with open(manifest_path, "r", encoding="utf-8") as f:
+    with open(manifest_path, encoding="utf-8") as f:
         manifest = json.load(f)
 
     assert manifest["total_problems"] == 30
@@ -36,7 +36,7 @@ def test_benchmark_checksums_match():
     checksum_file = CORPUS_DIR / "checksums.sha256"
     assert checksum_file.exists()
 
-    with open(checksum_file, "r", encoding="utf-8") as f:
+    with open(checksum_file, encoding="utf-8") as f:
         lines = f.readlines()
 
     assert len(lines) >= 30 * 5  # At least 150 files
@@ -79,7 +79,7 @@ def test_public_and_hidden_separation():
         assert (hid_p / "ground_truth.json").exists()
 
         # Verify problem spec has no leaked ground truth formula
-        with open(pub_p / "problem_spec.json", "r", encoding="utf-8") as f:
+        with open(pub_p / "problem_spec.json", encoding="utf-8") as f:
             spec = json.load(f)
         assert "ground_truth_formula" not in spec
         assert "formula" not in spec

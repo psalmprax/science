@@ -188,9 +188,9 @@ pub fn linear_least_squares(
         0.0
     };
 
-    let (_, _, _, _, is_well, _) = conditioning(cols, 1e-12);
+    let (cond, _, _, _, is_well, _) = conditioning(cols, 1e-12);
 
-    Ok((coeffs, mse, mae, r2, 0.0, is_well))
+    Ok((coeffs, mse, mae, r2, cond, is_well))
 }
 
 /// Machine-epsilon identifiability boundary.

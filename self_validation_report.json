@@ -212,14 +212,14 @@
     {
       "test": "Epistemic: Missing evidence rejected",
       "passed": true,
-      "details": "",
+      "details": "missing=['REQ-002 missing validation_evidence (needs >=10 non-blank chars)']",
       "error": "",
       "oracle": "traceability completeness rule applied to a record with a blank field"
     },
     {
       "test": "Epistemic: Tournament lifecycle bookkeeping (not mathematical proof)",
       "passed": true,
-      "details": "",
+      "details": "outcome=REPAIRED_CANDIDATE, repaired=Candidate",
       "error": "",
       "oracle": "declared lifecycle states; the tournament proves no physics"
     },

@@ -57,6 +57,22 @@ class _RustKernel(Protocol):
     def evaluate_precision_boundary(
         self, separation_delta: float, condition_number: float, precision_bits: int
     ) -> tuple[str, float, float, float, bool]: ...
+    def evolve_native(
+        self,
+        data: list[np.ndarray],
+        variable_names: list[str],
+        target: np.ndarray,
+        population_size: int,
+        generations: int,
+        islands: int,
+        migration_interval: int,
+        max_depth: int,
+        tournament_size: int,
+        mutation_rate: float,
+        crossover_rate: float,
+        allow_trans: bool,
+        seed: int,
+    ) -> tuple[list[tuple[str, float, int, float, float]], int]: ...
 
 
 try:
@@ -169,7 +185,7 @@ class RustKernelBridge:
                         c = cast(Any, apedp_kernel).compile(expr_str, list(variable_names))
                         compiled_list.append(c)
                         valid_indices.append(idx)
-                    except Exception:  # noqa: BLE001 - Class B, deliberately
+                    except Exception:
                         # NOT a verdict. The Rust kernel refusing to compile one
                         # expression is a fallback to "this candidate is not
                         # evaluable by the fast path", and the remaining
@@ -333,6 +349,75 @@ class RustKernelBridge:
                 logger.debug("Rust evaluate_precision_boundary failed (%s), falling back.", e)
 
         return self._fallback_precision_boundary(separation_delta, condition_number, precision_bits)
+
+    def evolve_native(
+        self,
+        data: Sequence[np.ndarray],
+        variable_names: Sequence[str],
+        target: np.ndarray,
+        population_size: int = 100,
+        generations: int = 25,
+        islands: int = 4,
+        migration_interval: int = 5,
+        max_depth: int = 4,
+        tournament_size: int = 4,
+        mutation_rate: float = 0.35,
+        crossover_rate: float = 0.70,
+        allow_trans: bool = True,
+        seed: int = 42,
+    ) -> tuple[list[dict[str, Any]], int]:
+        """Runs high-throughput parallel multi-island evolutionary search in Rust."""
+        data_f64 = [np.ascontiguousarray(d, dtype=np.float64) for d in data]
+        target_f64 = np.ascontiguousarray(target, dtype=np.float64)
+
+        if self.use_rust and hasattr(apedp_kernel, "evolve_native"):
+            try:
+                raw_pareto, total_evals = cast(Any, apedp_kernel).evolve_native(
+                    data_f64,
+                    list(variable_names),
+                    target_f64,
+                    population_size,
+                    generations,
+                    islands,
+                    migration_interval,
+                    max_depth,
+                    tournament_size,
+                    mutation_rate,
+                    crossover_rate,
+                    allow_trans,
+                    seed,
+                )
+                formatted = [
+                    {
+                        "expression": item[0],
+                        "mse": item[1],
+                        "complexity": item[2],
+                        "scale": item[3],
+                        "bias": item[4],
+                    }
+                    for item in raw_pareto
+                ]
+                return formatted, total_evals
+            except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
+                logger.debug("Rust evolve_native failed (%s), falling back to Python.", e)
+
+        # Fallback to pure Python evolve
+        from apedp.evolutionary_search import SearchConfig, evolve
+
+        x_dict = {name: d for name, d in zip(variable_names, data_f64, strict=False)}
+        cfg = SearchConfig(
+            islands=islands,
+            island_size=population_size // islands if islands > 0 else population_size,
+            generations=generations,
+            max_depth=max_depth,
+            seed=seed,
+        )
+        res = evolve(x_dict, target_f64, config=cfg)
+        formatted = [
+            {"expression": expr, "mse": mse, "complexity": int(compl), "scale": 1.0, "bias": 0.0}
+            for expr, mse, compl in res.pareto_front
+        ]
+        return formatted, res.n_evaluations
 
     # ------------------ Fallback Pure-Python Implementations ------------------
 

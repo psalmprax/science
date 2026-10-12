@@ -81,7 +81,7 @@ def run_platform_audit_suite() -> None:
         vacuum_moles = platform_assurance.evaluate_model("Ideal_Gas_Moles", vacuum_inputs)
         print(f"-> PASS: Solved vacuum scenario. Moles in vacuum: {vacuum_moles:.4e}")
         passes += 1
-    except Exception as e:  # noqa: BLE001 - the audit reports failures, it does not raise
+    except Exception as e:
         logger.warning("Boundary value calculation failed", exc_info=True)
         print(f"-> FAIL: Exception during boundary value calculation: {e}")
         failures += 1

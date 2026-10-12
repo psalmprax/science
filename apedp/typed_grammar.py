@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import random
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, ClassVar, cast
 
@@ -46,10 +47,10 @@ class DimVector:
             raise ValueError(f"DimVector must have 7 components, got {len(self.exponents)}")
 
     def __add__(self, other: DimVector) -> DimVector:
-        return DimVector(tuple(a + b for a, b in zip(self.exponents, other.exponents)))
+        return DimVector(tuple(a + b for a, b in zip(self.exponents, other.exponents, strict=True)))
 
     def __sub__(self, other: DimVector) -> DimVector:
-        return DimVector(tuple(a - b for a, b in zip(self.exponents, other.exponents)))
+        return DimVector(tuple(a - b for a, b in zip(self.exponents, other.exponents, strict=True)))
 
     def __neg__(self) -> DimVector:
         return DimVector(tuple(-a for a in self.exponents))
@@ -65,7 +66,7 @@ class DimVector:
         """Convert DimVector to a valid Pint unit expression string."""
         units = ["kilogram", "meter", "second", "kelvin", "mole", "ampere", "candela"]
         parts = []
-        for exp, u in zip(self.exponents, units):
+        for exp, u in zip(self.exponents, units, strict=True):
             if exp == 1:
                 parts.append(u)
             elif exp != 0:
@@ -96,7 +97,7 @@ class TypedTerminal:
 class TypedProductionGrammar:
     """Grammar engine generating dimensionally valid symbolic expression trees."""
 
-    def __init__(self, variable_units: dict[str, str | pint.Unit]):
+    def __init__(self, variable_units: Mapping[str, str | pint.Unit]):
         self.engine = DimensionalAssuranceEngine()
         self.terminals: list[TypedTerminal] = []
         self._dim_to_terminals: dict[DimVector, list[TypedTerminal]] = {}

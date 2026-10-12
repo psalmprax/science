@@ -25,6 +25,24 @@ indistinguishable from a pass.
 | `src/parser.rs` | Tokenizer, precedence-climbing parser, and evaluator for the expression language |
 | `src/numeric.rs` | Metrics, matrix conditioning, least squares, precision boundary |
 | `src/units.rs` | 7-D unit algebra and compound-unit parsing |
+| `src/genetic.rs` | Native multi-island genetic search over equation trees |
+| `src/ode.rs` | RK45 ODE integration for compiled systems |
+| `src/rime/` | RIME Stage-1 mechanism-graph engine (spec: `docs/RIME_V01_MASTER_SPEC.md`); see below |
+
+### RIME entry points
+
+| Module | Contents |
+| --- | --- |
+| `rime/graph.rs` | Typed mechanism DAG; series-at-a-time topological evaluation; recursive `State`; structural validation; canonical SHA-256 ids |
+| `rime/rewrite.rs` | The five frozen structural rewrites |
+| `rime/eval.rs` | Ridge-fitted readout scoring, charged degrees of freedom, parallel batches over Rayon |
+| `rime/record.rs` | Immutable content-addressed candidate records |
+| `rime/seeds.rs` | Deterministic 60-form seed catalogue (Stage-2 scaffolding) |
+| `rime/search.rs` | Deterministic budgeted beam search (Stage-2 scaffolding) |
+
+Python surface: `rime_search_json`, `rime_evaluate_json`, `rime_rewrite_json`,
+`rime_evaluate_series_json`. The engine is a **proposer**: it never scores itself
+against a holdout slice or decides its own promotion.
 
 ## Two things to know before changing any of it
 

@@ -1,0 +1,57 @@
+===================================================================================================================
+APEDP-X AUTONOMOUS EQUATION EVOLUTION ACROSS ALL FOUR UNIVERSES (15, 30, 60, 90)
+Expanded Feature Grammar Space: 26 Base Signals + PRODUCT_H_BB_TAKER (27 Terms)
+Training Split: Block A (2021-2023, 753 bars)
+===================================================================================================================
+
+>>> EVOLVING FOR UNIVERSE N = 15 ASSETS <<<
+Universe N = 15:
+  Evolved Equation: S_{i,t} = +1.1948 * X^*_H-BB +0.2227 * X^*_H-STOCH +0.4501 * X^*_H-OBV_MOM -0.4839 * X^*_NL_HURST_ADAPT -0.0161 * X^*_PRODUCT_H_BB_TAKER
+  Threshold: theta = 0.1695
+  In-Sample Sharpe: 0.000 | Fitness: 4.786
+  Interaction Term Selected: True
+    • H-BB (Bollinger Bands %B)                -> Weight: +1.1948
+    • H-STOCH (Stochastic Oscillator)          -> Weight: +0.2227
+    • H-OBV_MOM (OBV Momentum)                 -> Weight: +0.4501
+    • NL_HURST_ADAPT (Adaptive Regime)         -> Weight: -0.4839
+    • PRODUCT_H_BB_TAKER (BB x Taker Surge)    -> Weight: -0.0161
+
+>>> EVOLVING FOR UNIVERSE N = 30 ASSETS <<<
+Universe N = 30:
+  Evolved Equation: S_{i,t} = -0.1792 * X^*_H-ASYM +0.8179 * X^*_H-BB -0.2768 * X^*_NL_OFI_REV
+  Threshold: theta = 0.1572
+  In-Sample Sharpe: 0.000 | Fitness: 3.832
+  Interaction Term Selected: False
+    • H-ASYM (GJR Panic Leverage)              -> Weight: -0.1792
+    • H-BB (Bollinger Bands %B)                -> Weight: +0.8179
+    • NL_OFI_REV (RSI x OFI Reversal)          -> Weight: -0.2768
+
+>>> EVOLVING FOR UNIVERSE N = 60 ASSETS <<<
+Universe N = 60:
+  Evolved Equation: S_{i,t} = -0.0545 * X^*_H-ASYM -0.0042 * X^*_H-EMA_CROSS +0.4323 * X^*_H-BB -0.8522 * X^*_H-OBV_MOM +0.5357 * X^*_H-HURST -1.3680 * X^*_NL_SQUEEZE_TREND -0.9019 * X^*_NL_HURST_ADAPT
+  Threshold: theta = 0.0946
+  In-Sample Sharpe: 0.000 | Fitness: 3.268
+  Interaction Term Selected: False
+    • H-ASYM (GJR Panic Leverage)              -> Weight: -0.0545
+    • H-EMA_CROSS (Fast/Slow EMA)              -> Weight: -0.0042
+    • H-BB (Bollinger Bands %B)                -> Weight: +0.4323
+    • H-OBV_MOM (OBV Momentum)                 -> Weight: -0.8522
+    • H-HURST (Hurst Regime Memory)            -> Weight: +0.5357
+    • NL_SQUEEZE_TREND (MACD x Squeeze)        -> Weight: -1.3680
+    • NL_HURST_ADAPT (Adaptive Regime)         -> Weight: -0.9019
+
+>>> EVOLVING FOR UNIVERSE N = 90 ASSETS <<<
+Universe N = 90:
+  Evolved Equation: S_{i,t} = +0.7185 * X^*_H-NATR -0.0925 * X^*_H-SQUEEZE +0.7004 * X^*_H-BB -0.0685 * X^*_H-STOCH +0.7700 * X^*_H-HURST
+  Threshold: theta = 0.1525
+  In-Sample Sharpe: 0.000 | Fitness: 2.060
+  Interaction Term Selected: False
+    • H-NATR (Normalized ATR)                  -> Weight: +0.7185
+    • H-SQUEEZE (BB/Keltner Squeeze)           -> Weight: -0.0925
+    • H-BB (Bollinger Bands %B)                -> Weight: +0.7004
+    • H-STOCH (Stochastic Oscillator)          -> Weight: -0.0685
+    • H-HURST (Hurst Regime Memory)            -> Weight: +0.7700
+
+===================================================================================================================
+EVOLUTION COMPLETE ACROSS ALL UNIVERSES
+===================================================================================================================

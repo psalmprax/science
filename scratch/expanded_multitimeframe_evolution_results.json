@@ -1,0 +1,138 @@
+{
+  "1m": {
+    "interval": "1m",
+    "bars": 1000,
+    "total_grammar_features": 46,
+    "term_count": 3,
+    "equation": "S_1m = -0.6979*H-MACD +0.8974*H-EMA_CROSS +0.0376*NL_RISK_ADJ_MOM",
+    "threshold": 0.1154,
+    "fitness_sr": -1.571,
+    "in_sample_sharpe": -1.493,
+    "trades_count": 280,
+    "turnover": 0.0575,
+    "tot_return_pct": -1.82,
+    "active_terms": [
+      "H-MACD",
+      "H-EMA_CROSS",
+      "NL_RISK_ADJ_MOM"
+    ],
+    "weights_dict": {
+      "H-MACD": -0.6979,
+      "H-EMA_CROSS": 0.8974,
+      "NL_RISK_ADJ_MOM": 0.0376
+    },
+    "elapsed_s": 1.18
+  },
+  "5m": {
+    "interval": "5m",
+    "bars": 1000,
+    "total_grammar_features": 46,
+    "term_count": 3,
+    "equation": "S_5m = +0.6191*H-SQUEEZE +0.0350*TREND_EFFICIENCY +0.2490*PARKINSON_VOL",
+    "threshold": 0.0364,
+    "fitness_sr": -0.108,
+    "in_sample_sharpe": -0.109,
+    "trades_count": 429,
+    "turnover": 0.1311,
+    "tot_return_pct": -0.31,
+    "active_terms": [
+      "H-SQUEEZE",
+      "TREND_EFFICIENCY",
+      "PARKINSON_VOL"
+    ],
+    "weights_dict": {
+      "H-SQUEEZE": 0.6191,
+      "TREND_EFFICIENCY": 0.035,
+      "PARKINSON_VOL": 0.249
+    },
+    "elapsed_s": 1.22
+  },
+  "15m": {
+    "interval": "15m",
+    "bars": 1000,
+    "total_grammar_features": 46,
+    "term_count": 2,
+    "equation": "S_15m = -0.6040*EMA_SPREAD -0.2993*PARKINSON_VOL",
+    "threshold": 0.0768,
+    "fitness_sr": 0.271,
+    "in_sample_sharpe": 0.266,
+    "trades_count": 318,
+    "turnover": 0.0747,
+    "tot_return_pct": 0.99,
+    "active_terms": [
+      "EMA_SPREAD",
+      "PARKINSON_VOL"
+    ],
+    "weights_dict": {
+      "EMA_SPREAD": -0.604,
+      "PARKINSON_VOL": -0.2993
+    },
+    "elapsed_s": 1.19
+  },
+  "30m": {
+    "interval": "30m",
+    "bars": 1000,
+    "total_grammar_features": 46,
+    "term_count": 3,
+    "equation": "S_30m = -0.4609*EMA_SPREAD -0.1417*BB_WIDTH -0.1648*CMF",
+    "threshold": 0.1363,
+    "fitness_sr": 0.217,
+    "in_sample_sharpe": 0.233,
+    "trades_count": 553,
+    "turnover": 0.1279,
+    "tot_return_pct": 1.6,
+    "active_terms": [
+      "EMA_SPREAD",
+      "BB_WIDTH",
+      "CMF"
+    ],
+    "weights_dict": {
+      "EMA_SPREAD": -0.4609,
+      "BB_WIDTH": -0.1417,
+      "CMF": -0.1648
+    },
+    "elapsed_s": 1.27
+  },
+  "45m": {
+    "interval": "45m",
+    "bars": 333,
+    "total_grammar_features": 46,
+    "term_count": 1,
+    "equation": "S_45m = -0.6347*BREAKOUT_STRENGTH",
+    "threshold": 0.1523,
+    "fitness_sr": 1.128,
+    "in_sample_sharpe": 1.071,
+    "trades_count": 226,
+    "turnover": 0.238,
+    "tot_return_pct": 3.23,
+    "active_terms": [
+      "BREAKOUT_STRENGTH"
+    ],
+    "weights_dict": {
+      "BREAKOUT_STRENGTH": -0.6347
+    },
+    "elapsed_s": 0.72
+  },
+  "60m": {
+    "interval": "60m",
+    "bars": 1000,
+    "total_grammar_features": 46,
+    "term_count": 2,
+    "equation": "S_60m = +0.2324*H-EMA_CROSS -0.6140*EMA_SPREAD",
+    "threshold": 0.1654,
+    "fitness_sr": 1.142,
+    "in_sample_sharpe": 1.044,
+    "trades_count": 283,
+    "turnover": 0.0579,
+    "tot_return_pct": 8.19,
+    "active_terms": [
+      "H-EMA_CROSS",
+      "EMA_SPREAD"
+    ],
+    "weights_dict": {
+      "H-EMA_CROSS": 0.2324,
+      "EMA_SPREAD": -0.614
+    },
+    "elapsed_s": 1.28
+  }
+}

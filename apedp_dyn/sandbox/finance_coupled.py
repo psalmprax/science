@@ -121,8 +121,8 @@ def run_coupled():
     print(f"verdict: {adj.status.value} "
           f"contract={getattr(adj, 'contract', '')}")
     if adj.promoted is not None:
-        for i, e in enumerate(adj.promoted.candidate.equations):
-            print(f"  promoted eq{i}: {e}")
+        for i, eq in enumerate(adj.promoted.candidate.equations):
+            print(f"  promoted eq{i}: {eq}")
     print("reason:", adj.reason[:150])
     # Coupling census regardless of verdict: how many survivors use xr?
     xr_n = sum(1 for s in g4

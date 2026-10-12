@@ -11,9 +11,12 @@ unbroken backward compatibility with existing workflows and imports under
 """
 from __future__ import annotations
 
-import sys
 import apedp_dyn
-from apedp_dyn import *
+
+# The star import IS the façade: this module re-exports apedp_dyn's public API
+# wholesale so `apedp.dyn` cannot drift from it. Ruff cannot see the names it
+# binds, which is the point.
+from apedp_dyn import *  # noqa: F403
 
 # Alias subpackages if requested
 from apedp_dyn import (
@@ -28,7 +31,8 @@ from apedp_dyn import (
     validation,
 )
 
-__all__ = list(apedp_dyn.__all__) + [
+__all__ = [
+    *apedp_dyn.__all__,
     "epistemic",
     "estimation",
     "fitting",

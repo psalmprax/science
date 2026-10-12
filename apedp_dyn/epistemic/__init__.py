@@ -13,18 +13,40 @@ from apedp_dyn.epistemic.adjudicate import (
     resolution_floor,
     scale_from_observations,
 )
+from apedp_dyn.epistemic.cross_asset_gate import (
+    CrossAssetGateReport,
+    CrossAssetGateStatus,
+    evaluate_cross_asset_gate,
+)
+from apedp_dyn.epistemic.market_extrapolation import (
+    MarketExtrapolationResult,
+    MarketRung,
+    RungEvaluation,
+    evaluate_30_asset_market_ladder,
+    evaluate_single_asset_market_ladder,
+)
 
 __all__ = [
     "CAPABILITY_ABSENT",
     "REL_FLOOR",
     "Adjudication",
     "BenchmarkLevel",
+    "CrossAssetGateReport",
+    "CrossAssetGateStatus",
     "DataOrigin",
     "EpistemicAttribution",
     "EpistemicContract",
     "EpistemicStatus",
+    "MarketExtrapolationResult",
+    "MarketRung",
+    "RungEvaluation",
     "adjudicate",
     "bootstrap_available",
+    "evaluate_30_asset_market_ladder",
+    "evaluate_cross_asset_gate",
+    "evaluate_single_asset_market_ladder",
     "resolution_floor",
     "scale_from_observations",
 ]
+
+

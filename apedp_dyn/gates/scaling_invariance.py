@@ -26,15 +26,12 @@ Architecture (from the specification):
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Tuple
+from dataclasses import dataclass
 
 import numpy as np
 
 from apedp_dyn.conf.dimensionless import (
     DimensionlessGroup,
-    discover_pi_groups,
-    build_exponent_matrix,
 )
 
 
@@ -135,7 +132,7 @@ class ScalingInvarianceGate:
 
     def add_regime(self, regime: ScalingRegime):
         """Add a scaling regime to the gate's registry."""
-        object.__setattr__(self, '_regimes', self._regimes + (regime,))
+        object.__setattr__(self, '_regimes', (*self._regimes, regime))
         object.__setattr__(self, '_regime_by_name', {
             **self._regime_by_name,
             regime.name: regime,
@@ -230,7 +227,7 @@ class ScalingInvarianceGate:
 
         return ScalingInvarianceGateResult(
             candidate_id=candidate_id,
-            regimes_checked={name: res for name, res in results.items()},
+            regimes_checked=dict(results),
             passed_regimes=tuple(passed_regimes),
             failed_regimes=tuple(failed_regimes),
             overall_passed=overall_passed,

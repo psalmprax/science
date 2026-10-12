@@ -1,73 +1,173 @@
 //! RIME Stage-1 acceptance: planted-mechanism recovery + null abstention.
 //! Uses only the frozen core (graph + rewrites + evaluator + records).
+//!
+//! v0.1.1: the audit found the bundled null test vacuous — it charged 1.0 per
+//! edge while every MSE in the world under test was around 0.08, so no
+//! candidate could ever score positive and the test proved nothing. The control
+//! below now sets the penalty on the scale of the target variance and is
+//! **paired with a positive control** through the identical scoring path: a
+//! control that cannot promote a planted mechanism is not a control.
 
-use apedp_kernel::rime::eval::{mse_finite, score_batch};
+use apedp_kernel::rime::eval::{
+    fit_readout, fitted_mse, mse_finite, score_batch_fitted, FittedScore, ScoreConfig,
+};
 use apedp_kernel::rime::graph::{Graph, Node};
 use apedp_kernel::rime::record::CandidateRecord;
 use apedp_kernel::rime::rewrite::{apply, RewriteOp};
+use apedp_kernel::rime::search::{multiplicity_dof, target_variance};
 
-fn planted_world() -> (Vec<Vec<f64>>, Vec<f64>) {
-    // Deterministic white-ish input (hash noise): no periodic confound, so
-    // ONLY the true lag-2 form can predict y. Fully deterministic, no RNG.
-    let x: Vec<f64> = (0..500)
+fn hash_noise(n: usize, phase: f64) -> Vec<f64> {
+    (0..n)
         .map(|t| {
-            let v = ((t as f64) * 12.9898).sin() * 43758.5453;
+            let v = ((t as f64 + phase) * 12.9898).sin() * 43758.5453;
             v - v.floor() - 0.5
         })
-        .collect();
-    let y: Vec<f64> = x
-        .iter()
-        .enumerate()
-        .map(|(t, _)| if t >= 2 { 3.0 * x[t - 2] + 0.01 * ((t as f64) * 1.7).sin() } else { f64::NAN })
+        .collect()
+}
+
+/// Deterministic input (hash noise). Measured sample autocorrelation at the
+/// frozen lags is below 0.07, so no lag is a hidden copy of another. Fully
+/// deterministic, no RNG.
+fn planted_world() -> (Vec<Vec<f64>>, Vec<f64>) {
+    let x = hash_noise(500, 0.0);
+    let y: Vec<f64> = (0..500)
+        .map(|t| if t >= 2 { 3.0 * x[t - 2] + 0.01 * ((t as f64) * 1.7).sin() } else { f64::NAN })
         .collect();
     (vec![x], y)
 }
 
 fn seed_graph() -> Graph {
     let mut g = Graph::new();
-    let x = g.push(Node::Input(0));
-    g.output = x;
+    g.output = g.push(Node::Input(0));
     g
+}
+
+/// The five frozen lag expansions of the seed, scored against the seed.
+/// The search's own calibration, for a run that scores `n_candidates` forms:
+/// `gamma * var(y) / n_dev` per charged degree of freedom, plus the EBIC-style
+/// selection charge for looking at that many candidates.
+fn lag_score_config(target: &[f64], n_candidates: usize) -> ScoreConfig {
+    let var = target_variance(target);
+    let n_dev = target.iter().filter(|v| v.is_finite()).count().max(1);
+    ScoreConfig::new(1.5 * var / n_dev as f64, 1e-9).with_selection_dof(multiplicity_dof(n_candidates))
+}
+
+fn lag_expansions(
+    cols: &[Vec<f64>],
+    target: &[f64],
+    cfg: ScoreConfig,
+) -> (f64, Vec<usize>, Vec<FittedScore>) {
+    let seed = seed_graph();
+    let (parent_mse, _, _) = fitted_mse(&seed, cols, target, 1e-9);
+    let lags = [1usize, 2, 5, 10, 20];
+    let jobs: Vec<_> = lags
+        .iter()
+        .map(|&k| {
+            (
+                apply(&seed, &RewriteOp::AddLagEdge { src: 0, k }).unwrap(),
+                parent_mse,
+                target.to_vec(),
+            )
+        })
+        .collect();
+    let res = score_batch_fitted(&jobs, cols, &cfg);
+    (parent_mse, lags.to_vec(), res)
+}
+
+fn best_index(res: &[FittedScore]) -> usize {
+    res.iter()
+        .enumerate()
+        .max_by(|(_, a), (_, b)| a.score.partial_cmp(&b.score).unwrap())
+        .map(|(i, _)| i)
+        .unwrap()
 }
 
 #[test]
 fn planted_two_lag_mechanism_recovered() {
     let (cols, target) = planted_world();
-    let seed = seed_graph();
-    let (parent_mse, _) = mse_finite(&seed.evaluate(&cols), &target);
-    // Expand seed with each frozen lag; the k=2 form must win.
-    let mut jobs = Vec::new();
-    let mut names = Vec::new();
-    for k in [1usize, 2, 5, 10, 20] {
-        let g = apply(&seed, &RewriteOp::AddLagEdge { src: 0, k }).unwrap();
-        jobs.push((g, parent_mse, target.clone()));
-        names.push(k);
-    }
-    let res = score_batch(&jobs, &cols, 1e-6);
-    let best = res
-        .iter()
-        .enumerate()
-        .max_by(|(_, a), (_, b)| a.0.partial_cmp(&b.0).unwrap())
-        .map(|(i, _)| names[i])
-        .unwrap();
-    assert_eq!(best, 2, "planted lag-2 mechanism must score best");
-    // Winner must actually improve (positive score) and carry a stable id.
-    let rec = CandidateRecord::new(&jobs[names.iter().position(|&k| k == best).unwrap()].0, None, "AddLagEdge", 7, res.iter().map(|r| r.0).fold(f64::NEG_INFINITY, f64::max));
+    let (_, lags, res) = lag_expansions(&cols, &target, lag_score_config(&target, 5));
+    let i = best_index(&res);
+    assert_eq!(lags[i], 2, "planted lag-2 mechanism must score best");
+    assert!(res[i].score > 0.0, "winner must clear the gate: {}", res[i].score);
+    // The fitted readout must recover the planted amplitude, not just rank it.
+    assert!(
+        (res[i].scale - 3.0).abs() < 0.05 && res[i].r2 > 0.99,
+        "scale {} r2 {}",
+        res[i].scale,
+        res[i].r2
+    );
+    // Winner must carry a stable content-addressed record.
+    let winner = apply(&seed_graph(), &RewriteOp::AddLagEdge { src: 0, k: 2 }).unwrap();
+    let rec = CandidateRecord::new(&winner, Some(seed_graph().id()), "AddLagEdge", 7, res[i].score);
     assert_eq!(rec.record_id.len(), 64);
+}
+
+/// Positive control for the null test below: identical machinery, real signal.
+#[test]
+fn positive_control_promotes_a_planted_mechanism() {
+    let (cols, target) = planted_world();
+    let var = target_variance(&target);
+    let (parent_mse, lags, res) = lag_expansions(&cols, &target, lag_score_config(&target, 5));
+    assert!(parent_mse.is_finite());
+    let i = best_index(&res);
+    assert_eq!(lags[i], 2);
+    assert!(
+        res[i].score > 0.5 * var,
+        "a real mechanism must be promoted by an order of magnitude more than \
+         the charge: score {:.3e} vs var(y) {:.3e}",
+        res[i].score,
+        var
+    );
+    // No free promotion for the wrong lags: the gate is discriminative.
+    for (j, s) in res.iter().enumerate() {
+        if lags[j] != 2 {
+            assert!(s.score <= 0.0, "lag {} spuriously promoted (score {})", lags[j], s.score);
+        }
+    }
 }
 
 #[test]
 fn null_world_abstains() {
-    // Pure periodic target unrelated to inputs: no rewrite may improve.
+    // Target is a deterministic function of t alone: unrelated to the input.
     let (cols, _) = planted_world();
-    let target: Vec<f64> = (0..500).map(|t| (((t as f64) * 7.233).sin() * 269.7).fract().abs() - 0.5).collect();
-    let seed = seed_graph();
-    let (parent_mse, _) = mse_finite(&seed.evaluate(&cols), &target);
-    let jobs: Vec<_> = [1usize, 2, 5]
-        .iter()
-        .map(|&k| (apply(&seed, &RewriteOp::AddLagEdge { src: 0, k }).unwrap(), parent_mse, target.clone()))
-        .collect();
-    // Complexity penalty on: best score must not be positive (no free lunch).
-    let res = score_batch(&jobs, &cols, 1.0);
-    assert!(res.iter().all(|r| r.0 <= 0.0), "null world must not promote any rewrite");
+    let target: Vec<f64> = hash_noise(500, 900.0);
+    // Penalty on the sampling-noise scale of a dev MSE, with the multiplicity
+    // charge for the five forms scored — the regime the search runs in.
+    let (parent_mse, _lags, res) = lag_expansions(&cols, &target, lag_score_config(&target, 5));
+    assert!(parent_mse.is_finite());
+    assert!(
+        res.iter().all(|r| r.score <= 0.0),
+        "null world must not promote any rewrite: {:?}",
+        res.iter().map(|r| r.score).collect::<Vec<_>>()
+    );
+    // The penalty is load-bearing, not decorative: with no charge at all the
+    // in-sample fit noise of a wrong lag is enough to score positive. That is
+    // the failure mode a too-small lambda_c admits, and it is the direction the
+    // audit's 1.0-per-edge setting hid by making everything fail instead.
+    let (_, _, loose) = lag_expansions(&cols, &target, ScoreConfig::new(0.0, 1e-9));
+    assert!(multiplicity_dof(5) > 3.0);
+    assert!(
+        loose.iter().any(|r| r.score > 0.0),
+        "with a zero charge, fit noise should be visible — if not, this control \
+         is not actually exercising the gate"
+    );
+}
+
+#[test]
+fn lag_expansion_reports_the_planted_scale_not_a_placeholder() {
+    let (cols, target) = planted_world();
+    let lag2 = apply(&seed_graph(), &RewriteOp::AddLagEdge { src: 0, k: 2 }).unwrap();
+    let out = lag2.evaluate(&cols);
+    let (a, b) = fit_readout(&out, &target, 1e-9);
+    assert!((a - 3.0).abs() < 1e-3, "fitted scale {}", a);
+    assert!((b - 0.0).abs() < 0.05, "fitted intercept {}", b);
+    let (raw_mse, skipped) = mse_finite(&out, &target);
+    let (fitted, _, _) = fitted_mse(&lag2, &cols, &target, 1e-9);
+    assert!(
+        raw_mse > 100.0 * fitted,
+        "the raw/fitted gap is the defect: raw {:.4e} vs fitted {:.4e}",
+        raw_mse,
+        fitted
+    );
+    assert_eq!(skipped, 2);
 }

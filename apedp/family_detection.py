@@ -93,7 +93,7 @@ MECHANISTIC_PRIORS: dict[str, list[dict[str, Any]]] = {
 def recombine_power_law(variables: list[str], exponents: list[float]) -> str:
     """Render a power-law product string from parallel variable/exponent lists."""
     terms = []
-    for name, p in zip(variables, exponents):
+    for name, p in zip(variables, exponents, strict=True):
         if abs(p) < 1e-12:
             continue
         if abs(p - round(p)) > 1e-9:

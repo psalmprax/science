@@ -217,7 +217,7 @@ def run_crypto_experiment(
 
     ranked = sorted(
         [s for s in g4 if s.train_loss is not None and np.isfinite(s.train_loss)],
-        key=lambda s: float(s.train_loss),
+        key=lambda s: float(s.train_loss) if s.train_loss is not None else float("inf"),
     )
     se = {id(s): series(s) for s in ranked}
     best_se = se.get(id(ranked[0])) if ranked else None
@@ -251,7 +251,7 @@ def run_crypto_experiment(
     seg_px = px[i_ho_start:i_ho_end]
     cand_pool = ranked if ranked else sorted(
         [s for s in fitted if getattr(s, "holdout_rmse", None) is not None],
-        key=lambda s: float(s.holdout_rmse),
+        key=lambda s: float(s.holdout_rmse) if s.holdout_rmse is not None else float("inf"),
     )
     series_info = {
         "x": list(range(len(seg_px))),

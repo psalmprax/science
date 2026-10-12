@@ -548,31 +548,57 @@ class SelfValidator:
 
         # Test: Requirements traceability
         matrix = RequirementsTraceabilityMatrix()
-        matrix.register_requirement(
-            "REQ-001", "Validate model", "tester", "ADR-001", "model.py", "test_model", "run-001"
-        )
+        # Every field must satisfy the rule this check asserts against
+        # (>=10 non-blank characters). A record that is fully populated in
+        # *intent* but holds one-word placeholders ("tester", "model.py",
+        # "run-001") is not a fully populated record under the rule, so the old
+        # fixture tested its own shortness, not the rule.
+        complete_record = {
+            "goal": "Validate the model against held-out evidence",
+            "owner": "tester@apedp.invalid",
+            "design_adr": "ADR-001 traceability contract",
+            "impl_artifact": "apedp/epistemic.py:RequirementsTraceabilityMatrix",
+            "acceptance_test": "tests/test_self_validation.py::traceability",
+            "validation_evidence": "run-001 self-validation report",
+        }
+        matrix.register_requirement("REQ-001", **complete_record)
         self.report.add(
             "Epistemic: Complete traceability accepted",
             matrix.verify_completeness() == (True, []),
             oracle="traceability completeness rule applied to a fully populated record",
         )
         matrix.register_requirement(
-            "REQ-002", "Validate model", "tester", "ADR-002", "model.py", "test_model", ""
+            "REQ-002", **{**complete_record, "validation_evidence": ""}
         )
         complete, missing = matrix.verify_completeness()
         self.report.add(
             "Epistemic: Missing evidence rejected",
-            not complete and "REQ-002 missing validation_evidence" in missing,
+            # `missing` is a list of messages, so `in` is membership of a whole
+            # message, not of a substring: the prefix has to be searched for
+            # element-wise or the check can never pass.
+            not complete and any(
+                m.startswith("REQ-002 missing validation_evidence")
+                for m in missing),
+            details=f"missing={missing}",
             oracle="traceability completeness rule applied to a record with a blank field",
         )
         tournament = AdversarialDeliberationTournament(self.graph, lifecycle)
         result = tournament.run_tournament("trial", "1/x", "zero", True, "1/(x+epsilon)")
         self.report.add(
             "Epistemic: Tournament lifecycle bookkeeping (not mathematical proof)",
-            result["outcome"] == "REPAIRED_AND_VALIDATED"
+            # The tournament NEVER auto-promotes: the contradicted hypothesis is
+            # Retired and the repaired model lands as a Candidate that still
+            # needs explicit verification. Asserting REPAIRED_AND_VALIDATED /
+            # final_state == "Validated" would have asserted the opposite of the
+            # documented contract.
+            result["outcome"] == "REPAIRED_CANDIDATE"
             and result["hypothesis_state"] == "Retired"
-            and result["final_state"] == "Validated"
+            and result["repaired_model_state"] == "Candidate"
+            and result["requires_explicit_validation"] is True
+            and result["mathematical_proof"] is False
             and bool(self.graph.find_contradictions()),
+            details=f"outcome={result['outcome']}, "
+                    f"repaired={result['repaired_model_state']}",
             oracle="declared lifecycle states; the tournament proves no physics",
         )
 

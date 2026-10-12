@@ -35,7 +35,7 @@ def qlike(y: np.ndarray, pred: np.ndarray, floor: float) -> float:
 
 def _fit(X: np.ndarray, y: np.ndarray) -> np.ndarray:
     w, *_ = la.lstsq(X, y, rcond=None)
-    return w
+    return np.asarray(w)
 
 
 @dataclass

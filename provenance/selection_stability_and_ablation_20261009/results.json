@@ -1,0 +1,1017 @@
+{
+  "timestamp_utc": "2026-10-09T11:14:32.766044+00:00",
+  "pre_registered_seeds": [
+    42,
+    101,
+    777,
+    1337,
+    2024
+  ],
+  "universes": [
+    15,
+    30,
+    60,
+    90
+  ],
+  "train_period": "2021-2023 (Block A, 753 bars)",
+  "holdout_period": "2024-2025 (Block B, 502 bars)",
+  "part1_search_stability": {
+    "15": {
+      "N": 15,
+      "mean_active_terms": 4.8,
+      "std_active_terms": 0.4,
+      "mean_threshold": 0.1355,
+      "std_threshold": 0.0607,
+      "mean_pairwise_jaccard": 0.265,
+      "feature_stats": {
+        "H-ASYM": {
+          "index": 3,
+          "name": "H-ASYM (GJR Panic Leverage)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.3195,
+          "std_weight": 0.0,
+          "min_weight": -0.3195,
+          "max_weight": -0.3195,
+          "sign_consistency": "100% Negative"
+        },
+        "H-MACD": {
+          "index": 6,
+          "name": "H-MACD (Trend Momentum)",
+          "selection_count": 2,
+          "selection_freq": 40.0,
+          "mean_weight": 0.2062,
+          "std_weight": 0.1683,
+          "min_weight": 0.0379,
+          "max_weight": 0.3745,
+          "sign_consistency": "100% Positive"
+        },
+        "H-BB": {
+          "index": 9,
+          "name": "H-BB (Bollinger Bands %B)",
+          "selection_count": 4,
+          "selection_freq": 80.0,
+          "mean_weight": 0.8362,
+          "std_weight": 0.2482,
+          "min_weight": 0.5262,
+          "max_weight": 1.1948,
+          "sign_consistency": "100% Positive"
+        },
+        "H-STOCH": {
+          "index": 11,
+          "name": "H-STOCH (Stochastic Oscillator)",
+          "selection_count": 4,
+          "selection_freq": 80.0,
+          "mean_weight": 0.7508,
+          "std_weight": 0.3136,
+          "min_weight": 0.2227,
+          "max_weight": 1.0461,
+          "sign_consistency": "100% Positive"
+        },
+        "H-RV": {
+          "index": 12,
+          "name": "H-RV (Trailing Volume Rank)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.0438,
+          "std_weight": 0.0,
+          "min_weight": -0.0438,
+          "max_weight": -0.0438,
+          "sign_consistency": "100% Negative"
+        },
+        "H-A": {
+          "index": 13,
+          "name": "H-A (Amihud Illiquidity)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": 0.3698,
+          "std_weight": 0.0,
+          "min_weight": 0.3698,
+          "max_weight": 0.3698,
+          "sign_consistency": "100% Positive"
+        },
+        "H-LOG": {
+          "index": 14,
+          "name": "H-LOG (Log Volume Level)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": 0.3192,
+          "std_weight": 0.0,
+          "min_weight": 0.3192,
+          "max_weight": 0.3192,
+          "sign_consistency": "100% Positive"
+        },
+        "H-OBV_MOM": {
+          "index": 16,
+          "name": "H-OBV_MOM (OBV Momentum)",
+          "selection_count": 2,
+          "selection_freq": 40.0,
+          "mean_weight": 0.3539,
+          "std_weight": 0.0962,
+          "min_weight": 0.2577,
+          "max_weight": 0.4501,
+          "sign_consistency": "100% Positive"
+        },
+        "NL_SQUEEZE_TREND": {
+          "index": 20,
+          "name": "NL_SQUEEZE_TREND (MACD x Squeeze)",
+          "selection_count": 3,
+          "selection_freq": 60.0,
+          "mean_weight": 0.5504,
+          "std_weight": 0.0849,
+          "min_weight": 0.4835,
+          "max_weight": 0.6701,
+          "sign_consistency": "100% Positive"
+        },
+        "NL_RISK_ADJ_MOM": {
+          "index": 21,
+          "name": "NL_RISK_ADJ_MOM (Mom / NATR)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.0651,
+          "std_weight": 0.0,
+          "min_weight": -0.0651,
+          "max_weight": -0.0651,
+          "sign_consistency": "100% Negative"
+        },
+        "NL_HURST_ADAPT": {
+          "index": 23,
+          "name": "NL_HURST_ADAPT (Adaptive Regime)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.4839,
+          "std_weight": 0.0,
+          "min_weight": -0.4839,
+          "max_weight": -0.4839,
+          "sign_consistency": "100% Negative"
+        },
+        "NL_TAKER_MOM": {
+          "index": 24,
+          "name": "NL_TAKER_MOM (Taker Surge x Mom)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.3693,
+          "std_weight": 0.0,
+          "min_weight": -0.3693,
+          "max_weight": -0.3693,
+          "sign_consistency": "100% Negative"
+        },
+        "PRODUCT_H_BB_TAKER": {
+          "index": 26,
+          "name": "PRODUCT_H_BB_TAKER (BB x Taker Surge)",
+          "selection_count": 2,
+          "selection_freq": 40.0,
+          "mean_weight": -0.1104,
+          "std_weight": 0.0943,
+          "min_weight": -0.2047,
+          "max_weight": -0.0161,
+          "sign_consistency": "100% Negative"
+        }
+      }
+    },
+    "30": {
+      "N": 30,
+      "mean_active_terms": 4.4,
+      "std_active_terms": 1.5,
+      "mean_threshold": 0.1592,
+      "std_threshold": 0.0319,
+      "mean_pairwise_jaccard": 0.303,
+      "feature_stats": {
+        "H-ASYM": {
+          "index": 3,
+          "name": "H-ASYM (GJR Panic Leverage)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.1792,
+          "std_weight": 0.0,
+          "min_weight": -0.1792,
+          "max_weight": -0.1792,
+          "sign_consistency": "100% Negative"
+        },
+        "H-NATR": {
+          "index": 4,
+          "name": "H-NATR (Normalized ATR)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": 0.8824,
+          "std_weight": 0.0,
+          "min_weight": 0.8824,
+          "max_weight": 0.8824,
+          "sign_consistency": "100% Positive"
+        },
+        "H-MACD": {
+          "index": 6,
+          "name": "H-MACD (Trend Momentum)",
+          "selection_count": 3,
+          "selection_freq": 60.0,
+          "mean_weight": 0.2957,
+          "std_weight": 0.199,
+          "min_weight": 0.1073,
+          "max_weight": 0.5711,
+          "sign_consistency": "100% Positive"
+        },
+        "H-EMA_CROSS": {
+          "index": 7,
+          "name": "H-EMA_CROSS (Fast/Slow EMA)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.093,
+          "std_weight": 0.0,
+          "min_weight": -0.093,
+          "max_weight": -0.093,
+          "sign_consistency": "100% Negative"
+        },
+        "H-BB": {
+          "index": 9,
+          "name": "H-BB (Bollinger Bands %B)",
+          "selection_count": 2,
+          "selection_freq": 40.0,
+          "mean_weight": 0.835,
+          "std_weight": 0.0171,
+          "min_weight": 0.8179,
+          "max_weight": 0.8521,
+          "sign_consistency": "100% Positive"
+        },
+        "H-STOCH": {
+          "index": 11,
+          "name": "H-STOCH (Stochastic Oscillator)",
+          "selection_count": 4,
+          "selection_freq": 80.0,
+          "mean_weight": 0.9862,
+          "std_weight": 0.3092,
+          "min_weight": 0.6759,
+          "max_weight": 1.3425,
+          "sign_consistency": "100% Positive"
+        },
+        "NL_SQUEEZE_TREND": {
+          "index": 20,
+          "name": "NL_SQUEEZE_TREND (MACD x Squeeze)",
+          "selection_count": 3,
+          "selection_freq": 60.0,
+          "mean_weight": 0.4664,
+          "std_weight": 0.2818,
+          "min_weight": 0.0866,
+          "max_weight": 0.761,
+          "sign_consistency": "100% Positive"
+        },
+        "NL_RISK_ADJ_MOM": {
+          "index": 21,
+          "name": "NL_RISK_ADJ_MOM (Mom / NATR)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.1056,
+          "std_weight": 0.0,
+          "min_weight": -0.1056,
+          "max_weight": -0.1056,
+          "sign_consistency": "100% Negative"
+        },
+        "NL_OFI_REV": {
+          "index": 22,
+          "name": "NL_OFI_REV (RSI x OFI Reversal)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.2768,
+          "std_weight": 0.0,
+          "min_weight": -0.2768,
+          "max_weight": -0.2768,
+          "sign_consistency": "100% Negative"
+        },
+        "NL_HURST_ADAPT": {
+          "index": 23,
+          "name": "NL_HURST_ADAPT (Adaptive Regime)",
+          "selection_count": 4,
+          "selection_freq": 80.0,
+          "mean_weight": -0.508,
+          "std_weight": 0.0752,
+          "min_weight": -0.6107,
+          "max_weight": -0.4118,
+          "sign_consistency": "100% Negative"
+        },
+        "PRODUCT_H_BB_TAKER": {
+          "index": 26,
+          "name": "PRODUCT_H_BB_TAKER (BB x Taker Surge)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": 0.0131,
+          "std_weight": 0.0,
+          "min_weight": 0.0131,
+          "max_weight": 0.0131,
+          "sign_consistency": "100% Positive"
+        }
+      }
+    },
+    "60": {
+      "N": 60,
+      "mean_active_terms": 4.8,
+      "std_active_terms": 1.17,
+      "mean_threshold": 0.202,
+      "std_threshold": 0.0578,
+      "mean_pairwise_jaccard": 0.287,
+      "feature_stats": {
+        "H-ASYM": {
+          "index": 3,
+          "name": "H-ASYM (GJR Panic Leverage)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.0545,
+          "std_weight": 0.0,
+          "min_weight": -0.0545,
+          "max_weight": -0.0545,
+          "sign_consistency": "100% Negative"
+        },
+        "H-NATR": {
+          "index": 4,
+          "name": "H-NATR (Normalized ATR)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": 0.0647,
+          "std_weight": 0.0,
+          "min_weight": 0.0647,
+          "max_weight": 0.0647,
+          "sign_consistency": "100% Positive"
+        },
+        "H-SQUEEZE": {
+          "index": 5,
+          "name": "H-SQUEEZE (BB/Keltner Squeeze)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": 0.1592,
+          "std_weight": 0.0,
+          "min_weight": 0.1592,
+          "max_weight": 0.1592,
+          "sign_consistency": "100% Positive"
+        },
+        "H-MACD": {
+          "index": 6,
+          "name": "H-MACD (Trend Momentum)",
+          "selection_count": 2,
+          "selection_freq": 40.0,
+          "mean_weight": 0.0657,
+          "std_weight": 0.0003,
+          "min_weight": 0.0654,
+          "max_weight": 0.066,
+          "sign_consistency": "100% Positive"
+        },
+        "H-EMA_CROSS": {
+          "index": 7,
+          "name": "H-EMA_CROSS (Fast/Slow EMA)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.0042,
+          "std_weight": 0.0,
+          "min_weight": -0.0042,
+          "max_weight": -0.0042,
+          "sign_consistency": "100% Negative"
+        },
+        "H-BB": {
+          "index": 9,
+          "name": "H-BB (Bollinger Bands %B)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": 0.4323,
+          "std_weight": 0.0,
+          "min_weight": 0.4323,
+          "max_weight": 0.4323,
+          "sign_consistency": "100% Positive"
+        },
+        "H-RV": {
+          "index": 12,
+          "name": "H-RV (Trailing Volume Rank)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": 0.0245,
+          "std_weight": 0.0,
+          "min_weight": 0.0245,
+          "max_weight": 0.0245,
+          "sign_consistency": "100% Positive"
+        },
+        "H-MFI": {
+          "index": 15,
+          "name": "H-MFI (Money Flow Index)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": 0.164,
+          "std_weight": 0.0,
+          "min_weight": 0.164,
+          "max_weight": 0.164,
+          "sign_consistency": "100% Positive"
+        },
+        "H-OBV_MOM": {
+          "index": 16,
+          "name": "H-OBV_MOM (OBV Momentum)",
+          "selection_count": 2,
+          "selection_freq": 40.0,
+          "mean_weight": -0.6356,
+          "std_weight": 0.2166,
+          "min_weight": -0.8522,
+          "max_weight": -0.419,
+          "sign_consistency": "100% Negative"
+        },
+        "H-HURST": {
+          "index": 17,
+          "name": "H-HURST (Hurst Regime Memory)",
+          "selection_count": 5,
+          "selection_freq": 100.0,
+          "mean_weight": 0.5102,
+          "std_weight": 0.2217,
+          "min_weight": 0.1366,
+          "max_weight": 0.7539,
+          "sign_consistency": "100% Positive"
+        },
+        "NL_SQUEEZE_TREND": {
+          "index": 20,
+          "name": "NL_SQUEEZE_TREND (MACD x Squeeze)",
+          "selection_count": 3,
+          "selection_freq": 60.0,
+          "mean_weight": -1.0494,
+          "std_weight": 0.226,
+          "min_weight": -1.368,
+          "max_weight": -0.8682,
+          "sign_consistency": "100% Negative"
+        },
+        "NL_OFI_REV": {
+          "index": 22,
+          "name": "NL_OFI_REV (RSI x OFI Reversal)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.3446,
+          "std_weight": 0.0,
+          "min_weight": -0.3446,
+          "max_weight": -0.3446,
+          "sign_consistency": "100% Negative"
+        },
+        "NL_HURST_ADAPT": {
+          "index": 23,
+          "name": "NL_HURST_ADAPT (Adaptive Regime)",
+          "selection_count": 4,
+          "selection_freq": 80.0,
+          "mean_weight": -0.9263,
+          "std_weight": 0.332,
+          "min_weight": -1.3888,
+          "max_weight": -0.452,
+          "sign_consistency": "100% Negative"
+        }
+      }
+    },
+    "90": {
+      "N": 90,
+      "mean_active_terms": 5.2,
+      "std_active_terms": 1.47,
+      "mean_threshold": 0.189,
+      "std_threshold": 0.072,
+      "mean_pairwise_jaccard": 0.229,
+      "feature_stats": {
+        "H-ASYM": {
+          "index": 3,
+          "name": "H-ASYM (GJR Panic Leverage)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.1826,
+          "std_weight": 0.0,
+          "min_weight": -0.1826,
+          "max_weight": -0.1826,
+          "sign_consistency": "100% Negative"
+        },
+        "H-NATR": {
+          "index": 4,
+          "name": "H-NATR (Normalized ATR)",
+          "selection_count": 2,
+          "selection_freq": 40.0,
+          "mean_weight": 0.5631,
+          "std_weight": 0.1554,
+          "min_weight": 0.4077,
+          "max_weight": 0.7185,
+          "sign_consistency": "100% Positive"
+        },
+        "H-SQUEEZE": {
+          "index": 5,
+          "name": "H-SQUEEZE (BB/Keltner Squeeze)",
+          "selection_count": 4,
+          "selection_freq": 80.0,
+          "mean_weight": 0.4269,
+          "std_weight": 0.4718,
+          "min_weight": -0.0925,
+          "max_weight": 1.1922,
+          "sign_consistency": "3+/1-"
+        },
+        "H-BB": {
+          "index": 9,
+          "name": "H-BB (Bollinger Bands %B)",
+          "selection_count": 3,
+          "selection_freq": 60.0,
+          "mean_weight": 0.4538,
+          "std_weight": 0.2666,
+          "min_weight": 0.0835,
+          "max_weight": 0.7004,
+          "sign_consistency": "100% Positive"
+        },
+        "H-MOM": {
+          "index": 10,
+          "name": "H-MOM (5-Day Momentum)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.023,
+          "std_weight": 0.0,
+          "min_weight": -0.023,
+          "max_weight": -0.023,
+          "sign_consistency": "100% Negative"
+        },
+        "H-STOCH": {
+          "index": 11,
+          "name": "H-STOCH (Stochastic Oscillator)",
+          "selection_count": 2,
+          "selection_freq": 40.0,
+          "mean_weight": 0.2653,
+          "std_weight": 0.3338,
+          "min_weight": -0.0685,
+          "max_weight": 0.5991,
+          "sign_consistency": "1+/1-"
+        },
+        "H-RV": {
+          "index": 12,
+          "name": "H-RV (Trailing Volume Rank)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": 0.5512,
+          "std_weight": 0.0,
+          "min_weight": 0.5512,
+          "max_weight": 0.5512,
+          "sign_consistency": "100% Positive"
+        },
+        "H-A": {
+          "index": 13,
+          "name": "H-A (Amihud Illiquidity)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.2469,
+          "std_weight": 0.0,
+          "min_weight": -0.2469,
+          "max_weight": -0.2469,
+          "sign_consistency": "100% Negative"
+        },
+        "H-OBV_MOM": {
+          "index": 16,
+          "name": "H-OBV_MOM (OBV Momentum)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.6796,
+          "std_weight": 0.0,
+          "min_weight": -0.6796,
+          "max_weight": -0.6796,
+          "sign_consistency": "100% Negative"
+        },
+        "H-HURST": {
+          "index": 17,
+          "name": "H-HURST (Hurst Regime Memory)",
+          "selection_count": 3,
+          "selection_freq": 60.0,
+          "mean_weight": 0.5878,
+          "std_weight": 0.2961,
+          "min_weight": 0.1702,
+          "max_weight": 0.8232,
+          "sign_consistency": "100% Positive"
+        },
+        "NL_VOL_GATED_MOM": {
+          "index": 19,
+          "name": "NL_VOL_GATED_MOM (Mom x VolRank)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": 0.0206,
+          "std_weight": 0.0,
+          "min_weight": 0.0206,
+          "max_weight": 0.0206,
+          "sign_consistency": "100% Positive"
+        },
+        "NL_SQUEEZE_TREND": {
+          "index": 20,
+          "name": "NL_SQUEEZE_TREND (MACD x Squeeze)",
+          "selection_count": 3,
+          "selection_freq": 60.0,
+          "mean_weight": -1.1062,
+          "std_weight": 0.2833,
+          "min_weight": -1.4651,
+          "max_weight": -0.7725,
+          "sign_consistency": "100% Negative"
+        },
+        "NL_OFI_REV": {
+          "index": 22,
+          "name": "NL_OFI_REV (RSI x OFI Reversal)",
+          "selection_count": 1,
+          "selection_freq": 20.0,
+          "mean_weight": -0.2067,
+          "std_weight": 0.0,
+          "min_weight": -0.2067,
+          "max_weight": -0.2067,
+          "sign_consistency": "100% Negative"
+        },
+        "NL_HURST_ADAPT": {
+          "index": 23,
+          "name": "NL_HURST_ADAPT (Adaptive Regime)",
+          "selection_count": 2,
+          "selection_freq": 40.0,
+          "mean_weight": -0.7622,
+          "std_weight": 0.4192,
+          "min_weight": -1.1815,
+          "max_weight": -0.343,
+          "sign_consistency": "100% Negative"
+        }
+      }
+    }
+  },
+  "part1_global_feature_ranking": [
+    {
+      "rank": 1,
+      "short_name": "NL_SQUEEZE_TREND",
+      "full_name": "NL_SQUEEZE_TREND (MACD x Squeeze)",
+      "count": 12,
+      "total_runs": 20,
+      "recurrence_pct": 60.0
+    },
+    {
+      "rank": 2,
+      "short_name": "NL_HURST_ADAPT",
+      "full_name": "NL_HURST_ADAPT (Adaptive Regime)",
+      "count": 11,
+      "total_runs": 20,
+      "recurrence_pct": 55.0
+    },
+    {
+      "rank": 3,
+      "short_name": "H-STOCH",
+      "full_name": "H-STOCH (Stochastic Oscillator)",
+      "count": 10,
+      "total_runs": 20,
+      "recurrence_pct": 50.0
+    },
+    {
+      "rank": 4,
+      "short_name": "H-BB",
+      "full_name": "H-BB (Bollinger Bands %B)",
+      "count": 10,
+      "total_runs": 20,
+      "recurrence_pct": 50.0
+    },
+    {
+      "rank": 5,
+      "short_name": "H-HURST",
+      "full_name": "H-HURST (Hurst Regime Memory)",
+      "count": 8,
+      "total_runs": 20,
+      "recurrence_pct": 40.0
+    },
+    {
+      "rank": 6,
+      "short_name": "H-MACD",
+      "full_name": "H-MACD (Trend Momentum)",
+      "count": 7,
+      "total_runs": 20,
+      "recurrence_pct": 35.0
+    },
+    {
+      "rank": 7,
+      "short_name": "H-OBV_MOM",
+      "full_name": "H-OBV_MOM (OBV Momentum)",
+      "count": 5,
+      "total_runs": 20,
+      "recurrence_pct": 25.0
+    },
+    {
+      "rank": 8,
+      "short_name": "H-SQUEEZE",
+      "full_name": "H-SQUEEZE (BB/Keltner Squeeze)",
+      "count": 5,
+      "total_runs": 20,
+      "recurrence_pct": 25.0
+    },
+    {
+      "rank": 9,
+      "short_name": "H-ASYM",
+      "full_name": "H-ASYM (GJR Panic Leverage)",
+      "count": 4,
+      "total_runs": 20,
+      "recurrence_pct": 20.0
+    },
+    {
+      "rank": 10,
+      "short_name": "H-NATR",
+      "full_name": "H-NATR (Normalized ATR)",
+      "count": 4,
+      "total_runs": 20,
+      "recurrence_pct": 20.0
+    },
+    {
+      "rank": 11,
+      "short_name": "PRODUCT_H_BB_TAKER",
+      "full_name": "PRODUCT_H_BB_TAKER (BB x Taker Surge)",
+      "count": 3,
+      "total_runs": 20,
+      "recurrence_pct": 15.0
+    },
+    {
+      "rank": 12,
+      "short_name": "NL_OFI_REV",
+      "full_name": "NL_OFI_REV (RSI x OFI Reversal)",
+      "count": 3,
+      "total_runs": 20,
+      "recurrence_pct": 15.0
+    },
+    {
+      "rank": 13,
+      "short_name": "H-RV",
+      "full_name": "H-RV (Trailing Volume Rank)",
+      "count": 3,
+      "total_runs": 20,
+      "recurrence_pct": 15.0
+    },
+    {
+      "rank": 14,
+      "short_name": "NL_RISK_ADJ_MOM",
+      "full_name": "NL_RISK_ADJ_MOM (Mom / NATR)",
+      "count": 2,
+      "total_runs": 20,
+      "recurrence_pct": 10.0
+    },
+    {
+      "rank": 15,
+      "short_name": "H-A",
+      "full_name": "H-A (Amihud Illiquidity)",
+      "count": 2,
+      "total_runs": 20,
+      "recurrence_pct": 10.0
+    },
+    {
+      "rank": 16,
+      "short_name": "H-EMA_CROSS",
+      "full_name": "H-EMA_CROSS (Fast/Slow EMA)",
+      "count": 2,
+      "total_runs": 20,
+      "recurrence_pct": 10.0
+    },
+    {
+      "rank": 17,
+      "short_name": "NL_TAKER_MOM",
+      "full_name": "NL_TAKER_MOM (Taker Surge x Mom)",
+      "count": 1,
+      "total_runs": 20,
+      "recurrence_pct": 5.0
+    },
+    {
+      "rank": 18,
+      "short_name": "H-MFI",
+      "full_name": "H-MFI (Money Flow Index)",
+      "count": 1,
+      "total_runs": 20,
+      "recurrence_pct": 5.0
+    },
+    {
+      "rank": 19,
+      "short_name": "H-LOG",
+      "full_name": "H-LOG (Log Volume Level)",
+      "count": 1,
+      "total_runs": 20,
+      "recurrence_pct": 5.0
+    },
+    {
+      "rank": 20,
+      "short_name": "NL_VOL_GATED_MOM",
+      "full_name": "NL_VOL_GATED_MOM (Mom x VolRank)",
+      "count": 1,
+      "total_runs": 20,
+      "recurrence_pct": 5.0
+    },
+    {
+      "rank": 21,
+      "short_name": "H-MOM",
+      "full_name": "H-MOM (5-Day Momentum)",
+      "count": 1,
+      "total_runs": 20,
+      "recurrence_pct": 5.0
+    },
+    {
+      "rank": 22,
+      "short_name": "H-P",
+      "full_name": "H-P (Volatility Persistence)",
+      "count": 0,
+      "total_runs": 20,
+      "recurrence_pct": 0.0
+    },
+    {
+      "rank": 23,
+      "short_name": "H-OFI",
+      "full_name": "H-OFI (Order Flow Imbalance)",
+      "count": 0,
+      "total_runs": 20,
+      "recurrence_pct": 0.0
+    },
+    {
+      "rank": 24,
+      "short_name": "H-CVD",
+      "full_name": "H-CVD (Taker Buy Flow / CVD)",
+      "count": 0,
+      "total_runs": 20,
+      "recurrence_pct": 0.0
+    },
+    {
+      "rank": 25,
+      "short_name": "H-RSI",
+      "full_name": "H-RSI (RSI Oscillator)",
+      "count": 0,
+      "total_runs": 20,
+      "recurrence_pct": 0.0
+    },
+    {
+      "rank": 26,
+      "short_name": "H-CROSS_MOM",
+      "full_name": "H-CROSS_MOM (Cross-Asset Rel Mom)",
+      "count": 0,
+      "total_runs": 20,
+      "recurrence_pct": 0.0
+    },
+    {
+      "rank": 27,
+      "short_name": "NL_MASTER_SNR",
+      "full_name": "NL_MASTER_SNR (Mom / AsymVol^2)",
+      "count": 0,
+      "total_runs": 20,
+      "recurrence_pct": 0.0
+    }
+  ],
+  "part2_two_tier_ablation": {
+    "15": {
+      "N": 15,
+      "threshold": 0.1695,
+      "standalone_hbb": {
+        "net_return": 30.08,
+        "gross_return": 37.77,
+        "sharpe": 0.62,
+        "max_drawdown": 42.6,
+        "exposure": 87.9,
+        "turnover": 1724.0
+      },
+      "full_evolved": {
+        "net_return": 33.77,
+        "gross_return": 42.66,
+        "sharpe": 0.65,
+        "max_drawdown": 40.3,
+        "exposure": 89.0,
+        "turnover": 1932.0
+      },
+      "universe_terms_only": {
+        "net_return": 5.53,
+        "gross_return": 14.39,
+        "sharpe": 0.34,
+        "max_drawdown": 36.4,
+        "exposure": 66.3,
+        "turnover": 2420.0
+      },
+      "candidate_a_baseline": {
+        "net_return": -5.93,
+        "gross_return": 6.26,
+        "sharpe": 0.09,
+        "max_drawdown": 43.4,
+        "exposure": 86.1,
+        "turnover": 3652.0
+      },
+      "delta_universe_over_hbb": {
+        "net_return_pp": 3.69,
+        "sharpe_delta": 0.03,
+        "max_drawdown_delta": -2.3
+      },
+      "hbb_marginal_value": {
+        "net_return_pp": 28.24
+      }
+    },
+    "30": {
+      "N": 30,
+      "threshold": 0.1572,
+      "standalone_hbb": {
+        "net_return": 40.8,
+        "gross_return": 49.05,
+        "sharpe": 0.71,
+        "max_drawdown": 41.1,
+        "exposure": 83.4,
+        "turnover": 3416.0
+      },
+      "full_evolved": {
+        "net_return": 33.64,
+        "gross_return": 45.36,
+        "sharpe": 0.69,
+        "max_drawdown": 29.5,
+        "exposure": 84.5,
+        "turnover": 5047.0
+      },
+      "universe_terms_only": {
+        "net_return": -17.8,
+        "gross_return": -4.33,
+        "sharpe": -0.27,
+        "max_drawdown": 31.6,
+        "exposure": 47.7,
+        "turnover": 9106.0
+      },
+      "candidate_a_baseline": {
+        "net_return": 7.92,
+        "gross_return": 20.8,
+        "sharpe": 0.34,
+        "max_drawdown": 36.6,
+        "exposure": 83.5,
+        "turnover": 6760.0
+      },
+      "delta_universe_over_hbb": {
+        "net_return_pp": -7.16,
+        "sharpe_delta": -0.02,
+        "max_drawdown_delta": -11.6
+      },
+      "hbb_marginal_value": {
+        "net_return_pp": 51.44
+      }
+    },
+    "60": {
+      "N": 60,
+      "threshold": 0.0946,
+      "standalone_hbb": {
+        "net_return": 8.89,
+        "gross_return": 15.46,
+        "sharpe": 0.35,
+        "max_drawdown": 30.1,
+        "exposure": 83.6,
+        "turnover": 7030.0
+      },
+      "full_evolved": {
+        "net_return": 10.39,
+        "gross_return": 19.0,
+        "sharpe": 0.46,
+        "max_drawdown": 15.9,
+        "exposure": 92.9,
+        "turnover": 9012.0
+      },
+      "universe_terms_only": {
+        "net_return": -15.18,
+        "gross_return": -8.53,
+        "sharpe": -0.61,
+        "max_drawdown": 25.3,
+        "exposure": 92.8,
+        "turnover": 9055.0
+      },
+      "candidate_a_baseline": {
+        "net_return": -4.54,
+        "gross_return": 6.55,
+        "sharpe": -0.01,
+        "max_drawdown": 25.4,
+        "exposure": 85.1,
+        "turnover": 13184.0
+      },
+      "delta_universe_over_hbb": {
+        "net_return_pp": 1.5,
+        "sharpe_delta": 0.11,
+        "max_drawdown_delta": -14.2
+      },
+      "hbb_marginal_value": {
+        "net_return_pp": 25.57
+      }
+    },
+    "90": {
+      "N": 90,
+      "threshold": 0.1525,
+      "standalone_hbb": {
+        "net_return": -0.84,
+        "gross_return": 5.29,
+        "sharpe": 0.06,
+        "max_drawdown": 17.4,
+        "exposure": 84.7,
+        "turnover": 10790.0
+      },
+      "full_evolved": {
+        "net_return": 6.68,
+        "gross_return": 13.08,
+        "sharpe": 0.41,
+        "max_drawdown": 12.9,
+        "exposure": 88.1,
+        "turnover": 10500.0
+      },
+      "universe_terms_only": {
+        "net_return": 2.32,
+        "gross_return": 8.21,
+        "sharpe": 0.19,
+        "max_drawdown": 14.3,
+        "exposure": 86.0,
+        "turnover": 10067.0
+      },
+      "candidate_a_baseline": {
+        "net_return": -8.03,
+        "gross_return": 2.35,
+        "sharpe": -0.36,
+        "max_drawdown": 17.5,
+        "exposure": 85.8,
+        "turnover": 19257.0
+      },
+      "delta_universe_over_hbb": {
+        "net_return_pp": 7.52,
+        "sharpe_delta": 0.35,
+        "max_drawdown_delta": -4.5
+      },
+      "hbb_marginal_value": {
+        "net_return_pp": 4.36
+      }
+    }
+  }
+}

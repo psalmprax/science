@@ -19,6 +19,8 @@
 15. [License](#15-license)
 16. [System Capabilities & Architectural Philosophy](SYSTEM_CAPABILITIES_AND_PHILOSOPHY.md)
 17. [Evidence, Adapters & Domain Limits](#17-evidence-adapters--domain-limits)
+18. [APEDP-X Dynamic Discovery, Epistemic Referee & CPMD Architecture](#18-apedp-x-dynamic-discovery-epistemic-referee--cpmd-architecture)
+19. [Traceability & Verification Matrix](#19-traceability--verification-matrix)
 
 ---
 
@@ -1181,4 +1183,120 @@ The project previously had 19 anti-pattern categories documented in `ANTI_PATTER
 
 ---
 
-*Documentation generated for APEDP v1.0.0 — Autonomous Physics & Engineering Discovery Platform*
+## 18. APEDP-X Dynamic Discovery, Epistemic Referee & CPMD Architecture
+
+The October 2026 research programme upgrades APEDP into **APEDP-X / CPMD** (Continuous Predictive Market Discovery), transitioning from a passive hypothesis referee into an active, multi-proposer scientific discovery engine with formal verification and multiple-testing controls.
+
+### 18.1 Active Module Index & Registry
+
+| Module | Description | Status |
+|---|---|---|
+| [`apedp_dyn/conf/canonical_spec.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/conf/canonical_spec.py) | Canonical preregistered configuration loader enforcing SHA-256 integrity on frozen specs. | `production` |
+| [`apedp_dyn/conf/benchmark_v2.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/conf/benchmark_v2.py) | Benchmark v2 configuration schemas, trap suites, and seed schedules. | `production` |
+| [`apedp_dyn/conf/dimensionless.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/conf/dimensionless.py) | Dimensional homogeneity rules and physical dimensionless parameter bounds. | `production` |
+| [`apedp_dyn/epistemic/experiment_ledger.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/experiment_ledger.py) | Full-lineage candidate experiment ledger with anti-snooping holdout burning. | `production` |
+| [`apedp_dyn/epistemic/trial_ledger.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/trial_ledger.py) | Candidate trial ledger computing Bailey & López de Prado (2014) Deflated Sharpe Ratio. | `production` |
+| [`apedp_dyn/epistemic/promotion_lifecycle.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/promotion_lifecycle.py) | Six-stage scoped promotion state machine with non-fungible sequential gates. | `production` |
+| [`apedp_dyn/epistemic/novelty_adjudication.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/novelty_adjudication.py) | Decoupled Diebold-Mariano predictive incrementality and literature orthogonal novelty tests. | `production` |
+| [`apedp_dyn/epistemic/lean_universal_bridge.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/lean_universal_bridge.py) | Zero-disk in-memory Lean 4 formal verification kernel bridge via `--stdin` streaming. | `production` |
+| [`apedp_dyn/epistemic/adjudicate.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/adjudicate.py) | Central epistemic referee adjudicating multi-gate candidate admissibility. | `production` |
+| [`apedp_dyn/epistemic/claim_ladder.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/claim_ladder.py) | Epistemic claim ladder calibrating warrant strength from speculative to admitted. | `production` |
+| [`apedp_dyn/epistemic/cross_asset_gate.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/cross_asset_gate.py) | Multi-asset cross-sectional transfer gate enforcing zero contamination across symbols. | `production` |
+| [`apedp_dyn/epistemic/market_extrapolation.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/market_extrapolation.py) | Out-of-distribution regime transfer gate evaluating volatility and liquidity shocks. | `production` |
+| [`apedp_dyn/epistemic/frozen_spec.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/frozen_spec.py) | Cryptographic hash verification of referee source files to prevent silent code drift. | `production` |
+| [`apedp_dyn/epistemic/eedr.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/eedr.py) | Epistemic Evidence-to-Decisiveness Ratio allocating exploration budget. | `production` |
+| [`apedp_dyn/grammar/proposer_interface.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/grammar/proposer_interface.py) | Unified abstract base class and dataclass contracts for competing hypothesis proposers. | `production` |
+| [`apedp_dyn/grammar/trading_grammar_catalog.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/grammar/trading_grammar_catalog.py) | Grammar definitions and AST transforms for causal microstructure and order-flow signals. | `production` |
+| [`apedp_dyn/grammar/scientific_grammar_catalog.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/grammar/scientific_grammar_catalog.py) | Grammar definitions for physical, biological, fluid, and geometric dynamical systems. | `production` |
+| [`apedp_dyn/grammar/candidate_ir.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/grammar/candidate_ir.py) | Intermediate representation for symbolic expressions and parse tree canonicalization. | `production` |
+| [`apedp_dyn/proposers/sparse_microstructure_proposer.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/proposers/sparse_microstructure_proposer.py) | Sparse ElasticNet hypothesis proposer generating sparse linear microstructure models. | `production` |
+| [`apedp_dyn/proposers/resiliency_proposer.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/proposers/resiliency_proposer.py) | Nonlinear order-book resiliency proposer fitting exponential recovery dynamics. | `production` |
+| [`apedp_dyn/proposers/distributed_lag_interaction_proposer.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/proposers/distributed_lag_interaction_proposer.py) | Distributed lag kernel and bilinear feature interaction microstructure proposer. | `production` |
+| [`apedp_dyn/proposers/regime_switching_proposer.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/proposers/regime_switching_proposer.py) | Piecewise linear threshold models adaptive to market volatility states. | `production` |
+| [`apedp_dyn/proposers/hawkes_orderflow_proposer.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/proposers/hawkes_orderflow_proposer.py) | Self-exciting point process modeling order arrival clustering and quote replenishment. | `production` |
+| [`apedp_dyn/proposers/rime_proposer.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/proposers/rime_proposer.py) | RIME symbolic-mechanism proposer: emits closed-form equations from typed mechanism graphs, adjudicated by the same frozen referee. | `experimental` |
+| [`apedp_dyn/sandbox/execution_cost_models.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/execution_cost_models.py) | Decoupled execution models (Spread+Slippage, Almgren-Chriss impact, Queue fill). | `production` |
+| [`apedp_dyn/sandbox/calibrated_benchmark_suite.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/calibrated_benchmark_suite.py) | Three-tier calibrated benchmark suite (Referee FPR/CAR/VRR, Discovery Power, Transfer). | `production` |
+| [`apedp_dyn/sandbox/canonical_ledger.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/canonical_ledger.py) | Canonical execution ledger with additive log accounting, stock-split invariance, and fee models. | `production` |
+| [`apedp_dyn/sandbox/blind_benchmark.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/blind_benchmark.py) | Air-gapped blind benchmark runner preventing in-sample contamination of test suites. | `production` |
+| [`apedp_dyn/sandbox/blind_benchmark_protocol.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/blind_benchmark_protocol.py) | Cryptographic verification protocol for blind benchmark suites and hash receipts. | `production` |
+| [`apedp_dyn/sandbox/ga_depth2_equation_discovery.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/ga_depth2_equation_discovery.py) | Genetic algorithm search across depth-2 symbolic equation grammar space. | `experimental` |
+| [`apedp_dyn/sandbox/ga_depth3_equation_discovery.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/ga_depth3_equation_discovery.py) | Genetic algorithm search across depth-3 symbolic equation grammar space. | `experimental` |
+| [`apedp_dyn/sandbox/build_all_system_equations_lean_proofs.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/build_all_system_equations_lean_proofs.py) | Cross-domain Lean 4 formal proof suite for 10 system equations. | `production` |
+| [`apedp_dyn/sandbox/cpmd_hlik.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/cpmd_hlik.py) | Continuous Predictive Market Discovery harness for H-LIK liquidity hypothesis. | `audit-only` |
+| [`apedp_dyn/sandbox/cpmd_hxsc.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/cpmd_hxsc.py) | Continuous Predictive Market Discovery harness for H-XSC spread curvature hypothesis. | `audit-only` |
+| [`apedp_dyn/sandbox/cpmd_hdar.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/cpmd_hdar.py) | Continuous Predictive Market Discovery harness for H-DAR directional asymmetry hypothesis. | `audit-only` |
+| [`apedp_dyn/sandbox/cpmd_hofd.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/cpmd_hofd.py) | Continuous Predictive Market Discovery harness for H-OFD order-flow divergence hypothesis. | `audit-only` |
+| [`apedp_dyn/sandbox/eseds_dynamical.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/eseds_dynamical.py) | Energy-dissipation and dynamical stability referee harness. | `audit-only` |
+| [`apedp_dyn/sandbox/eso_packing.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/eso_packing.py) | Geometric sphere-packing contact invariant referee harness. | `audit-only` |
+| [`apedp_dyn/discovery_l2/ode_engine.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/discovery_l2/ode_engine.py) | Higher-order ODE numerical integration and parameter estimation engine. | `production` |
+| [`apedp_dyn/discovery_l2/pruning.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/discovery_l2/pruning.py) | Symbolic expression AST simplification, zero-coefficient pruning, and caching. | `production` |
+| [`rust/apedp-kernel/src/genetic.rs`](file:///home/psalmprax/ALL_PROJECTS/science/rust/apedp-kernel/src/genetic.rs) | Rust-accelerated genetic algorithm evaluator with verified minimum-MSE selection. | `production` |
+| [`rust/apedp-kernel/src/rime/graph.rs`](file:///home/psalmprax/ALL_PROJECTS/science/rust/apedp-kernel/src/rime/graph.rs) | RIME typed mechanism graph: series-at-a-time topological evaluation, `State` recursion, structural validation, canonical SHA-256 ids. | `experimental` |
+| [`rust/apedp-kernel/src/rime/rewrite.rs`](file:///home/psalmprax/ALL_PROJECTS/science/rust/apedp-kernel/src/rime/rewrite.rs) | The five frozen RIME structural rewrites (lag, interaction, state, nonlinearity wrap, prune). | `experimental` |
+| [`rust/apedp-kernel/src/rime/eval.rs`](file:///home/psalmprax/ALL_PROJECTS/science/rust/apedp-kernel/src/rime/eval.rs) | RIME scorer: ridge-fitted linear readout, charged degrees of freedom, parallel batch evaluation. | `experimental` |
+| [`rust/apedp-kernel/src/rime/seeds.rs`](file:///home/psalmprax/ALL_PROJECTS/science/rust/apedp-kernel/src/rime/seeds.rs) | Deterministic 60-form seed catalogue (levels, delays, differences, lead-lag interactions, memory, wrappers). | `experimental` |
+| [`rust/apedp-kernel/src/rime/search.rs`](file:///home/psalmprax/ALL_PROJECTS/science/rust/apedp-kernel/src/rime/search.rs) | Deterministic budgeted beam search over the frozen rewrites; null-model-anchored gate with EBIC selection charge. | `experimental` |
+| [`rust/apedp-kernel/src/rime/record.rs`](file:///home/psalmprax/ALL_PROJECTS/science/rust/apedp-kernel/src/rime/record.rs) | Immutable content-addressed RIME candidate records (graph id, parent, rewrite op, seed, dev score). | `experimental` |
+| [`benchmarks/rime_vs_neural.py`](file:///home/psalmprax/ALL_PROJECTS/science/benchmarks/rime_vs_neural.py) | Head-to-head benchmark: RIME vs ridge and MLP baselines across planted mechanisms, sample sizes, and a null arm. | `audit-only` |
+| [`specifications/canonical_preregistered_spec_v1.json`](file:///home/psalmprax/ALL_PROJECTS/science/specifications/canonical_preregistered_spec_v1.json) | Canonical frozen specification containing all preregistered thresholds. | `production` |
+| [`apedp_dyn/conf/benchmark.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/conf/benchmark.py) | Legacy benchmark configuration and baseline threshold profiles. | `deprecated` |
+| [`apedp_dyn/epistemic/transfer_scope.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/transfer_scope.py) | Out-of-distribution transfer scope classifier evaluating empirical domain boundaries. | `production` |
+| [`apedp_dyn/epistemic/diagnosis.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/diagnosis.py) | Diagnostic failure attribution determining why candidates were refused at gates. | `production` |
+| [`apedp_dyn/epistemic/bootstrap.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/bootstrap.py) | Block-bootstrap and stationary bootstrap statistical confidence interval estimator. | `production` |
+| [`apedp_dyn/epistemic/term_necessity.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/term_necessity.py) | Term necessity and coefficient ablation testing framework. | `production` |
+| [`apedp_dyn/epistemic/discovery_stability.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/discovery_stability.py) | Discovery stability harness measuring parameter sensitivity across random seeds. | `production` |
+| [`apedp_dyn/epistemic/agnostic_adapter.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/agnostic_adapter.py) | Domain-agnostic evidence ingestion adapter standardizing holdout inputs. | `production` |
+| [`apedp_dyn/epistemic/calibration.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/calibration.py) | Model probability and uncertainty calibration verification. | `production` |
+| [`apedp_dyn/epistemic/pointer.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/pointer.py) | Epistemic pointer tracking references to empirical artifacts and receipts. | `production` |
+| [`apedp_dyn/epistemic/followup.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/followup.py) | Automated followup experiment recommendation and active disambiguation engine. | `experimental` |
+| [`apedp_dyn/grammar/mechanical_grammar.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/grammar/mechanical_grammar.py) | Mechanical and physical dynamical systems grammar definitions. | `production` |
+| [`apedp_dyn/grammar/proposer.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/grammar/proposer.py) | Core grammar search proposer generating candidate AST expressions. | `production` |
+| [`apedp_dyn/grammar/coupled.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/grammar/coupled.py) | Coupled multi-variable differential equation grammar definitions. | `production` |
+| [`apedp_dyn/grammar/canonicalize.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/grammar/canonicalize.py) | Symbolic expression canonicalization and term ordering. | `production` |
+
+### 18.2 RIME Stage-1 Engine (v0.1.1)
+
+RIME searches small executable "mechanism graphs" (typed DAGs over inputs, constants, add/mul/neg, tanh/sign/abs, frozen lags $k \in \{1,2,5,10,20\}$, and a recursive `State` memory cell) and proposes the equations it finds to the referee. Spec: [`docs/RIME_V01_MASTER_SPEC.md`](RIME_V01_MASTER_SPEC.md).
+
+**Boundary discipline:** RIME is a *proposer only*. It fits on development data, emits `CandidateProposal` objects carrying a closed-form equation plus a content-addressed `graph_id`, and cannot read or alter referee gates (`apedp_dyn/epistemic/`). Confirmation holdouts are untouched by the search.
+
+**Stage-1 audit remediation (v0.1.1).** Four defects were confirmed by direct probes and fixed; each has a regression test that fails on the pre-fix code:
+
+| Defect | Pre-fix behaviour | Fix | Regression test |
+|---|---|---|---|
+| Values cached per *node*, not per *(node, time step)* | `x[t] - x[t-1]` evaluated to zero | Whole-series evaluation in arena (topological) order, use-counted release | `tests/rime_regression.rs::difference_term_keeps_its_values` |
+| `AddState` was not a recursion (`d*out[t-1] - out[t]`, wrong sign) | all-ones input, $d=0.5$ gave `[NaN, -0.5, -0.5, -0.5]` | `Node::State` with $h_t = d\,h_{t-1} + u_t$ | `tests/rime_regression.rs::add_state_is_a_recursive_decay` |
+| Graphs scored on raw output; no coefficient fitting | planted $y = 0.001x_{t-2} + 5$ invisible to the scorer | Ridge least-squares readout $a\,o_t + b$, two readout DoF charged | `tests/rime_regression.rs::scale_and_intercept_are_fitted_before_scoring` |
+| Null control used a 1.0-per-edge penalty (above every achievable MSE) | bundled test proved nothing | Penalty on the sampling-noise scale $\gamma\,\mathrm{var}(y)/n_{dev}$ plus EBIC selection charge $2\ln M$ | `tests/rime_regression.rs::null_world_false_positive_rate_is_controlled`, `short_series_null_control_pays_for_multiplicity` |
+
+**Measured behaviour** (`benchmarks/rime_vs_neural_results.json`): on four planted mechanisms (fitted lag, momentum difference, AR(1) memory, lead-lag interaction) across $n \in \{60,\dots,3000\}$ with dev = first 60% and untouched test = last 40%, RIME recovers the exact family 5/5 seeds in every cell with out-of-sample $R^2 \ge 0.9996$ and two fitted coefficients; ridge on the same hand-built features ties it where the correct feature exists but fails the interaction (no product term) and the autoregressive world; the 961-weight MLP needs $n \ge 1200$ to reach ridge level and is worse than the mean on the null arm. On a pure-noise target RIME proposes nothing (0/5 at $n=150$ and $n=1200$), while the MLP reports strongly negative out-of-sample $R^2$. The `--stress` grid (18 cells) adds noise, amplitude and on/off-grid decay sweeps with a ≈0.9-correlated distractor input: RIME reports the right structure in 18/18 cells, including off-grid decay via its documented nearest-grid approximation. These are planted-mechanism results, not evidence of real-market validity.
+
+**Multi-environment scoring (v0.1.2).** `RimeProposer(per_frame_envs=True)` scores each dev frame as its own environment under a frozen aggregation rule: `"mean"` (equal weight per environment — the literal §8 reading) or `"median_worst_gated"` (median of per-environment dev MSEs, plus a worst-environment improvement gate so a mechanism that only wins in a large environment is refused). The rule is fixed before scoring, reported in the proposal metadata, and covered by a dominance-trap regression test at both the Rust and Python layers. RIME's signal is **past-information-only** (temporal hygiene, explicitly not a causal claim; pinned by `test_rime_compute_score_documents_past_information_only`).
+
+---
+
+## 19. Traceability & Verification Matrix
+
+| Documented Property / Guarantee | Implementation Location | Automated Test | Evidence & Status |
+|---|---|---|---|
+| Native Lean 4 Streaming Verification | [`apedp_dyn/epistemic/lean_universal_bridge.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/lean_universal_bridge.py) | `tests/test_dyn_lean_universal_bridge.py` | Verified: Exit code 0, sub-50ms execution via `--stdin`. |
+| Full-Lineage Experiment Tracking | [`apedp_dyn/epistemic/experiment_ledger.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/experiment_ledger.py) | `tests/test_dyn_experiment_ledger_and_benchmarks.py` | Verified: Candidate parentage, features, params recorded. |
+| Anti-Snooping Holdout Burning | [`apedp_dyn/epistemic/experiment_ledger.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/experiment_ledger.py#L93) | `tests/test_dyn_experiment_ledger_and_benchmarks.py` | Verified: `HoldoutContaminationError` raised on reuse. |
+| Deflated Sharpe Ratio Gating ($DSR \ge 0.95$) | [`apedp_dyn/epistemic/trial_ledger.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/trial_ledger.py) | `tests/test_dyn_competing_proposers_and_dsr.py` | Verified: Penalizes trial multiplicity $N$ and skew/kurtosis. |
+| Six-Stage Scoped Promotion State Machine | [`apedp_dyn/epistemic/promotion_lifecycle.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/promotion_lifecycle.py) | `tests/test_dyn_experiment_ledger_and_benchmarks.py` | Verified: Stages 1-6 sequential, halts permanently on failure. |
+| Decoupled DM Predictive Incrementality ($p < 0.01$) | [`apedp_dyn/epistemic/novelty_adjudication.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/novelty_adjudication.py) | `tests/test_dyn_competing_proposers_and_dsr.py` | Verified: Diebold-Mariano test with HAC standard errors. |
+| Structural Literature Orthogonality ($R^2 < 0.85$) | [`apedp_dyn/epistemic/novelty_adjudication.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/epistemic/novelty_adjudication.py#L150) | `tests/test_dyn_competing_proposers_and_dsr.py` | Verified: Rejects collinear Kyle/Amihud/Biais/Carhart proxies. |
+| Stock-Split Scale Invariance ($P/k, kV$) | [`apedp_dyn/sandbox/canonical_ledger.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/canonical_ledger.py#L330) | `tests/test_dyn_competing_proposers_and_dsr.py` | Verified: Conserves dollar volume, detects nominal bias. |
+| Tactical Active Fraction Window $[5\%, 90\%]$ (5% to 90%) | [`apedp_dyn/sandbox/canonical_ledger.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/canonical_ledger.py#L250) | `tests/test_dyn_competing_proposers_and_dsr.py` | Verified: Refuses Sharpe for decorative/non-binding gates. |
+| RIME graph evaluation is time-consistent ($x[t]$ and $x[t-1]$ are distinct values) | [`rust/apedp-kernel/src/rime/graph.rs`](file:///home/psalmprax/ALL_PROJECTS/science/rust/apedp-kernel/src/rime/graph.rs) | `tests/rime_regression.rs` | Verified: difference/momentum forms retain their magnitude. |
+| RIME memory cell is a true recursion | [`rust/apedp-kernel/src/rime/rewrite.rs`](file:///home/psalmprax/ALL_PROJECTS/science/rust/apedp-kernel/src/rime/rewrite.rs) | `tests/rime_regression.rs` | Verified: all-ones input at $d=0.5$ gives $[1, 1.5, 1.75, 1.875]$. |
+| RIME scoring fits a readout and charges its degrees of freedom | [`rust/apedp-kernel/src/rime/eval.rs`](file:///home/psalmprax/ALL_PROJECTS/science/rust/apedp-kernel/src/rime/eval.rs) | `tests/rime_regression.rs`, `tests/rime_stage1.rs` | Verified: planted amplitude recovered; raw scoring shown insufficient. |
+| RIME abstains on null worlds (with a paired positive control) | [`rust/apedp-kernel/src/rime/search.rs`](file:///home/psalmprax/ALL_PROJECTS/science/rust/apedp-kernel/src/rime/search.rs) | `tests/rime_regression.rs` | Verified: 0 promotions over 24 null worlds, and on 150-row null worlds. |
+| RIME proposes through the standard proposer contract | [`apedp_dyn/proposers/rime_proposer.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/proposers/rime_proposer.py) | `tests/test_dyn_rime_proposer.py` | Verified: `CandidateProposal` with past-information-only `compute_score` (temporal, not causal); abstains on noise. |
+| RIME multi-environment scoring cannot be outvoted by one large frame | [`rust/apedp-kernel/src/rime/search.rs`](file:///home/psalmprax/ALL_PROJECTS/science/rust/apedp-kernel/src/rime/search.rs) | `pooled_dominance_trap_does_not_apply_to_envgate_rule` (Rust) + `test_rime_pooled_dev_scoring_cannot_outvote_a_failing_frame` (Python) | Verified: `MedianWorstGated` refuses a mechanism that wins only in the large env; the consistent-law control passes. |
+| Real-Market Trading Predictive Profitability | N/A (Candidate evaluations in `sandbox/cpmd_*.py`) | None (Empirical holdouts failed) | **Explicitly Unverified / Unproven**: H-LIK and H-XSC failed OOS confirmation. |
+
+---
+
+*Documentation generated for APEDP-X v2.0.0 — Autonomous Physics, Engineering & Market Discovery Platform*

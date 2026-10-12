@@ -17,29 +17,24 @@ from __future__ import annotations
 
 from fractions import Fraction
 
-import numpy as np
 import pytest
 
 from apedp_dyn.conf.dimensionless import (
     DimensionlessGroup,
-    discover_pi_groups,
     build_exponent_matrix,
-)
-from apedp_dyn.gates.scaling_invariance import (
-    ScalingInvarianceGate,
-    ScalingRegime,
-    ScalingGenerator,
-    ScalingInvarianceResult,
-    ScalingInvarianceGateResult,
+    discover_pi_groups,
 )
 from apedp_dyn.epistemic.adjudicate import (
     EpistemicStatus,
     adjudicate,
-    Adjudication,
     resolution_floor,
 )
-from apedp_dyn.grammar.candidate_ir import Term, CandidateDynamics, ScoredCandidate
-
+from apedp_dyn.gates.scaling_invariance import (
+    ScalingGenerator,
+    ScalingInvarianceGate,
+    ScalingRegime,
+)
+from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 
 # ============================================================
 # Test data: dimensional exponent matrices for fusion variables
@@ -274,7 +269,9 @@ class TestScalingInvarianceWithPiGroups:
         vector should be checked against the regime's invariance constraints.
         """
         from apedp_dyn.gates.scaling_invariance import (
-            ScalingInvarianceGate, ScalingRegime, ScalingGenerator,
+            ScalingGenerator,
+            ScalingInvarianceGate,
+            ScalingRegime,
         )
 
         # Discover the π group
@@ -313,7 +310,9 @@ class TestScalingInvarianceWithPiGroups:
     def test_gyro_bohm_scaling_invariance_check(self):
         """Check scaling invariance for a Gyro-Bohm-like exponent vector."""
         from apedp_dyn.gates.scaling_invariance import (
-            ScalingInvarianceGate, ScalingRegime, ScalingGenerator,
+            ScalingGenerator,
+            ScalingInvarianceGate,
+            ScalingRegime,
         )
 
         gate = ScalingInvarianceGate(regimes=[
@@ -375,8 +374,6 @@ class TestEpistemicAdjudicationScaling:
     def test_multi_hypothesis_weak_evidence(self):
         """With weak evidence (similar holdout RMSE), structurally distinct
         scaling laws should be reported as MULTI_HYPOTHESIS, not UNIQUE_SUPPORT."""
-        from apedp_dyn.grammar.candidate_ir import Term, CandidateDynamics, ScoredCandidate
-        from apedp_dyn.epistemic.adjudicate import adjudicate, EpistemicStatus
 
         # Candidate A: terms 'one', 'x', 'x3', 'v'
         terms_a = tuple(Term(name, f'a{i}') for i, name in enumerate(['one', 'x', 'x3', 'v']))
@@ -419,8 +416,6 @@ class TestEpistemicAdjudicationScaling:
     def test_unique_support_decisive_evidence(self):
         """With decisive evidence (large holdout RMSE gap), structurally distinct
         scaling laws should be reported as UNIQUE_SUPPORT."""
-        from apedp_dyn.grammar.candidate_ir import Term, CandidateDynamics, ScoredCandidate
-        from apedp_dyn.epistemic.adjudicate import adjudicate, EpistemicStatus
 
         # Candidate A: terms 'one', 'x', 'x3', 'v'
         terms_a = tuple(Term(name, f'a{i}') for i, name in enumerate(['one', 'x', 'x3', 'v']))

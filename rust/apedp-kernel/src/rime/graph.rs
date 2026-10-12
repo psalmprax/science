@@ -3,6 +3,19 @@
 //! Spec: docs/RIME_V01_MASTER_SPEC.md §4. Nodes form an arena; evaluation is
 //! synchronous over input series with NaN-poisoning. Canonical serialization
 //! feeds SHA-256 graph ids (deterministic from structure).
+//!
+//! ## v0.1.1 correctness fixes (Stage-1 audit)
+//!
+//! * Evaluation is **series-at-a-time**, not row-at-a-time. The previous
+//!   implementation memoised one value per *node*, so a node referenced both
+//!   directly and through `Lag` shared a single cache slot and the lagged
+//!   read returned the current row. Any difference/momentum form
+//!   (`x[t] - x[t-1]`) silently evaluated to zero. Values are now arrays over
+//!   the whole series, computed in arena (topological) order.
+//! * `Node::State` is the persistent memory cell required by spec §4/§5, with
+//!   the documented recurrence `h[t] = decay * h[t-1] + u[t]`, `h[-1] = init`.
+//!   `AddState` used to be encoded as `d*output[t-1] - output[t]`, which is
+//!   not a recursion and carries the wrong sign for the input term.
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -19,10 +32,57 @@ pub enum Node {
     Sign(usize),
     Abs(usize),
     Lag(usize, usize),
+    /// Persistent state cell (spec §4 `State`).
+    ///
+    /// `h[t] = decay * h[t-1] + u[t]` where `u` is the series of `src` and
+    /// `h[-1] = init` (so `h[0] = decay*init + u[0]`, which is `u[0]` for the
+    /// default `init = 0`). NaN in `u` poisons the state forward, exactly like
+    /// every other node: warmup rows of a lagged input are NaN and are skipped
+    /// (counted) by the scorer, never imputed.
+    State { src: usize, decay: f64, init: f64 },
 }
 
 /// Frozen lag set (spec §4).
 pub const LAG_SET: [usize; 5] = [1, 2, 5, 10, 20];
+
+/// Why a graph cannot be evaluated.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum GraphError {
+    /// `output` does not name a node.
+    OutputOutOfRange { output: usize, nodes: usize },
+    /// A node references itself or a later node: the arena must be topological.
+    NotTopological { node: usize, operand: usize },
+    /// `Lag(k)` with `k` outside the frozen set.
+    LagNotFrozen { node: usize, k: usize },
+    /// A non-finite numeric literal.
+    NonFiniteConstant { node: usize },
+    /// Empty arena.
+    Empty,
+}
+
+impl std::fmt::Display for GraphError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GraphError::Empty => write!(f, "graph has no nodes"),
+            GraphError::OutputOutOfRange { output, nodes } => {
+                write!(f, "output index {} out of range ({} nodes)", output, nodes)
+            }
+            GraphError::NotTopological { node, operand } => write!(
+                f,
+                "node {} references operand {}: arena order must be topological",
+                node, operand
+            ),
+            GraphError::LagNotFrozen { node, k } => {
+                write!(f, "node {} uses lag {} outside the frozen set {:?}", node, k, LAG_SET)
+            }
+            GraphError::NonFiniteConstant { node } => {
+                write!(f, "node {} carries a non-finite constant", node)
+            }
+        }
+    }
+}
+
+impl std::error::Error for GraphError {}
 
 /// A mechanism graph: arena + designated output node.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -55,6 +115,9 @@ impl Graph {
                 Node::Sign(a) => format!("S{}", a),
                 Node::Abs(a) => format!("B{}", a),
                 Node::Lag(a, k) => format!("L{}:{}", a, k),
+                Node::State { src, decay, init } => {
+                    format!("X{}:{:.17e}:{:.17e}", src, decay, init)
+                }
             };
             s.push_str(&frag);
             s.push(';');
@@ -70,44 +133,189 @@ impl Graph {
         h.finalize().iter().map(|b| format!("{:02x}", b)).collect::<String>()
     }
 
-    fn eval_node(&self, idx: usize, t: usize, cols: &[Vec<f64>], memo: &mut Vec<Option<f64>>) -> f64 {
-        if let Some(v) = memo[idx] {
-            return v;
-        }
-        let v = match &self.nodes[idx] {
-            Node::Input(i) => *cols.get(*i).and_then(|c| c.get(t)).unwrap_or(&f64::NAN),
-            Node::Const(c) => *c,
-            Node::Add(a, b) => self.eval_node(*a, t, cols, memo) + self.eval_node(*b, t, cols, memo),
-            Node::Mul(a, b) => self.eval_node(*a, t, cols, memo) * self.eval_node(*b, t, cols, memo),
-            Node::Neg(a) => -self.eval_node(*a, t, cols, memo),
-            Node::Tanh(a) => self.eval_node(*a, t, cols, memo).tanh(),
-            Node::Sign(a) => {
-                let x = self.eval_node(*a, t, cols, memo);
-                if x.is_nan() { f64::NAN } else if x > 0.0 { 1.0 } else if x < 0.0 { -1.0 } else { 0.0 }
+    /// Human-readable closed form of the output expression (for referee
+    /// packets). Node sharing is expanded, so the string can be exponential in
+    /// the number of nodes; RIME graphs are small by construction.
+    pub fn describe(&self) -> String {
+        fn rec(g: &Graph, i: usize, memo: &mut Vec<Option<String>>) -> String {
+            if let Some(s) = memo.get(i).and_then(|m| m.clone()) {
+                return s;
             }
-            Node::Abs(a) => self.eval_node(*a, t, cols, memo).abs(),
-            Node::Lag(a, k) => {
-                if t >= *k {
-                    self.eval_node(*a, t - k, cols, memo)
+            let s = match g.nodes.get(i) {
+                None => "<?>".to_string(),
+                Some(Node::Input(v)) => format!("v{}", v),
+                Some(Node::Const(c)) => format!("{:.6}", c),
+                Some(Node::Add(a, b)) => format!("({} + {})", rec(g, *a, memo), rec(g, *b, memo)),
+                Some(Node::Mul(a, b)) => format!("({} * {})", rec(g, *a, memo), rec(g, *b, memo)),
+                Some(Node::Neg(a)) => format!("(-{})", rec(g, *a, memo)),
+                Some(Node::Tanh(a)) => format!("tanh({})", rec(g, *a, memo)),
+                Some(Node::Sign(a)) => format!("sign({})", rec(g, *a, memo)),
+                Some(Node::Abs(a)) => format!("abs({})", rec(g, *a, memo)),
+                Some(Node::Lag(a, k)) => format!("{}[t-{}]", rec(g, *a, memo), k),
+                Some(Node::State { src, decay, init }) => {
+                    format!("state_{:.4}({}; init={:.4})", decay, rec(g, *src, memo), init)
+                }
+            };
+            if i < memo.len() {
+                memo[i] = Some(s.clone());
+            }
+            s
+        }
+        let mut memo = vec![None; self.nodes.len()];
+        rec(self, self.output, &mut memo)
+    }
+
+    /// Structural validation: output in range, arena order topological, lags
+    /// frozen, literals finite. Evaluation refuses non-topological graphs
+    /// instead of silently reading a half-built value.
+    pub fn validate(&self) -> Result<(), GraphError> {
+        if self.nodes.is_empty() {
+            return Err(GraphError::Empty);
+        }
+        if self.output >= self.nodes.len() {
+            return Err(GraphError::OutputOutOfRange { output: self.output, nodes: self.nodes.len() });
+        }
+        for (i, n) in self.nodes.iter().enumerate() {
+            let check = |operand: usize| -> Result<(), GraphError> {
+                if operand >= i {
+                    Err(GraphError::NotTopological { node: i, operand })
                 } else {
-                    f64::NAN
+                    Ok(())
+                }
+            };
+            match n {
+                Node::Input(_) => {}
+                Node::Const(c) => {
+                    if !c.is_finite() {
+                        return Err(GraphError::NonFiniteConstant { node: i });
+                    }
+                }
+                Node::Add(a, b) | Node::Mul(a, b) => {
+                    check(*a)?;
+                    check(*b)?;
+                }
+                Node::Neg(a) | Node::Tanh(a) | Node::Sign(a) | Node::Abs(a) => check(*a)?,
+                Node::Lag(a, k) => {
+                    check(*a)?;
+                    if !LAG_SET.contains(k) {
+                        return Err(GraphError::LagNotFrozen { node: i, k: *k });
+                    }
+                }
+                Node::State { src, decay, init } => {
+                    check(*src)?;
+                    if !decay.is_finite() || !init.is_finite() {
+                        return Err(GraphError::NonFiniteConstant { node: i });
+                    }
                 }
             }
-        };
-        memo[idx] = Some(v);
-        v
+        }
+        Ok(())
+    }
+
+    /// Operand indices of a node.
+    fn operands(n: &Node) -> Vec<usize> {
+        match n {
+            Node::Input(_) | Node::Const(_) => Vec::new(),
+            Node::Add(a, b) | Node::Mul(a, b) => vec![*a, *b],
+            Node::Neg(a) | Node::Tanh(a) | Node::Sign(a) | Node::Abs(a) | Node::Lag(a, _) => vec![*a],
+            Node::State { src, .. } => vec![*src],
+        }
+    }
+
+    /// Evaluate every node over the whole series, in arena (topological) order.
+    ///
+    /// One array per *live* node: a node's series is released as soon as the
+    /// last consumer has read it, and nodes unreachable from the output are
+    /// never computed. Memory is therefore O(depth × n), not O(nodes × n), and
+    /// time is O(edges × n) instead of the old O(nodes × n) recursive walk that
+    /// allocated a fresh memo per row.
+    pub fn evaluate_checked(&self, cols: &[Vec<f64>]) -> Result<Vec<f64>, GraphError> {
+        self.validate()?;
+        let n = cols.iter().map(|c| c.len()).max().unwrap_or(0);
+
+        // Remaining consumer count per node (the output counts as a consumer).
+        let mut uses = vec![0usize; self.nodes.len()];
+        for node in &self.nodes {
+            for op in Self::operands(node) {
+                uses[op] += 1;
+            }
+        }
+        // Pin the output node: its series must survive to the end even if a
+        // later node also consumes it.
+        uses[self.output] += 1;
+        let mut vals: Vec<Option<Vec<f64>>> = (0..self.nodes.len()).map(|_| None).collect();
+
+        for i in 0..self.nodes.len() {
+            if uses[i] == 0 && i != self.output {
+                continue; // unreachable from the output: never computed
+            }
+            let v: Vec<f64> = match &self.nodes[i] {
+                Node::Input(k) => (0..n)
+                    .map(|t| cols.get(*k).and_then(|c| c.get(t)).copied().unwrap_or(f64::NAN))
+                    .collect(),
+                Node::Const(c) => vec![*c; n],
+                Node::Add(a, b) => {
+                    let (x, y) = (vals[*a].as_ref().unwrap(), vals[*b].as_ref().unwrap());
+                    (0..n).map(|t| x[t] + y[t]).collect()
+                }
+                Node::Mul(a, b) => {
+                    let (x, y) = (vals[*a].as_ref().unwrap(), vals[*b].as_ref().unwrap());
+                    (0..n).map(|t| x[t] * y[t]).collect()
+                }
+                Node::Neg(a) => vals[*a].as_ref().unwrap().iter().map(|v| -v).collect(),
+                Node::Tanh(a) => vals[*a].as_ref().unwrap().iter().map(|v| v.tanh()).collect(),
+                Node::Sign(a) => vals[*a]
+                    .as_ref()
+                    .unwrap()
+                    .iter()
+                    .map(|v| {
+                        if v.is_nan() {
+                            f64::NAN
+                        } else if *v > 0.0 {
+                            1.0
+                        } else if *v < 0.0 {
+                            -1.0
+                        } else {
+                            0.0
+                        }
+                    })
+                    .collect(),
+                Node::Abs(a) => vals[*a].as_ref().unwrap().iter().map(|v| v.abs()).collect(),
+                Node::Lag(a, k) => {
+                    let x = vals[*a].as_ref().unwrap();
+                    (0..n).map(|t| if t >= *k { x[t - k] } else { f64::NAN }).collect()
+                }
+                Node::State { src, decay, init } => {
+                    let u = vals[*src].as_ref().unwrap();
+                    let mut h = vec![f64::NAN; n];
+                    let mut prev = *init;
+                    for t in 0..n {
+                        prev = decay * prev + u[t];
+                        h[t] = prev;
+                    }
+                    h
+                }
+            };
+            // Release consumed operands.
+            for op in Self::operands(&self.nodes[i]) {
+                uses[op] -= 1;
+                if uses[op] == 0 {
+                    vals[op] = None;
+                }
+            }
+            vals[i] = Some(v);
+        }
+        Ok(vals[self.output].take().expect("output series computed"))
     }
 
     /// Evaluate the output over all timesteps. NaN-poisoning is structural:
     /// any NaN input propagates (IEEE arithmetic), warmup rows stay NaN.
+    ///
+    /// A structurally invalid graph yields an all-NaN series (so it can never
+    /// score) — use [`Graph::evaluate_checked`] to see the reason.
     pub fn evaluate(&self, cols: &[Vec<f64>]) -> Vec<f64> {
-        let n = cols.first().map(|c| c.len()).unwrap_or(0);
-        (0..n)
-            .map(|t| {
-                let mut memo = vec![None; self.nodes.len()];
-                self.eval_node(self.output, t, cols, &mut memo)
-            })
-            .collect()
+        let n = cols.iter().map(|c| c.len()).max().unwrap_or(0);
+        self.evaluate_checked(cols).unwrap_or_else(|_| vec![f64::NAN; n])
     }
 
     pub fn edge_count(&self) -> usize {
@@ -115,7 +323,12 @@ impl Graph {
             .iter()
             .map(|n| match n {
                 Node::Input(_) | Node::Const(_) => 0,
-                Node::Neg(_) | Node::Tanh(_) | Node::Sign(_) | Node::Abs(_) | Node::Lag(_, _) => 1,
+                Node::Neg(_)
+                | Node::Tanh(_)
+                | Node::Sign(_)
+                | Node::Abs(_)
+                | Node::Lag(_, _)
+                | Node::State { .. } => 1,
                 Node::Add(_, _) | Node::Mul(_, _) => 2,
             })
             .sum()
@@ -186,5 +399,80 @@ mod tests {
         g.output = g.push(Node::Mul(x, x)); // x^2 >= 0
         let out = g.evaluate(&[vec![-2.0, 3.0]]);
         assert_eq!(out, vec![4.0, 9.0]);
+    }
+
+    #[test]
+    fn repeated_operand_is_not_memoised_across_time() {
+        // Defect 1 regression: x is read at t (directly) and at t-1 (via Lag).
+        let mut g = Graph::new();
+        let x = g.push(Node::Input(0));
+        let xl = g.push(Node::Lag(x, 1));
+        g.output = g.push(Node::Mul(x, xl)); // x[t] * x[t-1]
+
+        let out = g.evaluate(&[vec![2.0, 3.0, 4.0, 5.0]]);
+        assert!(out[0].is_nan());
+        assert_eq!(&out[1..], &[6.0, 12.0, 20.0]);
+    }
+
+    #[test]
+    fn state_recurrence_and_init() {
+        let mut g = Graph::new();
+        let u = g.push(Node::Input(0));
+        g.output = g.push(Node::State { src: u, decay: 0.5, init: 0.0 });
+        let out = g.evaluate(&[vec![1.0, 1.0, 1.0, 1.0]]);
+        assert_eq!(out, vec![1.0, 1.5, 1.75, 1.875]);
+
+        // A non-zero init is a decaying imprint of pre-sample history: the
+        // prior state is itself carried through one decay step to t = 0.
+        let mut h = Graph::new();
+        let u = h.push(Node::Input(0));
+        h.output = h.push(Node::State { src: u, decay: 0.5, init: 1.0 });
+        assert_eq!(h.evaluate(&[vec![0.0, 0.0]]), vec![0.5, 0.25]);
+    }
+
+    #[test]
+    fn unreachable_nodes_do_not_affect_output() {
+        let mut g = Graph::new();
+        let x = g.push(Node::Input(0));
+        let junk = g.push(Node::Input(7)); // unreachable, undefined column
+        g.output = x;
+        assert_eq!(g.evaluate(&[vec![1.0, 2.0]]), vec![1.0, 2.0]);
+        assert!(!g.nodes.is_empty() && junk == 1);
+    }
+
+    #[test]
+    fn validate_rejects_forward_reference_and_bad_lag() {
+        let g = Graph { nodes: vec![Node::Const(1.0), Node::Add(0, 1)], output: 1 };
+        assert_eq!(g.validate(), Err(GraphError::NotTopological { node: 1, operand: 1 }));
+        // Violating graph must not silently produce numbers.
+        assert!(g.evaluate(&[vec![1.0]]).iter().all(|v| v.is_nan()));
+
+        let mut h = Graph::new();
+        let x = h.push(Node::Input(0));
+        h.output = h.push(Node::Lag(x, 3));
+        assert_eq!(h.validate(), Err(GraphError::LagNotFrozen { node: 1, k: 3 }));
+
+        let k = Graph { nodes: vec![], output: 0 };
+        assert_eq!(k.validate(), Err(GraphError::Empty));
+    }
+
+    #[test]
+    fn describe_is_readable() {
+        let mut g = Graph::new();
+        let x = g.push(Node::Input(0));
+        let xl = g.push(Node::Lag(x, 2));
+        let nxl = g.push(Node::Neg(xl));
+        g.output = g.push(Node::Add(x, nxl));
+        let s = g.describe();
+        assert!(s.contains("v0"), "{}", s);
+        assert!(s.contains("[t-2]"), "{}", s);
+    }
+
+    #[test]
+    fn state_edge_is_charged() {
+        let mut g = Graph::new();
+        let x = g.push(Node::Input(0));
+        g.output = g.push(Node::State { src: x, decay: 0.5, init: 0.0 });
+        assert_eq!(g.edge_count(), 1);
     }
 }

@@ -360,7 +360,7 @@ class DiscoveryPipeline:
         data: Mapping[str, np.ndarray],
         target_column: str,
         output_unit: str = "dimensionless",
-        variable_units: dict[str, str] | None = None,
+        variable_units: Mapping[str, str] | None = None,
         hypotheses_to_evaluate: Sequence[Any] | None = None,
         near_ood_data: Mapping[str, np.ndarray] | None = None,
         far_ood_data: Mapping[str, np.ndarray] | None = None,
@@ -555,9 +555,13 @@ class DiscoveryPipeline:
                 _beta = np.array([1.0])
 
                 def _predict(idx: np.ndarray,
-                             _design: np.ndarray = design) -> np.ndarray:
+                             _design: np.ndarray = design,
+                             _beta: np.ndarray = _beta) -> np.ndarray:
                     # ``design`` is rebound every iteration of the candidate
                     # loop, so it is bound as a default rather than captured.
+                    # ``_beta`` is unused on this arm (the coefficient is fixed
+                    # at 1.0); it is held so both arms of the conditional define
+                    # one callable contract.
                     return np.asarray(_design[idx], dtype=float).reshape(-1)
 
             def _apply(values: np.ndarray, _beta: np.ndarray = _beta) -> np.ndarray:
@@ -894,7 +898,9 @@ class DiscoveryPipeline:
             target_column=target_column,
             hypotheses_to_evaluate=hypotheses_to_evaluate,
             variable_units=variable_units,
-            output_unit=output_unit,
+            # The comparison entry point lets a caller leave the unit unset;
+            # this one takes a concrete unit string.
+            output_unit=output_unit if output_unit is not None else "dimensionless",
             near_ood_data=near_ood_data,
             far_ood_data=far_ood_data,
             holdout_margin_ratio=holdout_margin_ratio,

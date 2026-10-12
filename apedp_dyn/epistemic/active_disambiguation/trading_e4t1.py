@@ -103,7 +103,9 @@ def _score(hid: str, resid: np.ndarray) -> ScoredCandidate:
 
 
 def _adjudicate(scored: list[ScoredCandidate]) -> tuple[str, str | None]:
-    scored = sorted(scored, key=lambda s: float(s.holdout_rmse))
+    scored = sorted(scored,
+                    key=lambda s: float(s.holdout_rmse)
+                    if s.holdout_rmse is not None else float("inf"))
     adj = adjudicate(list(scored),
                      resid_best=np.asarray(scored[0].provenance["gate4_status"]["holdout_residuals"]),
                      resid_rival=np.asarray(scored[1].provenance["gate4_status"]["holdout_residuals"]),
@@ -128,7 +130,7 @@ def run_origin(panels: dict[str, pd.DataFrame], origin: str, policy: str, seed: 
     # Candidate table from train fits (observable consequences only).
     def rm(s):
         return float(np.sqrt(np.mean(s**2))) if len(s) else float("nan")
-    rows: dict[str, tuple[dict[str, float], float]] = {}
+    rows: dict[str, tuple[dict[str, float], float, float]] = {}
     ftr = {h: btc[feats[h]].to_numpy() for h in feats}
     base_pred = {h: coefs[h][0] + coefs[h][1] * ftr[h] for h in feats}
     d1 = btc["sig"].shift(-1).to_numpy()
@@ -188,20 +190,20 @@ def run_origin(panels: dict[str, pd.DataFrame], origin: str, policy: str, seed: 
     elif policy == "persistence":
         mid, d = "m1", d_of["m1"]
     elif policy == "oracle":
-        mid, d = None, -1.0
+        d = -1.0
     else:
         raise ValueError(policy)
     # Observe on forward month (regime labels causal), re-adjudicate forward-only.
     fw_idx = np.where(m_fw)[0]
     if policy == "oracle":
-        best, best_margin = None, -1.0
+        best_c, best_margin = None, -1.0
         for mid_c in MEASUREMENT_IDS:
             st, _ = _forward_score(panels, coefs, feats, mid_c, fw_idx)
             vals = sorted(st.values())
             margin = vals[1] - vals[0]
             if margin > best_margin:
-                best, best_margin = mid_c, margin
-        mid = best
+                best_c, best_margin = mid_c, margin
+        mid = best_c if best_c is not None else mid
         d = float("nan")
     _, fwd = _forward_score(panels, coefs, feats, mid, fw_idx)
     scored = [_score(h, fwd[h]) for h in feats]

@@ -13,6 +13,7 @@ import csv
 import io
 import logging
 import re
+from dataclasses import replace
 from typing import Any
 
 import numpy as np
@@ -215,7 +216,7 @@ def _run_1d_series_discovery(
 
     ranked = sorted(
         [s for s in g4 if s.train_loss is not None and np.isfinite(s.train_loss)],
-        key=lambda s: float(s.train_loss),
+        key=lambda s: float(s.train_loss) if s.train_loss is not None else float("inf"),
     )
     se = {id(s): _se_series(s) for s in ranked}
     best_se = se.get(id(ranked[0])) if ranked else None
@@ -238,7 +239,7 @@ def _run_1d_series_discovery(
 
     cand_pool = ranked if ranked else sorted(
         [s for s in fitted if getattr(s, "holdout_rmse", None) is not None],
-        key=lambda s: float(s.holdout_rmse),
+        key=lambda s: float(s.holdout_rmse) if s.holdout_rmse is not None else float("inf"),
     )
 
     # Plot reconstruction
@@ -253,8 +254,12 @@ def _run_1d_series_discovery(
             from apedp_dyn.grammar.mechanical_grammar import materialize
             from apedp_dyn.simulation import simulate
             m = materialize(prob, adj.promoted.candidate)
-            for p in m.parameters:
-                p.value = adj.promoted.fit.param_values.get(p.name, 0.0)
+            # PhysicalModel/Parameter are frozen: rebuild the parameter tuple
+            # with the fitted values instead of mutating it in place.
+            fitted = adj.promoted.fit.param_values
+            m = replace(m, parameters=tuple(
+                replace(p, value=fitted.get(p.name, 0.0)) for p in m.parameters
+            ))
             res = simulate(m, (0.0, float(ho_len - 1)), prob.holdout["u_of_t"],
                            prob.holdout["x0"], n_eval=ho_len)
             if res.success:

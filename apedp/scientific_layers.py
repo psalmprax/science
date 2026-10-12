@@ -7,7 +7,7 @@ lightweight generic helpers. No domain hardcoding; fusion is one plugin.
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum, auto
 
@@ -378,7 +378,7 @@ def interior_pole_scan(expr, observed: dict, *,
     # about the geometry of the observed domain, not about parameter values.
     held = {name: 1.0 for name in names if name not in columns}
 
-    def _call(cols_by_name: dict[str, np.ndarray]) -> np.ndarray:
+    def _call(cols_by_name: Mapping[str, float | np.ndarray]) -> np.ndarray:
         ordered = [cols_by_name.get(n, held.get(n, 1.0)) for n in names]
         return np.atleast_1d(
             np.asarray(func(*ordered), dtype=float)
@@ -392,7 +392,9 @@ def interior_pole_scan(expr, observed: dict, *,
         else:
             parts = []
             for swept_name in axis_names:
-                cols = {name: base[name] for name in axis_names}
+                cols: dict[str, float | np.ndarray] = {
+                    name: base[name] for name in axis_names
+                }
                 cols[swept_name] = axis
                 parts.append(_call(cols))
             sweeps = parts

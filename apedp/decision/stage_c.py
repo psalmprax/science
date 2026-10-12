@@ -297,7 +297,7 @@ class StageCDecisionEngine:
             tol = 1e-9 * span
             try:
                 components = engine.extract_singular_components(c.expression)
-            except Exception as e:  # noqa: BLE001 - sympy raises a wide, version-dependent set here
+            except Exception as e:
                 # Recorded as inconclusive, not skipped. Skipping leaves the
                 # candidate out of `refusals`, and the caller reads absence of
                 # refusal as "no pole in the observed data" -- so a sympy
@@ -345,7 +345,7 @@ class StageCDecisionEngine:
                     # unexpected happened: the expression is simply outside the
                     # scope this routine claims.
                     continue
-                except Exception as e:  # noqa: BLE001 - sympy raises a wide, version-dependent set here
+                except Exception as e:
                     # A failure on something that *should* have been in scope.
                     # The component's roots are absent from `roots`, so its
                     # poles are never range-checked and the candidate would
@@ -610,7 +610,7 @@ class StageCDecisionEngine:
                                     f"{abs(mean_d):.2e} <= 1.96 * SE = {1.96 * se_d:.2e} "
                                     f"over {len(d)} paired residuals"
                                 )
-                    except Exception as e:  # noqa: BLE001 - optional metadata probe, never fatal
+                    except Exception as e:
                         # Leaving is_noise_equiv False here does not merely
                         # withhold a trade-off note: it keeps the candidate out
                         # of `competitive`, which is what promotes the run to

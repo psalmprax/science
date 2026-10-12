@@ -1,0 +1,113 @@
+===================================================================================================================
+APEDP-X EMPIRICAL AUDIT: MULTI-SEED SELECTION STABILITY & TWO-TIER ABLATION
+Pre-Registered Seeds: [42, 101, 777, 1337, 2024]
+Target Universes: N in [15, 30, 60, 90]
+Feature Grammar: 26 Base Signals + 1 Interaction Term (PRODUCT_H_BB_TAKER) = 27 Terms
+===================================================================================================================
+Dataset Loaded: Total Bars = 1255 | Train (Block A) = 753 | Holdout (Block B) = 502
+
+===================================================================================================================
+PART 1: MULTI-SEED SEARCH STABILITY AUDIT (BLOCK A: 2021-2023 DEVELOPMENT DATA)
+===================================================================================================================
+
+--- Universe N = 15 Assets (Running 5 Pre-Registered Seeds) ---
+  Seed 42    | Active Terms:  5 | Th: 0.1695 | Fitness: 4.786 | S = +1.1948*H-BB +0.2227*H-STOCH +0.4501*H-OBV_MOM -0.4839*NL_HURST_ADAPT -0.0161*PRODUCT_H_BB_TAKER
+  Seed 101   | Active Terms:  4 | Th: 0.0226 | Fitness: 4.635 | S = +0.0379*H-MACD +0.5262*H-BB +0.8791*H-STOCH +0.4835*NL_SQUEEZE_TREND
+  Seed 777   | Active Terms:  5 | Th: 0.2023 | Fitness: 4.642 | S = +0.8554*H-STOCH +0.3698*H-A +0.2577*H-OBV_MOM -0.0651*NL_RISK_ADJ_MOM -0.3693*NL_TAKER_MOM
+  Seed 1337  | Active Terms:  5 | Th: 0.1430 | Fitness: 4.556 | S = +0.3745*H-MACD +0.7103*H-BB +1.0461*H-STOCH +0.4975*NL_SQUEEZE_TREND -0.2047*PRODUCT_H_BB_TAKER
+  Seed 2024  | Active Terms:  5 | Th: 0.1401 | Fitness: 4.951 | S = -0.3195*H-ASYM +0.9135*H-BB -0.0438*H-RV +0.3192*H-LOG +0.6701*NL_SQUEEZE_TREND
+
+--- Universe N = 30 Assets (Running 5 Pre-Registered Seeds) ---
+  Seed 42    | Active Terms:  3 | Th: 0.1572 | Fitness: 3.832 | S = -0.1792*H-ASYM +0.8179*H-BB -0.2768*NL_OFI_REV
+  Seed 101   | Active Terms:  3 | Th: 0.1096 | Fitness: 3.835 | S = +1.3425*H-STOCH +0.7610*NL_SQUEEZE_TREND -0.5422*NL_HURST_ADAPT
+  Seed 777   | Active Terms:  5 | Th: 0.1493 | Fitness: 4.804 | S = +0.8824*H-NATR +0.5711*H-MACD +0.6820*H-STOCH -0.4673*NL_HURST_ADAPT +0.0131*PRODUCT_H_BB_TAKER
+  Seed 1337  | Active Terms:  4 | Th: 0.1727 | Fitness: 4.147 | S = +0.1073*H-MACD +1.2442*H-STOCH +0.5516*NL_SQUEEZE_TREND -0.4118*NL_HURST_ADAPT
+  Seed 2024  | Active Terms:  7 | Th: 0.2075 | Fitness: 4.282 | S = +0.2088*H-MACD -0.0930*H-EMA_CROSS +0.8521*H-BB +0.6759*H-STOCH +0.0866*NL_SQUEEZE_TREND -0.1056*NL_RISK_ADJ_MOM -0.6107*NL_HURST_ADAPT
+
+--- Universe N = 60 Assets (Running 5 Pre-Registered Seeds) ---
+  Seed 42    | Active Terms:  7 | Th: 0.0946 | Fitness: 3.268 | S = -0.0545*H-ASYM -0.0042*H-EMA_CROSS +0.4323*H-BB -0.8522*H-OBV_MOM +0.5357*H-HURST -1.3680*NL_SQUEEZE_TREND -0.9019*NL_HURST_ADAPT
+  Seed 101   | Active Terms:  4 | Th: 0.2322 | Fitness: 3.190 | S = +0.1592*H-SQUEEZE +0.1366*H-HURST -0.9119*NL_SQUEEZE_TREND -0.4520*NL_HURST_ADAPT
+  Seed 777   | Active Terms:  4 | Th: 0.1959 | Fitness: 3.096 | S = +0.0647*H-NATR +0.0245*H-RV +0.4201*H-HURST -0.8682*NL_SQUEEZE_TREND
+  Seed 1337  | Active Terms:  5 | Th: 0.2236 | Fitness: 3.156 | S = +0.0660*H-MACD -0.4190*H-OBV_MOM +0.7539*H-HURST -0.3446*NL_OFI_REV -0.9626*NL_HURST_ADAPT
+  Seed 2024  | Active Terms:  4 | Th: 0.2635 | Fitness: 3.050 | S = +0.0654*H-MACD +0.1640*H-MFI +0.7049*H-HURST -1.3888*NL_HURST_ADAPT
+
+--- Universe N = 90 Assets (Running 5 Pre-Registered Seeds) ---
+  Seed 42    | Active Terms:  5 | Th: 0.1525 | Fitness: 2.060 | S = +0.7185*H-NATR -0.0925*H-SQUEEZE +0.7004*H-BB -0.0685*H-STOCH +0.7700*H-HURST
+  Seed 101   | Active Terms:  4 | Th: 0.2445 | Fitness: 2.323 | S = +0.3517*H-SQUEEZE +0.1702*H-HURST -0.7725*NL_SQUEEZE_TREND -0.3430*NL_HURST_ADAPT
+  Seed 777   | Active Terms:  4 | Th: 0.0925 | Fitness: 1.510 | S = +0.5776*H-BB +0.5991*H-STOCH -0.2469*H-A -0.2067*NL_OFI_REV
+  Seed 1337  | Active Terms:  5 | Th: 0.1599 | Fitness: 2.266 | S = -0.1826*H-ASYM +0.4077*H-NATR +0.2560*H-SQUEEZE +0.8232*H-HURST -1.4651*NL_SQUEEZE_TREND
+  Seed 2024  | Active Terms:  8 | Th: 0.2957 | Fitness: 2.291 | S = +1.1922*H-SQUEEZE +0.0835*H-BB -0.0230*H-MOM +0.5512*H-RV -0.6796*H-OBV_MOM +0.0206*NL_VOL_GATED_MOM -1.0811*NL_SQUEEZE_TREND -1.1815*NL_HURST_ADAPT
+
+===================================================================================================================
+SELECTION STABILITY SUMMARY BY UNIVERSE (5 SEEDS PER UNIVERSE)
+===================================================================================================================
+Universe | Mean Terms   | Mean Th    | Pairwise Jaccard   | H-BB Frequency   | H-BB Mean Weight (Sign) 
+-------------------------------------------------------------------------------------------------------------------
+N = 15   |  4.8 ± 0.4 | 0.1355     | 0.265              | 4/5 (80.0%)      | +0.8362 (100% Positive) 
+N = 30   |  4.4 ± 1.5 | 0.1592     | 0.303              | 2/5 (40.0%)      | +0.8350 (100% Positive) 
+N = 60   |  4.8 ± 1.2 | 0.2020     | 0.287              | 1/5 (20.0%)      | +0.4323 (100% Positive) 
+N = 90   |  5.2 ± 1.5 | 0.1890     | 0.229              | 3/5 (60.0%)      | +0.4538 (100% Positive) 
+
+===================================================================================================================
+GLOBAL FEATURE RECURRENCE RANKING ACROSS ALL 20 SEARCH RUNS (4 UNIVERSES x 5 SEEDS)
+===================================================================================================================
+Rank  | Signal Identifier        | Full Feature Name                      | Total Selected  | Recurrence %
+-------------------------------------------------------------------------------------------------------------------
+1     | NL_SQUEEZE_TREND         | NL_SQUEEZE_TREND (MACD x Squeeze)      | 12 / 20         |  60.0%
+2     | NL_HURST_ADAPT           | NL_HURST_ADAPT (Adaptive Regime)       | 11 / 20         |  55.0%
+3     | H-STOCH                  | H-STOCH (Stochastic Oscillator)        | 10 / 20         |  50.0%
+4     | H-BB                     | H-BB (Bollinger Bands %B)              | 10 / 20         |  50.0%
+5     | H-HURST                  | H-HURST (Hurst Regime Memory)          | 8  / 20         |  40.0%
+6     | H-MACD                   | H-MACD (Trend Momentum)                | 7  / 20         |  35.0%
+7     | H-OBV_MOM                | H-OBV_MOM (OBV Momentum)               | 5  / 20         |  25.0%
+8     | H-SQUEEZE                | H-SQUEEZE (BB/Keltner Squeeze)         | 5  / 20         |  25.0%
+9     | H-ASYM                   | H-ASYM (GJR Panic Leverage)            | 4  / 20         |  20.0%
+10    | H-NATR                   | H-NATR (Normalized ATR)                | 4  / 20         |  20.0%
+11    | PRODUCT_H_BB_TAKER       | PRODUCT_H_BB_TAKER (BB x Taker Surge)  | 3  / 20         |  15.0%
+12    | NL_OFI_REV               | NL_OFI_REV (RSI x OFI Reversal)        | 3  / 20         |  15.0%
+13    | H-RV                     | H-RV (Trailing Volume Rank)            | 3  / 20         |  15.0%
+14    | NL_RISK_ADJ_MOM          | NL_RISK_ADJ_MOM (Mom / NATR)           | 2  / 20         |  10.0%
+15    | H-A                      | H-A (Amihud Illiquidity)               | 2  / 20         |  10.0%
+16    | H-EMA_CROSS              | H-EMA_CROSS (Fast/Slow EMA)            | 2  / 20         |  10.0%
+17    | NL_TAKER_MOM             | NL_TAKER_MOM (Taker Surge x Mom)       | 1  / 20         |   5.0%
+18    | H-MFI                    | H-MFI (Money Flow Index)               | 1  / 20         |   5.0%
+19    | H-LOG                    | H-LOG (Log Volume Level)               | 1  / 20         |   5.0%
+20    | NL_VOL_GATED_MOM         | NL_VOL_GATED_MOM (Mom x VolRank)       | 1  / 20         |   5.0%
+21    | H-MOM                    | H-MOM (5-Day Momentum)                 | 1  / 20         |   5.0%
+
+===================================================================================================================
+PART 2: CONTROLLED TWO-TIER ABLATION TEST (BLOCK B: 2024-2025 DIAGNOSTIC HOLDOUT)
+Evaluation Period: Block B (502 bars) | Fee: 5.0 bps | Inverse-Volatility Sizing
+===================================================================================================================
+Universe | Strategy / Policy                | Net Ret   | Gross Ret | Sharpe  | Max DD   | Exposure  | Turnover 
+-------------------------------------------------------------------------------------------------------------------
+N = 15   | Policy 1: Standalone H-BB        |   +30.08% |   +37.77% | +0.62 |   42.6% |    87.9% |   1724.0
+         | Policy 2: Full Evolved Equation  |   +33.77% |   +42.66% | +0.65 |   40.3% |    89.0% |   1932.0
+         | Policy 3: Universe Terms (No H-BB) |    +5.53% |   +14.39% | +0.34 |   36.4% |    66.3% |   2420.0
+         | Benchmark: Candidate A Baseline  |    -5.93% |    +6.26% | +0.09 |   43.4% |    86.1% |   3652.0
+  --> [N=15] Universe Terms Δ over H-BB: Net=+3.69pp | Sharpe=+0.03 | DD=-2.3pp
+  --> [N=15] H-BB Marginal Value (Full vs Ablation): Net=+28.24pp
+-------------------------------------------------------------------------------------------------------------------
+N = 30   | Policy 1: Standalone H-BB        |   +40.80% |   +49.05% | +0.71 |   41.1% |    83.4% |   3416.0
+         | Policy 2: Full Evolved Equation  |   +33.64% |   +45.36% | +0.69 |   29.5% |    84.5% |   5047.0
+         | Policy 3: Universe Terms (No H-BB) |   -17.80% |    -4.33% | -0.27 |   31.6% |    47.7% |   9106.0
+         | Benchmark: Candidate A Baseline  |    +7.92% |   +20.80% | +0.34 |   36.6% |    83.5% |   6760.0
+  --> [N=30] Universe Terms Δ over H-BB: Net=-7.16pp | Sharpe=-0.02 | DD=-11.6pp
+  --> [N=30] H-BB Marginal Value (Full vs Ablation): Net=+51.44pp
+-------------------------------------------------------------------------------------------------------------------
+N = 60   | Policy 1: Standalone H-BB        |    +8.89% |   +15.46% | +0.35 |   30.1% |    83.6% |   7030.0
+         | Policy 2: Full Evolved Equation  |   +10.39% |   +19.00% | +0.46 |   15.9% |    92.9% |   9012.0
+         | Policy 3: Universe Terms (No H-BB) |   -15.18% |    -8.53% | -0.61 |   25.3% |    92.8% |   9055.0
+         | Benchmark: Candidate A Baseline  |    -4.54% |    +6.55% | -0.01 |   25.4% |    85.1% |  13184.0
+  --> [N=60] Universe Terms Δ over H-BB: Net=+1.50pp | Sharpe=+0.11 | DD=-14.2pp
+  --> [N=60] H-BB Marginal Value (Full vs Ablation): Net=+25.57pp
+-------------------------------------------------------------------------------------------------------------------
+N = 90   | Policy 1: Standalone H-BB        |    -0.84% |    +5.29% | +0.06 |   17.4% |    84.7% |  10790.0
+         | Policy 2: Full Evolved Equation  |    +6.68% |   +13.08% | +0.41 |   12.9% |    88.1% |  10500.0
+         | Policy 3: Universe Terms (No H-BB) |    +2.32% |    +8.21% | +0.19 |   14.3% |    86.0% |  10067.0
+         | Benchmark: Candidate A Baseline  |    -8.03% |    +2.35% | -0.36 |   17.5% |    85.8% |  19257.0
+  --> [N=90] Universe Terms Δ over H-BB: Net=+7.52pp | Sharpe=+0.35 | DD=-4.5pp
+  --> [N=90] H-BB Marginal Value (Full vs Ablation): Net=+4.36pp
+-------------------------------------------------------------------------------------------------------------------
+
+Audit complete. Structured results written to: scratch/audit_stability_ablation_results.json

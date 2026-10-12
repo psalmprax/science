@@ -145,11 +145,11 @@ class BinaryOpNode(ASTNode):
         rv = self.right.evaluate(env)
         with np.errstate(all="ignore"):
             if self.op == "+":
-                return lv + rv
+                return np.asarray(lv + rv)
             if self.op == "-":
-                return lv - rv
+                return np.asarray(lv - rv)
             if self.op == "*":
-                return lv * rv
+                return np.asarray(lv * rv)
             if self.op == "/":
                 safe_rv = np.where(np.abs(rv) < 1e-15, 1.0, rv)
                 res = lv / safe_rv
@@ -213,7 +213,7 @@ class UnaryOpNode(ASTNode):
         if self.op == "exp":
             with np.errstate(over="ignore", under="ignore"):
                 clipped = np.clip(cv, -100.0, 100.0)
-                return np.exp(clipped)
+                return np.asarray(np.exp(clipped))
         if self.op == "log":
             with np.errstate(divide="ignore", invalid="ignore"):
                 safe_cv = np.where(cv > 1e-15, cv, 1.0)
@@ -390,7 +390,11 @@ class PowNode(ASTNode):
                     safe_bv = np.where(np.abs(bv) < 1e-15, 1.0, bv)
                     res = np.power(safe_bv, p_int)
                     return np.where(np.abs(bv) < 1e-15, np.nan, res)
-                return np.power(bv, p_int)
+                return np.asarray(np.power(bv, p_int))
+            if p_flt < 0:
+                safe_bv = np.where(bv > 1e-15, bv, 1.0)
+                res = np.power(safe_bv, p_flt)
+                return np.where(bv > 1e-15, res, np.nan)
             safe_bv = np.where(bv >= 0, bv, 0.0)
             res = np.power(safe_bv, p_flt)
             return np.where(bv >= 0, res, np.nan)
@@ -409,10 +413,13 @@ class PowNode(ASTNode):
 
 
 DEFAULT_POWERS: tuple[Fraction, ...] = (
+    Fraction(-3, 1),
     Fraction(-2, 1),
+    Fraction(-3, 2),
     Fraction(-1, 1),
     Fraction(-1, 2),
     Fraction(1, 2),
+    Fraction(3, 2),
     Fraction(2, 1),
     Fraction(3, 1),
 )

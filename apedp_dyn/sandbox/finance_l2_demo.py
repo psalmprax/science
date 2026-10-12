@@ -28,6 +28,7 @@ import numpy as np
 from apedp_dyn.discovery_l2.dimensional_types import Dimension
 from apedp_dyn.discovery_l2.l2_engine import L2DiscoveryEngine, L2DiscoveryResult
 from apedp_dyn.epistemic.adjudicate import (
+    Adjudication,
     BenchmarkLevel,
     DataOrigin,
     EpistemicAttribution,
@@ -102,7 +103,7 @@ def generate_market_regime_data(
 def evaluate_l0_finance_selection(
     returns: np.ndarray,
     data_origin: str = DataOrigin.REAL_OBSERVATIONAL,
-) -> ScoredCandidate:
+) -> Adjudication:
     """L0 Selection: Predefined candidate pool {constant drift, linear AR(1)}."""
     y = returns[1:]
     x_lag = returns[:-1]

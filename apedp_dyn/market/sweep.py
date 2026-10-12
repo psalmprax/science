@@ -164,7 +164,8 @@ def execute_window_discovery(
 
     verdict_str = adj.status.value.lower()
     attr_val = getattr(adj, "epistemic_attribution", getattr(adj, "attribution", None))
-    attr_str = attr_val.value.lower() if hasattr(attr_val, "value") else str(attr_val or "unknown").lower()
+    attr_str = (attr_val.value.lower() if attr_val is not None and hasattr(attr_val, "value")
+                else str(attr_val or "unknown").lower())
 
     if top_cand is not None:
         expr_str = str(

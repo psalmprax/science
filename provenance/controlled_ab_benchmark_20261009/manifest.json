@@ -1,0 +1,16 @@
+{
+ "utc": "2026-10-09T13:35:51.396720+00:00",
+ "command": [
+  ".venv/bin/python3",
+  "scratch/audit_controlled_ab_experiment.py"
+ ],
+ "returncode": 0,
+ "commit": "d881d5cdbc3df4bc1d1d5e7a24e91b4adf3a96f8",
+ "script_hashes": {
+  "scratch/audit_controlled_ab_experiment.py": "7030a660305483756bb46ac38c0b95eb6e4f45f9b30cefc2bb02d4705738283b"
+ },
+ "dataset_hashes": {
+  "data/market/multi_asset_90_5yr_orderflow.csv": "4729ad81f67cb1f430479fe02f1fc700980baf51e890b42cd0067856d273fa2e"
+ },
+ "note": "Tables must be generated from stdout.log/results artifacts in this directory."
+}

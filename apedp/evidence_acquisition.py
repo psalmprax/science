@@ -12,7 +12,7 @@ Given surviving admissible hypotheses (e.g. H1 = Shomate, H2 = Quadratic):
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
@@ -165,7 +165,9 @@ class EvidenceAcquisitionEngine:
 
     def find_discriminating_regime(
         self,
-        models: dict[str, str | sp.Expr | Callable | dict[str, Any]],
+        # Read-only, so `Mapping`: a `dict[str, str]` (the caller's shape) is not
+        # assignable to a dict with a wider value type, and nothing here writes.
+        models: Mapping[str, str | sp.Expr | Callable | dict[str, Any]],
         variable_domains: dict[str, tuple[float, float]],
         observed_domain: dict[str, tuple[float, float]] | None = None,
         n_points: int | None = None,
@@ -319,7 +321,9 @@ class EvidenceAcquisitionEngine:
 
     def find_bayesian_eig_regime(
         self,
-        models: dict[str, str | sp.Expr | Callable | dict[str, Any]],
+        # Read-only, so `Mapping`: a `dict[str, str]` (the caller's shape) is not
+        # assignable to a dict with a wider value type, and nothing here writes.
+        models: Mapping[str, str | sp.Expr | Callable | dict[str, Any]],
         variable_domains: dict[str, tuple[float, float]],
         model_priors: dict[str, float] | None = None,
         parameter_uncertainties: dict[str, float] | None = None,
@@ -355,7 +359,7 @@ class EvidenceAcquisitionEngine:
             total_prior = sum(model_priors.get(n, 1.0) for n in names)
             priors = {n: model_priors.get(n, 1.0) / max(total_prior, 1e-12) for n in names}
 
-        param_unc = parameter_uncertainties or {n: 0.05 for n in names}
+        param_unc = parameter_uncertainties or dict.fromkeys(names, 0.05)
 
         variables = sorted(variable_domains.keys())
         grid_n = n_points or self.default_grid_points

@@ -45,9 +45,9 @@ def estimate_time_derivative(
 
     if method == "spline":
         cs = CubicSpline(t_arr, x_arr)
-        return cs.derivative()(t_arr)
+        return np.asarray(cs.derivative()(t_arr))
     elif method == "central_diff":
-        return np.gradient(x_arr, t_arr)
+        return np.asarray(np.gradient(x_arr, t_arr))
     else:
         raise ValueError(f"Unknown derivative estimation method: {method}")
 
@@ -95,7 +95,7 @@ class L2ODEDiscoveryEngine:
         # if state has dimensions, target is [target_state] / [T].
         if target_dimension is not None:
             target_dim = target_dimension
-        elif state_dimensions[target_state].is_dimensionless:
+        elif state_dimensions[target_state].is_dimensionless():
             target_dim = BaseDimension()
         else:
             target_dim = state_dimensions[target_state] / BaseDimension(t=1)

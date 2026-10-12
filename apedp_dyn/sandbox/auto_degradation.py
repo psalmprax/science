@@ -119,7 +119,8 @@ def run_adcab_stage_a(noise_sigma: float = 0.03, seed: int = 42,
         scored.append(ScoredCandidate(
             c, {"gate4_status": g4, "data_origin": DataOrigin.SIMULATION},
             train_loss=float(rm), holdout_rmse=rm))
-    ranked = sorted([s for s in scored if np.isfinite(s.train_loss)], key=lambda s: s.train_loss)
+    ranked = sorted([s for s in scored if s.train_loss is not None and np.isfinite(s.train_loss)],
+                    key=lambda s: s.train_loss if s.train_loss is not None else float("inf"))
     adj = adjudicate(
         scored, resid_best=ranked[0].provenance["gate4_status"]["holdout_residuals"],
         resid_rival=ranked[1].provenance["gate4_status"]["holdout_residuals"],
@@ -129,7 +130,8 @@ def run_adcab_stage_a(noise_sigma: float = 0.03, seed: int = 42,
     # Transfer: best-vs-rival on interp vs hot extrapolation (frozen fits reused
     # via stored weights is overkill here; refit-free scoring uses Stage-1 weights
     # recomputed deterministically -- same data, same seed, same numbers).
-    order = sorted(scored, key=lambda s: s.holdout_rmse)
+    order = sorted(scored,
+                   key=lambda s: s.holdout_rmse if s.holdout_rmse is not None else float("inf"))
     b, r = order[0], order[1]
     extra = {}
     for cid, _terms, kind in defs:
@@ -144,7 +146,8 @@ def run_adcab_stage_a(noise_sigma: float = 0.03, seed: int = 42,
         extra[cid] = float(np.sqrt(np.mean((y_ee - pred) ** 2)))
     scope = TransferScope(
         candidate_id=b.candidate.candidate_id, rival_id=r.candidate.candidate_id,
-        interp_rmse_best=b.holdout_rmse, interp_rmse_rival=r.holdout_rmse,
+        interp_rmse_best=(b.holdout_rmse if b.holdout_rmse is not None else float("nan")),
+        interp_rmse_rival=(r.holdout_rmse if r.holdout_rmse is not None else float("nan")),
         extra_rmse_best=extra[b.candidate.candidate_id],
         extra_rmse_rival=extra[r.candidate.candidate_id])
     return adj, scored, scope

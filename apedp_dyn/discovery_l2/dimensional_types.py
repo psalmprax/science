@@ -48,6 +48,18 @@ class Dimension:
 
     __slots__ = ("_i", "_j", "_l", "_m", "_n", "_p", "_q", "_t", "_th")
 
+    # Explicit annotations so static analysis sees the ``__slots__`` attributes
+    # that are populated via ``object.__setattr__`` in ``__init__``.
+    _i: Fraction
+    _j: Fraction
+    _l: Fraction
+    _m: Fraction
+    _n: Fraction
+    _p: Fraction
+    _q: Fraction
+    _t: Fraction
+    _th: Fraction
+
     def __init__(
         self,
         m: int | float | str | Fraction = 0,

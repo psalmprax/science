@@ -1,0 +1,44 @@
+{
+  "config": {
+    "cost_bps": 5.0,
+    "evaluation_window": "post-2026-10-09 daily bars, end TBD at run time (min 60 trading days)",
+    "exposure_control": "baseline timing scaled to hyst mean exposure",
+    "hysteresis_thresholds": "train-half 75th/50th percentile of |S_B|, per evaluation (frozen rule, not frozen values)",
+    "metrics": [
+      "net_return",
+      "gross_return",
+      "sharpe_after_costs",
+      "max_drawdown",
+      "expected_shortfall_5pct",
+      "turnover",
+      "time_in_market"
+    ],
+    "rules": {
+      "base": "short iff S_B < 0",
+      "exposure_matched": "baseline timing, scaled to match hysteresis mean exposure",
+      "hysteresis": "enter iff S_B <= -entry; hold while S_B <= -exit; flat otherwise"
+    },
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT",
+      "BNBUSDT",
+      "XRPUSDT"
+    ],
+    "weights": {
+      "H-BB": 0.5447,
+      "H-MOM": -0.2019,
+      "H-OBV_MOM": -1.6370,
+      "NL_HURST_ADAPT": -0.3593
+    }
+  },
+  "decision_rule": {
+    "defensive_success": "hyst beats base AND exposure-matched on net, with drawdown not worse than exposure-matched",
+    "economic_success": "hyst net positive on 4/5 symbols",
+    "failure": "anything else; record without modification"
+  },
+  "frozen_script": "scratch/test_defense_vs_exposure_control.py",
+  "frozen_utc": "2026-10-09",
+  "label": "PROSPECTIVE-DEFENSE-EQ-B-v1",
+  "status": "PENDING-DATA (no post-2026-10-09 bars exist at freeze time)"
+}

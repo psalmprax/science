@@ -1,0 +1,16 @@
+{
+ "utc": "2026-10-09T11:04:13.234427+00:00",
+ "command": [
+  ".venv/bin/python3",
+  "scratch/audit_selection_stability_and_ablation.py"
+ ],
+ "returncode": 0,
+ "commit": "d881d5cdbc3df4bc1d1d5e7a24e91b4adf3a96f8",
+ "script_hashes": {
+  "scratch/audit_selection_stability_and_ablation.py": "46243bd18d7fde4148f48d7b5a38dbfa861e1bd0edb22d13dd5e1ea1e0506d83"
+ },
+ "dataset_hashes": {
+  "data/market/multi_asset_90_5yr_orderflow.csv": "4729ad81f67cb1f430479fe02f1fc700980baf51e890b42cd0067856d273fa2e"
+ },
+ "note": "Tables must be generated from stdout.log/results artifacts in this directory."
+}

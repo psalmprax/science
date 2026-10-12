@@ -1,0 +1,10 @@
+[package]
+name = "riemann_verifier"
+version = "0.1.0"
+edition = "2021"
+description = "High-performance native Rust Riemann-Siegel Z(t) zero isolator & explicit formula prime synthesizer"
+
+[dependencies]
+rayon = "1.10"
+
+[workspace]

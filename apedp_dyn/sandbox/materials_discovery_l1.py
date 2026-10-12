@@ -330,7 +330,7 @@ def run_l1_materials_benchmark(
 
     ranked = sorted(
         [s for s in candidates if s.train_loss is not None and np.isfinite(s.train_loss)],
-        key=lambda s: s.train_loss,
+        key=lambda s: s.train_loss if s.train_loss is not None else float("inf"),
     )
     r_best = None
     r_rival = None

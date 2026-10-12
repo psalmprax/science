@@ -235,10 +235,12 @@ def run_prospective_tournament(target_asset: str = "COMPOSITE_TOP15") -> dict[st
         reason = f"All models exceeded Gate 4 tolerance on 365-day prospective horizon (min RMSE={best_m.fwd_2023_rmse:.4f} > tol={tol_2023:.4f})"
     elif delta <= tau:
         verdict = EpistemicStatus.MULTI_HYPOTHESIS
-        reason = f"Rival {second_m.model_id} within tau (Δ={delta:.4f} <= τ={tau:.4f}); observationally indistinguishable"
+        rival_id = second_m.model_id if second_m is not None else "N/A"
+        reason = f"Rival {rival_id} within tau (Δ={delta:.4f} <= τ={tau:.4f}); observationally indistinguishable"
     else:
         verdict = EpistemicStatus.UNIQUE_SUPPORT
-        reason = f"Model {best_m.model_id} decisively separates from rivals (Δ={delta:.4f} > τ={tau:.4f})"
+        winner_id = best_m.model_id if best_m is not None else "N/A"
+        reason = f"Model {winner_id} decisively separates from rivals (Δ={delta:.4f} > τ={tau:.4f})"
 
     print("\n=======================================================")
     print(f"APEDP SOVEREIGN VERDICT (2023 PROSPECTIVE): {verdict.value.upper()}")

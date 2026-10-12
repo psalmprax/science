@@ -278,6 +278,34 @@
             <span id="reason-text">Promoted to UNIQUE_SUPPORT: sole non-dominated candidate passing fidelity, whiteness, and Gate 4 predictive verification.</span>
           </div>
 
+          <!-- Epistemic Claim Ladder & EEDR Self-Correction Panel -->
+          <div id="epistemic-tier-card" class="bg-[#070b13] p-4 rounded-xl border border-[#1b2640] space-y-2.5 font-mono text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-cyan-400 font-bold uppercase tracking-wider text-[11px] flex items-center space-x-1.5">
+                <span>🪜</span> <span>EPISTEMIC CLAIM LADDER &amp; EEDR STATUS</span>
+              </span>
+              <span id="aeh-provenance-tag" class="text-[10px] text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded border border-slate-700">AEH: PROVENANCE LOCKED</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+              <div class="bg-[#0e1628] p-2.5 rounded-lg border border-[#1b2640]">
+                <div class="text-slate-400 text-[10px]">ASSERTED CLAIM</div>
+                <div id="phys-claimed-tier" class="text-cyan-300 font-bold mt-0.5">C4: CAUSAL / MECHANISTIC</div>
+              </div>
+              <div class="bg-[#0e1628] p-2.5 rounded-lg border border-[#1b2640]">
+                <div class="text-slate-400 text-[10px]">JUSTIFIED TIER</div>
+                <div id="phys-justified-tier" class="text-emerald-400 font-bold mt-0.5">C4: CAUSAL / MECHANISTIC</div>
+              </div>
+              <div class="bg-[#0e1628] p-2.5 rounded-lg border border-[#1b2640]">
+                <div class="text-slate-400 text-[10px]">EEDR SELF-CORRECTION</div>
+                <div id="phys-eedr-status" class="text-cyan-300 font-bold mt-0.5">PROMOTED_ORIGINAL</div>
+              </div>
+            </div>
+            <div id="phys-eedr-detail" class="hidden text-[10px] text-slate-300 pt-1 border-t border-[#1b2640]/60 flex flex-wrap items-center justify-between gap-1">
+              <span>Repair Operator: <span id="phys-repair-op" class="text-amber-400 font-bold">Direct De Novo Verification</span></span>
+              <span>AEH Manifest: <span id="phys-manifest-hash" class="text-slate-400 font-mono">--</span></span>
+            </div>
+          </div>
+
           <!-- Multi-Hypothesis Split-Screen (Visible only on MULTI_HYPOTHESIS) -->
           <div id="multi-rivals-box" class="hidden p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-3">
             <div class="flex items-center space-x-2 text-amber-400 font-mono text-xs font-bold">
@@ -634,6 +662,30 @@
         <div id="sandbox-gate-box" class="hidden bg-[#070b13]/60 p-3.5 rounded-lg border border-[#1b2640]">
           <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2">Promotion Gates</div>
           <div id="sandbox-gate-rows" class="space-y-1 font-mono text-xs"></div>
+        </div>
+
+        <!-- Epistemic Claim Ladder & EEDR Self-Correction Panel for Sandbox -->
+        <div id="sandbox-epistemic-tier-card" class="hidden bg-[#070b13] p-4 rounded-xl border border-[#1b2640] space-y-2.5 font-mono text-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-cyan-400 font-bold uppercase tracking-wider text-[11px] flex items-center space-x-1.5">
+              <span>🪜</span> <span>EPISTEMIC CLAIM LADDER &amp; EEDR STATUS</span>
+            </span>
+            <span id="sandbox-aeh-provenance-tag" class="text-[10px] text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded border border-slate-700">AEH: PROVENANCE LOCKED</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+            <div class="bg-[#0e1628] p-2.5 rounded-lg border border-[#1b2640]">
+              <div class="text-slate-400 text-[10px]">ASSERTED CLAIM</div>
+              <div id="sandbox-claimed-tier" class="text-cyan-300 font-bold mt-0.5">—</div>
+            </div>
+            <div class="bg-[#0e1628] p-2.5 rounded-lg border border-[#1b2640]">
+              <div class="text-slate-400 text-[10px]">JUSTIFIED TIER</div>
+              <div id="sandbox-justified-tier" class="text-emerald-400 font-bold mt-0.5">—</div>
+            </div>
+            <div class="bg-[#0e1628] p-2.5 rounded-lg border border-[#1b2640]">
+              <div class="text-slate-400 text-[10px]">EEDR SELF-CORRECTION</div>
+              <div id="sandbox-eedr-status" class="text-cyan-300 font-bold mt-0.5">—</div>
+            </div>
+          </div>
         </div>
 
         <!-- Multi-Hypothesis Split-Screen (Visible only on MULTI_HYPOTHESIS) -->
@@ -1251,6 +1303,36 @@
         }
       }
 
+      // 3b. Bind Epistemic Framework & EEDR Self-Correction
+      if (data.epistemic_framework) {
+        const ef = data.epistemic_framework;
+        setText('phys-claimed-tier', ef.claimed_tier || 'C4_CAUSAL_MECHANISTIC');
+        setText('phys-justified-tier', ef.justified_tier || 'C2_PREDICTIVE');
+        setText('phys-eedr-status', ef.eedr_status || 'PROMOTED_ORIGINAL');
+
+        const eedrBadge = document.getElementById('phys-eedr-status');
+        if (eedrBadge) {
+          if (ef.eedr_status === 'PROMOTED_ORIGINAL') {
+            eedrBadge.className = 'text-emerald-400 font-bold mt-0.5';
+          } else if (ef.eedr_status === 'PROMOTED_REPAIRED') {
+            eedrBadge.className = 'text-cyan-300 font-bold mt-0.5';
+          } else {
+            eedrBadge.className = 'text-amber-400 font-bold mt-0.5';
+          }
+        }
+
+        const detailEl = document.getElementById('phys-eedr-detail');
+        if (detailEl) {
+          detailEl.classList.remove('hidden');
+          const opName = (ef.eedr_repair && ef.eedr_repair.repair_operator_applied)
+            ? ef.eedr_repair.repair_operator_applied
+            : (ef.eedr_status === 'PROMOTED_ORIGINAL' ? 'Direct De Novo Verification' : 'Terminal Abstention');
+          setText('phys-repair-op', opName);
+          const mHash = ef.aeh_manifest_hash ? ef.aeh_manifest_hash.slice(0, 16) + '...' : 'LOCKED';
+          setText('phys-manifest-hash', mHash);
+        }
+      }
+
       // 4. Render Plots
       renderTrajectoryPlot(data.plot_series);
       renderParetoPlot(data.pareto_candidates, data.tau_epi);
@@ -1735,15 +1817,38 @@
             grows.innerHTML = '';
             gates.forEach(g => {
               const pass = String(g.result || '') === '\u2713';
+              const warn = String(g.result || '') === '?' || String(g.result || '') === '\u26a0';
+              const colorClass = pass ? 'text-emerald-400' : (warn ? 'text-amber-400' : 'text-rose-400');
               const row = document.createElement('div');
               row.className = "flex items-center justify-between gap-3";
-              row.innerHTML = `<span class="${pass ? 'text-emerald-400' : 'text-rose-400'} font-bold">${g.result || '?'} ${g.gate || ''}</span><span class="text-slate-400 text-[10px] text-right">${g.detail || ''}</span>`;
+              row.innerHTML = `<span class="${colorClass} font-bold">${g.result || '?'} ${g.gate || ''}</span><span class="text-slate-400 text-[10px] text-right">${g.detail || ''}</span>`;
               grows.appendChild(row);
             });
           } else {
             gbox.classList.add('hidden');
           }
         }
+
+        // Epistemic Claim Ladder & EEDR card
+        const tierCard = document.getElementById('sandbox-epistemic-tier-card');
+        if (tierCard) {
+          if (data.claimed_tier || data.justified_tier) {
+            tierCard.classList.remove('hidden');
+            const claimedEl = document.getElementById('sandbox-claimed-tier');
+            const justifiedEl = document.getElementById('sandbox-justified-tier');
+            const eedrEl = document.getElementById('sandbox-eedr-status');
+            const provTag = document.getElementById('sandbox-aeh-provenance-tag');
+            if (claimedEl) claimedEl.innerText = data.claimed_tier || '—';
+            if (justifiedEl) justifiedEl.innerText = data.justified_tier || '—';
+            if (eedrEl) eedrEl.innerText = (data.epistemic_framework && data.epistemic_framework.eedr_status) || data.verdict || '—';
+            if (provTag && data.epistemic_framework && data.epistemic_framework.aeh_manifest_hash) {
+              provTag.innerText = `AEH: ${data.epistemic_framework.aeh_manifest_hash.slice(0, 12)}…`;
+            }
+          } else {
+            tierCard.classList.add('hidden');
+          }
+        }
+
         if (data.extra && data.extra.universe_note) {
           const reasonEl2 = document.getElementById('sandbox-reason');
           if (reasonEl2 && !reasonEl2.dataset.universeNote) {
@@ -1817,8 +1922,8 @@
           `<div class="flex justify-between border-b border-[#1b2640] py-1"><span class="text-slate-300">${c.id}</span><span class="text-slate-400">RMSE ${Number(c.rmse).toPrecision(4)}</span></div>`).join('');
       }
 
-      // Render chart
-      if (data.series) {
+      // Render chart (only when series data is available)
+      if (data.series && data.series.x && data.series.actual && data.series.x.length > 0) {
         renderSandboxSVG(data.series);
       }
     }

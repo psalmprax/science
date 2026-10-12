@@ -1,0 +1,39 @@
+{
+  "spec_version": "1.0.0",
+  "spec_id": "APEDPX_PREREGISTERED_CANONICAL_V1",
+  "created_at": "2026-10-12T11:35:00Z",
+  "description": "Canonical frozen preregistered constants and thresholds for APEDP-X / CPMD discovery and adjudication.",
+  "thresholds": {
+    "tactical_active_fraction_min": 0.05,
+    "tactical_active_fraction_max": 0.90,
+    "continuous_factor_active_fraction_min": 0.85,
+    "continuous_factor_active_fraction_max": 1.00,
+    "tail_risk_min_events": 30,
+    "deflated_sharpe_ratio_threshold": 0.95,
+    "diebold_mariano_p_value_threshold": 0.01,
+    "max_literature_r2": 0.85,
+    "min_oos_transfer_retention": 0.50,
+    "min_net_sharpe": 1.00,
+    "referee_max_fpr": 0.05,
+    "referee_min_car": 0.70,
+    "referee_min_vrr": 0.75,
+    "stock_split_invariance_tolerance": 1e-6
+  },
+  "notes": {
+    "tactical_active_fraction_max": "Harmonized and pinned to 0.90 after resolving historical documentation drift from 0.95 in audit."
+  },
+  "literature_baselines": [
+    "Kyle (1985) Continuous Auctions and Informed Trader",
+    "Amihud (2002) Illiquidity and Stock Returns",
+    "Biais, Hillion, Spatt (1995) / Large (2007) Order Book Resiliency",
+    "Carhart (1997) Four-Factor Cross-Sectional Asset Pricing"
+  ],
+  "promotion_stages": [
+    "1: MATHEMATICAL_CONSISTENCY",
+    "2: PREDICTIVE_RECOVERY",
+    "3: UNIQUE_IDENTIFICATION",
+    "4: OUT_OF_SAMPLE_TRANSFER",
+    "5: ECONOMIC_VALIDITY",
+    "6: REAL_MARKET_PROMOTION"
+  ]
+}

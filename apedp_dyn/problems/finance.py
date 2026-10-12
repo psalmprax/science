@@ -35,15 +35,18 @@ def _estimate_velocity(x: np.ndarray, dt: float = 1.0, smooth: bool = True) -> n
     Mitigates O(1/dt) noise amplification from raw finite differences.
     """
     if not smooth or len(x) < 5:
-        return np.gradient(x, dt)
+        return np.asarray(np.gradient(x, dt))
     w = min(7, len(x) if len(x) % 2 == 1 else len(x) - 1)
     if w < 5:
-        return np.gradient(x, dt)
+        return np.asarray(np.gradient(x, dt))
     try:
         from scipy.signal import savgol_filter
-        return savgol_filter(x, window_length=w, polyorder=2, deriv=1, delta=dt, mode="interp")
-    except Exception:
-        return np.gradient(x, dt)
+        return np.asarray(savgol_filter(
+            x, window_length=w, polyorder=2, deriv=1, delta=dt, mode="interp"))
+    except Exception:  # noqa: BLE001 -- savgol is a best-effort smoother; any
+        # failure (import, window/polyorder bounds, non-finite input) falls back
+        # to the raw finite difference, which is always available.
+        return np.asarray(np.gradient(x, dt))
 
 
 def spec_from_series(prices: np.ndarray,

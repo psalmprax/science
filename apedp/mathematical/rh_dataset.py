@@ -24,7 +24,7 @@ def generate_or_load_zeta_zeros(n_zeros: int = 200) -> list[dict[str, float]]:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     if CACHE_FILE.exists():
         try:
-            with open(CACHE_FILE, "r", encoding="utf-8") as f:
+            with open(CACHE_FILE, encoding="utf-8") as f:
                 data = json.load(f)
             if len(data) >= n_zeros:
                 return data[:n_zeros]  # type: ignore[no-any-return]

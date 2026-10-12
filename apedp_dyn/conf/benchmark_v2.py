@@ -1,4 +1,3 @@
-from __future__ import annotations
 """D5-CONF v2: collinearity ladder + misspecification + noise-scaled holdout ceiling (frozen).
 
 Order: well-conditioned recovery (v1, done) → collinear identification (v2a)
@@ -46,14 +45,14 @@ Tournament harnesses (v2d): DUFF/COUP/STAB noise-sweep contracts.
   STAB degrades: 1.0→0→33→33% with noise.
 """
 
+from __future__ import annotations
+
 import time
-import json
 
 import numpy as np
 
 from apedp_dyn.conf.dimensionless import D5_CONF_VERSION
 from apedp_dyn.epistemic.adjudicate import EpistemicStatus, adjudicate
-from apedp_dyn.epistemic.bootstrap import tiebreak
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 
 V2_VERSION = "2.0.0-collinear-misspec-noiseceilings-tournament"
@@ -119,67 +118,6 @@ DUFF_3PCT_NOISE_LEVELS = (0.03, 0.10)  # 3% and 10% noise sweep
 COUP_3PCT_NOISE_LEVELS = (0.03, 0.10)
 STAB_3PCT_NOISE_LEVELS = (0.03, 0.10)
 STAB_10PCT_NOISE_LEVEL = 0.10
-
-import time
-
-import numpy as np
-
-from apedp_dyn.conf.dimensionless import D5_CONF_VERSION
-from apedp_dyn.epistemic.adjudicate import EpistemicStatus, adjudicate
-from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
-
-V2_VERSION = "2.0.0-collinear-misspec"
-
-# Preregistered bands (frozen before outcomes).
-KAPPA_BANDS = {"well": 1e2, "severe": 1e3}
-# Target kappas for the ladder rungs. Construction is deterministic SVD-based
-# (exact singular values, column-standardized, bisection on s_min); the
-# REALIZED kappa is always measured and reported, never assumed.
-LADDER_KAPPAS = (10.0, 1e2, 1e3, 1e4, 1e5)
-LADDER_SEEDS = (0, 1, 2)
-LADDER_N = 100
-V2_NOISE_SIGMA = 0.03
-N_TRAIN = 60
-N_HOLDOUT = 40
-
-V2_TRUE_C = 3.2
-# v2 exponents: every predictor contributes substantially (|.| >= 1), so rung 1
-# (kappa ≈ 10) is decisive and the ladder can show the expected
-# UNIQUE → MULTI → INSUFFICIENT transition as information degrades.
-V2_TRUE_EXPONENTS = (-2.5, 1.5, -1.0)
-
-V2_STRUCTURES: dict[str, tuple[int, ...]] = {
-    "M_true": (0, 1, 2),
-    "M_reduced": (0, 1),
-    "M_single": (0,),
-}
-V2_TERMS: dict[str, tuple[str, ...]] = {
-    "M_true": ("one", "x", "x3", "v"),
-    "M_reduced": ("one", "x", "v"),
-    "M_single": ("one", "x"),
-}
-
-# v2b: radiation-loss misspecification (frozen constants).
-MISSPEC_SEEDS = (0, 1, 2)
-MISSPEC_K = 0.8
-MISSPEC_RANGES = {  # uniform engineering ranges
-    "W": (0.5, 2.0),
-    "Pin": (1.0, 3.0),
-    "ne": (0.5, 2.0),
-    "T": (0.5, 2.0),
-}
-MISSPEC_STRUCTURES: dict[str, tuple[str, ...]] = {
-    # power-law feature subsets of (W, Pin, ne, T) in log space
-    "P_W_P": ("W", "Pin"),
-    "P_W_P_N": ("W", "Pin", "ne"),
-    "P_W_P_N_T": ("W", "Pin", "ne", "T"),
-}
-MISSPEC_TERMS: dict[str, tuple[str, ...]] = {
-    "P_W_P": ("one", "x"),
-    "P_W_P_N": ("one", "x", "v"),
-    "P_W_P_N_T": ("one", "x", "x3", "v"),
-}
-MISSPEC_RESID_CORR_FLAG = 0.5  # |corr(resid, loss_frac)| above this = systematic
 
 
 def _design_exact_kappa(seed: int, kappa_target: float, n: int = LADDER_N) -> np.ndarray:
@@ -455,14 +393,9 @@ def _duff_tournament_cell(rep: int, pct: float) -> dict:
       rep 2: MULTI_HYPOTHESIS (over-parameterized C4 wins holdout)
       per-rep distribution: 0.33/0.33/0.33 across the three outcomes
     """
-    from apedp_dyn import dyn_sweep as ds
-    from apedp_dyn.epistemic.adjudicate import adjudicate, EpistemicStatus
-    
-    slate = ds.build_slates()
-    prob_clean = slate['DUFF']['prob_clean']
-    prob = ds._with_noise(prob_clean, pct, seed=ds.cell_seed('DUFF', rep, pct))
-    
-    # 8 candidates as in the frozen tournament
+    # 8 candidates as in the frozen tournament. The noise-scaled problem this
+    # cell used to build was never passed to run_rep; the cell delegates to the
+    # frozen harness, which does its own slating and seeding.
     from apedp_dyn.dyn_tournament import run_rep
     return run_rep(rep)
 
@@ -475,7 +408,7 @@ def _coup_tournament_cell(rep: int, pct: float) -> dict:
       at 10%: 0.67/0.00/0.67 (partial degradation)
     """
     from apedp_dyn import dyn_sweep as ds
-    from apedp_dyn.epistemic.adjudicate import adjudicate, EpistemicStatus
+    from apedp_dyn.epistemic.adjudicate import adjudicate
     
     slate = ds.build_slates()
     prob_clean = slate['COUP']['prob_clean']
@@ -487,7 +420,6 @@ def _coup_tournament_cell(rep: int, pct: float) -> dict:
     rt = ds.fit_candidate(prob, truth)
     rr = ds.fit_candidate(prob, rival)
     
-    ranked = [s for s in (rt, rr) if s.train_loss is not None and ...]
     # Simplified: run adjudication on the two
     adj = adjudicate([rt, rr])
     
@@ -508,7 +440,7 @@ def _stab_tournament_cell(rep: int, pct: float) -> dict:
     at 10%: status INSUFFICIENT_EVIDENCE (33%)
     """
     from apedp_dyn import dyn_sweep as ds
-    from apedp_dyn.epistemic.adjudicate import adjudicate, EpistemicStatus
+    from apedp_dyn.epistemic.adjudicate import adjudicate
     
     slate = ds.build_slates()
     prob_clean = slate['STAB']['prob_clean']
@@ -566,12 +498,12 @@ def run_coup_tournament(reps: tuple[int, ...] = (0, 1, 2),
     results = {}
     for pct in pcts:
         cells = [_coup_tournament_cell(r, pct) for r in reps]
-        by_pct = {}
+        by_pct: dict[str, int] = {}
         for c in cells:
             key = c['status']
             by_pct[key] = by_pct.get(key, 0) + 1
         results[str(pct)] = {
-            'per_rep': {str(r): c for r, c in zip(reps, cells)},
+            'per_rep': {str(r): c for r, c in zip(reps, cells, strict=True)},
             'outcome_distribution': by_pct,
         }
     return {
@@ -592,12 +524,12 @@ def run_stab_tournament(reps: tuple[int, ...] = (0, 1, 2),
     results = {}
     for pct in pcts:
         cells = [_stab_tournament_cell(r, pct) for r in reps]
-        by_pct = {}
+        by_pct: dict[str, int] = {}
         for c in cells:
             key = c['status']
             by_pct[key] = by_pct.get(key, 0) + 1
         results[str(pct)] = {
-            'per_rep': {str(r): c for r, c in zip(reps, cells)},
+            'per_rep': {str(r): c for r, c in zip(reps, cells, strict=True)},
             'outcome_distribution': by_pct,
         }
     return {
