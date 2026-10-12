@@ -268,4 +268,27 @@ mod tests {
         let j = pkt.to_json();
         assert!(!j.get("accepted").unwrap_or(&Value::Bool(false)).as_bool().unwrap());
     }
+
+    /// Smoke test: exercise `search` with a few seed catalogs and configs
+    /// without panicking and verify the returned packet has the expected shape.
+    #[test]
+    fn search_smoke() {
+        // Test with 1‑input and 2‑input seed catalogs.
+        for &n_inputs in &[1usize, 2] {
+            let seeds = seeds::small_forms(n_inputs);
+            // Minimal design matrix (10 samples, n_inputs columns) and target.
+            let cols = vec![vec![1.0; 10]; n_inputs];
+            let target = vec![0.5; 10];
+            let cfg = SearchConfig { budget: 5, beam: 3, max_depth: 1, lambda_c: 0.1, ridge: 0.0, seed: 42 };
+            let pkt = search(&seeds, &cols, &target, &cfg);
+            // The packet must be well‑formed.
+            assert!(pkt.accepted || pkt.proposals.is_empty(), "packet should be valid");
+            for p in &pkt.proposals {
+                assert!(p.get("equation").is_some(), "proposal missing equation");
+                assert!(p.get("rewrite").is_some(), "proposal missing rewrite");
+                assert!(p.get("score").is_some(), "proposal missing score");
+                assert!(p.get("mse").is_some(), "proposal missing mse");
+            }
+        }
+    }
 }
