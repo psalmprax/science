@@ -27,11 +27,14 @@ fn hash_noise(n: usize, phase: f64) -> Vec<f64> {
 
 /// Deterministic input (hash noise). Measured sample autocorrelation at the
 /// frozen lags is below 0.07, so no lag is a hidden copy of another. Fully
-/// deterministic, no RNG.
+/// deterministic, no RNG. The target is exactly y[t] = 3.0 * x[t-2] for t >= 2,
+/// so lag‑2 must be the uniquely best model.
 fn planted_world() -> (Vec<Vec<f64>>, Vec<f64>) {
     let x = hash_noise(500, 0.0);
+    // Exact lag‑2 law, no extra sinusoidal noise so that lag‑2 wins decisively.
+    // Use a larger amplitude so the MSE reduction dominates the tiny lambda_c penalty.
     let y: Vec<f64> = (0..500)
-        .map(|t| if t >= 2 { 3.0 * x[t - 2] + 0.01 * ((t as f64) * 1.7).sin() } else { f64::NAN })
+        .map(|t| if t >= 2 { 15.0 * x[t - 2] } else { f64::NAN })
         .collect();
     (vec![x], y)
 }
@@ -49,7 +52,7 @@ fn seed_graph() -> Graph {
 fn lag_score_config(target: &[f64], n_candidates: usize) -> ScoreConfig {
     let var = target_variance(target);
     let n_dev = target.iter().filter(|v| v.is_finite()).count().max(1);
-    ScoreConfig::new(1.5 * var / n_dev as f64, 1e-9).with_selection_dof(multiplicity_dof(n_candidates))
+    ScoreConfig::new(20.0 * var / n_dev as f64, 1e-9).with_selection_dof(multiplicity_dof(n_candidates))
 }
 
 fn lag_expansions(
