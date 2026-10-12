@@ -37,8 +37,7 @@ def features(R):
                                   for k in range(1, 6)])) if t + 5 < n else np.nan
                    for t in range(n)])
     Dcur = np.array([float(np.mean(Dnow[max(0, t - 4):t + 1])) for t in range(n)])
-    med = np.array([m[max(0, t - 19):t + 1] for t in range(n)])
-    vol = np.array([float(np.std(med[t]) + EPS) for t in range(n)])
+    vol = np.array([float(np.std(m[max(0, t - 19):t + 1]) + EPS) for t in range(n)])
     return H, D5, Dcur, np.abs(m), vol
 
 
