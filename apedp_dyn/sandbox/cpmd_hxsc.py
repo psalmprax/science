@@ -62,8 +62,9 @@ def stage(tag, R, lo, hi):
     t_obs = b[0]
     cnt = 0
     se_s = []
+    maxstart = len(h) - BL  # full-length blocks only
     for _ in range(NB):
-        order = rng.randint(0, len(h), size=nb)
+        order = rng.randint(0, maxstart + 1, size=nb)
         hb = np.concatenate([h[o:o + BL] for o in order])[:len(h)]
         Xb = np.column_stack([hb, X[:, 1:]])
         bb = fit_t(Xb, y)
