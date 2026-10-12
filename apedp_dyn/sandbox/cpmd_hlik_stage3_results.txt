@@ -1,0 +1,7 @@
+== EQUITY real (752 days x 14 assets) ==
+3A H-LIK: IC=-0.0285 p=0.985 MSEratio=1.043 [FAIL]
+3B residual: IC=-0.0270 p=0.975 [FAIL]
+== CRYPTO real (1094 days x 15 assets) ==
+3A H-LIK: IC=-0.0227 p=0.905 MSEratio=1.044 [FAIL]
+3B residual: IC=-0.0254 p=0.935 [FAIL]
+STAGE3: 3A/3B failed — no trading evaluation (verdicts separate)
