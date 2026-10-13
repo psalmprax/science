@@ -283,13 +283,24 @@ one in the numerics and one in the proposal surface:
   behaviour; an emitted-but-failed proposal is a failure on ANY family; static
   worlds additionally require reversal-invariance of the holdout score so a
   grid-order tracker cannot masquerade as mechanism (scored `index_fit`).
-  Measured (v0.1.2 fresh run, artifact `benchmarks/matched_compute_results.json`):
-  RIME-temporal recovers 4/5 (3 sequential + the static threshold law, with
-  `sq(slog)`-independent order-invariance), and its failure class is
-  explicitly tagged; OLS-basis control recovers 2/2 static laws; DLI, whose
-  feature matrix contains only SAME-TIME interactions, is recorded with its
-  measured grammar gap (delay-interactions are out of grammar despite the
-  name).
+  Measured (v0.1.2 fresh run, artifact `benchmarks/matched_compute_results.json`,
+  5 repeats, verdicts stable, full environment metadata, wall-budget
+  utilization recorded per cell):
+  RIME-temporal recovers 4/5 (3 sequential + the static threshold law; its one
+  failure, static_log, is the same monotone-invalued world PySR handles),
+  coverage-adjusted 4/5, accuracy on attempts 4/5. OLS-basis control recovers
+  2/2 static laws. DLI, whose feature matrix contains only SAME-TIME
+  interactions, is recorded with its measured grammar gap (delay-interactions
+  are out of grammar despite the name). **PySR 2.7 ran a HEAD-TO-HEAD under the
+  same serial-deterministic regime** (parallelism='serial', fixed seed, unbounded
+  iterations with a binding 2-s timeout, one-time Julia warmup excluded, lag
+  columns engineered for sequential worlds for information parity — PySR has no
+  time-shift operator): recovered 3/5 (lag2, lead-lag interaction, static
+  threshold law; r²=0.9974 even under the reversed diagnostic), failed static_log
+  at this budget and is out of scope on the IIR state law. The honest conclusion
+  at EQUAL 2-second serial budgets is COMPLEMENTARITY, not dominance: each
+  grammar class recovers worlds the others miss — exactly the coverage-axis
+  statement the harness was built to make rather than an arithmetic scorecard.
 
 **Routing (resolved capability statement).** RIME is the instrument for
 SEQUENTIAL mechanisms (lag, momentum, memory, lead-lag interaction) and — with

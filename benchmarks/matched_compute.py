@@ -301,6 +301,27 @@ def _subsets_under_cap(n: int, cap: int) -> list[tuple[int, ...]]:
 
 _PYSR_WARMED = {"done": False}
 
+# Lag columns handed to PySR for sequential worlds: information parity with
+# what RIME reads natively (the frozen LAG_SET subset) and what DLI builds
+# internally. PySR's operator set has no time-shift, so WITHOUT these columns
+# a temporal law is out of its REACH entirely — a scope fact, not a compute
+# result. Engineered as input columns only; NaN warmup rows are dropped for
+# the fit (skip-and-count, never imputed — the scoring semantics every other
+# method uses).
+_PYSR_LAGS = (1, 2, 5, 10)
+
+
+def _lag_frame(df: pd.DataFrame, feats: list[str]) -> pd.DataFrame:
+    out = pd.DataFrame(index=df.index)
+    for f in feats:
+        s = df[f].to_numpy(dtype=float)
+        out[f] = s
+        for k in _PYSR_LAGS:
+            lagged = np.full(len(s), np.nan)
+            lagged[k:] = s[:-k] if len(s) > k else np.nan
+            out[f"{f}_lag{k}"] = lagged
+    return out
+
 
 def _pysr_warmup() -> None:
     """One-time Julia warmup fit, EXCLUDED from measured walls (the kernel .so
@@ -325,14 +346,21 @@ def _pysr_run() -> Callable[[World, float], MethodResult]:
 
         _pysr_warmup()
         feats = [c for c in world.dev.columns if c != "target"]
+        if world.family.startswith("sequential"):
+            dev_X = _lag_frame(world.dev, feats)
+            hold_Xraw = _lag_frame(world.holdout, feats)
+        else:
+            dev_X = world.dev[feats]
+            hold_Xraw = world.holdout[feats]
         # Fairness: PySR cannot accept NaN y (its error "Input y contains NaN")
         # while RIME/OLS skip-and-count the warmup rows. Giving PySR the
         # FINITE rows is the same information the other methods effectively
         # consume; the full frame is what they get, the finite rows are what
         # they use.
-        finite_dev = np.isfinite(world.dev["target"].to_numpy(dtype=float)).nonzero()[0]
-        X_fit = world.dev[feats].to_numpy(dtype=float)[finite_dev]
-        y_fit = world.dev["target"].to_numpy(dtype=float)[finite_dev]
+        y_dev = world.dev["target"].to_numpy(dtype=float)
+        ok_dev = np.isfinite(y_dev) & np.isfinite(dev_X.to_numpy(dtype=float)).all(axis=1)
+        X_fit = dev_X.to_numpy(dtype=float)[ok_dev]
+        y_fit = y_dev[ok_dev]
         reg = PySRRegressor(
             # Wall-matched fairness: iterations are effectively unbounded so
             # timeout_in_seconds BINDS — the 2-s allowance is PySR's to use,
@@ -353,8 +381,16 @@ def _pysr_run() -> Callable[[World, float], MethodResult]:
         try:
             reg.fit(X_fit, y_fit)
             wall = time.perf_counter() - t0
-            sh = np.asarray(reg.predict(world.holdout[feats].to_numpy(dtype=float)),
-                            dtype=float)
+            ok_hold = np.isfinite(hold_Xraw.to_numpy(dtype=float)).all(axis=1)
+            X_pred = hold_Xraw.to_numpy(dtype=float)[ok_hold]
+            sh_full = np.asarray(reg.predict(X_pred), dtype=float)
+            yh_raw = world.holdout["target"].to_numpy(dtype=float)[ok_hold]
+            # Re-expand to full-length rows so _r2_from_hat can mask
+            # consistently; prediction rows dropped for fit are excluded here.
+            sh = np.full(len(world.holdout), np.nan)
+            sh[ok_hold] = sh_full
+            yh = np.full(len(world.holdout), np.nan)
+            yh[ok_hold] = yh_raw
         except Exception:
             return MethodResult(time.perf_counter() - t0, None, None, 0, None,
                                 abstained=True, over_budget=False)
@@ -363,7 +399,6 @@ def _pysr_run() -> Callable[[World, float], MethodResult]:
             n_prop = 0 if eqs is None or (hasattr(eqs, "empty") and eqs.empty) else len(eqs)
         except Exception:
             n_prop = 0
-        yh = world.holdout["target"].to_numpy(dtype=float)
         finite = np.isfinite(yh) & np.isfinite(sh)
         if finite.sum() < 30:
             return MethodResult(wall, None, None, n_prop, None, abstained=(n_prop == 0),
@@ -416,13 +451,17 @@ def build_methods() -> tuple[list[Method], dict[str, Any]]:
     if pysr_ok:
             methods.append(Method(
             "pysr_serial_deterministic",
-            FAMILIES,
+            ["sequential_lag", "sequential_interaction", "static_scaling", "static_log"],
             _pysr_run(),
             "PySR 2.7 (SymbolicRegression.jl), matched on the SAME serial-deterministic "
             "regime as RIME's single-core claims: parallelism='serial', fixed seed, "
-            "wall-clock matched via timeout_in_seconds. Declared coverage = all five "
-            "families (its operators are general). Note: this deliberately forfeits "
-            "PySR's default multithreading; it is the deterministic head-to-head.",
+            "wall-clock matched via timeout_in_seconds (iterations unbounded so the "
+            "allowance BINDS). Information parity: lag columns (frozen lag set) are "
+            "engineered as inputs for sequential worlds (PySR has no time-shift operator); "
+            "NaN warmup rows skip-and-count, never imputed. Declared coverage EXCLUDES "
+            "sequential_state: no operator expresses an input-side IIR (memory) — an "
+            "abstention there is scope, not compute. Note: this forfeits PySR's default "
+            "multithreading; it is the deterministic head-to-head.",
         ))
     return methods, env
 
@@ -488,9 +527,11 @@ def main() -> None:
     worlds = _make_worlds()
     methods, _ = build_methods()
     env = _environment()
-    env["pysr"] = ("available with version + matched wall-budget run") if env.get(
-        "pysr_available"
-    ) else "UNAVAILABLE — not compared, recorded not skipped"
+    env["pysr_status"] = (
+        "available; wall-budget matched run included"
+        if env.get("pysr_available")
+        else "UNAVAILABLE — not compared, recorded not skipped"
+    )
     artifact: dict[str, Any] = {
         "protocol": {
             "dev_rows": DEV_ROWS,

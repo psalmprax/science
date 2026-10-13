@@ -5,47 +5,47 @@
     {
       "evaluated": 200,
       "n": 150,
-      "remainder_pct": 91.9,
-      "us_graph_eval_phase": 1.2,
-      "us_per_candidate": 22.2,
+      "remainder_pct": 93.5,
+      "us_graph_eval_phase": 1.1,
+      "us_per_candidate": 27.2,
       "us_readout_fit_phase": 0.6,
-      "us_search_bookkeeping_remainder": 20.4
+      "us_search_bookkeeping_remainder": 25.4
     },
     {
       "evaluated": 200,
       "n": 600,
-      "remainder_pct": 67.8,
-      "us_graph_eval_phase": 3.8,
-      "us_per_candidate": 19.5,
-      "us_readout_fit_phase": 2.5,
-      "us_search_bookkeeping_remainder": 13.2
+      "remainder_pct": 74.6,
+      "us_graph_eval_phase": 3.4,
+      "us_per_candidate": 26.4,
+      "us_readout_fit_phase": 3.3,
+      "us_search_bookkeeping_remainder": 19.7
     },
     {
       "evaluated": 200,
       "n": 1200,
-      "remainder_pct": 51.7,
-      "us_graph_eval_phase": 7.7,
-      "us_per_candidate": 26.1,
-      "us_readout_fit_phase": 4.9,
-      "us_search_bookkeeping_remainder": 13.5
+      "remainder_pct": 53.5,
+      "us_graph_eval_phase": 7.1,
+      "us_per_candidate": 26.9,
+      "us_readout_fit_phase": 5.4,
+      "us_search_bookkeeping_remainder": 14.4
     },
     {
       "evaluated": 200,
       "n": 3000,
-      "remainder_pct": 0.0,
-      "us_graph_eval_phase": 27.7,
-      "us_per_candidate": 45.7,
-      "us_readout_fit_phase": 23.6,
-      "us_search_bookkeeping_remainder": 0.0
+      "remainder_pct": 32.9,
+      "us_graph_eval_phase": 17.5,
+      "us_per_candidate": 45.0,
+      "us_readout_fit_phase": 12.7,
+      "us_search_bookkeeping_remainder": 14.8
     },
     {
       "evaluated": 200,
       "n": 12000,
-      "remainder_pct": 0.0,
-      "us_graph_eval_phase": 143.6,
-      "us_per_candidate": 190.2,
-      "us_readout_fit_phase": 89.7,
-      "us_search_bookkeeping_remainder": 0.0
+      "remainder_pct": 1.9,
+      "us_graph_eval_phase": 127.7,
+      "us_per_candidate": 182.4,
+      "us_readout_fit_phase": 51.1,
+      "us_search_bookkeeping_remainder": 3.5
     }
   ]
 }
