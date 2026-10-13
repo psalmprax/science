@@ -4,6 +4,32 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — RIME Repair v0.1.x freeze (comparative-validation milestone)
+
+### Added (v0.1.2 static-grammar round, engine tag `rime_v0.1.2`)
+- **Matched-compute harness (`benchmarks/matched_compute.py`, audit-only):** equal-budget comparison of RIME (temporal + static grammars), the existing proposers, the algebraic OLS-basis control, and PySR when importable — scored on a preregistered **grammar-coverage axis**: out-of-coverage abstention is correct behaviour, an emitted-but-failed proposal is a failure on any family, and static worlds require holdout **reversal-invariance** so grid-order tracking is scored `index_fit` (the QEC masquerade, caught by construction) rather than a recovery. Measured run recorded in `benchmarks/matched_compute_results.json` (PySR honestly recorded unavailable, not skipped).
+- **Static search mode (kernel `config["static"]`, default OFF):** temporal primitives (lags, memory cells) are removed from seeds AND rewrites — grid-order fitting becomes unrepresentable for order-structured static data. No threshold or gate changes; the default grammar is byte-identical to v0.1.1.
+- **Algebraic input transforms (`RimeProposer(algebraic_transforms=[...])`):** canned `sq/cub/ssqrt/slog` transform columns appended at the input layer, recomputed identically inside `compute_score` so proposals stay causally usable on unseen frames; NaN-preserving, unknown kinds rejected at construction.
+
+### Fixed (v0.1.2 — this is also a CORRECTION of a prior conclusion)
+- **Scale-dependent ridge in `fit_readout` (engine numerics, `rust/apedp-kernel/src/rime/eval.rs`):** the fixed `1e-9` literal added to `Σ(o−ō)²` exceeded the raw second moment of algebraic-scale regressors (a p² column ≈1e-8) by ~30× and silently zeroed every such fit — this, not the grammar, was the primary cause of the measured QEC static-law failure. The ridge is now relative to the regressor's raw second moment (identical for unit-scale data; the QEC attribution "RIME's grammar is the wrong instrument for static scaling laws" is retired: the temporal grammar reaches the law via its self-interaction rewrite, pinned by `test_dyn_ga_qec.py` at holdout R²>0.99 both directions).
+- **`tests/rime_regression.rs` was stale against the v0.1.2 typed API** (referenced the removed `SearchPacket` surface and did not compile); rewritten as equivalents against `SearchOutcome` with true null-abstention, positive-control and budget assertions; `rime_stage1.rs` assertions recalibrated to commit 30e73bf's planted amplitude (previously internally inconsistent: even a perfect fit could not clear the control's own bar).
+
+### Added (this round, earlier)
+- **RIME Repair diagnosis v0.1.0 (`apedp_dyn/epistemic/rime_repair_diagnosis.py`, experimental):** frozen `ResidualReport` + finding vocabulary on real proposals; all cutoffs explicit caller args.
+- **RIME Repair engine v0.1.1–v0.1.4 (`apedp_dyn/epistemic/rime_repair_engine.py`, experimental):** bounded R1/R2/R3 operators, chronological 4-role partitions with single-use sealed split (`HoldoutContaminationError` on reopen), five explicit gates, prediction-equivalence clustering. Promotion structurally deferred to the APEDP-X track (no CandidateProposal→ScoredCandidate bridge fabricated).
+- **Sensitivity/recall milestone (v0.1.2–v0.1.3):** recall 9/9 strong planted defects with structure recovery; weak-defect curve never harms; BTC abstention regression; 5/5 walk-forward abstain; adversarial stability-block.
+
+### Fixed
+- **RIME `residual.rs` stub:** removed hardcoded threshold literal; residuals now use the fitted readout (consistent with `eval.rs` scoring); threshold is an explicit caller argument with regression tests.
+
+### Documented limitations (capability boundary, not a defect)
+- Same-driver omitted lags are usually absorbed by OLS into ~white residuals (4/6 sensitivity corners silent); firing corners yield gated rejection. R3's demonstrated domain is emergent lag from an independent driver. Whiteness alone is insufficient for structural identification.
+- Whiteness gate assumes stationarity across evaluation rows: on log-spaced QEC data, quadratic extrapolation misfit trips the temporal screen and vetoes an R²=0.95 repair (pinned conservative behavior; refusal is the safe direction).
+
+### Frozen scope
+- No further grammar expansion. Next milestone is comparative validation (matched-compute repair vs proposer, independent inspection), not new operators.
+
 ## [2.0.0] - 2026-10-12
 
 ### Added

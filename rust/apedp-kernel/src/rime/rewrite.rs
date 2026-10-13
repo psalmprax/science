@@ -6,7 +6,7 @@
 use serde::{Deserialize, Serialize};
 use super::graph::{Graph, Node, LAG_SET};
 
-/// The five frozen rewrite operations.
+/// The seven frozen rewrite operations (v0.1 core + two controlled expansions).
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RewriteOp {
     AddLagEdge { src: usize, k: usize },
@@ -14,6 +14,8 @@ pub enum RewriteOp {
     AddState { decay_num: usize, decay_den: usize },
     WrapNonlinearity { src: usize },
     PruneEdge { node: usize },
+    AbsNode { src: usize },
+    SignNode { src: usize },
 }
 
 impl RewriteOp {
@@ -24,6 +26,8 @@ impl RewriteOp {
             RewriteOp::AddState { .. } => "AddState",
             RewriteOp::WrapNonlinearity { .. } => "WrapNonlinearity",
             RewriteOp::PruneEdge { .. } => "PruneEdge",
+            RewriteOp::AbsNode { .. } => "AbsNode",
+            RewriteOp::SignNode { .. } => "SignNode",
         }
     }
 }
@@ -78,6 +82,18 @@ pub fn apply(g: &Graph, op: &RewriteOp) -> Option<Graph> {
             // Pruning replaces the node with Const(0.0) in place: downstream
             // indices stay valid, so the output index is preserved.
             h.nodes[*node] = Node::Const(0.0);
+        }
+        RewriteOp::AbsNode { src } => {
+            if *src >= n {
+                return None;
+            }
+            h.push(Node::Abs(*src));
+        }
+        RewriteOp::SignNode { src } => {
+            if *src >= n {
+                return None;
+            }
+            h.push(Node::Sign(*src));
         }
     }
     Some(h)

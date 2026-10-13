@@ -165,6 +165,18 @@ impl Graph {
         rec(self, self.output, &mut memo)
     }
 
+    /// True when any node reads time: a `Lag` delay or a `State` memory cell.
+    ///
+    /// Static search mode (config `"static": true`) uses this to exclude every
+    /// temporal form from the seed catalogue, so that on order-structured data
+    /// (e.g. a log-spaced static law) no candidate can win by fitting grid
+    /// order — a lag would be *unrepresentable*, not merely gated.
+    pub fn is_temporal(&self) -> bool {
+        self.nodes
+            .iter()
+            .any(|n| matches!(n, Node::Lag(_, _) | Node::State { .. }))
+    }
+
     /// Structural validation: output in range, arena order topological, lags
     /// frozen, literals finite. Evaluation refuses non-topological graphs
     /// instead of silently reading a half-built value.

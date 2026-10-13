@@ -16,6 +16,10 @@ use apedp_kernel::rime::record::CandidateRecord;
 use apedp_kernel::rime::rewrite::{apply, RewriteOp};
 use apedp_kernel::rime::search::{multiplicity_dof, target_variance};
 
+/// The planted lag-2 amplitude of [`planted_world`] (raised from 3.0 in
+/// 30e73bf so the MSE reduction dominates the lambda_c charge decisively).
+const PLANTED_AMP: f64 = 50.0;
+
 fn hash_noise(n: usize, phase: f64) -> Vec<f64> {
     (0..n)
         .map(|t| {
@@ -27,14 +31,15 @@ fn hash_noise(n: usize, phase: f64) -> Vec<f64> {
 
 /// Deterministic input (hash noise). Measured sample autocorrelation at the
 /// frozen lags is below 0.07, so no lag is a hidden copy of another. Fully
-/// deterministic, no RNG. The target is exactly y[t] = 3.0 * x[t-2] for t >= 2,
-/// so lag‑2 must be the uniquely best model.
+/// deterministic, no RNG. The target is exactly
+/// y[t] = PLANTED_AMP * x[t-2] for t >= 2, so lag‑2 must be the uniquely best
+/// model.
 fn planted_world() -> (Vec<Vec<f64>>, Vec<f64>) {
     let x = hash_noise(500, 0.0);
 // Exact lag‑2 law, no extra sinusoidal noise so that lag‑2 wins decisively.
     // Use a large amplitude so the MSE reduction dominates the lambda_c penalty.
     let y: Vec<f64> = (0..500)
-        .map(|t| if t >= 2 { 50.0 * x[t - 2] } else { f64::NAN })
+        .map(|t| if t >= 2 { PLANTED_AMP * x[t - 2] } else { f64::NAN })
         .collect();
     (vec![x], y)
 }
@@ -52,9 +57,13 @@ fn seed_graph() -> Graph {
 fn lag_score_config(target: &[f64], n_candidates: usize) -> ScoreConfig {
     let var = target_variance(target);
     let n_dev = target.iter().filter(|v| v.is_finite()).count().max(1);
-    // Strong penalty (50.0) ensures the null world test abstains,
-    // while the planted signal (50.0·x[t‑2]) dominates the gate.
-    ScoreConfig::new(50.0 * var / n_dev as f64, 1e-9).with_selection_dof(multiplicity_dof(n_candidates))
+    // Charge multiplier 25.0 (re-calibrated after 30e73bf raised the planted
+    // amplitude): at 50.0 the charge consumed ~62% of the target variance and
+    // even a PERFECT fit (mse≈0) could no longer clear this test's own
+    // `score > 0.5*var` bar — an internally inconsistent control. At 25.0 a
+    // perfect fit yields ≈0.69·var (> 0.5·var) while the null world still
+    // abstains for any positive charge (wrong-lag ΔMSE ≈ 0, minus charge).
+    ScoreConfig::new(25.0 * var / n_dev as f64, 1e-9).with_selection_dof(multiplicity_dof(n_candidates))
 }
 
 fn lag_expansions(
@@ -97,7 +106,7 @@ fn planted_two_lag_mechanism_recovered() {
     assert!(res[i].score > 0.0, "winner must clear the gate: {}", res[i].score);
     // The fitted readout must recover the planted amplitude, not just rank it.
     assert!(
-        (res[i].scale - 3.0).abs() < 0.05 && res[i].r2 > 0.99,
+        (res[i].scale - PLANTED_AMP).abs() < 0.05 && res[i].r2 > 0.99,
         "scale {} r2 {}",
         res[i].scale,
         res[i].r2
@@ -166,7 +175,7 @@ fn lag_expansion_reports_the_planted_scale_not_a_placeholder() {
     let lag2 = apply(&seed_graph(), &RewriteOp::AddLagEdge { src: 0, k: 2 }).unwrap();
     let out = lag2.evaluate(&cols);
     let (a, b) = fit_readout(&out, &target, 1e-9);
-    assert!((a - 3.0).abs() < 1e-3, "fitted scale {}", a);
+    assert!((a - PLANTED_AMP).abs() < 1e-3, "fitted scale {}", a);
     assert!((b - 0.0).abs() < 0.05, "fitted intercept {}", b);
     let (raw_mse, skipped) = mse_finite(&out, &target);
     let (fitted, _, _) = fitted_mse(&lag2, &cols, &target, 1e-9);

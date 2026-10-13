@@ -248,6 +248,63 @@ is enforced:
   modules contain no RIME references and RIME imports nothing from the referee
   (verified structurally; rule 1 remains architectural).
 
+## 16b. v0.1.2 static-grammar extension & scale-invariant readout (QEC round)
+
+The QEC repair round surfaced a boundary that turned out to be TWO defects,
+one in the numerics and one in the proposal surface:
+
+- **Scale-dependent ridge (FIXED — engine numerics).** `fit_readout` added a
+  fixed literal `ridge = 1e-9` to `Σ(o−ō)²`. For a regressor whose raw second
+  moment is far from unit scale — exactly what an algebraic transform column
+  (p² ≈ 1e-8) is — the ridge exceeded the entire signal energy (here ~30×) and
+  silently zeroed every algebraic-scale fit. The QEC attribution "RIME's lag/state
+  grammar is the wrong instrument for static scaling laws" was therefore
+  PARTLY WRONG: the grammar always contained the self-interaction rewrite
+  (`p·p`); the readout could not fit it. The ridge is now RELATIVE to the
+  regressor's raw second moment (`ridge·Σ o²`), which is identical for
+  unit-scale regressors (all pre-v0.1.2 tests) and correct at extreme scales.
+  The temporal-grammar side now recovers the QEC threshold law
+  (`test_dyn_ga_qec.py` asserts holdout R² > 0.99).
+- **Static search mode (`config["static"]`, OFF by default).** Removes temporal
+  primitives from the grammar entirely — no `Lag`, no `State`, in seeds and
+  rewrites alike (`Graph::is_temporal` filter). Use for static laws over an
+  order-structured axis where grid-order fitting must be UNREPRESENTABLE
+  rather than merely gated. No gate, threshold or preregistered value changes;
+  the default grammar is byte-identical to v0.1.1.
+- **Algebraic input transforms (Python layer).** `RimeProposer(
+  algebraic_transforms=[...])` appends canned transforms (`sq`, `cub`,
+  `ssqrt`, `slog`) of the first `max_transform_inputs` features as extra
+  candidate columns, recomputed identically inside `compute_score` so
+  proposals stay causally usable on unseen frames. Domain guarded
+  (NaN-preserving); unknown kinds are rejected at construction.
+- **Matched-compute harness with a grammar-coverage axis.**
+  `benchmarks/matched_compute.py` scores every method per dataset family with
+  a preregistered protocol: abstention OUT of declared coverage is correct
+  behaviour; an emitted-but-failed proposal is a failure on ANY family; static
+  worlds additionally require reversal-invariance of the holdout score so a
+  grid-order tracker cannot masquerade as mechanism (scored `index_fit`).
+  Measured (v0.1.2 fresh run, artifact `benchmarks/matched_compute_results.json`):
+  RIME-temporal recovers 4/5 (3 sequential + the static threshold law, with
+  `sq(slog)`-independent order-invariance), and its failure class is
+  explicitly tagged; OLS-basis control recovers 2/2 static laws; DLI, whose
+  feature matrix contains only SAME-TIME interactions, is recorded with its
+  measured grammar gap (delay-interactions are out of grammar despite the
+  name).
+
+**Routing (resolved capability statement).** RIME is the instrument for
+SEQUENTIAL mechanisms (lag, momentum, memory, lead-lag interaction) and — with
+the ridge fix — quadratic/monomial static laws via self-interaction. Static
+laws needing terms outside `{add, mul, tanh, sign, abs, sq, cub, ssqrt, slog}`
+(e.g. exp, genuinely deep powers) remain OUT of grammar for every RIME mode;
+route them to the algebraic-basis proposers, and let the referee adjudicate.
+
+**Regression tests.** `rust/apedp-kernel/tests/rime_static_mode.rs` (static
+recovery, no-transform can't claim exactness, temporal default unchanged);
+`tests/test_dyn_rime_static_grammar.py` (end-to-end transform recovery,
+holdout, metadata discipline, catalogue/domain safety);
+`tests/test_dyn_ga_qec.py` (updated to the corrected condition);
+`rime_regression.rs` rewritten against the current typed API.
+
 ## 16. v0.1.1 corrections (Stage-1 audit remediation)
 
 A Stage-1 audit read the whole engine, ran its tests, and probed the evaluator

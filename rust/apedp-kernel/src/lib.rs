@@ -628,7 +628,8 @@ fn rime_evaluate_series_json(
 ///
 /// `envs` is a JSON array of `{"cols": [[...]], "target": [...]}` objects, one
 /// per environment. `config_json` additionally accepts `"aggregation"`
-/// (`"mean"` | `"median_worst_gated"`) and `"gamma_gate"`. The aggregation rule
+/// (`"mean"` | `"median_worst_gated"`), `"gamma_gate"`, and `"static"` (disable
+/// temporal primitives for order-structured static laws). The aggregation rule
 /// is part of the frozen protocol and is reported back in the packet.
 #[pyfunction]
 #[pyo3(signature = (envs_json, config_json, variable_names=None))]
@@ -707,6 +708,9 @@ fn rime_search_envs_json(
     if let Some(v) = cfg_raw.get("ridge").and_then(|v| v.as_f64()) {
         cfg.ridge = v;
     }
+    if let Some(v) = cfg_raw.get("static").and_then(|v| v.as_bool()) {
+        cfg.static_ops = v;
+    }
     if let Some(v) = cfg_raw.get("gamma").and_then(|v| v.as_f64()) {
         // Σ over envs of their finite rows, calibrated on the pooled scale.
         let mut all: Vec<f64> = Vec::new();
@@ -726,7 +730,7 @@ fn rime_search_envs_json(
 
     let seeds = rime::seeds::small_forms(envs.iter().map(|e| e.cols.len()).max().unwrap_or(1));
     let outcome =
-        py.allow_threads(|| rime::search::search(&seeds, &envs[0].cols, &envs[0].target, &cfg));
+        py.allow_threads(|| rime::search::search_envs(&seeds, &envs, &cfg, agg, gamma_gate));
     let mut packet = outcome.to_json();
     if let Some(names) = variable_names.filter(|n| !n.is_empty()) {
         if let Some(list) = packet.get_mut("proposals").and_then(|v| v.as_array_mut()) {
@@ -748,8 +752,9 @@ fn rime_search_envs_json(
 /// One RIME search (spec §8/§12) over the frozen rewrites.
 ///
 /// `config_json` fields: max_depth, beam, budget, lambda_c, ridge, seed, and
-/// optionally `rel_penalty` to scale lambda_c to the target variance. Returns
-/// the full search packet as JSON (proposals + dev evidence).
+/// optionally `rel_penalty` to scale lambda_c to the target variance, and
+/// optionally `static` = true to disable temporal primitives entirely (seeds
+/// and rewrites: no lags, no memory cells) for order-structured static laws.
 #[pyfunction]
 #[pyo3(signature = (data, target, config_json, variable_names=None))]
 fn rime_search_json(
@@ -784,6 +789,9 @@ fn rime_search_json(
     }
     if let Some(v) = raw.get("ridge").and_then(|v| v.as_f64()) {
         cfg.ridge = v;
+    }
+    if let Some(v) = raw.get("static").and_then(|v| v.as_bool()) {
+        cfg.static_ops = v;
     }
     if let Some(v) = raw.get("gamma").and_then(|v| v.as_f64()) {
         // Sample-size-aware calibration: gamma * var(y) / n_dev.

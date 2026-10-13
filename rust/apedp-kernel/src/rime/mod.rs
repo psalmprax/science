@@ -8,5 +8,11 @@ pub mod graph;
 pub mod record;
 pub mod rewrite;
 pub mod search;
-pub mod referee;
+pub mod residual;
+pub mod d3;
+// NOTE (kernel restore): `referee` targets the v0.1-scaffolding search API
+// (SearchPacket/SearchConfig) and does not compile against the restored
+// v0.1.2 search API. Nothing imports it (Python referee is APEDP-X side).
+// File kept on disk; re-attach only with a port to the v0.1.2 packet types.
+// pub mod referee;
 pub mod seeds;

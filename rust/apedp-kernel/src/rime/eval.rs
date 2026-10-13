@@ -75,10 +75,18 @@ pub fn mse_finite(output: &[f64], target: &[f64]) -> (f64, usize) {
 
 /// Ridge-regularised least-squares readout.
 ///
-/// Minimises `Σ (a·o_t + b − y_t)² + ridge·a²` over finite `(o, y)` pairs,
-/// returning `(a, b)`. `ridge` shrinks the slope toward zero (the intercept is
-/// free, since the target's mean is not evidence of mechanism). Fewer than two
-/// finite pairs, or a constant output, yields `(0, ȳ)`.
+/// Minimises `Σ (a·o_t + b − y_t)² + ridge·Σ o_t² · a²` over finite `(o, y)`
+/// pairs, returning `(a, b)`. `ridge` shrinks the slope toward zero (the
+/// intercept is free, since the target's mean is not evidence of mechanism).
+/// Fewer than two finite pairs, or a constant output, yields `(0, ȳ)`.
+///
+/// v0.1.2 numerics fix: the ridge term is now RELATIVE to the regressor's raw
+/// second moment (`Σ o²`), not an absolute literal added to `Σ(o−ō)²`. The old
+/// form is scale-dependent — with the algebraic-transform columns (e.g. a
+/// squared axis at 1e-8 magnitude) a fixed 1e-9 ridge exceeded the entire
+/// signal energy by ~30× and silently zeroed the mechanism. For unit-scale
+/// regressors (all pre-v0.1.2 planted tests) the two forms agree to well below
+/// every test tolerance; for extreme scales this is the only correct form.
 pub fn fit_readout(output: &[f64], target: &[f64], ridge: f64) -> (f64, f64) {
     let mut n = 0.0f64;
     let (mut so, mut sy, mut soo, mut soy) = (0.0f64, 0.0f64, 0.0f64, 0.0f64);
@@ -96,7 +104,7 @@ pub fn fit_readout(output: &[f64], target: &[f64], ridge: f64) -> (f64, f64) {
     }
     let mo = so / n;
     let my = sy / n;
-    let sxx = (soo - n * mo * mo).max(0.0) + ridge.max(0.0);
+    let sxx = (soo - n * mo * mo).max(0.0) + ridge.max(0.0) * soo.max(0.0);
     let sxy = soy - n * mo * my;
     let a = if sxx > 0.0 { sxy / sxx } else { 0.0 };
     (a, my - a * mo)

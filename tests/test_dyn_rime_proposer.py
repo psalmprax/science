@@ -102,7 +102,7 @@ def test_rime_proposer_recovers_momentum_and_interaction_families():
     assert any("[t-1]" in e for e in equations), equations
     # Every proposal carries its provenance and the search's dev evidence.
     for p in proposals:
-        assert p.metadata["engine"] == "rime_v0.1.1"
+        assert p.metadata["engine"] == "rime_v0.1.2"
         assert p.metadata["evaluated"] <= 200
         assert p.metadata["lambda_c"] > 0.0
         assert p.metadata["depth"] <= 2
@@ -272,11 +272,11 @@ def test_rime_compute_score_documents_past_information_only():
     """The signal path is temporal (no look-ahead), not a causal claim."""
     import inspect
 
-    doc = inspect.getdoc(RimeProposer._scorer) or inspect.getdoc(
-        RimeProposer._scorer(  # the returned closure carries the semantics doc
-            ["x"], "{}", 1.0, 0.0
-        )
+    proposer = RimeProposer(feature_cols=["x"], target_col="target")
+    closure = proposer._scorer(  # instance method; returns the computing closure
+        [("x", "x", "raw")], ["x"], "{}", 1.0, 0.0
     )
+    doc = inspect.getdoc(closure) or inspect.getdoc(RimeProposer._scorer)
     assert doc is not None
     assert "PAST-INFORMATION-ONLY" in doc.upper()
     assert "NOT a causal claim" in doc
