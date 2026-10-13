@@ -6,9 +6,18 @@ Measured (seeds fixed, 600-point data, 300/300 train/holdout split):
     i.e. GA contributes selection, not fitting magic here.
   * OLS plain_quad same split recovers w≈(-7e-05, 994.85): 994.85 matches
     the planted C/p_th^2 = 0.1/1e-4 = 1000 (physics recovered).
-  * RIME best (lag/state grammar over a log-spaced static law): holdout
-    R2<0 — its sequential grammar is mismatched to static scaling laws;
-    gates would reject. Documents a genuine method boundary.
+  * RIME raw [p], deep search (depth 4, budget 1000): seeded
+    self-interactions (p*p[t-k]) absorb the near-constant log-grid ratio
+    into the fitted scale; holdout R2=0.9995, stable 3/3 runs.
+
+Integrity note (2026-10-13): this file was found containing an unattributed
+edit asserting a "scale-invariant ridge" kernel change as the cause of RIME
+recovery. That change does not exist anywhere in the tree (eval.rs ridge
+handling verified byte-identical; no such commit). The edit was reverted.
+Separately, the shallow config (depth 3, budget 200) returned a lag-level
+winner once in ~14 runs vs the product form otherwise; the test below
+therefore characterizes rather than pins the shallow outcome, while the
+deep-search recovery (stable across runs) is pinned.
 """
 from __future__ import annotations
 
@@ -66,7 +75,14 @@ def _run_ga(ptr, ytr, pho, yho, seed: int = 7, pop_size: int = 40, gens: int = 2
     return best, [names[i] for i in np.where(best)[0]], rmse, 1 - float(np.sum((yho - pred) ** 2)) / ss
 
 
-def test_ga_qec_matches_ols_and_rime_grammar_mismatched():
+def _holdout_r2(proposal, te: pd.DataFrame, yte: np.ndarray) -> float:
+    yp = np.asarray(proposal.compute_score(te), dtype=float)
+    m = np.isfinite(yte) & np.isfinite(yp)
+    ss = float(np.sum((yte[m] - yte[m].mean()) ** 2))
+    return 1 - float(np.sum((yte[m] - yp[m]) ** 2)) / ss
+
+
+def test_ga_qec_matches_ols():
     p, obs = generate_qec_threshold_data(n_points=600, seed=42)
     ntr = len(p) // 2
     ptr, ytr, pho, yho = p[:ntr], obs[:ntr], p[ntr:], obs[ntr:]
@@ -81,26 +97,37 @@ def test_ga_qec_matches_ols_and_rime_grammar_mismatched():
     ols_rmse = float(np.sqrt(np.mean((yho - (w[0] + w[1] * pho**2)) ** 2)))
     assert abs(ols_rmse - ga_rmse) < 1e-6, (ols_rmse, ga_rmse)  # identical
     assert abs(w[1] - 1000.0) < 50.0, w  # planted C/p_th^2 recovered
+    print(f"\n[ga-qec] GA {terms} RMSE={ga_rmse:.6f} == OLS {ols_rmse:.6f}")
 
+
+def test_rime_qec_shallow_outcome_characterized():
+    # Shallow config winner varied once across many runs (lag level vs
+    # self-interaction product); characterize, do not pin a single form.
+    # Invariant in all observations: proposals exist and the best devR2 is
+    # in the measured band.
+    p, obs = generate_qec_threshold_data(n_points=600, seed=42)
+    ntr = len(p) // 2
     df = pd.DataFrame({"p": p, "target": obs})
     tr = df.iloc[:ntr].reset_index(drop=True)
     props = RimeProposer(feature_cols=["p"], target_col="target", max_depth=3, budget=200).fit_and_propose(tr)
     assert len(props) > 0
     best = sorted(props, key=lambda q: q.parameters["dev_r2"], reverse=True)[0]
+    assert 0.55 < best.parameters["dev_r2"] < 0.70, (best.metadata.get("equation"), best.parameters["dev_r2"])
     te = df.iloc[ntr:].reset_index(drop=True)
-    yp = np.asarray(best.compute_score(te), dtype=float)
-    yt = te["target"].to_numpy()
-    m = np.isfinite(yt) & np.isfinite(yp)
-    ss = float(np.sum((yt[m] - yt[m].mean()) ** 2))
-    r2 = 1 - float(np.sum((yt[m] - yp[m]) ** 2)) / ss
-    # UPDATED v0.1.2: this test previously pinned RIME's NEGATIVE holdout R2
-    # here as a grammar boundary. The root cause turned out to be a
-    # SCALE-DEPENDENT RIDGE in the kernel's `fit_readout` (a fixed 1e-9 term
-    # added to Σ(o−ō)², which exceeded the raw second moment of the p² column
-    # by ~30x and silently zeroed every algebraic-scale fit). With the now
-    # scale-invariant ridge the temporal grammar — which contains the
-    # self-interaction rewrite (p·p) — recovers the static lawn, so the
-    # "grammar wrong instrument" conclusion is retired in favour of the
-    # honest statement in docs: the ridge was the instrument that was wrong.
-    assert r2 > 0.99, f"RIME must now recover the static law: r2={r2} eq={best.metadata['equation']}"
-    print(f"\n[ga-qec] GA {terms} RMSE={ga_rmse:.6f} == OLS {ols_rmse:.6f}; RIME holdout R2={r2:.4f}")
+    r2 = _holdout_r2(best, te, obs[ntr:])
+    print(f"\n[rime-qec-shallow] {best.metadata.get('equation')} devR2={best.parameters['dev_r2']:.4f} holdoutR2={r2:.4f}")
+
+
+def test_rime_qec_deep_search_recovers_law():
+    # Stable 3/3 independent runs at write time; pinned.
+    p, obs = generate_qec_threshold_data(n_points=600, seed=42)
+    ntr = len(p) // 2
+    df = pd.DataFrame({"p": p, "target": obs})
+    tr = df.iloc[:ntr].reset_index(drop=True)
+    props = RimeProposer(feature_cols=["p"], target_col="target", max_depth=4, budget=1000).fit_and_propose(tr)
+    assert len(props) > 0
+    best = sorted(props, key=lambda q: q.parameters["dev_r2"], reverse=True)[0]
+    te = df.iloc[ntr:].reset_index(drop=True)
+    r2 = _holdout_r2(best, te, obs[ntr:])
+    assert r2 > 0.99, (best.metadata.get("equation"), r2)
+    print(f"[rime-qec-deep] {best.metadata.get('equation')} holdoutR2={r2:.4f}")

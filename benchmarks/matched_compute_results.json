@@ -4,11 +4,19 @@
     "holdout_rows": 300,
     "recovery_r2": 0.99,
     "wall_budget_s": 2.0,
-    "seed_note": "all worlds deterministic (hash-noise generators)",
-    "holdout_use": "consumed once, at evaluation time only"
+    "repeats": 5,
+    "seed_note": "all worlds deterministic (hash-noise generators); methods deterministic or seeded (ElasticNetCV random_state=42, PySR deterministic=True)",
+    "holdout_use": "consumed at evaluation time only (forward + reversed diagnostic)",
+    "budget_note": "equal wall ALLOWANCE per method; utilization is recorded per cell \u2014 equal allowance is not equal utilized compute"
   },
   "environment": {
-    "pysr_available": false
+    "python": "3.12.3",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "pysr_available": true,
+    "pysr": "available with version + matched wall-budget run",
+    "julia": "unknown"
   },
   "families": [
     "sequential_lag",
@@ -32,12 +40,23 @@
           "family": "sequential_lag",
           "law": "y = 3\u00b7x[t-2] + 1",
           "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
           "holdout_r2": 1.0,
           "holdout_r2_reversed": -1.098749,
           "n_proposals": 5,
           "candidate_evals": 200,
+          "wall_seconds_median": 0.021675,
+          "wall_seconds_min": 0.018331,
+          "wall_seconds_max": 0.023619,
+          "budget_utilization": 0.010837,
           "abstained": false,
-          "wall_seconds": 0.0149,
+          "wall_seconds": 0.0236,
           "over_budget": false
         },
         {
@@ -45,12 +64,23 @@
           "family": "sequential_state",
           "law": "y = 0.8\u00b7y[t-1] + x[t]",
           "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
           "holdout_r2": 0.999956,
           "holdout_r2_reversed": -0.27312,
           "n_proposals": 5,
           "candidate_evals": 200,
+          "wall_seconds_median": 0.021413,
+          "wall_seconds_min": 0.017811,
+          "wall_seconds_max": 0.023125,
+          "budget_utilization": 0.010706,
           "abstained": false,
-          "wall_seconds": 0.0057,
+          "wall_seconds": 0.0231,
           "over_budget": false
         },
         {
@@ -58,12 +88,23 @@
           "family": "sequential_interaction",
           "law": "y = 4\u00b7z[t]\u00b7x[t-1]",
           "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
           "holdout_r2": 1.0,
           "holdout_r2_reversed": -0.868634,
           "n_proposals": 1,
           "candidate_evals": 97,
+          "wall_seconds_median": 0.011495,
+          "wall_seconds_min": 0.008976,
+          "wall_seconds_max": 0.013989,
+          "budget_utilization": 0.005747,
           "abstained": false,
-          "wall_seconds": 0.0065,
+          "wall_seconds": 0.014,
           "over_budget": false
         },
         {
@@ -71,12 +112,23 @@
           "family": "static_scaling",
           "law": "y = 1000\u00b7p\u00b2",
           "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
           "holdout_r2": 0.999998,
           "holdout_r2_reversed": 0.99997,
           "n_proposals": 5,
           "candidate_evals": 136,
+          "wall_seconds_median": 0.015583,
+          "wall_seconds_min": 0.013216,
+          "wall_seconds_max": 0.019524,
+          "budget_utilization": 0.007792,
           "abstained": false,
-          "wall_seconds": 0.0054,
+          "wall_seconds": 0.0166,
           "over_budget": false
         },
         {
@@ -84,12 +136,23 @@
           "family": "static_log",
           "law": "y = 20\u00b7sign(x)\u00b7log1p(|x|)",
           "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
           "holdout_r2": 0.0,
           "holdout_r2_reversed": 0.0,
           "n_proposals": 5,
           "candidate_evals": 185,
+          "wall_seconds_median": 0.015845,
+          "wall_seconds_min": 0.015682,
+          "wall_seconds_max": 0.016898,
+          "budget_utilization": 0.007923,
           "abstained": false,
-          "wall_seconds": 0.0059,
+          "wall_seconds": 0.0169,
           "over_budget": false
         }
       ],
@@ -111,12 +174,23 @@
           "family": "sequential_lag",
           "law": "y = 3\u00b7x[t-2] + 1",
           "verdict": "correct_abstention",
+          "verdicts_all_repeats": [
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention"
+          ],
           "holdout_r2": null,
           "holdout_r2_reversed": null,
           "n_proposals": 0,
-          "candidate_evals": 0,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.003405,
+          "wall_seconds_min": 0.003343,
+          "wall_seconds_max": 0.003621,
+          "budget_utilization": 0.001702,
           "abstained": true,
-          "wall_seconds": 0.001,
+          "wall_seconds": 0.0033,
           "over_budget": false
         },
         {
@@ -124,12 +198,23 @@
           "family": "sequential_state",
           "law": "y = 0.8\u00b7y[t-1] + x[t]",
           "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
           "holdout_r2": 0.361859,
           "holdout_r2_reversed": 0.361859,
           "n_proposals": 5,
           "candidate_evals": 60,
+          "wall_seconds_median": 0.008461,
+          "wall_seconds_min": 0.007731,
+          "wall_seconds_max": 0.008551,
+          "budget_utilization": 0.00423,
           "abstained": false,
-          "wall_seconds": 0.0023,
+          "wall_seconds": 0.0085,
           "over_budget": false
         },
         {
@@ -137,12 +222,23 @@
           "family": "sequential_interaction",
           "law": "y = 4\u00b7z[t]\u00b7x[t-1]",
           "verdict": "correct_abstention",
+          "verdicts_all_repeats": [
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention"
+          ],
           "holdout_r2": null,
           "holdout_r2_reversed": null,
           "n_proposals": 0,
-          "candidate_evals": 0,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.003405,
+          "wall_seconds_min": 0.003229,
+          "wall_seconds_max": 0.004087,
+          "budget_utilization": 0.001703,
           "abstained": true,
-          "wall_seconds": 0.0013,
+          "wall_seconds": 0.0041,
           "over_budget": false
         },
         {
@@ -150,12 +246,23 @@
           "family": "static_scaling",
           "law": "y = 1000\u00b7p\u00b2",
           "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
           "holdout_r2": 0.999998,
           "holdout_r2_reversed": 0.999998,
           "n_proposals": 5,
           "candidate_evals": 50,
+          "wall_seconds_median": 0.007619,
+          "wall_seconds_min": 0.007263,
+          "wall_seconds_max": 0.007899,
+          "budget_utilization": 0.00381,
           "abstained": false,
-          "wall_seconds": 0.0027,
+          "wall_seconds": 0.0079,
           "over_budget": false
         },
         {
@@ -163,12 +270,23 @@
           "family": "static_log",
           "law": "y = 20\u00b7sign(x)\u00b7log1p(|x|)",
           "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
           "holdout_r2": 1.0,
           "holdout_r2_reversed": 1.0,
           "n_proposals": 5,
           "candidate_evals": 106,
+          "wall_seconds_median": 0.013382,
+          "wall_seconds_min": 0.012779,
+          "wall_seconds_max": 0.014083,
+          "budget_utilization": 0.006691,
           "abstained": false,
-          "wall_seconds": 0.0038,
+          "wall_seconds": 0.0135,
           "over_budget": false
         }
       ],
@@ -190,12 +308,23 @@
           "family": "sequential_lag",
           "law": "y = 3\u00b7x[t-2] + 1",
           "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
           "holdout_r2": 0.484078,
           "holdout_r2_reversed": -0.104302,
           "n_proposals": 1,
           "candidate_evals": null,
+          "wall_seconds_median": 0.112626,
+          "wall_seconds_min": 0.109137,
+          "wall_seconds_max": 0.120992,
+          "budget_utilization": 0.056313,
           "abstained": false,
-          "wall_seconds": 0.1387,
+          "wall_seconds": 0.121,
           "over_budget": false
         },
         {
@@ -203,12 +332,23 @@
           "family": "sequential_state",
           "law": "y = 0.8\u00b7y[t-1] + x[t]",
           "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
           "holdout_r2": 0.37851,
           "holdout_r2_reversed": 0.145694,
           "n_proposals": 1,
           "candidate_evals": null,
+          "wall_seconds_median": 0.109855,
+          "wall_seconds_min": 0.106368,
+          "wall_seconds_max": 0.112698,
+          "budget_utilization": 0.054927,
           "abstained": false,
-          "wall_seconds": 0.1328,
+          "wall_seconds": 0.1102,
           "over_budget": false
         },
         {
@@ -216,12 +356,23 @@
           "family": "sequential_interaction",
           "law": "y = 4\u00b7z[t]\u00b7x[t-1]",
           "verdict": "correct_abstention",
+          "verdicts_all_repeats": [
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention"
+          ],
           "holdout_r2": null,
           "holdout_r2_reversed": null,
           "n_proposals": 0,
           "candidate_evals": null,
+          "wall_seconds_median": 0.110138,
+          "wall_seconds_min": 0.106868,
+          "wall_seconds_max": 0.119716,
+          "budget_utilization": 0.055069,
           "abstained": true,
-          "wall_seconds": 0.1305,
+          "wall_seconds": 0.1103,
           "over_budget": false
         },
         {
@@ -229,12 +380,23 @@
           "family": "static_scaling",
           "law": "y = 1000\u00b7p\u00b2",
           "verdict": "correct_abstention",
+          "verdicts_all_repeats": [
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention"
+          ],
           "holdout_r2": null,
           "holdout_r2_reversed": null,
           "n_proposals": 0,
           "candidate_evals": null,
+          "wall_seconds_median": 0.126397,
+          "wall_seconds_min": 0.122531,
+          "wall_seconds_max": 0.145573,
+          "budget_utilization": 0.063199,
           "abstained": true,
-          "wall_seconds": 0.1296,
+          "wall_seconds": 0.1264,
           "over_budget": false
         },
         {
@@ -242,12 +404,23 @@
           "family": "static_log",
           "law": "y = 20\u00b7sign(x)\u00b7log1p(|x|)",
           "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
           "holdout_r2": -3364.00325,
           "holdout_r2_reversed": -2910.094315,
           "n_proposals": 1,
           "candidate_evals": null,
+          "wall_seconds_median": 0.111261,
+          "wall_seconds_min": 0.107268,
+          "wall_seconds_max": 0.121099,
+          "budget_utilization": 0.055631,
           "abstained": false,
-          "wall_seconds": 0.1188,
+          "wall_seconds": 0.1211,
           "over_budget": false
         }
       ],
@@ -269,10 +442,21 @@
           "family": "sequential_lag",
           "law": "y = 3\u00b7x[t-2] + 1",
           "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
           "holdout_r2": 0.00417,
           "holdout_r2_reversed": 0.00417,
           "n_proposals": 1,
           "candidate_evals": 30,
+          "wall_seconds_median": 0.002589,
+          "wall_seconds_min": 0.002379,
+          "wall_seconds_max": 0.003357,
+          "budget_utilization": 0.001294,
           "abstained": false,
           "wall_seconds": 0.0028,
           "over_budget": false
@@ -282,12 +466,23 @@
           "family": "sequential_state",
           "law": "y = 0.8\u00b7y[t-1] + x[t]",
           "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
           "holdout_r2": 0.350359,
           "holdout_r2_reversed": 0.350359,
           "n_proposals": 1,
           "candidate_evals": 30,
+          "wall_seconds_median": 0.002532,
+          "wall_seconds_min": 0.002299,
+          "wall_seconds_max": 0.003032,
+          "budget_utilization": 0.001266,
           "abstained": false,
-          "wall_seconds": 0.0023,
+          "wall_seconds": 0.0025,
           "over_budget": false
         },
         {
@@ -295,12 +490,23 @@
           "family": "sequential_interaction",
           "law": "y = 4\u00b7z[t]\u00b7x[t-1]",
           "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
           "holdout_r2": -0.013258,
           "holdout_r2_reversed": -0.013258,
           "n_proposals": 1,
           "candidate_evals": 255,
+          "wall_seconds_median": 0.022689,
+          "wall_seconds_min": 0.021619,
+          "wall_seconds_max": 0.023745,
+          "budget_utilization": 0.011344,
           "abstained": false,
-          "wall_seconds": 0.0225,
+          "wall_seconds": 0.0237,
           "over_budget": false
         },
         {
@@ -308,12 +514,23 @@
           "family": "static_scaling",
           "law": "y = 1000\u00b7p\u00b2",
           "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
           "holdout_r2": 0.999973,
           "holdout_r2_reversed": 0.999973,
           "n_proposals": 1,
           "candidate_evals": 30,
+          "wall_seconds_median": 0.002537,
+          "wall_seconds_min": 0.002341,
+          "wall_seconds_max": 0.003308,
+          "budget_utilization": 0.001269,
           "abstained": false,
-          "wall_seconds": 0.0025,
+          "wall_seconds": 0.0023,
           "over_budget": false
         },
         {
@@ -321,18 +538,166 @@
           "family": "static_log",
           "law": "y = 20\u00b7sign(x)\u00b7log1p(|x|)",
           "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
           "holdout_r2": 1.0,
           "holdout_r2_reversed": 1.0,
           "n_proposals": 1,
           "candidate_evals": 30,
+          "wall_seconds_median": 0.002576,
+          "wall_seconds_min": 0.002356,
+          "wall_seconds_max": 0.003574,
+          "budget_utilization": 0.001288,
           "abstained": false,
-          "wall_seconds": 0.0027,
+          "wall_seconds": 0.0026,
           "over_budget": false
         }
       ],
       "tally": {
         "failed": 3,
         "recovered": 2
+      }
+    },
+    {
+      "method": "pysr_serial_deterministic",
+      "abstraction": "PySR 2.7 (SymbolicRegression.jl), matched on the SAME serial-deterministic regime as RIME's single-core claims: parallelism='serial', fixed seed, wall-clock matched via timeout_in_seconds. Declared coverage = all five families (its operators are general). Note: this deliberately forfeits PySR's default multithreading; it is the deterministic head-to-head.",
+      "declared_coverage": [
+        "sequential_lag",
+        "sequential_state",
+        "sequential_interaction",
+        "static_scaling",
+        "static_log"
+      ],
+      "runs": [
+        {
+          "world": "lag2_amplitude_offset",
+          "family": "sequential_lag",
+          "law": "y = 3\u00b7x[t-2] + 1",
+          "verdict": "miss",
+          "verdicts_all_repeats": [
+            "miss",
+            "miss",
+            "miss",
+            "miss",
+            "miss"
+          ],
+          "holdout_r2": null,
+          "holdout_r2_reversed": null,
+          "n_proposals": 0,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.001047,
+          "wall_seconds_min": 0.000772,
+          "wall_seconds_max": 0.061288,
+          "budget_utilization": 0.000523,
+          "abstained": true,
+          "wall_seconds": 0.0613,
+          "over_budget": false
+        },
+        {
+          "world": "state_decay_080",
+          "family": "sequential_state",
+          "law": "y = 0.8\u00b7y[t-1] + x[t]",
+          "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
+          "holdout_r2": 0.361742,
+          "holdout_r2_reversed": 0.361742,
+          "n_proposals": 3,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.246107,
+          "wall_seconds_min": 0.219082,
+          "wall_seconds_max": 6.570817,
+          "budget_utilization": 0.123053,
+          "abstained": false,
+          "wall_seconds": 6.5708,
+          "over_budget": true
+        },
+        {
+          "world": "lead_lag_interaction",
+          "family": "sequential_interaction",
+          "law": "y = 4\u00b7z[t]\u00b7x[t-1]",
+          "verdict": "miss",
+          "verdicts_all_repeats": [
+            "miss",
+            "miss",
+            "miss",
+            "miss",
+            "miss"
+          ],
+          "holdout_r2": null,
+          "holdout_r2_reversed": null,
+          "n_proposals": 0,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.000743,
+          "wall_seconds_min": 0.000712,
+          "wall_seconds_max": 0.000868,
+          "budget_utilization": 0.000371,
+          "abstained": true,
+          "wall_seconds": 0.0009,
+          "over_budget": false
+        },
+        {
+          "world": "static_threshold_law",
+          "family": "static_scaling",
+          "law": "y = 1000\u00b7p\u00b2",
+          "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
+          "holdout_r2": 0.393376,
+          "holdout_r2_reversed": 0.393376,
+          "n_proposals": 5,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.204093,
+          "wall_seconds_min": 0.200941,
+          "wall_seconds_max": 0.209143,
+          "budget_utilization": 0.102047,
+          "abstained": false,
+          "wall_seconds": 0.2012,
+          "over_budget": false
+        },
+        {
+          "world": "static_log_law",
+          "family": "static_log",
+          "law": "y = 20\u00b7sign(x)\u00b7log1p(|x|)",
+          "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
+          "holdout_r2": -5.166035,
+          "holdout_r2_reversed": -5.166035,
+          "n_proposals": 5,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.222602,
+          "wall_seconds_min": 0.211859,
+          "wall_seconds_max": 0.242882,
+          "budget_utilization": 0.111301,
+          "abstained": false,
+          "wall_seconds": 0.2429,
+          "over_budget": false
+        }
+      ],
+      "tally": {
+        "miss": 2,
+        "failed": 3
       }
     }
   ],
@@ -368,6 +733,14 @@
       "tally": {
         "failed": 3,
         "recovered": 2
+      }
+    },
+    "pysr_serial_deterministic": {
+      "points": 0,
+      "of": 5,
+      "tally": {
+        "miss": 2,
+        "failed": 3
       }
     }
   }

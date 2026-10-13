@@ -113,7 +113,10 @@ pub fn fit_readout(output: &[f64], target: &[f64], ridge: f64) -> (f64, f64) {
 /// Residual statistics of the fitted readout: `(mse, tss, n_eff, skipped)`.
 /// `tss` is the total sum of squares about the target mean over the same rows,
 /// so `1 − mse/tss` is the readout's R².
-fn residual_stats(output: &[f64], target: &[f64], a: f64, b: f64) -> (f64, f64, usize, usize) {
+///
+/// `pub` for the audit-only phase-decomposition harness
+/// (`tests/rime_profile.rs`), which needs fit+stats WITHOUT graph evaluation.
+pub fn residual_stats(output: &[f64], target: &[f64], a: f64, b: f64) -> (f64, f64, usize, usize) {
     let mut se = 0.0;
     let mut sy = 0.0;
     let mut n = 0usize;

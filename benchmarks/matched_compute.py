@@ -181,7 +181,7 @@ def _rime_run(**kw: Any) -> Callable[[World, float], MethodResult]:
         wall = time.perf_counter() - t0
         best = proposals[0] if proposals else None
         if best is None:
-            return MethodResult.abstain(wall, int(best.metadata["evaluated"]) if False else 0)
+            return MethodResult.abstain(wall, None)
         r2 = _holdout_r2(best, world.holdout)
         r2_rev = _holdout_r2(best, world.holdout.iloc[::-1])
         evals = int(best.metadata["evaluated"])
@@ -300,18 +300,20 @@ def _subsets_under_cap(n: int, cap: int) -> list[tuple[int, ...]]:
 
 
 def _pysr_run() -> Callable[[World, float], MethodResult]:
-    from pysr import PySRRegressor
-
     def run(world: World, allowance: float) -> MethodResult:
+        from pysr import PySRRegressor
+
         feats = [c for c in world.dev.columns if c != "target"]
         reg = PySRRegressor(
-            niterations=1,
+            niterations=2,
             maxsize=12,
             populations=8,
-            population_size=15,
-            timeout_in_seconds=max(1, int(allowance)),
+            population_size=33,
+            tournament_selection_n=7,
+            timeout_in_seconds=max(2, int(allowance)),
             deterministic=True,
-            proactive_ratio=0.0,
+            parallelism="serial",
+            random_state=7,
             verbosity=0,
             progress=False,
         )
@@ -323,8 +325,13 @@ def _pysr_run() -> Callable[[World, float], MethodResult]:
             sh = np.asarray(reg.predict(world.holdout[feats].to_numpy(dtype=float)),
                             dtype=float)
         except Exception:
-            return MethodResult(time.perf_counter() - t0, None, 0, None,
+            return MethodResult(time.perf_counter() - t0, None, None, 0, None,
                                 abstained=True, over_budget=False)
+        try:
+            eqs = getattr(reg, "equations_", None)
+            n_prop = 0 if eqs is None or (hasattr(eqs, "empty") and eqs.empty) else len(eqs)
+        except Exception:
+            n_prop = 0
         yh = world.holdout["target"].to_numpy(dtype=float)
         finite = np.isfinite(yh) & np.isfinite(sh)
         if finite.sum() < 30:
@@ -332,7 +339,6 @@ def _pysr_run() -> Callable[[World, float], MethodResult]:
                                 over_budget=wall > allowance)
         r2 = _r2_from_hat(yh, sh)
         r2_rev = _r2_from_hat(yh[::-1], sh[::-1])
-        n_prop = len(getattr(reg, "equations_", []) or [])
         return MethodResult(wall, r2, r2_rev, n_prop, None, abstained=(n_prop == 0),
                             over_budget=wall > allowance)
 
@@ -377,11 +383,15 @@ def build_methods() -> tuple[list[Method], dict[str, Any]]:
         pysr_ok = False
     env["pysr_available"] = pysr_ok
     if pysr_ok:
-        methods.append(Method(
-            "pysr",
+            methods.append(Method(
+            "pysr_serial_deterministic",
             FAMILIES,
             _pysr_run(),
-            "PySR (Julia symbolic regression), wall-clock matched via timeout_in_seconds",
+            "PySR 2.7 (SymbolicRegression.jl), matched on the SAME serial-deterministic "
+            "regime as RIME's single-core claims: parallelism='serial', fixed seed, "
+            "wall-clock matched via timeout_in_seconds. Declared coverage = all five "
+            "families (its operators are general). Note: this deliberately forfeits "
+            "PySR's default multithreading; it is the deterministic head-to-head.",
         ))
     return methods, env
 
@@ -412,22 +422,56 @@ def score(method: Method, world: World, res: MethodResult, allowance: float) -> 
 VICTORY = {"correct_abstention": 1, "recovered": 1}  # index_fit/failed/miss score 0
 
 
+def _environment() -> dict[str, Any]:
+    """Run-environment metadata for reproducibility (reviewer criterion)."""
+    import platform
+
+    import pandas as pd
+    import numpy as np
+    env: dict[str, Any] = {
+        "python": platform.python_version(),
+        "platform": platform.platform(),
+        "numpy": np.__version__,
+        "pandas": pd.__version__,
+    }
+    try:
+        pysr_ok = find_spec("pysr") is not None
+        env["pysr_available"] = bool(pysr_ok)
+        if pysr_ok:
+            import pysr
+            env["pysr"] = str(getattr(pysr, "__version__", "unknown"))
+            env["julia"] = str(getattr(pysr, "julia_version_", "unknown"))
+    except Exception:
+        env["pysr_available"] = False
+    return env
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--budget", type=float, default=DEFAULT_BUDGET_S)
+    ap.add_argument("--repeats", type=int, default=1,
+                    help="per-cell repeats for wall-time/verdict stability reporting")
     ap.add_argument("--json", default="benchmarks/matched_compute_results.json")
     args = ap.parse_args()
 
     worlds = _make_worlds()
-    methods, env = build_methods()
+    methods, _ = build_methods()
+    env = _environment()
+    env["pysr"] = ("available with version + matched wall-budget run") if env.get(
+        "pysr_available"
+    ) else "UNAVAILABLE — not compared, recorded not skipped"
     artifact: dict[str, Any] = {
         "protocol": {
             "dev_rows": DEV_ROWS,
             "holdout_rows": HOLDOUT_ROWS,
             "recovery_r2": RECOVERY_R2,
             "wall_budget_s": args.budget,
-            "seed_note": "all worlds deterministic (hash-noise generators)",
-            "holdout_use": "consumed once, at evaluation time only",
+            "repeats": args.repeats,
+            "seed_note": "all worlds deterministic (hash-noise generators); methods "
+                         "deterministic or seeded (ElasticNetCV random_state=42, PySR deterministic=True)",
+            "holdout_use": "consumed at evaluation time only (forward + reversed diagnostic)",
+            "budget_note": "equal wall ALLOWANCE per method; utilization is recorded "
+                           "per cell — equal allowance is not equal utilized compute",
         },
         "environment": env,
         "families": FAMILIES,
@@ -438,21 +482,31 @@ def main() -> None:
     for method in methods:
         rows = []
         for world in worlds:
-            res = method.run(world, args.budget)
+            # Preregistered repeats: verdicts are still required to be stable
+            # (they are deterministic methods on fixed worlds); the spread is
+            # over wall time / evaluations, reported as repeats statistics.
+            results = [method.run(world, args.budget) for _ in range(max(1, args.repeats))]
+            res = results[0]
             verdict = score(method, world, res, args.budget)
+            walls = [r.wall_seconds for r in results]
             rows.append({
                 "world": world.name,
                 "family": world.family,
                 "law": world.law,
                 "verdict": verdict,
+                "verdicts_all_repeats": [score(method, world, r, args.budget) for r in results],
                 "holdout_r2": None if res.holdout_r2 is None else round(res.holdout_r2, 6),
                 "holdout_r2_reversed": None if res.holdout_r2_reversed is None
                 else round(res.holdout_r2_reversed, 6),
                 "n_proposals": res.n_proposals,
                 "candidate_evals": res.candidate_evals,
+                "wall_seconds_median": round(float(np.median(walls)), 6),
+                "wall_seconds_min": round(float(min(walls)), 6),
+                "wall_seconds_max": round(float(max(walls)), 6),
+                "budget_utilization": round(float(np.median(walls)) / args.budget, 6),
                 "abstained": res.abstained,
                 "wall_seconds": round(res.wall_seconds, 4),
-                "over_budget": res.over_budget,
+                "over_budget": res.over_budget or max(walls) > args.budget,
             })
         tally: dict[str, int] = {}
         for r in rows:

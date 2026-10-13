@@ -1,0 +1,51 @@
+{
+  "kernel": "apedp-kernel rime, release profile",
+  "method": "phase decomposition, median of 7 reps per measurement; phases measured SINGLE-THREADED on the seed catalogue against a planted lag-2 world, while the production search wall is rayon-parallel — at large n the phase sum can exceed us_per_candidate and the remainder clamps to 0 (0 or a negative remainder means NO usable bookkeeping estimate at that size). remainder_pct>0 rows: bookkeeping is the dominant cost at small n (operational targeting for v0.2: enumeration and readout batches, not arithmetic);",
+  "rows": [
+    {
+      "evaluated": 200,
+      "n": 150,
+      "remainder_pct": 91.9,
+      "us_graph_eval_phase": 1.2,
+      "us_per_candidate": 22.2,
+      "us_readout_fit_phase": 0.6,
+      "us_search_bookkeeping_remainder": 20.4
+    },
+    {
+      "evaluated": 200,
+      "n": 600,
+      "remainder_pct": 67.8,
+      "us_graph_eval_phase": 3.8,
+      "us_per_candidate": 19.5,
+      "us_readout_fit_phase": 2.5,
+      "us_search_bookkeeping_remainder": 13.2
+    },
+    {
+      "evaluated": 200,
+      "n": 1200,
+      "remainder_pct": 51.7,
+      "us_graph_eval_phase": 7.7,
+      "us_per_candidate": 26.1,
+      "us_readout_fit_phase": 4.9,
+      "us_search_bookkeeping_remainder": 13.5
+    },
+    {
+      "evaluated": 200,
+      "n": 3000,
+      "remainder_pct": 0.0,
+      "us_graph_eval_phase": 27.7,
+      "us_per_candidate": 45.7,
+      "us_readout_fit_phase": 23.6,
+      "us_search_bookkeeping_remainder": 0.0
+    },
+    {
+      "evaluated": 200,
+      "n": 12000,
+      "remainder_pct": 0.0,
+      "us_graph_eval_phase": 143.6,
+      "us_per_candidate": 190.2,
+      "us_readout_fit_phase": 89.7,
+      "us_search_bookkeeping_remainder": 0.0
+    }
+  ]
+}
