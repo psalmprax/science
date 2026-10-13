@@ -1,0 +1,741 @@
+{
+  "protocol": {
+    "dev_rows": 600,
+    "holdout_rows": 300,
+    "recovery_r2": 0.99,
+    "coef_tol": 0.05,
+    "powers_basis": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "blind": "methods never see d, C, grid geometry, offset or the formula",
+    "abstention": "never counts toward recovery; correct ONLY on out-of-grammar (abstained verdict there); on in-grammar worlds abstention is recorded as a miss, per the preregistered rule",
+    "in_grammar_note": "RIME reaches p^2..p^6 via static grammar + sq/cub transform columns and its own interaction family"
+  },
+  "cells": [
+    {
+      "holdout_r2": 0.999994,
+      "holdout_r2_reversed": 0.999994,
+      "n_proposals": 3,
+      "wall_seconds": 0.0171,
+      "structure": 2,
+      "coef_relerr": 0.000243,
+      "verdict": "recovered_structure",
+      "world": "d2_C1000_log_1x",
+      "method": "rime_static",
+      "family": "in_grammar",
+      "d_true": 2,
+      "grid": "log",
+      "noise_mult": 1.0,
+      "formula": "y = 1000\u00b7p^2"
+    },
+    {
+      "holdout_r2": 0.99998,
+      "holdout_r2_reversed": 0.99998,
+      "n_proposals": 1,
+      "wall_seconds": 0.0,
+      "structure": 2,
+      "coef_relerr": 0.003919,
+      "verdict": "recovered_structure",
+      "world": "d2_C1000_log_1x",
+      "method": "ols_monomial",
+      "family": "in_grammar",
+      "d_true": 2,
+      "grid": "log",
+      "noise_mult": 1.0,
+      "formula": "y = 1000\u00b7p^2"
+    },
+    {
+      "holdout_r2": 0.999946,
+      "holdout_r2_reversed": 0.999946,
+      "n_proposals": 3,
+      "wall_seconds": 0.0322,
+      "structure": 2,
+      "coef_relerr": 0.000731,
+      "verdict": "recovered_structure",
+      "world": "d2_C1000_log_3x",
+      "method": "rime_static",
+      "family": "in_grammar",
+      "d_true": 2,
+      "grid": "log",
+      "noise_mult": 3.0,
+      "formula": "y = 1000\u00b7p^2"
+    },
+    {
+      "holdout_r2": 0.999823,
+      "holdout_r2_reversed": 0.999823,
+      "n_proposals": 1,
+      "wall_seconds": 0.0,
+      "structure": 2,
+      "coef_relerr": 0.011757,
+      "verdict": "recovered_structure",
+      "world": "d2_C1000_log_3x",
+      "method": "ols_monomial",
+      "family": "in_grammar",
+      "d_true": 2,
+      "grid": "log",
+      "noise_mult": 3.0,
+      "formula": "y = 1000\u00b7p^2"
+    },
+    {
+      "holdout_r2": 0.999913,
+      "holdout_r2_reversed": 0.999913,
+      "n_proposals": 3,
+      "wall_seconds": 0.0286,
+      "structure": 2,
+      "coef_relerr": 0.00045,
+      "verdict": "recovered_structure",
+      "world": "d2_C1000_uniform_1x",
+      "method": "rime_static",
+      "family": "in_grammar",
+      "d_true": 2,
+      "grid": "uniform",
+      "noise_mult": 1.0,
+      "formula": "y = 1000\u00b7p^2"
+    },
+    {
+      "holdout_r2": 0.999912,
+      "holdout_r2_reversed": 0.999912,
+      "n_proposals": 1,
+      "wall_seconds": 0.0,
+      "structure": 2,
+      "coef_relerr": 0.002633,
+      "verdict": "recovered_structure",
+      "world": "d2_C1000_uniform_1x",
+      "method": "ols_monomial",
+      "family": "in_grammar",
+      "d_true": 2,
+      "grid": "uniform",
+      "noise_mult": 1.0,
+      "formula": "y = 1000\u00b7p^2"
+    },
+    {
+      "holdout_r2": 0.999994,
+      "holdout_r2_reversed": 0.999994,
+      "n_proposals": 3,
+      "wall_seconds": 0.0281,
+      "structure": 2,
+      "coef_relerr": 0.000137,
+      "verdict": "recovered_structure",
+      "world": "d2_C1000_irregular_1x",
+      "method": "rime_static",
+      "family": "in_grammar",
+      "d_true": 2,
+      "grid": "irregular",
+      "noise_mult": 1.0,
+      "formula": "y = 1000\u00b7p^2"
+    },
+    {
+      "holdout_r2": 0.999982,
+      "holdout_r2_reversed": 0.999982,
+      "n_proposals": 1,
+      "wall_seconds": 0.0,
+      "structure": 2,
+      "coef_relerr": 0.003664,
+      "verdict": "recovered_structure",
+      "world": "d2_C1000_irregular_1x",
+      "method": "ols_monomial",
+      "family": "in_grammar",
+      "d_true": 2,
+      "grid": "irregular",
+      "noise_mult": 1.0,
+      "formula": "y = 1000\u00b7p^2"
+    },
+    {
+      "holdout_r2": 0.999994,
+      "holdout_r2_reversed": 0.999994,
+      "n_proposals": 3,
+      "wall_seconds": 0.0134,
+      "structure": 2,
+      "coef_relerr": 0.000243,
+      "verdict": "recovered_structure",
+      "world": "d2_C250_log_1x",
+      "method": "rime_static",
+      "family": "in_grammar",
+      "d_true": 2,
+      "grid": "log",
+      "noise_mult": 1.0,
+      "formula": "y = 250\u00b7p^2"
+    },
+    {
+      "holdout_r2": 0.99998,
+      "holdout_r2_reversed": 0.99998,
+      "n_proposals": 1,
+      "wall_seconds": 0.0,
+      "structure": 2,
+      "coef_relerr": 0.003919,
+      "verdict": "recovered_structure",
+      "world": "d2_C250_log_1x",
+      "method": "ols_monomial",
+      "family": "in_grammar",
+      "d_true": 2,
+      "grid": "log",
+      "noise_mult": 1.0,
+      "formula": "y = 250\u00b7p^2"
+    },
+    {
+      "holdout_r2": 0.999994,
+      "holdout_r2_reversed": 0.999994,
+      "n_proposals": 3,
+      "wall_seconds": 0.0152,
+      "structure": 2,
+      "coef_relerr": 0.000243,
+      "verdict": "recovered_structure",
+      "world": "d2_offset_log_1x",
+      "method": "rime_static",
+      "family": "in_grammar",
+      "d_true": 2,
+      "grid": "log",
+      "noise_mult": 1.0,
+      "formula": "y = 1000\u00b7p^2 + 0.002"
+    },
+    {
+      "holdout_r2": 0.99998,
+      "holdout_r2_reversed": 0.99998,
+      "n_proposals": 1,
+      "wall_seconds": 0.0,
+      "structure": 2,
+      "coef_relerr": 0.003919,
+      "verdict": "recovered_structure",
+      "world": "d2_offset_log_1x",
+      "method": "ols_monomial",
+      "family": "in_grammar",
+      "d_true": 2,
+      "grid": "log",
+      "noise_mult": 1.0,
+      "formula": "y = 1000\u00b7p^2 + 0.002"
+    },
+    {
+      "holdout_r2": 0.999999,
+      "holdout_r2_reversed": 0.999999,
+      "n_proposals": 3,
+      "wall_seconds": 0.01,
+      "structure": 3,
+      "coef_relerr": 7.8e-05,
+      "verdict": "recovered_structure",
+      "world": "d3_C100_log_1x",
+      "method": "rime_static",
+      "family": "in_grammar",
+      "d_true": 3,
+      "grid": "log",
+      "noise_mult": 1.0,
+      "formula": "y = 100\u00b7p^3"
+    },
+    {
+      "holdout_r2": 0.999991,
+      "holdout_r2_reversed": 0.999991,
+      "n_proposals": 1,
+      "wall_seconds": 0.0,
+      "structure": 3,
+      "coef_relerr": 0.002901,
+      "verdict": "recovered_structure",
+      "world": "d3_C100_log_1x",
+      "method": "ols_monomial",
+      "family": "in_grammar",
+      "d_true": 3,
+      "grid": "log",
+      "noise_mult": 1.0,
+      "formula": "y = 100\u00b7p^3"
+    },
+    {
+      "holdout_r2": 0.999975,
+      "holdout_r2_reversed": 0.999975,
+      "n_proposals": 3,
+      "wall_seconds": 0.0152,
+      "structure": 3,
+      "coef_relerr": 0.000276,
+      "verdict": "recovered_structure",
+      "world": "d3_C100_uniform_1x",
+      "method": "rime_static",
+      "family": "in_grammar",
+      "d_true": 3,
+      "grid": "uniform",
+      "noise_mult": 1.0,
+      "formula": "y = 100\u00b7p^3"
+    },
+    {
+      "holdout_r2": 0.999972,
+      "holdout_r2_reversed": 0.999972,
+      "n_proposals": 1,
+      "wall_seconds": 0.0,
+      "structure": 3,
+      "coef_relerr": 0.002238,
+      "verdict": "recovered_structure",
+      "world": "d3_C100_uniform_1x",
+      "method": "ols_monomial",
+      "family": "in_grammar",
+      "d_true": 3,
+      "grid": "uniform",
+      "noise_mult": 1.0,
+      "formula": "y = 100\u00b7p^3"
+    },
+    {
+      "holdout_r2": 0.999999,
+      "holdout_r2_reversed": 0.999999,
+      "n_proposals": 3,
+      "wall_seconds": 0.0157,
+      "structure": 3,
+      "coef_relerr": 9.7e-05,
+      "verdict": "recovered_structure",
+      "world": "d3_C100_irregular_1x",
+      "method": "rime_static",
+      "family": "in_grammar",
+      "d_true": 3,
+      "grid": "irregular",
+      "noise_mult": 1.0,
+      "formula": "y = 100\u00b7p^3"
+    },
+    {
+      "holdout_r2": 0.999992,
+      "holdout_r2_reversed": 0.999992,
+      "n_proposals": 1,
+      "wall_seconds": 0.0,
+      "structure": 3,
+      "coef_relerr": 0.002768,
+      "verdict": "recovered_structure",
+      "world": "d3_C100_irregular_1x",
+      "method": "ols_monomial",
+      "family": "in_grammar",
+      "d_true": 3,
+      "grid": "irregular",
+      "noise_mult": 1.0,
+      "formula": "y = 100\u00b7p^3"
+    },
+    {
+      "holdout_r2": 1.0,
+      "holdout_r2_reversed": 1.0,
+      "n_proposals": 3,
+      "wall_seconds": 0.0289,
+      "structure": 6,
+      "coef_relerr": 0.000203,
+      "verdict": "recovered_structure",
+      "world": "d6_C1e12_log_1x",
+      "method": "rime_static",
+      "family": "in_grammar",
+      "d_true": 6,
+      "grid": "log",
+      "noise_mult": 1.0,
+      "formula": "y = 1e+12\u00b7p^6"
+    },
+    {
+      "holdout_r2": 0.999997,
+      "holdout_r2_reversed": 0.999997,
+      "n_proposals": 1,
+      "wall_seconds": 0.0,
+      "structure": 6,
+      "coef_relerr": 0.001718,
+      "verdict": "recovered_structure",
+      "world": "d6_C1e12_log_1x",
+      "method": "ols_monomial",
+      "family": "in_grammar",
+      "d_true": 6,
+      "grid": "log",
+      "noise_mult": 1.0,
+      "formula": "y = 1e+12\u00b7p^6"
+    },
+    {
+      "holdout_r2": 1.0,
+      "holdout_r2_reversed": 1.0,
+      "n_proposals": 3,
+      "wall_seconds": 0.0285,
+      "structure": 6,
+      "coef_relerr": 0.000488,
+      "verdict": "recovered_structure",
+      "world": "d6_C1e12_irregular_1x",
+      "method": "rime_static",
+      "family": "in_grammar",
+      "d_true": 6,
+      "grid": "irregular",
+      "noise_mult": 1.0,
+      "formula": "y = 1e+12\u00b7p^6"
+    },
+    {
+      "holdout_r2": 0.999997,
+      "holdout_r2_reversed": 0.999997,
+      "n_proposals": 1,
+      "wall_seconds": 0.0,
+      "structure": 6,
+      "coef_relerr": 0.001679,
+      "verdict": "recovered_structure",
+      "world": "d6_C1e12_irregular_1x",
+      "method": "ols_monomial",
+      "family": "in_grammar",
+      "d_true": 6,
+      "grid": "irregular",
+      "noise_mult": 1.0,
+      "formula": "y = 1e+12\u00b7p^6"
+    },
+    {
+      "holdout_r2": 0.077546,
+      "holdout_r2_reversed": 0.077546,
+      "n_proposals": 3,
+      "wall_seconds": 0.0408,
+      "structure": null,
+      "coef_relerr": null,
+      "verdict": "failed",
+      "world": "neg_exp_log_1x",
+      "method": "rime_static",
+      "family": "out_of_grammar",
+      "d_true": null,
+      "grid": "log",
+      "noise_mult": 1.0,
+      "formula": "y = 5\u00b7exp(12\u00b7normalized(p))"
+    },
+    {
+      "holdout_r2": 0.328468,
+      "holdout_r2_reversed": 0.328468,
+      "n_proposals": 1,
+      "wall_seconds": 0.0,
+      "structure": null,
+      "coef_relerr": null,
+      "verdict": "failed",
+      "world": "neg_exp_log_1x",
+      "method": "ols_monomial",
+      "family": "out_of_grammar",
+      "d_true": null,
+      "grid": "log",
+      "noise_mult": 1.0,
+      "formula": "y = 5\u00b7exp(12\u00b7normalized(p))"
+    }
+  ],
+  "transfer": [
+    {
+      "from": "d2_C1000_log_1x",
+      "method": "rime_static",
+      "to": "d2_C1000_uniform_1x",
+      "r2": 0.999913
+    },
+    {
+      "from": "d2_C1000_log_1x",
+      "method": "rime_static",
+      "to": "d2_C1000_irregular_1x",
+      "r2": 0.999994
+    },
+    {
+      "from": "d2_C1000_log_1x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_uniform_1x",
+      "r2": 0.999904
+    },
+    {
+      "from": "d2_C1000_log_1x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_irregular_1x",
+      "r2": 0.999984
+    },
+    {
+      "from": "d2_C1000_log_3x",
+      "method": "rime_static",
+      "to": "d2_C1000_uniform_1x",
+      "r2": 0.999912
+    },
+    {
+      "from": "d2_C1000_log_3x",
+      "method": "rime_static",
+      "to": "d2_C1000_irregular_1x",
+      "r2": 0.999993
+    },
+    {
+      "from": "d2_C1000_log_3x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_uniform_1x",
+      "r2": 0.999773
+    },
+    {
+      "from": "d2_C1000_log_3x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_irregular_1x",
+      "r2": 0.999893
+    },
+    {
+      "from": "d2_C1000_uniform_1x",
+      "method": "rime_static",
+      "to": "d2_C1000_log_1x",
+      "r2": 0.999994
+    },
+    {
+      "from": "d2_C1000_uniform_1x",
+      "method": "rime_static",
+      "to": "d2_C1000_log_3x",
+      "r2": 0.999947
+    },
+    {
+      "from": "d2_C1000_uniform_1x",
+      "method": "rime_static",
+      "to": "d2_C1000_irregular_1x",
+      "r2": 0.999994
+    },
+    {
+      "from": "d2_C1000_uniform_1x",
+      "method": "rime_static",
+      "to": "d2_C250_log_1x",
+      "r2": -8.016036
+    },
+    {
+      "from": "d2_C1000_uniform_1x",
+      "method": "rime_static",
+      "to": "d2_offset_log_1x",
+      "r2": 0.999994
+    },
+    {
+      "from": "d2_C1000_uniform_1x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_log_1x",
+      "r2": 0.99999
+    },
+    {
+      "from": "d2_C1000_uniform_1x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_log_3x",
+      "r2": 0.999945
+    },
+    {
+      "from": "d2_C1000_uniform_1x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_irregular_1x",
+      "r2": 0.999992
+    },
+    {
+      "from": "d2_C1000_uniform_1x",
+      "method": "ols_monomial",
+      "to": "d2_C250_log_1x",
+      "r2": -7.954302
+    },
+    {
+      "from": "d2_C1000_uniform_1x",
+      "method": "ols_monomial",
+      "to": "d2_offset_log_1x",
+      "r2": 0.99999
+    },
+    {
+      "from": "d2_C1000_irregular_1x",
+      "method": "rime_static",
+      "to": "d2_C1000_log_1x",
+      "r2": 0.999994
+    },
+    {
+      "from": "d2_C1000_irregular_1x",
+      "method": "rime_static",
+      "to": "d2_C1000_log_3x",
+      "r2": 0.999947
+    },
+    {
+      "from": "d2_C1000_irregular_1x",
+      "method": "rime_static",
+      "to": "d2_C1000_uniform_1x",
+      "r2": 0.999914
+    },
+    {
+      "from": "d2_C1000_irregular_1x",
+      "method": "rime_static",
+      "to": "d2_C250_log_1x",
+      "r2": -8.00852
+    },
+    {
+      "from": "d2_C1000_irregular_1x",
+      "method": "rime_static",
+      "to": "d2_offset_log_1x",
+      "r2": 0.999994
+    },
+    {
+      "from": "d2_C1000_irregular_1x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_log_1x",
+      "r2": 0.999979
+    },
+    {
+      "from": "d2_C1000_irregular_1x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_log_3x",
+      "r2": 0.999936
+    },
+    {
+      "from": "d2_C1000_irregular_1x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_uniform_1x",
+      "r2": 0.999903
+    },
+    {
+      "from": "d2_C1000_irregular_1x",
+      "method": "ols_monomial",
+      "to": "d2_C250_log_1x",
+      "r2": -7.907278
+    },
+    {
+      "from": "d2_C1000_irregular_1x",
+      "method": "ols_monomial",
+      "to": "d2_offset_log_1x",
+      "r2": 0.999979
+    },
+    {
+      "from": "d2_C250_log_1x",
+      "method": "rime_static",
+      "to": "d2_C1000_uniform_1x",
+      "r2": 0.437922
+    },
+    {
+      "from": "d2_C250_log_1x",
+      "method": "rime_static",
+      "to": "d2_C1000_irregular_1x",
+      "r2": 0.437672
+    },
+    {
+      "from": "d2_C250_log_1x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_uniform_1x",
+      "r2": 0.436219
+    },
+    {
+      "from": "d2_C250_log_1x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_irregular_1x",
+      "r2": 0.436311
+    },
+    {
+      "from": "d2_offset_log_1x",
+      "method": "rime_static",
+      "to": "d2_C1000_uniform_1x",
+      "r2": 0.999913
+    },
+    {
+      "from": "d2_offset_log_1x",
+      "method": "rime_static",
+      "to": "d2_C1000_irregular_1x",
+      "r2": 0.999994
+    },
+    {
+      "from": "d2_offset_log_1x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_uniform_1x",
+      "r2": 0.999904
+    },
+    {
+      "from": "d2_offset_log_1x",
+      "method": "ols_monomial",
+      "to": "d2_C1000_irregular_1x",
+      "r2": 0.999984
+    },
+    {
+      "from": "d3_C100_log_1x",
+      "method": "rime_static",
+      "to": "d3_C100_uniform_1x",
+      "r2": 0.999975
+    },
+    {
+      "from": "d3_C100_log_1x",
+      "method": "rime_static",
+      "to": "d3_C100_irregular_1x",
+      "r2": 0.999999
+    },
+    {
+      "from": "d3_C100_log_1x",
+      "method": "ols_monomial",
+      "to": "d3_C100_uniform_1x",
+      "r2": 0.999969
+    },
+    {
+      "from": "d3_C100_log_1x",
+      "method": "ols_monomial",
+      "to": "d3_C100_irregular_1x",
+      "r2": 0.999992
+    },
+    {
+      "from": "d3_C100_uniform_1x",
+      "method": "rime_static",
+      "to": "d3_C100_log_1x",
+      "r2": 0.999999
+    },
+    {
+      "from": "d3_C100_uniform_1x",
+      "method": "rime_static",
+      "to": "d3_C100_irregular_1x",
+      "r2": 0.999999
+    },
+    {
+      "from": "d3_C100_uniform_1x",
+      "method": "ols_monomial",
+      "to": "d3_C100_log_1x",
+      "r2": 0.999996
+    },
+    {
+      "from": "d3_C100_uniform_1x",
+      "method": "ols_monomial",
+      "to": "d3_C100_irregular_1x",
+      "r2": 0.999997
+    },
+    {
+      "from": "d3_C100_irregular_1x",
+      "method": "rime_static",
+      "to": "d3_C100_log_1x",
+      "r2": 0.999999
+    },
+    {
+      "from": "d3_C100_irregular_1x",
+      "method": "rime_static",
+      "to": "d3_C100_uniform_1x",
+      "r2": 0.999975
+    },
+    {
+      "from": "d3_C100_irregular_1x",
+      "method": "ols_monomial",
+      "to": "d3_C100_log_1x",
+      "r2": 0.999991
+    },
+    {
+      "from": "d3_C100_irregular_1x",
+      "method": "ols_monomial",
+      "to": "d3_C100_uniform_1x",
+      "r2": 0.999969
+    },
+    {
+      "from": "d6_C1e12_log_1x",
+      "method": "rime_static",
+      "to": "d6_C1e12_irregular_1x",
+      "r2": 1.0
+    },
+    {
+      "from": "d6_C1e12_log_1x",
+      "method": "ols_monomial",
+      "to": "d6_C1e12_irregular_1x",
+      "r2": 0.999997
+    },
+    {
+      "from": "d6_C1e12_irregular_1x",
+      "method": "rime_static",
+      "to": "d6_C1e12_log_1x",
+      "r2": 1.0
+    },
+    {
+      "from": "d6_C1e12_irregular_1x",
+      "method": "ols_monomial",
+      "to": "d6_C1e12_log_1x",
+      "r2": 0.999997
+    }
+  ],
+  "rates": {
+    "rime_static": {
+      "correct_recovery": 11,
+      "in_grammar_worlds": 11,
+      "recovery_rate": 1.0,
+      "false_promotion": 0,
+      "failures": 0,
+      "abstained_in_grammar": 0,
+      "out_of_grammar_abstain": 0,
+      "out_of_grammar_emitted": 1
+    },
+    "ols_monomial": {
+      "correct_recovery": 11,
+      "in_grammar_worlds": 11,
+      "recovery_rate": 1.0,
+      "false_promotion": 0,
+      "failures": 0,
+      "abstained_in_grammar": 0,
+      "out_of_grammar_abstain": 0,
+      "out_of_grammar_emitted": 1
+    }
+  }
+}

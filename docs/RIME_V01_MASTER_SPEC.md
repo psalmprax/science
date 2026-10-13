@@ -248,6 +248,46 @@ is enforced:
   modules contain no RIME references and RIME imports nothing from the referee
   (verified structurally; rule 1 remains architectural).
 
+## 16c. v0.1.3 known-truth recovery challenge (blind, controlled)
+
+The QEC round's open question — can RIME recover the right structure when it
+is identifiable, and behave correctly when the evidence cannot identify it? —
+is now answered by a preregistered challenge (`benchmarks/known_truth_challenge.py`,
+artifact `benchmarks/known_truth_results.json`, pinned by
+`tests/test_dyn_rime_known_truth.py`). Blind discovery of planted monomial
+worlds (d ∈ {2, 3, 6} with independent grid geometry {log, uniform,
+irregular}, noise 1×/3× relative to each world's own signal, coefficient and
+offset variation — 11 in-grammar worlds + 1 exp() negative control},
+verdicts structural, never fit-only:
+
+- **Positive controls — PASS.** RIME static grammar (`static_mode` + sq/cub
+  transform columns) recovers the planted STRUCTURE on 11/11 in-grammar
+  worlds: effective exponent exact (k\* = d in every case, including d = 6
+  via the interaction composition cub·cub) and |Ĉ−C|/C ≤ 5e-4 — tighter than
+  the correctly specified BIC-OLS control (≤ 5e-3). Proposal predictions are
+  reversal-invariant on every world.
+- **Abstention-is-not-success rule enforced** at bookkeeping level: an
+  in-grammar abstention is recorded as a miss; recovered_structure counts
+  only (exponent + coefficient + both-orders fit).
+- **Negative control — honest boundary, not a win.** On the out-of-grammar
+  exp() world RIME does NOT abstain: it emits a spurious fit (recorded
+  out_of_grammar_emitted = 1), because some dev improvement clears the gate.
+  Scope refusal therefore needs referee-side adjudication (or a grammar
+  coverage declaration consumed upstream); it is NOT a property the search
+  provides for free. This is the nuance the challenge was built to expose.
+- **Harness numerics lessons, recorded as fixes made before citation:** (a)
+  noise σ must be relative to the DEV-slice truth std, not the full-axis std
+  (the tail of a log axis lives in the holdout; the first cut collapsed the
+  dev SNR for steep exponents); (b) any single-power structure regression
+  and any OLS control must standardize (raw p⁶ columns are 1e-20-scale); (c)
+  a full-degree polynomial OLS on an extrapolating grid is recorded as a
+  documented FAILURE mode — BIC-selected sparse OLS is the correct baseline
+  (full design: holdout R² −33 at 2× the training axis).
+- **Verdict.** On identifiable static monomial worlds at matched dev size,
+  RIME is structurally reliable (100% correct recovery, 0% false promotion
+  in-grammar); out-of-scope refusal must come from adjudication; transfer
+  axis (cross-grid, frozen proposals) is recorded in the artifact.
+
 ## 16b. v0.1.2 static-grammar extension & scale-invariant readout (QEC round)
 
 The QEC repair round surfaced a boundary that turned out to be TWO defects,
