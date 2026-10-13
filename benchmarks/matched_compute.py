@@ -299,13 +299,45 @@ def _subsets_under_cap(n: int, cap: int) -> list[tuple[int, ...]]:
     return out
 
 
+_PYSR_WARMED = {"done": False}
+
+
+def _pysr_warmup() -> None:
+    """One-time Julia warmup fit, EXCLUDED from measured walls (the kernel .so
+    load is likewise a one-time cost for the Rust side)."""
+    if _PYSR_WARMED["done"]:
+        return
+    from pysr import PySRRegressor
+
+    t = np.linspace(-5.0, 5.0, 300)
+    reg = PySRRegressor(
+        niterations=2, maxsize=12, populations=8, population_size=33,
+        tournament_selection_n=7, timeout_in_seconds=10, deterministic=True,
+        parallelism="serial", random_state=7, verbosity=0, progress=False,
+    )
+    reg.fit(t[:, None], 3.0 * t + 1.0)
+    _PYSR_WARMED["done"] = True
+
+
 def _pysr_run() -> Callable[[World, float], MethodResult]:
     def run(world: World, allowance: float) -> MethodResult:
         from pysr import PySRRegressor
 
+        _pysr_warmup()
         feats = [c for c in world.dev.columns if c != "target"]
+        # Fairness: PySR cannot accept NaN y (its error "Input y contains NaN")
+        # while RIME/OLS skip-and-count the warmup rows. Giving PySR the
+        # FINITE rows is the same information the other methods effectively
+        # consume; the full frame is what they get, the finite rows are what
+        # they use.
+        finite_dev = np.isfinite(world.dev["target"].to_numpy(dtype=float)).nonzero()[0]
+        X_fit = world.dev[feats].to_numpy(dtype=float)[finite_dev]
+        y_fit = world.dev["target"].to_numpy(dtype=float)[finite_dev]
         reg = PySRRegressor(
-            niterations=2,
+            # Wall-matched fairness: iterations are effectively unbounded so
+            # timeout_in_seconds BINDS — the 2-s allowance is PySR's to use,
+            # not an arbitrary iteration count it finishes in 0.3 s.
+            niterations=1_000_000,
             maxsize=12,
             populations=8,
             population_size=33,
@@ -319,8 +351,7 @@ def _pysr_run() -> Callable[[World, float], MethodResult]:
         )
         t0 = time.perf_counter()
         try:
-            reg.fit(world.dev[feats].to_numpy(dtype=float),
-                    world.dev["target"].to_numpy(dtype=float))
+            reg.fit(X_fit, y_fit)
             wall = time.perf_counter() - t0
             sh = np.asarray(reg.predict(world.holdout[feats].to_numpy(dtype=float)),
                             dtype=float)

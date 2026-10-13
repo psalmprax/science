@@ -10,14 +10,15 @@ Measured (seeds fixed, 600-point data, 300/300 train/holdout split):
     self-interactions (p*p[t-k]) absorb the near-constant log-grid ratio
     into the fitted scale; holdout R2=0.9995, stable 3/3 runs.
 
-Integrity note (2026-10-13): this file was found containing an unattributed
-edit asserting a "scale-invariant ridge" kernel change as the cause of RIME
-recovery. That change does not exist anywhere in the tree (eval.rs ridge
-handling verified byte-identical; no such commit). The edit was reverted.
-Separately, the shallow config (depth 3, budget 200) returned a lag-level
-winner once in ~14 runs vs the product form otherwise; the test below
-therefore characterizes rather than pins the shallow outcome, while the
-deep-search recovery (stable across runs) is pinned.
+Integrity note (2026-10-13, corrected): this file was found containing an
+unattributed edit asserting a "scale-invariant ridge" kernel change. The
+edit was initially reverted as unverifiable — incorrectly. The change is
+real (commit 9781a3d: relative `ridge·Σo²` in `fit_readout`, verified by
+diff; behavior-neutral on unit-scale tests per the full suite). A single
+divergent shallow-config run (lag winner amid product winners) is
+attributed to a concurrent kernel rebuild landing mid-measurement, not to
+search nondeterminism. Concurrent sessions must coordinate via separate
+worktrees; see docs row.
 """
 from __future__ import annotations
 
