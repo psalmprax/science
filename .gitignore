@@ -21,10 +21,16 @@ htmlcov/
 # Jupyter
 .ipynb_checkpoints
 
-# Environment
+# Environment — any python venv by name or variant suffix (hardened: attypical
+# venv directory names must never surface as git-status noise).
 .venv/
+.venv-*/
+.venv*/
 env/
+env-*/
 venv/
+venv-*/
+venv*/
 
 # IDE
 .idea/
