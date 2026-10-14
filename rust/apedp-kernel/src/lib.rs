@@ -804,7 +804,12 @@ fn rime_search_json(
     }
 
     let seeds = rime::seeds::small_forms(columns.len());
-    let outcome = py.allow_threads(|| rime::search::search(&seeds, &columns, &target_vec, &cfg));
+    // Opt-in multi-term refinement (`additive_terms` >= 2). Absent, 0 or 1 is
+    // exactly the frozen single-term `search`, so existing callers see no change.
+    let additive_terms = raw.get("additive_terms").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+    let outcome = py.allow_threads(|| {
+        rime::additive::search_additive(&seeds, &columns, &target_vec, &cfg, additive_terms)
+    });
     let mut packet = outcome.to_json();
     // Name the variables in every equation so the referee packet is readable.
     if !requested.is_empty() {

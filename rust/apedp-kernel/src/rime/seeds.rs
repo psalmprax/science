@@ -59,7 +59,7 @@ fn lag(g: &Graph, k: usize) -> Graph {
     wrap(g, |i| Node::Lag(i, k))
 }
 
-fn shift(n: &Node, off: usize) -> Node {
+pub(crate) fn shift(n: &Node, off: usize) -> Node {
     match n {
         Node::Input(i) => Node::Input(*i),
         Node::Const(c) => Node::Const(*c),

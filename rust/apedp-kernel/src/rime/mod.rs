@@ -3,6 +3,7 @@
 //!
 //! `search` and `seeds` are Stage-2 scaffolding built *from* the frozen
 //! primitives (spec §7/§8); they add no rewrites and change no node type.
+pub mod additive;
 pub mod eval;
 pub mod graph;
 pub mod record;
