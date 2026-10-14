@@ -721,6 +721,9 @@ fn rime_search_envs_json(
                 "rime: bad seed_order {:?} (want \"legacy\" or \"coverage_first\")", v)));
         };
     }
+    if let Some(v) = cfg_raw.get("square_seeds").and_then(|v| v.as_bool()) {
+        cfg.square_seeds = v;
+    }
     if let Some(v) = cfg_raw.get("gamma").and_then(|v| v.as_f64()) {
         // Σ over envs of their finite rows, calibrated on the pooled scale.
         let mut all: Vec<f64> = Vec::new();
@@ -738,8 +741,8 @@ fn rime_search_envs_json(
     };
     let gamma_gate = cfg_raw.get("gamma_gate").and_then(|v| v.as_f64()).unwrap_or(1.5);
 
-    let seeds = rime::seeds::small_forms_with_order(
-        envs.iter().map(|e| e.cols.len()).max().unwrap_or(1), cfg.seed_order);
+    let seeds = rime::seeds::small_forms_with_options(
+        envs.iter().map(|e| e.cols.len()).max().unwrap_or(1), cfg.seed_order, cfg.square_seeds);
     let outcome =
         py.allow_threads(|| rime::search::search_envs(&seeds, &envs, &cfg, agg, gamma_gate));
     let mut packet = outcome.to_json();
@@ -822,6 +825,9 @@ fn rime_search_json(
                 "rime: bad seed_order {:?} (want \"legacy\" or \"coverage_first\")", v)));
         };
     }
+    if let Some(v) = raw.get("square_seeds").and_then(|v| v.as_bool()) {
+        cfg.square_seeds = v;
+    }
     if let Some(v) = raw.get("gamma").and_then(|v| v.as_f64()) {
         // Sample-size-aware calibration: gamma * var(y) / n_dev.
         let n_dev = target_vec.iter().filter(|t| t.is_finite()).count();
@@ -832,7 +838,7 @@ fn rime_search_json(
         cfg.lambda_c = v;
     }
 
-    let seeds = rime::seeds::small_forms_with_order(columns.len(), cfg.seed_order);
+    let seeds = rime::seeds::small_forms_with_options(columns.len(), cfg.seed_order, cfg.square_seeds);
     // Opt-in multi-term refinement (`additive_terms` >= 2). Absent, 0 or 1 is
     // exactly the frozen single-term `search`, so existing callers see no change.
     let additive_terms = raw.get("additive_terms").and_then(|v| v.as_u64()).unwrap_or(0) as usize;

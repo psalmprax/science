@@ -6,6 +6,11 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ## [Unreleased] — RIME Repair v0.1.x freeze (comparative-validation milestone)
 
+### Added (v0.1.10 round — contemporaneous powers & reachability remediation, `experimental`)
+- **Opt-in contemporaneous square seeds (`rust/apedp-kernel/src/rime/seeds.rs`, `SearchConfig.square_seeds`, `RimeProposer(square_seeds=...)`, default `false`):** admits same-time self-multiplication `(x_i * x_i)` into seed catalogue family 5 at depth 0. Closes the measured QEC reachability failure (previously 0/1217 candidates were the true contemporaneous law, forcing search to emit lagged proxies or rely on Python repair). Raw `[p]` discovers `p_L = 1000*p^2` directly at depth 0 with holdout R² > 0.9995.
+- **Discrimination against grid-proxy fitting (`tests/test_dyn_rime_reachability_and_contemporaneous_qec.py`):** physical law `(p * p)` is 100% reversal-invariant (|R2_fwd − R2_rev| < 1e-12, holdout R² 0.9995), whereas legacy lagged proxy `(p * p[t-5])` error inflates by >10× under row reversal.
+- **Systematic curvature screen against wrong-family emissions:** on d=5 (planted cubic law p^3), a quadratic fit `(p * p)` triggers `FINDING_CURVATURE_SUSPECT` in `classify_findings`, whereas on d=3 true quadratic truth curvature is cleared (`no_reliable_structure`).
+
 ### Added (v0.1.9 round — relative-gain criterion, rational-power family, identifiability band)
 - **Relative SSE-reduction criterion (`RepairConfig.min_sse_reduction`, default 0 = frozen):** G = (SSE_base − SSE_cand)/SSE_base on the same validation rows, reported alongside absolute R² headroom on every gate. Preregistered companion for high-baseline problems where an absolute R² bar fails by construction (measured on AME2020 below). Caller chooses; neither criterion is inferred.
 - **Domain-informed rational-power term family (`RepairConfig.rational_powers`, default empty = frozen):** sign-safe x^p terms of declared dependencies appended to the R2 catalogue, enabled ONLY through the explicit config field — Layer-C priors enter declared, never as hidden corrections. Scored by the same gates.

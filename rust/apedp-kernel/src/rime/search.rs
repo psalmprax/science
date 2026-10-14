@@ -59,12 +59,21 @@ pub struct SearchConfig {
     /// catalogue is unchanged for every existing caller.
     #[serde(default, skip_serializing_if = "crate::rime::seeds::SeedOrder::is_legacy")]
     pub seed_order: SeedOrder,
+    /// Contemporaneous self-products (`(x_i * x_i)`): admits lag-0
+    /// self-multiplication into the seed catalogue (spec §7 algebraic extension).
+    ///
+    /// Addresses the QEC structural reachability flaw: previously, self-products
+    /// were only emitted for delayed lags k in {1, 2, 5}, rendering same-time
+    /// quadratic laws (p_L = 1000 * p^2) unreachable at depth 0.
+    /// Default: false (preserves frozen §7 catalogue byte identity).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub square_seeds: bool,
 }
 
 impl Default for SearchConfig {
     fn default() -> Self {
         SearchConfig { max_depth: 2, beam: 8, budget: 200, lambda_c: 1e-3, ridge: 1e-9, seed: 0,
-            static_ops: false, seed_order: SeedOrder::Legacy }
+            static_ops: false, seed_order: SeedOrder::Legacy, square_seeds: false }
     }
 }
 

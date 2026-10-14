@@ -149,6 +149,16 @@ pub fn small_forms(n_inputs: usize) -> Vec<Graph> {
 
 /// Build the small-form catalogue with an explicit family-2 ordering.
 pub fn small_forms_with_order(n_inputs: usize, order: SeedOrder) -> Vec<Graph> {
+    small_forms_with_options(n_inputs, order, false)
+}
+
+/// Build the small-form catalogue with explicit ordering and optional contemporaneous square seeds.
+///
+/// When `square_seeds = true`, contemporaneous self-products `(x_i * x_i)` are admitted
+/// into family 5 (cross-input & same-time products), making non-linear power laws (such
+/// as QEC `p_L = 1000 * p^2`) reachable at depth 0 without requiring manual feature engineering.
+/// Default `false` preserves frozen spec byte identity.
+pub fn small_forms_with_options(n_inputs: usize, order: SeedOrder, square_seeds: bool) -> Vec<Graph> {
     let n = n_inputs.max(1);
     let inputs: Vec<Graph> = (0..n).map(single_input).collect();
     let lagged: Vec<Vec<Graph>> = inputs.iter().map(|g| LAG_SET.iter().map(|k| lag(g, *k)).collect()).collect();
@@ -193,6 +203,9 @@ pub fn small_forms_with_order(n_inputs: usize, order: SeedOrder) -> Vec<Graph> {
     }
     // 5. Cross-input structure: level, difference and same-time product.
     for (i, ga) in inputs.iter().enumerate() {
+        if square_seeds {
+            push(&mut out, &mut seen, mul_g(ga, ga));
+        }
         for gb in inputs.iter().skip(i + 1) {
             push(&mut out, &mut seen, add_g(ga, gb));
             push(&mut out, &mut seen, sub(ga, gb));
@@ -337,5 +350,14 @@ mod tests {
             let d = format!("state_{:.4}", prior.0 as f64 / prior.1 as f64);
             assert!(described.iter().any(|s| s.contains(&d)), "missing decay prior {}", d);
         }
+    }
+
+    #[test]
+    fn square_seeds_emits_contemporaneous_self_product() {
+        let forms_default = small_forms(1);
+        let forms_sq = small_forms_with_options(1, SeedOrder::Legacy, true);
+        assert_eq!(forms_default.iter().any(|g| g.describe() == "(v0 * v0)"), false);
+        assert_eq!(forms_sq.iter().any(|g| g.describe() == "(v0 * v0)"), true);
+        assert!(forms_sq.len() <= MAX_SEED_FORMS);
     }
 }

@@ -168,6 +168,7 @@ class RimeProposer(ProposerBase):
         max_transform_inputs: int = 4,
         static_mode: bool = False,
         seed_order: str = "legacy",
+        square_seeds: bool = False,
     ) -> None:
         self._feature_cols = list(feature_cols) if feature_cols else None
         self._target_col = target_col
@@ -184,6 +185,7 @@ class RimeProposer(ProposerBase):
         self._max_proposals = int(max_proposals)
         self._min_r2 = float(min_r2)
         self._archetype = strategy_archetype
+        self._square_seeds = bool(square_seeds)
         if algebraic_transforms is not None:
             unknown = [k for k in algebraic_transforms if k not in _ALGEBRAIC_TRANSFORMS]
             if unknown:
@@ -415,6 +417,8 @@ class RimeProposer(ProposerBase):
                 config["static"] = True
             if self._seed_order != "legacy":
                 config["seed_order"] = self._seed_order
+            if self._square_seeds:
+                config["square_seeds"] = True
             if self._gamma is not None:
                 config["gamma"] = self._gamma
             packet = json.loads(apedp_kernel.rime_search_envs_json(envs_json, json.dumps(config), labels))
@@ -438,6 +442,8 @@ class RimeProposer(ProposerBase):
                 config["static"] = True
             if self._seed_order != "legacy":
                 config["seed_order"] = self._seed_order
+            if self._square_seeds:
+                config["square_seeds"] = True
             if self._gamma is not None:
                 config["gamma"] = self._gamma
             elif self._rel_penalty is not None:
