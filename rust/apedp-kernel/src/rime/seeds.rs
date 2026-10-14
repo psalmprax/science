@@ -67,6 +67,13 @@ pub(crate) fn shift(n: &Node, off: usize) -> Node {
         Node::Const(c) => Node::Const(*c),
         Node::Add(a, b) => Node::Add(a + off, b + off),
         Node::Mul(a, b) => Node::Mul(a + off, b + off),
+        Node::SafeDiv(a, b) => Node::SafeDiv(a + off, b + off),
+        Node::Sin(a) => Node::Sin(a + off),
+        Node::Cos(a) => Node::Cos(a + off),
+        Node::SafeExp(a) => Node::SafeExp(a + off),
+        Node::SafeLog(a) => Node::SafeLog(a + off),
+        Node::Diff(a) => Node::Diff(a + off),
+        Node::Power { src, p_num, p_den } => Node::Power { src: src + off, p_num: *p_num, p_den: *p_den },
         Node::Neg(a) => Node::Neg(a + off),
         Node::Tanh(a) => Node::Tanh(a + off),
         Node::Sign(a) => Node::Sign(a + off),
@@ -159,6 +166,17 @@ pub fn small_forms_with_order(n_inputs: usize, order: SeedOrder) -> Vec<Graph> {
 /// as QEC `p_L = 1000 * p^2`) reachable at depth 0 without requiring manual feature engineering.
 /// Default `false` preserves frozen spec byte identity.
 pub fn small_forms_with_options(n_inputs: usize, order: SeedOrder, square_seeds: bool) -> Vec<Graph> {
+    small_forms_with_all_options(n_inputs, order, square_seeds, false)
+}
+
+/// Build the small-form catalogue with explicit ordering, optional contemporaneous square seeds,
+/// and optional rational power seeds (Option 1 STEM reachability).
+pub fn small_forms_with_all_options(
+    n_inputs: usize,
+    order: SeedOrder,
+    square_seeds: bool,
+    power_seeds: bool,
+) -> Vec<Graph> {
     let n = n_inputs.max(1);
     let inputs: Vec<Graph> = (0..n).map(single_input).collect();
     let lagged: Vec<Vec<Graph>> = inputs.iter().map(|g| LAG_SET.iter().map(|k| lag(g, *k)).collect()).collect();
@@ -205,6 +223,12 @@ pub fn small_forms_with_options(n_inputs: usize, order: SeedOrder, square_seeds:
     for (i, ga) in inputs.iter().enumerate() {
         if square_seeds {
             push(&mut out, &mut seen, mul_g(ga, ga));
+        }
+        if power_seeds {
+            push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: 2, p_den: 3 }));
+            push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: 1, p_den: 3 }));
+            push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: 1, p_den: 2 }));
+            push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: -1, p_den: 3 }));
         }
         for gb in inputs.iter().skip(i + 1) {
             push(&mut out, &mut seen, add_g(ga, gb));

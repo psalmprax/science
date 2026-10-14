@@ -68,12 +68,36 @@ pub struct SearchConfig {
     /// Default: false (preserves frozen §7 catalogue byte identity).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub square_seeds: bool,
+    /// Pole-protected rational operators: admits `safediv(a, b) = a / (1.0 + |b|)`
+    /// into structural rewrites.
+    ///
+    /// Enables discovery of rational Padé saturating laws (such as QEC threshold saturation)
+    /// without risk of zero-division poles.
+    /// Default: false (preserves frozen v0.1 grammar byte identity).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub rational_ops: bool,
+    /// STEM primitives (Option 1): admits `sin`, `cos`, `exp`, `safelog`, `diff`
+    /// into structural rewrites.
+    /// Default: false (preserves frozen v0.1 grammar byte identity).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub stem_ops: bool,
+    /// Rational power operators: admits `x^(p_num/p_den)` into structural rewrites.
+    /// Enables discovery of power laws and fractional scaling (e.g. SEMF A^(2/3)).
+    /// Default: false (preserves frozen v0.1 grammar byte identity).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub power_ops: bool,
+    /// Diverse beam selection: guarantees round-robin representation across structural archetypes
+    /// (polynomial, power, rational, bounded, transcendental) in the beam frontier,
+    /// preventing greedy beam starvation of non-linear families.
+    /// Default: false (preserves frozen v0.1 grammar byte identity).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub diverse_beam: bool,
 }
 
 impl Default for SearchConfig {
     fn default() -> Self {
         SearchConfig { max_depth: 2, beam: 8, budget: 200, lambda_c: 1e-3, ridge: 1e-9, seed: 0,
-            static_ops: false, seed_order: SeedOrder::Legacy, square_seeds: false }
+            static_ops: false, seed_order: SeedOrder::Legacy, square_seeds: false, rational_ops: false, stem_ops: false, power_ops: false, diverse_beam: false }
     }
 }
 
@@ -592,6 +616,21 @@ pub fn enumerate_ops(g: &Graph) -> Vec<RewriteOp> {
             ops.push(RewriteOp::AddInteraction { a, b });
         }
     }
+    for a in 0..n {
+        for b in 0..n {
+            ops.push(RewriteOp::AddSafeDiv { a, b });
+        }
+    }
+    for src in 0..n {
+        ops.push(RewriteOp::SinNode { src });
+        ops.push(RewriteOp::CosNode { src });
+        ops.push(RewriteOp::SafeExpNode { src });
+        ops.push(RewriteOp::SafeLogNode { src });
+        ops.push(RewriteOp::DiffNode { src });
+        for &(p_num, p_den) in &super::rewrite::PERMITTED_POWERS {
+            ops.push(RewriteOp::AddPower { src, p_num, p_den });
+        }
+    }
     for node in 0..n {
         if !matches!(g.nodes[node], Node::Const(_)) {
             ops.push(RewriteOp::PruneEdge { node });
@@ -877,8 +916,46 @@ pub fn search(
     for (_, _, p) in &seed_keep {
         proposals.push(p.clone());
     }
-    let mut frontier: Vec<(Graph, f64)> =
-        seed_keep.into_iter().take(cfg.beam).map(|(g, mse, _)| (g, mse)).collect();
+    let mut frontier: Vec<(Graph, f64)> = if !cfg.diverse_beam {
+        seed_keep.into_iter().take(cfg.beam).map(|(g, mse, _)| (g, mse)).collect()
+    } else {
+        // Diverse beam: round-robin selection across structural archetypes
+        let mut families: std::collections::BTreeMap<&'static str, Vec<(Graph, f64)>> = std::collections::BTreeMap::new();
+        for (g, mse, _) in seed_keep {
+            let fam = if g.nodes.iter().any(|n| matches!(n, Node::Sin(_) | Node::Cos(_) | Node::SafeExp(_) | Node::SafeLog(_))) {
+                "transcendental"
+            } else if g.nodes.iter().any(|n| matches!(n, Node::Power { .. })) {
+                "power"
+            } else if g.nodes.iter().any(|n| matches!(n, Node::SafeDiv(_, _))) {
+                "rational"
+            } else if g.nodes.iter().any(|n| matches!(n, Node::Tanh(_) | Node::Sign(_) | Node::Abs(_))) {
+                "bounded"
+            } else {
+                "polynomial"
+            };
+            families.entry(fam).or_default().push((g, mse));
+        }
+        let mut selected = Vec::new();
+        let mut keys: Vec<&'static str> = families.keys().copied().collect();
+        while selected.len() < cfg.beam && !keys.is_empty() {
+            let mut remaining_keys = Vec::new();
+            for k in keys {
+                if let Some(list) = families.get_mut(k) {
+                    if !list.is_empty() {
+                        selected.push(list.remove(0));
+                        if selected.len() >= cfg.beam {
+                            break;
+                        }
+                        if !list.is_empty() {
+                            remaining_keys.push(k);
+                        }
+                    }
+                }
+            }
+            keys = remaining_keys;
+        }
+        selected
+    };
 
     for depth in 1..=cfg.max_depth.max(1) {
         // Enumerate children of the current beam, in deterministic order.
@@ -889,8 +966,29 @@ pub fn search(
                 // Static mode: temporal rewrites are removed from the grammar,
                 // so no candidate reachable from any beam member reads time.
                 if cfg.static_ops
-                    && matches!(op, RewriteOp::AddLagEdge { .. } | RewriteOp::AddState { .. })
+                    && matches!(op, RewriteOp::AddLagEdge { .. } | RewriteOp::AddState { .. } | RewriteOp::DiffNode { .. })
                 {
+                    dropped_scope += 1;
+                    continue;
+                }
+                if !cfg.rational_ops && matches!(op, RewriteOp::AddSafeDiv { .. }) {
+                    dropped_scope += 1;
+                    continue;
+                }
+                if !cfg.stem_ops
+                    && matches!(
+                        op,
+                        RewriteOp::SinNode { .. }
+                            | RewriteOp::CosNode { .. }
+                            | RewriteOp::SafeExpNode { .. }
+                            | RewriteOp::SafeLogNode { .. }
+                            | RewriteOp::DiffNode { .. }
+                    )
+                {
+                    dropped_scope += 1;
+                    continue;
+                }
+                if !cfg.power_ops && matches!(op, RewriteOp::AddPower { .. }) {
                     dropped_scope += 1;
                     continue;
                 }

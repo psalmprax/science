@@ -60,6 +60,7 @@ class RepairOperator(str, enum.Enum):
     R1_PARAM_REFIT = "R1_PARAM_REFIT"
     R2_TERM_INSERT = "R2_TERM_INSERT"
     R3_LAG_INSERT = "R3_LAG_INSERT"
+    R5_PADE_SATURATION = "R5_PADE_SATURATION"
 
 
 class RepairStatus(str, enum.Enum):
@@ -344,6 +345,48 @@ def _wrap_repaired(
     )
 
 
+def _wrap_pade_repaired(
+    parent: CandidateProposal,
+    term_label: str,
+    term_values_fn: Any,
+    a_param: float,
+    b_param: float,
+    repair_r2: float,
+    repair_rows: int,
+    seq: int,
+) -> CandidateProposal:
+    formula = f"({a_param:+.6g}*({parent.formula})) / (1 + {b_param:.6g}*|{parent.formula}|)"
+    params = {
+        "a": float(a_param),
+        "b": float(b_param),
+        "repair_r2": float(repair_r2),
+        "added_terms": 1,
+    }
+
+    def compute_score(df: pd.DataFrame, _fn=term_values_fn) -> np.ndarray:
+        return np.asarray(_fn(df), dtype=float)
+
+    deps = tuple(parent.declared_nominal_dependencies)
+    return CandidateProposal(
+        proposer_id="rime_repair_engine_v011",
+        candidate_id=f"{parent.candidate_id}::{RepairOperator.R5_PADE_SATURATION.value}#{seq}",
+        formula=formula,
+        strategy_archetype=parent.strategy_archetype,
+        declared_scale_invariant=parent.declared_scale_invariant,
+        declared_nominal_dependencies=deps,
+        compute_score=compute_score,
+        parameters=params,
+        metadata={
+            "parent_id": parent.candidate_id,
+            "parent_graph_id": (parent.metadata or {}).get("graph_id"),
+            "operator": RepairOperator.R5_PADE_SATURATION.value,
+            "term": term_label,
+            "repair_rows": int(repair_rows),
+            "engine": "rime_repair_v011",
+        },
+    )
+
+
 def generate_repairs(
     original: CandidateProposal,
     findings: Sequence[str],
@@ -373,6 +416,31 @@ def generate_repairs(
         if np.all(np.isfinite(coef)):
             seq += 1
             out.append(_wrap_repaired(original, RepairOperator.R1_PARAM_REFIT, None, None, coef, r2, int(np.isfinite(y).sum()), 0, seq))
+
+    if RepairOperator.R5_PADE_SATURATION in config.operators and room():
+        finite = np.isfinite(base) & np.isfinite(y)
+        if int(finite.sum()) >= 20:
+            zb = base[finite]
+            yb = y[finite]
+            try:
+                from scipy.optimize import curve_fit
+                popt, _ = curve_fit(
+                    lambda z, a, b: (a * z) / (1.0 + b * np.abs(z)),
+                    zb, yb, p0=[1.0, 0.0], bounds=([0.001, 0.0], [100.0, 1e7]), maxfev=2000
+                )
+                a_fit, b_fit = float(popt[0]), float(popt[1])
+                pred_tr = (a_fit * zb) / (1.0 + b_fit * np.abs(zb))
+                ss_tot = float(np.sum((yb - yb.mean()) ** 2))
+                r2_tr = 1.0 - float(np.sum((yb - pred_tr) ** 2)) / ss_tot if ss_tot > 0 else 0.0
+                seq += 1
+                fn = lambda df, _a=a_fit, _b=b_fit, _parent=original: (
+                    _a * np.asarray(_parent.compute_score(df), dtype=float)
+                    / (1.0 + _b * np.abs(np.asarray(_parent.compute_score(df), dtype=float)))
+                )
+                label = f"pade_sat(a={a_fit:.4g},b={b_fit:.4g})"
+                out.append(_wrap_pade_repaired(original, label, fn, a_fit, b_fit, r2_tr, int(finite.sum()), seq))
+            except Exception:
+                pass
 
     if config.max_added_terms < 1:
         return out

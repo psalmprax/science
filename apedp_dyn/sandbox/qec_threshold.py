@@ -45,13 +45,75 @@ QEC_D = 3
 QEC_EXP = (QEC_D + 1) / 2
 
 
-def generate_qec_threshold_data(n_points: int = 60,
-                                noise_sigma: float = 0.02,
-                                seed: int = 42):
-    """Synthetic logical error rates spanning the threshold."""
+def generate_qec_threshold_data(
+    n_points: int = 60,
+    noise_sigma: float = 0.02,
+    seed: int = 42,
+    distance: int = 3,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Synthetic logical error rates spanning the threshold.
+
+    Parameters
+    ----------
+    n_points:
+        Number of log-spaced points across the threshold window.
+    noise_sigma:
+        Observation noise relative to the RMS signal amplitude.
+    seed:
+        PRNG seed (uses numpy.random.default_rng).
+    distance:
+        Code distance d (default 3 -> exponent e = (d+1)/2 = 2.0).
+        For d=5 -> exponent e = 3.0; for d=7 -> exponent e = 4.0.
+    """
     rng = np.random.default_rng(seed)
     p = np.logspace(-3.3, -1.7, n_points)
-    truth = QEC_C * (p / QEC_P_TH) ** QEC_EXP
+    exp = (distance + 1) / 2.0
+    truth = QEC_C * (p / QEC_P_TH) ** exp
+    obs = truth + rng.normal(0, noise_sigma * np.sqrt(np.mean(truth ** 2)), n_points)
+    return p, obs
+
+
+def generate_qec_saturating_data(
+    n_points: int = 80,
+    noise_sigma: float = 0.02,
+    seed: int = 42,
+    distance: int = 3,
+    model: str = "pade",
+    p_sat: float = 0.5,
+    p_min: float = 0.001,
+    p_max: float = 0.025,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Synthetic saturating logical error rates spanning threshold into saturation.
+
+    Parameters
+    ----------
+    n_points:
+        Number of points linearly spaced across [p_min, p_max].
+    noise_sigma:
+        Observation noise relative to RMS signal amplitude.
+    seed:
+        PRNG seed (uses numpy.random.default_rng).
+    distance:
+        Code distance d (default 3 -> exponent e = 2.0).
+    model:
+        Saturating envelope model:
+        - "pade": Rational saturation p_L = u / (1 + (C/p_sat)*u), where u = C*(p/p_th)^e.
+        - "exponential": Soft exponential p_L = p_sat * (1 - exp(-(C/p_sat)*(p/p_th)^e)).
+    p_sat:
+        Asymptotic saturation ceiling (default 0.5 for depolarizing noise).
+    p_min, p_max:
+        Physical error rate interval.
+    """
+    rng = np.random.default_rng(seed)
+    p = np.linspace(p_min, p_max, n_points)
+    exp = (distance + 1) / 2.0
+    u = QEC_C * (p / QEC_P_TH) ** exp
+    if model == "pade":
+        truth = u / (1.0 + (QEC_C / p_sat) * (p / QEC_P_TH) ** exp)
+    elif model == "exponential":
+        truth = p_sat * (1.0 - np.exp(-(QEC_C / p_sat) * (p / QEC_P_TH) ** exp))
+    else:
+        raise ValueError(f"unknown saturating model: {model}; expected 'pade' or 'exponential'")
     obs = truth + rng.normal(0, noise_sigma * np.sqrt(np.mean(truth ** 2)), n_points)
     return p, obs
 

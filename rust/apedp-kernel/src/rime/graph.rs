@@ -32,6 +32,20 @@ pub enum Node {
     Sign(usize),
     Abs(usize),
     Lag(usize, usize),
+    /// Pole-protected rational division: `safediv(a, b) = a / (1.0 + |b|)`.
+    /// Denominator is strictly >= 1.0, eliminating poles and division-by-zero.
+    SafeDiv(usize, usize),
+    /// STEM primitives (Option 1):
+    /// Bounded sine: `sin(a)`
+    Sin(usize),
+    /// Bounded cosine: `cos(a)`
+    Cos(usize),
+    /// Clamped exponential: `exp(clamp(a, -60.0, 60.0))` to prevent float overflow
+    SafeExp(usize),
+    /// Non-pole natural logarithm: `ln(1.0 + |a|)`
+    SafeLog(usize),
+    /// Discrete first difference: `diff(a)[t] = a[t] - a[t-1]`, with NaN at warmup t=0
+    Diff(usize),
     /// Persistent state cell (spec §4 `State`).
     ///
     /// `h[t] = decay * h[t-1] + u[t]` where `u` is the series of `src` and
@@ -40,6 +54,10 @@ pub enum Node {
     /// every other node: warmup rows of a lagged input are NaN and are skipped
     /// (counted) by the scorer, never imputed.
     State { src: usize, decay: f64, init: f64 },
+    /// Rational power operator: `x^(p_num / p_den)`.
+    /// Supports fractional powers (e.g. 1/3, 2/3, 1/2) and integer powers (2, 3, -1).
+    /// Evaluated safely: sign-preserving for odd denominators, pole-safe for negative powers.
+    Power { src: usize, p_num: i32, p_den: u32 },
 }
 
 /// Frozen lag set (spec §4).
@@ -115,6 +133,15 @@ impl Graph {
                 Node::Sign(a) => format!("S{}", a),
                 Node::Abs(a) => format!("B{}", a),
                 Node::Lag(a, k) => format!("L{}:{}", a, k),
+                Node::SafeDiv(a, b) => format!("D{}:{}", a, b),
+                Node::Sin(a) => format!("SI{}", a),
+                Node::Cos(a) => format!("CO{}", a),
+                Node::SafeExp(a) => format!("EX{}", a),
+                Node::SafeLog(a) => format!("LG{}", a),
+                Node::Diff(a) => format!("DF{}", a),
+                Node::Power { src, p_num, p_den } => {
+                    format!("P{}:{}:{}", src, p_num, p_den)
+                }
                 Node::State { src, decay, init } => {
                     format!("X{}:{:.17e}:{:.17e}", src, decay, init)
                 }
@@ -147,6 +174,21 @@ impl Graph {
                 Some(Node::Const(c)) => format!("{:.6}", c),
                 Some(Node::Add(a, b)) => format!("({} + {})", rec(g, *a, memo), rec(g, *b, memo)),
                 Some(Node::Mul(a, b)) => format!("({} * {})", rec(g, *a, memo), rec(g, *b, memo)),
+                Some(Node::SafeDiv(a, b)) => {
+                    format!("safediv({}, {})", rec(g, *a, memo), rec(g, *b, memo))
+                }
+                Some(Node::Power { src, p_num, p_den }) => {
+                    if *p_den == 1 {
+                        format!("({}^{})", rec(g, *src, memo), p_num)
+                    } else {
+                        format!("({}^({}/{}))", rec(g, *src, memo), p_num, p_den)
+                    }
+                }
+                Some(Node::Sin(a)) => format!("sin({})", rec(g, *a, memo)),
+                Some(Node::Cos(a)) => format!("cos({})", rec(g, *a, memo)),
+                Some(Node::SafeExp(a)) => format!("exp({})", rec(g, *a, memo)),
+                Some(Node::SafeLog(a)) => format!("safelog({})", rec(g, *a, memo)),
+                Some(Node::Diff(a)) => format!("diff({})", rec(g, *a, memo)),
                 Some(Node::Neg(a)) => format!("(-{})", rec(g, *a, memo)),
                 Some(Node::Tanh(a)) => format!("tanh({})", rec(g, *a, memo)),
                 Some(Node::Sign(a)) => format!("sign({})", rec(g, *a, memo)),
@@ -174,7 +216,7 @@ impl Graph {
     pub fn is_temporal(&self) -> bool {
         self.nodes
             .iter()
-            .any(|n| matches!(n, Node::Lag(_, _) | Node::State { .. }))
+            .any(|n| matches!(n, Node::Lag(_, _) | Node::State { .. } | Node::Diff(_)))
     }
 
     /// Structural validation: output in range, arena order topological, lags
@@ -202,11 +244,25 @@ impl Graph {
                         return Err(GraphError::NonFiniteConstant { node: i });
                     }
                 }
-                Node::Add(a, b) | Node::Mul(a, b) => {
+                Node::Add(a, b) | Node::Mul(a, b) | Node::SafeDiv(a, b) => {
                     check(*a)?;
                     check(*b)?;
                 }
-                Node::Neg(a) | Node::Tanh(a) | Node::Sign(a) | Node::Abs(a) => check(*a)?,
+                Node::Neg(a)
+                | Node::Tanh(a)
+                | Node::Sign(a)
+                | Node::Abs(a)
+                | Node::Sin(a)
+                | Node::Cos(a)
+                | Node::SafeExp(a)
+                | Node::SafeLog(a)
+                | Node::Diff(a) => check(*a)?,
+                Node::Power { src, p_den, .. } => {
+                    check(*src)?;
+                    if *p_den == 0 || *p_den > 10 {
+                        return Err(GraphError::NonFiniteConstant { node: i });
+                    }
+                }
                 Node::Lag(a, k) => {
                     check(*a)?;
                     if !LAG_SET.contains(k) {
@@ -228,8 +284,18 @@ impl Graph {
     fn operands(n: &Node) -> Vec<usize> {
         match n {
             Node::Input(_) | Node::Const(_) => Vec::new(),
-            Node::Add(a, b) | Node::Mul(a, b) => vec![*a, *b],
-            Node::Neg(a) | Node::Tanh(a) | Node::Sign(a) | Node::Abs(a) | Node::Lag(a, _) => vec![*a],
+            Node::Add(a, b) | Node::Mul(a, b) | Node::SafeDiv(a, b) => vec![*a, *b],
+            Node::Neg(a)
+            | Node::Tanh(a)
+            | Node::Sign(a)
+            | Node::Abs(a)
+            | Node::Lag(a, _)
+            | Node::Sin(a)
+            | Node::Cos(a)
+            | Node::SafeExp(a)
+            | Node::SafeLog(a)
+            | Node::Diff(a)
+            | Node::Power { src: a, .. } => vec![*a],
             Node::State { src, .. } => vec![*src],
         }
     }
@@ -299,6 +365,57 @@ impl Graph {
                     let (x, y) = (vals[*a].as_ref().unwrap(), vals[*b].as_ref().unwrap());
                     (0..n).map(|t| x[t] * y[t]).collect()
                 }
+                Node::SafeDiv(a, b) => {
+                    let (x, y) = (vals[*a].as_ref().unwrap(), vals[*b].as_ref().unwrap());
+                    (0..n).map(|t| x[t] / (1.0 + y[t].abs())).collect()
+                }
+                Node::Sin(a) => vals[*a].as_ref().unwrap().iter().map(|v| v.sin()).collect(),
+                Node::Cos(a) => vals[*a].as_ref().unwrap().iter().map(|v| v.cos()).collect(),
+                Node::SafeExp(a) => vals[*a]
+                    .as_ref()
+                    .unwrap()
+                    .iter()
+                    .map(|v| v.clamp(-60.0, 60.0).exp())
+                    .collect(),
+                Node::SafeLog(a) => vals[*a]
+                    .as_ref()
+                    .unwrap()
+                    .iter()
+                    .map(|v| (1.0 + v.abs()).ln())
+                    .collect(),
+                Node::Diff(a) => {
+                    let x = vals[*a].as_ref().unwrap();
+                    (0..n)
+                        .map(|t| if t >= 1 { x[t] - x[t - 1] } else { f64::NAN })
+                        .collect()
+                }
+                Node::Power { src, p_num, p_den } => {
+                    let x = vals[*src].as_ref().unwrap();
+                    let exp = (*p_num as f64) / (*p_den as f64);
+                    (0..n)
+                        .map(|t| {
+                            let v = x[t];
+                            if v.is_nan() {
+                                f64::NAN
+                            } else if *p_num > 0 {
+                                if *p_den % 2 != 0 {
+                                    v.abs().powf(exp) * v.signum()
+                                } else {
+                                    v.abs().powf(exp)
+                                }
+                            } else {
+                                let denom = v.abs();
+                                if denom < 1e-12 {
+                                    0.0
+                                } else if *p_den % 2 != 0 {
+                                    v.signum() / denom.powf(-exp)
+                                } else {
+                                    1.0 / denom.powf(-exp)
+                                }
+                            }
+                        })
+                        .collect()
+                }
                 Node::Neg(a) => vals[*a].as_ref().unwrap().iter().map(|v| -v).collect(),
                 Node::Tanh(a) => vals[*a].as_ref().unwrap().iter().map(|v| v.tanh()).collect(),
                 Node::Sign(a) => vals[*a]
@@ -365,8 +482,14 @@ impl Graph {
                 | Node::Sign(_)
                 | Node::Abs(_)
                 | Node::Lag(_, _)
+                | Node::Sin(_)
+                | Node::Cos(_)
+                | Node::SafeExp(_)
+                | Node::SafeLog(_)
+                | Node::Diff(_)
+                | Node::Power { .. }
                 | Node::State { .. } => 1,
-                Node::Add(_, _) | Node::Mul(_, _) => 2,
+                Node::Add(_, _) | Node::Mul(_, _) | Node::SafeDiv(_, _) => 2,
             })
             .sum()
     }
@@ -511,5 +634,33 @@ mod tests {
         let x = g.push(Node::Input(0));
         g.output = g.push(Node::State { src: x, decay: 0.5, init: 0.0 });
         assert_eq!(g.edge_count(), 1);
+    }
+
+    #[test]
+    fn rational_power_evaluation() {
+        let mut g = Graph::new();
+        let x = g.push(Node::Input(0));
+        // Test x^(2/3)
+        g.output = g.push(Node::Power { src: x, p_num: 2, p_den: 3 });
+        let out = g.evaluate(&[vec![1.0, 8.0, 27.0]]);
+        assert!((out[0] - 1.0).abs() < 1e-10);
+        assert!((out[1] - 4.0).abs() < 1e-10);
+        assert!((out[2] - 9.0).abs() < 1e-10);
+
+        // Test odd-root sign preservation: (-8)^(1/3) = -2
+        let mut h = Graph::new();
+        let y = h.push(Node::Input(0));
+        h.output = h.push(Node::Power { src: y, p_num: 1, p_den: 3 });
+        let out_h = h.evaluate(&[vec![-8.0, 8.0]]);
+        assert!((out_h[0] - (-2.0)).abs() < 1e-10);
+        assert!((out_h[1] - 2.0).abs() < 1e-10);
+
+        // Test negative power: 8^(-1/3) = 0.5, 0^(-1/3) = 0.0 (safe pole)
+        let mut k = Graph::new();
+        let z = k.push(Node::Input(0));
+        k.output = k.push(Node::Power { src: z, p_num: -1, p_den: 3 });
+        let out_k = k.evaluate(&[vec![8.0, 0.0]]);
+        assert!((out_k[0] - 0.5).abs() < 1e-10);
+        assert_eq!(out_k[1], 0.0);
     }
 }

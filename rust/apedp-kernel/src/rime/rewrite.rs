@@ -16,7 +16,25 @@ pub enum RewriteOp {
     PruneEdge { node: usize },
     AbsNode { src: usize },
     SignNode { src: usize },
+    AddSafeDiv { a: usize, b: usize },
+    SinNode { src: usize },
+    CosNode { src: usize },
+    SafeExpNode { src: usize },
+    SafeLogNode { src: usize },
+    DiffNode { src: usize },
+    AddPower { src: usize, p_num: i32, p_den: u32 },
 }
+
+/// Permitted rational power parameters: (numerator, denominator).
+pub const PERMITTED_POWERS: [(i32, u32); 7] = [
+    (1, 2),   // x^(1/2) = sqrt(|x|)
+    (1, 3),   // x^(1/3) = cbrt(x)
+    (2, 3),   // x^(2/3) = cbrt(x)^2
+    (-1, 2),  // x^(-1/2) = 1 / sqrt(|x|)
+    (-1, 3),  // x^(-1/3) = 1 / cbrt(|x|)
+    (2, 1),   // x^2
+    (3, 1),   // x^3
+];
 
 impl RewriteOp {
     pub fn name(&self) -> &'static str {
@@ -28,6 +46,13 @@ impl RewriteOp {
             RewriteOp::PruneEdge { .. } => "PruneEdge",
             RewriteOp::AbsNode { .. } => "AbsNode",
             RewriteOp::SignNode { .. } => "SignNode",
+            RewriteOp::AddSafeDiv { .. } => "AddSafeDiv",
+            RewriteOp::SinNode { .. } => "SinNode",
+            RewriteOp::CosNode { .. } => "CosNode",
+            RewriteOp::SafeExpNode { .. } => "SafeExpNode",
+            RewriteOp::SafeLogNode { .. } => "SafeLogNode",
+            RewriteOp::DiffNode { .. } => "DiffNode",
+            RewriteOp::AddPower { .. } => "AddPower",
         }
     }
 }
@@ -94,6 +119,48 @@ pub fn apply(g: &Graph, op: &RewriteOp) -> Option<Graph> {
                 return None;
             }
             h.push(Node::Sign(*src));
+        }
+        RewriteOp::AddSafeDiv { a, b } => {
+            if !valid(a) || !valid(b) {
+                return None;
+            }
+            h.output = h.push(Node::SafeDiv(*a, *b));
+        }
+        RewriteOp::SinNode { src } => {
+            if !valid(src) {
+                return None;
+            }
+            h.output = h.push(Node::Sin(*src));
+        }
+        RewriteOp::CosNode { src } => {
+            if !valid(src) {
+                return None;
+            }
+            h.output = h.push(Node::Cos(*src));
+        }
+        RewriteOp::SafeExpNode { src } => {
+            if !valid(src) {
+                return None;
+            }
+            h.output = h.push(Node::SafeExp(*src));
+        }
+        RewriteOp::SafeLogNode { src } => {
+            if !valid(src) {
+                return None;
+            }
+            h.output = h.push(Node::SafeLog(*src));
+        }
+        RewriteOp::DiffNode { src } => {
+            if !valid(src) {
+                return None;
+            }
+            h.output = h.push(Node::Diff(*src));
+        }
+        RewriteOp::AddPower { src, p_num, p_den } => {
+            if !valid(src) || !PERMITTED_POWERS.contains(&(*p_num, *p_den)) {
+                return None;
+            }
+            h.output = h.push(Node::Power { src: *src, p_num: *p_num, p_den: *p_den });
         }
     }
     Some(h)
@@ -175,6 +242,28 @@ mod tests {
         let p = apply(&g, &RewriteOp::PruneEdge { node: 0 }).unwrap();
         let out = p.evaluate(&[vec![5.0], vec![7.0]]);
         assert_eq!(out, vec![7.0]); // x pruned to 0, y passes through
+    }
+
+    #[test]
+    fn safe_div_applies() {
+        let g = base();
+        let h = apply(&g, &RewriteOp::AddSafeDiv { a: 0, b: 1 }).unwrap();
+        assert_ne!(h.output, g.output);
+        let out = h.evaluate(&[vec![6.0], vec![2.0]]);
+        // safediv(6.0, 2.0) = 6.0 / (1.0 + 2.0) = 2.0
+        assert_eq!(out, vec![2.0]);
+    }
+
+    #[test]
+    fn add_power_applies() {
+        let g = base();
+        let h = apply(&g, &RewriteOp::AddPower { src: 0, p_num: 2, p_den: 3 }).unwrap();
+        assert_ne!(h.output, g.output);
+        let out = h.evaluate(&[vec![8.0], vec![1.0]]);
+        assert!((out[0] - 4.0).abs() < 1e-10);
+
+        // Invalid power rejected
+        assert!(apply(&g, &RewriteOp::AddPower { src: 0, p_num: 5, p_den: 7 }).is_none());
     }
 
     #[test]

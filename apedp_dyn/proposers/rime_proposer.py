@@ -65,10 +65,24 @@ _ALGEBRAIC_TRANSFORMS: dict[str, str] = {
     "cub": "x * x * x",
     "ssqrt": "sign(x) * sqrt(|x|)",
     "slog": "sign(x) * log1p(|x|)",
+    "sat": "sign(x) * |x| / (1 + |x|)",
+    "sat_sq": "sign(x) * (x * x) / (1 + (x * x))",
+    "sat_norm": "sign(x) * (|x| / s) / (1 + |x| / s)",
+    "sat_sq_norm": "sign(x) * (x / s)^2 / (1 + (x / s)^2)",
 }
 
+_STEM_TRANSFORMS: dict[str, str] = {
+    "sin": "sin(x)",
+    "cos": "cos(x)",
+    "exp": "exp(clip(x, -60, 60))",
+    "log": "log1p(|x|)",
+    "diff": "diff(x)",
+}
 
-def _apply_transform(kind: str, x: np.ndarray) -> np.ndarray:
+_ALL_TRANSFORMS: dict[str, str] = {**_ALGEBRAIC_TRANSFORMS, **_STEM_TRANSFORMS}
+
+
+def _apply_transform(kind: str, x: np.ndarray, scale: float = 1.0) -> np.ndarray:
     """Apply one algebraic transform. NaN-safe by construction (IEEE)."""
     if kind == "raw":
         return x
@@ -80,6 +94,33 @@ def _apply_transform(kind: str, x: np.ndarray) -> np.ndarray:
         return np.sign(x) * np.sqrt(np.abs(x))
     if kind == "slog":
         return np.sign(x) * np.log1p(np.abs(x))
+    if kind == "sat":
+        ax = np.abs(x)
+        return np.sign(x) * (ax / (1.0 + ax))
+    if kind == "sat_sq":
+        x2 = x * x
+        return np.sign(x) * (x2 / (1.0 + x2))
+    if kind == "sat_norm":
+        s = scale if (scale > 1e-12 and np.isfinite(scale)) else 1.0
+        ax = np.abs(x) / s
+        return np.sign(x) * (ax / (1.0 + ax))
+    if kind == "sat_sq_norm":
+        s = scale if (scale > 1e-12 and np.isfinite(scale)) else 1.0
+        u = (x / s) ** 2
+        return np.sign(x) * (u / (1.0 + u))
+    if kind == "sin":
+        return np.sin(x)
+    if kind == "cos":
+        return np.cos(x)
+    if kind == "exp":
+        return np.exp(np.clip(x, -60.0, 60.0))
+    if kind == "log":
+        return np.log1p(np.abs(x))
+    if kind == "diff":
+        out = np.full_like(x, np.nan, dtype=float)
+        if len(x) > 1:
+            out[1:] = x[1:] - x[:-1]
+        return out
     raise ValueError(f"unknown algebraic transform kind: {kind}")
 
 
@@ -143,6 +184,16 @@ class RimeProposer(ProposerBase):
         across all inputs first, so every input keeps lag-1 inside the same
         budget. Opt-in: the frozen catalogue is unchanged for existing callers;
         see ``tests/test_dyn_rime_coverage_funnel.py``.
+    rational_ops:
+        When True, enables rational division primitives (safe division
+        `safediv(x, y) = x / (1 + |y|)`) in both rewrites and candidate search.
+        Permits learning Padé rational approximants directly in the symbolic
+        mechanism graph. Default False (preserves frozen polynomial/transcendental
+        grammar).
+    stem_ops:
+        When True, enables elementary STEM primitives (sin, cos, safe exponential,
+        safe log, and first difference) in both rewrites and candidate search.
+        Default False (preserves frozen v0.1 grammar byte identity).
     max_proposals:
         Cap on emitted candidates, best first.
     """
@@ -169,6 +220,13 @@ class RimeProposer(ProposerBase):
         static_mode: bool = False,
         seed_order: str = "legacy",
         square_seeds: bool = False,
+        rational_ops: bool = False,
+        stem_ops: bool = False,
+        power_ops: bool = False,
+        min_rows: int = 30,
+        identifiability_band: float = 0.002,
+        check_derivatives: bool = False,
+        diverse_beam: bool = False,
     ) -> None:
         self._feature_cols = list(feature_cols) if feature_cols else None
         self._target_col = target_col
@@ -186,12 +244,17 @@ class RimeProposer(ProposerBase):
         self._min_r2 = float(min_r2)
         self._archetype = strategy_archetype
         self._square_seeds = bool(square_seeds)
+        self._power_ops = bool(power_ops)
+        self._min_rows = int(min_rows)
+        self._identifiability_band = float(identifiability_band)
+        self._check_derivatives = bool(check_derivatives)
+        self._diverse_beam = bool(diverse_beam)
         if algebraic_transforms is not None:
-            unknown = [k for k in algebraic_transforms if k not in _ALGEBRAIC_TRANSFORMS]
+            unknown = [k for k in algebraic_transforms if k not in _ALL_TRANSFORMS]
             if unknown:
                 raise ValueError(
                     f"unknown algebraic transform(s) {unknown}; "
-                    f"available: {sorted(_ALGEBRAIC_TRANSFORMS)}"
+                    f"available: {sorted(_ALL_TRANSFORMS)}"
                 )
         self._algebraic_transforms = (
             tuple(algebraic_transforms) if algebraic_transforms else None
@@ -203,6 +266,8 @@ class RimeProposer(ProposerBase):
                 f"unknown seed_order {seed_order!r}; expected 'legacy' or 'coverage_first'"
             )
         self._seed_order = str(seed_order)
+        self._rational_ops = bool(rational_ops)
+        self._stem_ops = bool(stem_ops)
 
     @property
     def proposer_id(self) -> str:
@@ -223,12 +288,14 @@ class RimeProposer(ProposerBase):
         ]
 
     @staticmethod
-    def _labels(feats: list[str], specs: list[tuple[str, str, str]]) -> list[str]:
+    def _labels(feats: list[str], specs: list[tuple[str, str, str, float]]) -> list[str]:
         """Column labels handed to the kernel (base names + transform labels)."""
-        return [label for label, _, _ in specs] if specs else list(feats)
+        return [label for label, _, _, _ in specs] if specs else list(feats)
 
-    def _specs(self, feats: list[str]) -> list[tuple[str, str, str]]:
-        """Expanded column specs: (label, base column, transform kind).
+    def _specs(
+        self, feats: list[str], first: pd.DataFrame | None = None
+    ) -> list[tuple[str, str, str, float]]:
+        """Expanded column specs: (label, base column, transform kind, scale).
 
         Raw features first (legacy order), then the algebraic transforms of the
         first ``max_transform_inputs`` features, in deterministic catalogue
@@ -236,11 +303,17 @@ class RimeProposer(ProposerBase):
         so pre-v0.1.2 behaviour (ordering, dedup, seed-catalogue lights) is
         unchanged.
         """
-        specs: list[tuple[str, str, str]] = [(f, f, "raw") for f in feats]
+        specs: list[tuple[str, str, str, float]] = [(f, f, "raw", 1.0) for f in feats]
         if self._algebraic_transforms:
             for f in feats[: self._max_transform_inputs]:
+                s = 1.0
+                if first is not None and f in first.columns:
+                    col_vals = first[f].to_numpy(dtype=float)
+                    s_est = float(np.nanstd(col_vals))
+                    if np.isfinite(s_est) and s_est > 1e-12:
+                        s = s_est
                 for kind in self._algebraic_transforms:
-                    specs.append((f"{kind}({f})", f, kind))
+                    specs.append((f"{kind}({f})", f, kind, s))
         return specs
 
     def _columns(
@@ -256,7 +329,7 @@ class RimeProposer(ProposerBase):
         feats = self._feats(first)
         if not feats or self._target_col not in first.columns:
             return None
-        specs = self._specs(feats)
+        specs = self._specs(feats, first)
         labels = self._labels(feats, specs)
 
         cols: list[np.ndarray] = [[] for _ in specs]
@@ -270,10 +343,10 @@ class RimeProposer(ProposerBase):
                 for f in feats
             }
             y = df[self._target_col].to_numpy(dtype=float)
-            if len(y) < 10:
+            if len(y) < min(10, self._min_rows):
                 continue
-            for idx, (_label, base_name, kind) in enumerate(specs):
-                cols[idx].extend(_apply_transform(kind, base[base_name]).tolist())
+            for idx, (_label, base_name, kind, scale) in enumerate(specs):
+                cols[idx].extend(_apply_transform(kind, base[base_name], scale).tolist())
             target.extend(y.tolist())
             # Frame separator: one NaN row so that a lag can never read across a
             # dataset boundary. The scorer skips (and counts) NaN rows, so this
@@ -294,7 +367,7 @@ class RimeProposer(ProposerBase):
 
     def _scorer(
         self,
-        specs: list[tuple[str, str, str]],
+        specs: list[tuple[str, str, str, float]],
         base_feats: list[str],
         graph_json: str,
         scale: float,
@@ -329,7 +402,8 @@ class RimeProposer(ProposerBase):
                     else np.full(n, np.nan)
                 )
             cols = [
-                _apply_transform(kind, base[base_name]) for _label, base_name, kind in specs
+                _apply_transform(kind, base[base_name], scale_feat)
+                for _label, base_name, kind, scale_feat in specs
             ]
             out = np.asarray(apedp_kernel.rime_evaluate_series_json(graph_json, cols), dtype=float)
             return scale * out + intercept
@@ -345,11 +419,11 @@ class RimeProposer(ProposerBase):
         """
         first = frames[0]
         feats = self._feats(first)
-        specs = self._specs(feats)
+        specs = self._specs(feats, first)
         labels = self._labels(feats, specs)
         out: list[tuple[list[np.ndarray], np.ndarray]] = []
         for df in frames:
-            if self._target_col not in df.columns or len(df) < 10:
+            if self._target_col not in df.columns or len(df) < min(10, self._min_rows):
                 continue
             base = {
                 f: (df[f].to_numpy(dtype=float) if f in df.columns else np.full(len(df), np.nan))
@@ -357,7 +431,7 @@ class RimeProposer(ProposerBase):
             }
             out.append(
                 (
-                    [_apply_transform(kind, base[base_name]) for _label, base_name, kind in specs],
+                    [_apply_transform(kind, base[base_name], scale) for _label, base_name, kind, scale in specs],
                     df[self._target_col].to_numpy(dtype=float),
                 )
             )
@@ -419,6 +493,14 @@ class RimeProposer(ProposerBase):
                 config["seed_order"] = self._seed_order
             if self._square_seeds:
                 config["square_seeds"] = True
+            if self._rational_ops:
+                config["rational_ops"] = True
+            if self._stem_ops:
+                config["stem_ops"] = True
+            if self._power_ops:
+                config["power_ops"] = True
+            if self._diverse_beam:
+                config["diverse_beam"] = True
             if self._gamma is not None:
                 config["gamma"] = self._gamma
             packet = json.loads(apedp_kernel.rime_search_envs_json(envs_json, json.dumps(config), labels))
@@ -429,7 +511,7 @@ class RimeProposer(ProposerBase):
             labels, cols, target, feats = assembled
             base_feats = feats
             finite = np.isfinite(target)
-            if int(finite.sum()) < 30:
+            if int(finite.sum()) < self._min_rows:
                 return []
             config = {
                 "max_depth": self._max_depth,
@@ -444,6 +526,14 @@ class RimeProposer(ProposerBase):
                 config["seed_order"] = self._seed_order
             if self._square_seeds:
                 config["square_seeds"] = True
+            if self._rational_ops:
+                config["rational_ops"] = True
+            if self._stem_ops:
+                config["stem_ops"] = True
+            if self._power_ops:
+                config["power_ops"] = True
+            if self._diverse_beam:
+                config["diverse_beam"] = True
             if self._gamma is not None:
                 config["gamma"] = self._gamma
             elif self._rel_penalty is not None:
@@ -463,13 +553,30 @@ class RimeProposer(ProposerBase):
         else:
             lambda_used = float(self._rel_penalty or 0.0) * float(np.var(target[finite]))
 
+        specs = self._specs(base_feats, frames[0])
         proposals: list[CandidateProposal] = []
-        for rank, p in enumerate(packet.get("proposals", [])):
+        raw_list = packet.get("proposals", [])
+        valid_proposals = [p for p in raw_list if float(p["dev_evidence"]["r2"]) >= self._min_r2]
+        max_r2 = max((float(p["dev_evidence"]["r2"]) for p in valid_proposals), default=-float("inf"))
+        equiv_set = [
+            p for p in valid_proposals
+            if max_r2 - float(p["dev_evidence"]["r2"]) <= self._identifiability_band
+        ]
+        equiv_equations = [p["equation"] for p in equiv_set]
+        equiv_count = len(equiv_set)
+
+        for rank, p in enumerate(valid_proposals):
             if len(proposals) >= self._max_proposals:
                 break
             ev = p["dev_evidence"]
-            if float(ev["r2"]) < self._min_r2:
-                continue
+            r2_val = float(ev["r2"])
+            lead_delta_r2 = max_r2 - r2_val
+            in_band = lead_delta_r2 <= self._identifiability_band
+            if in_band:
+                ident_status = "AMBIGUOUS_EQUIVALENCE_SET" if equiv_count > 1 else "UNIQUE_WINNER"
+            else:
+                ident_status = "SUB_OPTIMAL"
+
             scale = float(ev["scale"])
             intercept = float(ev["intercept"])
             # The kernel ships the runnable graph with the packet, so the
@@ -477,6 +584,27 @@ class RimeProposer(ProposerBase):
             graph_json = p["graph_json"]
             formula = f"{scale:+.6g} * ({p['equation']}) {intercept:+.6g}"
             dep_vars = tuple(base_feats)
+            scorer_fn = self._scorer(specs, base_feats, graph_json, scale, intercept)
+
+            grad_alignment = 1.0
+            if self._check_derivatives and len(frames[0]) > 2:
+                try:
+                    df_first = frames[0]
+                    y_first = df_first[self._target_col].to_numpy(dtype=float)
+                    pred_first = scorer_fn(df_first)
+                    fin_mask = np.isfinite(y_first) & np.isfinite(pred_first)
+                    if int(fin_mask.sum()) > 2:
+                        dy = np.diff(y_first[fin_mask])
+                        dpred = np.diff(pred_first[fin_mask])
+                        std_dy = float(np.std(dy))
+                        std_dp = float(np.std(dpred))
+                        if std_dy > 1e-12 and std_dp > 1e-12:
+                            corr = np.corrcoef(dy, dpred)[0, 1]
+                            if np.isfinite(corr):
+                                grad_alignment = float(corr)
+                except Exception:
+                    pass
+
             proposals.append(
                 CandidateProposal(
                     proposer_id=self.proposer_id,
@@ -485,7 +613,7 @@ class RimeProposer(ProposerBase):
                     strategy_archetype=self._archetype,
                     declared_scale_invariant=True,
                     declared_nominal_dependencies=dep_vars,
-                    compute_score=self._scorer(self._specs(base_feats), base_feats, graph_json, scale, intercept),
+                    compute_score=scorer_fn,
                     parameters={
                         "scale": scale,
                         "intercept": intercept,
@@ -493,6 +621,9 @@ class RimeProposer(ProposerBase):
                         "dev_r2": float(ev["r2"]),
                         "complexity": float(ev["complexity"]),
                         "n_eff": int(ev["n_eff"]),
+                        "identifiability_status": ident_status,
+                        "lead_delta_r2": float(lead_delta_r2),
+                        "gradient_alignment": float(grad_alignment),
                     },
                     metadata={
                         "graph_id": p["graph_id"],
@@ -517,12 +648,22 @@ class RimeProposer(ProposerBase):
                         "inputs_used_names": [base_feats[k] for k in p.get("inputs_used", [])
                                               if isinstance(k, int) and 0 <= k < len(base_feats)],
                         "lambda_c": lambda_used,
-                        "engine": "rime_v0.1.2",
+                        "engine": "rime_v0.2.0",
                         "signal_semantics": "past_information_only_not_causal",
                         "algebraic_transforms": (
                             list(self._algebraic_transforms) if self._algebraic_transforms else None
                         ),
                         "static_mode": bool(self._static_mode),
+                        "rational_ops": bool(self._rational_ops),
+                        "stem_ops": bool(self._stem_ops),
+                        "power_ops": bool(self._power_ops),
+                        "min_rows": int(self._min_rows),
+                        "diverse_beam": bool(self._diverse_beam),
+                        "identifiability_status": ident_status,
+                        "equivalence_band_size": equiv_count,
+                        "lead_delta_r2": float(lead_delta_r2),
+                        "competing_hypotheses": equiv_equations if in_band else [],
+                        "gradient_alignment": float(grad_alignment),
                         "seed_order": self._seed_order,
                         "per_frame_envs": bool(use_envs),
                         "aggregation": str(packet.get("aggregation", self._aggregation))

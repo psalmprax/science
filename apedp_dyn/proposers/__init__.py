@@ -22,15 +22,23 @@ from apedp_dyn.proposers.regime_switching_proposer import RegimeSwitchingPropose
 from apedp_dyn.proposers.resiliency_proposer import OrderBookResiliencyProposer
 from apedp_dyn.proposers.rime_proposer import RimeProposer, is_rime_available
 from apedp_dyn.proposers.sparse_microstructure_proposer import SparseMicrostructureProposer
+from apedp_dyn.proposers.stem_proposers import (
+    CompartmentalSirProposer,
+    HamiltonianProposer,
+    SolenoidalFluidProposer,
+)
 
 __all__ = [
     "CandidateProposal",
+    "CompartmentalSirProposer",
     "DistributedLagInteractionProposer",
+    "HamiltonianProposer",
     "HawkesOrderFlowProposer",
     "OrderBookResiliencyProposer",
     "ProposerBase",
     "RegimeSwitchingProposer",
     "RimeProposer",
+    "SolenoidalFluidProposer",
     "SparseMicrostructureProposer",
     "StrategyArchetype",
     "is_rime_available",

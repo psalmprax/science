@@ -101,7 +101,16 @@ def test_unknown_transform_kinds_are_rejected_up_front() -> None:
 def test_transform_catalogue_and_domain_safety() -> None:
     # The canned catalogue is what the docs promise, and transforms are
     # NaN-safe and finite on mixed-domain data (negatives, zero, positives).
-    assert sorted(_ALGEBRAIC_TRANSFORMS) == ["cub", "slog", "sq", "ssqrt"]
+    assert sorted(_ALGEBRAIC_TRANSFORMS) == [
+        "cub",
+        "sat",
+        "sat_norm",
+        "sat_sq",
+        "sat_sq_norm",
+        "slog",
+        "sq",
+        "ssqrt",
+    ]
     x = np.array([-3.0, -1e-3, 0.0, 1e-3, 3.0, np.nan])
     from apedp_dyn.proposers.rime_proposer import _apply_transform
 

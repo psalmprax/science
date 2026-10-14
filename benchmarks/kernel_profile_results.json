@@ -5,47 +5,47 @@
     {
       "evaluated": 200,
       "n": 150,
-      "remainder_pct": 86.9,
-      "us_graph_eval_phase": 2.0,
-      "us_per_candidate": 22.8,
-      "us_readout_fit_phase": 1.0,
-      "us_search_bookkeeping_remainder": 19.8
+      "remainder_pct": 72.3,
+      "us_graph_eval_phase": 16.5,
+      "us_per_candidate": 84.7,
+      "us_readout_fit_phase": 6.9,
+      "us_search_bookkeeping_remainder": 61.2
     },
     {
       "evaluated": 200,
       "n": 600,
-      "remainder_pct": 56.2,
-      "us_graph_eval_phase": 5.8,
-      "us_per_candidate": 23.0,
-      "us_readout_fit_phase": 4.3,
-      "us_search_bookkeeping_remainder": 12.9
+      "remainder_pct": 0.0,
+      "us_graph_eval_phase": 88.5,
+      "us_per_candidate": 74.3,
+      "us_readout_fit_phase": 42.1,
+      "us_search_bookkeeping_remainder": 0.0
     },
     {
       "evaluated": 200,
       "n": 1200,
-      "remainder_pct": 61.4,
-      "us_graph_eval_phase": 6.7,
-      "us_per_candidate": 30.0,
-      "us_readout_fit_phase": 4.9,
-      "us_search_bookkeeping_remainder": 18.4
+      "remainder_pct": 0.0,
+      "us_graph_eval_phase": 154.0,
+      "us_per_candidate": 120.7,
+      "us_readout_fit_phase": 53.8,
+      "us_search_bookkeeping_remainder": 0.0
     },
     {
       "evaluated": 200,
       "n": 3000,
-      "remainder_pct": 46.5,
-      "us_graph_eval_phase": 17.2,
-      "us_per_candidate": 57.3,
-      "us_readout_fit_phase": 13.5,
-      "us_search_bookkeeping_remainder": 26.6
+      "remainder_pct": 0.0,
+      "us_graph_eval_phase": 293.9,
+      "us_per_candidate": 255.6,
+      "us_readout_fit_phase": 146.1,
+      "us_search_bookkeeping_remainder": 0.0
     },
     {
       "evaluated": 200,
       "n": 12000,
-      "remainder_pct": 2.0,
-      "us_graph_eval_phase": 192.7,
-      "us_per_candidate": 250.6,
-      "us_readout_fit_phase": 52.9,
-      "us_search_bookkeeping_remainder": 5.0
+      "remainder_pct": 0.0,
+      "us_graph_eval_phase": 1262.6,
+      "us_per_candidate": 826.6,
+      "us_readout_fit_phase": 601.8,
+      "us_search_bookkeeping_remainder": 0.0
     }
   ]
 }
