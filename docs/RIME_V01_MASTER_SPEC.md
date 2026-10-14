@@ -288,6 +288,56 @@ verdicts structural, never fit-only:
   in-grammar); out-of-scope refusal must come from adjudication; transfer
   axis (cross-grid, frozen proposals) is recorded in the artifact.
 
+## 16d. v0.1.4 referee-side scope refusal + noise-seed uncertainty bounds
+
+Wires the §16c gap where it belongs — adjudication — and preregisters the
+uncertainty protocol on the same challenge.
+
+- **Referee-side scope refusal (`apedp_dyn/epistemic/scope_refusal.py`,
+  `experimental`; pinned by `tests/test_dyn_rime_known_truth_scope_repeats.py`).**
+  The referee is blind by construction: its only inputs are the (dev,
+  holdout) frames, the emitted candidate's frozen predictor, and the
+  declared holdout noise scale — never a world flag, never planted truth.
+  It fits a preregistered family-distinct probe pair (exponential family on
+  the dev-normalized axis, rate grid c ∈ [1, 50]; log family on the raw
+  axis) by least squares from the data alone, and adjudicates the emitted
+  candidate pairwise against EVERY probe through the standard
+  `adjudicate()` contract. The emitted claim is promoted only on
+  UNIQUE_SUPPORT against all probes; indistinguishability (MULTI),
+  probe-favored block bootstrap, or INSUFFICIENT/EXTRAPOLATION declines the
+  emission. Probe design constraints, documented in-module before any run:
+  probes must not be able to tie a true monomial world (wrongful refusal —
+  measured 0 in-grammar declines), and the exponential probe compounds
+  UNCLIPPED past the dev extent (clipping is the recorded polynomial-OLS
+  extrapolation defect in referee form; the rate cap keeps exp() finite on
+  reachable holdout extents).
+- **Measured.** On the exp() world BOTH methods' spurious emissions are now
+  refused by the referee (RIME: probe-favored block bootstrap + an
+  observationally indistinguishable log rival; BIC-OLS: exponential probe
+  superior, confirmed blockwise). In-grammar: all 22 (11 worlds × 2
+  methods) true recoveries survive the probes un-declined. Bookkeeping:
+  `out_of_grammar_emitted_declined` (contained) is never counted as a
+  recovery; `out_of_grammar_emitted_promoted` (a genuine scope leak) = 0 in
+  every measured run.
+- **Audit transparency (caught before citation, same discipline as the
+  prior rounds).** The FIRST adjudicated run promoted the OLS emission on
+  the exp world: diagnosed as a referee-side defect (the probe axis was
+  clipped to [0, 1], so the exponential probe degraded to a constant past
+  the dev extent on log-spaced grids). Fixed and documented above BEFORE
+  any conclusion was cited; the strict-AND semantics were never changed.
+- **Repeat protocol (declared before running).** 5 observation-noise seeds
+  (phase = 23.0 + 1009·seed; same design points, fresh draws; seed 0
+  reproduces the pinned §16c frames exactly), full world set, adjudicated
+  on. Bounds are therefore noise-driven uncertainty of the discovery +
+  adjudication layers only. Results
+  (`benchmarks/known_truth_results_repeats.json`): recovery 1.0 ± 0.0 per
+  method per seed (11/11 in-grammar every seed); per-world holdout R² std
+  ≤ 5e-5; coefficient accuracy stable (|Ĉ−C|/C ≲ 5e-4 RIME, unchanged);
+  both methods' exp-world emissions refused on 5/5 seeds with zero
+  wrongful in-grammar refusals. Honest nuance recorded: the rejected exp
+  emission's misfit is structurally dominated (RIME emission R²
+  0.0775 ± 1.6e-05 across seeds), so refusal is noise-robust there.
+
 ## 16b. v0.1.2 static-grammar extension & scale-invariant readout (QEC round)
 
 The QEC repair round surfaced a boundary that turned out to be TWO defects,
