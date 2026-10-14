@@ -34,6 +34,7 @@ from apedp_dyn.proposers.rime_proposer import RimeProposer
 BIAS_RATIO_CUT = 0.25
 VARIANCE_RATIO_CUT = 4.0
 CURVATURE_CORR_CUT = 0.3
+INTERACTION_CORR_CUT = 0.3
 MIN_ROWS = 30
 
 CONFIG = RepairConfig(
@@ -47,7 +48,7 @@ CONFIG = RepairConfig(
 
 CUTS = dict(rho_flag=RESID_RHO_FLAG, bias_ratio_cut=BIAS_RATIO_CUT,
             variance_ratio_cut=VARIANCE_RATIO_CUT, curvature_corr_cut=CURVATURE_CORR_CUT,
-            min_rows=MIN_ROWS)
+            interaction_corr_cut=INTERACTION_CORR_CUT, min_rows=MIN_ROWS)
 
 
 def _best(df_train: pd.DataFrame, feats, depth=1, budget=120):
@@ -96,11 +97,11 @@ def test_recall_strong_defects():
     # the right variable (structure recovery, not just predictions), sealed
     # gain over the frozen original in every run.
     cases = []
-    for s in (101, 102, 103):
+    for s in (101, 102, 103, 104, 105, 106):
         cases.append((f"param/s{s}", _plant_param(s), ["x"], "R1_PARAM_REFIT", None))
-    for s in (201, 202, 203):
-        cases.append((f"curv/s{s}", _plant_curv(s), ["x"], "R2_TERM_INSERT", "(x^2)"))
-    for s in (301, 302, 303):
+    for s in (201, 202, 203, 204, 205, 206):
+        cases.append((f"curv/s{s}", _plant_curv(s), ["x"], "R2_TERM_INSERT", "(x*x)"))
+    for s in (301, 302, 303, 304, 305, 306):
         cases.append((f"lag/s{s}", _plant_emergent_lag(s), ["x1", "x2"], "R3_LAG_INSERT", "(x2[t-1])"))
     repaired, structural = 0, 0
     for name, df, feats, op, term in cases:
@@ -115,9 +116,16 @@ def test_recall_strong_defects():
             else:
                 structural += 1
             assert out.sealed is not None and out.sealed["sealed_r2_gain"] > 0, (name, out.sealed)
+            # Single-round termination pinned: multi-round chaining is
+            # implemented but unreachable under single-targeted-finding veto
+            # semantics (documented extension point, not a tested path).
+            assert out.rounds_used == 1, (name, out.rounds_used)
     recall = repaired / len(cases)
-    print(f"\n[recall] {repaired}/{len(cases)} = {recall:.3f}; structural {structural}/{len(cases)}")
+    from scipy.stats import beta as _beta
+    lower = float(_beta.ppf(0.025, repaired, len(cases) - repaired + 1))
+    print(f"\n[recall] {repaired}/{len(cases)} = {recall:.3f}; structural {structural}/{len(cases)}; 95% lower {lower:.3f}")
     assert recall == 1.0, (repaired, len(cases))
+    assert lower > 0.8, lower
 
 
 def test_same_driver_omitted_lag_sensitivity_map():

@@ -120,15 +120,53 @@ def test_rime_qec_shallow_outcome_characterized():
 
 
 def test_rime_qec_deep_search_recovers_law():
-    # Stable 3/3 independent runs at write time; pinned.
+    # Stable independent runs at write time; pinned. Depths 4-6 converge
+    # to the same self-interaction winner with identical metrics: depth
+    # saturates at 4 for this truth (measured, not assumed).
     p, obs = generate_qec_threshold_data(n_points=600, seed=42)
     ntr = len(p) // 2
     df = pd.DataFrame({"p": p, "target": obs})
     tr = df.iloc[:ntr].reset_index(drop=True)
-    props = RimeProposer(feature_cols=["p"], target_col="target", max_depth=4, budget=1000).fit_and_propose(tr)
-    assert len(props) > 0
-    best = sorted(props, key=lambda q: q.parameters["dev_r2"], reverse=True)[0]
-    te = df.iloc[ntr:].reset_index(drop=True)
-    r2 = _holdout_r2(best, te, obs[ntr:])
-    assert r2 > 0.99, (best.metadata.get("equation"), r2)
-    print(f"[rime-qec-deep] {best.metadata.get('equation')} holdoutR2={r2:.4f}")
+    for depth in (4, 5, 6):
+        props = RimeProposer(feature_cols=["p"], target_col="target",
+                             max_depth=depth, budget=1000).fit_and_propose(tr)
+        assert len(props) > 0, depth
+        best = sorted(props, key=lambda q: q.parameters["dev_r2"], reverse=True)[0]
+        te = df.iloc[ntr:].reset_index(drop=True)
+        r2 = _holdout_r2(best, te, obs[ntr:])
+        assert r2 > 0.99, (depth, best.metadata.get("equation"), r2)
+        print(f"[rime-qec-deep] d={depth} {best.metadata.get('equation')} holdoutR2={r2:.4f}")
+
+
+def test_qec_same_time_square_unreachable_by_proposer_but_reachable_by_repair():
+    """Structural reachability, measured (not argued).
+
+    The exact QEC law is p_L = 1000*p^2 — a CONTEMPORANEOUS self-square.
+    With the penalty disabled, a deep search (1217 candidates evaluated,
+    100 proposals surfaced) on the single-input frame produces ZERO
+    same-time self-squares: `seeds.rs` family 7 only emits x*x[t-k] for
+    k in {1,2,5}, and no frozen rewrite creates a Mul node, so lag-0
+    multiplication is unreachable from the proposer. The repair engine's
+    interaction-probe family DOES contain the lag-0 self-product, and it is
+    what won the QEC-thirds sealed run (coefficient 1071 vs truth 1000).
+    """
+    import json
+    import re
+    import numpy as np
+    import apedp_kernel as ak
+    p, obs = generate_qec_threshold_data(n_points=600, seed=42)
+    col = p[:300]
+    y = obs[:300]
+    cfg = json.dumps({"max_depth": 6, "beam": 8, "budget": 5000,
+                      "ridge": 1e-9, "seed": 0, "rel_penalty": 0.0})
+    pkt = json.loads(ak.rime_search_json([np.asarray(col, dtype=float)],
+                                         np.asarray(y, dtype=float), cfg, ["p"]))
+    eqs = [pr["equation"] for pr in pkt["proposals"]]
+    assert pkt.get("evaluated", 0) >= 1000, pkt.get("evaluated")
+    assert eqs, "penalty-off search must surface proposals"
+    same_time = [e for e in eqs if re.fullmatch(r"\(p \* p\)", e)]
+    lagged = [e for e in eqs if e in ("(p * p[t-1])", "(p * p[t-2])", "(p * p[t-5])")]
+    assert same_time == [], same_time          # exact law never generated
+    assert len(lagged) >= 1, lagged            # lagged proxies are what exists
+    print(f"\n[qec-reachability] {pkt['evaluated']} evaluated, {len(eqs)} proposals, "
+          f"same-time square: {len(same_time)}; lagged proxies: {len(lagged)}")

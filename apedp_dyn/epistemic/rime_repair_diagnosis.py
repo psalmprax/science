@@ -14,9 +14,9 @@ Boundary discipline (AGENTS.md §1.1):
     whiteness flag is imported from its single existing definition rather
     than re-declared.
 
-Pipeline position: RIME proposes → this module diagnoses → (future) repair
+Pipeline position: RIME proposes → this module diagnoses → the repair
 engine modifies → independent validation compares → APEDP-X adjudicates.
-Only the first two stages exist here.
+This module covers diagnosis; modification lives in rime_repair_engine.
 """
 from __future__ import annotations
 
@@ -34,6 +34,7 @@ FINDING_INTERCEPT_BIAS = "intercept_bias"
 FINDING_TEMPORAL_DEPENDENCE = "temporal_dependence"
 FINDING_HETEROSCEDASTICITY_SUSPECT = "heteroscedasticity_suspect"
 FINDING_CURVATURE_SUSPECT = "curvature_suspect"
+FINDING_INTERACTION_SUSPECT = "interaction_suspect"
 FINDING_NO_RELIABLE_STRUCTURE = "no_reliable_structure"
 FINDING_INSUFFICIENT_ROWS = "insufficient_rows"
 
@@ -43,6 +44,7 @@ _FROZEN_FINDINGS = frozenset(
         FINDING_TEMPORAL_DEPENDENCE,
         FINDING_HETEROSCEDASTICITY_SUSPECT,
         FINDING_CURVATURE_SUSPECT,
+        FINDING_INTERACTION_SUSPECT,
         FINDING_NO_RELIABLE_STRUCTURE,
         FINDING_INSUFFICIENT_ROWS,
     }
@@ -180,23 +182,33 @@ def classify_findings(
     report: ResidualReport,
     resid: np.ndarray | pd.Series,
     y_pred: np.ndarray | pd.Series,
+    probes: dict[str, np.ndarray],
     *,
     rho_flag: float,
     bias_ratio_cut: float,
     variance_ratio_cut: float,
     curvature_corr_cut: float,
+    interaction_corr_cut: float,
     min_rows: int,
 ) -> tuple[str, ...]:
     """Map measured statistics + residuals to finding labels.
 
     Every cutoff is an explicit argument (no threshold literals in this
-    module, per AGENTS.md §1.3). Screens used:
+    module, per AGENTS.md §1.3). `probes` maps probe labels to value arrays
+    aligned with the residual rows (built by the caller, e.g. the repair
+    engine, from declared dependencies only); an empty dict disables the
+    interaction screen. Screens used:
 
       * intercept bias: |mean(resid)| > bias_ratio_cut * std(target)
       * temporal dependence: |rho1| > rho_flag
       * heteroscedasticity: var(second-half resid) / var(first-half resid)
         outside [1/cut, cut]
       * curvature: corr(resid, (y_pred - mean)^2), the missing-square screen
+      * interaction: max over probes of |corr(resid, probe)| >
+        interaction_corr_cut — the missing-interaction screen. Omitted
+        interactions of independent drivers leave white residuals, so no
+        other screen here can see them; the probe family must contain the
+        missing structure for this to fire (detection coverage limit).
 
     Labels are repair hypotheses to investigate, never conclusions.
     """
@@ -223,6 +235,16 @@ def classify_findings(
             cc = float(np.corrcoef(r, quad)[0, 1])
             if np.isfinite(cc) and abs(cc) > curvature_corr_cut:
                 findings.append(FINDING_CURVATURE_SUSPECT)
+        for _label, pv in probes.items():
+            pv = np.asarray(pv, dtype=float)
+            if pv.shape != r.shape:
+                continue
+            mm = np.isfinite(pv)
+            if int(mm.sum()) >= min_rows and float(np.std(pv[mm])) > 0.0 and r[mm].size > 2:
+                pc = float(np.corrcoef(r[mm], pv[mm])[0, 1])
+                if np.isfinite(pc) and abs(pc) > interaction_corr_cut:
+                    findings.append(FINDING_INTERACTION_SUSPECT)
+                    break
     if not findings:
         return (FINDING_NO_RELIABLE_STRUCTURE,)
     for f in findings:

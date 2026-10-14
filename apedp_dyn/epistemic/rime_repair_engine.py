@@ -44,6 +44,7 @@ cutoffs are explicit caller arguments.
 from __future__ import annotations
 
 import enum
+import re
 from dataclasses import dataclass, field
 from typing import Any, Sequence
 
@@ -71,7 +72,17 @@ class RepairStatus(str, enum.Enum):
 
 @dataclass(frozen=True)
 class RepairConfig:
-    """Bounds for one repair run. All fields explicit, no defaults that hide policy."""
+    """Bounds for one repair run. All fields explicit, no defaults that hide policy.
+
+    Predictive-gate criteria (both are reported; the bar is chosen by the
+    caller, never inferred):
+      * ``min_validation_r2_gain`` — absolute validation R² headroom. Fails by
+        construction on real baselines already near 1 (measured: refuses a
+        sealed-validated +0.005 on AME2020 where the original is 0.994).
+      * ``min_sse_reduction`` — relative squared-error reduction
+        G = (SSE_base − SSE_cand)/SSE_base on the same rows. Scale-aware; the
+        preregistered companion criterion for high-baseline problems.
+    """
 
     max_candidates_per_round: int
     max_rounds: int
@@ -79,6 +90,19 @@ class RepairConfig:
     min_validation_r2_gain: float
     equivalence_tol: float
     operators: tuple[RepairOperator, ...]
+    min_sse_reduction: float = 0.0
+    # Identifiability band (explicit, default 0 = frozen single-winner
+    # behaviour): passing candidates whose validation R2 lies within this
+    # band of the best are observationally indistinguishable, and the run
+    # resolves to AMBIGUOUS (MULTI_HYPOTHESIS territory) rather than
+    # crowning the marginally-highest scorer.
+    equivalence_r2_tol: float = 0.0
+    # Domain-informed term family (Layer C, declared and measured separately):
+    # bounded rational powers x^(p) of the declared dependencies, appended to
+    # the R2 catalogue. Empty = frozen standard catalogue only. Domain priors
+    # are NOT hidden corrections: they enter only through this explicit field
+    # and are scored by the same gates.
+    rational_powers: tuple[float, ...] = ()
 
 
 @dataclass
@@ -155,6 +179,14 @@ def _r2(yt: np.ndarray, yp: np.ndarray) -> float:
     return 1.0 - float(np.sum((yt - yp) ** 2)) / ss if ss > 0.0 else float("nan")
 
 
+def _sse(yt: np.ndarray, yp: np.ndarray) -> float:
+    """Sum of squared errors over the jointly-finite rows (NaN if none)."""
+    yt = np.asarray(yt, dtype=float)
+    yp = np.asarray(yp, dtype=float)
+    m = np.isfinite(yt) & np.isfinite(yp)
+    return float(np.sum((yt[m] - yp[m]) ** 2)) if int(m.sum()) else float("nan")
+
+
 def _lstsq_readout(cols: list[np.ndarray], y: np.ndarray) -> tuple[np.ndarray, float]:
     """Least-squares fit of [terms..., 1] to y on finite rows. Returns (coefs, r2)."""
     M = np.column_stack([np.asarray(c, dtype=float) for c in cols] + [np.ones(len(y))])
@@ -166,28 +198,98 @@ def _lstsq_readout(cols: list[np.ndarray], y: np.ndarray) -> tuple[np.ndarray, f
     return coef, _r2(y[m], pred)
 
 
-def _lag1(col: pd.Series) -> np.ndarray:
+def _lagk(col: Any, k: int) -> np.ndarray:
+    """Causal shift by k rows with NaN warmup. k=1 preserves _lag1 behavior."""
     out = np.full(len(col), np.nan)
-    out[1:] = np.asarray(col, dtype=float)[:-1]
+    v = np.asarray(col, dtype=float)
+    if k <= 0:
+        out[:] = v
+    else:
+        out[k:] = v[:-k]
     return out
 
 
-def _candidate_terms(df: pd.DataFrame, deps: Sequence[str]) -> list[tuple[str, str, np.ndarray]]:
-    """Permitted R2/R3 term columns derived ONLY from declared dependencies.
+def _lag1(col: pd.Series) -> np.ndarray:
+    return _lagk(col, 1)
 
-    Returns (term_label, source_dep, values). No other columns are readable:
-    the repair engine cannot shop the full frame for a fitting term.
+
+# Shortest frozen lags (RIME graph LAG_SET opens [1, 2, 5, 10, 20];
+# v0.1 repair scope covers the two shortest — documented, not configured).
+_REPAIR_LAGS: tuple[int, ...] = (1, 2)
+
+
+def _interaction_probes(df: pd.DataFrame, deps: Sequence[str]) -> list[tuple[str, str, np.ndarray]]:
+    """Probe/term family: pairwise products of declared dependencies at lag
+    0 and the two shortest frozen lags (squares included as i==j).
+
+    SINGLE SOURCE for both the diagnostic screen and the R2 term catalogue:
+    a probe and its repair term are the same column by construction, so the
+    screen can only fire for structure the engine is actually allowed to add.
+    Derived ONLY from declared dependencies — no frame shopping.
+    Returns (term_label, source_dep, values).
     """
     terms: list[tuple[str, str, np.ndarray]] = []
     cols = {d: np.asarray(df[d], dtype=float) if d in df.columns else np.full(len(df), np.nan) for d in deps}
-    for d in deps:
-        v = cols[d]
-        terms.append((f"({d}^2)", d, v**2))       # R2 square
-        terms.append((f"({d}[t-1])", d, _lag1(df[d])))  # R3 lag-1 (causal shift)
-    if len(deps) >= 2:
-        a, b = deps[0], deps[1]
-        terms.append((f"({a}*{b})", f"{a},{b}", cols[a] * cols[b]))  # R2 product
+    for ii, a in enumerate(deps):
+        for b in deps[ii:]:
+            terms.append((f"({a}*{b})", f"{a},{b}", cols[a] * cols[b]))
+            for k in _REPAIR_LAGS:
+                la, lb = _lagk(cols[a], k), _lagk(cols[b], k)
+                terms.append((f"({a}[t-{k}]*{b}[t-{k}])", f"{a},{b}", la * lb))
     return terms
+
+
+def _rational_power(col: np.ndarray, p: float) -> np.ndarray:
+    """x^p on the signed-safe branch: sign(x)*|x|^p, NaN-preserving.
+
+    Bounded rational powers on possibly-signed inputs must not silently
+    produce NaN (which the scorer would skip) — the sign-preserving branch is
+    the domain-safe reading and is declared by the caller's exponent choice.
+    """
+    v = np.asarray(col, dtype=float)
+    return np.sign(v) * np.power(np.abs(v), p)
+
+
+def _candidate_terms(
+    df: pd.DataFrame,
+    deps: Sequence[str],
+    rational_powers: Sequence[float] = (),
+) -> list[tuple[str, str, np.ndarray, Any]]:
+    """Permitted term columns with their operator attached.
+
+    Standard catalogue: single lag-1 insertions (R3) plus the interaction
+    probe family mirrored 1:1 with the diagnostic screen (R2).
+    Optional domain-informed family: rational powers of each declared
+    dependency (R2), enabled ONLY via the explicit config field.
+    No other columns are readable — no frame shopping. The operator rides
+    along explicitly — no string sniffing.
+    """
+    terms: list[tuple[str, str, np.ndarray, Any]] = []
+    for d in deps:
+        if d in df.columns:
+            terms.append((f"({d}[t-1])", d, _lagk(df[d], 1), RepairOperator.R3_LAG_INSERT))
+    for label, src, values in _interaction_probes(df, deps):
+        terms.append((label, src, values, RepairOperator.R2_TERM_INSERT))
+    if rational_powers:
+        for d in deps:
+            if d not in df.columns:
+                continue
+            col = np.asarray(df[d], dtype=float)
+            for p in rational_powers:
+                pf = float(p)
+                exp = int(pf) if pf.is_integer() else f"{pf:.3f}".rstrip("0").rstrip(".")
+                terms.append((f"({d}^{exp})", d, _rational_power(col, pf),
+                              RepairOperator.R2_TERM_INSERT))
+    return terms
+
+
+def _rational_power_term_fn(src: str, p: float):
+    """Live-frame re-derivation for a rational-power term (causal by construction)."""
+    def fn(df: pd.DataFrame, _d=src, _p=float(p)):
+        if _d not in df.columns:
+            return np.full(len(df), np.nan)
+        return _rational_power(df[_d], _p)
+    return fn
 
 
 def _wrap_repaired(
@@ -277,35 +379,41 @@ def generate_repairs(
     deps = [d for d in original.declared_nominal_dependencies if d in repair_df.columns]
     if not deps:
         return out
-    want_r2 = diagmod.FINDING_CURVATURE_SUSPECT in findings and RepairOperator.R2_TERM_INSERT in config.operators
+    want_r2 = ((diagmod.FINDING_CURVATURE_SUSPECT in findings
+                or diagmod.FINDING_INTERACTION_SUSPECT in findings)
+               and RepairOperator.R2_TERM_INSERT in config.operators)
     want_r3 = diagmod.FINDING_TEMPORAL_DEPENDENCE in findings and RepairOperator.R3_LAG_INSERT in config.operators
     if not (want_r2 or want_r3):
         return out
-    for label, _src, values in _candidate_terms(repair_df, deps):
+    for label, src, values, op in _candidate_terms(repair_df, deps, config.rational_powers):
         if not room():
             break
-        is_lag = "[t-1]" in label
-        if is_lag and not want_r3:
+        if op is RepairOperator.R3_LAG_INSERT and not want_r3:
             continue
-        if not is_lag and not want_r2:
+        if op is RepairOperator.R2_TERM_INSERT and not want_r2:
             continue
         coef, r2 = _lstsq_readout([base, values], y)
         if not np.all(np.isfinite(coef)):
             continue
         seq += 1
         # Re-derive the term inside the scorer from the live frame (causal).
-        if is_lag:
-            dep = _src
-            fn = (lambda df, _d=dep: _lag1(df[_d]) if _d in df.columns else np.full(len(df), np.nan))
-        elif "*" in label and "^2" not in label:
-            a, b = _src.split(",")
-            fn = (lambda df, _a=a, _b=b: np.asarray(df[_a], dtype=float) * np.asarray(df[_b], dtype=float)
-                  if _a in df.columns and _b in df.columns else np.full(len(df), np.nan))
+        # Labels encode their own construction: "(d[t-1])" is a single lag;
+        # "(a*b)" / "(a[t-k]*b[t-k])" split lagged columns from src "a,b";
+        # "(d^p)" is a sign-safe rational power of one declared dependency.
+        if op is RepairOperator.R3_LAG_INSERT:
+            fn = (lambda df, _d=src: _lagk(df[_d], 1) if _d in df.columns else np.full(len(df), np.nan))
+        elif "^" in label:
+            mp = re.search(r"\^(\d+(?:\.\d+)?)\)$", label)
+            fn = _rational_power_term_fn(src, float(mp.group(1))) if mp else (
+                lambda df: np.full(len(df), np.nan))
         else:
-            dep = _src
-            fn = (lambda df, _d=dep: np.asarray(df[_d], dtype=float) ** 2 if _d in df.columns else np.full(len(df), np.nan))
-        out.append(_wrap_repaired(original, RepairOperator.R2_TERM_INSERT if not is_lag else RepairOperator.R3_LAG_INSERT,
-                                  label, fn, coef, r2, int(np.isfinite(y).sum()), 1, seq))
+            a, b = src.split(",")
+            m = re.search(r"\[t-(\d+)\]", label)
+            k = int(m.group(1)) if m else 0
+            fn = (lambda df, _a=a, _b=b, _k=k: _lagk(np.asarray(df[_a], dtype=float), _k)
+                  * _lagk(np.asarray(df[_b], dtype=float), _k)
+                  if _a in df.columns and _b in df.columns else np.full(len(df), np.nan))
+        out.append(_wrap_repaired(original, op, label, fn, coef, r2, int(np.isfinite(y).sum()), 1, seq))
     return out
 
 
@@ -315,6 +423,7 @@ class GateReport:
     val_r2: float
     val_rmse: float
     r2_gain: float
+    sse_reduction: float
     predictive_pass: bool
     targeted_finding_cleared: bool
     new_temporal_flag: bool
@@ -378,6 +487,37 @@ def _paired_metrics(yt: np.ndarray, yp: np.ndarray) -> tuple[float, float]:
     return _r2(yt, yp), float(np.sqrt(np.mean((yt - yp) ** 2)))
 
 
+def build_probes(df: pd.DataFrame, deps: Sequence[str]) -> dict[str, np.ndarray]:
+    """Public probe builder (also used by external diagnosis callers).
+
+    Same single source as the R2 catalogue: pairwise products of declared
+    dependencies at lag 0 and the two shortest frozen lags. Keys are probe
+    labels, values full-frame arrays (caller masks to finite rows).
+    """
+    return {label: values for label, _src, values in _interaction_probes(df, deps)}
+
+
+def _masked_classify(    report: Any,
+    y: np.ndarray,
+    pred: np.ndarray,
+    df: pd.DataFrame,
+    deps: Sequence[str],
+    cutoffs: dict[str, Any],
+) -> tuple[str, ...]:
+    """Classify with interaction probes masked to the same finite rows.
+
+    Probes come from _interaction_probes (declared deps only) evaluated on
+    the live frame, then restricted by the residual finite mask — the
+    screen and the R2 catalogue see identical columns by construction.
+    """
+    yp = np.asarray(pred, dtype=float)
+    yt = np.asarray(y, dtype=float)
+    m = np.isfinite(yt) & np.isfinite(yp)
+    probes = {label: np.asarray(vals, dtype=float)[m]
+              for label, _src, vals in _interaction_probes(df, deps)}
+    return diagmod.classify_findings(report, (yt - yp)[m], yp[m], probes, **cutoffs)
+
+
 def repair(
     original: CandidateProposal,
     partitions: RepairPartitions,
@@ -387,17 +527,19 @@ def repair(
     bias_ratio_cut: float,
     variance_ratio_cut: float,
     curvature_corr_cut: float,
+    interaction_corr_cut: float,
     min_rows: int,
 ) -> RepairOutcome:
     """One bounded repair run: diagnose → generate → validate → sealed once."""
     cutoffs = dict(rho_flag=rho_flag, bias_ratio_cut=bias_ratio_cut,
                    variance_ratio_cut=variance_ratio_cut,
-                   curvature_corr_cut=curvature_corr_cut, min_rows=min_rows)
+                   curvature_corr_cut=curvature_corr_cut,
+                   interaction_corr_cut=interaction_corr_cut, min_rows=min_rows)
     # --- diagnose on the repair split (never validation, never sealed) ---
     rep = diagmod.diagnose_residuals(original, partitions.repair_df, partitions.repair_y, "repair")
     yp_r = np.asarray(original.compute_score(partitions.repair_df), dtype=float)
-    m_r = np.isfinite(partitions.repair_y) & np.isfinite(yp_r)
-    findings = diagmod.classify_findings(rep, (partitions.repair_y - yp_r)[m_r], yp_r[m_r], **cutoffs)
+    findings = _masked_classify(rep, partitions.repair_y, yp_r, partitions.repair_df,
+                                original.declared_nominal_dependencies, cutoffs)
     targeted = next((f for f in findings if f not in (diagmod.FINDING_NO_RELIABLE_STRUCTURE, diagmod.FINDING_INSUFFICIENT_ROWS)), None)
     if targeted is None:
         return RepairOutcome(RepairStatus.INSUFFICIENT_EVIDENCE if findings == (diagmod.FINDING_INSUFFICIENT_ROWS,) else RepairStatus.NO_IMPROVEMENT,
@@ -421,10 +563,24 @@ def repair(
         yp = np.asarray(c.compute_score(partitions.validation_df), dtype=float)
         r2, rmse = _paired_metrics(yt, yp)
         gain = r2 - base_r2 if np.isfinite(r2) and np.isfinite(base_r2) else float("nan")
-        predictive = bool(np.isfinite(gain) and gain >= config.min_validation_r2_gain)
+        # Two preregistered predictive criteria, reported independently:
+        # absolute R2 headroom AND relative SSE reduction (scale-aware). The
+        # caller's bar decides; neither is inferred from the other.
+        sse_base, sse_cand = _sse(yt, base_yp), _sse(yt, yp)
+        sse_red = ((sse_base - sse_cand) / sse_base
+                   if np.isfinite(sse_base) and np.isfinite(sse_cand) and sse_base > 0.0
+                   else float("nan"))
+        predictive = bool(
+            (np.isfinite(gain) and gain >= config.min_validation_r2_gain)
+            or (
+                config.min_sse_reduction > 0.0
+                and np.isfinite(sse_red)
+                and sse_red >= config.min_sse_reduction
+            )
+        )
         rep_v = diagmod.diagnose_residuals(c, partitions.validation_df, yt, "validation")
-        m_v = np.isfinite(yt) & np.isfinite(yp)
-        fv = diagmod.classify_findings(rep_v, (yt - yp)[m_v], yp[m_v], **cutoffs)
+        fv = _masked_classify(rep_v, yt, yp, partitions.validation_df,
+                              c.declared_nominal_dependencies, cutoffs)
         cleared = targeted not in fv
         new_temp = diagmod.FINDING_TEMPORAL_DEPENDENCE in fv and targeted != diagmod.FINDING_TEMPORAL_DEPENDENCE
         half = len(yt) // 2
@@ -435,8 +591,8 @@ def repair(
             b_a, _ = _paired_metrics(yt[:half], base_yp[:half])
             b_b, _ = _paired_metrics(yt[half:], base_yp[half:])
             stab = bool(np.isfinite(r2a) and np.isfinite(r2b) and r2a > b_a and r2b > b_b)
-        return GateReport(c.candidate_id, r2, rmse, gain, predictive, cleared, new_temp, stab,
-                          int(c.parameters.get("added_terms", 0)))
+        return GateReport(c.candidate_id, r2, rmse, gain, sse_red, predictive, cleared,
+                          new_temp, stab, int(c.parameters.get("added_terms", 0)))
 
     def passes(g: GateReport) -> bool:
         return g.predictive_pass and g.targeted_finding_cleared and not g.new_temporal_flag and g.stability_pass
@@ -472,9 +628,9 @@ def repair(
         base_yp = np.asarray(parent.compute_score(partitions.validation_df), dtype=float)
         base_r2, _ = _paired_metrics(base_yt, base_yp)
         rep_w = diagmod.diagnose_residuals(parent, partitions.repair_df, partitions.repair_y, "repair")
-        yp_w = np.asarray(parent.compute_score(partitions.repair_df), dtype=float)
-        m_w = np.isfinite(partitions.repair_y) & np.isfinite(yp_w)
-        findings = diagmod.classify_findings(rep_w, (partitions.repair_y - yp_w)[m_w], yp_w[m_w], **cutoffs)
+        findings = _masked_classify(rep_w, partitions.repair_y,
+                                    np.asarray(parent.compute_score(partitions.repair_df), dtype=float),
+                                    partitions.repair_df, parent.declared_nominal_dependencies, cutoffs)
         targeted = next((f for f in findings if f not in (diagmod.FINDING_NO_RELIABLE_STRUCTURE, diagmod.FINDING_INSUFFICIENT_ROWS)), targeted)
 
     passing_ids = [cid for cid, g in validation.items() if passes(g)]
@@ -487,6 +643,14 @@ def repair(
     passing = [c for c in all_cands if c.candidate_id in passing_ids]
     clusters = cluster_equivalent(passing, partitions.validation_df, np.asarray(partitions.validation_y, dtype=float), config.equivalence_tol)
     amb_size = max((len(cl) for cl in clusters if any(c.candidate_id == best.candidate_id for c in cl)), default=1)
+    # Near-tie identifiability band: distinct structures inside the band are
+    # observationally indistinguishable on validation, whichever scored
+    # marginally higher. The band is explicit; 0 preserves frozen behaviour.
+    if config.equivalence_r2_tol > 0.0:
+        best_r2 = validation[best.candidate_id].val_r2
+        tied = [c for c in passing
+                if abs(validation[c.candidate_id].val_r2 - best_r2) <= config.equivalence_r2_tol]
+        amb_size = max(amb_size, len(tied))
     if amb_size > 1:
         return RepairOutcome(RepairStatus.AMBIGUOUS, best, targeted, validation, None,
                              amb_size, evaluated, rounds_used,

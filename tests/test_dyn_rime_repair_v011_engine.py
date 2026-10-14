@@ -30,6 +30,7 @@ from apedp_dyn.proposers.rime_proposer import RimeProposer
 BIAS_RATIO_CUT = 0.25
 VARIANCE_RATIO_CUT = 4.0
 CURVATURE_CORR_CUT = 0.3
+INTERACTION_CORR_CUT = 0.3
 MIN_ROWS = 30
 
 CONFIG = RepairConfig(
@@ -43,7 +44,7 @@ CONFIG = RepairConfig(
 
 CUTS = dict(rho_flag=RESID_RHO_FLAG, bias_ratio_cut=BIAS_RATIO_CUT,
             variance_ratio_cut=VARIANCE_RATIO_CUT, curvature_corr_cut=CURVATURE_CORR_CUT,
-            min_rows=MIN_ROWS)
+            interaction_corr_cut=INTERACTION_CORR_CUT, min_rows=MIN_ROWS)
 
 
 def _discover(df: pd.DataFrame, **kw) -> CandidateProposal:
@@ -176,3 +177,62 @@ def test_repair_adequate_original_not_falsely_repaired():
     assert out.winner is None
     assert out.sealed is None  # sealed never opened without a validated winner
     print(f"\n[adequate] status={out.status.value} evals={out.candidates_evaluated}")
+
+
+def test_repair_composite_product_completed():
+    # Model-class closure: discovery takes the linear x3[t-2] part; the
+    # omitted both-sided product of INDEPENDENT drivers leaves white
+    # residuals visible only to the interaction probes; R2 inserts the
+    # lagged product; gates + sealed decide. This is the case GA-large won
+    # by basis construction — here earned through diagnosis instead.
+    rng = np.random.RandomState(71)
+    n = 1000
+    x1, x2, x3 = rng.randn(n), rng.randn(n), rng.randn(n)
+    y = np.zeros(n)
+    y[2:] = 2.0 * (x1[1:-1] * x2[1:-1]) + 3.0 * x3[:-2] + 10.0 + 0.05 * rng.randn(n - 2)
+    df = pd.DataFrame({"x1": x1, "x2": x2, "x3": x3, "target": y})
+    parts = RepairPartitions.from_frame(df, df["target"].to_numpy())
+    tr = parts.discovery_df.assign(target=parts.discovery_y)
+    props = RimeProposer(feature_cols=["x1", "x2", "x3"], target_col="target",
+                         max_depth=2, budget=200).fit_and_propose(tr)
+    assert len(props) > 0
+    orig = sorted(props, key=lambda p: p.parameters["dev_r2"], reverse=True)[0]
+    out = repair(orig, parts, CONFIG, **CUTS)
+    assert out.status == RepairStatus.IMPROVED, (out.status, out.submit_note, out.validation)
+    assert out.winner is not None
+    assert out.winner.metadata["operator"] == "R2_TERM_INSERT", out.winner.metadata
+    assert "(x1[t-1]*x2[t-1])" in (out.winner.metadata["term"] or ""), out.winner.metadata
+    assert out.targeted_finding == diagmod.FINDING_INTERACTION_SUSPECT
+    assert out.sealed is not None and out.sealed["sealed_r2_gain"] > 0
+    assert out.sealed["winner_r2"] > 0.9, out.sealed
+    print(f"\n[composite] {out.winner.metadata['term']} sealed R2={out.sealed['winner_r2']:.4f} evals={out.candidates_evaluated}")
+
+
+def test_corrupted_fixture_shuffled_target_no_repair():
+    # Reviewer risk #22 (harness integrity): with repair/validation/sealed
+    # targets shuffled (signal destroyed post-discovery), the engine must
+    # not manufacture a repair and must never open sealed rows.
+    import numpy as _np
+    import pandas as _pd
+    rng = _np.random.RandomState(11)
+    n = 1000
+    x = rng.randn(n)
+    y = _np.zeros(n)
+    y[2:] = 3.0 * x[:-2] + 10.0 + 0.01 * rng.randn(n - 2)
+    df = _pd.DataFrame({"x": x, "target": y})
+    parts = RepairPartitions.from_frame(df, df["target"].to_numpy())
+    tr = parts.discovery_df.assign(target=parts.discovery_y)
+    props = RimeProposer(feature_cols=["x"], target_col="target", max_depth=1, budget=120).fit_and_propose(tr)
+    assert len(props) > 0
+    orig = sorted(props, key=lambda p: p.parameters["dev_r2"], reverse=True)[0]
+    bad = RepairPartitions(
+        parts.discovery_df, parts.discovery_y,
+        parts.repair_df, rng.permutation(parts.repair_y),
+        parts.validation_df, np.random.RandomState(0).permutation(parts.validation_y),
+        parts._sealed_df, np.random.RandomState(1).permutation(parts._sealed_y),
+        spans=parts.spans)
+    out = repair(orig, bad, CONFIG, **CUTS)
+    assert out.status == RepairStatus.NO_IMPROVEMENT, out.status
+    assert out.candidates_evaluated == 0
+    assert out.winner is None and out.sealed is None
+    print("\n[harness] corrupted fixture -> NO_IMPROVEMENT, 0 evals, sealed shut")

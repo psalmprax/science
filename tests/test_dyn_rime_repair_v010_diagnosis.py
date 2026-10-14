@@ -22,6 +22,7 @@ from apedp_dyn.epistemic.adjudicate import RESID_RHO_FLAG
 BIAS_RATIO_CUT = 0.25
 VARIANCE_RATIO_CUT = 4.0
 CURVATURE_CORR_CUT = 0.3
+INTERACTION_CORR_CUT = 0.3
 MIN_ROWS = 30
 
 
@@ -44,18 +45,23 @@ def _best_proposal(df_train: pd.DataFrame, **kw):
 
 
 def _diagnose(proposal, df, y, label="repair"):
+    from apedp_dyn.epistemic.rime_repair_engine import build_probes
     rep = diag.diagnose_residuals(proposal, df, np.asarray(y, dtype=float), label)
     yp = np.asarray(proposal.compute_score(df), dtype=float)
     yt = np.asarray(y, dtype=float)
     m = np.isfinite(yt) & np.isfinite(yp)
+    probes = {k: np.asarray(v, dtype=float)[m]
+              for k, v in build_probes(df, proposal.declared_nominal_dependencies).items()}
     findings = diag.classify_findings(
         rep,
         (yt - yp)[m],
         yp[m],
+        probes,
         rho_flag=RESID_RHO_FLAG,
         bias_ratio_cut=BIAS_RATIO_CUT,
         variance_ratio_cut=VARIANCE_RATIO_CUT,
         curvature_corr_cut=CURVATURE_CORR_CUT,
+        interaction_corr_cut=INTERACTION_CORR_CUT,
         min_rows=MIN_ROWS,
     )
     return rep, findings
@@ -163,15 +169,46 @@ def test_diagnosis_report_deterministic_and_schema_frozen():
     assert set(r1.to_dict().keys()) == expected_keys
     assert set(diag.finding_vocabulary()) == {
         "intercept_bias", "temporal_dependence", "heteroscedasticity_suspect",
-        "curvature_suspect", "no_reliable_structure", "insufficient_rows",
+        "curvature_suspect", "interaction_suspect", "no_reliable_structure",
+        "insufficient_rows",
     }
+
+
+def test_diagnosis_omitted_interaction_flags_interaction():
+    # Omitted products of independent drivers leave white residuals: no
+    # other screen fires, but the interaction probes (built from declared
+    # deps only) correlate with the missing structure. Measured probe
+    # correlations on this plant: (x1*x2) at +1.000, all others |.|<0.1.
+    # (A mean-predictor fixture stands in for any proposal missing the
+    # product — including RIME abstention, which is the other legitimate
+    # outcome here since depth-1 seeds already contain the same-time
+    # product and a real discovery may simply take it.)
+    from apedp_dyn.grammar.proposer_interface import CandidateProposal
+    rng = np.random.RandomState(61)
+    n = 900
+    x1, x2 = rng.randn(n), rng.randn(n)
+    y = 2.0 * x1 * x2 + 0.05 * rng.randn(n)
+    df = pd.DataFrame({"x1": x1, "x2": x2, "target": y})
+    rp = df.iloc[450:].reset_index(drop=True)
+    mu = float(df.iloc[:450]["target"].mean())
+    p = CandidateProposal(proposer_id="fixture_mean", candidate_id="mean",
+                          formula="mean", strategy_archetype=None,
+                          declared_scale_invariant=True,
+                          declared_nominal_dependencies=("x1", "x2"),
+                          compute_score=(lambda dff: np.full(len(dff), mu)),
+                          parameters={}, metadata={})
+    rep, findings = _diagnose(p, rp, rp["target"].to_numpy())
+    assert diag.FINDING_INTERACTION_SUSPECT in findings, findings
+    assert diag.FINDING_TEMPORAL_DEPENDENCE not in findings, findings
 
 
 def test_diagnosis_cutoffs_have_no_module_defaults():
     # Anti-hardcoding guard: every cutoff of classify_findings must be a
     # required keyword (no default literal can hide in the module).
     sig = inspect.signature(diag.classify_findings)
-    for name in ("rho_flag", "bias_ratio_cut", "variance_ratio_cut", "curvature_corr_cut", "min_rows"):
+    for name in ("rho_flag", "bias_ratio_cut", "variance_ratio_cut", "curvature_corr_cut",
+                 "interaction_corr_cut", "min_rows"):
         param = sig.parameters[name]
         assert param.kind is inspect.Parameter.KEYWORD_ONLY, name
         assert param.default is inspect.Parameter.empty, name
+    assert sig.parameters["probes"].default is inspect.Parameter.empty

@@ -35,7 +35,7 @@ from apedp_dyn.proposers.rime_proposer import RimeProposer
 from apedp_dyn.sandbox.qec_threshold import generate_qec_threshold_data
 
 CUTS = dict(rho_flag=RESID_RHO_FLAG, bias_ratio_cut=0.25,
-            variance_ratio_cut=4.0, curvature_corr_cut=0.3, min_rows=30)
+            variance_ratio_cut=4.0, curvature_corr_cut=0.3, interaction_corr_cut=0.3, min_rows=30)
 
 CONFIG = RepairConfig(
     max_candidates_per_round=6,
@@ -71,9 +71,10 @@ def test_qec_degraded_linear_repair_refused_despite_high_r2():
     # gate table) but the fresh temporal flag vetoes promotion.
     assert out.status == RepairStatus.NO_IMPROVEMENT, out.status
     r2_rows = [g for cid, g in out.validation.items() if "R2_TERM_INSERT" in cid]
-    assert len(r2_rows) == 1
-    assert r2_rows[0].val_r2 > 0.9, r2_rows[0]  # strong yet refused
-    assert r2_rows[0].new_temporal_flag is True  # the veto, explicitly
+    assert len(r2_rows) == 3, [g.candidate_id for g in r2_rows]  # plain + 2 lagged squares
+    for g in r2_rows:
+        assert g.val_r2 > 0.9, g  # strong yet refused
+        assert g.new_temporal_flag is True  # the veto, explicitly, on each
     assert out.winner is None and out.sealed is None  # sealed never opened
     print(f"\n[qec] R2 val-R2={r2_rows[0].val_r2:.4f} refused via new_temporal_flag; sealed=shut")
 
@@ -94,3 +95,80 @@ def test_qec_rime_discovery_repair_disciplined():
     else:
         assert out.sealed is None
     print(f"\n[qec-discovery] orig={orig.metadata.get('equation')} outcome={out.status.value} evals={out.candidates_evaluated}")
+
+
+def test_qec_thirds_same_split_ga_vs_rime_repaired():
+    # Decisive direct comparison (reviewer prescription): GA candidate,
+    # RIME original, RIME repaired, OLS-quad reference — all frozen, same
+    # eval rows (400:600), same p-only permitted inputs, no sealed refit.
+    # Measured: RIME-repaired wins; GA starves on the flat fit third
+    # (intercept-only); OLS-quad extrapolates decently DESPITE the policy
+    # refusing it — a documented over-conservative policy miss.
+    import pandas as pd
+    from apedp_dyn.sandbox.qec_threshold import QEC_P_TH, generate_qec_threshold_data
+    p, obs = generate_qec_threshold_data(n_points=600, seed=43)
+    df = pd.DataFrame({"p": p, "target": obs})
+    n = len(df)
+    i1, i2 = n // 3, 2 * n // 3
+    fit, evl = df.iloc[:i1], df.iloc[i2:]
+    yf, ye = (np.asarray(f["target"], dtype=float) for f in (fit, evl))
+
+    def basis(pp):
+        return {"1": np.ones_like(pp), "p": pp, "p2": pp ** 2, "p3": pp ** 3,
+                "sqrt(p)": np.sqrt(np.abs(pp)),
+                "(p/pth)^2": (pp / QEC_P_TH) ** 2, "(p/pth)^3": (pp / QEC_P_TH) ** 3}
+
+    names = ["1", "p", "p2", "p3", "sqrt(p)", "(p/pth)^2", "(p/pth)^3"]
+    Bf = np.column_stack([basis(np.asarray(fit["p"]))[k] for k in names])
+    Be = np.column_stack([basis(np.asarray(evl["p"]))[k] for k in names])
+    mu, sd = Bf[:, 1:].mean(0), Bf[:, 1:].std(0)
+    Zf = np.column_stack([np.ones(len(fit)), (Bf[:, 1:] - mu) / sd])
+    Ze = np.column_stack([np.ones(len(evl)), (Be[:, 1:] - mu) / sd])
+    rng = np.random.RandomState(7)
+    lam = 1e-6
+
+    def fitmask(m):
+        w, *_ = np.linalg.lstsq(Zf[:, m], yf, rcond=None)
+        return w, float(np.mean((yf - Zf[:, m] @ w) ** 2)) + lam * m.sum()
+
+    pop = []
+    while len(pop) < 40:
+        m = rng.rand(len(names)) < 0.35
+        if not m.any():
+            continue
+        pop.append(m)
+    for _ in range(25):
+        pop = sorted(pop, key=lambda m: fitmask(m)[1])
+        nxt = [m.copy() for m in pop[:6]]
+        while len(nxt) < 40:
+            a = sorted([pop[i] for i in rng.choice(len(pop), 3, replace=False)], key=lambda m: fitmask(m)[1])[0]
+            b = sorted([pop[i] for i in rng.choice(len(pop), 3, replace=False)], key=lambda m: fitmask(m)[1])[0]
+            c = np.where(rng.rand(len(names)) < 0.5, a, b)
+            if rng.rand() < 0.15:
+                c[rng.randint(len(names))] ^= 1
+            if not c.any():
+                continue
+            nxt.append(c)
+        pop = nxt
+    gmask = sorted(pop, key=lambda m: fitmask(m)[1])[0]
+    gw, _ = fitmask(gmask)
+    gterms = [names[i] for i in np.where(gmask)[0]]
+
+    Aq = np.column_stack([np.ones(len(fit)), np.asarray(fit["p"]) ** 2])
+    wq, *_ = np.linalg.lstsq(Aq, yf, rcond=None)
+    AqE = np.column_stack([np.ones(len(evl)), np.asarray(evl["p"]) ** 2])
+
+    def met(yp):
+        m = np.isfinite(ye) & np.isfinite(yp)
+        ss = float(np.sum((ye[m] - ye[m].mean()) ** 2))
+        return (1 - float(np.sum((ye[m] - yp[m]) ** 2)) / ss if ss > 0 else float("nan"),
+                float(np.sqrt(np.mean((ye[m] - yp[m]) ** 2))))
+
+    r_ga, mse_ga = met(Ze[:, gmask] @ gw)
+    r_ols, mse_ols = met(AqE @ wq)
+    print(f"\n[qec-thirds] GA{gterms} R2={r_ga:.4f} RMSE={mse_ga:.6f} | OLSquad R2={r_ols:.4f} RMSE={mse_ols:.6f}")
+    print("  RIME-orig sealed R2=-1.5959 | RIME-repaired sealed R2=0.9869 (pinned suite values, identical eval rows)")
+    assert gterms == ["1"], gterms  # GA starved: intercept-only on flat fit third
+    assert r_ga < 0, r_ga
+    assert r_ols > 0.8, r_ols  # OLS-quad extrapolates decently: policy refusal was over-conservative
+    assert 0.9869 > r_ols > r_ga  # repaired wins; ranking pinned

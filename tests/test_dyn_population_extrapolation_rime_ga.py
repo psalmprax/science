@@ -168,3 +168,56 @@ def test_ga_basis_size_and_rime_parity():
     assert r_b > 0.99, r_b
     assert r_c > 0.8, r_c
     print(f"\n[parity] GA-small Atest={g_at:.4f} ~= RIME {r_at:.4f}; GA-large B={r_b:.4f} C={r_c:.4f}")
+
+
+def _bigframe(df: pd.DataFrame) -> pd.DataFrame:
+    def lagcol(col, k):
+        col = np.asarray(col, dtype=float)
+        v = np.full(len(col), np.nan)
+        if k > 0:
+            v[k:] = col[:-k]
+        else:
+            v[:] = col
+        return v
+    d = {"x1": np.asarray(df["x1"]), "x2": np.asarray(df["x2"]), "x3": np.asarray(df["x3"])}
+    for c in ("x1", "x2", "x3"):
+        for k in (1, 2):
+            d[f"{c}L{k}"] = lagcol(d[c], k)
+    for c in ("x1", "x2", "x3"):
+        for k in (0, 1, 2):
+            key = c if k == 0 else f"{c}L{k}"
+            d[f"{key}sq"] = d[key] ** 2
+    d["x1L1_x2L1"] = d["x1L1"] * d["x2L1"]
+    d["x1L2_x2L2"] = d["x1L2"] * d["x2L2"]
+    d["x1x2"] = d["x1"] * d["x2"]
+    d["x1x3"] = d["x1"] * d["x3"]
+    d["x2x3"] = d["x2"] * d["x3"]
+    out = pd.DataFrame(d)
+    out["target"] = np.asarray(df["target"])
+    return out
+
+
+def test_rime_large_matches_rime_raw_not_ga_large():
+    # RIME handed the SAME 23 engineered columns GA-large had. Measured:
+    # identical linear-part recovery (x3L2) at every depth/budget — the
+    # precomputed product column scores only R2~0.31 alone, and the
+    # combination is unreachable: 23 levels + partial delays exhaust the
+    # 60-form seed budget before cross-input sums, and no frozen rewrite
+    # introduces Add. GA-large wins via mask+OLS additive fitting — a model
+    # class gap (additive regression vs single-program search), not effort.
+    Atr, Ate, B, C = _populations()
+    AtrB, AteB = _bigframe(Atr), _bigframe(Ate)
+    feats = [c for c in AtrB.columns if c != "target"]
+    assert len(feats) == 23, len(feats)
+    for depth, budget in ((2, 200), (3, 1000)):
+        props = RimeProposer(feature_cols=feats, target_col="target",
+                             max_depth=depth, budget=budget).fit_and_propose(AtrB)
+        assert len(props) > 0
+        b = sorted(props, key=lambda q: q.parameters["dev_r2"], reverse=True)[0]
+        assert b.metadata.get("equation") == "x3L2", (depth, budget, b.metadata.get("equation"))
+        scores = [_r2(AteB["target"].to_numpy(), np.asarray(b.compute_score(AteB), dtype=float)),
+                  _r2(B["target"].to_numpy(), np.asarray(b.compute_score(_bigframe(B)), dtype=float)),
+                  _r2(C["target"].to_numpy(), np.asarray(b.compute_score(_bigframe(C)), dtype=float))]
+        for s, lo, hi in zip(scores, (0.55, 0.65, 0.35), (0.75, 0.80, 0.55)):
+            assert lo < s < hi, (depth, budget, scores)
+    print("\n[rime-large] 23 engineered inputs, still x3L2 partial: model-class gap, not feature count")

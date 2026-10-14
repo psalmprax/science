@@ -33,6 +33,7 @@ from apedp_dyn.sandbox.trading_signals_sandbox import (
 BIAS_RATIO_CUT = 0.25
 VARIANCE_RATIO_CUT = 4.0
 CURVATURE_CORR_CUT = 0.3
+INTERACTION_CORR_CUT = 0.3
 MIN_ROWS = 30
 
 CONFIG = RepairConfig(
@@ -46,7 +47,7 @@ CONFIG = RepairConfig(
 
 CUTS = dict(rho_flag=RESID_RHO_FLAG, bias_ratio_cut=BIAS_RATIO_CUT,
             variance_ratio_cut=VARIANCE_RATIO_CUT, curvature_corr_cut=CURVATURE_CORR_CUT,
-            min_rows=MIN_ROWS)
+            interaction_corr_cut=INTERACTION_CORR_CUT, min_rows=MIN_ROWS)
 
 
 def _btc_frame():
