@@ -15,6 +15,8 @@
 
 use std::collections::HashSet;
 
+use serde::{Deserialize, Serialize};
+
 use super::graph::{Graph, Node, LAG_SET};
 
 /// Spec §7 seed budget.
@@ -105,8 +107,48 @@ fn mul_g(a: &Graph, b: &Graph) -> Graph {
     combine(a, b, |_, x, y| Node::Mul(x, y))
 }
 
-/// Build the small-form catalogue over `n_inputs` variables.
+/// Seed-catalogue family-2 ordering (opt-in, `v0.1.6` diagnostics axis).
+///
+/// `Legacy` emits every input's five delayed levels before the next input's
+/// (input-major). At more inputs than the 60-form budget can hold (≈7 at 5
+/// lags each), truncation therefore removes whole inputs from the delayed
+/// family — measured: positions 15/16/19 of the 22-signal frame lost their
+/// lag-1 seed and could never be recovered, while a solo-frame control
+/// recovered the identical dependence at R²>0.95.
+///
+/// `CoverageFirst` emits lag-major instead: one lag per input across ALL
+/// inputs, then the next lag round. Same budget, same families, same forms
+/// for small input counts (≤60/n... exactly: identical whenever the legacy
+/// order fits inside the budget); different WHICH forms survive truncation
+/// at high input counts. OFF by default so the frozen catalogue is unchanged
+/// for every existing caller.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SeedOrder {
+    Legacy,
+    CoverageFirst,
+}
+
+impl SeedOrder {
+    /// True for the frozen default (used by `skip_serializing_if`).
+    pub fn is_legacy(&self) -> bool {
+        matches!(self, SeedOrder::Legacy)
+    }
+}
+
+impl Default for SeedOrder {
+    fn default() -> Self {
+        SeedOrder::Legacy
+    }
+}
+
+/// Build the small-form catalogue over `n_inputs` variables (legacy family-2
+/// order — input-major delayed levels).
 pub fn small_forms(n_inputs: usize) -> Vec<Graph> {
+    small_forms_with_order(n_inputs, SeedOrder::Legacy)
+}
+
+/// Build the small-form catalogue with an explicit family-2 ordering.
+pub fn small_forms_with_order(n_inputs: usize, order: SeedOrder) -> Vec<Graph> {
     let n = n_inputs.max(1);
     let inputs: Vec<Graph> = (0..n).map(single_input).collect();
     let lagged: Vec<Vec<Graph>> = inputs.iter().map(|g| LAG_SET.iter().map(|k| lag(g, *k)).collect()).collect();
@@ -118,10 +160,22 @@ pub fn small_forms(n_inputs: usize) -> Vec<Graph> {
     for g in &inputs {
         push(&mut out, &mut seen, g.clone());
     }
-    // 2. Delayed levels.
-    for ls in &lagged {
-        for g in ls {
-            push(&mut out, &mut seen, g.clone());
+    // 2. Delayed levels. `CoverageFirst` walks lag rounds outer, inputs inner,
+    // so every input's shortest lag survives truncation first.
+    match order {
+        SeedOrder::Legacy => {
+            for ls in &lagged {
+                for g in ls {
+                    push(&mut out, &mut seen, g.clone());
+                }
+            }
+        }
+        SeedOrder::CoverageFirst => {
+            for k in 0..LAG_SET.len() {
+                for ls in &lagged {
+                    push(&mut out, &mut seen, ls[k].clone());
+                }
+            }
         }
     }
     // 3. Differences: level - level[t-k] (momentum, reversal).
@@ -205,6 +259,48 @@ mod tests {
         assert_eq!(unique.len(), ids_a.len(), "duplicate seed forms");
         assert!(a.len() <= MAX_SEED_FORMS);
         assert!(a.len() >= 20, "catalogue too thin: {}", a.len());
+    }
+
+    #[test]
+    fn coverage_first_is_identical_inside_budget() {
+        // Small input counts: ordering cannot matter (nothing is truncated).
+        for n in 1..=6usize {
+            let legacy = small_forms(n);
+            let cov = small_forms_with_order(n, SeedOrder::CoverageFirst);
+            let li: HashSet<String> = legacy.iter().map(|g| g.id()).collect();
+            let ci: HashSet<String> = cov.iter().map(|g| g.id()).collect();
+            assert_eq!(li, ci, "ordering changed the set at n={}", n);
+            assert_eq!(legacy.len(), cov.len(), "ordering changed the count at n={}", n);
+        }
+    }
+
+    #[test]
+    fn coverage_first_keeps_every_inputs_shortest_lag() {
+        // 22 inputs: 22 levels + 110 delayed levels cannot fit 60. Legacy
+        // truncation loses whole inputs; coverage-first keeps lag-1 for all.
+        let cov = small_forms_with_order(22, SeedOrder::CoverageFirst);
+        assert!(cov.len() <= MAX_SEED_FORMS);
+        let described: Vec<String> = cov.iter().map(|g| g.describe()).collect();
+        for k in 0..22 {
+            assert!(described.contains(&format!("v{}[t-1]", k)), "input {} lost lag-1", k);
+        }
+        // Legacy, for contrast, loses at least the measured tail inputs.
+        let legacy = small_forms(22);
+        let ld: Vec<String> = legacy.iter().map(|g| g.describe()).collect();
+        assert!(!ld.contains(&"v19[t-1]".to_string()), "legacy unexpectedly kept v19 lag-1");
+    }
+
+    #[test]
+    fn orderings_share_budget_and_validity() {
+        for &n in &[2usize, 8, 22] {
+            for &o in &[SeedOrder::Legacy, SeedOrder::CoverageFirst] {
+                let forms = small_forms_with_order(n, o);
+                assert!(forms.len() <= MAX_SEED_FORMS, "n={} over budget", n);
+                for g in &forms {
+                    g.validate().unwrap_or_else(|e| panic!("invalid seed {}: {}", g.describe(), e));
+                }
+            }
+        }
     }
 
     #[test]

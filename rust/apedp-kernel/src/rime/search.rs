@@ -23,6 +23,7 @@ use super::eval::{charged_dof, fitted_mse, score_batch_fitted, FittedScore, Scor
 use super::graph::{Graph, Node, LAG_SET};
 use super::record::CandidateRecord;
 use super::rewrite::{apply, RewriteOp};
+use super::seeds::SeedOrder;
 
 /// Search configuration. `lambda_c` is a frozen quantity (spec §8): it is part
 /// of the experiment protocol, never tuned per candidate.
@@ -51,11 +52,19 @@ pub struct SearchConfig {
     /// is unchanged for every existing caller.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub static_ops: bool,
+    /// Family-2 (delayed levels) ordering when the seed catalogue must be
+    /// truncated by `MAX_SEED_FORMS` (many inputs). `Legacy` (default) is
+    /// input-major and can drop whole inputs' shortest lag; `CoverageFirst`
+    /// is lag-major so every input keeps lag-1 first. Opt-in: the frozen §7
+    /// catalogue is unchanged for every existing caller.
+    #[serde(default, skip_serializing_if = "crate::rime::seeds::SeedOrder::is_legacy")]
+    pub seed_order: SeedOrder,
 }
 
 impl Default for SearchConfig {
     fn default() -> Self {
-        SearchConfig { max_depth: 2, beam: 8, budget: 200, lambda_c: 1e-3, ridge: 1e-9, seed: 0, static_ops: false }
+        SearchConfig { max_depth: 2, beam: 8, budget: 200, lambda_c: 1e-3, ridge: 1e-9, seed: 0,
+            static_ops: false, seed_order: SeedOrder::Legacy }
     }
 }
 
@@ -457,13 +466,8 @@ pub fn search_envs(
     for env in usable_envs.iter().copied() {
         let env_cfg = SearchConfig {
             budget: per_env_budget,
-            lambda_c: cfg.lambda_c,
-            static_ops: cfg.static_ops,
-            ..SearchConfig::default()
-        }
-        .with_max_depth(cfg.max_depth)
-        .with_beam(cfg.beam)
-        .with_seed(cfg.seed);
+            ..cfg.clone()
+        };
         let inner = search(&seeds, &env.cols, &env.target, &env_cfg);
         evaluated += inner.evaluated;
         for p in &inner.proposals {
@@ -511,6 +515,12 @@ pub fn search_envs(
             &s0[0],
         );
         prop.parent_id = parent_id.clone();
+        prop.score = score;
+        prop.ref_score = score;
+        prop.mse = agg_cand;
+        if baseline_mse > 0.0 {
+            prop.r2 = 1.0 - agg_cand / baseline_mse;
+        }
         if best.as_ref().map(|(_, s)| score > *s).unwrap_or(true) {
             best = Some((prop, score));
         }
@@ -651,6 +661,10 @@ impl Proposal {
     /// `graph_json` is the executable graph itself, so a consumer (the Python
     /// proposer, the referee) never has to re-implement the canonical form to
     /// get a runnable mechanism back.
+    ///
+    /// `inputs_used` (v0.1.2 diagnostics addition) lists the input column
+    /// indices read by the output expression. Instrumentation only: it
+    /// changes no score, no gate, no selection — presence, not importance.
     pub fn to_json(&self) -> Value {
         json!({
             "graph_json": serde_json::to_string(&self.graph).unwrap_or_default(),
@@ -660,6 +674,7 @@ impl Proposal {
             "depth": self.depth,
             "equation": self.equation,
             "canonical": self.canonical,
+            "inputs_used": self.graph.inputs_used(),
             "dev_evidence": {
                 "score": self.score,
                 "ref_score": self.ref_score,
@@ -701,6 +716,14 @@ pub struct SearchOutcome {
     pub evaluated: usize,
     /// Candidates that scored above zero against their parent.
     pub accepted: usize,
+    /// Candidates rejected by the score gate (finite evidence, score ≤ 0).
+    /// Funnel instrumentation (v0.1.2 diagnostics): counting only.
+    pub rejected_score: usize,
+    /// Candidates dropped by structural/expression dedup before scoring.
+    pub dropped_dedup: usize,
+    /// Candidates dropped as invalid (failed validation) or out of scope
+    /// (static mode temporal forms). Never scored.
+    pub dropped_scope: usize,
 }
 
 impl SearchOutcome {
@@ -710,6 +733,9 @@ impl SearchOutcome {
             "baseline_graph_id": self.baseline_graph_id,
             "evaluated": self.evaluated,
             "accepted": self.accepted,
+            "rejected_score": self.rejected_score,
+            "dropped_dedup": self.dropped_dedup,
+            "dropped_scope": self.dropped_scope,
             "proposals": self.proposals.iter().map(|p| p.to_json()).collect::<Vec<_>>(),
         })
     }
@@ -761,6 +787,9 @@ pub fn search(
             baseline_graph_id,
             evaluated: 0,
             accepted: 0,
+            rejected_score: 0,
+            dropped_dedup: 0,
+            dropped_scope: 0,
         };
     }
 
@@ -776,6 +805,9 @@ pub fn search(
     seen_expr.insert(null_graph.describe());
     let mut proposals: Vec<Proposal> = Vec::new();
     let mut evaluated = 0usize;
+    let mut rejected_score = 0usize;
+    let mut dropped_dedup = 0usize;
+    let mut dropped_scope = 0usize;
 
     // Depth 0: the seed catalogue itself competes for promotion. Spec §7 makes
     // the seeds the initial hypothesis set; a catalogue that is only a source
@@ -785,13 +817,19 @@ pub fn search(
         if evaluated + seed_jobs.len() >= cfg.budget {
             break;
         }
-        if s.validate().is_err() || !seen.insert(s.id()) {
+        if s.validate().is_err() {
+            dropped_scope += 1;
+            continue;
+        }
+        if !seen.insert(s.id()) {
+            dropped_dedup += 1;
             continue;
         }
         // Static mode: temporal seeds (lags, differences, memory cells) are
         // unrepresentable, not gated — a form reading time cannot appear as a
         // candidate at all (see `static_ops` rationale).
         if cfg.static_ops && s.is_temporal() {
+            dropped_scope += 1;
             continue;
         }
         seed_jobs.push((s.clone(), baseline_mse, target.to_vec()));
@@ -801,9 +839,11 @@ pub fn search(
     let mut seed_keep: Vec<(Graph, f64, Proposal)> = Vec::new();
     for ((g, _pm, _t), s) in seed_jobs.iter().zip(seed_scores.iter()) {
         if !s.mse.is_finite() || !s.score.is_finite() || s.score <= 0.0 {
+            rejected_score += 1;
             continue;
         }
         if !seen_expr.insert(g.describe()) {
+            dropped_dedup += 1;
             continue;
         }
         let p = Proposal::from_score(
@@ -821,7 +861,8 @@ pub fn search(
     }
     if seed_keep.is_empty() {
         // No seed beats the mean predictor: abstain without expanding.
-        return SearchOutcome { proposals, baseline_mse, baseline_graph_id, evaluated, accepted: 0 };
+        return SearchOutcome { proposals, baseline_mse, baseline_graph_id, evaluated, accepted: 0,
+            rejected_score, dropped_dedup, dropped_scope };
     }
     seed_keep.sort_by(|a, b| rank_desc(&a.2, &b.2));
     for (_, _, p) in &seed_keep {
@@ -841,14 +882,16 @@ pub fn search(
                 if cfg.static_ops
                     && matches!(op, RewriteOp::AddLagEdge { .. } | RewriteOp::AddState { .. })
                 {
+                    dropped_scope += 1;
                     continue;
                 }
                 if evaluated + jobs.len() >= cfg.budget {
                     break 'outer;
                 }
-                let Some(child) = apply(parent, &op) else { continue };
+                let Some(child) = apply(parent, &op) else { dropped_scope += 1; continue };
                 child.validate().ok();
                 if !seen.insert(child.id()) || !seen_expr.insert(child.describe()) {
+                    dropped_dedup += 1;
                     continue;
                 }
                 jobs.push((child, *parent_mse, target.to_vec()));
@@ -868,6 +911,7 @@ pub fn search(
             // Structural rejections: a graph that cannot be evaluated, or a
             // candidate with no finite dev evidence, is never proposed.
             if !s.mse.is_finite() || !s.score.is_finite() || s.score <= 0.0 {
+                rejected_score += 1;
                 continue;
             }
             let p = Proposal::from_score(
@@ -900,7 +944,8 @@ pub fn search(
 
     proposals.sort_by(rank_desc);
     let accepted = proposals.len();
-    SearchOutcome { proposals, baseline_mse, baseline_graph_id, evaluated, accepted }
+    SearchOutcome { proposals, baseline_mse, baseline_graph_id, evaluated, accepted,
+        rejected_score, dropped_dedup, dropped_scope }
 }
 
 /// Count the parameters spent by the whole pipeline (edges + readout), for

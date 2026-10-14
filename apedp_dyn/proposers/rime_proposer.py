@@ -135,6 +135,14 @@ class RimeProposer(ProposerBase):
         level fits grid order rather than physics (the QEC failure class):
         static mode makes that failure unrepresentable instead of gating it.
         Kill switch prudence: default False, the frozen §7/§8 grammar.
+    seed_order:
+        Family-2 (delayed levels) ordering when the 60-form seed catalogue
+        must be truncated (many inputs). ``"legacy"`` (default) is input-major
+        and can drop whole inputs' shortest lag — measured 3/22 on the
+        trading-signal frame. ``"coverage_first"`` emits one lag per input
+        across all inputs first, so every input keeps lag-1 inside the same
+        budget. Opt-in: the frozen catalogue is unchanged for existing callers;
+        see ``tests/test_dyn_rime_coverage_funnel.py``.
     max_proposals:
         Cap on emitted candidates, best first.
     """
@@ -159,6 +167,7 @@ class RimeProposer(ProposerBase):
         algebraic_transforms: Sequence[str] | None = None,
         max_transform_inputs: int = 4,
         static_mode: bool = False,
+        seed_order: str = "legacy",
     ) -> None:
         self._feature_cols = list(feature_cols) if feature_cols else None
         self._target_col = target_col
@@ -187,6 +196,11 @@ class RimeProposer(ProposerBase):
         )
         self._max_transform_inputs = int(max_transform_inputs)
         self._static_mode = bool(static_mode)
+        if seed_order not in ("legacy", "coverage_first"):
+            raise ValueError(
+                f"unknown seed_order {seed_order!r}; expected 'legacy' or 'coverage_first'"
+            )
+        self._seed_order = str(seed_order)
 
     @property
     def proposer_id(self) -> str:
@@ -399,6 +413,8 @@ class RimeProposer(ProposerBase):
             }
             if self._static_mode:
                 config["static"] = True
+            if self._seed_order != "legacy":
+                config["seed_order"] = self._seed_order
             if self._gamma is not None:
                 config["gamma"] = self._gamma
             packet = json.loads(apedp_kernel.rime_search_envs_json(envs_json, json.dumps(config), labels))
@@ -420,6 +436,8 @@ class RimeProposer(ProposerBase):
             }
             if self._static_mode:
                 config["static"] = True
+            if self._seed_order != "legacy":
+                config["seed_order"] = self._seed_order
             if self._gamma is not None:
                 config["gamma"] = self._gamma
             elif self._rel_penalty is not None:
@@ -481,6 +499,17 @@ class RimeProposer(ProposerBase):
                         "baseline_mse": float(packet["baseline_mse"]),
                         "evaluated": int(packet["evaluated"]),
                         "accepted": int(packet["accepted"]),
+                        # Funnel instrumentation (v0.1.2 diagnostics, additive):
+                        # where generated candidates went. Absent on older
+                        # packets (e.g. the multi-env assembly path) -> None.
+                        "rejected_score": int(packet["rejected_score"]) if "rejected_score" in packet else None,
+                        "dropped_dedup": int(packet["dropped_dedup"]) if "dropped_dedup" in packet else None,
+                        "dropped_scope": int(packet["dropped_scope"]) if "dropped_scope" in packet else None,
+                        # Structural input usage (graph arena walk, not string
+                        # mining): indices into the feature list, plus names.
+                        "inputs_used_idx": list(p.get("inputs_used", [])),
+                        "inputs_used_names": [base_feats[k] for k in p.get("inputs_used", [])
+                                              if isinstance(k, int) and 0 <= k < len(base_feats)],
                         "lambda_c": lambda_used,
                         "engine": "rime_v0.1.2",
                         "signal_semantics": "past_information_only_not_causal",
@@ -488,6 +517,7 @@ class RimeProposer(ProposerBase):
                             list(self._algebraic_transforms) if self._algebraic_transforms else None
                         ),
                         "static_mode": bool(self._static_mode),
+                        "seed_order": self._seed_order,
                         "per_frame_envs": bool(use_envs),
                         "aggregation": str(packet.get("aggregation", self._aggregation))
                         if use_envs

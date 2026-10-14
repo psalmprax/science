@@ -711,6 +711,16 @@ fn rime_search_envs_json(
     if let Some(v) = cfg_raw.get("static").and_then(|v| v.as_bool()) {
         cfg.static_ops = v;
     }
+    if let Some(v) = cfg_raw.get("seed_order").and_then(|v| v.as_str()) {
+        cfg.seed_order = if v == "coverage_first" {
+            rime::seeds::SeedOrder::CoverageFirst
+        } else if v == "legacy" {
+            rime::seeds::SeedOrder::Legacy
+        } else {
+            return Err(PyValueError::new_err(format!(
+                "rime: bad seed_order {:?} (want \"legacy\" or \"coverage_first\")", v)));
+        };
+    }
     if let Some(v) = cfg_raw.get("gamma").and_then(|v| v.as_f64()) {
         // Σ over envs of their finite rows, calibrated on the pooled scale.
         let mut all: Vec<f64> = Vec::new();
@@ -728,7 +738,8 @@ fn rime_search_envs_json(
     };
     let gamma_gate = cfg_raw.get("gamma_gate").and_then(|v| v.as_f64()).unwrap_or(1.5);
 
-    let seeds = rime::seeds::small_forms(envs.iter().map(|e| e.cols.len()).max().unwrap_or(1));
+    let seeds = rime::seeds::small_forms_with_order(
+        envs.iter().map(|e| e.cols.len()).max().unwrap_or(1), cfg.seed_order);
     let outcome =
         py.allow_threads(|| rime::search::search_envs(&seeds, &envs, &cfg, agg, gamma_gate));
     let mut packet = outcome.to_json();
@@ -736,9 +747,17 @@ fn rime_search_envs_json(
         if let Some(list) = packet.get_mut("proposals").and_then(|v| v.as_array_mut()) {
             for p in list.iter_mut() {
                 if let Some(eq) = p.get("equation").and_then(|v| v.as_str()).map(|s| s.to_string()) {
+                    // Two-pass substitution, longest index first: a naive
+                    // ascending replace() corrupts multi-digit indices twice —
+                    // once ("v13" contains "v1") and again inside placeholders.
+                    // Descending order plus control-char placeholders (which
+                    // describe() output never contains) makes it exact.
                     let mut e = eq;
+                    for i in (0..names.len()).rev() {
+                        e = e.replace(&format!("v{}", i), &format!("\u{0}{}\u{1}", i));
+                    }
                     for (i, name) in names.iter().enumerate() {
-                        e = e.replace(&format!("v{}", i), name);
+                        e = e.replace(&format!("\u{0}{}\u{1}", i), name);
                     }
                     p["equation"] = serde_json::Value::String(e);
                 }
@@ -793,6 +812,16 @@ fn rime_search_json(
     if let Some(v) = raw.get("static").and_then(|v| v.as_bool()) {
         cfg.static_ops = v;
     }
+    if let Some(v) = raw.get("seed_order").and_then(|v| v.as_str()) {
+        cfg.seed_order = if v == "coverage_first" {
+            rime::seeds::SeedOrder::CoverageFirst
+        } else if v == "legacy" {
+            rime::seeds::SeedOrder::Legacy
+        } else {
+            return Err(PyValueError::new_err(format!(
+                "rime: bad seed_order {:?} (want \"legacy\" or \"coverage_first\")", v)));
+        };
+    }
     if let Some(v) = raw.get("gamma").and_then(|v| v.as_f64()) {
         // Sample-size-aware calibration: gamma * var(y) / n_dev.
         let n_dev = target_vec.iter().filter(|t| t.is_finite()).count();
@@ -803,7 +832,7 @@ fn rime_search_json(
         cfg.lambda_c = v;
     }
 
-    let seeds = rime::seeds::small_forms(columns.len());
+    let seeds = rime::seeds::small_forms_with_order(columns.len(), cfg.seed_order);
     // Opt-in multi-term refinement (`additive_terms` >= 2). Absent, 0 or 1 is
     // exactly the frozen single-term `search`, so existing callers see no change.
     let additive_terms = raw.get("additive_terms").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
@@ -817,9 +846,17 @@ fn rime_search_json(
         if let Some(list) = packet.get_mut("proposals").and_then(|v| v.as_array_mut()) {
             for p in list.iter_mut() {
                 if let Some(eq) = p.get("equation").and_then(|v| v.as_str()).map(|s| s.to_string()) {
+                    // Two-pass substitution, longest index first: a naive
+                    // ascending replace() corrupts multi-digit indices twice —
+                    // once ("v13" contains "v1") and again inside placeholders.
+                    // Descending order plus control-char placeholders (which
+                    // describe() output never contains) makes it exact.
                     let mut e = eq;
+                    for i in (0..names.len()).rev() {
+                        e = e.replace(&format!("v{}", i), &format!("\u{0}{}\u{1}", i));
+                    }
                     for (i, name) in names.iter().enumerate() {
-                        e = e.replace(&format!("v{}", i), name);
+                        e = e.replace(&format!("\u{0}{}\u{1}", i), name);
                     }
                     p["equation"] = serde_json::Value::String(e);
                 }

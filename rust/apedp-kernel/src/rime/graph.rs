@@ -234,6 +234,31 @@ impl Graph {
         }
     }
 
+    /// Input column indices read by the output expression, sorted and
+    /// deduplicated (arena walk from the output, so unreachable nodes never
+    /// contribute). Instrumentation only: reachability, not importance —
+    /// a reachable-yet-canceling node still counts.
+    pub fn inputs_used(&self) -> Vec<usize> {
+        let mut seen_node = vec![false; self.nodes.len()];
+        let mut stack = vec![self.output];
+        let mut inputs = std::collections::BTreeSet::new();
+        while let Some(i) = stack.pop() {
+            if i >= self.nodes.len() || seen_node[i] {
+                continue;
+            }
+            seen_node[i] = true;
+            match &self.nodes[i] {
+                Node::Input(k) => {
+                    inputs.insert(*k);
+                }
+                n => {
+                    stack.extend(Self::operands(n));
+                }
+            }
+        }
+        inputs.into_iter().collect()
+    }
+
     /// Evaluate every node over the whole series, in arena (topological) order.
     ///
     /// One array per *live* node: a node's series is released as soon as the

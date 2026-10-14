@@ -11,8 +11,6 @@
 use super::eval::fit_readout;
 use super::graph::Graph;
 
-/// Residual of a single sample: target - fitted readout prediction.
-type Residual = f64;
 
 /// Statistics from a residual analysis.
 #[derive(Clone, Debug, Default)]

@@ -35,6 +35,7 @@ fn regression_search_null_world_abstains() {
         ridge: 1e-9,
         seed: 42,
         static_ops: false,
+        ..SearchConfig::default()
     };
     let legacy_out = search(&small, &[x], &y_null, &config);
     assert_eq!(
@@ -70,6 +71,7 @@ fn regression_search_positive_control() {
         ridge: 1e-9,
         seed: 42,
         static_ops: false,
+        ..SearchConfig::default()
     };
     let sig_out = search(&small, &[x], &y_sig, &config);
     assert!(sig_out.accepted > 0, "positive control must recover a candidate");
@@ -100,6 +102,7 @@ fn regression_search_respects_budget_and_beam() {
         ridge: 1e-9,
         seed: 42,
         static_ops: false,
+        ..SearchConfig::default()
     };
     let out = search(&small, &[x], &y_sig, &config);
     assert!(out.evaluated <= 3, "budget must cap scoring: {} scored", out.evaluated);

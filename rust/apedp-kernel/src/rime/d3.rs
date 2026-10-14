@@ -15,8 +15,8 @@ pub fn make_log_path(base_dir: &Path) -> PathBuf {
     use std::time::{SystemTime, UNIX_EPOCH};
     let ts = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .expect("time error")
-        .as_secs();
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
     let name = format!("d3_candidates_{}.log", ts);
     base_dir.join(name)
 }
@@ -35,12 +35,15 @@ pub struct CandidateRecord {
 // Append a `CandidateRecord` to the run‑specific log file.
 // The file is created if it does not exist and appended to otherwise.
 pub fn log_candidate(log_path: &Path, record: &CandidateRecord) {
-    let mut file = OpenOptions::new()
+    if let Ok(mut file) = OpenOptions::new()
         .create(true)
         .append(true)
         .open(log_path)
-        .expect("failed to open candidate log");
-    let _ = writeln!(file, "{}", serde_json::to_string(record).unwrap());
+    {
+        if let Ok(line) = serde_json::to_string(record) {
+            let _ = writeln!(file, "{}", line);
+        }
+    }
 }
 
 // Convenience: log a candidate directly using a path constructed via
