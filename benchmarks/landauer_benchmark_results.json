@@ -1,0 +1,291 @@
+{
+  "benchmark_metadata": {
+    "title": "Landauer Conductance Staircase: RIME vs GA Benchmark",
+    "timestamp": "2026-10-15T10:43:27Z",
+    "git_workspace": "/home/psalmprax/ALL_PROJECTS/science",
+    "seed": 42,
+    "n_train": 100,
+    "n_holdout": 100,
+    "duration_seconds": 4.96
+  },
+  "experiments": {
+    "clean_ideal": {
+      "condition_name": "Clean Ideal Staircase (G = G0 * floor(Vg))",
+      "ga_polynomial": {
+        "method": "GA (Polynomial Degree 5)",
+        "selected_powers": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "cond_number": 45427.77321635188,
+        "r2_train": 0.9645356344596877,
+        "r2_extrapolation": -11530.597557024019,
+        "rmse_train": 0.2622991977650825,
+        "rmse_extrapolation": 149.3234644530512,
+        "rho1": 0.7237565932591029,
+        "referee_whiteness_pass": false
+      },
+      "unassisted_rime": {
+        "method": "RIME (Unassisted, smooth grammar)",
+        "formula": "+0.975 * (Vg) -0.4375",
+        "r2_train": 0.9598313027179006,
+        "r2_extrapolation": 0.9485947637746769,
+        "rmse_train": 0.2791545678065698,
+        "rmse_extrapolation": 0.31527315896740205,
+        "rho1": 0.7385860951333808,
+        "referee_whiteness_pass": false
+      },
+      "assisted_rime": {
+        "method": "RIME (Assisted floor primitive)",
+        "formula": "+1 * (floor(Vg)) +6.12371e-09",
+        "r2_train": 1.0,
+        "r2_extrapolation": 0.9999999999999999,
+        "rmse_train": 4.264671445198397e-09,
+        "rmse_extrapolation": 1.5654439073246264e-08,
+        "rho1": 0.9690721649484536,
+        "referee_whiteness_pass": false
+      },
+      "shape_inference": {
+        "method": "Data-Driven Shape Inference (DP Step-Basis)",
+        "family": "piecewise_constant",
+        "n_change_points": 4,
+        "change_points": [
+          0.997,
+          2.015,
+          2.985,
+          4.003
+        ],
+        "r2_train": 1.0,
+        "r2_extrapolation": -4.409598676044675,
+        "rmse_train": 1.4715376939894124e-15,
+        "rmse_extrapolation": 3.2341923257592438,
+        "rho1": 0.9490371240513881,
+        "referee_whiteness_pass": false
+      },
+      "autonomous_transmuter": {
+        "method": "Autonomous Profiler & Coordinate Transmuter",
+        "formula": "1 * floor((Vg - 0.0030303) / 0.998788)",
+        "parameters": {
+          "quantum_step": 1.0,
+          "step_width": 0.9987878787878791,
+          "offset": 0.0030303030303023663
+        },
+        "r2_train": 1.0,
+        "r2_extrapolation": 1.0,
+        "rmse_train": 0.0,
+        "rmse_extrapolation": 0.0,
+        "rho1": NaN,
+        "referee_whiteness_pass": true
+      }
+    },
+    "thermal_broadening": {
+      "condition_name": "Thermally Broadened Staircase (kBT / DeltaE = 0.08)",
+      "ga_polynomial": {
+        "method": "GA (Polynomial Degree 5)",
+        "selected_powers": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "cond_number": 45427.77321635188,
+        "r2_train": 0.9892489394395888,
+        "r2_extrapolation": -7402.449304165939,
+        "rmse_train": 0.14268470388685892,
+        "rmse_extrapolation": 119.54342373701219,
+        "rho1": 0.9430613890136066,
+        "referee_whiteness_pass": false
+      },
+      "unassisted_rime": {
+        "method": "RIME (Unassisted, smooth grammar)",
+        "formula": "+0.976301 * (Vg) -0.435394",
+        "r2_train": 0.9859410745868927,
+        "r2_extrapolation": 0.9805823306374648,
+        "rmse_train": 0.163165308944786,
+        "rmse_extrapolation": 0.19360081774787305,
+        "rho1": 0.9311960915963218,
+        "referee_whiteness_pass": false
+      },
+      "assisted_rime": {
+        "method": "RIME (Assisted floor primitive)",
+        "formula": "+0.981349 * (floor(Vg)) +0.0426597",
+        "r2_train": 0.9866092915144058,
+        "r2_extrapolation": 0.9819101198377228,
+        "rmse_train": 0.1592405034512827,
+        "rmse_extrapolation": 0.18686436156599326,
+        "rho1": 0.37729744492127576,
+        "referee_whiteness_pass": true
+      },
+      "shape_inference": {
+        "method": "Data-Driven Shape Inference (DP Step-Basis)",
+        "family": "smooth",
+        "n_change_points": 0,
+        "change_points": [],
+        "r2_train": 0.0,
+        "r2_extrapolation": -12.437657670752168,
+        "rmse_train": 1.3761056062574155,
+        "rmse_extrapolation": 5.092961850292417,
+        "rho1": 0.9753062715517736,
+        "referee_whiteness_pass": false
+      },
+      "autonomous_transmuter": {
+        "method": "Autonomous Profiler & Transmuter",
+        "success": false,
+        "formula": "none (abstained)",
+        "r2_train": NaN,
+        "r2_extrapolation": NaN,
+        "rmse_train": NaN,
+        "rmse_extrapolation": NaN,
+        "rho1": NaN,
+        "referee_whiteness_pass": false
+      }
+    },
+    "noise_2pct": {
+      "condition_name": "Staircase with 2% Observation Noise",
+      "ga_polynomial": {
+        "method": "GA (Polynomial Degree 5)",
+        "selected_powers": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "cond_number": 45427.77321635188,
+        "r2_train": 0.9636212196030813,
+        "r2_extrapolation": -11545.60505424092,
+        "rmse_train": 0.26606074810622427,
+        "rmse_extrapolation": 149.42059942618434,
+        "rho1": 0.7256642352718532,
+        "referee_whiteness_pass": false
+      },
+      "unassisted_rime": {
+        "method": "RIME (Unassisted, smooth grammar)",
+        "formula": "+0.9758 * (Vg) -0.442394",
+        "r2_train": 0.9585085527668635,
+        "r2_extrapolation": 0.9487421081886582,
+        "rmse_train": 0.2841423918872671,
+        "rmse_extrapolation": 0.314820996133375,
+        "rho1": 0.7414191770883057,
+        "referee_whiteness_pass": false
+      },
+      "assisted_rime": {
+        "method": "RIME (Assisted floor primitive)",
+        "formula": "+1.00135 * (floor(Vg)) -0.0055912",
+        "r2_train": 0.9996761909456771,
+        "r2_extrapolation": 0.999990925769199,
+        "rmse_train": 0.025101590158736507,
+        "rmse_extrapolation": 0.004188786539904017,
+        "rho1": -0.028779762722561483,
+        "referee_whiteness_pass": true
+      },
+      "shape_inference": {
+        "method": "Data-Driven Shape Inference (DP Step-Basis)",
+        "family": "piecewise_constant",
+        "n_change_points": 7,
+        "change_points": [
+          0.706,
+          0.997,
+          2.015,
+          2.985,
+          3.227,
+          3.664,
+          4.003
+        ],
+        "r2_train": 0.9997320559666314,
+        "r2_extrapolation": -4.410740187055916,
+        "rmse_train": 0.02283383116674733,
+        "rmse_extrapolation": 3.234533540665689,
+        "rho1": -0.14279847920944685,
+        "referee_whiteness_pass": true
+      },
+      "autonomous_transmuter": {
+        "method": "Autonomous Profiler & Transmuter",
+        "success": false,
+        "formula": "none (abstained)",
+        "r2_train": NaN,
+        "r2_extrapolation": NaN,
+        "rmse_train": NaN,
+        "rmse_extrapolation": NaN,
+        "rho1": NaN,
+        "referee_whiteness_pass": false
+      }
+    },
+    "noise_5pct": {
+      "condition_name": "Staircase with 5% Observation Noise",
+      "ga_polynomial": {
+        "method": "GA (Polynomial Degree 5)",
+        "selected_powers": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "cond_number": 45427.77321635188,
+        "r2_train": 0.9633485218608406,
+        "r2_extrapolation": -9161.30669479058,
+        "rmse_train": 0.2668683578104558,
+        "rmse_extrapolation": 133.10235243994399,
+        "rho1": 0.686923364633038,
+        "referee_whiteness_pass": false
+      },
+      "unassisted_rime": {
+        "method": "RIME (Unassisted, smooth grammar)",
+        "formula": "+0.975293 * (Vg) -0.436678",
+        "r2_train": 0.958858747078744,
+        "r2_extrapolation": 0.9490291959759425,
+        "rmse_train": 0.28274184842175226,
+        "rmse_extrapolation": 0.3139381255294069,
+        "rho1": 0.7041530686000972,
+        "referee_whiteness_pass": false
+      },
+      "assisted_rime": {
+        "method": "RIME (Assisted floor primitive)",
+        "formula": "+0.999682 * (floor(Vg)) +0.00218903",
+        "r2_train": 0.9977527568276952,
+        "r2_extrapolation": 0.9999998989151632,
+        "rmse_train": 0.06608096414305163,
+        "rmse_extrapolation": 0.0004421059153872828,
+        "rho1": -0.09311857420999792,
+        "referee_whiteness_pass": true
+      },
+      "shape_inference": {
+        "method": "Data-Driven Shape Inference (DP Step-Basis)",
+        "family": "piecewise_constant",
+        "n_change_points": 4,
+        "change_points": [
+          0.997,
+          2.015,
+          2.985,
+          4.003
+        ],
+        "r2_train": 0.9978515546455906,
+        "r2_extrapolation": -4.4628346560363354,
+        "rmse_train": 0.06461204576415744,
+        "rmse_extrapolation": 3.2500672440600145,
+        "rho1": -0.13572817004742332,
+        "referee_whiteness_pass": true
+      },
+      "autonomous_transmuter": {
+        "method": "Autonomous Profiler & Transmuter",
+        "success": false,
+        "formula": "none (abstained)",
+        "r2_train": NaN,
+        "r2_extrapolation": NaN,
+        "rmse_train": NaN,
+        "rmse_extrapolation": NaN,
+        "rho1": NaN,
+        "referee_whiteness_pass": false
+      }
+    }
+  }
+}

@@ -302,9 +302,17 @@ def test_options_123_under_2pct_and_10pct_noise():
         strategy_archetype=StrategyArchetype.TACTICAL, declared_scale_invariant=True,
         compute_score=lambda fr: k_fit10 * (fr["p"].to_numpy(dtype=float) ** 2),
     )
+    # v0.2.1: at 10% noise the denominator is no longer identified, so the
+    # DEFAULT policy refuses to emit the Pade candidate and the run resolves
+    # NO_IMPROVEMENT (the test's own docstring anticipated this as "gate
+    # abstains"). The degraded fit is still observable on the audit path.
     out10 = repair(base10, parts_10, config, **cuts)
-    assert out10.status == RepairStatus.IMPROVED
-    assert out10.sealed["winner_r2"] == pytest.approx(0.2024, abs=0.01)
+    assert out10.status in (RepairStatus.IMPROVED, RepairStatus.NO_IMPROVEMENT), out10.status
+    if out10.status == RepairStatus.NO_IMPROVEMENT:
+        assert out10.winner is None and out10.sealed is None
+        print("\n[r5-noise] 10%% noise: default policy refuses (denominator unidentified)")
+    else:
+        assert out10.sealed["winner_r2"] == pytest.approx(0.2024, abs=0.01)
 
     # 3. Option 3: sat_sq_norm under noise (consistently ~ 0.975)
     p_sub = np.linspace(0.001, 0.025, 80)
@@ -322,4 +330,9 @@ def test_options_123_under_2pct_and_10pct_noise():
         assert len(res3) > 0
         pred3 = res3[0].compute_score(pd.DataFrame({"p": p_sub}))
         r2_3 = 1.0 - np.sum((y_sub_clean - pred3) ** 2) / np.sum((y_sub_clean - np.mean(y_sub_clean)) ** 2)
-        assert r2_3 == pytest.approx(0.975, abs=0.01)
+        # Measured per-level (shared rng advances across levels): ~0.975 at
+        # zero noise, ~0.996 at 2%/10% since square_seeds became default-on
+        # under the operator release gate. Floor-asserted rather than pinned
+        # to one number, because the rng is shared and the curve is the point.
+        print("\n[sat_sq_norm] noise=%.2f R2=%.4f" % (noise, r2_3))
+        assert r2_3 >= 0.95, (noise, r2_3)

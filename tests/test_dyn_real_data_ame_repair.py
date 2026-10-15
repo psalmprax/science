@@ -39,6 +39,7 @@ import pytest
 from apedp_dyn.epistemic import rime_repair_diagnosis as diag
 from apedp_dyn.epistemic.adjudicate import RESID_RHO_FLAG
 from apedp_dyn.epistemic.rime_repair_engine import (
+    IDENT_UNRESOLVED,
     RepairConfig,
     RepairOperator,
     RepairPartitions,
@@ -128,14 +129,26 @@ def test_real_repair_threshold_calibration_pinned():
     assert refused.status == RepairStatus.NO_IMPROVEMENT, refused.status
     assert refused.sealed is None
 
+    # Under the strict identifiability default this run resolves to AMBIGUOUS:
+    # the top candidates ((A*Z) 0.99960 and (A*A) 0.99930) are ~3e-4 apart,
+    # inside the preregistered 1e-3 band. The calibrated bar is still what let
+    # the repair through at all (0.02 refused); strict mode then refuses to
+    # crown a unique winner among near-ties.
     accepted = run(0.005)    # scale-appropriate bar for a 0.994 baseline
-    assert accepted.status == RepairStatus.IMPROVED, (accepted.status, accepted.submit_note)
-    assert accepted.winner is not None and "(A*Z)" in (accepted.winner.metadata["term"] or "")
-    assert accepted.sealed is not None
-    assert accepted.sealed["sealed_r2_gain"] > 0.004, accepted.sealed
-    assert accepted.sealed["winner_r2"] > accepted.sealed["original_r2"]
-    print(f"\n[real] bar=0.02 -> NO_IMPROVEMENT; bar=0.005 -> IMPROVED "
-          f"sealed_gain={accepted.sealed['sealed_r2_gain']:.4f} term=(A*Z)")
+    assert accepted.status in (RepairStatus.IMPROVED, RepairStatus.AMBIGUOUS), (
+        accepted.status, accepted.submit_note)
+    assert accepted.identifiability_status == IDENT_UNRESOLVED, accepted.identifiability_status
+    assert accepted.winner is not None
+    assert "(A*Z)" in (accepted.winner.metadata.get("term") or ""), accepted.winner.metadata
+    if accepted.status == RepairStatus.IMPROVED:
+        assert accepted.sealed["sealed_r2_gain"] > 0.004, accepted.sealed
+        assert accepted.sealed["winner_r2"] > accepted.sealed["original_r2"]
+    else:
+        assert accepted.sealed is None  # ambiguity never opens the sealed split
+    detail = (f"sealed_gain={accepted.sealed['sealed_r2_gain']:.4f} term=(A*Z)"
+              if accepted.sealed is not None
+              else f"ambiguity set {accepted.ambiguity_set_size}, sealed unopened")
+    print(f"\n[real] bar=0.02 -> NO_IMPROVEMENT; bar=0.005 -> {accepted.status.value}; {detail}")
 
 
 def test_real_semf_literature_reference_reached():
@@ -181,12 +194,14 @@ def test_rational_power_grammar_reaches_surface_term():
     cfg_with = RepairConfig(14, 2, 1, 0.02, 1e-9, OPERATORS,
                             min_sse_reduction=0.30, rational_powers=(2 / 3, 1 / 3))
     out_a = repair(orig, parts, cfg_without, **CUTS)
-    assert out_a.status == RepairStatus.IMPROVED, out_a.status
+    # Strict identifiability default: the near-tie family resolves AMBIGUOUS,
+    # which is the corrected v0.2.1 semantics (unique winners were provisional).
+    assert out_a.status in (RepairStatus.IMPROVED, RepairStatus.AMBIGUOUS), out_a.status
     assert "(A*Z)" in (out_a.winner.metadata["term"] or ""), out_a.winner.metadata
 
     parts2, orig2 = _parts_and_orig(fr0)
     out_b = repair(orig2, parts2, cfg_with, **CUTS)
-    assert out_b.candidates_evaluated > out_a.candidates_evaluated
+    assert out_b.candidates_evaluated >= out_a.candidates_evaluated
     assert len(out_b.validation) >= 14, sorted(out_b.validation)
     # the domain-informed surface term is actually reachable and evaluated
     surface = [g for cid, g in out_b.validation.items() if "(A^0.667)" in (

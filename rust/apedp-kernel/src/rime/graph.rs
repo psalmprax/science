@@ -398,7 +398,7 @@ impl Graph {
                             if v.is_nan() {
                                 f64::NAN
                             } else if *p_num > 0 {
-                                if *p_den % 2 != 0 {
+                                if *p_den % 2 != 0 && *p_num % 2 != 0 {
                                     v.abs().powf(exp) * v.signum()
                                 } else {
                                     v.abs().powf(exp)
@@ -407,7 +407,7 @@ impl Graph {
                                 let denom = v.abs();
                                 if denom < 1e-12 {
                                     0.0
-                                } else if *p_den % 2 != 0 {
+                                } else if *p_den % 2 != 0 && *p_num % 2 != 0 {
                                     v.signum() / denom.powf(-exp)
                                 } else {
                                     1.0 / denom.powf(-exp)

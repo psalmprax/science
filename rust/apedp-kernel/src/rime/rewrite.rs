@@ -26,7 +26,7 @@ pub enum RewriteOp {
 }
 
 /// Permitted rational power parameters: (numerator, denominator).
-pub const PERMITTED_POWERS: [(i32, u32); 7] = [
+pub const PERMITTED_POWERS: [(i32, u32); 9] = [
     (1, 2),   // x^(1/2) = sqrt(|x|)
     (1, 3),   // x^(1/3) = cbrt(x)
     (2, 3),   // x^(2/3) = cbrt(x)^2
@@ -34,6 +34,8 @@ pub const PERMITTED_POWERS: [(i32, u32); 7] = [
     (-1, 3),  // x^(-1/3) = 1 / cbrt(|x|)
     (2, 1),   // x^2
     (3, 1),   // x^3
+    (-1, 1),  // x^(-1) = 1 / x
+    (-2, 1),  // x^(-2) = 1 / x^2
 ];
 
 impl RewriteOp {

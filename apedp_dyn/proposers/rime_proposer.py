@@ -71,15 +71,29 @@ _ALGEBRAIC_TRANSFORMS: dict[str, str] = {
     "sat_sq_norm": "sign(x) * (x / s)^2 / (1 + (x / s)^2)",
 }
 
+_QUANTUM_TRANSFORMS: dict[str, str] = {
+    "inv": "sign(x) / (1e-6 + |x|)",
+    "inv_sq": "1 / (1e-6 + x * x)",
+    "lor_norm": "1 / (1 + (x / s)^2)",
+    "floor": "floor(x)",
+    "ceil": "ceil(x)",
+    "arrh": "exp(-1 / |x|)",
+    "bose": "x / expm1(x)",
+    "planck": "x^3 / expm1(x)",
+    "expm1": "expm1(x)",
+}
+
 _STEM_TRANSFORMS: dict[str, str] = {
     "sin": "sin(x)",
     "cos": "cos(x)",
+    "cos2": "cos(2 * x)",
+    "sin2": "sin(2 * x)",
     "exp": "exp(clip(x, -60, 60))",
     "log": "log1p(|x|)",
     "diff": "diff(x)",
 }
 
-_ALL_TRANSFORMS: dict[str, str] = {**_ALGEBRAIC_TRANSFORMS, **_STEM_TRANSFORMS}
+_ALL_TRANSFORMS: dict[str, str] = {**_ALGEBRAIC_TRANSFORMS, **_STEM_TRANSFORMS, **_QUANTUM_TRANSFORMS}
 
 
 def _apply_transform(kind: str, x: np.ndarray, scale: float = 1.0) -> np.ndarray:
@@ -108,10 +122,41 @@ def _apply_transform(kind: str, x: np.ndarray, scale: float = 1.0) -> np.ndarray
         s = scale if (scale > 1e-12 and np.isfinite(scale)) else 1.0
         u = (x / s) ** 2
         return np.sign(x) * (u / (1.0 + u))
+    if kind == "inv":
+        ax = np.abs(x)
+        safe_x = np.where(ax < 1e-9, 1e-9, ax)
+        return np.sign(x) / safe_x
+    if kind == "inv_sq":
+        x2 = x * x
+        safe_x2 = np.where(x2 < 1e-18, 1e-18, x2)
+        return 1.0 / safe_x2
+    if kind == "lor_norm":
+        s = scale if (scale > 1e-12 and np.isfinite(scale)) else 1.0
+        u = (x / s) ** 2
+        return 1.0 / (1.0 + u)
+    if kind == "floor":
+        return np.floor(x)
+    if kind == "ceil":
+        return np.ceil(x)
+    if kind == "arrh":
+        safe_x = np.where(np.abs(x) < 1e-12, 1e-12, np.abs(x))
+        return np.exp(-np.clip(1.0 / safe_x, -50.0, 50.0))
+    if kind == "bose":
+        safe_x = np.where(np.abs(x) < 1e-12, 1e-12, x)
+        return np.where(np.abs(x) < 1e-9, 1.0, safe_x / np.expm1(np.clip(safe_x, -50.0, 50.0)))
+    if kind == "planck":
+        safe_x = np.where(np.abs(x) < 1e-12, 1e-12, x)
+        return np.where(np.abs(x) < 1e-9, 0.0, (safe_x**3) / np.expm1(np.clip(safe_x, -50.0, 50.0)))
+    if kind == "expm1":
+        return np.expm1(np.clip(x, -50.0, 50.0))
     if kind == "sin":
         return np.sin(x)
     if kind == "cos":
         return np.cos(x)
+    if kind == "cos2":
+        return np.cos(2.0 * x)
+    if kind == "sin2":
+        return np.sin(2.0 * x)
     if kind == "exp":
         return np.exp(np.clip(x, -60.0, 60.0))
     if kind == "log":
@@ -219,14 +264,23 @@ class RimeProposer(ProposerBase):
         max_transform_inputs: int = 4,
         static_mode: bool = False,
         seed_order: str = "legacy",
-        square_seeds: bool = False,
+        # square_seeds is default-ON under the operator release gate: it earned
+        # +1.00 recall on the lag-zero-square battery (which the frozen grammar
+        # cannot express at all) at system-level FPR 0 and 1.01x cost, per
+        # tests/test_dyn_rime_operator_release_gate.py. The other opt-ins stay
+        # off because they bought no recall on either battery.
+        square_seeds: bool = True,
         rational_ops: bool = False,
         stem_ops: bool = False,
         power_ops: bool = False,
+        harmonic_seeds: bool = False,
         min_rows: int = 30,
         identifiability_band: float = 0.002,
         check_derivatives: bool = False,
         diverse_beam: bool = False,
+        additive_terms: int = 1,
+        max_seeds: int | None = None,
+        lagged_products: bool = False,
     ) -> None:
         self._feature_cols = list(feature_cols) if feature_cols else None
         self._target_col = target_col
@@ -245,10 +299,14 @@ class RimeProposer(ProposerBase):
         self._archetype = strategy_archetype
         self._square_seeds = bool(square_seeds)
         self._power_ops = bool(power_ops)
+        self._harmonic_seeds = bool(harmonic_seeds)
         self._min_rows = int(min_rows)
         self._identifiability_band = float(identifiability_band)
         self._check_derivatives = bool(check_derivatives)
         self._diverse_beam = bool(diverse_beam)
+        self._additive_terms = int(additive_terms)
+        self._max_seeds = None if max_seeds is None else int(max_seeds)
+        self._lagged_products = bool(lagged_products)
         if algebraic_transforms is not None:
             unknown = [k for k in algebraic_transforms if k not in _ALL_TRANSFORMS]
             if unknown:
@@ -499,8 +557,16 @@ class RimeProposer(ProposerBase):
                 config["stem_ops"] = True
             if self._power_ops:
                 config["power_ops"] = True
+            if self._harmonic_seeds:
+                config["harmonic_seeds"] = True
             if self._diverse_beam:
                 config["diverse_beam"] = True
+            if self._additive_terms > 1:
+                config["additive_terms"] = self._additive_terms
+            if self._max_seeds is not None:
+                config["max_seeds"] = self._max_seeds
+            if self._lagged_products:
+                config["lagged_products"] = True
             if self._gamma is not None:
                 config["gamma"] = self._gamma
             packet = json.loads(apedp_kernel.rime_search_envs_json(envs_json, json.dumps(config), labels))
@@ -532,8 +598,16 @@ class RimeProposer(ProposerBase):
                 config["stem_ops"] = True
             if self._power_ops:
                 config["power_ops"] = True
+            if self._harmonic_seeds:
+                config["harmonic_seeds"] = True
             if self._diverse_beam:
                 config["diverse_beam"] = True
+            if self._additive_terms > 1:
+                config["additive_terms"] = self._additive_terms
+            if self._max_seeds is not None:
+                config["max_seeds"] = self._max_seeds
+            if self._lagged_products:
+                config["lagged_products"] = True
             if self._gamma is not None:
                 config["gamma"] = self._gamma
             elif self._rel_penalty is not None:

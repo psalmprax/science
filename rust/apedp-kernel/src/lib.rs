@@ -752,9 +752,25 @@ fn rime_search_envs_json(
         _ => rime::search::EnvAggregation::MeanPerEnv,
     };
     let gamma_gate = cfg_raw.get("gamma_gate").and_then(|v| v.as_f64()).unwrap_or(1.5);
+    if let Some(v) = cfg_raw.get("max_seeds").and_then(|v| v.as_u64()) {
+        cfg.max_seeds = Some(v as usize);
+    }
+    if let Some(v) = cfg_raw.get("lagged_products").and_then(|v| v.as_bool()) {
+        cfg.lagged_products = v;
+    }
+    if let Some(v) = cfg_raw.get("harmonic_seeds").and_then(|v| v.as_bool()) {
+        cfg.harmonic_seeds = v;
+    }
 
-    let seeds = rime::seeds::small_forms_with_all_options(
-        envs.iter().map(|e| e.cols.len()).max().unwrap_or(1), cfg.seed_order, cfg.square_seeds, cfg.power_ops);
+    let seeds = rime::seeds::small_forms_extended(
+        envs.iter().map(|e| e.cols.len()).max().unwrap_or(1),
+        cfg.seed_order,
+        cfg.square_seeds,
+        cfg.power_ops,
+        cfg.max_seeds,
+        cfg.lagged_products,
+        cfg.harmonic_seeds,
+    );
     let outcome =
         py.allow_threads(|| rime::search::search_envs(&seeds, &envs, &cfg, agg, gamma_gate));
     let mut packet = outcome.to_json();
@@ -852,6 +868,15 @@ fn rime_search_json(
     if let Some(v) = raw.get("diverse_beam").and_then(|v| v.as_bool()) {
         cfg.diverse_beam = v;
     }
+    if let Some(v) = raw.get("max_seeds").and_then(|v| v.as_u64()) {
+        cfg.max_seeds = Some(v as usize);
+    }
+    if let Some(v) = raw.get("lagged_products").and_then(|v| v.as_bool()) {
+        cfg.lagged_products = v;
+    }
+    if let Some(v) = raw.get("harmonic_seeds").and_then(|v| v.as_bool()) {
+        cfg.harmonic_seeds = v;
+    }
     if let Some(v) = raw.get("gamma").and_then(|v| v.as_f64()) {
         // Sample-size-aware calibration: gamma * var(y) / n_dev.
         let n_dev = target_vec.iter().filter(|t| t.is_finite()).count();
@@ -862,7 +887,15 @@ fn rime_search_json(
         cfg.lambda_c = v;
     }
 
-    let seeds = rime::seeds::small_forms_with_all_options(columns.len(), cfg.seed_order, cfg.square_seeds, cfg.power_ops);
+    let seeds = rime::seeds::small_forms_extended(
+        columns.len(),
+        cfg.seed_order,
+        cfg.square_seeds,
+        cfg.power_ops,
+        cfg.max_seeds,
+        cfg.lagged_products,
+        cfg.harmonic_seeds,
+    );
     // Opt-in multi-term refinement (`additive_terms` >= 2). Absent, 0 or 1 is
     // exactly the frozen single-term `search`, so existing callers see no change.
     let additive_terms = raw.get("additive_terms").and_then(|v| v.as_u64()).unwrap_or(0) as usize;

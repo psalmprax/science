@@ -68,6 +68,15 @@ def test_static_mode_plus_transforms_recovers_quadratic_law() -> None:
 
 
 def test_static_mode_without_transforms_cannot_claim_exact_recovery() -> None:
+    """SUPERSEDED by the square_seeds promotion (operator release gate).
+
+    The original premise was that static mode without transforms cannot reach
+    the exact law, so any proposal must stay visibly short of 0.95. With
+    square_seeds now default-on under the gate (measured +1.00 recall on the
+    lag-zero-square battery at system FPR 0 and 1.01x cost), static mode DOES
+    reach the exact contemporaneous square natively. The strengthened
+    assertion is that it reaches the lag-0 product specifically.
+    """
     df = _qec_style_frame()
     proposer = RimeProposer(
         feature_cols=["p"],
@@ -76,10 +85,12 @@ def test_static_mode_without_transforms_cannot_claim_exact_recovery() -> None:
         static_mode=True,
     )
     proposals = proposer.fit_and_propose(df.copy())
-    # Either it abstains, or whatever it proposes stays visibly short of the
-    # exact law: a level fit on a 1-decade axis must NOT masquerade at 0.99.
-    for p in proposals:
-        assert p.parameters["dev_r2"] < 0.95, p.formula
+    best = max(proposals, key=lambda p: p.parameters["dev_r2"]) if proposals else None
+    assert best is not None, "static mode should now recover the exact square"
+    assert best.parameters["dev_r2"] > 0.95, best.formula
+    eq = best.metadata.get("equation") or ""
+    assert "*" in eq and "[t-" not in eq and "state_" not in eq, eq
+    assert "(p * p)" in eq, eq
 
 
 def test_transforms_off_by_default_legacy_behaviour_unchanged() -> None:

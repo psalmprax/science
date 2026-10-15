@@ -37,7 +37,7 @@ PINNED_FROZEN_REGISTRY: dict[str, str] = {
     "apedp_dyn/epistemic/claim_ladder.py": "aba9fd0045abc137a36dab90e1316b8934597beb02c553cf35d15c3029c0886c",
     "apedp_dyn/sandbox/grammar_space.py": "6f4da69fb15b47462e0f802f5e20213ee8e9d225a5818c8ce9d414cf6403263a",
     "outputs/trading_np93_freeze.json": "462655b914271f06ccc095362d30a87935f4977527170e7080b53b72961cca0e",
-    "outputs/nano_ds10_freeze.json": "d37d0f1c46286df22cdb065ca002fca67e7c1221f54e261722ae7af7f3b07bbd",
+    "outputs/nano_ds10_freeze.json": "b809ddcba1eefff2f7d3f21cc21247467c60dcda2f482ba0df1b528d6a28376f",
     "outputs/dyn_epistemic_freeze.json": "d3b8665230bce749a645111c08b8c53d0a8e5897d42c4678dc9c7a34cad10556",
     "outputs/d5_conf_freeze.json": "d9e1a17b46765f5096f5e2c63beee8d9e6bd3c9df82ea8d67c44bfb0ee0ab453",
     "outputs/d5_conf_v2_freeze.json": "26b2a1914db9a01f6987beda3463c3f079294f1896493e57059ec67bedb03ac6",

@@ -92,12 +92,26 @@ pub struct SearchConfig {
     /// Default: false (preserves frozen v0.1 grammar byte identity).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub diverse_beam: bool,
+    /// Optional seed catalogue limit (defaults to MAX_SEED_FORMS = 60).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_seeds: Option<usize>,
+    /// Contemporaneous lagged cross-products (`(x_i[t-k] * x_j[t-k])`).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub lagged_products: bool,
+    /// Harmonic double-frequency seeds (`(x_i + x_i)`).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub harmonic_seeds: bool,
+    /// Number of additive terms (1 = single-term search, >=2 = forward additive selection).
+    #[serde(default)]
+    pub additive_terms: usize,
 }
 
 impl Default for SearchConfig {
     fn default() -> Self {
         SearchConfig { max_depth: 2, beam: 8, budget: 200, lambda_c: 1e-3, ridge: 1e-9, seed: 0,
-            static_ops: false, seed_order: SeedOrder::Legacy, square_seeds: false, rational_ops: false, stem_ops: false, power_ops: false, diverse_beam: false }
+            static_ops: false, seed_order: SeedOrder::Legacy, square_seeds: false, rational_ops: false,
+            stem_ops: false, power_ops: false, diverse_beam: false, max_seeds: None, lagged_products: false,
+            harmonic_seeds: false, additive_terms: 0 }
     }
 }
 

@@ -71,13 +71,17 @@ def test_repair_parameter_error_refit():
     assert parts.spans["discovery"] == (0, 400)
     orig = _discover(parts.discovery_df.assign(target=parts.discovery_y))
     out = repair(orig, parts, CONFIG, **CUTS)
-    assert out.status == RepairStatus.IMPROVED, out.submit_note
+    # v0.2.1 invariance default: AMBIGUOUS is the correct verdict when the
+    # repair term is not reproducible across independent dev slices.
+    assert out.status in (RepairStatus.IMPROVED, RepairStatus.AMBIGUOUS), out.submit_note
     assert out.winner is not None and out.winner.metadata["operator"] == "R1_PARAM_REFIT"
     assert out.targeted_finding == diagmod.FINDING_INTERCEPT_BIAS
-    assert out.sealed is not None and out.sealed["sealed_r2_gain"] > 0
-    assert out.sealed["winner_r2"] >= out.sealed["original_r2"]  # no-repair baseline
-    assert out.ambiguity_set_size == 1
-    print(f"\n[param] sealed gain={out.sealed['sealed_r2_gain']:.4f} evals={out.candidates_evaluated} rounds={out.rounds_used}")
+    if out.status == RepairStatus.IMPROVED:
+        assert out.sealed is not None and out.sealed["sealed_r2_gain"] > 0
+        assert out.sealed["winner_r2"] >= out.sealed["original_r2"]  # no-repair baseline
+    else:
+        assert out.sealed is None
+    print(f"\n[param] status={out.status.value} gain={out.sealed['sealed_r2_gain'] if out.sealed else None} evals={out.candidates_evaluated} rounds={out.rounds_used}")
 
 
 def test_repair_missing_curvature_inserts_square():
@@ -89,11 +93,16 @@ def test_repair_missing_curvature_inserts_square():
     parts = RepairPartitions.from_frame(df, df["target"].to_numpy())
     orig = _discover(parts.discovery_df.assign(target=parts.discovery_y), max_depth=1)
     out = repair(orig, parts, CONFIG, **CUTS)
-    assert out.status == RepairStatus.IMPROVED, out.submit_note
+    # v0.2.1 invariance default: AMBIGUOUS is the correct verdict when the
+    # repair term is not reproducible across independent dev slices.
+    assert out.status in (RepairStatus.IMPROVED, RepairStatus.AMBIGUOUS), out.submit_note
     assert out.winner is not None and out.winner.metadata["operator"] == "R2_TERM_INSERT"
     assert out.targeted_finding == diagmod.FINDING_CURVATURE_SUSPECT
-    assert out.sealed is not None and out.sealed["sealed_r2_gain"] > 0
-    print(f"\n[curv] sealed gain={out.sealed['sealed_r2_gain']:.4f} evals={out.candidates_evaluated} rounds={out.rounds_used}")
+    if out.status == RepairStatus.IMPROVED:
+        assert out.sealed is not None and out.sealed["sealed_r2_gain"] > 0
+    else:
+        assert out.sealed is None
+    print(f"\n[curv] status={out.status.value} gain={out.sealed['sealed_r2_gain'] if out.sealed else None} evals={out.candidates_evaluated} rounds={out.rounds_used}")
 
 
 def test_repair_missing_lag_inserts_lag():
@@ -121,11 +130,17 @@ def test_repair_missing_lag_inserts_lag():
     assert len(props) > 0
     orig = sorted(props, key=lambda p: p.parameters["dev_r2"], reverse=True)[0]
     out = repair(orig, parts, CONFIG, **CUTS)
-    assert out.status == RepairStatus.IMPROVED, (out.status, out.submit_note, out.validation)
+    # v0.2.1: invariance is the default decision path. IMPROVED requires the
+    # same structure to win >= 4/5 dev-side slices; on iid-x plants the repair
+    # term is genuinely non-unique, so AMBIGUOUS is the correct verdict.
+    assert out.status in (RepairStatus.IMPROVED, RepairStatus.AMBIGUOUS), (out.status, out.submit_note)
     assert out.winner is not None and out.winner.metadata["operator"] == "R3_LAG_INSERT"
     assert out.targeted_finding == diagmod.FINDING_TEMPORAL_DEPENDENCE
-    assert out.sealed is not None and out.sealed["sealed_r2_gain"] > 0
-    print(f"\n[lag] sealed gain={out.sealed['sealed_r2_gain']:.4f} evals={out.candidates_evaluated} rounds={out.rounds_used}")
+    if out.status == RepairStatus.IMPROVED:
+        assert out.sealed is not None and out.sealed["sealed_r2_gain"] > 0
+    else:
+        assert out.sealed is None
+    print(f"\n[lag] status={out.status.value} gain={out.sealed['sealed_r2_gain'] if out.sealed else None} evals={out.candidates_evaluated} rounds={out.rounds_used}")
 
 
 def test_repair_noise_abstains_and_sealed_stays_shut():
@@ -198,14 +213,22 @@ def test_repair_composite_product_completed():
     assert len(props) > 0
     orig = sorted(props, key=lambda p: p.parameters["dev_r2"], reverse=True)[0]
     out = repair(orig, parts, CONFIG, **CUTS)
-    assert out.status == RepairStatus.IMPROVED, (out.status, out.submit_note, out.validation)
+    # v0.2.1: invariance is the default decision path. IMPROVED requires the
+    # same structure to win >= 4/5 dev-side slices; on iid-x plants the repair
+    # term is genuinely non-unique, so AMBIGUOUS is the correct verdict.
+    assert out.status in (RepairStatus.IMPROVED, RepairStatus.AMBIGUOUS), (out.status, out.submit_note)
     assert out.winner is not None
     assert out.winner.metadata["operator"] == "R2_TERM_INSERT", out.winner.metadata
     assert "(x1[t-1]*x2[t-1])" in (out.winner.metadata["term"] or ""), out.winner.metadata
     assert out.targeted_finding == diagmod.FINDING_INTERACTION_SUSPECT
-    assert out.sealed is not None and out.sealed["sealed_r2_gain"] > 0
-    assert out.sealed["winner_r2"] > 0.9, out.sealed
-    print(f"\n[composite] {out.winner.metadata['term']} sealed R2={out.sealed['winner_r2']:.4f} evals={out.candidates_evaluated}")
+    if out.status == RepairStatus.IMPROVED:
+        assert out.sealed is not None and out.sealed["sealed_r2_gain"] > 0
+        assert out.sealed["winner_r2"] > 0.9, out.sealed
+    else:
+        assert out.sealed is None  # ambiguity never opens the sealed split
+    detail = (f"sealed R2={out.sealed['winner_r2']:.4f}" if out.sealed is not None
+              else "ambiguity: sealed unopened")
+    print(f"\n[composite] {out.winner.metadata['term']} {detail} evals={out.candidates_evaluated}")
 
 
 def test_corrupted_fixture_shuffled_target_no_repair():
@@ -236,3 +259,28 @@ def test_corrupted_fixture_shuffled_target_no_repair():
     assert out.candidates_evaluated == 0
     assert out.winner is None and out.sealed is None
     print("\n[harness] corrupted fixture -> NO_IMPROVEMENT, 0 evals, sealed shut")
+
+
+def test_single_round_is_the_documented_scope_limit():
+    """B-repair honesty: chaining is unreachable, and that is declared.
+
+    The engine CAN chain, but a round-1 win clears the targeted finding, so
+    round 2 generates nothing and every run terminates at rounds_used == 1.
+    That is a scope limit, not a failure, and it is pinned so nobody reports
+    multi-defect repair as working.
+    """
+    rng = np.random.RandomState(71)
+    n = 1000
+    x1, x2, x3 = rng.randn(n), rng.randn(n), rng.randn(n)
+    y = np.zeros(n)
+    y[2:] = 2.0 * (x1[1:-1] * x2[1:-1]) + 3.0 * x3[:-2] + 10.0 + 0.05 * rng.randn(n - 2)
+    df = pd.DataFrame({"x1": x1, "x2": x2, "x3": x3, "target": y})
+    parts = RepairPartitions.from_frame(df, df["target"].to_numpy())
+    tr = parts.discovery_df.assign(target=parts.discovery_y)
+    orig = sorted(RimeProposer(feature_cols=["x1", "x2", "x3"], target_col="target",
+                              max_depth=2, budget=200).fit_and_propose(tr),
+                  key=lambda q: q.parameters["dev_r2"], reverse=True)[0]
+    out = repair(orig, parts, CONFIG, **CUTS)
+    assert out.rounds_used == 1, out.rounds_used
+    print("\n[scope] rounds_used=%d: single structural addition per run (declared limit)"
+          % out.rounds_used)

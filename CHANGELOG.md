@@ -4,7 +4,139 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+### Test-suite reporting (machine-verified by tests/test_dyn_reporting_integrity.py)
+
+- The Python RIME/repair/referee/STEM suite total is **200 tests across 42 files**, counted by importing each file in tests/test_dyn_reporting_integrity.py and assert-verified in CI. Earlier prose quoted a 74-test subset of 11 files; that figure is a scoped subset, not the suite total, and is superseded by the machine-verified number.
+- Named exclusions from the wider `tests/` directory (not silently omitted):
+  - `tests/test_all_system_equations_lean_proofs.py::test_spot_check_lean_kernel_compilation` — environmental: the Lean kernel compile exceeds the test's 15s budget (pre-existing).
+  - `tests/test_dyn_lean_universal_bridge.py` — same environmental Lean cause.
+  - `outputs/nano_ds10_freeze.json` — FREEZE DRIFT: the pin at `apedp_dyn/epistemic/frozen_spec.py:40` expects d37d0f1c..., but the benchmark regenerates deterministically to b809ddcb..., so `test_all_frozen_records_verified_against_pinned_hashes` fails. All of that generator's dependencies are clean, so the drift reproduces at HEAD. The pinned hash predates the current generator output; the pin owner must re-pin or reconcile the generator. NOT touched in this change.
+
+## [Unreleased] — RIME shape inference steps 1-2 (data-driven family prior + step basis, `experimental`)
+
+### Added
+- **`apedp_dyn/epistemic/shape_inference.py` — data-driven form-family prior.** The point is to
+  stop supplying structure by hand and let the data choose the family.
+  - Exact O(k·n²) dynamic-programming segmentation; segment count from an explicit BIC
+    argument (no module-level thresholds, per AGENTS.md §1.3).
+  - Family verdict among `piecewise_constant` / `smooth` / `no_structure`, decided by how
+    many PARAMETERS each family needs to reach a common fit target (a shared
+    achievable×(1−sse_target) R²), with the flat and sloped families costed per parameter.
+  - `fit_step_family` / `step_family_basis` emit a candidate step form
+    `c₀ + Σ cᵢ·sign(x − tᵢ)` with data-estimated thresholds and OLS coefficients. This form
+    needs NO new operator node: `Sign`, `Add`, `Const`, `Mul` already exist in the kernel.
+  - `staircase_prior(x, y)` chains the two and returns `None` for the seeds whenever the prior
+    does not support a step family, so a curve is never handed one.
+- **`tests/test_dyn_shape_inference.py` (15/15 green, fixed seeds).** Acceptance is bidirectional:
+  - Landauer staircase recovered EXACTLY: R² 1.0, coefficients (2.5, 0.5×5) matching the true
+    generating form, 5 change-points estimated within half the local bin gap of truth 1..5.
+  - 2% noise still identifies it (R² 0.9997); 0–10% noise all classify `piecewise_constant`.
+  - Straight line → `smooth`, 0 change-points, and `staircase_prior` returns no seeds.
+  - Saturating Padé curve → `smooth`, 0 change-points. iid noise → `smooth`. BTC forward
+    returns (1094 rows) → `no_structure`. No fabricated steps on real market data.
+  - Step count is data-estimated: 2-step staircase → 2 change-points, 5-step → 5.
+  - <40 rows → `no_structure`.
+
+### Recorded measurement failures (kept on the record, not hidden)
+Four statistics were implemented and REJECTED by measurement, each in both directions:
+1. **"Piecewise-constant beats a line"** — flags iid noise (+0.14 R²) and a saturating curve
+   (+0.63) as stepped while granting only +0.027 on the real staircase, because a line already
+   fits a ramp of steps at R² 0.973.
+2. **Flat-run fraction on the p90 |Δy| scale** — collapses under noise (0.975 → 0.065 at 1%),
+   because >90% flat steps put the 90th percentile inside the plateau, so the tolerance is set
+   by noise instead of the jump.
+3. **Within-segment drift ratio** — mislabels a COARSE segmentation of a CURVE as plateaus
+   (0.70 on a noisy Padé curve, 0.98 on iid noise), because a strongly curved segment looks
+   plateau-like.
+4. **Separately-BIC-selected k per family** — degenerates, because a piecewise-constant model
+   with enough segments drives SSE to exactly 0 and BIC's log-SSE term rewards that without
+   bound (a clean straight line was assigned 32 constant segments).
+
+Also fixed on the way: a half-bin threshold bias (DP boundaries are indices, so
+emitting `xs[j]` as the edge put every sign flip one half-bin late — R² 0.990 instead of
+1.000000), and an inverted sign on the parsimony gap.
+
+### Critical negative control (why the gate, not the R², is the evidence)
+`fit_step_family` applied to a STRAIGHT LINE with forced thresholds returns R² 0.979 and
+`identifiable=True`, because 6 constants approximate a line over a wide range. So a high R²
+from this basis is NOT admissible evidence of steps: only the independent shape prior's
+verdict makes it admissible. `staircase_prior` therefore declines to emit seeds on a line,
+and the test asserts the raw R² would have been misleading.
+
+### Stated limitations
+- Step 2 is still a PROPOSAL. The step basis is not yet fed to the kernel search, so
+  multi-term composition and the kernel-side wiring remain unbuilt. No claim of unsolicited
+  end-to-end discovery is made.
+- Measured boundary: at 20% noise the staircase no longer classifies as
+  `piecewise_constant` within `max_segments=32` — the cap, not the statistic, is the limit.
+  Not tuned to green; recorded as a boundary.
+
+### Reporting integrity
+- `RIME_SUITE_TOTAL` raised 193 → 200 (whitelisting this file), verified by re-running
+  `tests/test_dyn_reporting_integrity.py`.
+
 ## [Unreleased] — RIME Repair v0.1.x freeze (comparative-validation milestone)
+
+### Added (v0.2.5 round — Autonomous Epistemic Profiler, Coordinate Transmuter & Frontier Quantum Equations, `experimental`)
+- **`apedp_dyn/epistemic/autonomous_profiler.py` — Autonomous Diagnostic Pre-Scan:**
+  - Profiles target data topologies without human domain prompting:
+    - Dynamic range $\mathcal{R}_y = \max(y)/\min(y) > 100 \implies$ selects scale-invariant `"log_mse"`.
+    - Arrhenius tunneling singularity detector: $\frac{d \ln y}{d(1/x)} \approx \text{const} < 0$.
+    - Power-law scaling detector: $\frac{d \ln y}{d \ln x} \approx \text{const}$.
+    - Quantized plateau staircase scanner: flat derivative fraction $> 40\%$ and discrete clustering.
+    - Dual-asymptotic crossover scanner: low-$x$ vs. high-$x$ boundary power divergence (Rayleigh-Jeans vs. Wien).
+  - Emits immutable `DatasetProfile` with deterministic SHA-256 hash.
+- **`apedp_dyn/epistemic/coordinate_transmuter.py` — Manifold Linearization & Parameter Recovery:**
+  - Projects non-linear physical manifolds with essential singularities or power laws onto linearized basis spaces:
+    - Log-linear singular basis: $\ln y = \beta_0 + \beta_1 \ln x + \beta_2 (1/x)$ recovers $y = C x^k e^{-c/x}$.
+    - Power-law basis: $\ln y = \beta_0 + \beta_1 \ln x$ recovers $y = C x^k$.
+    - Quantized staircase basis: midpoint linear fit recovers step height $G_0$ and step width $\Delta w$.
+  - Emits valid `CandidateProposal` objects with closures compliant with `AGENTS.md` §1.1.
+- **Discovery Verified on 3 Frontier Quantum Equations (`tests/test_dyn_autonomous_epistemic_profiler.py`):**
+  - **Landau-Zener Non-Adiabatic Transition:** $P_{\mathrm{LZ}} = \exp(-\alpha / v)$ discovered with $R^2 = 1.000000$, $\alpha = 0.75$, power $k = 0.0$.
+  - **BCS Superconducting Weak-Coupling Gap:** $\Delta(g) = 3.52 \exp(-1/g)$ non-perturbative essential singularity discovered with $R^2 = 1.000000$.
+  - **Integer Quantum Hall Effect Conductance:** $\sigma_{xy} = G_0 \lfloor 1/B \rfloor$ discrete plateau staircase discovered with $R^2 = 1.000000$.
+
+### Added (v0.2.4 round — RIME Quantum Equation Capabilities & Limitation Remediations, `experimental`)
+- **Limitation 1 Remediated: Negative Powers in Brus Quantum Confinement (`rust/apedp-kernel`, `RimeProposer`):**
+  - Added negative rational exponents $x^{-1}$ and $x^{-2}$ to `rust/apedp-kernel/src/rime/seeds.rs`, added `(-1, 1)` and `(-2, 1)` to `PERMITTED_POWERS` in `rust/apedp-kernel/src/rime/rewrite.rs`, and fixed `Node::Power` sign handling in `rust/apedp-kernel/src/rime/graph.rs` to guarantee even negative powers evaluate strictly positive.
+  - Added algebraic transforms `inv` ($1/x$), `inv_sq` ($1/x^2$), and `lor_norm` ($1/(1+(x/s)^2)$) to `_ALGEBRAIC_TRANSFORMS` in `apedp_dyn/proposers/rime_proposer.py`.
+  - On Brus quantum dot confinement ($E_g(R) = 1.74 + 2.45 R^{-2} - 0.28 R^{-1}$), native RIME directly recovers negative power scaling laws ($+2.03553 (R^{-2}) + 1.69599$), eliminating bounded proxy $\tanh$ extrapolation collapse and raising extrapolation $R^2$ from $-70.27$ to $+0.9959$.
+- **Limitation 2 Remediated: Continuous Denominator Scale & Lorentzian Resonance (`R5_PADE_SATURATION`, `rime_repair_engine.py`):**
+  - Expanded `RepairOperator.R5_PADE_SATURATION` in `apedp_dyn/epistemic/rime_repair_engine.py` to fit both Form 1 (rising saturation $a \cdot z / (1 + b |z|)$) and Form 2 (Lorentzian resonance / lineshape $a / (1 + b |z|)$).
+  - Added `resonance: bool` parameter to `_wrap_pade_repaired` with covariance condition ($< 5000$) and asymptotic parameter uncertainty ($< 5\%$) identifiability diagnostics.
+  - On Detuned Rabi oscillations ($P_{\max}(\Delta) = \frac{\Omega_R^2}{\Omega_R^2 + \Delta^2} = \frac{1}{1 + 0.04 \Delta^2}$), accurately recovers $a = 1.000$, $b = 0.0400 \implies \Omega_R^2 = 25.00$ on clean data ($R^2 = 1.000000$) and under 2% noise recovers $\Omega_R^2 = 24.81$ (0.76% parameter error, holdout $R^2 = 0.999968$, `identifiability_status: IDENTIFIED_STABLE`).
+- **Limitation 3 Remediated: Harmonic Frequency Multipliers in Rabi Pulse Dynamics (`rust/apedp-kernel`, `RimeProposer`):**
+  - Added `harmonic_seeds: bool` parameter to `SearchConfig`, `small_forms_extended`, and `RimeProposer`.
+  - Emits $\cos(x)$, $\sin(x)$, $\cos(x+x) = \cos(2x)$, and $\sin(x+x) = \sin(2x)$ at Depth 0 when `harmonic_seeds` is enabled.
+  - Added `cos2` ($\cos(2x)$) and `sin2` ($\sin(2x)$) STEM transforms to `_STEM_TRANSFORMS` in `RimeProposer`.
+  - On resonant Rabi pulse dynamics ($P_e(t) = \sin^2(t) = \frac{1 - \cos(2t)}{2}$), native RIME natively discovers `-0.5 * (cos((t + t))) + 0.5` with clean holdout $R^2 = 1.000000$ and 2% noisy holdout $R^2 = 0.999992$.
+- **Verification & Pinned Regression Suite (`tests/test_dyn_rime_quantum_equation_fixes.py`, 3/3 green):**
+  - Covers negative powers, Lorentzian lineshapes, and harmonic frequency multipliers under clean and noisy regimes. All 58 canonical AGENTS.md tests and all 103 Rust kernel tests pass cleanly.
+
+### Added (v0.2.3 round — RIME native resolution of Seed Catalog Exhaustion & Grammar Constraint, `experimental`)
+- **Resolution of Seed Catalog Exhaustion (`rust/apedp-kernel/src/rime/seeds.rs`, `SearchConfig.max_seeds`, `SearchConfig.lagged_products`):**
+  - Overcame the fixed 60-seed catalogue cap with configurable `max_seeds` budget parameter.
+  - Added Family 6b contemporaneous lagged interaction products `(x_i[t-k] * x_j[t-k])` for $k \in \{1, 2, 5\}$ (`lagged_products: bool = false`).
+  - Preserved 100% backward compatibility for all existing callers: default `small_forms_with_all_options` delegates to `small_forms_extended(..., None, false)` maintaining byte-identical catalogue output.
+- **Resolution of Grammar Constraint via Native Multi-Term Additive Search (`rust/apedp-kernel/src/rime/additive.rs`, `SearchConfig.additive_terms`, `RimeProposer(additive_terms=...)`):**
+  - Wired native Rust forward stepwise OLS engine (`search_additive`) into PyO3 entry points (`rime_search_json`, `rime_search_envs_json`) and Python `RimeProposer`.
+  - Performs joint least-squares parameter refitting on common rows, honestly charging each added term for structural edges, regression coefficients, and Bonferroni selection multiplicity ($\lambda_c \cdot (\text{edges} + 1\text{ coefficient} + 2 \ln M)$).
+  - Composes winning multi-term expressions into unified executable `Graph` objects evaluated seamlessly in both Rust and Python `compute_score`.
+- **Benchmark Equivalence & Parity with GA-Large (`tests/test_dyn_rime_native_additive_and_seeds.py`, 4/4 green):**
+  - On the composite population extrapolation benchmark ($y[t] = 2 x_1[t-1] x_2[t-1] + 3 x_3[t-2] + 10$), `RimeProposer(additive_terms=2, lagged_products=True, max_seeds=120)` natively recovers the composite equation with exact structural terms and true parameter values ($2.996 \cdot x_3[t-2] + 1.997 \cdot (x_1[t-1] \cdot x_2[t-1]) + 9.999$).
+  - Delivers transfer parity with GA-Large across populations without requiring post-hoc referee repair:
+    - Population A (test holdout): $R^2 = 0.999820$ (GA-Large: $0.9998$)
+    - Population B (fresh seeds): $R^2 = 0.999767$ (GA-Large: $0.9998$)
+    - Population C (distribution shift): $R^2 = 0.895609$ (GA-Large: $0.8961$)
+  - Confirmed 7-distractor noise filtering ($R^2 > 0.9999$) and parsimonious single-term retention on pure single-term data.
+
+### Added (v0.2.2 round — rational parameter identifiability & decoupled metrics, `experimental`)
+- **Rational Parameter Reconciliation & R5 Scaling Audit:** Reconciled mathematical parameter convention in `R5_PADE_SATURATION` (`apedp_dyn/epistemic/rime_repair_engine.py`). For $y = \frac{1000 p^2}{1 + 2000 p^2}$, explicitly established that when fitting $\text{pred} = \frac{a \cdot z}{1 + b \cdot |z|}$ against un-saturated parent model $z = k_{\text{fit}} \cdot p^2$, the physical numerator scale is $a \cdot k_{\text{fit}} = 1000.00$, the physical denominator scale is $b \cdot k_{\text{fit}} = 2000.00$, and the saturation envelope ratio is $\alpha = b/a = 2.0000$. Resolved prior documentation ambiguity conflating the dimensionless envelope ratio $\alpha=2.0$ with the raw physical denominator coefficient $c_{\text{den}}=2000$.
+- **Identifiability & Uncertainty Diagnostics in R5:** Added covariance matrix conditioning analysis (`cov_condition = np.linalg.cond(pcov)`), asymptotic parameter standard errors (`a_stderr`, `b_stderr`), boundary-hit flags, and explicit `identifiability_status` (`IDENTIFIED_STABLE` vs `PREDICTIVE_ONLY_ILL_CONDITIONED`). On narrow/weakly-saturated domains ($p \in [0.001, 0.008]$), flags ill-conditioning when denominator scale drifts (6.5% error) even if holdout $R^2 > 0.999$.
+- **Decoupled 5-Metric Evaluation Schema:** Implemented independent scoring in candidate proposal metadata and parameters: `structure_match`, `parameter_recovery`, `prediction_score` ($R^2$, RMSE), `extrapolation_score`, and `identifiability_status`. High predictive fit ($R^2 > 0.99$) is strictly decoupled from mechanism or parameter identification.
+- **Negative Controls & Skepticism Gates:** Verified against pure quadratic ($y = 1000 p^2 \implies b \to 0$, no false saturation) and exponential saturation ($y = 0.5(1 - e^{-u/0.5})$ where Padé achieves $R^2 > 0.999$, proving high fit alone does not certify rational mechanism).
+- **Pinned Verification Suite (`tests/test_dyn_rime_rational_parameter_identifiability.py`, 5/5 green):** Covers exact recovery, noise robustness ($0.5\%, 2\%, 5\%$), domain range breakdown, negative controls, and decoupled reporting. All 74 canonical and dynamic regression tests pass cleanly.
 
 ### Added (v0.2.1 round — flag calibration, staged search, layered FPR, `experimental`)
 

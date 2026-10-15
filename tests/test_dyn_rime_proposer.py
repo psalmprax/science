@@ -102,7 +102,7 @@ def test_rime_proposer_recovers_momentum_and_interaction_families():
     assert any("[t-1]" in e for e in equations), equations
     # Every proposal carries its provenance and the search's dev evidence.
     for p in proposals:
-        assert p.metadata["engine"] == "rime_v0.1.2"
+        assert p.metadata["engine"] in ("rime_v0.1.2", "rime_v0.2.0")
         assert p.metadata["evaluated"] <= 200
         assert p.metadata["lambda_c"] > 0.0
         assert p.metadata["depth"] <= 2

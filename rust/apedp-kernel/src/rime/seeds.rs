@@ -34,8 +34,8 @@ pub const DECAY_PRIORS: [(usize, usize); 5] = [(1, 2), (7, 10), (4, 5), (9, 10),
 /// so that every family fits inside the 60-form budget for two inputs.
 pub const INTERACTION_LAGS: [usize; 3] = [1, 2, 5];
 
-fn add(out: &mut Vec<Graph>, seen: &mut HashSet<String>, g: Graph) {
-    if out.len() >= MAX_SEED_FORMS {
+fn add(out: &mut Vec<Graph>, seen: &mut HashSet<String>, g: Graph, max_forms: usize) {
+    if out.len() >= max_forms {
         return;
     }
     if seen.insert(g.id()) {
@@ -177,12 +177,27 @@ pub fn small_forms_with_all_options(
     square_seeds: bool,
     power_seeds: bool,
 ) -> Vec<Graph> {
+    small_forms_extended(n_inputs, order, square_seeds, power_seeds, None, false, false)
+}
+
+/// Build the small-form catalogue with extended options including adaptive seed limits,
+/// contemporaneous lagged interaction products, and harmonic double-frequency seeds.
+pub fn small_forms_extended(
+    n_inputs: usize,
+    order: SeedOrder,
+    square_seeds: bool,
+    power_seeds: bool,
+    max_seeds: Option<usize>,
+    lagged_products: bool,
+    harmonic_seeds: bool,
+) -> Vec<Graph> {
+    let max_forms = max_seeds.unwrap_or(MAX_SEED_FORMS);
     let n = n_inputs.max(1);
     let inputs: Vec<Graph> = (0..n).map(single_input).collect();
     let lagged: Vec<Vec<Graph>> = inputs.iter().map(|g| LAG_SET.iter().map(|k| lag(g, *k)).collect()).collect();
     let mut out: Vec<Graph> = Vec::new();
     let mut seen: HashSet<String> = HashSet::new();
-    let push = |out: &mut Vec<Graph>, seen: &mut HashSet<String>, g: Graph| add(out, seen, g);
+    let push = |out: &mut Vec<Graph>, seen: &mut HashSet<String>, g: Graph| add(out, seen, g, max_forms);
 
     // 1. Levels.
     for g in &inputs {
@@ -224,11 +239,20 @@ pub fn small_forms_with_all_options(
         if square_seeds {
             push(&mut out, &mut seen, mul_g(ga, ga));
         }
+        if harmonic_seeds {
+            push(&mut out, &mut seen, add_g(ga, ga));
+            push(&mut out, &mut seen, wrap(ga, |node| Node::Cos(node)));
+            push(&mut out, &mut seen, wrap(ga, |node| Node::Sin(node)));
+            push(&mut out, &mut seen, wrap(&add_g(ga, ga), |node| Node::Cos(node)));
+            push(&mut out, &mut seen, wrap(&add_g(ga, ga), |node| Node::Sin(node)));
+        }
         if power_seeds {
             push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: 2, p_den: 3 }));
             push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: 1, p_den: 3 }));
             push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: 1, p_den: 2 }));
             push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: -1, p_den: 3 }));
+            push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: -1, p_den: 1 }));
+            push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: -2, p_den: 1 }));
         }
         for gb in inputs.iter().skip(i + 1) {
             push(&mut out, &mut seen, add_g(ga, gb));
@@ -245,6 +269,17 @@ pub fn small_forms_with_all_options(
             for k in INTERACTION_LAGS {
                 let idx = LAG_SET.iter().position(|x| *x == k).expect("lag in set");
                 push(&mut out, &mut seen, mul_g(&inputs[i], &lagged[j][idx]));
+            }
+        }
+    }
+    // 6b. Contemporaneous lagged interactions: x_i[t-k] * x_j[t-k].
+    if lagged_products {
+        for i in 0..inputs.len() {
+            for j in (i + 1)..inputs.len() {
+                for k in INTERACTION_LAGS {
+                    let idx = LAG_SET.iter().position(|x| *x == k).expect("lag in set");
+                    push(&mut out, &mut seen, mul_g(&lagged[i][idx], &lagged[j][idx]));
+                }
             }
         }
     }
