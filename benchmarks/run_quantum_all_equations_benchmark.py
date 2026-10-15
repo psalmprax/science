@@ -219,6 +219,7 @@ def run_all_benchmarks() -> dict[str, any]:
         "formula": planck_diff["formula"],
         "r2_train": planck_diff["integrated_trajectory_r2"],
         "jet_rmse": planck_diff["jet_rmse"],
+        "is_exact": planck_diff["is_exact_recovery"],
     }
 
     # =========================================================================
@@ -401,7 +402,7 @@ def generate_markdown_report(results: dict[str, any]) -> None:
         "| :-: | :--- | :--- | :--- | :--- | :---: | :---: | :---: | :---: |",
         f"| **1** | **Landauer Staircase** ($G_0 \\lfloor V_g \\rfloor$) | Quantized Plateaus | Total Variation ($BV$-ROF) | Step $\\Delta G = {eqs['landauer_staircase']['clean']['quantum_step_recovered']:.4f}$ | `{eqs['landauer_staircase']['clean']['r2_train']:.6f}` | `{eqs['landauer_staircase']['clean']['r2_extrap']:.6f}` | `{eqs['landauer_staircase']['clean']['wall_ms']:.2f} ms` | **PASSED** (Exact Recovery) |",
         f"| **2** | **Schwinger Pair Production** ($10 E^2 e^{{-1/E}}$) | Essential Singularity | Differential Padé | `{eqs['schwinger_tunneling']['formula']}` | `{eqs['schwinger_tunneling']['r2_train']:.6f}` | `{eqs['schwinger_tunneling']['r2_extrap']:.6f}` | `{eqs['schwinger_tunneling']['wall_ms']:.2f} ms` | **PASSED** (Exact Recovery) |",
-        f"| **3** | **Planck Radiance** ($\\frac{{\\nu^3}}{{e^\\nu - 1}}$) | Dual-Asymptotic Crossover | Differential Padé | `{eqs['planck_radiance']['formula']}` | `{eqs['planck_radiance']['r2_train']:.6f}` | `N/A (Jet ODE)` | `{eqs['planck_radiance']['wall_ms']:.2f} ms` | **PASSED** (Trajectory Pass) |",
+        f"| **3** | **Planck Radiance** ($\\frac{{\\nu^3}}{{e^\\nu - 1}}$) | Dual-Asymptotic Crossover | Differential Padé | `{eqs['planck_radiance']['formula']}` | `{eqs['planck_radiance']['r2_train']:.6f}` | `N/A (Jet ODE)` | `{eqs['planck_radiance']['wall_ms']:.2f} ms` | " + ("**PASSED** (Exact Recovery)" if eqs['planck_radiance'].get('is_exact') else "**RECORDED LIMITATION** (approximate jet ODE; no exact polynomial ODE exists)") + " |",
         f"| **4** | **Brus Confinement** ($1.74 + 2.45 R^{{-2}} - 0.28 R^{{-1}}$) | Rational Powers | Shared DAG Enumeration | `{eqs['brus_confinement']['best_formula']}` | `{eqs['brus_confinement']['r2_train']:.6f}` | `{eqs['brus_confinement']['r2_train']:.6f}` | `{eqs['brus_confinement']['wall_ms']:.2f} ms` | **PASSED** (Exact Recovery) |",
         f"| **5** | **Detuned Rabi Resonance** ($\\frac{{25}}{{25 + \\Delta^2}}$) | Lorentzian Padé Pole | Sparse Implicit SVD | `{eqs['detuned_rabi_resonance']['formula']}` | `RMSE < 1e-8` | `Exact Pole` | `{eqs['detuned_rabi_resonance']['wall_ms']:.2f} ms` | **PASSED** (Exact Algebraic) |",
         f"| **6** | **Resonant Rabi Dynamics** ($\\frac{{1 - \\cos(2t)}}{{2}}$) | Harmonic Frequency | Shared DAG Enumeration | `{eqs['resonant_rabi_dynamics']['formula']}` | `{eqs['resonant_rabi_dynamics']['r2_train']:.6f}` | `Exact Harmonic` | `{eqs['resonant_rabi_dynamics']['wall_ms']:.2f} ms` | **PASSED** (Exact Recovery) |",

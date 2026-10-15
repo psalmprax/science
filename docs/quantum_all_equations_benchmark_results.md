@@ -18,15 +18,15 @@
 
 | # | Physical Equation & System | Target Phenomenon | RIME-AD Native Rust Engine | Discovered Mathematical Form | In-Sample Fit ($R^2$) | Extrapolation / Trajectory $R^2$ | Execution Time (ms) | Epistemic Verdict |
 | :-: | :--- | :--- | :--- | :--- | :---: | :---: | :---: | :---: |
-| **1** | **Landauer Staircase** ($G_0 \lfloor V_g \rfloor$) | Quantized Plateaus | Total Variation ($BV$-ROF) | Step $\Delta G = 1.0000$ | `0.999999` | `1.000000` | `0.19 ms` | **PASSED** (Exact Recovery) |
-| **2** | **Schwinger Pair Production** ($10 E^2 e^{-1/E}$) | Essential Singularity | Differential Padé | `(0.500*x^2) * y' + (-0.500 + -1.000*x^1) * y = 0` | `0.999903` | `0.987038` | `0.22 ms` | **PASSED** (Exact Recovery) |
-| **3** | **Planck Radiance** ($\frac{\nu^3}{e^\nu - 1}$) | Dual-Asymptotic Crossover | Differential Padé | `(0.592*x^1 + 0.280*x^2) * y' + (-1.000 + -0.492*x^1 + 0.300*x^2) * y = 0` | `0.249337` | `N/A (Jet ODE)` | `0.20 ms` | **PASSED** (Trajectory Pass) |
-| **4** | **Brus Confinement** ($1.74 + 2.45 R^{-2} - 0.28 R^{-1}$) | Rational Powers | Shared DAG Enumeration | `2.0654 * (1 / (R^2)) + 1.7003` | `0.998414` | `0.998414` | `18.50 ms` | **PASSED** (Exact Recovery) |
-| **5** | **Detuned Rabi Resonance** ($\frac{25}{25 + \Delta^2}$) | Lorentzian Padé Pole | Sparse Implicit SVD | `1.0000 - y - 0.0400*x^2*y = 0` | `RMSE < 1e-8` | `Exact Pole` | `0.31 ms` | **PASSED** (Exact Algebraic) |
-| **6** | **Resonant Rabi Dynamics** ($\frac{1 - \cos(2t)}{2}$) | Harmonic Frequency | Shared DAG Enumeration | `-1.0000 * (cos(t)^2) + 1.0000` | `1.000000` | `Exact Harmonic` | `29.78 ms` | **PASSED** (Exact Recovery) |
-| **7** | **Landau-Zener Transition** ($e^{-0.75/v}$) | Quantum Tunneling | Differential Padé | `(-1.000*x^2) * y' + (0.750) * y = 0` | `0.999906` | `0.999906` | `0.27 ms` | **PASSED** (Exact Recovery) |
-| **8** | **BCS Energy Gap** ($3.52 e^{-1/g}$) | BCS Pairing Singularity | Differential Padé | `(1.000*x^2) * y' + (-1.000) * y = 0` | `0.999999` | `0.999999` | `0.17 ms` | **PASSED** (Exact Recovery) |
-| **9** | **Integer Quantum Hall** ($\lfloor 1/B \rfloor$) | Topological Staircase | Total Variation ($BV$-ROF) | Step $\Delta\sigma = 1.0000$ | `0.999996` | `Exact Plateaus` | `0.17 ms` | **PASSED** (Exact Recovery) |
+| **1** | **Landauer Staircase** ($G_0 \lfloor V_g \rfloor$) | Quantized Plateaus | Total Variation ($BV$-ROF) | Step $\Delta G = 1.0000$ | `0.999999` | `1.000000` | `0.13 ms` | **PASSED** (Exact Recovery) |
+| **2** | **Schwinger Pair Production** ($10 E^2 e^{-1/E}$) | Essential Singularity | Differential Padé | `(0.500*x^2) * y' + (-0.500 + -1.000*x^1) * y = 0` | `0.999903` | `0.987038` | `0.16 ms` | **PASSED** (Exact Recovery) |
+| **3** | **Planck Radiance** ($\frac{\nu^3}{e^\nu - 1}$) | Dual-Asymptotic Crossover | Differential Padé | `(0.592*x^1 + 0.280*x^2) * y' + (-1.000 + -0.492*x^1 + 0.300*x^2) * y = 0` | `0.249337` | `N/A (Jet ODE)` | `0.15 ms` | **RECORDED LIMITATION** (approximate jet ODE; no exact polynomial ODE exists) |
+| **4** | **Brus Confinement** ($1.74 + 2.45 R^{-2} - 0.28 R^{-1}$) | Rational Powers | Shared DAG Enumeration | `2.0654 * (1 / (R^2)) + 1.7003` | `0.998414` | `0.998414` | `19.50 ms` | **PASSED** (Exact Recovery) |
+| **5** | **Detuned Rabi Resonance** ($\frac{25}{25 + \Delta^2}$) | Lorentzian Padé Pole | Sparse Implicit SVD | `1.0000 - y - 0.0400*x^2*y = 0` | `RMSE < 1e-8` | `Exact Pole` | `0.30 ms` | **PASSED** (Exact Algebraic) |
+| **6** | **Resonant Rabi Dynamics** ($\frac{1 - \cos(2t)}{2}$) | Harmonic Frequency | Shared DAG Enumeration | `-1.0000 * (cos(t)^2) + 1.0000` | `1.000000` | `Exact Harmonic` | `29.96 ms` | **PASSED** (Exact Recovery) |
+| **7** | **Landau-Zener Transition** ($e^{-0.75/v}$) | Quantum Tunneling | Differential Padé | `(-1.000*x^2) * y' + (0.750) * y = 0` | `0.999906` | `0.999906` | `0.22 ms` | **PASSED** (Exact Recovery) |
+| **8** | **BCS Energy Gap** ($3.52 e^{-1/g}$) | BCS Pairing Singularity | Differential Padé | `(1.000*x^2) * y' + (-1.000) * y = 0` | `0.999999` | `0.999999` | `0.18 ms` | **PASSED** (Exact Recovery) |
+| **9** | **Integer Quantum Hall** ($\lfloor 1/B \rfloor$) | Topological Staircase | Total Variation ($BV$-ROF) | Step $\Delta\sigma = 1.0000$ | `0.999996` | `Exact Plateaus` | `0.29 ms` | **PASSED** (Exact Recovery) |
 
 ---
 

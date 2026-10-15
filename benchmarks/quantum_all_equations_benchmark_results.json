@@ -1,14 +1,14 @@
 {
   "metadata": {
     "title": "Quantum & Physical Benchmark Across RIME-AD Rust Engines",
-    "timestamp": "2026-10-15T14:15:06Z",
+    "timestamp": "2026-10-15T15:18:44Z",
     "git_workspace": "/home/psalmprax/ALL_PROJECTS/science",
     "equations_count": 9
   },
   "equations": {
     "landauer_staircase": {
       "clean": {
-        "wall_ms": 0.19412091933190823,
+        "wall_ms": 0.12959796003997326,
         "r2_train": 0.9999986435160065,
         "r2_extrap": 1.0,
         "rmse_extrap": 0.0,
@@ -17,7 +17,7 @@
         "is_quantized": true
       },
       "noise_2pct": {
-        "wall_ms": 0.29162305872887373,
+        "wall_ms": 0.28156209737062454,
         "r2_train": 0.9998354096574293,
         "r2_extrap": 0.9970721756913987,
         "rmse_extrap": 0.07524121930904208,
@@ -33,7 +33,7 @@
       }
     },
     "schwinger_tunneling": {
-      "wall_ms": 0.21971494425088167,
+      "wall_ms": 0.15906000044196844,
       "formula": "(0.500*x^2) * y' + (-0.500 + -1.000*x^1) * y = 0",
       "r2_train": 0.9999027373058178,
       "r2_extrap": 0.9870382687038118,
@@ -42,43 +42,44 @@
       "is_exact": true
     },
     "planck_radiance": {
-      "wall_ms": 0.20451401360332966,
+      "wall_ms": 0.15492609236389399,
       "formula": "(0.592*x^1 + 0.280*x^2) * y' + (-1.000 + -0.492*x^1 + 0.300*x^2) * y = 0",
       "r2_train": 0.24933661815675678,
-      "jet_rmse": 0.013482751649418269
+      "jet_rmse": 0.013482751649418269,
+      "is_exact": false
     },
     "brus_confinement": {
-      "wall_ms": 18.49742908962071,
+      "wall_ms": 19.500657101161778,
       "best_formula": "2.0654 * (1 / (R^2)) + 1.7003",
       "r2_train": 0.9984139642532619
     },
     "detuned_rabi_resonance": {
-      "wall_ms": 0.3051039529964328,
+      "wall_ms": 0.3024960169568658,
       "formula": "1.0000 - y - 0.0400*x^2*y = 0",
       "algebraic_rmse": 1.3314679828159064e-11,
       "is_exact": true
     },
     "resonant_rabi_dynamics": {
-      "wall_ms": 29.776429990306497,
+      "wall_ms": 29.96361197438091,
       "formula": "-1.0000 * (cos(t)^2) + 1.0000",
       "r2_train": 1.0
     },
     "landau_zener": {
-      "wall_ms": 0.2693389542400837,
+      "wall_ms": 0.2233379054814577,
       "formula": "(-1.000*x^2) * y' + (0.750) * y = 0",
       "r2_train": 0.9999059783288732,
       "jet_rmse": 1.550239135920066e-05,
       "is_exact": true
     },
     "bcs_energy_gap": {
-      "wall_ms": 0.17007801216095686,
+      "wall_ms": 0.17791392747312784,
       "formula": "(1.000*x^2) * y' + (-1.000) * y = 0",
       "r2_train": 0.99999922053602,
       "jet_rmse": 5.5043888669352266e-05,
       "is_exact": true
     },
     "iqhe_staircase": {
-      "wall_ms": 0.1697189873084426,
+      "wall_ms": 0.2851838944479823,
       "r2_train": 0.9999961559031956,
       "flat_fraction": 0.957983193277311,
       "quantum_step_recovered": 1.0,

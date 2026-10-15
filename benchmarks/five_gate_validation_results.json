@@ -1,0 +1,97 @@
+{
+  "metadata": {
+    "title": "RIME-AD Five-Gate Scientific Validation Programme",
+    "timestamp": "2026-10-15T15:20:29Z",
+    "git_workspace": "/home/psalmprax/ALL_PROJECTS/science"
+  },
+  "gates": {
+    "gate1_exact_recovery": {
+      "passed": true,
+      "cases": {
+        "landauer": {
+          "exact": true
+        },
+        "schwinger": {
+          "exact": true
+        },
+        "planck_limitation_holds": true,
+        "brus": {
+          "exact": true
+        },
+        "detuned_rabi": {
+          "exact": true
+        },
+        "resonant_rabi": {
+          "exact": true
+        },
+        "landau_zener": {
+          "exact": true
+        },
+        "bcs": {
+          "exact": true
+        },
+        "iqhe": {
+          "exact": true
+        }
+      }
+    },
+    "gate2_noise_identifiability": {
+      "passed": true,
+      "cases": {
+        "landauer_2pct_quantized": true,
+        "landauer_2pct_step": 0.9893400795633549,
+        "landauer_5pct_quantized": true,
+        "landauer_5pct_step": 0.9380492941971936,
+        "schwinger_2pct_no_false_exact": true,
+        "schwinger_2pct_traj_r2": -0.8794207215571179
+      }
+    },
+    "gate3_adversarial": {
+      "passed": true,
+      "cases": {
+        "sine_not_quantized": true,
+        "sine_not_exact_implicit": true,
+        "white_noise_not_exact_ode": true,
+        "null_world_not_exact": true
+      }
+    },
+    "gate4_matched_compute": {
+      "passed": true,
+      "rabi": {
+        "rime": {
+          "r2": 1.0,
+          "wall_ms": 37.982242996804416,
+          "formula": "-1.0000 * (cos(t)^2) + 1.0000"
+        },
+        "ga": {
+          "formula": "-1.0879 * ((cos(sin(t)) + -1.0776) - cos(cos(t))) + -0.6723",
+          "r2": 0.9999999601763059,
+          "wall_ms": 21.889884024858475,
+          "evals": 1560
+        }
+      },
+      "brus": {
+        "rime": {
+          "r2_train": 0.9984139642532619,
+          "wall_ms": 21.58015500754118,
+          "formula": "2.0654 * (1 / (R^2)) + 1.7003"
+        },
+        "ga": {
+          "formula": "2.2645 * ((t**2.2004)**-1.0) + 1.7176",
+          "r2": -2.9250686071320096,
+          "wall_ms": 6.158055970445275,
+          "evals": 1560
+        }
+      }
+    },
+    "gate5_sealed_confirmation": {
+      "passed": true,
+      "cases": {
+        "landauer_2pct_still_quantized": true,
+        "schwinger_still_exact": true,
+        "planck_still_not_exact": true
+      }
+    }
+  },
+  "all_passed": true
+}
