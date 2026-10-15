@@ -17,3 +17,9 @@ pub mod d3;
 // File kept on disk; re-attach only with a port to the v0.1.2 packet types.
 // pub mod referee;
 pub mod seeds;
+pub mod total_variation;
+pub mod implicit;
+pub mod diff_pade;
+pub mod enumerate;
+pub mod koopman;
+pub mod lie_symmetry;

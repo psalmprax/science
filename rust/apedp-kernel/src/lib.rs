@@ -943,6 +943,117 @@ fn rime_rewrite_json(graph_json: &str, op_json: &str) -> PyResult<String> {
     }
 }
 
+#[pyfunction]
+fn rime_total_variation_json(x_json: &str, y_json: &str, lambda: f64, jump_tol: f64) -> PyResult<String> {
+    let x: Vec<f64> = serde_json::from_str(x_json)
+        .map_err(|e| PyValueError::new_err(format!("bad x JSON: {}", e)))?;
+    let y: Vec<f64> = serde_json::from_str(y_json)
+        .map_err(|e| PyValueError::new_err(format!("bad y JSON: {}", e)))?;
+    let report = rime::total_variation::tv_denoise_and_analyze(&x, &y, lambda, jump_tol)
+        .map_err(|e| PyValueError::new_err(e))?;
+    serde_json::to_string(&report)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_implicit_discover_json(x_json: &str, y_json: &str, config_json: &str) -> PyResult<String> {
+    let x: Vec<f64> = serde_json::from_str(x_json)
+        .map_err(|e| PyValueError::new_err(format!("bad x JSON: {}", e)))?;
+    let y: Vec<f64> = serde_json::from_str(y_json)
+        .map_err(|e| PyValueError::new_err(format!("bad y JSON: {}", e)))?;
+    let config: rime::implicit::ImplicitConfig = if config_json.is_empty() {
+        rime::implicit::ImplicitConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+    let res = rime::implicit::discover_implicit_relation(&x, &y, &config)
+        .map_err(|e| PyValueError::new_err(e))?;
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_diff_pade_discover_json(x_json: &str, y_json: &str, config_json: &str) -> PyResult<String> {
+    let x: Vec<f64> = serde_json::from_str(x_json)
+        .map_err(|e| PyValueError::new_err(format!("bad x JSON: {}", e)))?;
+    let y: Vec<f64> = serde_json::from_str(y_json)
+        .map_err(|e| PyValueError::new_err(format!("bad y JSON: {}", e)))?;
+    let config: rime::diff_pade::DiffPadeConfig = if config_json.is_empty() {
+        rime::diff_pade::DiffPadeConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+    let res = rime::diff_pade::discover_differential_relation(&x, &y, &config)
+        .map_err(|e| PyValueError::new_err(e))?;
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_enumerate_search_json(
+    vars_json: &str,
+    target_json: &str,
+    var_names_json: &str,
+    include_trig: bool,
+    include_floor: bool,
+    max_depth: usize,
+) -> PyResult<String> {
+    let vars: Vec<Vec<f64>> = serde_json::from_str(vars_json)
+        .map_err(|e| PyValueError::new_err(format!("bad vars JSON: {}", e)))?;
+    let target: Vec<f64> = serde_json::from_str(target_json)
+        .map_err(|e| PyValueError::new_err(format!("bad target JSON: {}", e)))?;
+    let var_names: Vec<String> = serde_json::from_str(var_names_json)
+        .map_err(|e| PyValueError::new_err(format!("bad var_names JSON: {}", e)))?;
+    let candidates = rime::enumerate::search_enumerated_shared(
+        &vars,
+        &target,
+        &var_names,
+        include_trig,
+        include_floor,
+        max_depth,
+    );
+    serde_json::to_string(&candidates)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_koopman_discover_json(
+    series_json: &str,
+    dt: f64,
+    config_json: &str,
+) -> PyResult<String> {
+    let series: Vec<f64> = serde_json::from_str(series_json)
+        .map_err(|e| PyValueError::new_err(format!("bad series JSON: {}", e)))?;
+    let config: rime::koopman::KoopmanConfig = if config_json.is_empty() {
+        rime::koopman::KoopmanConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+    let res = rime::koopman::discover_linear_spectrum(&series, dt, &config)
+        .map_err(|e| PyValueError::new_err(e))?;
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_lie_symmetry_json(f_terms_json: &str, config_json: &str) -> PyResult<String> {
+    let f_terms: Vec<(usize, usize, f64)> = serde_json::from_str(f_terms_json)
+        .map_err(|e| PyValueError::new_err(format!("bad f_terms JSON: {}", e)))?;
+    let config: rime::lie_symmetry::LieConfig = if config_json.is_empty() {
+        rime::lie_symmetry::LieConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+    let res = rime::lie_symmetry::discover_point_symmetries(&f_terms, &config)
+        .map_err(|e| PyValueError::new_err(e))?;
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
 #[pymodule]
 fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(compile, m)?)?;
@@ -962,6 +1073,12 @@ fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rime_search_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_search_envs_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_evaluate_series_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_total_variation_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_implicit_discover_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_diff_pade_discover_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_enumerate_search_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_koopman_discover_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_lie_symmetry_json, m)?)?;
     m.add_class::<UnitVector>()?;
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     Ok(())

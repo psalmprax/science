@@ -1,0 +1,88 @@
+{
+  "metadata": {
+    "title": "Population Extrapolation: RIME-AD vs GA/GP Benchmark",
+    "timestamp": "2026-10-15T14:42:57Z",
+    "git_workspace": "/home/psalmprax/ALL_PROJECTS/science",
+    "generating_truth": "y[t] = 2.0*x1[t-1]*x2[t-1] + 3.0*x3[t-2] + 10.0"
+  },
+  "methods": {
+    "ga_small": {
+      "name": "Genetic Algorithm (GA-Small, Linear + Lags)",
+      "wall_ms": 1354.7206339426339,
+      "active_terms": [
+        "1",
+        "x1",
+        "x1[t-1]",
+        "x1[t-2]",
+        "x2",
+        "x2[t-1]",
+        "x2[t-2]",
+        "x3",
+        "x3[t-1]",
+        "x3[t-2]"
+      ],
+      "r2_A_tr": 0.6808908557738335,
+      "r2_A_te": 0.644961587338517,
+      "r2_B": 0.7006247124249401,
+      "r2_C_shift": 0.4184699767531941,
+      "r2_D_heavy": 0.32121020340752526
+    },
+    "ga_large": {
+      "name": "Genetic Algorithm (GA-Large, Polynomial + Interactions)",
+      "wall_ms": 2137.7060869708657,
+      "active_terms": [
+        "1",
+        "x1",
+        "x1[t-1]",
+        "x2",
+        "x2[t-1]",
+        "x3",
+        "x3[t-1]",
+        "x3[t-2]",
+        "x1^2",
+        "x1[t-1]^2",
+        "x1[t-2]^2",
+        "x2^2",
+        "x2[t-1]^2",
+        "x2[t-2]^2",
+        "x3^2",
+        "x1[t-1]*x2[t-1]",
+        "x1[t-2]*x2[t-2]",
+        "x1*x2",
+        "x1*x3",
+        "x2*x3"
+      ],
+      "r2_A_tr": 0.9997806103588579,
+      "r2_A_te": 0.9998033416843741,
+      "r2_B": 0.9997618392447694,
+      "r2_C_shift": 0.896099993558659,
+      "r2_D_heavy": 0.9999553885509458
+    },
+    "rime_ad": {
+      "name": "RIME-AD (Native Rust Adaptive Additive Discovery)",
+      "wall_ms": 8.675546967424452,
+      "formula": "+1 * (((2.995647 * x3[t-2]) + (1.996585 * (x1[t-1] * x2[t-1])))) +9.99877",
+      "active_terms": [
+        "x1",
+        "x2",
+        "x3"
+      ],
+      "r2_A_tr": 0.9997699836072547,
+      "r2_A_te": 0.9998163139278324,
+      "r2_B": 0.9997672389390011,
+      "r2_C_shift": 0.8960672761828506,
+      "r2_D_heavy": 0.999980073766025
+    }
+  },
+  "distractor_challenge": {
+    "wall_ms": 26.1791079537943,
+    "dev_r2": 0.999968952237157,
+    "inputs_used": [
+      "x1",
+      "x2",
+      "x3"
+    ],
+    "distractors_admitted": [],
+    "distractor_resilience_passed": true
+  }
+}
