@@ -21,7 +21,7 @@ def test_rational_pairs_recover_planck_textbook_form():
     u = (v ** 3) / (np.exp(v) - 1.0)
     res = json.loads(ak.rime_rational_search_json(
         json.dumps([v.tolist()]), json.dumps(u.tolist()),
-        json.dumps(["v"]), False, False, 2, 3))
+        json.dumps(["v"]), False, False, False, False, 2, 3))
     assert len(res) > 0
     best = res[0]
     assert best["r2"] > 0.999, f"R2={best['r2']} formula={best['formula']}"

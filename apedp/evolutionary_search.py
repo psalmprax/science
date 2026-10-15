@@ -75,6 +75,8 @@ class SearchConfig:
     tournament_size: int = 4
     mutation_rate: float = 0.35
     allow_exp: bool = True
+    allow_misc: bool = True
+    allow_advanced: bool = True
     allow_trig: bool = True
     allow_log: bool = True
     allow_sqrt: bool = True
@@ -802,6 +804,8 @@ def evolve(
                 mutation_rate=cfg.mutation_rate,
                 seed=cfg.seed,
                 allow_exp=cfg.allow_exp,
+                allow_misc=cfg.allow_misc,
+                allow_advanced=cfg.allow_advanced,
             )
             pareto_front_dicts = [
                 {"expression": item["expression"], "train_mse": item["mse"], "complexity": item["complexity"]}

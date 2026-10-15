@@ -535,3 +535,74 @@ mod tests {
         }
     }
 }
+
+/// Error function via the Abramowitz & Stegun 7.1.26 five-term
+/// approximation (|error| <= 1.5e-7). Odd, erf(±inf) = ±1, erf(NaN) = NaN.
+pub fn erf_approx(x: f64) -> f64 {
+    if x.is_nan() {
+        return f64::NAN;
+    }
+    if x == 0.0 {
+        // signum(0.0) is 1.0 in Rust, so the generic path would return
+        // ~1e-9 instead of exactly 0.
+        return 0.0;
+    }
+    if x.is_infinite() {
+        return x.signum();
+    }
+    let s = x.signum();
+    let ax = x.abs();
+    let t = 1.0 / (1.0 + 0.3275911 * ax);
+    let poly = ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t;
+    s * (1.0 - poly * (-ax * ax).exp())
+}
+
+/// Bessel function of the first kind, order 0, via the defining power
+/// series with early termination. Accurate to ~1e-12 for |x| <= 8 and
+/// degrading gracefully beyond (alternating cancellation); callers needing
+/// far-field asymptotics should extend this, not silently accept drift.
+pub fn bessel_j0(x: f64) -> f64 {
+    if x.is_nan() {
+        return f64::NAN;
+    }
+    if x.is_infinite() {
+        return 0.0;
+    }
+    let z = (x * x) / 4.0;
+    let mut sum = 1.0f64;
+    let mut term = 1.0f64;
+    for k in 1..100 {
+        term *= -z / ((k * k) as f64);
+        sum += term;
+        if term.abs() < 1e-16 * sum.abs().max(1e-300) && k > 10 {
+            break;
+        }
+    }
+    sum
+}
+
+#[cfg(test)]
+mod special_fn_tests {
+    use super::{bessel_j0, erf_approx};
+
+    #[test]
+    fn erf_matches_reference_values() {
+        // Abramowitz-Stegun 7.1.26 claims |error| <= 1.5e-7; pin at 1e-6.
+        assert_eq!(erf_approx(0.0), 0.0);
+        assert!((erf_approx(1.0) - 0.8427007929).abs() < 1e-6);
+        assert!((erf_approx(-1.0) + 0.8427007929).abs() < 1e-6);
+        assert!((erf_approx(2.0) - 0.9953222650).abs() < 1e-6);
+        assert_eq!(erf_approx(f64::INFINITY), 1.0);
+        assert_eq!(erf_approx(f64::NEG_INFINITY), -1.0);
+        assert!(erf_approx(f64::NAN).is_nan());
+    }
+
+    #[test]
+    fn bessel_j0_matches_reference_values() {
+        // J0(0) = 1; first positive zero at 2.4048255576957728.
+        assert!((bessel_j0(0.0) - 1.0).abs() < 1e-14);
+        assert!((bessel_j0(2.4048255576957728)).abs() < 1e-9);
+        assert!(bessel_j0(f64::NAN).is_nan());
+        assert_eq!(bessel_j0(f64::INFINITY), 0.0);
+    }
+}

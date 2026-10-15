@@ -365,6 +365,8 @@ class RustKernelBridge:
         crossover_rate: float = 0.70,
         allow_trans: bool = True,
         allow_exp: bool = True,
+        allow_misc: bool = True,
+        allow_advanced: bool = True,
         seed: int = 42,
     ) -> tuple[list[dict[str, Any]], int]:
         """Runs high-throughput parallel multi-island evolutionary search in Rust."""
@@ -387,6 +389,8 @@ class RustKernelBridge:
                     crossover_rate,
                     allow_trans,
                     allow_exp,
+                    allow_misc,
+                    allow_advanced,
                     seed,
                 )
                 formatted = [

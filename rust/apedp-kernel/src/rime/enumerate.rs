@@ -26,6 +26,25 @@ pub enum Op {
     Sin,
     Exp,
     Floor,
+    Neg,
+    Log,
+    Sqrt,
+    Abs,
+    Pi,
+    Sign,
+    Min,
+    Max,
+    Cbrt,
+    Erf,
+    BesselJ0,
+    Tan,
+    Sinh,
+    Cosh,
+    Tanh,
+    Asin,
+    Acos,
+    Atan,
+    Pow,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -128,6 +147,114 @@ impl SharedDag {
                 let a = self.eval_node(node.children[0], vars, memo);
                 a.iter().map(|&x| x.floor()).collect()
             }
+            // Domain-guarded misc ops: out-of-domain inputs yield NaN, and
+            // callers skip non-finite bases, so no spurious fits can arise.
+            Op::Neg => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter().map(|&x| -x).collect()
+            }
+            Op::Log => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter()
+                    .map(|&x| if x > 0.0 { x.ln() } else { f64::NAN })
+                    .collect()
+            }
+            Op::Sqrt => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter()
+                    .map(|&x| if x >= 0.0 { x.sqrt() } else { f64::NAN })
+                    .collect()
+            }
+            Op::Abs => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter().map(|&x| x.abs()).collect()
+            }
+            Op::Pi => {
+                vec![std::f64::consts::PI; vars[0].len()]
+            }
+            // Sign mirrors parser Func::Sign exactly (keeps -0.0 and NaN).
+            Op::Sign => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter()
+                    .map(|&x| {
+                        if x > 0.0 {
+                            1.0
+                        } else if x < 0.0 {
+                            -1.0
+                        } else {
+                            x
+                        }
+                    })
+                    .collect()
+            }
+            Op::Min => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                let b = self.eval_node(node.children[1], vars, memo);
+                a.iter().zip(b.iter()).map(|(&x, &y)| x.min(y)).collect()
+            }
+            Op::Max => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                let b = self.eval_node(node.children[1], vars, memo);
+                a.iter().zip(b.iter()).map(|(&x, &y)| x.max(y)).collect()
+            }
+            Op::Cbrt => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter().map(|&x| x.cbrt()).collect()
+            }
+            Op::Erf => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter().map(|&x| crate::numeric::erf_approx(x)).collect()
+            }
+            Op::BesselJ0 => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter().map(|&x| crate::numeric::bessel_j0(x)).collect()
+            }
+            Op::Tan => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter().map(|&x| x.tan()).collect()
+            }
+            Op::Sinh => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter().map(|&x| x.sinh()).collect()
+            }
+            Op::Cosh => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter().map(|&x| x.cosh()).collect()
+            }
+            Op::Tanh => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter().map(|&x| x.tanh()).collect()
+            }
+            Op::Asin => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter()
+                    .map(|&x| if x.abs() <= 1.0 { x.asin() } else { f64::NAN })
+                    .collect()
+            }
+            Op::Acos => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter()
+                    .map(|&x| if x.abs() <= 1.0 { x.acos() } else { f64::NAN })
+                    .collect()
+            }
+            Op::Atan => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                a.iter().map(|&x| x.atan()).collect()
+            }
+            Op::Pow => {
+                let a = self.eval_node(node.children[0], vars, memo);
+                let b = self.eval_node(node.children[1], vars, memo);
+                a.iter()
+                    .zip(b.iter())
+                    .map(|(&x, &y)| {
+                        if x < 0.0 && y.fract() != 0.0 {
+                            f64::NAN
+                        } else {
+                            x.powf(y)
+                        }
+                    })
+                    .collect()
+            }
         };
 
         memo.insert(root, res.clone());
@@ -150,6 +277,25 @@ impl SharedDag {
             Op::Sin => format!("sin({})", self.describe_node(node.children[0], var_names)),
             Op::Exp => format!("exp({})", self.describe_node(node.children[0], var_names)),
             Op::Floor => format!("floor({})", self.describe_node(node.children[0], var_names)),
+            Op::Neg => format!("(-{})", self.describe_node(node.children[0], var_names)),
+            Op::Log => format!("log({})", self.describe_node(node.children[0], var_names)),
+            Op::Sqrt => format!("sqrt({})", self.describe_node(node.children[0], var_names)),
+            Op::Abs => format!("abs({})", self.describe_node(node.children[0], var_names)),
+            Op::Pi => "pi".to_string(),
+            Op::Sign => format!("sign({})", self.describe_node(node.children[0], var_names)),
+            Op::Min => format!("min({}, {})", self.describe_node(node.children[0], var_names), self.describe_node(node.children[1], var_names)),
+            Op::Max => format!("max({}, {})", self.describe_node(node.children[0], var_names), self.describe_node(node.children[1], var_names)),
+            Op::Cbrt => format!("cbrt({})", self.describe_node(node.children[0], var_names)),
+            Op::Erf => format!("erf({})", self.describe_node(node.children[0], var_names)),
+            Op::BesselJ0 => format!("besselj({})", self.describe_node(node.children[0], var_names)),
+            Op::Tan => format!("tan({})", self.describe_node(node.children[0], var_names)),
+            Op::Sinh => format!("sinh({})", self.describe_node(node.children[0], var_names)),
+            Op::Cosh => format!("cosh({})", self.describe_node(node.children[0], var_names)),
+            Op::Tanh => format!("tanh({})", self.describe_node(node.children[0], var_names)),
+            Op::Asin => format!("asin({})", self.describe_node(node.children[0], var_names)),
+            Op::Acos => format!("acos({})", self.describe_node(node.children[0], var_names)),
+            Op::Atan => format!("atan({})", self.describe_node(node.children[0], var_names)),
+            Op::Pow => format!("({} ** {})", self.describe_node(node.children[0], var_names), self.describe_node(node.children[1], var_names)),
         }
     }
 }
@@ -173,18 +319,24 @@ pub fn enumerate_canonical_dag(
     include_trig: bool,
     include_floor: bool,
     include_exp: bool,
+    include_extended: bool,
+    include_advanced: bool,
     max_depth: usize,
 ) -> (SharedDag, Vec<Vec<usize>>) {
     let mut dag = SharedDag::new();
     let mut depth_pools: Vec<Vec<usize>> = Vec::new();
 
-    // Depth 0: variables and small constants
+    // Depth 0: variables and small constants (pi lives here too so it can
+    // appear inside nonlinear positions like sin(pi*x)).
     let mut d0 = Vec::new();
     for v in 0..n_vars {
         d0.push(dag.intern(DagNode { op: Op::Var(v), children: vec![] }));
     }
     d0.push(dag.intern(DagNode { op: Op::Const(1), children: vec![] }));
     d0.push(dag.intern(DagNode { op: Op::Const(2), children: vec![] }));
+    if include_extended {
+        d0.push(dag.intern(DagNode { op: Op::Pi, children: vec![] }));
+    }
 
     depth_pools.push(d0);
 
@@ -208,6 +360,25 @@ pub fn enumerate_canonical_dag(
             if include_exp {
                 curr_pool.push(dag.intern(DagNode { op: Op::Exp, children: vec![node_idx] }));
             }
+            if include_extended {
+                curr_pool.push(dag.intern(DagNode { op: Op::Neg, children: vec![node_idx] }));
+                curr_pool.push(dag.intern(DagNode { op: Op::Log, children: vec![node_idx] }));
+                curr_pool.push(dag.intern(DagNode { op: Op::Sqrt, children: vec![node_idx] }));
+                curr_pool.push(dag.intern(DagNode { op: Op::Abs, children: vec![node_idx] }));
+                curr_pool.push(dag.intern(DagNode { op: Op::Sign, children: vec![node_idx] }));
+                curr_pool.push(dag.intern(DagNode { op: Op::Cbrt, children: vec![node_idx] }));
+                curr_pool.push(dag.intern(DagNode { op: Op::Erf, children: vec![node_idx] }));
+                curr_pool.push(dag.intern(DagNode { op: Op::BesselJ0, children: vec![node_idx] }));
+            }
+            if include_advanced {
+                curr_pool.push(dag.intern(DagNode { op: Op::Tan, children: vec![node_idx] }));
+                curr_pool.push(dag.intern(DagNode { op: Op::Sinh, children: vec![node_idx] }));
+                curr_pool.push(dag.intern(DagNode { op: Op::Cosh, children: vec![node_idx] }));
+                curr_pool.push(dag.intern(DagNode { op: Op::Tanh, children: vec![node_idx] }));
+                curr_pool.push(dag.intern(DagNode { op: Op::Asin, children: vec![node_idx] }));
+                curr_pool.push(dag.intern(DagNode { op: Op::Acos, children: vec![node_idx] }));
+                curr_pool.push(dag.intern(DagNode { op: Op::Atan, children: vec![node_idx] }));
+            }
         }
 
         // 2. Binary ops between (d-1) and all previous
@@ -217,6 +388,17 @@ pub fn enumerate_canonical_dag(
                     if idx1 <= idx2 {
                         curr_pool.push(dag.intern(DagNode { op: Op::Add, children: vec![idx1, idx2] }));
                         curr_pool.push(dag.intern(DagNode { op: Op::Mul, children: vec![idx1, idx2] }));
+                        // Min/Max are commutative like Add/Mul; keep them
+                        // behind the extended flag with the same dedup rule.
+                        if include_extended {
+                            curr_pool.push(dag.intern(DagNode { op: Op::Min, children: vec![idx1, idx2] }));
+                            curr_pool.push(dag.intern(DagNode { op: Op::Max, children: vec![idx1, idx2] }));
+                        }
+                        // General Pow is non-commutative; no dedup shortcut.
+                        if include_advanced {
+                            curr_pool.push(dag.intern(DagNode { op: Op::Pow, children: vec![idx1, idx2] }));
+                            curr_pool.push(dag.intern(DagNode { op: Op::Pow, children: vec![idx2, idx1] }));
+                        }
                     }
                     curr_pool.push(dag.intern(DagNode { op: Op::Sub, children: vec![idx1, idx2] }));
                     curr_pool.push(dag.intern(DagNode { op: Op::Div, children: vec![idx1, idx2] }));
@@ -263,10 +445,11 @@ pub fn search_rational_pairs(
     var_names: &[String],
     include_trig: bool,
     include_floor: bool,
+    include_exp: bool,
+    include_advanced: bool,
     max_depth: usize,
     top_k: usize,
-) -> Vec<EnumerationCandidate> {
-    use std::cmp::Ordering;
+) -> Vec<EnumerationCandidate> {    use std::cmp::Ordering;
     use std::collections::BinaryHeap;
 
     #[derive(Clone, Copy)]
@@ -303,6 +486,8 @@ pub fn search_rational_pairs(
         include_trig,
         include_floor,
         true, // rational pairing only runs with exp enabled
+        false, // extended misc ops stay out of the denominator shortlist
+        false, // advanced ops stay out of the denominator shortlist
         max_depth,
     );
     let mut seen = HashMap::new();
@@ -404,13 +589,16 @@ pub fn search_enumerated_shared(
     include_trig: bool,
     include_floor: bool,
     include_exp: bool,
+    include_extended: bool,
+    include_advanced: bool,
     max_depth: usize,
 ) -> Vec<EnumerationCandidate> {
+
     let n = target.len();
     let mean_y = target.iter().sum::<f64>() / (n as f64);
     let var_y = target.iter().map(|v| (v - mean_y) * (v - mean_y)).sum::<f64>() / (n as f64);
 
-    let (dag, pools) = enumerate_canonical_dag(vars.len(), include_trig, include_floor, include_exp, max_depth);
+    let (dag, pools) = enumerate_canonical_dag(vars.len(), include_trig, include_floor, include_exp, include_extended, include_advanced, max_depth);
     let candidates: Vec<usize> = pools.iter().flatten().cloned().collect();
     let mut memo = HashMap::new();
     let mut results = Vec::new();
@@ -485,6 +673,8 @@ mod tests {
             true,  // include_trig
             false,
             false, // include_exp
+            false, // include_extended
+            false, // include_advanced
             2,
         );
 
@@ -507,6 +697,8 @@ mod tests {
             false,
             false,
             true, // include_exp
+            false, // include_extended
+            false, // include_advanced
             2,
         );
 
@@ -514,5 +706,65 @@ mod tests {
         let best = &res[0];
         assert!(best.r2 > 0.999, "Best R2: {}, formula: {}", best.r2, best.formula);
         assert!(best.formula.contains("exp"), "formula: {}", best.formula);
+    }
+
+    #[test]
+    fn test_enumerate_extended_ops_recover_log_sqrt_abs_neg() {
+        // Each extended op is a depth-1 node once include_extended is set.
+        let n = 40;
+        let v: Vec<f64> = (0..n).map(|i| 0.5 + 3.0 * (i as f64) / ((n - 1) as f64)).collect();
+        let cases: Vec<(Vec<f64>, &str)> = vec![
+            (v.iter().map(|&x| x.ln()).collect(), "log"),
+            (v.iter().map(|&x| x.sqrt()).collect(), "sqrt"),
+            (v.iter().map(|&x| (x - 2.0).abs()).collect(), "abs"),
+            (v.iter().map(|&x| -x).collect(), "(-"),
+        ];
+        for (y, token) in cases {
+            let arg: Vec<f64> = if token == "abs" {
+                v.iter().map(|&x| x - 2.0).collect()
+            } else {
+                v.clone()
+            };
+            let res = search_enumerated_shared(
+                &[arg],
+                &y,
+                &["v".to_string()],
+                false,
+                false,
+                false,
+                true, // include_extended
+                false, // include_advanced
+                2,
+            );
+            assert!(!res.is_empty());
+            let hit = res
+                .iter()
+                .any(|c| c.r2 > 0.999 && c.formula.contains(token));
+            assert!(hit, "token {token} not recovered; best: {}", res[0].formula);
+        }
+    }
+
+    #[test]
+    fn test_extended_ops_are_gated_off_by_default() {
+        // Without include_extended, log/sqrt/abs/neg nodes must not appear.
+        let n = 20;
+        let v: Vec<f64> = (0..n).map(|i| 0.5 + (i as f64)).collect();
+        let y: Vec<f64> = v.iter().map(|&x| x.ln()).collect();
+        let res = search_enumerated_shared(
+            &[v],
+            &y,
+            &["v".to_string()],
+            false,
+            false,
+            false,
+            false, // include_extended off
+            false, // include_advanced off
+            1,
+        );
+        for c in &res {
+            assert!(!c.formula.contains("log("), "leaked: {}", c.formula);
+            assert!(!c.formula.contains("sqrt("), "leaked: {}", c.formula);
+            assert!(!c.formula.contains("abs("), "leaked: {}", c.formula);
+        }
     }
 }

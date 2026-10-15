@@ -70,7 +70,7 @@ def _enum(vars_, target, names, trig, floor, depth, include_exp=False):
     return json.loads(ak.rime_enumerate_search_json(
         json.dumps([[float(v) for v in col] for col in vars_]),
         json.dumps(np.asarray(target, dtype=float).tolist()),
-        json.dumps(names), trig, floor, include_exp, depth))
+        json.dumps(names), trig, floor, include_exp, False, False, depth))
 
 
 # ---------------------------------------------------------------- Gate 1

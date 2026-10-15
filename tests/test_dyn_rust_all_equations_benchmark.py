@@ -127,6 +127,8 @@ def test_shared_dag_enumeration_rabi_and_brus():
         True,  # include trig
         False,
         False,  # no exp
+        False,  # no extended misc ops
+        False,  # no advanced ops
         2,
     ))
     assert len(res_rabi) > 0
@@ -143,6 +145,8 @@ def test_shared_dag_enumeration_rabi_and_brus():
         False,
         False,
         False,  # no exp
+        False,  # no extended misc ops
+        False,  # no advanced ops
         2,
     ))
     assert len(res_brus) > 0

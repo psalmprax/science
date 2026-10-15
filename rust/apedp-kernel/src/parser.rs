@@ -28,6 +28,8 @@ pub enum Node {
     Sub(Box<Node>, Box<Node>),
     Mul(Box<Node>, Box<Node>),
     Div(Box<Node>, Box<Node>),
+    Min(Box<Node>, Box<Node>),
+    Max(Box<Node>, Box<Node>),
     /// `**`. The exponent stays a full expression so `2**(x+1)` parses the way
     /// Python and sympy parse it.
     Pow(Box<Node>, Box<Node>),
@@ -56,6 +58,9 @@ pub enum Func {
     Abs,
     Sign,
     Floor,
+    Erf,
+    BesselJ0,
+    Cbrt,
 }
 
 impl Func {
@@ -79,6 +84,9 @@ impl Func {
             "abs" => Func::Abs,
             "sign" => Func::Sign,
             "floor" => Func::Floor,
+            "erf" => Func::Erf,
+            "besselj" | "besselj0" => Func::BesselJ0,
+            "cbrt" => Func::Cbrt,
             _ => return None,
         })
     }
@@ -113,6 +121,9 @@ impl Func {
                 }
             }
             Func::Floor => x.floor(),
+            Func::Erf => crate::numeric::erf_approx(x),
+            Func::BesselJ0 => crate::numeric::bessel_j0(x),
+            Func::Cbrt => x.cbrt(),
         }
     }
 }
@@ -349,6 +360,8 @@ fn eval_node_point(node: &Node, point: &[f64]) -> f64 {
         Node::Sub(a, b) => eval_node_point(a, point) - eval_node_point(b, point),
         Node::Mul(a, b) => eval_node_point(a, point) * eval_node_point(b, point),
         Node::Div(a, b) => eval_node_point(a, point) / eval_node_point(b, point),
+        Node::Min(a, b) => eval_node_point(a, point).min(eval_node_point(b, point)),
+        Node::Max(a, b) => eval_node_point(a, point).max(eval_node_point(b, point)),
         Node::Pow(a, b) => eval_node_point(a, point).powf(eval_node_point(b, point)),
         Node::Neg(a) => -eval_node_point(a, point),
         Node::Call(f, a) => f.apply(eval_node_point(a, point)),
@@ -365,6 +378,8 @@ fn eval_node(node: &Node, data: &[Vec<f64>], i: usize) -> f64 {
         Node::Sub(a, b) => eval_node(a, data, i) - eval_node(b, data, i),
         Node::Mul(a, b) => eval_node(a, data, i) * eval_node(b, data, i),
         Node::Div(a, b) => eval_node(a, data, i) / eval_node(b, data, i),
+        Node::Min(a, b) => eval_node(a, data, i).min(eval_node(b, data, i)),
+        Node::Max(a, b) => eval_node(a, data, i).max(eval_node(b, data, i)),
         Node::Pow(a, b) => eval_node(a, data, i).powf(eval_node(b, data, i)),
         Node::Neg(a) => -eval_node(a, data, i),
         Node::Call(f, a) => f.apply(eval_node(a, data, i)),
@@ -459,6 +474,14 @@ fn resolve(node: &Node, table: &HashMap<String, usize>) -> Result<Node, ParseErr
             Box::new(resolve(b, table)?),
         ),
         Node::Neg(a) => Node::Neg(Box::new(resolve(a, table)?)),
+        Node::Min(a, b) => Node::Min(
+            Box::new(resolve(a, table)?),
+            Box::new(resolve(b, table)?),
+        ),
+        Node::Max(a, b) => Node::Max(
+            Box::new(resolve(a, table)?),
+            Box::new(resolve(b, table)?),
+        ),
         Node::Call(f, a) => Node::Call(*f, Box::new(resolve(a, table)?)),
     })
 }
@@ -590,6 +613,27 @@ impl<'a> Parser<'a> {
                 self.bump();
                 if matches!(self.peek(), Some(Token::LParen)) {
                     self.bump();
+                    // min/max are the only two-argument forms: min(a, b).
+                    let lname = name.to_ascii_lowercase();
+                    if lname == "min" || lname == "max" {
+                        let first = self.parse_expr()?;
+                        if !matches!(self.peek(), Some(Token::Comma)) {
+                            return self.error("min/max take exactly two arguments");
+                        }
+                        self.bump();
+                        let second = self.parse_expr()?;
+                        match self.peek() {
+                            Some(Token::RParen) => {
+                                self.bump();
+                                let (a, b) = (Box::new(first), Box::new(second));
+                                if lname == "min" {
+                                    return Ok(Node::Min(a, b));
+                                }
+                                return Ok(Node::Max(a, b));
+                            }
+                            _ => return self.error("expected ')' after min/max arguments"),
+                        }
+                    }
                     let func = match Func::from_name(&name) {
                         Some(f) => f,
                         None => {

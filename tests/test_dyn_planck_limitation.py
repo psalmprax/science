@@ -1,14 +1,20 @@
-"""Planck radiance limitation pin.
+"""Planck radiance limitation pin (first-order LINEAR engines).
 
 Mathematical fact: for u(v) = v^3 / (e^v - 1),
     u'/u = 3/v - e^v / (e^v - 1).
-If a polynomial-coefficient relation P(v) u' + Q(v) u = 0 held exactly, then
-u'/u = -Q/P would be rational in v, forcing e^v into Q(v) -- contradicting
-the transcendence of e^v over Q(v) (Hermite). So NO exact first-order
-polynomial ODE exists for Planck radiance.
+If a LINEAR polynomial-coefficient relation P(v) u' + Q(v) u = 0 held
+exactly, then u'/u = -Q/P would be rational in v, forcing e^v into Q(v) --
+contradicting the transcendence of e^v over Q(v) (Hermite). So NO exact
+first-order LINEAR polynomial ODE exists for Planck radiance.
 
-The honest engine behavior is therefore: return the best approximate jet
-ODE, report a small jet residual, and set is_exact_recovery = False
+Scope correction (adjudicated 2026-10-15): this bar is linear-only. A
+quadratic Riccati relation DOES exist,
+    v^3 u' - (3v^2 - v^3) u + u^2 = 0  (verified to ~2e-7),
+but no current engine discovers second-degree Jet relations -- recorded
+follow-up, not a recovery claim.
+
+The honest LINEAR-engine behavior is therefore: return the best approximate
+jet ODE, report a small jet residual, and set is_exact_recovery = False
 (correct abstention from an exact-recovery claim). This test pins that the
 engine does not manufacture an exact recovery where none exists.
 """
@@ -105,13 +111,13 @@ def test_planck_equations_on_fresh_out_of_box_data():
     var = float(np.var(u))
     ga_r2 = 1.0 - float(np.mean((u - pred_ga) ** 2)) / var
     ode_r2 = 1.0 - float(np.mean((u - pred_ode) ** 2)) / var
-    # Neither transfers the true structure (both R2 well below exact), and
-    # the GA formula does not even use exp: at this budget, grammar access
-    # did not become mechanism discovery. R2 alone cannot crown a winner
-    # here -- a structurally absurd bounded oscillation can outscore a
-    # diverging ODE rollout on a decaying tail without capturing anything.
-    assert "exp" not in ga.best_expression, ga.best_expression
-    assert ga_r2 < 0.99, f"GA R2={ga_r2:.3f}"
+    # Neither transfers the true structure (both R2 well below exact).
+    # Notably the GA formula may sprinkle exp() tokens yet still collapse
+    # (nested sqrt(exp(...)) mush): grammar access is not mechanism
+    # discovery. R2 alone cannot crown a winner here -- a structurally
+    # absurd form can outscore a diverging ODE rollout on a decaying tail
+    # without capturing anything.
+    assert ga_r2 < 0.9, f"GA R2={ga_r2:.3f}"
     assert ode_r2 < 0.9, f"unexpected transfer: R2={ode_r2:.3f}"
 
 

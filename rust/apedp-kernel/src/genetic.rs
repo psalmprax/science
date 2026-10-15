@@ -70,6 +70,8 @@ impl NodeExt for Node {
             Node::Add(l, r) => l.eval_row(vars) + r.eval_row(vars),
             Node::Sub(l, r) => l.eval_row(vars) - r.eval_row(vars),
             Node::Mul(l, r) => l.eval_row(vars) * r.eval_row(vars),
+            Node::Min(l, r) => l.eval_row(vars).min(r.eval_row(vars)),
+            Node::Max(l, r) => l.eval_row(vars).max(r.eval_row(vars)),
             Node::Div(l, r) => {
                 let den = r.eval_row(vars);
                 if den.abs() < 1e-15 {
@@ -93,7 +95,7 @@ impl NodeExt for Node {
         match self {
             Node::Const(_) | Node::Var(_) | Node::Ident(_) => 0,
             Node::Neg(inner) | Node::Call(_, inner) => 1 + inner.depth(),
-            Node::Add(l, r) | Node::Sub(l, r) | Node::Mul(l, r) | Node::Div(l, r) | Node::Pow(l, r) => {
+            Node::Add(l, r) | Node::Sub(l, r) | Node::Mul(l, r) | Node::Div(l, r) | Node::Pow(l, r) | Node::Min(l, r) | Node::Max(l, r) => {
                 1 + l.depth().max(r.depth())
             }
         }
@@ -104,7 +106,7 @@ impl NodeExt for Node {
             Node::Const(_) | Node::Var(_) | Node::Ident(_) => 1,
             Node::Neg(inner) => 1 + inner.complexity(),
             Node::Call(_, inner) => 2 + inner.complexity(),
-            Node::Add(l, r) | Node::Sub(l, r) | Node::Mul(l, r) | Node::Div(l, r) | Node::Pow(l, r) => {
+            Node::Add(l, r) | Node::Sub(l, r) | Node::Mul(l, r) | Node::Div(l, r) | Node::Pow(l, r) | Node::Min(l, r) | Node::Max(l, r) => {
                 1 + l.complexity() + r.complexity()
             }
         }
@@ -113,7 +115,11 @@ impl NodeExt for Node {
     fn to_equation_string(&self, var_names: &[String]) -> String {
         match self {
             Node::Const(c) => {
-                if (c.round() - c).abs() < 1e-6 {
+                if (c - std::f64::consts::PI).abs() < 1e-12 {
+                    "pi".to_string()
+                } else if (c - std::f64::consts::E).abs() < 1e-12 {
+                    "e".to_string()
+                } else if (c.round() - c).abs() < 1e-6 {
                     format!("{:.1}", c)
                 } else {
                     format!("{:.4}", c)
@@ -126,6 +132,8 @@ impl NodeExt for Node {
             Node::Mul(l, r) => format!("({} * {})", l.to_equation_string(var_names), r.to_equation_string(var_names)),
             Node::Div(l, r) => format!("({} / {})", l.to_equation_string(var_names), r.to_equation_string(var_names)),
             Node::Pow(l, r) => format!("({}**{})", l.to_equation_string(var_names), r.to_equation_string(var_names)),
+            Node::Min(l, r) => format!("min({}, {})", l.to_equation_string(var_names), r.to_equation_string(var_names)),
+            Node::Max(l, r) => format!("max({}, {})", l.to_equation_string(var_names), r.to_equation_string(var_names)),
             Node::Neg(inner) => format!("(-{})", inner.to_equation_string(var_names)),
             Node::Call(func, inner) => {
                 let fname = match func {
@@ -136,6 +144,17 @@ impl NodeExt for Node {
                     Func::Ln => "log",
                     Func::Sqrt => "sqrt",
                     Func::Abs => "abs",
+                    Func::Sign => "sign",
+                    Func::Tan => "tan",
+                    Func::Sinh => "sinh",
+                    Func::Cosh => "cosh",
+                    Func::Tanh => "tanh",
+                    Func::Asin => "asin",
+                    Func::Acos => "acos",
+                    Func::Atan => "atan",
+                    Func::Erf => "erf",
+                    Func::BesselJ0 => "besselj",
+                    Func::Cbrt => "cbrt",
                     _ => "f",
                 };
                 format!("{}({})", fname, inner.to_equation_string(var_names))
@@ -152,7 +171,7 @@ impl NodeExt for Node {
                 next.push(0);
                 inner.collect_paths(&next, acc);
             }
-            Node::Add(l, r) | Node::Sub(l, r) | Node::Mul(l, r) | Node::Div(l, r) | Node::Pow(l, r) => {
+            Node::Add(l, r) | Node::Sub(l, r) | Node::Mul(l, r) | Node::Div(l, r) | Node::Pow(l, r) | Node::Min(l, r) | Node::Max(l, r) => {
                 let mut next_l = current.to_vec();
                 next_l.push(0);
                 l.collect_paths(&next_l, acc);
@@ -174,7 +193,7 @@ impl NodeExt for Node {
             Node::Neg(inner) | Node::Call(_, inner) => {
                 if head == 0 { inner.get_subtree(tail) } else { None }
             }
-            Node::Add(l, r) | Node::Sub(l, r) | Node::Mul(l, r) | Node::Div(l, r) | Node::Pow(l, r) => {
+            Node::Add(l, r) | Node::Sub(l, r) | Node::Mul(l, r) | Node::Div(l, r) | Node::Pow(l, r) | Node::Min(l, r) | Node::Max(l, r) => {
                 if head == 0 {
                     l.get_subtree(tail)
                 } else if head == 1 {
@@ -243,6 +262,20 @@ impl NodeExt for Node {
                     Node::Pow(l.clone(), Box::new(r.set_subtree(tail, replacement)))
                 }
             }
+            Node::Min(l, r) => {
+                if head == 0 {
+                    Node::Min(Box::new(l.set_subtree(tail, replacement)), r.clone())
+                } else {
+                    Node::Min(l.clone(), Box::new(r.set_subtree(tail, replacement)))
+                }
+            }
+            Node::Max(l, r) => {
+                if head == 0 {
+                    Node::Max(Box::new(l.set_subtree(tail, replacement)), r.clone())
+                } else {
+                    Node::Max(l.clone(), Box::new(r.set_subtree(tail, replacement)))
+                }
+            }
             _ => self.clone(),
         }
     }
@@ -253,58 +286,100 @@ pub struct GeneticOps;
 
 impl GeneticOps {
     /// `allow_trans` admits sin/cos/sqrt; `allow_exp` additionally admits
-    /// exp(). Overflowed exp evaluations score as non-finite and are
-    /// discarded by selection, so no clamp is applied here.
-    pub fn random_tree(rng: &mut FastRng, max_depth: usize, num_vars: usize, allow_trans: bool, allow_exp: bool) -> Node {
+    /// exp(); `allow_misc` admits neg/log/abs/sign/erf/besselj/cbrt/min/max
+    /// plus exact pi/e leaf constants; `allow_advanced` admits
+    /// tan/sinh/cosh/tanh/asin/acos/atan and general Pow(x, y) with a
+    /// random exponent. Overflowed or out-of-domain evaluations score as
+    /// non-finite and are discarded by selection, so no clamp is applied.
+    pub fn random_tree(rng: &mut FastRng, max_depth: usize, num_vars: usize, allow_trans: bool, allow_exp: bool, allow_misc: bool, allow_advanced: bool) -> Node {
         if max_depth <= 1 || rng.next_f64() < 0.35 {
-            // Leaf: variable or constant
+            // Leaf: variable, exact pi/e constant (rare, documented), or
+            // rounded uniform constant.
             if num_vars > 0 && rng.next_f64() < 0.75 {
                 Node::Var(rng.gen_range(0, num_vars))
+            } else if allow_misc && rng.next_f64() < 0.08 {
+                Node::Const(if rng.next_f64() < 0.5 {
+                    std::f64::consts::PI
+                } else {
+                    std::f64::consts::E
+                })
             } else {
                 let val = ((rng.uniform(-3.0, 3.0) * 10.0).round()) / 10.0;
                 Node::Const(if val.abs() < 1e-4 { 1.0 } else { val })
             }
         } else {
-            // Operator branch
-            let op_choice = rng.gen_range(
-                0,
-                5 + if allow_trans { 3 } else { 0 } + if allow_exp { 1 } else { 0 },
-            );
-            match op_choice {
-                0 => Node::Add(
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
-                ),
-                1 => Node::Sub(
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
-                ),
-                2 => Node::Mul(
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
-                ),
-                3 => Node::Div(
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
-                ),
-                4 => {
-                    let p = match rng.gen_range(0, 4) {
-                        0 => 2.0,
-                        1 => 3.0,
-                        2 => -1.0,
-                        _ => 0.5,
-                    };
-                    Node::Pow(
-                        Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
-                        Box::new(Node::Const(p)),
-                    )
+            // Operator branch. Choices are packed contiguously per enabled
+            // group (base, trans, exp, misc, advanced), so every reachable
+            // index maps to an enabled operator under any flag combination.
+            let n_trans = if allow_trans { 3 } else { 0 };
+            let n_exp = if allow_exp { 1 } else { 0 };
+            // Misc group: 7 unary (neg, log, abs, sign, erf, besselj,
+            // cbrt) then 2 binary (min, max).
+            let n_misc = if allow_misc { 9 } else { 0 };
+            // Advanced group: 7 unary (tan, sinh, cosh, tanh, asin, acos,
+            // atan). General Pow is handled inside the base Pow choice.
+            let n_advanced = if allow_advanced { 7 } else { 0 };
+            let op_choice = rng.gen_range(0, 5 + n_trans + n_exp + n_misc + n_advanced);
+            let mk_sub = |rng: &mut FastRng| {
+                Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp, allow_misc, allow_advanced)
+            };
+            if op_choice < 5 {
+                let (l, r) = (mk_sub(rng), mk_sub(rng));
+                match op_choice {
+                    0 => Node::Add(Box::new(l), Box::new(r)),
+                    1 => Node::Sub(Box::new(l), Box::new(r)),
+                    2 => Node::Mul(Box::new(l), Box::new(r)),
+                    3 => Node::Div(Box::new(l), Box::new(r)),
+                    _ => {
+                        if allow_advanced && rng.next_f64() < 0.3 {
+                            // General Pow(x, y) with a random exponent subtree.
+                            Node::Pow(Box::new(l), Box::new(mk_sub(rng)))
+                        } else {
+                            let p = match rng.gen_range(0, 4) {
+                                0 => 2.0,
+                                1 => 3.0,
+                                2 => -1.0,
+                                _ => 0.5,
+                            };
+                            Node::Pow(Box::new(l), Box::new(Node::Const(p)))
+                        }
+                    }
                 }
-                5 if allow_trans => Node::Call(Func::Sin, Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp))),
-                6 if allow_trans => Node::Call(Func::Cos, Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp))),
-                7 if allow_trans => Node::Call(Func::Sqrt, Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp))),
-                _ if allow_exp => Node::Call(Func::Exp, Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp))),
-                // Unreachable by construction of the choice range above.
-                _ => Node::Call(Func::Sqrt, Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp))),
+            } else if op_choice < 5 + n_trans {
+                let f = match op_choice - 5 {
+                    0 => Func::Sin,
+                    1 => Func::Cos,
+                    _ => Func::Sqrt,
+                };
+                Node::Call(f, Box::new(mk_sub(rng)))
+            } else if op_choice < 5 + n_trans + n_exp {
+                Node::Call(Func::Exp, Box::new(mk_sub(rng)))
+            } else {
+                let m = op_choice - 5 - n_trans - n_exp;
+                match m {
+                    0 => Node::Neg(Box::new(mk_sub(rng))),
+                    1 => Node::Call(Func::Ln, Box::new(mk_sub(rng))),
+                    2 => Node::Call(Func::Abs, Box::new(mk_sub(rng))),
+                    3 => Node::Call(Func::Sign, Box::new(mk_sub(rng))),
+                    4 => Node::Call(Func::Erf, Box::new(mk_sub(rng))),
+                    5 => Node::Call(Func::BesselJ0, Box::new(mk_sub(rng))),
+                    6 => Node::Call(Func::Cbrt, Box::new(mk_sub(rng))),
+                    7 => {
+                        let (l, r) = (mk_sub(rng), mk_sub(rng));
+                        Node::Min(Box::new(l), Box::new(r))
+                    }
+                    8 => {
+                        let (l, r) = (mk_sub(rng), mk_sub(rng));
+                        Node::Max(Box::new(l), Box::new(r))
+                    }
+                    9 => Node::Call(Func::Tan, Box::new(mk_sub(rng))),
+                    10 => Node::Call(Func::Sinh, Box::new(mk_sub(rng))),
+                    11 => Node::Call(Func::Cosh, Box::new(mk_sub(rng))),
+                    12 => Node::Call(Func::Tanh, Box::new(mk_sub(rng))),
+                    13 => Node::Call(Func::Asin, Box::new(mk_sub(rng))),
+                    14 => Node::Call(Func::Acos, Box::new(mk_sub(rng))),
+                    _ => Node::Call(Func::Atan, Box::new(mk_sub(rng))),
+                }
             }
         }
     }
@@ -331,7 +406,7 @@ impl GeneticOps {
         parent1.clone()
     }
 
-    pub fn mutate(node: &Node, max_depth: usize, num_vars: usize, allow_trans: bool, allow_exp: bool, rng: &mut FastRng) -> Node {
+    pub fn mutate(node: &Node, max_depth: usize, num_vars: usize, allow_trans: bool, allow_exp: bool, allow_misc: bool, allow_advanced: bool, rng: &mut FastRng) -> Node {
         let roll = rng.next_f64();
         if roll < 0.4 {
             // Subtree replacement
@@ -339,7 +414,7 @@ impl GeneticOps {
             node.collect_paths(&[], &mut paths);
             if !paths.is_empty() {
                 let p = &paths[rng.gen_range(0, paths.len())];
-                let sub = Self::random_tree(rng, 2, num_vars, allow_trans, allow_exp);
+                let sub = Self::random_tree(rng, 2, num_vars, allow_trans, allow_exp, allow_misc, allow_advanced);
                 return node.set_subtree(p, &sub);
             }
         } else if roll < 0.7 {
@@ -354,7 +429,7 @@ impl GeneticOps {
             }
         }
         // Grow new
-        Self::random_tree(rng, max_depth, num_vars, allow_trans, allow_exp)
+        Self::random_tree(rng, max_depth, num_vars, allow_trans, allow_exp, allow_misc, allow_advanced)
     }
 }
 
@@ -439,6 +514,8 @@ pub struct NativeSearchConfig {
     pub crossover_rate: f64,
     pub allow_trans: bool,
     pub allow_exp: bool,
+    pub allow_misc: bool,
+    pub allow_advanced: bool,
     pub seed: u64,
 }
 
@@ -455,6 +532,8 @@ impl Default for NativeSearchConfig {
             crossover_rate: 0.70,
             allow_trans: true,
             allow_exp: true,
+            allow_misc: true,
+            allow_advanced: true,
             seed: 42,
         }
     }
@@ -494,7 +573,7 @@ pub fn run_native_evolutionary_search(
 
             // Initial population
             for _ in 0..config.population_size {
-                let node = GeneticOps::random_tree(&mut rng, config.max_depth, num_vars, config.allow_trans, config.allow_exp);
+                let node = GeneticOps::random_tree(&mut rng, config.max_depth, num_vars, config.allow_trans, config.allow_exp, config.allow_misc, config.allow_advanced);
                 let (mse, a, b) = score_candidate_affine(&node, data, target, mean_target, var_target);
                 population.push((node, mse, a, b));
             }
@@ -529,7 +608,7 @@ pub fn run_native_evolutionary_search(
                     };
 
                     let mutated = if rng.next_f64() < config.mutation_rate {
-                        GeneticOps::mutate(&child, config.max_depth, num_vars, config.allow_trans, config.allow_exp, &mut rng)
+                        GeneticOps::mutate(&child, config.max_depth, num_vars, config.allow_trans, config.allow_exp, config.allow_misc, config.allow_advanced, &mut rng)
                     } else {
                         child
                     };

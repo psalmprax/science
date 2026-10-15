@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 
 import apedp_kernel as ak
+from apedp.rust_bridge import RustKernelBridge
 from apedp_dyn.epistemic.autonomous_profiler import profile_dataset
 from apedp_dyn.epistemic.shape_inference import staircase_prior
 from apedp_dyn.epistemic.prior_guided_search import _fit_floor_rule, _floor_rule_candidate
@@ -39,11 +40,46 @@ class RimeAdProposer(ProposerBase):
         max_degree: int = 2,
         strategy_archetype: StrategyArchetype = StrategyArchetype.TACTICAL,
         max_univariate_features: int = 12,
+        screen_top_k: int = 5,
     ):
         self._target_col = target_col
         self._max_degree = max_degree
         self._strategy_archetype = strategy_archetype
         self._max_univariate_features = max_univariate_features
+        self._screen_top_k = screen_top_k
+
+    def _screen_features(
+        self, df: pd.DataFrame, feature_cols: list[str], y: np.ndarray
+    ) -> list[str]:
+        """Rank features by univariate [1, x, x^2] OLS dev R² (deterministic).
+
+        The quadratic term keeps even-symmetric dependence (y ~ x^2, whose
+        linear correlation is ~0) screen-visible. Returns the top
+        screen_top_k names bounded by max_univariate_features, so fan-out
+        exclusion is by measurement rather than silent truncation.
+        """
+        scored: list[tuple[float, str]] = []
+        for feat in feature_cols:
+            try:
+                x = df[feat].to_numpy(dtype=float)
+            except Exception:
+                continue
+            mask = np.isfinite(x) & np.isfinite(y)
+            if int(mask.sum()) < 30:
+                continue
+            xm, ym = x[mask], y[mask]
+            try:
+                basis = np.column_stack([np.ones_like(xm), xm, xm ** 2])
+                coef, *_ = np.linalg.lstsq(basis, ym, rcond=None)
+                pred = basis @ coef
+            except Exception:
+                continue
+            vy = float(np.var(ym))
+            r2 = 1.0 - float(np.mean((ym - pred) ** 2)) / vy if vy > 1e-18 else 0.0
+            scored.append((r2, feat))
+        scored.sort(key=lambda kv: kv[0], reverse=True)
+        keep = max(0, min(self._screen_top_k, self._max_univariate_features))
+        return [feat for _, feat in scored[:keep]]
 
     @property
     def proposer_id(self) -> str:
@@ -78,12 +114,14 @@ class RimeAdProposer(ProposerBase):
         else:
             # Case 2: Multi-variate additive discovery
             candidates.extend(self._propose_multivariate(df, feature_cols, y_dev))
-            # Fan-out: run the univariate representations (TV/staircase,
-            # implicit SVD, differential Padé, shared-DAG enumeration) per
-            # feature, so the Rust engines engage on multi-feature frames
-            # instead of only the OLS baseline firing. Each representation
-            # keeps its own gates; ranking below stays BIC on dev rows.
-            for feat in feature_cols[: max(0, self._max_univariate_features)]:
+            # Screening-gated fan-out: rank features by univariate dev R²
+            # and run the univariate representations (TV/staircase,
+            # implicit SVD, differential Padé, shared-DAG enumeration) over
+            # the measured top features, so the Rust engines engage on
+            # multi-feature frames instead of only the OLS baseline firing.
+            # Each representation keeps its own gates; ranking below stays
+            # BIC on dev rows.
+            for feat in self._screen_features(df, feature_cols, y_dev):
                 try:
                     x_col = df[feat].to_numpy(dtype=float)
                 except Exception:
@@ -189,6 +227,8 @@ class RimeAdProposer(ProposerBase):
                     True,  # allow trig
                     False,
                     False,  # no exp (keeps the frozen depth-2 search space)
+                    False,  # no extended misc ops
+                    False,  # no advanced ops
                     2,
                 )
             )
@@ -228,6 +268,27 @@ class RimeAdProposer(ProposerBase):
                     candidates.append(cand)
             except Exception:
                 pass
+
+        # Representation 6: Rational Pairs Search with Exp (Dual-Asymptotics / Planck Radiance)
+        try:
+            rat_cands = json.loads(
+                ak.rime_rational_search_json(
+                    json.dumps([[float(v) for v in x]]),
+                    json.dumps(y.tolist()),
+                    json.dumps([feat_name]),
+                    False,
+                    False,
+                    2,
+                    3,
+                )
+            )
+            for item in rat_cands:
+                if item.get("r2", 0.0) > 0.95:
+                    cand = self._make_rational_pair_candidate(item, feat_name)
+                    if cand is not None:
+                        candidates.append(cand)
+        except Exception:
+            pass
 
         return candidates
 
@@ -400,3 +461,32 @@ class RimeAdProposer(ProposerBase):
             parameters={"slope": float(slope), "intercept": float(intercept)},
             metadata={"r2": item.get("r2", 0.0), "method": "shared_dag_enumerate"},
         )
+
+    def _make_rational_pair_candidate(
+        self, item: dict[str, Any], feat_name: str
+    ) -> CandidateProposal | None:
+        formula = item.get("formula", "")
+        slope = item.get("slope", 1.0)
+        intercept = item.get("intercept", 0.0)
+        bridge = RustKernelBridge()
+
+        def _scorer(df: pd.DataFrame) -> np.ndarray:
+            xv = df[feat_name].to_numpy(dtype=float)
+            try:
+                pred = bridge.evaluate_expression(formula, [feat_name], [xv])
+                return np.asarray(pred, dtype=float)
+            except Exception:
+                return np.full_like(xv, np.nan)
+
+        return CandidateProposal(
+            proposer_id=self.proposer_id,
+            candidate_id="rational_pair_exp",
+            formula=formula,
+            strategy_archetype=self._strategy_archetype,
+            declared_scale_invariant=False,
+            declared_nominal_dependencies=(feat_name,),
+            compute_score=_scorer,
+            parameters={"slope": float(slope), "intercept": float(intercept)},
+            metadata={"r2": item.get("r2", 0.0), "method": "rational_pair_search"},
+        )
+

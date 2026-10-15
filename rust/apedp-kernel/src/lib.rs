@@ -530,6 +530,8 @@ fn simulate_ode_rk45<'py>(
     crossover_rate=0.70,
     allow_trans=true,
     allow_exp=true,
+    allow_misc=true,
+    allow_advanced=true,
     seed=42
 ))]
 fn evolve_native<'py>(
@@ -547,6 +549,8 @@ fn evolve_native<'py>(
     crossover_rate: f64,
     allow_trans: bool,
     allow_exp: bool,
+    allow_misc: bool,
+    allow_advanced: bool,
     seed: u64,
 ) -> PyResult<(Vec<(String, f64, usize, f64, f64)>, usize)> {
     let columns = extract_columns(data, "data")?;
@@ -562,6 +566,8 @@ fn evolve_native<'py>(
         crossover_rate,
         allow_trans,
         allow_exp,
+        allow_misc,
+        allow_advanced,
         seed,
     };
 
@@ -1002,6 +1008,8 @@ fn rime_enumerate_search_json(
     include_trig: bool,
     include_floor: bool,
     include_exp: bool,
+    include_extended: bool,
+    include_advanced: bool,
     max_depth: usize,
 ) -> PyResult<String> {
     let vars: Vec<Vec<f64>> = serde_json::from_str(vars_json)
@@ -1017,6 +1025,8 @@ fn rime_enumerate_search_json(
         include_trig,
         include_floor,
         include_exp,
+        include_extended,
+        include_advanced,
         max_depth,
     );
     serde_json::to_string(&candidates)
@@ -1030,6 +1040,8 @@ fn rime_rational_search_json(
     var_names_json: &str,
     include_trig: bool,
     include_floor: bool,
+    include_exp: bool,
+    include_advanced: bool,
     max_depth: usize,
     top_k: usize,
 ) -> PyResult<String> {
@@ -1045,6 +1057,8 @@ fn rime_rational_search_json(
         &var_names,
         include_trig,
         include_floor,
+        include_exp,
+        include_advanced,
         max_depth,
         top_k,
     );
