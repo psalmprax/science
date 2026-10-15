@@ -6,7 +6,7 @@
 ### Benchmark Provenance & Reproducibility Notice
 - **Protocol:** Deterministic execution via [`benchmarks/run_landauer_rime_vs_ga_benchmark.py`](file:///home/psalmprax/ALL_PROJECTS/science/benchmarks/run_landauer_rime_vs_ga_benchmark.py).
 - **Machine-Measured Data Source:** [`benchmarks/landauer_benchmark_results.json`](file:///home/psalmprax/ALL_PROJECTS/science/benchmarks/landauer_benchmark_results.json).
-- **Execution Timestamp:** 2026-10-15T10:43:27Z.
+- **Execution Timestamp:** 2026-10-15T11:13:33Z.
 - **Random Seed:** Pinned to `42`.
 - **Discovery Split:** $V_g \in [0.1, 4.9]$ ($N = 100$ rows).
 - **Holdout Extrapolation Split:** $V_g \in [5.0, 9.8]$ ($N = 100$ rows).
@@ -24,10 +24,10 @@ All figures below are **machine-measured from actual execution runs** in the rep
 
 | Method / Model Configuration | In-Sample Fit ($R^2$) | Out-of-Sample Extrapolation ($R^2$) | Extrapolation RMSE | Residual Autocorr ($|\rho_1|$) | Design Matrix Condition ($\kappa$) | Epistemic Referee Whiteness Gate |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Genetic Algorithm (GA, Degree 5 Polynomial)** | `0.9645` | `-11530.5976` | `149.3235` | `0.7238` | `4.54e+04` | **REFUSED** ($|\rho_1| > 0.50$) |
-| **Unassisted RIME (Smooth Grammar)** | `0.9598` | `0.9486` | `0.3153` | `0.7386` | Low (~1.0) | **REFUSED** ($|\rho_1| > 0.50$) |
-| **RIME with `floor` Transform** | `1.000000` | `1.000000` | `0.000000` | `0.9691` | Minimal | **PASSED** (Exact Recovery) |
-| **Autonomous Epistemic Profiler & Transmuter** | `1.000000` | `1.000000` | `0.000000` | `0.0000` | N/A (Analytical) | **PASSED** (Exact Recovery) |
+| **Genetic Algorithm (GA, Degree 5 Polynomial)** | `0.9645` | `-11530.5976` | `149.3235` | `0.7238` | `4.54e+04` | **REFUSED** (extrapolation collapse (R2 -11530.5976 < 0.99)) |
+| **Unassisted RIME (Smooth Grammar)** | `0.9598` | `0.9486` | `0.3153` | `0.7386` | Low (~1.0) | **REFUSED** (extrapolation collapse (R2 0.9486 < 0.99)) |
+| **RIME with `floor` Transform** | `1.000000` | `1.000000` | `0.000000` | `0.9691` | Minimal | **PASSED** (exact recovery by rule (RMSE 1.57e-08 <= 1e-06, R2 1.000000000 within 1e-09 of 1)) |
+| **Autonomous Epistemic Profiler & Transmuter** | `1.000000` | `1.000000` | `0.000000` | `n/a (exact-zero residuals)` | N/A (Analytical) | **PASSED** (exact recovery by rule (RMSE 0.00e+00 <= 1e-06, R2 1.000000000 within 1e-09 of 1)) |
 
 ---
 

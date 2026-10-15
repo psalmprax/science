@@ -19,10 +19,12 @@ ROOT = Path(__file__).resolve().parent.parent
 # Machine-verified total: updated only by re-running this test, which fails
 # if it is wrong. Anything quoted in prose must match it or be labelled a
 # subset.
-RIME_SUITE_TOTAL = 200
+RIME_SUITE_TOTAL = 211
 
 RIME_TEST_FILES = [
     "test_dyn_shape_inference.py",
+    "test_dyn_prior_guided_unsolicited.py",
+    "test_dyn_landauer_report_fidelity.py",
     "test_dyn_rime_coverage_funnel.py",
     "test_dyn_ga_qec.py",
     "test_dyn_rime_noise_present_battery.py",

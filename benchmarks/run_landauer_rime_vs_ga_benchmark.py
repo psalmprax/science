@@ -38,6 +38,11 @@ from apedp_dyn.proposers.rime_proposer import RimeProposer
 from apedp_dyn.epistemic.shape_inference import infer_shape_prior, fit_step_family, step_family_basis
 from apedp_dyn.epistemic.autonomous_profiler import profile_dataset
 from apedp_dyn.epistemic.coordinate_transmuter import transmute_and_propose
+from apedp_dyn.epistemic.report_fidelity import (
+    render_float,
+    render_verdict_cell,
+    verdict_for_row,
+)
 
 
 def lag1_autocorr(residuals: np.ndarray) -> float:
@@ -465,10 +470,10 @@ def generate_markdown_report(results: dict[str, Any]) -> None:
         "",
         "| Method / Model Configuration | In-Sample Fit ($R^2$) | Out-of-Sample Extrapolation ($R^2$) | Extrapolation RMSE | Residual Autocorr ($|\\rho_1|$) | Design Matrix Condition ($\\kappa$) | Epistemic Referee Whiteness Gate |",
         "| :--- | :---: | :---: | :---: | :---: | :---: | :---: |",
-        f"| **Genetic Algorithm (GA, Degree 5 Polynomial)** | `{clean_ga['r2_train']:.4f}` | `{clean_ga['r2_extrapolation']:.4f}` | `{clean_ga['rmse_extrapolation']:.4f}` | `{clean_ga['rho1']:.4f}` | `{clean_ga['cond_number']:.2e}` | **REFUSED** ($|\\rho_1| > 0.50$) |",
-        f"| **Unassisted RIME (Smooth Grammar)** | `{clean_unass['r2_train']:.4f}` | `{clean_unass['r2_extrapolation']:.4f}` | `{clean_unass['rmse_extrapolation']:.4f}` | `{clean_unass['rho1']:.4f}` | Low (~1.0) | **REFUSED** ($|\\rho_1| > 0.50$) |",
-        f"| **RIME with `floor` Transform** | `{clean_ass['r2_train']:.6f}` | `{clean_ass['r2_extrapolation']:.6f}` | `{clean_ass['rmse_extrapolation']:.6f}` | `{clean_ass['rho1'] if np.isfinite(clean_ass['rho1']) else 0.0:.4f}` | Minimal | **PASSED** (Exact Recovery) |",
-        f"| **Autonomous Epistemic Profiler & Transmuter** | `{clean_trans['r2_train']:.6f}` | `{clean_trans['r2_extrapolation']:.6f}` | `{clean_trans['rmse_extrapolation']:.6f}` | `{clean_trans['rho1'] if np.isfinite(clean_trans['rho1']) else 0.0:.4f}` | N/A (Analytical) | **PASSED** (Exact Recovery) |",
+        f"| **Genetic Algorithm (GA, Degree 5 Polynomial)** | `{clean_ga['r2_train']:.4f}` | `{clean_ga['r2_extrapolation']:.4f}` | `{clean_ga['rmse_extrapolation']:.4f}` | `{clean_ga['rho1']:.4f}` | `{clean_ga['cond_number']:.2e}` | {render_verdict_cell(*verdict_for_row(clean_ga['r2_extrapolation'], clean_ga['rho1'], clean_ga['rmse_extrapolation']))} |",
+        f"| **Unassisted RIME (Smooth Grammar)** | `{clean_unass['r2_train']:.4f}` | `{clean_unass['r2_extrapolation']:.4f}` | `{clean_unass['rmse_extrapolation']:.4f}` | `{clean_unass['rho1']:.4f}` | Low (~1.0) | {render_verdict_cell(*verdict_for_row(clean_unass['r2_extrapolation'], clean_unass['rho1'], clean_unass['rmse_extrapolation']))} |",
+        f"| **RIME with `floor` Transform** | `{clean_ass['r2_train']:.6f}` | `{clean_ass['r2_extrapolation']:.6f}` | `{clean_ass['rmse_extrapolation']:.6f}` | {render_float(clean_ass['rho1'], 4)} | Minimal | {render_verdict_cell(*verdict_for_row(clean_ass['r2_extrapolation'], clean_ass['rho1'], clean_ass['rmse_extrapolation']))} |",
+        f"| **Autonomous Epistemic Profiler & Transmuter** | `{clean_trans['r2_train']:.6f}` | `{clean_trans['r2_extrapolation']:.6f}` | `{clean_trans['rmse_extrapolation']:.6f}` | {render_float(clean_trans['rho1'], 4)} | N/A (Analytical) | {render_verdict_cell(*verdict_for_row(clean_trans['r2_extrapolation'], clean_trans['rho1'], clean_trans['rmse_extrapolation']))} |",
         "",
         "---",
         "",

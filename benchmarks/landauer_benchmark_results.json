@@ -1,12 +1,12 @@
 {
   "benchmark_metadata": {
     "title": "Landauer Conductance Staircase: RIME vs GA Benchmark",
-    "timestamp": "2026-10-15T10:43:27Z",
+    "timestamp": "2026-10-15T11:13:33Z",
     "git_workspace": "/home/psalmprax/ALL_PROJECTS/science",
     "seed": 42,
     "n_train": 100,
     "n_holdout": 100,
-    "duration_seconds": 4.96
+    "duration_seconds": 5.23
   },
   "experiments": {
     "clean_ideal": {

@@ -6,11 +6,57 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ### Test-suite reporting (machine-verified by tests/test_dyn_reporting_integrity.py)
 
-- The Python RIME/repair/referee/STEM suite total is **200 tests across 42 files**, counted by importing each file in tests/test_dyn_reporting_integrity.py and assert-verified in CI. Earlier prose quoted a 74-test subset of 11 files; that figure is a scoped subset, not the suite total, and is superseded by the machine-verified number.
+- The Python RIME/repair/referee/STEM suite total is **211 tests across 44 files**, counted by importing each file in tests/test_dyn_reporting_integrity.py and assert-verified in CI. Earlier prose quoted a 74-test subset of 11 files; that figure is a scoped subset, not the suite total, and is superseded by the machine-verified number.
 - Named exclusions from the wider `tests/` directory (not silently omitted):
   - `tests/test_all_system_equations_lean_proofs.py::test_spot_check_lean_kernel_compilation` — environmental: the Lean kernel compile exceeds the test's 15s budget (pre-existing).
   - `tests/test_dyn_lean_universal_bridge.py` — same environmental Lean cause.
   - `outputs/nano_ds10_freeze.json` — FREEZE DRIFT: the pin at `apedp_dyn/epistemic/frozen_spec.py:40` expects d37d0f1c..., but the benchmark regenerates deterministically to b809ddcb..., so `test_all_frozen_records_verified_against_pinned_hashes` fails. All of that generator's dependencies are clean, so the drift reproduces at HEAD. The pinned hash predates the current generator output; the pin owner must re-pin or reconcile the generator. NOT touched in this change.
+
+## [Unreleased] — Closed-loop prior-guided search + report fidelity (`experimental`)
+
+### Added
+- **`apedp_dyn/epistemic/prior_guided_search.py` — the loop-closer.** Consumes the shape
+  prior and dataset profile on DEV rows only and selects a search path through a FIXED
+  table (stepped -> step basis + extrapolatable rule form; singular/power -> transmutation
+  fitter; else abstain). Emits `CandidateProposal` objects; never promotes, never sees
+  holdout. No operator-name literals usable for per-equation selection (machine-guarded).
+  Owns a deterministic two-stage floor-rule fit (global log-width grid + max-margin
+  tie-break + local refine): max-margin phasing was REQUIRED, measured, because several
+  (w, off) classify dev rows identically (SSE 1.5e-29 tie) while holdout separates them
+  (0.974 vs 1.0).
+- **`apedp_dyn/epistemic/report_fidelity.py` — verdicts derive from rows.** `verdict_for_row`
+  with explicit args (tau_extrapolation, rho_max, eps_exact_rmse, delta_exact_r2):
+  exact-recovery bypass checked FIRST (rho1 of numerical noise must not refuse R2 == 1),
+  then gate, then stated refusal reasons. The Landauer harness template now renders this
+  function's output verbatim; hardcoded `**PASSED** (Exact Recovery)` / `**REFUSED**`
+  labels were removed from `benchmarks/run_landauer_rime_vs_ga_benchmark.py` (4 lines +
+  import; NaN rho1 now renders `n/a (exact-zero residuals)` instead of `0.0000`).
+- **`tests/test_dyn_prior_guided_unsolicited.py` (7/7 green).** Unsolicited Landauer recovery
+  on sealed splits (dev [0.1,4.9] -> holdout [5.0,9.8], R2 == 1.0 both, zero human primitive
+  choice); table truth across staircase/singular/power/line (line abstains); noise rung 1
+  (2%: holdout >= 0.999); rung 2 labeled semi-synthetic (BTC 5m + injected W=125/OFF=40
+  staircase at local SNR=5: width 125.02/125, quantum within 0.4%, offset modulo width,
+  holdout 0.8910 vs oracle 0.8917); clean-stream abstention control; low-SNR boundary
+  (SNR<=4 abstains) pinned, not hidden; single-threshold edge states its no-holdout limit.
+- **`tests/test_dyn_landauer_report_fidelity.py` (4/4 green).** Verdict-rule units, committed
+  md == committed JSON cell-for-cell on the main table, no-hardcode guard on the harness,
+  end-to-end rendered-cell presence.
+
+### Measured integration gap found and fixed (kept on record)
+- The transmutation fitter DECLINES stepped data under noise that the shape prior
+  identifies (its level-clustering rule needs <=20 discrete rounded levels; noisy returns
+  exceed that). The adapter therefore owns a uniform row-1 floor-fit path instead of
+  depending on the other module's internal gating. Two components disagreeing on the same
+  data is exactly what the closed loop had to resolve, and did.
+
+### Honest scope restated
+- Rung 2 is semi-synthetic by necessity: the repo has no real dataset with known truth and
+  >=40 rows (Bertozzi 5, Brown 20). The injection (form, SNR, oracle) is fully labeled in
+  the test. Unsolicited discovery on real measured unknowns remains unclaimed.
+
+### Reporting integrity
+- `RIME_SUITE_TOTAL` raised 200 -> 211 (whitelisting the two new files), verified by
+  re-running `tests/test_dyn_reporting_integrity.py`.
 
 ## [Unreleased] — RIME shape inference steps 1-2 (data-driven family prior + step basis, `experimental`)
 
