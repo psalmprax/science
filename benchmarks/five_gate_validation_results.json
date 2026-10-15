@@ -1,7 +1,7 @@
 {
   "metadata": {
     "title": "RIME-AD Five-Gate Scientific Validation Programme",
-    "timestamp": "2026-10-15T15:20:29Z",
+    "timestamp": "2026-10-15T16:41:40Z",
     "git_workspace": "/home/psalmprax/ALL_PROJECTS/science"
   },
   "gates": {
@@ -59,27 +59,30 @@
       "passed": true,
       "rabi": {
         "rime": {
-          "r2": 1.0,
-          "wall_ms": 37.982242996804416,
+          "r2_holdout": 1.0,
+          "r2_train": 1.0,
+          "wall_ms": 32.893085037358105,
           "formula": "-1.0000 * (cos(t)^2) + 1.0000"
         },
         "ga": {
-          "formula": "-1.0879 * ((cos(sin(t)) + -1.0776) - cos(cos(t))) + -0.6723",
-          "r2": 0.9999999601763059,
-          "wall_ms": 21.889884024858475,
+          "formula": "-0.5000 * cos((t + t)) + 0.5000",
+          "r2": 1.0,
+          "wall_ms": 9.762882022187114,
           "evals": 1560
         }
       },
       "brus": {
         "rime": {
           "r2_train": 0.9984139642532619,
-          "wall_ms": 21.58015500754118,
+          "r2_holdout_single": -34.56794083957014,
+          "r2_holdout_multi": 1.0,
+          "wall_ms": 18.752848962321877,
           "formula": "2.0654 * (1 / (R^2)) + 1.7003"
         },
         "ga": {
-          "formula": "2.2645 * ((t**2.2004)**-1.0) + 1.7176",
-          "r2": -2.9250686071320096,
-          "wall_ms": 6.158055970445275,
+          "formula": "3.8227 * ((cos((t / t)) / t) / t) + 1.7003",
+          "r2": -34.5674843357986,
+          "wall_ms": 6.3607830088585615,
           "evals": 1560
         }
       }

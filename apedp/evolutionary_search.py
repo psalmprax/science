@@ -801,6 +801,7 @@ def evolve(
                 tournament_size=cfg.tournament_size,
                 mutation_rate=cfg.mutation_rate,
                 seed=cfg.seed,
+                allow_exp=cfg.allow_exp,
             )
             pareto_front_dicts = [
                 {"expression": item["expression"], "train_mse": item["mse"], "complexity": item["complexity"]}

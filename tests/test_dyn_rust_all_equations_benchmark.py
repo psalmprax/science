@@ -126,6 +126,7 @@ def test_shared_dag_enumeration_rabi_and_brus():
         json.dumps(["t"]),
         True,  # include trig
         False,
+        False,  # no exp
         2,
     ))
     assert len(res_rabi) > 0
@@ -141,7 +142,41 @@ def test_shared_dag_enumeration_rabi_and_brus():
         json.dumps(["R"]),
         False,
         False,
+        False,  # no exp
         2,
     ))
     assert len(res_brus) > 0
     assert res_brus[0]["r2"] > 0.99
+
+
+def test_autonomous_rime_ad_proposer_and_referee_adjudication():
+    from apedp_dyn.proposers.rime_ad_proposer import RimeAdProposer
+    from pathlib import Path
+    import pandas as pd
+
+    # Verify autonomous discovery on Detuned Rabi
+    delta = np.linspace(-6.0, 6.0, 60)
+    pe = 25.0 / (25.0 + delta ** 2)
+    df = pd.DataFrame({"delta": delta, "target": pe})
+    proposer = RimeAdProposer(target_col="target")
+    cands = proposer.fit_and_propose(df)
+    assert len(cands) > 0
+    assert cands[0].metadata["method"] == "implicit_svd"
+
+    # Verify that benchmark JSON reflects honest referee adjudications
+    json_path = Path("benchmarks/quantum_all_equations_benchmark_results.json")
+    assert json_path.exists()
+    data = json.loads(json_path.read_text(encoding="utf-8"))
+    eqs = data["equations"]
+
+    # Detuned Rabi and Landauer clean must pass exact recovery
+    assert eqs["detuned_rabi_resonance"]["verdict"] == "PASSED"
+    assert eqs["landauer_staircase"]["verdict"] == "PASSED"
+
+    # Planck Radiance must be honestly refused
+    assert eqs["planck_radiance"]["verdict"] == "REFUSED"
+
+    # Schwinger and BCS must be honestly refused by referee whiteness gate (|rho1| >= 0.5)
+    assert eqs["schwinger_tunneling"]["verdict"] == "REFUSED"
+    assert eqs["bcs_energy_gap"]["verdict"] == "REFUSED"
+

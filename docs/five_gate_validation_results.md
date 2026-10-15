@@ -31,14 +31,15 @@
 | White noise yields no exact ODE | **PASS** |
 | Null world yields no exact relation | **PASS** |
 
-### Gate 4 — Matched-Compute Ablation (RIME enumeration vs native GA)
+### Gate 4 — Matched-Compute Ablation (RIME vs Native GA on Identical Holdout Splits)
 
-| Task / Method | Holdout/Train R² | Wall time | Detail |
+| Task / Representation | Holdout R² | Execution Time | Discovered Formula / Search Detail |
 | :--- | :---: | :---: | :--- |
-| Rabi: RIME enumeration | `1.000000` | `37.98 ms` | `-1.0000 * (cos(t)^2) + 1.0000` |
-| Rabi: native GA | `1.000000` | `21.89 ms` | `-1.0879 * ((cos(sin(t)) + -1.0776) - cos(cos(t))) + -0.6723` (1560 evals) |
-| Brus: RIME enumeration (train) | `0.998414` | `21.58 ms` | `2.0654 * (1 / (R^2)) + 1.7003` |
-| Brus: native GA (holdout) | `-2.925069` | `6.16 ms` | `2.2645 * ((t**2.2004)**-1.0) + 1.7176` (1560 evals) |
+| Rabi: RIME shared DAG | `1.000000` | `32.89 ms` | `-1.0000 * (cos(t)^2) + 1.0000` |
+| Rabi: Native GA | `1.000000` | `9.76 ms` | `-0.5000 * cos((t + t)) + 0.5000` (1560 evals) |
+| Brus: RIME single-term DAG | `-34.567941` | `18.75 ms` | `2.0654 * (1 / (R^2)) + 1.7003` (collapses on holdout) |
+| Brus: RIME multi-rational | `1.000000` | `< 1.0 ms` | `1.7400 - 0.2800*(1/R) + 2.4500*(1/R^2)` (exact holdout recovery) |
+| Brus: Native GA single tree | `-34.567484` | `6.36 ms` | `3.8227 * ((cos((t / t)) / t) / t) + 1.7003` (1560 evals, collapses on holdout) |
 
 ### Gate 5 — Sealed Confirmation (fresh seed 12345, frozen configs)
 

@@ -529,6 +529,7 @@ fn simulate_ode_rk45<'py>(
     mutation_rate=0.35,
     crossover_rate=0.70,
     allow_trans=true,
+    allow_exp=true,
     seed=42
 ))]
 fn evolve_native<'py>(
@@ -545,6 +546,7 @@ fn evolve_native<'py>(
     mutation_rate: f64,
     crossover_rate: f64,
     allow_trans: bool,
+    allow_exp: bool,
     seed: u64,
 ) -> PyResult<(Vec<(String, f64, usize, f64, f64)>, usize)> {
     let columns = extract_columns(data, "data")?;
@@ -559,6 +561,7 @@ fn evolve_native<'py>(
         mutation_rate,
         crossover_rate,
         allow_trans,
+        allow_exp,
         seed,
     };
 
@@ -998,6 +1001,7 @@ fn rime_enumerate_search_json(
     var_names_json: &str,
     include_trig: bool,
     include_floor: bool,
+    include_exp: bool,
     max_depth: usize,
 ) -> PyResult<String> {
     let vars: Vec<Vec<f64>> = serde_json::from_str(vars_json)
@@ -1012,7 +1016,37 @@ fn rime_enumerate_search_json(
         &var_names,
         include_trig,
         include_floor,
+        include_exp,
         max_depth,
+    );
+    serde_json::to_string(&candidates)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_rational_search_json(
+    vars_json: &str,
+    target_json: &str,
+    var_names_json: &str,
+    include_trig: bool,
+    include_floor: bool,
+    max_depth: usize,
+    top_k: usize,
+) -> PyResult<String> {
+    let vars: Vec<Vec<f64>> = serde_json::from_str(vars_json)
+        .map_err(|e| PyValueError::new_err(format!("bad vars JSON: {}", e)))?;
+    let target: Vec<f64> = serde_json::from_str(target_json)
+        .map_err(|e| PyValueError::new_err(format!("bad target JSON: {}", e)))?;
+    let var_names: Vec<String> = serde_json::from_str(var_names_json)
+        .map_err(|e| PyValueError::new_err(format!("bad var_names JSON: {}", e)))?;
+    let candidates = rime::enumerate::search_rational_pairs(
+        &vars,
+        &target,
+        &var_names,
+        include_trig,
+        include_floor,
+        max_depth,
+        top_k,
     );
     serde_json::to_string(&candidates)
         .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
@@ -1077,6 +1111,7 @@ fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rime_implicit_discover_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_diff_pade_discover_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_enumerate_search_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_rational_search_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_koopman_discover_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_lie_symmetry_json, m)?)?;
     m.add_class::<UnitVector>()?;

@@ -38,10 +38,12 @@ class RimeAdProposer(ProposerBase):
         target_col: str = "target",
         max_degree: int = 2,
         strategy_archetype: StrategyArchetype = StrategyArchetype.TACTICAL,
+        max_univariate_features: int = 12,
     ):
         self._target_col = target_col
         self._max_degree = max_degree
         self._strategy_archetype = strategy_archetype
+        self._max_univariate_features = max_univariate_features
 
     @property
     def proposer_id(self) -> str:
@@ -76,6 +78,25 @@ class RimeAdProposer(ProposerBase):
         else:
             # Case 2: Multi-variate additive discovery
             candidates.extend(self._propose_multivariate(df, feature_cols, y_dev))
+            # Fan-out: run the univariate representations (TV/staircase,
+            # implicit SVD, differential Padé, shared-DAG enumeration) per
+            # feature, so the Rust engines engage on multi-feature frames
+            # instead of only the OLS baseline firing. Each representation
+            # keeps its own gates; ranking below stays BIC on dev rows.
+            for feat in feature_cols[: max(0, self._max_univariate_features)]:
+                try:
+                    x_col = df[feat].to_numpy(dtype=float)
+                except Exception:
+                    continue
+                mask = np.isfinite(x_col) & np.isfinite(y_dev)
+                if int(mask.sum()) < 30:
+                    continue
+                try:
+                    candidates.extend(
+                        self._propose_univariate(x_col[mask], y_dev[mask], feat)
+                    )
+                except Exception:
+                    continue
 
         if not candidates:
             return ()
@@ -107,7 +128,7 @@ class RimeAdProposer(ProposerBase):
         prior, seeds = staircase_prior(x, y)
 
         # Representation 1: Step / Plateau (BV-ROF)
-        if prior.family == "piecewise_constant" or profile.flat_fraction > 0.35:
+        if prior.family == "piecewise_constant" or profile.flat_derivative_fraction > 0.35:
             if seeds is not None and len(seeds.thresholds) >= 2:
                 rule = _fit_floor_rule(x, y, seeds.thresholds)
                 if rule is not None:
@@ -167,6 +188,7 @@ class RimeAdProposer(ProposerBase):
                     json.dumps([feat_name]),
                     True,  # allow trig
                     False,
+                    False,  # no exp (keeps the frozen depth-2 search space)
                     2,
                 )
             )

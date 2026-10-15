@@ -1,89 +1,168 @@
 {
   "metadata": {
-    "title": "Quantum & Physical Benchmark Across RIME-AD Rust Engines",
-    "timestamp": "2026-10-15T15:18:44Z",
+    "title": "Quantum & Physical Benchmark: Autonomous Multi-Representation RIME-AD",
+    "timestamp": "2026-10-15T15:58:43Z",
     "git_workspace": "/home/psalmprax/ALL_PROJECTS/science",
     "equations_count": 9
   },
   "equations": {
     "landauer_staircase": {
-      "clean": {
-        "wall_ms": 0.12959796003997326,
-        "r2_train": 0.9999986435160065,
-        "r2_extrap": 1.0,
-        "rmse_extrap": 0.0,
-        "flat_fraction": 0.9595959595959596,
-        "quantum_step_recovered": 1.0,
-        "is_quantized": true
-      },
-      "noise_2pct": {
-        "wall_ms": 0.28156209737062454,
-        "r2_train": 0.9998354096574293,
-        "r2_extrap": 0.9970721756913987,
-        "rmse_extrap": 0.07524121930904208,
-        "quantum_step_recovered": 0.9893400795633549,
-        "is_quantized": true
-      },
-      "noise_5pct": {
-        "r2_train": 0.9989771623421575,
-        "r2_extrap": 0.901115185518003,
-        "rmse_extrap": 0.4372684270358305,
-        "quantum_step_recovered": 0.9380492941971936,
-        "is_quantized": true
-      }
+      "name": "Landauer Staircase",
+      "wall_ms": 321.1626569973305,
+      "formula": "1 * floor((Vg - 0.00664707) / 0.99775) + -2.10224e-16",
+      "method": "extrapolatable_rule_form",
+      "r2_train": 1.0,
+      "rmse_train": 3.8732686019755015e-16,
+      "r2_extrap": 1.0,
+      "rmse_extrap": 1.091411914395169e-15,
+      "rho1": NaN,
+      "verdict": "PASSED",
+      "reason": "exact recovery by rule (RMSE 1.09e-15 <= 1e-06, R2 1.000000000 within 1e-09 of 1)"
     },
     "schwinger_tunneling": {
-      "wall_ms": 0.15906000044196844,
+      "name": "Schwinger Tunneling",
+      "wall_ms": 42.584356968291104,
       "formula": "(0.500*x^2) * y' + (-0.500 + -1.000*x^1) * y = 0",
-      "r2_train": 0.9999027373058178,
-      "r2_extrap": 0.9870382687038118,
-      "rmse_extrap": 0.6038619186537636,
-      "rho1": 0.9243720407469429,
-      "is_exact": true
+      "method": "differential_pade_rk4",
+      "r2_train": 0.9999960497561056,
+      "rmse_train": 0.0037442940820696714,
+      "r2_extrap": 0.9999999630151525,
+      "rmse_extrap": 0.0010200419940733856,
+      "rho1": 0.9253215766714593,
+      "verdict": "REFUSED",
+      "reason": "residual structure (|rho1| 0.9253 >= 0.5)"
     },
     "planck_radiance": {
-      "wall_ms": 0.15492609236389399,
-      "formula": "(0.592*x^1 + 0.280*x^2) * y' + (-1.000 + -0.492*x^1 + 0.300*x^2) * y = 0",
-      "r2_train": 0.24933661815675678,
-      "jet_rmse": 0.013482751649418269,
-      "is_exact": false
+      "name": "Planck Radiance",
+      "wall_ms": 58.2830139901489,
+      "formula": "-1.4032 * (-1.4032 * (cos(v) / (v + 1)) + 0.9927) + 0.9927",
+      "method": "shared_dag_enumerate",
+      "r2_train": -1.2757409012883767,
+      "rmse_train": 0.6100749304163413,
+      "r2_extrap": -121.49142163120838,
+      "rmse_extrap": 1.5068247863094542,
+      "rho1": 0.9553892740169291,
+      "verdict": "REFUSED",
+      "reason": "extrapolation collapse (R2 -121.4914 < 0.99)"
     },
     "brus_confinement": {
-      "wall_ms": 19.500657101161778,
-      "best_formula": "2.0654 * (1 / (R^2)) + 1.7003",
-      "r2_train": 0.9984139642532619
+      "name": "Brus Confinement",
+      "wall_ms": 47.308715991675854,
+      "formula": "1.7400 + -0.2800*(1/R) + 2.4500*(1/R^2)",
+      "method": "multi_rational_basis",
+      "r2_train": 1.0,
+      "rmse_train": 2.0106994154417226e-16,
+      "r2_extrap": 1.0,
+      "rmse_extrap": 1.9229626863835638e-16,
+      "rho1": NaN,
+      "verdict": "PASSED",
+      "reason": "exact recovery by rule (RMSE 1.92e-16 <= 1e-06, R2 1.000000000 within 1e-09 of 1)"
     },
     "detuned_rabi_resonance": {
-      "wall_ms": 0.3024960169568658,
+      "name": "Detuned Rabi Resonance",
+      "wall_ms": 50.298716058023274,
       "formula": "1.0000 - y - 0.0400*x^2*y = 0",
-      "algebraic_rmse": 1.3314679828159064e-11,
-      "is_exact": true
+      "method": "implicit_svd",
+      "r2_train": 1.0,
+      "rmse_train": 1.2230709056988355e-11,
+      "r2_extrap": 1.0,
+      "rmse_extrap": 2.94815396423473e-12,
+      "rho1": NaN,
+      "verdict": "PASSED",
+      "reason": "exact recovery by rule (RMSE 2.95e-12 <= 1e-06, R2 1.000000000 within 1e-09 of 1)"
     },
     "resonant_rabi_dynamics": {
-      "wall_ms": 29.96361197438091,
-      "formula": "-1.0000 * (cos(t)^2) + 1.0000",
-      "r2_train": 1.0
+      "name": "Resonant Rabi Dynamics",
+      "wall_ms": 37.71018097177148,
+      "formula": "-1.0000 * (-1.0000 * (cos(t)^2) + 1.0000) + 1.0000",
+      "method": "shared_dag_enumerate",
+      "r2_train": 1.0,
+      "rmse_train": 9.646809571707697e-17,
+      "r2_extrap": 1.0,
+      "rmse_extrap": 1.1742937623019467e-16,
+      "rho1": NaN,
+      "verdict": "PASSED",
+      "reason": "exact recovery by rule (RMSE 1.17e-16 <= 1e-06, R2 1.000000000 within 1e-09 of 1)"
     },
     "landau_zener": {
-      "wall_ms": 0.2233379054814577,
+      "name": "Landau-Zener Transition",
+      "wall_ms": 61.36389204766601,
       "formula": "(-1.000*x^2) * y' + (0.750) * y = 0",
-      "r2_train": 0.9999059783288732,
-      "jet_rmse": 1.550239135920066e-05,
-      "is_exact": true
+      "method": "differential_pade_rk4",
+      "r2_train": 0.9999999999984137,
+      "rmse_train": 2.712162886128557e-07,
+      "r2_extrap": 0.999999999999997,
+      "rmse_extrap": 1.223555673397093e-09,
+      "rho1": NaN,
+      "verdict": "PASSED",
+      "reason": "exact recovery by rule (RMSE 1.22e-09 <= 1e-06, R2 1.000000000 within 1e-09 of 1)"
     },
     "bcs_energy_gap": {
-      "wall_ms": 0.17791392747312784,
+      "name": "BCS Energy Gap",
+      "wall_ms": 37.35793998930603,
       "formula": "(1.000*x^2) * y' + (-1.000) * y = 0",
-      "r2_train": 0.99999922053602,
-      "jet_rmse": 5.5043888669352266e-05,
-      "is_exact": true
+      "method": "differential_pade_rk4",
+      "r2_train": 0.9999999723448555,
+      "rmse_train": 5.2375020204236104e-05,
+      "r2_extrap": 0.9999999285856123,
+      "rmse_extrap": 5.513765851830393e-05,
+      "rho1": 0.9261381946070141,
+      "verdict": "REFUSED",
+      "reason": "residual structure (|rho1| 0.9261 >= 0.5)"
     },
     "iqhe_staircase": {
-      "wall_ms": 0.2851838944479823,
-      "r2_train": 0.9999961559031956,
-      "flat_fraction": 0.957983193277311,
-      "quantum_step_recovered": 1.0,
-      "is_quantized": true
+      "name": "Integer Quantum Hall Effect",
+      "wall_ms": 450.61549195088446,
+      "formula": "1 * floor((inv_B - -0.000844989) / 1.00176) + 7.9913e-16",
+      "method": "extrapolatable_rule_form",
+      "r2_train": 1.0,
+      "rmse_train": 8.860612892016396e-16,
+      "r2_extrap": 0.9909255898366606,
+      "rmse_extrap": 0.11180339887498948,
+      "rho1": -0.01281645569620155,
+      "verdict": "PASSED",
+      "reason": "gate pass (R2 0.9909 >= 0.99, |rho1| 0.0128 < 0.5)"
+    }
+  },
+  "robustness": {
+    "landauer_clean": {
+      "name": "Landauer Staircase",
+      "wall_ms": 321.1626569973305,
+      "formula": "1 * floor((Vg - 0.00664707) / 0.99775) + -2.10224e-16",
+      "method": "extrapolatable_rule_form",
+      "r2_train": 1.0,
+      "rmse_train": 3.8732686019755015e-16,
+      "r2_extrap": 1.0,
+      "rmse_extrap": 1.091411914395169e-15,
+      "rho1": NaN,
+      "verdict": "PASSED",
+      "reason": "exact recovery by rule (RMSE 1.09e-15 <= 1e-06, R2 1.000000000 within 1e-09 of 1)"
+    },
+    "landauer_noise_2pct": {
+      "name": "Landauer (2% Noise)",
+      "wall_ms": 301.21682095341384,
+      "formula": "1.00097 * floor((Vg - -0.0013127) / 1.00023) + -0.00401425",
+      "method": "extrapolatable_rule_form",
+      "r2_train": 0.9998329349952629,
+      "rmse_train": 0.01802189144874336,
+      "r2_extrap": 0.9999953225270574,
+      "rmse_extrap": 0.0030073845251182762,
+      "rho1": 0.9689366983864206,
+      "verdict": "REFUSED",
+      "reason": "residual structure (|rho1| 0.9689 >= 0.5)"
+    },
+    "landauer_noise_5pct": {
+      "name": "Landauer (5% Noise)",
+      "wall_ms": 312.6762369647622,
+      "formula": "0.999772 * floor((Vg - 0.00664707) / 0.99775) + 0.00157163",
+      "method": "extrapolatable_rule_form",
+      "r2_train": 0.9988405722481115,
+      "rmse_train": 0.04744336733583004,
+      "r2_extrap": 0.9999999478955011,
+      "rmse_extrap": 0.00031741023777663157,
+      "rho1": 0.9689366983864466,
+      "verdict": "REFUSED",
+      "reason": "residual structure (|rho1| 0.9689 >= 0.5)"
     }
   }
 }

@@ -252,7 +252,10 @@ impl NodeExt for Node {
 pub struct GeneticOps;
 
 impl GeneticOps {
-    pub fn random_tree(rng: &mut FastRng, max_depth: usize, num_vars: usize, allow_trans: bool) -> Node {
+    /// `allow_trans` admits sin/cos/sqrt; `allow_exp` additionally admits
+    /// exp(). Overflowed exp evaluations score as non-finite and are
+    /// discarded by selection, so no clamp is applied here.
+    pub fn random_tree(rng: &mut FastRng, max_depth: usize, num_vars: usize, allow_trans: bool, allow_exp: bool) -> Node {
         if max_depth <= 1 || rng.next_f64() < 0.35 {
             // Leaf: variable or constant
             if num_vars > 0 && rng.next_f64() < 0.75 {
@@ -263,23 +266,26 @@ impl GeneticOps {
             }
         } else {
             // Operator branch
-            let op_choice = rng.gen_range(0, if allow_trans { 8 } else { 5 });
+            let op_choice = rng.gen_range(
+                0,
+                5 + if allow_trans { 3 } else { 0 } + if allow_exp { 1 } else { 0 },
+            );
             match op_choice {
                 0 => Node::Add(
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans)),
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans)),
+                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
+                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
                 ),
                 1 => Node::Sub(
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans)),
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans)),
+                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
+                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
                 ),
                 2 => Node::Mul(
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans)),
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans)),
+                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
+                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
                 ),
                 3 => Node::Div(
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans)),
-                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans)),
+                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
+                    Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
                 ),
                 4 => {
                     let p = match rng.gen_range(0, 4) {
@@ -289,13 +295,16 @@ impl GeneticOps {
                         _ => 0.5,
                     };
                     Node::Pow(
-                        Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans)),
+                        Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp)),
                         Box::new(Node::Const(p)),
                     )
                 }
-                5 => Node::Call(Func::Sin, Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans))),
-                6 => Node::Call(Func::Cos, Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans))),
-                _ => Node::Call(Func::Sqrt, Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans))),
+                5 if allow_trans => Node::Call(Func::Sin, Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp))),
+                6 if allow_trans => Node::Call(Func::Cos, Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp))),
+                7 if allow_trans => Node::Call(Func::Sqrt, Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp))),
+                _ if allow_exp => Node::Call(Func::Exp, Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp))),
+                // Unreachable by construction of the choice range above.
+                _ => Node::Call(Func::Sqrt, Box::new(Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp))),
             }
         }
     }
@@ -322,7 +331,7 @@ impl GeneticOps {
         parent1.clone()
     }
 
-    pub fn mutate(node: &Node, max_depth: usize, num_vars: usize, allow_trans: bool, rng: &mut FastRng) -> Node {
+    pub fn mutate(node: &Node, max_depth: usize, num_vars: usize, allow_trans: bool, allow_exp: bool, rng: &mut FastRng) -> Node {
         let roll = rng.next_f64();
         if roll < 0.4 {
             // Subtree replacement
@@ -330,7 +339,7 @@ impl GeneticOps {
             node.collect_paths(&[], &mut paths);
             if !paths.is_empty() {
                 let p = &paths[rng.gen_range(0, paths.len())];
-                let sub = Self::random_tree(rng, 2, num_vars, allow_trans);
+                let sub = Self::random_tree(rng, 2, num_vars, allow_trans, allow_exp);
                 return node.set_subtree(p, &sub);
             }
         } else if roll < 0.7 {
@@ -345,7 +354,7 @@ impl GeneticOps {
             }
         }
         // Grow new
-        Self::random_tree(rng, max_depth, num_vars, allow_trans)
+        Self::random_tree(rng, max_depth, num_vars, allow_trans, allow_exp)
     }
 }
 
@@ -429,6 +438,7 @@ pub struct NativeSearchConfig {
     pub mutation_rate: f64,
     pub crossover_rate: f64,
     pub allow_trans: bool,
+    pub allow_exp: bool,
     pub seed: u64,
 }
 
@@ -444,6 +454,7 @@ impl Default for NativeSearchConfig {
             mutation_rate: 0.35,
             crossover_rate: 0.70,
             allow_trans: true,
+            allow_exp: true,
             seed: 42,
         }
     }
@@ -483,7 +494,7 @@ pub fn run_native_evolutionary_search(
 
             // Initial population
             for _ in 0..config.population_size {
-                let node = GeneticOps::random_tree(&mut rng, config.max_depth, num_vars, config.allow_trans);
+                let node = GeneticOps::random_tree(&mut rng, config.max_depth, num_vars, config.allow_trans, config.allow_exp);
                 let (mse, a, b) = score_candidate_affine(&node, data, target, mean_target, var_target);
                 population.push((node, mse, a, b));
             }
@@ -518,7 +529,7 @@ pub fn run_native_evolutionary_search(
                     };
 
                     let mutated = if rng.next_f64() < config.mutation_rate {
-                        GeneticOps::mutate(&child, config.max_depth, num_vars, config.allow_trans, &mut rng)
+                        GeneticOps::mutate(&child, config.max_depth, num_vars, config.allow_trans, config.allow_exp, &mut rng)
                     } else {
                         child
                     };

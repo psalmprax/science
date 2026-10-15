@@ -4,6 +4,10 @@
 //!   1. Complexity-ordered enumeration of small canonical expression DAGs.
 //!   2. Memoized, hash-consed subexpression evaluation (PSE-style shared computation).
 //!   3. RED-style residual-guided subexpression targeting: isolates r = y - f(x).
+//!
+//! `include_exp` admits `exp()` nodes. The evaluator clamps the argument to
+//! [-50, 50], so overflow degrades to saturation rather than non-finite
+//! blowup; callers keep it off unless the problem family warrants it.
 
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
@@ -161,12 +165,16 @@ pub struct EnumerationCandidate {
 }
 
 /// Systematically enumerate small canonical expressions up to given depth.
+///
+/// Returns the shared DAG plus one candidate pool per depth level, so later
+/// stages (e.g. rational pairing) can bound combinations by depth.
 pub fn enumerate_canonical_dag(
     n_vars: usize,
     include_trig: bool,
     include_floor: bool,
+    include_exp: bool,
     max_depth: usize,
-) -> (SharedDag, Vec<usize>) {
+) -> (SharedDag, Vec<Vec<usize>>) {
     let mut dag = SharedDag::new();
     let mut depth_pools: Vec<Vec<usize>> = Vec::new();
 
@@ -197,6 +205,9 @@ pub fn enumerate_canonical_dag(
             if include_floor {
                 curr_pool.push(dag.intern(DagNode { op: Op::Floor, children: vec![node_idx] }));
             }
+            if include_exp {
+                curr_pool.push(dag.intern(DagNode { op: Op::Exp, children: vec![node_idx] }));
+            }
         }
 
         // 2. Binary ops between (d-1) and all previous
@@ -216,8 +227,173 @@ pub fn enumerate_canonical_dag(
         depth_pools.push(curr_pool);
     }
 
-    let all_candidates: Vec<usize> = depth_pools.into_iter().flatten().collect();
-    (dag, all_candidates)
+    (dag, depth_pools)
+}
+
+/// Does the subtree rooted at `idx` contain operator `op`?
+fn subtree_contains(dag: &SharedDag, idx: usize, op: Op, seen: &mut HashMap<usize, bool>) -> bool {
+    if let Some(&v) = seen.get(&idx) {
+        return v;
+    }
+    let node = &dag.nodes[idx];
+    let mut v = node.op == op;
+    if !v {
+        for &c in &node.children {
+            if subtree_contains(dag, c, op, seen) {
+                v = true;
+                break;
+            }
+        }
+    }
+    seen.insert(idx, v);
+    v
+}
+
+/// Rational-pairing stage (Padé-style): form Div(num, den) with numerators
+/// from the depth-bounded basis pool (excluding Div nodes, which would build
+/// redundant rationals-of-rationals) and denominators from the
+/// transcendental-denominator shortlist (basis nodes whose subtree contains
+/// `exp`). Each pair is OLS-readout scored with the DAG-wide shared memo, so
+/// every unique node is still evaluated once; only the top `top_k` pairs
+/// are materialised into formula strings. The cap is an explicit caller
+/// budget, not a validity verdict.
+pub fn search_rational_pairs(
+    vars: &[Vec<f64>],
+    target: &[f64],
+    var_names: &[String],
+    include_trig: bool,
+    include_floor: bool,
+    max_depth: usize,
+    top_k: usize,
+) -> Vec<EnumerationCandidate> {
+    use std::cmp::Ordering;
+    use std::collections::BinaryHeap;
+
+    #[derive(Clone, Copy)]
+    struct Scored {
+        r2: f64,
+        mse: f64,
+        slope: f64,
+        intercept: f64,
+        root: usize,
+    }
+    impl PartialEq for Scored {
+        fn eq(&self, other: &Self) -> bool {
+            self.r2 == other.r2
+        }
+    }
+    impl Eq for Scored {}
+    impl PartialOrd for Scored {
+        fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+            self.r2.partial_cmp(&other.r2)
+        }
+    }
+    impl Ord for Scored {
+        fn cmp(&self, other: &Self) -> Ordering {
+            self.partial_cmp(other).unwrap_or(Ordering::Equal)
+        }
+    }
+
+    let n = target.len();
+    let mean_y = target.iter().sum::<f64>() / (n as f64);
+    let var_y = target.iter().map(|v| (v - mean_y) * (v - mean_y)).sum::<f64>() / (n as f64);
+
+    let (mut dag, pools) = enumerate_canonical_dag(
+        vars.len(),
+        include_trig,
+        include_floor,
+        true, // rational pairing only runs with exp enabled
+        max_depth,
+    );
+    let mut seen = HashMap::new();
+    let mut numerators = Vec::new();
+    let mut denoms = Vec::new();
+    for idx in pools.iter().flatten().cloned() {
+        if dag.nodes[idx].op == Op::Div {
+            continue;
+        }
+        numerators.push(idx);
+        if subtree_contains(&dag, idx, Op::Exp, &mut seen) {
+            denoms.push(idx);
+        }
+    }
+
+    let mut memo = HashMap::new();
+    let mut heap: BinaryHeap<std::cmp::Reverse<Scored>> = BinaryHeap::new();
+    let keep = top_k.max(1);
+    for &num in &numerators {
+        for &den in &denoms {
+            if num == den {
+                continue;
+            }
+            let root = dag.intern(DagNode {
+                op: Op::Div,
+                children: vec![num, den],
+            });
+            let out = dag.eval_node(root, vars, &mut memo);
+            if out.iter().any(|v| !v.is_finite()) {
+                continue;
+            }
+            // Spike guard: a denominator brushing zero produces huge ratios
+            // that OLS can spuriously fit. Rational candidates must stay
+            // bounded on the data.
+            if out.iter().any(|v| v.abs() > 1e6) {
+                continue;
+            }
+            let mean_b = out.iter().sum::<f64>() / (n as f64);
+            let mut cov = 0.0f64;
+            let mut vb = 0.0f64;
+            for i in 0..n {
+                let db = out[i] - mean_b;
+                cov += db * (target[i] - mean_y);
+                vb += db * db;
+            }
+            if vb <= 1e-12 {
+                continue;
+            }
+            let slope = cov / vb;
+            let intercept = mean_y - slope * mean_b;
+            let mut sse = 0.0f64;
+            for i in 0..n {
+                let e = target[i] - (slope * out[i] + intercept);
+                sse += e * e;
+            }
+            let mse = sse / (n as f64);
+            let r2 = if var_y > 1e-15 { 1.0 - (mse / var_y) } else { 1.0 };
+            if heap.len() < keep
+                || r2 > heap.peek().map(|s| s.0.r2).unwrap_or(f64::NEG_INFINITY)
+            {
+                heap.push(std::cmp::Reverse(Scored {
+                    r2,
+                    mse,
+                    slope,
+                    intercept,
+                    root,
+                }));
+                if heap.len() > keep {
+                    heap.pop();
+                }
+            }
+        }
+    }
+
+    let mut top: Vec<Scored> = heap.into_iter().map(|s| s.0).collect();
+    top.sort_by(|a, b| b.r2.partial_cmp(&a.r2).unwrap_or(Ordering::Equal));
+    top.into_iter()
+        .map(|s| EnumerationCandidate {
+            node_idx: s.root,
+            formula: format!(
+                "{:.4} * ({}) + {:.4}",
+                s.slope,
+                dag.describe_node(s.root, var_names),
+                s.intercept
+            ),
+            slope: s.slope,
+            intercept: s.intercept,
+            r2: s.r2,
+            mse: s.mse,
+        })
+        .collect()
 }
 
 /// Enumerate, batch-evaluate with shared memoization, and fit linear readout (slope * basis + intercept)
@@ -227,13 +403,15 @@ pub fn search_enumerated_shared(
     var_names: &[String],
     include_trig: bool,
     include_floor: bool,
+    include_exp: bool,
     max_depth: usize,
 ) -> Vec<EnumerationCandidate> {
     let n = target.len();
     let mean_y = target.iter().sum::<f64>() / (n as f64);
     let var_y = target.iter().map(|v| (v - mean_y) * (v - mean_y)).sum::<f64>() / (n as f64);
 
-    let (dag, candidates) = enumerate_canonical_dag(vars.len(), include_trig, include_floor, max_depth);
+    let (dag, pools) = enumerate_canonical_dag(vars.len(), include_trig, include_floor, include_exp, max_depth);
+    let candidates: Vec<usize> = pools.iter().flatten().cloned().collect();
     let mut memo = HashMap::new();
     let mut results = Vec::new();
 
@@ -306,11 +484,35 @@ mod tests {
             &["t".to_string()],
             true,  // include_trig
             false,
+            false, // include_exp
             2,
         );
 
         assert!(!res.is_empty());
         let best = &res[0];
         assert!(best.r2 > 0.999, "Best R2: {}, formula: {}", best.r2, best.formula);
+    }
+
+    #[test]
+    fn test_enumerate_with_exp_finds_exponential_growth() {
+        // y = exp(v): Exp(v) is a depth-1 node once include_exp is set.
+        let n = 40;
+        let v: Vec<f64> = (0..n).map(|i| 0.1 + 2.0 * (i as f64) / ((n - 1) as f64)).collect();
+        let y: Vec<f64> = v.iter().map(|&vv| vv.exp()).collect();
+
+        let res = search_enumerated_shared(
+            &[v],
+            &y,
+            &["v".to_string()],
+            false,
+            false,
+            true, // include_exp
+            2,
+        );
+
+        assert!(!res.is_empty());
+        let best = &res[0];
+        assert!(best.r2 > 0.999, "Best R2: {}, formula: {}", best.r2, best.formula);
+        assert!(best.formula.contains("exp"), "formula: {}", best.formula);
     }
 }
