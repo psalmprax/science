@@ -19,6 +19,8 @@ import json
 import numpy as np
 
 import apedp_kernel as ak
+from apedp.evolutionary_search import SearchConfig, evolve
+from apedp.rust_bridge import RustKernelBridge
 
 
 def test_planck_returns_approximate_jet_ode_without_exact_claim():
@@ -39,3 +41,21 @@ def test_planck_returns_approximate_jet_ode_without_exact_claim():
     # But no exact recovery may be claimed: none exists mathematically.
     assert res["is_exact_recovery"] is False
     assert res["integrated_trajectory_r2"] < 0.99
+
+
+def test_native_ga_hallucinates_on_planck_while_rime_abstains():
+    # Same train/holdout split for both. GA returns a spurious
+    # rational-trigonometric contraption that collapses out of sample,
+    # while RIME's differential engine refuses the exact claim.
+    v_tr = np.linspace(0.1, 6.0, 60)
+    v_ho = np.linspace(6.1, 10.0, 40)
+    u_tr = (v_tr ** 3) / (np.exp(v_tr) - 1.0)
+    u_ho = (v_ho ** 3) / (np.exp(v_ho) - 1.0)
+    ga = evolve({"v": v_tr}, u_tr, config=SearchConfig(
+        use_native_ga=True, islands=2, island_size=30,
+        generations=15, seed=42))
+    assert ga.best_expression
+    pred = RustKernelBridge().evaluate_expression(
+        ga.best_expression, ["v"], [v_ho])
+    ga_r2 = 1.0 - float(np.mean((u_ho - pred) ** 2)) / float(np.var(u_ho))
+    assert ga_r2 < 0.5, f"GA unexpectedly transferred: R2={ga_r2}"
