@@ -1,0 +1,118 @@
+{
+  "sandbox_version": 1,
+  "provenance": "Mirror of OpenAI 'Sharing AI progress in mathematics' (2026-10-06): ~4000 problems attempted, 722 manuscripts published, 3 later retracted (repo now lists 719 across 372 result families). Pipeline modeled: attempt -> machine-checkable certificate -> independent verification -> retraction accounting. APEDP-X variant reports verified/failed/unavailable/unsupported; it never marks a task verified without a checker certificate.",
+  "problems": [
+    {
+      "id": "NT-1",
+      "category": "Number theory",
+      "name": "Goldbach conjecture over even integers in [4, 2000000]",
+      "engine": "rust/goldbach_verifier (Rayon sieve, exhaustive)",
+      "checker": "exhaustive witness certificate: every even n must have a prime pair",
+      "status": "supported",
+      "claim_ceiling": "C2_PREDICTIVE (finite range only; universal claim abstains)"
+    },
+    {
+      "id": "NT-2",
+      "category": "Number theory / analysis",
+      "name": "Riemann zeta zero discovery + calibration gate (T = 60)",
+      "engine": "rust/riemann_verifier (Euler-Maclaurin bisection, from scratch)",
+      "checker": "reference-zero calibration (delta < 1e-8) + approximate tally reconciliation",
+      "status": "supported",
+      "claim_ceiling": "finite-range numerics only; certified zero count deliberately unresolved (S(T) remainder)"
+    },
+    {
+      "id": "LAW-1",
+      "category": "Mathematical physics",
+      "name": "Planck spectral density: exact Riccati ODE recovery",
+      "engine": "rime_diff_pade (Rust) with include_riccati",
+      "checker": "recomputed jet residual on the raw data + exact-recovery flag + plate snapshot",
+      "status": "supported",
+      "claim_ceiling": "exact recovery of a rational ODE on the fitted family"
+    },
+    {
+      "id": "LAW-2",
+      "category": "Dynamical systems",
+      "name": "Harmonic oscillator: exact 2nd-order ODE recovery (y'' = -4y)",
+      "engine": "rime_diff_pade (Rust)",
+      "checker": "recomputed jet RMSE (must be < 1e-12) + integrated trajectory R2",
+      "status": "supported",
+      "claim_ceiling": "exact recovery of a linear constant-coefficient ODE"
+    },
+    {
+      "id": "GA-1",
+      "category": "Analysis",
+      "name": "Trigonometric family exact recovery: sin(2x) and 2cos(1.3x)",
+      "engine": "native GA (genetic.rs) with trig template seeding + Powell polish",
+      "checker": "recomputed MSE on the training grid (must be < 1e-12)",
+      "status": "supported",
+      "claim_ceiling": "exact recovery within the seeded trig grammar"
+    },
+    {
+      "id": "PDE-1",
+      "category": "Partial differential equations",
+      "name": "Burgers equation: frozen-coefficient transfer to holdout window",
+      "engine": "rime_pde discovery + apedp_dyn.epistemic.pde_transfer",
+      "checker": "frozen-coefficient residual R2 recomputation (no re-fit) + coefficient tolerances",
+      "status": "conditional",
+      "conditional_on": "rime_pde_discover_json binding present in the installed kernel extension (pending concurrent-session commit)"
+    },
+    {
+      "id": "LEAN-1",
+      "category": "Formalization",
+      "name": "Lean formalization of a discovered law",
+      "engine": "apedp_dyn/epistemic/lean_universal_bridge.py",
+      "checker": "Lean kernel",
+      "status": "unsupported",
+      "reason": "Per-result templated Lean files exist in-tree (14+ under apedp_dyn/lean_formal/), but there is no automated at-scale formalization pipeline and no Lean toolchain wired into this sandbox."
+    },
+    {
+      "id": "OPEN-RH",
+      "category": "Number theory",
+      "name": "Quasi-Riemann hypothesis variant (OpenAI headline, Oct 2026)",
+      "status": "unsupported",
+      "reason": "Requires proof construction and literature novelty. APEDP-X can numerically certify zero locations on a finite range (NT-2) but has no proof-search engine and no originality adjudication."
+    },
+    {
+      "id": "OPEN-BSD",
+      "category": "Algebraic geometry / number theory",
+      "name": "Partial results on the Birch and Swinnerton-Dyer conjecture",
+      "status": "unsupported",
+      "reason": "No algebraic-geometry engine, no elliptic-curve machinery, no proof-level output path."
+    },
+    {
+      "id": "OPEN-HODGE",
+      "category": "Algebraic geometry",
+      "name": "Partial results on the Hodge conjecture",
+      "status": "unsupported",
+      "reason": "No algebraic-geometry engine, no cohomology constructions, no proof-level output path."
+    },
+    {
+      "id": "OPEN-KAKEYA",
+      "category": "Geometric measure theory",
+      "name": "Kakeya conjecture extension to R^4",
+      "status": "unsupported",
+      "reason": "Proof-level combinatorial/geometric argument required; outside the ODE/PDE-law and finite-certificate engines."
+    },
+    {
+      "id": "OPEN-ALGO",
+      "category": "Complexity theory",
+      "name": "Asymptotic algorithmic advances (multiplication exponent, Fourier transform)",
+      "status": "unsupported",
+      "reason": "No asymptotic lower-bound or complexity-analysis machinery; the GA recovers closed-form laws, it does not construct asymptotically improved algorithms."
+    },
+    {
+      "id": "OPEN-NS",
+      "category": "Partial differential equations",
+      "name": "Navier-Stokes global regularity discussion",
+      "status": "unsupported",
+      "reason": "APEDP-X discovers and transfers PDE coefficient laws (PDE-1) on finite grids; global regularity is a proof obligation it cannot state."
+    },
+    {
+      "id": "OPEN-SCALE",
+      "category": "Metascience",
+      "name": "Autonomous 719-manuscript throughput with retraction accounting",
+      "status": "unsupported",
+      "reason": "APEDP-X is single-problem and human-in-the-loop: one registry entry per engine invocation, scarce holdout budget, no autonomous multi-thousand-problem pipeline. This sandbox runs ~6 checks per invocation, not ~4000."
+    }
+  ]
+}

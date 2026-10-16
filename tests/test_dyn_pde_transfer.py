@@ -19,6 +19,19 @@ from apedp_dyn.epistemic.pde_transfer import evaluate_frozen_transfer
 DT = 0.002
 DX = 0.1
 
+# `rime_pde_discover_json` lives in a lib.rs wiring block owned by the
+# concurrent session (untracked rime/pde.rs). In a clean checkout of the tree
+# that contains pde_transfer.py but not that binding, these pins skip with a
+# reason instead of erroring; they re-activate automatically once it ships.
+pytestmark = pytest.mark.skipif(
+    not hasattr(ak, "rime_pde_discover_json"),
+    reason=(
+        "rime_pde_discover_json binding not present in this build "
+        "(pending concurrent-session commit of rime/pde.rs wiring); "
+        "frozen-transfer pins re-activate automatically once it ships."
+    ),
+)
+
 
 def _simulate_burgers(nx: int = 60, nt: int = 50, nu: float = 0.1) -> np.ndarray:
     """Explicit scheme identical to the Rust Burgers test fixture."""
