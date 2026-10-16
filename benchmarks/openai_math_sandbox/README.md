@@ -9,6 +9,42 @@ problems APEDP-X can machine-check, and declares everything else
 `UNSUPPORTED` with a reason — the point is to measure, with real numbers,
 what is missing from this system relative to that release.
 
+## Full-catalog ingestion (all 372 families / 719 manuscripts)
+
+```bash
+python3 benchmarks/openai_math_sandbox/ingest_openai_catalog.py --from-dir <cache>   # regenerate
+```
+
+`catalog/manuscripts_manifest.json` records every result family and all 719
+manuscripts (titles, PDF paths, discipline, Lean-formalization flag), ingested
+from a SHA-256-pinned snapshot in `catalog/source_snapshot/`
+(`CONTENTS.md` / `history.md` / `README.md` / `overview.pdf` /
+`formalization.yaml` of `openai/math`, retrieved 2026-10-16).
+`catalog/CATALOG_AUDIT.md` is the human-readable audit. Pinned by
+`tests/test_openai_math_catalog.py` (7/7).
+
+Accounting found by the ingestion (all discrepancies recorded, not hidden):
+
+- **722 → 719** = 3 withdrawn manuscripts (named in `history.md`, absent from
+  the catalogue): a sign error in the Weil-classes paper cascaded into two
+  dependents. 14 further manuscripts were revised and 13 citation-updated.
+- Family numbering is historical, not contiguous: 372 live families over
+  001–377 with retired numbers 45/61/70/123/163.
+- **Formalization counts do not reconcile upstream**: `history.md` states
+  300/719 top-line results formalized (~42%), while `formalization.yaml`
+  enumerates 173 source papers / 200 main-result declarations (173 joined to
+  catalogue manuscripts, 136/372 families). Both numbers are reported; the
+  delta is left unresolved rather than assumed away.
+- The yaml `review.status` is `unchecked` and entries are `agent`-produced —
+  it is not an independent verification layer, and APEDP-X does not run Lean.
+- One yaml source path is stale after a revision ("Taming implies
+  compatibility on four-manifolds" still points at the September directory);
+  it is joined by title and the stale path is on record.
+- **APEDP-X verdict over the whole catalog: 372/372 families are
+  `uncheckable_proof_level`** (no proof engine). Probe tags mark 40 families
+  where finite numerical illustration is possible and 35 with explicit
+  constructions — illustration, never verification.
+
 ## Run
 
 ```bash
