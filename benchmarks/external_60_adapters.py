@@ -250,11 +250,100 @@ class AIFeynmanAdapter:
         )
 
 
+class RimeADNativeAdapter:
+    """RIME-AD native engine (`evolve_native`) as an adapter.
+
+    Introduced 2026-10-16 for *future* rounds only. The frozen round
+    (PREREG-APEDP-EXTBENCH-60-2026-09-26) measured the full
+    `AutonomousModelSynthesizer` stack, not the native RIME-AD search.
+    Scoring this engine against the same hidden grids would extend a frozen
+    record with a second method on already-consumed holdout -- that is a new
+    round under protocol section 6.3 with its own preregistration, seed and
+    checksummed predictions. Until such a round exists, use scratch
+    (`--out-dir`) runs and never write into `tournament_results_external_60/`.
+
+    Contract: reads public CSVs only (`load_public_grids`), fits on train,
+    evaluates the winning expression on all four public grids through
+    `RustKernelBridge.evaluate_expression`. Expression-eval failure is an
+    abstention, and abstentions never carry numeric predictions.
+    """
+
+    name = "rime_ad_native"
+
+    def __init__(
+        self,
+        population_size: int = 300,
+        generations: int = 50,
+        islands: int = 4,
+        seed: int = 42,
+    ) -> None:
+        self.population_size = population_size
+        self.generations = generations
+        self.islands = islands
+        self.seed = seed
+
+    def run(self, corpus_root: str | Path, problem_id: str) -> AdapterResult:
+        from apedp.rust_bridge import RustKernelBridge
+
+        t0 = time.time()
+        grids = load_public_grids(corpus_root, problem_id)
+        tr = grids["train.csv"]
+        bridge = RustKernelBridge()
+        pareto, evals = bridge.evolve_native(
+            [np.ascontiguousarray(tr[:, 0])],
+            ["x"],
+            np.ascontiguousarray(tr[:, 1]),
+            population_size=self.population_size,
+            generations=self.generations,
+            islands=self.islands,
+            seed=self.seed,
+        )
+        if not pareto:
+            return AdapterResult(
+                competitor=self.name, problem_id=problem_id, expression="",
+                abstained=True, abstain_reason="native search returned no candidates",
+                wall_seconds=time.time() - t0,
+            )
+        best = min(pareto, key=lambda p: p["mse"])
+        expr = str(best["expression"])
+        preds: dict[str, list[float]] = {}
+        try:
+            for key in ("train.csv", "validation.csv", "near_ood.csv", "far_ood.csv"):
+                with np.errstate(all="ignore"):
+                    p = np.asarray(
+                        bridge.evaluate_expression(expr, ["x"], [grids[key][:, 0]]),
+                        dtype=float,
+                    ).ravel()
+                preds[key] = [float(v) if np.isfinite(v) else float("nan") for v in p]
+        except (ArithmeticError, TypeError, ValueError):
+            logger.debug("RIME-AD native eval failed for %s", problem_id, exc_info=True)
+            return AdapterResult(
+                competitor=self.name, problem_id=problem_id, expression=expr,
+                abstained=True,
+                abstain_reason="expression evaluation failed on a public grid",
+                wall_seconds=time.time() - t0,
+                metadata={"n_evaluations": int(evals), "train_mse": float(best["mse"])},
+            )
+        return AdapterResult(
+            competitor=self.name, problem_id=problem_id, expression=expr,
+            abstained=False, predictions=preds, wall_seconds=time.time() - t0,
+            metadata={
+                "n_evaluations": int(evals),
+                "train_mse": float(best["mse"]),
+                "population_size": self.population_size,
+                "generations": self.generations,
+                "islands": self.islands,
+                "seed": self.seed,
+            },
+        )
+
+
 __all__ = [
     "AIFeynmanAdapter",
     "APEDPAdapter",
     "AdapterResult",
     "PySINDyAdapter",
     "PySRAdapter",
+    "RimeADNativeAdapter",
     "load_public_grids",
 ]

@@ -532,6 +532,8 @@ fn simulate_ode_rk45<'py>(
     allow_exp=true,
     allow_misc=true,
     allow_advanced=true,
+    polish_constants=true,
+    polish_top_k=3,
     seed=42
 ))]
 fn evolve_native<'py>(
@@ -551,6 +553,8 @@ fn evolve_native<'py>(
     allow_exp: bool,
     allow_misc: bool,
     allow_advanced: bool,
+    polish_constants: bool,
+    polish_top_k: usize,
     seed: u64,
 ) -> PyResult<(Vec<(String, f64, usize, f64, f64)>, usize)> {
     let columns = extract_columns(data, "data")?;
@@ -568,6 +572,8 @@ fn evolve_native<'py>(
         allow_exp,
         allow_misc,
         allow_advanced,
+        polish_constants,
+        polish_top_k,
         seed,
     };
 

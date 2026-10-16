@@ -292,6 +292,35 @@ impl GeneticOps {
     /// random exponent. Overflowed or out-of-domain evaluations score as
     /// non-finite and are discarded by selection, so no clamp is applied.
     pub fn random_tree(rng: &mut FastRng, max_depth: usize, num_vars: usize, allow_trans: bool, allow_exp: bool, allow_misc: bool, allow_advanced: bool) -> Node {
+        Self::random_tree_inner(rng, max_depth, num_vars, allow_trans, allow_exp, allow_misc, allow_advanced, true)
+    }
+
+    /// Trig frequency/phase template: `sin|cos(f*x + p)` with `f` and `p`
+    /// drawn so selection can latch on and the polish stage can refine both
+    /// constants. Physics laws with oscillatory structure are combinatorially
+    /// unreachable from a uniform random tree at depth 4 (the frozen N04
+    /// forensics: coarse frequency x no phase DOF -> R2 = 0.04); seeding the
+    /// template directly is the recorded next-round fix.
+    fn trig_template(rng: &mut FastRng, num_vars: usize) -> Node {
+        let func = if rng.next_f64() < 0.5 { Func::Sin } else { Func::Cos };
+        let v = rng.gen_range(0, num_vars);
+        let f = ((rng.uniform(0.3, 2.8) * 10.0).round()) / 10.0;
+        let arg = if rng.next_f64() < 0.35 {
+            Node::Mul(Box::new(Node::Const(f)), Box::new(Node::Var(v)))
+        } else {
+            let p = ((rng.uniform(-3.14, 3.14) * 10.0).round()) / 10.0;
+            Node::Add(
+                Box::new(Node::Mul(Box::new(Node::Const(f)), Box::new(Node::Var(v)))),
+                Box::new(Node::Const(p)),
+            )
+        };
+        Node::Call(func, Box::new(arg))
+    }
+
+    fn random_tree_inner(rng: &mut FastRng, max_depth: usize, num_vars: usize, allow_trans: bool, allow_exp: bool, allow_misc: bool, allow_advanced: bool, top: bool) -> Node {
+        if top && allow_trans && num_vars > 0 && max_depth >= 3 && rng.next_f64() < 0.18 {
+            return Self::trig_template(rng, num_vars);
+        }
         if max_depth <= 1 || rng.next_f64() < 0.35 {
             // Leaf: variable, exact pi/e constant (rare, documented), or
             // rounded uniform constant.
@@ -321,7 +350,7 @@ impl GeneticOps {
             let n_advanced = if allow_advanced { 7 } else { 0 };
             let op_choice = rng.gen_range(0, 5 + n_trans + n_exp + n_misc + n_advanced);
             let mk_sub = |rng: &mut FastRng| {
-                Self::random_tree(rng, max_depth - 1, num_vars, allow_trans, allow_exp, allow_misc, allow_advanced)
+                Self::random_tree_inner(rng, max_depth - 1, num_vars, allow_trans, allow_exp, allow_misc, allow_advanced, false)
             };
             if op_choice < 5 {
                 let (l, r) = (mk_sub(rng), mk_sub(rng));
@@ -491,6 +520,156 @@ pub fn score_candidate_affine(
     (mse, a, b)
 }
 
+/// Golden-section minimization of a unimodal closure on [lo, hi].
+fn golden_section_min<F: FnMut(f64) -> f64>(
+    mut lo: f64,
+    mut hi: f64,
+    iters: usize,
+    mut f: F,
+) -> (f64, f64) {
+    const PHI: f64 = 0.6180339887498949;
+    let mut x1 = hi - PHI * (hi - lo);
+    let mut x2 = lo + PHI * (hi - lo);
+    let mut f1 = f(x1);
+    let mut f2 = f(x2);
+    for _ in 0..iters {
+        if f1 < f2 {
+            hi = x2;
+            x2 = x1;
+            f2 = f1;
+            x1 = hi - PHI * (hi - lo);
+            f1 = f(x1);
+        } else {
+            lo = x1;
+            x1 = x2;
+            f1 = f2;
+            x2 = lo + PHI * (hi - lo);
+            f2 = f(x2);
+        }
+    }
+    if f1 < f2 { (x1, f1) } else { (x2, f2) }
+}
+
+/// Coordinate-descent polish of a candidate's inner constants via
+/// golden-section line search (the LM-style local stage of the pipeline).
+///
+/// Each `Const` leaf is optimized in turn over `[v - span, v + span]` with
+/// `span = max(|v|, 0.5)` (covers halving/doubling and fine moves), sweeping
+/// the tree up to `sweeps` times. The affine readout is refit at every probe,
+/// and a constant is only replaced when the full-pipeline MSE strictly
+/// improves -- so objective-flat constants (e.g. a lone global multiplier
+/// absorbed by the readout) leave the tree untouched.
+pub fn polish_candidate_constants(
+    node: &Node,
+    data: &[Vec<f64>],
+    target: &[f64],
+    mean_target: f64,
+    var_target: f64,
+    sweeps: usize,
+    evals: &mut usize,
+) -> (Node, f64, f64, f64) {
+    let mut best = node.clone();
+    let (mut best_mse, mut best_a, mut best_b) =
+        score_candidate_affine(&best, data, target, mean_target, var_target);
+    *evals += 1;
+
+    let mut all_paths = Vec::new();
+    best.collect_paths(&[], &mut all_paths);
+    let const_paths: Vec<Vec<usize>> = all_paths
+        .into_iter()
+        .filter(|p| matches!(best.get_subtree(p), Some(Node::Const(_))))
+        .collect();
+    if const_paths.is_empty() {
+        return (best, best_mse, best_a, best_b);
+    }
+
+    let values_of = |node: &Node| -> Vec<f64> {
+        const_paths
+            .iter()
+            .map(|p| match node.get_subtree(p) {
+                Some(Node::Const(v)) => v,
+                _ => 0.0,
+            })
+            .collect()
+    };
+
+    for sweep in 0..sweeps {
+        let mut improved_any = false;
+        // Later sweeps narrow the search window: alternating 1D line searches
+        // zigzag in coupled valleys (e.g. sin(f*x + p) frequency/phase), and a
+        // fixed wide window keeps overshooting along each axis.
+        let decay = 1.0 + 0.4 * sweep as f64;
+        let before_vals = values_of(&best);
+        for path in &const_paths {
+            let Some(Node::Const(v)) = best.get_subtree(path) else {
+                continue;
+            };
+            let span = v.abs().max(0.5) / decay;
+            let (lo, hi) = (v - span, v + span);
+            let mut probe = |c: f64| -> f64 {
+                let cand = best.set_subtree(path, &Node::Const(c));
+                let (mse, _, _) =
+                    score_candidate_affine(&cand, data, target, mean_target, var_target);
+                *evals += 1;
+                mse
+            };
+            let (c_best, _) = golden_section_min(lo, hi, 28, &mut probe);
+            let cand = best.set_subtree(path, &Node::Const(c_best));
+            let (mse, a, b) =
+                score_candidate_affine(&cand, data, target, mean_target, var_target);
+            *evals += 1;
+            if mse < best_mse {
+                best = cand;
+                best_mse = mse;
+                best_a = a;
+                best_b = b;
+                improved_any = true;
+            }
+        }
+        // Powell-style conjugate direction: line-search along this sweep's
+        // net displacement vector to escape valleys where every single-axis
+        // move is locally non-improving.
+        let after_vals = values_of(&best);
+        let dir: Vec<f64> = after_vals
+            .iter()
+            .zip(before_vals.iter())
+            .map(|(a, b)| a - b)
+            .collect();
+        let norm: f64 = dir.iter().map(|d| d * d).sum::<f64>().sqrt();
+        if norm > 1e-12 && const_paths.len() <= 16 {
+            let mut probe_dir = |t: f64| -> f64 {
+                let mut cand = best.clone();
+                for (path, (a, d)) in const_paths.iter().zip(after_vals.iter().zip(dir.iter())) {
+                    cand = cand.set_subtree(path, &Node::Const(a + t * d));
+                }
+                let (mse, _, _) =
+                    score_candidate_affine(&cand, data, target, mean_target, var_target);
+                *evals += 1;
+                mse
+            };
+            let (t_best, _) = golden_section_min(-1.5, 1.5, 28, &mut probe_dir);
+            let mut cand = best.clone();
+            for (path, (a, d)) in const_paths.iter().zip(after_vals.iter().zip(dir.iter())) {
+                cand = cand.set_subtree(path, &Node::Const(a + t_best * d));
+            }
+            let (mse, a, b) =
+                score_candidate_affine(&cand, data, target, mean_target, var_target);
+            *evals += 1;
+            if mse < best_mse {
+                best = cand;
+                best_mse = mse;
+                best_a = a;
+                best_b = b;
+                improved_any = true;
+            }
+        }
+        if !improved_any {
+            break;
+        }
+    }
+    (best, best_mse, best_a, best_b)
+}
+
 /// A candidate expression on the Pareto frontier.
 #[derive(Clone, Debug)]
 pub struct ParetoCandidate {
@@ -516,6 +695,10 @@ pub struct NativeSearchConfig {
     pub allow_exp: bool,
     pub allow_misc: bool,
     pub allow_advanced: bool,
+    /// Coordinate-descent golden-section polish of inner constants applied to
+    /// the top `polish_top_k` candidates of every island after evolution.
+    pub polish_constants: bool,
+    pub polish_top_k: usize,
     pub seed: u64,
 }
 
@@ -534,6 +717,8 @@ impl Default for NativeSearchConfig {
             allow_exp: true,
             allow_misc: true,
             allow_advanced: true,
+            polish_constants: true,
+            polish_top_k: 3,
             seed: 42,
         }
     }
@@ -620,6 +805,29 @@ pub fn run_native_evolutionary_search(
                 population = next_gen;
             }
 
+            // Local polish stage: refine inner constants of the best candidates
+            // with a golden-section coordinate descent. Same-seed determinism is
+            // preserved (islands still run in fixed order) and the pooled best
+            // can only improve -- replacements require a strict MSE gain.
+            if config.polish_constants && config.polish_top_k > 0 {
+                population.sort_by(|a, b| cmp_f64(a.1, b.1));
+                let k = config.polish_top_k.min(population.len());
+                let mut polish_evals = 0usize;
+                for slot in 0..k {
+                    let (polished, mse, a, b) = polish_candidate_constants(
+                        &population[slot].0,
+                        data,
+                        target,
+                        mean_target,
+                        var_target,
+                        8,
+                        &mut polish_evals,
+                    );
+                    population[slot] = (polished, mse, a, b);
+                }
+                total_evaluations.fetch_add(polish_evals, Ordering::Relaxed);
+            }
+
             population
         })
         .collect();
@@ -666,4 +874,203 @@ pub fn run_native_evolutionary_search(
     pareto_front.sort_by_key(|p| p.complexity);
     let total_evals = total_evaluations.load(Ordering::Relaxed);
     (pareto_front, total_evals)
+}
+
+#[cfg(test)]
+mod polish_tests {
+    use super::*;
+    use crate::parser::Func;
+
+    fn sin_data(freq: f64, n: usize) -> (Vec<Vec<f64>>, Vec<f64>) {
+        let xs: Vec<f64> = (0..n)
+            .map(|i| 0.05 + 3.0 * i as f64 / (n - 1) as f64)
+            .collect();
+        let ys: Vec<f64> = xs.iter().map(|x| (freq * x).sin()).collect();
+        (vec![xs], ys)
+    }
+
+    fn stats(target: &[f64]) -> (f64, f64) {
+        let nf = target.len() as f64;
+        let mean = target.iter().sum::<f64>() / nf;
+        let var = target.iter().map(|v| (v - mean) * (v - mean)).sum::<f64>() / nf;
+        (mean, var)
+    }
+
+    fn sin_const_tree(c: f64) -> Node {
+        Node::Call(
+            Func::Sin,
+            Box::new(Node::Mul(
+                Box::new(Node::Const(c)),
+                Box::new(Node::Var(0)),
+            )),
+        )
+    }
+
+    fn recover_sin_const(node: &Node) -> f64 {
+        match node {
+            Node::Call(Func::Sin, inner) => match inner.as_ref() {
+                Node::Mul(l, _) => match l.as_ref() {
+                    Node::Const(c) => *c,
+                    _ => f64::NAN,
+                },
+                _ => f64::NAN,
+            },
+            _ => f64::NAN,
+        }
+    }
+
+    #[test]
+    fn test_polish_refines_frequency_constant() {
+        let (data, target) = sin_data(2.0, 60);
+        let (mean, var) = stats(&target);
+        let tree = sin_const_tree(1.8);
+        let (mse_before, _, _) = score_candidate_affine(&tree, &data, &target, mean, var);
+        let mut evals = 0usize;
+        let (polished, mse_after, _, _) =
+            polish_candidate_constants(&tree, &data, &target, mean, var, 2, &mut evals);
+        let recovered = recover_sin_const(&polished);
+        assert!(
+            mse_after < mse_before * 1e-2,
+            "polish must collapse the residual: {} -> {}",
+            mse_before,
+            mse_after
+        );
+        assert!(
+            (recovered - 2.0).abs() < 5e-3,
+            "frequency not refined to 2.0: {}",
+            recovered
+        );
+        assert!(evals > 30, "eval budget must be counted: {}", evals);
+    }
+
+    #[test]
+    fn test_polish_refines_phase_and_frequency_jointly() {
+        // sin(1.7*x + 0.4): two coupled constants; coordinate descent must
+        // improve both across sweeps.
+        let xs: Vec<f64> = (0..80).map(|i| 0.02 + 3.0 * i as f64 / 79.0).collect();
+        let ys: Vec<f64> = xs.iter().map(|x| (1.7 * x + 0.4).sin()).collect();
+        let data = vec![xs];
+        let (mean, var) = stats(&ys);
+        let tree = Node::Call(
+            Func::Sin,
+            Box::new(Node::Add(
+                Box::new(Node::Mul(
+                    Box::new(Node::Const(1.5)),
+                    Box::new(Node::Var(0)),
+                )),
+                Box::new(Node::Const(0.2)),
+            )),
+        );
+        let (mse_before, _, _) = score_candidate_affine(&tree, &data, &ys, mean, var);
+        let mut evals = 0usize;
+        let (polished, mse_after, _, _) =
+            polish_candidate_constants(&tree, &data, &ys, mean, var, 8, &mut evals);
+        assert!(
+            mse_after < mse_before * 1e-3,
+            "joint polish must collapse the residual: {} -> {}",
+            mse_before,
+            mse_after
+        );
+    }
+
+    #[test]
+    fn test_polish_leaves_constant_free_tree_untouched() {
+        let (data, target) = sin_data(2.0, 50);
+        let (mean, var) = stats(&target);
+        // atan(x) tree: y ~ 0.5*atan(x) via readout; no inner constants.
+        let tree = Node::Call(Func::Atan, Box::new(Node::Var(0)));
+        let mut evals = 0usize;
+        let (polished, mse_after, _, _) =
+            polish_candidate_constants(&tree, &data, &target, mean, var, 2, &mut evals);
+        assert_eq!(polished, tree);
+        let (mse_before, _, _) = score_candidate_affine(&tree, &data, &target, mean, var);
+        assert!((mse_after - mse_before).abs() < 1e-15);
+        assert_eq!(evals, 1, "constant-free tree costs exactly one scoring eval");
+    }
+
+    #[test]
+    fn test_native_search_polish_never_worsens_best() {
+        let (data, target) = sin_data(2.0, 60);
+        let names = vec!["x".to_string()];
+        let base = NativeSearchConfig {
+            population_size: 60,
+            generations: 12,
+            islands: 2,
+            seed: 42,
+            ..Default::default()
+        };
+        let off = NativeSearchConfig {
+            polish_constants: false,
+            ..base.clone()
+        };
+        let (pareto_off, evals_off) =
+            run_native_evolutionary_search(&data, &target, &names, &off);
+        let (pareto_on, evals_on) =
+            run_native_evolutionary_search(&data, &target, &names, &base);
+        let best_off = pareto_off.iter().map(|p| p.mse).fold(f64::INFINITY, f64::min);
+        let best_on = pareto_on.iter().map(|p| p.mse).fold(f64::INFINITY, f64::min);
+        assert!(
+            best_on <= best_off + 1e-12,
+            "polish worsened the best MSE: {} -> {}",
+            best_off,
+            best_on
+        );
+        assert!(evals_on > evals_off, "polish evals must be counted: {} vs {}", evals_on, evals_off);
+    }
+
+    #[test]
+    fn test_golden_section_min_finds_quadratic_minimum() {
+        let (x, f) = golden_section_min(-3.0, 5.0, 60, |t| (t - 1.25) * (t - 1.25));
+        assert!((x - 1.25).abs() < 1e-6, "x={}", x);
+        assert!(f < 1e-12);
+    }
+}
+
+#[cfg(test)]
+mod trig_seed_tests {
+    use super::*;
+
+    fn has_trig(node: &Node) -> bool {
+        let mut paths = Vec::new();
+        node.collect_paths(&[], &mut paths);
+        paths.iter().any(|p| {
+            matches!(
+                node.get_subtree(p),
+                Some(Node::Call(Func::Sin, _)) | Some(Node::Call(Func::Cos, _))
+            )
+        })
+    }
+
+    #[test]
+    fn test_trig_templates_seeded_at_top_level() {
+        let mut rng = FastRng::new(2026);
+        let mut count = 0usize;
+        for _ in 0..300 {
+            let t = GeneticOps::random_tree(&mut rng, 4, 1, true, true, true, true);
+            if has_trig(&t) {
+                count += 1;
+            }
+        }
+        assert!(
+            (10..=110).contains(&count),
+            "trig template seeding rate off: {}/300",
+            count
+        );
+    }
+
+    #[test]
+    fn test_trig_templates_respect_flags() {
+        let mut rng = FastRng::new(2027);
+        for _ in 0..200 {
+            let t = GeneticOps::random_tree(&mut rng, 4, 1, false, true, true, true);
+            assert!(!has_trig(&t), "trig seeded while allow_trans=false");
+        }
+        // With num_vars = 0 the template is structurally impossible (it needs
+        // a Var leaf) and is guarded before any rng draw.
+        let mut rng = FastRng::new(2028);
+        let t = GeneticOps::random_tree(&mut rng, 4, 0, true, true, true, true);
+        let mut paths = Vec::new();
+        t.collect_paths(&[], &mut paths);
+        assert!(paths.iter().all(|p| t.get_subtree(p).is_some()));
+    }
 }
