@@ -10,13 +10,18 @@ first-order LINEAR polynomial ODE exists for Planck radiance.
 Scope correction (adjudicated 2026-10-15): this bar is linear-only. A
 quadratic Riccati relation DOES exist,
     v^3 u' - (3v^2 - v^3) u + u^2 = 0  (verified to ~2e-7),
-but no current engine discovers second-degree Jet relations -- recorded
-follow-up, not a recovery claim.
+and the Riccati Jet extension (adjudicated + implemented 2026-10-16,
+`include_riccati=True` on `rime_diff_pade_discover_json`) recovers it
+exactly on its canonical split -- see test_dyn_frontier_9_of_10.py and
+the Rust `test_planck_riccati_ode_recovery`.
 
 The honest LINEAR-engine behavior is therefore: return the best approximate
 jet ODE, report a small jet residual, and set is_exact_recovery = False
 (correct abstention from an exact-recovery claim). This test pins that the
-engine does not manufacture an exact recovery where none exists.
+engine does not manufacture an exact recovery where none exists -- including
+the cubic-coefficient linear fit, whose traj R2 reaches ~0.99999 and jet
+RMSE ~1e-4 on the training window but must still abstain (it is a fit, not
+a law: `snapped_terms=False`, no structural rationalization).
 """
 from __future__ import annotations
 
@@ -111,14 +116,35 @@ def test_planck_equations_on_fresh_out_of_box_data():
     var = float(np.var(u))
     ga_r2 = 1.0 - float(np.mean((u - pred_ga) ** 2)) / var
     ode_r2 = 1.0 - float(np.mean((u - pred_ode) ** 2)) / var
-    # Neither transfers the true structure (both R2 well below exact).
+    # Neither transfers the true structure (both R2 below exact).
     # Notably the GA formula may sprinkle exp() tokens yet still collapse
     # (nested sqrt(exp(...)) mush): grammar access is not mechanism
     # discovery. R2 alone cannot crown a winner here -- a structurally
     # absurd form can outscore a diverging ODE rollout on a decaying tail
     # without capturing anything.
+    # The linear bar was 0.9 before the SR3-lite refinement pass; refinement
+    # improved the approximation's transfer to ~0.94 on this extended domain.
+    # It remains a fitted approximation: clearly below exact and, critically,
+    # flagged is_exact_recovery=False.
+    assert ode["is_exact_recovery"] is False
     assert ga_r2 < 0.9, f"GA R2={ga_r2:.3f}"
-    assert ode_r2 < 0.9, f"unexpected transfer: R2={ode_r2:.3f}"
+    assert ode_r2 < 0.99, f"unexpected transfer: R2={ode_r2:.3f}"
+
+
+def test_planck_cubic_linear_fit_must_not_claim_exact():
+    # Regression pin (2026-10-16): with max_x_degree=3 the linear fit reaches
+    # traj R2 ~0.99999 / jet ~1e-4 and previously tripped a loose exact gate
+    # (traj>0.99 && jet<0.05). No exact linear ODE exists (Hermite), so the
+    # engine must abstain: exact flag False and coefficients not rationalized.
+    v = np.linspace(0.1, 6.0, 60)
+    u = (v ** 3) / (np.exp(v) - 1.0)
+    cfg = {"max_x_degree": 3, "max_diff_order": 1, "smooth_window": 5,
+           "sparsity_threshold": 0.02, "rcond_threshold": 1e-12}
+    res = json.loads(ak.rime_diff_pade_discover_json(
+        json.dumps(v.tolist()), json.dumps(u.tolist()), json.dumps(cfg)))
+    assert res["is_exact_recovery"] is False, res["formula"]
+    assert res.get("snapped_terms") is not True
+    assert "y^2" not in res["formula"]
 
 
 def test_planck_equations_change_under_5pct_noise_but_abstention_holds():
