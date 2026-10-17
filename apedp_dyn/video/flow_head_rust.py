@@ -195,3 +195,57 @@ class RustFlowRollout:
     def _head_channels(c_in: int) -> list[int]:
         # default head-channel slice used by the torch trainer: 1:3 when C>=3, else all
         return [1, 2] if c_in >= 3 else list(range(c_in))
+
+def from_learned_flow_head(head: LearnedFlowHead, spec: RustFlowHeadSpec | None = None,
+                           dt: float = 1.0, enforce_hh: bool = True, hh_iters: int = 30,
+                           nu: float = 0.0, use_dissipation: bool = False) -> RustFlowRollout:
+    """Convert a trained LearnedFlowHead into a RustFlowRollout for kernel rollout.
+
+    Packs the head's state_dict weights into the kernel layout and constructs a
+    RustFlowRollout that can roll out using ONE Python<->Rust crossing per step.
+
+    Parameters
+    ----------
+    head : LearnedFlowHead
+        A trained (or freshly-initialized) flow head.
+    spec : RustFlowHeadSpec, optional
+        If None, a minimal spec matching head.cfg is constructed.
+    dt : float
+        Advection time step per rollout frame.
+    enforce_hh : bool
+        Whether to apply the Helmholtz-Hodge divergence-free projection.
+    hh_iters : int
+        Helmlholtz-Hodge iteration count (only used if enforce_hh=True).
+    nu : float
+        Kinematic viscosity for boundary smoothing (only if use_dissipation=True).
+    use_dissipation : bool
+        Whether to enable viscosity dissipation in the rollout.
+
+    Returns
+    -------
+    RustFlowRollout
+        A rollout ready for end-to-end kernel transport.
+    """
+    import torch
+    from apedp_dyn.video.learned_flow_head import FlowHeadConfig
+
+    if spec is None:
+        cfg = head.cfg or FlowHeadConfig()
+        spec = RustFlowHeadSpec(
+            context_channels=cfg.context_channels,
+            hidden_dim=cfg.hidden_dim,
+            n_layers=cfg.n_layers,
+            flow_scale=cfg.flow_scale,
+        )
+
+    packed = pack_weights(head.state_dict())
+    return RustFlowRollout(
+        spec=spec,
+        weights=packed,
+        dt=dt,
+        enforce_hh=enforce_hh,
+        hh_iters=hh_iters,
+        nu=nu,
+        use_dissipation=use_dissipation,
+    )
+
