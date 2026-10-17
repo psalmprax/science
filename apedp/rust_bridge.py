@@ -96,6 +96,15 @@ class _RustKernel(Protocol):
     def video_sliced_wasserstein2(
         self, x_rows: list[np.ndarray], y_rows: list[np.ndarray], dir_rows: list[np.ndarray]
     ) -> float: ...
+    def video_warp_bilinear_2d(
+        self, input: np.ndarray, vx: np.ndarray, vy: np.ndarray, channels: int, height: int, width: int
+    ) -> np.ndarray: ...
+    def video_compute_optical_flow_divergence(
+        self, vx: np.ndarray, vy: np.ndarray, height: int, width: int, dx: float, dy: float
+    ) -> np.ndarray: ...
+    def video_detect_disocclusion_mask(
+        self, div_flow: np.ndarray, divergence_threshold: float
+    ) -> np.ndarray: ...
     def evolve_native(
         self,
         data: list[np.ndarray],
@@ -667,6 +676,142 @@ class RustKernelBridge:
             total += float(np.mean((np.interp(np.linspace(0, 1, n), np.linspace(0, 1, len(px)), px) -
                                     np.interp(np.linspace(0, 1, n), np.linspace(0, 1, len(py)), py)) ** 2))
         return float(np.sqrt(total / n_projections))
+
+    def video_warp_2d(
+        self,
+        image: np.ndarray,
+        vx: np.ndarray,
+        vy: np.ndarray,
+    ) -> np.ndarray:
+        """2D Bilinear Sub-Pixel Coordinate Warping of an image/latent field.
+
+        Args:
+            image: Array of shape (C, H, W) or (H, W).
+            vx: Horizontal displacement array of shape (H, W).
+            vy: Vertical displacement array of shape (H, W).
+
+        Returns:
+            Warped array with the same shape as `image`.
+        """
+        arr = np.asarray(image, dtype=np.float64)
+        is_2d = arr.ndim == 2
+        if is_2d:
+            arr = arr[np.newaxis, :, :]
+        c, h, w = arr.shape
+        vx_arr = np.asarray(vx, dtype=np.float64)
+        vy_arr = np.asarray(vy, dtype=np.float64)
+        if vx_arr.shape != (h, w) or vy_arr.shape != (h, w):
+            raise ValueError(f"Flow shapes ({vx_arr.shape}, {vy_arr.shape}) must match image plane ({h}, {w})")
+
+        if self.use_rust:
+            try:
+                out = cast(Any, apedp_kernel).video_warp_bilinear_2d(
+                    np.ascontiguousarray(arr).reshape(-1),
+                    np.ascontiguousarray(vx_arr).reshape(-1),
+                    np.ascontiguousarray(vy_arr).reshape(-1),
+                    c, h, w,
+                )
+                self._tally(_KERNEL_PATH_RUST)
+                res = np.asarray(out, dtype=np.float64).reshape(c, h, w)
+                return res[0] if is_2d else res
+            except Exception as e:  # noqa: BLE001
+                logger.debug("Rust video_warp_bilinear_2d failed (%s), falling back to NumPy.", e)
+
+        self._tally(_KERNEL_PATH_FALLBACK)
+        # Vectorized NumPy fallback
+        y_grid, x_grid = np.meshgrid(np.arange(h), np.arange(w), indexing="ij")
+        sx = np.clip(x_grid + vx_arr, 0.0, w - 1.0)
+        sy = np.clip(y_grid + vy_arr, 0.0, h - 1.0)
+        x0 = np.floor(sx).astype(np.int64)
+        y0 = np.floor(sy).astype(np.int64)
+        x1 = np.clip(x0 + 1, 0, w - 1)
+        y1 = np.clip(y0 + 1, 0, h - 1)
+        wx = sx - x0
+        wy = sy - y0
+
+        warped = np.zeros_like(arr)
+        for ch in range(c):
+            plane = arr[ch]
+            top = plane[y0, x0] * (1.0 - wx) + plane[y0, x1] * wx
+            bottom = plane[y1, x0] * (1.0 - wx) + plane[y1, x1] * wx
+            warped[ch] = top * (1.0 - wy) + bottom * wy
+        return warped[0] if is_2d else warped
+
+    def video_optical_flow_divergence(
+        self,
+        vx: np.ndarray,
+        vy: np.ndarray,
+        dx: float = 1.0,
+        dy: float = 1.0,
+    ) -> np.ndarray:
+        """Compute spatial divergence of optical flow: div(v) = d(vx)/dx + d(vy)/dy.
+
+        Args:
+            vx: Horizontal velocity field of shape (H, W).
+            vy: Vertical velocity field of shape (H, W).
+            dx: Spatial step size in x.
+            dy: Spatial step size in y.
+
+        Returns:
+            Divergence field of shape (H, W).
+        """
+        vx_arr = np.asarray(vx, dtype=np.float64)
+        vy_arr = np.asarray(vy, dtype=np.float64)
+        if vx_arr.shape != vy_arr.shape:
+            raise ValueError(f"Shape mismatch: {vx_arr.shape} vs {vy_arr.shape}")
+        if vx_arr.ndim != 2:
+            raise ValueError("Optical flow components must be 2-dimensional (H, W)")
+        h, w = vx_arr.shape
+        if h < 3 or w < 3:
+            raise ValueError("Grid dimensions must be at least 3x3")
+
+        if self.use_rust:
+            try:
+                out = cast(Any, apedp_kernel).video_compute_optical_flow_divergence(
+                    np.ascontiguousarray(vx_arr).reshape(-1),
+                    np.ascontiguousarray(vy_arr).reshape(-1),
+                    h, w, dx, dy,
+                )
+                self._tally(_KERNEL_PATH_RUST)
+                return np.asarray(out, dtype=np.float64).reshape(h, w)
+            except Exception as e:  # noqa: BLE001
+                logger.debug("Rust video_compute_optical_flow_divergence failed (%s), falling back to NumPy.", e)
+
+        self._tally(_KERNEL_PATH_FALLBACK)
+        dvx_dx = np.gradient(vx_arr, dx, axis=1)
+        dvy_dy = np.gradient(vy_arr, dy, axis=0)
+        return dvx_dx + dvy_dy
+
+    def video_disocclusion_mask(
+        self,
+        div_flow: np.ndarray,
+        divergence_threshold: float = 0.0,
+    ) -> np.ndarray:
+        """Detect disocclusion / expansion regions triggering residual texture injection.
+
+        Args:
+            div_flow: Divergence array of shape (H, W) or 1D.
+            divergence_threshold: Threshold above which divergence triggers source injection.
+
+        Returns:
+            Disocclusion intensity array in [0.0, 1.0].
+        """
+        div_arr = np.asarray(div_flow, dtype=np.float64)
+        orig_shape = div_arr.shape
+
+        if self.use_rust:
+            try:
+                out = cast(Any, apedp_kernel).video_detect_disocclusion_mask(
+                    np.ascontiguousarray(div_arr).reshape(-1),
+                    divergence_threshold,
+                )
+                self._tally(_KERNEL_PATH_RUST)
+                return np.asarray(out, dtype=np.float64).reshape(orig_shape)
+            except Exception as e:  # noqa: BLE001
+                logger.debug("Rust video_detect_disocclusion_mask failed (%s), falling back to NumPy.", e)
+
+        self._tally(_KERNEL_PATH_FALLBACK)
+        return np.clip(np.maximum(0.0, div_arr - divergence_threshold), 0.0, 1.0)
 
     # ------------------ Fallback Pure-Python Implementations ------------------
 

@@ -54,6 +54,10 @@ class TensorTrainVideo:
         """Percentage of memory saved (e.g. 93.5%)."""
         return (1.0 - (self.compressed_elements / self.dense_elements)) * 100.0
 
+    def reconstruct(self) -> np.ndarray:
+        """Decompress TT cores back to dense 4D array (T, C, H, W)."""
+        return decompress_video_latent(self)
+
 
 def compress_video_latent(
     latent: np.ndarray,

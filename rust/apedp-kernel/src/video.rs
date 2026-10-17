@@ -12,6 +12,7 @@
 //! zero-copy `ArrayView1` straight out of NumPy buffers for the pyo3
 //! surface), following the same pattern as the parser/genetic surfaces.
 use crate::data::DataCol;
+use rayon::prelude::*;
 
 /// Peak SNR in dB between two flat sample arrays in [0, 1].
 ///
@@ -195,6 +196,146 @@ fn quantile_at(sorted: &[f64], u: f64) -> f64 {
     sorted[i] * (1.0 - frac) + sorted[i + 1] * frac
 }
 
+/// 2D Bilinear Sub-Pixel Coordinate Warping of a multi-channel image/latent tensor:
+///   I_out(c, y, x) = I_in(c, y + vy(y, x), x + vx(y, x))
+/// using border clamping and Rayon parallelization across channels and planes.
+pub fn warp_bilinear_2d(
+    input: &[f64],
+    vx: &[f64],
+    vy: &[f64],
+    channels: usize,
+    height: usize,
+    width: usize,
+) -> Result<Vec<f64>, String> {
+    let plane_len = height * width;
+    if input.len() != channels * plane_len {
+        return Err(format!(
+            "Input length {} != channels {} * height {} * width {}",
+            input.len(),
+            channels,
+            height,
+            width
+        ));
+    }
+    if vx.len() != plane_len || vy.len() != plane_len {
+        return Err(format!(
+            "Flow lengths ({}, {}) != plane_size {}",
+            vx.len(),
+            vy.len(),
+            plane_len
+        ));
+    }
+    if height < 2 || width < 2 {
+        return Err("Dimensions must be at least 2x2".to_string());
+    }
+
+    let mut output = vec![0.0f64; input.len()];
+    let max_x = (width - 1) as f64;
+    let max_y = (height - 1) as f64;
+
+    output
+        .par_chunks_mut(plane_len)
+        .enumerate()
+        .for_each(|(c, out_plane)| {
+            let in_plane = &input[c * plane_len..(c + 1) * plane_len];
+            for y in 0..height {
+                let row_idx = y * width;
+                for x in 0..width {
+                    let idx = row_idx + x;
+                    // Source sample position
+                    let sx = ((x as f64) + vx[idx]).clamp(0.0, max_x);
+                    let sy = ((y as f64) + vy[idx]).clamp(0.0, max_y);
+
+                    let x0 = sx.floor() as usize;
+                    let y0 = sy.floor() as usize;
+                    let x1 = (x0 + 1).min(width - 1);
+                    let y1 = (y0 + 1).min(height - 1);
+
+                    let wx = sx - (x0 as f64);
+                    let wy = sy - (y0 as f64);
+
+                    let top_left = in_plane[y0 * width + x0];
+                    let top_right = in_plane[y0 * width + x1];
+                    let bottom_left = in_plane[y1 * width + x0];
+                    let bottom_right = in_plane[y1 * width + x1];
+
+                    let top = top_left * (1.0 - wx) + top_right * wx;
+                    let bottom = bottom_left * (1.0 - wx) + bottom_right * wx;
+
+                    out_plane[idx] = top * (1.0 - wy) + bottom * wy;
+                }
+            }
+        });
+
+    Ok(output)
+}
+
+/// Compute spatial optical flow divergence:
+///   div(v) = (vx(x+1, y) - vx(x-1, y)) / (2*dx) + (vy(x, y+1) - vy(x, y-1)) / (2*dy)
+pub fn compute_optical_flow_divergence(
+    vx: &[f64],
+    vy: &[f64],
+    height: usize,
+    width: usize,
+    dx: f64,
+    dy: f64,
+) -> Result<Vec<f64>, String> {
+    let n = height * width;
+    if vx.len() != n || vy.len() != n {
+        return Err(format!(
+            "Velocity lengths ({}, {}) != {}",
+            vx.len(),
+            vy.len(),
+            n
+        ));
+    }
+    if height < 3 || width < 3 {
+        return Err("Grid dimensions must be at least 3x3".to_string());
+    }
+    if dx <= 0.0 || dy <= 0.0 {
+        return Err("dx and dy must be positive".to_string());
+    }
+
+    let inv_2dx = 1.0 / (2.0 * dx);
+    let inv_2dy = 1.0 / (2.0 * dy);
+    let mut div = vec![0.0f64; n];
+
+    for y in 0..height {
+        let ym = if y == 0 { 0 } else { y - 1 };
+        let yp = if y + 1 >= height { height - 1 } else { y + 1 };
+        let row_curr = y * width;
+        let row_m = ym * width;
+        let row_p = yp * width;
+        for x in 0..width {
+            let xm = if x == 0 { 0 } else { x - 1 };
+            let xp = if x + 1 >= width { width - 1 } else { x + 1 };
+
+            let dvx = (vx[row_curr + xp] - vx[row_curr + xm]) * inv_2dx;
+            let dvy = (vy[row_p + x] - vy[row_m + x]) * inv_2dy;
+            div[row_curr + x] = dvx + dvy;
+        }
+    }
+    Ok(div)
+}
+
+/// Detect disocclusion mask based on positive flow divergence:
+/// Mask > 0 where new surfaces/occlusions are exposed, triggering residual injection s(t).
+pub fn detect_disocclusion_mask(
+    div_flow: &[f64],
+    divergence_threshold: f64,
+) -> Vec<f64> {
+    div_flow
+        .iter()
+        .map(|&d| {
+            if d > divergence_threshold {
+                (d - divergence_threshold).min(1.0)
+            } else {
+                0.0
+            }
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -264,5 +405,55 @@ mod tests {
         assert!((quantile_at(&sorted, 0.5) - 2.0).abs() < 1e-15);
         // Between nodes: halfway between u=0.5 and u=1.0 nodes.
         assert!((quantile_at(&sorted, 0.75) - 3.0).abs() < 1e-15);
+    }
+
+    #[test]
+    fn warp_bilinear_2d_zero_flow_is_identity() {
+        let input = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+            7.0, 8.0, 9.0,
+        ];
+        let vx = vec![0.0; 9];
+        let vy = vec![0.0; 9];
+        let warped = warp_bilinear_2d(&input, &vx, &vy, 1, 3, 3).unwrap();
+        assert_eq!(warped, input);
+    }
+
+    #[test]
+    fn warp_bilinear_2d_translation_and_clamping() {
+        let input = vec![
+            1.0, 2.0,
+            3.0, 4.0,
+        ];
+        // Shift x by +0.5 (half pixel right)
+        let vx = vec![0.5; 4];
+        let vy = vec![0.0; 4];
+        let warped = warp_bilinear_2d(&input, &vx, &vy, 1, 2, 2).unwrap();
+        // (0,0) samples halfway between 1.0 and 2.0 -> 1.5
+        assert!((warped[0] - 1.5).abs() < 1e-12);
+        // (1,0) samples beyond right border, clamped at 2.0 -> 2.0
+        assert!((warped[1] - 2.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn optical_flow_divergence_and_disocclusion_mask() {
+        let h = 4;
+        let w = 4;
+        // Divergent flow: vx expands along x, vy expands along y
+        let mut vx = vec![0.0; h * w];
+        let mut vy = vec![0.0; h * w];
+        for y in 0..h {
+            for x in 0..w {
+                vx[y * w + x] = x as f64 * 0.2;
+                vy[y * w + x] = y as f64 * 0.2;
+            }
+        }
+        let div = compute_optical_flow_divergence(&vx, &vy, h, w, 1.0, 1.0).unwrap();
+        // Divergence should be positive everywhere in the interior (approx 0.2 + 0.2 = 0.4)
+        assert!(div[1 * w + 1] > 0.3);
+        let mask = detect_disocclusion_mask(&div, 0.2);
+        assert!(mask[1 * w + 1] > 0.1);
+        assert_eq!(mask.len(), h * w);
     }
 }

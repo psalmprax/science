@@ -2021,6 +2021,73 @@ fn video_sliced_wasserstein2(
     video::sliced_wasserstein2(&x, &y, &dirs).map_err(PyValueError::new_err)
 }
 
+/// 2D Bilinear Sub-Pixel Coordinate Warping of an image or latent field.
+#[pyfunction]
+#[pyo3(signature = (input, vx, vy, channels, height, width))]
+fn video_warp_bilinear_2d<'py>(
+    py: Python<'py>,
+    input: PyReadonlyArray1<'py, f64>,
+    vx: PyReadonlyArray1<'py, f64>,
+    vy: PyReadonlyArray1<'py, f64>,
+    channels: usize,
+    height: usize,
+    width: usize,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let in_slice = input.as_slice().map_err(|_| PyValueError::new_err("input must be C-contiguous"))?;
+    let vx_slice = vx.as_slice().map_err(|_| PyValueError::new_err("vx must be C-contiguous"))?;
+    let vy_slice = vy.as_slice().map_err(|_| PyValueError::new_err("vy must be C-contiguous"))?;
+
+    let out = py
+        .allow_threads(|| {
+            video::warp_bilinear_2d(in_slice, vx_slice, vy_slice, channels, height, width)
+        })
+        .map_err(PyValueError::new_err)?;
+
+    Ok(out.into_pyarray_bound(py))
+}
+
+/// Compute spatial optical flow divergence: div(v) = d(vx)/dx + d(vy)/dy.
+#[pyfunction]
+#[pyo3(signature = (vx, vy, height, width, dx=1.0, dy=1.0))]
+fn video_compute_optical_flow_divergence<'py>(
+    py: Python<'py>,
+    vx: PyReadonlyArray1<'py, f64>,
+    vy: PyReadonlyArray1<'py, f64>,
+    height: usize,
+    width: usize,
+    dx: f64,
+    dy: f64,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let vx_slice = vx.as_slice().map_err(|_| PyValueError::new_err("vx must be C-contiguous"))?;
+    let vy_slice = vy.as_slice().map_err(|_| PyValueError::new_err("vy must be C-contiguous"))?;
+
+    let out = py
+        .allow_threads(|| {
+            video::compute_optical_flow_divergence(vx_slice, vy_slice, height, width, dx, dy)
+        })
+        .map_err(PyValueError::new_err)?;
+
+    Ok(out.into_pyarray_bound(py))
+}
+
+/// Detect disocclusion mask where flow divergence exceeds threshold.
+#[pyfunction]
+#[pyo3(signature = (div_flow, divergence_threshold=0.0))]
+fn video_detect_disocclusion_mask<'py>(
+    py: Python<'py>,
+    div_flow: PyReadonlyArray1<'py, f64>,
+    divergence_threshold: f64,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let div_slice = div_flow.as_slice().map_err(|_| PyValueError::new_err("div_flow must be C-contiguous"))?;
+
+    let out = py
+        .allow_threads(|| {
+            video::detect_disocclusion_mask(div_slice, divergence_threshold)
+        });
+
+    Ok(out.into_pyarray_bound(py))
+}
+
 #[pymodule]
 fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(compile, m)?)?;
@@ -2028,6 +2095,9 @@ fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(video_psnr, m)?)?;
     m.add_function(wrap_pyfunction!(video_ssim_frame, m)?)?;
     m.add_function(wrap_pyfunction!(video_sliced_wasserstein2, m)?)?;
+    m.add_function(wrap_pyfunction!(video_warp_bilinear_2d, m)?)?;
+    m.add_function(wrap_pyfunction!(video_compute_optical_flow_divergence, m)?)?;
+    m.add_function(wrap_pyfunction!(video_detect_disocclusion_mask, m)?)?;
     m.add_function(wrap_pyfunction!(compute_metrics, m)?)?;
     m.add_function(wrap_pyfunction!(score_candidates_parallel, m)?)?;
     m.add_function(wrap_pyfunction!(probe_singularity, m)?)?;

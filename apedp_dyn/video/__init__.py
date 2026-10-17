@@ -10,6 +10,10 @@ Sub-project providing:
 from apedp_dyn.video.continuous_interpolator import (
     ContinuousTemporalInterpolator,
 )
+from apedp_dyn.video.decoupled_transport import (
+    DecoupledSpatioTemporalTransport,
+    DecoupledTransportConfig,
+)
 from apedp_dyn.video.jet_flow_model import (
     JetFlowModelConfig,
     JetFlowVideoModel,
@@ -45,6 +49,8 @@ from apedp_dyn.video.vae_bridge import (
 __all__ = [
     "ContinuousTemporalInterpolator",
     "ContinuousWaveletVAE",
+    "DecoupledSpatioTemporalTransport",
+    "DecoupledTransportConfig",
     "JetFlowConfig",
     "JetFlowModelConfig",
     "JetFlowStepper",

@@ -1,0 +1,88 @@
+{
+  "benchmark": "decoupled_continuous_spatiotemporal_transport",
+  "timestamp_utc": "2026-10-17T09:27:41.217375+00:00",
+  "rust_kernel_available": true,
+  "grid_resolution": [
+    64,
+    64
+  ],
+  "overall_fps": 268.103798902482,
+  "scenes": {
+    "vehicle_translation": {
+      "num_frames": 16,
+      "resolution": [
+        64,
+        64
+      ],
+      "transport_time_sec": 0.03376554301939905,
+      "step_latency_ms": 2.25103620129327,
+      "generation_fps": 444.23985692699125,
+      "flicker_acceleration": 8.632807169923683e-05,
+      "dense_elements": 196608,
+      "compressed_elements": 15129,
+      "tt_compression_ratio": 12.99543922268491,
+      "tt_memory_saving_pct": 92.30499267578125,
+      "tt_compression_time_sec": 0.2636204339796677,
+      "tt_reconstruction_mse": 1.6616874374245132e-10,
+      "upsampled_frames_count": 39,
+      "mean_disocclusion_energy": 0.0
+    },
+    "fluid_vortex": {
+      "num_frames": 16,
+      "resolution": [
+        64,
+        64
+      ],
+      "transport_time_sec": 0.1036156180780381,
+      "step_latency_ms": 6.907707871869206,
+      "generation_fps": 144.76582081190455,
+      "flicker_acceleration": 6.986408631405724e-05,
+      "dense_elements": 196608,
+      "compressed_elements": 18112,
+      "tt_compression_ratio": 10.855123674911662,
+      "tt_memory_saving_pct": 90.78776041666666,
+      "tt_compression_time_sec": 0.2744227880612016,
+      "tt_reconstruction_mse": 6.126818781477691e-05,
+      "upsampled_frames_count": 39,
+      "mean_disocclusion_energy": 0.16008689208963092
+    },
+    "expanding_disocclusion": {
+      "num_frames": 16,
+      "resolution": [
+        64,
+        64
+      ],
+      "transport_time_sec": 0.048863522009924054,
+      "step_latency_ms": 3.257568133994937,
+      "generation_fps": 306.97746259374304,
+      "flicker_acceleration": 1.7855177239018192e-06,
+      "dense_elements": 196608,
+      "compressed_elements": 8377,
+      "tt_compression_ratio": 23.46997731884923,
+      "tt_memory_saving_pct": 95.73923746744791,
+      "tt_compression_time_sec": 0.022107913973741233,
+      "tt_reconstruction_mse": 0.0008655344758860539,
+      "upsampled_frames_count": 39,
+      "mean_disocclusion_energy": 42.0160867864504
+    },
+    "camera_zoom": {
+      "num_frames": 16,
+      "resolution": [
+        64,
+        64
+      ],
+      "transport_time_sec": 0.05246883106883615,
+      "step_latency_ms": 3.4979220712557435,
+      "generation_fps": 285.8840133167984,
+      "flicker_acceleration": 2.808489753958013e-07,
+      "dense_elements": 196608,
+      "compressed_elements": 3616,
+      "tt_compression_ratio": 54.3716814159292,
+      "tt_memory_saving_pct": 98.16080729166666,
+      "tt_compression_time_sec": 0.06966556701809168,
+      "tt_reconstruction_mse": 1.1851774402672031e-09,
+      "upsampled_frames_count": 39,
+      "mean_disocclusion_energy": 92.6185351233928
+    }
+  }
+}
