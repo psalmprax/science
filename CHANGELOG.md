@@ -6,7 +6,7 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ### Test-suite reporting (machine-verified by tests/test_dyn_reporting_integrity.py)
 
-- The Python RIME/repair/referee/STEM suite total is **211 tests across 44 files**, counted by importing each file in tests/test_dyn_reporting_integrity.py and assert-verified in CI. Earlier prose quoted a 74-test subset of 11 files; that figure is a scoped subset, not the suite total, and is superseded by the machine-verified number.
+- The Python RIME/repair/referee/STEM suite total is **212 tests across 44 files**, counted by importing each file in tests/test_dyn_reporting_integrity.py and assert-verified in CI. Raised 211 -> 212 after `test_dyn_trading_universe_sweep.py` gained a test function post-mint (constant bumped by re-running the assertion test, per its own rule). Earlier prose quoted a 74-test subset of 11 files; that figure is a scoped subset, not the suite total, and is superseded by the machine-verified number.
 - Named exclusions from the wider `tests/` directory (not silently omitted):
   - `tests/test_all_system_equations_lean_proofs.py::test_spot_check_lean_kernel_compilation` — environmental: the Lean kernel compile exceeds the test's 15s budget (pre-existing).
   - `tests/test_dyn_lean_universal_bridge.py` — same environmental Lean cause.
