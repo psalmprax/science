@@ -51,6 +51,7 @@ class FlowHeadConfig:
     flow_scale: float = 4.0        # tanh output scale bound (px/frame)
     lambda_div: float = 0.10       # soft incompressibility penalty
     lambda_smooth: float = 0.01    # TV smoothness penalty on v
+    predict_gain: bool = False     # + per-channel (s, b) affine after the warp
 
 
 class LearnedFlowHead(nn.Module):
@@ -58,6 +59,15 @@ class LearnedFlowHead(nn.Module):
 
     Input : (B, 2C, H, W)  — stacked previous + current frames
     Output: (B, 2, H, W)   — (v_x, v_y), each in (-flow_scale, flow_scale)
+
+    With ``cfg.predict_gain`` the network additionally emits a per-channel
+    affine correction (s_c, b_c): the predicted next frame is
+    ``s_c * warp(z_curr, v)_c + b_c``. This is the closed-form family of the
+    fluid generator's per-step map — semi-Lagrangian advection, joint dye
+    renormalization and the per-clip per-channel stretch collapse to exactly
+    an affine post-warp map (the renorm max also involves an in-generator
+    third dye channel that is NEVER stored in frames, so (s, b) must be
+    inferred from pixels, not computed).
     """
 
     def __init__(self, cfg: FlowHeadConfig | None = None) -> None:
@@ -70,13 +80,34 @@ class LearnedFlowHead(nn.Module):
             layers.append(nn.Conv2d(c, self.cfg.hidden_dim, 3, padding=1))
             layers.append(nn.GELU())
             c = self.cfg.hidden_dim
-        layers.append(nn.Conv2d(c, 2, 3, padding=1))
+        out_ch = 2 + (2 * self.cfg.context_channels if self.cfg.predict_gain else 0)
+        layers.append(nn.Conv2d(c, out_ch, 3, padding=1))
         self.net = nn.Sequential(*layers)
+        if self.cfg.predict_gain:
+            with torch.no_grad():
+                last = self.net[-1]
+                # s = softplus(raw_mean) starts at exactly 1.0, b at 0.0:
+                # softplus^{-1}(1) = log(e - 1); the head thus starts as the
+                # plain no-gain model and moves only with evidence.
+                last.bias[2:2 + self.cfg.context_channels].fill_(0.5413248546129181)
+                last.bias[2 + self.cfg.context_channels:].zero_()
 
-    def forward(self, z_prev: torch.Tensor, z_curr: torch.Tensor) -> torch.Tensor:
+    def predict_flow_and_gain(self, z_prev: torch.Tensor, z_curr: torch.Tensor
+                              ) -> tuple[torch.Tensor, torch.Tensor | None, torch.Tensor | None]:
+        """Return (v, s, b): flow (B,2,H,W) and, when ``predict_gain``, the
+        per-channel affine correction (B,C) applied after the warp."""
         x = torch.cat([z_prev, z_curr], dim=1)
         raw = self.net(x)
-        return self.cfg.flow_scale * torch.tanh(raw)
+        v = self.cfg.flow_scale * torch.tanh(raw[:, :2])
+        if not self.cfg.predict_gain:
+            return v, None, None
+        c = self.cfg.context_channels
+        s = F.softplus(raw[:, 2:2 + c].mean(dim=(2, 3)))
+        b = raw[:, 2 + c:2 + 2 * c].mean(dim=(2, 3))
+        return v, s, b
+
+    def forward(self, z_prev: torch.Tensor, z_curr: torch.Tensor) -> torch.Tensor:
+        return self.predict_flow_and_gain(z_prev, z_curr)[0]
 
 
 def warp_frames(z: torch.Tensor, vx: torch.Tensor, vy: torch.Tensor,
@@ -143,6 +174,16 @@ def _divergence(v: torch.Tensor) -> torch.Tensor:
     return dvx_dx[:, 1:-1, :] + dvy_dy[:, :, 1:-1]      # (B, H-2, W-2), aligned
 
 
+def _advance(z_curr: torch.Tensor, v: torch.Tensor,
+             s: torch.Tensor | None, b: torch.Tensor | None,
+             dt: float, periodic: bool) -> torch.Tensor:
+    """Predicted next frame: warp, then the head's per-channel affine (if any)."""
+    z_pred = warp_frames(z_curr, v[:, 0], v[:, 1], dt=dt, periodic=periodic)
+    if s is not None:
+        z_pred = s.unsqueeze(-1).unsqueeze(-1) * z_pred + b.unsqueeze(-1).unsqueeze(-1)
+    return z_pred
+
+
 def flow_consistency_loss(model: LearnedFlowHead,
                           z_prev: torch.Tensor, z_curr: torch.Tensor,
                           z_next: torch.Tensor, dt: float = 1.0,
@@ -151,10 +192,12 @@ def flow_consistency_loss(model: LearnedFlowHead,
 
     All tensors (B,C,H,W); C should equal the head's context_channels.
     ``periodic`` selects the warp boundary treatment (see :func:`warp_frames`);
-    it must match the transport config used at rollout.
+    it must match the transport config used at rollout. If the head was built
+    with ``cfg.predict_gain`` its per-channel affine (s, b) is applied after
+    the warp (see :meth:`LearnedFlowHead.predict_flow_and_gain`).
     """
-    v = model(z_prev, z_curr)
-    z_pred = warp_frames(z_curr, v[:, 0], v[:, 1], dt=dt, periodic=periodic)
+    v, s, b = model.predict_flow_and_gain(z_prev, z_curr)
+    z_pred = _advance(z_curr, v, s, b, dt, periodic)
     adv_loss = F.mse_loss(z_pred, z_next)
     div_sq = float(model.cfg.lambda_div) * torch.mean(_divergence(v) ** 2)
     tv = float(model.cfg.lambda_smooth) * (
@@ -184,10 +227,20 @@ def flow_supervision_loss(model: LearnedFlowHead,
     residual self-supervision, so the gradient is not tied to the dye
     renormalization floor.
     """
-    base = flow_consistency_loss(model, z_prev, z_curr, z_next, dt=dt, periodic=periodic)
-    v_pred = model(z_prev, z_curr)
-    flow_mse = F.mse_loss(v_pred[:, 0], vx_teacher) + F.mse_loss(v_pred[:, 1], vy_teacher)
-    return base + flow_mse
+    # SHARED FORWARD (halves the per-step model cost): one head evaluation
+    # feeds both the consistency warp and the supervised MSE. Numerically
+    # identical to the naive composition (same v Into both terms — conv/GELU
+    # are deterministic), pinned by test at 1e-12.
+    v, s, b = model.predict_flow_and_gain(z_prev, z_curr)
+    z_pred = _advance(z_curr, v, s, b, dt, periodic)
+    adv_loss = F.mse_loss(z_pred, z_next)
+    div_sq = float(model.cfg.lambda_div) * torch.mean(_divergence(v) ** 2)
+    tv = float(model.cfg.lambda_smooth) * (
+        torch.mean(torch.abs(torch.diff(v, dim=-1)))
+        + torch.mean(torch.abs(torch.diff(v, dim=-2)))
+    )
+    flow_mse = F.mse_loss(v[:, 0], vx_teacher) + F.mse_loss(v[:, 1], vy_teacher)
+    return adv_loss + div_sq + tv + flow_mse
 
 
 def train_flow_head(model: LearnedFlowHead,
@@ -200,7 +253,8 @@ def train_flow_head(model: LearnedFlowHead,
                     dt: float = 1.0,
                     flow_targets: np.ndarray | None = None,
                     frames_per_clip: int | None = None,
-                    periodic: bool = False) -> list[float]:
+                    periodic: bool = False,
+                    rollout_steps: int = 1) -> list[float]:
     """Train a LearnedFlowHead self-supervised on (T,C,H,W) clips on CPU.
 
     ``clips`` can be a single clip or a stack of clips shape either
@@ -226,6 +280,12 @@ def train_flow_head(model: LearnedFlowHead,
     input derives it automatically). ``periodic``: toroidal warp boundary in
     the loss — must match the rollout transport's ``periodic_warp`` (the
     fluid domain is periodic; see the benchmark wiring).
+
+    ``rollout_steps`` (exposure-bias training): when > 1 the model is trained
+    on consecutive transitions it generates ITSELF — the per-step loss is the
+    same objective, but each forward feeds the model's own previous prediction
+    and gradients flow through the whole unrolled window (BPTT). Sampled
+    windows never run past a clip end (ti + rollout_steps <= clip last index).
     """
     clip_lengths: list[int] | None = None
     if isinstance(clips, dict):
@@ -251,6 +311,10 @@ def train_flow_head(model: LearnedFlowHead,
             )
         flow = torch.from_numpy(flow)
 
+    k = int(rollout_steps)
+    if k < 1:
+        raise ValueError(f"rollout_steps must be >= 1, got {rollout_steps}")
+
     model.double()   # head params default fp32; the domain data is float64
     model.train()
     opt = torch.optim.AdamW(model.parameters(), lr=lr)
@@ -258,33 +322,53 @@ def train_flow_head(model: LearnedFlowHead,
     deadline = (time.perf_counter() + deadline_s) if deadline_s else None
     losses: list[float] = []
     t_total = data.shape[0]
-    if clip_lengths is None and frames_per_clip is not None and int(frames_per_clip) >= 3:
+    if clip_lengths is None and frames_per_clip is not None and int(frames_per_clip) >= k + 2:
         clip_lengths = [int(frames_per_clip)] * (t_total // int(frames_per_clip))
     valid_tis: list[int] = []
     if clip_lengths:
         start = 0
         for length in clip_lengths:
-            if length >= 3:
-                valid_tis.extend(range(start + 1, start + length - 1))
+            if length >= k + 2:
+                valid_tis.extend(range(start + 1, start + length - k))
             start += length
     if not valid_tis:
-        valid_tis = list(range(1, t_total - 1))
+        valid_tis = list(range(1, t_total - k))
+    if not valid_tis:
+        raise ValueError(
+            f"no training windows fit: need at least {k + 2} consecutive frames "
+            f"(got t_total={t_total}, rollout_steps={k})"
+        )
     valid_arr = np.asarray(valid_tis, dtype=np.int64)
     for step in range(steps):
         ti = int(valid_arr[rng.randint(0, valid_arr.shape[0])])
         z_prev = data[ti - 1: ti]
         z_curr = data[ti: ti + 1]
-        z_next = data[ti + 1: ti + 2]
         opt.zero_grad(set_to_none=True)
-        if flow is None:
-            loss = flow_consistency_loss(model, z_prev, z_curr, z_next, dt=dt, periodic=periodic)
-        else:
-            loss = flow_supervision_loss(model, z_prev, z_curr,
-                                         flow[ti + 1: ti + 2, 0], flow[ti + 1: ti + 2, 1],
-                                         z_next, dt=dt, periodic=periodic)
-        loss.backward()
+        # Multi-step unroll: each step reuses the SAME per-step objective
+        # (advection consistency [+ flow MSE]); the model's own prediction
+        # becomes the next step's input, so drift over k steps is directly
+        # penalized rather than only single-transition error.
+        total: torch.Tensor | None = None
+        for j in range(k):
+            z_next = data[ti + 1 + j: ti + 2 + j]
+            if flow is None:
+                loss = flow_consistency_loss(model, z_prev, z_curr, z_next,
+                                             dt=dt, periodic=periodic)
+            else:
+                loss = flow_supervision_loss(model, z_prev, z_curr,
+                                             flow[ti + 1 + j: ti + 2 + j, 0],
+                                             flow[ti + 1 + j: ti + 2 + j, 1],
+                                             z_next, dt=dt, periodic=periodic)
+            total = loss if total is None else total + loss
+            if j + 1 < k:
+                # advance with the GRAPH-CARRYING prediction (BPTT across the
+                # window): the next step sees the model's own output
+                v_s, s_s, b_s = model.predict_flow_and_gain(z_prev, z_curr)
+                z_pred = _advance(z_curr, v_s, s_s, b_s, dt, periodic)
+                z_prev, z_curr = z_curr, z_pred
+        total.backward()
         opt.step()
-        losses.append(float(loss.item()))
+        losses.append(float(total.item()))
         if deadline is not None and time.perf_counter() >= deadline:
             break
         if progress_every and (step + 1) % progress_every == 0:
@@ -298,31 +382,52 @@ def rollout_dcstt_head(head: LearnedFlowHead,
                        context: np.ndarray,
                        horizon: int,
                        dt: float = 1.0,
-                       input_channels: tuple[int, ...] = (1, 2)) -> np.ndarray:
+                       input_channels: tuple[int, ...] = (1, 2),
+                       ch0_policy: str = "transport") -> np.ndarray:
     """Roll DC-STT forward from 2 context frames using head-predicted flow.
 
     ``context`` is (2,C,H,W). ``input_channels`` selects which context
     channels the HEAD sees (default (1, 2): the advected dye scalars it was
-    trained on); ALL channels are transported. Returns (horizon+2, C, H, W)
-    covering the two context frames plus every transported frame, i.e. row
-    i corresponds to clip column t = i (row 0/1 are the context frames).
-    The transport config must use nu=0.0 so the rollout matches the
-    pure-advection training dynamics (module docstring), and its
-    ``periodic_warp`` must match the training loss boundary treatment.
+    trained on); ALL channels are transported unless ``ch0_policy`` says
+    otherwise. Returns (horizon+2, C, H, W) covering the two context frames
+    plus every transported frame, i.e. row i corresponds to clip column
+    t = i (row 0/1 are the context frames). The transport config must use
+    nu=0.0 so the rollout matches the pure-advection training dynamics
+    (module docstring), and its ``periodic_warp`` must match the training
+    loss boundary treatment.
+
+    If the head was built with ``cfg.predict_gain``, its per-channel affine
+    (s, b) is applied to the dye channels after every transport step — the
+    rollout then executes the exact prediction map the loss trained.
+
+    ``ch0_policy`` — how the vorticity channel (index 0) is advanced:
+    - "transport" (legacy): advected by the head flow like the dye — wrong
+      for this domain: ch0 = |curl(v)| is a DERIVED field, not an advected
+      scalar; measured 9x worse than persistence on 1-step advection.
+    - "persist": frozen at the last context frame (|curl| evolves smoothly;
+      the strongest trivial policy on this channel).
     """
+    if ch0_policy not in ("transport", "persist"):
+        raise ValueError(f"ch0_policy must be 'transport' or 'persist', got {ch0_policy!r}")
     head.double()
     head.eval()
     ctx = np.asarray(context, dtype=np.float64)
-    z_prev = torch.from_numpy(ctx[0][list(input_channels)]).unsqueeze(0)
-    z_curr = torch.from_numpy(ctx[1][list(input_channels)]).unsqueeze(0)
+    ch = list(input_channels)
+    z_prev = torch.from_numpy(ctx[0][ch]).unsqueeze(0)
+    z_curr = torch.from_numpy(ctx[1][ch]).unsqueeze(0)
     z_state = torch.from_numpy(ctx[1]).unsqueeze(0)
     frames = [ctx[0].copy(), ctx[1].copy()]
     for _ in range(horizon):
-        v = head(z_prev, z_curr)
+        v, s, b = head.predict_flow_and_gain(z_prev, z_curr)
         z_np, _ = transport.transport_step(z_state.squeeze(0).numpy(),
                                            v[0, 0].numpy(), v[0, 1].numpy(), dt=dt)
         z_state_new = torch.from_numpy(z_np).unsqueeze(0)
-        z_prev, z_curr = z_curr, z_state_new[:, list(input_channels)]
+        if s is not None:
+            z_state_new[:, ch] = (s[:, :, None, None] * z_state_new[:, ch]
+                                  + b[:, :, None, None])
+        if ch0_policy == "persist":
+            z_state_new[:, 0] = z_state[:, 0]
+        z_prev, z_curr = z_curr, z_state_new[:, ch]
         z_state = z_state_new
         frames.append(z_state.squeeze(0).numpy().copy())
     return np.stack(frames, axis=0)

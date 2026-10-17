@@ -93,7 +93,11 @@ def run_learned_flow_benchmark(train_budget_s: float = 90.0,
                                out_path: Path | None = None,
                                seed: int = 0,
                                flow_supervised: bool = False,
-                               periodic: bool = True) -> dict:
+                               periodic: bool = True,
+                               save_head: Path | None = None,
+                               gain_correction: bool = False,
+                               rollout_steps: int = 1,
+                               ch0_policy: str = "persist") -> dict:
     # n_clips=10 mirrors run_jetflow_vs_diffusion_matched.py exactly, so the
     # shared holdout ids (fluid_clip_0003/0005) stay burnable and are never
     # used as training data here (AGENTS.md 1.2).
@@ -103,6 +107,8 @@ def run_learned_flow_benchmark(train_budget_s: float = 90.0,
     print("LEARNED-FLOW DC-STT: transport held-out clips with INFERRED flow (CPU)"
           + ("  [Stage-3 FLOW-SUPERVISED: analytic teacher on TRAIN clips only]"
              if flow_supervised else ""))
+    print(f"config: periodic_warp={periodic}, gain_correction={gain_correction}, "
+          f"rollout_steps={rollout_steps}, ch0_policy={ch0_policy}")
     print("=" * 80)
 
     clips = make_domain_set(tuple(man["train_ids"]), tuple(man["holdout_ids"]),
@@ -128,7 +134,7 @@ def run_learned_flow_benchmark(train_budget_s: float = 90.0,
               "fields from the TRAIN ids only")
 
     # ---- CPU training under the repo's wall-clock deadline discipline ------
-    head = LearnedFlowHead(FlowHeadConfig())
+    head = LearnedFlowHead(FlowHeadConfig(predict_gain=gain_correction))
     head.double()
     t0 = time.perf_counter()
     losses = train_flow_head(head, train_clips, steps=100000, lr=3e-4,
@@ -136,7 +142,8 @@ def run_learned_flow_benchmark(train_budget_s: float = 90.0,
                              deadline_s=train_budget_s,
                              flow_targets=flow_targets,
                              frames_per_clip=t,
-                             periodic=periodic)
+                             periodic=periodic,
+                             rollout_steps=rollout_steps)
     train_s = time.perf_counter() - t0
     train_steps = len(losses)
     print(f"trained {train_steps} steps in {train_s:.1f}s; "
@@ -163,7 +170,8 @@ def run_learned_flow_benchmark(train_budget_s: float = 90.0,
 
         # learned-flow DC-STT rollout
         t1 = time.perf_counter()
-        rollout = rollout_dcstt_head(head, solver, context, horizon=true_h)
+        rollout = rollout_dcstt_head(head, solver, context, horizon=true_h,
+                                     ch0_policy=ch0_policy)
         rollout_s = time.perf_counter() - t1
 
         # persistence + integer-shift-search baselines
@@ -213,6 +221,9 @@ def run_learned_flow_benchmark(train_budget_s: float = 90.0,
         "seed": int(seed),
         "flow_supervised": bool(flow_supervised),
         "periodic_warp": bool(periodic),
+        "gain_correction": bool(gain_correction),
+        "rollout_steps": int(rollout_steps),
+        "ch0_policy": str(ch0_policy),
         "train_budget_s": float(train_budget_s),
         "train_steps": int(train_steps),
         "train_s": float(train_s),
@@ -228,6 +239,13 @@ def run_learned_flow_benchmark(train_budget_s: float = 90.0,
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         print(f"\nSaved learned-flow results to {out_path}")
+    if save_head is not None:
+        # Persist the trained weights (packable into the Rust kernel via
+        # flow_head_rust.pack_weights for the distillation-parity check).
+        save_head.parent.mkdir(parents=True, exist_ok=True)
+        import torch
+        torch.save(head.state_dict(), str(save_head))
+        print(f"Saved trained head weights to {save_head}")
     return payload
 
 
@@ -237,12 +255,28 @@ if __name__ == "__main__":
     parser.add_argument("--flow-supervised", action="store_true", default=False,
                         help="Stage-3: supervise the head with the generator's "
                              "analytic flow on TRAIN clips only")
+    parser.add_argument("--save-head", type=Path, default=None,
+                        help="optional .pt path: export the trained head state_dict")
     parser.add_argument("--clamped-boundary", action="store_true", default=False,
                         help="ablation: use clamped (border) warp instead of the "
                              "domain-correct periodic warp, in BOTH training and rollout")
+    parser.add_argument("--gain-correction", action="store_true", default=False,
+                        help="head also predicts a per-channel affine (s,b) applied "
+                             "after transport (the generator's dye renorm gain)")
+    parser.add_argument("--rollout-steps", type=int, default=1,
+                        help="exposure-bias training: unroll k model-own steps per "
+                             "training window (BPTT); 1 = single-transition (legacy)")
+    parser.add_argument("--ch0-policy", choices=("transport", "persist"),
+                        default="persist",
+                        help="vorticity channel policy: 'transport' (legacy advect) "
+                             "or 'persist' (freeze; domain-correct for ch0=|curl|)")
     parser.add_argument("--out", type=Path,
                         default=_REPO / "benchmarks" / "learned_flow_dcstt_results.json")
     args = parser.parse_args()
     run_learned_flow_benchmark(train_budget_s=args.train_budget_s, out_path=args.out,
                                flow_supervised=args.flow_supervised,
-                               periodic=not args.clamped_boundary)
+                               periodic=not args.clamped_boundary,
+                               save_head=args.save_head,
+                               gain_correction=args.gain_correction,
+                               rollout_steps=args.rollout_steps,
+                               ch0_policy=args.ch0_policy)

@@ -113,8 +113,14 @@ def test_flow_consistency_loss_zero_for_perfect_constant_translation() -> None:
         def forward(self, a, b):
             return v
 
+        def predict_flow_and_gain(self, a, b):
+            return v, None, None
+
     model = LearnedFlowHead(FlowHeadConfig(hidden_dim=4, n_layers=1, lambda_smooth=0.0))
-    model.forward = _FixedHead().forward.__get__(model)  # type: ignore[method-assign]
+    fixed = _FixedHead()
+    model.forward = fixed.forward.__get__(model)  # type: ignore[method-assign]
+    # the loss calls predict_flow_and_gain directly (single shared forward)
+    model.predict_flow_and_gain = fixed.predict_flow_and_gain.__get__(model)  # type: ignore[method-assign]
     loss = flow_consistency_loss(model, z1, z1, z2, dt=1.0)
     # smooth term off; advection term ~0; only tiny div-terms from finite diff at borders
     assert float(loss) < 0.05
@@ -208,3 +214,104 @@ def test_train_flow_head_rejects_mismatched_flow_targets() -> None:
     import pytest
     with pytest.raises(ValueError, match="flow_targets"):
         train_flow_head(head, clips, steps=2, flow_targets=bad)
+
+
+def test_flow_supervision_loss_equals_the_naive_composition() -> None:
+    """The shared-forward refactor must be numerically identical to
+    flow_consistency_loss + the supervised MSE evaluated separately (same
+    seeded head state, no dropout/normalization randomness)."""
+    import pytest
+    import torch.nn.functional as F
+
+    torch.manual_seed(11)
+    head = LearnedFlowHead(FlowHeadConfig(hidden_dim=8, n_layers=2)).double().eval()
+    z_prev = torch.randn(1, 2, 16, 16, dtype=torch.float64)
+    z_curr = torch.randn(1, 2, 16, 16, dtype=torch.float64)
+    z_next = torch.randn(1, 2, 16, 16, dtype=torch.float64)
+    vx_t = torch.randn(1, 16, 16, dtype=torch.float64) * 0.5
+    vy_t = torch.randn(1, 16, 16, dtype=torch.float64) * 0.5
+    with torch.no_grad():
+        shared = float(flow_supervision_loss(head, z_prev, z_curr, vx_t, vy_t, z_next))
+        base = float(flow_consistency_loss(head, z_prev, z_curr, z_next))
+        v = head(z_prev, z_curr)
+        extra = float(F.mse_loss(v[:, 0], vx_t) + F.mse_loss(v[:, 1], vy_t))
+    assert abs(shared - (base + extra)) < 1e-12, (shared, base, extra)
+
+
+def test_gain_head_recovers_affine_after_warp() -> None:
+    """The generator's per-step map is affine AFTER the warp (joint dye
+    renorm + per-channel stretch); a head without gain cannot represent it.
+
+    Frozen-pair synthetic: frames[2] = 0.5 * frames[1] + 0.1 with frames[2]
+    reachable from frames[1] at v = 0. The gain head must fit (s, b) to the
+    true affine and crush the residual a no-gain head floors on; the
+    no-gain head must expose (s, b) = (None, None).
+    """
+    rng = np.random.RandomState(21)
+    frames = rng.randn(3, 2, 16, 16)
+    frames[2] = 0.5 * frames[1] + 0.1
+    cfg = dict(hidden_dim=8, n_layers=2, context_channels=2,
+               lambda_div=0.0, lambda_smooth=0.0)
+
+    hg = LearnedFlowHead(FlowHeadConfig(predict_gain=True, **cfg)).double()
+    lg = train_flow_head(hg, frames, steps=150, lr=3e-3, seed=0)
+    hn = LearnedFlowHead(FlowHeadConfig(predict_gain=False, **cfg)).double()
+    ln = train_flow_head(hn, frames, steps=150, lr=3e-3, seed=0)
+    assert lg[-1] < 0.25 * ln[-1], (
+        f"gain head {lg[-1]:.3e} must crush the no-gain floor {ln[-1]:.3e} "
+        "on an affine-after-warp transition"
+    )
+    with torch.no_grad():
+        z0 = torch.from_numpy(frames[0:1])
+        z1 = torch.from_numpy(frames[1:2])
+        v_g, s_g, b_g = hg.predict_flow_and_gain(z0, z1)
+        v_n, s_n, b_n = hn.predict_flow_and_gain(z0, z1)
+    assert s_n is None and b_n is None and v_n.shape == (1, 2, 16, 16)
+    assert s_g is not None and b_g is not None
+    assert abs(float(s_g.mean()) - 0.5) < 0.15, float(s_g.mean())
+    assert abs(float(b_g.mean()) - 0.1) < 0.15, float(b_g.mean())
+
+
+def test_ch0_persist_policy_freezes_the_vorticity_channel() -> None:
+    """ch0 = |curl(v)| is a derived field, not an advected scalar: with
+    policy "persist" every transported row must carry the last context
+    ch0 verbatim; "transport" (legacy) must not coincide (untrained flow is
+    nonzero w.p. 1); an unknown policy must raise."""
+    import pytest
+
+    head = LearnedFlowHead(FlowHeadConfig(hidden_dim=4, n_layers=1)).double()
+    solver = DecoupledSpatioTemporalTransport(
+        DecoupledTransportConfig(use_rust=True, nu=0.0,
+                                 enable_laplacian_dissipation=False,
+                                 periodic_warp=True)
+    )
+    ctx = np.random.RandomState(7).randn(2, 3, 16, 16)
+    out_p = rollout_dcstt_head(head, solver, ctx, horizon=3, ch0_policy="persist")
+    assert np.array_equal(out_p[2:, 0], np.repeat(ctx[1, 0:1], 3, axis=0))
+    out_t = rollout_dcstt_head(head, solver, ctx, horizon=3, ch0_policy="transport")
+    assert not np.array_equal(out_t[2:, 0], out_p[2:, 0]), (
+        "legacy transport accidentally froze ch0; the persist pin is vacuous"
+    )
+    with pytest.raises(ValueError, match="ch0_policy"):
+        rollout_dcstt_head(head, solver, ctx, horizon=1, ch0_policy="bogus")
+
+
+def test_rollout_steps_windows_never_cross_the_clip_end() -> None:
+    """Multi-step windows stay inside their clip: frames beyond the declared
+    clip are NaN, so any off-by-one that lets a sampled window touch them
+    poisons the loss with NaN (the sharp part of this pin). Too-short clips
+    must raise instead of silently training on nothing."""
+    import pytest
+
+    data = np.random.RandomState(9).randn(10, 2, 16, 16)
+    data[8:] = np.nan    # past the declared 8-frame first clip
+    head = LearnedFlowHead(FlowHeadConfig(hidden_dim=4, n_layers=1)).double()
+    losses = train_flow_head(head, {"clip0": data[:8], "clip1": data[8:]},
+                             steps=40, lr=1e-3, seed=0, rollout_steps=2)
+    assert len(losses) > 0
+    assert all(np.isfinite(losses)), "a window crossed the clip end (NaN target)"
+
+    head2 = LearnedFlowHead(FlowHeadConfig(hidden_dim=4, n_layers=1)).double()
+    with pytest.raises(ValueError, match="training windows"):
+        train_flow_head(head2, {"clip0": data[:3]}, steps=2, seed=0,
+                        rollout_steps=2)
