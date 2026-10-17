@@ -1,0 +1,4184 @@
+{
+  "source": "https://raw.githubusercontent.com/openai/math/main/lean/",
+  "fetched_utc": "2026-10-16T08:04:54Z",
+  "yaml_main_results": 200,
+  "unique_challenges": 189,
+  "files": [
+    {
+      "challenge": "AbhyankarSathaye",
+      "file": "ComparatorChallenges/AbhyankarSathaye.json",
+      "sha256": "c7e954153e064582ebcbaf85deacc29f933dca1c7188e90a6a78eb17b929148f",
+      "bytes": 366
+    },
+    {
+      "challenge": "AbhyankarSathaye",
+      "file": "ComparatorChallenges/AbhyankarSathaye.lean",
+      "sha256": "a7db47dbd441d730d082f3cae61a2d7f22fd37aae46429dc269b290f262504c6",
+      "bytes": 724
+    },
+    {
+      "challenge": "AmplitudeDamping",
+      "file": "ComparatorChallenges/AmplitudeDamping.json",
+      "sha256": "d5fd3b206d67df3786b22e25c25e9a7364ea70ee02a6d2d8b478b76e9ef7d70b",
+      "bytes": 316
+    },
+    {
+      "challenge": "AmplitudeDamping",
+      "file": "ComparatorChallenges/AmplitudeDamping.lean",
+      "sha256": "fa10657ef13d9a869fb057e0a166b21fe24a538d02211b8b62c29bc7a03588bd",
+      "bytes": 4866
+    },
+    {
+      "challenge": "ArnoldCounterexample",
+      "file": "ComparatorChallenges/ArnoldCounterexample.json",
+      "sha256": "6136c4b54dcc695ef9fe66f678206e2e6f94be96b97ac0ba922ad3aeedbd52cd",
+      "bytes": 318
+    },
+    {
+      "challenge": "ArnoldCounterexample",
+      "file": "ComparatorChallenges/ArnoldCounterexample.lean",
+      "sha256": "3f414804a720eb53310e3280e5d07e7a5c8511c56135d5228c0ee6ceb9bbab78",
+      "bytes": 5086
+    },
+    {
+      "challenge": "ArtinCAT0",
+      "file": "ComparatorChallenges/ArtinCAT0.json",
+      "sha256": "e1e3bb3ab560118c4297fb32b60f6b712c07c9437e03009024feb11f25d0d2ff",
+      "bytes": 302
+    },
+    {
+      "challenge": "ArtinCAT0",
+      "file": "ComparatorChallenges/ArtinCAT0.lean",
+      "sha256": "81e60d5355278668a02d5a5b606867229e4ddf9b0abf2d060adf08b1f2af944e",
+      "bytes": 2840
+    },
+    {
+      "challenge": "AsymptoticallyMinimalLittlewood",
+      "file": "ComparatorChallenges/AsymptoticallyMinimalLittlewood.json",
+      "sha256": "0021e2cbecb32bf46c0ee9955f4241e518447f3019717304f2df794126331906",
+      "bytes": 344
+    },
+    {
+      "challenge": "AsymptoticallyMinimalLittlewood",
+      "file": "ComparatorChallenges/AsymptoticallyMinimalLittlewood.lean",
+      "sha256": "045e02714ed642444b9257f20f1ce65d68f00e63e914cc3aa7335f6ed5648a71",
+      "bytes": 625
+    },
+    {
+      "challenge": "AuslanderReiten",
+      "file": "ComparatorChallenges/AuslanderReiten.json",
+      "sha256": "c449639de0d62ab7d444f20d65524c9e6b1ab3a7fbb4bf0501c4cbe0018b4b9d",
+      "bytes": 320
+    },
+    {
+      "challenge": "AuslanderReiten",
+      "file": "ComparatorChallenges/AuslanderReiten.lean",
+      "sha256": "b716f2eee8443c065478c024edf5f2fc1dab0996a964a8149d77c6d9369af98f",
+      "bytes": 2743
+    },
+    {
+      "challenge": "BackwardIntertwiners",
+      "file": "ComparatorChallenges/BackwardIntertwiners.json",
+      "sha256": "02f60773a490f1f12b81b2b0a66cc34ade1ba3aeaa237f2d4a67613797278973",
+      "bytes": 364
+    },
+    {
+      "challenge": "BackwardIntertwiners",
+      "file": "ComparatorChallenges/BackwardIntertwiners.lean",
+      "sha256": "e555b5537647010a358132ffb75eb9f98bf0221479bcc1d6640f18a134c87820",
+      "bytes": 1401
+    },
+    {
+      "challenge": "BassTrace",
+      "file": "ComparatorChallenges/BassTrace.json",
+      "sha256": "c539654a4313c8174c966e8bfe7db6aaad145975fb41107dce7afcecaf3a537a",
+      "bytes": 351
+    },
+    {
+      "challenge": "BassTrace",
+      "file": "ComparatorChallenges/BassTrace.lean",
+      "sha256": "e52ea8e1f8feb2f39084de0e3102519adb6d975ce07ff1421c2b2f48bdf33f1b",
+      "bytes": 22880
+    },
+    {
+      "challenge": "BiholderTransport",
+      "file": "ComparatorChallenges/BiholderTransport.json",
+      "sha256": "7c9eb6cfa8ef73414fd72772596c4289850e13af37fe0d2204e9823af97737f8",
+      "bytes": 344
+    },
+    {
+      "challenge": "BiholderTransport",
+      "file": "ComparatorChallenges/BiholderTransport.lean",
+      "sha256": "0a01595c5b2289901b195b6a358e5c463146d6e1f3a106250139672bed2ff20e",
+      "bytes": 5413
+    },
+    {
+      "challenge": "BinPackingGap",
+      "file": "ComparatorChallenges/BinPackingGap.json",
+      "sha256": "761527acf4ff186a6765baf5b3f30d7542f75b88865168de59e25e7c360ba941",
+      "bytes": 321
+    },
+    {
+      "challenge": "BinPackingGap",
+      "file": "ComparatorChallenges/BinPackingGap.lean",
+      "sha256": "f72d9643f0dab3bdb18876f54b072f9720fc99491e3801f2a46214e90f7e2e50",
+      "bytes": 12523
+    },
+    {
+      "challenge": "BinaryMatching",
+      "file": "ComparatorChallenges/BinaryMatching.json",
+      "sha256": "9ec0cd858949e16333ae9d64e68c2a25a1d1f03b59c6af0c90cc79731f2e9c9a",
+      "bytes": 355
+    },
+    {
+      "challenge": "BinaryMatching",
+      "file": "ComparatorChallenges/BinaryMatching.lean",
+      "sha256": "05f2ae77b70ff97e2f9cd960662a68fb3664ffae184d2c36bbd6c330955dd090",
+      "bytes": 2330
+    },
+    {
+      "challenge": "BinarySweep",
+      "file": "ComparatorChallenges/BinarySweep.json",
+      "sha256": "25effc8adb0ada050f97be853249026cf6a5a97b603d99992ad27835d5b23e22",
+      "bytes": 327
+    },
+    {
+      "challenge": "BinarySweep",
+      "file": "ComparatorChallenges/BinarySweep.lean",
+      "sha256": "35f4267a40a62a9149855f7b067b5b8f2306ba0c3b522f113a078af07b2aba31",
+      "bytes": 3730
+    },
+    {
+      "challenge": "BipartiteCrossing",
+      "file": "ComparatorChallenges/BipartiteCrossing.json",
+      "sha256": "805fa1d52cc07581d9951ad6d927c123c933f5c75fc4a2a6b08f5096a555625c",
+      "bytes": 326
+    },
+    {
+      "challenge": "BipartiteCrossing",
+      "file": "ComparatorChallenges/BipartiteCrossing.lean",
+      "sha256": "37ea82a967ca9fa95fd504fa75a8fb063dd99d91651ae3f5b68bc150950e2032",
+      "bytes": 2553
+    },
+    {
+      "challenge": "BorsukNine",
+      "file": "ComparatorChallenges/BorsukNine.json",
+      "sha256": "166280fe4f1677ef284ff142354470b9fb18b030ce8ff5632d9790c8aa5e4f43",
+      "bytes": 306
+    },
+    {
+      "challenge": "BorsukNine",
+      "file": "ComparatorChallenges/BorsukNine.lean",
+      "sha256": "c097288178f7b71023274b9cc3e5b600fad2e9b4c85bd635b7bf06c307fc631c",
+      "bytes": 826
+    },
+    {
+      "challenge": "BoundedRecovery",
+      "file": "ComparatorChallenges/BoundedRecovery.json",
+      "sha256": "bf415d887efe5963971791efc7b454bfd48c1fed5bad363b8d21b99c2a11f6f9",
+      "bytes": 329
+    },
+    {
+      "challenge": "BoundedRecovery",
+      "file": "ComparatorChallenges/BoundedRecovery.lean",
+      "sha256": "98f18329535c8721e16943c3edf930b6cbb4f7c4ee34e8be1d4e4a2b4cd0e6fc",
+      "bytes": 4088
+    },
+    {
+      "challenge": "BoundedTreePotentials",
+      "file": "ComparatorChallenges/BoundedTreePotentials.json",
+      "sha256": "fb79b609796648a1e4fb13dc0a1580919452b540c15182b291cb990227becb71",
+      "bytes": 355
+    },
+    {
+      "challenge": "BoundedTreePotentials",
+      "file": "ComparatorChallenges/BoundedTreePotentials.lean",
+      "sha256": "2a0bfecab2bb3b3da07393f7dbe95f324a8351b1e5d6d1b38283376641c11875",
+      "bytes": 14868
+    },
+    {
+      "challenge": "BoundedTreewidthL1",
+      "file": "ComparatorChallenges/BoundedTreewidthL1.json",
+      "sha256": "ec313e68d93286dff543b0d46755de4b6ca3de772978bfe476a8cae08ca5256b",
+      "bytes": 332
+    },
+    {
+      "challenge": "BoundedTreewidthL1",
+      "file": "ComparatorChallenges/BoundedTreewidthL1.lean",
+      "sha256": "630b947fa99b012e1575ad23cf658b0d6e8660d31a95600f5b5894bb0fe5d48f",
+      "bytes": 1651
+    },
+    {
+      "challenge": "Brennan",
+      "file": "ComparatorChallenges/Brennan.json",
+      "sha256": "1973310cc46409cf180cd7811611407a727175932ce26ea6bc9b6dcb4dd6b553",
+      "bytes": 307
+    },
+    {
+      "challenge": "Brennan",
+      "file": "ComparatorChallenges/Brennan.lean",
+      "sha256": "07ad707efc006317e91d7357ff390308e2c50402c636d0ffba2e87b88ffe570d",
+      "bytes": 1715
+    },
+    {
+      "challenge": "BrennanSharp",
+      "file": "ComparatorChallenges/BrennanSharp.json",
+      "sha256": "5e28f46588ce17e2f573caee303ba6f49d89eddfe438ccf2b344cdda15165187",
+      "bytes": 331
+    },
+    {
+      "challenge": "BrennanSharp",
+      "file": "ComparatorChallenges/BrennanSharp.lean",
+      "sha256": "638aad0c24a403921792b7932eb481c5368698ed97b2c49578fd7af17b4e9e23",
+      "bytes": 1110
+    },
+    {
+      "challenge": "C0Absorption",
+      "file": "ComparatorChallenges/C0Absorption.json",
+      "sha256": "874bc8d2370ec332fd743314e45b56bd530df1a962e6df4003b7fd98f4531555",
+      "bytes": 315
+    },
+    {
+      "challenge": "C0Absorption",
+      "file": "ComparatorChallenges/C0Absorption.lean",
+      "sha256": "a5d7375b335f7dd950c879f1d99d60cda553d2a4d7e68b0170a35c5657becdbe",
+      "bytes": 1057
+    },
+    {
+      "challenge": "CHObstruction",
+      "file": "ComparatorChallenges/CHObstruction.json",
+      "sha256": "95484776acae3d7176ec20898817a23910dff1282e064fac9c74a68f1beac4f9",
+      "bytes": 313
+    },
+    {
+      "challenge": "CHObstruction",
+      "file": "ComparatorChallenges/CHObstruction.lean",
+      "sha256": "b58c11900fa0d3873614f086562b2d46acd5f8d47e67b7d79a1220a274ed9b3b",
+      "bytes": 3654
+    },
+    {
+      "challenge": "CartierChartCompactnessSupport",
+      "file": "ComparatorChallenges/CartierChartCompactnessSupport.json",
+      "sha256": "242cadf7dd3f4675b1db7043075221e2044ddc7786837ed97971138a31b62c0f",
+      "bytes": 390
+    },
+    {
+      "challenge": "CartierChartCompactnessSupport",
+      "file": "ComparatorChallenges/CartierChartCompactnessSupport.lean",
+      "sha256": "05de6915fb577137d01be2fcaab5ebcc252d80f628ffb913bea4bef87b54ea64",
+      "bytes": 1365
+    },
+    {
+      "challenge": "CharacterCriterion",
+      "file": "ComparatorChallenges/CharacterCriterion.json",
+      "sha256": "747bbe2975f953d0b5cab3007d6236031a75f82ce32a8d952d06fcc7eac170e5",
+      "bytes": 338
+    },
+    {
+      "challenge": "CharacterCriterion",
+      "file": "ComparatorChallenges/CharacterCriterion.lean",
+      "sha256": "296b0ff956fcb151637be273c44afed6439101290238ff11cec333d843e5ecf8",
+      "bytes": 135459
+    },
+    {
+      "challenge": "CharacterVarietiesAllSeamsSupport",
+      "file": "ComparatorChallenges/CharacterVarietiesAllSeamsSupport.json",
+      "sha256": "c6bc7eb2e8d770e64482e642a8a6f25f020d73a0df5927a0b6b03b835798fe8b",
+      "bytes": 429
+    },
+    {
+      "challenge": "CharacterVarietiesAllSeamsSupport",
+      "file": "ComparatorChallenges/CharacterVarietiesAllSeamsSupport.lean",
+      "sha256": "ebc3129bfb5ef4a47e0de1d89f0f406ef6603df32355bdfbb9ce278627c1a1f1",
+      "bytes": 900
+    },
+    {
+      "challenge": "ChoicelessPolynomialTime",
+      "file": "ComparatorChallenges/ChoicelessPolynomialTime.json",
+      "sha256": "6b7b0c476948208fa58011497df3ddcfb0d3ff08b7299141949da3240a21cf7a",
+      "bytes": 328
+    },
+    {
+      "challenge": "ChoicelessPolynomialTime",
+      "file": "ComparatorChallenges/ChoicelessPolynomialTime.lean",
+      "sha256": "bca543a0526a28dd9c3466e5fcb1278436580a63f45320ab315f3b2a410866df",
+      "bytes": 19566
+    },
+    {
+      "challenge": "CirculantHadamard",
+      "file": "ComparatorChallenges/CirculantHadamard.json",
+      "sha256": "c1fe62023b2b218840c7389b00a97473b48f3a59ab1af453f0dd4558b9e6b4b1",
+      "bytes": 352
+    },
+    {
+      "challenge": "CirculantHadamard",
+      "file": "ComparatorChallenges/CirculantHadamard.lean",
+      "sha256": "397ec4f1ab8e02877f4a4d0b5a12d0c9b26a06bf768999479210b365c3acb647",
+      "bytes": 737
+    },
+    {
+      "challenge": "ClassicalON",
+      "file": "ComparatorChallenges/ClassicalON.json",
+      "sha256": "47cb3623915c8cfcc35099fabd0c44173afa72b706eb0526c4b8d3855e789252",
+      "bytes": 308
+    },
+    {
+      "challenge": "ClassicalON",
+      "file": "ComparatorChallenges/ClassicalON.lean",
+      "sha256": "c2f5f88455b811eb6b56c1ae80ff91f4e398e18e7c7fbeee6daca8da4122d696",
+      "bytes": 1961
+    },
+    {
+      "challenge": "CliqueFreeLog",
+      "file": "ComparatorChallenges/CliqueFreeLog.json",
+      "sha256": "ddfe72ae1b6d99817f05dd1b91ff8e178717abeecff667e08781df60c1faf56d",
+      "bytes": 339
+    },
+    {
+      "challenge": "CliqueFreeLog",
+      "file": "ComparatorChallenges/CliqueFreeLog.lean",
+      "sha256": "f2da8879eb520c1fcc7812d3d476f528b54dd7405c00a8f4c0488e212379c2d2",
+      "bytes": 577
+    },
+    {
+      "challenge": "CommonBasesFPRAS",
+      "file": "ComparatorChallenges/CommonBasesFPRAS.json",
+      "sha256": "b4d68930a3d2d6b026c00c72104ffa7276b7691ab36569a1ee060a20f2ddd667",
+      "bytes": 328
+    },
+    {
+      "challenge": "CommonBasesFPRAS",
+      "file": "ComparatorChallenges/CommonBasesFPRAS.lean",
+      "sha256": "f20d91f7fe7f1cccee71d1312754a258c0b4f69925be9485ba80957b76d09f95",
+      "bytes": 4848
+    },
+    {
+      "challenge": "CommutingDerivations",
+      "file": "ComparatorChallenges/CommutingDerivations.json",
+      "sha256": "627ee35337cc015e1afa71282d815b9acb0f9facc91b8e15b59e3f1a25be6bb7",
+      "bytes": 409
+    },
+    {
+      "challenge": "CommutingDerivations",
+      "file": "ComparatorChallenges/CommutingDerivations.lean",
+      "sha256": "79b337e7b0c1687ae668ee5642063cdc0f466137da822312dd83dc63101ff44b",
+      "bytes": 2393
+    },
+    {
+      "challenge": "CompactBanach",
+      "file": "ComparatorChallenges/CompactBanach.json",
+      "sha256": "0b2f496d1bc30fbae51e69373f7b09817d4c0cca5f99e4df1921bf394cae990c",
+      "bytes": 322
+    },
+    {
+      "challenge": "CompactBanach",
+      "file": "ComparatorChallenges/CompactBanach.lean",
+      "sha256": "358a151d7684a0681e83111ebdf2c3a4f5f77eb253509a018422915c1711cb34",
+      "bytes": 1357
+    },
+    {
+      "challenge": "CompleteCrossing",
+      "file": "ComparatorChallenges/CompleteCrossing.json",
+      "sha256": "6b2a2b034a4d860278e99d6c36fcdc0b0fcf60a4baae508c0b45d4a7807cc570",
+      "bytes": 343
+    },
+    {
+      "challenge": "CompleteCrossing",
+      "file": "ComparatorChallenges/CompleteCrossing.lean",
+      "sha256": "9cd41491187c4149827a3b4a5e5cad098652b0cfae22deacdcf72ea48330e8f0",
+      "bytes": 3556
+    },
+    {
+      "challenge": "CompleteCrouzeix",
+      "file": "ComparatorChallenges/CompleteCrouzeix.json",
+      "sha256": "458866285eca662c7e35786aef3332e44d4d46edee29a4c0c09a8a67a46fa22c",
+      "bytes": 318
+    },
+    {
+      "challenge": "CompleteCrouzeix",
+      "file": "ComparatorChallenges/CompleteCrouzeix.lean",
+      "sha256": "6b63c6180f5507b341b323af4668050a32226526f56359563286efc509e8afbc",
+      "bytes": 1316
+    },
+    {
+      "challenge": "ComplexCancellation",
+      "file": "ComparatorChallenges/ComplexCancellation.json",
+      "sha256": "d6387837a006e069413a5529bd5ce1e1bf8a1f4dc959fe40a4f8dba5ccab3465",
+      "bytes": 327
+    },
+    {
+      "challenge": "ComplexCancellation",
+      "file": "ComparatorChallenges/ComplexCancellation.lean",
+      "sha256": "1c25be0bb2a81b32b787856546194c82dd11947efe765742d3d9c4b915f6f428",
+      "bytes": 717
+    },
+    {
+      "challenge": "Conductivity",
+      "file": "ComparatorChallenges/Conductivity.json",
+      "sha256": "ca6115f52ab9f5eb5a082efa9cc3a31173e611b29be32421af9631ab49033af0",
+      "bytes": 328
+    },
+    {
+      "challenge": "Conductivity",
+      "file": "ComparatorChallenges/Conductivity.lean",
+      "sha256": "646bf2f842e2a169865e984174b96b855e6a368deff70ec7e916cfafa4cf6557",
+      "bytes": 2887
+    },
+    {
+      "challenge": "ConjugatePoints",
+      "file": "ComparatorChallenges/ConjugatePoints.json",
+      "sha256": "41325189d075c70c053c8b662eeedad5ecad3458306386227918354ddd20f663",
+      "bytes": 332
+    },
+    {
+      "challenge": "ConjugatePoints",
+      "file": "ComparatorChallenges/ConjugatePoints.lean",
+      "sha256": "e8b4c4bb21f1dc3fa18a2d21fc9ca923b54c012e07174e854e3b338bd89f9b16",
+      "bytes": 4476
+    },
+    {
+      "challenge": "ContinuumTransition",
+      "file": "ComparatorChallenges/ContinuumTransition.json",
+      "sha256": "8ec375365e428188d10ee25955a2c0eca28200f949839b0a8356d5542127e8d8",
+      "bytes": 341
+    },
+    {
+      "challenge": "ContinuumTransition",
+      "file": "ComparatorChallenges/ContinuumTransition.lean",
+      "sha256": "703b04bfb80732ba60d9c55cc108ea94e9d5740174695cae4ca97f99aedf5512",
+      "bytes": 2385
+    },
+    {
+      "challenge": "CoordinateSweeps",
+      "file": "ComparatorChallenges/CoordinateSweeps.json",
+      "sha256": "84dbb774ba106569f6e05834ae5a43e5b04050f1e0bb1ebb8dd324b6bd8fc332",
+      "bytes": 379
+    },
+    {
+      "challenge": "CoordinateSweeps",
+      "file": "ComparatorChallenges/CoordinateSweeps.lean",
+      "sha256": "de91026965bbc17d2b4262c82b22f44bd4034ddc71fe2b7f59b33e5670f28052",
+      "bytes": 11536
+    },
+    {
+      "challenge": "Cotype",
+      "file": "ComparatorChallenges/Cotype.json",
+      "sha256": "b60c097ef466c4a8a57d8ba03e0768a209add7edf723fc9a5fc275df48548d12",
+      "bytes": 303
+    },
+    {
+      "challenge": "Cotype",
+      "file": "ComparatorChallenges/Cotype.lean",
+      "sha256": "453f9a677d12383f0caa5ccfeb6fb5cf9da471d2a51cf25ff748d45392878a0d",
+      "bytes": 1745
+    },
+    {
+      "challenge": "CoulombIonization",
+      "file": "ComparatorChallenges/CoulombIonization.json",
+      "sha256": "18cb9e193da1c2a874a734c9bd181e440a2e0614cf2699b4ff81ca724df98789",
+      "bytes": 335
+    },
+    {
+      "challenge": "CoulombIonization",
+      "file": "ComparatorChallenges/CoulombIonization.lean",
+      "sha256": "c7dbbf25bf29ad6ad3dd6af5e9bfe32ad9a878d8db2f8e14e2de581e809d0f44",
+      "bytes": 3611
+    },
+    {
+      "challenge": "CourtadeKumar",
+      "file": "ComparatorChallenges/CourtadeKumar.json",
+      "sha256": "b7095cca718b8b49c9f60e94442f8c3583a5cec13ac6c612dbd47a431fdcac32",
+      "bytes": 351
+    },
+    {
+      "challenge": "CourtadeKumar",
+      "file": "ComparatorChallenges/CourtadeKumar.lean",
+      "sha256": "f9f9d6d20d83405ed7822cb64b57f934ccd6fd3686d6eec09146465f29878eb1",
+      "bytes": 2206
+    },
+    {
+      "challenge": "CriticalSK",
+      "file": "ComparatorChallenges/CriticalSK.json",
+      "sha256": "3164b158fbba980bda240f2d512b8480efd678b64662e13e6955ec16782003b3",
+      "bytes": 445
+    },
+    {
+      "challenge": "CriticalSK",
+      "file": "ComparatorChallenges/CriticalSK.lean",
+      "sha256": "d365331a7e2c669d579e5e248fcb9c9f41062a188f60a6484c562f532aa4e08a",
+      "bytes": 6074
+    },
+    {
+      "challenge": "CriticalSKMixing",
+      "file": "ComparatorChallenges/CriticalSKMixing.json",
+      "sha256": "b87c7aec463827b9a2b5998ff22deb78b6af2dfd0b026e4eb26e574c3fdad466",
+      "bytes": 341
+    },
+    {
+      "challenge": "CriticalSKMixing",
+      "file": "ComparatorChallenges/CriticalSKMixing.lean",
+      "sha256": "16c41c4533f545eb81b40e5698199ea80ecee4e86d5db0b1a5594b51ba1a5499",
+      "bytes": 2762
+    },
+    {
+      "challenge": "CriticalZ3",
+      "file": "ComparatorChallenges/CriticalZ3.json",
+      "sha256": "ab3de20c993f7c3823a26577052b8bf950e310841e990ea604a4bdaa83b85e4c",
+      "bytes": 321
+    },
+    {
+      "challenge": "CriticalZ3",
+      "file": "ComparatorChallenges/CriticalZ3.lean",
+      "sha256": "34ea3ff4648b6ea92c3e7d94bcb7b66047a9d0fbd1f583c461c34636cbb854d8",
+      "bytes": 2184
+    },
+    {
+      "challenge": "CycleDecomposition",
+      "file": "ComparatorChallenges/CycleDecomposition.json",
+      "sha256": "f89705dba6bfbf27113cae83ae8000946bd6276b2afae4b19e28fa528dfb32d0",
+      "bytes": 332
+    },
+    {
+      "challenge": "CycleDecomposition",
+      "file": "ComparatorChallenges/CycleDecomposition.lean",
+      "sha256": "8c40255789147b218565654daa7d4f9ef39824b009d06ec9fb6beb7b45cae0f9",
+      "bytes": 850
+    },
+    {
+      "challenge": "DaugavetModuli",
+      "file": "ComparatorChallenges/DaugavetModuli.json",
+      "sha256": "351b9e76846a012f194810e1d39366e5a6d5156496dc83a76a429c5890269bff",
+      "bytes": 395
+    },
+    {
+      "challenge": "DaugavetModuli",
+      "file": "ComparatorChallenges/DaugavetModuli.lean",
+      "sha256": "b80afc577219cb0314de348626d6dadbf25eecf4e727de3a73d3f3adc90968a9",
+      "bytes": 4514
+    },
+    {
+      "challenge": "DegreeRigidity",
+      "file": "ComparatorChallenges/DegreeRigidity.json",
+      "sha256": "8aea98b8c9d06631764ee739802c2783a4333b106c0b8f8e33153bf01ddaf7dc",
+      "bytes": 338
+    },
+    {
+      "challenge": "DegreeRigidity",
+      "file": "ComparatorChallenges/DegreeRigidity.lean",
+      "sha256": "ae3fcff2aca95957449bafd932cb00464a4432b4c1652a36be1c69a5dd32d999",
+      "bytes": 1220
+    },
+    {
+      "challenge": "DeligneDrinfeld",
+      "file": "ComparatorChallenges/DeligneDrinfeld.json",
+      "sha256": "2fe02807b46eaab9e0f45f313f474d0d7448bcbee361cd2f9604ebd83d6bc8ba",
+      "bytes": 315
+    },
+    {
+      "challenge": "DeligneDrinfeld",
+      "file": "ComparatorChallenges/DeligneDrinfeld.lean",
+      "sha256": "b2fc1de28eb29eb1e8934f52978a64a1cd9fc13f3b4379e84171d4f8a106e3cd",
+      "bytes": 7290
+    },
+    {
+      "challenge": "DepthThree",
+      "file": "ComparatorChallenges/DepthThree.json",
+      "sha256": "0b9ecec5cb9b079bf8f6b301604938a9b74758f6abeff6dd985e160c89f578b3",
+      "bytes": 368
+    },
+    {
+      "challenge": "DepthThree",
+      "file": "ComparatorChallenges/DepthThree.lean",
+      "sha256": "c12686c38119eb50c375790ebc28e0c806821714985431e59f18ae87649872a4",
+      "bytes": 4453
+    },
+    {
+      "challenge": "DiamondDistortion",
+      "file": "ComparatorChallenges/DiamondDistortion.json",
+      "sha256": "d2ec9360f04c9f4efb69885db8aa9976fa488763403a585029a32f5ffb20515d",
+      "bytes": 340
+    },
+    {
+      "challenge": "DiamondDistortion",
+      "file": "ComparatorChallenges/DiamondDistortion.lean",
+      "sha256": "3d80ead1782f380ef2cc6f191d9802a7a150f35b30ffc5c0663cb8006a58f666",
+      "bytes": 12528
+    },
+    {
+      "challenge": "DirectCrouzeix",
+      "file": "ComparatorChallenges/DirectCrouzeix.json",
+      "sha256": "26346f0920c9862517f30c4c3a016a5aea03913cca5c151dd1a26eee3e7a9f82",
+      "bytes": 371
+    },
+    {
+      "challenge": "DirectCrouzeix",
+      "file": "ComparatorChallenges/DirectCrouzeix.lean",
+      "sha256": "6aff79e03dee428cf5a677dba39da0fe14fe3d9a989a7e6d4bc0f3bf2a148d22",
+      "bytes": 1353
+    },
+    {
+      "challenge": "DirectionalBallisticity",
+      "file": "ComparatorChallenges/DirectionalBallisticity.json",
+      "sha256": "50701da9c416997d906243fafa42c6d937a64b2e1d7cb77d06da23383db5eaef",
+      "bytes": 370
+    },
+    {
+      "challenge": "DirectionalBallisticity",
+      "file": "ComparatorChallenges/DirectionalBallisticity.lean",
+      "sha256": "f1225d29e53266aa298b6f09d2b4d9b9f54122199142d1f58ac1b082c0b441c4",
+      "bytes": 3946
+    },
+    {
+      "challenge": "DirichletSevenEighths",
+      "file": "ComparatorChallenges/DirichletSevenEighths.json",
+      "sha256": "cfc8d85d49ec5f180e75990d95c59c45f9bd5b9f453a101308870b9c4df9e1d9",
+      "bytes": 369
+    },
+    {
+      "challenge": "DirichletSevenEighths",
+      "file": "ComparatorChallenges/DirichletSevenEighths.lean",
+      "sha256": "8fb13ad977bca104591fcbc6ef01a58496e7385053c9b1445f95749afc0eff54",
+      "bytes": 379
+    },
+    {
+      "challenge": "DixmierAllDiscrete",
+      "file": "ComparatorChallenges/DixmierAllDiscrete.json",
+      "sha256": "8072f74263ac840a87fd90ce9756c7d308ce67af731bae36ef577f0a16156aa8",
+      "bytes": 335
+    },
+    {
+      "challenge": "DixmierAllDiscrete",
+      "file": "ComparatorChallenges/DixmierAllDiscrete.lean",
+      "sha256": "b87f008ef0a48e93cd3946df5729929fff873aa11d5522b1eef05653cf1e773e",
+      "bytes": 1891
+    },
+    {
+      "challenge": "DoublingHilbert",
+      "file": "ComparatorChallenges/DoublingHilbert.json",
+      "sha256": "b50d494bf6538adafb584efcaf9ccc4702de49d47800ed95784e62cb112e16c6",
+      "bytes": 317
+    },
+    {
+      "challenge": "DoublingHilbert",
+      "file": "ComparatorChallenges/DoublingHilbert.lean",
+      "sha256": "f7f9b905f01b3333bec0f1164075949eba47b536af2b60daa29032a6796b2d8a",
+      "bytes": 1003
+    },
+    {
+      "challenge": "EgyptianFractions",
+      "file": "ComparatorChallenges/EgyptianFractions.json",
+      "sha256": "e437463f549509b9f7915877a19a54ec1d17d961fee02ce83d5cc3cf1a5fcf36",
+      "bytes": 737
+    },
+    {
+      "challenge": "EgyptianFractions",
+      "file": "ComparatorChallenges/EgyptianFractions.lean",
+      "sha256": "e96f5967735c7f7af64fc306601a5280d20f5752799e8c9a5fcc424cd421c0f6",
+      "bytes": 3863
+    },
+    {
+      "challenge": "EntangledGames",
+      "file": "ComparatorChallenges/EntangledGames.json",
+      "sha256": "cb52a10bf682ae1e2bb84d645be13e4c18c0539b8e0b847b565a217e06d51054",
+      "bytes": 355
+    },
+    {
+      "challenge": "EntangledGames",
+      "file": "ComparatorChallenges/EntangledGames.lean",
+      "sha256": "b3957e18f10af74244e7a2fc1b6cf12b14c9dc4b036f7ffe2ef2b2810e6697c0",
+      "bytes": 3180
+    },
+    {
+      "challenge": "EuclideanFiveColor",
+      "file": "ComparatorChallenges/EuclideanFiveColor.json",
+      "sha256": "46b5d2c6fa6c2977b52e36c2b19953ee57fc7535584848c6d4010af4edf81b39",
+      "bytes": 387
+    },
+    {
+      "challenge": "EuclideanFiveColor",
+      "file": "ComparatorChallenges/EuclideanFiveColor.lean",
+      "sha256": "7055ba6ec44990ca1da798f3fab5db8398b58485e633102acf6732e5bbe957cd",
+      "bytes": 388
+    },
+    {
+      "challenge": "EuclideanRamsey",
+      "file": "ComparatorChallenges/EuclideanRamsey.json",
+      "sha256": "2d7a4422593f70e170f5fc41c87e33f8afae5ad3cf795000c09181d9fad76872",
+      "bytes": 332
+    },
+    {
+      "challenge": "EuclideanRamsey",
+      "file": "ComparatorChallenges/EuclideanRamsey.lean",
+      "sha256": "cb2ede9a1f7b6c2784acfcace10de725268779be904e8b81771e79044233ac0c",
+      "bytes": 1917
+    },
+    {
+      "challenge": "ExactFourier",
+      "file": "ComparatorChallenges/ExactFourier.json",
+      "sha256": "5c80971062c12f3ec364ae482fbd1e0d954c81c36437f3faa0b2c56562d1892c",
+      "bytes": 323
+    },
+    {
+      "challenge": "ExactFourier",
+      "file": "ComparatorChallenges/ExactFourier.lean",
+      "sha256": "93b33a2b9f6543dd0b893c3a5a504df19a1a39476072c6d7ebe18133a820ef6d",
+      "bytes": 2005
+    },
+    {
+      "challenge": "FactorGeneration",
+      "file": "ComparatorChallenges/FactorGeneration.json",
+      "sha256": "4088aa35a7a507a148ff9ca928421bc372bd765c0b0e41c6cf1a0888fc11ef10",
+      "bytes": 351
+    },
+    {
+      "challenge": "FactorGeneration",
+      "file": "ComparatorChallenges/FactorGeneration.lean",
+      "sha256": "2e6b0087e27aa2814dd212e5957af3b56670ea2ce07ae049a47908ada5581bb5",
+      "bytes": 1738
+    },
+    {
+      "challenge": "FinitisticAsymmetry",
+      "file": "ComparatorChallenges/FinitisticAsymmetry.json",
+      "sha256": "9a3eaf61ff768857a0ddc1562650b6391c78c38a51c15406f6b0b55a01e80141",
+      "bytes": 349
+    },
+    {
+      "challenge": "FinitisticAsymmetry",
+      "file": "ComparatorChallenges/FinitisticAsymmetry.lean",
+      "sha256": "64ea38db9933f0082a04d2fa181083fbe01a7a823c9ce07f32d0835dce83cf96",
+      "bytes": 1335
+    },
+    {
+      "challenge": "ForestSpace",
+      "file": "ComparatorChallenges/ForestSpace.json",
+      "sha256": "9345c725bcf2e13e62935384639956e9c7fbab03250e652f81810f261d01aa3d",
+      "bytes": 313
+    },
+    {
+      "challenge": "ForestSpace",
+      "file": "ComparatorChallenges/ForestSpace.lean",
+      "sha256": "eefd4ea48a2592dd0782ce3ac833933525fc2dda5cc60a1749d1fa9bc44f4944",
+      "bytes": 19596
+    },
+    {
+      "challenge": "FoulkesHowe",
+      "file": "ComparatorChallenges/FoulkesHowe.json",
+      "sha256": "88d413f643d799a7663353e0ade1d0bb7572a5752e8414fb2ec117244005ff64",
+      "bytes": 354
+    },
+    {
+      "challenge": "FoulkesHowe",
+      "file": "ComparatorChallenges/FoulkesHowe.lean",
+      "sha256": "ef2a1c1ff39cc2caf381d5704476288fe35c00d316d02dd0571e3c5590e7df19",
+      "bytes": 1809
+    },
+    {
+      "challenge": "FourierLLogL",
+      "file": "ComparatorChallenges/FourierLLogL.json",
+      "sha256": "90decc246eb0e69baa220415dd12eefdf7f38511a011751bfe216745211e4600",
+      "bytes": 318
+    },
+    {
+      "challenge": "FourierLLogL",
+      "file": "ComparatorChallenges/FourierLLogL.lean",
+      "sha256": "c4d23b5ee24bd446a0524df1e3af08c7ea7d293e079cc8c8d6030113bdb5ab3f",
+      "bytes": 821
+    },
+    {
+      "challenge": "FreeIsing",
+      "file": "ComparatorChallenges/FreeIsing.json",
+      "sha256": "a5933f8c91891b9411b209f8f1bf17b2ed15a8c3dd9e3fea72f60f24b7545f6a",
+      "bytes": 330
+    },
+    {
+      "challenge": "FreeIsing",
+      "file": "ComparatorChallenges/FreeIsing.lean",
+      "sha256": "cf2fd894b22f094ccc071e57557c916ec3dc3a5664a45b0f106ff4e7bbfebcca",
+      "bytes": 3042
+    },
+    {
+      "challenge": "GaussianMoat",
+      "file": "ComparatorChallenges/GaussianMoat.json",
+      "sha256": "b4a9fccc8f9ed173e7647456a587459e2dd10ff3b2a4f68ed7ed94b85ff2e143",
+      "bytes": 316
+    },
+    {
+      "challenge": "GaussianMoat",
+      "file": "ComparatorChallenges/GaussianMoat.lean",
+      "sha256": "f1d2bdcb38ababb65d98dba286dfe13286c1709aea704d9dac58e2004ca80e84",
+      "bytes": 1166
+    },
+    {
+      "challenge": "GaussianPropeller",
+      "file": "ComparatorChallenges/GaussianPropeller.json",
+      "sha256": "8a26e668bd42299e8699ae3d25a31c1b4831ce782a618383347e4e879f116d63",
+      "bytes": 336
+    },
+    {
+      "challenge": "GaussianPropeller",
+      "file": "ComparatorChallenges/GaussianPropeller.lean",
+      "sha256": "4130e2ee06a20af2578cf886bacc86cc22750a0e17080e69e8675aae25cf608c",
+      "bytes": 1401
+    },
+    {
+      "challenge": "GaussianReplacement",
+      "file": "ComparatorChallenges/GaussianReplacement.json",
+      "sha256": "70df646c99002e72d45e482740c7edbcdbe9b325aff4defbef69d035cec460e4",
+      "bytes": 838
+    },
+    {
+      "challenge": "GaussianReplacement",
+      "file": "ComparatorChallenges/GaussianReplacement.lean",
+      "sha256": "18f2b4bd0dd5218ebd587955fdefe71848ba04f2338c8ea6312353e84b0c1b43",
+      "bytes": 26166
+    },
+    {
+      "challenge": "GotsmanLinial",
+      "file": "ComparatorChallenges/GotsmanLinial.json",
+      "sha256": "984badd50d1b08ce2b0133740550f4207b64bc3ebf2a4c4cf249402c70dc8b59",
+      "bytes": 344
+    },
+    {
+      "challenge": "GotsmanLinial",
+      "file": "ComparatorChallenges/GotsmanLinial.lean",
+      "sha256": "5c63b62186354758cea448deb11dfd42a0e729a2260c6ef5b7df1c0be3b5dcfc",
+      "bytes": 1672
+    },
+    {
+      "challenge": "GrahamSpherical",
+      "file": "ComparatorChallenges/GrahamSpherical.json",
+      "sha256": "585ed05f1d4cf2b416ac615acd50d80d5837ad107ccafedc6d318b7113cedaf6",
+      "bytes": 327
+    },
+    {
+      "challenge": "GrahamSpherical",
+      "file": "ComparatorChallenges/GrahamSpherical.lean",
+      "sha256": "9f3f1b2871826ef17cee8672fe2a9be1c50c2337e88213635474bbb28d75c170",
+      "bytes": 1781
+    },
+    {
+      "challenge": "GrothendieckElementaryExpansion",
+      "file": "ComparatorChallenges/GrothendieckElementaryExpansion.json",
+      "sha256": "9b43d4f3bce820f9f013a6078de44c83085d2feaedf3065aba6b665e71f509a2",
+      "bytes": 345
+    },
+    {
+      "challenge": "GrothendieckElementaryExpansion",
+      "file": "ComparatorChallenges/GrothendieckElementaryExpansion.lean",
+      "sha256": "9b2e52c8286079d5bea2dcc70cf382e4f6de44e324780e665d38377129553056",
+      "bytes": 18162
+    },
+    {
+      "challenge": "GroupRingDeterminant",
+      "file": "ComparatorChallenges/GroupRingDeterminant.json",
+      "sha256": "18793264972faa50d5b4ea87daeda86a1b18259a9ca807460048d2f3390a31d2",
+      "bytes": 329
+    },
+    {
+      "challenge": "GroupRingDeterminant",
+      "file": "ComparatorChallenges/GroupRingDeterminant.lean",
+      "sha256": "4100354a6076d4108fee4bb23e41fed8da04098510d5330e56f3508e446239ac",
+      "bytes": 2124
+    },
+    {
+      "challenge": "HadwigerCounterexample",
+      "file": "ComparatorChallenges/HadwigerCounterexample.json",
+      "sha256": "eeb332aaf7383820ab97fe251832cfc7a0e3aa5cbf4b2f16a48010704b32d273",
+      "bytes": 419
+    },
+    {
+      "challenge": "HadwigerCounterexample",
+      "file": "ComparatorChallenges/HadwigerCounterexample.lean",
+      "sha256": "83f9f9c49f49d4abc35c8d1b7247ccab5de9c9ef909c45acabc16875e306b898",
+      "bytes": 1765
+    },
+    {
+      "challenge": "HarmonicArtin",
+      "file": "ComparatorChallenges/HarmonicArtin.json",
+      "sha256": "7c21d952d095ea40268c7b8f7170ad1c244b68803495b10faa6e0d8634630a74",
+      "bytes": 332
+    },
+    {
+      "challenge": "HarmonicArtin",
+      "file": "ComparatorChallenges/HarmonicArtin.lean",
+      "sha256": "89befd8aa588a749435709c576bf679644d96fbe3c4be98662c23255a28f527d",
+      "bytes": 2062
+    },
+    {
+      "challenge": "HarmonicGrowth",
+      "file": "ComparatorChallenges/HarmonicGrowth.json",
+      "sha256": "5f390cbc0c9f2fe3dd7fc51bd86d3add956b8435140fe3a6b1b6d4d46887ffa9",
+      "bytes": 322
+    },
+    {
+      "challenge": "HarmonicGrowth",
+      "file": "ComparatorChallenges/HarmonicGrowth.lean",
+      "sha256": "02c9e5d8654bbbd6cc4de899fcaaf1fa550252cb0b3f3418921ffb8711f263fb",
+      "bytes": 4511
+    },
+    {
+      "challenge": "HeckeSevenEighths",
+      "file": "ComparatorChallenges/HeckeSevenEighths.json",
+      "sha256": "04eb947847df3c1717bdb660f70a74600d0991490bb67d52cbcf0b3186e0bd5e",
+      "bytes": 377
+    },
+    {
+      "challenge": "HeckeSevenEighths",
+      "file": "ComparatorChallenges/HeckeSevenEighths.lean",
+      "sha256": "cb5e404fa65a502c0a9006b9ad45c28914feb79e4b7b1ffcf05e4af82ed0cfc2",
+      "bytes": 10095
+    },
+    {
+      "challenge": "HenonEmden",
+      "file": "ComparatorChallenges/HenonEmden.json",
+      "sha256": "c56ebe52117b7c2c119e85cb4442d5c71df3c5c774d52e3d7d528c862e533578",
+      "bytes": 319
+    },
+    {
+      "challenge": "HenonEmden",
+      "file": "ComparatorChallenges/HenonEmden.lean",
+      "sha256": "f42125331b02564e56f0ccb7009c294b4233cb12fd4467b5aa96dd2a3524b3da",
+      "bytes": 1009
+    },
+    {
+      "challenge": "HoneycombBridgeMassSupport",
+      "file": "ComparatorChallenges/HoneycombBridgeMassSupport.json",
+      "sha256": "86229e94c32c59a51f0923e55216f08983de1b1d545e8e2a235c35b51b63cbfc",
+      "bytes": 361
+    },
+    {
+      "challenge": "HoneycombBridgeMassSupport",
+      "file": "ComparatorChallenges/HoneycombBridgeMassSupport.lean",
+      "sha256": "50cc48019b0335fda0ba6f79ca1ebe0ba8f0118eed15565c8f80416ccdf43cdc",
+      "bytes": 2773
+    },
+    {
+      "challenge": "HyperbolicCones",
+      "file": "ComparatorChallenges/HyperbolicCones.json",
+      "sha256": "954a11b27fce69c9b1e70daa002eefe7f8182fb477629cacf4aa6460e2dced8d",
+      "bytes": 317
+    },
+    {
+      "challenge": "HyperbolicCones",
+      "file": "ComparatorChallenges/HyperbolicCones.lean",
+      "sha256": "88c428351740c111e39d35aed94f3cfc08010f3dce0d9589ca5bcfde8308f9bf",
+      "bytes": 2616
+    },
+    {
+      "challenge": "HyperbolicObstruction",
+      "file": "ComparatorChallenges/HyperbolicObstruction.json",
+      "sha256": "6aa9d01af2d443e2c3e0819ffefa45a81bc80a3825f636da0445365a17b351cc",
+      "bytes": 330
+    },
+    {
+      "challenge": "HyperbolicObstruction",
+      "file": "ComparatorChallenges/HyperbolicObstruction.lean",
+      "sha256": "f136a867a33fa3dac21e614675a938f939711221431f67d474224bc01b319c29",
+      "bytes": 6291
+    },
+    {
+      "challenge": "IndependentProducts",
+      "file": "ComparatorChallenges/IndependentProducts.json",
+      "sha256": "311a2588782b51d5324e1029b1550b069f58630d7008868ea979b0fb8fab9610",
+      "bytes": 475
+    },
+    {
+      "challenge": "IndependentProducts",
+      "file": "ComparatorChallenges/IndependentProducts.lean",
+      "sha256": "e2fc5aaab473f3d9b27baaa3fb5cd6646a8d86798298fb9f1f86c809509b8827",
+      "bytes": 4721
+    },
+    {
+      "challenge": "IndependentSets",
+      "file": "ComparatorChallenges/IndependentSets.json",
+      "sha256": "ea6e46cb22c96e1967fa236586dad49343179d32fda982e01af8902c3e0c6803",
+      "bytes": 338
+    },
+    {
+      "challenge": "IndependentSets",
+      "file": "ComparatorChallenges/IndependentSets.lean",
+      "sha256": "60887f5c9f2971774d7c87005df03b86853bcfb1689e2f7f0ac521035555a033",
+      "bytes": 2957
+    },
+    {
+      "challenge": "InfiniteMatroid",
+      "file": "ComparatorChallenges/InfiniteMatroid.json",
+      "sha256": "8d56594400ee353792bc7153086072fc05762cc5cafd4d9cc7e48db525e13b82",
+      "bytes": 336
+    },
+    {
+      "challenge": "InfiniteMatroid",
+      "file": "ComparatorChallenges/InfiniteMatroid.lean",
+      "sha256": "802e9bf69b2c5d9be56f2899ef69f5470910cf059b419d3e8f770f1523cae3a7",
+      "bytes": 1067
+    },
+    {
+      "challenge": "IsometricImmersion",
+      "file": "ComparatorChallenges/IsometricImmersion.json",
+      "sha256": "51a377beae00c13be5c32c04dd2ce153eec24a3789fa7851475c852eb59ed646",
+      "bytes": 367
+    },
+    {
+      "challenge": "IsometricImmersion",
+      "file": "ComparatorChallenges/IsometricImmersion.lean",
+      "sha256": "d4763aecca7bbf58b8e16e3e1ca919bff2ad6bc9f610a03641c8361c9319cfa9",
+      "bytes": 1945
+    },
+    {
+      "challenge": "Jacobsthal",
+      "file": "ComparatorChallenges/Jacobsthal.json",
+      "sha256": "cc762a7b2dd0da4f2bb8140e32d26c2ca13f22a8c3cdf5ee1050820b7c892d69",
+      "bytes": 333
+    },
+    {
+      "challenge": "Jacobsthal",
+      "file": "ComparatorChallenges/Jacobsthal.lean",
+      "sha256": "a2fe296ccf4e70242e6ce3db976d236525f7ca823e4a9a5c6fede1335ca0031e",
+      "bytes": 630
+    },
+    {
+      "challenge": "KMedianRecovery",
+      "file": "ComparatorChallenges/KMedianRecovery.json",
+      "sha256": "eacbc735d57be5f395f3721fe60d756291e85a12da83070af6a436fe1d4bb89b",
+      "bytes": 342
+    },
+    {
+      "challenge": "KMedianRecovery",
+      "file": "ComparatorChallenges/KMedianRecovery.lean",
+      "sha256": "5662777702dd2ddd42a30b1425a6e424272e1d7606ae74485e8ac46b8b866cc2",
+      "bytes": 4241
+    },
+    {
+      "challenge": "KahlerSplitting",
+      "file": "ComparatorChallenges/KahlerSplitting.json",
+      "sha256": "2fc5188b55f267ee3b5ad418c58506cc180ee67dec646a6a6cb4693b483649e5",
+      "bytes": 325
+    },
+    {
+      "challenge": "KahlerSplitting",
+      "file": "ComparatorChallenges/KahlerSplitting.lean",
+      "sha256": "b162638c07040481a051d7e022965fba5f7181017d086f97735ed66477b9fc5b",
+      "bytes": 6260
+    },
+    {
+      "challenge": "KaplanskyFinitelyPresented",
+      "file": "ComparatorChallenges/KaplanskyFinitelyPresented.json",
+      "sha256": "abb9081593480bf6cb2b2b4a76905ef0c14796470562285c36e9366fdf7a1c8c",
+      "bytes": 380
+    },
+    {
+      "challenge": "KaplanskyFinitelyPresented",
+      "file": "ComparatorChallenges/KaplanskyFinitelyPresented.lean",
+      "sha256": "1f7ec0c0ee0fed8abd5fabd58dfeb116f5afc0bc37d7041b2975412aca4f1638",
+      "bytes": 619
+    },
+    {
+      "challenge": "KaplanskyQuasitrace",
+      "file": "ComparatorChallenges/KaplanskyQuasitrace.json",
+      "sha256": "e0eeb8758e6ac605038ed26b0ce7ff86f9e52efcc6fb08e17eccc15ba316f3ac",
+      "bytes": 340
+    },
+    {
+      "challenge": "KaplanskyQuasitrace",
+      "file": "ComparatorChallenges/KaplanskyQuasitrace.lean",
+      "sha256": "2036e2a1555f6d789950f47c471d081854b3871f4bac90459343dc3b8af2d3f8",
+      "bytes": 1837
+    },
+    {
+      "challenge": "Laughlin",
+      "file": "ComparatorChallenges/Laughlin.json",
+      "sha256": "f67e3a3b21e27fe89fb328240e56f94bd703867dcf3bae8e0136b1907f0b2f9b",
+      "bytes": 309
+    },
+    {
+      "challenge": "Laughlin",
+      "file": "ComparatorChallenges/Laughlin.lean",
+      "sha256": "7e84360cbc6154a961306abe9f6def2a687aff6490b94a9df1354fa860709cce",
+      "bytes": 2520
+    },
+    {
+      "challenge": "LiebThirring",
+      "file": "ComparatorChallenges/LiebThirring.json",
+      "sha256": "f268c47258b1afc0c96bffe7b35757b86657050ebaf9a6c3c67f4e7a9f38955a",
+      "bytes": 328
+    },
+    {
+      "challenge": "LiebThirring",
+      "file": "ComparatorChallenges/LiebThirring.lean",
+      "sha256": "008bcfc167bb1931b14682171578ab2422a7176658bafd95dafb8feb13ab8ade",
+      "bytes": 3987
+    },
+    {
+      "challenge": "LipschitzEquivalence",
+      "file": "ComparatorChallenges/LipschitzEquivalence.json",
+      "sha256": "0cf9f13307f002f69b6de183508c5f30faefac4593c3b73d1c445bea5b7f3566",
+      "bytes": 335
+    },
+    {
+      "challenge": "LipschitzEquivalence",
+      "file": "ComparatorChallenges/LipschitzEquivalence.lean",
+      "sha256": "6cd6d20439f9433567e6b11781ec06fb4f5ef5c16b84808062b09af146232625",
+      "bytes": 1329
+    },
+    {
+      "challenge": "LittleFinitistic",
+      "file": "ComparatorChallenges/LittleFinitistic.json",
+      "sha256": "14ac61824b748c4a332fd1a6ddf0dd71531f5dfdd39025d69d695023fbd207ce",
+      "bytes": 335
+    },
+    {
+      "challenge": "LittleFinitistic",
+      "file": "ComparatorChallenges/LittleFinitistic.lean",
+      "sha256": "22840db694ba3cbc43bbb286270fdc624656e6fcbf1fd96ff51f8dee6ff958f3",
+      "bytes": 948
+    },
+    {
+      "challenge": "LogBrunnMinkowski",
+      "file": "ComparatorChallenges/LogBrunnMinkowski.json",
+      "sha256": "cd0b805962b00e0e15fb8e336de830480de26d86a4d9abeebe1af07a6aec0ccd",
+      "bytes": 325
+    },
+    {
+      "challenge": "LogBrunnMinkowski",
+      "file": "ComparatorChallenges/LogBrunnMinkowski.lean",
+      "sha256": "53931ed19a6491a1d07e43dcd7b2bc1930ed5484a0135b44778a886f4212510f",
+      "bytes": 1124
+    },
+    {
+      "challenge": "LogConcaveQuery",
+      "file": "ComparatorChallenges/LogConcaveQuery.json",
+      "sha256": "5a0e43007406bf58e647ffa64a7aa89ec8c37c68535ad6193723ccf0aa6620e7",
+      "bytes": 331
+    },
+    {
+      "challenge": "LogConcaveQuery",
+      "file": "ComparatorChallenges/LogConcaveQuery.lean",
+      "sha256": "e35be4c9d8352ba082385717f8209296b6ddf264fbe03228df4daee47f7aedf2",
+      "bytes": 3733
+    },
+    {
+      "challenge": "LogspaceEquality",
+      "file": "ComparatorChallenges/LogspaceEquality.json",
+      "sha256": "80a22fecb8d68504a00419c12de7d83f9a6556f01d512ef7607c1acff61118cc",
+      "bytes": 1278
+    },
+    {
+      "challenge": "LogspaceEquality",
+      "file": "ComparatorChallenges/LogspaceEquality.lean",
+      "sha256": "5c9ed4d04a778b61b33693eff64227a9c5b8162bf53c0b3e3938fb505831d817",
+      "bytes": 4679
+    },
+    {
+      "challenge": "MahlerConjecture",
+      "file": "ComparatorChallenges/MahlerConjecture.json",
+      "sha256": "fdf11d50fc36b5ae3d13aeea074aa6e40071c6bacd8de44fc399ac9ac9251959",
+      "bytes": 328
+    },
+    {
+      "challenge": "MahlerConjecture",
+      "file": "ComparatorChallenges/MahlerConjecture.lean",
+      "sha256": "40718172f61fe01f6c96b4c28324a1d76491eb84af4776d8507d8cdcb3120ea0",
+      "bytes": 585
+    },
+    {
+      "challenge": "MarkovType",
+      "file": "ComparatorChallenges/MarkovType.json",
+      "sha256": "74bc3d73b1cc70fd9f5a41cca42da521fb217f775d722b176d6ebb130382306f",
+      "bytes": 357
+    },
+    {
+      "challenge": "MarkovType",
+      "file": "ComparatorChallenges/MarkovType.lean",
+      "sha256": "c5be3acd0f01b53f937fe769eda54257f2f93f5aa2b6e9ea31ad93c450d4aba3",
+      "bytes": 2314
+    },
+    {
+      "challenge": "MatchingEntropy",
+      "file": "ComparatorChallenges/MatchingEntropy.json",
+      "sha256": "f080baefbec0105edaf37ecc5e2e937b78cb13a9d745dc997bda193c4696e2ee",
+      "bytes": 330
+    },
+    {
+      "challenge": "MatchingEntropy",
+      "file": "ComparatorChallenges/MatchingEntropy.lean",
+      "sha256": "5e8aacabca23f0b2852ffd7e58c1a87a8e94eec7abb8d5f354d787472d6749db",
+      "bytes": 2107
+    },
+    {
+      "challenge": "MatrixFields",
+      "file": "ComparatorChallenges/MatrixFields.json",
+      "sha256": "7982a57ecaab76e22ab14d62e1145f30e98672ae690101ff96f78bb2a311a72d",
+      "bytes": 370
+    },
+    {
+      "challenge": "MatrixFields",
+      "file": "ComparatorChallenges/MatrixFields.lean",
+      "sha256": "fe4f7ef409f69f7ef9542c6672e091c9cb6505e0d17c41cda01a2924c2729bc6",
+      "bytes": 3293
+    },
+    {
+      "challenge": "MatrixMultiplication",
+      "file": "ComparatorChallenges/MatrixMultiplication.json",
+      "sha256": "95a2e1557bef8931bdaa3da5c0ae969e5991f53199798b512d69e907f8a81288",
+      "bytes": 496
+    },
+    {
+      "challenge": "MatrixMultiplication",
+      "file": "ComparatorChallenges/MatrixMultiplication.lean",
+      "sha256": "9a411f75929179604218e1cf84de34792e05acf40b15096ad4178ba21defa8eb",
+      "bytes": 4060
+    },
+    {
+      "challenge": "MatrixRemoval",
+      "file": "ComparatorChallenges/MatrixRemoval.json",
+      "sha256": "f746b2a374277d201eea7f901128a4833c7b637d1a8d17f33d0835a6fbfe5430",
+      "bytes": 336
+    },
+    {
+      "challenge": "MatrixRemoval",
+      "file": "ComparatorChallenges/MatrixRemoval.lean",
+      "sha256": "1db0fac5a4ddc57a90e9950cfd4e7e4e1681b4c8ce755e6ba5c169f3656b77e9",
+      "bytes": 2104
+    },
+    {
+      "challenge": "MaximalSeshadriConstants",
+      "file": "ComparatorChallenges/MaximalSeshadriConstants.json",
+      "sha256": "49ea15b1052388a4a31fe7458ccb1e664eb482d1097e3c55b0428a3006d91c9d",
+      "bytes": 357
+    },
+    {
+      "challenge": "MaximalSeshadriConstants",
+      "file": "ComparatorChallenges/MaximalSeshadriConstants.lean",
+      "sha256": "42ea49034bd96076a13ddb516698d6d112278ec0e1a7481d3ad3effd4a3b042e",
+      "bytes": 18581
+    },
+    {
+      "challenge": "MemoryPrecision",
+      "file": "ComparatorChallenges/MemoryPrecision.json",
+      "sha256": "e54ef71fe8f4bc47ab2cbac30494e28505eb4c41ace0ddb6bd70698a486b64bc",
+      "bytes": 320
+    },
+    {
+      "challenge": "MemoryPrecision",
+      "file": "ComparatorChallenges/MemoryPrecision.lean",
+      "sha256": "40651237473d67fdf4d48ac04f4a3294768cf75c867ee34334a96f9dfc293271",
+      "bytes": 42432
+    },
+    {
+      "challenge": "MetricEntropyDuality",
+      "file": "ComparatorChallenges/MetricEntropyDuality.json",
+      "sha256": "7b95c9c86fdd3dab7640e14a4f56f29873de2e6571caff62ad52a3b9314d964a",
+      "bytes": 370
+    },
+    {
+      "challenge": "MetricEntropyDuality",
+      "file": "ComparatorChallenges/MetricEntropyDuality.lean",
+      "sha256": "56e4e4aaa1c1cb998e03aca8f659471996a0428e35736316dfa4cb31f9457cc8",
+      "bytes": 1827
+    },
+    {
+      "challenge": "MidpointLenses",
+      "file": "ComparatorChallenges/MidpointLenses.json",
+      "sha256": "107feac50a26e221d39e856b630fb7810c4d02b1f2356d49607680c13f97719c",
+      "bytes": 326
+    },
+    {
+      "challenge": "MidpointLenses",
+      "file": "ComparatorChallenges/MidpointLenses.lean",
+      "sha256": "c9d84a074da6e635c7e10bb4b2a1fc6a40d2c0487a53e8df16b82f9d5754edca",
+      "bytes": 13730
+    },
+    {
+      "challenge": "Nagata",
+      "file": "ComparatorChallenges/Nagata.json",
+      "sha256": "7b6dd9709dea0e6e72c35b1de0aaa3d5b91d13da5edb73bb7c21d0b98ef3395e",
+      "bytes": 450
+    },
+    {
+      "challenge": "Nagata",
+      "file": "ComparatorChallenges/Nagata.lean",
+      "sha256": "2b82cb8149a85456b0651d04caa37aa78411367dc17c4bd9aaf556022ef6eaea",
+      "bytes": 16375
+    },
+    {
+      "challenge": "OddKaplansky",
+      "file": "ComparatorChallenges/OddKaplansky.json",
+      "sha256": "aec211304ad49f15d11ae58b8017e71a0990c5be785b33412d641a43f977df65",
+      "bytes": 315
+    },
+    {
+      "challenge": "OddKaplansky",
+      "file": "ComparatorChallenges/OddKaplansky.lean",
+      "sha256": "3bd3e91af01329f0681ba4842517d02771348d62907bb4d3861de3c419b799af",
+      "bytes": 876
+    },
+    {
+      "challenge": "OneTapeSpace",
+      "file": "ComparatorChallenges/OneTapeSpace.json",
+      "sha256": "b5f9be3f8393148089887b527cfc44f0a55d15e8db95888376e23360b026ec2d",
+      "bytes": 352
+    },
+    {
+      "challenge": "OneTapeSpace",
+      "file": "ComparatorChallenges/OneTapeSpace.lean",
+      "sha256": "8582043a2836b5625a970d63f9c0c508347ad1c39ef12a7aef0168e555e02c81",
+      "bytes": 7268
+    },
+    {
+      "challenge": "OneWayLiveness",
+      "file": "ComparatorChallenges/OneWayLiveness.json",
+      "sha256": "95a0d569553ffdf31bb09170b31bde4a91763743e228a8df80b05805b5ed9aee",
+      "bytes": 321
+    },
+    {
+      "challenge": "OneWayLiveness",
+      "file": "ComparatorChallenges/OneWayLiveness.lean",
+      "sha256": "875eb3b5bd7f84214e571fd1bb1257260c81cd583fb28517b401c987faa44c3b",
+      "bytes": 4190
+    },
+    {
+      "challenge": "OptimalMaxCut",
+      "file": "ComparatorChallenges/OptimalMaxCut.json",
+      "sha256": "4f644dcb199a2442b84d6bf808beecbceb2cf4162cc53eb136119314fbe1578f",
+      "bytes": 309
+    },
+    {
+      "challenge": "OptimalMaxCut",
+      "file": "ComparatorChallenges/OptimalMaxCut.lean",
+      "sha256": "a30ac1bd42af8f3602bbfb73c689c755fd2d8c74cae8fd58b63a8ed42c5e6b0d",
+      "bytes": 5514
+    },
+    {
+      "challenge": "PartitionPrinciple",
+      "file": "ComparatorChallenges/PartitionPrinciple.json",
+      "sha256": "b397ff9f33531c0eb896a3fbda9431057789716b54beca87884716cf28bcdbe5",
+      "bytes": 390
+    },
+    {
+      "challenge": "PartitionPrinciple",
+      "file": "ComparatorChallenges/PartitionPrinciple.lean",
+      "sha256": "cc1cca2e6092c94b100b4408b2bff5bfe896b7537fb7a89f14353ea6a08f9b46",
+      "bytes": 10128
+    },
+    {
+      "challenge": "PerfectCompleteness",
+      "file": "ComparatorChallenges/PerfectCompleteness.json",
+      "sha256": "76c8b8409b50e0718945eb1d45c842412024de1257a8a8122ed5019c75631ef1",
+      "bytes": 356
+    },
+    {
+      "challenge": "PerfectCompleteness",
+      "file": "ComparatorChallenges/PerfectCompleteness.lean",
+      "sha256": "7270211455879e01db9b7a745f543418e709b7eb17279b7fa42408429e0f7ef8",
+      "bytes": 5810
+    },
+    {
+      "challenge": "PeriodicTilingThree",
+      "file": "ComparatorChallenges/PeriodicTilingThree.json",
+      "sha256": "e87378eda65c42e0ecdf457306ef3f79db0ee94dbfe99f890ba1b351a64ce147",
+      "bytes": 365
+    },
+    {
+      "challenge": "PeriodicTilingThree",
+      "file": "ComparatorChallenges/PeriodicTilingThree.lean",
+      "sha256": "056c498ce4a6e7b71b688eb8c499ebef70ad1bddfea98b7215d480eb11e08bba",
+      "bytes": 1994
+    },
+    {
+      "challenge": "PettyProjectionVolume",
+      "file": "ComparatorChallenges/PettyProjectionVolume.json",
+      "sha256": "ae1ee5160f9bd4ba896faa928b8cab668cf983bd4bb3b0dd1874806a0334ae4b",
+      "bytes": 343
+    },
+    {
+      "challenge": "PettyProjectionVolume",
+      "file": "ComparatorChallenges/PettyProjectionVolume.lean",
+      "sha256": "29270000c1c8332fef7657ed9f81f89a472d902e2a8a6eb4c4a28934c9f528f3",
+      "bytes": 1769
+    },
+    {
+      "challenge": "PinchedKahler",
+      "file": "ComparatorChallenges/PinchedKahler.json",
+      "sha256": "9d6298ec1b435c84e4f180e31510243a4ad012e7d4140f2a70025f72c6b12c8a",
+      "bytes": 402
+    },
+    {
+      "challenge": "PinchedKahler",
+      "file": "ComparatorChallenges/PinchedKahler.lean",
+      "sha256": "439f02fda8b7d65c54301a320565c07c0ebe8d02d53ec1354d943bd8e9caae96",
+      "bytes": 7046
+    },
+    {
+      "challenge": "PinnedDistances",
+      "file": "ComparatorChallenges/PinnedDistances.json",
+      "sha256": "563f10bb8bc44e82342037189cbcd53eaa3bf420dd89c2e2b8f03e915fd52d83",
+      "bytes": 286
+    },
+    {
+      "challenge": "PinnedDistances",
+      "file": "ComparatorChallenges/PinnedDistances.lean",
+      "sha256": "7af4512ae986b608a8d52712434df3e7bb1d4c2ed423624e5abffb8d5eb1da01",
+      "bytes": 909
+    },
+    {
+      "challenge": "PlanarFalconer",
+      "file": "ComparatorChallenges/PlanarFalconer.json",
+      "sha256": "ec5ce2eff6e388e9ed8fd365da800c942794248a754691c47184fbd13dc37ea1",
+      "bytes": 326
+    },
+    {
+      "challenge": "PlanarFalconer",
+      "file": "ComparatorChallenges/PlanarFalconer.lean",
+      "sha256": "9ece965373d6e5a5f0e51766a71114659c5dfbc814ce940215a03f7a2f253f69",
+      "bytes": 450
+    },
+    {
+      "challenge": "PlanarFirstPassage",
+      "file": "ComparatorChallenges/PlanarFirstPassage.json",
+      "sha256": "1171ec43edeecf996dcc2fa843e5d0034dc530fa83811ea96c010c7f627cabdf",
+      "bytes": 333
+    },
+    {
+      "challenge": "PlanarFirstPassage",
+      "file": "ComparatorChallenges/PlanarFirstPassage.lean",
+      "sha256": "0fcdfe4b24b1018585edf0cf3fa0ab4f7db78fc774ddd670ae5b6d454ee706de",
+      "bytes": 3880
+    },
+    {
+      "challenge": "PlanarL1",
+      "file": "ComparatorChallenges/PlanarL1.json",
+      "sha256": "0043ad85e76dc9e2472f49d8a3d6c189093effa9e83170ae60c6c28f677349ce",
+      "bytes": 331
+    },
+    {
+      "challenge": "PlanarL1",
+      "file": "ComparatorChallenges/PlanarL1.lean",
+      "sha256": "e902947b3b86e48e2eb3052f5832ee4a3ac5fb4e4ffd3ad0b8ad16f66344c3c3",
+      "bytes": 2176
+    },
+    {
+      "challenge": "PlaneColoring",
+      "file": "ComparatorChallenges/PlaneColoring.json",
+      "sha256": "4c422e33d0405983061eccb667a68817b999f953761f05e60aaaaa6caf0c0b4f",
+      "bytes": 324
+    },
+    {
+      "challenge": "PlaneColoring",
+      "file": "ComparatorChallenges/PlaneColoring.lean",
+      "sha256": "868e71b127ba5bc82474130618483289ac29cc58c45898eb0216199080c9dc37",
+      "bytes": 327
+    },
+    {
+      "challenge": "PosteriorReplicas",
+      "file": "ComparatorChallenges/PosteriorReplicas.json",
+      "sha256": "aa8e4892d4f48c971b6caa742d4362a572fae3ab72bc8fe13a6359424965ff93",
+      "bytes": 333
+    },
+    {
+      "challenge": "PosteriorReplicas",
+      "file": "ComparatorChallenges/PosteriorReplicas.lean",
+      "sha256": "4738f722c6294eae589ecd91c1132f3862154c97bcaea7090bed792e98375dcc",
+      "bytes": 19025
+    },
+    {
+      "challenge": "PowerFreeValues",
+      "file": "ComparatorChallenges/PowerFreeValues.json",
+      "sha256": "d47857339c42028297f4f800bb4ad35d38ba3a9949b9e6542189f9dd7f8fac2d",
+      "bytes": 322
+    },
+    {
+      "challenge": "PowerFreeValues",
+      "file": "ComparatorChallenges/PowerFreeValues.lean",
+      "sha256": "5e42de8cf6611fb73cab28849edb8b473ab16a047c1fc29ec042463e87a1f2f1",
+      "bytes": 1380
+    },
+    {
+      "challenge": "ProjectionCounterexample",
+      "file": "ComparatorChallenges/ProjectionCounterexample.json",
+      "sha256": "f743e8d6c9a8a1d8ccb627457ab0c6ef59bd97e1b0034b4dfae2a9cc9939466b",
+      "bytes": 375
+    },
+    {
+      "challenge": "ProjectionCounterexample",
+      "file": "ComparatorChallenges/ProjectionCounterexample.lean",
+      "sha256": "6f695ad46f2cb035fb085c3e852fbf33fc956235cf7e69da6a662dd106f6ea30",
+      "bytes": 1324
+    },
+    {
+      "challenge": "ProjectionMoments",
+      "file": "ComparatorChallenges/ProjectionMoments.json",
+      "sha256": "53a72ad6fdb527dcf9bd3ccaa0e5eceb72577a648b4ec537e0adebd3c4b5fed8",
+      "bytes": 326
+    },
+    {
+      "challenge": "ProjectionMoments",
+      "file": "ComparatorChallenges/ProjectionMoments.lean",
+      "sha256": "efa52293731b868a0fcec21797c68ed12578c2047492989781a6d43db6dd1fec",
+      "bytes": 29663
+    },
+    {
+      "challenge": "ProjectionVolume",
+      "file": "ComparatorChallenges/ProjectionVolume.json",
+      "sha256": "c107f1d32562841448146ac9b5af3d4f24a2bdf20ebfe85ac82d92280185c6c9",
+      "bytes": 347
+    },
+    {
+      "challenge": "ProjectionVolume",
+      "file": "ComparatorChallenges/ProjectionVolume.lean",
+      "sha256": "877aba27508a77a7654082a4f12a5ba15159b0ddfd69d3c9e8cfdd58d3bf5e40",
+      "bytes": 2112
+    },
+    {
+      "challenge": "QACParity",
+      "file": "ComparatorChallenges/QACParity.json",
+      "sha256": "249565edb570aeb09c2f923b9c6170427c531e02ce78f98bc98f464dffd51a5c",
+      "bytes": 323
+    },
+    {
+      "challenge": "QACParity",
+      "file": "ComparatorChallenges/QACParity.lean",
+      "sha256": "9fcf0b33c4236d5feed8a0f7c9b957fa2992cbe68759bf1cfac8e3e9e15d3828",
+      "bytes": 2720
+    },
+    {
+      "challenge": "QuadricBundles",
+      "file": "ComparatorChallenges/QuadricBundles.json",
+      "sha256": "e8dd5512653fec19023cca766e782d657b3ec6dca33347b87fb1620a49ffa64f",
+      "bytes": 329
+    },
+    {
+      "challenge": "QuadricBundles",
+      "file": "ComparatorChallenges/QuadricBundles.lean",
+      "sha256": "de366a18291196c1089c1f5a65b89c046806345edef5fb1679c881fe05b3b9f7",
+      "bytes": 8870
+    },
+    {
+      "challenge": "QuantitativeVanDerWaerden",
+      "file": "ComparatorChallenges/QuantitativeVanDerWaerden.json",
+      "sha256": "0fcea93df537b8451e08f27d23231cb1b05b515afee53c5d1d8b33dfcfd814fa",
+      "bytes": 361
+    },
+    {
+      "challenge": "QuantitativeVanDerWaerden",
+      "file": "ComparatorChallenges/QuantitativeVanDerWaerden.lean",
+      "sha256": "1caa563bbf7a5602adb8cdbbc06aaf1e3d4d5fe27ed4bebf2bf44cf2937a6593",
+      "bytes": 943
+    },
+    {
+      "challenge": "QuasiRiemannHypothesis",
+      "file": "ComparatorChallenges/QuasiRiemannHypothesis.json",
+      "sha256": "46ebb7edc11f69536210f502b4bcbd36bbaf3f0872c16748b6c8ce43991bf320",
+      "bytes": 353
+    },
+    {
+      "challenge": "QuasiRiemannHypothesis",
+      "file": "ComparatorChallenges/QuasiRiemannHypothesis.lean",
+      "sha256": "065f8c9a01d28db78c8b1bfc5083b535082a2d2aac2230d563f98b8caa812cc5",
+      "bytes": 169
+    },
+    {
+      "challenge": "QuinticLienard",
+      "file": "ComparatorChallenges/QuinticLienard.json",
+      "sha256": "52e78108c45ce22cf96adafd9826f378ad61b6e222891b5dbade39ab1e805d95",
+      "bytes": 313
+    },
+    {
+      "challenge": "QuinticLienard",
+      "file": "ComparatorChallenges/QuinticLienard.lean",
+      "sha256": "cb34f454db432f46902a17036812adde4c73fe276d6d7a8a8b21797ace40d000",
+      "bytes": 1352
+    },
+    {
+      "challenge": "RadialTransition",
+      "file": "ComparatorChallenges/RadialTransition.json",
+      "sha256": "42edad6787773f71f917cc6e43b4eca05dc25488c6f82f611d1c61115a60a399",
+      "bytes": 323
+    },
+    {
+      "challenge": "RadialTransition",
+      "file": "ComparatorChallenges/RadialTransition.lean",
+      "sha256": "305e7a1b2a0cb643b5bc8667dca0e2f138b64c3b375b3f79ffe169103dc7e8ad",
+      "bytes": 2306
+    },
+    {
+      "challenge": "RandomizedMeanPayoff",
+      "file": "ComparatorChallenges/RandomizedMeanPayoff.json",
+      "sha256": "ff6f8b5b31fa7ee7fc125d6d652ceb947eff43a808b187dd6f8d3d5dc68f36b4",
+      "bytes": 340
+    },
+    {
+      "challenge": "RandomizedMeanPayoff",
+      "file": "ComparatorChallenges/RandomizedMeanPayoff.lean",
+      "sha256": "0814324496e79fc843198a37954c4615543e7c6fdc09796f9f177c071a6439a5",
+      "bytes": 4104
+    },
+    {
+      "challenge": "RationalHitting",
+      "file": "ComparatorChallenges/RationalHitting.json",
+      "sha256": "2b135eaf875cd6c699fd8dd9b9b8073f11da8ef767c581fd2e1b65d15d250dee",
+      "bytes": 296
+    },
+    {
+      "challenge": "RationalHitting",
+      "file": "ComparatorChallenges/RationalHitting.lean",
+      "sha256": "c0fc0d9740d4ef195918447f4da9605e75760845cae1163c534d6299c6e4877f",
+      "bytes": 4269
+    },
+    {
+      "challenge": "RecursivePotentials",
+      "file": "ComparatorChallenges/RecursivePotentials.json",
+      "sha256": "c098b3e0380fbfed29d8cef38720f7c6ff58848b3035802c53e40bc2f5896d22",
+      "bytes": 350
+    },
+    {
+      "challenge": "RecursivePotentials",
+      "file": "ComparatorChallenges/RecursivePotentials.lean",
+      "sha256": "c3e4d2184a101f7f73902b4ec23275077c612a0037c382ce1ee2d14cd3d48f9a",
+      "bytes": 37748
+    },
+    {
+      "challenge": "ReflexiveFixedPoints",
+      "file": "ComparatorChallenges/ReflexiveFixedPoints.json",
+      "sha256": "9f178244093f7f2f109a6421da773b4f655512b030a965aca11257626c840537",
+      "bytes": 361
+    },
+    {
+      "challenge": "ReflexiveFixedPoints",
+      "file": "ComparatorChallenges/ReflexiveFixedPoints.lean",
+      "sha256": "e82d18ae968de9efbb0ea83aa401e95302a4b80686949107a3d0223335718d0d",
+      "bytes": 960
+    },
+    {
+      "challenge": "RegularParity",
+      "file": "ComparatorChallenges/RegularParity.json",
+      "sha256": "d1eaa46d6c9c8189b4d236bbbf0aee584991cac425b3ff63308944f059602d51",
+      "bytes": 341
+    },
+    {
+      "challenge": "RegularParity",
+      "file": "ComparatorChallenges/RegularParity.lean",
+      "sha256": "ad73876bec42c44fb5c28fb5f77c37d46d9344aa4eeaafd0bd7ea0f3d559226c",
+      "bytes": 2713
+    },
+    {
+      "challenge": "RieszQuantitative",
+      "file": "ComparatorChallenges/RieszQuantitative.json",
+      "sha256": "4656a5812cc764159634e8f191bf4e98abf20ebb130bcb31187a2c5a4623939c",
+      "bytes": 375
+    },
+    {
+      "challenge": "RieszQuantitative",
+      "file": "ComparatorChallenges/RieszQuantitative.lean",
+      "sha256": "6e1b35500d0313a4774dafe0ae42200202735e598191209f06e930f114f99bd0",
+      "bytes": 2302
+    },
+    {
+      "challenge": "RyserCovering",
+      "file": "ComparatorChallenges/RyserCovering.json",
+      "sha256": "496544b0aed472d462671c4902146331b0f0e4a4067ea1ba72a7a992f68d2864",
+      "bytes": 373
+    },
+    {
+      "challenge": "RyserCovering",
+      "file": "ComparatorChallenges/RyserCovering.lean",
+      "sha256": "ce109f1b71b5131eae54916ffb0aabd36a3b90eaf0780bf2a58afec1aaf4ebe4",
+      "bytes": 1757
+    },
+    {
+      "challenge": "RyserOddExtensions",
+      "file": "ComparatorChallenges/RyserOddExtensions.json",
+      "sha256": "9333c823e95c9871e99e380ac379430f564dd6a030854ea62019057d4e8a2ce4",
+      "bytes": 345
+    },
+    {
+      "challenge": "RyserOddExtensions",
+      "file": "ComparatorChallenges/RyserOddExtensions.lean",
+      "sha256": "99c41ea692d8c63e880c3119fa3a25eb4e04e96f775a2ccd632bb7fa9be37f9b",
+      "bytes": 2856
+    },
+    {
+      "challenge": "Saxl",
+      "file": "ComparatorChallenges/Saxl.json",
+      "sha256": "20c77d628ecc9ed20e3eea8bb033bcd7fedd02c42449e02f2a0573187b33a770",
+      "bytes": 307
+    },
+    {
+      "challenge": "Saxl",
+      "file": "ComparatorChallenges/Saxl.lean",
+      "sha256": "71917234c1dc2e7fe3b8912175f5bdbb30565803ff71a1bb5ce71c889c79d683",
+      "bytes": 4450
+    },
+    {
+      "challenge": "SecondKahnKalai",
+      "file": "ComparatorChallenges/SecondKahnKalai.json",
+      "sha256": "7810510e76f4d7908d0c199ad104e02f4bd1dac404267a8aaf9fcd2a314a0001",
+      "bytes": 348
+    },
+    {
+      "challenge": "SecondKahnKalai",
+      "file": "ComparatorChallenges/SecondKahnKalai.lean",
+      "sha256": "2a0d29f9fde90aa8a4b5173da67cab115be047e59f6001ccdc9b6095988beae5",
+      "bytes": 2737
+    },
+    {
+      "challenge": "SelfSimilar",
+      "file": "ComparatorChallenges/SelfSimilar.json",
+      "sha256": "5352e95649d1dd075b7a7951db9bf72c85dbbe386c258f655ed1c01365490d61",
+      "bytes": 337
+    },
+    {
+      "challenge": "SelfSimilar",
+      "file": "ComparatorChallenges/SelfSimilar.lean",
+      "sha256": "95798462a1dfc33be8d3e67efc137b6193d9800776beb2fe6b3a27912fecb18d",
+      "bytes": 2253
+    },
+    {
+      "challenge": "SensitivitySeparation",
+      "file": "ComparatorChallenges/SensitivitySeparation.json",
+      "sha256": "d5ab43d4dc9111caf9c679c50d7127ee73f6aa1f831f8cc689a1de761fc99897",
+      "bytes": 342
+    },
+    {
+      "challenge": "SensitivitySeparation",
+      "file": "ComparatorChallenges/SensitivitySeparation.lean",
+      "sha256": "76405c3a09039be254192bdb453af6121987ffd3a3236a7303fc4979d9361eae",
+      "bytes": 1291
+    },
+    {
+      "challenge": "SeymourSecondNeighborhood",
+      "file": "ComparatorChallenges/SeymourSecondNeighborhood.json",
+      "sha256": "e2496b399005d74e7ae3a1467f3286120b706abe519e42d87880ca1679935778",
+      "bytes": 358
+    },
+    {
+      "challenge": "SeymourSecondNeighborhood",
+      "file": "ComparatorChallenges/SeymourSecondNeighborhood.lean",
+      "sha256": "fa4a37831405b3fe7f6a88a2dce8918982195ee1757e05e4623055822d36ca98",
+      "bytes": 913
+    },
+    {
+      "challenge": "SiegelZeros",
+      "file": "ComparatorChallenges/SiegelZeros.json",
+      "sha256": "620696740156c4503f27ac17760adf1b638f621ad81ab4cde7a0f8df32c4b643",
+      "bytes": 422
+    },
+    {
+      "challenge": "SiegelZeros",
+      "file": "ComparatorChallenges/SiegelZeros.lean",
+      "sha256": "bedaac0248a641910f79a380d9702d82c6bfbbfd3760a69d27c72c5d8fb136ce",
+      "bytes": 904
+    },
+    {
+      "challenge": "SignedFiniteBand",
+      "file": "ComparatorChallenges/SignedFiniteBand.json",
+      "sha256": "7b103eb07fd637dcfb02923cd4df2e83b88200253e742b746629b1539d6fcec0",
+      "bytes": 348
+    },
+    {
+      "challenge": "SignedFiniteBand",
+      "file": "ComparatorChallenges/SignedFiniteBand.lean",
+      "sha256": "b3bca8a51f58611e232ed51e4b15829a43d5a7974244a2d73a74ed7468d29488",
+      "bytes": 1753
+    },
+    {
+      "challenge": "SimpleAmenable",
+      "file": "ComparatorChallenges/SimpleAmenable.json",
+      "sha256": "c4b67c051efad791f2536fc945b52ad911a49799be063abf8681a20b8684eb59",
+      "bytes": 317
+    },
+    {
+      "challenge": "SimpleAmenable",
+      "file": "ComparatorChallenges/SimpleAmenable.lean",
+      "sha256": "ff02a2468a0567cf22ae5ac7a7f95360c8038ad79c1df0a2a100ee2b18d0beeb",
+      "bytes": 505
+    },
+    {
+      "challenge": "SingleFold",
+      "file": "ComparatorChallenges/SingleFold.json",
+      "sha256": "c3bebcda69363690d5cf9df87f157ac35de09b7a2bd7304158059e2c366a680c",
+      "bytes": 306
+    },
+    {
+      "challenge": "SingleFold",
+      "file": "ComparatorChallenges/SingleFold.lean",
+      "sha256": "a32b461c1dadec053dce0a3ddc101273021af51e987e949cac44dc5cd4012a98",
+      "bytes": 1073
+    },
+    {
+      "challenge": "SingleLatticeCovering",
+      "file": "ComparatorChallenges/SingleLatticeCovering.json",
+      "sha256": "a0d1f9444b4c21bd5edca089b48144df91cc8edb556eb522947e22abe2f7c798",
+      "bytes": 348
+    },
+    {
+      "challenge": "SingleLatticeCovering",
+      "file": "ComparatorChallenges/SingleLatticeCovering.lean",
+      "sha256": "f2f6684141cab6c648c934f75685a3d85f12f37f3c2b0c83224155157a60dbcd",
+      "bytes": 874
+    },
+    {
+      "challenge": "SingletonLoopMatching",
+      "file": "ComparatorChallenges/SingletonLoopMatching.json",
+      "sha256": "99893f2e245ea894af1af8adb5a883f5e647cb8a44f2c71d0eb3990d2ad9c3c3",
+      "bytes": 334
+    },
+    {
+      "challenge": "SingletonLoopMatching",
+      "file": "ComparatorChallenges/SingletonLoopMatching.lean",
+      "sha256": "19d38b8703538dea486feb2d3281dbb2317e6372e59d733062199f500f60cbc6",
+      "bytes": 4057
+    },
+    {
+      "challenge": "SmoothYau",
+      "file": "ComparatorChallenges/SmoothYau.json",
+      "sha256": "b6246f14dd1dae3521a1292e98348a86b7dcf1e2bb17e5df5b9410f6d37f007c",
+      "bytes": 367
+    },
+    {
+      "challenge": "SmoothYau",
+      "file": "ComparatorChallenges/SmoothYau.lean",
+      "sha256": "4299e40a556682d609c4d3d3b7638416b188f998eddd73d3af26b5749cfd92b1",
+      "bytes": 6385
+    },
+    {
+      "challenge": "StableCoordinateFour",
+      "file": "ComparatorChallenges/StableCoordinateFour.json",
+      "sha256": "bcbeb10eb23938131e989ae41926998752b66660a24659b04dc4a0f8ded11cfd",
+      "bytes": 351
+    },
+    {
+      "challenge": "StableCoordinateFour",
+      "file": "ComparatorChallenges/StableCoordinateFour.lean",
+      "sha256": "6fe7a164a37c2296e98fc3854dab48dfcd10af35001eb7ac488fb6c4f523f325",
+      "bytes": 1441
+    },
+    {
+      "challenge": "SteinitzBergstrom",
+      "file": "ComparatorChallenges/SteinitzBergstrom.json",
+      "sha256": "a1ddb4bf687734bb38468666b4b1b8d3194d974614786e85cfc5b4aa77532195",
+      "bytes": 323
+    },
+    {
+      "challenge": "SteinitzBergstrom",
+      "file": "ComparatorChallenges/SteinitzBergstrom.lean",
+      "sha256": "c36334eff43ee1dc46d565c80a4a537fea67951e727ab7b88b5c64fca0dfe63d",
+      "bytes": 965
+    },
+    {
+      "challenge": "StrictMeans",
+      "file": "ComparatorChallenges/StrictMeans.json",
+      "sha256": "58a197ec633d9c0ff4bbccacdea7901d40a41640d4f76028a61fe57d2f8f608c",
+      "bytes": 317
+    },
+    {
+      "challenge": "StrictMeans",
+      "file": "ComparatorChallenges/StrictMeans.lean",
+      "sha256": "64ab7a216f4e12c8a54433a38082552e7c35af1631bdaefc3a9be99e7f30cfd0",
+      "bytes": 1521
+    },
+    {
+      "challenge": "StrongThinTree",
+      "file": "ComparatorChallenges/StrongThinTree.json",
+      "sha256": "c53fcd5c5352e0bda675135dfaa473672c27017d70a7f34df494634b5f3d30e7",
+      "bytes": 324
+    },
+    {
+      "challenge": "StrongThinTree",
+      "file": "ComparatorChallenges/StrongThinTree.lean",
+      "sha256": "f8ca2f8c8078052bbd345b09087ad6c821d4a1db62fbaa163604e03d8c745980",
+      "bytes": 1358
+    },
+    {
+      "challenge": "StructuralCrouzeix",
+      "file": "ComparatorChallenges/StructuralCrouzeix.json",
+      "sha256": "bb8e7bf4a71d8064a57ea0099e299caa456fdea7d2fac8f73d74845bb163b4ba",
+      "bytes": 344
+    },
+    {
+      "challenge": "StructuralCrouzeix",
+      "file": "ComparatorChallenges/StructuralCrouzeix.lean",
+      "sha256": "f7c09beafdb635221e63e9846043df4347994d7df7f8d7858ead113cf049f205",
+      "bytes": 8095
+    },
+    {
+      "challenge": "SubpolynomialLp",
+      "file": "ComparatorChallenges/SubpolynomialLp.json",
+      "sha256": "96bc7424afc0ccea23dba75c6cb5b44e69df6dc8db9b664c18e4ca62ee1190d8",
+      "bytes": 320
+    },
+    {
+      "challenge": "SubpolynomialLp",
+      "file": "ComparatorChallenges/SubpolynomialLp.lean",
+      "sha256": "651ac125ea27b18d0e3d23077a6cc3a3824e3ecadecf59fe2e29e20f2280d397",
+      "bytes": 1914
+    },
+    {
+      "challenge": "SubsphereCurrent",
+      "file": "ComparatorChallenges/SubsphereCurrent.json",
+      "sha256": "9fdd2387a3fa37dbc56b915de3510d79dedcc273d79b5d9a18170b1ba1285393",
+      "bytes": 335
+    },
+    {
+      "challenge": "SubsphereCurrent",
+      "file": "ComparatorChallenges/SubsphereCurrent.lean",
+      "sha256": "794e9edce13c7286e2b7a837fb17375d5ffa6a7cf81acd0d250351e60a55a073",
+      "bytes": 18073
+    },
+    {
+      "challenge": "Superstring",
+      "file": "ComparatorChallenges/Superstring.json",
+      "sha256": "e298a74e985c5ee46968c6c232061292bcf89ef6e93dd6a1a222b94db357c87a",
+      "bytes": 310
+    },
+    {
+      "challenge": "Superstring",
+      "file": "ComparatorChallenges/Superstring.lean",
+      "sha256": "8930f17794dfd3ca55e5c238019e5ccecf8c189d2df87df83773d00d1f4d1d3a",
+      "bytes": 1549
+    },
+    {
+      "challenge": "SurfaceConeCandidateSupport",
+      "file": "ComparatorChallenges/SurfaceConeCandidateSupport.json",
+      "sha256": "dce1e6a3d800cb5b61ab13b7dd5cd76566960b963678f1dd238f922fcc4801f1",
+      "bytes": 357
+    },
+    {
+      "challenge": "SurfaceConeCandidateSupport",
+      "file": "ComparatorChallenges/SurfaceConeCandidateSupport.lean",
+      "sha256": "c75e9be97bcb12a6c289b6652337fc32398064fe8bef7cd910110a9d96fae56e",
+      "bytes": 494
+    },
+    {
+      "challenge": "SymmetricDomains",
+      "file": "ComparatorChallenges/SymmetricDomains.json",
+      "sha256": "1acb77b2abcbf8d8889a0ae36f2c9c09a3a86922181de832a38d67e315e2ec06",
+      "bytes": 314
+    },
+    {
+      "challenge": "SymmetricDomains",
+      "file": "ComparatorChallenges/SymmetricDomains.lean",
+      "sha256": "2d838d21d7431014cea2d5af5bc4b64121075333c5833b4cfc5efb73c4a1f1ce",
+      "bytes": 2704
+    },
+    {
+      "challenge": "SymmetricMahlerEquality",
+      "file": "ComparatorChallenges/SymmetricMahlerEquality.json",
+      "sha256": "2e878c2ae80cd8ce362374b38f26731d256c27125aa4cfb970d883b0df05038a",
+      "bytes": 417
+    },
+    {
+      "challenge": "SymmetricMahlerEquality",
+      "file": "ComparatorChallenges/SymmetricMahlerEquality.lean",
+      "sha256": "9b36525c55b50fc2fc75dc600d69d68683b57ffc9978622c3303d1cf02c3faf3",
+      "bytes": 1730
+    },
+    {
+      "challenge": "SymmetricPolar",
+      "file": "ComparatorChallenges/SymmetricPolar.json",
+      "sha256": "0665fbaed509ae1465a32ed1f1548988b1416b15a93f1c8eec10cdc633b06e95",
+      "bytes": 329
+    },
+    {
+      "challenge": "SymmetricPolar",
+      "file": "ComparatorChallenges/SymmetricPolar.lean",
+      "sha256": "3683f15ea0cf510f677e40d0db8aff6c2b442bac325241984ff5a57ca4d9075a",
+      "bytes": 1598
+    },
+    {
+      "challenge": "Tachikawa",
+      "file": "ComparatorChallenges/Tachikawa.json",
+      "sha256": "340bcee5916a2527401f17c08107aa5d76a8bca8297505000e1fbe22a4a4cdcb",
+      "bytes": 319
+    },
+    {
+      "challenge": "Tachikawa",
+      "file": "ComparatorChallenges/Tachikawa.lean",
+      "sha256": "1a775f2172b4d320aa6724332f58a5ee043b92058279f8bde2d866635371829c",
+      "bytes": 974
+    },
+    {
+      "challenge": "TalagrandDiscreteConvexity",
+      "file": "ComparatorChallenges/TalagrandDiscreteConvexity.json",
+      "sha256": "536989b4c18777d436d1e3518a1c18e1ebe6eb2dbac72b7dc56777de4fc7c476",
+      "bytes": 370
+    },
+    {
+      "challenge": "TalagrandDiscreteConvexity",
+      "file": "ComparatorChallenges/TalagrandDiscreteConvexity.lean",
+      "sha256": "42336d1d65ce9eb583ad33c0f054f0c6bb5ae1b11174ac22793d34b4cf8a8e4f",
+      "bytes": 1949
+    },
+    {
+      "challenge": "TalagrandExpectationThreshold",
+      "file": "ComparatorChallenges/TalagrandExpectationThreshold.json",
+      "sha256": "1d0cc306d5b9c8c67fa2e00b00c0d27909791ae302b1e73d9c3c18915caa2b41",
+      "bytes": 383
+    },
+    {
+      "challenge": "TalagrandExpectationThreshold",
+      "file": "ComparatorChallenges/TalagrandExpectationThreshold.lean",
+      "sha256": "5cf4b2c9e45ae9b376d07d03e37a536cae59be9d78efb65ceee6db37e1f59bd0",
+      "bytes": 1783
+    },
+    {
+      "challenge": "TamingCompatibility",
+      "file": "ComparatorChallenges/TamingCompatibility.json",
+      "sha256": "8ffca9a67983439a64f9675f881e66400167d1d0715da95cf595cc76ec6aa31e",
+      "bytes": 353
+    },
+    {
+      "challenge": "TamingCompatibility",
+      "file": "ComparatorChallenges/TamingCompatibility.lean",
+      "sha256": "e93c5f3c91cdedebae708f54b7ae714836fe49f4d3119e0bbd2740e2f6bfa566",
+      "bytes": 2401
+    },
+    {
+      "challenge": "ThompsonNonamenability",
+      "file": "ComparatorChallenges/ThompsonNonamenability.json",
+      "sha256": "5e8f9248dde00437950209958b428878b0a05a2428974a4f086d2094f4e206b4",
+      "bytes": 357
+    },
+    {
+      "challenge": "ThompsonNonamenability",
+      "file": "ComparatorChallenges/ThompsonNonamenability.lean",
+      "sha256": "ffe66b3d35e17a81e46fb9ef0109f1ee79b199a0b36da82d946f79efdbe606a1",
+      "bytes": 2726
+    },
+    {
+      "challenge": "ThorpRouting",
+      "file": "ComparatorChallenges/ThorpRouting.json",
+      "sha256": "9bc7a4353097aab7a6385c2dcc36b8252b5e25e94caa35d07535579ddb7ec032",
+      "bytes": 308
+    },
+    {
+      "challenge": "ThorpRouting",
+      "file": "ComparatorChallenges/ThorpRouting.lean",
+      "sha256": "0a6ffa20b5320721424301ba304090c5b7e01c08c25dac0f0ca3240c17591462",
+      "bytes": 97747
+    },
+    {
+      "challenge": "ThorpWeightedCompatibility",
+      "file": "ComparatorChallenges/ThorpWeightedCompatibility.json",
+      "sha256": "2eaaae47369fc7f1f0981778763d8cb9234f492542599b5d8b35f99c4a5267a8",
+      "bytes": 359
+    },
+    {
+      "challenge": "ThorpWeightedCompatibility",
+      "file": "ComparatorChallenges/ThorpWeightedCompatibility.lean",
+      "sha256": "ac71a11b9450c2f10be55aadc2d9d7c325a9eaafbe9db8a288a8128b6d5ce4df",
+      "bytes": 1882
+    },
+    {
+      "challenge": "TingleySphereIsometry",
+      "file": "ComparatorChallenges/TingleySphereIsometry.json",
+      "sha256": "7e50ce0afaab04e002f1d5cba129579b6a079c966238487d9329eb8fd325a12f",
+      "bytes": 338
+    },
+    {
+      "challenge": "TingleySphereIsometry",
+      "file": "ComparatorChallenges/TingleySphereIsometry.lean",
+      "sha256": "fee90b109d4640af4faeebb337b39e654e57c4db645f049d654d082f25fd7303",
+      "bytes": 1287
+    },
+    {
+      "challenge": "TorsionFreeHyperbolic",
+      "file": "ComparatorChallenges/TorsionFreeHyperbolic.json",
+      "sha256": "e4178f580015efa3669582be5289097579b93a8d342122fcae71ccad8e5a3a74",
+      "bytes": 316
+    },
+    {
+      "challenge": "TorsionFreeHyperbolic",
+      "file": "ComparatorChallenges/TorsionFreeHyperbolic.lean",
+      "sha256": "07a6d626a7698f4e5e1b5cc19326c7efaafd0addf336f27aa3a5c9ed115fe8a5",
+      "bytes": 1633
+    },
+    {
+      "challenge": "TorsionFreeZeroDivisors",
+      "file": "ComparatorChallenges/TorsionFreeZeroDivisors.json",
+      "sha256": "2b4e32790076384bd9c492bfdb032d0d9d6027bb98d4a6c728ebe3a5fe862f12",
+      "bytes": 326
+    },
+    {
+      "challenge": "TorsionFreeZeroDivisors",
+      "file": "ComparatorChallenges/TorsionFreeZeroDivisors.lean",
+      "sha256": "f0fa4b50cb7bab116b37c75a74fdea60fb206a35f2b0590157468c054dfec3c2",
+      "bytes": 1540
+    },
+    {
+      "challenge": "TraceIdealTransportSupport",
+      "file": "ComparatorChallenges/TraceIdealTransportSupport.json",
+      "sha256": "0d717e97d8b472826a27af8c44a68da8bc92261020684c08aae97265c9fe3173",
+      "bytes": 1518
+    },
+    {
+      "challenge": "TraceIdealTransportSupport",
+      "file": "ComparatorChallenges/TraceIdealTransportSupport.lean",
+      "sha256": "d6c228b57bb7df92e03b09d12d23e0d3d9dda330a165e986fecfc2aabd4a2b05",
+      "bytes": 10021
+    },
+    {
+      "challenge": "TriangularHilbert",
+      "file": "ComparatorChallenges/TriangularHilbert.json",
+      "sha256": "79a0bdc2c1be0ea4f51012679983d60b9e3fe72781293a49063e4e7a5c9a3dad",
+      "bytes": 332
+    },
+    {
+      "challenge": "TriangularHilbert",
+      "file": "ComparatorChallenges/TriangularHilbert.lean",
+      "sha256": "768eef032a27b868cbeba17c167787a2183aacb6368c2d1733b400d55d264acc",
+      "bytes": 1471
+    },
+    {
+      "challenge": "TwoWayComplementation",
+      "file": "ComparatorChallenges/TwoWayComplementation.json",
+      "sha256": "7fdd20593d6cdd2cd8a7f8a2a0eba06671c587af4b5f4d26dadeb86a43d21bba",
+      "bytes": 363
+    },
+    {
+      "challenge": "TwoWayComplementation",
+      "file": "ComparatorChallenges/TwoWayComplementation.lean",
+      "sha256": "4e47aa239705ac77757073930d4d88e4128e30fba8341284a42c8958a927a6bb",
+      "bytes": 1452
+    },
+    {
+      "challenge": "TwoWayDeterminization",
+      "file": "ComparatorChallenges/TwoWayDeterminization.json",
+      "sha256": "62f3ac9f098b29dfd67339d10f3191be28efa9dd5c1042c89c089b737861ca0c",
+      "bytes": 359
+    },
+    {
+      "challenge": "TwoWayDeterminization",
+      "file": "ComparatorChallenges/TwoWayDeterminization.lean",
+      "sha256": "640df9524171535dca77e5ef7129b174886ed8a7bfe68de8d831f65931fc9de8",
+      "bytes": 3019
+    },
+    {
+      "challenge": "UniformFourier",
+      "file": "ComparatorChallenges/UniformFourier.json",
+      "sha256": "757bd302c164fa79741d846ac3c3c17de8bb12cf63ecfa9df64864745e0b4eb2",
+      "bytes": 368
+    },
+    {
+      "challenge": "UniformFourier",
+      "file": "ComparatorChallenges/UniformFourier.lean",
+      "sha256": "4c571f275bd7506c3ccd1e6d78f2fca77e07112c969c1c62ad8359d61544ec74",
+      "bytes": 13003
+    },
+    {
+      "challenge": "UniformGamma",
+      "file": "ComparatorChallenges/UniformGamma.json",
+      "sha256": "5c71c58d5f6529f2ded692c06b7ec44622a532e74bba484c011b09d78981da0c",
+      "bytes": 332
+    },
+    {
+      "challenge": "UniformGamma",
+      "file": "ComparatorChallenges/UniformGamma.lean",
+      "sha256": "1d0ec2d4a495ea93a8526aaf223ba12a0c1d0f4c0652d837954c206439d57020",
+      "bytes": 25412
+    },
+    {
+      "challenge": "UniformSparsestCut",
+      "file": "ComparatorChallenges/UniformSparsestCut.json",
+      "sha256": "5901cd9c1d96b4e4a42660db2dd4476f224b5e9cafa17e304cec6f58dc5618e3",
+      "bytes": 327
+    },
+    {
+      "challenge": "UniformSparsestCut",
+      "file": "ComparatorChallenges/UniformSparsestCut.lean",
+      "sha256": "27d55087cde8a7080de8d37e72843dd064103be505ef78e509af56bdffcd2eeb",
+      "bytes": 1618
+    },
+    {
+      "challenge": "UniqueGamesTheorem",
+      "file": "ComparatorChallenges/UniqueGamesTheorem.json",
+      "sha256": "bff621deccd4007c2b213201d4d97938b095ed0411cfd5fed3f66a65d4358050",
+      "bytes": 329
+    },
+    {
+      "challenge": "UniqueGamesTheorem",
+      "file": "ComparatorChallenges/UniqueGamesTheorem.lean",
+      "sha256": "c82b5f04d79075ffca1e8048243fc86f256668030173a497a177a981429533a0",
+      "bytes": 8782
+    },
+    {
+      "challenge": "UniversalFInfinity",
+      "file": "ComparatorChallenges/UniversalFInfinity.json",
+      "sha256": "d8fc6fa827b3b92c54a1b8c2ff66b436f9a5297ab825414ea43b5b1e2cd06abf",
+      "bytes": 354
+    },
+    {
+      "challenge": "UniversalFInfinity",
+      "file": "ComparatorChallenges/UniversalFInfinity.lean",
+      "sha256": "f253bcdd8bce56b2cadf8e903f45fc3bff476ca546ef9f0b32123461575c2026",
+      "bytes": 779
+    },
+    {
+      "challenge": "VertexCover",
+      "file": "ComparatorChallenges/VertexCover.json",
+      "sha256": "d8dc74e3b1871d939862817f39e6f9517c52d2f8b3321cb6e85a624e0c838b41",
+      "bytes": 376
+    },
+    {
+      "challenge": "VertexCover",
+      "file": "ComparatorChallenges/VertexCover.lean",
+      "sha256": "18604792a302754d02561f6901f4cc3eaf22aecae127f24f539d22371a513e36",
+      "bytes": 5120
+    },
+    {
+      "challenge": "VlasovMaxwell",
+      "file": "ComparatorChallenges/VlasovMaxwell.json",
+      "sha256": "423df2cf9e072e1dc4bcdc848b1c37cb9a3b684109075c2122ea3f1825445a32",
+      "bytes": 322
+    },
+    {
+      "challenge": "VlasovMaxwell",
+      "file": "ComparatorChallenges/VlasovMaxwell.lean",
+      "sha256": "67941fd3f10cf129d42dc4ef6ea6b8585fb90ad942108d7d71827ce9960b9cf5",
+      "bytes": 4303
+    },
+    {
+      "challenge": "WeakHessian",
+      "file": "ComparatorChallenges/WeakHessian.json",
+      "sha256": "b607cbd5629f15bedb82b3c5326deb0c6d73bbbdafbe8073470828db96f3e250",
+      "bytes": 315
+    },
+    {
+      "challenge": "WeakHessian",
+      "file": "ComparatorChallenges/WeakHessian.lean",
+      "sha256": "a1b474ee9b1ca3514888e2705dd4b007e082eb211248f3d5a984e13f319b8b09",
+      "bytes": 10298
+    },
+    {
+      "challenge": "WeakMTWGlobalSupport",
+      "file": "ComparatorChallenges/WeakMTWGlobalSupport.json",
+      "sha256": "deb8a523598d086b146fe7908bfa641c4654f9f1c20e58b84036b1e4ee334385",
+      "bytes": 337
+    },
+    {
+      "challenge": "WeakMTWGlobalSupport",
+      "file": "ComparatorChallenges/WeakMTWGlobalSupport.lean",
+      "sha256": "7cb7b3cb07bfd7a6ba8f2e289dcf95e7dc7b722a6b2f679a47ecec0da7e34f35",
+      "bytes": 2699
+    },
+    {
+      "challenge": "YauCounterexample",
+      "file": "ComparatorChallenges/YauCounterexample.json",
+      "sha256": "4b91fa995c8cd5efd1b1bead66c86a24b7928164a83a6c8a1f4fde0a7efe53b6",
+      "bytes": 344
+    },
+    {
+      "challenge": "YauCounterexample",
+      "file": "ComparatorChallenges/YauCounterexample.lean",
+      "sha256": "6e754e1c8ece1e9678e51999783d54e3cdc282b8b3bdfc4b1d60fe301cbfaf66",
+      "bytes": 2743
+    }
+  ],
+  "challenges": [
+    {
+      "challenge": "AbhyankarSathaye",
+      "comparator_config": "ComparatorChallenges/AbhyankarSathaye.json",
+      "declarations": [
+        "OAI.AbhyankarSathaye.exists_noncoordinate_polynomial"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/AbhyankarSathaye/Counterexample.lean"
+      ]
+    },
+    {
+      "challenge": "AmplitudeDamping",
+      "comparator_config": "ComparatorChallenges/AmplitudeDamping.json",
+      "declarations": [
+        "OAI.GAD.main"
+      ],
+      "solution_files": [
+        "OAI/InformationTheory/AmplitudeDamping/Main.lean"
+      ]
+    },
+    {
+      "challenge": "ArnoldCounterexample",
+      "comparator_config": "ComparatorChallenges/ArnoldCounterexample.json",
+      "declarations": [
+        "OAI.ArnoldCounterexample.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/Arnold/Main.lean"
+      ]
+    },
+    {
+      "challenge": "ArtinCAT0",
+      "comparator_config": "ComparatorChallenges/ArtinCAT0.json",
+      "declarations": [
+        "OAI.ArtinCAT0.main"
+      ],
+      "solution_files": [
+        "OAI/GroupTheory/ArtinCAT0/Main.lean"
+      ]
+    },
+    {
+      "challenge": "AsymptoticallyMinimalLittlewood",
+      "comparator_config": "ComparatorChallenges/AsymptoticallyMinimalLittlewood.json",
+      "declarations": [
+        "OAI.AsymptoticallyMinimalLittlewood.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Littlewood/Main.lean"
+      ]
+    },
+    {
+      "challenge": "AuslanderReiten",
+      "comparator_config": "ComparatorChallenges/AuslanderReiten.json",
+      "declarations": [
+        "OAI.ArExplicit.Statement.main"
+      ],
+      "solution_files": [
+        "OAI/Algebra/AuslanderReiten/All.lean"
+      ]
+    },
+    {
+      "challenge": "BackwardIntertwiners",
+      "comparator_config": "ComparatorChallenges/BackwardIntertwiners.json",
+      "declarations": [
+        "OAI.BackwardIntertwiners.direct_algebra_corollary"
+      ],
+      "solution_files": [
+        "OAI/Analysis/BackwardIntertwiners/AlgebraCorollary.lean"
+      ]
+    },
+    {
+      "challenge": "BassTrace",
+      "comparator_config": "ComparatorChallenges/BassTrace.json",
+      "declarations": [
+        "OAI.BassTrace.RightProjective.bassTraceModules_vanishing_and_support"
+      ],
+      "solution_files": [
+        "OAI/RingTheory/BassTrace/Main.lean"
+      ]
+    },
+    {
+      "challenge": "BiholderTransport",
+      "comparator_config": "ComparatorChallenges/BiholderTransport.json",
+      "declarations": [
+        "OAI.WeakMTWTransport.uniform_biHolder_transport"
+      ],
+      "solution_files": [
+        "OAI/Analysis/BiholderTransport/Main.lean"
+      ]
+    },
+    {
+      "challenge": "BinPackingGap",
+      "comparator_config": "ComparatorChallenges/BinPackingGap.json",
+      "declarations": [
+        "OAI.BinPackingGap.main_results"
+      ],
+      "solution_files": [
+        "OAI/Computability/BinPacking/Main.lean"
+      ]
+    },
+    {
+      "challenge": "BinaryMatching",
+      "comparator_config": "ComparatorChallenges/BinaryMatching.json",
+      "declarations": [
+        "OAI.BinaryMatching.deterministic_approximate_counting"
+      ],
+      "solution_files": [
+        "OAI/Computability/MatchingCount/BinarySolve.lean"
+      ]
+    },
+    {
+      "challenge": "BinarySweep",
+      "comparator_config": "ComparatorChallenges/BinarySweep.json",
+      "declarations": [
+        "OAI.binary_sweep_contraction_and_mixing"
+      ],
+      "solution_files": [
+        "OAI/Probability/BinarySweep/Main.lean"
+      ]
+    },
+    {
+      "challenge": "BipartiteCrossing",
+      "comparator_config": "ComparatorChallenges/BipartiteCrossing.json",
+      "declarations": [
+        "OAI.Zarankiewicz.mainTarget_proof"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/Crossing/Main.lean"
+      ]
+    },
+    {
+      "challenge": "BorsukNine",
+      "comparator_config": "ComparatorChallenges/BorsukNine.json",
+      "declarations": [
+        "OAI.BorsukNine.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Geometry/Borsuk/Counterexample.lean"
+      ]
+    },
+    {
+      "challenge": "BoundedRecovery",
+      "comparator_config": "ComparatorChallenges/BoundedRecovery.json",
+      "declarations": [
+        "OAI.BoundedRecovery.bounded_recovery"
+      ],
+      "solution_files": [
+        "OAI/Analysis/ModularRecovery/Recovery.lean"
+      ]
+    },
+    {
+      "challenge": "BoundedTreePotentials",
+      "comparator_config": "ComparatorChallenges/BoundedTreePotentials.json",
+      "declarations": [
+        "OAI.BoundedTreePotentials.TreeCalculus.main_counterexample"
+      ],
+      "solution_files": [
+        "OAI/Analysis/TreePotential/Main.lean"
+      ]
+    },
+    {
+      "challenge": "BoundedTreewidthL1",
+      "comparator_config": "ComparatorChallenges/BoundedTreewidthL1.json",
+      "declarations": [
+        "OAI.BoundedTreewidthL1.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/TreewidthL1/Main.lean"
+      ]
+    },
+    {
+      "challenge": "Brennan",
+      "comparator_config": "ComparatorChallenges/Brennan.json",
+      "declarations": [
+        "OAI.Brennan.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Analysis/IntegralMeans/Main.lean"
+      ]
+    },
+    {
+      "challenge": "BrennanSharp",
+      "comparator_config": "ComparatorChallenges/BrennanSharp.json",
+      "declarations": [
+        "OAI.Brennan.Sharp.sharp_endpoints"
+      ],
+      "solution_files": [
+        "OAI/Analysis/IntegralMeans/SharpEndpoints.lean"
+      ]
+    },
+    {
+      "challenge": "C0Absorption",
+      "comparator_config": "ComparatorChallenges/C0Absorption.json",
+      "declarations": [
+        "OAI.C0Absorption.main_result"
+      ],
+      "solution_files": [
+        "OAI/Analysis/C0Absorption/Main.lean"
+      ]
+    },
+    {
+      "challenge": "CHObstruction",
+      "comparator_config": "ComparatorChallenges/CHObstruction.json",
+      "declarations": [
+        "OAI.CHObstruction.main"
+      ],
+      "solution_files": [
+        "OAI/ModelTheory/Categoricity/Main.lean"
+      ]
+    },
+    {
+      "challenge": "CartierChartCompactnessSupport",
+      "comparator_config": "ComparatorChallenges/CartierChartCompactnessSupport.json",
+      "declarations": [
+        "OAI.CartierSections.isCompact_closedChartFieldRetraction_cone"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/CartierSections/ChartCompactness.lean"
+      ]
+    },
+    {
+      "challenge": "CharacterCriterion",
+      "comparator_config": "ComparatorChallenges/CharacterCriterion.json",
+      "declarations": [
+        "OAI.KirchbergRordam.character_criterion"
+      ],
+      "solution_files": [
+        "OAI/Analysis/CharacterCriterion/Main.lean"
+      ]
+    },
+    {
+      "challenge": "CharacterVarietiesAllSeamsSupport",
+      "comparator_config": "ComparatorChallenges/CharacterVarietiesAllSeamsSupport.json",
+      "declarations": [
+        "OAI.IntegralCharacterVarieties.SurfacePresentation.Diagram.producedMarkedValues_allSeams"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/CharacterVarieties/Seams/ProducedSolution.lean"
+      ]
+    },
+    {
+      "challenge": "ChoicelessPolynomialTime",
+      "comparator_config": "ComparatorChallenges/ChoicelessPolynomialTime.json",
+      "declarations": [
+        "OAI.CPTSeparation.main"
+      ],
+      "solution_files": [
+        "OAI/ModelTheory/Choiceless/Separation.lean"
+      ]
+    },
+    {
+      "challenge": "CirculantHadamard",
+      "comparator_config": "ComparatorChallenges/CirculantHadamard.json",
+      "declarations": [
+        "OAI.CirculantHadamard.exists_iff_order_one_or_four"
+      ],
+      "solution_files": [
+        "OAI/LinearAlgebra/CirculantHadamard/Main.lean"
+      ]
+    },
+    {
+      "challenge": "ClassicalON",
+      "comparator_config": "ComparatorChallenges/ClassicalON.json",
+      "declarations": [
+        "OAI.ClassicalON.main"
+      ],
+      "solution_files": [
+        "OAI/Probability/ClassicalON/Main.lean"
+      ]
+    },
+    {
+      "challenge": "CliqueFreeLog",
+      "comparator_config": "ComparatorChallenges/CliqueFreeLog.json",
+      "declarations": [
+        "OAI.CliqueFreeLog.logarithmic_independence_bound"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/CliqueFree/Main.lean"
+      ]
+    },
+    {
+      "challenge": "CommonBasesFPRAS",
+      "comparator_config": "ComparatorChallenges/CommonBasesFPRAS.json",
+      "declarations": [
+        "OAI.common_bases_fpras"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/MatroidCounting/CommonBases.lean"
+      ]
+    },
+    {
+      "challenge": "CommutingDerivations",
+      "comparator_config": "ComparatorChallenges/CommutingDerivations.json",
+      "declarations": [
+        "OAI.AbhyankarSathaye.CommutingDerivations.commuting_derivations_with_ordinary_extras"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/CommutingDerivations/OrdinaryExtraMain.lean"
+      ]
+    },
+    {
+      "challenge": "CompactBanach",
+      "comparator_config": "ComparatorChallenges/CompactBanach.json",
+      "declarations": [
+        "OAI.CompactBanach.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/DoublingHilbert/CompactBanach.lean"
+      ]
+    },
+    {
+      "challenge": "CompleteCrossing",
+      "comparator_config": "ComparatorChallenges/CompleteCrossing.json",
+      "declarations": [
+        "OAI.Paper170.complete_graph_crossing_number"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/CompleteCrossing/Main.lean"
+      ]
+    },
+    {
+      "challenge": "CompleteCrouzeix",
+      "comparator_config": "ComparatorChallenges/CompleteCrouzeix.json",
+      "declarations": [
+        "OAI.CompleteCrouzeix.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/NumericalRange/Main.lean"
+      ]
+    },
+    {
+      "challenge": "ComplexCancellation",
+      "comparator_config": "ComparatorChallenges/ComplexCancellation.json",
+      "declarations": [
+        "OAI.ComplexCancellation.main"
+      ],
+      "solution_files": [
+        "OAI/Algebra/AffineCancellation/Main.lean"
+      ]
+    },
+    {
+      "challenge": "Conductivity",
+      "comparator_config": "ComparatorChallenges/Conductivity.json",
+      "declarations": [
+        "OAI.ScalarConductivity.main_nonuniqueness"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Conductivity/Main.lean"
+      ]
+    },
+    {
+      "challenge": "ConjugatePoints",
+      "comparator_config": "ComparatorChallenges/ConjugatePoints.json",
+      "declarations": [
+        "OAI.ThreeManifold.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Geometry/ConjugatePoints/ThreeManifold.lean"
+      ]
+    },
+    {
+      "challenge": "ContinuumTransition",
+      "comparator_config": "ComparatorChallenges/ContinuumTransition.json",
+      "declarations": [
+        "OAI.ContinuumTemperature.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Probability/ContinuumTransition/Main.lean"
+      ]
+    },
+    {
+      "challenge": "CoordinateSweeps",
+      "comparator_config": "ComparatorChallenges/CoordinateSweeps.json",
+      "declarations": [
+        "OAI.CoordinateSweeps.conditional_main"
+      ],
+      "solution_files": [
+        "OAI/Probability/CoordinateSweeps/Main.lean"
+      ]
+    },
+    {
+      "challenge": "Cotype",
+      "comparator_config": "ComparatorChallenges/Cotype.json",
+      "declarations": [
+        "OAI.Cotype.mainTarget_proved"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Cotype/Main.lean"
+      ]
+    },
+    {
+      "challenge": "CoulombIonization",
+      "comparator_config": "ComparatorChallenges/CoulombIonization.json",
+      "declarations": [
+        "OAI.CoulombAtom.generalized_ionization"
+      ],
+      "solution_files": [
+        "OAI/Analysis/CoulombIonization/Main.lean"
+      ]
+    },
+    {
+      "challenge": "CourtadeKumar",
+      "comparator_config": "ComparatorChallenges/CourtadeKumar.json",
+      "declarations": [
+        "OAI.LeanBlast.CourtadeKumar.courtadeKumarAndAttainment"
+      ],
+      "solution_files": [
+        "OAI/InformationTheory/BooleanNoise/Main.lean"
+      ]
+    },
+    {
+      "challenge": "CriticalSK",
+      "comparator_config": "ComparatorChallenges/CriticalSK.json",
+      "declarations": [
+        "OAI.CriticalSK.covariance_and_linear_tests"
+      ],
+      "solution_files": [
+        "OAI/MathematicalPhysics/CriticalSK/Rayleigh.lean"
+      ]
+    },
+    {
+      "challenge": "CriticalSKMixing",
+      "comparator_config": "ComparatorChallenges/CriticalSKMixing.json",
+      "declarations": [
+        "OAI.CriticalSK.critical_mixing_bounds"
+      ],
+      "solution_files": [
+        "OAI/MathematicalPhysics/CriticalMixing/Main.lean"
+      ]
+    },
+    {
+      "challenge": "CriticalZ3",
+      "comparator_config": "ComparatorChallenges/CriticalZ3.json",
+      "declarations": [
+        "OAI.CriticalZ3.critical_no_infinite"
+      ],
+      "solution_files": [
+        "OAI/Probability/CriticalZ3/Main.lean"
+      ]
+    },
+    {
+      "challenge": "CycleDecomposition",
+      "comparator_config": "ComparatorChallenges/CycleDecomposition.json",
+      "declarations": [
+        "OAI.ErdosGallai.erdos_gallai"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/CycleDecomposition/Main.lean"
+      ]
+    },
+    {
+      "challenge": "DaugavetModuli",
+      "comparator_config": "ComparatorChallenges/DaugavetModuli.json",
+      "declarations": [
+        "OAI.ExactModuli.exact_example"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Daugavet/Main.lean"
+      ]
+    },
+    {
+      "challenge": "DegreeRigidity",
+      "comparator_config": "ComparatorChallenges/DegreeRigidity.json",
+      "declarations": [
+        "OAI.TuringRigidity.ManuscriptMain.rigidity"
+      ],
+      "solution_files": [
+        "OAI/Computability/DegreeRigidity/Main.lean"
+      ]
+    },
+    {
+      "challenge": "DeligneDrinfeld",
+      "comparator_config": "ComparatorChallenges/DeligneDrinfeld.json",
+      "declarations": [
+        "OAI.DeligneDrinfeld.main"
+      ],
+      "solution_files": [
+        "OAI/Algebra/Drinfeld/Completion.lean"
+      ]
+    },
+    {
+      "challenge": "DepthThree",
+      "comparator_config": "ComparatorChallenges/DepthThree.json",
+      "declarations": [
+        "OAI.DepthThreeLowerBound.exists_polynomial_time_language_depth_three_lower_bound"
+      ],
+      "solution_files": [
+        "OAI/Computability/DepthThree/Main.lean"
+      ]
+    },
+    {
+      "challenge": "DiamondDistortion",
+      "comparator_config": "ComparatorChallenges/DiamondDistortion.json",
+      "declarations": [
+        "OAI.DiamondDistortion.headline_all_pairs"
+      ],
+      "solution_files": [
+        "OAI/Analysis/DiamondDistortion/Descent.lean"
+      ]
+    },
+    {
+      "challenge": "DirectCrouzeix",
+      "comparator_config": "ComparatorChallenges/DirectCrouzeix.json",
+      "declarations": [
+        "OAI.DirectCrouzeix.complete_crouzeix"
+      ],
+      "solution_files": [
+        "OAI/Analysis/DirectCrouzeix/CompleteBound.lean"
+      ]
+    },
+    {
+      "challenge": "DirectionalBallisticity",
+      "comparator_config": "ComparatorChallenges/DirectionalBallisticity.json",
+      "declarations": [
+        "OAI.DirectionalTransience.directional_transience_implies_ballisticity"
+      ],
+      "solution_files": [
+        "OAI/Probability/Ballisticity/Main.lean"
+      ]
+    },
+    {
+      "challenge": "DirichletSevenEighths",
+      "comparator_config": "ComparatorChallenges/DirichletSevenEighths.json",
+      "declarations": [
+        "OAI.DirichletCharacter.LFunction_ne_zero_of_seven_eighths_lt_re"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/DirichletL/Nonvanishing.lean"
+      ]
+    },
+    {
+      "challenge": "DixmierAllDiscrete",
+      "comparator_config": "ComparatorChallenges/DixmierAllDiscrete.json",
+      "declarations": [
+        "OAI.Dixmier.current_main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Unitarizability/AllDiscrete.lean"
+      ]
+    },
+    {
+      "challenge": "DoublingHilbert",
+      "comparator_config": "ComparatorChallenges/DoublingHilbert.json",
+      "declarations": [
+        "OAI.DoublingHilbert.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/DoublingHilbert/Main.lean"
+      ]
+    },
+    {
+      "challenge": "EgyptianFractions",
+      "comparator_config": "ComparatorChallenges/EgyptianFractions.json",
+      "declarations": [
+        "OAI.Problem337.counting_double_log_order",
+        "OAI.Problem337.main_double_log_order",
+        "OAI.Problem337.prescribed_denominator_corollary"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/EgyptianFractions/Main.lean"
+      ]
+    },
+    {
+      "challenge": "EntangledGames",
+      "comparator_config": "ComparatorChallenges/EntangledGames.json",
+      "declarations": [
+        "OAI.ThresholdParallelRepetition.threshold_parallel_repetition"
+      ],
+      "solution_files": [
+        "OAI/Probability/EntangledGames/Main.lean"
+      ]
+    },
+    {
+      "challenge": "EuclideanFiveColor",
+      "comparator_config": "ComparatorChallenges/EuclideanFiveColor.json",
+      "declarations": [
+        "OAI.EuclideanFiveColor.no_proper_five_coloring"
+      ],
+      "solution_files": [
+        "OAI/Geometry/PlaneColoring/Five.lean"
+      ]
+    },
+    {
+      "challenge": "EuclideanRamsey",
+      "comparator_config": "ComparatorChallenges/EuclideanRamsey.json",
+      "declarations": [
+        "OAI.EuclideanRamsey.classification"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/EuclideanRamsey/Main.lean"
+      ]
+    },
+    {
+      "challenge": "ExactFourier",
+      "comparator_config": "ComparatorChallenges/ExactFourier.json",
+      "declarations": [
+        "OAI.ExactFourier.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Computability/FourierCircuit/Main.lean"
+      ]
+    },
+    {
+      "challenge": "FactorGeneration",
+      "comparator_config": "ComparatorChallenges/FactorGeneration.json",
+      "declarations": [
+        "OAI.Generator.single_generation_of_II1_separable_predual"
+      ],
+      "solution_files": [
+        "OAI/Analysis/FactorGeneration/Main.lean"
+      ]
+    },
+    {
+      "challenge": "FinitisticAsymmetry",
+      "comparator_config": "ComparatorChallenges/FinitisticAsymmetry.json",
+      "declarations": [
+        "OAI.LittleFinitistic.extreme_left_right_asymmetry"
+      ],
+      "solution_files": [
+        "OAI/Algebra/FinitisticAsymmetry/Main.lean"
+      ]
+    },
+    {
+      "challenge": "ForestSpace",
+      "comparator_config": "ComparatorChallenges/ForestSpace.json",
+      "declarations": [
+        "OAI.ForestSpace.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Analysis/ForestSpace/Main.lean"
+      ]
+    },
+    {
+      "challenge": "FoulkesHowe",
+      "comparator_config": "ComparatorChallenges/FoulkesHowe.json",
+      "declarations": [
+        "OAI.Problem346.canonical_foulkes_howe_surjective"
+      ],
+      "solution_files": [
+        "OAI/RepresentationTheory/FoulkesHowe/Stabilization.lean"
+      ]
+    },
+    {
+      "challenge": "FourierLLogL",
+      "comparator_config": "ComparatorChallenges/FourierLLogL.json",
+      "declarations": [
+        "OAI.FourierLLogL.paperMain"
+      ],
+      "solution_files": [
+        "OAI/Analysis/FourierLLogL/PaperMain.lean"
+      ]
+    },
+    {
+      "challenge": "FreeIsing",
+      "comparator_config": "ComparatorChallenges/FreeIsing.json",
+      "declarations": [
+        "OAI.Problem367.free_ising_factor_iff_threshold"
+      ],
+      "solution_files": [
+        "OAI/Probability/FreeIsing/Main.lean"
+      ]
+    },
+    {
+      "challenge": "GaussianMoat",
+      "comparator_config": "ComparatorChallenges/GaussianMoat.json",
+      "declarations": [
+        "OAI.GaussianMoat.fullMain"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/GaussianMoat/Main.lean"
+      ]
+    },
+    {
+      "challenge": "GaussianPropeller",
+      "comparator_config": "ComparatorChallenges/GaussianPropeller.json",
+      "declarations": [
+        "OAI.GaussianPropeller.all_partitions"
+      ],
+      "solution_files": [
+        "OAI/Probability/GaussianPropeller/Main.lean"
+      ]
+    },
+    {
+      "challenge": "GaussianReplacement",
+      "comparator_config": "ComparatorChallenges/GaussianReplacement.json",
+      "declarations": [
+        "OAI.CurrentProjection.fiberBlockMain",
+        "OAI.CurrentProjection.hybridBlockMain"
+      ],
+      "solution_files": [
+        "OAI/Probability/GaussianReplacement/FiberBlock.lean",
+        "OAI/Probability/GaussianReplacement/Hybrid.lean"
+      ]
+    },
+    {
+      "challenge": "GotsmanLinial",
+      "comparator_config": "ComparatorChallenges/GotsmanLinial.json",
+      "declarations": [
+        "OAI.LeanBlast.GotsmanLinial.gotsmanLinialStatement"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/GotsmanLinial/Main.lean"
+      ]
+    },
+    {
+      "challenge": "GrahamSpherical",
+      "comparator_config": "ComparatorChallenges/GrahamSpherical.json",
+      "declarations": [
+        "OAI.GrahamSpherical.full_main"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/SphericalRamsey/Main.lean"
+      ]
+    },
+    {
+      "challenge": "GrothendieckElementaryExpansion",
+      "comparator_config": "ComparatorChallenges/GrothendieckElementaryExpansion.json",
+      "declarations": [
+        "OAI.Grothendieck.elementary_expansion"
+      ],
+      "solution_files": [
+        "OAI/CategoryTheory/Globular/ElementaryExpansion.lean"
+      ]
+    },
+    {
+      "challenge": "GroupRingDeterminant",
+      "comparator_config": "ComparatorChallenges/GroupRingDeterminant.json",
+      "declarations": [
+        "OAI.GroupRingDeterminant.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/GroupDeterminants/Main.lean"
+      ]
+    },
+    {
+      "challenge": "HadwigerCounterexample",
+      "comparator_config": "ComparatorChallenges/HadwigerCounterexample.json",
+      "declarations": [
+        "OAI.HadwigerCounterexample.not_hadwiger_conjecture"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/HadwigerCounterexample/Main.lean"
+      ]
+    },
+    {
+      "challenge": "HarmonicArtin",
+      "comparator_config": "ComparatorChallenges/HarmonicArtin.json",
+      "declarations": [
+        "OAI.HarmonicArtin.salvetti_cover_contractible"
+      ],
+      "solution_files": [
+        "OAI/Topology/ArtinGroups/Realizations/SalvettiCoverContractible.lean"
+      ]
+    },
+    {
+      "challenge": "HarmonicGrowth",
+      "comparator_config": "ComparatorChallenges/HarmonicGrowth.json",
+      "declarations": [
+        "OAI.HarmonicCounterexample.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/HarmonicGrowth/Main.lean"
+      ]
+    },
+    {
+      "challenge": "HeckeSevenEighths",
+      "comparator_config": "ComparatorChallenges/HeckeSevenEighths.json",
+      "declarations": [
+        "OAI.SevenEighths.HeckeFamily.LFunction_ne_zero_of_seven_eighths_lt_re"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/DirichletL/Hecke/Nonvanishing.lean"
+      ]
+    },
+    {
+      "challenge": "HenonEmden",
+      "comparator_config": "ComparatorChallenges/HenonEmden.json",
+      "declarations": [
+        "OAI.HenonLaneEmden.main_nonexistence"
+      ],
+      "solution_files": [
+        "OAI/Analysis/HenonEmden/Main.lean"
+      ]
+    },
+    {
+      "challenge": "HoneycombBridgeMassSupport",
+      "comparator_config": "ComparatorChallenges/HoneycombBridgeMassSupport.json",
+      "declarations": [
+        "OAI.CriticalHoneycomb.finiteBridgeMassEstimate"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/HoneycombChords/BridgeMass.lean"
+      ]
+    },
+    {
+      "challenge": "HyperbolicCones",
+      "comparator_config": "ComparatorChallenges/HyperbolicCones.json",
+      "declarations": [
+        "OAI.Paper256.main_result"
+      ],
+      "solution_files": [
+        "OAI/Analysis/HyperbolicCones/Main.lean"
+      ]
+    },
+    {
+      "challenge": "HyperbolicObstruction",
+      "comparator_config": "ComparatorChallenges/HyperbolicObstruction.json",
+      "declarations": [
+        "OAI.HyperbolicObstruction.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/HyperbolicGroups/Main.lean"
+      ]
+    },
+    {
+      "challenge": "IndependentProducts",
+      "comparator_config": "ComparatorChallenges/IndependentProducts.json",
+      "declarations": [
+        "OAI.IndependentProducts.main_exponential",
+        "OAI.IndependentProducts.main_general"
+      ],
+      "solution_files": [
+        "OAI/Analysis/ProductSpaces/Main.lean",
+        "OAI/Analysis/ProductSpaces/WeakNullity.lean"
+      ]
+    },
+    {
+      "challenge": "IndependentSets",
+      "comparator_config": "ComparatorChallenges/IndependentSets.json",
+      "declarations": [
+        "OAI.LargeIndependentSets.mainTheoremReal"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/IndependentSets/Main.lean"
+      ]
+    },
+    {
+      "challenge": "InfiniteMatroid",
+      "comparator_config": "ComparatorChallenges/InfiniteMatroid.json",
+      "declarations": [
+        "OAI.InfiniteMatroidCounterexample.main"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/InfiniteMatroid/Main.lean"
+      ]
+    },
+    {
+      "challenge": "IsometricImmersion",
+      "comparator_config": "ComparatorChallenges/IsometricImmersion.json",
+      "declarations": [
+        "OAI.SmoothLocal.Geometry.exists_local_metric_without_local_immersion"
+      ],
+      "solution_files": [
+        "OAI/Geometry/IsometricImmersion/Main.lean"
+      ]
+    },
+    {
+      "challenge": "Jacobsthal",
+      "comparator_config": "ComparatorChallenges/Jacobsthal.json",
+      "declarations": [
+        "OAI.Erdos970.Erdos970Final.erdos_970_quadratic"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/Jacobsthal/Conclusions/QuadraticBound.lean"
+      ]
+    },
+    {
+      "challenge": "KMedianRecovery",
+      "comparator_config": "ComparatorChallenges/KMedianRecovery.json",
+      "declarations": [
+        "OAI.MetricKMedianRecovery.global_application"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/KMedianRecovery/Main.lean"
+      ]
+    },
+    {
+      "challenge": "KahlerSplitting",
+      "comparator_config": "ComparatorChallenges/KahlerSplitting.json",
+      "declarations": [
+        "OAI.UniversalCoverSplitting.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/KahlerSplitting/Main.lean"
+      ]
+    },
+    {
+      "challenge": "KaplanskyFinitelyPresented",
+      "comparator_config": "ComparatorChallenges/KaplanskyFinitelyPresented.json",
+      "declarations": [
+        "OAI.KaplanskyCounterexample.finitelyPresented_counterexample"
+      ],
+      "solution_files": [
+        "OAI/RingTheory/DirectFiniteness/FinitelyPresented.lean"
+      ]
+    },
+    {
+      "challenge": "KaplanskyQuasitrace",
+      "comparator_config": "ComparatorChallenges/KaplanskyQuasitrace.json",
+      "declarations": [
+        "OAI.Kaplansky.kaplansky_quasitrace_counterexample"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Kaplansky/Main.lean"
+      ]
+    },
+    {
+      "challenge": "Laughlin",
+      "comparator_config": "ComparatorChallenges/Laughlin.json",
+      "declarations": [
+        "OAI.Laughlin.mainTarget_proved"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Laughlin/Main.lean"
+      ]
+    },
+    {
+      "challenge": "LiebThirring",
+      "comparator_config": "ComparatorChallenges/LiebThirring.json",
+      "declarations": [
+        "OAI.SharpLiebThirring.sharp_lieb_thirring"
+      ],
+      "solution_files": [
+        "OAI/Analysis/LiebThirring/Main.lean"
+      ]
+    },
+    {
+      "challenge": "LipschitzEquivalence",
+      "comparator_config": "ComparatorChallenges/LipschitzEquivalence.json",
+      "declarations": [
+        "OAI.LipschitzCounterexample.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/LipschitzEquivalence/Main.lean"
+      ]
+    },
+    {
+      "challenge": "LittleFinitistic",
+      "comparator_config": "ComparatorChallenges/LittleFinitistic.json",
+      "declarations": [
+        "OAI.LittleFinitistic.Main.exists_counterexample"
+      ],
+      "solution_files": [
+        "OAI/Algebra/Finitistic/Main.lean"
+      ]
+    },
+    {
+      "challenge": "LogBrunnMinkowski",
+      "comparator_config": "ComparatorChallenges/LogBrunnMinkowski.json",
+      "declarations": [
+        "OAI.LogBrunnMinkowski.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/LogVolume/BrunnMinkowski.lean"
+      ]
+    },
+    {
+      "challenge": "LogConcaveQuery",
+      "comparator_config": "ComparatorChallenges/LogConcaveQuery.json",
+      "declarations": [
+        "OAI.LogConcaveSampling.exact_source_main"
+      ],
+      "solution_files": [
+        "OAI/Probability/LogConcave/Main.lean"
+      ]
+    },
+    {
+      "challenge": "LogspaceEquality",
+      "comparator_config": "ComparatorChallenges/LogspaceEquality.json",
+      "declarations": [
+        "OAI.ExactDerandomization.exact_logarithmic_space_derandomization"
+      ],
+      "solution_files": [
+        "OAI/Computability/Logspace/Equality.lean"
+      ]
+    },
+    {
+      "challenge": "MahlerConjecture",
+      "comparator_config": "ComparatorChallenges/MahlerConjecture.json",
+      "declarations": [
+        "OAI.SymmetricMahler.symmetric_mahler"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Mahler/MainTheorem.lean"
+      ]
+    },
+    {
+      "challenge": "MarkovType",
+      "comparator_config": "ComparatorChallenges/MarkovType.json",
+      "declarations": [
+        "OAI.MarkovSuperreflexivity.hasNontrivialMarkovType_iff_hasEquivalentUCNorm"
+      ],
+      "solution_files": [
+        "OAI/Analysis/MarkovType/Main.lean"
+      ]
+    },
+    {
+      "challenge": "MatchingEntropy",
+      "comparator_config": "ComparatorChallenges/MatchingEntropy.json",
+      "declarations": [
+        "OAI.MatchingEntropy.entropy_main"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/PerfectMatching/Main.lean"
+      ]
+    },
+    {
+      "challenge": "MatrixFields",
+      "comparator_config": "ComparatorChallenges/MatrixFields.json",
+      "declarations": [
+        "OAI.MatrixAllFields.MatrixMultiplication.AllFieldMain.omega_lt_source_constant"
+      ],
+      "solution_files": [
+        "OAI/LinearAlgebra/MatrixFields/Conclusions/AllFieldsBound.lean"
+      ]
+    },
+    {
+      "challenge": "MatrixMultiplication",
+      "comparator_config": "ComparatorChallenges/MatrixMultiplication.json",
+      "declarations": [
+        "OAI.MatrixMultiplication.complex_alpha_gt_93_div_200",
+        "OAI.MatrixMultiplication.complex_omega_le_nine_quarters",
+        "OAI.MatrixMultiplication.complex_rectangular_omega_lt_523_div_250"
+      ],
+      "solution_files": [
+        "OAI/LinearAlgebra/MatrixMultiplication/Main.lean"
+      ]
+    },
+    {
+      "challenge": "MatrixRemoval",
+      "comparator_config": "ComparatorChallenges/MatrixRemoval.json",
+      "declarations": [
+        "OAI.Problem348.no_polynomial_removal_bound"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/MatrixRemoval/Main.lean"
+      ]
+    },
+    {
+      "challenge": "MaximalSeshadriConstants",
+      "comparator_config": "ComparatorChallenges/MaximalSeshadriConstants.json",
+      "declarations": [
+        "OAI.MaximalSeshadri.Geometry.maximalSeshadriConstants"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/Seshadri/Main.lean"
+      ]
+    },
+    {
+      "challenge": "MemoryPrecision",
+      "comparator_config": "ComparatorChallenges/MemoryPrecision.json",
+      "declarations": [
+        "OAI.MemoryPrecision.main"
+      ],
+      "solution_files": [
+        "OAI/Probability/MemoryPrecision/Main.lean"
+      ]
+    },
+    {
+      "challenge": "MetricEntropyDuality",
+      "comparator_config": "ComparatorChallenges/MetricEntropyDuality.json",
+      "declarations": [
+        "OAI.MetricEntropyDuality.exists_entropy_duality_counterexample_with_covers"
+      ],
+      "solution_files": [
+        "OAI/Analysis/MetricEntropy/Main.lean"
+      ]
+    },
+    {
+      "challenge": "MidpointLenses",
+      "comparator_config": "ComparatorChallenges/MidpointLenses.json",
+      "declarations": [
+        "OAI.SegmentLenses.midpoint_lens_main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/SegmentLenses/Main.lean"
+      ]
+    },
+    {
+      "challenge": "Nagata",
+      "comparator_config": "ComparatorChallenges/Nagata.json",
+      "declarations": [
+        "OAI.Nagata.nagata_conjecture"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/PlaneCurves/Nagata.lean"
+      ]
+    },
+    {
+      "challenge": "OddKaplansky",
+      "comparator_config": "ComparatorChallenges/OddKaplansky.json",
+      "declarations": [
+        "OAI.OddKaplansky.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Algebra/OddKaplansky/Main.lean"
+      ]
+    },
+    {
+      "challenge": "OneTapeSpace",
+      "comparator_config": "ComparatorChallenges/OneTapeSpace.json",
+      "declarations": [
+        "OAI.Fifths.Single.capped",
+        "OAI.Fifths.Single.unknown"
+      ],
+      "solution_files": [
+        "OAI/Computability/SpaceSimulation/Main.lean"
+      ]
+    },
+    {
+      "challenge": "OneWayLiveness",
+      "comparator_config": "ComparatorChallenges/OneWayLiveness.json",
+      "declarations": [
+        "OAI.OneWayLiveness.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/Automata/Main.lean"
+      ]
+    },
+    {
+      "challenge": "OptimalMaxCut",
+      "comparator_config": "ComparatorChallenges/OptimalMaxCut.json",
+      "declarations": [
+        "OAI.OptimalMaxCut.main"
+      ],
+      "solution_files": [
+        "OAI/Computability/MaxCut/Main.lean"
+      ]
+    },
+    {
+      "challenge": "PartitionPrinciple",
+      "comparator_config": "ComparatorChallenges/PartitionPrinciple.json",
+      "declarations": [
+        "OAI.PartitionPilot.Forcing.TransitiveGround.exists_model_partitionPrinciple_without_choice"
+      ],
+      "solution_files": [
+        "OAI/SetTheory/PartitionPrinciple/Models/Separation.lean"
+      ]
+    },
+    {
+      "challenge": "PerfectCompleteness",
+      "comparator_config": "ComparatorChallenges/PerfectCompleteness.json",
+      "declarations": [
+        "OAI.PerfectCompleteness.Theorem11.exists_reduction"
+      ],
+      "solution_files": [
+        "OAI/Computability/PerfectCompleteness/Theorem11.lean"
+      ]
+    },
+    {
+      "challenge": "PeriodicTilingThree",
+      "comparator_config": "ComparatorChallenges/PeriodicTilingThree.json",
+      "declarations": [
+        "OAI.PeriodicTilingThree.periodic_tiling_counterexample_and_minimality"
+      ],
+      "solution_files": [
+        "OAI/Geometry/PeriodicTiling/Counterexample.lean"
+      ]
+    },
+    {
+      "challenge": "PettyProjectionVolume",
+      "comparator_config": "ComparatorChallenges/PettyProjectionVolume.json",
+      "declarations": [
+        "OAI.PettyProjection.petty_projection_volume"
+      ],
+      "solution_files": [
+        "OAI/Geometry/ProjectionBodies/Main.lean"
+      ]
+    },
+    {
+      "challenge": "PinchedKahler",
+      "comparator_config": "ComparatorChallenges/PinchedKahler.json",
+      "declarations": [
+        "OAI.PinchedHartogs.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Geometry/Kahler/Main.lean"
+      ]
+    },
+    {
+      "challenge": "PinnedDistances",
+      "comparator_config": "ComparatorChallenges/PinnedDistances.json",
+      "declarations": [
+        "OAI.WeakPinned.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/PinnedDistances/Main.lean"
+      ]
+    },
+    {
+      "challenge": "PlanarFalconer",
+      "comparator_config": "ComparatorChallenges/PlanarFalconer.json",
+      "declarations": [
+        "OAI.PlanarFalconer.mainTarget_proved"
+      ],
+      "solution_files": [
+        "OAI/MeasureTheory/Falconer/Main.lean"
+      ]
+    },
+    {
+      "challenge": "PlanarFirstPassage",
+      "comparator_config": "ComparatorChallenges/PlanarFirstPassage.json",
+      "declarations": [
+        "OAI.PlanarFPP.manuscriptMain"
+      ],
+      "solution_files": [
+        "OAI/Probability/FirstPassage/BoundaryCurve.lean"
+      ]
+    },
+    {
+      "challenge": "PlanarL1",
+      "comparator_config": "ComparatorChallenges/PlanarL1.json",
+      "declarations": [
+        "OAI.PlanarL1.planar_graph_metrics_embed_L1"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/PlanarL1/Embedding.lean"
+      ]
+    },
+    {
+      "challenge": "PlaneColoring",
+      "comparator_config": "ComparatorChallenges/PlaneColoring.json",
+      "declarations": [
+        "OAI.Problem160.properColoring_seven"
+      ],
+      "solution_files": [
+        "OAI/Geometry/PlaneColoring/Seven.lean"
+      ]
+    },
+    {
+      "challenge": "PosteriorReplicas",
+      "comparator_config": "ComparatorChallenges/PosteriorReplicas.json",
+      "declarations": [
+        "OAI.PosteriorReplicas.source_main"
+      ],
+      "solution_files": [
+        "OAI/Probability/PosteriorReplicas/Main.lean"
+      ]
+    },
+    {
+      "challenge": "PowerFreeValues",
+      "comparator_config": "ComparatorChallenges/PowerFreeValues.json",
+      "declarations": [
+        "OAI.QuarticPowerFree.allDegrees"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/PowerFree/Main.lean"
+      ]
+    },
+    {
+      "challenge": "ProjectionCounterexample",
+      "comparator_config": "ComparatorChallenges/ProjectionCounterexample.json",
+      "declarations": [
+        "OAI.ProjectionCounterexample.universal_simplex_upper_bound_false"
+      ],
+      "solution_files": [
+        "OAI/Geometry/ProjectionBody/Counterexample.lean"
+      ]
+    },
+    {
+      "challenge": "ProjectionMoments",
+      "comparator_config": "ComparatorChallenges/ProjectionMoments.json",
+      "declarations": [
+        "OAI.ProjectionMoments.main"
+      ],
+      "solution_files": [
+        "OAI/Probability/ProjectionMoments/Main.lean"
+      ]
+    },
+    {
+      "challenge": "ProjectionVolume",
+      "comparator_config": "ComparatorChallenges/ProjectionVolume.json",
+      "declarations": [
+        "OAI.Paper092.product_counterexample"
+      ],
+      "solution_files": [
+        "OAI/Geometry/ProjectionVolume/ProductCounterexample.lean"
+      ]
+    },
+    {
+      "challenge": "QACParity",
+      "comparator_config": "ComparatorChallenges/QACParity.json",
+      "declarations": [
+        "OAI.QAC.parity_lower_bound"
+      ],
+      "solution_files": [
+        "OAI/InformationTheory/QuantumCircuit/Parity.lean"
+      ]
+    },
+    {
+      "challenge": "QuadricBundles",
+      "comparator_config": "ComparatorChallenges/QuadricBundles.json",
+      "declarations": [
+        "OAI.QuadricCounterexample.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Geometry/QuadricBundles/Main.lean"
+      ]
+    },
+    {
+      "challenge": "QuantitativeVanDerWaerden",
+      "comparator_config": "ComparatorChallenges/QuantitativeVanDerWaerden.json",
+      "declarations": [
+        "OAI.QuantitativeVanDerWaerden.uniform_lower_bound"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/ProgressionColoring/Main.lean"
+      ]
+    },
+    {
+      "challenge": "QuasiRiemannHypothesis",
+      "comparator_config": "ComparatorChallenges/QuasiRiemannHypothesis.json",
+      "declarations": [
+        "OAI.riemannZeta_ne_zero_of_seven_eighths_lt_re"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/DirichletL/Nonvanishing.lean"
+      ]
+    },
+    {
+      "challenge": "QuinticLienard",
+      "comparator_config": "ComparatorChallenges/QuinticLienard.json",
+      "declarations": [
+        "OAI.QuinticLienard.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/LienardCycles/Main.lean"
+      ]
+    },
+    {
+      "challenge": "RadialTransition",
+      "comparator_config": "ComparatorChallenges/RadialTransition.json",
+      "declarations": [
+        "OAI.RadialTransition.main"
+      ],
+      "solution_files": [
+        "OAI/Probability/RadialTransition/Main.lean"
+      ]
+    },
+    {
+      "challenge": "RandomizedMeanPayoff",
+      "comparator_config": "ComparatorChallenges/RandomizedMeanPayoff.json",
+      "declarations": [
+        "OAI.randomized_quasipolynomial_mean_payoff"
+      ],
+      "solution_files": [
+        "OAI/Computability/RandomMean/Main.lean"
+      ]
+    },
+    {
+      "challenge": "RationalHitting",
+      "comparator_config": "ComparatorChallenges/RationalHitting.json",
+      "declarations": [
+        "OAI.RationalHitting.main"
+      ],
+      "solution_files": [
+        "OAI/Computability/RationalHitting/Main.lean"
+      ]
+    },
+    {
+      "challenge": "RecursivePotentials",
+      "comparator_config": "ComparatorChallenges/RecursivePotentials.json",
+      "declarations": [
+        "OAI.ComparatorModel.RecursivePotentials.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/RecursivePotentials/Challenge.lean"
+      ]
+    },
+    {
+      "challenge": "ReflexiveFixedPoints",
+      "comparator_config": "ComparatorChallenges/ReflexiveFixedPoints.json",
+      "declarations": [
+        "OAI.ReflexiveFixedPoints.exists_fixedPoint_of_canonicallyReflexive"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Nonexpansive/Main.lean"
+      ]
+    },
+    {
+      "challenge": "RegularParity",
+      "comparator_config": "ComparatorChallenges/RegularParity.json",
+      "declarations": [
+        "OAI.QAC.parity_lower_bound_polynomial_size"
+      ],
+      "solution_files": [
+        "OAI/InformationTheory/QuantumCircuit/Main.lean"
+      ]
+    },
+    {
+      "challenge": "RieszQuantitative",
+      "comparator_config": "ComparatorChallenges/RieszQuantitative.json",
+      "declarations": [
+        "OAI.RieszRectifiability.quantitative_higher_codimension_riesz_rectifiability"
+      ],
+      "solution_files": [
+        "OAI/Analysis/RieszRectifiability/Uniformity/Rectifiability.lean"
+      ]
+    },
+    {
+      "challenge": "RyserCovering",
+      "comparator_config": "ComparatorChallenges/RyserCovering.json",
+      "declarations": [
+        "OAI.RyserCoveringCounterexample.exists_prime_eventually_counterexampleRank"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/Ryser/Construction/Main.lean"
+      ]
+    },
+    {
+      "challenge": "RyserOddExtensions",
+      "comparator_config": "ComparatorChallenges/RyserOddExtensions.json",
+      "declarations": [
+        "OAI.RyserOdd.eventualOddFailures_and_infinite"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/Ryser/OddExtensions.lean"
+      ]
+    },
+    {
+      "challenge": "Saxl",
+      "comparator_config": "ComparatorChallenges/Saxl.json",
+      "declarations": [
+        "OAI.Saxl.saxl_conjecture"
+      ],
+      "solution_files": [
+        "OAI/RepresentationTheory/Saxl/Main.lean"
+      ]
+    },
+    {
+      "challenge": "SecondKahnKalai",
+      "comparator_config": "ComparatorChallenges/SecondKahnKalai.json",
+      "declarations": [
+        "OAI.LeanBlast.SecondKahnKalai.secondKahnKalaiBounds"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/GraphThreshold/Main.lean"
+      ]
+    },
+    {
+      "challenge": "SelfSimilar",
+      "comparator_config": "ComparatorChallenges/SelfSimilar.json",
+      "declarations": [
+        "OAI.EntropyRateDimension.entropy_rate_dimension"
+      ],
+      "solution_files": [
+        "OAI/MeasureTheory/SelfSimilar/Main.lean"
+      ]
+    },
+    {
+      "challenge": "SensitivitySeparation",
+      "comparator_config": "ComparatorChallenges/SensitivitySeparation.json",
+      "declarations": [
+        "OAI.Paper320.quantitative_separation"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/Sensitivity/Separation.lean"
+      ]
+    },
+    {
+      "challenge": "SeymourSecondNeighborhood",
+      "comparator_config": "ComparatorChallenges/SeymourSecondNeighborhood.json",
+      "declarations": [
+        "OAI.SeymourSecondNeighborhood.exists_goodVertex"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/SecondNeighborhood/Main.lean"
+      ]
+    },
+    {
+      "challenge": "SiegelZeros",
+      "comparator_config": "ComparatorChallenges/SiegelZeros.json",
+      "declarations": [
+        "OAI.SiegelZeros.WeightedTorusJets.exists_absolute_real_zero_gap"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/SiegelZeros/Conclusions/Theorem.lean"
+      ]
+    },
+    {
+      "challenge": "SignedFiniteBand",
+      "comparator_config": "ComparatorChallenges/SignedFiniteBand.json",
+      "declarations": [
+        "OAI.SignedDisk.CenteredDiskEndpoint.main_signed_finite_band"
+      ],
+      "solution_files": [
+        "OAI/Analysis/SignedDisk/Main.lean"
+      ]
+    },
+    {
+      "challenge": "SimpleAmenable",
+      "comparator_config": "ComparatorChallenges/SimpleAmenable.json",
+      "declarations": [
+        "OAI.SimpleAmenable.main"
+      ],
+      "solution_files": [
+        "OAI/GroupTheory/SimpleAmenable/Main.lean"
+      ]
+    },
+    {
+      "challenge": "SingleFold",
+      "comparator_config": "ComparatorChallenges/SingleFold.json",
+      "declarations": [
+        "OAI.SingleFold.main"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/SingleFold/Main.lean"
+      ]
+    },
+    {
+      "challenge": "SingleLatticeCovering",
+      "comparator_config": "ComparatorChallenges/SingleLatticeCovering.json",
+      "declarations": [
+        "OAI.SingleLatticeCovering.single_lattice_covering"
+      ],
+      "solution_files": [
+        "OAI/Geometry/LatticeCovering/Main.lean"
+      ]
+    },
+    {
+      "challenge": "SingletonLoopMatching",
+      "comparator_config": "ComparatorChallenges/SingletonLoopMatching.json",
+      "declarations": [
+        "OAI.LoopMatching.fullEndpoint"
+      ],
+      "solution_files": [
+        "OAI/Computability/LoopMatching/Main.lean"
+      ]
+    },
+    {
+      "challenge": "SmoothYau",
+      "comparator_config": "ComparatorChallenges/SmoothYau.json",
+      "declarations": [
+        "OAI.YauCounterexamples.sphere_three",
+        "OAI.YauCounterexamples.sphere_two_torus_two"
+      ],
+      "solution_files": [
+        "OAI/Geometry/SmoothYau/ProductMetric/SphereProduct.lean",
+        "OAI/Geometry/SmoothYau/SphereMetric/ThreeSphere.lean"
+      ]
+    },
+    {
+      "challenge": "StableCoordinateFour",
+      "comparator_config": "ComparatorChallenges/StableCoordinateFour.json",
+      "declarations": [
+        "OAI.StableCoordinate.principal_package"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/StableCoordinate/Principal.lean"
+      ]
+    },
+    {
+      "challenge": "SteinitzBergstrom",
+      "comparator_config": "ComparatorChallenges/SteinitzBergstrom.json",
+      "declarations": [
+        "OAI.EuclideanSteinitzBergstrom.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Steinitz/Main.lean"
+      ]
+    },
+    {
+      "challenge": "StrictMeans",
+      "comparator_config": "ComparatorChallenges/StrictMeans.json",
+      "declarations": [
+        "OAI.StrictInverseFirstPower.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/StrictMeans/Main.lean"
+      ]
+    },
+    {
+      "challenge": "StrongThinTree",
+      "comparator_config": "ComparatorChallenges/StrongThinTree.json",
+      "declarations": [
+        "OAI.StrongThinTree.strongThinTree"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/ThinTrees/Main.lean"
+      ]
+    },
+    {
+      "challenge": "StructuralCrouzeix",
+      "comparator_config": "ComparatorChallenges/StructuralCrouzeix.json",
+      "declarations": [
+        "OAI.StructuralCrouzeixReference.challenge"
+      ],
+      "solution_files": [
+        "OAI/Analysis/StructuralCrouzeix/Endpoint.lean"
+      ]
+    },
+    {
+      "challenge": "SubpolynomialLp",
+      "comparator_config": "ComparatorChallenges/SubpolynomialLp.json",
+      "declarations": [
+        "OAI.SubpolynomialLp.source_main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/LpDimension/Main.lean"
+      ]
+    },
+    {
+      "challenge": "SubsphereCurrent",
+      "comparator_config": "ComparatorChallenges/SubsphereCurrent.json",
+      "declarations": [
+        "OAI.SubsphereCurrent.full_current_main_scope"
+      ],
+      "solution_files": [
+        "OAI/Probability/Subsphere/Main.lean"
+      ]
+    },
+    {
+      "challenge": "Superstring",
+      "comparator_config": "ComparatorChallenges/Superstring.json",
+      "declarations": [
+        "OAI.Superstring.main"
+      ],
+      "solution_files": [
+        "OAI/Computability/Superstring/Main.lean"
+      ]
+    },
+    {
+      "challenge": "SurfaceConeCandidateSupport",
+      "comparator_config": "ComparatorChallenges/SurfaceConeCandidateSupport.json",
+      "declarations": [
+        "OAI.SmallCM.candidate_ring_properties"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/SurfaceCones/CandidateRing.lean"
+      ]
+    },
+    {
+      "challenge": "SymmetricDomains",
+      "comparator_config": "ComparatorChallenges/SymmetricDomains.json",
+      "declarations": [
+        "OAI.Release061.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/SymmetricDomains/Main.lean"
+      ]
+    },
+    {
+      "challenge": "SymmetricMahlerEquality",
+      "comparator_config": "ComparatorChallenges/SymmetricMahlerEquality.json",
+      "declarations": [
+        "OAI.SymmetricMahler.symmetric_mahler_equality"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Mahler/Classification.lean"
+      ]
+    },
+    {
+      "challenge": "SymmetricPolar",
+      "comparator_config": "ComparatorChallenges/SymmetricPolar.json",
+      "declarations": [
+        "OAI.SymmetricPolar.symmetric_polar_main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/PolarProducts/Main.lean"
+      ]
+    },
+    {
+      "challenge": "Tachikawa",
+      "comparator_config": "ComparatorChallenges/Tachikawa.json",
+      "declarations": [
+        "OAI.Tachikawa.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/RingTheory/Tachikawa/Counterexample.lean"
+      ]
+    },
+    {
+      "challenge": "TalagrandDiscreteConvexity",
+      "comparator_config": "ComparatorChallenges/TalagrandDiscreteConvexity.json",
+      "declarations": [
+        "OAI.TalagrandDiscreteConvexity.talagrand_discrete_convexity"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/DiscreteConvexity/Main.lean"
+      ]
+    },
+    {
+      "challenge": "TalagrandExpectationThreshold",
+      "comparator_config": "ComparatorChallenges/TalagrandExpectationThreshold.json",
+      "declarations": [
+        "OAI.TalagrandThreshold.talagrand_expectation_threshold_equivalence"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/ExpectationThreshold/Main.lean"
+      ]
+    },
+    {
+      "challenge": "TamingCompatibility",
+      "comparator_config": "ComparatorChallenges/TamingCompatibility.json",
+      "declarations": [
+        "OAI.TamingCompatibility.taming_implies_compatibility"
+      ],
+      "solution_files": [
+        "OAI/Geometry/TamingCompatibility/Main.lean"
+      ]
+    },
+    {
+      "challenge": "ThompsonNonamenability",
+      "comparator_config": "ComparatorChallenges/ThompsonNonamenability.json",
+      "declarations": [
+        "OAI.ThompsonNonamenability.thompson_F_nonamenable_composition"
+      ],
+      "solution_files": [
+        "OAI/GroupTheory/Thompson/Main.lean"
+      ]
+    },
+    {
+      "challenge": "ThorpRouting",
+      "comparator_config": "ComparatorChallenges/ThorpRouting.json",
+      "declarations": [
+        "OAI.ThorpNine.main"
+      ],
+      "solution_files": [
+        "OAI/Probability/ThorpRouting/Main.lean"
+      ]
+    },
+    {
+      "challenge": "ThorpWeightedCompatibility",
+      "comparator_config": "ComparatorChallenges/ThorpWeightedCompatibility.json",
+      "declarations": [
+        "OAI.ThorpCompatibility.weightedCompatibility_main"
+      ],
+      "solution_files": [
+        "OAI/Probability/ThorpCompatibility/Main.lean"
+      ]
+    },
+    {
+      "challenge": "TingleySphereIsometry",
+      "comparator_config": "ComparatorChallenges/TingleySphereIsometry.json",
+      "declarations": [
+        "OAI.Tingley.tingley_sphere_isometry_full"
+      ],
+      "solution_files": [
+        "OAI/Analysis/SphereIsometry/Extension.lean"
+      ]
+    },
+    {
+      "challenge": "TorsionFreeHyperbolic",
+      "comparator_config": "ComparatorChallenges/TorsionFreeHyperbolic.json",
+      "declarations": [
+        "OAI.Release075.main"
+      ],
+      "solution_files": [
+        "OAI/GroupTheory/Hyperbolic/Main.lean"
+      ]
+    },
+    {
+      "challenge": "TorsionFreeZeroDivisors",
+      "comparator_config": "ComparatorChallenges/TorsionFreeZeroDivisors.json",
+      "declarations": [
+        "OAI.TorsionFreeZeroDivisors.main"
+      ],
+      "solution_files": [
+        "OAI/Algebra/GroupRing/Main.lean"
+      ]
+    },
+    {
+      "challenge": "TraceIdealTransportSupport",
+      "comparator_config": "ComparatorChallenges/TraceIdealTransportSupport.json",
+      "declarations": [
+        "OAI.TraceConeClassification.TraceConeEquiv.idealOrderIso_finIdeal",
+        "OAI.TraceConeClassification.TraceConeEquiv.idealOrderIso_zeroIdeal",
+        "OAI.TraceConeClassification.closed_ideal_weight_exists"
+      ],
+      "solution_files": [
+        "OAI/Analysis/TraceCone/FiniteIdeal.lean",
+        "OAI/Analysis/TraceCone/IdealTransport.lean"
+      ]
+    },
+    {
+      "challenge": "TriangularHilbert",
+      "comparator_config": "ComparatorChallenges/TriangularHilbert.json",
+      "declarations": [
+        "OAI.TriangularHilbert.main_estimate"
+      ],
+      "solution_files": [
+        "OAI/Analysis/TriangularHilbert/Main.lean"
+      ]
+    },
+    {
+      "challenge": "TwoWayComplementation",
+      "comparator_config": "ComparatorChallenges/TwoWayComplementation.json",
+      "declarations": [
+        "OAI.TwoWayComplementation.complementation_lower_bound_finite"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/TwoWayAutomata/Main.lean"
+      ]
+    },
+    {
+      "challenge": "TwoWayDeterminization",
+      "comparator_config": "ComparatorChallenges/TwoWayDeterminization.json",
+      "declarations": [
+        "OAI.TwoWayComplementation.explicit_family_main"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/TwoWayAutomata/ExplicitFamily.lean"
+      ]
+    },
+    {
+      "challenge": "UniformFourier",
+      "comparator_config": "ComparatorChallenges/UniformFourier.json",
+      "declarations": [
+        "OAI.PowerSaving.convolution_main",
+        "OAI.PowerSaving.transform_main"
+      ],
+      "solution_files": [
+        "OAI/Computability/FourierTransform/Main.lean"
+      ]
+    },
+    {
+      "challenge": "UniformGamma",
+      "comparator_config": "ComparatorChallenges/UniformGamma.json",
+      "declarations": [
+        "OAI.ComparatorModel.CurrentMain.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/TracialSplitting/Challenge.lean"
+      ]
+    },
+    {
+      "challenge": "UniformSparsestCut",
+      "comparator_config": "ComparatorChallenges/UniformSparsestCut.json",
+      "declarations": [
+        "OAI.UniformSparsestCut.mainGap"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/SparsestCut/Main.lean"
+      ]
+    },
+    {
+      "challenge": "UniqueGamesTheorem",
+      "comparator_config": "ComparatorChallenges/UniqueGamesTheorem.json",
+      "declarations": [
+        "OAI.UniqueGamesTheorem.theorem11"
+      ],
+      "solution_files": [
+        "OAI/Computability/UniqueGames/Theorem.lean"
+      ]
+    },
+    {
+      "challenge": "UniversalFInfinity",
+      "comparator_config": "ComparatorChallenges/UniversalFInfinity.json",
+      "declarations": [
+        "OAI.UniversalFInfinity.universal_group_of_type_FInfinity"
+      ],
+      "solution_files": [
+        "OAI/GroupTheory/UniversalGroup/Main.lean"
+      ]
+    },
+    {
+      "challenge": "VertexCover",
+      "comparator_config": "ComparatorChallenges/VertexCover.json",
+      "declarations": [
+        "OAI.VertexCover.every_fixed_factor_below_two"
+      ],
+      "solution_files": [
+        "OAI/Computability/VertexCover/Main.lean"
+      ]
+    },
+    {
+      "challenge": "VlasovMaxwell",
+      "comparator_config": "ComparatorChallenges/VlasovMaxwell.json",
+      "declarations": [
+        "OAI.RVM.global_classical_solution"
+      ],
+      "solution_files": [
+        "OAI/Analysis/VlasovMaxwell/Main.lean"
+      ]
+    },
+    {
+      "challenge": "WeakHessian",
+      "comparator_config": "ComparatorChallenges/WeakHessian.json",
+      "declarations": [
+        "OAI.WeakHessian.every_geodesic"
+      ],
+      "solution_files": [
+        "OAI/Geometry/WeakHessian/Main.lean"
+      ]
+    },
+    {
+      "challenge": "WeakMTWGlobalSupport",
+      "comparator_config": "ComparatorChallenges/WeakMTWGlobalSupport.json",
+      "declarations": [
+        "OAI.WeakMTWGlobalSupport.current_main_convexity"
+      ],
+      "solution_files": [
+        "OAI/Geometry/WeakMTW/Convexity.lean"
+      ]
+    },
+    {
+      "challenge": "YauCounterexample",
+      "comparator_config": "ComparatorChallenges/YauCounterexample.json",
+      "declarations": [
+        "OAI.Yau.Target.yau_nodal_set_upper_bound_counterexample"
+      ],
+      "solution_files": [
+        "OAI/Geometry/NodalSets/Main.lean"
+      ]
+    }
+  ],
+  "failures": []
+}

@@ -1,0 +1,121 @@
+{
+  "timestamp": "2026-10-16T17:07:04Z",
+  "memory_benchmark": [
+    {
+      "name": "Clip-Small (16f, 32x32)",
+      "shape": [
+        16,
+        16,
+        32,
+        32
+      ],
+      "bond_ranks": [
+        8,
+        8,
+        8
+      ],
+      "dense_mb": 2.0,
+      "tt_mb": 0.026,
+      "compression_ratio": 75.85,
+      "memory_saving_pct": 98.7,
+      "r2_fidelity": 0.9988,
+      "psnr_db": 43.55,
+      "compress_time_ms": 96.56,
+      "decompress_time_ms": 0.49
+    },
+    {
+      "name": "Clip-Medium (32f, 64x64)",
+      "shape": [
+        32,
+        16,
+        64,
+        64
+      ],
+      "bond_ranks": [
+        12,
+        12,
+        12
+      ],
+      "dense_mb": 16.0,
+      "tt_mb": 0.097,
+      "compression_ratio": 165.49,
+      "memory_saving_pct": 99.4,
+      "r2_fidelity": 0.9994,
+      "psnr_db": 46.13,
+      "compress_time_ms": 887.22,
+      "decompress_time_ms": 19.39
+    },
+    {
+      "name": "Clip-Large (64f, 64x64)",
+      "shape": [
+        64,
+        16,
+        64,
+        64
+      ],
+      "bond_ranks": [
+        16,
+        16,
+        16
+      ],
+      "dense_mb": 32.0,
+      "tt_mb": 0.172,
+      "compression_ratio": 186.18,
+      "memory_saving_pct": 99.5,
+      "r2_fidelity": 0.9994,
+      "psnr_db": 46.15,
+      "compress_time_ms": 2475.79,
+      "decompress_time_ms": 13.98
+    }
+  ],
+  "step_efficiency_benchmark": [
+    {
+      "name": "50-Step Standard Euler Diffusion (Baseline)",
+      "steps": 50,
+      "order": 1,
+      "latency_ms": 1.251,
+      "speedup_vs_50_euler": 1.0,
+      "trajectory_rmse": 0.00148,
+      "trajectory_r2": 1.0
+    },
+    {
+      "name": "10-Step Standard Euler Diffusion",
+      "steps": 10,
+      "order": 1,
+      "latency_ms": 0.248,
+      "speedup_vs_50_euler": 5.05,
+      "trajectory_rmse": 0.00761,
+      "trajectory_r2": 0.9998
+    },
+    {
+      "name": "4-Step Jet2 Curvature Flow Stepper",
+      "steps": 4,
+      "order": 2,
+      "latency_ms": 0.315,
+      "speedup_vs_50_euler": 3.97,
+      "trajectory_rmse": 0.0058,
+      "trajectory_r2": 0.9999
+    },
+    {
+      "name": "2-Step Jet2 Curvature Flow Stepper",
+      "steps": 2,
+      "order": 2,
+      "latency_ms": 0.156,
+      "speedup_vs_50_euler": 8.03,
+      "trajectory_rmse": 0.02406,
+      "trajectory_r2": 0.9981
+    }
+  ],
+  "temporal_interpolation_benchmark": {
+    "source_frames": 16,
+    "frames_60fps": 39,
+    "time_60fps_ms": 30.49,
+    "ms_per_frame_60fps": 0.782,
+    "frames_120fps": 76,
+    "time_120fps_ms": 47.97,
+    "ms_per_frame_120fps": 0.631,
+    "temporal_smoothness_orig": 0.003291,
+    "temporal_smoothness_60fps": 8.1e-05,
+    "temporal_smoothness_120fps": 5e-06
+  }
+}

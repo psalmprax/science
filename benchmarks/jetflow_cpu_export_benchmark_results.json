@@ -1,0 +1,29 @@
+{
+  "timestamp_utc": "2026-10-16T22:43:53.280060+00:00",
+  "config": {
+    "hidden_dim": 32,
+    "num_layers": 1,
+    "frames": 6,
+    "latent_shape": [
+      12,
+      16,
+      16
+    ],
+    "n_params": 34476,
+    "reps": 25
+  },
+  "sizes_bytes": {
+    "fp32_onnx": 173520,
+    "int8_onnx": 104928
+  },
+  "parity": {
+    "ort_fp32_vs_torch_max_abs": 0.0,
+    "ort_int8_vs_torch_max_abs": 0.0,
+    "ort_fp32_alt_config_vs_torch_max_abs": 0.0
+  },
+  "latency_ms": {
+    "torch_eager": 8.680554879829288,
+    "ort_fp32": 5.317047438584268,
+    "ort_int8": 9.966901680454612
+  }
+}

@@ -1,0 +1,2864 @@
+{
+  "rule": "candidate classification of formal STATEMENTS; nothing here is a verification",
+  "challenges": 189,
+  "counts": {
+    "tier3_uncheckable_proof_level": 126,
+    "tier1_candidate_explicit_construction": 48,
+    "tier2_candidate_numeric_or_bound": 15
+  },
+  "results": [
+    {
+      "challenge": "AmplitudeDamping",
+      "declarations": [
+        "OAI.GAD.main"
+      ],
+      "solution_files": [
+        "OAI/InformationTheory/AmplitudeDamping/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "10 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ArnoldCounterexample",
+      "declarations": [
+        "OAI.ArnoldCounterexample.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/Arnold/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "4 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "BinPackingGap",
+      "declarations": [
+        "OAI.BinPackingGap.main_results"
+      ],
+      "solution_files": [
+        "OAI/Computability/BinPacking/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "9 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "BinaryMatching",
+      "declarations": [
+        "OAI.BinaryMatching.deterministic_approximate_counting"
+      ],
+      "solution_files": [
+        "OAI/Computability/MatchingCount/BinarySolve.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "4 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "BoundedTreePotentials",
+      "declarations": [
+        "OAI.BoundedTreePotentials.TreeCalculus.main_counterexample"
+      ],
+      "solution_files": [
+        "OAI/Analysis/TreePotential/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "6 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CliqueFreeLog",
+      "declarations": [
+        "OAI.CliqueFreeLog.logarithmic_independence_bound"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/CliqueFree/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "3 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CommutingDerivations",
+      "declarations": [
+        "OAI.AbhyankarSathaye.CommutingDerivations.commuting_derivations_with_ordinary_extras"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/CommutingDerivations/OrdinaryExtraMain.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "7 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "DaugavetModuli",
+      "declarations": [
+        "OAI.ExactModuli.exact_example"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Daugavet/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "28 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "DepthThree",
+      "declarations": [
+        "OAI.DepthThreeLowerBound.exists_polynomial_time_language_depth_three_lower_bound"
+      ],
+      "solution_files": [
+        "OAI/Computability/DepthThree/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "5 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "DoublingHilbert",
+      "declarations": [
+        "OAI.DoublingHilbert.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/DoublingHilbert/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "EgyptianFractions",
+      "declarations": [
+        "OAI.Problem337.counting_double_log_order",
+        "OAI.Problem337.main_double_log_order",
+        "OAI.Problem337.prescribed_denominator_corollary"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/EgyptianFractions/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "31 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)",
+        "asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "EntangledGames",
+      "declarations": [
+        "OAI.ThresholdParallelRepetition.threshold_parallel_repetition"
+      ],
+      "solution_files": [
+        "OAI/Probability/EntangledGames/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "9 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "EuclideanFiveColor",
+      "declarations": [
+        "OAI.EuclideanFiveColor.no_proper_five_coloring"
+      ],
+      "solution_files": [
+        "OAI/Geometry/PlaneColoring/Five.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "FoulkesHowe",
+      "declarations": [
+        "OAI.Problem346.canonical_foulkes_howe_surjective"
+      ],
+      "solution_files": [
+        "OAI/RepresentationTheory/FoulkesHowe/Stabilization.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "FourierLLogL",
+      "declarations": [
+        "OAI.FourierLLogL.paperMain"
+      ],
+      "solution_files": [
+        "OAI/Analysis/FourierLLogL/PaperMain.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "4 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)",
+        "asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "HadwigerCounterexample",
+      "declarations": [
+        "OAI.HadwigerCounterexample.not_hadwiger_conjecture"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/HadwigerCounterexample/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "13 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "HarmonicGrowth",
+      "declarations": [
+        "OAI.HarmonicCounterexample.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/HarmonicGrowth/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "InfiniteMatroid",
+      "declarations": [
+        "OAI.InfiniteMatroidCounterexample.main"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/InfiniteMatroid/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "IsometricImmersion",
+      "declarations": [
+        "OAI.SmoothLocal.Geometry.exists_local_metric_without_local_immersion"
+      ],
+      "solution_files": [
+        "OAI/Geometry/IsometricImmersion/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "3 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "KahlerSplitting",
+      "declarations": [
+        "OAI.UniversalCoverSplitting.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/KahlerSplitting/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "3 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "KaplanskyFinitelyPresented",
+      "declarations": [
+        "OAI.KaplanskyCounterexample.finitelyPresented_counterexample"
+      ],
+      "solution_files": [
+        "OAI/RingTheory/DirectFiniteness/FinitelyPresented.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "existential quantifier in statement",
+        "3 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "KaplanskyQuasitrace",
+      "declarations": [
+        "OAI.Kaplansky.kaplansky_quasitrace_counterexample"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Kaplansky/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "LipschitzEquivalence",
+      "declarations": [
+        "OAI.LipschitzCounterexample.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/LipschitzEquivalence/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "LittleFinitistic",
+      "declarations": [
+        "OAI.LittleFinitistic.Main.exists_counterexample"
+      ],
+      "solution_files": [
+        "OAI/Algebra/Finitistic/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "existential quantifier in statement",
+        "4 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "LogConcaveQuery",
+      "declarations": [
+        "OAI.LogConcaveSampling.exact_source_main"
+      ],
+      "solution_files": [
+        "OAI/Probability/LogConcave/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "5 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "MatrixRemoval",
+      "declarations": [
+        "OAI.Problem348.no_polynomial_removal_bound"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/MatrixRemoval/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "6 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "MemoryPrecision",
+      "declarations": [
+        "OAI.MemoryPrecision.main"
+      ],
+      "solution_files": [
+        "OAI/Probability/MemoryPrecision/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "68 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "MetricEntropyDuality",
+      "declarations": [
+        "OAI.MetricEntropyDuality.exists_entropy_duality_counterexample_with_covers"
+      ],
+      "solution_files": [
+        "OAI/Analysis/MetricEntropy/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "3 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "Nagata",
+      "declarations": [
+        "OAI.Nagata.nagata_conjecture"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/PlaneCurves/Nagata.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "29 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "OneTapeSpace",
+      "declarations": [
+        "OAI.Fifths.Single.capped",
+        "OAI.Fifths.Single.unknown"
+      ],
+      "solution_files": [
+        "OAI/Computability/SpaceSimulation/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "9 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "OneWayLiveness",
+      "declarations": [
+        "OAI.OneWayLiveness.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/Automata/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "9 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "PeriodicTilingThree",
+      "declarations": [
+        "OAI.PeriodicTilingThree.periodic_tiling_counterexample_and_minimality"
+      ],
+      "solution_files": [
+        "OAI/Geometry/PeriodicTiling/Counterexample.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "6 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "PlanarFirstPassage",
+      "declarations": [
+        "OAI.PlanarFPP.manuscriptMain"
+      ],
+      "solution_files": [
+        "OAI/Probability/FirstPassage/BoundaryCurve.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "5 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ProjectionCounterexample",
+      "declarations": [
+        "OAI.ProjectionCounterexample.universal_simplex_upper_bound_false"
+      ],
+      "solution_files": [
+        "OAI/Geometry/ProjectionBody/Counterexample.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ProjectionVolume",
+      "declarations": [
+        "OAI.Paper092.product_counterexample"
+      ],
+      "solution_files": [
+        "OAI/Geometry/ProjectionVolume/ProductCounterexample.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "14 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "QuadricBundles",
+      "declarations": [
+        "OAI.QuadricCounterexample.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Geometry/QuadricBundles/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "RadialTransition",
+      "declarations": [
+        "OAI.RadialTransition.main"
+      ],
+      "solution_files": [
+        "OAI/Probability/RadialTransition/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "9 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "RegularParity",
+      "declarations": [
+        "OAI.QAC.parity_lower_bound_polynomial_size"
+      ],
+      "solution_files": [
+        "OAI/InformationTheory/QuantumCircuit/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "6 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "RyserCovering",
+      "declarations": [
+        "OAI.RyserCoveringCounterexample.exists_prime_eventually_counterexampleRank"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/Ryser/Construction/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "5 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "RyserOddExtensions",
+      "declarations": [
+        "OAI.RyserOdd.eventualOddFailures_and_infinite"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/Ryser/OddExtensions.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "4 numeric literals in statement",
+        "asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SensitivitySeparation",
+      "declarations": [
+        "OAI.Paper320.quantitative_separation"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/Sensitivity/Separation.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "7 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SingleLatticeCovering",
+      "declarations": [
+        "OAI.SingleLatticeCovering.single_lattice_covering"
+      ],
+      "solution_files": [
+        "OAI/Geometry/LatticeCovering/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SmoothYau",
+      "declarations": [
+        "OAI.YauCounterexamples.sphere_three",
+        "OAI.YauCounterexamples.sphere_two_torus_two"
+      ],
+      "solution_files": [
+        "OAI/Geometry/SmoothYau/ProductMetric/SphereProduct.lean",
+        "OAI/Geometry/SmoothYau/SphereMetric/ThreeSphere.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "existential quantifier in statement",
+        "6 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SubpolynomialLp",
+      "declarations": [
+        "OAI.SubpolynomialLp.source_main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/LpDimension/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "19 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)",
+        "asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "TwoWayComplementation",
+      "declarations": [
+        "OAI.TwoWayComplementation.complementation_lower_bound_finite"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/TwoWayAutomata/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "11 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "TwoWayDeterminization",
+      "declarations": [
+        "OAI.TwoWayComplementation.explicit_family_main"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/TwoWayAutomata/ExplicitFamily.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "20 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "UniformSparsestCut",
+      "declarations": [
+        "OAI.UniformSparsestCut.mainGap"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/SparsestCut/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "4 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)",
+        "asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "YauCounterexample",
+      "declarations": [
+        "OAI.Yau.Target.yau_nodal_set_upper_bound_counterexample"
+      ],
+      "solution_files": [
+        "OAI/Geometry/NodalSets/Main.lean"
+      ],
+      "tier": "tier1_candidate_explicit_construction",
+      "evidence": [
+        "declaration name contains 'counterexample'",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CoordinateSweeps",
+      "declarations": [
+        "OAI.CoordinateSweeps.conditional_main"
+      ],
+      "solution_files": [
+        "OAI/Probability/CoordinateSweeps/Main.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "DiamondDistortion",
+      "declarations": [
+        "OAI.DiamondDistortion.headline_all_pairs"
+      ],
+      "solution_files": [
+        "OAI/Analysis/DiamondDistortion/Descent.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "8 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ForestSpace",
+      "declarations": [
+        "OAI.ForestSpace.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Analysis/ForestSpace/Main.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "7 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "FreeIsing",
+      "declarations": [
+        "OAI.Problem367.free_ising_factor_iff_threshold"
+      ],
+      "solution_files": [
+        "OAI/Probability/FreeIsing/Main.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "4 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "GaussianReplacement",
+      "declarations": [
+        "OAI.CurrentProjection.fiberBlockMain",
+        "OAI.CurrentProjection.hybridBlockMain"
+      ],
+      "solution_files": [
+        "OAI/Probability/GaussianReplacement/FiberBlock.lean",
+        "OAI/Probability/GaussianReplacement/Hybrid.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "15 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "HeckeSevenEighths",
+      "declarations": [
+        "OAI.SevenEighths.HeckeFamily.LFunction_ne_zero_of_seven_eighths_lt_re"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/DirichletL/Hecke/Nonvanishing.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "18 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "IndependentProducts",
+      "declarations": [
+        "OAI.IndependentProducts.main_exponential",
+        "OAI.IndependentProducts.main_general"
+      ],
+      "solution_files": [
+        "OAI/Analysis/ProductSpaces/Main.lean",
+        "OAI/Analysis/ProductSpaces/WeakNullity.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "28 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "MatchingEntropy",
+      "declarations": [
+        "OAI.MatchingEntropy.entropy_main"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/PerfectMatching/Main.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "4 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "MidpointLenses",
+      "declarations": [
+        "OAI.SegmentLenses.midpoint_lens_main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/SegmentLenses/Main.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "8 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "QuasiRiemannHypothesis",
+      "declarations": [
+        "OAI.riemannZeta_ne_zero_of_seven_eighths_lt_re"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/DirichletL/Nonvanishing.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "3 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": {
+        "family": 3,
+        "probe": "riemann_verifier (wave 1)"
+      }
+    },
+    {
+      "challenge": "SecondKahnKalai",
+      "declarations": [
+        "OAI.LeanBlast.SecondKahnKalai.secondKahnKalaiBounds"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/GraphThreshold/Main.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SiegelZeros",
+      "declarations": [
+        "OAI.SiegelZeros.WeightedTorusJets.exists_absolute_real_zero_gap"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/SiegelZeros/Conclusions/Theorem.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "existential quantifier in statement",
+        "16 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "StrictMeans",
+      "declarations": [
+        "OAI.StrictInverseFirstPower.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/StrictMeans/Main.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "existential quantifier in statement",
+        "13 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SymmetricPolar",
+      "declarations": [
+        "OAI.SymmetricPolar.symmetric_polar_main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/PolarProducts/Main.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "4 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ThorpRouting",
+      "declarations": [
+        "OAI.ThorpNine.main"
+      ],
+      "solution_files": [
+        "OAI/Probability/ThorpRouting/Main.lean"
+      ],
+      "tier": "tier2_candidate_numeric_or_bound",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "12 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "AbhyankarSathaye",
+      "declarations": [
+        "OAI.AbhyankarSathaye.exists_noncoordinate_polynomial"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/AbhyankarSathaye/Counterexample.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ArtinCAT0",
+      "declarations": [
+        "OAI.ArtinCAT0.main"
+      ],
+      "solution_files": [
+        "OAI/GroupTheory/ArtinCAT0/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "3 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "AsymptoticallyMinimalLittlewood",
+      "declarations": [
+        "OAI.AsymptoticallyMinimalLittlewood.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Littlewood/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "AuslanderReiten",
+      "declarations": [
+        "OAI.ArExplicit.Statement.main"
+      ],
+      "solution_files": [
+        "OAI/Algebra/AuslanderReiten/All.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "BackwardIntertwiners",
+      "declarations": [
+        "OAI.BackwardIntertwiners.direct_algebra_corollary"
+      ],
+      "solution_files": [
+        "OAI/Analysis/BackwardIntertwiners/AlgebraCorollary.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "BassTrace",
+      "declarations": [
+        "OAI.BassTrace.RightProjective.bassTraceModules_vanishing_and_support"
+      ],
+      "solution_files": [
+        "OAI/RingTheory/BassTrace/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "BiholderTransport",
+      "declarations": [
+        "OAI.WeakMTWTransport.uniform_biHolder_transport"
+      ],
+      "solution_files": [
+        "OAI/Analysis/BiholderTransport/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "BinarySweep",
+      "declarations": [
+        "OAI.binary_sweep_contraction_and_mixing"
+      ],
+      "solution_files": [
+        "OAI/Probability/BinarySweep/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "BipartiteCrossing",
+      "declarations": [
+        "OAI.Zarankiewicz.mainTarget_proof"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/Crossing/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "BorsukNine",
+      "declarations": [
+        "OAI.BorsukNine.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Geometry/Borsuk/Counterexample.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "BoundedRecovery",
+      "declarations": [
+        "OAI.BoundedRecovery.bounded_recovery"
+      ],
+      "solution_files": [
+        "OAI/Analysis/ModularRecovery/Recovery.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "5 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)",
+        "asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "BoundedTreewidthL1",
+      "declarations": [
+        "OAI.BoundedTreewidthL1.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/TreewidthL1/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "Brennan",
+      "declarations": [
+        "OAI.Brennan.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Analysis/IntegralMeans/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "BrennanSharp",
+      "declarations": [
+        "OAI.Brennan.Sharp.sharp_endpoints"
+      ],
+      "solution_files": [
+        "OAI/Analysis/IntegralMeans/SharpEndpoints.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "C0Absorption",
+      "declarations": [
+        "OAI.C0Absorption.main_result"
+      ],
+      "solution_files": [
+        "OAI/Analysis/C0Absorption/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "CHObstruction",
+      "declarations": [
+        "OAI.CHObstruction.main"
+      ],
+      "solution_files": [
+        "OAI/ModelTheory/Categoricity/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CartierChartCompactnessSupport",
+      "declarations": [
+        "OAI.CartierSections.isCompact_closedChartFieldRetraction_cone"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/CartierSections/ChartCompactness.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "CharacterCriterion",
+      "declarations": [
+        "OAI.KirchbergRordam.character_criterion"
+      ],
+      "solution_files": [
+        "OAI/Analysis/CharacterCriterion/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CharacterVarietiesAllSeamsSupport",
+      "declarations": [
+        "OAI.IntegralCharacterVarieties.SurfacePresentation.Diagram.producedMarkedValues_allSeams"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/CharacterVarieties/Seams/ProducedSolution.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "ChoicelessPolynomialTime",
+      "declarations": [
+        "OAI.CPTSeparation.main"
+      ],
+      "solution_files": [
+        "OAI/ModelTheory/Choiceless/Separation.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CirculantHadamard",
+      "declarations": [
+        "OAI.CirculantHadamard.exists_iff_order_one_or_four"
+      ],
+      "solution_files": [
+        "OAI/LinearAlgebra/CirculantHadamard/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "3 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ClassicalON",
+      "declarations": [
+        "OAI.ClassicalON.main"
+      ],
+      "solution_files": [
+        "OAI/Probability/ClassicalON/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CommonBasesFPRAS",
+      "declarations": [
+        "OAI.common_bases_fpras"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/MatroidCounting/CommonBases.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CompactBanach",
+      "declarations": [
+        "OAI.CompactBanach.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/DoublingHilbert/CompactBanach.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CompleteCrossing",
+      "declarations": [
+        "OAI.Paper170.complete_graph_crossing_number"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/CompleteCrossing/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CompleteCrouzeix",
+      "declarations": [
+        "OAI.CompleteCrouzeix.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/NumericalRange/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ComplexCancellation",
+      "declarations": [
+        "OAI.ComplexCancellation.main"
+      ],
+      "solution_files": [
+        "OAI/Algebra/AffineCancellation/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "Conductivity",
+      "declarations": [
+        "OAI.ScalarConductivity.main_nonuniqueness"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Conductivity/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ConjugatePoints",
+      "declarations": [
+        "OAI.ThreeManifold.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Geometry/ConjugatePoints/ThreeManifold.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ContinuumTransition",
+      "declarations": [
+        "OAI.ContinuumTemperature.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Probability/ContinuumTransition/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "Cotype",
+      "declarations": [
+        "OAI.Cotype.mainTarget_proved"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Cotype/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CoulombIonization",
+      "declarations": [
+        "OAI.CoulombAtom.generalized_ionization"
+      ],
+      "solution_files": [
+        "OAI/Analysis/CoulombIonization/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CourtadeKumar",
+      "declarations": [
+        "OAI.LeanBlast.CourtadeKumar.courtadeKumarAndAttainment"
+      ],
+      "solution_files": [
+        "OAI/InformationTheory/BooleanNoise/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CriticalSK",
+      "declarations": [
+        "OAI.CriticalSK.covariance_and_linear_tests"
+      ],
+      "solution_files": [
+        "OAI/MathematicalPhysics/CriticalSK/Rayleigh.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "30 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)",
+        "asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CriticalSKMixing",
+      "declarations": [
+        "OAI.CriticalSK.critical_mixing_bounds"
+      ],
+      "solution_files": [
+        "OAI/MathematicalPhysics/CriticalMixing/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "7 numeric literals in statement",
+        "named real constant (pi/log/sqrt/zeta/...)",
+        "asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CriticalZ3",
+      "declarations": [
+        "OAI.CriticalZ3.critical_no_infinite"
+      ],
+      "solution_files": [
+        "OAI/Probability/CriticalZ3/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "CycleDecomposition",
+      "declarations": [
+        "OAI.ErdosGallai.erdos_gallai"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/CycleDecomposition/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "DegreeRigidity",
+      "declarations": [
+        "OAI.TuringRigidity.ManuscriptMain.rigidity"
+      ],
+      "solution_files": [
+        "OAI/Computability/DegreeRigidity/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "DeligneDrinfeld",
+      "declarations": [
+        "OAI.DeligneDrinfeld.main"
+      ],
+      "solution_files": [
+        "OAI/Algebra/Drinfeld/Completion.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "DirectCrouzeix",
+      "declarations": [
+        "OAI.DirectCrouzeix.complete_crouzeix"
+      ],
+      "solution_files": [
+        "OAI/Analysis/DirectCrouzeix/CompleteBound.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "DirectionalBallisticity",
+      "declarations": [
+        "OAI.DirectionalTransience.directional_transience_implies_ballisticity"
+      ],
+      "solution_files": [
+        "OAI/Probability/Ballisticity/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "DirichletSevenEighths",
+      "declarations": [
+        "OAI.DirichletCharacter.LFunction_ne_zero_of_seven_eighths_lt_re"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/DirichletL/Nonvanishing.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "5 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "DixmierAllDiscrete",
+      "declarations": [
+        "OAI.Dixmier.current_main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Unitarizability/AllDiscrete.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "EuclideanRamsey",
+      "declarations": [
+        "OAI.EuclideanRamsey.classification"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/EuclideanRamsey/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ExactFourier",
+      "declarations": [
+        "OAI.ExactFourier.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Computability/FourierCircuit/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "FactorGeneration",
+      "declarations": [
+        "OAI.Generator.single_generation_of_II1_separable_predual"
+      ],
+      "solution_files": [
+        "OAI/Analysis/FactorGeneration/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "FinitisticAsymmetry",
+      "declarations": [
+        "OAI.LittleFinitistic.extreme_left_right_asymmetry"
+      ],
+      "solution_files": [
+        "OAI/Algebra/FinitisticAsymmetry/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "GaussianMoat",
+      "declarations": [
+        "OAI.GaussianMoat.fullMain"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/GaussianMoat/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "GaussianPropeller",
+      "declarations": [
+        "OAI.GaussianPropeller.all_partitions"
+      ],
+      "solution_files": [
+        "OAI/Probability/GaussianPropeller/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "GotsmanLinial",
+      "declarations": [
+        "OAI.LeanBlast.GotsmanLinial.gotsmanLinialStatement"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/GotsmanLinial/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "GrahamSpherical",
+      "declarations": [
+        "OAI.GrahamSpherical.full_main"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/SphericalRamsey/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "GrothendieckElementaryExpansion",
+      "declarations": [
+        "OAI.Grothendieck.elementary_expansion"
+      ],
+      "solution_files": [
+        "OAI/CategoryTheory/Globular/ElementaryExpansion.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "GroupRingDeterminant",
+      "declarations": [
+        "OAI.GroupRingDeterminant.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/GroupDeterminants/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "HarmonicArtin",
+      "declarations": [
+        "OAI.HarmonicArtin.salvetti_cover_contractible"
+      ],
+      "solution_files": [
+        "OAI/Topology/ArtinGroups/Realizations/SalvettiCoverContractible.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "HenonEmden",
+      "declarations": [
+        "OAI.HenonLaneEmden.main_nonexistence"
+      ],
+      "solution_files": [
+        "OAI/Analysis/HenonEmden/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "3 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "HoneycombBridgeMassSupport",
+      "declarations": [
+        "OAI.CriticalHoneycomb.finiteBridgeMassEstimate"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/HoneycombChords/BridgeMass.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "HyperbolicCones",
+      "declarations": [
+        "OAI.Paper256.main_result"
+      ],
+      "solution_files": [
+        "OAI/Analysis/HyperbolicCones/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "7 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "HyperbolicObstruction",
+      "declarations": [
+        "OAI.HyperbolicObstruction.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/HyperbolicGroups/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "IndependentSets",
+      "declarations": [
+        "OAI.LargeIndependentSets.mainTheoremReal"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/IndependentSets/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "3 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "Jacobsthal",
+      "declarations": [
+        "OAI.Erdos970.Erdos970Final.erdos_970_quadratic"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/Jacobsthal/Conclusions/QuadraticBound.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "KMedianRecovery",
+      "declarations": [
+        "OAI.MetricKMedianRecovery.global_application"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/KMedianRecovery/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "Laughlin",
+      "declarations": [
+        "OAI.Laughlin.mainTarget_proved"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Laughlin/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "LiebThirring",
+      "declarations": [
+        "OAI.SharpLiebThirring.sharp_lieb_thirring"
+      ],
+      "solution_files": [
+        "OAI/Analysis/LiebThirring/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "LogBrunnMinkowski",
+      "declarations": [
+        "OAI.LogBrunnMinkowski.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/LogVolume/BrunnMinkowski.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "4 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "LogspaceEquality",
+      "declarations": [
+        "OAI.ExactDerandomization.exact_logarithmic_space_derandomization"
+      ],
+      "solution_files": [
+        "OAI/Computability/Logspace/Equality.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "MahlerConjecture",
+      "declarations": [
+        "OAI.SymmetricMahler.symmetric_mahler"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Mahler/MainTheorem.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "MarkovType",
+      "declarations": [
+        "OAI.MarkovSuperreflexivity.hasNontrivialMarkovType_iff_hasEquivalentUCNorm"
+      ],
+      "solution_files": [
+        "OAI/Analysis/MarkovType/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "MatrixFields",
+      "declarations": [
+        "OAI.MatrixAllFields.MatrixMultiplication.AllFieldMain.omega_lt_source_constant"
+      ],
+      "solution_files": [
+        "OAI/LinearAlgebra/MatrixFields/Conclusions/AllFieldsBound.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "9 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "MatrixMultiplication",
+      "declarations": [
+        "OAI.MatrixMultiplication.complex_alpha_gt_93_div_200",
+        "OAI.MatrixMultiplication.complex_omega_le_nine_quarters",
+        "OAI.MatrixMultiplication.complex_rectangular_omega_lt_523_div_250"
+      ],
+      "solution_files": [
+        "OAI/LinearAlgebra/MatrixMultiplication/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "8 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "MaximalSeshadriConstants",
+      "declarations": [
+        "OAI.MaximalSeshadri.Geometry.maximalSeshadriConstants"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/Seshadri/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "OddKaplansky",
+      "declarations": [
+        "OAI.OddKaplansky.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Algebra/OddKaplansky/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "OptimalMaxCut",
+      "declarations": [
+        "OAI.OptimalMaxCut.main"
+      ],
+      "solution_files": [
+        "OAI/Computability/MaxCut/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "PartitionPrinciple",
+      "declarations": [
+        "OAI.PartitionPilot.Forcing.TransitiveGround.exists_model_partitionPrinciple_without_choice"
+      ],
+      "solution_files": [
+        "OAI/SetTheory/PartitionPrinciple/Models/Separation.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "PerfectCompleteness",
+      "declarations": [
+        "OAI.PerfectCompleteness.Theorem11.exists_reduction"
+      ],
+      "solution_files": [
+        "OAI/Computability/PerfectCompleteness/Theorem11.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "PettyProjectionVolume",
+      "declarations": [
+        "OAI.PettyProjection.petty_projection_volume"
+      ],
+      "solution_files": [
+        "OAI/Geometry/ProjectionBodies/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "PinchedKahler",
+      "declarations": [
+        "OAI.PinchedHartogs.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/Geometry/Kahler/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "PinnedDistances",
+      "declarations": [
+        "OAI.WeakPinned.main"
+      ],
+      "solution_files": [
+        "OAI/Geometry/PinnedDistances/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement",
+        "asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "PlanarFalconer",
+      "declarations": [
+        "OAI.PlanarFalconer.mainTarget_proved"
+      ],
+      "solution_files": [
+        "OAI/MeasureTheory/Falconer/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "PlanarL1",
+      "declarations": [
+        "OAI.PlanarL1.planar_graph_metrics_embed_L1"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/PlanarL1/Embedding.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "PlaneColoring",
+      "declarations": [
+        "OAI.Problem160.properColoring_seven"
+      ],
+      "solution_files": [
+        "OAI/Geometry/PlaneColoring/Seven.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "PosteriorReplicas",
+      "declarations": [
+        "OAI.PosteriorReplicas.source_main"
+      ],
+      "solution_files": [
+        "OAI/Probability/PosteriorReplicas/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "PowerFreeValues",
+      "declarations": [
+        "OAI.QuarticPowerFree.allDegrees"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/PowerFree/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "3 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ProjectionMoments",
+      "declarations": [
+        "OAI.ProjectionMoments.main"
+      ],
+      "solution_files": [
+        "OAI/Probability/ProjectionMoments/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "QACParity",
+      "declarations": [
+        "OAI.QAC.parity_lower_bound"
+      ],
+      "solution_files": [
+        "OAI/InformationTheory/QuantumCircuit/Parity.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "QuantitativeVanDerWaerden",
+      "declarations": [
+        "OAI.QuantitativeVanDerWaerden.uniform_lower_bound"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/ProgressionColoring/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "4 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "QuinticLienard",
+      "declarations": [
+        "OAI.QuinticLienard.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/LienardCycles/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "4 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "RandomizedMeanPayoff",
+      "declarations": [
+        "OAI.randomized_quasipolynomial_mean_payoff"
+      ],
+      "solution_files": [
+        "OAI/Computability/RandomMean/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "RationalHitting",
+      "declarations": [
+        "OAI.RationalHitting.main"
+      ],
+      "solution_files": [
+        "OAI/Computability/RationalHitting/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "RecursivePotentials",
+      "declarations": [
+        "OAI.ComparatorModel.RecursivePotentials.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/RecursivePotentials/Challenge.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ReflexiveFixedPoints",
+      "declarations": [
+        "OAI.ReflexiveFixedPoints.exists_fixedPoint_of_canonicallyReflexive"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Nonexpansive/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "RieszQuantitative",
+      "declarations": [
+        "OAI.RieszRectifiability.quantitative_higher_codimension_riesz_rectifiability"
+      ],
+      "solution_files": [
+        "OAI/Analysis/RieszRectifiability/Uniformity/Rectifiability.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "Saxl",
+      "declarations": [
+        "OAI.Saxl.saxl_conjecture"
+      ],
+      "solution_files": [
+        "OAI/RepresentationTheory/Saxl/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SelfSimilar",
+      "declarations": [
+        "OAI.EntropyRateDimension.entropy_rate_dimension"
+      ],
+      "solution_files": [
+        "OAI/MeasureTheory/SelfSimilar/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SeymourSecondNeighborhood",
+      "declarations": [
+        "OAI.SeymourSecondNeighborhood.exists_goodVertex"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/SecondNeighborhood/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SignedFiniteBand",
+      "declarations": [
+        "OAI.SignedDisk.CenteredDiskEndpoint.main_signed_finite_band"
+      ],
+      "solution_files": [
+        "OAI/Analysis/SignedDisk/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SimpleAmenable",
+      "declarations": [
+        "OAI.SimpleAmenable.main"
+      ],
+      "solution_files": [
+        "OAI/GroupTheory/SimpleAmenable/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SingleFold",
+      "declarations": [
+        "OAI.SingleFold.main"
+      ],
+      "solution_files": [
+        "OAI/NumberTheory/SingleFold/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SingletonLoopMatching",
+      "declarations": [
+        "OAI.LoopMatching.fullEndpoint"
+      ],
+      "solution_files": [
+        "OAI/Computability/LoopMatching/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "StableCoordinateFour",
+      "declarations": [
+        "OAI.StableCoordinate.principal_package"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/StableCoordinate/Principal.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SteinitzBergstrom",
+      "declarations": [
+        "OAI.EuclideanSteinitzBergstrom.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Steinitz/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "StrongThinTree",
+      "declarations": [
+        "OAI.StrongThinTree.strongThinTree"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/ThinTrees/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "StructuralCrouzeix",
+      "declarations": [
+        "OAI.StructuralCrouzeixReference.challenge"
+      ],
+      "solution_files": [
+        "OAI/Analysis/StructuralCrouzeix/Endpoint.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SubsphereCurrent",
+      "declarations": [
+        "OAI.SubsphereCurrent.full_current_main_scope"
+      ],
+      "solution_files": [
+        "OAI/Probability/Subsphere/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "Superstring",
+      "declarations": [
+        "OAI.Superstring.main"
+      ],
+      "solution_files": [
+        "OAI/Computability/Superstring/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SurfaceConeCandidateSupport",
+      "declarations": [
+        "OAI.SmallCM.candidate_ring_properties"
+      ],
+      "solution_files": [
+        "OAI/AlgebraicGeometry/SurfaceCones/CandidateRing.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SymmetricDomains",
+      "declarations": [
+        "OAI.Release061.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/SymmetricDomains/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "SymmetricMahlerEquality",
+      "declarations": [
+        "OAI.SymmetricMahler.symmetric_mahler_equality"
+      ],
+      "solution_files": [
+        "OAI/Analysis/Mahler/Classification.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "2 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "Tachikawa",
+      "declarations": [
+        "OAI.Tachikawa.main_theorem"
+      ],
+      "solution_files": [
+        "OAI/RingTheory/Tachikawa/Counterexample.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "TalagrandDiscreteConvexity",
+      "declarations": [
+        "OAI.TalagrandDiscreteConvexity.talagrand_discrete_convexity"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/DiscreteConvexity/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "9 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "TalagrandExpectationThreshold",
+      "declarations": [
+        "OAI.TalagrandThreshold.talagrand_expectation_threshold_equivalence"
+      ],
+      "solution_files": [
+        "OAI/Combinatorics/ExpectationThreshold/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "3 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "TamingCompatibility",
+      "declarations": [
+        "OAI.TamingCompatibility.taming_implies_compatibility"
+      ],
+      "solution_files": [
+        "OAI/Geometry/TamingCompatibility/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ThompsonNonamenability",
+      "declarations": [
+        "OAI.ThompsonNonamenability.thompson_F_nonamenable_composition"
+      ],
+      "solution_files": [
+        "OAI/GroupTheory/Thompson/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "ThorpWeightedCompatibility",
+      "declarations": [
+        "OAI.ThorpCompatibility.weightedCompatibility_main"
+      ],
+      "solution_files": [
+        "OAI/Probability/ThorpCompatibility/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "TingleySphereIsometry",
+      "declarations": [
+        "OAI.Tingley.tingley_sphere_isometry_full"
+      ],
+      "solution_files": [
+        "OAI/Analysis/SphereIsometry/Extension.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "3 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "TorsionFreeHyperbolic",
+      "declarations": [
+        "OAI.Release075.main"
+      ],
+      "solution_files": [
+        "OAI/GroupTheory/Hyperbolic/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "TorsionFreeZeroDivisors",
+      "declarations": [
+        "OAI.TorsionFreeZeroDivisors.main"
+      ],
+      "solution_files": [
+        "OAI/Algebra/GroupRing/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "TraceIdealTransportSupport",
+      "declarations": [
+        "OAI.TraceConeClassification.TraceConeEquiv.idealOrderIso_finIdeal",
+        "OAI.TraceConeClassification.TraceConeEquiv.idealOrderIso_zeroIdeal",
+        "OAI.TraceConeClassification.closed_ideal_weight_exists"
+      ],
+      "solution_files": [
+        "OAI/Analysis/TraceCone/FiniteIdeal.lean",
+        "OAI/Analysis/TraceCone/IdealTransport.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "5 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "TriangularHilbert",
+      "declarations": [
+        "OAI.TriangularHilbert.main_estimate"
+      ],
+      "solution_files": [
+        "OAI/Analysis/TriangularHilbert/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    },
+    {
+      "challenge": "UniformFourier",
+      "declarations": [
+        "OAI.PowerSaving.convolution_main",
+        "OAI.PowerSaving.transform_main"
+      ],
+      "solution_files": [
+        "OAI/Computability/FourierTransform/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "UniformGamma",
+      "declarations": [
+        "OAI.ComparatorModel.CurrentMain.main"
+      ],
+      "solution_files": [
+        "OAI/Analysis/TracialSplitting/Challenge.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "UniqueGamesTheorem",
+      "declarations": [
+        "OAI.UniqueGamesTheorem.theorem11"
+      ],
+      "solution_files": [
+        "OAI/Computability/UniqueGames/Theorem.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "6 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "UniversalFInfinity",
+      "declarations": [
+        "OAI.UniversalFInfinity.universal_group_of_type_FInfinity"
+      ],
+      "solution_files": [
+        "OAI/GroupTheory/UniversalGroup/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "VertexCover",
+      "declarations": [
+        "OAI.VertexCover.every_fixed_factor_below_two"
+      ],
+      "solution_files": [
+        "OAI/Computability/VertexCover/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "3 numeric literals in statement"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "VlasovMaxwell",
+      "declarations": [
+        "OAI.RVM.global_classical_solution"
+      ],
+      "solution_files": [
+        "OAI/Analysis/VlasovMaxwell/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "existential quantifier in statement",
+        "finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))",
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "WeakHessian",
+      "declarations": [
+        "OAI.WeakHessian.every_geodesic"
+      ],
+      "solution_files": [
+        "OAI/Geometry/WeakHessian/Main.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [
+        "named real constant (pi/log/sqrt/zeta/...)"
+      ],
+      "probe_join": null
+    },
+    {
+      "challenge": "WeakMTWGlobalSupport",
+      "declarations": [
+        "OAI.WeakMTWGlobalSupport.current_main_convexity"
+      ],
+      "solution_files": [
+        "OAI/Geometry/WeakMTW/Convexity.lean"
+      ],
+      "tier": "tier3_uncheckable_proof_level",
+      "evidence": [],
+      "probe_join": null
+    }
+  ]
+}

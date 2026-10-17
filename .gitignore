@@ -67,3 +67,9 @@ california_housing_*.csv
 
 # Audit logs (request/response records, unbounded growth)
 logs/
+
+# Generated benchmark media and trained model weights: same policy as outputs/
+# (copy out what must be compared or reproduced; never commit the blobs).
+artifacts/
+checkpoints/
+docs/media/
