@@ -89,6 +89,13 @@ class _RustKernel(Protocol):
     def evaluate_precision_boundary(
         self, separation_delta: float, condition_number: float, precision_bits: int
     ) -> tuple[str, float, float, float, bool]: ...
+    def video_psnr(self, a: np.ndarray, b: np.ndarray) -> float: ...
+    def video_ssim_frame(
+        self, a_rows: list[np.ndarray], b_rows: list[np.ndarray], win: int, c1: float, c2: float
+    ) -> float: ...
+    def video_sliced_wasserstein2(
+        self, x_rows: list[np.ndarray], y_rows: list[np.ndarray], dir_rows: list[np.ndarray]
+    ) -> float: ...
     def evolve_native(
         self,
         data: list[np.ndarray],
@@ -530,7 +537,7 @@ class RustKernelBridge:
         self._tally(_KERNEL_PATH_FALLBACK)
         from apedp.evolutionary_search import SearchConfig, evolve
 
-        x_dict = {name: d for name, d in zip(variable_names, data_f64, strict=False)}
+        x_dict = dict(zip(variable_names, data_f64, strict=False))
         cfg = SearchConfig(
             islands=islands,
             island_size=population_size // islands if islands > 0 else population_size,
@@ -545,6 +552,121 @@ class RustKernelBridge:
             for expr, mse, compl in res.pareto_front
         ]
         return formatted, res.n_evaluations
+
+    # ------------------ Video metrics (eval_gate first-line port) ------------------
+
+    def video_psnr(self, a: np.ndarray, b: np.ndarray) -> float:
+        """Peak SNR (dB) between two [0, 1] arrays; kernel first-line, NumPy fallback.
+
+        Mirrors ``apedp_dyn.video.eval_gate.compute_psnr``: a shape mismatch
+        raises identically on both paths, and a mean squared error at or
+        below 1e-12 reports the same 100 dB ceiling (metric definition, not a
+        referee threshold).
+        """
+        a_arr = np.asarray(a, dtype=np.float64)
+        b_arr = np.asarray(b, dtype=np.float64)
+        if a_arr.shape != b_arr.shape:
+            raise ValueError(f"Shape mismatch: {a_arr.shape} vs {b_arr.shape}")
+        if self.use_rust:
+            try:
+                out = float(cast(Any, apedp_kernel).video_psnr(
+                    np.ascontiguousarray(a_arr).reshape(-1),
+                    np.ascontiguousarray(b_arr).reshape(-1),
+                ))
+                self._tally(_KERNEL_PATH_RUST)
+                return out
+            except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
+                logger.debug("Rust video_psnr failed (%s), falling back to NumPy.", e)
+        self._tally(_KERNEL_PATH_FALLBACK)
+        mse = float(np.mean((a_arr - b_arr) ** 2))
+        return 100.0 if mse <= 1e-12 else float(10.0 * np.log10(1.0 / mse))
+
+    def video_ssim_frame(
+        self,
+        a_gray: np.ndarray,
+        b_gray: np.ndarray,
+        win: int = 8,
+        c1: float = 0.01,
+        c2: float = 0.03,
+    ) -> float:
+        """Mean windowed SSIM over ONE grayscale frame (2-D), kernel first-line.
+
+        Rows cross the boundary as zero-copy views of the frame buffer. A
+        frame smaller than the window yields NaN on both paths (matching the
+        reference's empty-block mean).
+        """
+        a_g = np.asarray(a_gray, dtype=np.float64)
+        b_g = np.asarray(b_gray, dtype=np.float64)
+        if a_g.shape != b_g.shape or a_g.ndim != 2:
+            return float("nan")
+        if self.use_rust:
+            try:
+                out = float(cast(Any, apedp_kernel).video_ssim_frame(
+                    list(a_g), list(b_g), int(win), c1, c2
+                ))
+                self._tally(_KERNEL_PATH_RUST)
+                return out
+            except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
+                logger.debug("Rust video_ssim_frame failed (%s), falling back to NumPy.", e)
+        self._tally(_KERNEL_PATH_FALLBACK)
+        h, w = a_g.shape
+        vals = []
+        for y in range(0, h - win + 1, win):
+            for x in range(0, w - win + 1, win):
+                pa, pb = a_g[y:y + win, x:x + win], b_g[y:y + win, x:x + win]
+                ma, mb = float(pa.mean()), float(pb.mean())
+                va, vb = float(pa.var()), float(pb.var())
+                cov = float(((pa - ma) * (pb - mb)).mean())
+                vals.append((2 * ma * mb + c1) * (2 * cov + c2)
+                            / ((ma ** 2 + mb ** 2 + c1) * (va + vb + c2)))
+        return float(np.mean(vals)) if vals else float("nan")
+
+    def video_sliced_wasserstein(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        n_projections: int = 128,
+        seed: int = 7,
+    ) -> float:
+        """Sliced Wasserstein-2 between (n, d) clouds; kernel first-line.
+
+        The projection matrix is generated numpy-side exactly as the
+        reference does (``RandomState(seed)``), so kernel and reference
+        distances are identically seeded, not merely close.
+        """
+        x_mat = np.asarray(x, dtype=np.float64).reshape(-1, np.asarray(x).shape[-1])
+        y_mat = np.asarray(y, dtype=np.float64).reshape(-1, np.asarray(y).shape[-1])
+        if x_mat.shape[-1] != y_mat.shape[-1]:
+            raise ValueError("Feature dimension mismatch")
+        if x_mat.shape[0] < 2 or y_mat.shape[0] < 2:
+            raise ValueError("Need at least 2 points per distribution")
+        rng = np.random.RandomState(seed)
+        d = x_mat.shape[-1]
+        dirs = rng.normal(0.0, 1.0, size=(n_projections, d))
+        dirs /= np.linalg.norm(dirs, axis=-1, keepdims=True) + 1e-12
+        if self.use_rust:
+            try:
+                out = float(cast(Any, apedp_kernel).video_sliced_wasserstein2(
+                    list(np.ascontiguousarray(x_mat)),
+                    list(np.ascontiguousarray(y_mat)),
+                    list(dirs),
+                ))
+                self._tally(_KERNEL_PATH_RUST)
+                return out
+            except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
+                logger.debug("Rust video_sliced_wasserstein2 failed (%s), falling back to NumPy.", e)
+        self._tally(_KERNEL_PATH_FALLBACK)
+        # Reference implementation, INLINE (like every other bridge fallback):
+        # a lazy import of eval_gate's routed `sliced_wasserstein` would
+        # re-enter the bridge and recurse under force_fallback.
+        total = 0.0
+        for k in range(n_projections):
+            px = np.sort(x_mat @ dirs[k])
+            py = np.sort(y_mat @ dirs[k])
+            n = min(len(px), len(py))
+            total += float(np.mean((np.interp(np.linspace(0, 1, n), np.linspace(0, 1, len(px)), px) -
+                                    np.interp(np.linspace(0, 1, n), np.linspace(0, 1, len(py)), py)) ** 2))
+        return float(np.sqrt(total / n_projections))
 
     # ------------------ Fallback Pure-Python Implementations ------------------
 

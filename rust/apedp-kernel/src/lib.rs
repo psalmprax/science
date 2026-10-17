@@ -14,6 +14,7 @@
 
 pub mod data;
 pub mod numeric;
+pub mod video;
 pub mod ode;
 pub mod parser;
 pub mod units;
@@ -1972,10 +1973,61 @@ fn rime_laplacian_dissipation_2d<'py>(
     Ok(out.into_pyarray_bound(py))
 }
 
+/// First-line port of `apedp_dyn/video/eval_gate.py` frame metrics.
+///
+/// Data enters as borrowed NumPy views through the same zero-copy path as
+/// the parser surface. Failures raise; a raise is "this input could not be
+/// scored", never a verdict, and the bridge falls back to the NumPy
+/// reference exactly like every other kernel-backed method.
+#[pyfunction]
+fn video_psnr(
+    a: &Bound<'_, PyAny>,
+    b: &Bound<'_, PyAny>,
+) -> PyResult<f64> {
+    let a_guard = GuardedVector::extract(a, "a")?;
+    let b_guard = GuardedVector::extract(b, "b")?;
+    video::psnr_series(a_guard.slice(), b_guard.slice()).map_err(PyValueError::new_err)
+}
+
+/// Mean windowed SSIM over one grayscale frame given as row views.
+#[pyfunction]
+fn video_ssim_frame(
+    a_rows: &Bound<'_, PyAny>,
+    b_rows: &Bound<'_, PyAny>,
+    win: usize,
+    c1: f64,
+    c2: f64,
+) -> PyResult<f64> {
+    let a_guard = PythonColumns::extract(a_rows, "a_rows")?;
+    let b_guard = PythonColumns::extract(b_rows, "b_rows")?;
+    let a = a_guard.views();
+    let b = b_guard.views();
+    Ok(video::ssim_frame(&a, &b, win, c1, c2))
+}
+
+/// Sliced Wasserstein-2 over explicit (numpy-generated) projection rows.
+#[pyfunction]
+fn video_sliced_wasserstein2(
+    x_rows: &Bound<'_, PyAny>,
+    y_rows: &Bound<'_, PyAny>,
+    dir_rows: &Bound<'_, PyAny>,
+) -> PyResult<f64> {
+    let x_guard = PythonColumns::extract(x_rows, "x_rows")?;
+    let y_guard = PythonColumns::extract(y_rows, "y_rows")?;
+    let d_guard = PythonColumns::extract(dir_rows, "dir_rows")?;
+    let x = x_guard.views();
+    let y = y_guard.views();
+    let dirs = d_guard.views();
+    video::sliced_wasserstein2(&x, &y, &dirs).map_err(PyValueError::new_err)
+}
+
 #[pymodule]
 fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(compile, m)?)?;
     m.add_function(wrap_pyfunction!(evaluate_batch, m)?)?;
+    m.add_function(wrap_pyfunction!(video_psnr, m)?)?;
+    m.add_function(wrap_pyfunction!(video_ssim_frame, m)?)?;
+    m.add_function(wrap_pyfunction!(video_sliced_wasserstein2, m)?)?;
     m.add_function(wrap_pyfunction!(compute_metrics, m)?)?;
     m.add_function(wrap_pyfunction!(score_candidates_parallel, m)?)?;
     m.add_function(wrap_pyfunction!(probe_singularity, m)?)?;

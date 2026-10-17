@@ -1,0 +1,90 @@
+{
+  "timestamp_utc": "2026-10-17T03:24:44.506085+00:00",
+  "convention_note": "flow param t=0 data / t=1 noise; sampling integrates t: 1 -> 0",
+  "domain_split": {
+    "train": [
+      "fluid_clip_0000",
+      "fluid_clip_0001",
+      "fluid_clip_0002",
+      "fluid_clip_0004",
+      "fluid_clip_0006",
+      "fluid_clip_0007",
+      "fluid_clip_0008",
+      "fluid_clip_0009"
+    ],
+    "holdout": [
+      "fluid_clip_0003",
+      "fluid_clip_0005"
+    ]
+  },
+  "teacher": {
+    "hidden": 48,
+    "layers": 2,
+    "train_steps": 200,
+    "final_train_loss": 0.28727166075163063
+  },
+  "student": {
+    "hidden": 32,
+    "layers": 1,
+    "distill_steps": 100,
+    "final_distill_mse": 0.27804782201324924
+  },
+  "curves": {
+    "untrained_baseline": [
+      {
+        "teacher_steps": 8,
+        "student_steps": 2,
+        "rmse_mean": 0.8107252967536477,
+        "rmse_std": 0.01310208452850869
+      },
+      {
+        "teacher_steps": 8,
+        "student_steps": 4,
+        "rmse_mean": 0.8123609052459239,
+        "rmse_std": 0.013545333315312111
+      },
+      {
+        "teacher_steps": 16,
+        "student_steps": 2,
+        "rmse_mean": 0.8082185649127833,
+        "rmse_std": 0.011486908157213333
+      },
+      {
+        "teacher_steps": 16,
+        "student_steps": 4,
+        "rmse_mean": 0.8088108213749127,
+        "rmse_std": 0.01075842437964543
+      }
+    ],
+    "post_distillation": [
+      {
+        "teacher_steps": 8,
+        "student_steps": 2,
+        "rmse_mean": 0.5216078106759092,
+        "rmse_std": 0.010781439302316972
+      },
+      {
+        "teacher_steps": 8,
+        "student_steps": 4,
+        "rmse_mean": 0.5195994337059083,
+        "rmse_std": 0.0062663456093720125
+      },
+      {
+        "teacher_steps": 16,
+        "student_steps": 2,
+        "rmse_mean": 0.5073135586853164,
+        "rmse_std": 0.013182239318272402
+      },
+      {
+        "teacher_steps": 16,
+        "student_steps": 4,
+        "rmse_mean": 0.5139399793404009,
+        "rmse_std": 0.008470036137997614
+      }
+    ]
+  },
+  "key_deltas": {
+    "t16_s2_rmse_before": 0.8082185649127833,
+    "t16_s2_rmse_after": 0.5073135586853164
+  }
+}
