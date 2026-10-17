@@ -24,7 +24,9 @@ over clips one at a time (b = 1) to stay correct.
 """
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Sequence, Tuple
+import time
+from collections.abc import Sequence
+
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -34,7 +36,7 @@ def flow_matching_loss(
     model,
     z_data: torch.Tensor,
     prompt_tokens: torch.Tensor,
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     """Plain flow-matching loss on a single clip (b = 1)."""
     if z_data.ndim != 5 or z_data.shape[0] != 1:
         raise ValueError(f"Expected (1, T, C, H, W) latents, got {tuple(z_data.shape)}")
@@ -53,14 +55,21 @@ def train_flow_model(
     lr: float = 1e-3,
     seed: int = 0,
     progress_every: int = 0,
-) -> List[float]:
-    """Train a flow model on stacked clip latents (N, T, C, H, W), b=1 loops."""
+    deadline_s: float | None = None,
+) -> list[float]:
+    """Train a flow model on stacked clip latents (N, T, C, H, W), b=1 loops.
+
+    ``deadline_s`` (optional) stops the loop at a wall-clock deadline so a
+    caller can enforce an equal-time training budget regardless of any
+    pre-calibrated step-count estimate (probe drift protection).
+    """
     model.train()
     opt = torch.optim.AdamW(model.parameters(), lr=lr)
     rng = np.random.RandomState(seed)
     n = clips_latents.shape[0]
     dev = clips_latents.device
     dtype = clips_latents.dtype
+    deadline = (time.perf_counter() + deadline_s) if deadline_s else None
     losses = []
     for step in range(steps):
         idx = rng.randint(0, n)
@@ -71,6 +80,8 @@ def train_flow_model(
         d["flow_loss"].backward()
         opt.step()
         losses.append(float(d["flow_loss"].item()))
+        if deadline is not None and time.perf_counter() >= deadline:
+            break
         if progress_every and (step + 1) % progress_every == 0:
             print(f"[train_flow_model] step {step + 1}/{steps} loss={losses[-1]:.4f}")
     return losses
@@ -80,10 +91,10 @@ def train_flow_model(
 def euler_sample_reverse(
     model,
     prompt_tokens: torch.Tensor,
-    shape: Tuple[int, int, int, int],
+    shape: tuple[int, int, int, int],
     num_steps: int,
     seed: int = 0,
-    guidance_scale: Optional[float] = None,
+    guidance_scale: float | None = None,
     dtype: torch.dtype = torch.float64,
     trajectory: bool = False,
 ):
@@ -119,7 +130,7 @@ def euler_sample_reverse(
 def _student_sample_trainable(
     student,
     text: torch.Tensor,
-    shape: Tuple[int, int, int, int],
+    shape: tuple[int, int, int, int],
     num_steps: int,
     seed: int,
     dtype: torch.dtype,
@@ -155,7 +166,8 @@ def distill_solution(
     seed: int = 0,
     dtype: torch.dtype = torch.float64,
     progress_every: int = 0,
-) -> List[float]:
+    deadline_s: float | None = None,
+) -> list[float]:
     """Solution distillation: student's few-step endpoint == teacher's
     many-step endpoint from the SAME initial noise."""
     student.train()
@@ -163,6 +175,7 @@ def distill_solution(
     rng = np.random.RandomState(seed)
     losses = []
     clip_shape = tuple(clips_latents[0].shape)  # (T, C, H, W)
+    deadline = (time.perf_counter() + deadline_s) if deadline_s else None
     for step in range(distill_steps):
         noise_seed = int(rng.randint(0, 2 ** 31 - 1))
         text = torch.randn(1, 2, 64, dtype=dtype)
@@ -180,6 +193,8 @@ def distill_solution(
         loss.backward()
         opt.step()
         losses.append(float(loss.item()))
+        if deadline is not None and time.perf_counter() >= deadline:
+            break
         if progress_every and (step + 1) % progress_every == 0:
             print(f"[distill] step {step + 1}/{distill_steps} mse={losses[-1]:.6f}")
     return losses
@@ -188,13 +203,13 @@ def distill_solution(
 def distillation_curves(
     teacher,
     student,
-    shape: Tuple[int, int, int, int],
+    shape: tuple[int, int, int, int],
     n_eval: int = 8,
     teacher_step_grid: Sequence[int] = (4, 8, 16),
     student_step_grid: Sequence[int] = (1, 2, 4),
     seed: int = 123,
     dtype: torch.dtype = torch.float64,
-) -> Dict[str, object]:
+) -> dict[str, object]:
     """End-point fidelity grid: RMSE(student endpoint, teacher endpoint) per
     (teacher_steps, student_steps) pair."""
     teacher.eval()

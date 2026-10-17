@@ -89,12 +89,17 @@ def _calibrated_train_steps(train_fn, model, train_lat, budget_s: float, seed: i
     consumes ≈ the same wall-clock budget for this architecture (matched
     TRAINING budget = equal seconds, not equal epochs/steps). The probe is
     long enough (200 steps) that first-call warm-up cost is diluted to <1% of
-    the estimate (verified below by the achieved-time check in the JSON)."""
+    the estimate (verified below by the achieved-time check in the JSON).
+
+    The returned count is padded ×1.25 upward-bound: real-run per-step cost can
+    drift from the probe in either direction, so the budget axis is enforced
+    by the trainer's own ``deadline_s`` (probe is for step-count shape, the
+    seconds are enforced in-loop)."""
     probe_steps = 200
     t0 = time.perf_counter()
     _probe = train_fn(model, train_lat, steps=probe_steps, lr=1e-3, seed=seed)
     per_step = (time.perf_counter() - t0) / float(probe_steps)
-    steps = max(50, int(budget_s / max(1e-6, per_step)))
+    steps = max(50, int(1.25 * budget_s / max(1e-6, per_step)))
     return steps, _probe
 
 
@@ -160,10 +165,14 @@ def run_matched_benchmark(train_steps: int = 300, n_clips: int = 10, n_gen: int 
         budget_note = f"fixed-step mode: {train_steps} steps for both"
 
     t0 = time.perf_counter()
-    jet_losses = train_flow_model(jet, train_lat, steps=train_steps_jet, lr=1e-3, seed=seed)
+    jet_deadline = train_budget_s if train_budget_s is not None else None
+    jet_losses = train_flow_model(jet, train_lat, steps=train_steps_jet, lr=1e-3, seed=seed,
+                                  deadline_s=jet_deadline)
     jet_train_s = time.perf_counter() - t0
+    jet_achieved_steps = len(jet_losses)
     t0 = time.perf_counter()
-    base_losses = train_flow_model_baseline(base, train_lat, steps=train_steps_base, lr=1e-3, seed=seed)
+    base_losses = train_flow_model_baseline(base, train_lat, steps=train_steps_base, lr=1e-3, seed=seed,
+                                            deadline_s=jet_deadline)
     base_train_s = time.perf_counter() - t0
     jet.train()
     base.train()
@@ -223,7 +232,8 @@ def run_matched_benchmark(train_steps: int = 300, n_clips: int = 10, n_gen: int 
         distill_steps = 100
     d_losses = distill_solution(jet, student, train_lat, distill_steps=distill_steps,
                                 teacher_steps=16, student_steps=2, lr=5e-4,
-                                seed=seed + 1)
+                                seed=seed + 1,
+                                deadline_s=train_budget_s if train_budget_s is not None else None)
     distill_train_s = time.perf_counter() - t0 + per_d_step * 0  # probe included
     student.eval()
 
@@ -350,6 +360,7 @@ def run_matched_benchmark(train_steps: int = 300, n_clips: int = 10, n_gen: int 
             "domain_split": {"train": list(man["train_ids"]), "holdout": list(man["holdout_ids"])},
             "latent_shape": list(shape), "pixel_shape": [6, 3, 16, 16],
             "train_steps": {"jet": int(train_steps_jet), "baseline": int(train_steps_base)},
+            "achieved_steps": {"jet": int(jet_achieved_steps), "baseline": len(base_losses)},
             "train_lr": 1e-3,
             "budget_mode": budget_note,
             "train_time_s_jet": jet_train_s, "train_time_s_baseline": base_train_s,
@@ -358,6 +369,7 @@ def run_matched_benchmark(train_steps: int = 300, n_clips: int = 10, n_gen: int 
                 "budget_s": float(train_budget_s) if train_budget_s is not None else "fixed-steps mode",
                 "achieved_s": float(distill_train_s),
                 "per_d_step_probe_s": float(per_d_step),
+                "achieved_steps": len(d_losses),
             },
             "final_train_loss_jet": jet_losses[-1], "final_train_loss_baseline": base_losses[-1],
             "threads": int(threads), "seed": int(seed),

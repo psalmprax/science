@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-10-17T08:37:29.110453+00:00",
+  "timestamp_utc": "2026-10-17T09:27:38.438730+00:00",
   "convention_note": "flow param t=0 data / t=1 noise; sampling integrates t: 1 -> 0 (distill.py convention)",
   "honest_labels": {
     "fvd": "sliced-Wasserstein proxy over frozen deterministic features \u2014 ranked separation, NOT I3D-FVD",
@@ -39,21 +39,26 @@
       16
     ],
     "train_steps": {
-      "jet": 3509,
-      "baseline": 5015
+      "jet": 3425,
+      "baseline": 4799
+    },
+    "achieved_steps": {
+      "jet": 3172,
+      "baseline": 3478
     },
     "train_lr": 0.001,
-    "budget_mode": "wall-clock matched: 90s per arch (jet steps=3509, baseline steps=5015)",
-    "train_time_s_jet": 81.67916199599858,
-    "train_time_s_baseline": 117.78616246406455,
+    "budget_mode": "wall-clock matched: 90s per arch (jet steps=3425, baseline steps=4799)",
+    "train_time_s_jet": 90.01381170901004,
+    "train_time_s_baseline": 90.00893292098772,
     "extra_distill_phase": {
       "note": "the distilled 2-step student consumes one MORE equal second-budget after the teacher",
       "budget_s": 90.0,
-      "achieved_s": 65.31205903203227,
-      "per_d_step_probe_s": 0.21096467329771257
+      "achieved_s": 92.71330084791407,
+      "per_d_step_probe_s": 0.13022245829924942,
+      "achieved_steps": 582
     },
-    "final_train_loss_jet": 0.1151916787982972,
-    "final_train_loss_baseline": 0.08186603684945712,
+    "final_train_loss_jet": 0.12365712802473731,
+    "final_train_loss_baseline": 0.14532811321908914,
     "threads": 4,
     "seed": 0,
     "params_jet": 133452,
@@ -64,186 +69,186 @@
       "jet": 3.0,
       "baseline": 3.0
     },
-    "matched_k": 32,
-    "matched_gap_pct": 7.804317611010695
+    "matched_k": 48,
+    "matched_gap_pct": 5.371398416057262
   },
   "rows": [
     {
       "name": "jet_tt_2step",
-      "latency_ms_per_clip_median": 445.74243703391403,
+      "latency_ms_per_clip_median": 628.0767665011808,
       "latency_ms_per_clip_all": [
-        501.893,
-        481.661,
-        455.108,
-        423.763,
-        423.632,
-        430.393,
-        443.606,
-        447.879
+        593.971,
+        603.729,
+        553.309,
+        1099.065,
+        641.851,
+        656.928,
+        614.303,
+        807.121
       ],
       "model_passes_per_clip": 22.5,
-      "total_generation_s": 4.277171537978575,
+      "total_generation_s": 6.139880175003782,
       "params": 133452,
-      "nearest_psnr_db_mean": 7.425099776124119,
-      "nearest_ssim_mean": 0.25013144362840745,
-      "temporal_consistency_mean": 0.6424253507111082,
-      "fvd_proxy_swd_vs_holdout": 1.053280535880526,
-      "fvd_proxy_swd_vs_train": 0.8136911520330335,
-      "decode_ms_per_clip": 20.01120604109019,
+      "nearest_psnr_db_mean": 7.492238259188368,
+      "nearest_ssim_mean": 0.2544107000838839,
+      "temporal_consistency_mean": 0.6373960496632728,
+      "fvd_proxy_swd_vs_holdout": 1.060773873420625,
+      "fvd_proxy_swd_vs_train": 0.8165185706685375,
+      "decode_ms_per_clip": 11.75022590905428,
       "tt_compression_ratio": 2.024604569420035
     },
     {
       "name": "jet_tt_2step_distilled",
-      "latency_ms_per_clip_median": 14.175470918416977,
-      "train_budget_s": 65.31205903203227,
-      "distill_steps": 426,
-      "distill_final_mse": 0.026934792347174615,
+      "latency_ms_per_clip_median": 16.09202503459528,
+      "train_budget_s": 92.71330084791407,
+      "distill_steps": 691,
+      "distill_final_mse": 0.015075262583181271,
       "params": 34476,
-      "nearest_psnr_db_mean": 9.700311628367324,
-      "nearest_ssim_mean": 0.38969287935857344,
-      "temporal_consistency_mean": 0.262322688386844,
-      "fvd_proxy_swd_vs_holdout": 0.5953992120111385,
-      "fvd_proxy_swd_vs_train": 0.38954600938248496,
-      "decode_ms_per_clip": 20.01120604109019
+      "nearest_psnr_db_mean": 9.56191273191639,
+      "nearest_ssim_mean": 0.3739056814520175,
+      "temporal_consistency_mean": 0.23672162917225742,
+      "fvd_proxy_swd_vs_holdout": 0.5992839325854339,
+      "fvd_proxy_swd_vs_train": 0.40058522583199885,
+      "decode_ms_per_clip": 11.75022590905428
     },
     {
       "name": "diffusion_matched",
-      "steps": 32,
-      "latency_ms_per_clip_median": 410.955281520728,
+      "steps": 48,
+      "latency_ms_per_clip_median": 594.3402610137127,
       "latency_ms_per_clip_all": [
-        399.721,
-        440.743,
-        417.44,
-        428.004,
-        400.948,
-        404.47,
-        391.422,
-        427.207
+        620.298,
+        587.657,
+        601.024,
+        657.82,
+        918.947,
+        579.967,
+        507.164,
+        498.183
       ],
-      "match_gap_pct": 7.804317611010695,
-      "model_passes_per_clip": 64.0,
+      "match_gap_pct": 5.371398416057262,
+      "model_passes_per_clip": 96.0,
       "params": 152492,
-      "nearest_psnr_db_mean": 12.590418096018002,
-      "nearest_ssim_mean": 0.6632457616633107,
-      "temporal_consistency_mean": 0.13322924875330353,
-      "fvd_proxy_swd_vs_holdout": 0.2722554403975945,
-      "fvd_proxy_swd_vs_train": 0.18414419261535586,
-      "decode_ms_per_clip": 20.01120604109019
+      "nearest_psnr_db_mean": 11.85860090301992,
+      "nearest_ssim_mean": 0.6526716439296596,
+      "temporal_consistency_mean": 0.1412562216182739,
+      "fvd_proxy_swd_vs_holdout": 0.27113342618124325,
+      "fvd_proxy_swd_vs_train": 0.17738805094484575,
+      "decode_ms_per_clip": 11.75022590905428
     },
     {
       "name": "diffusion_frontier_K48",
       "steps": 48,
-      "latency_ms_per_clip_median": 716.6531609836966,
+      "latency_ms_per_clip_median": 594.3402610137127,
       "model_passes_per_clip": 96.0,
       "params": 152492,
-      "nearest_psnr_db_mean": 12.559562983956852,
-      "nearest_ssim_mean": 0.6619877106510283,
-      "temporal_consistency_mean": 0.13461362661559254,
-      "fvd_proxy_swd_vs_holdout": 0.2738148088340099,
-      "fvd_proxy_swd_vs_train": 0.18392090773100242,
-      "decode_ms_per_clip": 20.01120604109019
+      "nearest_psnr_db_mean": 11.85860090301992,
+      "nearest_ssim_mean": 0.6526716439296596,
+      "temporal_consistency_mean": 0.1412562216182739,
+      "fvd_proxy_swd_vs_holdout": 0.27113342618124325,
+      "fvd_proxy_swd_vs_train": 0.17738805094484575,
+      "decode_ms_per_clip": 11.75022590905428
     },
     {
       "name": "jet_tt_4step",
-      "latency_ms_per_clip_median": 937.7655270509422,
+      "latency_ms_per_clip_median": 1246.8184735043906,
       "model_passes_per_clip": 40.0,
       "params": 133452,
-      "nearest_psnr_db_mean": 7.317134135380217,
-      "nearest_ssim_mean": 0.23843112094314275,
-      "temporal_consistency_mean": 0.6552585677253936,
-      "fvd_proxy_swd_vs_holdout": 1.041051776219997,
-      "fvd_proxy_swd_vs_train": 0.7879407933800839,
-      "decode_ms_per_clip": 20.01120604109019
+      "nearest_psnr_db_mean": 7.402129060586598,
+      "nearest_ssim_mean": 0.24972259416138587,
+      "temporal_consistency_mean": 0.6319148978813126,
+      "fvd_proxy_swd_vs_holdout": 1.0679225644362642,
+      "fvd_proxy_swd_vs_train": 0.8020594415488903,
+      "decode_ms_per_clip": 11.75022590905428
     }
   ],
   "baseline_step_curve": [
     {
       "steps": 2,
-      "latency_ms_median": 25.665558059699833,
+      "latency_ms_median": 26.448043005075306,
       "model_passes_per_clip": 4.0,
-      "nearest_psnr_db_mean": 13.394041961004362,
-      "nearest_ssim_mean": 0.6865609155998725,
-      "temporal_consistency_mean": 0.12201901273152352,
-      "fvd_proxy_swd_vs_holdout": 0.2506680050959447,
-      "fvd_proxy_swd_vs_train": 0.20196252503123885,
-      "decode_ms_per_clip": 20.01120604109019
+      "nearest_psnr_db_mean": 12.711779522848769,
+      "nearest_ssim_mean": 0.6793510048187714,
+      "temporal_consistency_mean": 0.12501365430477104,
+      "fvd_proxy_swd_vs_holdout": 0.2545823421108261,
+      "fvd_proxy_swd_vs_train": 0.19791545439270225,
+      "decode_ms_per_clip": 11.75022590905428
     },
     {
       "steps": 4,
-      "latency_ms_median": 53.59900847543031,
+      "latency_ms_median": 50.062444526702166,
       "model_passes_per_clip": 8.0,
-      "nearest_psnr_db_mean": 13.082340447490568,
-      "nearest_ssim_mean": 0.6810914855192185,
-      "temporal_consistency_mean": 0.12017958109631686,
-      "fvd_proxy_swd_vs_holdout": 0.2561388624534962,
-      "fvd_proxy_swd_vs_train": 0.1917862386821206,
-      "decode_ms_per_clip": 20.01120604109019
+      "nearest_psnr_db_mean": 12.36260558478774,
+      "nearest_ssim_mean": 0.676015315388325,
+      "temporal_consistency_mean": 0.13059466980129725,
+      "fvd_proxy_swd_vs_holdout": 0.256344861586662,
+      "fvd_proxy_swd_vs_train": 0.1902587031336391,
+      "decode_ms_per_clip": 11.75022590905428
     },
     {
       "steps": 8,
-      "latency_ms_median": 107.91749850613996,
+      "latency_ms_median": 105.64743599388748,
       "model_passes_per_clip": 16.0,
-      "nearest_psnr_db_mean": 12.831249608640505,
-      "nearest_ssim_mean": 0.6726766499714119,
-      "temporal_consistency_mean": 0.1259616291262318,
-      "fvd_proxy_swd_vs_holdout": 0.2622703419087066,
-      "fvd_proxy_swd_vs_train": 0.18733154226008267,
-      "decode_ms_per_clip": 20.01120604109019
+      "nearest_psnr_db_mean": 12.115386741398222,
+      "nearest_ssim_mean": 0.6616080179937635,
+      "temporal_consistency_mean": 0.13446978077832322,
+      "fvd_proxy_swd_vs_holdout": 0.26353627535314844,
+      "fvd_proxy_swd_vs_train": 0.18228662009178348,
+      "decode_ms_per_clip": 11.75022590905428
     },
     {
       "steps": 12,
-      "latency_ms_median": 140.5328320688568,
+      "latency_ms_median": 159.88434694008902,
       "model_passes_per_clip": 24.0,
-      "nearest_psnr_db_mean": 12.73224751678162,
-      "nearest_ssim_mean": 0.6688748636792827,
-      "temporal_consistency_mean": 0.12829488666693403,
-      "fvd_proxy_swd_vs_holdout": 0.2659445660787784,
-      "fvd_proxy_swd_vs_train": 0.185750386885286,
-      "decode_ms_per_clip": 20.01120604109019
+      "nearest_psnr_db_mean": 12.024381850152643,
+      "nearest_ssim_mean": 0.65901519690501,
+      "temporal_consistency_mean": 0.1352839355653576,
+      "fvd_proxy_swd_vs_holdout": 0.26627298747110567,
+      "fvd_proxy_swd_vs_train": 0.17998469778999074,
+      "decode_ms_per_clip": 11.75022590905428
     },
     {
       "steps": 16,
-      "latency_ms_median": 225.8855089894496,
+      "latency_ms_median": 198.69310298236087,
       "model_passes_per_clip": 32.0,
-      "nearest_psnr_db_mean": 12.678225027143016,
-      "nearest_ssim_mean": 0.6667476513161631,
-      "temporal_consistency_mean": 0.12985810191961591,
-      "fvd_proxy_swd_vs_holdout": 0.2683904453782806,
-      "fvd_proxy_swd_vs_train": 0.18502384367968305,
-      "decode_ms_per_clip": 20.01120604109019
+      "nearest_psnr_db_mean": 11.972989985151129,
+      "nearest_ssim_mean": 0.6572262404662108,
+      "temporal_consistency_mean": 0.1364704009189029,
+      "fvd_proxy_swd_vs_holdout": 0.26779900989478206,
+      "fvd_proxy_swd_vs_train": 0.17915728053028515,
+      "decode_ms_per_clip": 11.75022590905428
     },
     {
       "steps": 24,
-      "latency_ms_median": 376.08904152875766,
+      "latency_ms_median": 313.82948701502755,
       "model_passes_per_clip": 48.0,
-      "nearest_psnr_db_mean": 12.620539375841428,
-      "nearest_ssim_mean": 0.6644545620062465,
-      "temporal_consistency_mean": 0.13194934724726387,
-      "fvd_proxy_swd_vs_holdout": 0.27086843651190695,
-      "fvd_proxy_swd_vs_train": 0.18441193321600055,
-      "decode_ms_per_clip": 20.01120604109019
+      "nearest_psnr_db_mean": 11.917335279306542,
+      "nearest_ssim_mean": 0.6550682977394184,
+      "temporal_consistency_mean": 0.13857332120603957,
+      "fvd_proxy_swd_vs_holdout": 0.26920414631623174,
+      "fvd_proxy_swd_vs_train": 0.17826445229291799,
+      "decode_ms_per_clip": 11.75022590905428
     },
     {
       "steps": 32,
-      "latency_ms_median": 410.955281520728,
+      "latency_ms_median": 419.3035035277717,
       "model_passes_per_clip": 64.0,
-      "nearest_psnr_db_mean": 12.590418096018002,
-      "nearest_ssim_mean": 0.6632457616633107,
-      "temporal_consistency_mean": 0.13322924875330353,
-      "fvd_proxy_swd_vs_holdout": 0.2722554403975945,
-      "fvd_proxy_swd_vs_train": 0.18414419261535586,
-      "decode_ms_per_clip": 20.01120604109019
+      "nearest_psnr_db_mean": 11.888288861697408,
+      "nearest_ssim_mean": 0.6538908067423331,
+      "temporal_consistency_mean": 0.13987114412529666,
+      "fvd_proxy_swd_vs_holdout": 0.2700934088571668,
+      "fvd_proxy_swd_vs_train": 0.17779943399972503,
+      "decode_ms_per_clip": 11.75022590905428
     },
     {
       "steps": 48,
-      "latency_ms_median": 716.6531609836966,
+      "latency_ms_median": 594.3402610137127,
       "model_passes_per_clip": 96.0,
-      "nearest_psnr_db_mean": 12.559562983956852,
-      "nearest_ssim_mean": 0.6619877106510283,
-      "temporal_consistency_mean": 0.13461362661559254,
-      "fvd_proxy_swd_vs_holdout": 0.2738148088340099,
-      "fvd_proxy_swd_vs_train": 0.18392090773100242,
-      "decode_ms_per_clip": 20.01120604109019
+      "nearest_psnr_db_mean": 11.85860090301992,
+      "nearest_ssim_mean": 0.6526716439296596,
+      "temporal_consistency_mean": 0.1412562216182739,
+      "fvd_proxy_swd_vs_holdout": 0.27113342618124325,
+      "fvd_proxy_swd_vs_train": 0.17738805094484575,
+      "decode_ms_per_clip": 11.75022590905428
     }
   ],
   "real_anchor": {
@@ -258,25 +263,25 @@
       1.112513
     ],
     "jet_losses_tail": [
-      0.101401,
-      0.139254,
-      0.117076,
-      0.114012,
-      0.115192
+      0.074626,
+      0.117895,
+      0.170434,
+      0.109785,
+      0.123657
     ],
     "baseline_losses_head": [
-      1.201969,
-      1.098479,
-      1.088266,
-      1.015593,
-      0.964711
+      1.175547,
+      1.130173,
+      1.068208,
+      0.998224,
+      0.943974
     ],
     "baseline_losses_tail": [
-      0.152902,
-      0.067063,
-      0.229138,
-      0.045648,
-      0.081866
+      0.066501,
+      0.064526,
+      0.064995,
+      0.066365,
+      0.145328
     ]
   }
 }

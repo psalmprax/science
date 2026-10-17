@@ -22,6 +22,7 @@ records the exact counts of both.
 from __future__ import annotations
 
 import math
+import time
 from dataclasses import dataclass
 
 import numpy as np
@@ -255,8 +256,14 @@ def train_flow_model_baseline(
     lr: float = 1e-3,
     seed: int = 0,
     progress_every: int = 0,
+    deadline_s: float | None = None,
 ) -> list[float]:
-    """Identical optimization protocol as ``distill.train_flow_model`` (b=1 loops)."""
+    """Identical optimization protocol as ``distill.train_flow_model`` (b=1 loops).
+
+    ``deadline_s`` (optional) stops the loop at a wall-clock deadline so a
+    caller can enforce an equal-time training budget regardless of any
+    pre-calibrated step-count estimate (probe drift protection).
+    """
     model.train()
     opt = torch.optim.AdamW(model.parameters(), lr=lr)
     rng = np.random.RandomState(seed)
@@ -264,6 +271,7 @@ def train_flow_model_baseline(
     dev = clips_latents.device
     dtype = clips_latents.dtype
     losses: list[float] = []
+    deadline = (time.perf_counter() + deadline_s) if deadline_s else None
     for step in range(steps):
         idx = int(rng.randint(0, n))
         z = clips_latents[idx: idx + 1].to(dev)
@@ -273,6 +281,8 @@ def train_flow_model_baseline(
         d[FLOW_LOSS_KEY].backward()
         opt.step()
         losses.append(float(d[FLOW_LOSS_KEY].item()))
+        if deadline is not None and time.perf_counter() >= deadline:
+            break
         if progress_every and (step + 1) % progress_every == 0:
             print(f"[train_flow_model_baseline] step {step + 1}/{steps} loss={losses[-1]:.4f}")
     return losses

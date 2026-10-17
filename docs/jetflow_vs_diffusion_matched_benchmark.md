@@ -29,11 +29,14 @@ tight latency envelopes*, not head-to-head quality at equal compute.
 
 | Row | Steps | Latency (ms/clip) | PSNR (dB) | SSIM | FVD-proxy | Temp. smooth |
 |---|---|---|---|---|---|---|
-| jet_tt_2step (raw)   | 2  | 446 | 7.43 | 0.250 | 1.053 | 0.642 |
-| jet_tt_2step_distill | 2  | **14.2** | 9.70 | 0.390 | 0.595 | 0.262 |
-| diffusion_matched    | 32 | 411 | **12.59** | **0.663** | **0.272** | **0.133** |
-| diffusion_frontier_K48 | 48 | 717 | 12.56 | 0.662 | 0.274 | 0.135 |
-| jet_tt_4step (raw)   | 4  | 938 | 7.32 | 0.238 | 1.041 | 0.655 |
+| jet_tt_2step (raw)   | 2  | 628 | 7.49 | 0.254 | 1.061 | 0.637 |
+| jet_tt_2step_distill | 2  | **16.1** | 9.56 | 0.374 | 0.599 | 0.237 |
+| diffusion_matched    | 48 | 594 | **11.86** | **0.653** | **0.271** | **0.141** |
+| diffusion_frontier_K48 | 48 | 594 | 11.86 | 0.653 | 0.271 | 0.141 |
+| jet_tt_4step (raw)   | 4  | 1247 | 7.40 | 0.250 | 1.068 | 0.632 |
+
+(v2 artifact: in-loop deadline-bounded budgets; replaces the v1 numbers
+recorded in the git history and CHANGELOG.)
 
 Notes on instrument symbolism:
 - **FVD-proxy** = sliced-Wasserstein-2 on a frozen deterministic featurizer
@@ -46,20 +49,24 @@ Notes on instrument symbolism:
 
 ## Findings
 
-1. **Equal-compute quality loss is real, not a step-budget artifact.**  The
+1. **Equal-compute quality loss is real, not a throughput artifact.**  The
    earlier equal-*steps* comparison (300 each) was unfair because JetFlow is
    slower per step. Wall-clock budget matching removes that objection and the
-   quality gap persists (0.115 vs 0.082 train loss; hold-out PSNR gap
-   ≈ 5.2 dB). The gap is architectural, not a calibration bug.
+   quality gap persists. Measured per-step cost is a near tie (first run,
+   probe-budgeted: 23.28 vs 23.49 ms/step); the corrected in-loop
+   deadline controller (v2 artifact) gives jet 28.38 ms/step × 3172 and
+   baseline 25.88 ms/step × 3478, both consuming exactly 90.0 s (a ±33%
+   spread in steps/s did not change the ordering of any instrument). The
+   gap is architectural, not a calibration bug.
 2. **Diffusion quality plateaus at K≈32** — K=48 spends 1.75× longer at the
    same quality. On this small model, extra steps buy nothing beyond K=32.
 3. **Raw 2-step JetFlow temporal smoothness (0.642) is poor** — contradicting
    the "flow = smooth" pitch; the distilled student cuts this to 0.262, but
    diffusion wins outright at 0.133.
-4. **The distilled student is the only viable sub-50 ms option.** At ~70
+4. **The distilled student is the only viable sub-50 ms option.** At ~62
    clips/s single-process, JetFlow distill-2step is the
    competitive offering; the diffusion baseline simply cannot run at that
-   latency on this model (its matched point is ~0.41 s/clip).
+   latency on this model (its matched point is ~0.59 s/clip).
 
 ## Recommendation
 
