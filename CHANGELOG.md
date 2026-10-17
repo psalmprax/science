@@ -12,6 +12,31 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   - `tests/test_dyn_lean_universal_bridge.py` — same environmental Lean cause.
   - `outputs/nano_ds10_freeze.json` — FREEZE DRIFT: the pin at `apedp_dyn/epistemic/frozen_spec.py:40` expects d37d0f1c..., but the benchmark regenerates deterministically to b809ddcb..., so `test_all_frozen_records_verified_against_pinned_hashes` fails. All of that generator's dependencies are clean, so the drift reproduces at HEAD. The pinned hash predates the current generator output; the pin owner must re-pin or reconcile the generator. NOT touched in this change.
 
+## [Unreleased] — Preregistration coverage closed + JetFlow-Video v0.2 + RIME §16e negative result + higher-order PDE engine (2026-10-17)
+
+### Added — four frozen preregistrations (frozen BEFORE their confirmation runs; harnesses/artifacts committed separately)
+- [`docs/PREREGISTRATION_JETFLOW_VIDEO_V02.md`](docs/PREREGISTRATION_JETFLOW_VIDEO_V02.md) (PREREG-JETFLOW-VIDEO-V02-2026-10-17): fresh-seed {101, 202, 303} matched-benchmark replication (H1 SSIM/smoothness ordering, H2 PSNR ≥ 9.5 dB, H3 training-cost ratio ≤ 0.5, H4 structural pass counts) + architecture invariants (strict 3D causality, SE(3)/Plücker exactness, text-encoder order/negation, Noether idempotence, TT fidelity, periodic parity). Margins derive from the disclosed exploratory seed-0 run.
+- [`docs/PREREGISTRATION_HIGHER_ORDER_PDE.md`](docs/PREREGISTRATION_HIGHER_ORDER_PDE.md) (PREREG-HOPDE-2026-10-17): two-sided fresh-seed {810, 811, 812} validation — KdV, biharmonic KS-type, and second-order-temporal Klein–Gordon worlds must confirm; explosive positive-`c₄` ultraviolet and null worlds must be refused.
+- [`docs/PREREGISTRATION_CROSS_DOMAIN_ENGINES.md`](docs/PREREGISTRATION_CROSS_DOMAIN_ENGINES.md) (PREREG-XDOMAIN-2026-10-17): fresh-instance confirmation batteries for DMRG (ED parity, thermodynamic limit, field arm), LOB transport (8-combo parameter grid, three recovery paths), audio chirp transport, molecular SE(3) relaxation (invariance, equivariance, mirror), robotics unicycle (convergence orders, Lyapunov descent).
+- [`docs/PREREGISTRATION_QUANTUM_PROFILER_HOLDOUT.md`](docs/PREREGISTRATION_QUANTUM_PROFILER_HOLDOUT.md) (PREREG-QPROF-2026-10-17): first out-of-sample confirmation of the quantum profiler/coordinate transmuter (Brus power law, Landauer staircase, Schwinger tunneling) with smooth-polynomial-refusal and null guards on fresh noise seeds.
+
+### Added — JetFlow-Video v0.2 pillars (exploratory evidence)
+- **Compositional text encoder** (`packages/jetflow-video/jetflow_video/text_encoder.py`): sequence-level `(B, L_seq, D_text)` contextual encoding, negation gating, order-sensitive modifiers, HuggingFace bridge, prompt→physics steering extraction.
+- **3D causal spatio-temporal VAE** (`bridge.py`): strict past-only `CausalConv3d`/`CausalResBlock3D` stack, diagonal-Gaussian KL posterior, end-to-end video-batch training.
+- **Depth-aware SE(3)/Plücker transport** (`depth_se3.py`): exact Rodrigues/`V(ω)` exponential map, 6D Plücker ray embedding, learned monocular depth + 3D perspective warp with disocclusion source.
+- **DC-STT neural velocity/source predictor** (`apedp_dyn/video/decoupled_transport.py`): `NeuralTransportFlowNet` (streamfunction-curl + compressible-potential decomposition, bounded disocclusion source) trained end-to-end through a differentiable transport step with Rust rollout.
+- **Rust periodic warp kernel** (`rust/apedp-kernel/src/video.rs::warp_bilinear_2d_periodic`, PyO3 export, bridge `periodic=True`): generator-exact floor-then-mod backtrace indexing; torch / NumPy fallback / Rust parity pinned at 1e-12 in `tests/test_dyn_periodic_boundary_transport.py`.
+- **Higher-order PDE hypothesis engine** (`apedp_dyn/pde/higher_order_engine.py`): spatial orders to 4th + temporal orders {1, 2} with variance-normalized BIC selection, proposer/referee separation, and the ultraviolet Fourier-symbol stability guard (rejects explosive `c₄ > 0` biharmonic terms).
+
+### Committed — RIME §16e negative-result artifacts (prereg was `363e8df`)
+- `apedp_dyn/epistemic/scope_refusal_mv.py` (multivariate rival-probe construction), `benchmarks/run_scope_refusal_mv_validation.py`, canonical artifact + disclosed void first run, `docs/RIME_SCOPE_MV_REPORT.md`, registered pins `tests/test_dyn_rime_scope_refusal_mv.py`. Recorded outcome: §16e as preregistered FAILS its two-sided validation (control wrongfully refused via c→0.1 linearization; §16c monomial guards undefined); v2 prereg required before any modification.
+
+### Measured — exploratory JetFlow matched benchmark, post-remediation seed 0 (artifact `benchmarks/jetflow_vs_diffusion_matched_results.json`)
+- `jet_tt_2step` 10.74 dB PSNR / 0.514 SSIM / 0.275 temporal consistency at 8 structural passes per clip; SSIM and temporal smoothness beat `diffusion_matched` (0.477 / 0.365) and `diffusion_frontier_K48` (0.492 / 0.372); PSNR remains 0.23 dB below `diffusion_matched`.
+- Training at equal 300 steps: 14.40 s (JetFlow) vs 80.75 s (baseline) — ratio 0.178; final flow-matching loss 0.1528 vs 0.1631.
+- Harness caveat recorded: the artifact's `model_passes_per_clip` for `jet_tt_2step` (9.0) includes one warmup generation amortized over `n_gen`; the structural count is 8 (the confirmation protocol resets the counter after warmup).
+- AGENTS.md dynamic regression suite on the committed tree: **127 passed**.
+
 ## [Unreleased] — DC-STT landed honestly: horizon decay + first learned flow head (2026-10-17)
 
 ### Added
