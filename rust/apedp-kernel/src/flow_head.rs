@@ -20,8 +20,9 @@
 //! where c_in_l = 2*C_in for l=0 and `hidden` afterwards.
 //!
 //! Backprop notes (parity pinned in tests/test_dyn_flow_head_rust.py):
-//! - GELU is the exact erf form; [`crate::numeric::erf_approx`] carries
-//!   |error| <= 1.5e-7, the dominant term in the v-parity tolerance there.
+//! - GELU is the exact erf form; [`flow_head::erf_hp`] is pinned to a 397-point
+//!   `math.erf` grid (|error| <= 8e-16), so the v-parity tolerance carries no
+//!   erf term anymore.
 //! - The self-supervised loss backpropagates through the warp's COORDINATE
 //!   branch only (data planes carry no gradient) — matching the Python
 //!   trainer.

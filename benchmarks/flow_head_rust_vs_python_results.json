@@ -1,0 +1,39 @@
+{
+  "benchmark": "flow_head_rust_vs_python",
+  "timestamp_utc": "2026-10-17T10:50:10.817259+00:00",
+  "spec": {
+    "hidden": 24,
+    "layers": 3,
+    "flow_scale": 4.0,
+    "lambda_div": 0.01,
+    "lambda_smooth": 0.01
+  },
+  "train_budget_s": 90.0,
+  "python_train": {
+    "steps": 1085,
+    "time_s": 91.40247496205848,
+    "ms_per_step": 84.24191240742717,
+    "first_loss": 0.00041311865517394957,
+    "final_loss": 0.00036590385679126077
+  },
+  "rust_train": {
+    "steps": 257,
+    "time_s": 90.29846155701671,
+    "ms_per_step": 351.3558815448121,
+    "first_loss": 0.00018707311595318082,
+    "final_loss": 0.01967243366960709
+  },
+  "python_rollout": {
+    "horizon": 14,
+    "time_s": 150.12011118233204,
+    "median_step_ms": 6.414439529180527,
+    "fps": 0.09325865728274048
+  },
+  "rust_rollout": {
+    "time_s": 1812.0381858898327,
+    "median_step_ms": 129.91650949697942,
+    "fps": 0.007726106496549937
+  },
+  "cross_engine_final_state_maxabsdiff": 0.9806995381736239,
+  "notes": "no threshold gate: numbers are the deliverable; budgets equal; each engine trains its own weights; cross-engine state diff is the parity test class bound (erf approx through HH+warp)."
+}

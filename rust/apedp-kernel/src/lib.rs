@@ -15,6 +15,7 @@
 pub mod data;
 pub mod numeric;
 pub mod video;
+pub mod flow_head;
 pub mod ode;
 pub mod parser;
 pub mod units;
@@ -2088,6 +2089,122 @@ fn video_detect_disocclusion_mask<'py>(
     Ok(out.into_pyarray_bound(py))
 }
 
+/// Learned flow-head forward pass: v = head(z_prev, z_curr).
+#[pyfunction]
+#[pyo3(signature = (z_prev, z_curr, channel_count, hidden, n_layers, flow_scale, height, width, weights))]
+fn flow_head_forward<'py>(
+    py: Python<'py>,
+    z_prev: PyReadonlyArray1<'py, f64>,
+    z_curr: PyReadonlyArray1<'py, f64>,
+    channel_count: usize,
+    hidden: usize,
+    n_layers: usize,
+    flow_scale: f64,
+    height: usize,
+    width: usize,
+    weights: PyReadonlyArray1<'py, f64>,
+) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
+    let spec = flow_head::FlowHeadSpec { c_in: channel_count, hidden, n_layers, flow_scale };
+    let zp = z_prev.as_slice().map_err(|_| PyValueError::new_err("z_prev must be C-contiguous"))?;
+    let zc = z_curr.as_slice().map_err(|_| PyValueError::new_err("z_curr must be C-contiguous"))?;
+    let wt = weights.as_slice().map_err(|_| PyValueError::new_err("weights must be C-contiguous"))?;
+    let (vx, vy) = py
+        .allow_threads(|| flow_head::forward_v(zp, zc, spec, wt, height, width))
+        .map_err(PyValueError::new_err)?;
+    Ok((vx.into_pyarray_bound(py), vy.into_pyarray_bound(py)))
+}
+
+/// Self-supervised flow-head training over explicit frame triples.
+/// `frame_triples` is the flattened [t_prev, t_curr, t_next] * n list.
+/// Returns (losses, trained_weights) — the caller re-injects the weights
+/// (no unsafe in-place aliasing across the boundary).
+#[pyfunction]
+#[pyo3(signature = (data, frame_triples, channel_count, hidden, n_layers, flow_scale, height, width, weights, steps, lr, weight_decay, lambda_div, lambda_smooth, dt, deadline_ms=None))]
+#[allow(clippy::too_many_arguments)]
+fn flow_head_train<'py>(
+    py: Python<'py>,
+    data: PyReadonlyArray1<'py, f64>,
+    frame_triples: PyReadonlyArray1<'py, u64>,
+    channel_count: usize,
+    hidden: usize,
+    n_layers: usize,
+    flow_scale: f64,
+    height: usize,
+    width: usize,
+    weights: PyReadonlyArray1<'py, f64>,
+    steps: usize,
+    lr: f64,
+    weight_decay: f64,
+    lambda_div: f64,
+    lambda_smooth: f64,
+    dt: f64,
+    deadline_ms: Option<u128>,
+) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
+    let spec = flow_head::FlowHeadSpec { c_in: channel_count, hidden, n_layers, flow_scale };
+    let d = data.as_slice().map_err(|_| PyValueError::new_err("data must be C-contiguous"))?;
+    let tr = frame_triples.as_slice().map_err(|_| PyValueError::new_err("frame_triples must be C-contiguous"))?;
+    if tr.len() % 3 != 0 {
+        return Err(PyValueError::new_err("frame_triples must pack groups of three"));
+    }
+    let triples: Vec<[usize; 3]> = tr
+        .chunks_exact(3)
+        .map(|c| [c[0] as usize, c[1] as usize, c[2] as usize])
+        .collect();
+    let w0 = weights.as_slice().map_err(|_| PyValueError::new_err("weights must be C-contiguous"))?.to_vec();
+    let (losses, w_out) = py
+        .allow_threads(move || {
+            let mut w_mut = w0;
+            let res = flow_head::train(
+                d, &triples, spec, &mut w_mut, height, width, steps, lr, weight_decay,
+                lambda_div, lambda_smooth, dt, deadline_ms,
+            );
+            res.map(|losses| (losses, w_mut))
+        })
+        .map_err(PyValueError::new_err)?;
+    Ok((losses.into_pyarray_bound(py), w_out.into_pyarray_bound(py)))
+}
+
+/// One full DC-STT transport step (head + optional Leray + warp + optional
+/// viscosity) in a single Python<->Rust crossing.
+#[pyfunction]
+#[pyo3(signature = (state, head_prev, head_curr, channel_count, hidden, n_layers, flow_scale, height, width, weights, dt, enforce_hh, hh_iters, nu, use_dissipation, dx, dy))]
+#[allow(clippy::too_many_arguments)]
+fn flow_head_transport_step<'py>(
+    py: Python<'py>,
+    state: PyReadonlyArray1<'py, f64>,
+    head_prev: PyReadonlyArray1<'py, f64>,
+    head_curr: PyReadonlyArray1<'py, f64>,
+    channel_count: usize,
+    hidden: usize,
+    n_layers: usize,
+    flow_scale: f64,
+    height: usize,
+    width: usize,
+    weights: PyReadonlyArray1<'py, f64>,
+    dt: f64,
+    enforce_hh: bool,
+    hh_iters: usize,
+    nu: f64,
+    use_dissipation: bool,
+    dx: f64,
+    dy: f64,
+) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>, f64)> {
+    let spec = flow_head::FlowHeadSpec { c_in: channel_count, hidden, n_layers, flow_scale };
+    let st = state.as_slice().map_err(|_| PyValueError::new_err("state must be C-contiguous"))?;
+    let hp = head_prev.as_slice().map_err(|_| PyValueError::new_err("head_prev must be C-contiguous"))?;
+    let hc = head_curr.as_slice().map_err(|_| PyValueError::new_err("head_curr must be C-contiguous"))?;
+    let wt = weights.as_slice().map_err(|_| PyValueError::new_err("weights must be C-contiguous"))?;
+    let (z_next, vx, vy, rem) = py
+        .allow_threads(|| {
+            flow_head::transport_step(
+                st, hp, hc, spec, wt, height, width, dt, enforce_hh, hh_iters, nu,
+                use_dissipation, dx, dy,
+            )
+        })
+        .map_err(PyValueError::new_err)?;
+    Ok((z_next.into_pyarray_bound(py), vx.into_pyarray_bound(py), vy.into_pyarray_bound(py), rem))
+}
+
 #[pymodule]
 fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(compile, m)?)?;
@@ -2098,6 +2215,9 @@ fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(video_warp_bilinear_2d, m)?)?;
     m.add_function(wrap_pyfunction!(video_compute_optical_flow_divergence, m)?)?;
     m.add_function(wrap_pyfunction!(video_detect_disocclusion_mask, m)?)?;
+    m.add_function(wrap_pyfunction!(flow_head_forward, m)?)?;
+    m.add_function(wrap_pyfunction!(flow_head_train, m)?)?;
+    m.add_function(wrap_pyfunction!(flow_head_transport_step, m)?)?;
     m.add_function(wrap_pyfunction!(compute_metrics, m)?)?;
     m.add_function(wrap_pyfunction!(score_candidates_parallel, m)?)?;
     m.add_function(wrap_pyfunction!(probe_singularity, m)?)?;
