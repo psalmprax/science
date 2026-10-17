@@ -41,7 +41,12 @@ pytest tests/test_dyn_competing_proposers_and_dsr.py \
        tests/test_dyn_native_ga_best.py \
        tests/test_dyn_experiment_ledger_and_benchmarks.py \
        tests/test_documentation_and_spec_integrity.py \
-       tests/test_dyn_expanded_proposers_and_calibrated_power.py -v
+       tests/test_dyn_expanded_proposers_and_calibrated_power.py \
+       tests/test_dyn_dmrg_quantum.py \
+       tests/test_dyn_lob_transport.py \
+       tests/test_dyn_audio_field_transport.py \
+       tests/test_dyn_molecular_se3_flow.py \
+       tests/test_dyn_robotics_trajectory.py -v
 ```
 
 ---
