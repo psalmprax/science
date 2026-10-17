@@ -1,0 +1,92 @@
+{
+  "benchmark": "learned_flow_dcstt_flow_supervised",
+  "timestamp_utc": "2026-10-17T12:36:14.150725+00:00",
+  "seed": 0,
+  "flow_supervised": true,
+  "train_budget_s": 180.0,
+  "train_steps": 647,
+  "train_s": 181.40938641293906,
+  "final_train_loss": 0.2556961032018352,
+  "first_train_loss": 0.16452465743203465,
+  "params": 11738,
+  "holdout_ids": [
+    "fluid_clip_0003",
+    "fluid_clip_0005"
+  ],
+  "per_clip": {
+    "fluid_clip_0003": {
+      "estimated_shift_vx_vy": [
+        0.0,
+        0.0
+      ],
+      "rollout_time_s": 1.3396098699886352,
+      "rollout_fps": 10.450803859872106,
+      "rows": {
+        "4": {
+          "horizon": 4,
+          "learned_flow_psnr_db": 42.94838896396773,
+          "persistence_psnr_db": 43.582408866258305,
+          "shift_search_psnr_db": 43.582408866258305
+        },
+        "8": {
+          "horizon": 8,
+          "learned_flow_psnr_db": 41.88682721543543,
+          "persistence_psnr_db": 42.2644185612378,
+          "shift_search_psnr_db": 42.2644185612378
+        },
+        "14": {
+          "horizon": 14,
+          "learned_flow_psnr_db": 39.40021197734076,
+          "persistence_psnr_db": 40.40976549062099,
+          "shift_search_psnr_db": 40.40976549062099
+        }
+      }
+    },
+    "fluid_clip_0005": {
+      "estimated_shift_vx_vy": [
+        0.0,
+        0.0
+      ],
+      "rollout_time_s": 1.3369652609108016,
+      "rollout_fps": 10.471476267425649,
+      "rows": {
+        "4": {
+          "horizon": 4,
+          "learned_flow_psnr_db": 35.50222187599909,
+          "persistence_psnr_db": 35.50142808466473,
+          "shift_search_psnr_db": 35.50142808466473
+        },
+        "8": {
+          "horizon": 8,
+          "learned_flow_psnr_db": 32.152966156034026,
+          "persistence_psnr_db": 32.15073575490311,
+          "shift_search_psnr_db": 32.15073575490311
+        },
+        "14": {
+          "horizon": 14,
+          "learned_flow_psnr_db": 30.06834439132779,
+          "persistence_psnr_db": 30.06031481205355,
+          "shift_search_psnr_db": 30.06031481205355
+        }
+      }
+    }
+  },
+  "aggregate_psnr_db": {
+    "learned_flow": {
+      "4": 39.225305419983414,
+      "8": 37.01989668573473,
+      "14": 34.73427818433427
+    },
+    "persistence": {
+      "4": 39.541918475461515,
+      "8": 37.20757715807045,
+      "14": 35.23504015133727
+    },
+    "shift_search": {
+      "4": 39.541918475461515,
+      "8": 37.20757715807045,
+      "14": 35.23504015133727
+    }
+  },
+  "honest_scope": "(stated, not hidden):\n- \"Real content\" = domain content whose flow is NOT provided (must be\n  inferred from pixels; the head must generalize across vortex configs).\n  The clip generator itself remains synthetic; photorealism is unclaimed.\n- Deadline-disciplined training (matched wall-clock class as the\n  jet-vs-diffusion benchmark), deterministic seeds, holdout ids come from\n  the same domain manifest split used by the matched-compute benchmark.\n- AC-training floor: dye renormalization in the clip generator makes the\n  self-supervised target approximate; the trained loss floor is reported."
+}

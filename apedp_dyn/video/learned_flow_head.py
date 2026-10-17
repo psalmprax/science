@@ -80,15 +80,22 @@ class LearnedFlowHead(nn.Module):
 
 
 def warp_frames(z: torch.Tensor, vx: torch.Tensor, vy: torch.Tensor,
-                dt: float = 1.0) -> torch.Tensor:
-    """Backward warp z (B,C,H,W) by displacement -dt*(vx,vy) via grid_sample.
+                dt: float = 1.0, periodic: bool = False) -> torch.Tensor:
+    """Backward warp z (B,C,H,W) by displacement -dt*(vx,vy).
 
     Matches DC-STT's `video_warp_2d` convention: sample z at the upstream
-    position x - dt*v (semi-Lagrangian backtrace), border padding. ``vx``
-    must be (B,H,W) — broadcasting handles the H,W meshgrid; the caller is
-    responsible for batch shape (see training/rollout). Used in training
-    loss and rollout; sign-convention parity against the Rust-kernel NumPy
-    fallback is pinned in tests/test_dyn_learned_flow_head.py.
+    position x - dt*v (semi-Lagrangian backtrace). ``vx`` must be (B,H,W) —
+    broadcasting handles the H,W meshgrid; the caller is responsible for
+    batch shape (see training/rollout). Used in training loss and rollout;
+    sign-convention parity against the Rust-kernel NumPy fallback is pinned
+    in tests/test_dyn_learned_flow_head.py.
+
+    ``periodic=True``: wrap-around (toroidal) boundary conditions matching
+    the fluid generator's `floor(q) % size` backtrace indexing — the source
+    coordinate is floored first, the integer index taken modulo, frac =
+    q - floor(q). ``periodic=False`` (default): grid_sample, border padding.
+    Train and rollout boundary treatment must agree; the fluid benchmark
+    sets both periodic.
     """
     b, _, h, w = z.shape
     if vx.shape != (b, h, w) or vy.shape != (b, h, w):
@@ -96,6 +103,30 @@ def warp_frames(z: torch.Tensor, vx: torch.Tensor, vy: torch.Tensor,
     yy, xx = torch.meshgrid(
         torch.arange(h, dtype=z.dtype), torch.arange(w, dtype=z.dtype), indexing="ij"
     )
+    if periodic:
+        qx = xx - dt * vx
+        qy = yy - dt * vy
+        fx = torch.floor(qx)
+        fy = torch.floor(qy)
+        x0 = torch.remainder(fx, w).long()
+        y0 = torch.remainder(fy, h).long()
+        x1 = (x0 + 1) % w
+        y1 = (y0 + 1) % h
+        wx = (qx - fx).unsqueeze(1)
+        wy = (qy - fy).unsqueeze(1)
+
+        def _gather(yi: torch.Tensor, xi: torch.Tensor) -> torch.Tensor:
+            # Flattened spatial gather: (B,H,W) row/col indices -> H*W flat
+            # index, expanded over channels. (Naive z[:, :, yi, xi] advanced
+            # indexing pushes the index batch dim to the FRONT; two-stage
+            # gathers along H then W re-index the remaining axis incorrectly.)
+            z_flat = z.reshape(b, z.shape[1], h * w)
+            flat = (yi * w + xi).reshape(b, 1, h * w).expand_as(z_flat)
+            return torch.gather(z_flat, 2, flat).reshape(b, z.shape[1], h, w)
+
+        top = _gather(y0, x0) * (1.0 - wx) + _gather(y0, x1) * wx
+        bottom = _gather(y1, x0) * (1.0 - wx) + _gather(y1, x1) * wx
+        return top * (1.0 - wy) + bottom * wy
     # pixel-center convention (align_corners=False): pixel i maps to
     # (2i+1)/size - 1; equivalent to the bridge fallback's sx = x + disp with
     # bilinear floor weights and border clamping (parity pinned in tests).
@@ -114,13 +145,16 @@ def _divergence(v: torch.Tensor) -> torch.Tensor:
 
 def flow_consistency_loss(model: LearnedFlowHead,
                           z_prev: torch.Tensor, z_curr: torch.Tensor,
-                          z_next: torch.Tensor, dt: float = 1.0) -> torch.Tensor:
+                          z_next: torch.Tensor, dt: float = 1.0,
+                          periodic: bool = False) -> torch.Tensor:
     """Self-supervised advection-consistency objective for one transition.
 
     All tensors (B,C,H,W); C should equal the head's context_channels.
+    ``periodic`` selects the warp boundary treatment (see :func:`warp_frames`);
+    it must match the transport config used at rollout.
     """
     v = model(z_prev, z_curr)
-    z_pred = warp_frames(z_curr, v[:, 0], v[:, 1], dt=dt)
+    z_pred = warp_frames(z_curr, v[:, 0], v[:, 1], dt=dt, periodic=periodic)
     adv_loss = F.mse_loss(z_pred, z_next)
     div_sq = float(model.cfg.lambda_div) * torch.mean(_divergence(v) ** 2)
     tv = float(model.cfg.lambda_smooth) * (
@@ -130,6 +164,32 @@ def flow_consistency_loss(model: LearnedFlowHead,
     return adv_loss + div_sq + tv
 
 
+def flow_supervision_loss(model: LearnedFlowHead,
+                          z_prev: torch.Tensor, z_curr: torch.Tensor,
+                          vx_teacher: torch.Tensor, vy_teacher: torch.Tensor,
+                          z_next: torch.Tensor, dt: float = 1.0,
+                          periodic: bool = False) -> torch.Tensor:
+    """Teacher-supervised flow objective (Stage 3): consistency + flow MSA.
+
+    Adds ``MSE(v_head, v_teacher)`` to :func:`flow_consistency_loss`. The
+    teacher is the fluid-domain generator's own ANALYTIC field, made
+    available for TRAIN clips only (``fluid_domain.make_fluid_clip(...,
+    return_flow=True)``): the generator advects its dye backtracing with
+    ``u = dpsi/dy`` (y-velocity) and ``v = -dpsi/dx`` (x-velocity), so the
+    caller MUST pass ``vx_teacher = v_gen, vy_teacher = u_gen``. That swap is
+    pinned in tests/test_dyn_learned_flow_head.py.
+
+    The supervised term fills exactly the gap the 2x-budget rung exposed:
+    a dense per-pixel target replaces the (floor-bound) single-advection
+    residual self-supervision, so the gradient is not tied to the dye
+    renormalization floor.
+    """
+    base = flow_consistency_loss(model, z_prev, z_curr, z_next, dt=dt, periodic=periodic)
+    v_pred = model(z_prev, z_curr)
+    flow_mse = F.mse_loss(v_pred[:, 0], vx_teacher) + F.mse_loss(v_pred[:, 1], vy_teacher)
+    return base + flow_mse
+
+
 def train_flow_head(model: LearnedFlowHead,
                     clips: np.ndarray,
                     steps: int,
@@ -137,18 +197,41 @@ def train_flow_head(model: LearnedFlowHead,
                     seed: int = 0,
                     progress_every: int = 0,
                     deadline_s: float | None = None,
-                    dt: float = 1.0) -> list[float]:
+                    dt: float = 1.0,
+                    flow_targets: np.ndarray | None = None,
+                    frames_per_clip: int | None = None,
+                    periodic: bool = False) -> list[float]:
     """Train a LearnedFlowHead self-supervised on (T,C,H,W) clips on CPU.
 
-    ``clips`` cent be a single clip or a stack of clips shape either
+    ``clips`` can be a single clip or a stack of clips shape either
     (T,C,H,W) or a dict from ``make_domain_set``; dict values are stacked.
     Channels 1:3 (the advected scalars) are the head's domain. Optimizer
     AdamW, deterministic RandomState frame sampling, optional wall-clock
     ``deadline_s`` identical in spirit to the trainer deadline contract.
-    Returns the per-step advection-consistency loss.
+    Returns the per-step total loss (advection-consistency [+ flow MSE]).
+
+    ``flow_targets`` (optional, Stage 3 supervision): (T, 2, H, W) teacher
+    fields in the SAME concatenated clip order as the stacked ``clips``,
+    channel 0 = vx (x-velocity), channel 1 = vy (y-velocity), px/frame.
+    Built from ``make_fluid_clip(seed, return_flow=True)`` as
+    ``np.stack([v_gen, u_gen])`` per frame (the swap pinned in tests).
+    Train-clip ids only; never built from holdout clips.
+
+    Teacher alignment: for the sampled triple (ti-1, ti, ti+1) the target is
+    ``flow[ti+1]`` — the field the generator itself used to advect frame ti
+    into ti+1 — matching both the advection-consistency loss and the rollout
+    convention (head(z_{ti-1}, z_{ti}) advances z_ti). ``frames_per_clip``:
+    when the stacked array concatenates equal-length clips, pass the per-clip
+    frame count so sampled transitions never straddle clip boundaries (dict
+    input derives it automatically). ``periodic``: toroidal warp boundary in
+    the loss — must match the rollout transport's ``periodic_warp`` (the
+    fluid domain is periodic; see the benchmark wiring).
     """
+    clip_lengths: list[int] | None = None
     if isinstance(clips, dict):
-        arr = np.concatenate([np.asarray(v, np.float64) for v in clips.values()], axis=0)
+        vals = [np.asarray(v, np.float64) for v in clips.values()]
+        clip_lengths = [int(v.shape[0]) for v in vals]
+        arr = np.concatenate(vals, axis=0)
     else:
         arr = np.asarray(clips, np.float64)
     if arr.ndim != 4:
@@ -158,6 +241,16 @@ def train_flow_head(model: LearnedFlowHead,
         arr = arr[:, 1:3]
     data = torch.from_numpy(arr)
 
+    flow = None
+    if flow_targets is not None:
+        flow = np.asarray(flow_targets, np.float64)
+        if flow.shape != (arr.shape[0], 2, arr.shape[2], arr.shape[3]):
+            raise ValueError(
+                f"flow_targets {flow.shape} must match stacked clips (T,2,H,W); "
+                "channel 0 = vx (x-velocity), channel 1 = vy (y-velocity)"
+            )
+        flow = torch.from_numpy(flow)
+
     model.double()   # head params default fp32; the domain data is float64
     model.train()
     opt = torch.optim.AdamW(model.parameters(), lr=lr)
@@ -165,13 +258,30 @@ def train_flow_head(model: LearnedFlowHead,
     deadline = (time.perf_counter() + deadline_s) if deadline_s else None
     losses: list[float] = []
     t_total = data.shape[0]
+    if clip_lengths is None and frames_per_clip is not None and int(frames_per_clip) >= 3:
+        clip_lengths = [int(frames_per_clip)] * (t_total // int(frames_per_clip))
+    valid_tis: list[int] = []
+    if clip_lengths:
+        start = 0
+        for length in clip_lengths:
+            if length >= 3:
+                valid_tis.extend(range(start + 1, start + length - 1))
+            start += length
+    if not valid_tis:
+        valid_tis = list(range(1, t_total - 1))
+    valid_arr = np.asarray(valid_tis, dtype=np.int64)
     for step in range(steps):
-        ti = int(rng.randint(1, t_total - 1))
+        ti = int(valid_arr[rng.randint(0, valid_arr.shape[0])])
         z_prev = data[ti - 1: ti]
         z_curr = data[ti: ti + 1]
         z_next = data[ti + 1: ti + 2]
         opt.zero_grad(set_to_none=True)
-        loss = flow_consistency_loss(model, z_prev, z_curr, z_next, dt=dt)
+        if flow is None:
+            loss = flow_consistency_loss(model, z_prev, z_curr, z_next, dt=dt, periodic=periodic)
+        else:
+            loss = flow_supervision_loss(model, z_prev, z_curr,
+                                         flow[ti + 1: ti + 2, 0], flow[ti + 1: ti + 2, 1],
+                                         z_next, dt=dt, periodic=periodic)
         loss.backward()
         opt.step()
         losses.append(float(loss.item()))
@@ -197,7 +307,8 @@ def rollout_dcstt_head(head: LearnedFlowHead,
     covering the two context frames plus every transported frame, i.e. row
     i corresponds to clip column t = i (row 0/1 are the context frames).
     The transport config must use nu=0.0 so the rollout matches the
-    pure-advection training dynamics (module docstring).
+    pure-advection training dynamics (module docstring), and its
+    ``periodic_warp`` must match the training loss boundary treatment.
     """
     head.double()
     head.eval()

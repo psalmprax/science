@@ -44,7 +44,11 @@ from apedp_dyn.video.decoupled_transport import (
     DecoupledSpatioTemporalTransport,
     DecoupledTransportConfig,
 )
-from apedp_dyn.video.fluid_domain import fluid_domain_manifest, make_domain_set
+from apedp_dyn.video.fluid_domain import (
+    fluid_domain_manifest,
+    make_domain_set,
+    make_fluid_clip,
+)
 from apedp_dyn.video.learned_flow_head import (
     FlowHeadConfig,
     LearnedFlowHead,
@@ -87,19 +91,41 @@ def run_learned_flow_benchmark(train_budget_s: float = 90.0,
                                horizons: tuple[int, ...] = (4, 8, 14),
                                n_holdout: int = 2,
                                out_path: Path | None = None,
-                               seed: int = 0) -> dict:
+                               seed: int = 0,
+                               flow_supervised: bool = False,
+                               periodic: bool = True) -> dict:
     # n_clips=10 mirrors run_jetflow_vs_diffusion_matched.py exactly, so the
     # shared holdout ids (fluid_clip_0003/0005) stay burnable and are never
     # used as training data here (AGENTS.md 1.2).
     man = fluid_domain_manifest(n_clips=10)
     t, h, w = int(man["t"]) if "t" in man else 16, 64, 64
     print("=" * 80)
-    print("LEARNED-FLOW DC-STT: transport held-out clips with INFERRED flow (CPU)")
+    print("LEARNED-FLOW DC-STT: transport held-out clips with INFERRED flow (CPU)"
+          + ("  [Stage-3 FLOW-SUPERVISED: analytic teacher on TRAIN clips only]"
+             if flow_supervised else ""))
     print("=" * 80)
 
     clips = make_domain_set(tuple(man["train_ids"]), tuple(man["holdout_ids"]),
                             t=t, h=h, w=w)
-    train_clips = np.concatenate([clips[cid] for cid in man["train_ids"]], axis=0)
+    train_ids = list(man["train_ids"])
+    train_clips = np.concatenate([clips[cid] for cid in train_ids], axis=0)
+
+    flow_targets = None
+    if flow_supervised:
+        # Stage-3 teacher flows: the generator's own analytic field,
+        # TRAIN-CLIP IDS ONLY (the holdout ids stay exclusively gate-side;
+        # they never enter training nor the pseudo-flow set). Stacked in
+        # EXACTLY the same clip order train_flow_head concatenates, in
+        # head-units (vx, vy) = (v_gen, u_gen) — the swap pinned in tests.
+        per_id = []
+        for cid in train_ids:
+            gseed = int(cid.replace("fluid_clip_", ""), 10)
+            _, u_gen, v_gen = make_fluid_clip(gseed, t=t, h=h, w=w,
+                                              return_flow=True)
+            per_id.append(np.stack([v_gen, u_gen], axis=1))  # (T, 2, H, W)
+        flow_targets = np.concatenate(per_id, axis=0)
+        print(f"flow supervision: {flow_targets.shape} analytic teacher "
+              "fields from the TRAIN ids only")
 
     # ---- CPU training under the repo's wall-clock deadline discipline ------
     head = LearnedFlowHead(FlowHeadConfig())
@@ -107,17 +133,24 @@ def run_learned_flow_benchmark(train_budget_s: float = 90.0,
     t0 = time.perf_counter()
     losses = train_flow_head(head, train_clips, steps=100000, lr=3e-4,
                              seed=seed, progress_every=2000,
-                             deadline_s=train_budget_s)
+                             deadline_s=train_budget_s,
+                             flow_targets=flow_targets,
+                             frames_per_clip=t,
+                             periodic=periodic)
     train_s = time.perf_counter() - t0
     train_steps = len(losses)
     print(f"trained {train_steps} steps in {train_s:.1f}s; "
           f"loss {losses[0]:.5f} -> {losses[-1]:.5f} "
-          f"(loss floor kept by dye-renormalization, not fixable without generator change)")
+          f"(advection-consistency floor; the generator's dye renormalization is a "
+          f"deterministic gain coupling, modelable separately)")
 
-    # nu=0.0 pure-advection transport for rollout (see module docstring)
+    # nu=0.0 pure-advection transport for rollout (see module docstring);
+    # the fluid generator's advection is periodic, so BOTH the training loss
+    # warp and the rollout transport must be periodic (toroidal).
     solver = DecoupledSpatioTemporalTransport(
         DecoupledTransportConfig(use_rust=True, nu=0.0,
-                                 enable_laplacian_dissipation=False)
+                                 enable_laplacian_dissipation=False,
+                                 periodic_warp=periodic)
     )
 
     per_clip: dict[str, dict] = {}
@@ -175,9 +208,11 @@ def run_learned_flow_benchmark(train_budget_s: float = 90.0,
         print(f"  {k:12s}", {hz: f"{v:.2f}dB" for hz, v in sorted(d.items(), key=lambda x: int(x[0]))})
 
     payload = {
-        "benchmark": "learned_flow_dcstt",
+        "benchmark": "learned_flow_dcstt" + ("_flow_supervised" if flow_supervised else ""),
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "seed": int(seed),
+        "flow_supervised": bool(flow_supervised),
+        "periodic_warp": bool(periodic),
         "train_budget_s": float(train_budget_s),
         "train_steps": int(train_steps),
         "train_s": float(train_s),
@@ -199,7 +234,15 @@ def run_learned_flow_benchmark(train_budget_s: float = 90.0,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--train-budget-s", type=float, default=90.0)
+    parser.add_argument("--flow-supervised", action="store_true", default=False,
+                        help="Stage-3: supervise the head with the generator's "
+                             "analytic flow on TRAIN clips only")
+    parser.add_argument("--clamped-boundary", action="store_true", default=False,
+                        help="ablation: use clamped (border) warp instead of the "
+                             "domain-correct periodic warp, in BOTH training and rollout")
     parser.add_argument("--out", type=Path,
                         default=_REPO / "benchmarks" / "learned_flow_dcstt_results.json")
     args = parser.parse_args()
-    run_learned_flow_benchmark(train_budget_s=args.train_budget_s, out_path=args.out)
+    run_learned_flow_benchmark(train_budget_s=args.train_budget_s, out_path=args.out,
+                               flow_supervised=args.flow_supervised,
+                               periodic=not args.clamped_boundary)

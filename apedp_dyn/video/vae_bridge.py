@@ -7,6 +7,10 @@ Tensor-Train spatio-temporal video latents (TensorTrainVideo), providing:
 1. ContinuousWaveletVAE: High-fidelity invertible multi-scale spatial latent autoencoder.
 2. VideoVAEBridge: End-to-end bridge from raw RGB video to compressed TT-video representations.
 3. Direct continuous-time RGB frame decoding from contracted TT-cores without dense 4D expansion.
+4. DiffusersVAEBridge: HuggingFace ``diffusers.AutoencoderKL`` behind the SAME
+   encode/decode interface (Stage-2 of the distillation ladder: the frozen
+   appearance prior). Config-only (random init) and pretrained-weights paths
+   are EXPLICIT and never silently conflated.
 """
 from __future__ import annotations
 
@@ -223,3 +227,137 @@ class VideoVAEBridge:
             return 100.0
         max_val = 1.0
         return 10.0 * math.log10((max_val ** 2) / mse)
+
+
+class DiffusersVAEBridge:
+    """HuggingFace ``diffusers.AutoencoderKL`` behind the VideoVAEBridge surface.
+
+    Status: experimental
+
+    Stage-2 wiring of the distillation ladder: the frozen appearance prior.
+    Contract mirrors :class:`VideoVAEBridge` exactly (encode_frame /
+    decode_frame / encode_video_to_latent / decode_latent_to_video /
+    encode_video_to_tt / decode_tt_to_video / compute_rgb_psnr), with these
+    bridge-specific semantics:
+
+    * Construct with ``model_id`` (e.g. ``"stabilityai/sd-vae-ft-mse"``) for a
+      PRETRAINED appearance prior — requires network or a warm HF cache.
+    * Construct with ``config_only=True`` for a random-initialized AutoencoderKL
+      (small config) — the interface/parity test path. Its latents are
+      UNTRAINED NOISE; a caller must never treat them as appearance priors.
+      ``self.pretrained_weights_loaded`` records which path was taken so no
+      artifact can silently claim a prior it does not have.
+    * Frames are mapped [0,1] -> [-1,1] for the VAE and clamped back; latent
+      handling uses ``config.scaling_factor`` on both sides (encode-time
+      multiply, decode-time divide), matching diffusers convention.
+    * Internal compute is float32 (the diffusers reference dtype); array
+      boundaries are float64, preserving the repo's boundary contract.
+    * Channel-count mismatches raise before any silent truncation/padding
+      (contrasting the analytic WaveletVAE's zero-pad, which is safe there
+      because that transform is linear; the KL latent is not).
+    """
+
+    def __init__(
+        self,
+        model_id: str | None = None,
+        config_only: bool = False,
+        vae=None,
+        in_channels: int = 3,
+        downsample_factor: int = 8,
+    ) -> None:
+        if vae is None:
+            try:
+                from diffusers import AutoencoderKL
+            except ImportError as exc:  # pragma: no cover - env-dependent
+                raise ImportError(
+                    "DiffusersVAEBridge needs the optional dependency 'diffusers' "
+                    "(pip install diffusers). The analytic ContinuousWaveletVAE "
+                    "VideoVAEBridge remains available without it."
+                ) from exc
+            if config_only:
+                if model_id is not None and model_id:
+                    raise ValueError("config_only=True and model_id are mutually exclusive")
+                # 0.41 requires explicit per-block type tuples; without them the
+                # block chain truncates to one stage and mid-block channels
+                # mismatch (reproduced + pinned by the interface tests).
+                n_blocks = 4
+                vae = AutoencoderKL(
+                    in_channels=in_channels,
+                    out_channels=in_channels,
+                    latent_channels=4,
+                    block_out_channels=tuple(32 * 2 ** i for i in range(n_blocks)),
+                    down_block_types=("DownEncoderBlock2D",) * n_blocks,
+                    up_block_types=("UpDecoderBlock2D",) * n_blocks,
+                    layers_per_block=1,
+                    norm_num_groups=32,  # divides every block width (32..256)
+                    sample_size=32,
+                )
+            else:
+                if not model_id:
+                    raise ValueError("provide model_id or config_only=True")
+                vae = AutoencoderKL.from_pretrained(model_id)  # type: ignore[assignment]
+        vae.eval()
+        self.vae = vae
+        self.latent_channels = int(vae.config.latent_channels)
+        self.downsample_factor = int(downsample_factor)
+        self.scaling_factor = float(getattr(vae.config, "scaling_factor", 1.0) or 1.0)
+        # Which construction path ran — surfaced for every artifact to declare.
+        self.pretrained_weights_loaded = bool(model_id) and not config_only
+        self.source_model_id = None if config_only else model_id
+
+    # -- frame-level interface (same shapes as ContinuousWaveletVAE) --------
+    def encode_frame(self, frame_rgb: np.ndarray) -> np.ndarray:
+        if frame_rgb.ndim != 3 or frame_rgb.shape[0] != 3:
+            raise ValueError(f"Expected frame (3, H, W), got {frame_rgb.shape}")
+        import torch
+        import torch.nn.functional as F
+
+        x = torch.from_numpy(np.asarray(frame_rgb, np.float32)[None]).mul_(2.0).sub_(1.0)
+        with torch.no_grad():
+            dist = self.vae.encode(x).latent_dist
+            z = dist.mode() if hasattr(dist, "mode") else dist
+            z = z * self.scaling_factor
+        return np.asarray(z[0].double().numpy())
+
+    def decode_frame(self, latent: np.ndarray, target_shape: tuple[int, int] | None = None) -> np.ndarray:
+        import torch
+
+        latent = np.asarray(latent)
+        if latent.shape[0] != self.latent_channels:
+            raise ValueError(
+                f"This VAE's latent space has {self.latent_channels} channels, "
+                f"got {latent.shape[0]}; refusing silent remap"
+            )
+        z = torch.from_numpy(np.asarray(latent, np.float32)[None]) / self.scaling_factor
+        with torch.no_grad():
+            x = self.vae.decode(z).sample
+        rgb = ((x[0] + 1.0) * 0.5).clamp(0.0, 1.0)
+        return np.asarray(rgb.double().numpy())
+
+    # -- video + TT composition ------------------------------
+    def encode_video_to_latent(self, video_rgb: np.ndarray) -> np.ndarray:
+        if video_rgb.ndim != 4:
+            raise ValueError(f"Expected (T, 3, H, W), got {video_rgb.shape}")
+        return np.stack([self.encode_frame(video_rgb[t]) for t in range(video_rgb.shape[0])], axis=0)
+
+    def decode_latent_to_video(self, latent_video: np.ndarray) -> np.ndarray:
+        if latent_video.ndim != 4:
+            raise ValueError(f"Expected (T, L, H', W'), got {latent_video.shape}")
+        return np.stack([self.decode_frame(latent_video[t]) for t in range(latent_video.shape[0])], axis=0)
+
+    def encode_video_to_tt(self, video_rgb: np.ndarray, bond_ranks: int | tuple[int, int, int] = 16):
+        from apedp_dyn.video.tensor_train_video import compress_video_latent
+
+        max_r = max(bond_ranks) if isinstance(bond_ranks, (tuple, list)) else int(bond_ranks)
+        return compress_video_latent(self.encode_video_to_latent(video_rgb), max_rank=max_r)
+
+    def decode_tt_to_video(self, tt_video) -> np.ndarray:
+        from apedp_dyn.video.tensor_train_video import decompress_video_latent
+
+        return self.decode_latent_to_video(decompress_video_latent(tt_video))
+
+    def compute_rgb_psnr(self, original_rgb: np.ndarray, reconstructed_rgb: np.ndarray) -> float:
+        mse = float(np.mean((original_rgb - reconstructed_rgb) ** 2))
+        if mse <= 1e-12:
+            return 100.0
+        return float(10.0 * math.log10(1.0 / mse))

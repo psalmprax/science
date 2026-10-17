@@ -53,12 +53,22 @@ def make_fluid_clip(
     n_vortices: int = 3,
     diffusion: float = 0.01,
     diffusion_steps: int = 1,
-) -> np.ndarray:
+    return_flow: bool = False,
+) -> np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Generate one deterministic 2D incompressible fluid tracer clip.
 
     The dye (3 channels: vorticity magnitude + two advected scalars) is
     advected by semi-Lagrangian backtracing under the evolving
     streamfunction field. Output in [0, 1], float64 (T, 3, H, W).
+
+    With ``return_flow=True`` ALSO returns the per-frame analytic velocity
+    the generator itself used to advect the dye: ``(u, v)`` grids of shape
+    (T, H, W) each, where ``u`` is the y-velocity and ``v`` the x-velocity
+    (the streamfunction convention ``u = dpsi/dy, v = -dpsi/dx``), in the
+    same px/frame semi-Lagrangian units as the dye advection. This is the
+    train-clip-only flow teacher for supervised flow-head training
+    (TESTS pin the (u, v) convention so callers cannot silently swap them).
+    Holdout clips must NOT consume it (train/holdout discipline).
     """
     if t < 4:
         raise ValueError(f"Need at least 4 frames, got t={t}")
@@ -85,6 +95,8 @@ def make_fluid_clip(
     dye /= max(1e-9, dye.max())
 
     frames = np.zeros((t, 3, h, w), dtype=np.float64)
+    flow_u = np.zeros((t, h, w), dtype=np.float64)
+    flow_v = np.zeros((t, h, w), dtype=np.float64)
     for ti in range(t):
         phase = 2 * np.pi * ti / max(1, t - 1)
         strengths = base_strength * (0.8 + 0.2 * np.sin(phase + 1.7 * np.arange(n_vortices)))
@@ -97,6 +109,7 @@ def make_fluid_clip(
 
         psi = _vortex_streamfunction(h, w, centers_now, strengths)
         u, v = _streamfunction_velocity(psi)
+        flow_u[ti], flow_v[ti] = u, v
 
         # Perceptual frame 0: vorticity (+two advected scalar channels)
         frames[ti, 0] = np.abs(_curl_from_velocity(u, v))
@@ -119,6 +132,8 @@ def make_fluid_clip(
     for ci in range(3):
         lo, hi = frames[:, ci].min(), frames[:, ci].max()
         frames[:, ci] = (frames[:, ci] - lo) / max(1e-9, hi - lo)
+    if return_flow:
+        return frames, flow_u, flow_v
     return frames
 
 
