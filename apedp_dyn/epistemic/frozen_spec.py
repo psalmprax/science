@@ -35,7 +35,7 @@ GRAMMAR_SPACE_PATH = BASE_DIR / "apedp_dyn" / "sandbox" / "grammar_space.py"
 PINNED_FROZEN_REGISTRY: dict[str, str] = {
     "apedp_dyn/epistemic/adjudicate.py": "da604e6a21f8687e5834362989f370f3b386649e89fbced2ec624030ffd4ff73",
     "apedp_dyn/epistemic/claim_ladder.py": "aba9fd0045abc137a36dab90e1316b8934597beb02c553cf35d15c3029c0886c",
-    "apedp_dyn/sandbox/grammar_space.py": "6f4da69fb15b47462e0f802f5e20213ee8e9d225a5818c8ce9d414cf6403263a",
+    "apedp_dyn/sandbox/grammar_space.py": "aba0f42abb0fcd2a2bb7a698419d21227ca5ce3709d7879c01573deeb39ab930",
     "outputs/trading_np93_freeze.json": "462655b914271f06ccc095362d30a87935f4977527170e7080b53b72961cca0e",
     "outputs/nano_ds10_freeze.json": "b809ddcba1eefff2f7d3f21cc21247467c60dcda2f482ba0df1b528d6a28376f",
     "outputs/dyn_epistemic_freeze.json": "d3b8665230bce749a645111c08b8c53d0a8e5897d42c4678dc9c7a34cad10556",
@@ -142,6 +142,8 @@ def require_table_provenance_record(table_id: str, record_dir: Path | str) -> di
         )
     with open(manifest_path, encoding="utf-8") as f:
         manifest = json.load(f)
+    if not isinstance(manifest, dict):
+        raise MissingProvenanceError(f"Table '{table_id}' provenance manifest must be a JSON object.")
     if manifest.get("returncode") != 0:
         raise MissingProvenanceError(
             f"Table '{table_id}' provenance record failed with non-zero returncode {manifest.get('returncode')}."

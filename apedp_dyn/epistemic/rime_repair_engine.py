@@ -54,7 +54,7 @@ from __future__ import annotations
 
 import enum
 import re
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -353,6 +353,48 @@ def _rational_power_term_fn(src: str, p: float):
     return fn
 
 
+def _r3_lag_fn(src: str) -> Callable[[pd.DataFrame], np.ndarray]:
+    """Factory bound at emit time: one-lag scorer for a declared dependency."""
+    def fn(df: pd.DataFrame, _d: str = src) -> np.ndarray:
+        if _d not in df.columns:
+            return np.full(len(df), np.nan)
+        return _lagk(df[_d], 1)
+    return fn
+
+
+def _missing_values_fn() -> Callable[[pd.DataFrame], np.ndarray]:
+    def fn(df: pd.DataFrame) -> np.ndarray:
+        return np.full(len(df), np.nan)
+    return fn
+
+
+def _pair_lag_fn(src: str, label: str) -> Callable[[pd.DataFrame], np.ndarray]:
+    """Factory bound at emit time: lagged a*b interaction from the 'a,b' source."""
+    a, b = src.split(",")
+    m = re.search(r"\[t-(\d+)\]", label)
+    k = int(m.group(1)) if m else 0
+    def fn(df: pd.DataFrame, _a: str = a, _b: str = b, _k: int = k) -> np.ndarray:
+        if _a in df.columns and _b in df.columns:
+            return np.asarray(_lagk(np.asarray(df[_a], dtype=float), _k) * _lagk(np.asarray(df[_b], dtype=float), _k))
+        return np.full(len(df), np.nan)
+    return fn
+
+
+def _pade_scoring_fn(
+    resonant: bool, a_param: float, b_param: float, parent: CandidateProposal,
+) -> Callable[[pd.DataFrame], np.ndarray]:
+    """Factory bound at emit time: Pade saturation/resonance scorer of the parent."""
+    def fn(
+        df: pd.DataFrame, _a: float = a_param, _b: float = b_param,
+        _parent: CandidateProposal = parent, _res: bool = resonant,
+    ) -> np.ndarray:
+        base_d = np.asarray(_parent.compute_score(df), dtype=float)
+        if _res:
+            return np.asarray(_a / (1.0 + _b * np.abs(base_d)))
+        return np.asarray(_a * base_d / (1.0 + _b * np.abs(base_d)))
+    return fn
+
+
 def _wrap_repaired(
     parent: CandidateProposal,
     operator: RepairOperator,
@@ -367,7 +409,7 @@ def _wrap_repaired(
     if term_label is None:
         alpha, beta = float(coefs[0]), float(coefs[1])
         formula = f"{alpha:+.6g}*({parent.formula}){beta:+.6g}"
-        params = {"alpha": alpha, "beta": beta}
+        params: dict[str, Any] = {"alpha": alpha, "beta": beta}
     else:
         alpha, beta, gamma = float(coefs[0]), float(coefs[1]), float(coefs[2])
         formula = f"{alpha:+.6g}*({parent.formula}){beta:+.6g}*({term_label}){gamma:+.6g}"
@@ -383,11 +425,11 @@ def _wrap_repaired(
         _c = np.asarray(coefs, dtype=float)
         base = np.asarray(_p.compute_score(df), dtype=float)
         if _fn is None:
-            return _c[0] * base + _c[1]
+            return np.asarray(np.asarray(np.asarray(_c[0] * base + _c[1])))
         t = np.asarray(_fn(df), dtype=float)
         out = _c[0] * base + _c[1] * t + _c[2]
         out[~(np.isfinite(base) & np.isfinite(t))] = np.nan
-        return out
+        return np.asarray(np.asarray(np.asarray(out)))
 
     # Structural identity for cross-slice comparison (invariance ranking).
     # A repaired candidate's identity is the parent mechanism PLUS the term
@@ -587,14 +629,11 @@ def generate_repairs(
                 if not (st != "IDENTIFIED_STABLE" and not getattr(config, "r5_emit_unidentified", False)):
                     seq += 1
                     if is_res:
-                        def fn(df, _a=a_fit, _b=b_fit, _parent=original):
-                            return _a / (1.0 + _b * np.abs(np.asarray(_parent.compute_score(df), dtype=float)))
                         label = f"pade_sat_res(a={a_fit:.4g},b={b_fit:.4g})"
+                        fn = _pade_scoring_fn(True, a_fit, b_fit, original)
                     else:
-                        def fn(df, _a=a_fit, _b=b_fit, _parent=original):
-                            base_d = np.asarray(_parent.compute_score(df), dtype=float)
-                            return _a * base_d / (1.0 + _b * np.abs(base_d))
                         label = f"pade_sat(a={a_fit:.4g},b={b_fit:.4g})"
+                        fn = _pade_scoring_fn(False, a_fit, b_fit, original)
 
                     out.append(_wrap_pade_repaired(
                         original, label, fn, a_fit, b_fit, r2_fit, int(finite.sum()), seq,
@@ -630,23 +669,12 @@ def generate_repairs(
         # "(a*b)" / "(a[t-k]*b[t-k])" split lagged columns from src "a,b";
         # "(d^p)" is a sign-safe rational power of one declared dependency.
         if op is RepairOperator.R3_LAG_INSERT:
-            def fn(df, _d=src):
-                if _d in df.columns:
-                    return _lagk(df[_d], 1)
-                return np.full(len(df), np.nan)
-
+            fn = _r3_lag_fn(src)
         elif "^" in label:
             mp = re.search(r"\^(\d+(?:\.\d+)?)\)$", label)
-            fn = _rational_power_term_fn(src, float(mp.group(1))) if mp else (
-                lambda df: np.full(len(df), np.nan))
+            fn = _rational_power_term_fn(src, float(mp.group(1))) if mp else _missing_values_fn()
         else:
-            a, b = src.split(",")
-            m = re.search(r"\[t-(\d+)\]", label)
-            k = int(m.group(1)) if m else 0
-            def fn(df, _a=a, _b=b, _k=k):
-                if _a in df.columns and _b in df.columns:
-                    return _lagk(np.asarray(df[_a], dtype=float), _k) * _lagk(np.asarray(df[_b], dtype=float), _k)
-                return np.full(len(df), np.nan)
+            fn = _pair_lag_fn(src, label)
         out.append(_wrap_repaired(original, op, label, fn, coef, r2, int(np.isfinite(y).sum()), 1, seq))
     return out
 

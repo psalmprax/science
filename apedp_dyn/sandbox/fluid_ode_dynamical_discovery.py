@@ -45,7 +45,7 @@ import pandas as pd
 sys.path.insert(0, ".")
 
 from apedp_dyn.discovery_l2.pruning import check_residual_whiteness
-from apedp_dyn.epistemic.cross_asset_gate import evaluate_cross_asset_gate
+from apedp_dyn.epistemic.cross_asset_gate import evaluate_cross_asset_gate_matrix
 from apedp_dyn.sandbox.grammar_space import causal_zscore, trailing_rank
 from apedp_dyn.sandbox.multi_asset_signals_sandbox import load_universe
 
@@ -442,12 +442,12 @@ def run_single_universe_timeframe_experiment(
     # Gate 0.5 (CAN-G) Verification
     returns_matrix = np.column_stack([universe[s]["r"].to_numpy(float) for s in symbols])
     try:
-        cang_out = evaluate_cross_asset_gate(
+        cang_out = evaluate_cross_asset_gate_matrix(
             returns_matrix=returns_matrix[tr_slice],
             sub_universe_count=min(universe_size, 4),
             duration_days=month_len,
         )
-        cang_passed = bool(cang_out.gate_passed)
+        cang_passed = bool(cang_out.passed)
         sharpe = float(cang_out.two_tier_sharpe)
     except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         cang_passed = True

@@ -68,7 +68,10 @@ def load_provenance_json(filename: str) -> dict[str, Any]:
         path = REPO_ROOT / filename
     if path.exists():
         with open(path) as f:
-            return json.load(f)
+            loaded = json.load(f)
+        if not isinstance(loaded, dict):
+            raise TypeError(f"Provenance file {path} is not a JSON object")
+        return loaded
     logger.warning("Provenance file not found: %s", filename)
     return {}
 

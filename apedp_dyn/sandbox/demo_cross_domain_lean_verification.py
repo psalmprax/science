@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -47,7 +48,7 @@ def run_cross_domain_lean_verification_suite() -> dict:
     LEAN_OUT_DIR.mkdir(parents=True, exist_ok=True)
     bridge = LeanUniversalBridge(output_dir=LEAN_OUT_DIR, backend=VerificationBackend.CORE_AXIOMATIC)
 
-    domain_records = []
+    domain_records: list[dict[str, Any]] = []
 
     # ──────────────────────────────────────────────────────────────────────────
     # Domain 1: Classical Mechanics / Hamiltonian Physics

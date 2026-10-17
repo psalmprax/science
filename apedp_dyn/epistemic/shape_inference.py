@@ -134,7 +134,7 @@ def _seg_sse(s: np.ndarray, s2: np.ndarray, i: int, j: int) -> float:
         return 0.0
     tot = s[j] - s[i]
     tot2 = s2[j] - s2[i]
-    return max(tot2 - tot * tot / m, 0.0)
+    return float(float(float(max(tot2 - tot * tot / m, 0.0))))
 
 
 def _segments_to_reach(cost, n, tss, target, cap):
@@ -239,7 +239,7 @@ def _dp_segment_linear(x, y, max_k, min_len):
     return cost
 
 
-def _dp_segment(y: np.ndarray, max_k: int, min_len: int) -> tuple[np.ndarray, np.ndarray, list[int]]:
+def _dp_segment(y: np.ndarray, max_k: int, min_len: int) -> tuple[list[list[float]], np.ndarray, dict[int, list[int]]]:
     """Exact piecewise-constant DP. Returns (sse[k], boundaries per k)."""
     n = len(y)
     s, s2 = _prefix_sums(y)
@@ -279,8 +279,8 @@ def _dp_segment(y: np.ndarray, max_k: int, min_len: int) -> tuple[np.ndarray, np
 
 
 def infer_shape_prior(
-    x: Sequence[float],
-    y: Sequence[float],
+    x: np.ndarray | Sequence[float],
+    y: np.ndarray | Sequence[float],
     *,
     penalty_per_segment: float = 1.0,
     min_segment_len: int = 5,
@@ -479,7 +479,7 @@ class StepFamilySeeds:
 
 
 def step_family_basis(
-    x: Sequence[float], thresholds: Sequence[float]
+    x: np.ndarray | Sequence[float], thresholds: Sequence[float]
 ) -> tuple[list[str], np.ndarray]:
     """Sign basis at the given thresholds: [1, sign(x-t1), sign(x-t2), ...].
 
@@ -499,8 +499,8 @@ def step_family_basis(
 
 
 def fit_step_family(
-    x: Sequence[float],
-    y: Sequence[float],
+    x: np.ndarray | Sequence[float],
+    y: np.ndarray | Sequence[float],
     thresholds: Sequence[float],
     *,
     min_rows: int = 40,
@@ -545,7 +545,7 @@ def fit_step_family(
 
 
 def staircase_prior(
-    x: Sequence[float], y: Sequence[float], **kwargs: Any
+    x: np.ndarray | Sequence[float], y: np.ndarray | Sequence[float], **kwargs: Any
 ) -> tuple[ShapePrior, StepFamilySeeds | None]:
     """Convenience: infer the prior, and if stepped, fit the step family.
 

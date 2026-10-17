@@ -168,33 +168,33 @@ def safe_div(x: np.ndarray | float, y: np.ndarray | float, eps: float = 1e-12) -
 def safe_log(x: np.ndarray | float, floor: float = 1e-12) -> np.ndarray:
     """Domain-safe natural logarithm enforcing x > 0 floor (Spec §10.A)."""
     x_arr = np.asarray(x, dtype=float)
-    return np.log(np.maximum(x_arr, floor))
+    return np.asarray(np.asarray(np.asarray(np.log(np.maximum(x_arr, floor)))))
 
 
 def safe_log1p(x: np.ndarray | float, floor: float = -0.999999) -> np.ndarray:
     """Domain-safe log(1+x) enforcing 1+x > 0 (Spec §10.A)."""
     x_arr = np.asarray(x, dtype=float)
-    return np.log1p(np.maximum(x_arr, floor))
+    return np.asarray(np.asarray(np.asarray(np.log1p(np.maximum(x_arr, floor)))))
 
 
 def safe_sqrt(x: np.ndarray | float) -> np.ndarray:
     """Domain-safe square root enforcing non-negative input (Spec §10.A)."""
     x_arr = np.asarray(x, dtype=float)
-    return np.sqrt(np.maximum(x_arr, 0.0))
+    return np.asarray(np.asarray(np.asarray(np.sqrt(np.maximum(x_arr, 0.0)))))
 
 
 def safe_pow(x: np.ndarray | float, p: float) -> np.ndarray:
     """Domain-safe power with controlled exponent (Spec §10.A)."""
     x_arr = np.asarray(x, dtype=float)
     if p % 1 == 0:
-        return np.power(x_arr, p)
-    return np.power(np.maximum(x_arr, 0.0), p)
+        return np.asarray(np.asarray(np.asarray(np.power(x_arr, p))))
+    return np.asarray(np.asarray(np.asarray(np.power(np.maximum(x_arr, 0.0), p))))
 
 
 def exp_clamp(x: np.ndarray | float, min_val: float = -20.0, max_val: float = 20.0) -> np.ndarray:
     """Clamped exponential avoiding floating point overflow (Spec §10.A)."""
     x_arr = np.asarray(x, dtype=float)
-    return np.exp(np.clip(x_arr, min_val, max_val))
+    return np.asarray(np.asarray(np.asarray(np.exp(np.clip(x_arr, min_val, max_val)))))
 
 
 def op_tanh(x: np.ndarray | float) -> np.ndarray:
@@ -204,19 +204,19 @@ def op_tanh(x: np.ndarray | float) -> np.ndarray:
 
 def op_clip(x: np.ndarray | float, min_val: float, max_val: float) -> np.ndarray:
     """Explicit clipping operator."""
-    return np.clip(np.asarray(x, dtype=float), min_val, max_val)
+    return np.asarray(np.asarray(np.asarray(np.clip(np.asarray(x, dtype=float), min_val, max_val))))
 
 
 def positive_part(x: np.ndarray | float) -> np.ndarray:
     """max(x, 0) positive half-wave rectifier."""
     x_arr = np.asarray(x, dtype=float)
-    return np.maximum(x_arr, 0.0)
+    return np.asarray(np.asarray(np.asarray(np.maximum(x_arr, 0.0))))
 
 
 def negative_part(x: np.ndarray | float) -> np.ndarray:
     """max(-x, 0) negative half-wave rectifier (downside magnitude)."""
     x_arr = np.asarray(x, dtype=float)
-    return np.maximum(-x_arr, 0.0)
+    return np.asarray(np.asarray(np.asarray(np.maximum(-x_arr, 0.0))))
 
 
 # --- B. Rolling-Window Causal Operators (Spec §10.B) ---
@@ -224,66 +224,66 @@ def negative_part(x: np.ndarray | float) -> np.ndarray:
 def roll_mean(x: np.ndarray, n: int, min_periods: int | None = None) -> np.ndarray:
     """Causal rolling mean; returns NaN until min_periods reached."""
     mp = n if min_periods is None else min_periods
-    return pd.Series(x).rolling(n, min_periods=mp).mean().to_numpy()
+    return np.asarray(np.asarray(np.asarray(pd.Series(x).rolling(n, min_periods=mp).mean().to_numpy())))
 
 
 def roll_std(x: np.ndarray, n: int, min_periods: int | None = None, ddof: int = 1) -> np.ndarray:
     """Causal rolling sample standard deviation."""
     mp = n if min_periods is None else min_periods
-    return pd.Series(x).rolling(n, min_periods=mp).std(ddof=ddof).to_numpy()
+    return np.asarray(np.asarray(np.asarray(pd.Series(x).rolling(n, min_periods=mp).std(ddof=ddof).to_numpy())))
 
 
 def roll_var(x: np.ndarray, n: int, min_periods: int | None = None, ddof: int = 1) -> np.ndarray:
     """Causal rolling sample variance."""
     mp = n if min_periods is None else min_periods
-    return pd.Series(x).rolling(n, min_periods=mp).var(ddof=ddof).to_numpy()
+    return np.asarray(np.asarray(np.asarray(pd.Series(x).rolling(n, min_periods=mp).var(ddof=ddof).to_numpy())))
 
 
 def roll_min(x: np.ndarray, n: int, min_periods: int | None = None) -> np.ndarray:
     """Causal rolling minimum."""
     mp = n if min_periods is None else min_periods
-    return pd.Series(x).rolling(n, min_periods=mp).min().to_numpy()
+    return np.asarray(np.asarray(np.asarray(pd.Series(x).rolling(n, min_periods=mp).min().to_numpy())))
 
 
 def roll_max(x: np.ndarray, n: int, min_periods: int | None = None) -> np.ndarray:
     """Causal rolling maximum."""
     mp = n if min_periods is None else min_periods
-    return pd.Series(x).rolling(n, min_periods=mp).max().to_numpy()
+    return np.asarray(np.asarray(np.asarray(pd.Series(x).rolling(n, min_periods=mp).max().to_numpy())))
 
 
 def roll_sum(x: np.ndarray, n: int, min_periods: int | None = None) -> np.ndarray:
     """Causal rolling sum."""
     mp = n if min_periods is None else min_periods
-    return pd.Series(x).rolling(n, min_periods=mp).sum().to_numpy()
+    return np.asarray(np.asarray(np.asarray(pd.Series(x).rolling(n, min_periods=mp).sum().to_numpy())))
 
 
 def roll_median(x: np.ndarray, n: int, min_periods: int | None = None) -> np.ndarray:
     """Causal rolling median."""
     mp = n if min_periods is None else min_periods
-    return pd.Series(x).rolling(n, min_periods=mp).median().to_numpy()
+    return np.asarray(np.asarray(np.asarray(pd.Series(x).rolling(n, min_periods=mp).median().to_numpy())))
 
 
 def roll_quantile(x: np.ndarray, n: int, q: float, min_periods: int | None = None) -> np.ndarray:
     """Causal rolling quantile in [0, 1]."""
     mp = n if min_periods is None else min_periods
-    return pd.Series(x).rolling(n, min_periods=mp).quantile(q).to_numpy()
+    return np.asarray(np.asarray(np.asarray(pd.Series(x).rolling(n, min_periods=mp).quantile(q).to_numpy())))
 
 
 def roll_skew(x: np.ndarray, n: int, min_periods: int | None = None) -> np.ndarray:
     """Causal rolling sample skewness."""
     mp = n if min_periods is None else min_periods
-    return pd.Series(x).rolling(n, min_periods=mp).skew().to_numpy()
+    return np.asarray(np.asarray(np.asarray(pd.Series(x).rolling(n, min_periods=mp).skew().to_numpy())))
 
 
 def roll_kurtosis(x: np.ndarray, n: int, min_periods: int | None = None) -> np.ndarray:
     """Causal rolling sample kurtosis."""
     mp = n if min_periods is None else min_periods
-    return pd.Series(x).rolling(n, min_periods=mp).kurt().to_numpy()
+    return np.asarray(np.asarray(np.asarray(pd.Series(x).rolling(n, min_periods=mp).kurt().to_numpy())))
 
 
 def ewma(x: np.ndarray, span: int, adjust: bool = False) -> np.ndarray:
     """Exponentially weighted moving average."""
-    return pd.Series(x).ewm(span=span, adjust=adjust).mean().to_numpy()
+    return np.asarray(np.asarray(np.asarray(pd.Series(x).ewm(span=span, adjust=adjust).mean().to_numpy())))
 
 
 def roll_slope(x: np.ndarray, n: int) -> np.ndarray:
@@ -307,7 +307,7 @@ def roll_slope(x: np.ndarray, n: int) -> np.ndarray:
 def roll_corr(x: np.ndarray, y: np.ndarray, n: int, min_periods: int | None = None) -> np.ndarray:
     """Causal rolling correlation between x and y."""
     mp = n if min_periods is None else min_periods
-    return pd.Series(x).rolling(n, min_periods=mp).corr(pd.Series(y)).to_numpy()
+    return np.asarray(np.asarray(np.asarray(pd.Series(x).rolling(n, min_periods=mp).corr(pd.Series(y)).to_numpy())))
 
 
 def roll_beta(x: np.ndarray, benchmark: np.ndarray, n: int, min_periods: int | None = None) -> np.ndarray:
@@ -334,7 +334,7 @@ def op_lag(x: np.ndarray, k: int = 1) -> np.ndarray:
 
 def op_diff(x: np.ndarray, k: int = 1) -> np.ndarray:
     """Causal difference operator: x_t - x_{t-k}."""
-    return x - op_lag(x, k)
+    return np.asarray(np.asarray(np.asarray(x - op_lag(x, k))))
 
 
 def op_pct_change(x: np.ndarray, k: int = 1, eps: float = 1e-12) -> np.ndarray:
@@ -348,7 +348,7 @@ def op_log_return(x: np.ndarray, k: int = 1) -> np.ndarray:
     x_arr = np.asarray(x, dtype=float)
     lagged = op_lag(x_arr, k)
     with np.errstate(all="ignore"):
-        return safe_log(x_arr) - safe_log(lagged)
+        return np.asarray(np.asarray(np.asarray(safe_log(x_arr) - safe_log(lagged))))
 
 
 def op_acceleration(x: np.ndarray, k: int = 1) -> np.ndarray:
@@ -418,7 +418,7 @@ def consecutive_down_bars(r: np.ndarray) -> np.ndarray:
 def count_condition(condition_mask: np.ndarray, n: int) -> np.ndarray:
     """Causal count of true conditions in trailing window n."""
     numeric = np.asarray(condition_mask, dtype=float)
-    return pd.Series(numeric).rolling(n, min_periods=n).sum().to_numpy()
+    return np.asarray(np.asarray(np.asarray(pd.Series(numeric).rolling(n, min_periods=n).sum().to_numpy())))
 
 
 # --- D. Ranking and Normalization Operators (Spec §10.D) ---
@@ -491,7 +491,7 @@ def winsorize(x: np.ndarray, p_low: float = 0.01, p_high: float = 0.99) -> np.nd
         return x.copy()
     q_low = float(np.percentile(x[valid], p_low * 100.0))
     q_high = float(np.percentile(x[valid], p_high * 100.0))
-    return np.clip(x, q_low, q_high)
+    return np.asarray(np.asarray(np.asarray(np.clip(x, q_low, q_high))))
 
 
 def robust_zscore(x: np.ndarray, eps: float = 1e-12) -> np.ndarray:

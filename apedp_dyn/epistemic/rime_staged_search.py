@@ -88,7 +88,7 @@ def staged_search(
     stem_ops, power_ops, static_mode ...).
     """
     ops = dict(ops or {})
-    base = {"feature_cols": list(feature_cols), "target_col": target_col,
+    base: dict[str, Any] = {"feature_cols": list(feature_cols), "target_col": target_col,
                 "max_depth": max_depth}
 
     # Stage 1: cheap admit pass over the whole catalogue at a tiny budget.

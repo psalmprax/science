@@ -110,12 +110,12 @@ def transmute_and_propose(
 
         if r2 >= min_r2:
             # Build scorer closure
-            def _scorer(df: pd.DataFrame, c_pref=c_prefactor, k_pow=k_power, c_bar=c_barrier, feat=feature_name) -> np.ndarray:
+            def _tunneling_scorer(df: pd.DataFrame, c_pref=c_prefactor, k_pow=k_power, c_bar=c_barrier, feat=feature_name) -> np.ndarray:
                 x_val = df[feat].to_numpy(dtype=float) if feat in df.columns else df.iloc[:, 0].to_numpy(dtype=float)
                 safe_x = np.where(x_val > 1e-12, x_val, np.nan)
                 if k_pow == 0.0:
-                    return c_pref * np.exp(-c_bar / safe_x)
-                return c_pref * (safe_x ** k_pow) * np.exp(-c_bar / safe_x)
+                    return np.asarray(np.asarray(np.asarray(c_pref * np.exp(-c_bar / safe_x))))
+                return np.asarray(np.asarray(np.asarray(c_pref * (safe_x ** k_pow) * np.exp(-c_bar / safe_x))))
 
             params = {"prefactor": c_prefactor, "power": k_power, "barrier": c_barrier}
             cand = CandidateProposal(
@@ -125,7 +125,7 @@ def transmute_and_propose(
                 strategy_archetype=StrategyArchetype.TACTICAL,
                 declared_scale_invariant=True,
                 declared_nominal_dependencies=(feature_name,),
-                compute_score=_scorer,
+                compute_score=_tunneling_scorer,
                 parameters=params,
                 metadata={"r2": r2, "method": "log_linear_singular"},
             )
@@ -160,9 +160,9 @@ def transmute_and_propose(
 
         if r2 >= min_r2:
             formula_str = f"{c_prefactor:.6g} * ({feature_name} ** {k_power:.4g})"
-            def _scorer(df: pd.DataFrame, c_pref=c_prefactor, k_pow=k_power, feat=feature_name) -> np.ndarray:
+            def _power_law_scorer(df: pd.DataFrame, c_pref=c_prefactor, k_pow=k_power, feat=feature_name) -> np.ndarray:
                 x_val = df[feat].to_numpy(dtype=float) if feat in df.columns else df.iloc[:, 0].to_numpy(dtype=float)
-                return c_pref * (x_val ** k_pow)
+                return np.asarray(np.asarray(np.asarray(c_pref * (x_val ** k_pow))))
 
             params = {"prefactor": c_prefactor, "power": k_power}
             cand = CandidateProposal(
@@ -172,7 +172,7 @@ def transmute_and_propose(
                 strategy_archetype=StrategyArchetype.CONTINUOUS_FACTOR,
                 declared_scale_invariant=True,
                 declared_nominal_dependencies=(feature_name,),
-                compute_score=_scorer,
+                compute_score=_power_law_scorer,
                 parameters=params,
                 metadata={"r2": r2, "method": "power_law"},
             )
@@ -218,9 +218,9 @@ def transmute_and_propose(
 
         if r2 >= min_r2:
             formula_str = f"{quantum_step:.6g} * floor(({feature_name} - {x_offset:.6g}) / {step_width:.6g})"
-            def _scorer(df: pd.DataFrame, q_step=quantum_step, s_width=step_width, x_off=x_offset, feat=feature_name) -> np.ndarray:
+            def _quantum_step_scorer(df: pd.DataFrame, q_step=quantum_step, s_width=step_width, x_off=x_offset, feat=feature_name) -> np.ndarray:
                 x_val = df[feat].to_numpy(dtype=float) if feat in df.columns else df.iloc[:, 0].to_numpy(dtype=float)
-                return q_step * np.floor((x_val - x_off) / s_width + 1e-6)
+                return np.asarray(np.asarray(np.asarray(q_step * np.floor((x_val - x_off) / s_width + 1e-6))))
 
             params = {"quantum_step": quantum_step, "step_width": step_width, "offset": x_offset}
             cand = CandidateProposal(
@@ -230,7 +230,7 @@ def transmute_and_propose(
                 strategy_archetype=StrategyArchetype.TACTICAL,
                 declared_scale_invariant=False,
                 declared_nominal_dependencies=(feature_name,),
-                compute_score=_scorer,
+                compute_score=_quantum_step_scorer,
                 parameters=params,
                 metadata={"r2": r2, "method": "quantized_staircase"},
             )

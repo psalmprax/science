@@ -153,7 +153,7 @@ def invariant_structure_verdict(
         best = max(props, key=lambda p: p.parameters.get("dev_r2", float("-inf")))
         results.append(SliceResult(
             canonical_key(best),
-            (best.metadata or {}).get("equation") or getattr(best, "formula", ""),
+            str((best.metadata or {}).get("equation") or getattr(best, "formula", "")),
             float(best.parameters.get("dev_r2", float("nan"))),
             len(sl),
         ))

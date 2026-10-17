@@ -5,46 +5,46 @@
     {
       "evaluated": 200,
       "n": 150,
-      "remainder_pct": 86.2,
-      "us_graph_eval_phase": 19.0,
-      "us_per_candidate": 188.8,
+      "remainder_pct": 58.9,
+      "us_graph_eval_phase": 16.3,
+      "us_per_candidate": 57.0,
       "us_readout_fit_phase": 7.1,
-      "us_search_bookkeeping_remainder": 162.7
+      "us_search_bookkeeping_remainder": 33.6
     },
     {
       "evaluated": 200,
       "n": 600,
-      "remainder_pct": 35.9,
-      "us_graph_eval_phase": 112.5,
-      "us_per_candidate": 228.7,
-      "us_readout_fit_phase": 34.0,
-      "us_search_bookkeeping_remainder": 82.2
+      "remainder_pct": 4.3,
+      "us_graph_eval_phase": 61.7,
+      "us_per_candidate": 95.7,
+      "us_readout_fit_phase": 29.9,
+      "us_search_bookkeeping_remainder": 4.1
     },
     {
       "evaluated": 200,
       "n": 1200,
       "remainder_pct": 0.0,
-      "us_graph_eval_phase": 111.6,
-      "us_per_candidate": 189.3,
-      "us_readout_fit_phase": 99.2,
+      "us_graph_eval_phase": 122.4,
+      "us_per_candidate": 123.2,
+      "us_readout_fit_phase": 57.3,
       "us_search_bookkeeping_remainder": 0.0
     },
     {
       "evaluated": 200,
       "n": 3000,
       "remainder_pct": 0.0,
-      "us_graph_eval_phase": 299.5,
-      "us_per_candidate": 284.8,
-      "us_readout_fit_phase": 173.9,
+      "us_graph_eval_phase": 296.1,
+      "us_per_candidate": 220.0,
+      "us_readout_fit_phase": 214.3,
       "us_search_bookkeeping_remainder": 0.0
     },
     {
       "evaluated": 200,
       "n": 12000,
       "remainder_pct": 0.0,
-      "us_graph_eval_phase": 1317.4,
-      "us_per_candidate": 784.0,
-      "us_readout_fit_phase": 651.5,
+      "us_graph_eval_phase": 1348.1,
+      "us_per_candidate": 773.7,
+      "us_readout_fit_phase": 647.3,
       "us_search_bookkeeping_remainder": 0.0
     }
   ]

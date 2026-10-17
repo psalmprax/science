@@ -27,7 +27,7 @@ from typing import Any
 sys.path.insert(0, '.')
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_1.json"
+FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_2.json"
 
 
 def verify_referee() -> dict[str, str]:

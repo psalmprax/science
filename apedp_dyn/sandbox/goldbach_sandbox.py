@@ -53,7 +53,9 @@ def run_rust_goldbach_binary(limit: int = 10_000_000) -> dict[str, Any]:
     # Find JSON line
     for line in stdout.splitlines():
         if line.startswith("{") and line.endswith("}"):
-            return json.loads(line)
+            parsed = json.loads(line)
+            if isinstance(parsed, dict):
+                return parsed
     raise RuntimeError(f"Failed to parse Rust verifier output: {stdout}")
 
 

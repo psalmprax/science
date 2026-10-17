@@ -732,7 +732,7 @@ class LeanUniversalBridge:
                 else:
                     return "(q1 q2 : Int) : (q1 - q2) + q2 - q1 = 0", "by omega", True, "lean_core_omega", "Algebraic conservation verified"
 
-            elif kind == InvariantKind.LIPSCHITCH_SMOOTHNESS if hasattr(InvariantKind, "LIPSCHITCH_SMOOTHNESS") else InvariantKind.LIPSCHITZ_SMOOTHNESS:
+            elif kind == InvariantKind.LIPSCHITZ_SMOOTHNESS:
                 if any(k in full_meta for k in ("sin", "hamiltonian", "harmonic")):
                     stmt = "(t1 t2 : R) : |sin t1 - sin t2| ≤ (1 : R) * |t1 - t2|"
                     proof = "by exact lipschitz_sin t1 t2"
@@ -963,6 +963,8 @@ class LeanUniversalBridge:
                             timeout=25,
                         )
                     else:
+                        # Branch only runs when in_memory is False (lean_file written above).
+                        assert lean_file is not None
                         docker_cmd = [
                             "docker", "run", "--rm",
                             "-v", f"{self.output_dir.resolve()}:/workspace",

@@ -35,11 +35,11 @@
 
 | Task / Representation | Holdout R² | Execution Time | Discovered Formula / Search Detail |
 | :--- | :---: | :---: | :--- |
-| Rabi: RIME shared DAG | `1.000000` | `34.96 ms` | `-1.0000 * (cos(t)^2) + 1.0000` |
-| Rabi: Native GA | `0.999579` | `9.61 ms` | `4.8440 * min((exp(t) + min(t, t)), cos(sin(cos(sin(t))))) + -3.2304` (1560 evals) |
-| Brus: RIME single-term DAG | `-34.567941` | `14.09 ms` | `2.0654 * (1 / (R^2)) + 1.7003` (collapses on holdout) |
+| Rabi: RIME shared DAG | `1.000000` | `30.72 ms` | `-1.0000 * (cos(t)^2) + 1.0000` |
+| Rabi: Native GA | `0.999992` | `28.59 ms` | `18.8415 * besselj(sin(besselj(sin(t)))) + -15.6500` (3798 evals) |
+| Brus: RIME single-term DAG | `-34.567941` | `21.19 ms` | `2.0654 * (1 / (R^2)) + 1.7003` (collapses on holdout) |
 | Brus: RIME multi-rational | `1.000000` | `< 1.0 ms` | `1.7400 - 0.2800*(1/R) + 2.4500*(1/R^2)` (exact holdout recovery) |
-| Brus: Native GA single tree | `-2.116898` | `13.36 ms` | `2.6251 * (erf(cbrt(t)) * ((t**-1.3025) / t)) + 1.7193` (1560 evals, collapses on holdout) |
+| Brus: Native GA single tree | `-17.338247` | `6.19 ms` | `1.9446 * tan((sqrt(tan(((erf(t) / t) / t))) / t)) + 1.7063` (1566 evals, collapses on holdout) |
 
 ### Gate 5 — Sealed Confirmation (fresh seed 12345, frozen configs)
 

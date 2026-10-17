@@ -22,6 +22,7 @@
 18. [APEDP-X Dynamic Discovery, Epistemic Referee & CPMD Architecture](#18-apedp-x-dynamic-discovery-epistemic-referee--cpmd-architecture)
 19. [Traceability & Verification Matrix](#19-traceability--verification-matrix)
 20. [Transformer Proposer Design — Q&A Record](TRANSFORMER_PROPOSER_DESIGN_QA.md)
+21. [Sparrow Quantum Deterministic Photonics Blueprint](SPARROW_QUANTUM_DETERMINISTIC_PHOTONICS.md)
 
 ---
 
@@ -1267,6 +1268,7 @@ The October 2026 research programme upgrades APEDP into **APEDP-X / CPMD** (Cont
 | [`apedp_dyn/grammar/proposer.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/grammar/proposer.py) | Core grammar search proposer generating candidate AST expressions. | `production` |
 | [`apedp_dyn/grammar/coupled.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/grammar/coupled.py) | Coupled multi-variable differential equation grammar definitions. | `production` |
 | [`apedp_dyn/grammar/canonicalize.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/grammar/canonicalize.py) | Symbolic expression canonicalization and term ordering. | `production` |
+| [`apedp_dyn/quantum/sparrow_photonics.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/quantum/sparrow_photonics.py) | Sparrow Quantum deterministic photonics engine: deterministic QD scaling vs SPDC, passive fusion with Excitation-Based Feedback (EBF), semi-fluid cluster code (sFFCC) resource scaling, and multi-channel fault-tolerance referee. Spec: [`docs/SPARROW_QUANTUM_DETERMINISTIC_PHOTONICS.md`](SPARROW_QUANTUM_DETERMINISTIC_PHOTONICS.md). | `experimental` |
 
 ### 18.2 RIME Stage-1 Engine (v0.1.1)
 

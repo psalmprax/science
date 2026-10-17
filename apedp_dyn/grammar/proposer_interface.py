@@ -34,7 +34,9 @@ class CandidateProposal:
     declared_scale_invariant: bool
     declared_nominal_dependencies: tuple[str, ...] = ()
     compute_score: Callable[[pd.DataFrame], np.ndarray] = field(default=lambda df: np.zeros(len(df)), repr=False)
-    parameters: dict[str, float] = field(default_factory=dict)
+    # Heterogeneous by contract: numeric fit parameters plus predictive-status
+    # strings such as "identifiability_status" (readers cast explicitly).
+    parameters: dict[str, Any] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
@@ -48,10 +50,13 @@ class ProposerBase(ABC):
         pass
 
     @abstractmethod
-    def fit_and_propose(
-        self,
-        train_data: dict[str, pd.DataFrame],
-        target_col: str = "price",
-    ) -> Sequence[CandidateProposal]:
-        """Generate candidate proposals from training data without self-adjudication."""
-        pass
+    def fit_and_propose(self, *args: Any, **kwargs: Any) -> Sequence[CandidateProposal]:
+        """Generate candidate proposals from training data without self-adjudication.
+
+        The abstract contract is intentionally call-shape-agnostic: concrete
+        proposers consume different data layouts (a dict of frames, a single
+        frame, a mapping of arrays) and own their own required knobs. Only the
+        emission type is contractual (AGENTS.md §1.1); acceptance never lives
+        here.
+        """
+        raise NotImplementedError

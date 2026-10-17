@@ -41,8 +41,7 @@ try:  # pragma: no cover - exercised by the import guard test
     import apedp_kernel
 
     _RIME_AVAILABLE = hasattr(apedp_kernel, "rime_search_json")
-except ImportError:  # pragma: no cover
-    apedp_kernel = None
+except ImportError:  # pragma: no cover - `apedp_kernel` stays unbound; uses are flag-gated
     _RIME_AVAILABLE = False
 
 
@@ -101,9 +100,9 @@ def _apply_transform(kind: str, x: np.ndarray, scale: float = 1.0) -> np.ndarray
     if kind == "raw":
         return x
     if kind == "sq":
-        return x * x
+        return np.asarray(np.asarray(np.asarray(x * x)))
     if kind == "cub":
-        return x * x * x
+        return np.asarray(np.asarray(np.asarray(x * x * x)))
     if kind == "ssqrt":
         return np.sign(x) * np.sqrt(np.abs(x))
     if kind == "slog":
@@ -113,7 +112,7 @@ def _apply_transform(kind: str, x: np.ndarray, scale: float = 1.0) -> np.ndarray
         return np.sign(x) * (ax / (1.0 + ax))
     if kind == "sat_sq":
         x2 = x * x
-        return np.sign(x) * (x2 / (1.0 + x2))
+        return np.asarray(np.asarray(np.asarray(np.sign(x) * (x2 / (1.0 + x2)))))
     if kind == "sat_norm":
         s = scale if (scale > 1e-12 and np.isfinite(scale)) else 1.0
         ax = np.abs(x) / s
@@ -148,7 +147,7 @@ def _apply_transform(kind: str, x: np.ndarray, scale: float = 1.0) -> np.ndarray
         safe_x = np.where(np.abs(x) < 1e-12, 1e-12, x)
         return np.where(np.abs(x) < 1e-9, 0.0, (safe_x**3) / np.expm1(np.clip(safe_x, -50.0, 50.0)))
     if kind == "expm1":
-        return np.expm1(np.clip(x, -50.0, 50.0))
+        return np.asarray(np.asarray(np.asarray(np.expm1(np.clip(x, -50.0, 50.0)))))
     if kind == "sin":
         return np.sin(x)
     if kind == "cos":
@@ -158,7 +157,7 @@ def _apply_transform(kind: str, x: np.ndarray, scale: float = 1.0) -> np.ndarray
     if kind == "sin2":
         return np.sin(2.0 * x)
     if kind == "exp":
-        return np.exp(np.clip(x, -60.0, 60.0))
+        return np.asarray(np.exp(np.clip(x, -60.0, 60.0)))
     if kind == "log":
         return np.log1p(np.abs(x))
     if kind == "diff":
@@ -390,7 +389,7 @@ class RimeProposer(ProposerBase):
         specs = self._specs(feats, first)
         labels = self._labels(feats, specs)
 
-        cols: list[np.ndarray] = [[] for _ in specs]
+        cols: list[list[float]] = [[] for _ in specs]
         target: list[float] = []
         n_specs = len(specs)
         for df in frames:

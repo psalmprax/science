@@ -39,7 +39,10 @@ def load_and_verify_canonical_spec(enforce_hash: bool = True) -> dict[str, Any]:
             f"Silent modifications to preregistered settings violate scientific integrity."
         )
 
-    return json.loads(content.decode("utf-8"))
+    loaded = json.loads(content.decode("utf-8"))
+    if not isinstance(loaded, dict):
+        raise SpecificationIntegrityError("Canonical specification must be a JSON object")
+    return loaded
 
 
 # Load on module import

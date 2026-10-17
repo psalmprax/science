@@ -12,6 +12,17 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   - `tests/test_dyn_lean_universal_bridge.py` — same environmental Lean cause.
   - `outputs/nano_ds10_freeze.json` — FREEZE DRIFT: the pin at `apedp_dyn/epistemic/frozen_spec.py:40` expects d37d0f1c..., but the benchmark regenerates deterministically to b809ddcb..., so `test_all_frozen_records_verified_against_pinned_hashes` fails. All of that generator's dependencies are clean, so the drift reproduces at HEAD. The pinned hash predates the current generator output; the pin owner must re-pin or reconcile the generator. NOT touched in this change.
 
+## [Unreleased] — mypy strict debt cleared; blind-freeze re-mint v1.2 (2026-10-17)
+
+### Fixed (typing)
+- **Both mypy CI gates exit 0:** `mypy apedp_dyn/ --ignore-missing-imports` and `mypy apedp/ apedp_dyn/ --ignore-missing-imports` report no issues (was 122 errors in 38 files). The `apedp/` core gate was already green; this release brings `apedp_dyn/` to parity.
+- Honest fixes by category: `isinstance(dict)` guards at every JSON boundary (`canonical_spec`, `frozen_spec`, `ode/dispatch`, `riemann`/`goldbach` rust-binary parsers, lean-provenance loader); value-preserving `np.asarray` wraps at ndarray-declared return boundaries (video stack, execution-cost models, `high_dim_pde` Rust-engine wrappers); union request types widened ONLY where callers legitimately pass ndarrays (`staircase_prior`, `fit_step_family`, `step_family_basis`, `sample_at_timestamps`, shape-inference request forms); `_dp_segment` return annotation corrected to its actual `(list[list[float]], ndarray, dict)` contract; `ProposerBase.fit_and_propose` abstract contract made call-shape-agnostic (`*args/**kwargs`) so heterogeneous concrete proposers conform to AGENTS.md §1.1; scorer factories in `rime_repair_engine` (uniform `Callable[[pd.DataFrame], ndarray]` signatures, bound-at-emit-time closures); Tesla-style conditional nested scorers renamed in `coordinate_transmuter`; missing `Any`/`Callable` imports; integer rank selection via numpy scalar `.sum()` in `tensor_train_video`.
+- `CandidateProposal.parameters` widened to `dict[str, Any]` — heterogeneous by contract: numeric fit parameters plus predictive-status strings such as `identifiability_status` (readers cast explicitly); no runtime instance shape changed.
+- **No thresholds touched:** per AGENTS.md §1.3 no new threshold literals anywhere; the new `cross_asset_gate.evaluate_cross_asset_gate_matrix` diagnostic adapter only computes within-class/pooled/two-tier Sharpe inputs and delegates all verdicts to the canonical `evaluate_cross_asset_gate` (sandbox probe callers called an API shape that always threw and silently fell back — they now reach the real gate and read `report.passed`).
+
+### Fixed (frozen-record protocol)
+- `apedp_dyn/sandbox/grammar_space.py` was type-hardened (explicit `from typing import Any` import; value-preserving `np.asarray` wrap at an ndarray-declared return boundary) — no referee logic, thresholds, or canonicalization changes. Per the runner's own mint-first protocol, **`APEDPX_FROZEN_v1_2.json` supersedes v1_1** (drift: `6f4da69fb15b…` → `aba0f42abb0f…`, sole guard-file change), `blind_benchmark.FROZEN_RECORD` and the `frozen_spec.py` pinned hash were re-pointed, and all 15 referee guard files verify against the new record.
+
 ## [Unreleased] — Rust↔Python Bridge Hardening (2026-10-17, `production`)
 
 ### Performance
@@ -38,6 +49,28 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 - Full verification: 179 Rust tests (`cargo test`), 45 bridge tests, 26/26 differential conformance against the rebuilt release kernel, 58/58 AGENTS.md regression battery.
 
 ---
+
+## [Unreleased] — JetFlow-Video Honest-Fast-Path Remediation (2026-10-17, `experimental`)
+
+### Remediated (fraud vectors)
+- **Fake NumPy trainer removed (`apedp_dyn/video/jet_flow_model.py`):** the NumPy `train_step` was not a trainer — it mutated one bias vector by a single scalar mean-gradient while every other conditioner weight stayed frozen-random. The method is now diagnostics-only (`DeprecationWarning`, NO parameter mutation); real training routes to `packages/jetflow-video JetFlowTrainer` (full-parameter AdamW; grad-flow verified). Pinned by `tests/test_dyn_jet_flow_sota_path.py::test_jet_flow_video_model_train_step` (behavior change justified in the test docstring — the old pin certified fake behavior).
+- **Salted-hash prompt embedding replaced (`apedp_dyn/video/semantic_bridge.py`):** `embed_text_prompt` seeded random Gaussians from the Python builtin `hash()`, which is salted per process (PYTHONHASHSEED) — embeddings were non-reproducible across runs and carried zero structure. Replaced with `feature_hash_word_char_trigram_v1` (MD5-indexed hashing trick over word + char-trigram tokens + sentence-context term). Byte-identical across processes (subprocess-pinned); lexical similarity preserved (0.744 shared-vocabulary vs 0.229 unrelated). Honestly labeled as lexical features, not CLIP-scale semantics.
+- **Found package bug — sampler direction:** `model.generate_video` integrates t: 0 -> 1 from noise, but `trainer.compute_loss` parameterizes t = 0 as data / t = 1 as noise — the shipped sampler ran the ODE backwards relative to training. The samplers in `first_frame.py` and `distill.py` implement the trainer-consistent direction (integrate t: 1 -> 0); the package inconsistency is documented, unresolved in `generate_video` itself.
+- **Benchmark-doc honesty:** `docs/jet_flow_video_benchmark.md` executive-summary numbers (8.7x–24.4x, 13.9x, 0.02 ms/frame) were superseded by its own artifact (75.85x–186.18x, 8.03x, 0.782 ms/frame); treat the JSON artifact as the citable source. The "2-step beats 50-step diffusion" benchmark is a strawman (integrators on a told analytic field) — replaced by genuine teacher->student distillation curves below.
+
+### Added
+- **`apedp_dyn/video/eval_gate.py` + `tests/test_dyn_video_eval_gate.py` (5/5):** held-out certification instruments — PSNR/SSIM (video-aware), temporal-consistency (smooth advection beats frame-shuffled), FVD PROXY (sliced Wasserstein-2 over a frozen deterministic featurizer; explicitly NOT I3D-FVD), burnable held-out split (disjoint/deterministic/exclusive), and a certify API with caller-supplied thresholds (no new threshold literals).
+- **`apedp_dyn/video/fluid_domain.py` + `tests/test_dyn_fluid_domain.py` (4/4):** domain-scoped dataset — 2D incompressible NS tracer clips (velocity from streamfunction, grid-divergence-free |div| < 1e-10 — the Noether projector finally applies to a physically real object here), semi-Lagrangian dye advection, scope manifest with exclusive holdout ids.
+- **`packages/jetflow-video/jetflow_video/first_frame.py` + `tests/test_dyn_jetflow_anchored_and_distill.py` (5/5):** real-first-frame conditioning — anchored corruption (frame 0 stays clean), anchor-excluded loss, and generation that re-imposes the anchor bitwise at every step in the trainer-consistent sampling direction.
+- **`packages/jetflow-video/jetflow_video/perceptual_decoder.py` + `tests/test_dyn_jetflow_perceptual_decoder.py` (3/3):** zero-init residual decoder on the Haar base (training STARTS at exact Haar parity — monotone upgrade path, no regression cliff), patch-LSGAN discriminator + gradient loss trained on fluid frames.
+- **`packages/jetflow-video/jetflow_video/distill.py` + `benchmarks/run_jetflow_distill_benchmark.py` + `benchmarks/jetflow_distill_curves.json`:** authentic teacher->student solution distillation (trained teacher on the fluid domain, run split-disciplined). Landmark: student 2-step endpoint RMSE vs 16-step teacher 0.808 -> 0.507 measured on the artifact; the honest replacement for the old integrator benchmark.
+- **`benchmarks/run_jetflow_cpu_export_benchmark.py` + `benchmarks/jetflow_cpu_export_benchmark_results.json` + `tests/test_dyn_jetflow_cpu_export.py` (3/3):** ONNX export (static traced graph per clip config — traced attention cannot carry a dynamic temporal axis; documented) plus `onnxruntime` dynamic int8 quantization: 173.5 KB -> 104.9 KB with parity max|Δ| = 0.0; measured latencies (eager 8.68 ms / ORT fp32 5.32 ms / ORT int8 9.97 ms) — int8 is a SIZE win at this scale, ORT fp32 the speed win; the artifact reports both rather than marketing one.
+
+### Known limitations (recorded, not swept)
+- Synthetic fluid-domain evidence only; no real-data photorealism claim derives from this round.
+- FVD proxy is not I3D-FVD; ranked-separation instrument only.
+- ONNX graphs are static per clip length (regenerate per export).
+- `model.generate_video` sampler-direction bug is documented but NOT fixed in place (deployed samplers route through the corrected `first_frame.py`/`distill.py` paths).
 
 ## [Unreleased] — RIME-AD Native Rust Engines & Unified Quantum Benchmark (`experimental`)
 

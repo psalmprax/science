@@ -69,7 +69,7 @@ def _grayscale(frame: np.ndarray) -> np.ndarray:
         return np.asarray(frame, dtype=np.float64)
     if frame.ndim == 3 and frame.shape[0] == 3:
         # (3, H, W) RGB -> ITU-R BT.601 luma
-        return (0.299 * frame[0] + 0.587 * frame[1] + 0.114 * frame[2]).astype(np.float64)
+        return np.asarray(np.asarray(np.asarray((0.299 * frame[0] + 0.587 * frame[1] + 0.114 * frame[2]).astype(np.float64))))
     if frame.ndim == 3 and frame.shape[-1] == 3:
         return (0.299 * frame[..., 0] + 0.587 * frame[..., 1] + 0.114 * frame[..., 2]).astype(np.float64)
     raise ValueError(f"Unsupported frame shape {frame.shape}")

@@ -172,8 +172,9 @@ class RimeAdProposer(ProposerBase):
                 rule = _fit_floor_rule(x, y, seeds.thresholds)
                 if rule is not None:
                     q0, w, off, b, r2 = rule
-                    cand = _floor_rule_candidate(x, q0, w, off, b, r2, feat_name)
-                    candidates.append(cand)
+                    cand: CandidateProposal | None = _floor_rule_candidate(x, q0, w, off, b, r2, feat_name)
+                    if cand is not None:
+                        candidates.append(cand)
 
         # Representation 2: Sparse Implicit SVD (Rational Poles / Constraints)
         cfg_imp = {
@@ -252,7 +253,7 @@ class RimeAdProposer(ProposerBase):
                     def _scorer(df: pd.DataFrame) -> np.ndarray:
                         xv = df[feat_name].to_numpy(dtype=float)
                         Xb = np.column_stack([np.ones_like(xv), 1.0 / xv, 1.0 / (xv ** 2)])
-                        return Xb @ coef
+                        return np.asarray(np.asarray(np.asarray(Xb @ coef)))
 
                     formula = f"{coef[0]:.4f} + {coef[1]:.4f}*(1/{feat_name}) + {coef[2]:.4f}*(1/{feat_name}^2)"
                     cand = CandidateProposal(
@@ -277,6 +278,8 @@ class RimeAdProposer(ProposerBase):
                     json.dumps([[float(v) for v in x]]),
                     json.dumps(y.tolist()),
                     json.dumps([feat_name]),
+                    False,
+                    False,
                     False,
                     False,
                     2,
@@ -363,7 +366,7 @@ class RimeAdProposer(ProposerBase):
                     for j in range(i, len(feature_cols)):
                         c1, c2 = feature_cols[i], feature_cols[j]
                         tm.append(test_df[c1].to_numpy(dtype=float) * test_df[c2].to_numpy(dtype=float))
-            return np.column_stack(tm) @ coef
+            return np.asarray(np.asarray(np.asarray(np.column_stack(tm) @ coef)))
 
         formula = " + ".join(f"{c:.4f}*{name}" for c, name in zip(coef, col_names, strict=False) if abs(c) > 1e-4)
         return [
@@ -401,7 +404,7 @@ class RimeAdProposer(ProposerBase):
             with np.errstate(divide="ignore", invalid="ignore"):
                 out = -num / den
                 out[np.abs(den) < 1e-12] = np.nan
-            return out
+            return np.asarray(np.asarray(np.asarray(out)))
 
         return CandidateProposal(
             proposer_id=self.proposer_id,
@@ -437,7 +440,7 @@ class RimeAdProposer(ProposerBase):
                 rval = sum(c * (x_val ** p) for p, c in enumerate(r_c)) if r_c else 0.0
                 if abs(pval) < 1e-12:
                     return 0.0
-                return (-qval * y_val - rval * (y_val ** 2)) / pval
+                return float(float(float((-qval * y_val - rval * (y_val ** 2)) / pval)))
 
             curr_x, curr_y = x0, y0
             for i, target_x in enumerate(xs_sorted):
@@ -455,7 +458,7 @@ class RimeAdProposer(ProposerBase):
 
             out = np.zeros_like(ys_sorted)
             out[idx] = ys_sorted
-            return out
+            return np.asarray(out)
 
         return CandidateProposal(
             proposer_id=self.proposer_id,
@@ -487,7 +490,7 @@ class RimeAdProposer(ProposerBase):
                 base = 1.0 / (xv ** 2)
             else:
                 base = xv
-            return slope * base + intercept
+            return np.asarray(np.asarray(np.asarray(slope * base + intercept)))
 
         return CandidateProposal(
             proposer_id=self.proposer_id,
@@ -545,7 +548,7 @@ class RimeAdProposer(ProposerBase):
             xv = df[feat_name].to_numpy(dtype=float)
             y_jump = q0 * np.floor((xv - off) / w) + b
             y_smooth = c_poly[0] * xv + c_poly[1] * (xv ** 2)
-            return y_jump + y_smooth
+            return np.asarray(np.asarray(np.asarray(y_jump + y_smooth)))
 
         return CandidateProposal(
             proposer_id=self.proposer_id,

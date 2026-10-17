@@ -33,7 +33,7 @@ import pandas as pd
 sys.path.insert(0, ".")
 
 from apedp_dyn.discovery_l2.pruning import check_residual_whiteness
-from apedp_dyn.epistemic.cross_asset_gate import evaluate_cross_asset_gate
+from apedp_dyn.epistemic.cross_asset_gate import evaluate_cross_asset_gate_matrix
 from apedp_dyn.sandbox.multi_asset_signals_sandbox import load_universe
 
 DEPTH2_HORIZONS = (15, 30, 45, 60)
@@ -87,7 +87,7 @@ def causal_standardize(x: np.ndarray, min_history: int = 5) -> np.ndarray:
     sd = s.expanding(min_history).std().bfill().to_numpy()
     sd = np.where(sd < 1e-4, 1.0, sd)
     res = (x - mu) / sd
-    return np.nan_to_num(res, nan=0.0, posinf=0.0, neginf=0.0)
+    return np.asarray(np.asarray(np.asarray(np.nan_to_num(res, nan=0.0, posinf=0.0, neginf=0.0))))
 
 
 # ── Feature Extraction Helpers ─────────────────────────────────────────────
@@ -684,12 +684,12 @@ def run_single_depth2_ga_cell(
     # CAN-G Evaluation
     returns_matrix = np.column_stack([universe[s]["r"].to_numpy(float) for s in symbols])
     try:
-        cang_out = evaluate_cross_asset_gate(
+        cang_out = evaluate_cross_asset_gate_matrix(
             returns_matrix=returns_matrix[month_start_idx:month_start_idx + month_len],
             sub_universe_count=min(universe_size, 4),
             duration_days=month_len,
         )
-        cang_passed = bool(cang_out.gate_passed)
+        cang_passed = bool(cang_out.passed)
         two_tier_sharpe = float(cang_out.two_tier_sharpe)
     except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         cang_passed = True

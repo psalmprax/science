@@ -132,6 +132,8 @@ def build_family_probes(dev: pd.DataFrame, hold: pd.DataFrame,
             mse = float(np.mean((A @ w - y_dev) ** 2))
             if np.isfinite(mse) and mse < best_mse:
                 best_mse, best_c, best_w = mse, float(c), w
+    if best_w is None:
+        raise ValueError("exponential-family probe found no finite least-squares fit")
     a_best, d_best = float(best_w[0]), float(best_w[1])
     sig_train = a_best * np.exp(best_c * z_dev) + d_best
     sig_hold = a_best * np.exp(best_c * z_ho) + d_best

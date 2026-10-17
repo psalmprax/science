@@ -269,8 +269,8 @@ def _structured_null(n: int, seed: int) -> tuple[np.ndarray, np.ndarray]:
     kind = seed % 4
     if kind == 0:
         e = np.zeros(n)
-        for t in range(1, n):
-            e[t] = 0.9 * e[t - 1] + r.randn()
+        for t_lag in range(1, n):
+            e[t_lag] = 0.9 * e[t_lag - 1] + r.randn()
         y = e
     elif kind == 1:
         t = np.arange(n) / n

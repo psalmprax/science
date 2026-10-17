@@ -43,7 +43,9 @@ from apedp.safety import safe_parse_expr
 try:
     import apedp_kernel
 except ImportError:
-    apedp_kernel = None
+    # `apedp_kernel` stays unbound when the native module is absent; every use
+    # is gated by the availability probe (or caught by the caller's try/except).
+    pass
 
 logger = logging.getLogger("apedp.evolutionary_search")
 
@@ -1049,7 +1051,7 @@ def evolve(
             seen[key] = (mse, complexity)
     front = _pareto_front([(key, mse, complexity) for key, (mse, complexity) in seen.items()])
     best = min(front, key=lambda item: item[1])[0] if front else None
-    grouped_pick: str | None = None
+    grouped_pick_scaled: str | None = None
     y_mu, y_scale_locals = scaling.get("__target__", [0.0, 1.0])
     if x_test is not None and y_test is not None and front:
         test_arrays = {name: np.asarray(x_test[name], dtype=float).ravel() for name in x_test}
@@ -1081,7 +1083,7 @@ def evolve(
                 # train-normalized target, the holdout target is raw.
                 scored_front.append((key, float(np.mean((prediction * y_scale_locals + y_mu - test_target) ** 2))))
         if scored_front:
-            grouped_pick = min(scored_front, key=lambda pair: pair[1])[0]
+            grouped_pick_scaled = min(scored_front, key=lambda pair: pair[1])[0]
     def _denormalized(expression_str: str | None) -> str | None:
         if expression_str is None or not scaling:
             return expression_str
@@ -1092,14 +1094,14 @@ def evolve(
 
     return SearchResult(
         best_expression=best,
-        grouped_pick=grouped_pick,
+        grouped_pick=grouped_pick_scaled,
         pareto_front=[{"expression": key, "train_mse": mse, "complexity": complexity} for key, mse, complexity in front],
         generations_run=cfg.generations,
         n_evaluations=evaluated,
         history=history,
         variable_scaling=scaling,
         denormalized_best=_denormalized(best),
-        denormalized_pick=_denormalized(grouped_pick),
+        denormalized_pick=_denormalized(grouped_pick_scaled),
     )
 
 

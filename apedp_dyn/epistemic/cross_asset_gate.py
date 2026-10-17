@@ -71,6 +71,45 @@ class CrossAssetGateReport:
 
 
 
+def evaluate_cross_asset_gate_matrix(
+    returns_matrix: np.ndarray,
+    sub_universe_count: int,
+    duration_days: int = 0,
+    volatility_normalized: bool = True,
+) -> CrossAssetGateReport:
+    """Diagnostic CAN-G entry point for raw returns matrices (sandbox probe paths).
+
+    Splits the matrix columns into ``sub_universe_count`` sub-universes
+    (asset classes are unlabelled in this probe), computes within-class,
+    naive pooled and two-tier mean Sharpe ratios, and delegates the verdict
+    to :func:`evaluate_cross_asset_gate` — a single source of epistemic
+    truth; no thresholds are defined here.
+    """
+    window = returns_matrix[:duration_days] if duration_days > 0 else returns_matrix
+
+    def _sharpe(values: np.ndarray) -> float:
+        std = float(np.std(values, ddof=1)) if len(values) > 1 else 0.0
+        return float(np.mean(values)) / std if std > 1e-12 else 0.0
+
+    n_assets = int(window.shape[1]) if window.ndim == 2 and window.shape[1] > 0 else 0
+    n_sub = max(1, min(int(sub_universe_count), n_assets))
+    bounds = [round(i * n_assets / n_sub) for i in range(n_sub + 1)]
+    within: dict[str, float] = {}
+    for s in range(n_sub):
+        block = window[:, bounds[s]:bounds[s + 1]]
+        if block.size:
+            per_asset = [_sharpe(block[:, j]) for j in range(block.shape[1])]
+            within[f"sub_universe_{s:02d}"] = float(np.mean(per_asset))
+    pooled = _sharpe(window.reshape(-1))
+    two_tier = float(np.mean(list(within.values()))) if within else pooled
+    return evaluate_cross_asset_gate(
+        within_class_sharpes=within,
+        naive_pooled_sharpe=pooled,
+        two_tier_sharpe=two_tier,
+        volatility_normalized=volatility_normalized,
+    )
+
+
 def evaluate_cross_asset_gate(
     within_class_sharpes: dict[str, float],
     naive_pooled_sharpe: float,

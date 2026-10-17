@@ -444,7 +444,7 @@ def op_michaelis_menten(s: np.ndarray | float, vmax: float, km: float) -> np.nda
     """Enzyme saturation rate law: v = V_max * S / (K_m + S)."""
     s_arr = np.maximum(np.asarray(s, dtype=float), 0.0)
     km_eff = max(km, 1e-12)
-    return vmax * s_arr / (km_eff + s_arr)
+    return np.asarray(np.asarray(np.asarray(vmax * s_arr / (km_eff + s_arr))))
 
 
 def op_hill_activation(x: np.ndarray | float, k: float, n: float = 2.0) -> np.ndarray:
@@ -453,7 +453,7 @@ def op_hill_activation(x: np.ndarray | float, k: float, n: float = 2.0) -> np.nd
     k_eff = max(k, 1e-12)
     xn = np.power(x_arr, n)
     kn = np.power(k_eff, n)
-    return xn / (kn + xn)
+    return np.asarray(np.asarray(np.asarray(xn / (kn + xn))))
 
 
 def op_hill_repression(x: np.ndarray | float, k: float, n: float = 2.0) -> np.ndarray:
@@ -462,7 +462,7 @@ def op_hill_repression(x: np.ndarray | float, k: float, n: float = 2.0) -> np.nd
     k_eff = max(k, 1e-12)
     xn = np.power(x_arr, n)
     kn = np.power(k_eff, n)
-    return kn / (kn + xn)
+    return np.asarray(np.asarray(np.asarray(kn / (kn + xn))))
 
 
 def op_temporal_derivative(x: np.ndarray, dt: float) -> np.ndarray:

@@ -20,9 +20,9 @@
 
 | Model / Search Architecture | In-Sample Fit (Pop A-Train $R^2$) | In-Dist Holdout (Pop A-Test $R^2$) | Fresh Seed (Pop B $R^2$) | Parameter Shift (Pop C $R^2$) | Heavy-Tail OOD (Pop D $R^2$) | Execution Time (ms) | Epistemic Status |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **GA-Small** (Linear + Lags) | `0.6809` | `0.6450` | `0.7006` | `0.4185` | `0.3212` | `1354.7 ms` | **REFUSED** (Missing Interaction) |
-| **GA-Large** (Polynomial + Cross Basis) | `0.9998` | `0.9998` | `0.9998` | `0.8961` | `1.0000` | `2137.7 ms` | **PASSED** (Pre-Planted Basis) |
-| **RIME-AD** (Native Rust Additive Discovery) | `0.9998` | `0.9998` | `0.9998` | `0.8961` | `1.0000` | `8.7 ms` | **PASSED** (Autonomous Recovery) |
+| **GA-Small** (Linear + Lags) | `0.6809` | `0.6450` | `0.7006` | `0.4185` | `0.3212` | `1755.9 ms` | **REFUSED** (Missing Interaction) |
+| **GA-Large** (Polynomial + Cross Basis) | `0.9998` | `0.9998` | `0.9998` | `0.8961` | `1.0000` | `2384.8 ms` | **PASSED** (Pre-Planted Basis) |
+| **RIME-AD** (Native Rust Additive Discovery) | `0.9998` | `0.9998` | `0.9998` | `0.8961` | `1.0000` | `10.7 ms` | **PASSED** (Autonomous Recovery) |
 
 ---
 
@@ -40,7 +40,7 @@
 
 | Metric / Property | Measured Value | Standard Ground Truth | Evaluation |
 | :--- | :---: | :---: | :---: |
-| **Distractor Search Time** | `26.2 ms` | $< 2500 \text{ ms}$ | **Passed** |
+| **Distractor Search Time** | `34.0 ms` | $< 2500 \text{ ms}$ | **Passed** |
 | **Dev Partition Fit ($R^2$)** | `0.999969` | $> 0.9990$ | **Passed** |
 | **Admitted Signal Inputs** | `['x1', 'x2', 'x3']` | `['x1', 'x2', 'x3']` | **Exact** |
 | **Admitted Distractor Channels** | `[]` | `[]` (Zero noise channels) | **0% False Discovery** |
@@ -51,4 +51,4 @@
 1. **Parity on In-Distribution & Fresh Realizations:** Both RIME-AD and GA-Large achieve near-perfect recovery ($R^2 = 0.9998$ vs $0.9998$) on Population A and Population B.
 2. **Graceful Degradation on Parameter Shift:** When physical parameters shift ($c_1: 2.0 \to 2.5, c_2: 3.0 \to 2.0$), both engines transfer gracefully without catastrophic blowup ($R^2 = 0.8961$).
 3. **Zero False Discovery on Distractors:** Under 7 pure noise distractor channels, RIME-AD's complexity-penalized additive search (`gamma=1.0`) strictly filters out all 7 noise features, admitting only the true generating variables $[x_1, x_2, x_3]$.
-4. **Execution Speed Advantage:** RIME-AD evaluates candidate mechanisms in native Rust in **`8.7 ms`**, whereas multi-generation GA requires thousands of evaluations taking **`2137.7 ms`** (~246x speedup).
+4. **Execution Speed Advantage:** RIME-AD evaluates candidate mechanisms in native Rust in **`10.7 ms`**, whereas multi-generation GA requires thousands of evaluations taking **`2384.8 ms`** (~222x speedup).

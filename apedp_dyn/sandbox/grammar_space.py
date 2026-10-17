@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Callable
+from typing import Any
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -547,7 +548,7 @@ def evaluate_equation_b_score(
 
 def op_product_interaction(feat_1: np.ndarray, feat_2: np.ndarray) -> np.ndarray:
     """Candidate interaction operator: PRODUCT(H_BB, NL_TAKER_MOM)."""
-    return np.asarray(feat_1, dtype=float) * np.asarray(feat_2, dtype=float)
+    return np.asarray(np.asarray(np.asarray(np.asarray(feat_1, dtype=float) * np.asarray(feat_2, dtype=float))))
 
 
 def evaluate_equation_e_score(
@@ -671,7 +672,8 @@ def op_exposure_scale(
     alpha: float | np.ndarray,
 ) -> np.ndarray:
     """Equation 3: Exposure-matched control operator: p^{(E)} = alpha * p^{(B)}."""
-    return np.asarray(alpha, dtype=float) * np.asarray(pos_base, dtype=float)
+    scaled = np.asarray(alpha, dtype=float) * np.asarray(pos_base, dtype=float)
+    return np.asarray(scaled)
 
 
 def op_turnover_cost(

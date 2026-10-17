@@ -62,7 +62,9 @@ def run_rust_riemann_binary(max_t: float = 100.0, sample_points: int = 2000) -> 
     stdout = res.stdout.strip()
     for line in stdout.splitlines():
         if line.startswith("{") and line.endswith("}"):
-            return json.loads(line)
+            parsed = json.loads(line)
+            if isinstance(parsed, dict):
+                return parsed
     raise RuntimeError(f"Failed to parse Rust riemann verifier output: {stdout}")
 
 
