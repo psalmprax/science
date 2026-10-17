@@ -22,7 +22,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
-from apedp_dyn import (  # noqa: E402
+from apedp_dyn import (  # noqa: E402, I001 - sys.path bootstrap precedes imports; block intentionally spans the bootstrap marker
     CandidateDynamics,
     Term,
     enumerate_candidates,
@@ -30,8 +30,8 @@ from apedp_dyn import (  # noqa: E402
     materialize,
     prune_admissible,
 )
-from apedp_dyn.estimation import spline_coefficients, weak_coefficients  # noqa: E402
-from apedp_dyn.problems import mass_spring_damper, pendulum  # noqa: E402
+from apedp_dyn.estimation import spline_coefficients, weak_coefficients  # noqa: E402 - sys.path bootstrap precedes imports (standalone harness)
+from apedp_dyn.problems import mass_spring_damper, pendulum  # noqa: E402 - sys.path bootstrap precedes imports (standalone harness)
 
 NOISE_LEVELS = (0.0, 0.25, 0.5, 1.0, 2.0, 5.0)
 REFINE_LEVELS = (0.0, 1.0, 5.0)

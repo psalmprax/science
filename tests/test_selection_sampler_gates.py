@@ -151,7 +151,6 @@ def test_mh_runs_and_reports():
 
 def test_mh_rejects_bad_proposal_cov():
     pytest.importorskip("jax")
-    import jax.numpy as jnp  # noqa: F401  (kept for symmetry with _dummy_mh)
     with pytest.raises(ValueError):
         _dummy_mh(proposal_cov=np.eye(3))
     with pytest.raises(ValueError):

@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Sequence
-from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -88,7 +87,7 @@ class HamiltonianProposer(ProposerBase):
         X = np.column_stack(features)
         y = -p_dot  # positive force -dp/dt = dV/dq
 
-        coeffs, residuals, _, _ = np.linalg.lstsq(X, y, rcond=None)
+        coeffs, _residuals, _, _ = np.linalg.lstsq(X, y, rcond=None)
         k = float(coeffs[0])
         alpha = float(coeffs[1]) if len(coeffs) > 1 else 0.0
 
@@ -206,7 +205,7 @@ class SolenoidalFluidProposer(ProposerBase):
         A = np.vstack([u_basis, v_basis])
         b_target = np.concatenate([u_obs, v_obs])
 
-        coeffs, residuals, _, _ = np.linalg.lstsq(A, b_target, rcond=None)
+        coeffs, _residuals, _, _ = np.linalg.lstsq(A, b_target, rcond=None)
         c1, c2, c3, c4, c5 = [float(val) for val in coeffs]
 
         # Analytical divergence check:
@@ -287,10 +286,10 @@ class CompartmentalSirProposer(ProposerBase):
             return []
 
         S = df[s_col].to_numpy(dtype=float)
-        I = df[i_col].to_numpy(dtype=float)
+        I_arr = df[i_col].to_numpy(dtype=float)
         R = df[r_col].to_numpy(dtype=float)
 
-        total_N = S + I + R
+        total_N = S + I_arr + R
         N0 = float(np.mean(total_N))
         if N0 <= 0.0:
             return []
@@ -302,18 +301,18 @@ class CompartmentalSirProposer(ProposerBase):
 
         # Numerical derivatives
         dS = np.gradient(S, self.dt)
-        dI = np.gradient(I, self.dt)
+        np.gradient(I_arr, self.dt)
         dR = np.gradient(R, self.dt)
 
-        # Estimate gamma from dR/dt = gamma * I
-        denom_I = float(np.sum(I ** 2))
+        # Estimate gamma from dR/dt = gamma * I_arr
+        denom_I = float(np.sum(I_arr ** 2))
         if denom_I < 1e-12:
             return []
-        gamma = float(np.sum(dR * I) / denom_I)
+        gamma = float(np.sum(dR * I_arr) / denom_I)
         gamma = max(0.001, gamma)
 
-        # Estimate beta from dS/dt = -beta * (S * I / N)
-        interaction = S * I / N0
+        # Estimate beta from dS/dt = -beta * (S * I_arr / N)
+        interaction = S * I_arr / N0
         denom_SI = float(np.sum(interaction ** 2))
         if denom_SI < 1e-12:
             return []
@@ -321,7 +320,7 @@ class CompartmentalSirProposer(ProposerBase):
         beta = max(0.001, beta)
 
         r0 = beta / gamma
-        formula = f"dI/dt = {beta:.4f} * (S * I / {N0:.1f}) - {gamma:.4f} * I"
+        formula = f"dI/dt = {beta:.4f} * (S * I_arr / {N0:.1f}) - {gamma:.4f} * I_arr"
         cand_id = f"SIR-{hashlib.sha256(formula.encode()).hexdigest()[:8]}"
 
         def compute_score(test_df: pd.DataFrame) -> np.ndarray:

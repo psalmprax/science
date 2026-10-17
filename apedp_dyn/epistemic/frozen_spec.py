@@ -140,7 +140,7 @@ def require_table_provenance_record(table_id: str, record_dir: Path | str) -> di
             f"Table '{table_id}' cannot enter ledger: missing '{manifest_path}'. "
             f"All published tables require provenance/make_record.py output."
         )
-    with open(manifest_path, "r", encoding="utf-8") as f:
+    with open(manifest_path, encoding="utf-8") as f:
         manifest = json.load(f)
     if manifest.get("returncode") != 0:
         raise MissingProvenanceError(

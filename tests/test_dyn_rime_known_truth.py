@@ -28,7 +28,7 @@ _REPO = str(Path(__file__).resolve().parents[1])
 if _REPO not in sys.path:
     sys.path.insert(0, _REPO)
 
-from benchmarks.known_truth_challenge import (  # noqa: E402
+from benchmarks.known_truth_challenge import (
     RECOVERY_R2,
     run_challenge,
 )
@@ -87,9 +87,10 @@ def test_no_structure_claim_on_out_of_grammar_world(artifact) -> None:
             r[method]["out_of_grammar_abstain"] == 1, r[method]
 
 
-def test_challenge_is_deterministic() -> None:
-    a = run_challenge("/tmp/kt_determinism_probe.json")
-    b = run_challenge("/tmp/kt_determinism_probe.json")
+def test_challenge_is_deterministic(tmp_path: Path) -> None:
+    probe = tmp_path / "kt_determinism_probe.json"
+    a = run_challenge(str(probe))
+    b = run_challenge(str(probe))
     v_a = [(c["world"], c["method"], c["verdict"]) for c in a["cells"]]
     v_b = [(c["world"], c["method"], c["verdict"]) for c in b["cells"]]
     assert v_a == v_b

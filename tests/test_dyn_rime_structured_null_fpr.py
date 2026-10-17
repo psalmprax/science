@@ -28,12 +28,11 @@ reported separately.
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from apedp_dyn.epistemic.adjudicate import RESID_RHO_FLAG
 from apedp_dyn.proposers.rime_proposer import RimeProposer
 
-ALL_OPS = dict(square_seeds=True, rational_ops=True, stem_ops=True, power_ops=True)
+ALL_OPS = {"square_seeds": True, "rational_ops": True, "stem_ops": True, "power_ops": True}
 
 
 def _structured_null(n: int, seed: int):
@@ -71,7 +70,7 @@ def _run(config: dict) -> tuple[int, int]:
     for seed in range(40):
         x, y = _structured_null(600, seed)
         ntr = 400
-        tr = pd_like = __import__("pandas").DataFrame({"x": x[:ntr], "target": y[:ntr]})
+        tr = __import__("pandas").DataFrame({"x": x[:ntr], "target": y[:ntr]})
         te = __import__("pandas").DataFrame({"x": x[ntr:], "target": y[ntr:]})
         props = RimeProposer(feature_cols=["x"], target_col="target",
                              max_depth=3, budget=200, **config).fit_and_propose(tr)
@@ -87,7 +86,7 @@ def _run(config: dict) -> tuple[int, int]:
 
 
 def test_proposer_fpr_on_structured_nulls_is_nonzero():
-    promoted, surviving = _run(dict())
+    promoted, surviving = _run({})
     assert promoted >= 5, f"expected the proposer to leak on structured nulls, got {promoted}"
     assert surviving == 0, f"referee guard must refuse all of them, got {surviving}"
     print(f"\n[layered-fpr] frozen grammar: proposer {promoted}/40, system {surviving}/40")

@@ -63,7 +63,7 @@ class Dimension:
     def __init__(
         self,
         m: int | float | str | Fraction = 0,
-        l: int | float | str | Fraction = 0,  # noqa: E741
+        l: int | float | str | Fraction = 0,  # noqa: E741 - l is the physics LENGTH dimension symbol in the (m, l, t, i, th) convention; part of the public API
         t: int | float | str | Fraction = 0,
         i: int | float | str | Fraction = 0,
         th: int | float | str | Fraction = 0,
@@ -109,7 +109,7 @@ class Dimension:
         return self._m
 
     @property
-    def l(self) -> Fraction:  # noqa: E743
+    def l(self) -> Fraction:  # noqa: E743 - l is the physics LENGTH dimension symbol in the (m, l, t, i, th) convention; part of the public API
         return self._l
 
     @property

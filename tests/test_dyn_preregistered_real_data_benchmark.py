@@ -20,8 +20,8 @@ Evaluates three real experimental datasets:
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import re
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -37,7 +37,7 @@ from apedp_dyn.grammar.candidate_ir import (
     ScoredCandidate,
     Term,
 )
-from apedp_dyn.proposers.rime_proposer import RimeProposer, _RIME_AVAILABLE
+from apedp_dyn.proposers.rime_proposer import _RIME_AVAILABLE, RimeProposer
 from apedp_dyn.sandbox.market_real_data_benchmark import evaluate_real_market_return_discovery
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -120,7 +120,7 @@ def test_dataset_1_ame2020_native_discovery_vs_literature_semf():
 
     ss_tot_te = np.sum((y_te - np.mean(y_te)) ** 2)
     semf_holdout_r2 = 1.0 - (np.sum((y_te - y_pred_semf) ** 2) / ss_tot_te)
-    semf_rmse = np.sqrt(np.mean((y_te - y_pred_semf) ** 2))
+    np.sqrt(np.mean((y_te - y_pred_semf) ** 2))
 
     # Verify literature SEMF passes with known physical coefficients
     assert semf_holdout_r2 > 0.99, f"SEMF holdout R2 should exceed 0.99, got {semf_holdout_r2:.4f}"

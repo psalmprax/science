@@ -31,9 +31,9 @@ from apedp_dyn.epistemic.rime_repair_engine import (
 )
 from apedp_dyn.proposers.rime_proposer import RimeProposer
 
-CUTS = dict(rho_flag=RESID_RHO_FLAG, bias_ratio_cut=0.25,
-            variance_ratio_cut=4.0, curvature_corr_cut=0.3,
-            interaction_corr_cut=0.3, min_rows=30)
+CUTS = {"rho_flag": RESID_RHO_FLAG, "bias_ratio_cut": 0.25,
+            "variance_ratio_cut": 4.0, "curvature_corr_cut": 0.3,
+            "interaction_corr_cut": 0.3, "min_rows": 30}
 
 CONFIG = RepairConfig(
     max_candidates_per_round=6,
@@ -42,6 +42,7 @@ CONFIG = RepairConfig(
     min_validation_r2_gain=0.02,
     equivalence_tol=1e-9,
     operators=(RepairOperator.R1_PARAM_REFIT, RepairOperator.R2_TERM_INSERT, RepairOperator.R3_LAG_INSERT),
+    invariance_slices=0,
 )
 
 
@@ -154,12 +155,12 @@ def test_rime_depths_1_to_6_identical():
         scores = [_r2(Ate["target"].to_numpy(), np.asarray(b.compute_score(Ate), dtype=float)),
                   _r2(B["target"].to_numpy(), np.asarray(b.compute_score(B), dtype=float)),
                   _r2(C["target"].to_numpy(), np.asarray(b.compute_score(C), dtype=float))]
-        for s, lo, hi in zip(scores, (0.55, 0.65, 0.35), (0.75, 0.80, 0.55)):
+        for s, lo, hi in zip(scores, (0.55, 0.65, 0.35), (0.75, 0.80, 0.55), strict=False):
             assert lo < s < hi, (depth, scores)
 
 
 def test_rime_sq_transforms_change_nothing():
-    Atr, Ate, B, C = _pops()
+    Atr, Ate, _B, _C = _pops()
     props = RimeProposer(feature_cols=["x1", "x2", "x3"], target_col="target",
                          max_depth=3, budget=200, algebraic_transforms=("sq",)).fit_and_propose(Atr)
     assert len(props) > 0
@@ -245,7 +246,6 @@ def test_rime_recall_vs_budget_curve():
     # budget. Measured: 0/5 budgets — the product never appears at any
     # budget because selection is penalty-dominated, not budget-starved
     # (evaluated counts confirm the budget is spent, not ignored).
-    import pandas as _pd
     Atr, _, _, _ = _pops()
     for budget, lo_ev in ((50, 1), (100, 1), (200, 100), (500, 100), (1000, 100)):
         props = RimeProposer(feature_cols=["x1", "x2", "x3"], target_col="target",
@@ -286,7 +286,6 @@ def test_usage_log_planted_composite_uses_only_x3():
     # only; x1/x2 (the product drivers) never appear — the product form
     # never even enters the emitted set, consistent with the seed-coverage
     # and penalty-dominated findings.
-    import pandas as _pd
     from apedp_dyn.proposers.rime_usage_log import log_search_usage
     Atr, _, _, _ = _pops()
     props = RimeProposer(feature_cols=["x1", "x2", "x3"], target_col="target",

@@ -27,14 +27,14 @@ _REPOS_ROOT = str(Path(__file__).resolve().parents[2])
 if _REPOS_ROOT not in sys.path:
     sys.path.insert(0, _REPOS_ROOT)
 
-from apedp_dyn.epistemic.adjudicate import (  # noqa: E402
+from apedp_dyn.epistemic.adjudicate import (
     RESID_RHO_FLAG,
     SOLE_SURVIVOR_GAMMA,
     BenchmarkLevel,
     DataOrigin,
     adjudicate,
 )
-from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term  # noqa: E402
+from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 
 M4_DC_TRUE_NM = 15.0
 M4_DC_GRID_NM = (5.0, 8.0, 10.0, 12.0, 15.0, 20.0, 30.0)

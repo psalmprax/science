@@ -20,9 +20,8 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-from scipy.optimize import curve_fit
-
 from cpmd_calibration import gen
+from scipy.optimize import curve_fit
 
 TRUTH = {"a": 1.2, "t0": 8.0, "seed": 2001, "noise": 0.1}
 

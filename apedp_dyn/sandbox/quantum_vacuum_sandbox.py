@@ -43,13 +43,13 @@ _REPO_ROOT = str(Path(__file__).resolve().parents[2])
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from apedp_dyn.epistemic.adjudicate import (  # noqa: E402
+from apedp_dyn.epistemic.adjudicate import (
     RESID_RHO_FLAG,
     SOLE_SURVIVOR_GAMMA,
     Adjudication,
     adjudicate,
 )
-from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term  # noqa: E402
+from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 
 CAL_SIGMA = 1.8
 

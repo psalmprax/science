@@ -184,7 +184,7 @@ class IsolatedDataVault:
             else:
                 try:
                     sealed[k] = copy.deepcopy(v)
-                except Exception:  # noqa: BLE001 -- deepcopy can fail on exotic objects;
+                except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                     # fall back to the original reference so sealing never aborts
                     sealed[k] = v
         return sealed

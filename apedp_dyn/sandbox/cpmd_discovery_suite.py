@@ -10,7 +10,6 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-
 from cpmd_synth_trading import one_path
 
 K, M, KK = 20, 5, 20
@@ -93,7 +92,8 @@ def stage(tag, seeds, genfn):
 
 
 def run():
-    A = lambda sd: one_path(sd)[0]
+    def A(sd):
+        return one_path(sd)[0]
     r1 = stage("Stage 1 discovery gen-A (50000+)", range(50000, 50020), A)
     r2 = stage("Stage 1 discovery gen-B (51000+)", range(51000, 51020), gen_B)
     surv = [k for k in ("ctp", "ser", "sac")

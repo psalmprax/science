@@ -26,16 +26,15 @@ from apedp_dyn.epistemic.adjudicate import RESID_RHO_FLAG
 from apedp_dyn.epistemic.rime_repair_engine import (
     RepairConfig,
     RepairOperator,
-    RepairStatus,
+    RepairPartitions,
     repair,
 )
-from apedp_dyn.epistemic.rime_repair_engine import RepairPartitions
 from apedp_dyn.proposers.rime_proposer import RimeProposer
 from apedp_dyn.sandbox.qec_threshold import generate_qec_threshold_data
 
-CUTS = dict(rho_flag=RESID_RHO_FLAG, bias_ratio_cut=0.25,
-            variance_ratio_cut=4.0, curvature_corr_cut=0.3,
-            interaction_corr_cut=0.3, min_rows=30)
+CUTS = {"rho_flag": RESID_RHO_FLAG, "bias_ratio_cut": 0.25,
+            "variance_ratio_cut": 4.0, "curvature_corr_cut": 0.3,
+            "interaction_corr_cut": 0.3, "min_rows": 30}
 
 CONFIG = RepairConfig(
     max_candidates_per_round=6,

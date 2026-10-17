@@ -25,18 +25,18 @@ _REPO_ROOT = str(Path(__file__).resolve().parents[2])
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from apedp_dyn.epistemic.adjudicate import adjudicate  # noqa: E402
-from apedp_dyn.fitting.parameter_fit import fit_candidate  # noqa: E402
-from apedp_dyn.grammar.candidate_ir import (  # noqa: E402
+from apedp_dyn.epistemic.adjudicate import adjudicate
+from apedp_dyn.fitting.parameter_fit import fit_candidate
+from apedp_dyn.grammar.candidate_ir import (
     CandidateDynamics,
     ScoredCandidate,
     Term,
 )
-from apedp_dyn.grammar.mechanical_grammar import (  # noqa: E402
+from apedp_dyn.grammar.mechanical_grammar import (
     enumerate_candidates,
     prune_admissible,
 )
-from apedp_dyn.problems.finance import spec_from_series  # noqa: E402
+from apedp_dyn.problems.finance import spec_from_series
 
 FIN_TERMS = ("one", "x", "x3", "v", "abs_v_v", "sin_x")
 def _cache(name):
@@ -98,7 +98,7 @@ def run_pooled():
                 f = fit_candidate(probs[asset], c)
                 g4 = f.provenance.get("gate4_status", {}).get("passed", False)
                 mat[cid][asset] = (f.holdout_rmse, g4)
-            except Exception:  # noqa: BLE001 -- record, don't stop the slate
+            except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 mat[cid][asset] = (None, False)
     print(f"  {'cid':9s} {'terms':22s} " + " ".join(f"{a:>8s}" for a in ASSETS)
           + f"  {'pooled':>7s}")

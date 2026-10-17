@@ -10,13 +10,10 @@ Verifies:
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from apedp_dyn.sandbox.ga_depth2_equation_discovery import (
     DEPTH2_FEATURE_CATALOG,
-    DEPTH2_HORIZONS,
     DEPTH2_KEYS,
-    DEPTH2_UNIVERSES,
     build_depth2_panel,
     run_depth2_genetic_algorithm,
     run_single_depth2_ga_cell,
@@ -44,7 +41,7 @@ def test_depth2_panel_construction_and_causality():
     assert len(X_dict) == 24
     n_pts = len(y_flat)
     assert n_pts > 0
-    for k, v in X_dict.items():
+    for _k, v in X_dict.items():
         assert len(v) == n_pts
         assert np.all(np.isfinite(v))
 
@@ -57,7 +54,7 @@ def test_depth2_panel_construction_and_causality():
 def test_ga_evolution_discovers_depth2_terms():
     """Verify that the Genetic Algorithm evolves valid equations containing Depth-2 terms."""
     universe, symbols = load_universe("15")
-    X_dict, y_flat, r_contemp_flat = build_depth2_panel(universe, symbols, horizon_minutes=30)
+    X_dict, y_flat, _r_contemp_flat = build_depth2_panel(universe, symbols, horizon_minutes=30)
 
     N = len(symbols)
     tr_s = slice(80 * N, (80 + 21) * N)

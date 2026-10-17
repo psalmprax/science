@@ -24,11 +24,6 @@ import numpy as np
 import numpy.linalg as la
 import pandas as pd
 
-from apedp_dyn.epistemic.active_disambiguation.trading_e4t1 import (  # noqa: F401
-    ASSETS,
-    build_asset_panel,
-    load_frames,
-)
 from apedp_dyn.epistemic.adjudicate import adjudicate
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 

@@ -17,12 +17,12 @@ _REPO_ROOT = str(Path(__file__).resolve().parents[2])
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from apedp_dyn.fitting.parameter_fit import fit_candidate  # noqa: E402
-from apedp_dyn.grammar.candidate_ir import (  # noqa: E402
+from apedp_dyn.fitting.parameter_fit import fit_candidate
+from apedp_dyn.grammar.candidate_ir import (
     CandidateDynamics,
     Term,
 )
-from apedp_dyn.problems.finance import spec_from_series  # noqa: E402
+from apedp_dyn.problems.finance import spec_from_series
 
 ASSETS = {"SPX": "SP500", "NDX": "NASDAQ100", "WTI": "DCOILWTICO",
           "DGS10": "DGS10", "BTC": "CBBTCUSD"}
@@ -76,7 +76,7 @@ def run_asset(name):
             if not all(ok(v) for v in out.values()):
                 i += STEP
                 continue
-        except Exception:  # noqa: BLE001 -- skip failed windows, keep walking
+        except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             i += STEP
             continue
         v = vols[tr[0]:tr[1]].mean()

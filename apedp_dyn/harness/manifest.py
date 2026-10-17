@@ -117,7 +117,7 @@ def compute_dataset_hash(data: Any) -> str:
             try:
                 hashed_series = pd.util.hash_pandas_object(data, index=True)
                 return hashlib.sha256(hashed_series.to_numpy().tobytes()).hexdigest()
-            except Exception:  # noqa: BLE001 -- fall back to CSV hashing if the fast path fails
+            except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 return hashlib.sha256(data.to_csv(index=False).encode("utf-8")).hexdigest()
         if isinstance(data, pd.Series):
             return hashlib.sha256(data.to_numpy().tobytes()).hexdigest()
@@ -134,7 +134,7 @@ def compute_dataset_hash(data: Any) -> str:
     if isinstance(data, (dict, list)):
         try:
             return hashlib.sha256(json.dumps(data, sort_keys=True, default=str).encode("utf-8")).hexdigest()
-        except Exception:  # noqa: BLE001 -- fall back to str() if payload is not JSON-serializable
+        except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
@@ -142,16 +142,21 @@ def compute_dataset_hash(data: Any) -> str:
 
 def get_git_commit_sha() -> str:
     """Retrieve active Git commit SHA or fallback to clean release tag."""
+    import shutil
     import subprocess
+
+    git_bin = shutil.which("git")
+    if git_bin is None:
+        raise RuntimeError("git not found; cannot record provenance commit SHA")
     try:
-        out = subprocess.check_output(
-            ["git", "rev-parse", "HEAD"],  # noqa: S607 -- resolving git from PATH is intended here
+        out = subprocess.check_output(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
+            [git_bin, "rev-parse", "HEAD"],
             stderr=subprocess.DEVNULL,
             timeout=2,
         ).decode("utf-8").strip()
         if len(out) == 40:
             return out
-    except Exception:  # noqa: BLE001, S110 -- any git failure means provenance is
+    except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         # unavailable; fall back to a locked label rather than crashing
         pass
     return "HEAD_PROVENANCE_LOCKED"

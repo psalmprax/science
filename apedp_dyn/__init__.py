@@ -8,6 +8,7 @@ The optimizer never invents structure: the mechanical grammar emits a typed
 CandidateDynamics IR; gates 1-2 prune before any integration; the fitter only
 estimates numbers for frozen structures; gate 4 (held-out intervention) decides.
 """
+from apedp_dyn import ode, pde
 from apedp_dyn.epistemic import (
     CAPABILITY_ABSENT,
     REL_FLOOR,
@@ -139,6 +140,8 @@ __all__ = [
     "materialize_system",
     "mechanical_energy",
     "observation_scale",
+    "ode",
+    "pde",
     "prune_admissible",
     "resolution_floor",
     "run_all_gates",

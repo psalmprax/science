@@ -13,8 +13,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from apedp_dyn.epistemic.adjudicate import RESID_RHO_FLAG
 from apedp_dyn.epistemic import rime_repair_diagnosis as diagmod
+from apedp_dyn.epistemic.adjudicate import RESID_RHO_FLAG
 from apedp_dyn.epistemic.rime_repair_engine import (
     RepairConfig,
     RepairOperator,
@@ -25,9 +25,9 @@ from apedp_dyn.epistemic.rime_repair_engine import (
 from apedp_dyn.grammar.proposer_interface import CandidateProposal
 from apedp_dyn.proposers.rime_proposer import RimeProposer
 from apedp_dyn.sandbox.trading_signals_sandbox import (
+    SIGNAL_REGISTRY,
     extract_all_22_features,
     load_real_btc_orderflow,
-    SIGNAL_REGISTRY,
 )
 
 BIAS_RATIO_CUT = 0.25
@@ -45,9 +45,9 @@ CONFIG = RepairConfig(
     operators=(RepairOperator.R1_PARAM_REFIT, RepairOperator.R2_TERM_INSERT, RepairOperator.R3_LAG_INSERT),
 )
 
-CUTS = dict(rho_flag=RESID_RHO_FLAG, bias_ratio_cut=BIAS_RATIO_CUT,
-            variance_ratio_cut=VARIANCE_RATIO_CUT, curvature_corr_cut=CURVATURE_CORR_CUT,
-            interaction_corr_cut=INTERACTION_CORR_CUT, min_rows=MIN_ROWS)
+CUTS = {"rho_flag": RESID_RHO_FLAG, "bias_ratio_cut": BIAS_RATIO_CUT,
+            "variance_ratio_cut": VARIANCE_RATIO_CUT, "curvature_corr_cut": CURVATURE_CORR_CUT,
+            "interaction_corr_cut": INTERACTION_CORR_CUT, "min_rows": MIN_ROWS}
 
 
 def _btc_frame():
@@ -105,7 +105,7 @@ def test_walkforward_all_abstain_with_persistence_baseline():
     # window as the predictive baseline, separate from any structure claim.
     df = _btc_frame()
     y = df["target"].to_numpy()
-    n, w, step = len(df), 300, 60
+    _n, w, step = len(df), 300, 60
     abstains, persist_rmses = 0, []
     for k in range(5):
         a = k * step

@@ -676,7 +676,7 @@ class RimeProposer(ProposerBase):
                             corr = np.corrcoef(dy, dpred)[0, 1]
                             if np.isfinite(corr):
                                 grad_alignment = float(corr)
-                except Exception:
+                except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                     pass
 
             proposals.append(

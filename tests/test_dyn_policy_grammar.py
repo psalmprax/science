@@ -10,19 +10,15 @@ Verifies:
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from apedp_dyn.sandbox.grammar_space import (
-    TRADING_POLICY_SYMBOLS,
     EQUATION_A_AUTHORITATIVE_WEIGHTS,
     EQUATION_A_ROUNDED_WEIGHTS,
+    TRADING_POLICY_SYMBOLS,
     TradingGrammarSymbol,
-    evaluate_equation_a_score,
-    op_sign,
-    op_hysteresis,
     op_exposure_scale,
+    op_hysteresis,
     op_turnover_cost,
-    audit_policy_equivalences,
 )
 from apedp_dyn.sandbox.multi_asset_signals_sandbox import (
     PINNED_30_CHROMOSOME,
@@ -110,9 +106,8 @@ def test_candidates_c_d_e_operators_and_catalog():
     from apedp_dyn.sandbox.grammar_space import (
         GRAMMAR_CANDIDATE_CATALOG,
         op_deadband,
-        op_turnover_penalty,
         op_product_interaction,
-        evaluate_equation_e_score,
+        op_turnover_penalty,
     )
 
     # 1. Verify candidate catalog has A, B, H, C, D, E

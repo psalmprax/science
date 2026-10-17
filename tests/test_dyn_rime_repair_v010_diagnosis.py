@@ -15,8 +15,8 @@ import numpy as np
 import pandas as pd
 
 from apedp_dyn.epistemic import rime_repair_diagnosis as diag
-from apedp_dyn.proposers.rime_proposer import RimeProposer
 from apedp_dyn.epistemic.adjudicate import RESID_RHO_FLAG
+from apedp_dyn.proposers.rime_proposer import RimeProposer
 
 # Explicit test-local cutoffs (arguments, not module thresholds).
 BIAS_RATIO_CUT = 0.25
@@ -116,7 +116,7 @@ def test_diagnosis_missing_square_flags_curvature():
     # so the square survives in the residuals by construction.
     p = _best_proposal(tr, max_depth=1)
     assert "Mul" not in p.metadata.get("equation", "") or True
-    rep, findings = _diagnose(p, rp, rp["target"].to_numpy())
+    _rep, findings = _diagnose(p, rp, rp["target"].to_numpy())
     assert diag.FINDING_CURVATURE_SUSPECT in findings, findings
 
 
@@ -132,7 +132,7 @@ def test_diagnosis_time_scaled_noise_flags_heteroscedasticity():
     df = pd.DataFrame({"x": x, "target": y})
     tr, rp = df.iloc[:300].reset_index(drop=True), df.iloc[300:].reset_index(drop=True)
     p = _best_proposal(tr)
-    rep, findings = _diagnose(p, rp, rp["target"].to_numpy())
+    _rep, findings = _diagnose(p, rp, rp["target"].to_numpy())
     assert diag.FINDING_HETEROSCEDASTICITY_SUSPECT in findings, findings
 
 
@@ -149,7 +149,7 @@ def test_diagnosis_insufficient_rows():
     tr = df.iloc[:450].reset_index(drop=True)
     tiny = df.iloc[450:460].reset_index(drop=True)
     p = _best_proposal(tr)
-    rep, findings = _diagnose(p, tiny, tiny["target"].to_numpy())
+    _rep, findings = _diagnose(p, tiny, tiny["target"].to_numpy())
     assert findings == (diag.FINDING_INSUFFICIENT_ROWS,), findings
 
 
@@ -197,7 +197,7 @@ def test_diagnosis_omitted_interaction_flags_interaction():
                           declared_nominal_dependencies=("x1", "x2"),
                           compute_score=(lambda dff: np.full(len(dff), mu)),
                           parameters={}, metadata={})
-    rep, findings = _diagnose(p, rp, rp["target"].to_numpy())
+    _rep, findings = _diagnose(p, rp, rp["target"].to_numpy())
     assert diag.FINDING_INTERACTION_SUSPECT in findings, findings
     assert diag.FINDING_TEMPORAL_DEPENDENCE not in findings, findings
 

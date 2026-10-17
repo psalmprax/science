@@ -22,10 +22,10 @@ budget, and ``admitted_families`` is how many survived stage 1.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Sequence
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any
 
-import numpy as np
 import pandas as pd
 
 from apedp_dyn.proposers.rime_proposer import RimeProposer
@@ -88,8 +88,8 @@ def staged_search(
     stem_ops, power_ops, static_mode ...).
     """
     ops = dict(ops or {})
-    base = dict(feature_cols=list(feature_cols), target_col=target_col,
-                max_depth=max_depth)
+    base = {"feature_cols": list(feature_cols), "target_col": target_col,
+                "max_depth": max_depth}
 
     # Stage 1: cheap admit pass over the whole catalogue at a tiny budget.
     p1 = RimeProposer(budget=stage1_budget, **base, **ops)
@@ -105,7 +105,7 @@ def staged_search(
     # Keep everything that belongs to an admitted family, plus anything that
     # beat the straight full-budget run (never lose a good candidate to the
     # staging heuristic).
-    admitted_out = [q for q in stage2 if _family_of(q) in admitted]
+    [q for q in stage2 if _family_of(q) in admitted]
     by_id = {q.candidate_id: q for q in stage2}
     merged = list(by_id.values())
     merged.sort(key=lambda q: q.parameters.get("dev_r2", float("-inf")), reverse=True)

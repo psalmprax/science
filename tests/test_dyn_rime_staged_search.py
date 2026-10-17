@@ -15,13 +15,15 @@ argument:
 """
 from __future__ import annotations
 
+from typing import ClassVar
+
 import numpy as np
 import pandas as pd
 
 from apedp_dyn.epistemic.rime_staged_search import _family_of, coverage_curve, staged_search
 from apedp_dyn.proposers.rime_proposer import RimeProposer
 
-ALL_OPS = dict(square_seeds=True, rational_ops=True, stem_ops=True, power_ops=True)
+ALL_OPS = {"square_seeds": True, "rational_ops": True, "stem_ops": True, "power_ops": True}
 
 
 def _planted(n: int, seed: int, rho: float) -> pd.DataFrame:
@@ -45,9 +47,9 @@ def test_recovery_saturates_while_budget_grows():
     rows = coverage_curve(frame, ["x"], budgets=(24, 96, 400, 1000, 2000))
     print("\n[budget-curve]")
     for r in rows:
-        print("   budget=%-5d evaluated=%-5d proposals=%-3d families=%d best_r2=%s"
-              % (r["budget"], r["evaluated"], r["n_proposals"], r["n_families"],
-                 None if r["best_dev_r2"] is None else round(r["best_dev_r2"], 4)))
+        print(f"   budget={r['budget']:<5} evaluated={r['evaluated']:<5} "
+              f"proposals={r['n_proposals']:<3} families={r['n_families']} "
+              f"best_r2={None if r['best_dev_r2'] is None else round(r['best_dev_r2'], 4)}")
     r2s = [r["best_dev_r2"] for r in rows if r["best_dev_r2"] is not None]
     assert r2s, "no proposals at any budget"
     assert r2s[0] > 0.9, r2s                     # smallest budget already recovers
@@ -69,9 +71,8 @@ def test_expanded_grammar_does_not_improve_recovery_on_an_easy_truth():
         out[tag] = rows[0]
     print("\n[coverage-frozen vs all-ops]")
     for tag, r in out.items():
-        print("   %-8s evaluated=%-4d proposals=%d families=%d best=%s r2=%.4f"
-              % (tag, r["evaluated"], r["n_proposals"], r["n_families"],
-                 r["best_family"], r["best_dev_r2"]))
+        print(f"   {tag:<8} evaluated={r['evaluated']:<4} proposals={r['n_proposals']} "
+              f"families={r['n_families']} best={r['best_family']} r2={r['best_dev_r2']:.4f}")
     assert out["frozen"]["best_dev_r2"] is not None
     assert out["all_ops"]["best_dev_r2"] is not None
     # The expansion spends more budget for the same winner and the same score.
@@ -88,7 +89,7 @@ def test_staged_search_is_never_worse_and_reports_coverage():
                             max_depth=3, budget=200, **ALL_OPS).fit_and_propose(frame)
     straight_r2 = max(q.parameters.get("dev_r2", float("-inf")) for q in straight) if straight else float("-inf")
     merged, rep = staged_search(frame, ["x"], stage1_budget=24, stage2_budget=200, ops=ALL_OPS)
-    print("\n[staged] %s" % rep.to_dict())
+    print(f"\n[staged] {rep.to_dict()}")
     assert rep.stage2_budget >= rep.stage1_budget
     assert 0.0 <= rep.coverage <= 1.0
     best_r2 = max(q.parameters.get("dev_r2", float("-inf")) for q in merged) if merged else float("-inf")
@@ -127,16 +128,16 @@ def test_expanded_grammar_null_fpr_unchanged_at_system_level():
             flag = calib.flag if calib else float("nan")
             ok, _ = check_whiteness((yt - yp)[m], flag, calib)
             system_fp += int(ok)
-    print("\n[structured-null-fpr] proposer=%d system=%d (12 worlds, all ops ON)"
-          % (proposer_fp, system_fp))
+    print(f"\n[structured-null-fpr] proposer={proposer_fp} system={system_fp} "
+          f"(12 worlds, all ops ON)")
     assert proposer_fp >= 0
     assert system_fp == 0, system_fp
 
 
 def test_family_label_is_deterministic():
     class P:
-        metadata = {"equation": "(p * p[t-1])"}
-        formula = ""
+        metadata: ClassVar[dict[str, str]] = {"equation": "(p * p[t-1])"}
+        formula: ClassVar[str] = ""
 
     assert _family_of(P()) == "lag+mul"
     assert _family_of(P()) == _family_of(P())

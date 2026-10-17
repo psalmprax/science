@@ -11,7 +11,6 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-
 from cpmd_calibration import gen
 from cpmd_effective_slope import LAGS
 
@@ -41,7 +40,7 @@ def ci_ols(y):
 
 def ci_hac(y, bw=BW):
     s, r = ols_fit(y)
-    n = len(y)
+    len(y)
     w = r * XC
     S = float(np.sum(w ** 2))
     for L in range(1, bw + 1):
@@ -64,7 +63,7 @@ def ci_bboot(y, seed):
         try:
             sb, _ = ols_fit(yb)
             boots.append(sb)
-        except Exception:
+        except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             pass
     b = np.array(boots)
     if len(b) > 10:
@@ -126,11 +125,11 @@ def run():
             res[m] = {"cov": 0, "w": [], "b": [], "n": 0}
         for k in range(200):
             sd = 5000 + k
-            lags, yfull = gen_dep(struct, rho, nl, sd)
+            _lags, yfull = gen_dep(struct, rho, nl, sd)
             ar = np.arange(2, 14)
             y = yfull[((ar >= 4) & (ar <= 12))]
             n = len(y)
-            s0, _ = ols_fit(y)
+            _s0, _ = ols_fit(y)
             _, r = ols_fit(y)
             s2 = float(np.sum(r ** 2)) / (n - 2)
             outs = {"OLS": ci_ols(y), "HAC": ci_hac(y), "BBOOT": ci_bboot(y, sd),

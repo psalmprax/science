@@ -23,13 +23,13 @@ _REPO_ROOT = str(Path(__file__).resolve().parents[2])
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from apedp_dyn.epistemic.adjudicate import adjudicate  # noqa: E402
-from apedp_dyn.grammar.candidate_ir import (  # noqa: E402
+from apedp_dyn.epistemic.adjudicate import adjudicate
+from apedp_dyn.grammar.candidate_ir import (
     CandidateDynamics,
     ScoredCandidate,
     Term,
 )
-from apedp_dyn.sandbox.finance_l2_demo import (  # noqa: E402
+from apedp_dyn.sandbox.finance_l2_demo import (
     generate_market_regime_data,
 )
 

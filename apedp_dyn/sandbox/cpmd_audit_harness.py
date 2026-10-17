@@ -10,9 +10,8 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-
+from cpmd_discovery_suite import EPS, K, gen_B, ic_null, rolling_std
 from cpmd_synth_trading import one_path
-from cpmd_discovery_suite import gen_B, rolling_std, ic_null, K, EPS
 
 ALPHA_HARNESS = 0.05 / 2
 ALPHA_CMD = 0.025
@@ -88,18 +87,18 @@ def run():
     print(f"gen-A oracle (true-regime rule): meanIC={np.mean(ics):+.4f}")
     print("gen-B oracle: 0.0000 by construction (symmetric, zero-mean)")
     print("== Step 2: harness calibration ==")
-    m1, p1 = eval_fc(control_genC, gen_C, range(70000, 70020),
+    _m1, p1 = eval_fc(control_genC, gen_C, range(70000, 70020),
                      "positive control on gen-C")
-    m0, p0 = eval_fc(control_genC, gen_B, range(70500, 70520),
+    _m0, p0 = eval_fc(control_genC, gen_B, range(70500, 70520),
                      "null case (control on gen-B)")
     h_ok = (p1 < ALPHA_HARNESS) and (p0 >= ALPHA_HARNESS)
     print(f"harness: {'FIT' if h_ok else 'UNFIT — stop, no candidate verdict'}")
     if not h_ok:
         return
     print("== Step 3: H-CMD on untouched paths ==")
-    ma, pa = eval_fc(hcmd, lambda sd: one_path(sd)[0], range(71000, 71020),
+    _ma, pa = eval_fc(hcmd, lambda sd: one_path(sd)[0], range(71000, 71020),
                      "H-CMD gen-A")
-    mb, pb = eval_fc(hcmd, gen_B, range(72000, 72020), "H-CMD gen-B")
+    _mb, pb = eval_fc(hcmd, gen_B, range(72000, 72020), "H-CMD gen-B")
     if (pa < ALPHA_CMD) or (pb < ALPHA_CMD):
         print("H-CMD: SURVIVES to next evidential stage")
     else:

@@ -33,10 +33,10 @@ from apedp_dyn.epistemic.shape_inference import (
 # Explicit, test-local cutoffs (the module takes them as arguments).
 PENALTY = 1.0
 MARGIN = 0.05
-CUTS = dict(penalty_per_segment=PENALTY, min_segment_len=5,
-            max_segments=32, improvement_margin=MARGIN, min_rows=40,
-            flat_tol=0.05, min_flat_fraction=0.5, min_run_length=5.0, min_pc_r2=0.05,
-            sse_target=0.01)
+CUTS = {"penalty_per_segment": PENALTY, "min_segment_len": 5,
+            "max_segments": 32, "improvement_margin": MARGIN, "min_rows": 40,
+            "flat_tol": 0.05, "min_flat_fraction": 0.5, "min_run_length": 5.0, "min_pc_r2": 0.05,
+            "sse_target": 0.01}
 
 
 def _staircase(vg, edges):
@@ -107,10 +107,7 @@ def test_drift_ratio_separates_plateaus_from_curves():
     ps = infer_shape_prior(vg, stair, **CUTS)
     pl = infer_shape_prior(px, line, **CUTS)
     pq = infer_shape_prior(sat_x, sat, **CUTS)
-    print("\n[parsimony] stair=%s line=%s pade=%s"
-          % ((ps.params_piecewise_constant, ps.params_piecewise_linear),
-             (pl.params_piecewise_constant, pl.params_piecewise_linear),
-             (pq.params_piecewise_constant, pq.params_piecewise_linear)))
+    print(f"\n[parsimony] stair={(ps.params_piecewise_constant, ps.params_piecewise_linear)} line={(pl.params_piecewise_constant, pl.params_piecewise_linear)} pade={(pq.params_piecewise_constant, pq.params_piecewise_linear)}")
     assert ps.family == FAMILY_PIECEWISE_CONSTANT, ps.note
     assert pl.family != FAMILY_PIECEWISE_CONSTANT, pl.note
     assert pq.family != FAMILY_PIECEWISE_CONSTANT, pq.note
@@ -171,9 +168,9 @@ def test_vocabulary_is_frozen():
 # ---------------------------------------------------------------------------
 # Step 2: step-family basis at data-estimated change-points.
 # ---------------------------------------------------------------------------
-CUTS2 = dict(min_segment_len=5, max_segments=32, flat_tol=0.05, min_flat_fraction=0.5,
-             min_run_length=5.0, min_pc_r2=0.05, min_rows=40,
-             sse_target=0.01)
+CUTS2 = {"min_segment_len": 5, "max_segments": 32, "flat_tol": 0.05, "min_flat_fraction": 0.5,
+             "min_run_length": 5.0, "min_pc_r2": 0.05, "min_rows": 40,
+             "sse_target": 0.01}
 
 
 def test_staircase_recovered_exactly_with_estimated_thresholds():
@@ -188,7 +185,7 @@ def test_staircase_recovered_exactly_with_estimated_thresholds():
     for e in (1.0, 2.0, 3.0, 4.0, 5.0):
         g += (vg >= float(e))
     prior, seeds = staircase_prior(vg, g, **CUTS2)
-    print("\n[step2] r2=%r coeffs=%r" % (seeds.r2, seeds.coefficients))
+    print(f"\n[step2] r2={seeds.r2!r} coeffs={seeds.coefficients!r}")
     assert prior.family == FAMILY_PIECEWISE_CONSTANT
     assert seeds is not None and seeds.identifiable
     assert seeds.r2 == pytest.approx(1.0, abs=1e-9)
@@ -221,13 +218,12 @@ def test_smooth_line_is_never_handed_a_step_family():
     x = rng.uniform(0.1, 6.0, 200)
     y = 2.5 * x + 10.0 + 0.02 * rng.randn(200)
     prior, seeds = staircase_prior(x, y, **CUTS2)
-    print("\n[gate] prior=%s seeds=%s" % (prior.family, seeds))
+    print(f"\n[gate] prior={prior.family} seeds={seeds}")
     assert prior.family != FAMILY_PIECEWISE_CONSTANT
     assert seeds is None, "a smooth line must never be handed a step family"
     # Proof that the gate is doing real work, not that the numbers were small.
     raw = fit_step_family(x, y, (1.0, 2.0, 3.0, 4.0, 5.0))
-    print("[gate] raw R2 on a straight line = %s identifiable=%s"
-          % (round(raw.r2, 4), raw.identifiable))
+    print(f"[gate] raw R2 on a straight line = {round(raw.r2, 4)} identifiable={raw.identifiable}")
     assert raw.r2 > 0.9, raw.r2
 
 

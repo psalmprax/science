@@ -8,14 +8,15 @@ Fault 7: Non-binding thresholds – binding check asserts active fraction in [5%
 from __future__ import annotations
 
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
 
 from apedp_dyn.epistemic.frozen_spec import (
+    PINNED_FROZEN_REGISTRY,
     FreezeDriftError,
     MissingProvenanceError,
-    PINNED_FROZEN_REGISTRY,
     require_table_provenance_record,
     verify_all_frozen_records_or_raise,
 )
@@ -201,7 +202,7 @@ def test_run_ledger_decorative_threshold_suppresses_sharpe():
     weights = {"H-BB": 1.0}
 
     # Extremely high threshold: th_in = 999.0 (never binds)
-    rows, summary = run_ledger(
+    _rows, summary = run_ledger(
         syms=["TEST"],
         data=data,
         weights=weights,

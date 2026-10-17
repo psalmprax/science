@@ -16,7 +16,6 @@ from __future__ import annotations
 import ast
 from collections.abc import Mapping
 from fractions import Fraction
-from typing import Any
 
 from apedp_dyn.discovery_l2.dimensional_types import (
     Dimension,

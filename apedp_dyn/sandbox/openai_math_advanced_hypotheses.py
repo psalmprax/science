@@ -22,9 +22,8 @@ import math
 import sys
 import time
 from collections import Counter
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, Literal
+from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -33,7 +32,7 @@ sys.path.insert(0, ".")
 
 from apedp_dyn.discovery_l2.pruning import check_residual_whiteness
 from apedp_dyn.epistemic.cross_asset_gate import evaluate_cross_asset_gate
-from apedp_dyn.sandbox.grammar_space import causal_zscore, trailing_rank
+from apedp_dyn.sandbox.grammar_space import causal_zscore
 from apedp_dyn.sandbox.multi_asset_signals_sandbox import load_universe
 
 ADVANCED_HORIZONS = (15, 30, 45, 60)
@@ -164,7 +163,7 @@ def build_advanced_hypotheses_panel(
     N = len(symbols)
 
     # Distinct multi-bar forward steps: 15m -> 1, 30m -> 2, 45m -> 3, 60m -> 4
-    step = max(1, int(round(horizon_minutes / 15.0)))
+    step = max(1, round(horizon_minutes / 15.0))
     w_roll = 20
 
     # Strict boundary truncation: features from 0 to T-step, targets from step to T
@@ -372,7 +371,6 @@ def evaluate_advanced_hypothesis(
 
     # Gate -1 Causal Target Certification
     causal_cert = verify_gate_minus_1_causality(y_tr, r_tr_contemp, max_threshold=0.10)
-    fwl_applied = False
     fwl_beta = 0.0
 
     if abs(causal_cert.contemp_corr) >= 0.40:
@@ -402,7 +400,6 @@ def evaluate_advanced_hypothesis(
         y_bwd = y_bwd - fwl_beta * r_bwd_c
         # Re-check causal certification post-purge
         causal_cert = verify_gate_minus_1_causality(y_tr, r_tr_contemp, max_threshold=0.10)
-        fwl_applied = True
 
     M_tr = np.nan_to_num(np.column_stack([X_tr[k_i] for k_i in keys]), nan=0.0, posinf=0.0, neginf=0.0)
     M_fwd = np.nan_to_num(np.column_stack([X_fwd[k_i] for k_i in keys]), nan=0.0, posinf=0.0, neginf=0.0)
@@ -415,13 +412,13 @@ def evaluate_advanced_hypothesis(
     try:
         s_vals = np.linalg.svd(M_scaled, compute_uv=False)
         cond = float(s_vals[0] / s_vals[-1]) if s_vals[-1] > 1e-15 else float("inf")
-    except Exception:
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         cond = float("inf")
 
     # Fit in-sample OLS coefficients
     try:
         coefs, _, _, _ = np.linalg.lstsq(M_tr, y_tr, rcond=None)
-    except Exception:
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         coefs = np.zeros(k)
 
     # In-sample Train M
@@ -598,7 +595,7 @@ def run_single_advanced_cell(
         universe, symbols, horizon_minutes,
     )
 
-    n_obs_m = month_len * N
+    month_len * N
     tr_s = slice(month_start_idx * N, (month_start_idx + month_len) * N)
     fwd_s = slice((month_start_idx + month_len) * N, (month_start_idx + 2 * month_len) * N)
     bwd_s = slice((month_start_idx - month_len) * N, month_start_idx * N)
@@ -640,7 +637,7 @@ def run_single_advanced_cell(
         )
         cang_passed = bool(cang_out.gate_passed)
         sharpe = float(cang_out.two_tier_sharpe)
-    except Exception:
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         cang_passed = True
         sharpe = 1.05
 

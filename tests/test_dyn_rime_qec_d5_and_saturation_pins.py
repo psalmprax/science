@@ -24,17 +24,17 @@ import pandas as pd
 import pytest
 
 from apedp_dyn.epistemic.rime_repair_diagnosis import (
-    ResidualReport,
-    classify_findings,
     FINDING_CURVATURE_SUSPECT,
     FINDING_NO_RELIABLE_STRUCTURE,
+    ResidualReport,
+    classify_findings,
 )
-from apedp_dyn.proposers.rime_proposer import RimeProposer, _RIME_AVAILABLE
+from apedp_dyn.proposers.rime_proposer import _RIME_AVAILABLE, RimeProposer
 from apedp_dyn.sandbox.qec_threshold import (
     QEC_C,
     QEC_P_TH,
-    generate_qec_threshold_data,
     generate_qec_saturating_data,
+    generate_qec_threshold_data,
 )
 
 
@@ -210,7 +210,7 @@ def test_canonical_saturating_data_generators_pinned():
 
     # Padé and Exponential agree to first order at small p (both ~ C * (p/p_th)^2)
     p_p_det, y_p_det = generate_qec_saturating_data(n_points=100, noise_sigma=0.0, seed=42, distance=3, model="pade")
-    p_e_det, y_e_det = generate_qec_saturating_data(n_points=100, noise_sigma=0.0, seed=42, distance=3, model="exponential")
+    _p_e_det, y_e_det = generate_qec_saturating_data(n_points=100, noise_sigma=0.0, seed=42, distance=3, model="exponential")
     small_p_mask = p_p_det < 0.003
     rel_diff = np.abs(y_p_det[small_p_mask] - y_e_det[small_p_mask]) / y_p_det[small_p_mask]
     assert np.mean(rel_diff) < 0.01, f"Padé and exponential models must match to within 1% at low-p: got {np.mean(rel_diff):.4f}"

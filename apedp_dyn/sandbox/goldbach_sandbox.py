@@ -7,6 +7,7 @@ between bounded empirical verification (C2) and universal deductive proof (C6).
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -31,14 +32,17 @@ def run_rust_goldbach_binary(limit: int = 10_000_000) -> dict[str, Any]:
     """Execute the compiled Rust binary to test all even numbers up to limit."""
     # Ensure binary is built
     if not RUST_BIN.exists():
-        subprocess.run(
-            ["cargo", "build", "--release", "--manifest-path", str(CARGO_TOML)],
+        cargo = shutil.which("cargo")
+        if cargo is None:
+            raise RuntimeError("cargo not found; install the Rust toolchain to build the kernel binary")
+        subprocess.run(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
+            [cargo, "build", "--release", "--manifest-path", str(CARGO_TOML)],
             cwd=str(ROOT_DIR),
             check=True,
             capture_output=True,
         )
 
-    res = subprocess.run(
+    res = subprocess.run(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
         [str(RUST_BIN), str(limit), "--json"],
         cwd=str(ROOT_DIR),
         capture_output=True,
@@ -56,7 +60,7 @@ def run_rust_goldbach_binary(limit: int = 10_000_000) -> dict[str, Any]:
 def run_goldbach_adjudication(limit: int = 10_000_000) -> dict[str, Any]:
     """Run full Goldbach verification in Rust and adjudicate under AEH."""
     # 1. Run Rust parallel verifier
-    t0 = time.time()
+    time.time()
     rust_telemetry = run_rust_goldbach_binary(limit=limit)
 
     evens_tested = int(rust_telemetry["evens_tested"])
@@ -107,7 +111,7 @@ def run_goldbach_adjudication(limit: int = 10_000_000) -> dict[str, Any]:
     )
 
     # 6. EEDR Repair Stage: Bounded Epistemic Calibration
-    eedr_res = harness.run_eedr_repair_stage(
+    harness.run_eedr_repair_stage(
         failed_candidate_id="GOLDBACH_CONJECTURE_UNIVERSAL",
         claimed_tier=ClaimLevel.C6_FORMALLY_VERIFIED,
         evidence=bundle,

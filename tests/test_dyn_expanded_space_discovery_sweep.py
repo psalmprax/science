@@ -16,11 +16,8 @@ Verifies:
 """
 from __future__ import annotations
 
-import pytest
-
 from apedp_dyn.sandbox.expanded_space_discovery_sweep import (
     DURATIONS_MINUTES,
-    UNIVERSE_SIZES,
     HorizonDiscoveryResult,
     run_expanded_space_discovery,
 )

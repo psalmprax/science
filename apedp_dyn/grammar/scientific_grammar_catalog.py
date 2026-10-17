@@ -30,10 +30,9 @@ import enum
 import hashlib
 import json
 from dataclasses import asdict, dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. Scientific Domain, Family, and Type Enums

@@ -12,64 +12,37 @@ Verifies:
 from __future__ import annotations
 
 import json
+
 import numpy as np
 import pandas as pd
-import pytest
 
 from apedp_dyn.grammar.trading_grammar_catalog import (
-    AvailabilityTiming,
-    DataType,
-    FailurePolicy,
-    FeatureFamily,
-    FeatureSpec,
-    GrammarLayer,
     MASTER_FEATURE_CATALOG,
     MASTER_TARGET_CATALOG,
+    FeatureSpec,
+    GrammarLayer,
     TargetSpec,
     TradingGrammarCatalog,
     compute_recommended_first_stage_features,
     consecutive_down_bars,
     consecutive_up_bars,
-    count_condition,
     cross_sectional_rank,
     cross_sectional_zscore,
-    ewma,
     exp_clamp,
-    negative_part,
     op_acceleration,
-    op_clip,
     op_cooldown,
     op_deadband,
-    op_diff,
     op_hysteresis_path,
     op_lag,
-    op_log_return,
     op_pct_change,
-    op_tanh,
-    positive_part,
-    regime_gate,
     robust_zscore,
-    roll_beta,
-    roll_corr,
-    roll_kurtosis,
-    roll_max,
     roll_mean,
-    roll_median,
-    roll_min,
-    roll_quantile,
-    roll_skew,
     roll_slope,
-    roll_std,
-    roll_sum,
-    roll_var,
     safe_div,
     safe_log,
-    safe_log1p,
-    safe_pow,
     safe_sqrt,
     signal_gate,
     time_since_last_high,
-    time_since_last_low,
     winsorize,
 )
 
@@ -149,7 +122,7 @@ def test_targets_catalogue():
     assert "FWD_CS_RANK_1" in MASTER_TARGET_CATALOG
     assert "FWD_REALIZED_VOL_16" in MASTER_TARGET_CATALOG
 
-    for tid, target in MASTER_TARGET_CATALOG.items():
+    for _tid, target in MASTER_TARGET_CATALOG.items():
         assert isinstance(target, TargetSpec)
         assert target.requires_future is True
         assert target.horizon_bars >= 1

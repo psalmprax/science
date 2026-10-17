@@ -9,7 +9,6 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-
 from cpmd_calibration import gen
 from cpmd_effective_slope import LAGS
 from cpmd_estimand import finite_window_truth

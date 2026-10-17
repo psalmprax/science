@@ -22,8 +22,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -132,7 +133,7 @@ def diagnose_residuals(
     """
     y_pred = np.asarray(proposal.compute_score(df), dtype=float)
     y_true = np.asarray(y, dtype=float)
-    n_rows = int(len(y_true))
+    n_rows = len(y_true)
     yt, yp = _finite_pair(y_true, y_pred)
     n_finite = int(yt.size)
     if n_finite == 0:

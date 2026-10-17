@@ -12,8 +12,7 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-
-from cpmd_discovery_suite import rolling_std, ic_null, K, M, KK, EPS
+from cpmd_discovery_suite import EPS, KK, K, M, ic_null
 from cpmd_v018 import feats
 
 SIG = 0.01
@@ -30,7 +29,7 @@ def gen_truth(seed, which, A, n=3000):
         C = float(np.sum(zw) / (EPS + np.sum(np.abs(zw))))
         Q = float(np.sum(zw * np.abs(zw)) / (EPS + np.sum(zw ** 2)))
         rw = np.array(buf[-KK:])
-        V = float((EPS + np.mean(rw[-M:] ** 2)) / (EPS + np.mean(rw ** 2)))
+        float((EPS + np.mean(rw[-M:] ** 2)) / (EPS + np.mean(rw ** 2)))
         Mt = 1.0 if float(np.mean(buf[-5:])) > 0 else -1.0
         sigt = float(np.std(buf[-20:]) + EPS)
         if which == "in":
@@ -83,7 +82,7 @@ def score_paths(which, A, seeds):
     for name, fn in forms.items():
         for scaled in (False, True):
             ics, ps = [], []
-            for ret, sd in zip(paths, seeds):
+            for ret, sd in zip(paths, seeds, strict=False):
                 ic, p, _ = eval_form(fn, ret, sd, scaled)
                 ics.append(ic)
                 ps.append(p)
@@ -101,7 +100,7 @@ def run():
         ics = []
         for i in range(10):
             ret = gen_truth(90000 + i, which, A)
-            sig, C, Q, V, Mt = feats(ret)
+            _sig, C, Q, _V, Mt = feats(ret)
             n = len(ret)
             tf = np.full(n, np.nan)
             for t in range(K, n - 1):

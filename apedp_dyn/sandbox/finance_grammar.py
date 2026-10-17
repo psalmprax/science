@@ -56,7 +56,7 @@ def run_experiment(name, prob):
     for s in kept:
         try:
             f = fit_candidate(prob, s.candidate)
-        except Exception as e:  # noqa: BLE001 -- record, don't stop the slate
+        except Exception as e:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             print(f"    fit failed {s.candidate.candidate_id}: {type(e).__name__}")
             continue
         fitted.append(f)

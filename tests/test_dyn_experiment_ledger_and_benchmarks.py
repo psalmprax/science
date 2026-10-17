@@ -21,9 +21,7 @@ from apedp_dyn.sandbox.calibrated_benchmark_suite import (
     run_calibrated_discovery_benchmark,
     run_calibrated_referee_benchmark,
     run_transfer_benchmark,
-    wilson_ci,
 )
-
 
 # ── 1. Experiment Ledger & Anti-Snooping Guard ───────────────────────────────
 

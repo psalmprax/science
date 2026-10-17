@@ -7,11 +7,9 @@ Validates:
   - Strict boundary truncation and asset-level cross-sectional excess return panel
 """
 import numpy as np
-import pytest
+
 from apedp_dyn.sandbox.openai_math_advanced_hypotheses import (
-    ADVANCED_HORIZONS,
     ADVANCED_HYPOTHESIS_SPECS,
-    UNIVERSE_SIZES,
     run_preflight_controlled_verification,
     run_single_advanced_cell,
     verify_gate_minus_1_causality,
@@ -64,7 +62,7 @@ def test_single_cell_evaluation_15_assets_30m():
 def test_all_5_advanced_hypotheses_integrity():
     """Verify specifications for all 5 advanced hypotheses."""
     assert len(ADVANCED_HYPOTHESIS_SPECS) == 5
-    for hyp_id, spec in ADVANCED_HYPOTHESIS_SPECS.items():
+    for _hyp_id, spec in ADVANCED_HYPOTHESIS_SPECS.items():
         assert "name" in spec
         assert "scientific_origin" in spec
         assert "formula" in spec

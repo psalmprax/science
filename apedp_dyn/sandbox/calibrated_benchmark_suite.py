@@ -9,10 +9,10 @@ Implements the reviewer's architecture separating discovery power from referee d
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
+
 import numpy as np
-import pandas as pd
 from scipy import stats
 
 from apedp_dyn.conf.canonical_spec import (
@@ -230,7 +230,7 @@ def run_transfer_benchmark(
 ) -> TransferBenchmarkReport:
     """Evaluate surviving models across unseen OOD environments."""
     is_ics, oos_ics = [], []
-    for env_name, (X_test, y_test) in test_environments.items():
+    for _env_name, (X_test, y_test) in test_environments.items():
         is_ic, oos_ic = discovered_model_eval_fn(X_test, y_test)
         is_ics.append(is_ic)
         oos_ics.append(oos_ic)

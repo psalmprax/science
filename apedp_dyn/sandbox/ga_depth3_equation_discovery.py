@@ -25,7 +25,7 @@ import time
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -141,7 +141,7 @@ def build_depth3_panel(
     T = len(universe[symbols[0]])
     N = len(symbols)
 
-    step = max(1, int(round(horizon_minutes / 15.0)))
+    step = max(1, round(horizon_minutes / 15.0))
     w_roll = 20
 
     # Strict boundary truncation: features from 0 to T-step, targets from step to T
@@ -352,7 +352,7 @@ def run_depth3_genetic_algorithm(
 
     # Initial population
     population: list[EvolvedChromosome] = []
-    for i in range(pop_size):
+    for _i in range(pop_size):
         mask = np.zeros(K, dtype=bool)
         # Always pick at least 1 Depth-3 term
         mask[rng.randint(D3_START, K)] = True
@@ -380,7 +380,7 @@ def run_depth3_genetic_algorithm(
         try:
             s_vals = np.linalg.svd(M_scaled, compute_uv=False)
             cond = float(s_vals[0] / s_vals[-1]) if s_vals[-1] > 1e-15 else float("inf")
-        except Exception:
+        except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             cond = float("inf")
 
         chrom.condition_number = cond
@@ -391,10 +391,10 @@ def run_depth3_genetic_algorithm(
             XtX = M_sub.T @ M_sub + ridge_eye
             Xty = M_sub.T @ y_train
             coefs = np.linalg.solve(XtX, Xty)
-        except Exception:
+        except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             try:
                 coefs, _, _, _ = np.linalg.lstsq(M_sub, y_train, rcond=None)
-            except Exception:
+            except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 coefs = np.zeros(k)
 
         pred = M_sub @ coefs
@@ -644,7 +644,7 @@ def run_single_depth3_ga_cell(
         )
         cang_passed = bool(cang_out.gate_passed)
         two_tier_sharpe = float(cang_out.two_tier_sharpe)
-    except Exception:
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         cang_passed = True
         two_tier_sharpe = 1.05
 

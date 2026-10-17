@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import math
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -41,14 +42,17 @@ CARGO_TOML = ROOT_DIR / "rust" / "riemann_verifier" / "Cargo.toml"
 def run_rust_riemann_binary(max_t: float = 100.0, sample_points: int = 2000) -> dict[str, Any]:
     """Execute the compiled Rust binary to test 2D zeros, Turing check, and prime synthesis."""
     if not RUST_BIN.exists():
-        subprocess.run(
-            ["cargo", "build", "--release", "--manifest-path", str(CARGO_TOML)],
+        cargo = shutil.which("cargo")
+        if cargo is None:
+            raise RuntimeError("cargo not found; install the Rust toolchain to build the kernel binary")
+        subprocess.run(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
+            [cargo, "build", "--release", "--manifest-path", str(CARGO_TOML)],
             cwd=str(ROOT_DIR),
             check=True,
             capture_output=True,
         )
 
-    res = subprocess.run(
+    res = subprocess.run(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
         [str(RUST_BIN), str(max_t), str(sample_points), "--json"],
         cwd=str(ROOT_DIR),
         capture_output=True,
@@ -64,7 +68,7 @@ def run_rust_riemann_binary(max_t: float = 100.0, sample_points: int = 2000) -> 
 
 def run_riemann_adjudication(max_x: float = 100.0, sample_points: int = 2000) -> dict[str, Any]:
     """Run full Riemann Hypothesis and Prime Distribution adjudication with Rust engine."""
-    t0 = time.time()
+    time.time()
     rust_telemetry = run_rust_riemann_binary(max_t=max_x, sample_points=sample_points)
 
     zeros_found = int(rust_telemetry.get("zeros_dynamically_found", 0))
@@ -134,7 +138,7 @@ def run_riemann_adjudication(max_x: float = 100.0, sample_points: int = 2000) ->
     )
 
     # 5. EEDR Repair Stage: Bounded Epistemic Calibration
-    eedr_res = harness.run_eedr_repair_stage(
+    harness.run_eedr_repair_stage(
         failed_candidate_id="RIEMANN_HYPOTHESIS_UNIVERSAL",
         claimed_tier=ClaimLevel.C6_FORMALLY_VERIFIED,
         evidence=bundle,
@@ -204,7 +208,7 @@ def run_riemann_adjudication(max_x: float = 100.0, sample_points: int = 2000) ->
             },
             "gate_breakdown": [
                 {"gate": "Reference-Zero Calibration", "result": "✓", "detail": f"PASS: Max discrepancy Δ={max_discrepancy:.2e} < 1e-8 against reference values"},
-                {"gate": "Off-Line Grid Scan", "result": "✓", "detail": f"OFF_LINE_GRID_SCAN_PASS (0 sampled off-line zeros on σ ∈ [0.2, 0.8])"},
+                {"gate": "Off-Line Grid Scan", "result": "✓", "detail": "OFF_LINE_GRID_SCAN_PASS (0 sampled off-line zeros on σ ∈ [0.2, 0.8])"},
                 {"gate": "Continuous Region Exclusion", "result": "?", "detail": "UNRESOLVED: Discrete grid only; continuous exclusion requires interval enclosure"},
                 {"gate": "Zero-Count Reconciliation", "result": "?", "detail": f"APPROXIMATE_TALLY_MATCH: N_approx={turing_expected} matches detected={turing_detected} (S(T) remainder uncertified)"},
                 {"gate": "Prime Harmonics Synthesis", "result": "✓", "detail": f"R² = {r2_rh:.5f} across {sample_points:,} pts ({rate_m_evals:.1f}M evals/s)"},
@@ -248,7 +252,7 @@ def run_riemann_adjudication(max_x: float = 100.0, sample_points: int = 2000) ->
         "series": {
             "x": sample_xs.tolist(),
             "actual": true_psi_curve,
-            "x_label": f"x ∈ [2, 60] (Chebyshev Prime Step Function ψ(x) synthesized by dynamically discovered zeros)",
+            "x_label": "x ∈ [2, 60] (Chebyshev Prime Step Function ψ(x) synthesized by dynamically discovered zeros)",
         },
         "epistemic_framework": {
             "version": "APEDP-X v1.0-FROZEN",

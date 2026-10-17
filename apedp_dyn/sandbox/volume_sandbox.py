@@ -21,7 +21,7 @@ from typing import Any
 
 import numpy as np
 
-SIDECAR_DIR = Path("/tmp/ma2024")  # noqa: S108 -- deliberate sidecar location; repo benchmark must stay frozen
+SIDECAR_DIR = Path("/tmp/ma2024")  # noqa: S108 - documented fixed sidecar dataset location (see module docstring)
 CRYPTO_FILE = SIDECAR_DIR / "vol_daily_crypto.json"
 
 QUARTER_BLOCKS = (

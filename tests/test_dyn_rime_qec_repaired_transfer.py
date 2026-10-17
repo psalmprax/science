@@ -66,7 +66,7 @@ def test_repaired_holds_d3_new_grids_ranges_noise():
     for name, grid, seed in cases:
         ns = 3.0 if name == "noise3x" else 1.0
         pp, yy, _ = _gen(2, grid, seed, nscale=ns)
-        r2, rmse = _metrics(yy, _repaired(pp))
+        r2, _rmse = _metrics(yy, _repaired(pp))
         yo = wq[0] + wq[1] * pp ** 2
         r2o, _ = _metrics(yy, yo)
         assert r2 > 0.985, (name, r2)
@@ -77,7 +77,7 @@ def test_repaired_holds_d3_new_grids_ranges_noise():
 def test_repaired_decays_ordered_across_distances():
     wq = _frozen_olsq()
     log = np.logspace(-3.3, -1.7, 600)
-    prev, prev_o = 2.0, 2.0
+    prev, _prev_o = 2.0, 2.0
     for d, exp, seed, lo, hi in ((4, 2.5, 309, 0.9, 1.0), (5, 3, 310, 0.7, 0.9),
                                 (6, 3.5, 311, 0.5, 0.75), (7, 4, 312, 0.4, 0.6)):
         pp, yy, _ = _gen(exp, log, seed)
@@ -87,7 +87,7 @@ def test_repaired_decays_ordered_across_distances():
         assert lo < r2 < hi, (d, r2)
         assert r2 < prev, (d, r2, prev)  # monotone decay with distance
         assert r2o > r2, (d, r2, r2o)  # plain quadratic transfers marginally better
-        prev, prev_o = r2, r2o
+        prev, _prev_o = r2, r2o
     print("\n[repaired-transfer] monotone decay d=4..7; OLS-quad above throughout: no transferable law")
 
 
@@ -108,6 +108,7 @@ def test_fresh_discovery_per_distance_abstains_where_dev_subrange_is_swamped():
     """
     import numpy as _np
     import pandas as _pd
+
     from apedp_dyn.proposers.rime_proposer import RimeProposer
     C, PTH = 0.1, 0.01
 

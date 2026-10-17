@@ -84,7 +84,7 @@ def evaluate_frozen_transfer(
     cols = _interior_stencils(u_hold, dt, dx)
     ut = cols["u_t"].reshape(-1)
     pred = np.zeros_like(ut)
-    for name, c in zip(active_terms, coefficients):
+    for name, c in zip(active_terms, coefficients, strict=False):
         if name not in cols:
             raise ValueError(f"unknown PDE term: {name!r}")
         pred += float(c) * cols[name].reshape(-1)

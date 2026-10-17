@@ -62,7 +62,7 @@ def gen_R(seed, kind="equity", n=900):
 
 
 def panel_stats(R):
-    n, N = R.shape
+    _n, N = R.shape
     kurt = float(np.mean(((R - R.mean(0)) / R.std(0)) ** 4, axis=0).mean())
     sq = R ** 2
     ac1 = float(np.mean([np.corrcoef(sq[:-1, i], sq[1:, i])[0, 1] for i in range(N)]))

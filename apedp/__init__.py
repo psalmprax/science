@@ -5,6 +5,7 @@ An end-to-end scientific discovery, mathematical verification, epistemic trackin
 dimensional assurance, metrology analysis, and autonomous anomaly repair platform.
 """
 
+from apedp import ode, pde
 from apedp.adversarial_benchmarks import (
     AdversarialScienceBenchmarkSuite,
     AdversarialTrapResult,
@@ -217,3 +218,4 @@ from apedp.visualization import (
 )
 
 __version__ = "1.0.0"
+__all_continuum__ = ["ode", "pde"]

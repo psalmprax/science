@@ -33,11 +33,12 @@ structurally. They are declared before any run, not tuned afterwards.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from typing import Any
+
 import numpy as np
 import pandas as pd
-
-from dataclasses import dataclass, field
-from typing import Any, Callable
 
 from apedp_dyn.epistemic.adjudicate import (
     Adjudication,

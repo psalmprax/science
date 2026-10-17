@@ -18,7 +18,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from apedp.decision.stage_c import EpistemicState  # noqa: F401 (kept: present in original)
 from apedp.model_synthesis import AutonomousModelSynthesizer
 
 pytestmark = pytest.mark.skipif(

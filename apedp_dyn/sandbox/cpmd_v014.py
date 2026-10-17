@@ -8,10 +8,9 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-
 from cpmd_calibration import gen
-from cpmd_ols_uncertainty import gen_dep, ci_gls, ar1_cov  # generators only
 from cpmd_effective_slope import LAGS
+from cpmd_ols_uncertainty import gen_dep  # generators only
 
 T7 = 2.3646  # t_{.975,df=7}
 T5 = 2.5706  # t_{.975,df=5}
@@ -75,10 +74,9 @@ def run():
     print("== 2. correlated noise (OLS-T df=7) ==")
     ok2 = 0
     tot2 = 0
-    for (struct, rho), nl in [x for x in
-                              __import__("itertools").product(
+    for (struct, rho), nl in list(__import__("itertools").product(
                                   [("ar1", 0.3), ("ar1", 0.5), ("cs", 0.5),
-                                   ("ma1", 0.0)], (0.1, 0.2))]:
+                                   ("ma1", 0.0)], (0.1, 0.2))):
         truth = finwin_truth(LAGS, "power")
         s, ok = ols_t_cell(LAGS, T7, truth,
                            lambda k, st=struct, rh=rho, nl=nl, off=8400:

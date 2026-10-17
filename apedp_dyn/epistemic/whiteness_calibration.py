@@ -37,8 +37,8 @@ substitute it without re-implementing the check.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Sequence
+from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -252,7 +252,6 @@ def screen_structured_null_worlds(
                 if np.isfinite(r):
                     rho_bad.append(abs(r))
 
-    worlds_with_leak = proposer_fp  # upper bound; exact per-world count below
     return {
         "proposer_promotions": proposer_fp,
         "system_promotions": system_fp,

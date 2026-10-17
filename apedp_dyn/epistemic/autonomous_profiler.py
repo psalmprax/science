@@ -13,8 +13,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -178,7 +179,7 @@ def profile_dataset(
         flat_fraction = float(np.mean(numerical_slopes < flat_slope_cut))
         # Cluster unique target levels
         rounded_y = np.round(y_s, 3)
-        unique_vals, counts = np.unique(rounded_y, return_counts=True)
+        unique_vals, _counts = np.unique(rounded_y, return_counts=True)
         if len(unique_vals) <= max_discrete_levels and flat_fraction >= flat_fraction_cut:
             is_staircase = True
             discrete_levels = [float(v) for v in unique_vals]
@@ -226,7 +227,7 @@ def profile_dataset(
             "is_power": is_power,
             "power_exp": round(power_exp, 4),
             "is_staircase": is_staircase,
-            "discrete_levels": [round(l, 3) for l in discrete_levels],
+            "discrete_levels": [round(lv, 3) for lv in discrete_levels],
             "is_dual": is_dual,
             "low_x_exp": round(low_x_exp, 3),
             "high_x_exp": round(high_x_exp, 3),

@@ -1,4 +1,6 @@
 """Unit tests for CompetitorAbstentionWrapper and Dimensional Constant Synthesis."""
+import tempfile
+
 import sympy as sp
 
 from apedp.dimensional_layer import audit_dimensional_admissibility
@@ -49,9 +51,10 @@ def test_audit_dimensional_admissibility_negative():
 
 def test_pipeline_validate_dimensions_with_synthesis():
     """Verify DiscoveryPipeline.validate_dimensions handles dimensional constant synthesis."""
-    # Fixed path under the system temp dir: harmless in a test process, and the
+    # Unique temp-dir persistence root: harmless in a test process, and the
     # pipeline only uses it as a persistence root.
-    pipeline = DiscoveryPipeline("/tmp/test_pipeline_val_dim")  # noqa: S108
+    pipeline_root = tempfile.mkdtemp(prefix="test_pipeline_val_dim")
+    pipeline = DiscoveryPipeline(pipeline_root)
     pipeline.engine.register_variable("a", "astronomical_unit")
     pipeline.engine.register_variable("T", "year")
 

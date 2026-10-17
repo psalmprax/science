@@ -71,6 +71,6 @@ def test_every_apedp_dyn_module_imports() -> None:
     for name in names:
         try:
             importlib.import_module(name)
-        except Exception as exc:  # noqa: BLE001 - the failure IS the report
+        except Exception as exc:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             failures.append(f"{name}: {type(exc).__name__}: {exc}")
     assert not failures, "modules that fail to import:\n" + "\n".join(failures)

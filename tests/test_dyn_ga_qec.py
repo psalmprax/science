@@ -57,7 +57,8 @@ def _run_ga(ptr, ytr, pho, yho, seed: int = 7, pop_size: int = 40, gens: int = 2
         scored = sorted(pop, key=lambda m: fit(m)[1])
         nxt = [m.copy() for m in scored[:6]]
         while len(nxt) < pop_size:
-            t = lambda: sorted([pop[i] for i in rng.choice(len(pop), 3, replace=False)], key=lambda m: fit(m)[1])[0]
+            t = (lambda p1=pop, e=rng, v=names, f=fit:
+                 sorted([p1[i] for i in e.choice(len(p1), 3, replace=False)], key=lambda mm: f(mm)[1])[0])
             a, b = t(), t()
             c = np.where(rng.rand(len(names)) < 0.5, a, b)
             if not c.any():
@@ -88,7 +89,7 @@ def test_ga_qec_matches_ols():
     ntr = len(p) // 2
     ptr, ytr, pho, yho = p[:ntr], obs[:ntr], p[ntr:], obs[ntr:]
 
-    mask, terms, ga_rmse, ga_r2 = _run_ga(ptr, ytr, pho, yho)
+    _mask, terms, ga_rmse, ga_r2 = _run_ga(ptr, ytr, pho, yho)
     assert set(terms) == {"1", "p2"}, terms  # selection, not magic
     assert abs(ga_rmse - 0.002220) < 1e-4, ga_rmse
     assert ga_r2 > 0.99, ga_r2
@@ -152,7 +153,9 @@ def test_qec_same_time_square_unreachable_by_proposer_but_reachable_by_repair():
     """
     import json
     import re
+
     import numpy as np
+
     import apedp_kernel as ak
     p, obs = generate_qec_threshold_data(n_points=600, seed=42)
     col = p[:300]

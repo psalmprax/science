@@ -10,10 +10,11 @@ selection-bias-induced false discoveries.
 from __future__ import annotations
 
 import datetime
-from dataclasses import asdict, dataclass
 import json
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
+
 import numpy as np
 from scipy import stats
 
@@ -111,7 +112,7 @@ class CandidateTrialLedger:
 
     def _load_from_disk(self) -> None:
         assert self._persistence_path is not None
-        with open(self._persistence_path, "r", encoding="utf-8") as f:
+        with open(self._persistence_path, encoding="utf-8") as f:
             for line in f:
                 if line.strip():
                     d = json.loads(line)
@@ -131,7 +132,7 @@ def compute_expected_max_sharpe(n_trials: int, var_trials: float) -> float:
     # Asymptotic Extreme Value Theory for N independent standard normals
     # z ≈ sqrt(2 * ln(N)) + Euler_Mascheroni / sqrt(2 * ln(N))
     log_n = np.log(n_trials)
-    sqrt_2log_n = np.sqrt(2.0 * log_n)
+    np.sqrt(2.0 * log_n)
     expected_z = (1.0 - EULER_MASCHERONI) * stats.norm.ppf(1.0 - 1.0 / n_trials) + \
                  EULER_MASCHERONI * stats.norm.ppf(1.0 - 1.0 / (n_trials * np.e))
     return float(sigma_sr * expected_z)

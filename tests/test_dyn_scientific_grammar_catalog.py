@@ -11,30 +11,20 @@ Verifies:
 from __future__ import annotations
 
 import json
+
 import numpy as np
-import pytest
 
 from apedp_dyn.grammar.scientific_grammar_catalog import (
-    BiologyFamily,
     BiologyValidityGate,
-    ChemistryFamily,
     ChemistryValidityGate,
-    PhysicsFamily,
     PhysicsValidityGate,
-    ScientificDomain,
     ScientificGrammarCatalog,
-    ScientificVariableKind,
-    ScientificVariableSpec,
-    ValueType,
-    MASTER_SCIENTIFIC_CATALOG,
-    op_delay,
     op_hill_activation,
     op_hill_repression,
     op_lotka_volterra_step,
     op_michaelis_menten,
     op_temporal_derivative,
     op_temporal_integral,
-    op_threshold_activation,
 )
 
 

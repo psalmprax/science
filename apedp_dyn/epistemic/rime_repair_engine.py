@@ -54,14 +54,15 @@ from __future__ import annotations
 
 import enum
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
-from apedp_dyn.epistemic.experiment_ledger import HoldoutContaminationError
 from apedp_dyn.epistemic import rime_repair_diagnosis as diagmod
+from apedp_dyn.epistemic.experiment_ledger import HoldoutContaminationError
 from apedp_dyn.grammar.proposer_interface import CandidateProposal
 
 
@@ -88,7 +89,7 @@ class RepairStatus(str, enum.Enum):
 IDENTIFIABILITY_BAND_R2 = 1e-3
 
 
-def _resolved_band(config: "RepairConfig") -> float:
+def _resolved_band(config: RepairConfig) -> float:
     """Band actually in force for this run (mode default unless explicit)."""
     if config.equivalence_r2_tol is not None:
         return float(config.equivalence_r2_tol)
@@ -191,7 +192,7 @@ class RepairPartitions:
         df: pd.DataFrame,
         y: np.ndarray | pd.Series,
         fracs: tuple[float, float, float, float] = (0.4, 0.2, 0.2, 0.2),
-    ) -> "RepairPartitions":
+    ) -> RepairPartitions:
         y = np.asarray(y, dtype=float)
         n = len(df)
         if n < 40 or abs(sum(fracs) - 1.0) > 1e-9 or any(f <= 0.0 for f in fracs):
@@ -378,7 +379,8 @@ def _wrap_repaired(
                    # overrides this from its own covariance analysis.
                    "identifiability_status": IDENT_UNRESOLVED})
 
-    def compute_score(df: pd.DataFrame, _p=parent, _fn=term_values_fn, _c=np.asarray(coefs, dtype=float)) -> np.ndarray:
+    def compute_score(df: pd.DataFrame, _p=parent, _fn=term_values_fn) -> np.ndarray:
+        _c = np.asarray(coefs, dtype=float)
         base = np.asarray(_p.compute_score(df), dtype=float)
         if _fn is None:
             return _c[0] * base + _c[1]
@@ -543,7 +545,7 @@ def generate_repairs(
                 ss_tot = float(np.sum((yb - yb.mean()) ** 2))
                 r2_1 = 1.0 - float(np.sum((yb - pred1) ** 2)) / ss_tot if ss_tot > 0 else 0.0
                 candidates_pade.append((r2_1, False, a1, b1, a1_se, b1_se, cov1_cond, st1))
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 pass
 
             # Form 2: Lorentzian resonance (y(0) = a): y = a / (1 + b * |z|)
@@ -574,7 +576,7 @@ def generate_repairs(
                 ss_tot = float(np.sum((yb - yb.mean()) ** 2))
                 r2_2 = 1.0 - float(np.sum((yb - pred2) ** 2)) / ss_tot if ss_tot > 0 else 0.0
                 candidates_pade.append((r2_2, True, a2, b2, a2_se, b2_se, cov2_cond, st2))
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 pass
 
             # Sort by R2 descending
@@ -585,15 +587,13 @@ def generate_repairs(
                 if not (st != "IDENTIFIED_STABLE" and not getattr(config, "r5_emit_unidentified", False)):
                     seq += 1
                     if is_res:
-                        fn = lambda df, _a=a_fit, _b=b_fit, _parent=original: (
-                            _a / (1.0 + _b * np.abs(np.asarray(_parent.compute_score(df), dtype=float)))
-                        )
+                        def fn(df, _a=a_fit, _b=b_fit, _parent=original):
+                            return _a / (1.0 + _b * np.abs(np.asarray(_parent.compute_score(df), dtype=float)))
                         label = f"pade_sat_res(a={a_fit:.4g},b={b_fit:.4g})"
                     else:
-                        fn = lambda df, _a=a_fit, _b=b_fit, _parent=original: (
-                            _a * np.asarray(_parent.compute_score(df), dtype=float)
-                            / (1.0 + _b * np.abs(np.asarray(_parent.compute_score(df), dtype=float)))
-                        )
+                        def fn(df, _a=a_fit, _b=b_fit, _parent=original):
+                            base_d = np.asarray(_parent.compute_score(df), dtype=float)
+                            return _a * base_d / (1.0 + _b * np.abs(base_d))
                         label = f"pade_sat(a={a_fit:.4g},b={b_fit:.4g})"
 
                     out.append(_wrap_pade_repaired(
@@ -630,7 +630,11 @@ def generate_repairs(
         # "(a*b)" / "(a[t-k]*b[t-k])" split lagged columns from src "a,b";
         # "(d^p)" is a sign-safe rational power of one declared dependency.
         if op is RepairOperator.R3_LAG_INSERT:
-            fn = (lambda df, _d=src: _lagk(df[_d], 1) if _d in df.columns else np.full(len(df), np.nan))
+            def fn(df, _d=src):
+                if _d in df.columns:
+                    return _lagk(df[_d], 1)
+                return np.full(len(df), np.nan)
+
         elif "^" in label:
             mp = re.search(r"\^(\d+(?:\.\d+)?)\)$", label)
             fn = _rational_power_term_fn(src, float(mp.group(1))) if mp else (
@@ -639,9 +643,10 @@ def generate_repairs(
             a, b = src.split(",")
             m = re.search(r"\[t-(\d+)\]", label)
             k = int(m.group(1)) if m else 0
-            fn = (lambda df, _a=a, _b=b, _k=k: _lagk(np.asarray(df[_a], dtype=float), _k)
-                  * _lagk(np.asarray(df[_b], dtype=float), _k)
-                  if _a in df.columns and _b in df.columns else np.full(len(df), np.nan))
+            def fn(df, _a=a, _b=b, _k=k):
+                if _a in df.columns and _b in df.columns:
+                    return _lagk(np.asarray(df[_a], dtype=float), _k) * _lagk(np.asarray(df[_b], dtype=float), _k)
+                return np.full(len(df), np.nan)
         out.append(_wrap_repaired(original, op, label, fn, coef, r2, int(np.isfinite(y).sum()), 1, seq))
     return out
 
@@ -816,7 +821,7 @@ def _invariance_verdict(best, partitions, config, cutoffs) -> _InvVerdict:
                 ), **cutoffs)
                 if sres.winner is not None:
                     key = canonical_key(sres.winner)
-        except Exception:  # noqa: BLE001 — a slice that cannot run is not a win
+        except Exception:  # noqa: BLE001, S112 - try-continue by design: best-effort path skips this candidate without aborting  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             continue
         if key is None:
             continue
@@ -908,10 +913,10 @@ def repair(
     than an accident. Extending it requires a multi-finding diagnosis that
     can order and separately justify two additions.
     """
-    cutoffs = dict(rho_flag=rho_flag, bias_ratio_cut=bias_ratio_cut,
-                   variance_ratio_cut=variance_ratio_cut,
-                   curvature_corr_cut=curvature_corr_cut,
-                   interaction_corr_cut=interaction_corr_cut, min_rows=min_rows)
+    cutoffs = {"rho_flag": rho_flag, "bias_ratio_cut": bias_ratio_cut,
+                   "variance_ratio_cut": variance_ratio_cut,
+                   "curvature_corr_cut": curvature_corr_cut,
+                   "interaction_corr_cut": interaction_corr_cut, "min_rows": min_rows}
     # --- diagnose on the repair split (never validation, never sealed) ---
     rep = diagmod.diagnose_residuals(original, partitions.repair_df, partitions.repair_y, "repair")
     yp_r = np.asarray(original.compute_score(partitions.repair_df), dtype=float)

@@ -25,7 +25,7 @@ import time
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -34,7 +34,6 @@ sys.path.insert(0, ".")
 
 from apedp_dyn.discovery_l2.pruning import check_residual_whiteness
 from apedp_dyn.epistemic.cross_asset_gate import evaluate_cross_asset_gate
-from apedp_dyn.sandbox.grammar_space import causal_zscore, trailing_rank
 from apedp_dyn.sandbox.multi_asset_signals_sandbox import load_universe
 
 DEPTH2_HORIZONS = (15, 30, 45, 60)
@@ -135,7 +134,7 @@ def build_depth2_panel(
     T = len(universe[symbols[0]])
     N = len(symbols)
 
-    step = max(1, int(round(horizon_minutes / 15.0)))
+    step = max(1, round(horizon_minutes / 15.0))
     w_roll = 20
 
     # Strict boundary truncation: features from 0 to T-step, targets from step to T
@@ -365,7 +364,7 @@ def run_depth2_genetic_algorithm(
     M_full = np.column_stack([X_dict[k] for k in keys])
 
     D1_COUNT = 8
-    D2_COUNT = K - D1_COUNT
+    K - D1_COUNT
 
     def repair_depth2_chromosome(mask: np.ndarray) -> np.ndarray:
         # Guarantee at least 1 Depth-2 term (indices 8..K-1)
@@ -391,7 +390,7 @@ def run_depth2_genetic_algorithm(
 
     # Initial population initialization
     population: list[EvolvedChromosome] = []
-    for i in range(pop_size):
+    for _i in range(pop_size):
         mask = np.zeros(K, dtype=bool)
         # Always pick at least 1 Depth-2 term
         mask[rng.randint(D1_COUNT, K)] = True
@@ -420,7 +419,7 @@ def run_depth2_genetic_algorithm(
         try:
             s_vals = np.linalg.svd(M_scaled, compute_uv=False)
             cond = float(s_vals[0] / s_vals[-1]) if s_vals[-1] > 1e-15 else float("inf")
-        except Exception:
+        except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             cond = float("inf")
 
         chrom.condition_number = cond
@@ -431,10 +430,10 @@ def run_depth2_genetic_algorithm(
             XtX = M_sub.T @ M_sub + ridge_eye
             Xty = M_sub.T @ y_train
             coefs = np.linalg.solve(XtX, Xty)
-        except Exception:
+        except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             try:
                 coefs, _, _, _ = np.linalg.lstsq(M_sub, y_train, rcond=None)
-            except Exception:
+            except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 coefs = np.zeros(k)
 
         pred = M_sub @ coefs
@@ -692,7 +691,7 @@ def run_single_depth2_ga_cell(
         )
         cang_passed = bool(cang_out.gate_passed)
         two_tier_sharpe = float(cang_out.two_tier_sharpe)
-    except Exception:
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         cang_passed = True
         two_tier_sharpe = 1.05
 

@@ -4,8 +4,6 @@ Regression suite for Multi-Population Extrapolation & Distractor Challenge: RIME
 
 import json
 from pathlib import Path
-import pytest
-
 
 RESULTS_JSON = Path("benchmarks/population_extrapolation_results.json")
 REPORT_MD = Path("docs/population_extrapolation_rime_ad_vs_ga.md")
@@ -17,7 +15,7 @@ def test_extrapolation_artifacts_exist():
 
 
 def test_population_extrapolation_metrics():
-    with open(RESULTS_JSON, "r", encoding="utf-8") as f:
+    with open(RESULTS_JSON, encoding="utf-8") as f:
         data = json.load(f)
 
     methods = data["methods"]
@@ -47,7 +45,7 @@ def test_population_extrapolation_metrics():
 
 
 def test_distractor_noise_immunity():
-    with open(RESULTS_JSON, "r", encoding="utf-8") as f:
+    with open(RESULTS_JSON, encoding="utf-8") as f:
         data = json.load(f)
 
     dist = data["distractor_challenge"]

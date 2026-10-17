@@ -17,9 +17,9 @@ def load_cols(close_path, close_cols, ofi_cols):
     df = pd.read_csv(close_path)
     P = df[close_cols].to_numpy(dtype=float)
     R = np.diff(np.log(P), axis=0)
-    O = df[ofi_cols].to_numpy(dtype=float)[1:]  # align with returns
-    assert R.shape == O.shape, (R.shape, O.shape)
-    return R, O
+    ord_flow = df[ofi_cols].to_numpy(dtype=float)[1:]  # align with returns
+    assert R.shape == ord_flow.shape, (R.shape, ord_flow.shape)
+    return R, ord_flow
 
 
 def trailing_std(R, w=SW):
@@ -28,14 +28,14 @@ def trailing_std(R, w=SW):
                       for i in range(N)] for t in range(n)])
 
 
-def hofd_forecast(R, O):
+def hofd_forecast(R, ord_flow):
     n, N = R.shape
     sig = trailing_std(R)
     fc = np.full((n, N), np.nan)
     for t in range(ZW, n - 1):
-        w = O[t - ZW + 1:t + 1]
+        w = ord_flow[t - ZW + 1:t + 1]
         mu, sd = w.mean(0), w.std(0) + EPS
-        s = (O[t] - mu) / sd
+        s = (ord_flow[t] - mu) / sd
         fc[t] = -sig[t] * np.tanh(s)
     return fc
 
@@ -52,11 +52,11 @@ def ic_null(F, R, seed):
     return obs, float(cnt / NSW), mse
 
 
-def evaluate(tag, R, O, seed, lo=0.0, hi=1.0):
-    assert R.shape == O.shape
+def evaluate(tag, R, ord_flow, seed, lo=0.0, hi=1.0):
+    assert R.shape == ord_flow.shape
     n = len(R)
     a, b = int(lo * n), int(hi * n)
-    F = hofd_forecast(R, O)
+    F = hofd_forecast(R, ord_flow)
     # restrict to window [a:b] on FORECAST index
     Fw = np.full_like(F, np.nan)
     Fw[a:b] = F[a:b]

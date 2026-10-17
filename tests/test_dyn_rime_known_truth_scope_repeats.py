@@ -24,7 +24,6 @@ quietly patched.
 """
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
@@ -35,19 +34,19 @@ _REPO = str(Path(__file__).resolve().parents[1])
 if _REPO not in sys.path:
     sys.path.insert(0, _REPO)
 
-from benchmarks.known_truth_challenge import (  # noqa: E402
-    DEV_ROWS,
-    HOLDOUT_ROWS,
-    build_worlds,
-    run_challenge,
-    run_challenge_repeats,
-)
-from apedp_dyn.epistemic.scope_refusal import (  # noqa: E402
+from apedp_dyn.epistemic.scope_refusal import (
     adjudicate_scope,
     build_family_probes,
     scored_from_predict,
 )
-from benchmarks.known_truth_challenge import _unit_noise  # noqa: E402
+from benchmarks.known_truth_challenge import (
+    DEV_ROWS,
+    HOLDOUT_ROWS,
+    _unit_noise,
+    build_worlds,
+    run_challenge,
+    run_challenge_repeats,
+)
 
 
 @pytest.fixture(scope="module")
@@ -64,7 +63,7 @@ def _scope(worlds, name: str, k: int = 2):
     w, *_ = np.linalg.lstsq(np.column_stack([x ** k]), y, rcond=None)
     alpha = float(w[0])
     emitted = scored_from_predict(
-        "emitted_p%d" % k, lambda fd: np.asarray(fd["p"].to_numpy(dtype=float) ** k * alpha),
+        f"emitted_p{k}", lambda fd: np.asarray(fd["p"].to_numpy(dtype=float) ** k * alpha),
         dev, hold, noise_sigma=bw.sigma)
     probes = build_family_probes(dev, hold, noise_sigma=bw.sigma)
     hold_y = hold["target"].to_numpy(dtype=float)
@@ -75,7 +74,7 @@ def _scope(worlds, name: str, k: int = 2):
 
 def test_referee_blind_on_planted_exp_world_declines_all_monomials(worlds) -> None:
     bw = worlds["neg_exp_log_1x"]
-    dev, hold = bw.dev, bw.hold
+    _dev, _hold = bw.dev, bw.hold
     for k in (1, 2, 3, 4, 5, 6):
         res = _scope(worlds, "neg_exp_log_1x", k)
         assert res.verdict == "declined", (k, res.to_dict())
@@ -176,7 +175,7 @@ def test_noise_seed_rule_seed0_pins_hist_artifact_frames(worlds) -> None:
         # replicate sigma the way build_worlds does (dev-slice-relative)
         dev_truth = truth[:DEV_ROWS]
         sigma_ref = rel * float(np.std(dev_truth))
-        y_ref = np.concatenate([
+        np.concatenate([
             truth[:DEV_ROWS] + _unit_noise(DEV_ROWS, 23.0) * sigma_ref,
             truth[DEV_ROWS:] + _unit_noise(HOLDOUT_ROWS, 23.0) * sigma_ref,
         ])
@@ -194,7 +193,7 @@ def test_noise_seed_variation_changes_draws_deterministically(worlds) -> None:
     a = build_worlds(noise_seed=1)
     b = build_worlds(noise_seed=1)
     c = build_worlds(noise_seed=2)
-    for wa, wb, wc in zip(a, b, c):
+    for wa, wb, wc in zip(a, b, c, strict=False):
         ya = np.concatenate([wa.dev["target"].to_numpy(dtype=float),
                              wa.hold["target"].to_numpy(dtype=float)])
         yb = np.concatenate([wb.dev["target"].to_numpy(dtype=float),

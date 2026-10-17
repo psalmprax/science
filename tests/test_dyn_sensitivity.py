@@ -30,7 +30,7 @@ def _sole_live() -> bool:
         s = ScoredCandidate(c, {"gate4_status": g4}, train_loss=0.1, holdout_rmse=0.50)
         return bool(adjudicate([s], resid_sole=[0.0] * 400).status
                     is EpistemicStatus.INSUFFICIENT_EVIDENCE)
-    except Exception:  # noqa: BLE001 -- any failure mode means inactive
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         return False
 
 

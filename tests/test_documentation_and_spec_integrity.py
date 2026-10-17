@@ -11,35 +11,29 @@ from __future__ import annotations
 
 import hashlib
 import inspect
-import json
-from pathlib import Path
 import re
-import pytest
+from pathlib import Path
 
+import apedp_dyn.epistemic.novelty_adjudication as na
+import apedp_dyn.epistemic.promotion_lifecycle as pl
+import apedp_dyn.sandbox.calibrated_benchmark_suite as cbs
+import apedp_dyn.sandbox.canonical_ledger as cl
 from apedp_dyn.conf.canonical_spec import (
-    SPEC_PATH,
-    PINNED_SPEC_SHA256,
-    TACTICAL_ACTIVE_MIN,
-    TACTICAL_ACTIVE_MAX,
     CONTINUOUS_FACTOR_ACTIVE_MIN,
-    CONTINUOUS_FACTOR_ACTIVE_MAX,
-    TAIL_RISK_MIN_EVENTS,
-    DSR_THRESHOLD,
     DIEBOLD_MARIANO_P_VALUE_THRESHOLD,
+    DSR_THRESHOLD,
     MAX_LITERATURE_R2,
+    PINNED_SPEC_SHA256,
     REFEREE_MAX_FPR,
     REFEREE_MIN_CAR,
     REFEREE_MIN_VRR,
+    SPEC_PATH,
     STOCK_SPLIT_INVARIANCE_TOLERANCE,
+    TACTICAL_ACTIVE_MAX,
+    TACTICAL_ACTIVE_MIN,
+    TAIL_RISK_MIN_EVENTS,
     load_and_verify_canonical_spec,
-    SpecificationIntegrityError,
 )
-import apedp_dyn.sandbox.canonical_ledger as cl
-import apedp_dyn.epistemic.novelty_adjudication as na
-import apedp_dyn.epistemic.promotion_lifecycle as pl
-import apedp_dyn.epistemic.trial_ledger as tl
-import apedp_dyn.sandbox.calibrated_benchmark_suite as cbs
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -155,6 +149,6 @@ def test_orphan_module_detection():
                 orphans.append(rel_str)
 
     assert not orphans, (
-        f"Orphan module detection failed! The following active modules are missing from DOCUMENTATION.md:\n"
+        "Orphan module detection failed! The following active modules are missing from DOCUMENTATION.md:\n"
         + "\n".join(f" - {o}" for o in orphans)
     )

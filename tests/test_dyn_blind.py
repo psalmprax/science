@@ -24,7 +24,9 @@ def test_guard_passes_on_frozen_tree():
 def test_guard_detects_mutation_on_any_frozen_file(monkeypatch, tmp_path):
     """Guard must fail loudly on mutation of ANY frozen file, not just the original 3 referee files."""
     import json
+
     import pytest
+
     from apedp_dyn.sandbox.blind_benchmark import FROZEN_RECORD
     rec = json.loads(FROZEN_RECORD.read_text())
     tampered_rec = dict(rec)

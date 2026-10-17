@@ -36,10 +36,9 @@ from apedp_dyn.epistemic.prior_guided_search import (
     PATH_TRANSMUTED_SINGULAR,
     propose_unsolicited,
     score_on_holdout,
-    select_search_path,
 )
 
-SHAPE_KW = dict(min_segment_len=5, max_segments=32, min_pc_r2=0.05, min_rows=40)
+SHAPE_KW = {"min_segment_len": 5, "max_segments": 32, "min_pc_r2": 0.05, "min_rows": 40}
 
 _BANNED_SELECTION_LITERALS = re.compile(r"""['"](floor|ceil|arrh|bose|planck|lor_norm|inv_sq)['"]""")
 

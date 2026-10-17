@@ -13,10 +13,9 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-from scipy.optimize import curve_fit
-
 from cpmd_calibration import gen
-from cpmd_effective_slope import slope_ols, slope_model, LAGS, true_slope
+from cpmd_effective_slope import LAGS, slope_model, slope_ols
+from scipy.optimize import curve_fit
 
 TM = float(np.mean(LAGS))
 
@@ -39,7 +38,7 @@ def model_ci(lags, y, seed, B=50):
         yb = np.exp(pred + rng.choice(resid, size=len(lags), replace=True))
         try:
             boots.append(slope_model(lags, yb))
-        except Exception:
+        except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             pass
     b = np.array(boots)
     pt = float(a * TM / (TM + t0))
@@ -69,14 +68,14 @@ def run():
                 stats["ols"].append(s - truth)
                 cov["ols"] += (lo <= truth <= hi)
                 wid["ols"].append(hi - lo)
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 pass
             try:
                 s, lo, hi = model_ci(LAGS, y, seed=sd)
                 stats["mod"].append(s - truth)
                 cov["mod"] += (lo <= truth <= hi)
                 wid["mod"].append(hi - lo)
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 pass
             n += 1
         eo = np.array(stats["ols"])

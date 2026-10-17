@@ -10,20 +10,14 @@ discoveries or compute cost?
 """
 from __future__ import annotations
 
-import time
 import numpy as np
 import pandas as pd
 import pytest
 
-from apedp_dyn.grammar.proposer_interface import CandidateProposal, StrategyArchetype
-from apedp_dyn.proposers.rime_proposer import RimeProposer, is_rime_available
 from apedp_dyn.epistemic.adjudicate import adjudicate
-from apedp_dyn.epistemic.diagnosis import diagnose
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
-from apedp_dyn.fitting.parameter_fit import FitResult
-
-import apedp_kernel
-from apedp_dyn.proposers import RimeProposer as RimeProposerExported
+from apedp_dyn.grammar.proposer_interface import CandidateProposal
+from apedp_dyn.proposers.rime_proposer import RimeProposer, is_rime_available
 
 pytestmark = pytest.mark.skipif(
     not is_rime_available(),
@@ -65,7 +59,7 @@ def _planted_interaction_product(n: int = 600, seed: int = 44) -> pd.DataFrame:
 def _planted_regime_piecewise(n: int = 600, seed: int = 45) -> pd.DataFrame:
     """Generates piecewise data: different coefficients in different regimes."""
     rng = np.random.RandomState(seed)
-    t = np.arange(n)
+    np.arange(n)
     x = rng.randn(n)
     # Different coefficients in different regimes, aligned properly
     y = np.zeros(n)
@@ -93,7 +87,7 @@ def _null_world_4features(n: int = 500, seed: int = 17) -> pd.DataFrame:
 
 def _proposal_to_scored(proposal: CandidateProposal, train_loss: float | None = None) -> ScoredCandidate:
     """Convert a RIME CandidateProposal to a ScoredCandidate for adjudication."""
-    equation = proposal.metadata.get("equation", proposal.formula)
+    proposal.metadata.get("equation", proposal.formula)
     cand = CandidateDynamics(
         lhs="y",
         terms=(Term(proposal.candidate_id[:4], "theta"),),
@@ -159,7 +153,7 @@ class TestGrammarG1_CompositeStructure:
         # not a guarantee on every data set.
         if proposals:
             p = proposals[0]
-            equation = p.metadata.get("equation", p.formula)
+            p.metadata.get("equation", p.formula)
             # Record whether nested form was found (for release notes)
             # has_nested = "(" in equation and ")" in equation
             # For this test, we just verify the pipeline works
@@ -344,7 +338,7 @@ class TestGrammarG4_ComplexityAndFalseDiscoveryControls:
         # should not cause false promotion
         if proposals:
             p = proposals[0]
-            equation = p.metadata.get("equation", p.formula)
+            p.metadata.get("equation", p.formula)
             # Should find a form close to y = 3*x + 1
             assert abs(p.parameters.get("scale", 0) - 3.0) < 1.0, (
                 f"G4: expected scale near 3.0, got {p.parameters.get('scale')}"
@@ -373,7 +367,7 @@ class TestAblationGrammarIncrement:
         proposer_baseline = RimeProposer(
             feature_cols=["x1", "x2", "x3"], target_col="target", max_depth=2, budget=100, seed=42
         )
-        props_base = proposer_baseline.fit_and_propose(df)
+        proposer_baseline.fit_and_propose(df)
 
         # G1 expansion (deeper search)
         proposer_g1 = RimeProposer(
@@ -382,7 +376,7 @@ class TestAblationGrammarIncrement:
         props_g1 = proposer_g1.fit_and_propose(df)
 
         # G1 should recover nested forms that baseline misses
-        g1_has_nested = any(
+        any(
             "(" in p.metadata.get("equation", p.formula) and ")" in p.metadata.get("equation", p.formula)
             for p in props_g1
         )
@@ -453,7 +447,7 @@ class TestAblationGrammarIncrement:
             props_g3 = proposer_g3.fit_and_propose(df)
 
             # Check false_discoveries for both
-            for props, label in [(props_base, "baseline"), (props_g3, "G3")]:
+            for props, _label in [(props_base, "baseline"), (props_g3, "G3")]:
                 if props:
                     scored = [_proposal_to_scored(p) for p in props]
                     adj = adjudicate(scored, bootstrap=False, data_origin="simulation")

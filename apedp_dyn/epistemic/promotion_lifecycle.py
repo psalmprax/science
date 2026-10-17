@@ -18,8 +18,8 @@ from typing import Any
 
 from apedp_dyn.conf.canonical_spec import (
     DIEBOLD_MARIANO_P_VALUE_THRESHOLD,
-    MAX_LITERATURE_R2,
     DSR_THRESHOLD,
+    MAX_LITERATURE_R2,
 )
 
 

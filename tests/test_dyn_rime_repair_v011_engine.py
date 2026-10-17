@@ -13,8 +13,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from apedp_dyn.epistemic.adjudicate import RESID_RHO_FLAG
 from apedp_dyn.epistemic import rime_repair_diagnosis as diagmod
+from apedp_dyn.epistemic.adjudicate import RESID_RHO_FLAG
 from apedp_dyn.epistemic.experiment_ledger import HoldoutContaminationError
 from apedp_dyn.epistemic.rime_repair_engine import (
     RepairConfig,
@@ -42,9 +42,9 @@ CONFIG = RepairConfig(
     operators=(RepairOperator.R1_PARAM_REFIT, RepairOperator.R2_TERM_INSERT, RepairOperator.R3_LAG_INSERT),
 )
 
-CUTS = dict(rho_flag=RESID_RHO_FLAG, bias_ratio_cut=BIAS_RATIO_CUT,
-            variance_ratio_cut=VARIANCE_RATIO_CUT, curvature_corr_cut=CURVATURE_CORR_CUT,
-            interaction_corr_cut=INTERACTION_CORR_CUT, min_rows=MIN_ROWS)
+CUTS = {"rho_flag": RESID_RHO_FLAG, "bias_ratio_cut": BIAS_RATIO_CUT,
+            "variance_ratio_cut": VARIANCE_RATIO_CUT, "curvature_corr_cut": CURVATURE_CORR_CUT,
+            "interaction_corr_cut": INTERACTION_CORR_CUT, "min_rows": MIN_ROWS}
 
 
 def _discover(df: pd.DataFrame, **kw) -> CandidateProposal:
@@ -164,7 +164,7 @@ def test_repair_equivalence_preserved_by_clustering():
     mk = lambda form, off: CandidateProposal(
         proposer_id="fixture", candidate_id=f"fix_{form}", formula=form,
         strategy_archetype=None, declared_scale_invariant=True,
-        compute_score=(lambda df, _b=base[:len(df)] if len(base) >= len(df) else base: np.asarray(_b[:len(df)], dtype=float) + off),
+        compute_score=(lambda df, _b=base: np.asarray(_b[:len(df)], dtype=float) + off),
         parameters={}, metadata={})
     df = pd.DataFrame({"x": x})
     y = base + rng.randn(n) * 0.01
@@ -282,5 +282,5 @@ def test_single_round_is_the_documented_scope_limit():
                   key=lambda q: q.parameters["dev_r2"], reverse=True)[0]
     out = repair(orig, parts, CONFIG, **CUTS)
     assert out.rounds_used == 1, out.rounds_used
-    print("\n[scope] rounds_used=%d: single structural addition per run (declared limit)"
-          % out.rounds_used)
+    print(f"\n[scope] rounds_used={out.rounds_used}: single structural addition per run "
+          f"(declared limit)")

@@ -137,7 +137,7 @@ def test_transform_catalogue_and_domain_safety() -> None:
         target_col="target",
         algebraic_transforms=["sq", "slog"],
     )
-    assembled = proposer._columns([df])  # noqa: SLF001 — internal contract
+    assembled = proposer._columns([df])
     assert assembled is not None
     labels, cols, _target, base_feats = assembled
     assert labels[:2] == ["x", "sq(x)"] or labels[2] == "sq(x)"

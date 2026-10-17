@@ -53,8 +53,8 @@ ROOT = Path(__file__).resolve().parent.parent
 MASS_FILE = ROOT / "data" / "mass_1.mas20.txt"
 M_H, M_N = 7288.971064, 8071.31806  # keV mass excesses, from the same file
 
-CUTS = dict(rho_flag=RESID_RHO_FLAG, bias_ratio_cut=0.25, variance_ratio_cut=4.0,
-            curvature_corr_cut=0.3, interaction_corr_cut=0.3, min_rows=30)
+CUTS = {"rho_flag": RESID_RHO_FLAG, "bias_ratio_cut": 0.25, "variance_ratio_cut": 4.0,
+            "curvature_corr_cut": 0.3, "interaction_corr_cut": 0.3, "min_rows": 30}
 OPERATORS = (RepairOperator.R1_PARAM_REFIT, RepairOperator.R2_TERM_INSERT,
              RepairOperator.R3_LAG_INSERT)
 
@@ -204,7 +204,7 @@ def test_rational_power_grammar_reaches_surface_term():
     assert out_b.candidates_evaluated >= out_a.candidates_evaluated
     assert len(out_b.validation) >= 14, sorted(out_b.validation)
     # the domain-informed surface term is actually reachable and evaluated
-    surface = [g for cid, g in out_b.validation.items() if "(A^0.667)" in (
+    [g for cid, g in out_b.validation.items() if "(A^0.667)" in (
         out_b.winner.metadata.get("term") or "") or "(A^0.667)" in cid]
     gen_terms = set()
     for cid in out_b.validation:
@@ -223,7 +223,7 @@ def test_proxy_and_mechanism_are_observationally_indistinguishable():
     """
     ok = _load_binding()
     fr0 = _frame(ok)
-    parts, orig = _parts_and_orig(fr0)
+    parts, _orig = _parts_and_orig(fr0)
     sealed_df, sealed_y = parts.take_sealed()
     A = sealed_df["A"].to_numpy(float)
     B = sealed_y.astype(float)

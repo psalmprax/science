@@ -94,7 +94,7 @@ class SparseMicrostructureProposer(ProposerBase):
         X_norm = (X_mat - means) / stds
 
         cand_idx = 0
-        alphas_to_try = list(self._alphas) + [1e-5]
+        alphas_to_try = [*list(self._alphas), 1e-05]
         for alpha in alphas_to_try:
             for l1_ratio in self._l1_ratios:
                 model = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, fit_intercept=True, max_iter=2000, random_state=42)

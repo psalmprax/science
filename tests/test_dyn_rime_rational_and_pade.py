@@ -23,7 +23,7 @@ from apedp_dyn.grammar.proposer_interface import (
     CandidateProposal,
     StrategyArchetype,
 )
-from apedp_dyn.proposers.rime_proposer import RimeProposer, _RIME_AVAILABLE
+from apedp_dyn.proposers.rime_proposer import _RIME_AVAILABLE, RimeProposer
 
 
 @pytest.mark.skipif(not _RIME_AVAILABLE, reason="apedp_kernel with RIME required")
@@ -163,14 +163,14 @@ def test_option_2_epistemic_repair_engine_end_to_end_repair():
         operators=(RepairOperator.R5_PADE_SATURATION,),
     )
 
-    cuts = dict(
-        rho_flag=RESID_RHO_FLAG,
-        bias_ratio_cut=0.25,
-        variance_ratio_cut=4.0,
-        curvature_corr_cut=0.3,
-        interaction_corr_cut=0.3,
-        min_rows=30,
-    )
+    cuts = {
+        "rho_flag": RESID_RHO_FLAG,
+        "bias_ratio_cut": 0.25,
+        "variance_ratio_cut": 4.0,
+        "curvature_corr_cut": 0.3,
+        "interaction_corr_cut": 0.3,
+        "min_rows": 30,
+    }
 
     out = repair(base_prop, parts, config, **cuts)
     assert out.status == RepairStatus.IMPROVED, f"Repair failed: {out.submit_note}"
@@ -229,7 +229,13 @@ def test_options_123_under_2pct_and_10pct_noise():
     - Option 3 (sat_sq_norm): 0.9753 (clean) -> 0.9750 (2% noise) -> 0.9752 (10% noise).
     """
     from apedp_dyn.epistemic.adjudicate import RESID_RHO_FLAG
-    from apedp_dyn.epistemic.rime_repair_engine import RepairConfig, RepairOperator, RepairPartitions, RepairStatus, repair
+    from apedp_dyn.epistemic.rime_repair_engine import (
+        RepairConfig,
+        RepairOperator,
+        RepairPartitions,
+        RepairStatus,
+        repair,
+    )
 
     # 1. Option 1: SafeDiv under noise
     x = np.linspace(0.1, 5.0, 100)
@@ -261,10 +267,10 @@ def test_options_123_under_2pct_and_10pct_noise():
         min_validation_r2_gain=0.01, equivalence_tol=1e-9,
         operators=(RepairOperator.R5_PADE_SATURATION,),
     )
-    cuts = dict(
-        rho_flag=RESID_RHO_FLAG, bias_ratio_cut=0.25, variance_ratio_cut=4.0,
-        curvature_corr_cut=0.3, interaction_corr_cut=0.3, min_rows=30,
-    )
+    cuts = {
+        "rho_flag": RESID_RHO_FLAG, "bias_ratio_cut": 0.25, "variance_ratio_cut": 4.0,
+        "curvature_corr_cut": 0.3, "interaction_corr_cut": 0.3, "min_rows": 30,
+    }
 
     # 2a. 0% noise: exact recovery
     parts_0 = RepairPartitions.from_frame(pd.DataFrame({"p": p, "target": p_L_clean}), p_L_clean)
@@ -334,5 +340,5 @@ def test_options_123_under_2pct_and_10pct_noise():
         # zero noise, ~0.996 at 2%/10% since square_seeds became default-on
         # under the operator release gate. Floor-asserted rather than pinned
         # to one number, because the rng is shared and the curve is the point.
-        print("\n[sat_sq_norm] noise=%.2f R2=%.4f" % (noise, r2_3))
+        print(f"\n[sat_sq_norm] noise={noise:.2f} R2={r2_3:.4f}")
         assert r2_3 >= 0.95, (noise, r2_3)

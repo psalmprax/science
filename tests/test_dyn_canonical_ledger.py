@@ -3,8 +3,6 @@
 All metrics aggregate from one per-observation ledger; no competing harness.
 """
 
-import numpy as np
-import pandas as pd
 
 from apedp_dyn.sandbox.canonical_ledger import ledger_hash, run_ledger
 from apedp_dyn.sandbox.multi_asset_signals_sandbox import load_universe

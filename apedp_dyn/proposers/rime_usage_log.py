@@ -17,8 +17,9 @@ Scope and honesty notes:
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Sequence
+from typing import Any
 
 
 def feature_usage(proposal: Any, feature_cols: Sequence[str]) -> dict[str, bool]:

@@ -11,25 +11,25 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
+from apedp_dyn.epistemic.novelty_adjudication import (
+    evaluate_regime_robustness_diagnostic,
+)
 from apedp_dyn.grammar.proposer_interface import StrategyArchetype
-from apedp_dyn.proposers.distributed_lag_interaction_proposer import DistributedLagInteractionProposer
-from apedp_dyn.proposers.regime_switching_proposer import RegimeSwitchingProposer
+from apedp_dyn.proposers.distributed_lag_interaction_proposer import (
+    DistributedLagInteractionProposer,
+)
 from apedp_dyn.proposers.hawkes_orderflow_proposer import HawkesOrderFlowProposer
+from apedp_dyn.proposers.regime_switching_proposer import RegimeSwitchingProposer
 from apedp_dyn.sandbox.calibrated_benchmark_suite import (
     compute_theoretical_gaussian_power,
     generate_power_curve_matrix,
 )
-from apedp_dyn.epistemic.novelty_adjudication import (
-    evaluate_regime_robustness_diagnostic,
-)
 from apedp_dyn.sandbox.execution_cost_models import (
-    FixedPlusSlippageCostModel,
     AlmgrenChrissImpactCostModel,
+    FixedPlusSlippageCostModel,
     LimitOrderQueueCostModel,
 )
-
 
 # ── P0: Power Curve Calibration Tests ────────────────────────────────────────
 

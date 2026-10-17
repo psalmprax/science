@@ -10,8 +10,7 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-
-from cpmd_synth_trading import one_path, ols_slope_width, decay_curve
+from cpmd_synth_trading import decay_curve, ols_slope_width, one_path
 
 COST = 0.0002
 HOLD = 5

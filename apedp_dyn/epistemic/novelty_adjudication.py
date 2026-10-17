@@ -8,8 +8,10 @@ Decouples empirical predictive power from structural/literature novelty:
 """
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
+
 import numpy as np
 
 from apedp_dyn.conf.canonical_spec import (

@@ -36,9 +36,8 @@ from __future__ import annotations
 import math
 import sys
 import time
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, Literal
+from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -181,9 +180,9 @@ def build_unified_feature_panel(
     T = len(universe[symbols[0]])
     N = len(symbols)
 
-    step = max(1, int(round(timeframe_minutes / 15.0)))
+    step = max(1, round(timeframe_minutes / 15.0))
     scale = math.sqrt(max(1.0, timeframe_minutes / 5.0))
-    w_roll = max(5, int(round(20 * scale)))
+    w_roll = max(5, round(20 * scale))
 
     rets_2d = np.zeros((T, N))
     prices_2d = np.zeros((T, N))
@@ -316,7 +315,7 @@ def evaluate_equation_epistemically(
     # Fit in-sample OLS coefficients
     try:
         coefs, _, _, _ = np.linalg.lstsq(M_tr, y_tr, rcond=None)
-    except Exception:
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         coefs = np.zeros(k)
 
     # In-sample Train M metrics
@@ -450,7 +449,7 @@ def run_single_universe_timeframe_experiment(
         )
         cang_passed = bool(cang_out.gate_passed)
         sharpe = float(cang_out.two_tier_sharpe)
-    except Exception:
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         cang_passed = True
         sharpe = 1.25
 

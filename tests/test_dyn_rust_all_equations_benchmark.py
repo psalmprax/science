@@ -9,8 +9,8 @@ Asserts:
 from __future__ import annotations
 
 import json
+
 import numpy as np
-import pytest
 
 import apedp_kernel as ak
 
@@ -154,9 +154,11 @@ def test_shared_dag_enumeration_rabi_and_brus():
 
 
 def test_autonomous_rime_ad_proposer_and_referee_adjudication():
-    from apedp_dyn.proposers.rime_ad_proposer import RimeAdProposer
     from pathlib import Path
+
     import pandas as pd
+
+    from apedp_dyn.proposers.rime_ad_proposer import RimeAdProposer
 
     # Verify autonomous discovery on Detuned Rabi
     delta = np.linspace(-6.0, 6.0, 60)

@@ -18,6 +18,8 @@ percent observation noise and pins three rules:
 """
 from __future__ import annotations
 
+import itertools
+
 import numpy as np
 import pandas as pd
 
@@ -81,11 +83,10 @@ def test_pade_noise_curve_is_monotone_and_recorded():
         r2 = _r2(te["target"].to_numpy(), cand[0].compute_score(te))
         curve.append((noise, r2))
         refused = _pade(tr, k, R5_CONFIG) == []
-        print("\n[pade-noise] noise=%.3f holdoutR2=%.6f default-emits=%s"
-              % (noise, r2, not refused))
+        print(f"\n[pade-noise] noise={noise:.3f} holdoutR2={r2:.6f} default-emits={not refused}")
     r2s = [r for _n, r in curve]
     assert r2s[0] > 0.9, curve                       # exact construction
-    assert all(a >= b - 1e-9 for a, b in zip(r2s, r2s[1:])), curve
+    assert all(a >= b - 1e-9 for a, b in itertools.pairwise(r2s)), curve
     assert r2s[-1] < r2s[0] - 1e-3, curve             # must visibly fall
     assert 0.5 < r2s[1] < 1.0, curve                  # the honest 2% figure
 
@@ -103,7 +104,7 @@ def test_qec_square_recovers_structurally_at_two_percent_noise():
     best = sorted(props, key=lambda q: q.parameters["dev_r2"], reverse=True)[0]
     eq = best.metadata.get("equation") or ""
     holdout_r2 = _r2(y[len(y) // 2:], best.compute_score(frame)[len(y) // 2:])
-    print("\n[qec-noise] 2%% noise -> %s  holdoutR2=%.4f" % (eq, holdout_r2))
+    print(f"\n[qec-noise] 2% noise -> {eq}  holdoutR2={holdout_r2:.4f}")
     assert holdout_r2 > 0.95, holdout_r2
     assert "[t-" not in eq and "state_" not in eq, eq   # still the lag-0 form
 
@@ -124,7 +125,6 @@ def test_no_phantom_rationality_is_quotable():
         if audited:
             q = audited[0]
             den = q.parameters.get("b", 0.0) * kk
-            print("\n[phantom] noise=%.2f phantom b*k=%.3e status=%s (refused by default)"
-                  % (noise, den, q.parameters["identifiability_status"]))
+            print("\n[phantom] noise={:.2f} phantom b*k={:.3e} status={} (refused by default)".format(noise, den, q.parameters["identifiability_status"]))
             if den >= 1e-3:
                 assert q.parameters["identifiability_status"] == "PREDICTIVE_ONLY_ILL_CONDITIONED"

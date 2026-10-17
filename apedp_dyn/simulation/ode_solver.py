@@ -203,10 +203,12 @@ def simulate(model, t_span: tuple[float, float],
                 return np.empty(0)
             return np.atleast_1d(np.asarray(u_of_t(t), dtype=float))
 
-        drift = lambda t, x: crhs(t, x, _u(t), pdict)  # noqa: E731
+        def drift(t, x):
+            return crhs(t, x, _u(t), pdict)
     except (ArithmeticError, ValueError, TypeError) as e:
         metrics["rhs_path"] = f"interpreted ({type(e).__name__})"
-        drift = lambda t, x: model.rhs(t, x, u_of_t)  # noqa: E731
+        def drift(t, x):
+            return model.rhs(t, x, u_of_t)
     try:
         sol = solve_ivp(drift, t_span, np.asarray(x0, dtype=float),
                         method="LSODA", t_eval=t_eval, rtol=rtol, atol=atol)

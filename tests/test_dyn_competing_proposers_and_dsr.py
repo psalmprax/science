@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from apedp_dyn.epistemic.novelty_adjudication import (
     evaluate_predictive_incrementality,
@@ -35,7 +34,6 @@ from apedp_dyn.sandbox.canonical_ledger import (
     assert_strategy_class_compliance,
     run_ledger,
 )
-
 
 # ── 1. Consistent Stock-Split Invariance ──────────────────────────────────────
 
@@ -103,7 +101,7 @@ def test_tail_risk_strategy_fails_insufficient_statistical_power():
     rows[100]["pos"] = -1.0
     rows[200]["pos"] = -1.0
 
-    is_comp, frac, status, reason = assert_strategy_class_compliance(
+    is_comp, _frac, status, reason = assert_strategy_class_compliance(
         rows, strategy_archetype="tail_risk", min_events=30
     )
     assert is_comp is False
@@ -229,7 +227,7 @@ def test_candidate_trial_ledger_records_and_computes_stats(tmp_path):
     ledger_file = tmp_path / "test_trials.jsonl"
     ledger = CandidateTrialLedger(persistence_path=ledger_file)
 
-    rec1 = ledger.record_trial(
+    ledger.record_trial(
         candidate_id="c1",
         proposer_id="elasticnet",
         formula="0.5*mom + 0.2*cvd",
@@ -238,7 +236,7 @@ def test_candidate_trial_ledger_records_and_computes_stats(tmp_path):
         returns=np.random.randn(100) * 0.01 + 0.001,
         status="EVALUATED",
     )
-    rec2 = ledger.record_trial(
+    ledger.record_trial(
         candidate_id="c2",
         proposer_id="resiliency",
         formula="Shock * exp(-0.4*k)",
@@ -359,7 +357,7 @@ def test_tactical_strategy_enforces_5_to_90_percent_active_window():
 
     # 92% active -> GATE_NON_BINDING (> 90% ceiling)
     rows_92 = [{"pos": -1.0 if i < 92 else 0.0} for i in range(100)]
-    is_c92, frac92, status92, reason92 = assert_strategy_class_compliance(rows_92, strategy_archetype="tactical")
+    is_c92, _frac92, status92, reason92 = assert_strategy_class_compliance(rows_92, strategy_archetype="tactical")
     assert is_c92 is False
     assert status92 == "GATE_NON_BINDING"
     assert "outside [5%, 90%]" in reason92

@@ -11,9 +11,9 @@ Maintains an immutable record of the complete hypothesis search process:
 from __future__ import annotations
 
 import datetime
+import json
 from dataclasses import asdict, dataclass, field
 from enum import Enum
-import json
 from pathlib import Path
 from typing import Any
 
@@ -106,7 +106,7 @@ class FullLineageExperimentLedger:
         if parent_candidate_id and parent_candidate_id in self._nodes:
             parent = self._nodes[parent_candidate_id]
             version = parent.version + 1
-            attempted_variants = list(parent.attempted_variants) + [parent.formula]
+            attempted_variants = [*list(parent.attempted_variants), parent.formula]
 
         node = CandidateExperimentNode(
             candidate_id=candidate_id,
@@ -205,7 +205,7 @@ class FullLineageExperimentLedger:
 
     def _load_from_disk(self) -> None:
         assert self._persistence_path is not None
-        with open(self._persistence_path, "r", encoding="utf-8") as f:
+        with open(self._persistence_path, encoding="utf-8") as f:
             for line in f:
                 if not line.strip():
                     continue

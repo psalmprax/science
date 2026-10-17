@@ -37,7 +37,7 @@ def _probe(params: dict, expect_insufficient: bool) -> bool:
                             holdout_rmse=0.50)
         got = adjudicate([s], **params).status is EpistemicStatus.INSUFFICIENT_EVIDENCE
         return bool(got == expect_insufficient)
-    except Exception:  # noqa: BLE001 -- any failure mode means inactive
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         return False
 
 
@@ -73,7 +73,7 @@ def _probe_const_abstains() -> bool:
         s = ScoredCandidate(c, {"gate4_status": g4}, train_loss=0.1, holdout_rmse=0.075)
         return bool(adjudicate([s], resid_sole=[0.0] * 400).status
                     is EpistemicStatus.INSUFFICIENT_EVIDENCE)
-    except Exception:  # noqa: BLE001 -- any failure mode means inactive
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         return False
 
 
@@ -89,7 +89,7 @@ def _probe_dual_ceiling() -> bool:
         s = ScoredCandidate(c, {"gate4_status": g4}, train_loss=1e-8, holdout_rmse=3e-4)
         return bool(adjudicate([s], resid_sole=rng.normal(0, 1, size=400)).status
                     is EpistemicStatus.UNIQUE_SUPPORT)
-    except Exception:  # noqa: BLE001 -- any failure mode means inactive
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         return False
 
 

@@ -21,13 +21,11 @@ from __future__ import annotations
 import enum
 import hashlib
 import json
-from collections.abc import Callable
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from typing import Any
 
 import numpy as np
 import pandas as pd
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. Grammar Architecture Enums & Schema (Layers 0 - 4 + Metadata)
@@ -832,7 +830,7 @@ def compute_recommended_first_stage_features(
     p = df["close"].to_numpy(float)
     o = df["open"].to_numpy(float) if "open" in df.columns else p
     h = df["high"].to_numpy(float) if "high" in df.columns else p
-    l = df["low"].to_numpy(float) if "low" in df.columns else p
+    lo = df["low"].to_numpy(float) if "low" in df.columns else p
     v = df["volume"].to_numpy(float) if "volume" in df.columns else np.ones(len(p))
     tb = df["taker_buy"].to_numpy(float) if "taker_buy" in df.columns else v * 0.5
     ofi = df["ofi"].to_numpy(float) if "ofi" in df.columns else np.zeros(len(p))
@@ -852,12 +850,12 @@ def compute_recommended_first_stage_features(
     # True range & Candle shape
     p_prev = op_lag(p, 1)
     p_prev[0] = p[0]
-    tr = np.maximum(h - l, np.maximum(np.abs(h - p_prev), np.abs(l - p_prev)))
+    tr = np.maximum(h - lo, np.maximum(np.abs(h - p_prev), np.abs(lo - p_prev)))
     out["TRUE_RANGE"] = tr
-    hl_range = np.maximum(h - l, 1e-12)
+    hl_range = np.maximum(h - lo, 1e-12)
     out["BODY_TO_RANGE"] = np.abs(p - o) / hl_range
     out["UPPER_WICK_TO_RANGE"] = (h - np.maximum(o, p)) / hl_range
-    out["CLOSE_LOCATION"] = (p - l) / hl_range
+    out["CLOSE_LOCATION"] = (p - lo) / hl_range
 
     # --- 2. Trend and momentum ---
     ema12 = ewma(p, 12)
@@ -885,7 +883,7 @@ def compute_recommended_first_stage_features(
 
     # ADX proxy
     up_move = h - op_lag(h, 1)
-    down_move = op_lag(l, 1) - l
+    down_move = op_lag(lo, 1) - lo
     plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0.0)
     minus_dm = np.where((down_move > up_move) & (down_move > 0), down_move, 0.0)
     atr14 = roll_mean(tr, 14)
@@ -901,7 +899,7 @@ def compute_recommended_first_stage_features(
     out["DOWNSIDE_VOL"] = safe_sqrt(roll_mean(negative_part(out["RET_1"]) ** 2, 20))
 
     # Range based volatility: Parkinson
-    log_hl = safe_log(safe_div(h, l))
+    log_hl = safe_log(safe_div(h, lo))
     out["PARKINSON_VOL"] = safe_sqrt(roll_sum(log_hl ** 2, 20) / (4.0 * np.log(2.0) * 20.0))
 
     # Bollinger Bands
@@ -914,7 +912,7 @@ def compute_recommended_first_stage_features(
     out["KELTNER_WIDTH"] = safe_div(3.0 * atr14, ema20)
     out["SQUEEZE_STATE"] = safe_div(out["BB_WIDTH"], out["KELTNER_WIDTH"])
     donchian_high_prev = op_lag(roll_max(h, 20), 1)
-    donchian_low_prev = op_lag(roll_min(l, 20), 1)
+    donchian_low_prev = op_lag(roll_min(lo, 20), 1)
     up_bo = positive_part(p - donchian_high_prev)
     dn_bo = positive_part(donchian_low_prev - p)
     out["BREAKOUT_STRENGTH"] = safe_div(up_bo - dn_bo, atr14)
@@ -937,7 +935,7 @@ def compute_recommended_first_stage_features(
     out["SIGNED_VOLUME_MOMENTUM"] = roll_slope(signed_vol, 5)
 
     # Chaikin Money Flow
-    mf_multiplier = safe_div((p - l) - (h - p), hl_range)
+    mf_multiplier = safe_div((p - lo) - (h - p), hl_range)
     mf_volume = mf_multiplier * v
     out["CMF"] = safe_div(roll_sum(mf_volume, 20), roll_sum(v, 20))
 

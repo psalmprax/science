@@ -57,9 +57,9 @@ def _sole_ar_case():
 def test_whiteness_guard_operating_point():
     mk, resid, rho_sq = _sole_ar_case()
     assert 0.3 < rho_sq < 0.5, rho_sq  # straddles the sweep by construction
-    kw = dict(resid_sole=resid.tolist(), sole_survivor_rule=True,
-              data_origin=DataOrigin.SIMULATION.value,
-              benchmark_level=BenchmarkLevel.L0_SELECTION.value)
+    kw = {"resid_sole": resid.tolist(), "sole_survivor_rule": True,
+              "data_origin": DataOrigin.SIMULATION.value,
+              "benchmark_level": BenchmarkLevel.L0_SELECTION.value}
     v03 = adjudicate([mk()], sole_rho_flag=0.3, **kw)
     v05 = adjudicate([mk()], sole_rho_flag=0.5, **kw)
     v07 = adjudicate([mk()], sole_rho_flag=0.7, **kw)
@@ -72,9 +72,9 @@ def test_whiteness_guard_operating_point():
 
 def test_frozen_default_untouched():
     mk, resid, _ = _sole_ar_case()
-    kw = dict(resid_sole=resid.tolist(), sole_survivor_rule=True,
-              data_origin=DataOrigin.SIMULATION.value,
-              benchmark_level=BenchmarkLevel.L0_SELECTION.value)
+    kw = {"resid_sole": resid.tolist(), "sole_survivor_rule": True,
+              "data_origin": DataOrigin.SIMULATION.value,
+              "benchmark_level": BenchmarkLevel.L0_SELECTION.value}
     default = adjudicate([mk()], **kw)
     explicit = adjudicate([mk()], sole_rho_flag=0.5, **kw)
     assert default.status == explicit.status == EpistemicStatus.UNIQUE_SUPPORT

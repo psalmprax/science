@@ -74,7 +74,7 @@ SHAPES: dict[str, tuple[str, float, float, int]] = {
 
 
 def _evaluate(formula: str, x: np.ndarray) -> np.ndarray:
-    return eval(formula, {  # noqa: S307 - fixed literal table, not user input
+    return eval(formula, {  # noqa: S307 - intentional: evaluates repo-authored physics formulas with a fixed env (test fixture)
         "x": x, "exp": np.exp, "log": np.log, "cos": np.cos, "sin": np.sin,
     })
 

@@ -132,7 +132,7 @@ class EventLedger:
                     f.write(json.dumps(event.to_dict(), sort_keys=True) + "\n")
                     f.flush()
                     os.fsync(f.fileno())
-            except Exception:  # noqa: BLE001, S110 -- best-effort WAL append; a failed
+            except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 # journal write must not abort the in-memory event chain
                 pass
 

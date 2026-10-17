@@ -28,10 +28,9 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 import numpy as np
 import sympy as sp
@@ -39,7 +38,6 @@ import sympy as sp
 sys.path.insert(0, ".")
 
 from apedp.mathematical.mathematical_layer import (
-    ProofBoundaryStatus,
     ProofClaimStatus,
 )
 from apedp.safety import safe_parse_expr
@@ -52,7 +50,6 @@ from apedp_dyn.epistemic.agnostic_adapter import (
 from apedp_dyn.epistemic.claim_ladder import (
     ClaimLevel,
     EvidenceBundle,
-    EvidenceRequirement,
     adjudicate_scientific_claim,
 )
 
@@ -132,7 +129,7 @@ class JointEpistemicCertificate:
         }
 
 
-from enum import Enum
+from enum import Enum  # noqa: E402 - sys.path bootstrap precedes imports (standalone harness)
 
 
 class VerificationBackend(str, Enum):
@@ -185,9 +182,9 @@ class LeanUniversalBridge:
         if not docker_bin:
             return False
         try:
-            res = subprocess.run([docker_bin, "ps"], capture_output=True, text=True, timeout=5)
+            res = subprocess.run([docker_bin, "ps"], capture_output=True, text=True, timeout=5)  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
             return res.returncode == 0
-        except Exception:
+        except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             return False
 
     @property
@@ -196,9 +193,9 @@ class LeanUniversalBridge:
         if not self._lean_binary:
             return "not_installed"
         try:
-            res = subprocess.run([self._lean_binary, "--version"], capture_output=True, text=True, timeout=5)
+            res = subprocess.run([self._lean_binary, "--version"], capture_output=True, text=True, timeout=5)  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
             return res.stdout.strip()
-        except Exception:
+        except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             return "unknown"
 
     def sanitize_lean_identifier(self, raw_name: str) -> str:
@@ -488,13 +485,13 @@ class LeanUniversalBridge:
         use_core = standalone_core or (self.backend == VerificationBackend.CORE_AXIOMATIC)
         cand_id_clean = self.sanitize_lean_identifier(candidate.candidate_id)
         lines: list[str] = [
-            f"/-",
-            f"  APEDP-X Agnostic Formal Verification Module",
+            "/-",
+            "  APEDP-X Agnostic Formal Verification Module",
             f"  Candidate: {candidate.candidate_id}",
             f"  Formula: {candidate.formula_repr}",
             f"  Proposed Epistemic Claim: {candidate.proposed_claim.label()}",
             f"  Architecture: {'Option 2: Pure Core Lean 4 Axiomatic Infrastructure' if use_core else 'Mathlib Real Analysis'}",
-            f"-/",
+            "-/",
         ]
         if not use_core:
             lines.extend([
@@ -569,7 +566,7 @@ class LeanUniversalBridge:
 
         theorems: list[LeanTheoremVerification] = []
 
-        for idx, inv in enumerate(candidate.declared_invariants):
+        for _idx, inv in enumerate(candidate.declared_invariants):
             thm_name = f"{cand_id_clean}_{self.sanitize_lean_identifier(inv.name)}"
             thm_stmt, proof_script, is_provable, method, diag = self._synthesize_theorem_and_proof(
                 candidate=candidate,
@@ -625,7 +622,7 @@ class LeanUniversalBridge:
             rhs_str = rhs_str.replace("^", "**")
             sym_expr = safe_parse_expr(rhs_str)
             var_symbols = list(sym_expr.free_symbols)
-        except Exception:
+        except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             sym_expr = None
 
         full_meta = f"{candidate.candidate_id} {candidate.formula_repr} {invariant.name} {invariant.description}".lower()
@@ -791,7 +788,7 @@ class LeanUniversalBridge:
                     f_lamb = sp.lambdify(var_symbols[0] if var_symbols else sp.Symbol("x"), sym_expr, "numpy")
                     vals = f_lamb(test_pts)
                     is_pos = bool(np.all(vals >= -invariant.tolerance))
-                except Exception:
+                except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                     is_pos = True
 
                 if is_pos:
@@ -958,7 +955,7 @@ class LeanUniversalBridge:
                             self.docker_image,
                             "-c", "/home/lean/.elan/bin/lean --stdin",
                         ]
-                        proc = subprocess.run(
+                        proc = subprocess.run(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
                             docker_cmd,
                             input=lean_code,
                             capture_output=True,
@@ -973,7 +970,7 @@ class LeanUniversalBridge:
                             self.docker_image,
                             "-c", f"/home/lean/.elan/bin/lean /workspace/{lean_file.name}",
                         ]
-                        proc = subprocess.run(
+                        proc = subprocess.run(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
                             docker_cmd,
                             capture_output=True,
                             text=True,
@@ -982,7 +979,7 @@ class LeanUniversalBridge:
                     kernel_exit = proc.returncode
                     kernel_stdout = proc.stdout
                     kernel_stderr = proc.stderr
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                     logger.warning("Docker Lean execution encountered error: %s", e)
                     kernel_exit = -1
                     kernel_stderr = str(e)
@@ -993,7 +990,7 @@ class LeanUniversalBridge:
         elif self.is_lean_compiler_available and self._lean_binary:
             try:
                 if in_memory:
-                    proc = subprocess.run(
+                    proc = subprocess.run(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
                         [self._lean_binary, "--stdin"],
                         input=lean_code,
                         capture_output=True,
@@ -1001,7 +998,7 @@ class LeanUniversalBridge:
                         timeout=15,
                     )
                 else:
-                    proc = subprocess.run(
+                    proc = subprocess.run(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
                         [self._lean_binary, str(lean_file)],
                         capture_output=True,
                         text=True,
@@ -1010,7 +1007,7 @@ class LeanUniversalBridge:
                 kernel_exit = proc.returncode
                 kernel_stdout = proc.stdout
                 kernel_stderr = proc.stderr
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 logger.warning("Lean kernel execution encountered error: %s", e)
                 kernel_exit = -1
                 kernel_stderr = str(e)
@@ -1130,7 +1127,7 @@ class LeanUniversalBridge:
                     self.docker_image,
                     "-c", "/home/lean/.elan/bin/lean --stdin",
                 ]
-                proc = subprocess.run(
+                proc = subprocess.run(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
                     docker_cmd,
                     input=lean_code,
                     capture_output=True,
@@ -1140,12 +1137,12 @@ class LeanUniversalBridge:
                 kernel_exit = proc.returncode
                 kernel_stdout = proc.stdout
                 kernel_stderr = proc.stderr
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 kernel_exit = -1
                 kernel_stderr = str(e)
         elif self.is_lean_compiler_available and self._lean_binary:
             try:
-                proc = subprocess.run(
+                proc = subprocess.run(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
                     [self._lean_binary, "--stdin"],
                     input=lean_code,
                     capture_output=True,
@@ -1155,7 +1152,7 @@ class LeanUniversalBridge:
                 kernel_exit = proc.returncode
                 kernel_stdout = proc.stdout
                 kernel_stderr = proc.stderr
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 kernel_exit = -1
                 kernel_stderr = str(e)
 

@@ -14,7 +14,7 @@ import numpy as np
 N, L, LAM, C0, GAM = 10, 10, 0.8, 1.0, 1.0
 BW, SW, EPS = 100, 20, 1e-8
 NSW = 200
-LAMW = np.array([LAM ** l for l in range(L)])
+LAMW = np.array([LAM ** lag_i for lag_i in range(L)])
 LAMW /= LAMW.sum()
 
 
@@ -56,8 +56,8 @@ def hdar_forecast(R):
     for t in range(BW, n - 1):
         D = np.zeros(N)
         for i in range(N):
-            ehist = np.array([Ball[t - l, i] * m[t - l] - Z[t - l, i]
-                              if t - l >= BW else 0.0 for l in range(L)])
+            ehist = np.array([Ball[t - lag_i, i] * m[t - lag_i] - Z[t - lag_i, i]
+                              if t - lag_i >= BW else 0.0 for lag_i in range(L)])
             D[i] = float(np.sum(LAMW * ehist))
         fc[t] = sig[t] * G[t] * np.tanh(GAM * D)
     return fc
@@ -116,7 +116,7 @@ def stage12(tag, seeds, delay):
 
 def run():
     p1d, p2d = stage12("gen-D discovery (100000+)", range(100000, 100010), True)
-    p1e, p2e = stage12("gen-E discovery (110000+)", range(110000, 110010), False)
+    p1e, _p2e = stage12("gen-E discovery (110000+)", range(110000, 110010), False)
     d_pass = all(p < 0.05 for p in p1d) and all(p < 0.05 for p in p2d)
     e_abs = all(p >= 0.05 for p in p1e)
     print(f"gen-D stages pass: {d_pass} | gen-E abstains: {e_abs}")

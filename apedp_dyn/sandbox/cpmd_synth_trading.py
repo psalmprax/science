@@ -44,12 +44,12 @@ def one_path(seed):
 
 def decay_curve(a):
     a = np.abs(a)
-    return np.array([float(np.mean(a[:len(a) - l] * a[l:]))
-                     for l in range(4, 13)])
+    return np.array([float(np.mean(a[:len(a) - lag_i] * a[lag_i:]))
+                     for lag_i in range(4, 13)])
 
 
 def run_path(seed):
-    ret, px, state = one_path(seed)
+    ret, _px, _state = one_path(seed)
     W = 200
     # burn-in median threshold
     thr = []
@@ -78,7 +78,7 @@ def run_path(seed):
         r = ret[W + 200 + 1:]
         gross = p * r
         trades = np.sum(np.abs(np.diff(np.concatenate([[0.0], p])))) / 2.0
-        net = float(np.sum(gross) - trades * COST * 2 / len(p) * len(p))
+        float(np.sum(gross) - trades * COST * 2 / len(p) * len(p))
         netrets = gross - np.abs(np.diff(np.concatenate([[0.0], p]))) * COST
         nav = np.cumsum(netrets)
         dd = float(np.max(np.maximum.accumulate(nav) - nav))
@@ -105,7 +105,7 @@ def run():
         try:
             _, p = wilcoxon(np.array(acc["ols"]["sharpe"])
                             - np.array(acc[base]["sharpe"]))
-        except Exception:
+        except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             p = 1.0
         print(f"ols vs {base}: Wilcoxon p={p:.4f}")
     g1 = np.mean(acc["ols"]["sharpe"]) > 0

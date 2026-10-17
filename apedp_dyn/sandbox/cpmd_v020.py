@@ -10,10 +10,9 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-
-from cpmd_discovery_suite import rolling_std, ic_null, K, M, KK, EPS
+from cpmd_discovery_suite import EPS, K
 from cpmd_v018 import feats
-from cpmd_v019 import grammar_forms, eval_form
+from cpmd_v019 import eval_form, grammar_forms
 
 SIG = 0.01
 ALPHA = 0.05 / 60
@@ -45,7 +44,7 @@ def oracle_ic(leg, A=2.0):
     for i in range(10):
         ret = gen_ladder_truth(94000 + i, leg, A)
         n = len(ret)
-        sig, C, Q, V, Mt = feats(ret)
+        _sig, C, Q, _V, Mt = feats(ret)
         tf = np.full(n, np.nan)
         for t in range(K, n - 1):
             if leg == "high":
@@ -72,7 +71,7 @@ def search(ret, seed):
 def discovery(leg, A, seeds):
     paths = [gen_ladder_truth(sd, leg, A) for sd in seeds]
     agg = {}
-    for ret, sd in zip(paths, seeds):
+    for ret, sd in zip(paths, seeds, strict=False):
         for name, ic, p in search(ret, sd):
             agg.setdefault(name, []).append((ic, p))
     rows = [(nm, float(np.mean([a[0] for a in v])),
@@ -152,8 +151,8 @@ def run():
     from cpmd_discovery_suite import gen_B
     paths = [gen_B(93000 + i) for i in range(20)]
     agg = {}
-    for ret, sd in zip(paths, range(93000, 93020)):
-        for name, ic, p in search(ret, sd):
+    for ret, sd in zip(paths, range(93000, 93020), strict=False):
+        for name, _ic, p in search(ret, sd):
             agg.setdefault(name, []).append(p)
     prom = [nm for nm, v in agg.items() if float(np.median(v)) < ALPHA]
     out = "NO_RECOVERY" if not prom else "MULTI_HYPOTHESIS"

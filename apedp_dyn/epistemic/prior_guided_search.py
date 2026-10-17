@@ -29,8 +29,9 @@ holdout, and neither is claimed for the other.
 """
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -41,7 +42,6 @@ from apedp_dyn.epistemic.shape_inference import (
     FAMILY_PIECEWISE_CONSTANT,
     ShapePrior,
     StepFamilySeeds,
-    fit_step_family,
     staircase_prior,
 )
 from apedp_dyn.grammar.proposer_interface import CandidateProposal, StrategyArchetype
@@ -150,16 +150,16 @@ def _fit_floor_rule(
     seed_ss = min(e[0] for e in evals)
     seed = min((e for e in evals if e[0] <= seed_ss * (1.0 + 1e-6) + 1e-20),
                key=lambda e: -_margin(e[2], e[3]))
-    _, q0, w, off, b = seed
-    for w in np.linspace(w * (1.0 - refine_radius), w * (1.0 + refine_radius), refine_steps):
-        if w <= 0:
+    _, _q0, w, off, _b = seed
+    for w_try in np.linspace(w * (1.0 - refine_radius), w * (1.0 + refine_radius), refine_steps):
+        if w_try <= 0:
             continue
-        for oo in np.linspace(off - w / 2.0, off + w / 2.0, refine_steps):
-            _scan(float(w), float(oo))
+        for oo in np.linspace(off - w_try / 2.0, off + w_try / 2.0, refine_steps):
+            _scan(float(w_try), float(oo))
     best_ss = min(e[0] for e in evals)
     tol = best_ss * (1.0 + 1e-6) + 1e-20
     tied = [e for e in evals if e[0] <= tol]
-    ss, q0, w, off, b = max(tied, key=lambda e: _margin(e[2], e[3]))
+    ss, _q0, w, off, _b = max(tied, key=lambda e: _margin(e[2], e[3]))
     pred = np.floor((x_dev - off) / w)
     A = np.column_stack([pred, np.ones_like(pred)])
     coef, *_ = np.linalg.lstsq(A, y_dev, rcond=None)
@@ -213,11 +213,11 @@ def _sign_basis_candidate(
     def _scorer(df: pd.DataFrame) -> np.ndarray:
         xv = np.asarray(df[feature_name], dtype=float).ravel()
         out = np.full_like(xv, beta[0])
-        for c, t in zip(beta[1:], thr):
+        for c, t in zip(beta[1:], thr, strict=False):
             out = out + c * np.where(xv >= t, 1.0, -1.0)
         return out
 
-    terms = " + ".join(f"{c:.6g}*(sign({feature_name}-{t:.6g}))" for c, t in zip(beta[1:], thr))
+    terms = " + ".join(f"{c:.6g}*(sign({feature_name}-{t:.6g}))" for c, t in zip(beta[1:], thr, strict=False))
     formula = f"{beta[0]:.6g} + {terms}" if terms else f"{beta[0]:.6g}"
     cand = CandidateProposal(
         proposer_id=_GUIDED_PROPOSER_ID,
@@ -292,7 +292,7 @@ def propose_unsolicited(
                                   "fitter returned success=False")
         return GuidedProposal(path, prior.family, res.candidate, (), res.formula,
                               dict(res.parameters), (), res.r2,
-                              f"table row 2: profile flags -> transmutation fit on dev",
+                              "table row 2: profile flags -> transmutation fit on dev",
                               False, "")
 
     # Row 1 needs step seeds; the table guarantees them, belt-and-braces anyway.

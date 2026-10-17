@@ -73,10 +73,10 @@ def test_correct_structure_wins_by_slice_agreement():
     frame = ok[["A", "B"]].copy()
     v = invariant_structure_verdict(frame, _search_A_surface(),
                                     n_slices=5, min_slices=4)
-    print("\n[invariance] %s: %s (agreement %.2f, %d/%d)"
-          % (v.verdict, v.note, v.agreement, v.slice_wins, v.n_slices))
+    print(f"\n[invariance] {v.verdict}: {v.note} (agreement {v.agreement:.2f}, "
+          f"{v.slice_wins}/{v.n_slices})")
     for r in v.slice_results:
-        print("   slice n=%d winner=%s r2=%.4f" % (r.n_rows, r.equation[:32], r.dev_r2))
+        print(f"   slice n={r.n_rows} winner={r.equation[:32]} r2={r.dev_r2:.4f}")
     assert v.verdict == "UNIQUE", v.to_dict()
     assert v.slice_wins >= 4, v.slice_wins
 
@@ -92,8 +92,7 @@ def test_structure_that_is_not_the_truth_is_not_unique():
     frame = ok[["A", "B"]].copy()
     v = invariant_structure_verdict(frame, _search_A_only(),
                                     n_slices=5, min_slices=4)
-    print("\n[invariance-neg] %s: %s (agreement %.2f)"
-          % (v.verdict, v.note, v.agreement))
+    print(f"\n[invariance-neg] {v.verdict}: {v.note} (agreement {v.agreement:.2f})")
     # A-only IS legitimately the best single-A structure on every slice, so the
     # honest expectation is UNIQUE *within that grammar*. The claim under test
     # is that the term it wins with is NOT the surface term -- i.e. agreement
@@ -128,7 +127,7 @@ def test_multi_result_when_no_structure_clears_the_threshold():
     v = invariant_structure_verdict(frame, unstable_search, n_slices=5, min_slices=4)
     assert v.verdict == "MULTI", v.to_dict()
     assert v.slice_wins < 4, v.slice_wins
-    print("\n[invariance-multi] rotating winner -> %s (slice_wins=%d)" % (v.verdict, v.slice_wins))
+    print(f"\n[invariance-multi] rotating winner -> {v.verdict} (slice_wins={v.slice_wins})")
 
 
 def test_no_slice_winner_yields_none_not_unique():

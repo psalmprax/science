@@ -52,13 +52,13 @@ def fetch_symbol_klines(symbol: str, start_dt: str = "2021-01-01", end_dt: str =
     req1 = urllib.request.Request(url1, headers={"User-Agent": "Mozilla/5.0"})
     # S310: the scheme is a literal https:// Binance public endpoint, not
     # user input, so there is no file:/custom-scheme surface here.
-    with urllib.request.urlopen(req1, timeout=15) as resp:  # noqa: S310
+    with urllib.request.urlopen(req1, timeout=15) as resp:  # noqa: S310 - literal https:// Binance endpoint; scheme is never user input
         batch1 = json.loads(resp.read().decode())
 
     next_ts = batch1[-1][6] + 1
     url2 = f"https://api.binance.com/api/v3/klines?symbol={pair}&interval=1d&startTime={next_ts}&endTime={end_ts}&limit=1000"
     req2 = urllib.request.Request(url2, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req2, timeout=15) as resp:  # noqa: S310
+    with urllib.request.urlopen(req2, timeout=15) as resp:  # noqa: S310 - literal https:// Binance endpoint; scheme is never user input
         batch2 = json.loads(resp.read().decode())
 
     all_k = batch1 + batch2

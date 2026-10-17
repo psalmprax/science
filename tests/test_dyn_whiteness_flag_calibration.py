@@ -64,8 +64,7 @@ def test_flag_is_monotone_in_target_persistence():
         else:
             assert calib.target_rho1 > 0.8, calib.target_rho1
     assert flags["ar2"].flag > flags["white"].flag, (flags["white"].flag, flags["ar2"].flag)
-    print("\n[flag] white: target_rho1=%.3f flag=%.3f | ar2: target_rho1=%.3f flag=%.3f"
-          % (flags["white"].target_rho1, flags["white"].flag,
+    print("\n[flag] white: target_rho1={:.3f} flag={:.3f} | ar2: target_rho1={:.3f} flag={:.3f}".format(flags["white"].target_rho1, flags["white"].flag,
              flags["ar2"].target_rho1, flags["ar2"].flag))
 
 
@@ -80,8 +79,7 @@ def test_over_refusal_fixed_on_persistent_target():
     calib_ok, why = check_whiteness(resid, calib.flag, calib)
     assert FROZEN_FLAG < rho < calib.flag, (rho, calib.flag)  # in the fixed band
     assert not frozen_ok and calib_ok, (rho, calib.flag, why)
-    print("\n[over-refusal] |rho1|=%.3f: frozen 0.5 refuses, calibrated %.3f accepts"
-          % (rho, calib.flag))
+    print(f"\n[over-refusal] |rho1|={rho:.3f}: frozen 0.5 refuses, calibrated {calib.flag:.3f} accepts")
 
 
 def test_under_refusal_fixed_on_white_target():
@@ -99,8 +97,7 @@ def test_under_refusal_fixed_on_white_target():
     calib_ok, why = check_whiteness(resid, calib.flag, calib)
     assert calib.flag < rho < FROZEN_FLAG, (rho, calib.flag)  # in the fixed band
     assert frozen_ok and not calib_ok, (rho, calib.flag, why)
-    print("\n[under-refusal] |rho1|=%.3f: frozen 0.5 admits, calibrated %.3f refuses"
-          % (rho, calib.flag))
+    print(f"\n[under-refusal] |rho1|={rho:.3f}: frozen 0.5 admits, calibrated {calib.flag:.3f} refuses")
 
 
 def test_layered_structured_null_fpr_reported_separately():
@@ -112,7 +109,7 @@ def test_layered_structured_null_fpr_reported_separately():
                             max_depth=3, budget=200).fit_and_propose(frame)
 
     rep = screen_structured_null_worlds(engine, n_worlds=24)
-    print("\n[layered-fpr] %s" % rep)
+    print(f"\n[layered-fpr] {rep}")
     assert rep["proposer_promotions"] > 0, rep
     assert rep["system_promotions"] == 0, rep
     # Blocked promotions are strongly autocorrelated: the guard is catching

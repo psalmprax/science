@@ -26,10 +26,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from apedp_dyn.grammar.candidate_ir import ScoredCandidate, CandidateDynamics, Term
-from apedp_dyn.fitting.parameter_fit import FitResult
 from apedp_dyn.epistemic.adjudicate import adjudicate
-from apedp_dyn.epistemic.diagnosis import diagnose
+from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 
 # Frozen constants (mirroring preregistered spec)
 RESID_RHO_FLAG = 0.5  # whiteness threshold: |rho1| must be < 0.5
@@ -137,9 +135,8 @@ def test_whiteness_independent_noise_controls(n, sigma):
     # In a full calibration suite one would verify the empirical alpha matches
     # the preregistered level; here we just confirm no spurious failure.
     assert outcome != "FAIL", (
-        "Whiteness guard false-alarm on i.i.d. noise: n=%d, sigma=%s, "
-        "rho1=%.4f"
-        % (n, sigma, rho1)
+        f"Whiteness guard false-alarm on i.i.d. noise: n={n}, sigma={sigma}, "
+        f"rho1={rho1:.4f}"
     )
 
 
@@ -205,9 +202,8 @@ def test_whiteness_autocorrelated_noise_controls(n, rho):
     # of guard firing + high rho1 is PASS; other combinations are also
     # acceptable (PASS or UNRESOLVED).
     assert outcome != "FAIL", (
-        "Whiteness guard failure on AR(1) noise: n=%d, rho=%.1f, "
-        "rho1_emp=%.4f, status=%s, attribution=%s"
-        % (n, rho, rho1_emp, status, attribution)
+        f"Whiteness guard failure on AR(1) noise: n={n}, rho={rho:.1f}, "
+        f"rho1_emp={rho1_emp:.4f}, status={status}, attribution={attribution}"
     )
 
 
@@ -295,7 +291,6 @@ def test_whiteness_key_conditions(n, sigma, rho):
 
     # Assertion: outcome should be PASS or UNRESOLVED
     assert outcome in ("PASS", "UNRESOLVED"), (
-        "Whiteness sweep FAIL unexpectedly: n=%d, sigma=%.1f, rho=%.1f, "
-        "outcome=%s, rho1_emp=%.4f"
-        % (n, sigma, rho, outcome, rho1_emp)
+        f"Whiteness sweep FAIL unexpectedly: n={n}, sigma={sigma:.1f}, rho={rho:.1f}, "
+        f"outcome={outcome}, rho1_emp={rho1_emp:.4f}"
     )

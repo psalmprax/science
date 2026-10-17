@@ -10,8 +10,7 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-
-from cpmd_hdar import gen_panel, trailing_std, panel_ic_null
+from cpmd_hdar import panel_ic_null, trailing_std
 
 N = 10
 W, L, LAM = 200, 6, 1.0
@@ -30,7 +29,7 @@ def gen_F(seed):
     R = np.zeros((n, N))
     for t in range(3, n):
         R[t] = beta * F[t] + eta[t]
-        R[t, slow] += beta[slow] * sum(w[l] * F[t - 1 - l] for l in range(3))
+        R[t, slow] += beta[slow] * sum(w[lag_i] * F[t - 1 - lag_i] for lag_i in range(3))
     return R
 
 
@@ -46,13 +45,13 @@ def hlik_forecast(R):
             # design: rows s in [t-W, t-1], target z[i,s+1], cols u[s-l]
             S = np.arange(t - W, t)
             Y = Z[S + 1, i]
-            X = np.column_stack([u[S - l] for l in range(L)])
+            X = np.column_stack([u[S - lag_i] for lag_i in range(L)])
             XtX = X.T @ X + LAM * np.eye(L)
             try:
                 bh = np.linalg.solve(XtX, X.T @ Y)
             except np.linalg.LinAlgError:
                 continue
-            lags = np.array([u[t - l] for l in range(L)])
+            lags = np.array([u[t - lag_i] for lag_i in range(L)])
             fc[t, i] = sig[t, i] * float(bh @ lags)
     return fc
 

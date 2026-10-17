@@ -83,7 +83,7 @@ def select(lags, ly, rule="bic", margin=0.0):
     try:
         pp, se = fit_power(lags, ly)
         pe = fit_expo(lags, ly)
-    except Exception:
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         return "fail", None
     ip = ic(ly, pp[0] - pp[1] * np.log(lags + pp[2]), 3, rule)
     ie = ic(ly, pe[0] - pe[1] * lags, 2, rule)
@@ -105,7 +105,7 @@ def boot_ci(lags, ly, pp, seed, B=100):
             pb, _ = curve_fit(lambda t, lA, a, tt: lA - a * np.log(t + tt),
                               lags, np.log(yb), p0=tuple(pp), maxfev=20000)
             boots.append(pb[1])
-        except Exception:
+        except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             pass
     b = np.array(boots)
     if len(b) > 10:
@@ -158,7 +158,6 @@ def sha256_of(obj):
 
 
 if __name__ == "__main__":
-    import sys
     results = {}
     for rule in ("bic", "aicc"):
         for margin in (0.0, 2.0, 6.0):

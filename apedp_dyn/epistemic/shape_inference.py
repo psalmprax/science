@@ -24,8 +24,10 @@ APEDP-X track still decide everything downstream. Nothing here promotes.
 """
 from __future__ import annotations
 
+import itertools
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 
@@ -162,9 +164,9 @@ def _within_segment_sse(x: np.ndarray, y: np.ndarray, cuts: list[int]) -> tuple[
     within-segment residual is DRAF: a slope buys nearly all of it, so
     ss_lin << ss_const.
     """
-    bounds = [0] + list(cuts) + [len(x)]
+    bounds = [0, *list(cuts), len(x)]
     sc = sl = 0.0
-    for a, b in zip(bounds[:-1], bounds[1:]):
+    for a, b in itertools.pairwise(bounds):
         if b - a < 2:
             continue
         xs, ys = x[a:b], y[a:b]
@@ -326,7 +328,7 @@ def infer_shape_prior(
 
     # Piecewise-constant DP.
     cap = int(min(max_segments, max(1, len(xs) // max(min_segment_len, 1))))
-    s2 = _prefix_sums(ys)[1]
+    _prefix_sums(ys)[1]
     cost = _dp_segment(ys, cap, min_segment_len)[0]
     best_k, best_bic = 1, float("inf")
     for k in range(1, cap + 1):
@@ -359,7 +361,7 @@ def infer_shape_prior(
     target = max(achievable * (1.0 - sse_target), 1e-12)
     k_target = _segments_to_reach(cost, len(ys), tss, target, cap)
 
-    flat = _flat_run_stats(ys, flat_tol)
+    _flat_run_stats(ys, flat_tol)
 
     # Recorded, measured failures of four earlier discriminators (see
     # CHANGELOG): (a) "piecewise-constant beats a line" flags noise and a

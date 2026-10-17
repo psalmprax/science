@@ -79,7 +79,7 @@ class OrderBookResiliencyProposer(ProposerBase):
             try:
                 popt, _ = curve_fit(_exp_decay, k_steps, mean_traj, p0=[0.5, 0.5], maxfev=1000)
                 beta_fit, gamma_fit = float(popt[0]), max(float(popt[1]), 0.05)
-            except Exception:
+            except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 beta_fit, gamma_fit = 0.35, 0.45
 
         formula_str = f"Shock_t * {beta_fit:.4f} * exp(-{gamma_fit:.4f} * k)"

@@ -43,7 +43,7 @@ def _estimate_velocity(x: np.ndarray, dt: float = 1.0, smooth: bool = True) -> n
         from scipy.signal import savgol_filter
         return np.asarray(savgol_filter(
             x, window_length=w, polyorder=2, deriv=1, delta=dt, mode="interp"))
-    except Exception:  # noqa: BLE001 -- savgol is a best-effort smoother; any
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         # failure (import, window/polyorder bounds, non-finite input) falls back
         # to the raw finite difference, which is always available.
         return np.asarray(np.gradient(x, dt))

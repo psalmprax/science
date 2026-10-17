@@ -146,6 +146,31 @@ ignore = [
 # `apedp/neural_discovery/symbolic.py` also ignores S105: it is a symbolic
 # tokenizer, so `token` is the domain word throughout (token stream, token
 # index, VAR_PREFIX token) and never a credential.
+# Sandbox demo harnesses deliberately bootstrap sys.path before their imports
+# (they are also run standalone from CSV/JSON fixtures); E402 is the expected
+# layout there, not sloppiness.
+"apedp_dyn/sandbox/*" = ["E402"]
+# Freeze-pinned v1.1 modules (frozen_spec.PINNED_FROZEN_REGISTRY /
+# sandbox/APEDPX_FROZEN_v1_1.json): any byte change re-trips the SHA-256
+# freeze guard and fails the blind benchmark loudly, so their pre-frozen
+# findings are knowingly retained in every rule family. Do NOT autofix
+# these files — byte identity outranks lint cosmetics there.
+# Covers every selected rule family (incl. BLE/BLK), for every python file
+# pinned in either freeze record.
+"apedp_dyn/sandbox/grammar_space.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/multi_asset_signals_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/epistemic/adjudicate.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/epistemic/claim_ladder.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/grammar/candidate_ir.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/apedp_x_meta_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/causal_discovery_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/eseds_dynamical.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/eso_packing.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/multi_grammar_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/pde_verification_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/sphere_packing_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/trading_signals_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/ui/server.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
 
 [tool.mypy]
 python_version = "3.12"

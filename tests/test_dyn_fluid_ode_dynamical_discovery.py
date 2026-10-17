@@ -7,11 +7,9 @@ Validates:
   - Dual Adjudication: APEDP Gated Arm vs Best-Fit ML Arm
   - Gate 0.5 (CAN-G) risk parity verification
 """
-import pytest
 from apedp_dyn.sandbox.fluid_ode_dynamical_discovery import (
     CANDIDATE_EQUATION_SPECS,
     TIMEFRAMES_MINUTES,
-    UNIVERSE_SIZES,
     run_single_universe_timeframe_experiment,
 )
 
@@ -27,7 +25,7 @@ def test_candidate_equation_specs_integrity():
         "Eq5_ODE_2ndOrder",
     }
     assert set(CANDIDATE_EQUATION_SPECS.keys()) == expected_keys
-    for eq_id, spec in CANDIDATE_EQUATION_SPECS.items():
+    for _eq_id, spec in CANDIDATE_EQUATION_SPECS.items():
         assert "formula" in spec
         assert "feature_keys" in spec
         assert len(spec["feature_keys"]) >= 2
@@ -47,7 +45,7 @@ def test_single_cell_evaluation_30_assets_15m():
     assert res.gate_05_cang_passed is True
 
     # Check each equation evaluation
-    for eq_id, ev in res.evaluations.items():
+    for _eq_id, ev in res.evaluations.items():
         assert ev.condition_number <= 1000.0
         assert ev.best_fit_verdict == "PROMOTES (Ungated Argmin)"
         assert ev.gated_verdict in (

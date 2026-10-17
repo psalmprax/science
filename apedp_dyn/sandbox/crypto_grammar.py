@@ -30,15 +30,15 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from apedp_dyn.epistemic.adjudicate import Adjudication, adjudicate  # noqa: E402
-from apedp_dyn.epistemic.bootstrap import holdout_residual_series  # noqa: E402
-from apedp_dyn.fitting.parameter_fit import fit_candidate  # noqa: E402
-from apedp_dyn.grammar.mechanical_grammar import (  # noqa: E402
+from apedp_dyn.epistemic.adjudicate import Adjudication, adjudicate
+from apedp_dyn.epistemic.bootstrap import holdout_residual_series
+from apedp_dyn.fitting.parameter_fit import fit_candidate
+from apedp_dyn.grammar.mechanical_grammar import (
     enumerate_candidates,
     prune_admissible,
 )
-from apedp_dyn.problems.base import DynProblem  # noqa: E402
-from apedp_dyn.problems.finance import spec_from_series  # noqa: E402
+from apedp_dyn.problems.base import DynProblem
+from apedp_dyn.problems.finance import spec_from_series
 
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "market"
 CRYPTO_DATA_FILE = DATA_DIR / "crypto_top15.csv"
@@ -190,7 +190,7 @@ def run_crypto_experiment(
         for s in kept:
             try:
                 f = fit_candidate(prob, s.candidate)
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 n_fit_failed += 1
                 print(f"    fit failed {s.candidate.candidate_id}: {type(e).__name__}")
                 continue

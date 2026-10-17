@@ -83,12 +83,12 @@ def test_bridge_forwards_polish_flags():
     bridge = RustKernelBridge()
     x = np.linspace(-3, 3, 200)
     y = 3.0 * x ** 2 + 2.0
-    common = dict(
-        population_size=50,
-        generations=20,
-        islands=4,
-        seed=42,
-    )
+    common = {
+        "population_size": 50,
+        "generations": 20,
+        "islands": 4,
+        "seed": 42,
+    }
     pareto_off, evals_off = bridge.evolve_native(
         [x], ["x"], y, polish_constants=False, **common
     )

@@ -13,23 +13,24 @@ score forces flat with reason code; never silently becomes zero signal.
 """
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
 import hashlib
 import sys
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
 sys.path.insert(0, '.')
 
-from apedp_dyn.sandbox.grammar_space import causal_zscore, trailing_rank  # noqa: E402
-from apedp_dyn.conf.canonical_spec import (  # noqa: E402
-    TACTICAL_ACTIVE_MIN,
-    TACTICAL_ACTIVE_MAX,
+from apedp_dyn.conf.canonical_spec import (
     CONTINUOUS_FACTOR_ACTIVE_MIN,
-    TAIL_RISK_MIN_EVENTS,
     STOCK_SPLIT_INVARIANCE_TOLERANCE,
+    TACTICAL_ACTIVE_MAX,
+    TACTICAL_ACTIVE_MIN,
+    TAIL_RISK_MIN_EVENTS,
 )
+from apedp_dyn.sandbox.grammar_space import causal_zscore, trailing_rank
 
 FEE = 0.0005  # 5 bps per unit position change
 
@@ -97,7 +98,6 @@ def run_ledger(syms: list[str], data: dict[str, pd.DataFrame],
     hold while S<-th_out). Invalid scores force flat with reason.
     """
     rows: list[dict] = []
-    per_asset_nets: list[float] = []
     for s in syms:
         raw, r = raw_features(data[s])
         z, valid = zscore_features(raw)
@@ -158,7 +158,7 @@ def run_ledger(syms: list[str], data: dict[str, pd.DataFrame],
     by_asset: dict[str, list[dict]] = {}
     for row in rows:
         by_asset.setdefault(row["asset"], []).append(row)
-    for s, rs in by_asset.items():
+    for _s, rs in by_asset.items():
         prev = 0.0
         for row in rs:
             dpos = abs(row["pos"] - prev)
@@ -381,10 +381,10 @@ def run_feature_rank_ablation(
 
     Returns exact live deltas (Δ Net Return, Δ Sharpe, Δ Turnover).
     """
-    rows_ranked, sum_ranked = run_ledger(
+    _rows_ranked, sum_ranked = run_ledger(
         syms, data, weights, rule, th_in, th_out, eval_slice, fee=fee, ablate_feature_rank=False, check_binding=False
     )
-    rows_unranked, sum_unranked = run_ledger(
+    _rows_unranked, sum_unranked = run_ledger(
         syms, data, weights, rule, th_in, th_out, eval_slice, fee=fee, ablate_feature_rank=True, check_binding=False
     )
 

@@ -11,8 +11,7 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-
-from cpmd_discovery_suite import rolling_std, ic_null, K, M, KK, EPS
+from cpmd_discovery_suite import EPS, KK, K, M, ic_null, rolling_std
 
 SIG = 0.01
 
@@ -89,7 +88,7 @@ def cand_fc(name, ret):
 def run():
     print("== 1. strength ladder (oracle IC + harness p + IC coverage) ==")
     for c in (0.0, 0.1, 0.5, 2.0):
-        oics, ps, cov = [], [], 0
+        oics, ps, _cov = [], [], 0
         for i in range(20):
             sd = 80000 + int(c * 100) + i
             ret = gen_ladder(sd, c)

@@ -10,8 +10,6 @@ exclusion rather than leaving a silently-shorter suite.
 """
 from __future__ import annotations
 
-import subprocess
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -86,8 +84,8 @@ def _collected_count() -> int:
             continue
         ns: dict = {"__file__": str(path), "__name__": f"rtk_count_{path.stem}"}
         try:
-            exec(compile(path.read_text(encoding="utf-8"), str(path), "exec"), ns)
-        except Exception as exc:  # noqa: BLE001
+            exec(compile(path.read_text(encoding="utf-8"), str(path), "exec"), ns)  # noqa: S102 - integrity harness deliberately executes repo-owned source files; no external input
+        except Exception as exc:
             raise AssertionError(f"{fname} failed to import: {exc}") from exc
         total += sum(1 for k, v in ns.items()
                      if k.startswith("test_") and callable(v))
@@ -97,8 +95,8 @@ def _collected_count() -> int:
 
 def test_stated_suite_total_is_machine_verified():
     actual = _collected_count()
-    print("\n[reporting] RIME/repair/referee/STEM suite collected = %d (stated %d)"
-          % (actual, RIME_SUITE_TOTAL))
+    print(f"\n[reporting] RIME/repair/referee/STEM suite collected = {actual} (stated "
+          f"{RIME_SUITE_TOTAL})")
     assert actual == RIME_SUITE_TOTAL, (
         actual, RIME_SUITE_TOTAL,
         "update RIME_SUITE_TOTAL by re-running this test, never by editing prose")

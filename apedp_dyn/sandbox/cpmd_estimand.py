@@ -9,10 +9,9 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-from scipy.optimize import curve_fit
-
 from cpmd_calibration import gen
-from cpmd_effective_slope import slope_ols, LAGS
+from cpmd_effective_slope import LAGS, slope_ols
+from scipy.optimize import curve_fit
 
 TM = float(np.mean(LAGS))
 A_TRUE, T0_TRUE = 1.2, 8.0
@@ -57,7 +56,7 @@ def run():
                     lambda t, lA, a, tt: lA - a * np.log(t + tt),
                     LAGS, np.log(y), p0=(np.log(0.05), 1.0, 8.0), maxfev=50000)
                 em.append(float(pp[1] * TM / (TM + pp[2])) - pt)
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 pass
             n += 1
         for name, e in (("OLS-vs-pointwise", eo_pt), ("OLS-vs-finwin", eo_fw),

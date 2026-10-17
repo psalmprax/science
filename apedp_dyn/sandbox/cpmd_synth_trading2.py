@@ -10,14 +10,13 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-
-from cpmd_synth_trading import one_path, ols_slope_width, decay_curve, COST
+from cpmd_synth_trading import COST, decay_curve, ols_slope_width, one_path
 
 WINDOWS = (25, 50, 100, 200)
 
 
 def run_path(seed, windows):
-    ret, px, state = one_path(seed)
+    ret, _px, state = one_path(seed)
     W = max(windows)
     burn = 200
     med = {}
@@ -114,7 +113,7 @@ def run():
     d = np.array(acc2[f"ols{win}"]["sharpe"]) - np.array(acc2["mom5"]["sharpe"])
     try:
         _, p = wilcoxon(d)
-    except Exception:
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         p = 1.0
     g1 = float(np.mean(acc2[f"ols{win}"]["sharpe"])) > 0
     g3 = (float(np.mean(acc2[f"ols{win}"]["dd"]))

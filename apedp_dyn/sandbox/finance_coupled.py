@@ -22,16 +22,16 @@ _REPO_ROOT = str(Path(__file__).resolve().parents[2])
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from apedp_dyn.epistemic.adjudicate import adjudicate  # noqa: E402
-from apedp_dyn.fitting.parameter_fit import fit_candidate  # noqa: E402
-from apedp_dyn.grammar.coupled import enumerate_coupled  # noqa: E402
-from apedp_dyn.grammar.mechanical_grammar import prune_admissible  # noqa: E402
-from apedp_dyn.model import (  # noqa: E402
+from apedp_dyn.epistemic.adjudicate import adjudicate
+from apedp_dyn.fitting.parameter_fit import fit_candidate
+from apedp_dyn.grammar.coupled import enumerate_coupled
+from apedp_dyn.grammar.mechanical_grammar import prune_admissible
+from apedp_dyn.model import (
     DynamicalEquation,
     InputVariable,
     StateVariable,
 )
-from apedp_dyn.problems.base import DynProblem, make_signal  # noqa: E402
+from apedp_dyn.problems.base import DynProblem, make_signal
 
 COUP_TERMS = ("x", "v", "xr")
 
@@ -109,7 +109,7 @@ def run_coupled():
     for s in kept:
         try:
             fitted.append(fit_candidate(prob, s.candidate))
-        except Exception as e:  # noqa: BLE001 -- record, don't stop
+        except Exception as e:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             print(f"  fit failed: {type(e).__name__}")
     g4 = [f for f in fitted
           if f.provenance.get("gate4_status", {}).get("passed", False)]

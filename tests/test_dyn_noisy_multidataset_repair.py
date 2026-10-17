@@ -40,7 +40,6 @@ from apedp_dyn.epistemic.rime_repair_engine import (
     RepairStatus,
     repair,
 )
-from apedp_dyn.grammar.proposer_interface import CandidateProposal
 from apedp_dyn.proposers.rime_proposer import RimeProposer
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -53,8 +52,8 @@ CFG = RepairConfig(6, 2, 1, 0.02, 1e-9, OPS, min_sse_reduction=0.30)
 NOISELESS = RepairConfig(6, 2, 1, 0.02, 1e-9, OPS, min_sse_reduction=0.30,
                          r5_emit_unidentified=True)
 
-CUTS = dict(rho_flag=RESID_RHO_FLAG, bias_ratio_cut=0.25, variance_ratio_cut=4.0,
-            curvature_corr_cut=0.3, interaction_corr_cut=0.3, min_rows=30)
+CUTS = {"rho_flag": RESID_RHO_FLAG, "bias_ratio_cut": 0.25, "variance_ratio_cut": 4.0,
+            "curvature_corr_cut": 0.3, "interaction_corr_cut": 0.3, "min_rows": 30}
 
 
 def _load_binding() -> pd.DataFrame:
@@ -146,9 +145,8 @@ def test_real_targets_under_two_percent_noise(dataset, fn):
     if len(frame) < 80:
         pytest.skip(f"{dataset} rows={len(frame)} below the 40-row partition floor")
     out, fr = _run(frame, features, CFG)
-    print("\n[noisy-multi] %-12s rows=%d -> %s ident=%s note=%s"
-          % (dataset, len(fr), out.status.value,
-             out.identifiability_status, out.submit_note))
+    print(f"\n[noisy-multi] {dataset:<12} rows={len(fr)} -> {out.status.value} "
+          f"ident={out.identifiability_status} note={out.submit_note}")
     # Honest outcomes only: an improvement WITH sealed evidence, or an
     # abstention with nothing opened. Never a fabricated fix.
     assert out.status in (RepairStatus.IMPROVED, RepairStatus.NO_IMPROVEMENT,
@@ -182,8 +180,8 @@ def test_no_repair_baseline_never_reports_a_fix(dataset, fn):
     assert out.status in (RepairStatus.NO_IMPROVEMENT, RepairStatus.INSUFFICIENT_EVIDENCE), out.status
     assert out.sealed is None
     assert out.winner is None
-    print("\n[no-repair-baseline] %-12s rows=%d -> %s (no fix reported)"
-          % (dataset, len(frame), out.status.value))
+    print(f"\n[no-repair-baseline] {dataset:<12} rows={len(frame)} -> {out.status.value} "
+          f"(no fix reported)")
 
 
 def test_row_floor_limitation_is_recorded():
@@ -194,7 +192,7 @@ def test_row_floor_limitation_is_recorded():
         small["bertozzi_1964"] = len(b.read_text().splitlines())
     lf = ROOT / "data" / "brown_lifter_tables.jsonl"
     if lf.exists():
-        rows = sum(len(__import__("json").loads(l).get("rows", [])) for l in lf.read_text().splitlines())
+        rows = sum(len(__import__("json").loads(ln).get("rows", [])) for ln in lf.read_text().splitlines())
         small["brown_lifter_tables"] = rows
-    print("\n[scope] in-repo small real tables: %s (all below the 40-row floor)" % small)
+    print(f"\n[scope] in-repo small real tables: {small} (all below the 40-row floor)")
     assert all(v < 40 for v in small.values()), small

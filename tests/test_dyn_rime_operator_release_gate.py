@@ -152,12 +152,12 @@ def test_operator_release_gate_records_a_decision_per_operator():
             # applied to the very numbers recorded next to it.
             assert decision == _decision(rec - base_recall, fpr, ratio)
             rows.append((bname, op, rec, base_recall, fpr, cost, ratio, decision))
-            print("\n[gate] %-22s %-14s recall=%.2f (base %.2f uplift %+.2f) FPR=%d "
-                  "cost=%d ratio=%.2f -> %s"
-                  % (bname, op, rec, base_recall, rec - base_recall, fpr, cost, ratio, decision))
+            print(f"\n[gate] {bname:<22} {op:<14} recall={rec:.2f} (base {base_recall:.2f} "
+                  f"uplift {rec - base_recall:+.2f}) FPR={fpr} "
+                  f"cost={cost} ratio={ratio:.2f} -> {decision}")
     assert rows, "no operators evaluated"
     # Safety half is non-negotiable: no row may carry a nonzero system FPR.
-    for bname, op, rec, base_recall, fpr, cost, ratio, decision in rows:
+    for bname, op, _rec_c, _base_recall_c, fpr, _cost_c, _ratio_c, _decision_c in rows:
         assert fpr == REQUIRED_FPR, (bname, op, fpr)
     # Discrimination check, restated for the new baseline: the gate must not
     # be vacuously unanimous. The explicitly-FROZEN grammar cannot express the
@@ -192,13 +192,14 @@ def test_defaults_are_exactly_the_operators_the_gate_promoted():
     base_frozen = _recovery_exact_square(frozen)
     assert base_frozen == 0.0, base_frozen          # frozen grammar cannot
     for op in on_by_default:
-        ops = dict(frozen); ops[op] = True
+        ops = dict(frozen)
+        ops[op] = True
         rec = _recovery_exact_square(ops)
         fpr = _system_fpr(ops)
         ratio = _cost(ops) / _cost(frozen)
         decision = _decision(rec - base_frozen, fpr, ratio)
         assert decision == "promote-to-default", (op, decision, rec, fpr, ratio)
-    print("\n[gate] defaults on = %s (each promoted against the frozen baseline)" % sorted(on_by_default))
+    print(f"\n[gate] defaults on = {sorted(on_by_default)} (each promoted against the frozen baseline)")
 
 
 def test_default_change_did_not_widen_coverage_or_risk():
@@ -212,5 +213,5 @@ def test_default_change_did_not_widen_coverage_or_risk():
     fpr_default = _system_fpr(default, n_worlds=12)
     fpr_frozen = _system_fpr(frozen, n_worlds=12)
     assert fpr_default == fpr_frozen == 0, (fpr_default, fpr_frozen)
-    print("\n[gate] default vs frozen on the easy battery: recall %.2f vs %.2f, FPR %d vs %d"
-          % (rec_default, rec_frozen, fpr_default, fpr_frozen))
+    print(f"\n[gate] default vs frozen on the easy battery: recall {rec_default:.2f} vs "
+          f"{rec_frozen:.2f}, FPR {fpr_default} vs {fpr_frozen}")

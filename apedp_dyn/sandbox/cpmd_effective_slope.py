@@ -12,9 +12,8 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-from scipy.optimize import curve_fit
-
 from cpmd_calibration import gen
+from scipy.optimize import curve_fit
 
 LAGS = np.arange(4, 13, dtype=float)  # frozen interval
 
@@ -35,7 +34,7 @@ def slope_model(lags, y):
     pp, _ = curve_fit(lambda t, lA, a, tt: lA - a * np.log(t + tt),
                       lags, np.log(y), p0=(np.log(0.05), 1.0, 8.0),
                       maxfev=50000)
-    lA, a, t0 = (float(v) for v in pp)
+    _lA, a, t0 = (float(v) for v in pp)
     tm = float(np.mean(lags))
     return float(a * tm / (tm + t0))
 
@@ -62,11 +61,11 @@ def run():
             try:
                 s_ols, _ = slope_ols(LAGS, yy)
                 eo.append(s_ols)
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 pass
             try:
                 em.append(slope_model(LAGS, yy))
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 pass
             tot += 1
         t = true_slope(kind)

@@ -30,10 +30,7 @@ from apedp_dyn.epistemic.claim_ladder import (
     EvidenceRequirement,
 )
 from apedp_dyn.epistemic.lean_universal_bridge import (
-    JointEpistemicCertificate,
-    LeanTheoremVerification,
     LeanUniversalBridge,
-    LeanVerificationResult,
 )
 
 

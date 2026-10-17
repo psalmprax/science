@@ -17,9 +17,9 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
+
 import numpy as np
 
-from apedp.mathematical.mathematical_layer import ProofClaimStatus
 from apedp_dyn.epistemic.agnostic_adapter import (
     AgnosticCandidateSpecification,
     AgnosticProblemDataset,
@@ -32,9 +32,7 @@ from apedp_dyn.epistemic.claim_ladder import (
     EvidenceRequirement,
 )
 from apedp_dyn.epistemic.lean_universal_bridge import (
-    JointEpistemicCertificate,
     LeanUniversalBridge,
-    LeanVerificationResult,
     VerificationBackend,
 )
 

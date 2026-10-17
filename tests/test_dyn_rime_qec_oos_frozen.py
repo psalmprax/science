@@ -20,8 +20,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from apedp_dyn.sandbox.qec_threshold import generate_qec_threshold_data
-
 A1, B1 = 1055.6995975078069, -6.0557766840642346e-05
 A2, B2 = 1023.7284277856082, -6.055776684063844e-05
 
@@ -76,7 +74,7 @@ def test_frozen_equations_uniform_grid():
     rms = []
     for s in (43, 44, 45):
         pp, yy = _gen(2, lin_grid, s)
-        (r1, rmse1, mae1), (r2, rmse2, mae2) = _eval(pp, yy)
+        (r1, _rmse1, mae1), (r2, _rmse2, mae2) = _eval(pp, yy)
         assert r1 > 0.99 and r2 > 0.99, (s, r1, r2)
         rms.append((mae1, mae2))
     # MAE roughly doubles vs T1 (low-end breakdown masked by R2 weighting).
@@ -144,7 +142,7 @@ def test_irregular_grid_distinguishes_generator():
     yy = t + rg.normal(0, 0.02 * np.sqrt(np.mean(t ** 2)), 600)
     floor = 0.02 * np.sqrt(np.mean(t ** 2))
     y1 = A1 * _lag5(irr ** 2) + B1
-    y2 = A2 * (irr * _lag5(irr)) + B2
+    A2 * (irr * _lag5(irr)) + B2
     m1 = np.isfinite(y1)
     rmse1 = float(np.sqrt(np.mean((yy[m1] - y1[m1]) ** 2)))
     assert rmse1 > 1.5 * floor, (rmse1, floor)

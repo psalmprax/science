@@ -12,11 +12,9 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from apedp_dyn.epistemic.autonomous_profiler import profile_dataset
 from apedp_dyn.epistemic.coordinate_transmuter import transmute_and_propose
-
 
 # ============================================================================
 # Section 1: Benchmark Physical Regimes Verification

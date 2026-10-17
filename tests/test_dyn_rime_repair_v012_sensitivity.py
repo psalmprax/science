@@ -20,8 +20,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from apedp_dyn.epistemic.adjudicate import RESID_RHO_FLAG
 from apedp_dyn.epistemic import rime_repair_diagnosis as diagmod
+from apedp_dyn.epistemic.adjudicate import RESID_RHO_FLAG
 from apedp_dyn.epistemic.rime_repair_engine import (
     RepairConfig,
     RepairOperator,
@@ -46,9 +46,9 @@ CONFIG = RepairConfig(
     operators=(RepairOperator.R1_PARAM_REFIT, RepairOperator.R2_TERM_INSERT, RepairOperator.R3_LAG_INSERT),
 )
 
-CUTS = dict(rho_flag=RESID_RHO_FLAG, bias_ratio_cut=BIAS_RATIO_CUT,
-            variance_ratio_cut=VARIANCE_RATIO_CUT, curvature_corr_cut=CURVATURE_CORR_CUT,
-            interaction_corr_cut=INTERACTION_CORR_CUT, min_rows=MIN_ROWS)
+CUTS = {"rho_flag": RESID_RHO_FLAG, "bias_ratio_cut": BIAS_RATIO_CUT,
+            "variance_ratio_cut": VARIANCE_RATIO_CUT, "curvature_corr_cut": CURVATURE_CORR_CUT,
+            "interaction_corr_cut": INTERACTION_CORR_CUT, "min_rows": MIN_ROWS}
 
 
 def _best(df_train: pd.DataFrame, feats, depth=1, budget=120):
@@ -138,7 +138,7 @@ def test_recall_strong_defects():
     lower = float(_beta.ppf(0.025, repaired, len(cases) - repaired + 1)) if repaired > 0 else 0.0
     # The measured claim is that the engine EITHER repairs with sealed evidence
     # or declares ambiguity — never a silently-vanishing or fabricated result.
-    for name, df, feats, _op, _term in cases:
+    for _name, df, feats, _op, _term in cases:
         out, _ = _run(df, feats)
         assert out.status in (RepairStatus.IMPROVED, RepairStatus.AMBIGUOUS,
                               RepairStatus.NO_IMPROVEMENT, RepairStatus.INSUFFICIENT_EVIDENCE), out.status
@@ -152,7 +152,7 @@ def test_recall_strong_defects():
     # battery. What is pinned instead: at least one genuine repair survives
     # invariance with sealed evidence, and every case reaches a terminal
     # verdict. The interval is reported, not asserted.
-    print("  95%% CI lower for the improved set: %.3f" % lower)
+    print(f"  95% CI lower for the improved set: {lower:.3f}")
     assert repaired >= 1, (repaired, ambiguous)
 
 
@@ -203,7 +203,7 @@ def test_weak_defect_never_harms():
     # outcome must never be materially worse than the frozen original.
     for coef, tag in ((0.8, "strong"), (0.3, "mid"), (0.1, "weak")):
         df = _plant_curv(501, coef=coef)
-        out, orig = _run(df, ["x"])
+        out, _orig = _run(df, ["x"])
         assert out.status in (RepairStatus.IMPROVED, RepairStatus.NO_IMPROVEMENT), out.status
         if out.status == RepairStatus.IMPROVED:
             assert out.sealed is not None

@@ -10,8 +10,7 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
 import numpy as np
-
-from cpmd_discovery_suite import rolling_std, ic_null, EPS
+from cpmd_discovery_suite import ic_null, rolling_std
 
 SIG = 0.01
 ALPHA = 0.05 / 12
@@ -39,7 +38,7 @@ def gen_ret(seed, rho, beta, n=3000):
 
 
 def grammar_fc(name, f1, f2, sig):
-    n = len(f1)
+    len(f1)
     if name == "f1":
         v = f1
     elif name == "f2":
@@ -74,7 +73,7 @@ FORMS = ["f1", "f2", "f1+f2", "f1-f2", "tanhf1", "tanhf2", "signf1",
 def oracle_check(rho, beta):
     ics = []
     for i in range(10):
-        r, f1, f2 = gen_ret(96000 + i, rho, beta)
+        r, f1, _f2 = gen_ret(96000 + i, rho, beta)
         ok = np.isfinite(f1[:-1]) & np.isfinite(r)
         ics.append(float(np.corrcoef(f1[:-1][ok], r[ok])[0, 1]))
     return float(np.mean(ics))

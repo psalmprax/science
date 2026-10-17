@@ -29,12 +29,12 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from apedp_dyn.epistemic.adjudicate import EpistemicStatus  # noqa: E402
-from apedp_dyn.fitting.parameter_fit import _with_values, fit_candidate  # noqa: E402
-from apedp_dyn.gates.intervention import auto_tolerance, intervention_holdout  # noqa: E402
-from apedp_dyn.grammar.candidate_ir import CandidateDynamics, Term  # noqa: E402
-from apedp_dyn.grammar.mechanical_grammar import materialize  # noqa: E402
-from apedp_dyn.problems.finance import spec_from_series  # noqa: E402
+from apedp_dyn.epistemic.adjudicate import EpistemicStatus
+from apedp_dyn.fitting.parameter_fit import _with_values, fit_candidate
+from apedp_dyn.gates.intervention import auto_tolerance, intervention_holdout
+from apedp_dyn.grammar.candidate_ir import CandidateDynamics, Term
+from apedp_dyn.grammar.mechanical_grammar import materialize
+from apedp_dyn.problems.finance import spec_from_series
 
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "market"
 CRYPTO_DATA_FILE = DATA_DIR / "crypto_top15.csv"
@@ -177,7 +177,7 @@ def run_prospective_tournament(target_asset: str = "COMPOSITE_TOP15") -> dict[st
                     gate4_passed=passed_g4,
                 )
             )
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             print(f"Skipping {cid}: {e}")
 
     # Tier C: Regime-Conditioned Hybrid Model
@@ -209,7 +209,7 @@ def run_prospective_tournament(target_asset: str = "COMPOSITE_TOP15") -> dict[st
                     gate4_passed=cond_passed,
                 )
             )
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         print(f"Tier C conditional eval skipped: {exc}")
 
     # Rank by 2023 holdout RMSE

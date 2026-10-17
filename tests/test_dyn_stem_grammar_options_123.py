@@ -12,10 +12,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from apedp_dyn.discovery_l2.dimensional_types import (
-    Dimension,
-    DimensionalError,
-)
 from apedp_dyn.epistemic.dimensional_homogeneity import (
     ACCELERATION,
     DIMENSIONLESS,
@@ -43,7 +39,6 @@ from apedp_dyn.proposers.stem_proposers import (
     HamiltonianProposer,
     SolenoidalFluidProposer,
 )
-
 
 # ==============================================================================
 # OPTION 1: RIME Native STEM Primitives
@@ -76,7 +71,6 @@ def test_option_1_stem_transforms_domain_safety():
 @pytest.mark.skipif(not is_rime_available(), reason="native RIME kernel required")
 def test_option_1_rime_proposer_stem_ops_wiring():
     """Verify RimeProposer accepts stem_ops=True and executes search."""
-    import apedp_kernel
 
     t = np.linspace(0, 4 * np.pi, 200)
     # y = sin(t) planted

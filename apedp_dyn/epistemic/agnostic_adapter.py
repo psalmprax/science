@@ -169,7 +169,7 @@ class AgnosticAdapter:
                     metrics["extrap_rmse"] = 999.0
                 else:
                     metrics["extrap_rmse"] = float(np.sqrt(np.mean((dataset.y_extrap - y_pred_extrap) ** 2)))
-        except Exception:  # noqa: BLE001 -- a candidate model that raises is scored as a failed fit, never fatal
+        except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             metrics["execution_error"] = 1.0
             metrics["holdout_rmse"] = 999.0
             metrics["in_sample_r2"] = -999.0

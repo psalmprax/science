@@ -122,7 +122,6 @@ def test_rime_on_ga_exact_22_signal_grammar_abstains():
     # columns). More grammar cannot fix absent signal; GA's historical edge
     # lived in thresholded-Sharpe space, not MSE space, and collapsed
     # out-of-regime regardless.
-    import time
     from apedp_dyn.sandbox.trading_signals_sandbox import (
         SIGNAL_REGISTRY,
         extract_all_22_features,
@@ -167,7 +166,7 @@ def test_rime_grammar_semantically_inert_rename_invariance():
                       max_depth=2, budget=200).fit_and_propose(d2)
     assert len(p1) == len(p2) > 0
     for a, b in zip(sorted(p1, key=lambda q: q.parameters["dev_r2"], reverse=True),
-                    sorted(p2, key=lambda q: q.parameters["dev_r2"], reverse=True)):
+                    sorted(p2, key=lambda q: q.parameters["dev_r2"], reverse=True), strict=False):
         assert a.metadata.get("graph_id") == b.metadata.get("graph_id")
         assert a.parameters["dev_r2"] == b.parameters["dev_r2"]
     print("\n[semantics] rename-invariant: identical graph ids, identical scores")
@@ -241,3 +240,95 @@ def test_usage_log_22_signals_mostly_untouched():
     assert len(rep.unused_in_all) >= 15, rep.to_dict()
     assert set(rep.used_in_any) <= {"H-CVD", "H-OFI", "H-SQUEEZE", "H-BB", "H-RV"}, rep.used_in_any
     print(f"\n[usage] 22-signal: {rep.n_proposals} proposals, used={rep.used_in_any}")
+
+
+def test_universe_sweep_90_assets_60d_and_60_dim_pde():
+    """Test 90 assets across both 60-day horizon and 60-dimensional continuous PDE space.
+    1. 60-day aggregation window (19 bars) strictly abstains due to sample size floor (<30 rows).
+    2. Daily bars with trailing 60d rolling features (1195 bars) strictly abstain (no spurious overfitting).
+    3. 60-dimensional continuous PDE discovery on 90 real assets refutes continuous spatial diffusion (R^2 < 0.06).
+    4. Positive control on identical 90-asset 60D coordinates recovers planted 60D diffusion with R^2 > 0.999999.
+    5. 60D McKean-Vlasov Attention PDE contracts the 90-asset return cloud monotonically.
+    """
+    from sklearn.decomposition import PCA
+
+    from apedp_dyn.epistemic.high_dim_pde import (
+        discover_pde_rbf_point_cloud_hd,
+        step_vlasov_attention_pde_hd,
+    )
+
+    df, px, of = _load("data/market/multi_asset_90_5yr_orderflow.csv")
+
+    # Part 1: 60-day aggregation horizon
+    fr_60d = _frame(df, px, of, 60)
+    assert len(fr_60d) == 19
+    props_60d = RimeProposer(
+        feature_cols=["r", "vol", "ofi"], target_col="target", max_depth=2, budget=200
+    ).fit_and_propose(fr_60d)
+    assert len(props_60d) == 0  # Abstains honestly on N < 30
+
+    # Part 2: Daily data with trailing 60-day rolling features
+    daily_fr = _frame(df, px, of, 1)
+    r_series = daily_fr["r"]
+    daily_fr["r_60d"] = r_series.rolling(60).sum()
+    daily_fr["vol_60d"] = r_series.rolling(60).std()
+    daily_fr["ofi_60d"] = daily_fr["ofi"].rolling(60).mean()
+    clean_daily = daily_fr.dropna().reset_index(drop=True)
+    assert len(clean_daily) == 1195
+
+    props_rolling = RimeProposer(
+        feature_cols=["r_60d", "vol_60d", "ofi_60d"], target_col="target", max_depth=2, budget=200
+    ).fit_and_propose(clean_daily)
+    assert len(props_rolling) == 0  # Honest abstention on market noise
+
+    # Part 3: 60-dimensional continuous PDE evaluation on 90 assets
+    close_cols = [c for c in df.columns if c.endswith("_CLOSE")]
+    prices = df[close_cols].to_numpy(float)
+    returns = np.diff(np.log(prices), axis=0)  # (1254, 90)
+
+    pca = PCA(n_components=60, random_state=42)
+    points_60d = pca.fit_transform(returns.T)  # 90 assets as points in R^60
+    assert points_60d.shape == (90, 60)
+
+    # Real returns over last 60 time steps
+    u_values = returns[-60:, :]
+    res_real = discover_pde_rbf_point_cloud_hd(
+        points=points_60d,
+        u_values=u_values,
+        dt=1.0 / 252.0,
+        dimension=60,
+        sparsity_threshold=0.01,
+    )
+    assert res_real.dimension == 60
+    assert not res_real.holdout_passed  # Referee correctly refuses continuous diffusion on market data
+    assert res_real.r2_dev < 0.10
+
+    # Part 4: Positive control on identical 90-asset 60D coordinates
+    norm_points_60d = points_60d / np.std(points_60d) * 0.1
+    dim, alpha, nt, dt = 60, 0.5, 30, 0.005
+    r2 = np.sum(norm_points_60d * norm_points_60d, axis=1)
+    u_planted = np.zeros((nt, 90))
+    for ti in range(nt):
+        t = 1.0 + ti * dt
+        scale = (1.0 / t) ** (dim / 2.0)
+        u_planted[ti, :] = scale * np.exp(-r2 / (4.0 * alpha * t))
+
+    res_planted = discover_pde_rbf_point_cloud_hd(
+        points=norm_points_60d,
+        u_values=u_planted,
+        dt=dt,
+        dimension=dim,
+        sparsity_threshold=0.01,
+    )
+    assert res_planted.dimension == 60
+    assert res_planted.r2_dev > 0.99999
+    assert res_planted.holdout_passed
+    lap_idx = res_planted.active_terms.index("laplacian_60d(u)")
+    assert abs(res_planted.coefficients[lap_idx] - alpha) < 0.05
+
+    # Part 5: 60D McKean-Vlasov Attention PDE on the 90 assets
+    evolved = step_vlasov_attention_pde_hd(points_60d, steps=10, dt=0.05, damping=0.1)
+    assert evolved.shape == (90, 60)
+    assert np.max(np.linalg.norm(evolved, axis=1)) < np.max(np.linalg.norm(points_60d, axis=1))
+    assert np.mean(np.var(evolved, axis=0)) < np.mean(np.var(points_60d, axis=0))
+

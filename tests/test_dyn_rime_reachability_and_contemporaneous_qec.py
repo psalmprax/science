@@ -15,10 +15,9 @@ Flaws addressed:
 from __future__ import annotations
 
 import json
-import re
+
 import numpy as np
 import pandas as pd
-import pytest
 
 import apedp_kernel as ak
 from apedp_dyn.proposers.rime_proposer import RimeProposer
@@ -131,10 +130,10 @@ def test_wrong_family_residual_curvature_detected_at_d5():
 
     # Systematic curvature detection via epistemic classifier
     from apedp_dyn.epistemic.rime_repair_diagnosis import (
-        classify_findings,
-        ResidualReport,
         FINDING_CURVATURE_SUSPECT,
         FINDING_NO_RELIABLE_STRUCTURE,
+        ResidualReport,
+        classify_findings,
     )
 
     rep_d5 = ResidualReport(

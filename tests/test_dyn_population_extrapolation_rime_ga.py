@@ -135,7 +135,7 @@ def test_rime_depth_sweep_identical_and_partial():
         scores = [_r2(Ate["target"].to_numpy(), np.asarray(b.compute_score(Ate), dtype=float)),
                   _r2(B["target"].to_numpy(), np.asarray(b.compute_score(B), dtype=float)),
                   _r2(C["target"].to_numpy(), np.asarray(b.compute_score(C), dtype=float))]
-        for s, lo, hi in zip(scores, (0.55, 0.65, 0.35), (0.75, 0.80, 0.55)):
+        for s, lo, hi in zip(scores, (0.55, 0.65, 0.35), (0.75, 0.80, 0.55), strict=False):
             assert lo < s < hi, (depth, scores)
     print("\n[rime-depth] depths 1-4 identical: x3[t-2] partial recovery; C-shift graceful")
 
@@ -218,6 +218,6 @@ def test_rime_large_matches_rime_raw_not_ga_large():
         scores = [_r2(AteB["target"].to_numpy(), np.asarray(b.compute_score(AteB), dtype=float)),
                   _r2(B["target"].to_numpy(), np.asarray(b.compute_score(_bigframe(B)), dtype=float)),
                   _r2(C["target"].to_numpy(), np.asarray(b.compute_score(_bigframe(C)), dtype=float))]
-        for s, lo, hi in zip(scores, (0.55, 0.65, 0.35), (0.75, 0.80, 0.55)):
+        for s, lo, hi in zip(scores, (0.55, 0.65, 0.35), (0.75, 0.80, 0.55), strict=False):
             assert lo < s < hi, (depth, budget, scores)
     print("\n[rime-large] 23 engineered inputs, still x3L2 partial: model-class gap, not feature count")

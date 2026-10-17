@@ -12,15 +12,11 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from apedp_dyn.grammar.proposer_interface import CandidateProposal, StrategyArchetype
-from apedp_dyn.proposers.rime_proposer import RimeProposer, is_rime_available
 from apedp_dyn.epistemic.adjudicate import adjudicate
 from apedp_dyn.epistemic.diagnosis import diagnose
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
-from apedp_dyn.fitting.parameter_fit import FitResult
-
-import apedp_kernel
-from apedp_dyn.proposers import RimeProposer as RimeProposerExported
+from apedp_dyn.grammar.proposer_interface import CandidateProposal
+from apedp_dyn.proposers.rime_proposer import RimeProposer, is_rime_available
 
 pytestmark = pytest.mark.skipif(
     not is_rime_available(),
@@ -81,7 +77,7 @@ def _proposal_to_scored(proposal: CandidateProposal, train_loss: float | None = 
     - provenance: dict with benchmark_level, data_origin, gate4_status
     """
     # Extract equation terms from the proposal formula/metadata
-    equation = proposal.metadata.get("equation", proposal.formula)
+    proposal.metadata.get("equation", proposal.formula)
     # Build a simple CandidateDynamics from the equation string
     # For now, use a generic construction; real usage would parse the equation
     cand = CandidateDynamics(lhs="y", terms=(Term(proposal.candidate_id[:4], "theta"),), candidate_id=proposal.candidate_id)
@@ -194,7 +190,7 @@ class TestAmbiguousEquivalent:
 
     def test_near_collinear_via_adjudication(self):
         """Near-collinear features should lead to MULTI_HYPOTHESIS via adjudication."""
-        df, description = _equivalent_forms()
+        df, _description = _equivalent_forms()
 
         proposer = RimeProposer(feature_cols=["x1", "x2"], target_col="target", max_depth=1, budget=200)
         proposals = proposer.fit_and_propose(df)
@@ -276,7 +272,7 @@ class TestComparativeValidation:
         lean_status = "MATHEMATICALLY_CONSISTENT" if adj.promoted else "FAILED"
         dimensions_consistent = True
         bounded = True
-        result = tracker.verify_stage_1(lean_status, dimensions_consistent, bounded)
+        tracker.verify_stage_1(lean_status, dimensions_consistent, bounded)
         # Stage 1 should pass for a mathematically consistent planted mechanism
 
         # Diagnosis

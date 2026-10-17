@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from apedp_dyn.proposers.rime_proposer import RimeProposer, _RIME_AVAILABLE
+from apedp_dyn.proposers.rime_proposer import _RIME_AVAILABLE, RimeProposer
 
 ROOT = Path(__file__).resolve().parent.parent
 BERTOZZI_FILE = ROOT / "data" / "bertozzi_1964.jsonl"

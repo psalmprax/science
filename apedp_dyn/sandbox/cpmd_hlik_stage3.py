@@ -43,12 +43,12 @@ def hlik_forecast(R):
         for t in range(W, n - 1):
             S = np.arange(t - W, t)
             Y = Z[S + 1, i]
-            X = np.column_stack([u[S - l] for l in range(L)])
+            X = np.column_stack([u[S - lag_i] for lag_i in range(L)])
             try:
                 bh = np.linalg.solve(X.T @ X + LAM * np.eye(L), X.T @ Y)
             except np.linalg.LinAlgError:
                 continue
-            fc[t, i] = sig[t, i] * float(bh @ np.array([u[t - l] for l in range(L)]))
+            fc[t, i] = sig[t, i] * float(bh @ np.array([u[t - lag_i] for lag_i in range(L)]))
     return fc
 
 

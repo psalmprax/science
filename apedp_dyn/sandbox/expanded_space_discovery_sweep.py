@@ -19,9 +19,7 @@ from __future__ import annotations
 import itertools
 import math
 import sys
-import time
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
@@ -29,18 +27,8 @@ import pandas as pd
 
 sys.path.insert(0, ".")
 
-from apedp_dyn.discovery_l2.dimensional_types import Dimension
-from apedp_dyn.discovery_l2.multiterm_engine import MultiTermL2Engine
 from apedp_dyn.discovery_l2.pruning import check_residual_whiteness
-from apedp_dyn.epistemic.claim_ladder import (
-    ClaimLevel,
-    EvidenceBundle,
-    EvidenceRequirement,
-    adjudicate_scientific_claim,
-)
 from apedp_dyn.epistemic.cross_asset_gate import evaluate_cross_asset_gate
-from apedp_dyn.harness import AEH
-from apedp_dyn.harness.manifest import compute_dataset_hash
 from apedp_dyn.sandbox.grammar_space import causal_zscore, trailing_rank
 from apedp_dyn.sandbox.multi_asset_signals_sandbox import load_universe
 
@@ -152,12 +140,12 @@ def build_microstructure_ofi_panel(
     Target:
       Forward return y over duration horizon.
     """
-    T = len(universe[symbols[0]])
-    N = len(symbols)
+    len(universe[symbols[0]])
+    len(symbols)
 
     # Scaling factor for horizon duration
     scale = math.sqrt(max(1.0, duration / 5.0))
-    w_roll = max(5, int(round(20 * scale)))
+    w_roll = max(5, round(20 * scale))
 
     # Collect cross-sectional pooled series
     all_raw_ofi = []
@@ -182,7 +170,7 @@ def build_microstructure_ofi_panel(
 
         # Forward return target over duration horizon
         # For duration tau, compute forward return scaled to duration horizon
-        step = max(1, int(round(duration / 15.0)))
+        step = max(1, round(duration / 15.0))
         fwd_p = np.roll(p, -step)
         fwd_ret = (fwd_p - p) / np.maximum(p, 1e-12)
         fwd_ret[-step:] = 0.0
@@ -268,9 +256,9 @@ def build_cross_asset_lead_lag_panel(
     T = len(universe[symbols[0]])
     N = len(symbols)
 
-    step = max(1, int(round(duration / 15.0)))
+    step = max(1, round(duration / 15.0))
     scale = math.sqrt(max(1.0, duration / 5.0))
-    w_roll = max(5, int(round(20 * scale)))
+    w_roll = max(5, round(20 * scale))
 
     # Compute returns matrix (T x N)
     rets_2d = np.zeros((T, N))
@@ -421,7 +409,7 @@ def evaluate_candidate_equation(
     # Fit OLS coefficients on train
     try:
         coefs, _, _, _ = np.linalg.lstsq(M_tr, y_tr, rcond=None)
-    except Exception:
+    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         coefs = np.zeros(len(feature_keys))
 
     # In-sample Train predictions
@@ -595,7 +583,7 @@ def run_expanded_space_discovery(
                 if bic < best_bic:
                     best_bic = bic
                     best_combo = combo_keys
-            except Exception:
+            except Exception:  # noqa: BLE001, S112 - try-continue by design: best-effort path skips this candidate without aborting  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 continue
 
     # Freeze the in-sample selected model, then evaluate ONCE on untouched holdouts

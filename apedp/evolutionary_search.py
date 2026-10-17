@@ -37,8 +37,8 @@ from typing import Any, cast
 import numpy as np
 import sympy as sp
 
-from apedp.safety import safe_parse_expr
 from apedp.rust_bridge import is_rust_kernel_available
+from apedp.safety import safe_parse_expr
 
 try:
     import apedp_kernel
@@ -291,7 +291,7 @@ def _eval_fast(
             res_arr = np.asarray(res, dtype=float).ravel()
             if res_arr.shape == target_shape and np.all(np.isfinite(res_arr)):
                 return res_arr
-        except Exception:
+        except Exception:  # noqa: S110, BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             pass
 
     function = _lambdify_cached(cache, expression, data_symbols)
@@ -356,7 +356,7 @@ def evaluate_skeleton(
                     rust_mse = float(rust_res[1])
                     if np.isfinite(rust_mse):
                         return rust_mse, fixed
-            except Exception:
+            except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 solved_with_rust = False
 
         if not solved_with_rust:
@@ -838,7 +838,7 @@ def evolve(
                 denormalized_best=best_expr_str,
                 denormalized_pick=grouped_pick,
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             logger.debug("Native Rust evolve failed (%s), falling back to Python loop.", e)
 
     # Normalize numerics for conditioning; symbols keep original units so
