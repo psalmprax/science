@@ -12,6 +12,16 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   - `tests/test_dyn_lean_universal_bridge.py` — same environmental Lean cause.
   - `outputs/nano_ds10_freeze.json` — FREEZE DRIFT: the pin at `apedp_dyn/epistemic/frozen_spec.py:40` expects d37d0f1c..., but the benchmark regenerates deterministically to b809ddcb..., so `test_all_frozen_records_verified_against_pinned_hashes` fails. All of that generator's dependencies are clean, so the drift reproduces at HEAD. The pinned hash predates the current generator output; the pin owner must re-pin or reconcile the generator. NOT touched in this change.
 
+## [Unreleased] — JetFlow vs Diffusion: wall-clock-matched honest benchmark (2026-10-17, `audit-only`)
+
+### Added
+- **`benchmarks/run_jetflow_vs_diffusion_matched.py` + `benchmarks/jetflow_vs_diffusion_matched_results.json` + `docs/jetflow_vs_diffusion_matched_benchmark.md`:** replaces the earlier equal-*step-count* protocol (which under-budgeted the slower JetFlow stack) with equal **wall-clock training budget** (probe-calibrated 90 s per architecture: JetFlow 3509 steps/81.7 s, baseline 5015 steps/117.8 s) plus a probe-conservative equal budget for the distilled 2-step student (65.3 s consumed). Model-forward counts are *measured* per clip (not hand-estimated: raw jet-2step 22.5 passes vs diffusion-32step 64); identical CFG=3.0, trainer-consistent sampler directions, and identical burnable hold-out ids across architectures.
+- **`packages/jetflow-video/jetflow_video/diffusion_baseline.py` (new):** the fair textbook baseline — small UNet-style ResBlock denoiser (152k params vs JetFlow's 133k), standard cosine-schedule DDPM v-objective, CFG-capable; trained through the same budget controller, same split, same instruments.
+- **Honest verdict (single-run seed 0, artifact-backed):** at matched budget and ~0.41–0.45 s/clip the diffusion baseline wins every measured quality instrument (PSNR 12.59 vs 7.43, SSIM 0.663 vs 0.250, FVD-proxy 0.272 vs 1.053, temporal 0.133 vs 0.642); quality plateaus at K≈32 (K=48 spends 1.75× longer for nothing); the distilled 2-step student is the only sub-50 ms option at 14.2 ms/clip (29× faster, PSNR 9.70) — JetFlow's defensible claim is serving-side latency, not matched-compute quality. Known limitation (recorded, not swept): single-run variance unquantified; no repeats yet.
+
+### Tests
+- Full AGENTS.md regression battery plus the video/jetflow suite: 92 passed (one `test_end_to_end_text_to_video_jet2_flow_matching` failure in the first pass did not reproduce in two 13-file suite reruns and passes in isolation — one-off transient, recorded honestly rather than hidden).
+
 ## [Unreleased] — mypy strict debt cleared; blind-freeze re-mint v1.2 (2026-10-17)
 
 ### Fixed (typing)
