@@ -2047,6 +2047,33 @@ fn video_warp_bilinear_2d<'py>(
     Ok(out.into_pyarray_bound(py))
 }
 
+/// 2D Bilinear Sub-Pixel Coordinate Warping with periodic (wrap-around)
+/// boundary conditions (floor-then-mod backtrace indexing, numpy `%`
+/// semantics); the fluid-domain generator's advection kernel.
+#[pyfunction]
+#[pyo3(signature = (input, vx, vy, channels, height, width))]
+fn video_warp_bilinear_2d_periodic<'py>(
+    py: Python<'py>,
+    input: PyReadonlyArray1<'py, f64>,
+    vx: PyReadonlyArray1<'py, f64>,
+    vy: PyReadonlyArray1<'py, f64>,
+    channels: usize,
+    height: usize,
+    width: usize,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let in_slice = input.as_slice().map_err(|_| PyValueError::new_err("input must be C-contiguous"))?;
+    let vx_slice = vx.as_slice().map_err(|_| PyValueError::new_err("vx must be C-contiguous"))?;
+    let vy_slice = vy.as_slice().map_err(|_| PyValueError::new_err("vy must be C-contiguous"))?;
+
+    let out = py
+        .allow_threads(|| {
+            video::warp_bilinear_2d_periodic(in_slice, vx_slice, vy_slice, channels, height, width)
+        })
+        .map_err(PyValueError::new_err)?;
+
+    Ok(out.into_pyarray_bound(py))
+}
+
 /// Compute spatial optical flow divergence: div(v) = d(vx)/dx + d(vy)/dy.
 #[pyfunction]
 #[pyo3(signature = (vx, vy, height, width, dx=1.0, dy=1.0))]
@@ -2213,6 +2240,7 @@ fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(video_ssim_frame, m)?)?;
     m.add_function(wrap_pyfunction!(video_sliced_wasserstein2, m)?)?;
     m.add_function(wrap_pyfunction!(video_warp_bilinear_2d, m)?)?;
+    m.add_function(wrap_pyfunction!(video_warp_bilinear_2d_periodic, m)?)?;
     m.add_function(wrap_pyfunction!(video_compute_optical_flow_divergence, m)?)?;
     m.add_function(wrap_pyfunction!(video_detect_disocclusion_mask, m)?)?;
     m.add_function(wrap_pyfunction!(flow_head_forward, m)?)?;

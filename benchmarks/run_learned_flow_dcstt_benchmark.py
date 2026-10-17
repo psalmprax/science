@@ -148,8 +148,10 @@ def run_learned_flow_benchmark(train_budget_s: float = 90.0,
     train_steps = len(losses)
     print(f"trained {train_steps} steps in {train_s:.1f}s; "
           f"loss {losses[0]:.5f} -> {losses[-1]:.5f} "
-          f"(advection-consistency floor; the generator's dye renormalization is a "
-          f"deterministic gain coupling, modelable separately)")
+          + ("(per-step objective over a k-step model-own rollout; "
+             if rollout_steps > 1 else "(advection-consistency; ")
+          + ("gain head models the renormalization affine)" if gain_correction
+             else "the generator's dye renorm is a factor out of head scope here)"))
 
     # nu=0.0 pure-advection transport for rollout (see module docstring);
     # the fluid generator's advection is periodic, so BOTH the training loss

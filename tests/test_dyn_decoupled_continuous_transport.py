@@ -179,3 +179,31 @@ class TestDecoupledSpatioTemporalTransport:
             recon = tt_video.reconstruct()
             recon_error = float(np.mean((traj - recon) ** 2))
             assert recon_error < 0.05  # High-fidelity reconstruction
+
+    def test_neural_transport_flow_net_training_and_rust_rollout(self) -> None:
+        """Verify trainable NeuralTransportFlowNet learns optical flow + source and rolls out with Rust solver."""
+        import torch
+        from apedp_dyn.video.decoupled_transport import (
+            NeuralTransportFlowNet,
+            train_neural_transport_model,
+        )
+
+        cfg = DecoupledTransportConfig(use_rust=True, nu=0.002)
+        solver = DecoupledSpatioTemporalTransport(cfg)
+
+        z0 = _synthetic_scene("gaussian_spot", 16, 16)
+        vx, vy = _generate_velocity_field("translation", 16, 16)
+        traj, _ = solver.generate_multiscene_trajectory(z0, [(vx, vy)] * 3, dt=0.5)
+        # Shape (N=2, T=4, C=3, H=16, W=16)
+        clips_t = torch.from_numpy(np.stack([traj, traj], axis=0)).float()
+
+        net = NeuralTransportFlowNet(in_channels=3, hidden_dim=16, text_dim=16)
+        prompts = torch.ones(2, 16)
+        losses = train_neural_transport_model(net, clips_t, prompt_embeddings=prompts, steps=20, lr=5e-3, seed=0)
+        assert len(losses) == 20
+        assert losses[-1] < losses[0], f"Expected transport loss to decrease: {losses[0]:.6f} -> {losses[-1]:.6f}"
+
+        rollout, telem = net.rollout_with_rust_transport(solver, z0, num_steps=3, prompt_emb=prompts[0], dt=0.5)
+        assert rollout.shape == (4, 3, 16, 16)
+        assert len(telem) == 3
+

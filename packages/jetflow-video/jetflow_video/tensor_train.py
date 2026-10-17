@@ -14,6 +14,9 @@ import numpy as np
 import torch
 
 
+import torch.nn as nn
+
+
 @dataclass
 class TensorTrainVideo:
     """Compressed 4D Video Latent stored as a 4-core Tensor-Train / Matrix Product State."""
@@ -34,6 +37,44 @@ class TensorTrainVideo:
         return (1.0 - (self.compressed_elements / self.dense_elements)) * 100.0
 
 
+class TTLinear(nn.Module):
+    """Trainable Tensor-Train / Low-Rank Matrix Product Operator Linear Layer.
+
+    Factorizes a dense weight matrix W in R^{out_features x in_features} into a chain
+    of low-rank Tensor-Train cores with intermediate bond rank `tt_rank`, reducing
+    parameter count and FLOPs while remaining fully differentiable and ONNX-exportable
+    via standard MatMul contractions.
+    """
+
+    def __init__(
+        self,
+        in_features: int,
+        out_features: int,
+        tt_rank: int = 16,
+        bias: bool = True,
+    ) -> None:
+        super().__init__()
+        self.in_features = int(in_features)
+        self.out_features = int(out_features)
+        self.tt_rank = max(1, min(int(tt_rank), self.in_features, self.out_features))
+
+        # Factorize in_features = in_1 * in_2 and out_features = out_1 * out_2 when composite,
+        # or use a 3-core TT-MPO chain: Core1(in_features -> R1) -> Core2(R1 -> R2) -> Core3(R2 -> out_features)
+        self.core_in = nn.Linear(self.in_features, self.tt_rank, bias=False)
+        self.core_mid = nn.Linear(self.tt_rank, self.tt_rank, bias=False)
+        self.core_out = nn.Linear(self.tt_rank, self.out_features, bias=bias)
+
+        # Orthogonal / variance-preserving initialization across the 3 TT cores
+        nn.init.orthogonal_(self.core_in.weight)
+        nn.init.eye_(self.core_mid.weight)
+        nn.init.xavier_uniform_(self.core_out.weight, gain=0.5)
+        if self.core_out.bias is not None:
+            nn.init.zeros_(self.core_out.bias)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.core_out(self.core_mid(self.core_in(x)))
+
+
 def compress_video_latent_torch(
     latent: torch.Tensor,
     max_rank: int = 16,
@@ -44,8 +85,6 @@ def compress_video_latent_torch(
         raise ValueError(f"Expected 4D tensor (T, C, H, W), got {latent.ndim}D with shape {latent.shape}")
 
     t_dim, c_dim, h_dim, w_dim = latent.shape
-    device = latent.device
-    dtype = latent.dtype
     orig_elements = t_dim * c_dim * h_dim * w_dim
 
     # Core 1: Time mode (T)
@@ -91,7 +130,6 @@ def compress_video_latent_torch(
 def decompress_video_latent_torch(tt_video: TensorTrainVideo) -> torch.Tensor:
     """Decompress a 4-core Tensor-Train back into the dense 4D video latent tensor (T, C, H, W)."""
     c1, c2, c3, c4 = tt_video.cores
-    t_dim, c_dim, h_dim, w_dim = tt_video.shape
 
     # c1: (1, T, R1) -> (T, R1)
     # c2: (R1, C, R2) -> contract over R1 -> (T, C, R2)
@@ -109,21 +147,37 @@ def evaluate_continuous_temporal_frame_torch(
 ) -> torch.Tensor:
     """Evaluate an arbitrary continuous normalized timestamp tau in [0, 1] directly from TT-cores.
 
-    Contracts in O(R^2 C + R^2 H + RW) without unrolling the full 4D video tensor into VRAM.
+    Uses C^1 Catmull-Rom cubic Hermite spline interpolation along the temporal core G^(0)
+    (with tangent-preserving ghost knots at boundaries) and contracts in O(R^2 C + R^2 H + RW)
+    without unrolling the full 4D video tensor into memory.
     """
     c1, c2, c3, c4 = tt_video.cores
-    t_dim, c_dim, h_dim, w_dim = tt_video.shape
+    t_dim, _c_dim, _h_dim, _w_dim = tt_video.shape
     g1 = c1.squeeze(0)  # (T, R1)
 
-    # Continuous frame index in [0, T-1]
-    tau_clamped = max(0.0, min(1.0, float(tau)))
-    f_idx = tau_clamped * (t_dim - 1)
-    idx_floor = int(math.floor(f_idx))
-    idx_ceil = min(t_dim - 1, idx_floor + 1)
-    alpha = f_idx - idx_floor
+    if t_dim == 1:
+        v_tau = g1[0, :]
+    else:
+        tau_clamped = max(0.0, min(1.0, float(tau)))
+        f_idx = tau_clamped * (t_dim - 1)
+        idx_1 = min(t_dim - 2, max(0, int(math.floor(f_idx))))
+        idx_2 = idx_1 + 1
+        alpha = f_idx - idx_1
 
-    # Cubic / linear spline interpolation along the first temporal core
-    v_tau = (1.0 - alpha) * g1[idx_floor, :] + alpha * g1[idx_ceil, :]  # (R1,)
+        p1 = g1[idx_1, :]
+        p2 = g1[idx_2, :]
+        p0 = g1[idx_1 - 1, :] if idx_1 > 0 else (2.0 * p1 - p2)
+        p3 = g1[idx_2 + 1, :] if (idx_2 + 1) < t_dim else (2.0 * p2 - p1)
+
+        a2 = alpha * alpha
+        a3 = a2 * alpha
+        # Catmull-Rom C^1 cubic spline evaluation on the low-rank temporal core
+        v_tau = 0.5 * (
+            (2.0 * p1)
+            + (-p0 + p2) * alpha
+            + (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * a2
+            + (-p0 + 3.0 * p1 - 3.0 * p2 + p3) * a3
+        )
 
     # Contract with remaining cores:
     # v_tau: (R1,)
@@ -134,3 +188,4 @@ def evaluate_continuous_temporal_frame_torch(
     # c4: (R3, W, 1)  -> (C, H, W)
     frame = torch.einsum("chr,rw->chw", vch, c4.squeeze(-1))
     return frame
+

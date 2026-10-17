@@ -21,6 +21,8 @@ class NoetherConfig:
     dx: float = 1.0
     dy: float = 1.0
     divergence_tolerance: float = 1e-2
+    preserve_wavelet_subbands: bool = False
+    temporal_flicker_damping: float = 0.25
 
 
 class NoetherConservationEngine:
@@ -85,16 +87,53 @@ class NoetherConservationEngine:
             return vx_sol.squeeze(0), vy_sol.squeeze(0), rem_div_norm
         return vx_sol, vy_sol, rem_div_norm
 
+    def project_wavelet_temporal_conservation(
+        self,
+        velocity_field: torch.Tensor,
+    ) -> Tuple[torch.Tensor, float]:
+        r"""Enforce subband-preserving temporal mass conservation on wavelet latents (T, C, H, W).
+
+        Unlike 2D vector-field Leray projection (which pairs channel 2k and 2k+1 and would
+        illegally mix low-pass LL and high-pass LH wavelet subbands), this projector operates
+        within each channel independently, damping unphysical frame-to-frame spatial DC mass
+        flicker while preserving the learned spatial denoising vector field.
+        """
+        if velocity_field.ndim != 4:
+            raise ValueError(f"Expected 4D tensor (T, C, H, W), got {velocity_field.shape}")
+
+        t, _c, _h, _w = velocity_field.shape
+        if t <= 1:
+            return velocity_field.clone(), 0.0
+
+        projected = velocity_field.clone()
+        # Spatial mean per (frame, channel): shape (T, C, 1, 1)
+        frame_means = projected.mean(dim=(-2, -1), keepdim=True)
+        # Clip-wide temporal mean per channel: shape (1, C, 1, 1)
+        clip_means = frame_means.mean(dim=0, keepdim=True)
+        flicker = frame_means - clip_means
+
+        damping = float(self.config.temporal_flicker_damping)
+        projected = projected - damping * flicker
+        rem_flicker = float(torch.sqrt(torch.mean(((1.0 - damping) * flicker) ** 2)).item())
+        return projected, rem_flicker
+
     def project_spatial_latent_velocity(
         self,
         velocity_field: torch.Tensor,
     ) -> Tuple[torch.Tensor, float]:
-        r"""Project 4D spatio-temporal video velocity (T, C, H, W) to solenoidal space (\nabla \cdot v = 0).
+        r"""Project 4D spatio-temporal video velocity (T, C, H, W) to physical invariant space.
 
-        Pairs latent channels (2k, 2k+1) into 2D spatial vector fields.
+        - When `config.preserve_wavelet_subbands` is True (used for multi-subband wavelet VAEs
+          where channels represent LL, LH, HL, HH frequency bands rather than 2D (vx, vy) pairs),
+          enforces subband-preserving temporal mass conservation without cross-channel mixing.
+        - Otherwise, pairs channels (2k, 2k+1) into 2D spatial vector fields and projects onto
+          the divergence-free solenoidal subspace (\nabla \cdot v = 0).
         """
         if velocity_field.ndim != 4:
             raise ValueError(f"Expected 4D tensor (T, C, H, W), got {velocity_field.shape}")
+
+        if self.config.preserve_wavelet_subbands:
+            return self.project_wavelet_temporal_conservation(velocity_field)
 
         t, c, h, w = velocity_field.shape
         projected = velocity_field.clone()
@@ -115,13 +154,22 @@ class NoetherConservationEngine:
         return projected, mean_div
 
     def compute_divergence_loss(self, velocity_field: torch.Tensor) -> torch.Tensor:
-        r"""Differentiable spatial divergence loss for PyTorch neural training.
+        r"""Differentiable physical invariant loss for PyTorch neural training.
 
-        Loss = \mathbb{E}_{t, c} [\|\partial_x v_x + \partial_y v_y\|^2].
+        When `preserve_wavelet_subbands` is True, penalizes second-order temporal jitter
+        and frame-to-frame spatial mass drift across wavelet channels. Otherwise computes
+        2D spatial divergence loss \mathbb{E}_{t, c} [\|\partial_x v_x + \partial_y v_y\|^2].
         """
-        # Supports (B, T, C, H, W) or (T, C, H, W)
         v = velocity_field if velocity_field.ndim == 5 else velocity_field.unsqueeze(0)
         b, t, c, h, w = v.shape
+
+        if self.config.preserve_wavelet_subbands:
+            if t <= 1:
+                return torch.tensor(0.0, device=velocity_field.device, dtype=velocity_field.dtype)
+            frame_means = v.mean(dim=(-2, -1))  # (B, T, C)
+            temporal_mass_diff = frame_means[:, 1:, :] - frame_means[:, :-1, :]
+            return torch.mean(temporal_mass_diff ** 2)
+
         dx, dy = self.config.dx, self.config.dy
 
         div_losses = []

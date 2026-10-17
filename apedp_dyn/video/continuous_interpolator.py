@@ -14,6 +14,8 @@ from collections.abc import Sequence
 
 import numpy as np
 
+from scipy.interpolate import CubicSpline
+
 from apedp_dyn.video.tensor_train_video import TensorTrainVideo, evaluate_continuous_temporal_frame
 
 
@@ -22,6 +24,15 @@ class ContinuousTemporalInterpolator:
 
     def __init__(self, tt_video: TensorTrainVideo) -> None:
         self.tt_video = tt_video
+        t_dim, _c_dim, _h_dim, _w_dim = tt_video.shape
+        r1 = tt_video.bond_ranks[0]
+        self._t_knots = np.linspace(0.0, 1.0, t_dim)
+        self._g0_mat = tt_video.core_t.reshape(t_dim, r1)
+        self._spline = (
+            CubicSpline(self._t_knots, self._g0_mat, axis=0, bc_type="natural")
+            if t_dim >= 4
+            else None
+        )
 
     def sample_at_timestamps(self, timestamps: Sequence[float] | np.ndarray) -> np.ndarray:
         r"""Sample video frames at an arbitrary sequence of continuous timestamps tau_k in [0.0, 1.0].
@@ -35,12 +46,21 @@ class ContinuousTemporalInterpolator:
         if len(timestamps) == 0:
             raise ValueError("timestamps list cannot be empty")
 
-        frames: list[np.ndarray] = []
-        for tau in timestamps:
-            frame = evaluate_continuous_temporal_frame(self.tt_video, float(tau))
-            frames.append(frame)
+        taus = np.clip(np.asarray(timestamps, dtype=np.float64), 0.0, 1.0)
+        if self._spline is not None:
+            g0_taus = self._spline(taus)  # (N_out, R1)
+        else:
+            r1 = self.tt_video.bond_ranks[0]
+            g0_taus = np.column_stack(
+                [np.interp(taus, self._t_knots, self._g0_mat[:, k]) for k in range(r1)]
+            )
 
-        return np.stack(frames, axis=0)
+        r3 = self.tt_video.bond_ranks[2]
+        w_dim = self.tt_video.shape[3]
+        tc_r2 = np.tensordot(g0_taus, self.tt_video.core_c, axes=([1], [0]))
+        tch_r3 = np.tensordot(tc_r2, self.tt_video.core_h, axes=([2], [0]))
+        g3 = self.tt_video.core_w.reshape(r3, w_dim)
+        return np.tensordot(tch_r3, g3, axes=([3], [0]))
 
     def resample_to_fps(
         self,

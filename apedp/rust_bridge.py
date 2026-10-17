@@ -682,6 +682,8 @@ class RustKernelBridge:
         image: np.ndarray,
         vx: np.ndarray,
         vy: np.ndarray,
+        *,
+        periodic: bool = False,
     ) -> np.ndarray:
         """2D Bilinear Sub-Pixel Coordinate Warping of an image/latent field.
 
@@ -689,6 +691,10 @@ class RustKernelBridge:
             image: Array of shape (C, H, W) or (H, W).
             vx: Horizontal displacement array of shape (H, W).
             vy: Vertical displacement array of shape (H, W).
+            periodic: wrap-around (toroidal) boundary conditions matching the
+                fluid-domain generator's `floor(q) % size` backtrace indexing
+                (float is floored first, the integer index wrapped, frac =
+                q - floor(q)). Default False = border clamping.
 
         Returns:
             Warped array with the same shape as `image`.
@@ -705,7 +711,13 @@ class RustKernelBridge:
 
         if self.use_rust:
             try:
-                out = cast(Any, apedp_kernel).video_warp_bilinear_2d(
+                if periodic:
+                    fn = getattr(cast(Any, apedp_kernel), "video_warp_bilinear_2d_periodic", None)
+                    if fn is None:
+                        raise AttributeError("video_warp_bilinear_2d_periodic absent from kernel build")
+                else:
+                    fn = cast(Any, apedp_kernel).video_warp_bilinear_2d
+                out = fn(
                     np.ascontiguousarray(arr).reshape(-1),
                     np.ascontiguousarray(vx_arr).reshape(-1),
                     np.ascontiguousarray(vy_arr).reshape(-1),
@@ -720,14 +732,29 @@ class RustKernelBridge:
         self._tally(_KERNEL_PATH_FALLBACK)
         # Vectorized NumPy fallback
         y_grid, x_grid = np.meshgrid(np.arange(h), np.arange(w), indexing="ij")
-        sx = np.clip(x_grid + vx_arr, 0.0, w - 1.0)
-        sy = np.clip(y_grid + vy_arr, 0.0, h - 1.0)
-        x0 = np.floor(sx).astype(np.int64)
-        y0 = np.floor(sy).astype(np.int64)
-        x1 = np.clip(x0 + 1, 0, w - 1)
-        y1 = np.clip(y0 + 1, 0, h - 1)
-        wx = sx - x0
-        wy = sy - y0
+        if periodic:
+            # Generator semantics: floor the backtrace coordinate FIRST, wrap
+            # the integer index (numpy `%`), frac = q - floor(q). Wrapping the
+            # float first would lose exactness for tiny negative backtraces.
+            qx = x_grid + vx_arr
+            qy = y_grid + vy_arr
+            fx = np.floor(qx)
+            fy = np.floor(qy)
+            x0 = np.mod(fx.astype(np.int64), w)
+            y0 = np.mod(fy.astype(np.int64), h)
+            x1 = (x0 + 1) % w
+            y1 = (y0 + 1) % h
+            wx = qx - fx
+            wy = qy - fy
+        else:
+            sx = np.clip(x_grid + vx_arr, 0.0, w - 1.0)
+            sy = np.clip(y_grid + vy_arr, 0.0, h - 1.0)
+            x0 = np.floor(sx).astype(np.int64)
+            y0 = np.floor(sy).astype(np.int64)
+            x1 = np.clip(x0 + 1, 0, w - 1)
+            y1 = np.clip(y0 + 1, 0, h - 1)
+            wx = sx - x0
+            wy = sy - y0
 
         warped = np.zeros_like(arr)
         for ch in range(c):

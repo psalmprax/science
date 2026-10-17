@@ -270,6 +270,89 @@ pub fn warp_bilinear_2d(
     Ok(output)
 }
 
+/// 2D Bilinear Sub-Pixel Coordinate Warping with PERIODIC (wrap-around)
+/// boundary conditions:
+///   I_out(c, y, x) = I_in(c, wrap(y + vy), wrap(x + vx))
+///
+/// Indexing mirrors the fluid-domain generator's semi-Lagrangian backtrace
+/// exactly: the backtrace coordinate is floored FIRST, the integer index is
+/// wrapped with `rem_euclid` (numpy `%` semantics for negative coordinates),
+/// and the fractional weight is `q - floor(q)`. Floor-before-wrap matters:
+/// wrapping the float coordinate first loses exactness for tiny negative
+/// backtraces (a rounded `rem_euclid` can land on `size` instead of `0`).
+pub fn warp_bilinear_2d_periodic(
+    input: &[f64],
+    vx: &[f64],
+    vy: &[f64],
+    channels: usize,
+    height: usize,
+    width: usize,
+) -> Result<Vec<f64>, String> {
+    let plane_len = height * width;
+    if input.len() != channels * plane_len {
+        return Err(format!(
+            "Input length {} != channels {} * height {} * width {}",
+            input.len(),
+            channels,
+            height,
+            width
+        ));
+    }
+    if vx.len() != plane_len || vy.len() != plane_len {
+        return Err(format!(
+            "Flow lengths ({}, {}) != plane_size {}",
+            vx.len(),
+            vy.len(),
+            plane_len
+        ));
+    }
+    if height < 2 || width < 2 {
+        return Err("Dimensions must be at least 2x2".to_string());
+    }
+
+    let mut output = vec![0.0f64; input.len()];
+    let w_i = width as i64;
+    let h_i = height as i64;
+
+    output
+        .par_chunks_mut(plane_len)
+        .enumerate()
+        .for_each(|(c, out_plane)| {
+            let in_plane = &input[c * plane_len..(c + 1) * plane_len];
+            for y in 0..height {
+                let row_idx = y * width;
+                for x in 0..width {
+                    let idx = row_idx + x;
+                    // Backtrace source position (unclamped, un-wrapped).
+                    let qx = (x as f64) + vx[idx];
+                    let qy = (y as f64) + vy[idx];
+                    // Floor first, then wrap the integer index (numpy `%`).
+                    let fx = qx.floor();
+                    let fy = qy.floor();
+                    let x0 = (fx as i64).rem_euclid(w_i) as usize;
+                    let y0 = (fy as i64).rem_euclid(h_i) as usize;
+                    let x1 = (x0 + 1) % width;
+                    let y1 = (y0 + 1) % height;
+
+                    let wx = qx - fx;
+                    let wy = qy - fy;
+
+                    let top_left = in_plane[y0 * width + x0];
+                    let top_right = in_plane[y0 * width + x1];
+                    let bottom_left = in_plane[y1 * width + x0];
+                    let bottom_right = in_plane[y1 * width + x1];
+
+                    let top = top_left * (1.0 - wx) + top_right * wx;
+                    let bottom = bottom_left * (1.0 - wx) + bottom_right * wx;
+
+                    out_plane[idx] = top * (1.0 - wy) + bottom * wy;
+                }
+            }
+        });
+
+    Ok(output)
+}
+
 /// Compute spatial optical flow divergence:
 ///   div(v) = (vx(x+1, y) - vx(x-1, y)) / (2*dx) + (vy(x, y+1) - vy(x, y-1)) / (2*dy)
 pub fn compute_optical_flow_divergence(
@@ -434,6 +517,46 @@ mod tests {
         assert!((warped[0] - 1.5).abs() < 1e-12);
         // (1,0) samples beyond right border, clamped at 2.0 -> 2.0
         assert!((warped[1] - 2.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn warp_bilinear_2d_periodic_zero_flow_is_identity() {
+        let input = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+            7.0, 8.0, 9.0,
+        ];
+        let vx = vec![0.0; 9];
+        let vy = vec![0.0; 9];
+        let warped = warp_bilinear_2d_periodic(&input, &vx, &vy, 1, 3, 3).unwrap();
+        assert_eq!(warped, input);
+    }
+
+    #[test]
+    fn warp_bilinear_2d_periodic_wraps_across_border() {
+        // Row 0: 1 2, row 1: 3 4. Shift x by +1 with wrap:
+        // out(1,0) = in(0,0) = 1.0 (instead of clamping to 2.0).
+        let input = vec![1.0, 2.0, 3.0, 4.0];
+        let vx = vec![1.0; 4];
+        let vy = vec![0.0; 4];
+        let warped = warp_bilinear_2d_periodic(&input, &vx, &vy, 1, 2, 2).unwrap();
+        assert!((warped[0] - 2.0).abs() < 1e-15); // out(0,0) = in(1,0)
+        assert!((warped[1] - 1.0).abs() < 1e-15); // out(1,0) = in(0,0) wrapped
+        assert!((warped[2] - 4.0).abs() < 1e-15);
+        assert!((warped[3] - 3.0).abs() < 1e-15);
+    }
+
+    #[test]
+    fn warp_bilinear_2d_periodic_negative_backtrace_matches_floor_mod() {
+        // q = -0.5 must sample between the last and first columns with
+        // weight 0.5 (numpy floor-mod semantics), NOT clamp.
+        let input = vec![1.0, 2.0, 3.0, 4.0];
+        let vx = vec![-0.5; 4];
+        let vy = vec![0.0; 4];
+        let warped = warp_bilinear_2d_periodic(&input, &vx, &vy, 1, 2, 2).unwrap();
+        // out(0,0): 0.5 * in(1,0) + 0.5 * in(0,0) = 0.5*2 + 0.5*1 = 1.5
+        assert!((warped[0] - 1.5).abs() < 1e-15);
+        assert!((warped[1] - 1.5).abs() < 1e-15);
     }
 
     #[test]
