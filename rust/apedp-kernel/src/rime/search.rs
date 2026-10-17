@@ -828,9 +828,9 @@ pub fn null_model() -> Graph {
 /// Run the beam search. `seeds` are the small forms; `cols`/`target` are the
 /// **development** data only. The gate is spec §8: a candidate is accepted when
 /// `(parent_mse - candidate_mse) - lambda_c * complexity > 0`.
-pub fn search(
+pub fn search<V: crate::data::DataCol>(
     seeds: &[Graph],
-    cols: &[Vec<f64>],
+    cols: &[V],
     target: &[f64],
     cfg: &SearchConfig,
 ) -> SearchOutcome {

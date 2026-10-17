@@ -37,9 +37,9 @@ pub struct ResidualAnalysis {
 ///
 /// Diagnosis only: returns statistics, never modifies the graph and never
 /// promotes anything.
-pub fn diagnose_residuals(
+pub fn diagnose_residuals<V: crate::data::DataCol>(
     graph: &Graph,
-    columns: &[Vec<f64>],
+    columns: &[V],
     target: &[f64],
     threshold: f64,
     ridge: f64,

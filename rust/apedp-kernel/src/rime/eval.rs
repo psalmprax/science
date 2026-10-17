@@ -166,7 +166,7 @@ pub struct FittedScore {
 }
 
 /// Fit the readout of a graph and return `(mse, scale, intercept)`.
-pub fn fitted_mse(graph: &Graph, cols: &[Vec<f64>], target: &[f64], ridge: f64) -> (f64, f64, f64) {
+pub fn fitted_mse<V: crate::data::DataCol>(graph: &Graph, cols: &[V], target: &[f64], ridge: f64) -> (f64, f64, f64) {
     let out = graph.evaluate(cols);
     let (a, b) = fit_readout(&out, target, ridge);
     let (mse, _, _, _) = residual_stats(&out, target, a, b);
@@ -174,10 +174,10 @@ pub fn fitted_mse(graph: &Graph, cols: &[Vec<f64>], target: &[f64], ridge: f64) 
 }
 
 /// Score one candidate against its parent's dev MSE, on the fitted readout.
-pub fn score_candidate_fitted(
+pub fn score_candidate_fitted<V: crate::data::DataCol>(
     graph: &Graph,
     parent_dev_mse: f64,
-    cols: &[Vec<f64>],
+    cols: &[V],
     target: &[f64],
     cfg: &ScoreConfig,
 ) -> FittedScore {
@@ -192,9 +192,9 @@ pub fn score_candidate_fitted(
 
 /// Parallel batch scoring on fitted readouts. Returns scores in input order
 /// (deterministic despite parallelism).
-pub fn score_batch_fitted(
+pub fn score_batch_fitted<V: crate::data::DataCol>(
     jobs: &[(Graph, f64, Vec<f64>)],
-    cols: &[Vec<f64>],
+    cols: &[V],
     cfg: &ScoreConfig,
 ) -> Vec<FittedScore> {
     jobs.par_iter()
@@ -206,10 +206,10 @@ pub fn score_batch_fitted(
 /// planted mechanism whose amplitude or offset differs from the target's, so it
 /// must never be used to decide promotion. Kept so audits can reproduce the
 /// pre-v0.1.1 numbers.
-pub fn score_candidate_raw(
+pub fn score_candidate_raw<V: crate::data::DataCol>(
     graph: &Graph,
     parent_dev_mse: f64,
-    cols: &[Vec<f64>],
+    cols: &[V],
     target: &[f64],
     lambda_c: f64,
 ) -> (f64, f64, usize) {
@@ -220,9 +220,9 @@ pub fn score_candidate_raw(
 }
 
 /// Parallel batch scoring on raw outputs (diagnostic; see [`score_candidate_raw`]).
-pub fn score_batch_raw(
+pub fn score_batch_raw<V: crate::data::DataCol>(
     jobs: &[(Graph, f64, Vec<f64>)],
-    cols: &[Vec<f64>],
+    cols: &[V],
     lambda_c: f64,
 ) -> Vec<(f64, f64, usize)> {
     jobs.par_iter()

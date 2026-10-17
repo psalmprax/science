@@ -59,8 +59,8 @@ pub fn metrics(y_true: &[f64], y_pred: &[f64]) -> (f64, f64, f64, f64, bool) {
 ///
 /// `cols` are the columns; the matrix is `n_rows x n_cols`. Mirrors
 /// `RustKernelBridge._fallback_conditioning`.
-pub fn conditioning(
-    cols: &[Vec<f64>],
+pub fn conditioning<V: crate::data::DataCol>(
+    cols: &[V],
     rcond_threshold: f64,
 ) -> (f64, f64, f64, usize, bool, Vec<f64>) {
     let degenerate = || (f64::INFINITY, 0.0, 0.0, 0usize, false, Vec::new());
@@ -68,8 +68,8 @@ pub fn conditioning(
     if cols.is_empty() {
         return degenerate();
     }
-    let n_rows = cols[0].len();
-    if cols.iter().any(|c| c.len() != n_rows) {
+    let n_rows = cols[0].row_len();
+    if cols.iter().any(|c| c.row_len() != n_rows) {
         // Ragged columns have no matrix. numpy would raise here, and the
         // Python side catches it into the degenerate report.
         return degenerate();
@@ -107,15 +107,15 @@ pub fn conditioning(
 /// Mirrors `RustKernelBridge._fallback_linear_solver`: with `lambda_reg` above
 /// `1e-15` it forms the regularised normal equations and solves them, and
 /// reports the same MSE/MAE/R^2 plus the conditioning of the original basis.
-pub fn linear_least_squares(
-    cols: &[Vec<f64>],
+pub fn linear_least_squares<V: crate::data::DataCol>(
+    cols: &[V],
     target: &[f64],
     lambda_reg: f64,
 ) -> Result<(Vec<f64>, f64, f64, f64, f64, bool), String> {
     if cols.is_empty() {
         return Err("linear solve needs at least one basis column".to_string());
     }
-    let n = cols[0].len();
+    let n = cols[0].row_len();
     if n == 0 {
         return Err("linear solve needs at least one row".to_string());
     }
@@ -127,10 +127,10 @@ pub fn linear_least_squares(
         ));
     }
     for (i, c) in cols.iter().enumerate() {
-        if c.len() != n {
+        if c.row_len() != n {
             return Err(format!(
                 "basis column {i} has length {} but column 0 has length {n}",
-                c.len()
+                c.row_len()
             ));
         }
     }
@@ -217,11 +217,11 @@ pub fn precision_boundary(
 }
 
 #[inline]
-fn to_matrix(cols: &[Vec<f64>], n_rows: usize, n_cols: usize) -> Vec<f64> {
+fn to_matrix<V: crate::data::DataCol>(cols: &[V], n_rows: usize, n_cols: usize) -> Vec<f64> {
     let mut m = vec![0.0f64; n_rows * n_cols];
     for c in 0..n_cols {
         for r in 0..n_rows {
-            m[r * n_cols + c] = cols[c][r];
+            m[r * n_cols + c] = cols[c].row(r);
         }
     }
     m

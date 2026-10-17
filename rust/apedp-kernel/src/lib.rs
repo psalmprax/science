@@ -12,6 +12,7 @@
 //! "this expression is bad"; the bridge turns it into a per-candidate fallback
 //! and keeps going.
 
+pub mod data;
 pub mod numeric;
 pub mod ode;
 pub mod parser;
@@ -19,8 +20,12 @@ pub mod units;
 pub mod genetic;
 pub mod rime;
 
+pub use data::DataCol;
+
+use ndarray::ArrayView1;
+
 use ndarray::Array2;
-use numpy::{IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1};
+use numpy::{IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArray3, PyUntypedArrayMethods};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
@@ -61,29 +66,85 @@ impl CompiledExpression {
     }
 }
 
-/// Copy a list of 1-D float64 arrays into owned vectors.
-fn extract_columns(obj: &Bound<'_, PyAny>, what: &str) -> PyResult<Vec<Vec<f64>>> {
-    let list = obj
-        .downcast::<PyList>()
-        .map_err(|_| PyValueError::new_err(format!("{what} must be a list of 1-D float64 arrays")))?;
-    let mut out = Vec::with_capacity(list.len());
-    for item in list.iter() {
-        let arr = item.extract::<PyReadonlyArray1<f64>>().map_err(|e| {
-            PyValueError::new_err(format!("{what} must contain 1-D float64 arrays: {e}"))
-        })?;
-        if arr.as_array().len() == 0 {
-            return Err(PyValueError::new_err(format!("{what} must not be empty")));
-        }
-        out.push(arr.as_array().iter().copied().collect());
-    }
-    Ok(out)
+/// Guard-backed zero-copy columns extracted from a Python list of NumPy arrays.
+///
+/// The [`PyReadonlyArray1`] guards pin the Python-side buffers alive, so this
+/// struct must live as long as any views materialized from it. The views
+/// ([`PythonColumns::views`]) alias the NumPy memory directly: the previous
+/// `Vec<Vec<f64>>` deep-copy re-copied the same dataset on every
+/// per-candidate call, which is the cost this replaces.
+struct PythonColumns<'py> {
+    sources: Vec<PyReadonlyArray1<'py, f64>>,
 }
 
-fn extract_vec1(obj: &Bound<'_, PyAny>, what: &str) -> PyResult<Vec<f64>> {
-    let arr = obj.extract::<PyReadonlyArray1<f64>>().map_err(|e| {
-        PyValueError::new_err(format!("{what} must be a 1-D float64 array: {e}"))
-    })?;
-    Ok(arr.as_array().iter().copied().collect())
+impl<'py> PythonColumns<'py> {
+    fn extract(obj: &'py Bound<'_, PyAny>, what: &str) -> PyResult<Self> {
+        let list = obj
+            .downcast::<PyList>()
+            .map_err(|_| PyValueError::new_err(format!("{what} must be a list of 1-D float64 arrays")))?;
+        let mut sources = Vec::with_capacity(list.len());
+        for item in list.iter() {
+            let arr: PyReadonlyArray1<f64> = item.extract().map_err(|e| {
+                PyValueError::new_err(format!("{what} must contain 1-D float64 arrays: {e}"))
+            })?;
+            if arr.as_array().len() == 0 {
+                return Err(PyValueError::new_err(format!("{what} must not be empty")));
+            }
+            sources.push(arr);
+        }
+        Ok(Self { sources })
+    }
+
+    /// Materialize zero-copy borrowed views over the held NumPy buffers.
+    fn views(&self) -> Vec<ArrayView1<'_, f64>> {
+        self.sources.iter().map(|a| a.as_array()).collect()
+    }
+}
+
+/// Guard-backed zero-copy 1-D vector extracted from a NumPy array.
+///
+/// Mirrors [`PythonColumns`] for the single-array case (targets, true/pred
+/// pairs). The [`PyReadonlyArray1`] guard pins the Python buffer alive; a
+/// contiguous buffer is handed out as a borrowed [`PyReadonlyArray::as_slice`]
+/// into Python-side memory with no copy, and a strided buffer falls back to
+/// one owned copy so the [`GuardedVector::slice`] contract (`&[f64]`) always
+/// holds.
+struct GuardedVector<'py> {
+    source: PyReadonlyArray1<'py, f64>,
+    /// Empty when the source buffer is contiguous; otherwise the one-time
+    /// copy that every subsequent consumer reads.
+    owned: Vec<f64>,
+}
+
+impl<'py> GuardedVector<'py> {
+    fn extract(obj: &'py Bound<'_, PyAny>, what: &str) -> PyResult<Self> {
+        let arr: PyReadonlyArray1<f64> = obj.extract().map_err(|e| {
+            PyValueError::new_err(format!("{what} must be a 1-D float64 array: {e}"))
+        })?;
+        if arr.as_slice().is_ok() {
+            Ok(Self { source: arr, owned: Vec::new() })
+        } else {
+            // Strided buffer: one-time contiguous copy; every subsequent
+            // consumer reads that instead of re-copying per row.
+            let owned: Vec<f64> = arr.as_array().iter().copied().collect();
+            Ok(Self { source: arr, owned })
+        }
+    }
+
+    /// Zero-copy view of the extracted vector (one-time copy when strided).
+    ///
+    /// The returned borrow is tied to `&self` (the guard), and the guard pins
+    /// a Python reference — so callers that release the GIL must hoist this
+    /// call *outside* the closure. The `&[f64]` slice it yields is
+    /// `Send + Sync` and safe to hold across `allow_threads`.
+    fn slice(&self) -> &[f64] {
+        if !self.owned.is_empty() {
+            return &self.owned;
+        }
+        self.source
+            .as_slice()
+            .expect("contiguity verified at extraction")
+    }
 }
 
 #[pyfunction]
@@ -100,7 +161,8 @@ fn evaluate_batch<'py>(
     compiled: &CompiledExpression,
     data: &Bound<'py, PyAny>,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
-    let cols = extract_columns(data, "data")?;
+    let cols_guard = PythonColumns::extract(data, "data")?;
+    let cols = cols_guard.views();
     let values = compiled
         .inner
         .evaluate(&cols)
@@ -114,9 +176,9 @@ fn compute_metrics(
     y_true: &Bound<'_, PyAny>,
     y_pred: &Bound<'_, PyAny>,
 ) -> PyResult<(f64, f64, f64, f64, bool)> {
-    let yt = extract_vec1(y_true, "y_true")?;
-    let yp = extract_vec1(y_pred, "y_pred")?;
-    Ok(numeric::metrics(&yt, &yp))
+    let yt_guard = GuardedVector::extract(y_true, "y_true")?;
+    let yp_guard = GuardedVector::extract(y_pred, "y_pred")?;
+    Ok(numeric::metrics(yt_guard.slice(), yp_guard.slice()))
 }
 
 /// Score compiled candidates against one target, in parallel.
@@ -135,8 +197,10 @@ fn score_candidates_parallel(
 ) -> PyResult<Vec<(usize, f64, f64, f64, f64, bool)>> {
     use rayon::prelude::*;
 
-    let cols = extract_columns(data, "data")?;
-    let target_vec = extract_vec1(target, "target")?;
+    let cols_guard = PythonColumns::extract(data, "data")?;
+    let cols = cols_guard.views();
+    let target_guard = GuardedVector::extract(target, "target")?;
+    let target_slice = target_guard.slice();
 
     // Release the GIL for the fan-out: the whole point of this entry point is
     // using more than one core, and holding the GIL would serialise it.
@@ -152,7 +216,7 @@ fn score_candidates_parallel(
                 match c.inner.evaluate(&cols) {
                     Ok(pred) => {
                         let (mse, mae, r2, max_res, has_nan) =
-                            numeric::metrics(&target_vec, &pred);
+                            numeric::metrics(target_slice, &pred);
                         (id, mse, mae, r2, max_res, has_nan)
                     }
                     Err(_) => (id, f64::NAN, f64::NAN, f64::NAN, f64::NAN, true),
@@ -269,7 +333,8 @@ fn compute_matrix_conditioning(
     cols: &Bound<'_, PyAny>,
     rcond_threshold: f64,
 ) -> PyResult<(f64, f64, f64, usize, bool, Vec<f64>)> {
-    let columns = extract_columns(cols, "cols")?;
+    let columns_guard = PythonColumns::extract(cols, "cols")?;
+    let columns = columns_guard.views();
     Ok(numeric::conditioning(&columns, rcond_threshold))
 }
 
@@ -284,9 +349,10 @@ fn solve_linear_coefficients(
     target: &Bound<'_, PyAny>,
     lambda_reg: f64,
 ) -> PyResult<(Vec<f64>, f64, f64, f64, f64, bool)> {
-    let columns = extract_columns(cols, "cols")?;
-    let target_vec = extract_vec1(target, "target")?;
-    numeric::linear_least_squares(&columns, &target_vec, lambda_reg)
+    let columns_guard = PythonColumns::extract(cols, "cols")?;
+    let columns = columns_guard.views();
+    let target_guard = GuardedVector::extract(target, "target")?;
+    numeric::linear_least_squares(&columns, target_guard.slice(), lambda_reg)
         .map_err(PyValueError::new_err)
 }
 
@@ -557,8 +623,10 @@ fn evolve_native<'py>(
     polish_top_k: usize,
     seed: u64,
 ) -> PyResult<(Vec<(String, f64, usize, f64, f64)>, usize)> {
-    let columns = extract_columns(data, "data")?;
-    let target_vec = extract_vec1(target, "target")?;
+    let columns_guard = PythonColumns::extract(data, "data")?;
+    let columns = columns_guard.views();
+    let target_guard = GuardedVector::extract(target, "target")?;
+    let target_slice = target_guard.slice();
     let config = genetic::NativeSearchConfig {
         population_size,
         generations,
@@ -578,7 +646,7 @@ fn evolve_native<'py>(
     };
 
     let (pareto, total_evals) = py.allow_threads(|| {
-        genetic::run_native_evolutionary_search(&columns, &target_vec, &variable_names, &config)
+        genetic::run_native_evolutionary_search(&columns, target_slice, &variable_names, &config)
     });
 
     let res: Vec<(String, f64, usize, f64, f64)> = pareto
@@ -610,13 +678,15 @@ fn rime_evaluate_json(
     graph
         .validate()
         .map_err(|e| PyValueError::new_err(format!("rime: invalid graph: {}", e)))?;
-    let columns = extract_columns(data, "data")?;
-    let target_vec = extract_vec1(target, "target")?;
+    let columns_guard = PythonColumns::extract(data, "data")?;
+    let columns = columns_guard.views();
+    let target_guard = GuardedVector::extract(target, "target")?;
+    let target_slice = target_guard.slice();
     // Single-candidate evaluation: no selection charge is added here, because
     // the caller knows how many candidates it looked at; the search sets it.
     let score_cfg = rime::eval::ScoreConfig::new(lambda_c, ridge);
     let s = py.allow_threads(|| {
-        rime::eval::score_candidate_fitted(&graph, parent_mse, &columns, &target_vec, &score_cfg)
+        rime::eval::score_candidate_fitted(&graph, parent_mse, &columns, target_slice, &score_cfg)
     });
     Ok((graph.id(), s.score, s.mse, s.skipped, s.scale, s.intercept, s.r2, s.complexity))
 }
@@ -634,7 +704,8 @@ fn rime_evaluate_series_json(
 ) -> PyResult<Vec<f64>> {
     let graph: rime::graph::Graph = serde_json::from_str(graph_json)
         .map_err(|e| PyValueError::new_err(format!("rime: bad graph JSON: {}", e)))?;
-    let columns = extract_columns(data, "data")?;
+    let columns_guard = PythonColumns::extract(data, "data")?;
+    let columns = columns_guard.views();
     py.allow_threads(|| graph.evaluate_checked(&columns))
         .map_err(|e| PyValueError::new_err(format!("rime: invalid graph: {}", e)))
 }
@@ -829,8 +900,10 @@ fn rime_search_json(
     config_json: &str,
     variable_names: Option<Vec<String>>,
 ) -> PyResult<String> {
-    let columns = extract_columns(data, "data")?;
-    let target_vec = extract_vec1(target, "target")?;
+    let columns_guard = PythonColumns::extract(data, "data")?;
+    let columns = columns_guard.views();
+    let target_guard = GuardedVector::extract(target, "target")?;
+    let target_slice = target_guard.slice();
     let requested: Vec<String> = variable_names.unwrap_or_default();
 
     let mut cfg = rime::search::SearchConfig::default();
@@ -894,10 +967,10 @@ fn rime_search_json(
     }
     if let Some(v) = raw.get("gamma").and_then(|v| v.as_f64()) {
         // Sample-size-aware calibration: gamma * var(y) / n_dev.
-        let n_dev = target_vec.iter().filter(|t| t.is_finite()).count();
-        cfg.lambda_c = v * rime::search::target_variance(&target_vec) / n_dev.max(1) as f64;
+        let n_dev = target_guard.slice().iter().filter(|t| t.is_finite()).count();
+        cfg.lambda_c = v * rime::search::target_variance(target_guard.slice()) / n_dev.max(1) as f64;
     } else if let Some(v) = raw.get("rel_penalty").and_then(|v| v.as_f64()) {
-        cfg.lambda_c = v * rime::search::target_variance(&target_vec);
+        cfg.lambda_c = v * rime::search::target_variance(target_guard.slice());
     } else if let Some(v) = raw.get("lambda_c").and_then(|v| v.as_f64()) {
         cfg.lambda_c = v;
     }
@@ -915,7 +988,7 @@ fn rime_search_json(
     // exactly the frozen single-term `search`, so existing callers see no change.
     let additive_terms = raw.get("additive_terms").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
     let outcome = py.allow_threads(|| {
-        rime::additive::search_additive(&seeds, &columns, &target_vec, &cfg, additive_terms)
+        rime::additive::search_additive(&seeds, &columns, target_slice, &cfg, additive_terms)
     });
     let mut packet = outcome.to_json();
     // Name the variables in every equation so the referee packet is readable.
@@ -1108,6 +1181,797 @@ fn rime_lie_symmetry_json(f_terms_json: &str, config_json: &str) -> PyResult<Str
         .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
 }
 
+#[pyfunction]
+fn rime_pde_discover_json(
+    u_grid_json: &str,
+    dt: f64,
+    dx: f64,
+    config_json: &str,
+) -> PyResult<String> {
+    let u_grid: Vec<Vec<f64>> = serde_json::from_str(u_grid_json)
+        .map_err(|e| PyValueError::new_err(format!("bad u_grid JSON: {}", e)))?;
+    let config: rime::pde::PdeConfig = if config_json.is_empty() {
+        rime::pde::PdeConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+    let res = rime::pde::discover_pde_1d(&u_grid, dt, dx, &config)
+        .map_err(|e| PyValueError::new_err(e))?;
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_pde_discover_2d_json(
+    u_grid_json: &str,
+    dt: f64,
+    dx: f64,
+    dy: f64,
+    config_json: &str,
+) -> PyResult<String> {
+    let u_grid: Vec<Vec<Vec<f64>>> = serde_json::from_str(u_grid_json)
+        .map_err(|e| PyValueError::new_err(format!("bad u_grid 2D JSON: {}", e)))?;
+    let config: rime::pde::PdeConfig = if config_json.is_empty() {
+        rime::pde::PdeConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+    let res = rime::pde::discover_pde_2d(&u_grid, dt, dx, dy, &config)
+        .map_err(|e| PyValueError::new_err(e))?;
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_pde_discover_nonuniform_json(
+    u_grid_json: &str,
+    t_coords: Vec<f64>,
+    x_coords: Vec<f64>,
+    config_json: &str,
+) -> PyResult<String> {
+    let u_grid: Vec<Vec<f64>> = serde_json::from_str(u_grid_json)
+        .map_err(|e| PyValueError::new_err(format!("bad u_grid JSON: {}", e)))?;
+    let config: rime::pde::PdeConfig = if config_json.is_empty() {
+        rime::pde::PdeConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+    let res = rime::pde::discover_pde_nonuniform(&u_grid, &t_coords, &x_coords, &config)
+        .map_err(|e| PyValueError::new_err(e))?;
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_pde_discover_3d_json(
+    u_grid_json: &str,
+    dt: f64,
+    dx: f64,
+    dy: f64,
+    dz: f64,
+    config_json: &str,
+) -> PyResult<String> {
+    let u_grid: Vec<Vec<Vec<Vec<f64>>>> = serde_json::from_str(u_grid_json)
+        .map_err(|e| PyValueError::new_err(format!("bad u_grid 3D JSON: {}", e)))?;
+    let config: rime::pde::PdeConfig = if config_json.is_empty() {
+        rime::pde::PdeConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+    let res = rime::high_dim_pde::discover_pde_3d_cartesian(&u_grid, dt, dx, dy, dz, &config)
+        .map_err(|e| PyValueError::new_err(e))?;
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_high_dim_pde_radial_json(
+    r_coords: Vec<f64>,
+    u_grid_json: &str,
+    dt: f64,
+    dr: f64,
+    dimension: usize,
+    config_json: &str,
+) -> PyResult<String> {
+    let u_grid: Vec<Vec<f64>> = serde_json::from_str(u_grid_json)
+        .map_err(|e| PyValueError::new_err(format!("bad u_grid radial JSON: {}", e)))?;
+    let config: rime::pde::PdeConfig = if config_json.is_empty() {
+        rime::pde::PdeConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+    let res = rime::high_dim_pde::discover_pde_radial_hd(&r_coords, &u_grid, dt, dr, dimension, &config)
+        .map_err(|e| PyValueError::new_err(e))?;
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_high_dim_pde_point_cloud_json(
+    u_anchors_json: &str,
+    u_probes_plus_json: &str,
+    u_probes_minus_json: &str,
+    dt: f64,
+    h: f64,
+    dimension: usize,
+    config_json: &str,
+) -> PyResult<String> {
+    let u_anchors: Vec<Vec<f64>> = serde_json::from_str(u_anchors_json)
+        .map_err(|e| PyValueError::new_err(format!("bad u_anchors JSON: {}", e)))?;
+    let u_probes_plus: Vec<Vec<Vec<f64>>> = serde_json::from_str(u_probes_plus_json)
+        .map_err(|e| PyValueError::new_err(format!("bad u_probes_plus JSON: {}", e)))?;
+    let u_probes_minus: Vec<Vec<Vec<f64>>> = serde_json::from_str(u_probes_minus_json)
+        .map_err(|e| PyValueError::new_err(format!("bad u_probes_minus JSON: {}", e)))?;
+    let config: rime::pde::PdeConfig = if config_json.is_empty() {
+        rime::pde::PdeConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+    let res = rime::high_dim_pde::discover_pde_point_cloud_hd(
+        &u_anchors,
+        &u_probes_plus,
+        &u_probes_minus,
+        dt,
+        h,
+        dimension,
+        &config,
+    ).map_err(|e| PyValueError::new_err(e))?;
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_high_dim_pde_separable_json(
+    phi_grid_json: &str,
+    dt: f64,
+    dx: f64,
+    dimension: usize,
+    config_json: &str,
+) -> PyResult<String> {
+    let phi_grid: Vec<Vec<f64>> = serde_json::from_str(phi_grid_json)
+        .map_err(|e| PyValueError::new_err(format!("bad phi_grid JSON: {}", e)))?;
+    let config: rime::pde::PdeConfig = if config_json.is_empty() {
+        rime::pde::PdeConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+    let res = rime::high_dim_pde::discover_pde_separable_hd(&phi_grid, dt, dx, dimension, &config)
+        .map_err(|e| PyValueError::new_err(e))?;
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+#[pyo3(signature = (series_json, dt, labels=None, config_json=""))]
+fn rime_coupled_discover_json(
+    series_json: &str,
+    dt: f64,
+    labels: Option<Vec<String>>,
+    config_json: &str,
+) -> PyResult<String> {
+    let series: Vec<Vec<f64>> = serde_json::from_str(series_json)
+        .map_err(|e| PyValueError::new_err(format!("bad series JSON: {}", e)))?;
+    let config: rime::coupled_system::CoupledConfig = if config_json.is_empty() {
+        rime::coupled_system::CoupledConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+    let lbl_refs = labels.as_ref().map(|l| l.as_slice());
+    let res = rime::coupled_system::discover_coupled_system(&series, dt, lbl_refs, &config)
+        .map_err(|e| PyValueError::new_err(e))?;
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_number_theory_farey_json(val: f64, max_denom: i64, eps: f64) -> PyResult<String> {
+    let res = rime::number_theory::farey_rational(val, max_denom, eps);
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_number_theory_integer_relation_json(
+    x: Vec<f64>,
+    max_coeff: i64,
+    eps: f64,
+    labels: Option<Vec<String>>,
+) -> PyResult<String> {
+    let lbl_refs = labels.as_ref().map(|l| l.as_slice());
+    let res = rime::number_theory::find_integer_relation(&x, max_coeff, eps, lbl_refs);
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_number_theory_modular_lattice_json(
+    data: Vec<f64>,
+    min_spacing: f64,
+    max_spacing: f64,
+    max_rmse: f64,
+) -> PyResult<String> {
+    let res = rime::number_theory::detect_modular_lattice(&data, min_spacing, max_spacing, max_rmse);
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_invariant_transfer_evaluate_json(
+    candidate_name: String,
+    formula: String,
+    envs_json: String,
+    coeffs: Vec<f64>,
+    model_type: String,
+    min_worst_r2: f64,
+    max_r2_dispersion: f64,
+    extrap_margin_ratio: f64,
+    max_gradient_ratio: f64,
+) -> PyResult<String> {
+    let envs: Vec<rime::invariant_transfer::EnvironmentData> = serde_json::from_str(&envs_json)
+        .map_err(|e| PyValueError::new_err(format!("bad envs JSON: {}", e)))?;
+
+    let eval_fn = move |x: f64| -> f64 {
+        match model_type.as_str() {
+            "poly" => {
+                let mut sum = 0.0;
+                let mut x_pow = 1.0;
+                for &c in &coeffs {
+                    sum += c * x_pow;
+                    x_pow *= x;
+                }
+                sum
+            }
+            "rational" => {
+                let mid = coeffs.len() / 2;
+                let num_coeffs = &coeffs[0..mid];
+                let den_coeffs = &coeffs[mid..];
+                let mut num = 0.0;
+                let mut xp = 1.0;
+                for &c in num_coeffs {
+                    num += c * xp;
+                    xp *= x;
+                }
+                let mut den = 1.0;
+                let mut xd = x;
+                for &d in den_coeffs {
+                    den += d * xd;
+                    xd *= x;
+                }
+                if den.abs() < 1e-12 { f64::NAN } else { num / den }
+            }
+            _ => {
+                // Default linear: c0 + c1 * x
+                let c0 = coeffs.get(0).copied().unwrap_or(0.0);
+                let c1 = coeffs.get(1).copied().unwrap_or(1.0);
+                c0 + c1 * x
+            }
+        }
+    };
+
+    let res = rime::invariant_transfer::evaluate_invariant_transfer(
+        &candidate_name,
+        &formula,
+        &envs,
+        eval_fn,
+        min_worst_r2,
+        max_r2_dispersion,
+        extrap_margin_ratio,
+        max_gradient_ratio,
+    );
+
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_jet2_neural_pde_operator<'py>(
+    py: Python<'py>,
+    x: PyReadonlyArray2<'py, f64>,
+    w1: PyReadonlyArray2<'py, f64>,
+    b1: PyReadonlyArray1<'py, f64>,
+    w2: PyReadonlyArray1<'py, f64>,
+    viscosity_nu: f64,
+) -> PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)> {
+    let x_shape = x.shape();
+    let w1_shape = w1.shape();
+    let m = x_shape[0];
+    let d = x_shape[1];
+    let h = w1_shape[0];
+    if w1_shape[1] != d {
+        return Err(PyValueError::new_err("w1 column dimension must match x dimension D"));
+    }
+
+    let x_slice = x
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("x must be C-contiguous"))?;
+    let w1_slice = w1
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("w1 must be C-contiguous"))?;
+    let b1_slice = b1
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("b1 must be C-contiguous"))?;
+    let w2_slice = w2
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("w2 must be C-contiguous"))?;
+
+    let out = py
+        .allow_threads(|| {
+            rime::high_dim_pde::eval_jet2_neural_pde_operator(
+                x_slice,
+                w1_slice,
+                b1_slice,
+                w2_slice,
+                m,
+                d,
+                h,
+                viscosity_nu,
+            )
+        })
+        .map_err(|e| PyValueError::new_err(e))?;
+
+    Ok((
+        out.u.into_pyarray_bound(py),
+        out.grad_norm_sq.into_pyarray_bound(py),
+        out.laplacian.into_pyarray_bound(py),
+        out.pde_residual.into_pyarray_bound(py),
+    ))
+}
+
+#[pyfunction]
+fn rime_vlasov_attention_pde_step<'py>(
+    py: Python<'py>,
+    x_init: PyReadonlyArray2<'py, f64>,
+    steps: usize,
+    dt: f64,
+    damping: f64,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    let shape = x_init.shape();
+    let n = shape[0];
+    let d = shape[1];
+    let x_slice = x_init
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("x_init must be C-contiguous"))?;
+
+    let evolved = py
+        .allow_threads(|| {
+            rime::high_dim_pde::step_vlasov_attention_pde_hd(x_slice, n, d, steps, dt, damping)
+        })
+        .map_err(|e| PyValueError::new_err(e))?;
+
+    let arr = Array2::from_shape_vec((n, d), evolved)
+        .map_err(|e| PyValueError::new_err(format!("shape error: {}", e)))?;
+    Ok(arr.into_pyarray_bound(py))
+}
+
+#[pyfunction]
+fn rime_high_dim_pde_point_cloud_flat_json<'py>(
+    py: Python<'py>,
+    u_anchors: PyReadonlyArray2<'py, f64>,
+    u_probes_plus: PyReadonlyArray3<'py, f64>,
+    u_probes_minus: PyReadonlyArray3<'py, f64>,
+    dt: f64,
+    h: f64,
+    dimension: usize,
+    config_json: &str,
+) -> PyResult<String> {
+    let anc_shape = u_anchors.shape();
+    let nt = anc_shape[0];
+    let m = anc_shape[1];
+    let anc_slice = u_anchors
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("u_anchors must be C-contiguous"))?;
+    let plus_slice = u_probes_plus
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("u_probes_plus must be C-contiguous"))?;
+    let minus_slice = u_probes_minus
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("u_probes_minus must be C-contiguous"))?;
+    let config: rime::pde::PdeConfig = if config_json.is_empty() {
+        rime::pde::PdeConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+
+    let res = py
+        .allow_threads(|| {
+            rime::high_dim_pde::discover_pde_point_cloud_hd_flat(
+                anc_slice,
+                plus_slice,
+                minus_slice,
+                nt,
+                m,
+                dimension,
+                dt,
+                h,
+                &config,
+            )
+        })
+        .map_err(|e| PyValueError::new_err(e))?;
+
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_fokker_planck_ou_operator<'py>(
+    py: Python<'py>,
+    x: PyReadonlyArray2<'py, f64>,
+    w1: PyReadonlyArray2<'py, f64>,
+    b1: PyReadonlyArray1<'py, f64>,
+    w2: PyReadonlyArray1<'py, f64>,
+    diffusion_nu: f64,
+    drift_gamma: f64,
+) -> PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)> {
+    let x_shape = x.shape();
+    let w1_shape = w1.shape();
+    let m = x_shape[0];
+    let d = x_shape[1];
+    let h = w1_shape[0];
+    if w1_shape[1] != d {
+        return Err(PyValueError::new_err("w1 column dimension must match x dimension D"));
+    }
+
+    let x_slice = x.as_slice().map_err(|_| PyValueError::new_err("x must be C-contiguous"))?;
+    let w1_slice = w1.as_slice().map_err(|_| PyValueError::new_err("w1 must be C-contiguous"))?;
+    let b1_slice = b1.as_slice().map_err(|_| PyValueError::new_err("b1 must be C-contiguous"))?;
+    let w2_slice = w2.as_slice().map_err(|_| PyValueError::new_err("w2 must be C-contiguous"))?;
+
+    let out = py
+        .allow_threads(|| {
+            rime::high_dim_pde::eval_fokker_planck_ou_operator(
+                x_slice,
+                w1_slice,
+                b1_slice,
+                w2_slice,
+                m,
+                d,
+                h,
+                diffusion_nu,
+                drift_gamma,
+            )
+        })
+        .map_err(|e| PyValueError::new_err(e))?;
+
+    Ok((
+        out.u.into_pyarray_bound(py),
+        out.grad_norm_sq.into_pyarray_bound(py),
+        out.laplacian.into_pyarray_bound(py),
+        out.pde_residual.into_pyarray_bound(py),
+    ))
+}
+
+#[pyfunction]
+fn rime_jet3_pde_loss_and_grads<'py>(
+    py: Python<'py>,
+    x: PyReadonlyArray2<'py, f64>,
+    target_f: PyReadonlyArray1<'py, f64>,
+    w1: PyReadonlyArray2<'py, f64>,
+    b1: PyReadonlyArray1<'py, f64>,
+    w2: PyReadonlyArray1<'py, f64>,
+    viscosity_nu: f64,
+    hjb_beta: f64,
+    reaction_mu: f64,
+) -> PyResult<(
+    f64,
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)> {
+    let x_shape = x.shape();
+    let w1_shape = w1.shape();
+    let m = x_shape[0];
+    let d = x_shape[1];
+    let h = w1_shape[0];
+    if w1_shape[1] != d {
+        return Err(PyValueError::new_err("w1 column dimension must match x dimension D"));
+    }
+
+    let x_slice = x.as_slice().map_err(|_| PyValueError::new_err("x must be C-contiguous"))?;
+    let f_slice = target_f.as_slice().map_err(|_| PyValueError::new_err("target_f must be C-contiguous"))?;
+    let w1_slice = w1.as_slice().map_err(|_| PyValueError::new_err("w1 must be C-contiguous"))?;
+    let b1_slice = b1.as_slice().map_err(|_| PyValueError::new_err("b1 must be C-contiguous"))?;
+    let w2_slice = w2.as_slice().map_err(|_| PyValueError::new_err("w2 must be C-contiguous"))?;
+
+    let out = py
+        .allow_threads(|| {
+            rime::high_dim_pde::compute_jet3_pde_loss_and_grads(
+                x_slice,
+                f_slice,
+                w1_slice,
+                b1_slice,
+                w2_slice,
+                m,
+                d,
+                h,
+                viscosity_nu,
+                hjb_beta,
+                reaction_mu,
+            )
+        })
+        .map_err(|e| PyValueError::new_err(e))?;
+
+    let gw1_arr = Array2::from_shape_vec((h, d), out.grad_w1)
+        .map_err(|e| PyValueError::new_err(format!("shape error: {}", e)))?;
+
+    Ok((
+        out.loss,
+        gw1_arr.into_pyarray_bound(py),
+        out.grad_b1.into_pyarray_bound(py),
+        out.grad_w2.into_pyarray_bound(py),
+    ))
+}
+
+#[pyfunction]
+fn rime_pde_discover_nd_cartesian_json<'py>(
+    py: Python<'py>,
+    u_flat: PyReadonlyArray1<'py, f64>,
+    grid_shape: Vec<usize>,
+    dt: f64,
+    dxs: Vec<f64>,
+    config_json: &str,
+) -> PyResult<String> {
+    let u_slice = u_flat
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("u_flat must be C-contiguous"))?;
+    let config: rime::pde::PdeConfig = if config_json.is_empty() {
+        rime::pde::PdeConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+
+    let res = py
+        .allow_threads(|| {
+            rime::high_dim_pde::discover_pde_nd_cartesian(u_slice, &grid_shape, dt, &dxs, &config)
+        })
+        .map_err(|e| PyValueError::new_err(e))?;
+
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_high_dim_pde_rbf_point_cloud_json<'py>(
+    py: Python<'py>,
+    points_flat: PyReadonlyArray1<'py, f64>,
+    u_values_flat: PyReadonlyArray1<'py, f64>,
+    nt: usize,
+    m: usize,
+    dimension: usize,
+    dt: f64,
+    config_json: &str,
+) -> PyResult<String> {
+    let pts_slice = points_flat
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("points_flat must be C-contiguous"))?;
+    let u_slice = u_values_flat
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("u_values_flat must be C-contiguous"))?;
+    let config: rime::pde::PdeConfig = if config_json.is_empty() {
+        rime::pde::PdeConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+
+    let res = py
+        .allow_threads(|| {
+            rime::high_dim_pde::discover_pde_rbf_point_cloud_hd(
+                pts_slice, u_slice, nt, m, dimension, dt, &config,
+            )
+        })
+        .map_err(|e| PyValueError::new_err(e))?;
+
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_high_dim_pde_tensor_train_json<'py>(
+    py: Python<'py>,
+    tt_cores_flat: PyReadonlyArray1<'py, f64>,
+    nt: usize,
+    bond_rank: usize,
+    dimension: usize,
+    nx: usize,
+    dt: f64,
+    dx: f64,
+    config_json: &str,
+) -> PyResult<String> {
+    let cores_slice = tt_cores_flat
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("tt_cores_flat must be C-contiguous"))?;
+    let config: rime::pde::PdeConfig = if config_json.is_empty() {
+        rime::pde::PdeConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+
+    let res = py
+        .allow_threads(|| {
+            rime::high_dim_pde::discover_pde_tensor_train_hd(
+                cores_slice,
+                nt,
+                bond_rank,
+                dimension,
+                nx,
+                dt,
+                dx,
+                &config,
+            )
+        })
+        .map_err(|e| PyValueError::new_err(e))?;
+
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_high_dim_pde_neural_pinn_json<'py>(
+    py: Python<'py>,
+    x_collocation_flat: PyReadonlyArray1<'py, f64>,
+    w1_flat: PyReadonlyArray1<'py, f64>,
+    b1: PyReadonlyArray1<'py, f64>,
+    w2_time_flat: PyReadonlyArray1<'py, f64>,
+    nt: usize,
+    m: usize,
+    dimension: usize,
+    h: usize,
+    dt: f64,
+    config_json: &str,
+) -> PyResult<String> {
+    let x_slice = x_collocation_flat
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("x_collocation_flat must be C-contiguous"))?;
+    let w1_slice = w1_flat
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("w1_flat must be C-contiguous"))?;
+    let b1_slice = b1
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("b1 must be C-contiguous"))?;
+    let w2_slice = w2_time_flat
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("w2_time_flat must be C-contiguous"))?;
+    let config: rime::pde::PdeConfig = if config_json.is_empty() {
+        rime::pde::PdeConfig::default()
+    } else {
+        serde_json::from_str(config_json)
+            .map_err(|e| PyValueError::new_err(format!("bad config JSON: {}", e)))?
+    };
+
+    let res = py
+        .allow_threads(|| {
+            rime::high_dim_pde::discover_pde_neural_pinn_hd(
+                x_slice, w1_slice, b1_slice, w2_slice, nt, m, dimension, h, dt, &config,
+            )
+        })
+        .map_err(|e| PyValueError::new_err(e))?;
+
+    serde_json::to_string(&res)
+        .map_err(|e| PyValueError::new_err(format!("serialize failed: {}", e)))
+}
+
+#[pyfunction]
+fn rime_jet2_video_flow_step<'py>(
+    py: Python<'py>,
+    z: PyReadonlyArray1<'py, f64>,
+    v_current: PyReadonlyArray1<'py, f64>,
+    v_t_plus: PyReadonlyArray1<'py, f64>,
+    v_t_minus: PyReadonlyArray1<'py, f64>,
+    v_spatial_plus: PyReadonlyArray1<'py, f64>,
+    v_spatial_minus: PyReadonlyArray1<'py, f64>,
+    dt: f64,
+    dt_span: f64,
+    two_h_disp: f64,
+    order: usize,
+) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
+    let z_slice = z
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("z must be C-contiguous"))?;
+    let vc_slice = v_current
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("v_current must be C-contiguous"))?;
+    let vtp_slice = v_t_plus
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("v_t_plus must be C-contiguous"))?;
+    let vtm_slice = v_t_minus
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("v_t_minus must be C-contiguous"))?;
+    let vsp_slice = v_spatial_plus
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("v_spatial_plus must be C-contiguous"))?;
+    let vsm_slice = v_spatial_minus
+        .as_slice()
+        .map_err(|_| PyValueError::new_err("v_spatial_minus must be C-contiguous"))?;
+
+    let (z_next, a_out) = py
+        .allow_threads(|| {
+            rime::high_dim_pde::jet2_video_flow_step(
+                z_slice,
+                vc_slice,
+                vtp_slice,
+                vtm_slice,
+                vsp_slice,
+                vsm_slice,
+                dt,
+                dt_span,
+                two_h_disp,
+                order,
+            )
+        })
+        .map_err(|e| PyValueError::new_err(e))?;
+
+    Ok((z_next.into_pyarray_bound(py), a_out.into_pyarray_bound(py)))
+}
+
+#[pyfunction]
+#[pyo3(signature = (vx, vy, height, width, dx=1.0, dy=1.0, num_iter=50))]
+fn rime_helmholtz_hodge_div_free_2d<'py>(
+    py: Python<'py>,
+    vx: PyReadonlyArray1<'py, f64>,
+    vy: PyReadonlyArray1<'py, f64>,
+    height: usize,
+    width: usize,
+    dx: f64,
+    dy: f64,
+    num_iter: usize,
+) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>, f64)> {
+    let vx_slice = vx.as_slice().map_err(|_| PyValueError::new_err("vx must be C-contiguous"))?;
+    let vy_slice = vy.as_slice().map_err(|_| PyValueError::new_err("vy must be C-contiguous"))?;
+
+    let (vx_sol, vy_sol, rem_div) = py
+        .allow_threads(|| {
+            rime::high_dim_pde::helmholtz_hodge_div_free_2d(vx_slice, vy_slice, height, width, dx, dy, num_iter)
+        })
+        .map_err(|e| PyValueError::new_err(e))?;
+
+    Ok((vx_sol.into_pyarray_bound(py), vy_sol.into_pyarray_bound(py), rem_div))
+}
+
+#[pyfunction]
+#[pyo3(signature = (field, height, width, channels, nu, dt, dx=1.0, dy=1.0))]
+fn rime_laplacian_dissipation_2d<'py>(
+    py: Python<'py>,
+    field: PyReadonlyArray1<'py, f64>,
+    height: usize,
+    width: usize,
+    channels: usize,
+    nu: f64,
+    dt: f64,
+    dx: f64,
+    dy: f64,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let field_slice = field.as_slice().map_err(|_| PyValueError::new_err("field must be C-contiguous"))?;
+
+    let out = py
+        .allow_threads(|| {
+            rime::high_dim_pde::laplacian_dissipation_2d(field_slice, height, width, channels, nu, dt, dx, dy)
+        })
+        .map_err(|e| PyValueError::new_err(e))?;
+
+    Ok(out.into_pyarray_bound(py))
+}
+
 #[pymodule]
 fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(compile, m)?)?;
@@ -1134,6 +1998,30 @@ fn apedp_kernel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rime_rational_search_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_koopman_discover_json, m)?)?;
     m.add_function(wrap_pyfunction!(rime_lie_symmetry_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_pde_discover_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_pde_discover_2d_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_pde_discover_nonuniform_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_pde_discover_3d_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_pde_discover_nd_cartesian_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_high_dim_pde_radial_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_high_dim_pde_point_cloud_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_high_dim_pde_point_cloud_flat_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_high_dim_pde_rbf_point_cloud_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_high_dim_pde_tensor_train_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_high_dim_pde_neural_pinn_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_high_dim_pde_separable_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_jet2_neural_pde_operator, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_jet2_video_flow_step, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_helmholtz_hodge_div_free_2d, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_laplacian_dissipation_2d, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_fokker_planck_ou_operator, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_jet3_pde_loss_and_grads, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_vlasov_attention_pde_step, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_coupled_discover_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_number_theory_farey_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_number_theory_integer_relation_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_number_theory_modular_lattice_json, m)?)?;
+    m.add_function(wrap_pyfunction!(rime_invariant_transfer_evaluate_json, m)?)?;
     m.add_class::<UnitVector>()?;
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     Ok(())

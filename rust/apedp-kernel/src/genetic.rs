@@ -145,7 +145,6 @@ impl NodeExt for Node {
                     Func::Sqrt => "sqrt",
                     Func::Abs => "abs",
                     Func::Sign => "sign",
-                    Func::Tan => "tan",
                     Func::Sinh => "sinh",
                     Func::Cosh => "cosh",
                     Func::Tanh => "tanh",
@@ -465,9 +464,9 @@ impl GeneticOps {
 /// Evaluates a candidate tree against a dataset using closed-form affine projection:
 /// min_{a, b} || a * f(X) + b - y ||^2
 #[inline]
-pub fn score_candidate_affine(
+pub fn score_candidate_affine<V: crate::data::DataCol>(
     node: &Node,
-    data: &[Vec<f64>],
+    data: &[V],
     target: &[f64],
     mean_target: f64,
     var_target: f64,
@@ -484,7 +483,7 @@ pub fn score_candidate_affine(
 
     for i in 0..n {
         for v in 0..num_vars {
-            row_buf[v] = data[v][i];
+            row_buf[v] = data[v].row(i);
         }
         let val = node.eval_row(&row_buf);
         if !val.is_finite() {
@@ -559,9 +558,9 @@ fn golden_section_min<F: FnMut(f64) -> f64>(
 /// and a constant is only replaced when the full-pipeline MSE strictly
 /// improves -- so objective-flat constants (e.g. a lone global multiplier
 /// absorbed by the readout) leave the tree untouched.
-pub fn polish_candidate_constants(
+pub fn polish_candidate_constants<V: crate::data::DataCol>(
     node: &Node,
-    data: &[Vec<f64>],
+    data: &[V],
     target: &[f64],
     mean_target: f64,
     var_target: f64,
@@ -735,8 +734,8 @@ fn cmp_f64(a: f64, b: f64) -> std::cmp::Ordering {
 }
 
 /// Runs a high-throughput multi-island evolutionary search in pure Rust.
-pub fn run_native_evolutionary_search(
-    data: &[Vec<f64>],
+pub fn run_native_evolutionary_search<V: crate::data::DataCol>(
+    data: &[V],
     target: &[f64],
     var_names: &[String],
     config: &NativeSearchConfig,

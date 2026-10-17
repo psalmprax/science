@@ -332,9 +332,9 @@ impl Graph {
     /// never computed. Memory is therefore O(depth × n), not O(nodes × n), and
     /// time is O(edges × n) instead of the old O(nodes × n) recursive walk that
     /// allocated a fresh memo per row.
-    pub fn evaluate_checked(&self, cols: &[Vec<f64>]) -> Result<Vec<f64>, GraphError> {
+    pub fn evaluate_checked<V: crate::data::DataCol>(&self, cols: &[V]) -> Result<Vec<f64>, GraphError> {
         self.validate()?;
-        let n = cols.iter().map(|c| c.len()).max().unwrap_or(0);
+        let n = cols.iter().map(|c| c.row_len()).max().unwrap_or(0);
 
         // Remaining consumer count per node (the output counts as a consumer).
         let mut uses = vec![0usize; self.nodes.len()];
@@ -354,7 +354,7 @@ impl Graph {
             }
             let v: Vec<f64> = match &self.nodes[i] {
                 Node::Input(k) => (0..n)
-                    .map(|t| cols.get(*k).and_then(|c| c.get(t)).copied().unwrap_or(f64::NAN))
+                    .map(|t| cols.get(*k).and_then(|c| c.row_opt(t)).unwrap_or(f64::NAN))
                     .collect(),
                 Node::Const(c) => vec![*c; n],
                 Node::Add(a, b) => {
@@ -467,8 +467,8 @@ impl Graph {
     ///
     /// A structurally invalid graph yields an all-NaN series (so it can never
     /// score) — use [`Graph::evaluate_checked`] to see the reason.
-    pub fn evaluate(&self, cols: &[Vec<f64>]) -> Vec<f64> {
-        let n = cols.iter().map(|c| c.len()).max().unwrap_or(0);
+    pub fn evaluate<V: crate::data::DataCol>(&self, cols: &[V]) -> Vec<f64> {
+        let n = cols.iter().map(|c| c.row_len()).max().unwrap_or(0);
         self.evaluate_checked(cols).unwrap_or_else(|_| vec![f64::NAN; n])
     }
 

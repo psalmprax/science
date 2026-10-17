@@ -23,3 +23,8 @@ pub mod diff_pade;
 pub mod enumerate;
 pub mod koopman;
 pub mod lie_symmetry;
+pub mod pde;
+pub mod number_theory;
+pub mod invariant_transfer;
+pub mod coupled_system;
+pub mod high_dim_pde;

@@ -202,3 +202,58 @@ jobs:
         run: |
           sleep 10
           curl -f https://apedp.fly.dev/health || exit 1
+
+  # ------------------------------------------------------------------
+  # Wheel artifacts for the native kernel.
+  #
+  # `apedp_kernel` is a separate maturin package, so plain `pip install -e .`
+  # never produces it: the bridge silently answers every call on the Python
+  # reference path and the differential conformance suite skips. This job
+  # builds the manylinux wheel on every push/PR and uploads it as a workflow
+  # artifact, so users can `pip install` it directly. On a tag push it also
+  # publishes to PyPI, but only when a `PYPI_API_TOKEN` secret exists -- until
+  # then the artifact upload is the distribution surface.
+  # ------------------------------------------------------------------
+  build-kernel-wheel:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build manylinux wheel (pyo3/maturin container)
+        uses: PyO3/maturin-action@v1
+        with:
+          working-directory: rust/apedp-kernel
+          command: build
+          args: --release --out ../../wheelhouse
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apedp_kernel-wheel-${{ github.sha }}
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  publish-kernel-wheel:
+    needs: build-kernel-wheel
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'push' &&
+      startsWith(github.ref, 'refs/tags/') &&
+      secrets.PYPI_API_TOKEN != ''
+    permissions:
+      contents: read
+    steps:
+      - name: Download wheel artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: apedp_kernel-wheel-${{ github.sha }}
+          path: wheelhouse
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: wheelhouse
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip-existing: true

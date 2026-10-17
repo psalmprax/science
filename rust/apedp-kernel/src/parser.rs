@@ -299,12 +299,15 @@ impl Compiled {
         self.num_vars
     }
 
-    /// Evaluate over `data`, one array per declared variable.
+    /// Evaluate over `data`, one column per declared variable.
     ///
-    /// Returns a vector of length `data[0].len()`. Arithmetic that numpy would
-    /// render as inf or NaN renders the same way here, because Rust's f64 does
-    /// not trap.
-    pub fn evaluate(&self, data: &[Vec<f64>]) -> Result<Vec<f64>, String> {
+    /// Columns may be owned `Vec<f64>` or borrowed `ArrayView1<f64>` views
+    /// into NumPy buffers — anything implementing [`crate::data::DataCol`].
+    ///
+    /// Returns a vector of length `data[0].row_len()`. Arithmetic that numpy
+    /// would render as inf or NaN renders the same way here, because Rust's
+    /// f64 does not trap.
+    pub fn evaluate<V: crate::data::DataCol>(&self, data: &[V]) -> Result<Vec<f64>, String> {
         if data.len() != self.num_vars {
             return Err(format!(
                 "expression '{}' declares {} variable(s) but {} array(s) were supplied",
@@ -323,13 +326,13 @@ impl Compiled {
                 self.source
             ));
         }
-        let expected = data[0].len();
+        let expected = data[0].row_len();
         for (i, col) in data.iter().enumerate() {
-            if col.len() != expected {
+            if col.row_len() != expected {
                 return Err(format!(
                     "variable '{}' has length {} but '{}' has length {}; \
                      all data arrays must have the same length",
-                    self.variables[i], col.len(), self.variables[0], expected
+                    self.variables[i], col.row_len(), self.variables[0], expected
                 ));
             }
         }
@@ -370,10 +373,10 @@ fn eval_node_point(node: &Node, point: &[f64]) -> f64 {
 }
 
 #[inline]
-fn eval_node(node: &Node, data: &[Vec<f64>], i: usize) -> f64 {
+fn eval_node<V: crate::data::DataCol>(node: &Node, data: &[V], i: usize) -> f64 {
     match node {
         Node::Const(c) => *c,
-        Node::Var(v) => data[*v][i],
+        Node::Var(v) => data[*v].row(i),
         Node::Add(a, b) => eval_node(a, data, i) + eval_node(b, data, i),
         Node::Sub(a, b) => eval_node(a, data, i) - eval_node(b, data, i),
         Node::Mul(a, b) => eval_node(a, data, i) * eval_node(b, data, i),
@@ -723,7 +726,7 @@ mod tests {
         // Silently returning an empty array would read as "evaluated zero
         // points successfully", which is a different claim from "no length".
         let c = compile("1 + 2*3", &vars(&[])).unwrap();
-        let e = c.evaluate(&[]).unwrap_err();
+        let e = c.evaluate::<Vec<f64>>(&[]).unwrap_err();
         assert!(e.contains("no variables"), "{e}");
     }
 

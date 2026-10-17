@@ -16,6 +16,7 @@ asserts importability instead of trusting a skip.
 from __future__ import annotations
 
 import logging
+from collections import OrderedDict
 from collections.abc import Sequence
 from types import ModuleType
 from typing import Any, Protocol, cast
@@ -28,6 +29,37 @@ from apedp.safety import safe_parse_expr
 logger = logging.getLogger("apedp.rust_bridge")
 
 _RUST_AVAILABLE = False
+
+# ------------------------------------------------------------------
+# Compile/function caches and kernel-path observability.
+#
+# Two costs were paid on every call before these existed:
+#   1. `kernel.compile(expr, vars)` re-parsed the same expression string at
+#      every FFI crossing (per candidate, per generation).
+#   2. The Python fallback re-parsed and re-`lambdify`'d identical expression
+#      strings on every fallback evaluation.
+# Both caches are keyed only on immutable strings, so entries carry no data
+# layout assumptions and invalidation is unnecessary: a compiled program is
+# a pure function of its text.
+# ------------------------------------------------------------------
+_MAX_COMPILE_CACHE = 4096
+_kernel_compile_cache: OrderedDict[tuple[str, tuple[str, ...]], Any] = OrderedDict()
+# The kernel the cache was compiled against. A compiled handle belongs to the
+# kernel module that produced it, so when the owner changes (a test fixture
+# swaps in a different kernel, a module is reloaded) the cache is cleared
+# rather than re-served across kernel identities.
+_kernel_compile_owner: list[Any] = [None]
+_lambdify_cache: OrderedDict[str, tuple[tuple[str, ...], Any]] = OrderedDict()
+
+# Kernel-path counters: populated per RustKernelBridge instance. These exist
+# because a run cannot otherwise prove which path executed -- the fix this
+# file's earlier audit called "a counter, not a log line". Benchmarks read
+# `bridge.tallies` (or the `kernel_path` field now attached to every result
+# dict) to cite the fast path honestly.
+_KERNEL_PATH_RUST = "rust"
+_KERNEL_PATH_FALLBACK = "fallback"
+
+_missing_kernel_warned = False
 
 
 class _RustKernel(Protocol):
@@ -92,9 +124,55 @@ class RustKernelBridge:
     """High-performance bridge between APEDP Python orchestration and Rust numerical kernel."""
 
     def __init__(self, force_fallback: bool = False, dual_validate: bool = False):
+        global _missing_kernel_warned
         self.force_fallback = force_fallback
         self.dual_validate = dual_validate
         self.use_rust = _RUST_AVAILABLE and not force_fallback
+        # Kernel-path counters (see the module block above). Per instance so a
+        # benchmark run's tally cannot be polluted by other runs sharing the
+        # module-level default bridge. `tallies` counts *public call outcomes*;
+        # `last_path` records the most recent one.
+        self.tallies = {_KERNEL_PATH_RUST: 0, _KERNEL_PATH_FALLBACK: 0}
+        self.last_path: str | None = None
+        if not self.use_rust and not force_fallback and not _missing_kernel_warned:
+            # Loud, once, at construction -- not buried at debug level. The
+            # bridge is correct without the kernel, but a benchmark that meant
+            # to measure the fast path must NOT be able to silently measure
+            # the Python reference engine instead.
+            logger.warning(
+                "apedp_kernel native extension not built; using the pure-Python "
+                "reference engine (correct but slower; build with "
+                "`maturin develop --release --manifest-path rust/apedp-kernel/Cargo.toml`)"
+            )
+            _missing_kernel_warned = True
+
+    def _tally(self, path: str) -> str:
+        """Records and returns the kernel path that answered this call."""
+        self.tallies[path] = self.tallies.get(path, 0) + 1
+        self.last_path = path
+        return path
+
+    def _kernel_compile(self, kernel: Any, expr_str: str, variables: Sequence[str]) -> Any:
+        """LRU-cached FFI crossing to ``kernel.compile``.
+
+        The compiled program is a pure function of ``(expr_str, variables)``,
+        so the cache key is exactly that pair of immutable strings. Candidates
+        repeat heavily across generations; without the cache every re-serving
+        of one re-parsed the same expression inside the kernel.
+        """
+        if _kernel_compile_owner[0] is not kernel:
+            _kernel_compile_cache.clear()
+            _kernel_compile_owner[0] = kernel
+        key = (expr_str, tuple(variables))
+        cached = _kernel_compile_cache.get(key)
+        if cached is not None:
+            _kernel_compile_cache.move_to_end(key)
+            return cached
+        compiled = kernel.compile(expr_str, list(variables))
+        _kernel_compile_cache[key] = compiled
+        while len(_kernel_compile_cache) > _MAX_COMPILE_CACHE:
+            _kernel_compile_cache.popitem(last=False)
+        return compiled
 
     def evaluate_expression(
         self,
@@ -123,8 +201,9 @@ class RustKernelBridge:
         kernel: _RustKernel | ModuleType = apedp_kernel
         if self.use_rust:
             try:
-                compiled = kernel.compile(expr_str, list(variable_names))
+                compiled = self._kernel_compile(kernel, expr_str, list(variable_names))
                 rust_out = kernel.evaluate_batch(compiled, data_f64)
+                self._tally(_KERNEL_PATH_RUST)
 
                 if self.dual_validate:
                     py_out = self._fallback_eval(expr_str, variable_names, data_f64)
@@ -137,8 +216,10 @@ class RustKernelBridge:
                 return rust_out
             except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
                 logger.debug("Rust kernel eval failed for '%s' (%s), falling back to Python.", expr_str, e)
+                self._tally(_KERNEL_PATH_FALLBACK)
                 return self._fallback_eval(expr_str, variable_names, data_f64)
 
+        self._tally(_KERNEL_PATH_FALLBACK)
         return self._fallback_eval(expr_str, variable_names, data_f64)
 
     def compute_metrics(
@@ -153,17 +234,22 @@ class RustKernelBridge:
         if self.use_rust:
             try:
                 mse, mae, r2, max_res, has_nan = cast(Any, apedp_kernel).compute_metrics(yt, yp)
+                self._tally(_KERNEL_PATH_RUST)
                 return {
                     "mse": mse,
                     "mae": mae,
                     "r_squared": r2,
                     "max_residual": max_res,
                     "has_nan_or_inf": has_nan,
+                    "kernel_path": _KERNEL_PATH_RUST,
                 }
             except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
                 logger.debug("Rust compute_metrics failed (%s), falling back to Python.", e)
 
-        return self._fallback_metrics(yt, yp)
+        self._tally(_KERNEL_PATH_FALLBACK)
+        metrics = self._fallback_metrics(yt, yp)
+        metrics["kernel_path"] = _KERNEL_PATH_FALLBACK
+        return metrics
 
     def score_candidates_batch(
         self,
@@ -218,6 +304,7 @@ class RustKernelBridge:
                             "r_squared": r2,
                             "max_residual": max_res,
                             "has_nan_or_inf": has_nan,
+                            "kernel_path": _KERNEL_PATH_RUST,
                         }
 
                     results = []
@@ -230,18 +317,23 @@ class RustKernelBridge:
                             metrics = self._fallback_metrics(target_f64, py_eval)
                             metrics["candidate_id"] = idx
                             metrics["expression"] = expr_str
+                            metrics["kernel_path"] = _KERNEL_PATH_FALLBACK
                             results.append(metrics)
+                    self._tally(_KERNEL_PATH_RUST)
                     return results
             except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
                 logger.debug("Rust parallel batch scoring failed (%s), falling back.", e)
+                self._tally(_KERNEL_PATH_FALLBACK)
 
         # Fallback scoring sequentially in Python
+        self._tally(_KERNEL_PATH_FALLBACK)
         results = []
         for idx, expr_str in enumerate(candidate_exprs):
             py_eval = self._fallback_eval(expr_str, variable_names, data_f64)
             metrics = self._fallback_metrics(target_f64, py_eval)
             metrics["candidate_id"] = idx
             metrics["expression"] = expr_str
+            metrics["kernel_path"] = _KERNEL_PATH_FALLBACK
             results.append(metrics)
         return results
 
@@ -255,21 +347,26 @@ class RustKernelBridge:
         """Probes for poles and asymptotic blow-ups across domain bounds."""
         if self.use_rust:
             try:
-                compiled = cast(Any, apedp_kernel).compile(expr_str, list(variable_names))
+                compiled = self._kernel_compile(kernel=apedp_kernel, expr_str=expr_str, variables=list(variable_names))
                 is_sound, has_pole, pole_coord, max_deriv, risk_type = (
                     cast(Any, apedp_kernel).probe_singularity(compiled, list(domain_bounds), num_grid_points)
                 )
+                self._tally(_KERNEL_PATH_RUST)
                 return {
                     "is_sound": is_sound,
                     "has_pole": has_pole,
                     "pole_coordinate": pole_coord,
                     "max_derivative": max_deriv,
                     "risk_type": risk_type,
+                    "kernel_path": _KERNEL_PATH_RUST,
                 }
             except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
                 logger.debug("Rust probe_singularity failed (%s), falling back to Python.", e)
 
-        return self._fallback_singularity_probe(expr_str, variable_names, domain_bounds, num_grid_points)
+        self._tally(_KERNEL_PATH_FALLBACK)
+        probe = self._fallback_singularity_probe(expr_str, variable_names, domain_bounds, num_grid_points)
+        probe["kernel_path"] = _KERNEL_PATH_FALLBACK
+        return probe
 
     def compute_matrix_conditioning(
         self,
@@ -285,6 +382,7 @@ class RustKernelBridge:
                 )
                 cond, s_max, s_min, rank, is_well = res[0], res[1], res[2], res[3], res[4]
                 s_list = list(res[5]) if len(res) > 5 else [s_max, s_min]
+                self._tally(_KERNEL_PATH_RUST)
                 return {
                     "condition_number": cond,
                     "max_singular_value": s_max,
@@ -292,11 +390,15 @@ class RustKernelBridge:
                     "effective_rank": rank,
                     "is_well_conditioned": is_well,
                     "singular_values": s_list,
+                    "kernel_path": _KERNEL_PATH_RUST,
                 }
             except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
                 logger.debug("Rust compute_matrix_conditioning failed (%s), falling back.", e)
 
-        return self._fallback_conditioning(col_slices, rcond_threshold)
+        self._tally(_KERNEL_PATH_FALLBACK)
+        cond_rep = self._fallback_conditioning(col_slices, rcond_threshold)
+        cond_rep["kernel_path"] = _KERNEL_PATH_FALLBACK
+        return cond_rep
 
     def solve_linear_coefficients(
         self,
@@ -313,6 +415,7 @@ class RustKernelBridge:
                 coeffs, mse, mae, r2, cond, is_well = cast(Any, apedp_kernel).solve_linear_coefficients(
                     col_slices, target_f64, lambda_reg
                 )
+                self._tally(_KERNEL_PATH_RUST)
                 return {
                     "coefficients": np.array(coeffs, dtype=np.float64),
                     "mse": mse,
@@ -320,11 +423,15 @@ class RustKernelBridge:
                     "r_squared": r2,
                     "condition_number": cond,
                     "is_well_conditioned": is_well,
+                    "kernel_path": _KERNEL_PATH_RUST,
                 }
             except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
                 logger.debug("Rust solve_linear_coefficients failed (%s), falling back.", e)
 
-        return self._fallback_linear_solver(col_slices, target_f64, lambda_reg)
+        self._tally(_KERNEL_PATH_FALLBACK)
+        linear = self._fallback_linear_solver(col_slices, target_f64, lambda_reg)
+        linear["kernel_path"] = _KERNEL_PATH_FALLBACK
+        return linear
 
     def evaluate_precision_boundary(
         self,
@@ -338,17 +445,22 @@ class RustKernelBridge:
                 p_type, eps_mach, eps_star, obs, resolved = (
                     cast(Any, apedp_kernel).evaluate_precision_boundary(separation_delta, condition_number, precision_bits)
                 )
+                self._tally(_KERNEL_PATH_RUST)
                 return {
                     "precision_type": p_type,
                     "machine_epsilon": eps_mach,
                     "theoretical_threshold": eps_star,
                     "empirical_transition_observed": obs,
                     "resolved": resolved,
+                    "kernel_path": _KERNEL_PATH_RUST,
                 }
             except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
                 logger.debug("Rust evaluate_precision_boundary failed (%s), falling back.", e)
 
-        return self._fallback_precision_boundary(separation_delta, condition_number, precision_bits)
+        self._tally(_KERNEL_PATH_FALLBACK)
+        boundary = self._fallback_precision_boundary(separation_delta, condition_number, precision_bits)
+        boundary["kernel_path"] = _KERNEL_PATH_FALLBACK
+        return boundary
 
     def evolve_native(
         self,
@@ -404,14 +516,18 @@ class RustKernelBridge:
                         "complexity": item[2],
                         "scale": item[3],
                         "bias": item[4],
+                        "kernel_path": _KERNEL_PATH_RUST,
                     }
                     for item in raw_pareto
                 ]
+                self._tally(_KERNEL_PATH_RUST)
                 return formatted, total_evals
             except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
                 logger.debug("Rust evolve_native failed (%s), falling back to Python.", e)
+                self._tally(_KERNEL_PATH_FALLBACK)
 
         # Fallback to pure Python evolve
+        self._tally(_KERNEL_PATH_FALLBACK)
         from apedp.evolutionary_search import SearchConfig, evolve
 
         x_dict = {name: d for name, d in zip(variable_names, data_f64, strict=False)}
@@ -424,7 +540,8 @@ class RustKernelBridge:
         )
         res = evolve(x_dict, target_f64, config=cfg)
         formatted = [
-            {"expression": expr, "mse": mse, "complexity": int(compl), "scale": 1.0, "bias": 0.0}
+            {"expression": expr, "mse": mse, "complexity": int(compl), "scale": 1.0, "bias": 0.0,
+             "kernel_path": _KERNEL_PATH_FALLBACK}
             for expr, mse, compl in res.pareto_front
         ]
         return formatted, res.n_evaluations
@@ -454,19 +571,21 @@ class RustKernelBridge:
         shape = data[0].shape
         nan_result = lambda: np.full(shape, np.nan, dtype=np.float64)  # noqa: E731
 
-        try:
-            expr = safe_parse_expr(expr_str)
-        except (TypeError, ValueError) as e:
-            logger.debug("Rejected expression %r in Python fallback (%s).", expr_str, e)
-            return nan_result()
+        # The reference engine's own cost was re-parsing + re-lambdifying the
+        # same expression on every call. The compiled callable is a pure
+        # function of the expression text (pi/e are substituted into the body
+        # by the parser), so it is cached by `expr_str` alone.
+        cached_entry = _lambdify_cache.get(expr_str)
+        if cached_entry is None:
+            try:
+                expr = safe_parse_expr(expr_str)
+            except (TypeError, ValueError) as e:
+                logger.debug("Rejected expression %r in Python fallback (%s).", expr_str, e)
+                return nan_result()
 
-        # A variable named in the data shadows a same-named mathematical
-        # constant, matching the previous hand-built environment.
-        env: dict[str, Any] = {"pi": np.pi, "e": np.e}
-        for name, arr in zip(variable_names, data, strict=False):
-            env[name] = arr
-
-        try:
+            # ``lambdify`` builds a signature from the expression's free symbols
+            # only, so pass exactly those; ``pi``/``e`` are already substituted
+            # into the expression body by the parser.
             argnames = tuple(sorted(str(s) for s in expr.free_symbols))
             func = sp.lambdify(
                 argnames,
@@ -475,9 +594,20 @@ class RustKernelBridge:
                 cse=False,
                 docstring_limit=0,
             )
-            # ``lambdify`` builds a signature from the expression's free symbols
-            # only, so pass exactly those; ``pi``/``e`` are already substituted
-            # into the expression body by the parser.
+            cached_entry = (argnames, func)
+            _lambdify_cache[expr_str] = cached_entry
+            while len(_lambdify_cache) > _MAX_COMPILE_CACHE:
+                _lambdify_cache.popitem(last=False)
+        else:
+            _lambdify_cache.move_to_end(expr_str)
+
+        argnames, func = cached_entry
+        # A variable named in the data shadows a same-named mathematical
+        # constant, matching the previous hand-built environment.
+        env: dict[str, Any] = {"pi": np.pi, "e": np.e}
+        env.update(dict(zip(variable_names, data, strict=False)))
+
+        try:
             res = func(*(env[name] for name in argnames))
             if np.isscalar(res):
                 return np.full(shape, float(cast(Any, res)), dtype=np.float64)

@@ -12,6 +12,33 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   - `tests/test_dyn_lean_universal_bridge.py` — same environmental Lean cause.
   - `outputs/nano_ds10_freeze.json` — FREEZE DRIFT: the pin at `apedp_dyn/epistemic/frozen_spec.py:40` expects d37d0f1c..., but the benchmark regenerates deterministically to b809ddcb..., so `test_all_frozen_records_verified_against_pinned_hashes` fails. All of that generator's dependencies are clean, so the drift reproduces at HEAD. The pinned hash predates the current generator output; the pin owner must re-pin or reconcile the generator. NOT touched in this change.
 
+## [Unreleased] — Rust↔Python Bridge Hardening (2026-10-17, `production`)
+
+### Performance
+- **Zero-copy NumPy columns in the native kernel:** `extract_columns` deep-copied every dataset column into owned `Vec<f64>` on every FFI crossing, re-copying the same data on each per-candidate call (`evaluate_batch`, `score_candidates_parallel`, `rime_evaluate_json`, …). The new `DataCol` erased-column trait (`rust/apedp-kernel/src/data.rs`) makes owned `Vec<f64>` and borrowed `ndarray::ArrayView1<f64>` interchangable, and `PythonColumns` (a guard-backed view holder) materializes zero-copy views over the Python-side buffers across `allow_threads`. The parser, numeric, genetic, and RIME (graph/eval/search/additive/residual) surfaces now take `&[V: DataCol]`; the JSON-fed internal paths keep their owned `Vec<Vec<f64>>` unchanged.
+- **Compile caching at the bridge:** `RustKernelBridge` re-parsed identical expression strings at every FFI crossing. Added `_kernel_compile` (LRU, 4096 entries, keyed on `(expr_str, variable_names)`, owner-guarded so a swapped kernel clears the cache) and a `lambdify` cache for the Python fallback (keyed on expression text).
+- **Release profile:** workspace `Cargo.toml` sets `codegen-units = 1` alongside `lto = true`.
+
+### Added
+- **Zero-copy 1-D extraction also:** the guarded-views pattern extends past column lists — single-array arguments (targets, `y_true`/`y_pred`) now extract through a `GuardedVector` (pin-once `PyReadonlyArray1` guard; contiguous buffers hand out borrowed `&[f64]` slices via `PyReadonlyArray::as_slice`, strided buffers take one owned fallback copy), so `compute_metrics`, `solve_linear_coefficients`, `evolve_native`, and every RIME entry point stop re-copying their target and series arguments per call.
+- **Kernel-path counters + `kernel_path` field:** every `RustKernelBridge` instance exposes `tallies` (rust/fallback call counts) and `last_path`, and every returned result dict (metrics, scoring rows, probes, conditioning, linear solves, precision boundary, evolve rows) carries a `kernel_path` tag. A benchmark run can now *prove* the Rust fast path executed instead of being unable to distinguish it from the silently-correct Python fallback.
+- **Loud missing-kernel warning:** constructing a bridge without the native `apedp_kernel` extension logs exactly one WARNING naming the `maturin develop --release` build command (previously the fallback was invisible and "easy to miss", in the bridge's own docstring words).
+- **CI wheel artifacts:** `build-kernel-wheel` job builds the manylinux wheel via `PyO3/maturin-action` and uploads it as a workflow artifact on every push/PR, so the kernel is `pip install`able without running maturin locally; a tag-gated `publish-kernel-wheel` job publishes to PyPI only when a `PYPI_API_TOKEN` secret is configured.
+
+### Measured (before/after, min-of-3 interleaved fresh-process runs, 600×4 float64 dataset)
+- **Reference engine (Python fallback) repeated eval: 2678.9 → 34.5 µs/call (77×).** The lambdify cache is where most wall-clock in fallback-heavy workloads went.
+- **Batch scoring round (15 candidates): 1087.6 → 888.1 µs (−18%); per candidate 72.5 → 59.2 µs.** Compile-free cache hits plus view-based columns.
+- **Repeated candidate-evaluation call: 110.8 → 95.6 µs (−14%).** Per-call cost at this dataset size is dominated by Rayon pool dispatch (~85 µs), so the copy-elimination scaling grows with dataset size (the elimination only has to cover the ~19 KB per-call re-copy here).
+- **`compute_metrics`: 11.1 → 7.6 µs (−32%).**
+- Unique-expression direct eval (no cache effect): 24.9 → 20.7 µs (−17%). Kernel-level `score_candidates_parallel`: 817.7 → 785.2 µs — no kernel-path regression; the only regression risk found in profiling (machine-load drift) was excluded by interleaved min-of-N.
+- Artifacts: `benchmarks/run_bridge_fastpath_benchmark.py` (identical driver for both stacks) and `benchmarks/bridge_fastpath_benchmark_results.json` (raw runs + minima). The "before" stack is the git HEAD kernel (owned `Vec<Vec<f64>>` copies, bare `kernel.compile` at every crossing) built from a clean wheel into an isolated venv.
+
+### Tests
+- `tests/test_rust_bridge_observability.py` (new, 8 tests): tallies prove the fast path ran, result dicts carry `kernel_path`, failing kernels tally fallback (not vanishing), compile cache serves repeated expressions once, cache is keyed on the variable table (wrong-variable-layout reuse is the dangerous failure), the fallback lambdify cache is consulted, and the missing-kernel warning fires exactly once at WARNING level with the build command.
+- Full verification: 179 Rust tests (`cargo test`), 45 bridge tests, 26/26 differential conformance against the rebuilt release kernel, 58/58 AGENTS.md regression battery.
+
+---
+
 ## [Unreleased] — RIME-AD Native Rust Engines & Unified Quantum Benchmark (`experimental`)
 
 ### Added

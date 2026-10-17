@@ -184,9 +184,9 @@ fn compose(terms: &[Term], coeffs: &[f64]) -> Graph {
 /// Frozen-search first, then forward-selected additive terms.
 ///
 /// `max_terms <= 1` returns `search`'s outcome untouched.
-pub fn search_additive(
+pub fn search_additive<V: crate::data::DataCol>(
     seeds: &[Graph],
-    cols: &[Vec<f64>],
+    cols: &[V],
     target: &[f64],
     cfg: &SearchConfig,
     max_terms: usize,
