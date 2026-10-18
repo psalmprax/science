@@ -12,6 +12,50 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   - `tests/test_dyn_lean_universal_bridge.py` — same environmental Lean cause.
   - `outputs/nano_ds10_freeze.json` — FREEZE DRIFT: the pin at `apedp_dyn/epistemic/frozen_spec.py:40` expects d37d0f1c..., but the benchmark regenerates deterministically to b809ddcb..., so `test_all_frozen_records_verified_against_pinned_hashes` fails. All of that generator's dependencies are clean, so the drift reproduces at HEAD. The pinned hash predates the current generator output; the pin owner must re-pin or reconcile the generator. NOT touched in this change.
 
+## [Unreleased] — Structural-invariant probe: one check per invariant (2026-10-18)
+
+`_StructuralProbesMixin._probe_structural_invariants` was a 382-line method whose
+fifteen checks shared one evidence context by closing over fifteen locals. It is now
+an orchestrator plus one method per invariant, with the envelope measured once
+(`_EnvelopeScan`) and handed to each check (`_StructuralContext`).
+
+### What changed
+- `_EnvelopeScan.from_samples()` computes `lowest`, `highest`, `widest`,
+  `first_unevaluated` and `boundary_divergence` once. Fifteen checks used to re-derive
+  them from the same lists; a check can no longer decide against a different sample
+  than the check before it.
+- The five magnitude ceilings (`current_density_ceiling`, `velocity_saturation_ceiling`,
+  `yield_strength_ceiling`, `stokes_drag_ceiling`, `saturation_ceiling`) now share
+  `_envelope_ceiling()`, so a new ceiling cannot quietly measure a different point
+  than its siblings.
+- Checks run in check-number order and each returns `None` (invariant not declared --
+  nothing counted), `[]` (declared and satisfied) or its counterexamples. Counting of
+  `invariants_checked` and counterexample ordering are therefore unchanged, including
+  the two checks (dimensional, heat capacity) that can record a probe error instead of
+  counting.
+- `_probe_structural_invariants` is 99 lines; the longest single check is 43. The file
+  grows 382 -> 584 lines because each check now carries its own docstring recording
+  what was removed from it (variable-name matching, the printed-text magic-constant
+  search).
+- `_EnvelopeScan` and `_StructuralContext` are re-exported from the facade, matching
+  the existing policy that every name defined in a package module is reachable from
+  the package -- the policy `tests/test_package_facades.py` enforces.
+
+### Verification
+- **Exact old-vs-new equivalence.** The pre-split method (from commit `919d4c8`) and
+  the new one were run over 31 cases -- every invariant alone, all fifteen declared at
+  once, constant models, `1/x` (non-real at 0), two-symbol envelopes, and three
+  dimensional paths including an undefined unit -- comparing the serialised
+  counterexamples and the full metrics dict: **0 mismatches**, 40 counterexamples, all
+  15 probes exercised. The harness also verified it loaded the pre-split source (no
+  `_EnvelopeScan`) rather than re-testing the new code.
+- **Behavioural battery unchanged:** `/tmp/falsifier_fingerprint.py` still digests
+  **`8c4c4f17a3597525`**.
+- `tests/test_structural_invariant_coverage.py`: 38 tests still pass with their
+  expectations unchanged (not re-pinned).
+- The 11 test files that import the split packages: **186 passed**, exit 0.
+  `ruff check apedp/falsification` clean, exit 0.
+
 ## [Unreleased] — Structural-invariant coverage: a constant model no longer skips the axis (2026-10-18)
 
 Found by a new per-invariant coverage test, not by a refactor; fixed in the probe
@@ -140,7 +184,7 @@ implementations now live in focused modules:
 | `probes_mathematical.py` | `_MathematicalProbesMixin` | 133 |
 | `probes_boundary.py` | `_BoundaryProbesMixin` | 146 |
 | `probes_numerical.py` | `_NumericalProbesMixin` | 194 |
-| `probes_structural.py` | `_StructuralProbesMixin` | 351 |
+| `probes_structural.py` | `_StructuralProbesMixin` (orchestrator + one check per invariant; 584 lines after the follow-up below) | 584 |
 | `probes_empirical.py` | `_EmpiricalProbesMixin` | 77 |
 | `falsifier.py` | `IndependentAdversarialFalsifier.__init__` + `falsify()` | 200 |
 

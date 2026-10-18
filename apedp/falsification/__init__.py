@@ -63,6 +63,8 @@ from .probes_numerical import (
     _NumericalProbesMixin,
 )
 from .probes_structural import (
+    _EnvelopeScan,
+    _StructuralContext,
     _StructuralProbesMixin,
 )
 from .report import (
