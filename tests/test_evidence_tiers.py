@@ -31,12 +31,16 @@ from apedp.falsification import (
     IndependentAdversarialFalsifier,
 )
 
-FALSIFICATION_SOURCE = Path(__file__).resolve().parents[1] / "apedp" / "falsification.py"
+FALSIFICATION_DIR = Path(__file__).resolve().parents[1] / "apedp" / "falsification"
 
 
 def _probe_names_in_source() -> set[str]:
-    source = FALSIFICATION_SOURCE.read_text()
-    return set(re.findall(r'probe_name="([A-Za-z]+)"', source))
+    files = sorted(FALSIFICATION_DIR.glob("*.py"))
+    assert files, f"no falsification modules found under {FALSIFICATION_DIR}"
+    declared: set[str] = set()
+    for path in files:
+        declared |= set(re.findall(r'probe_name="([A-Za-z]+)"', path.read_text()))
+    return declared
 
 
 def test_every_probe_declares_an_evidence_tier():

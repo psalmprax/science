@@ -332,13 +332,15 @@ def test_mathematical_axis_surfaces_a_crashed_pole_search(monkeypatch):
 
 def test_boundary_axis_surfaces_a_timed_out_limit(monkeypatch):
     """A limit that times out is unknown: neither a divergence nor a clean pass."""
-    from apedp import falsification
+    from apedp.falsification import probes_boundary as boundary_impl
     from apedp.safety import LimitTimeout
 
     def timeout(*args, **kwargs):
         raise LimitTimeout("injected: limit budget exhausted")
 
-    monkeypatch.setattr(falsification, "limit_with_timeout", timeout)
+    # The boundary probe lives in `apedp.falsification.probes_boundary`; patching
+    # the facade (or `falsifier`) would rebind a name no probe reads.
+    monkeypatch.setattr(boundary_impl, "limit_with_timeout", timeout)
     report = _report_for(
         "boundary",
         "log(x - 5.0)",

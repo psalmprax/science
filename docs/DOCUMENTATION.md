@@ -501,6 +501,21 @@ regressor = SymbolicRegressor(engine, ['x', 'y'], 'meter/second')
 result = regressor.fit(data, target)
 ```
 
+### 5.11 `apedp/falsification/`, `apedp/gated_assurance/`, `apedp/benchmarks/` — split packages
+
+The three former monoliths are now packages of focused modules. Each package's
+`__init__.py` is a **facade**: it re-exports every name the old module exposed
+(including names it merely imported), so `from apedp.falsification import X`,
+`apedp.gated_assurance.validate_three_gates`, and monkeypatching of module-level
+attributes keep working unchanged. `__module__` of the moved classes now names
+the implementation module (e.g. `apedp.falsification.falsifier`).
+
+| Package | Modules |
+|---|---|
+| `apedp/falsification/` | `constants` (probe-envelope constants), `taxonomy` (axes, failure classes, evidence tiers), `counterexamples`, `constraints` (contradictory-constraint engine), `report`, `probe_support` + `probes_mathematical` / `probes_boundary` / `probes_numerical` / `probes_structural` / `probes_empirical` (the five axes, as mixins), `falsifier` (the `IndependentAdversarialFalsifier` class: `falsify()` plus `__init__`), `blind` (blind audit) |
+| `apedp/gated_assurance/` | `checks` (constraint/asymptote/stability/generality probes), `contracts` (verdicts, metrics, benchmark contracts), `mechanistic`, `operational`, `engine`, `benchmark_contracts`, `feasibility` (classification + three-gate validator) |
+| `apedp/benchmarks/` | `types` (trust weights, enums, metric helpers), `results`, `cases` (the 25- and 100-case tables, data only), `pathological` (suite selection), `harness` |
+
 ---
 
 ## 6. API Server

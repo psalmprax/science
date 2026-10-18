@@ -12,6 +12,174 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   - `tests/test_dyn_lean_universal_bridge.py` — same environmental Lean cause.
   - `outputs/nano_ds10_freeze.json` — FREEZE DRIFT: the pin at `apedp_dyn/epistemic/frozen_spec.py:40` expects d37d0f1c..., but the benchmark regenerates deterministically to b809ddcb..., so `test_all_frozen_records_verified_against_pinned_hashes` fails. All of that generator's dependencies are clean, so the drift reproduces at HEAD. The pinned hash predates the current generator output; the pin owner must re-pin or reconcile the generator. NOT touched in this change.
 
+## [Unreleased] — Structural-invariant coverage: a constant model no longer skips the axis (2026-10-18)
+
+Found by a new per-invariant coverage test, not by a refactor; fixed in the probe
+the earlier split created (`apedp/falsification/probes_structural.py`).
+
+### The finding
+`_probe_structural_invariants` returned early when the expression had no free
+symbols, so a *constant* law was declared with invariants, evaluated by no check,
+and reported as `invariants_declared = 1, invariants_checked = 0` with an **empty**
+`probe_errors` list. Reproduction: `falsify("-1.0", {"x": (1, 2)}, ["positivity"])`
+returned no counterexample and no error -- a declared positivity invariant that the
+report neither checked nor mentioned. The candidate was still refused, but by the
+numerical axis (`INCONCLUSIVE_PROBE_ERROR`), i.e. for a reason unrelated to the
+invariant the caller declared. The module's own stated contract ("a probe that
+could not decide is an error on every axis, not a pass") was not met on this path.
+
+### The fix
+A model with no free symbols is still a model: the probe now evaluates the constant
+once and runs the same fifteen checks over it. A constant with no finite real value
+(e.g. `1e400`) is reported as an unresolved `EnvelopeSweep`/`NoRealValues` probe with
+`invariants_checked = 0`, matching how a model that returns no real value across its
+envelope is already handled.
+
+| Input | Before | After |
+|---|---|---|
+| `-1.0`, `["positivity"]` | `INCONCLUSIVE_PROBE_ERROR`, checked 0, no error, no counterexample | `REFUSED_CANNOT_REPAIR`, checked 1, `PositivityViolationProbe` |
+| `2.0 + 0.0*x`, `["positivity"]` | checked 0, no error | checked 1, no counterexample (invariant satisfied) |
+| `1e400`, `["positivity"]` | checked 0, no error | checked 0, `NoRealValues` unresolved error |
+
+### Scope and verification
+- **Confined to constant models.** The 12-formula, five-axis behavioural battery
+  (`/tmp/falsifier_fingerprint.py`) has digest **`8c4c4f17a3597525`** both before the
+  refactor and after this fix, with the payloads comparing equal: no non-constant
+  model changed a finding. This is why the fix did not disturb the refactor's
+  equivalence evidence.
+- **New test file** `tests/test_structural_invariant_coverage.py` (38 tests): every
+  declared structural invariant is paired with a model that must violate it and one
+  that must not, asserting on the probe that fires; plus symbol-renaming, undeclared-
+  invariant silence, and the dimensional probe. Expectations come from the
+  invariant's meaning, not from a recorded run.
+- **Non-vacuous:** restoring the pre-fix early return makes exactly the four
+  constant-model tests fail (`4 failed, 34 passed`); restoring the fixed file
+  byte-identically returns `38 passed`.
+- 14 affected test files + facade + coverage suites: **495 passed**, with only the
+  same 2 pre-existing `test_dimensional_invariance.py` failures (P07, E16).
+  `ruff check apedp` clean, exit 0.
+
+## [Unreleased] — Split the three god-files into focused packages (2026-10-18)
+
+`apedp/falsification.py` (2322 lines), `apedp/gated_assurance.py` (2116) and
+`apedp/benchmarks.py` (1414) are now packages. Behaviour-preserving refactor: no
+threshold, probe, verdict, weight or control-flow change — only code movement
+plus re-exports.
+
+### New layout
+- `apedp/falsification/`: `constants`, `taxonomy`, `counterexamples`, `constraints`, `report`, `falsifier`, `blind`.
+- `apedp/gated_assurance/`: `checks`, `contracts`, `mechanistic`, `operational`, `engine`, `benchmark_contracts`, `feasibility`.
+- `apedp/benchmarks/`: `types`, `results`, `pathological`, `harness`.
+
+Each `__init__.py` is a facade re-exporting **every** name the old module exposed,
+including the names it merely imported (e.g. `apedp.benchmarks.FalsificationReport`,
+`apedp.falsification.LimitTimeout`), so all existing import paths are unchanged.
+Consequences recorded honestly:
+- `__module__` of moved classes now names the implementation module (e.g.
+  `apedp.falsification.counterexamples.Counterexample`). No `pickle` use of these
+  types exists in the repository, and nothing pins `__module__`.
+- Rebinding a *moved* symbol on the facade no longer changes what the
+  implementation calls: `tests/test_flaw_fixes.py::test_boundary_axis_surfaces_a_timed_out_limit`
+  patched `falsification.limit_with_timeout` and now patches
+  `apedp.falsification.falsifier.limit_with_timeout` instead (the module the probe
+  actually reads). The assertion is unchanged. Patching `falsification.sp` still
+  works because that is an attribute on the `sympy` module object itself.
+- `tests/test_evidence_tiers.py` scanned `apedp/falsification.py` for
+  `probe_name="..."` literals; it now globs `apedp/falsification/*.py`. Coverage
+  and staleness assertions are unchanged, including `len(declared) >= 20`.
+
+### Verification
+- **Source is lossless:** the generator compared every non-blank, non-header
+  source line of each original file against the concatenation of its emitted
+  modules, in order — exact match (decorators included; comment blocks travel with
+  the definition below them).
+- **API is identical:** a before/after snapshot of each module's `dir()` — kind,
+  signature, base classes, dataclass fields and values, class members — reports
+  **0 missing, 0 changed** names for all three. The only additions are the
+  submodule attributes a package necessarily exposes (`falsification.taxonomy`, …).
+- `ruff check` clean on the three packages (I001/E402/F401/F811 resolved by
+  pruning headers to used imports, sorting, and a file-level `# ruff: noqa: F401`
+  on each facade).
+- The 14 test files that import these modules: **451 passed**, with the same 2
+  pre-existing `test_dimensional_invariance.py` failures (P07, E16) present before
+  and after the split. No new failure attributable to the refactor.
+
+### Follow-up — the case tables moved out of the benchmark class
+
+`apedp/benchmarks/pathological.py` (980 lines) held the class *and* both case
+tables inline. The tables are now `apedp/benchmarks/cases.py` (976 lines, data
+only: `_get_25_case_suite`, `_get_100_case_suite`), and
+`PathologicalEquationBenchmark` keeps only selection behaviour and delegates.
+The class API is unchanged — `get_benchmark_cases`, `_get_25_case_suite` and
+`get_100_case_suite` are still classmethods with the same signatures, so a
+subclass can still override either suite.
+
+- **Byte-identical tables:** the extracted text was compared character-by-character
+  against `git show HEAD:apedp/benchmarks.py` (the pre-split monolith, where both
+  tables stated their method-body indentation): `identical=True` for both, 308 and
+  646 lines.
+- **Identical at runtime:** a SHA-256 fingerprint over every dataclass field of
+  every case (factories normalised) is unchanged for all three entry points:
+  25-case `026febdf62324e5e`, 100-case `8c7a5c2cf322fd19`, `get_benchmark_cases()`
+  (= the 25-case suite) `026febdf62324e5e`.
+- **API:** the before/after snapshot reports **0 missing, 0 changed**; the only
+  new facade names are `cases` and its two private functions.
+- `ruff check apedp/benchmarks` clean; `test_package_facades`,
+  `test_falsification_and_benchmarks`, `test_benchmark_integrity`,
+  `test_adversarial_science`, `test_evidence_tiers`, `test_phase2`,
+  `test_untested_module_smoke` **91 passed, exit 0**.
+
+### Follow-up — the falsifier's five probe axes moved into mixins
+
+`apedp/falsification/falsifier.py` was a 1154-line single class. The probe
+implementations now live in focused modules:
+
+| Module | Contents | Lines |
+|---|---|---|
+| `probe_support.py` | `_ProbeSupportMixin`: `_record_probe_error`, `_sample_envelope` | 105 |
+| `probes_mathematical.py` | `_MathematicalProbesMixin` | 133 |
+| `probes_boundary.py` | `_BoundaryProbesMixin` | 146 |
+| `probes_numerical.py` | `_NumericalProbesMixin` | 194 |
+| `probes_structural.py` | `_StructuralProbesMixin` | 351 |
+| `probes_empirical.py` | `_EmpiricalProbesMixin` | 77 |
+| `falsifier.py` | `IndependentAdversarialFalsifier.__init__` + `falsify()` | 200 |
+
+Method bodies, signatures and docstrings are unchanged; the class is now
+`IndependentAdversarialFalsifier(_ProbeSupportMixin, _MathematicalProbesMixin,
+_BoundaryProbesMixin, _NumericalProbesMixin, _StructuralProbesMixin,
+_EmpiricalProbesMixin)`.
+
+**Consequence recorded honestly: the class's bases and MRO change.** `bases` went
+from `(object,)` to the six mixins, so three test subclasses in
+`tests/test_benchmark_integrity.py` (`_BlindFalsifier`, `_AlwaysRefusingFalsifier`,
+`_RecordingFalsifier`) now inherit the mixins transitively. Everything callers use
+is unaffected: every former method is still reachable on the class, the class's own
+constructor signature is byte-identical, and the public facade still exports
+`IndependentAdversarialFalsifier` from `apedp.falsification`.
+
+**Verification**
+- **Behavioural digest unchanged.** `/tmp/falsifier_fingerprint.py` runs a 12-formula
+  battery spanning all five axes and hashes verdicts, `survived`, every
+  counterexample's `(probe_name, failure_class)`, axes tested, refusal reason,
+  `cannot_repair`, evidence tier and metric keys: digest **8c4c4f17a3597525** before
+  and after, with the two full payloads comparing equal (`fingerprint payload
+  identical: True`). This is a stronger statement than a green test run: no probe
+  changed a finding.
+- **API surface:** all previously own members are still reachable (`missing: []`),
+  the class signature is unchanged, and the only snapshot difference is the intended
+  `bases` change.
+- `ruff check apedp` clean; all 169+ `apedp.*` modules import.
+- The 14 test files that import these modules plus `test_package_facades`:
+  **457 passed**, with only the same 2 pre-existing `test_dimensional_invariance.py`
+  failures (P07, E16) seen before any of this work.
+- `tests/test_flaw_fixes.py::test_boundary_axis_surfaces_a_timed_out_limit` patched
+  `falsification.limit_with_timeout`; the boundary probe now reads it from
+  `apedp.falsification.probes_boundary`, so the patch target moved there. Assertions
+  unchanged. Same class of adaptation as the earlier `falsifier` patch: rebinding a
+  moved symbol on a facade does not reach the implementation module.
+
+Docs: `docs/DOCUMENTATION.md` §5.11 records the layout and the facade guarantee.
+
 ## [Unreleased] — Preregistration coverage closed + JetFlow-Video v0.2 + RIME §16e negative result + higher-order PDE engine (2026-10-17)
 
 ### Added — four frozen preregistrations (frozen BEFORE their confirmation runs; harnesses/artifacts committed separately)
