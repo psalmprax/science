@@ -33,8 +33,11 @@ an orchestrator plus one method per invariant, with the envelope measured once
   `invariants_checked` and counterexample ordering are therefore unchanged, including
   the two checks (dimensional, heat capacity) that can record a probe error instead of
   counting.
-- `_probe_structural_invariants` is 99 lines; the longest single check is 43. The file
-  grows 382 -> 584 lines because each check now carries its own docstring recording
+- Envelope preparation (constant-model handling plus the `lambdify` sweep) moved into
+  `_prepare_structural_envelope()`, which returns `None` for a constant with no finite
+  real value so the caller must report it. `_probe_structural_invariants` is 80 lines;
+  the longest single check is 43. The file
+  grows 382 -> 604 lines because each check now carries its own docstring recording
   what was removed from it (variable-name matching, the printed-text magic-constant
   search).
 - `_EnvelopeScan` and `_StructuralContext` are re-exported from the facade, matching
@@ -184,7 +187,7 @@ implementations now live in focused modules:
 | `probes_mathematical.py` | `_MathematicalProbesMixin` | 133 |
 | `probes_boundary.py` | `_BoundaryProbesMixin` | 146 |
 | `probes_numerical.py` | `_NumericalProbesMixin` | 194 |
-| `probes_structural.py` | `_StructuralProbesMixin` (orchestrator + one check per invariant; 584 lines after the follow-up below) | 584 |
+| `probes_structural.py` | `_StructuralProbesMixin` (orchestrator + one check per invariant; 604 lines after the follow-ups below) | 604 |
 | `probes_empirical.py` | `_EmpiricalProbesMixin` | 77 |
 | `falsifier.py` | `IndependentAdversarialFalsifier.__init__` + `falsify()` | 200 |
 

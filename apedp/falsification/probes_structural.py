@@ -87,41 +87,22 @@ class _StructuralProbesMixin:
         """Tests physical invariants such as positivity, probability ceilings, and dimensional consistency."""
         ces: list[Counterexample] = []
         syms = list(expr.free_symbols)
-        if not syms:
-            # A model with no free symbols is still a model. The previous early
-            # return declared the invariants, evaluated none of them, and reported
-            # `invariants_checked = 0` with an *empty* probe-error list -- a hole the
-            # report never mentioned (found by tests/test_structural_invariant_
-            # coverage.py: `-1.0` with `positivity` was neither refuted nor flagged).
-            # The constant is evaluated once instead, so the same checks below
-            # decide it; a non-finite constant is reported as unevaluable, exactly
-            # as a model that returns no real value across its envelope is.
-            constant_value = self._constant_envelope_value(expr)
-            if constant_value is None:
-                return ces, {
-                    "invariants_declared": len(invariants),
-                    "invariants_checked": 0,
-                    "probe_errors": [{
-                        "probe": "EnvelopeSweep",
-                        "error": "NoRealValues",
-                        "detail": f"constant model {expr} has no finite real value",
-                        "unresolved": True,
-                    }],
-                }
-
-            def evaluate(*_args: Any, _value: float = constant_value) -> float:
-                return _value
-
-            samples: list[tuple[dict[str, float], float | None]] = [({}, constant_value)]
-            probe_errors: list[dict[str, Any]] = []
-        else:
-            evaluate = sp.lambdify(syms, expr, modules=["numpy", "math"])
-
-            # Every invariant below is decided from the model's own behaviour across
-            # the declared envelope. Symbol *names* are never consulted, so renaming a
-            # variable cannot disable a check, and a violation away from the declared
-            # bounds (e.g. f = x**2 - 0.5 on [-1, 1]) is no longer invisible.
-            samples, probe_errors = self._sample_envelope(evaluate, syms, domains)
+        prepared = self._prepare_structural_envelope(expr, domains)
+        if prepared is None:
+            # A constant with no finite real value cannot decide any invariant. It
+            # is reported as unevaluable -- an error on the record -- rather than
+            # counted as a check that passed.
+            return ces, {
+                "invariants_declared": len(invariants),
+                "invariants_checked": 0,
+                "probe_errors": [{
+                    "probe": "EnvelopeSweep",
+                    "error": "NoRealValues",
+                    "detail": f"constant model {expr} has no finite real value",
+                    "unresolved": True,
+                }],
+            }
+        evaluate, samples, probe_errors = prepared
 
         scan = _EnvelopeScan.from_samples(samples)
         metrics: dict[str, Any] = {
@@ -175,6 +156,45 @@ class _StructuralProbesMixin:
 
         self._finalize_structural_metrics(metrics, scan, invariants, expr)
         return ces, metrics
+
+    def _prepare_structural_envelope(
+        self, expr: sp.Expr, domains: dict[str, tuple[float, float]]
+    ) -> tuple[
+        Callable[..., Any],
+        list[tuple[dict[str, float], float | None]],
+        list[dict[str, Any]],
+    ] | None:
+        """Evaluate the model over its declared envelope, ready for the invariant checks.
+
+        Every invariant is decided from the model's own behaviour across that
+        envelope: symbol *names* are never consulted, so renaming a variable cannot
+        disable a check, and a violation away from the declared bounds
+        (e.g. f = x**2 - 0.5 on [-1, 1]) is not invisible.
+
+        A model with no free symbols is still a model: it is evaluated once at the
+        single empty point rather than skipped. The previous early return declared
+        the invariants, evaluated none of them, and reported `invariants_checked = 0`
+        with an *empty* probe-error list -- a hole the report never mentioned (found
+        by tests/test_structural_invariant_coverage.py: `-1.0` with `positivity` was
+        neither refuted nor flagged).
+
+        Returns ``None`` when a constant model has no finite real value, i.e. when no
+        invariant can be decided; the caller must report that rather than pass it.
+        """
+        syms = list(expr.free_symbols)
+        if syms:
+            evaluate = sp.lambdify(syms, expr, modules=["numpy", "math"])
+            samples, probe_errors = self._sample_envelope(evaluate, syms, domains)
+            return evaluate, samples, probe_errors
+
+        constant_value = self._constant_envelope_value(expr)
+        if constant_value is None:
+            return None
+
+        def evaluate(*_args: Any, _value: float = constant_value) -> float:
+            return _value
+
+        return evaluate, [({}, constant_value)], []
 
     @staticmethod
     def _constant_envelope_value(expr: sp.Expr) -> float | None:
