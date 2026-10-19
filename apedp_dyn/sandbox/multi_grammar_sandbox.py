@@ -140,7 +140,8 @@ def _fit_grammar_candidate(
     else:
         X = feat
 
-    X_tr, y_tr = X[:n_train], y[:n_train]
+    train_end = max(0, n_train - 5)
+    X_tr, y_tr = X[:train_end], y[:train_end]
     X_ho, y_ho = X[n_train:], y[n_train:]
 
     ok_tr = np.isfinite(X_tr).all(axis=1) & np.isfinite(y_tr)
@@ -254,7 +255,8 @@ def _fit_combo_candidate(
     else:
         X = feat
 
-    X_tr, y_tr = X[:n_train], y[:n_train]
+    train_end = max(0, n_train - 5)
+    X_tr, y_tr = X[:train_end], y[:train_end]
     X_ho, y_ho = X[n_train:], y[n_train:]
 
     ok_tr = np.isfinite(X_tr).all(axis=1) & np.isfinite(y_tr)
@@ -483,6 +485,7 @@ def run_pooled_multi_asset_discovery(
     all_feats, all_tgts = [], []
     T = len(universe[assets[0]])
     n_train = T // 2
+    train_end = max(0, n_train - 5)
 
     for a in assets:
         df_a = universe[a]
@@ -492,8 +495,8 @@ def run_pooled_multi_asset_discovery(
     feats_3d = np.stack(all_feats, axis=1)  # (T, N, K)
     tgts_2d = np.stack(all_tgts, axis=1)    # (T, N)
 
-    feats_tr = feats_3d[:n_train].reshape(-1, feats_3d.shape[2])
-    tgts_tr = tgts_2d[:n_train].reshape(-1)
+    feats_tr = feats_3d[:train_end].reshape(-1, feats_3d.shape[2])
+    tgts_tr = tgts_2d[:train_end].reshape(-1)
     feats_ho = feats_3d[n_train:].reshape(-1, feats_3d.shape[2])
     tgts_ho = tgts_2d[n_train:].reshape(-1)
 
