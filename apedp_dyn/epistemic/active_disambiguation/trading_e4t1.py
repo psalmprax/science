@@ -120,6 +120,8 @@ def run_origin(panels: dict[str, pd.DataFrame], origin: str, policy: str, seed: 
     dates = panels["BTC"]["date"]
     m_tr = (dates < origin).to_numpy()
     m_fw = (dates >= origin).to_numpy() & (dates < str(pd.Timestamp(origin) + pd.offsets.MonthBegin(1)))
+    origin_idx = int(np.searchsorted(dates.to_numpy(), np.datetime64(origin), side="left"))
+    m_tr_d5 = m_tr & (np.arange(len(dates)) + 5 < origin_idx)
     btc = panels["BTC"]
     coefs = fit_btc(btc, m_tr)
     feats = {"H1": "logV", "H2": "rankV", "H3": "HA"}
@@ -139,8 +141,8 @@ def run_origin(panels: dict[str, pd.DataFrame], origin: str, policy: str, seed: 
     tv_cut = np.nanquantile(tv[m_tr], 2 / 3)
     hi_tv, hi_vr = tv > tv_cut, btc["rankV"].to_numpy() > 2 / 3
     neg = btc["r"].to_numpy() < 0
-    subsets = {"m1": m_tr, "m2": m_tr, "m3": m_tr & hi_tv, "m4": m_tr & hi_vr,
-               "m5": m_tr & neg, "m6": m_tr & hi_tv, "m7": m_tr, "m8": m_tr}
+    subsets = {"m1": m_tr, "m2": m_tr_d5, "m3": m_tr & hi_tv, "m4": m_tr & hi_vr,
+               "m5": m_tr & neg, "m6": m_tr_d5 & hi_tv, "m7": m_tr, "m8": m_tr}
     targets = {"m1": d1, "m2": d5, "m3": d1, "m4": d1, "m5": d1, "m6": d5, "m7": None, "m8": None}
     for mid in MEASUREMENT_IDS:
         if mid in ("m7", "m8"):
