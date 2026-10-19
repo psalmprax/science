@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import time
 from collections.abc import Sequence
 from pathlib import Path
@@ -479,15 +480,24 @@ def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
 
         is_multiterm = bool(req.get("multiterm", False))
         if is_multiterm:
-            max_terms = int(req.get("max_terms", 4))
-            max_depth = int(req.get("max_depth", 3))
-            max_term_complexity = int(req.get("max_term_complexity", 8))
+            # Budgets default to the engine's own (2, 4, 3): the RIME-era
+            # (3, 8, 4) triple expanded generation ~50x (extra powers) and
+            # pushed single requests into minute-scale runs. Callers can still
+            # raise any cap explicitly for a heavier search.
+            max_terms = int(req.get("max_terms", 3))
+            max_depth = int(req.get("max_depth", 2))
+            max_term_complexity = int(req.get("max_term_complexity", 4))
             operators = tuple(req.get("operators", ('+', '-', '*', '/', 'pow', 'sin', 'cos', 'abs')))
             m_eng = MultiTermL2Engine(
                 max_depth=max_depth,
                 max_term_complexity=max_term_complexity,
                 max_terms=max_terms,
                 operators=operators,
+                # The zoo's step/sine regimes starve shape-term screening
+                # (see multiterm_engine Step 2), so the registry route runs a
+                # wider basis than the 28-term engine default; combinations
+                # stay bounded by max_terms=3.
+                max_basis_terms=40,
             )
             res = m_eng.discover_multiterm(
                 X=feats,
@@ -870,6 +880,30 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
     # Prepare plot data
     split_idx = int(n * 0.6)
     pred_vals = np.zeros(n)
+    # State series this system actually produced. Looking names up here (instead
+    # of referencing branch-local variables) means a term naming a state the
+    # system never defined fails loudly with a clear message instead of raising
+    # NameError deep inside the endpoint.
+    state_series: dict[str, Any] = {}
+    for _name in ("x", "v", "theta", "omega", "m"):
+        _val = locals().get(_name)
+        if _val is not None:
+            state_series[_name] = _val
+
+    def _cubic_term(t_name: str) -> bool:
+        """True only for an explicit cubic in x.
+
+        Accepts the exponent forms the grammar actually emits -- ``x^3``,
+        ``x**3``, ``(x)^3``, ``(x)^(3)``, ``(x)**(3)`` -- and the bare token
+        ``x3``. The previous substring test (``"3" in t_name``) cubed ``x`` for
+        ANY term containing the digit 3 (``theta_3``, ``m3``, ``x3_lag``),
+        silently fabricating the plotted curve.
+        """
+        s = t_name.replace(" ", "")
+        if re.search(r"\(?x\)?(?:\*\*|\^)\(?3\)?", s):
+            return True
+        return bool(re.fullmatch(r"x3", s))
+
     if top_cand is not None:
         if top_cand.fit and top_cand.fit.param_values:
             # Multi-term or single term prediction
@@ -879,16 +913,21 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
                 for term in top_cand.candidate.terms:
                     w = pv.get(term.parameter, 0.0)
                     t_name = term.name
-                    if t_name == "omega":
-                        pred_vals += w * omega
-                    elif t_name == "x":
-                        pred_vals += w * x
-                    elif t_name == "v":
-                        pred_vals += w * v
-                    elif "sin(theta)" in t_name:
-                        pred_vals += w * np.sin(theta)
-                    elif "x^3" in t_name or "x**3" in t_name or "3" in t_name:
-                        pred_vals += w * (x**3)
+                    if t_name in state_series:
+                        pred_vals += w * np.asarray(state_series[t_name], dtype=float)
+                    elif "sin(theta)" in t_name and "theta" in state_series:
+                        pred_vals += w * np.sin(state_series["theta"])
+                    elif _cubic_term(t_name) and "x" in state_series:
+                        pred_vals += w * (state_series["x"] ** 3)
+                    else:
+                        raise HTTPException(
+                            status_code=500,
+                            detail=(
+                                f"Cannot reconstruct plot series for term '{t_name}' "
+                                f"in system '{req.system}' (available states: "
+                                f"{sorted(state_series)})."
+                            ),
+                        )
             else:
                 coef = top_cand.fit.param_values.get("theta_1", 1.0)
                 cid = top_cand.candidate.candidate_id
@@ -2199,27 +2238,37 @@ def get_trading_np93() -> dict[str, Any]:
 
     freeze_file = ROOT / "outputs" / "trading_np93_freeze.json"
     if freeze_file.exists():
+        # Serve the frozen measurement verbatim, and derive the contract verdict
+        # from ITS OWN counts using the benchmark's definition
+        # (false_promotion_rate = promotions / validated windows;
+        # passed = no promotions and no unique support). This endpoint used to
+        # overwrite those two fields with 0.0 / True on every response,
+        # including the frozen measurement -- i.e. it falsified the scoreboard.
         with open(freeze_file, encoding="utf-8") as f:
             data = json.load(f)
-    else:
-        from benchmarks.run_trading_np93 import run_trading_np93
+        promotion = int(data.get("promotion", 0) or 0)
+        validation = int(data.get("validation", 0) or 0)
+        unique = int(data.get("unique", 0) or 0)
+        data["false_promotion_rate"] = promotion / max(1, validation)
+        data["passed_contract"] = bool(promotion == 0 and unique == 0)
+        return _json_obj(data)
 
-        summary, _ = run_trading_np93()
-        data = {
-            "benchmark": summary.benchmark,
-            "full_name": summary.full_name,
-            "windows": summary.windows,
-            "candidate_space": summary.candidate_space,
-            "validation": summary.validation,
-            "unique": summary.unique,
-            "multi": summary.multi,
-            "promotion": summary.promotion,
-            "question": summary.question,
-        }
-    data["false_promotion_rate"] = 0.0
-    data["passed_contract"] = True
-    data["primary_diagnosis"] = "OBSERVATIONAL_NON_IDENTIFIABILITY"
-    return _json_obj(data)
+    from benchmarks.run_trading_np93 import run_trading_np93
+
+    summary, _ = run_trading_np93()
+    return _json_obj({
+        "benchmark": summary.benchmark,
+        "full_name": summary.full_name,
+        "windows": summary.windows,
+        "candidate_space": summary.candidate_space,
+        "validation": summary.validation,
+        "unique": summary.unique,
+        "multi": summary.multi,
+        "promotion": summary.promotion,
+        "question": summary.question,
+        "false_promotion_rate": float(summary.false_promotion_rate),
+        "passed_contract": bool(summary.passed_contract),
+    })
 
 
 @app.get("/api/benchmarks/nano-ds10", dependencies=[Depends(_require_api_key)])

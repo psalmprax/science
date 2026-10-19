@@ -68,20 +68,14 @@ class TestSandboxGalleryExtended:
     def test_lynx_real_data(self):
         """Lynx cycle sandbox: the verdict agrees with its own margin.
 
-        The pinned promotion this body used to assert is not reproducible, and
-        the reason is the fixture rather than the referee. `load_lynx` reads
-        `/tmp/lynx.csv` -- a file outside the repository. The copy present now
-        (mtime 2026-10-06) holds non-integer values (1821 -> 5745.071229516849),
-        so it is not the MacLulich trapping counts the sandbox docstring names;
-        against it the best cycle candidate beats `ar1_lag` by Delta=0.0114
-        versus tau=0.424, and adjudicate abstains before the bootstrap tiebreak
-        the old body was exercising. Asserting any verdict here would be
-        asserting the contents of an untracked file, so what is pinned instead
-        is the contract the response must satisfy whatever the series holds:
-        the promotion flag, the margin and the reason have to agree.
-
-        Reviewers: vendoring the real series in the repo (rather than reading
-        it from /tmp) is what would let the promoted case be pinned again.
+        The fixture dependency was remediated on 2026-10-19: the canonical
+        MacLulich series (R datasets::lynx, 1821-1934, 114 annual counts) is now
+        vendored in-repo at `data/market/lynx_maclulich.csv` with provenance in
+        `data/market/PROVENANCE.json`, and `load_lynx` reads it by default
+        instead of `/tmp/lynx.csv`. The series is therefore tracked and the
+        response contract is pinned against the real data: whatever verdict the
+        referee reaches, the promotion flag, the margin and the reason must
+        agree, and a boundary promotion must be labelled as one.
         """
         d = client.post("/api/sandbox/run", json={"sandbox_id": "lynx_cycle"}).json()
 

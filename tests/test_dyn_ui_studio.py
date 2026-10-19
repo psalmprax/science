@@ -9,7 +9,8 @@ Verifies:
      - Multi-term damped oscillator discovery.
   4. POST /api/discover/market:
      - W3_COVID returns UNIQUE_SUPPORT for volatility interaction.
-     - W2_2019 returns INSUFFICIENT_EVIDENCE (refuses spurious models).
+     - W2_2019 returns UNIQUE_SUPPORT only as the audited sole survivor, with
+       adequacy guards asserted (see engine-level pin in test_dyn_real_market_l2_sweep.py).
   5. GET /api/challenge/ladder: Returns 10-rung False Certainty Ladder scorecard.
 """
 from __future__ import annotations
@@ -101,14 +102,87 @@ class TestAPEDPStudioAPI:
         assert "vol" in data["discovered_expression"]
         assert len(data["market_series"]["prices"]) > 0
 
-    def test_market_discovery_calm_refuses_spurious_models(self, client):
-        """W2_2019 calm bull market is refused, never promoted.
+def test_trading_np93_endpoint_reports_measured_verdict(tmp_path, monkeypatch):
+    """The benchmark endpoint must report the MEASURED contract verdict.
 
-        Refusal class is multi_hypothesis, not insufficient_evidence: once
-        gate A tolerates causally honest NaN padding the grammar does hold an
-        adequate, generalizing candidate for this window, and the surviving
-        rival is the same function reordered (representation equivalence).
-        What matters here is that nothing is promoted.
+    It used to overwrite false_promotion_rate with 0.0 and passed_contract with
+    True on every response, including the frozen measurement. With a freeze
+    file recording 3 promotions out of 12 validated windows, the endpoint must
+    now report FPR 0.25 and a failed contract.
+    """
+    import json
+
+    from apedp_dyn.ui import server as ui_server
+
+    (tmp_path / "outputs").mkdir()
+    freeze = tmp_path / "outputs" / "trading_np93_freeze.json"
+    freeze.write_text(json.dumps({
+        "benchmark": "TRADING-NP93",
+        "full_name": "Null Promotion Benchmark",
+        "windows": 93,
+        "candidate_space": 1000,
+        "validation": 12,
+        "unique": 1,
+        "multi": 92,
+        "promotion": 3,
+        "question": "does the referee promote null windows?",
+    }))
+    monkeypatch.setattr(ui_server, "ROOT", tmp_path)
+
+    client = TestClient(ui_server.app)
+    resp = client.get("/api/benchmarks/trading-np93")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["promotion"] == 3
+    assert data["false_promotion_rate"] == 0.25
+    assert data["passed_contract"] is False
+
+
+def test_discover_physics_all_systems_return_series():
+    """Every physics system must return 200 with a reconstructable plot series.
+
+    The term reconstruction used to reference branch-local state variables, so a
+    term naming a state the system never defined raised NameError (HTTP 500),
+    and the substring test `"3" in t_name` cubed x for any term containing a 3.
+    """
+    from apedp_dyn.ui import server as ui_server
+
+    client = TestClient(ui_server.app)
+    for system in ("kinetic", "duffing", "harmonic", "pendulum"):
+        resp = client.post("/api/discover/physics", json={
+            "system": system, "n_samples": 60, "noise": 0.02,
+        })
+        assert resp.status_code == 200, f"{system}: {resp.text[:200]}"
+        data = resp.json()
+        assert data["system"] == system
+        assert "verdict" in data and "promoted_equation" in data
+
+
+def test_sandbox_upload_endpoint_is_wired():
+    """/api/sandbox/upload must run discovery, not 404."""
+    from apedp_dyn.ui import server as ui_server
+
+    client = TestClient(ui_server.app)
+    csv_text = "t,y\n" + "\n".join(f"{i * 0.1:.2f},{2.0 * i + 1.0:.3f}" for i in range(40))
+    resp = client.post("/api/sandbox/upload", json={
+        "csv_text": csv_text, "target_column": "y", "mode": "auto",
+    })
+    assert resp.status_code == 200, resp.text[:200]
+    assert resp.json()["sandbox_id"] == "custom_upload"
+
+
+    def test_market_discovery_calm_sole_survivor_keeps_adequacy_guards(self, client):
+        """W2_2019 calm bull market: the audited sole-survivor contract, not a stale refusal pin.
+
+        Audit trail (2026-10-19; engine-level pin in
+        ``tests/test_dyn_real_market_l2_sweep.py``): the grammar now yields
+        exactly ONE adequate candidate for this window. The hardened
+        sole-survivor contract therefore promotes it -- but only because
+        absolute holdout fidelity and whiteness both pass. The retired pin
+        expected ``multi_hypothesis`` because a reorder twin of the then-winner
+        was generated; that twin no longer exists, so this endpoint test pins
+        the audited outcome together with the anti-spurious guards it depends
+        on (promotion must not mean "promoted because nothing fit").
         """
         resp = client.post("/api/discover/market", json={
             "asset": "sp500",
@@ -117,8 +191,18 @@ class TestAPEDPStudioAPI:
         })
         assert resp.status_code == 200
         data = resp.json()
-        assert data["epistemic_verdict"] != "unique_support"
-        assert data["epistemic_verdict"] == "multi_hypothesis"
+
+        assert data["epistemic_verdict"] == "unique_support"
+        assert data["epistemic_attribution"] == "decisive_evidential_support"
+        assert "no structurally distinct rival survived scoring" in data["full_reason"]
+
+        # Anti-spurious guards: the sole survivor must be adequate on out-of-sample data.
+        assert "ma_dev" in data["discovered_expression"]
+        assert "vol" in data["discovered_expression"]
+        assert data["expression_complexity"] <= 4
+        assert data["holdout_error"] > 0
+        assert data["whiteness_passed"] is True
+        assert abs(data["whiteness_rho1"]) < 0.1
 
     def test_challenge_ladder_endpoint(self, client):
         """GET /api/challenge/ladder returns all 10 verified rungs."""
