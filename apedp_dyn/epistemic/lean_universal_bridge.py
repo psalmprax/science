@@ -175,7 +175,16 @@ def _liberal_parse_formula(formula: str) -> sp.Expr | None:
     while tokens:
         candidate_str = " ".join(tokens)
         try:
-            return sp.sympify(candidate_str, locals=_ast_symbol_locals(candidate_str))
+            parsed = sp.sympify(candidate_str, locals=_ast_symbol_locals(candidate_str))
+            # Only single sympy expressions are a valid AST for the refutation
+            # stages; non-Expr parses (tuple/list forms with stray commas or
+            # annotation tails) crashed ``_ast_polynomial_total_degree``
+            # downstream (AttributeError: 'list' has no free_symbols). Trim
+            # and retry; fail closed to None when nothing parseable remains.
+            if isinstance(parsed, sp.Expr):
+                return parsed
+            tokens = tokens[:-1]
+            continue
         except Exception:  # noqa: BLE001 - progressive trim of annotation tail is the fallback
             tokens = tokens[:-1]
     return None
@@ -205,6 +214,8 @@ def _ast_detect_damping_factor(expr: sp.Expr) -> str | None:
 
 def _ast_polynomial_total_degree(expr: sp.Expr) -> int | None:
     """Total polynomial degree of ``expr`` in its free symbols, or None."""
+    if not isinstance(expr, sp.Expr):
+        return None
     if not expr.free_symbols:
         return 0 if expr.is_number else None
     try:
@@ -633,7 +644,7 @@ class LeanUniversalBridge:
                 "axiom sir_flux_conservation (beta s i gamma : R) : (-beta * s * i) + (beta * s * i - gamma * i) + (gamma * i) = (0 : R)",
                 "axiom norm_sq_nonneg (u : R) : (0 : R) ≤ u * u",
                 "axiom exp_pos (s : R) : (0 : R) ≤ exp s",
-                "axiom exp_damp_le_one (s : R) : exp (-s) ≤ (1 : R)",
+                "axiom exp_damp_le_one (s : R) (hs : (0 : R) ≤ s) : exp (-s) ≤ (1 : R)",
                 "axiom inv_damp_le_one (s : R) : inv_damp s ≤ (1 : R)",
                 "axiom neg_neg (x : R) : -(-x) = x",
                 "axiom abs_le_self (x : R) : |x| ≤ |x|",
@@ -793,9 +804,13 @@ class LeanUniversalBridge:
                     proof = "by exact mul_le_self_of_le_one (|v|) (inv_damp s) (inv_damp_le_one s) hpos"
                     return stmt, proof, True, "axiomatic_damping_bound", "Damping contraction bound verified via axiomatic deduction"
                 elif any(k in full_meta for k in ("squeeze", "exp_damp")):
-                    stmt = "(c s : R) (hpos : (0 : R) ≤ |c|) : |c| * exp (-s) ≤ |c|"
-                    proof = "by exact mul_le_self_of_le_one (|c|) (exp (-s)) (exp_damp_le_one s) hpos"
-                    return stmt, proof, True, "axiomatic_exp_damp_bound", "Exponential squeeze damping bound verified via axiomatic deduction"
+                    # Finding 12 fix: exp(-s) > 1 for s < 0, so the decay bound
+                    # is only true in-damped-regime. The axiom and the
+                    # synthesized theorem both carry the non-negativity
+                    # hypothesis on s instead of asserting a false universal.
+                    stmt = "(c s : R) (hpos : (0 : R) ≤ |c|) (hs : (0 : R) ≤ s) : |c| * exp (-s) ≤ |c|"
+                    proof = "by exact mul_le_self_of_le_one (|c|) (exp (-s)) (exp_damp_le_one s hs) hpos"
+                    return stmt, proof, True, "axiomatic_exp_damp_bound", "Exponential squeeze damping bound verified via axiomatic deduction (damped regime s >= 0)"
                 elif any(k in full_meta for k in ("rank", "certainty", "entropy", "gate")):
                     return "(x : Nat) : x ≤ x + 1", "by omega", True, "lean_core_omega", "Bounded interval verified"
                 else:

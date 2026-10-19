@@ -30,6 +30,53 @@
 
 APEDP (Autonomous Physics & Engineering Discovery Platform) is an end-to-end scientific computing platform for discovering, validating, and repairing physical equations from experimental data. It combines symbolic regression, dimensional analysis, Bayesian model selection, physical anomaly repair, epistemic tracking, quantum error correction, metrology, and applied defect auditing in a unified framework.
 
+### Epistemic integrity notes (2026-10-19, blind-audit round 2)
+
+> **Outstanding requirements.** F14 (three-role data protocol), F16 (formal
+> CBF-QP certificate), referee-path mutation testing, and an independent Lean
+> toolchain verification are explicitly unresolved; their exact acceptance
+> criteria live in [`SYSTEM_FLAWS_AUDIT.md`](SYSTEM_FLAWS_AUDIT.md)
+> ("Outstanding requirements register", REG-F14/REG-F14b/REG-F16/REG-MUT/
+> REG-LEAN). The remediation checkpoint is frozen at commit `47594e7`
+> (tag `remediation-checkpoint-47594e7`).
+
+- **Referee pair anchoring (`apedp_dyn/epistemic/adjudicate.py`).** The pair
+  evaluation between a promoted head and its nearest rival is anchored on
+  frame holdout RMSE (gate-4-certified), never on the train-loss ordering, so
+  an overfitted train-loss winner can no longer manufacture a spurious
+  `MULTI_HYPOTHESIS` refusal. Recorded in the frozen re-mint (see
+  `CHANGELOG.md`, blind-audit round 2) and pinned by the epistemic referee
+  tests.
+- **NCM structural proposer (`apedp_dyn/proposers/ncm_structural_proposer.py`).**
+  All four archetype branches emit real forward `compute_score` closures that
+  reproduce the fit-time prediction; the zero-vector default in
+  `CandidateProposal` is no longer reachable from this proposer.
+- **Hawkes order-flow scorer causality.** The standardized-intensity
+  `compute_score` couples only to fit-time intensity distribution constants;
+  no eval-frame-wide mean/std (holdout-future statistics) inside scoring.
+- **Lean bridge axiom hygiene (`apedp_dyn/epistemic/lean_universal_bridge.py`).**
+  `exp_damp_le_one` carries the explicit `(hs : 0 ≤ s)` non-negativity
+  hypothesis; the decay bound is never asserted out of the damped regime.
+- **RIME implicit Rust kernel (`rust/apedp-kernel/src/rime/implicit.rs`).**
+  `is_exact_recovery` additionally requires `active_count >= 2`, so the
+  all-zero "0 = 0" pruned vector cannot be certified as an exact discovery;
+  the exactness RMSE gate is scale-aware (relative to the RMS magnitude of
+  the relation's residual terms) so O(1e5)-scale exact laws are certifiable
+  while small-scale near-misses are refused.
+- **PDE frozen-scoring library (`apedp_dyn/epistemic/pde_discovery.py`).**
+  The Python cold-end library is a strict mirror of the Rust discovery
+  library: a dev-discovered active term the mirror cannot resolve now fails
+  closed (raises naming the term) instead of silently dropping a coefficient
+  column; `u^3` is classified as a cubic state nonlinearity and `u_xxx` as
+  the third-order spatial derivative, and the mirror's coverage of the full
+  Rust 1D catalog is pinned.
+- **Lean chain integrity (`apedp_dyn/lean_formal/`).** Every P2-verified
+  record's emitted Lean source is `sorry`-free and every `sorry`-carrying
+  file maps to a P0-refuted record, pinned against the regenerated
+  provenance in `artifacts/all_system_equations_lean_provenance.json`.
+
+
+
 For an in-depth breakdown of system capabilities and why the platform balances autonomous discovery with domain constraints, see [System Capabilities & Architectural Philosophy](SYSTEM_CAPABILITIES_AND_PHILOSOPHY.md).
 
 APEDP should be described as a **domain-general evidence and model-adjudication

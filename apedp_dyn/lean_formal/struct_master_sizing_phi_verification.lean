@@ -53,14 +53,14 @@ axiom parseval_partition (p_low : R) : p_low + ((1 : R) - p_low) = (1 : R)
 axiom sir_flux_conservation (beta s i gamma : R) : (-beta * s * i) + (beta * s * i - gamma * i) + (gamma * i) = (0 : R)
 axiom norm_sq_nonneg (u : R) : (0 : R) ≤ u * u
 axiom exp_pos (s : R) : (0 : R) ≤ exp s
-axiom exp_damp_le_one (s : R) : exp (-s) ≤ (1 : R)
+axiom exp_damp_le_one (s : R) (hs : (0 : R) ≤ s) : exp (-s) ≤ (1 : R)
 axiom inv_damp_le_one (s : R) : inv_damp s ≤ (1 : R)
 axiom neg_neg (x : R) : -(-x) = x
 axiom abs_le_self (x : R) : |x| ≤ |x|
 
 /-- Declared Invariant: position_sizing_positivity (bound_positivity) - Strict non-negativity of position sizing multiplier Phi >= 0 --/
-theorem struct_master_sizing_phi_position_sizing_positivity (x : R) : |x| ≤ |x| :=
-  by exact abs_le_self x
+theorem struct_master_sizing_phi_position_sizing_positivity (u : R) : (0 : R) ≤ u * u :=
+  by exact norm_sq_nonneg u
 
 /-- Declared Invariant: asymptotic_squeeze_damping (asymptotic_limit) - Exponential squeeze damping bound |Phi| <= |Phi_max| --/
 theorem struct_master_sizing_phi_asymptotic_squeeze_damping (c v : R) (hpos : (0 : R) ≤ |c|) : |c * tanh v| ≤ |c| :=

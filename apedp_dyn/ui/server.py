@@ -907,8 +907,8 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
     if top_cand is not None:
         if top_cand.fit and top_cand.fit.param_values:
             # Multi-term or single term prediction
-            if hasattr(top_cand.candidate, "terms") and len(top_cand.candidate.terms) > 1:
-                # Reconstruct multi-term
+            if hasattr(top_cand.candidate, "terms") and len(top_cand.candidate.terms) >= 1:
+                # Reconstruct multi-term or single-term with explicit Term objects
                 pv = top_cand.fit.param_values
                 for term in top_cand.candidate.terms:
                     w = pv.get(term.parameter, 0.0)
@@ -931,14 +931,16 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
             else:
                 coef = top_cand.fit.param_values.get("theta_1", 1.0)
                 cid = top_cand.candidate.candidate_id
-                if "sin" in cid:
-                    pred_vals = coef * np.sin(theta)
-                elif "theta" in cid:
-                    pred_vals = coef * theta
-                elif "m" in cid and "v" in cid:
-                    pred_vals = coef * m * (v**2)
-                elif req.system == "harmonic":
-                    pred_vals = coef * x
+                if "sin" in cid and "theta" in state_series:
+                    pred_vals = coef * np.sin(state_series["theta"])
+                elif "theta" in cid and "theta" in state_series:
+                    pred_vals = coef * np.asarray(state_series["theta"], dtype=float)
+                elif "m" in cid and "v" in cid and "m" in state_series and "v" in state_series:
+                    pred_vals = coef * state_series["m"] * (state_series["v"] ** 2)
+                elif "x" in state_series and (_cubic_term(cid) or "x^3" in cid or "x**3" in cid):
+                    pred_vals = coef * (state_series["x"] ** 3)
+                elif "x" in state_series:
+                    pred_vals = coef * np.asarray(state_series["x"], dtype=float)
 
     _pc = adj.promoted
     _pcg4 = (_pc.provenance.get("gate4_status", {}) if _pc is not None else {})

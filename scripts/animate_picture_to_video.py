@@ -12,30 +12,30 @@ and animates it into a 10-second continuous video (240 frames @ 24 FPS):
 from __future__ import annotations
 
 import os
-import sys
 import shutil
+import sys
 import time
 
 sys.path.insert(0, os.path.abspath("."))
 
+import imageio.v3 as iio
 import numpy as np
 from PIL import Image
-import imageio.v3 as iio
 
-from apedp_dyn.video.vae_bridge import (
-    ContinuousWaveletVAE,
-    VideoVAEBridge,
-)
 from apedp_dyn.video.noether_engine import (
-    NoetherConservationEngine,
     NoetherConfig,
-)
-from apedp_dyn.video.tensor_train_video import (
-    compress_video_latent,
+    NoetherConservationEngine,
 )
 from apedp_dyn.video.physics_knobs import (
     PhysicalSteeringConfig,
     PhysicalSteeringController,
+)
+from apedp_dyn.video.tensor_train_video import (
+    compress_video_latent,
+)
+from apedp_dyn.video.vae_bridge import (
+    ContinuousWaveletVAE,
+    VideoVAEBridge,
 )
 
 
@@ -159,9 +159,9 @@ def animate_picture(
     frames_rgb_uint8 = []
     keyframe_indices = [
         0,
-        int(round(total_frames * 0.25)),
-        int(round(total_frames * 0.50)),
-        int(round(total_frames * 0.75)),
+        round(total_frames * 0.25),
+        round(total_frames * 0.50),
+        round(total_frames * 0.75),
         total_frames - 1,
     ]
     keyframe_paths = {}
@@ -202,7 +202,7 @@ def animate_picture(
     print(f"• Output Video:          {output_mp4_path} ({mp4_kb:.1f} KB)")
     print(f"• Artifact Copy:         {art_mp4}")
     print(f"• Continuous Frame Rate: {ms_per_frame:.3f} ms per frame")
-    print(f"• Keyframe JPEGs (Quality=98):")
+    print("• Keyframe JPEGs (Quality=98):")
     for sec_lbl, pth in keyframe_paths.items():
         kb = os.path.getsize(pth) / 1024.0
         print(f"  - [{sec_lbl}]: {pth} ({kb:.1f} KB)")
@@ -213,5 +213,6 @@ if __name__ == "__main__":
     img_in = sys.argv[1] if len(sys.argv) > 1 else "docs/media/input_sports_car.png"
     mp4_out = sys.argv[2] if len(sys.argv) > 2 else "docs/media/picture_to_video_10s.mp4"
     kframes_dir = sys.argv[3] if len(sys.argv) > 3 else "docs/media/keyframes"
-    art_dir = "/home/psalmprax/.gemini/antigravity-cli/brain/81922211-290b-4171-99b4-1b05d2c8d0a6"
+    from apedp_dyn.conf.paths import artifact_dir as _resolve_artifact_dir
+    art_dir = str(_resolve_artifact_dir())
     animate_picture(img_in, mp4_out, kframes_dir, art_dir)

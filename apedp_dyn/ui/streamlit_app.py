@@ -15,7 +15,10 @@ try:
 except ImportError:
     HAS_STREAMLIT = False
 
-from apedp_dyn.epistemic.experiment_ledger import FullLineageExperimentLedger
+from apedp_dyn.epistemic.experiment_ledger import (
+    CandidateLifecycleState,
+    FullLineageExperimentLedger,
+)
 from apedp_dyn.ui.dag_explorer import (
     build_burned_holdouts_view,
     compute_pareto_frontier,
@@ -44,7 +47,7 @@ def render_dashboard(ledger_path: str | Path | None = None) -> None:
     burned = ledger.get_burned_holdouts()
 
     col1, col2, col3, col4 = st.columns(4)
-    promoted = [c for c in candidates if "PROMOTED" in str(c.state)]
+    promoted = [c for c in candidates if c.state == CandidateLifecycleState.CONFIRMED_VALID]
     rejected = [c for c in candidates if "REJECTED" in str(c.state) or "FAILED" in str(c.state)]
 
     col1.metric("Total Hypotheses", len(candidates))

@@ -89,7 +89,7 @@ def _non_bonded_pairs(force_field: MolecularForceField, n: int) -> list[tuple[in
     geometry. Bonded terms already carry their own exchange repulsion; the
     non-bonded term exists to keep *non-bonded* atoms apart.
     """
-    bonded = set(force_field.bonds)
+    bonded = {(min(u, v), max(u, v)) for u, v in force_field.bonds}
     return [
         (i, j)
         for i in range(n)

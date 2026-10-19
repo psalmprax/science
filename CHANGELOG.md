@@ -4,6 +4,252 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Round-3 external assessment record (2026-10-19)
+
+- Registered the L2 holdout R² base floor, F-test significance level, and fitted
+  predictor degrees of freedom in the canonical preregistered specification;
+  pruning now consumes those pinned values rather than hardcoding the 95% gate.
+- Post-round-3 external review: **6.5/10 overall** (up from ~6/10), credited to
+  reliability and audit discipline, while explicitly noting the remediation
+  does not by itself establish stronger scientific discovery capability or a
+  demonstrated advantage over competing methods. Scorecard and the
+  reviewer-stated criteria for reaching 8/10 (REG requirement closure with
+  per-item acceptance evidence, independent review of mathematical
+  certificates and critical code paths, reproducible external evaluation of
+  discovery validity) and 9/10 (measurable advantage over established
+  alternatives across multiple independent problem families) are recorded in
+  `docs/SYSTEM_FLAWS_AUDIT.md` ("Round-3 external assessment record") as
+  forward requirements — not claimed progress.
+
+## [Unreleased] — Remediation checkpoint frozen at `47594e7`; open-requirements register (2026-10-19)
+
+- `47594e7` is tagged `remediation-checkpoint-47594e7` as the frozen
+  remediation milestone. Per the external review's final recommendation, F14
+  (three-role data protocol), F16 (formal CBF-QP certificate), mutation
+  testing of referee/leakage paths, and an independent Lean toolchain run are
+  recorded as **explicit unresolved requirements** with exact acceptance
+  criteria in `docs/SYSTEM_FLAWS_AUDIT.md` ("Outstanding requirements
+  register", IDs REG-F14, REG-F14b, REG-F16, REG-MUT, REG-LEAN). None may be
+  marked complete silently.
+- F17 scale-aware gate — reviewer acceptance items closed: the polynomial
+  library's constant `1` column had pinned the term-scale denominator at O(1),
+  defeating scale-awareness below O(1) data (a mis-fitting linear candidate at
+  near-zero scale was certified permissively). The term scale is now measured
+  over NON-constant columns; near-zero-scale exact laws certify scale-
+  consistently while misfits refuse. Degenerate inputs pinned: all-zero and
+  constant data (no NaN via the 1e-12 floor), <10 samples and NaN inputs
+  rejected explicitly at the binding boundary. Rust lib 186/186. New pins:
+  `TestF17ExtremeScaleRobustness` (6 tests), `TestF8ErrorDiagnosticDetail`.
+  Round-2 suite total: 46 tests.
+
+## [Unreleased] — External-review round (cont.): F17 scale-aware gate, F8 fail-closed mirror, Lean chain pin (2026-10-19)
+
+Continued from the review-response round above (same external report, remaining "additional scrutiny" items answered in code rather than in prose):
+
+### F17 — scale-aware exact-recovery gate (Rust `rime/implicit.rs`, rebuilt)
+- The exact-recovery gate is no longer an absolute `rmse < 1e-5`. It is measured
+  RELATIVE to the RMS magnitude of the relation's own residual terms, so
+  O(1e5)-scale genuinely exact relations (the audit's QEC-scale class) are
+  certifiable while small-scale near-misses are refused at the same relative
+  tolerance (1e-5). Verified through the rebuilt pyo3 binding: O(1) circle
+  exact (rmse 7e-16), 1e5-scale exact recovered (rmse 9e-13), small-scale
+  1e-4-perturbed relation REFUSED. The "0 = 0" tautology guard stays
+  scale-independent via the active-term count. Rust lib: 186/186. Pinned by
+  `TestF17ScaleAwareExactGate` (4 tests).
+
+### F8 — frozen-library mirror drift fails closed
+- `_frozen_residual_r2` no longer silently skips dev-discovered active terms
+  that the Python cold-end mirror cannot resolve — a dropped column corrupted
+  the frozen R^2 toward flattering values (the original F8 defect class).
+  Unresolved terms now raise naming the drifted term(s). Pinned by
+  `TestF8FrozenLibraryTermAudit`: fail-closed raise, term-classification pin
+  (`u^3` is a cubic STATE nonlinearity, `u_xxx` the third-order spatial
+  derivative — distinct series, per the reviewer's classification remark), and
+  a mirror-coverage pin that every Rust 1D catalog term (including `u^3` and
+  `u_xxx`) resolves in the Python mirror.
+
+### Lean — complete dependency-chain integrity pin
+- The reviewer's request to "compile the complete dependency chain and check
+  for unintended axioms or unproved assumptions" is pinned mechanically: for
+  every P2-verified record in the regenerated provenance (315 records), the
+  emitted Lean source in the tracked `apedp_dyn/lean_formal/` directory must
+  be `sorry`-free, and every `sorry`-carrying file must belong to a
+  P0-refuted record — the sorry channel can no longer certify under any
+  label drift. (`TestLeanProofChainIntegrity`, 2 tests over the full family.)
+
+
+Follow-through on the external remediation review (rating round). All items below are
+pinned by `tests/test_dyn_blind_audit_round2_remediation.py`.
+
+### F14 — holdout selection-reuse disclosure
+- The reviewer's composition critique is accepted: the pair verdict selects the
+  promotion head on the SAME holdout slice that later certifies it, so that slice
+  is a selection set, not an untouched confirmation set. The referee cannot mint
+  new confirmation data, so every pair-path `UNIQUE_SUPPORT` verdict now carries
+  the explicit diagnostic flag
+  `selection_reused_confirmation_holdout(n_candidates=<N>)` (the pool size that
+  was compared on the slice). Callers MUST charge that selection to the DSR trial
+  ledger (`search_id` + `selection_pool_size` — the standing multiple-testing
+  correction) or hold out an independent sealed confirmation split; a FULL
+  contract claim without that separation is misstated and callers/auditors can
+  now detect it mechanically from the verdict record. The former
+  `test_tau_shrunk...` fixture documents the two-directional τ rule (Δ ≤ τ ->
+  `MULTI_HYPOTHESIS`; Δ > τ -> `UNIQUE_SUPPORT`), establishing that uniqueness
+  comes from the prespecified τ, never from the (construction-guaranteed)
+  sign of the separation.
+- Re-minted: `adjudicate.py` SHA pin (`f56987b9…`) in `frozen_spec.py` and
+  `APEDPX_FROZEN_v1_7.json`.
+
+### F4 — multiplicity coverage pins
+- Pinned: the ledger charges every recorded trial including repeated
+  evaluations of the same structure under different seeds/hyperparameter
+  settings (6 records under one `search_id` -> 6 trials), and charges the full
+  declared pool beyond recorded survivors (40 declared, 2 recorded -> 40
+  trials, `hidden_trials=38`), with the DSR verdict decreasing under the
+  hidden multiplicity at matched variance.
+
+### F5 — annualization numerical pin
+- The fixture (annualized SR 2.5, 500 trials): `annualization_factor=1.0`
+  manufactures significance (p < 1e-6, `is_significant=True`); the
+  F5-corrected call passes `annualization_factor=252.0`, yielding SE on the
+  annualized scale (≈1.0) and `p ≈ 0.094` (not significant). Both directions
+  pinned numerically.
+
+### F16 — safety-envelope battery (not a CBF certificate)
+- The reviewer is correct that the pull-away deflection is a heuristic, not a
+  forward-invariance guarantee. The stepper's docstring already states it is
+  "not a certified quadratic-programming CBF-QP with formal
+  forward-invariance certificates"; this disclosure is now itself pinned by a
+  test so it cannot silently regress into an overclaim.
+- New behavioral envelope pins (all on the portable CPU path):
+  finiteness throughout; measured inter-agent separation floor > 0.6 (with
+  `r_safe=0.5`) across a collinear head-on encounter, a high-relative-velocity
+  approach (2.5u/s closing speed), a dt sweep over [0.05, 0.10, 0.20], and
+  simultaneous multi-pair engagement of 4 agents; exact agent-index
+  permutation symmetry (max deviation 0.0); finite escape dynamics from
+  degenerate coincident starts; and the F16 regression class itself —
+  forward progress > 0.4 into a symmetric head-on encounter where the
+  pre-fix radial-only deflection deadlocked.
+- A formal `dot(h) + alpha(h) >= 0` CBF-QP synthesis remains future work
+  (tracked here, not smuggled into the heuristic's claim).
+
+### Honest-scope note
+- Reviewer items NOT closed by code here and deliberately not claimed:
+  (a) F17's `rmse < 1e-5` gate is still an absolute threshold — a scale-aware
+  RMSE normalization is a kernel change deferred with its own acceptance
+  criteria; (b) F8's mathematical compatibility of the non-uniform fitting
+  and scoring libraries needs a dedicated term-audit, not a test tweak; and
+  (c) "full test suite" in prior notes meant the AGENTS.md dynamic battery
+  (a named collection), never the entire repository — wording now matches.
+
+## [Unreleased] — Blind-audit remediation round 2: F14–F17 + freeze re-mint (2026-10-19)
+
+### Frozen-record re-mint (rationale, per freeze protocol)
+- `apedp_dyn/epistemic/adjudicate.py` (F14 remediation below),
+  `apedp_dyn/sandbox/grammar_space.py` (F1 causal-target remediation below),
+  `apedp_dyn/sandbox/trading_signals_sandbox.py` (F5 annualization wiring), and
+  `apedp_dyn/ui/server.py` (F7 state-series dictionary reconstruction) are
+  frozen guard files; all four required edits in this round. Both freeze
+  surfaces were re-minted: `frozen_spec.py`'s pinned SHA-256 registry (for the
+  two files it registers) and a new blind-protocol record
+  `apedp_dyn/sandbox/APEDPX_FROZEN_v1_7.json` (supersedes v1_6;
+  `blind_benchmark.py` now consumes v1_7 via `FROZEN_RECORD`): each remint
+  rationale is logged in the record's `remint_log`. Referee threshold semantics
+  and grammar-space primitive sets are untouched; verification is covered by
+  `tests/test_audit_open_flaws_remediated.py::
+test_all_frozen_records_verified_against_pinned_hashes`, `tests/test_dyn_blind.py`
+  (`verify_referee()`), and `tests/test_documentation_and_spec_integrity.py`.
+
+### Critical fixes (new audit Findings 14–17)
+- **F14 — `apedp_dyn/epistemic/adjudicate.py`:** the pair evaluation was anchored
+  on the train-loss ordering. An overfitted train-loss winner made
+  `delta = rival_ho − best_ho` negative, trivially tripping `delta <= tau` for
+  any `tau > 0` and denying `UNIQUE_SUPPORT` to genuine generalizing candidates
+  (misclassified `MULTI_HYPOTHESIS`). The pair anchor is now the holdout-lowest
+  RMSE candidate when it is gate-4 certified; `delta` is therefore always a
+  holdout separation and the `delta <= tau` check verifies the holdout criterion
+  directly before any `MULTI_HYPOTHESIS` verdict. A re-anchored pass falls back
+  to the honest point-estimate contract for the bootstrap tiebreaker (residual
+  series correspondence cannot be attributed across the re-anchor).
+- **F15 — `apedp_dyn/proposers/ncm_structural_proposer.py`:** all four archetype
+  branches (BOUNDED_RATIONAL_SATURATION, CONSERVED_DAMPED_OSCILLATOR,
+  DIFFUSION_ADVECTION_CONTINUUM, CYCLIC_HARMONIC_REGIME) now emit real
+  `compute_score` closures. Each closure builds its design matrix from the
+  candidate frame the same way the fit did (frame-local gradients / lens, not
+  fit-time arrays), falls back to an all-zero vector only for missing columns,
+  and reproduces the fit-time prediction in-sample.
+- **F16 — `apedp_dyn/cuda/batch_physics_steppers.py`:** `batch_multi_agent_cbf_step`
+  now applies the reference CPU implementation's anti-parallel tangential
+  breakaway force (`|anti-parallel| > 0.7` → perpendicular breakaway scaled by
+  `anti_par * k_rep * (1/d − 1/r_w)/d^*2`), eliminating permanent deadlock on
+  collinear trajectories.
+- **F17 — `rust/apedp-kernel/src/rime/implicit.rs`:** `is_exact_recovery` now
+  requires `active_count >= 2` in addition to `rmse < 1e-5`; the all-zero
+  pruned vector (algebraic residual identically 0, the "0 = 0" tautology) can no
+  longer be certified as an exact physical recovery.
+- **F10 — `apedp_dyn/proposers/hawkes_orderflow_proposer.py`:** the
+  standardized-intensity scorer standardized against the *evaluated frame's*
+  mean/std, which over a holdout folds the whole future distribution of the
+  point process into every `t`. Scoring standardization now couples only to the
+  FIT-time intensity distribution constants (`fit_intens_mean`/
+  `fit_intens_std`, the same frozen coupling already used by the surge
+  threshold quantile), so the emitted signal is strictly causal at evaluation
+  time.
+- **F12 — `apedp_dyn/epistemic/lean_universal_bridge.py`:** the prover axiom
+  `exp_damp_le_one (s : R) : exp (-s) ≤ (1 : R)` was a false universal
+  (`exp(-s) > 1` for `s < 0`). The axiom and the synthesized squeeze/exponential
+  damping theorem both now carry the non-negativity hypothesis `(hs : (0 : R) ≤ s)`;
+  the bound is only claimed in-damped-regime.
+
+### Lean-proof inventory reconciliation
+- The unresolved `test_all_system_equations_lean_proofs.py` failures were two
+  distinct problems, both fixed:
+  1. The five per-sweep provenance inputs (`fluid_ode_dynamical_sweep_`,
+     `openai_math_advanced_hypotheses_sweep_`, `ga_depth2_sweep_`,
+     `ga_depth3_sweep_`, `expanded_space_discovery_`) and the cross-domain
+     verification record existed only in a temporary IDE artifact folder, not
+     in the repository. They are now tracked under `artifacts/` (AGENTS.md
+     §1.4: documentation/records must be verified in the repo workspace).
+  2. `lean_universal_bridge.py::_liberal_parse_formula` returned non-Expr
+     sympy parses (tuple/list forms from bracketed heaviside-indicator
+     formulas), which crashed `_ast_polynomial_total_degree` during the full
+     sweep. It now accepts only single sympy expressions (trimming otherwise,
+     failing closed to None), and the degree helper rejects non-Expr input.
+  After regeneration, the reproducible record is 323 evaluated / 315 P2 / 8 P0
+  / 0 P1: the 6 additional P0s are grammar-space candidates whose declared
+  saturation bounds are not provable over their formulas (unbounded degree-3
+  products like `(LeadSpill * DispNorm) * EntropyCert`, and heaviside-indicator
+  products like `[OFI * I(Lead > 0)] * VolRatio` that fail closed on AST
+  refutation) — the former 321/2 record overclaimed those P2s; the traps
+  (`PHYS-ENERGY-LEAK-TRAP`, `FIN-CUBIC-RUNAWAY-POLYNOMIAL` → P0) and all spot
+  checks (`STRUCT-MASTER-SIZING-PHI`, `GA-D3-CHAMPION-U90_H60M`,
+  `TRADING-SCORE-N90` → P2) are unchanged. The test contract pins the
+  regenerated record; no preregistered threshold changed.
+
+### Verification notes
+- `tests/test_dyn_grammar_space.py`: the frozen d5-target pin was stale — it
+  still pinned the backward window `s.shift(-1).rolling(5)` (80% leakage into
+  the "future" target); it now pins the shipped forward-only
+  `s.rolling(5).mean().shift(-5)` (aggregate over s[t+1..t+5]) plus NaN-tail and
+  finiteness invariants.
+- F2 (basis screening holdout leak) and F3 (mismatched SS_tot mask) were
+  verified already remediated on disk in
+  `apedp_dyn/discovery_l2/multiterm_engine.py` (full-series causal evaluation;
+  masked-partition `ss_tot` on `y_ho_m`), pinned by
+  `tests/test_audit_open_flaws_remediated.py`.
+- **F8 — `apedp_dyn/epistemic/pde_discovery.py`:** Added missing spatial stencil
+  term `u_xxx` and polynomial term `u^3` to the non-uniform PDE holdout evaluation
+  library, aligning with 1D/2D discovery terms.
+- **F9 — `apedp_dyn/proposers/distributed_lag_interaction_proposer.py`:** Replaced
+  single `lag_state["buffer"]` with per-column buffer dictionary `lag_state["buffers"]`
+  so multi-column lag features do not overwrite each other during streaming evaluation.
+- **F10 — `apedp_dyn/proposers/hawkes_orderflow_proposer.py`:** Eliminated full-frame
+  mean volume and price-change leakage in arrival weight normalization by using
+  fit-time reference scales or causal expanding means.
+- **F11 — `apedp_dyn/molecular/se3_flow.py`:** Symmetrized bond pair exclusions in
+  `_non_bonded_pairs` so reversed bond tuples `(j, i)` are correctly excluded from
+  non-bonded core repulsion.
+
 ## [Unreleased] — forensic audit remediation, §4.1 freeze re-mint
 
 - `apedp_dyn/sandbox/multi_asset_signals_sandbox.py` is pinned by

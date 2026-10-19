@@ -10,15 +10,71 @@ Verifies:
 
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pandas as pd
 
+import apedp_dyn.proposers.invariant_transfer_proposer as invariant_transfer_module
 from apedp_dyn.epistemic.number_theory_engine import (
     discover_integer_relation,
     discover_modular_lattice,
     recover_rational_constant,
 )
+from apedp_dyn.epistemic.trial_ledger import CandidateTrialLedger
 from apedp_dyn.proposers.invariant_transfer_proposer import InvariantTransferProposer
+
+
+def test_invariant_transfer_declares_all_evaluated_fits_as_trial_pool(monkeypatch):
+    calls = 0
+
+    def evaluate(*_args):
+        nonlocal calls
+        calls += 1
+        return json.dumps({
+            "passed_retention_gate": calls == 1,
+            "extrapolation_safe": True,
+            "cgi_score": 1.0,
+            "worst_env_r2": 1.0,
+            "r2_dispersion_std": 0.0,
+            "irm_penalty": 0.0,
+            "extrapolation_verdict": "safe",
+        })
+
+    monkeypatch.setattr(invariant_transfer_module, "_KERNEL_AVAILABLE", True)
+    monkeypatch.setattr(
+        invariant_transfer_module,
+        "apedp_kernel",
+        type("FakeKernel", (), {"rime_invariant_transfer_evaluate_json": staticmethod(evaluate)}),
+        raising=False,
+    )
+
+    x = np.linspace(1.0, 5.0, 20)
+    data = pd.concat([
+        pd.DataFrame({"x": x, "target": 2.0 * x, "regime": "early"}),
+        pd.DataFrame({"x": x + 5.0, "target": 2.0 * (x + 5.0), "regime": "late"}),
+    ], ignore_index=True)
+    proposals = InvariantTransferProposer(
+        feature_cols=["x"],
+        target_col="target",
+        env_col="regime",
+        max_poly_degree=3,
+    ).fit_and_propose(data)
+
+    assert calls == 3
+    assert len(proposals) == 1
+    assert proposals[0].metadata["evaluated_fit_count"] == 3
+    assert proposals[0].metadata["selection_pool_size"] == 3
+    ledger = CandidateTrialLedger()
+    ledger.record_trial(
+        candidate_id=proposals[0].candidate_id,
+        proposer_id=proposals[0].proposer_id,
+        formula=proposals[0].formula,
+        strategy_archetype=proposals[0].strategy_archetype.value,
+        in_sample_sharpe=0.0,
+        metadata=proposals[0].metadata,
+    )
+    assert ledger.effective_trial_count == 3
 
 
 def test_farey_rational_constant_recovery():
@@ -111,13 +167,15 @@ def test_invariant_transfer_proposer_promotes_causal_law():
     # Search-size disclosure: dev-side metrics were selected over the whole
     # degree pool, so the trial counts must be visible on every candidate.
     assert top_p.metadata["selection_rank"] == 0
-    assert top_p.metadata["selection_pool_size"] == len(proposals)
+    assert top_p.metadata["selection_pool_size"] == 6
+    assert top_p.metadata["evaluated_fit_count"] == 6
     assert top_p.metadata["degree_trials"] == 3  # max_poly_degree default
     assert "dev environments" in top_p.metadata["dev_side_gates"]
     search_ids = {p.metadata["search_id"] for p in proposals}
     assert len(search_ids) == 1, "one fit call must share a single search_id"
     for p in proposals:
-        assert p.metadata["selection_pool_size"] == len(proposals)
+        assert p.metadata["selection_pool_size"] == 6
+        assert p.metadata["evaluated_fit_count"] == 6
         assert 0 <= p.metadata["selection_rank"] < len(proposals)
         assert p.metadata["search_id"] == next(iter(search_ids))
 

@@ -7,8 +7,8 @@ metadata:
     app.kubernetes.io/component: distributed-sweep
 spec:
   completionMode: Indexed
-  completions: 100
-  parallelism: 20
+  completions: 12
+  parallelism: 8
   backoffLimit: 3
   template:
     metadata:
@@ -20,18 +20,12 @@ spec:
         - name: apedp-sweep-worker
           image: ghcr.io/owner/science:latest
           imagePullPolicy: IfNotPresent
-          command: ["python3", "-m", "apedp_dyn.distributed.chunked_executor"]
+          command: ["python3", "-m", "apedp_dyn.sandbox.real_market_l2_sweep"]
           args:
             - "--partition-index"
             - "$(JOB_COMPLETION_INDEX)"
             - "--total-partitions"
-            - "100"
-            - "--chunk-size"
-            - "1000"
-            - "--backend"
-            - "multiprocessing"
-            - "--workers"
-            - "8"
+            - "12"
           env:
             - name: JOB_COMPLETION_INDEX
               valueFrom:

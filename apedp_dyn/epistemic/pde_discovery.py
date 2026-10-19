@@ -9,7 +9,6 @@ Bridges the native Rust PDE Jet engine (rime/pde.rs) into APEDP-X:
 from __future__ import annotations
 
 import json
-import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -44,23 +43,37 @@ class PdeDiscoveryResult:
 
 
 def _fornberg_centered_weights(x_sub: Sequence[float], z: float, m_max: int) -> np.ndarray:
-    """Fornberg stencil weights for derivatives up to ``m_max`` at ``z``.
+    """Fornberg (1988) recurrence stencil weights for derivatives up to ``m_max`` at ``z``.
 
-    Equivalent to the kernel's ``fornberg_weights``: with centered offsets
-    ``xi_k = x_k - z``, row m solves ``sum_k w_k * xi_k**p = m! * delta_{m,p}``.
+    Eliminates Vandermonde conditioning instability by directly evaluating the
+    stable analytical Fornberg recurrence matching the Rust kernel fornberg_weights.
     """
-    xi = np.subtract(np.asarray(x_sub, dtype=float), float(z))
-    n = xi.size
-    vander = np.vander(xi, n, increasing=True)  # rows k: [1, xi_k, ..., xi_k^(n-1)]
-    weights = np.zeros((m_max + 1, n), dtype=float)
-    for m_i in range(m_max + 1):
-        rhs = np.zeros(n, dtype=float)
-        rhs[m_i] = math.factorial(m_i)
-        # Exactness is sum_k w_k xi_k^p = m! delta_{m,p}, i.e. vander^T @ w = rhs
-        # (the transposed solve; solving vander @ w instead solves the
-        # interpolation problem and produces garbage weights).
-        weights[m_i] = np.linalg.solve(vander.T, rhs)
-    return weights
+    x = [float(v) for v in x_sub]
+    n = len(x) - 1
+    c = np.zeros((m_max + 1, n + 1, n + 1), dtype=float)
+    c[0, 0, 0] = 1.0
+    c1 = 1.0
+
+    for i in range(1, n + 1):
+        c2 = 1.0
+        for j in range(i):
+            c3 = x[i] - x[j]
+            c2 *= c3
+            for m in range(min(m_max, i) + 1):
+                term1 = (x[i] - z) * c[m, i - 1, j]
+                term2 = float(m) * c[m - 1, i - 1, j] if m > 0 else 0.0
+                c[m, i, j] = (term1 - term2) / c3
+        for m in range(min(m_max, i) + 1):
+            term1 = (x[i - 1] - z) * c[m, i - 1, i - 1]
+            term2 = float(m) * c[m - 1, i - 1, i - 1] if m > 0 else 0.0
+            c[m, i, i] = (c1 / c2) * (term2 - term1)
+        c1 = c2
+
+    res = np.zeros((m_max + 1, n + 1), dtype=float)
+    for m in range(m_max + 1):
+        for j in range(n + 1):
+            res[m, j] = c[m, n, j]
+    return res
 
 
 def _frozen_residual_r2(
@@ -69,13 +82,26 @@ def _frozen_residual_r2(
     active_terms: list[str],
     coefficients: list[float],
 ) -> float:
-    """R^2 of the FROZEN operator (dev-discovered coefficients) against u_t."""
+    """R^2 of the FROZEN operator (dev-discovered coefficients) against u_t.
+
+    F8 audit rule (fail-closed): the Python frozen library is explicitly
+    documented as a mirror of the Rust discovery library. A dev-discovered
+    active term that the cold-end library cannot resolve must raise, never be
+    silently skipped — an untouched dropped column would corrupt the frozen
+    R^2 toward a flattering value (the original F8 defect class).
+    """
     coeff_by_term = dict(zip(active_terms, coefficients, strict=True))
+    missing = [term for term in coeff_by_term if term not in columns_by_name]
+    if missing:
+        raise ValueError(
+            "Frozen scoring library cannot resolve dev-discovered active term(s): "
+            + ", ".join(sorted(missing))
+            + " — the Python mirror and the Rust discovery library have drifted; "
+              "refuse scoring instead of silently dropping coefficient terms"
+    )
     prediction = np.zeros(ut.shape[0], dtype=float)
     for term, coeff in coeff_by_term.items():
-        column = columns_by_name.get(term)
-        if column is not None:
-            prediction += coeff * column
+        prediction += coeff * columns_by_name[term]
     residual = ut - prediction
     ss_res = float(np.sum(residual ** 2))
     ss_tot = float(np.sum((ut - ut.mean()) ** 2))
@@ -162,6 +188,8 @@ def _eval_frozen_2d_library(
     columns["u"] = np.asarray(u_vals, dtype=float)
     if max_polynomial_degree >= 2:
         columns["u^2"] = columns["u"] ** 2
+    if max_polynomial_degree >= 3:
+        columns["u^3"] = columns["u"] ** 3
     columns["u_x"] = np.asarray(ux_a, dtype=float)
     columns["u_y"] = np.asarray(uy_a, dtype=float)
     u_xx = np.asarray(uxx_a, dtype=float)
@@ -381,26 +409,42 @@ def discover_pde_nonuniform(
     col_u: list[float] = []
     col_ux: list[float] = []
     col_uxx: list[float] = []
+    col_uxxx: list[float] = []
     n_sp = len(x_vec)
     if n_sp < 5:
         raise ValueError("Non-uniform PDE discovery requires at least 5 spatial points")
+    spatial_order = max(2, max_spatial_order)
     for i in range(1, len(hold_idx) - 1):
         t_sub = [t_hold[i - 1], t_hold[i], t_hold[i + 1]]
         w_t = _fornberg_centered_weights(t_sub, t_hold[i], 1)
         for j in range(2, n_sp - 2):
             x_sub = x_vec[j - 2: j + 3]
-            w_x = _fornberg_centered_weights(x_sub, x_vec[j], 2)
+            w_x = _fornberg_centered_weights(x_sub, x_vec[j], spatial_order)
             vals = [u_hold[i - 1][j], u_hold[i][j], u_hold[i + 1][j]]
             ut_hold.append(w_t[1] @ vals)
             col_u.append(u_hold[i][j])
             col_ux.append(w_x[1] @ u_hold[i][j - 2: j + 3])
             col_uxx.append(w_x[2] @ u_hold[i][j - 2: j + 3])
-    columns_by_name = {"u": np.asarray(col_u, dtype=float), "u_x": np.asarray(col_ux, dtype=float),
-                       "u_xx": np.asarray(col_uxx, dtype=float)}
+            if max_spatial_order >= 3:
+                col_uxxx.append(w_x[3] @ u_hold[i][j - 2: j + 3])
+    columns_by_name = {
+        "u": np.asarray(col_u, dtype=float),
+        "u_x": np.asarray(col_ux, dtype=float),
+    }
     if max_polynomial_degree >= 2:
         columns_by_name["u^2"] = columns_by_name["u"] ** 2
+    if max_polynomial_degree >= 3:
+        columns_by_name["u^3"] = columns_by_name["u"] ** 3
     if include_advection_terms:
         columns_by_name["u*u_x"] = columns_by_name["u"] * columns_by_name["u_x"]
+        if max_polynomial_degree >= 2:
+            columns_by_name["u^2*u_x"] = columns_by_name["u"] ** 2 * columns_by_name["u_x"]
+    if max_spatial_order >= 2:
+        columns_by_name["u_xx"] = np.asarray(col_uxx, dtype=float)
+        if include_advection_terms:
+            columns_by_name["u*u_xx"] = columns_by_name["u"] * columns_by_name["u_xx"]
+    if max_spatial_order >= 3:
+        columns_by_name["u_xxx"] = np.asarray(col_uxxx, dtype=float)
     r2_hold = _frozen_residual_r2(
         np.asarray(ut_hold, dtype=float),
         columns_by_name,

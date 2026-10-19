@@ -13,6 +13,11 @@ from collections.abc import Mapping
 
 import numpy as np
 
+from apedp_dyn.conf.canonical_spec import (
+    PRUNING_HOLDOUT_F_TEST_PREDICTOR_DOF,
+    PRUNING_HOLDOUT_F_TEST_SIGNIFICANCE_LEVEL,
+    PRUNING_HOLDOUT_R2_BASE_FLOOR,
+)
 from apedp_dyn.discovery_l2.ast_generator import ASTNode, BinaryOpNode
 from apedp_dyn.discovery_l2.dimensional_types import Dimension
 from apedp_dyn.epistemic.adjudicate import BenchmarkLevel, DataOrigin
@@ -354,14 +359,22 @@ def fit_and_score_candidate(
     # noise-chasing luck (measured: a random-walk trajectory promoted
     # t**2/x at holdout R^2 = 0.2008 on n_ho = 16). The floor is therefore
     # at least the F-test significance level of R^2 for one fitted parameter
-    # against the holdout residual degrees of freedom (F(1, n-2) at 95%).
+    # against the holdout residual degrees of freedom using the registered level.
     n_ho = int(mask_ho.sum())
-    r2_floor = 0.20
-    if n_ho > 3:
+    r2_floor = PRUNING_HOLDOUT_R2_BASE_FLOOR
+    predictor_dof = PRUNING_HOLDOUT_F_TEST_PREDICTOR_DOF
+    residual_dof = n_ho - predictor_dof - 1
+    if residual_dof > 1:
         from scipy.stats import f as _f_dist
 
-        f_crit = float(_f_dist.isf(0.05, 1, n_ho - 2))
-        r2_sig = f_crit / (f_crit + (n_ho - 2))
+        f_crit = float(
+            _f_dist.isf(
+                PRUNING_HOLDOUT_F_TEST_SIGNIFICANCE_LEVEL,
+                predictor_dof,
+                residual_dof,
+            )
+        )
+        r2_sig = f_crit * predictor_dof / (f_crit * predictor_dof + residual_dof)
         r2_floor = max(r2_floor, r2_sig)
     passed_evidential = bool(
         np.isfinite(rmse_ho)
@@ -546,4 +559,3 @@ def select_pareto_candidates(
             min_rmse_so_far = best_rmse
 
     return survivors
-

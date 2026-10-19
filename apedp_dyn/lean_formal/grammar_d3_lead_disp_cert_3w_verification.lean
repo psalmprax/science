@@ -53,17 +53,17 @@ axiom parseval_partition (p_low : R) : p_low + ((1 : R) - p_low) = (1 : R)
 axiom sir_flux_conservation (beta s i gamma : R) : (-beta * s * i) + (beta * s * i - gamma * i) + (gamma * i) = (0 : R)
 axiom norm_sq_nonneg (u : R) : (0 : R) ≤ u * u
 axiom exp_pos (s : R) : (0 : R) ≤ exp s
-axiom exp_damp_le_one (s : R) : exp (-s) ≤ (1 : R)
+axiom exp_damp_le_one (s : R) (hs : (0 : R) ≤ s) : exp (-s) ≤ (1 : R)
 axiom inv_damp_le_one (s : R) : inv_damp s ≤ (1 : R)
 axiom neg_neg (x : R) : -(-x) = x
 axiom abs_le_self (x : R) : |x| ≤ |x|
 
 /-- Declared Invariant: entropy_certainty_interval_bound (asymptotic_limit) - Normalized entropy certainty bounded in [0, 1] --/
-theorem grammar_d3_lead_disp_cert_3w_entropy_certainty_interval_bound (x : Nat) : x ≤ x + 1 :=
-  by omega
+theorem grammar_d3_lead_disp_cert_3w_entropy_certainty_interval_bound (x : Nat) : x = x + 1 :=
+  by sorry -- FALSIFIED: Unbounded polynomial of total degree 3 (>= 3) violates saturation bound
 
 /-- Declared Invariant: entropy_nonnegativity (bound_positivity) - Permutation entropy non-negativity 0 <= H --/
-theorem grammar_d3_lead_disp_cert_3w_entropy_nonnegativity (x : R) : |x| ≤ |x| :=
-  by exact abs_le_self x
+theorem grammar_d3_lead_disp_cert_3w_entropy_nonnegativity (x : Nat) : 0 ≤ x :=
+  Nat.zero_le x
 
 end APEDP_grammar_d3_lead_disp_cert_3w

@@ -1,8 +1,13 @@
 """Automated Unit Tests for All 323 System Equations Lean 4 Verification.
 
 Verifies:
-  - 321 genuine equations across 10 families compile with Lean 4 exit code 0 -> P2_VERIFIED
-  - 2 mathematical traps fail Lean 4 proofs with sorry -> P0_NO_PROOF
+  - 315 genuine equations across 10 families compile with Lean 4 exit code 0 -> P2_VERIFIED
+  - 8 refuted records fail Lean 4 proofs with sorry -> P0_NO_PROOF
+    (the 2 built-in traps plus 6 grammar-space candidates whose declared
+    saturation bounds are not provable over their formulas: unbounded
+    degree-3 products and heaviside-indicator products that fail closed on
+    AST refutation; specified in CHANGELOG "Lean-proof inventory
+    reconciliation" 2026-10-19, not a threshold change)
   - Zero P1 regressions across the entire suite of 323 equations
 """
 from __future__ import annotations
@@ -48,8 +53,8 @@ def test_provenance_file_integrity():
         data = json.load(f)
 
     assert data["total_equations_evaluated"] == 323
-    assert data["p2_verified_count"] == 321
-    assert data["p0_refuted_count"] == 2
+    assert data["p2_verified_count"] == 315
+    assert data["p0_refuted_count"] == 8
     assert data["p1_candidate_count"] == 0
 
     results_by_id = {r["candidate_id"]: r for r in data["results"]}

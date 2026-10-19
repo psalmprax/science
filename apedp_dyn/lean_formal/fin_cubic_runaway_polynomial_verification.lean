@@ -53,13 +53,13 @@ axiom parseval_partition (p_low : R) : p_low + ((1 : R) - p_low) = (1 : R)
 axiom sir_flux_conservation (beta s i gamma : R) : (-beta * s * i) + (beta * s * i - gamma * i) + (gamma * i) = (0 : R)
 axiom norm_sq_nonneg (u : R) : (0 : R) ≤ u * u
 axiom exp_pos (s : R) : (0 : R) ≤ exp s
-axiom exp_damp_le_one (s : R) : exp (-s) ≤ (1 : R)
+axiom exp_damp_le_one (s : R) (hs : (0 : R) ≤ s) : exp (-s) ≤ (1 : R)
 axiom inv_damp_le_one (s : R) : inv_damp s ≤ (1 : R)
 axiom neg_neg (x : R) : -(-x) = x
 axiom abs_le_self (x : R) : |x| ≤ |x|
 
 /-- Declared Invariant: asymptotic_impact_saturation (asymptotic_limit) - Falsely claiming global bounded saturation for degree-3 polynomial --/
 theorem fin_cubic_runaway_polynomial_asymptotic_impact_saturation (x : Nat) : x = x + 1 :=
-  by sorry -- FALSIFIED: Unbounded degree >= 3 runaway violates saturation bound
+  by sorry -- FALSIFIED: Unbounded polynomial of total degree 3 (>= 3) violates saturation bound
 
 end APEDP_fin_cubic_runaway_polynomial

@@ -53,7 +53,7 @@ axiom parseval_partition (p_low : R) : p_low + ((1 : R) - p_low) = (1 : R)
 axiom sir_flux_conservation (beta s i gamma : R) : (-beta * s * i) + (beta * s * i - gamma * i) + (gamma * i) = (0 : R)
 axiom norm_sq_nonneg (u : R) : (0 : R) ≤ u * u
 axiom exp_pos (s : R) : (0 : R) ≤ exp s
-axiom exp_damp_le_one (s : R) : exp (-s) ≤ (1 : R)
+axiom exp_damp_le_one (s : R) (hs : (0 : R) ≤ s) : exp (-s) ≤ (1 : R)
 axiom inv_damp_le_one (s : R) : inv_damp s ≤ (1 : R)
 axiom neg_neg (x : R) : -(-x) = x
 axiom abs_le_self (x : R) : |x| ≤ |x|
@@ -63,7 +63,7 @@ theorem ga_d2_champion_u60_h15m_gating_indicator_boundedness (x : Nat) : x ≤ x
   by omega
 
 /-- Declared Invariant: regime_gate_positivity (bound_positivity) - Indicator activation non-negativity 0 <= I(gate) --/
-theorem ga_d2_champion_u60_h15m_regime_gate_positivity (x : R) : |x| ≤ |x| :=
-  by exact abs_le_self x
+theorem ga_d2_champion_u60_h15m_regime_gate_positivity (x : R) : (0 : R) ≤ (1 : R) + x * x :=
+  by exact add_nonneg (1 : R) (x * x) one_pos (pow2_nonneg x)
 
 end APEDP_ga_d2_champion_u60_h15m

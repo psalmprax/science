@@ -10,8 +10,6 @@ Emits standardized CandidateProposal instances conforming to ProposerBase.
 """
 from __future__ import annotations
 
-from typing import Any
-
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import ElasticNetCV
@@ -133,9 +131,9 @@ class DistributedLagInteractionProposer(ProposerBase):
         max_lag = max((spec[2] for spec in column_spec.values() if spec[0] == "lag"), default=0)
         # Causal state carried across calls: a lag term evaluated on a streaming
         # chunk shorter than the lag must see the observations that preceded the
-        # chunk, not zeros. `_lag_state` holds the tail of the most recent
-        # series; a fresh (non-streaming) frame resets it.
-        lag_state: dict[str, Any] = {"buffer": None}
+        # chunk, not zeros. `lag_state["buffers"]` holds the tail of the most recent
+        # series keyed by column; a fresh (non-streaming) frame resets it.
+        lag_state: dict[str, dict[str, np.ndarray]] = {"buffers": {}}
 
         def compute_score(d: pd.DataFrame) -> np.ndarray:
             sig = np.full(len(d), bias, dtype=float)
@@ -150,24 +148,24 @@ class DistributedLagInteractionProposer(ProposerBase):
                     _, base_col, lag_n = spec
                     if base_col in d.columns:
                         s_raw = d[base_col].to_numpy(dtype=float)
-                        buffer = lag_state["buffer"]
-                        if buffer is not None and buffer[0] == base_col:
-                            history = np.concatenate([buffer[1], s_raw])
+                        col_buffer = lag_state["buffers"].get(base_col)
+                        if col_buffer is not None and len(col_buffer) > 0:
+                            history = np.concatenate([col_buffer, s_raw])
+                            l_prev = len(col_buffer)
                         else:
                             history = s_raw
-                        # lagged[t] = history[t] shifted by lag_n within the
-                        # concatenated series, aligned to the current frame.
-                        # lagged[t] = series value lag_n steps before frame
-                        # position t. Rows whose predecessor lies before the
-                        # available history are unknowable and stay NaN.
-                        lagged = np.full(len(s_raw), np.nan)
-                        if len(history) >= len(s_raw) + lag_n:
-                            lagged = history[len(history) - len(s_raw) - lag_n: len(history) - lag_n]
+                            l_prev = 0
+                        # lagged[t] = series value lag_n steps before frame position t.
+                        # Rows whose predecessor lies before available history stay NaN.
+                        lagged = np.full(len(s_raw), np.nan, dtype=float)
+                        shift_pos = l_prev - lag_n
+                        if shift_pos >= 0:
+                            lagged[:] = history[shift_pos : shift_pos + len(s_raw)]
                         else:
-                            available = len(history) - lag_n
-                            if available > 0:
-                                lagged[len(s_raw) - available:] = history[:available]
-                        lag_state["buffer"] = (base_col, s_raw[-max_lag:].copy() if max_lag else s_raw[-1:].copy())
+                            valid_start = -shift_pos
+                            if valid_start < len(s_raw):
+                                lagged[valid_start:] = history[: len(s_raw) - valid_start]
+                        lag_state["buffers"][base_col] = s_raw[-max_lag:].copy() if max_lag else s_raw[-1:].copy()
                         sig += w * lagged
                 else:
                     if name in d.columns:

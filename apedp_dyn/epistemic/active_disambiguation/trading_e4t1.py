@@ -120,6 +120,8 @@ def run_origin(panels: dict[str, pd.DataFrame], origin: str, policy: str, seed: 
     dates = panels["BTC"]["date"]
     m_tr = (dates < origin).to_numpy()
     m_fw = (dates >= origin).to_numpy() & (dates < str(pd.Timestamp(origin) + pd.offsets.MonthBegin(1)))
+    origin_idx = int(np.searchsorted(dates.to_numpy(), np.datetime64(origin), side="left"))
+    m_tr_d5 = m_tr & (np.arange(len(dates)) + 5 < origin_idx)
     btc = panels["BTC"]
     coefs = fit_btc(btc, m_tr)
     feats = {"H1": "logV", "H2": "rankV", "H3": "HA"}
@@ -134,13 +136,13 @@ def run_origin(panels: dict[str, pd.DataFrame], origin: str, policy: str, seed: 
     ftr = {h: btc[feats[h]].to_numpy() for h in feats}
     base_pred = {h: coefs[h][0] + coefs[h][1] * ftr[h] for h in feats}
     d1 = btc["sig"].shift(-1).to_numpy()
-    d5 = btc["sig"].shift(-1).rolling(5).mean().to_numpy()
+    d5 = btc["sig"].rolling(5).mean().shift(-5).to_numpy()
     tv = btc["trailvol20"].to_numpy()
     tv_cut = np.nanquantile(tv[m_tr], 2 / 3)
     hi_tv, hi_vr = tv > tv_cut, btc["rankV"].to_numpy() > 2 / 3
     neg = btc["r"].to_numpy() < 0
-    subsets = {"m1": m_tr, "m2": m_tr, "m3": m_tr & hi_tv, "m4": m_tr & hi_vr,
-               "m5": m_tr & neg, "m6": m_tr & hi_tv, "m7": m_tr, "m8": m_tr}
+    subsets = {"m1": m_tr, "m2": m_tr_d5, "m3": m_tr & hi_tv, "m4": m_tr & hi_vr,
+               "m5": m_tr & neg, "m6": m_tr_d5 & hi_tv, "m7": m_tr, "m8": m_tr}
     targets = {"m1": d1, "m2": d5, "m3": d1, "m4": d1, "m5": d1, "m6": d5, "m7": None, "m8": None}
     for mid in MEASUREMENT_IDS:
         if mid in ("m7", "m8"):
@@ -224,7 +226,7 @@ def _forward_score(panels, coefs, feats, mid, fw_idx):
             rms[h] = float(np.sqrt(np.mean(fwd[h] ** 2)))
         return rms, fwd
     btc = panels["BTC"]
-    ty = (btc["sig"].shift(-1).rolling(5).mean().to_numpy() if mid in ("m2", "m6")
+    ty = (btc["sig"].rolling(5).mean().shift(-5).to_numpy() if mid in ("m2", "m6")
           else btc["sig"].shift(-1).to_numpy())[fw_idx]
     tv = btc["trailvol20"].to_numpy()[fw_idx]
     ok = np.isfinite(ty)
