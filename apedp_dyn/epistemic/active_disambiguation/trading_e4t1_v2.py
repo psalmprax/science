@@ -94,7 +94,10 @@ def run_origin(panels: dict[str, pd.DataFrame], origin: str, policy: str, seed: 
     nxt = str(pd.Timestamp(origin) + pd.offsets.MonthBegin(1))
     tr_idx = np.where((dates < origin).to_numpy())[0]
     fw_idx = np.where((dates >= origin).to_numpy() & (dates < nxt).to_numpy())[0]
-    tr_blocks = np.intersect1d(_blocks(len(dates)), tr_idx)
+    origin_idx = int(np.searchsorted(dates.to_numpy(), np.datetime64(origin), side="left"))
+    tr_blocks = np.intersect1d(
+        _blocks(len(dates)), tr_idx[tr_idx + 5 < origin_idx]
+    )
     btc = panels["BTC"]
     d5_btc = _d5(btc["sig"].to_numpy())
     # Fit on train blocks.
