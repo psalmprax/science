@@ -263,7 +263,7 @@ def batch_multi_agent_cbf_step(
     rep_dir = diff / dist_pair  # [B, N, N, 2] unit repulsion direction
     # anti_par[b, i, j] > 0 when repulsion opposes agent i's heading
     anti_par = -(rep_dir * heading_vec.unsqueeze(2)).sum(dim=-1)  # [B, N, N]
-    perp = torch.stack([-rep_dir[..., 1], rep_dir[..., 0]], dim=-1)  # [B, N, N, 2]
+    perp = torch.stack([rep_dir[..., 1], -rep_dir[..., 0]], dim=-1)  # [B, N, N, 2]
     tangential = torch.where(
         (anti_par > 0.7).unsqueeze(-1),
         anti_par.unsqueeze(-1) * rep_magnitude * perp,

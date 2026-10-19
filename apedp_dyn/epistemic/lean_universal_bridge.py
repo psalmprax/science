@@ -175,7 +175,16 @@ def _liberal_parse_formula(formula: str) -> sp.Expr | None:
     while tokens:
         candidate_str = " ".join(tokens)
         try:
-            return sp.sympify(candidate_str, locals=_ast_symbol_locals(candidate_str))
+            parsed = sp.sympify(candidate_str, locals=_ast_symbol_locals(candidate_str))
+            # Only single sympy expressions are a valid AST for the refutation
+            # stages; non-Expr parses (tuple/list forms with stray commas or
+            # annotation tails) crashed ``_ast_polynomial_total_degree``
+            # downstream (AttributeError: 'list' has no free_symbols). Trim
+            # and retry; fail closed to None when nothing parseable remains.
+            if isinstance(parsed, sp.Expr):
+                return parsed
+            tokens = tokens[:-1]
+            continue
         except Exception:  # noqa: BLE001 - progressive trim of annotation tail is the fallback
             tokens = tokens[:-1]
     return None
@@ -205,6 +214,8 @@ def _ast_detect_damping_factor(expr: sp.Expr) -> str | None:
 
 def _ast_polynomial_total_degree(expr: sp.Expr) -> int | None:
     """Total polynomial degree of ``expr`` in its free symbols, or None."""
+    if not isinstance(expr, sp.Expr):
+        return None
     if not expr.free_symbols:
         return 0 if expr.is_number else None
     try:

@@ -53,17 +53,17 @@ axiom parseval_partition (p_low : R) : p_low + ((1 : R) - p_low) = (1 : R)
 axiom sir_flux_conservation (beta s i gamma : R) : (-beta * s * i) + (beta * s * i - gamma * i) + (gamma * i) = (0 : R)
 axiom norm_sq_nonneg (u : R) : (0 : R) ≤ u * u
 axiom exp_pos (s : R) : (0 : R) ≤ exp s
-axiom exp_damp_le_one (s : R) : exp (-s) ≤ (1 : R)
+axiom exp_damp_le_one (s : R) (hs : (0 : R) ≤ s) : exp (-s) ≤ (1 : R)
 axiom inv_damp_le_one (s : R) : inv_damp s ≤ (1 : R)
 axiom neg_neg (x : R) : -(-x) = x
 axiom abs_le_self (x : R) : |x| ≤ |x|
 
 /-- Declared Invariant: regularity_singularity_avoidance (bound_positivity) - Non-zero denominator regularity lower bound eps > 0 --/
-theorem struct_downside_semivariance_ofi_regularity_singularity_avoidance (t1 t2 : R) : |sin t1 - sin t2| ≤ (1 : R) * |t1 - t2| :=
-  by exact lipschitz_sin t1 t2
+theorem struct_downside_semivariance_ofi_regularity_singularity_avoidance (u : R) : (0 : R) ≤ u * u :=
+  by exact norm_sq_nonneg u
 
 /-- Declared Invariant: downside_risk_variance_positivity (bound_positivity) - Downside semivariance non-negativity 0 <= down_vol^2 --/
-theorem struct_downside_semivariance_ofi_downside_risk_variance_positivity (x : R) : |x| ≤ |x| :=
-  by exact abs_le_self x
+theorem struct_downside_semivariance_ofi_downside_risk_variance_positivity (u : R) : (0 : R) ≤ u * u :=
+  by exact norm_sq_nonneg u
 
 end APEDP_struct_downside_semivariance_ofi

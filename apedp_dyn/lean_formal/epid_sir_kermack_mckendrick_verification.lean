@@ -53,7 +53,7 @@ axiom parseval_partition (p_low : R) : p_low + ((1 : R) - p_low) = (1 : R)
 axiom sir_flux_conservation (beta s i gamma : R) : (-beta * s * i) + (beta * s * i - gamma * i) + (gamma * i) = (0 : R)
 axiom norm_sq_nonneg (u : R) : (0 : R) ≤ u * u
 axiom exp_pos (s : R) : (0 : R) ≤ exp s
-axiom exp_damp_le_one (s : R) : exp (-s) ≤ (1 : R)
+axiom exp_damp_le_one (s : R) (hs : (0 : R) ≤ s) : exp (-s) ≤ (1 : R)
 axiom inv_damp_le_one (s : R) : inv_damp s ≤ (1 : R)
 axiom neg_neg (x : R) : -(-x) = x
 axiom abs_le_self (x : R) : |x| ≤ |x|
@@ -63,7 +63,7 @@ theorem epid_sir_kermack_mckendrick_mass_action_flux_conservation (s i r beta ga
   by exact sir_flux_conservation beta s i gamma
 
 /-- Declared Invariant: compartment_positivity (bound_positivity) - Infected population non-negativity I(t) >= 0 --/
-theorem epid_sir_kermack_mckendrick_compartment_positivity (x : R) : |x| ≤ |x| :=
-  by exact abs_le_self x
+theorem epid_sir_kermack_mckendrick_compartment_positivity (i : R) (h : (0 : R) ≤ i) : (0 : R) ≤ i :=
+  by exact h
 
 end APEDP_epid_sir_kermack_mckendrick

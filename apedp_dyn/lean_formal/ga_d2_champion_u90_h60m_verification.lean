@@ -53,14 +53,14 @@ axiom parseval_partition (p_low : R) : p_low + ((1 : R) - p_low) = (1 : R)
 axiom sir_flux_conservation (beta s i gamma : R) : (-beta * s * i) + (beta * s * i - gamma * i) + (gamma * i) = (0 : R)
 axiom norm_sq_nonneg (u : R) : (0 : R) ≤ u * u
 axiom exp_pos (s : R) : (0 : R) ≤ exp s
-axiom exp_damp_le_one (s : R) : exp (-s) ≤ (1 : R)
+axiom exp_damp_le_one (s : R) (hs : (0 : R) ≤ s) : exp (-s) ≤ (1 : R)
 axiom inv_damp_le_one (s : R) : inv_damp s ≤ (1 : R)
 axiom neg_neg (x : R) : -(-x) = x
 axiom abs_le_self (x : R) : |x| ≤ |x|
 
 /-- Declared Invariant: variance_nonnegativity (bound_positivity) - Variance density non-negativity 0 <= vol^2 --/
-theorem ga_d2_champion_u90_h60m_variance_nonnegativity (x : R) : |x| ≤ |x| :=
-  by exact abs_le_self x
+theorem ga_d2_champion_u90_h60m_variance_nonnegativity (u : R) : (0 : R) ≤ u * u :=
+  by exact norm_sq_nonneg u
 
 /-- Declared Invariant: dispersion_zero_sum_flux (conservation_law) - Cross-sectional dispersion zero-sum conservation --/
 theorem ga_d2_champion_u90_h60m_dispersion_zero_sum_flux (q1 q2 : Int) : (q1 - q2) + (q2 - q1) = 0 :=

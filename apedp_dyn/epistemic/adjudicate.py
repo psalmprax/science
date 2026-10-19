@@ -825,22 +825,21 @@ def adjudicate(fitted: list,
     if delta <= tau:
         attr = (epistemic_attribution if epistemic_attribution != "unknown"
                 else EpistemicAttribution.INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY.value)
-        ho_candidates = [s for s in ranked if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)]
-        ho_best = min(ho_candidates, key=lambda s: s.holdout_rmse) if ho_candidates else best
-        min_ho_rmse = float(ho_best.holdout_rmse)
-        ho_rivals = [s for s in ho_candidates if _identity(s) != _identity(ho_best)]
-        closest_rival = min(ho_rivals, key=lambda s: s.holdout_rmse) if ho_rivals else second
-        delta_ho = float(closest_rival.holdout_rmse - min_ho_rmse)
-        margin = float(delta_ho - tau)
-
+        # Pair-consistent refusal (Finding 14 follow-through): the tie verdict
+        # and its diagnostics are reported against the ANCHORED pair
+        # (best vs nearest distinct rival). Recomputing a global holdout
+        # minimum here contradicted the decision and printed diagnostics like
+        # "Δ=1.93 ≤ τ=0.025": a huge holdout separation quoted next to a
+        # refusal. delta below (possibly negative when the anchored head's
+        # rival appears better but is not gate-4 certified) IS delta_ho.
         equiv = tuple(
             s.candidate.candidate_id for s in ranked
-            if s.holdout_rmse is not None and (s.holdout_rmse - min_ho_rmse) <= tau
+            if s.holdout_rmse is not None and (s.holdout_rmse - best_rmse) <= tau
         )
         return Adjudication(
-            EpistemicStatus.MULTI_HYPOTHESIS, rival=closest_rival, ranking=tuple(ranked),
-            best_rmse=min_ho_rmse, second_rmse=float(closest_rival.holdout_rmse),
-            delta_rmse=delta_ho, tau_epi=tau, tau_epi_source=tau_source,
+            EpistemicStatus.MULTI_HYPOTHESIS, rival=second, ranking=tuple(ranked),
+            best_rmse=best_rmse, second_rmse=float(second.holdout_rmse),
+            delta_rmse=delta, tau_epi=tau, tau_epi_source=tau_source,
             holdout_noise_scale=holdout_noise_scale,
             holdout_scale_source=scale_source, epistemic_margin=margin,
             contract=pair_contract,
@@ -848,9 +847,10 @@ def adjudicate(fitted: list,
             benchmark_level=benchmark_level,
             epistemic_attribution=attr,
             admissible_equivalence_class=equiv,
-            reason=f"rival candidates including {closest_rival.candidate.candidate_id} within τ "
-                   f"(Δ={delta_ho:.3g} ≤ τ={tau:.3g} [{tau_source}]); observationally "
-                   "indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion")
+            reason=f"nearest distinct rival {second.candidate.candidate_id} within τ "
+                   f"(Δ={delta:.3g} ≤ τ={tau:.3g} [{tau_source}] on holdout RMSE); "
+                   "observationally indistinguishable under the prespecified APEDP "
+                   "resolution criterion; APEDP abstains from unique promotion")
     # Bootstrap-v2 tiebreaker, on the would-be-UNIQUE branch only. A point
     # margin that clears tau is not by itself evidence: the per-timepoint
     # error difference can straddle zero blockwise, which means the two

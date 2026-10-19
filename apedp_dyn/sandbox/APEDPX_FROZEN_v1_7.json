@@ -9,7 +9,7 @@
     "py": "3.12"
   },
   "file_hashes_sha256": {
-    "apedp_dyn/epistemic/adjudicate.py": "713a735b86519b907ae650151e2162b13b466ff37b126520940da593d9935b3d",
+    "apedp_dyn/epistemic/adjudicate.py": "5a8f1feae5f4de4959ebd2e2a6cc71dc316b9f7599a6d1e90983f57d69771278",
     "apedp_dyn/epistemic/claim_ladder.py": "aba9fd0045abc137a36dab90e1316b8934597beb02c553cf35d15c3029c0886c",
     "apedp_dyn/grammar/candidate_ir.py": "3076d6a7c4ceae0952c8bc372f9483097cccae4613dc2f574d5462583fe42a35",
     "apedp_dyn/sandbox/apedp_x_meta_sandbox.py": "3f6e19e1bdb5d33e74e7abbcc893bd5147ea3a51d4753d6add1c4d8ce6bc3b3d",
@@ -64,7 +64,7 @@
   "remint_log": [
     {
       "remint_of": "apedp_dyn/epistemic/adjudicate.py",
-      "reason": "Blind-audit Finding 14: train-loss-anchored pair made delta negative for overfitted train winners, trivially denying UNIQUE_SUPPORT to generalizing candidates. Referee comparison currency is now holdout RMSE with gate-4 certification."
+      "reason": "Blind-audit Finding 14: train-loss-anchored pair made delta negative for overfitted train winners, trivially denying UNIQUE_SUPPORT to generalizing candidates. Referee comparison currency is now holdout RMSE with gate-4 certification; the MULTI refusal is pair-consistent (diagnostics reported against the anchored pair, never a recomputed global holdout minimum)."
     },
     {
       "remint_of": "apedp_dyn/sandbox/grammar_space.py",

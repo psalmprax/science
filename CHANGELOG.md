@@ -63,6 +63,31 @@ test_all_frozen_records_verified_against_pinned_hashes`, `tests/test_dyn_blind.p
   damping theorem both now carry the non-negativity hypothesis `(hs : (0 : R) ≤ s)`;
   the bound is only claimed in-damped-regime.
 
+### Lean-proof inventory reconciliation
+- The unresolved `test_all_system_equations_lean_proofs.py` failures were two
+  distinct problems, both fixed:
+  1. The five per-sweep provenance inputs (`fluid_ode_dynamical_sweep_`,
+     `openai_math_advanced_hypotheses_sweep_`, `ga_depth2_sweep_`,
+     `ga_depth3_sweep_`, `expanded_space_discovery_`) and the cross-domain
+     verification record existed only in a temporary IDE artifact folder, not
+     in the repository. They are now tracked under `artifacts/` (AGENTS.md
+     §1.4: documentation/records must be verified in the repo workspace).
+  2. `lean_universal_bridge.py::_liberal_parse_formula` returned non-Expr
+     sympy parses (tuple/list forms from bracketed heaviside-indicator
+     formulas), which crashed `_ast_polynomial_total_degree` during the full
+     sweep. It now accepts only single sympy expressions (trimming otherwise,
+     failing closed to None), and the degree helper rejects non-Expr input.
+  After regeneration, the reproducible record is 323 evaluated / 315 P2 / 8 P0
+  / 0 P1: the 6 additional P0s are grammar-space candidates whose declared
+  saturation bounds are not provable over their formulas (unbounded degree-3
+  products like `(LeadSpill * DispNorm) * EntropyCert`, and heaviside-indicator
+  products like `[OFI * I(Lead > 0)] * VolRatio` that fail closed on AST
+  refutation) — the former 321/2 record overclaimed those P2s; the traps
+  (`PHYS-ENERGY-LEAK-TRAP`, `FIN-CUBIC-RUNAWAY-POLYNOMIAL` → P0) and all spot
+  checks (`STRUCT-MASTER-SIZING-PHI`, `GA-D3-CHAMPION-U90_H60M`,
+  `TRADING-SCORE-N90` → P2) are unchanged. The test contract pins the
+  regenerated record; no preregistered threshold changed.
+
 ### Verification notes
 - `tests/test_dyn_grammar_space.py`: the frozen d5-target pin was stale — it
   still pinned the backward window `s.shift(-1).rolling(5)` (80% leakage into
