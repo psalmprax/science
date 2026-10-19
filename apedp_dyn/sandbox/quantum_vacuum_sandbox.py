@@ -576,8 +576,8 @@ def run_quantum_vacuum_discovery(
     r_rival = None
     if pass_bootstrap_residuals and len(candidates) >= 2:
         ranked = sorted(
-            [s for s in candidates if s.train_loss is not None and np.isfinite(s.train_loss)],
-            key=lambda s: s.train_loss if s.train_loss is not None else float("inf"),
+            [s for s in candidates if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)],
+            key=lambda s: s.holdout_rmse,
         )
         if len(ranked) >= 2:
             best_cand = ranked[0]
@@ -637,8 +637,8 @@ def run_quench_dynamics_discovery(
     r_rival = None
     if pass_bootstrap_residuals and len(candidates) >= 2:
         ranked = sorted(
-            [s for s in candidates if s.train_loss is not None and np.isfinite(s.train_loss)],
-            key=lambda s: s.train_loss if s.train_loss is not None else float("inf"),
+            [s for s in candidates if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)],
+            key=lambda s: s.holdout_rmse,
         )
         if len(ranked) >= 2:
             best_cand = ranked[0]

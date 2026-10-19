@@ -31,6 +31,8 @@ class NoetherConfig:
     dy: float = 1.0
     divergence_tolerance: float = 1e-2
     symplectic_step: bool = True
+    preserve_wavelet_subbands: bool = False
+    temporal_flicker_damping: float = 0.25
 
 
 class NoetherConservationEngine:
@@ -111,17 +113,42 @@ class NoetherConservationEngine:
 
         return vx_sol, vy_sol, rem_div_norm
 
+    def project_wavelet_temporal_conservation(
+        self,
+        velocity_field: np.ndarray,
+    ) -> tuple[np.ndarray, float]:
+        r"""Enforce subband-preserving temporal mass conservation on wavelet latents (T, C, H, W)."""
+        if velocity_field.ndim != 4:
+            raise ValueError(f"Expected 4D velocity array (T, C, H, W), got {velocity_field.shape}")
+
+        t = velocity_field.shape[0]
+        if t <= 1:
+            return velocity_field.copy(), 0.0
+
+        projected = velocity_field.copy()
+        frame_means = np.mean(projected, axis=(-2, -1), keepdims=True)
+        clip_means = np.mean(frame_means, axis=0, keepdims=True)
+        flicker = frame_means - clip_means
+        damping = float(self.config.temporal_flicker_damping)
+        projected = projected - damping * flicker
+        rem_flicker = float(np.sqrt(np.mean(((1.0 - damping) * flicker) ** 2)))
+        return projected, rem_flicker
+
     def project_spatial_latent_velocity(
         self,
         velocity_field: np.ndarray,
     ) -> tuple[np.ndarray, float]:
-        r"""Project 4D spatio-temporal video velocity (T, C, H, W) to solenoidal space.
+        r"""Project 4D spatio-temporal video velocity (T, C, H, W) to solenoidal/invariant space.
 
-        Channels are paired (e.g. channel 2k as x-component, 2k+1 as y-component)
-        to form continuous 2D spatial vector fields that satisfy \nabla \cdot v = 0.
+        When `preserve_wavelet_subbands` is True, enforces subband-preserving temporal mass
+        conservation without mixing wavelet subbands (LL, LH, HL, HH). Otherwise pairs channels
+        (2k, 2k+1) as 2D spatial vector fields that satisfy \nabla \cdot v = 0.
         """
         if velocity_field.ndim != 4:
             raise ValueError(f"Expected 4D velocity array (T, C, H, W), got {velocity_field.shape}")
+
+        if self.config.preserve_wavelet_subbands:
+            return self.project_wavelet_temporal_conservation(velocity_field)
 
         t, c, _h, _w = velocity_field.shape
         projected = np.zeros_like(velocity_field)

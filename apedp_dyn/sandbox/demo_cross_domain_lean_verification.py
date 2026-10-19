@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import json
 import logging
-from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -40,8 +39,10 @@ from apedp_dyn.epistemic.lean_universal_bridge import (
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("cross_domain_lean_demo")
 
-ARTIFACT_DIR = Path("/home/psalmprax/.gemini/antigravity-cli/brain/81922211-290b-4171-99b4-1b05d2c8d0a6")
-LEAN_OUT_DIR = Path("/home/psalmprax/ALL_PROJECTS/science/apedp_dyn/lean_formal")
+from apedp_dyn.conf.paths import artifact_dir, lean_root
+
+ARTIFACT_DIR = artifact_dir()
+LEAN_OUT_DIR = lean_root()
 
 
 def run_cross_domain_lean_verification_suite() -> dict:

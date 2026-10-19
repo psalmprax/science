@@ -105,8 +105,9 @@ def test_promotion_tracker_full_successful_lifecycle():
     assert s3.passed is True
     assert tracker.highest_stage_passed == PromotionStage.STAGE_3_UNIQUE_IDENTIFICATION
 
-    # Stage 4: Out-of-Sample Transfer
-    s4 = tracker.verify_stage_4(oos_ic=0.035, oos_p_value=0.01)
+    # Stage 4: Out-of-Sample Transfer (0.035 / 0.07 = 0.50 retention, meets the
+    # preregistered MIN_OOS_TRANSFER_RETENTION floor exactly)
+    s4 = tracker.verify_stage_4(in_sample_ic=0.07, oos_ic=0.035, oos_p_value=0.01)
     assert s4.passed is True
     assert tracker.highest_stage_passed == PromotionStage.STAGE_4_OUT_OF_SAMPLE_TRANSFER
 

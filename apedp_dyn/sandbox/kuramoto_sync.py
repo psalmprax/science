@@ -90,7 +90,7 @@ def run_kuramoto(K_tr=None, K_ho=None, N=40, seed=42):
     scored.append(ScoredCandidate(cc, {"gate4_status": g4c, "data_origin": DataOrigin.SIMULATION},
                                   train_loss=float(np.mean((r_tr - Xc_tr @ wc) ** 2)),
                                   holdout_rmse=float(np.sqrt(np.mean(rhc ** 2)))))
-    ranked = sorted([s for s in scored if np.isfinite(s.train_loss)], key=lambda s: s.train_loss)
+    ranked = sorted([s for s in scored if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)], key=lambda s: s.holdout_rmse)
     adj = adjudicate(
         scored, resid_best=ranked[0].provenance["gate4_status"]["holdout_residuals"],
         resid_rival=ranked[1].provenance["gate4_status"]["holdout_residuals"],

@@ -45,7 +45,7 @@ import pandas as pd
 sys.path.insert(0, ".")
 
 from apedp_dyn.discovery_l2.pruning import check_residual_whiteness
-from apedp_dyn.epistemic.cross_asset_gate import evaluate_cross_asset_gate_matrix
+from apedp_dyn.epistemic.cross_asset_gate import evaluate_cross_asset_gate
 from apedp_dyn.sandbox.grammar_space import causal_zscore, trailing_rank
 from apedp_dyn.sandbox.multi_asset_signals_sandbox import load_universe
 
@@ -175,8 +175,16 @@ def build_unified_feature_panel(
     universe: dict[str, pd.DataFrame],
     symbols: tuple[str, ...],
     timeframe_minutes: int,
-) -> tuple[dict[str, np.ndarray], np.ndarray]:
-    """Construct causally strictly aligned features for fluid and dynamical models."""
+) -> tuple[dict[str, np.ndarray], np.ndarray, dict[str, np.ndarray], np.ndarray]:
+    """Construct causally strictly aligned features for fluid and dynamical models.
+
+    Returns ``(X_dict, y_target, X_asset, fwd_excess_2d)``. ``X_dict`` /
+    ``y_target`` keep the historical cross-sectionally *averaged* aggregate
+    panel. ``X_asset`` stacks the per-asset feature series (columns =
+    ``symbols[1:]``; the lead asset is used only as the reference series) and
+    ``fwd_excess_2d`` is the per-asset forward forward-excess matrix in the
+    same column order, both consumed by the stratified CAN-G evaluation.
+    """
     T = len(universe[symbols[0]])
     N = len(symbols)
 
@@ -197,7 +205,7 @@ def build_unified_feature_panel(
             ofis_2d[:, i] = 0.0
 
     lead_ret = rets_2d[:, 0]
-    lead_vol = pd.Series(lead_ret).rolling(w_roll, min_periods=5).std().bfill().to_numpy()
+    lead_vol = pd.Series(lead_ret).rolling(w_roll, min_periods=5).std().ffill().to_numpy()
     lead_vol = np.maximum(lead_vol, 1e-4)
 
     cross_median = np.median(rets_2d, axis=1)
@@ -226,8 +234,8 @@ def build_unified_feature_panel(
         ofi_i = ofis_2d[:, i]
 
         # 1. Lead spillover
-        cov_lead = pd.Series(r_i * lead_ret).rolling(w_roll, min_periods=5).mean().bfill().to_numpy()
-        vol_i = pd.Series(r_i).rolling(w_roll, min_periods=5).std().bfill().to_numpy()
+        cov_lead = pd.Series(r_i * lead_ret).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
+        vol_i = pd.Series(r_i).rolling(w_roll, min_periods=5).std().ffill().to_numpy()
         vol_i = np.maximum(vol_i, 1e-4)
         corr_lead = cov_lead / np.maximum(vol_i * lead_vol, 1e-6)
         corr_lead = np.clip(corr_lead, -1.0, 1.0)
@@ -251,12 +259,12 @@ def build_unified_feature_panel(
         lead_spill_x_disp = lead_spill * disp_norm
 
         # 7. Cointegration / Kalman residual
-        var_lead = pd.Series(lead_ret**2).rolling(w_roll, min_periods=5).mean().bfill().to_numpy()
+        var_lead = pd.Series(lead_ret**2).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
         beta_i = cov_lead / np.maximum(var_lead, 1e-6)
         beta_i = np.clip(beta_i, -2.0, 3.0)
         spread = p_i - beta_i * prices_2d[:, 0]
-        sp_mean = pd.Series(spread).rolling(w_roll, min_periods=5).mean().bfill().to_numpy()
-        sp_std = pd.Series(spread).rolling(w_roll, min_periods=5).std().bfill().to_numpy()
+        sp_mean = pd.Series(spread).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
+        sp_std = pd.Series(spread).rolling(w_roll, min_periods=5).std().ffill().to_numpy()
         kalman_res = (spread - sp_mean) / np.maximum(sp_std, 1e-6)
 
         # 8. Delta OFI (time derivative of order flow)
@@ -283,7 +291,21 @@ def build_unified_feature_panel(
         "delta_ofi": np.nan_to_num(np.mean(all_delta_ofi, axis=0), nan=0.0),
     }
     y_target = np.nan_to_num(fwd_excess_target, nan=0.0)
-    return X_dict, y_target
+    X_asset: dict[str, np.ndarray] = {
+        "lead_spill": np.nan_to_num(np.stack(all_lead_spill, axis=1), nan=0.0),
+        "ofi": np.nan_to_num(np.stack(all_ofi, axis=1), nan=0.0),
+        "disp_norm": np.nan_to_num(np.stack(all_disp_norm, axis=1), nan=0.0),
+        "rel_mom": np.nan_to_num(np.stack(all_rel_mom, axis=1), nan=0.0),
+        "cs_rank_vol": np.nan_to_num(np.stack(all_cs_rank_vol, axis=1), nan=0.0),
+        "lead_spill_x_disp": np.nan_to_num(np.stack(all_lead_spill_x_disp, axis=1), nan=0.0),
+        "kalman_res": np.nan_to_num(np.stack(all_kalman_res, axis=1), nan=0.0),
+        "delta_ofi": np.nan_to_num(np.stack(all_delta_ofi, axis=1), nan=0.0),
+    }
+    # Per-asset forward excess in the discovery target's own alignment; the
+    # market (cross-median) leg is subtracted per row, so stratified L/S
+    # portfolios built on these rows are market-neutral by construction.
+    fwd_excess_2d = np.nan_to_num(fwd_rets_2d - fwd_cross_median[:, None], nan=0.0)
+    return X_dict, y_target, X_asset, fwd_excess_2d
 
 
 def evaluate_equation_epistemically(
@@ -398,6 +420,141 @@ def evaluate_equation_epistemically(
     )
 
 
+def _cross_sectional_ls_pnl(scores_row: np.ndarray, excess_row: np.ndarray) -> float:
+    """One-step market-neutral L/S P&L from a per-asset score row.
+
+    The score row is z-scored across the stratum's assets (cross-sectional
+    information only — no temporal leakage), then traded one-unit against
+    the same-step forward excess. A constant score row (degenerate stratum)
+    contributes zero P&L for that step.
+    """
+    scores_row = np.asarray(scores_row, dtype=float)
+    excess_row = np.asarray(excess_row, dtype=float)
+    if scores_row.size < 2:
+        return 0.0
+    sd = float(np.std(scores_row))
+    if not np.isfinite(sd) or sd <= 1e-12:
+        return 0.0
+    z = (scores_row - float(np.mean(scores_row))) / sd
+    return float(np.mean(z * excess_row))
+
+
+def _sharpe(series: np.ndarray) -> float:
+    """Per-period Sharpe of a P&L series (scale-free decision statistic)."""
+    series = np.asarray(series, dtype=float)
+    if series.size < 2:
+        return 0.0
+    sd = float(np.std(series, ddof=1))
+    if not np.isfinite(sd) or sd <= 1e-12:
+        return 0.0
+    return float(np.mean(series)) / sd
+
+
+def evaluate_stratified_representation_gate(
+    evals: dict[str, EquationEvaluation],
+    winning_id: str,
+    X_asset: dict[str, np.ndarray],
+    fwd_excess_2d: np.ndarray,
+    tr_slice: slice,
+    sub_universe_count: int,
+) -> tuple[bool, float]:
+    """Gate 0.5 (CAN-G) evidence from the representation, not from raw market data.
+
+    Historical defect: the probe fed the gate RAW per-asset returns, so the
+    verdict measured the arbitrary market-drift sign of the window -- a
+    coin flip -- and never touched the discovered representation at all.
+    
+    Now the gate evaluates the winning equation's FROZEN train-window
+    coefficients as an actual stratified signal: per-asset scores are the
+    per-asset feature panels (already causal z-scored / dispersion-
+    normalized, so ``volatility_normalized=True`` becomes a true claim),
+    scored against the same alignment the discovery target uses. Each
+    sub-universe (positional quarter) yields a market-neutral L/S P&L
+    series; the naive-pooled basket and the equal-allocation two-tier
+    portfolio follow the reference multi-asset sandbox's semantics.
+
+    Returns (passed, two_tier_sharpe). All steps use only training-window
+    rows; the holdout referee sees none of this.
+    """
+    win_ev = evals[winning_id]
+    panels = [X_asset[k] for k in win_ev.feature_keys]
+    if any(p.ndim != 2 for p in panels) or len({p.shape for p in panels}) != 1:
+        raise ValueError("per-asset feature panels must share shape (T, N-1)")
+
+    rows = list(range(tr_slice.start, tr_slice.stop))
+    if len(rows) < 3:
+        raise ValueError("CAN-G probe needs a multi-row training window")
+
+    coeffs = np.array([win_ev.coefficients[k] for k in win_ev.feature_keys], dtype=float)
+    scores = np.zeros((len(rows), panels[0].shape[1]), dtype=float)
+    for c, panel in zip(coeffs, panels, strict=True):
+        scores += c * panel[rows, :]
+    excess = fwd_excess_2d[rows, 1:]
+
+    n_assets = scores.shape[1]
+    n_sub = max(2, min(int(sub_universe_count), n_assets))
+    bounds = [round(i * n_assets / n_sub) for i in range(n_sub + 1)]
+
+    within: dict[str, float] = {}
+    stratum_pnl: list[np.ndarray] = []
+    for s in range(n_sub):
+        pnl = np.array(
+            [
+                _cross_sectional_ls_pnl(scores[r, bounds[s]:bounds[s + 1]], excess[r, bounds[s]:bounds[s + 1]])
+                for r in range(len(rows))
+            ],
+            dtype=float,
+        )
+        stratum_pnl.append(pnl)
+        within[f"sub_universe_{s:02d}"] = _sharpe(pnl)
+
+    pooled_pnl = np.array(
+        [_cross_sectional_ls_pnl(scores[r, :], excess[r, :]) for r in range(len(rows))],
+        dtype=float,
+    )
+    # Equal-RISK two-tier allocation (the gate module's "Equal-Risk
+    # Allocation" semantic): each stratum leg is vol-targeted to one unit of
+    # risk before aggregation, so a high-dispersion stratum cannot dominate
+    # the combined portfolio merely by trading at a larger scale -- which is
+    # precisely the cross-asset distortion CAN-G exists to catch.
+    leg_risks = np.array(
+        [float(np.std(p, ddof=1)) for p in stratum_pnl], dtype=float
+    )
+    if np.any(~np.isfinite(leg_risks)) or np.any(leg_risks <= 1e-12):
+        # A degenerate (zero-dispersion) stratum cannot be evaluated
+        # independently; the stratified evidence is inadmissible.
+        return False, float("nan")
+    two_tier_pnl = np.mean(
+        np.stack([p / r for p, r in zip(stratum_pnl, leg_risks, strict=True)], axis=0),
+        axis=0,
+    )
+    two_tier = _sharpe(two_tier_pnl)
+
+    report = evaluate_cross_asset_gate(
+        within_class_sharpes=within,
+        naive_pooled_sharpe=_sharpe(pooled_pnl),
+        two_tier_sharpe=two_tier,
+        volatility_normalized=True,
+        # Not a portfolio-promotion evaluation (discovery-phase cell): per
+        # the gate module's doctrine, SR > 0 per class is required "ONLY
+        # when the representation is being promoted as an active trading
+        # strategy". Requiring it here failed good representations on
+        # 21-row sign noise (each stratum Sharpe's noise scale is 1/sqrt(21)
+        # ~ 0.22). The binding holdout decision stays with Gate 4.
+        portfolio_promotion=False,
+    )
+    # Non-vacuous discovery-phase verdict: the stratified program must be
+    # (a) scientifically valid, (b) fully evaluated in every stratum, and
+    # (c) at least non-negative on the equal-risk two-tier allocation. A
+    # negative or degenerate stratified program is itself cross-asset
+    # evidence against the representation.
+    if not report.passed or not report.scientific_valid:
+        return False, two_tier
+    if not np.isfinite(two_tier) or two_tier < 0.0:
+        return False, two_tier
+    return bool(report.passed), float(two_tier)
+
+
 def run_single_universe_timeframe_experiment(
     universe_size: int = 30,
     timeframe_minutes: int = 15,
@@ -406,7 +563,9 @@ def run_single_universe_timeframe_experiment(
 ) -> UniverseHorizonExperimentResult:
     """Run discovery on a single (universe_size, timeframe) cell for all 5 equations."""
     universe, symbols = load_universe(str(universe_size))
-    X_dict, y_target = build_unified_feature_panel(universe, symbols, timeframe_minutes)
+    X_dict, y_target, X_asset, fwd_excess_2d = build_unified_feature_panel(
+        universe, symbols, timeframe_minutes
+    )
 
     bwd_slice = slice(max(0, month_start_idx - month_len), month_start_idx)
     tr_slice = slice(month_start_idx, month_start_idx + month_len)
@@ -439,19 +598,27 @@ def run_single_universe_timeframe_experiment(
             best_bic = ev.train_bic
             winning_id = eq_id
 
-    # Gate 0.5 (CAN-G) Verification
-    returns_matrix = np.column_stack([universe[s]["r"].to_numpy(float) for s in symbols])
+    # Gate 0.5 (CAN-G): representation-derived stratified evidence. The old
+    # probe fed raw per-asset returns, so its verdict was the market-drift
+    # sign of whichever 21-day window happened to be chosen (verified coin
+    # flip: 27-29 passing windows out of 60, with zero representation
+    # influence). It also failed OPEN on exceptions, fabricating a 1.25
+    # Sharpe. The stratified evaluation below scores the discovered
+    # representation itself and fails closed.
     try:
-        cang_out = evaluate_cross_asset_gate_matrix(
-            returns_matrix=returns_matrix[tr_slice],
+        cang_passed, sharpe = evaluate_stratified_representation_gate(
+            evals=evals,
+            winning_id=winning_id,
+            X_asset=X_asset,
+            fwd_excess_2d=fwd_excess_2d,
+            tr_slice=tr_slice,
             sub_universe_count=min(universe_size, 4),
-            duration_days=month_len,
         )
-        cang_passed = bool(cang_out.passed)
-        sharpe = float(cang_out.two_tier_sharpe)
-    except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
-        cang_passed = True
-        sharpe = 1.25
+        cang_passed = bool(cang_passed)
+        sharpe = float(sharpe)
+    except Exception:  # noqa: BLE001 - fail-closed probe: a failed gate diagnostic can never read as a pass
+        cang_passed = False
+        sharpe = float("nan")
 
     win_ev = evals[winning_id]
     summary_verdict = win_ev.gated_verdict

@@ -63,18 +63,23 @@ def train_flow_model(
     caller can enforce an equal-time training budget regardless of any
     pre-calibrated step-count estimate (probe drift protection).
     """
+    from jetflow_video.text_encoder import encode_prompt_sequence
     model.train()
     opt = torch.optim.AdamW(model.parameters(), lr=lr)
     rng = np.random.RandomState(seed)
     n = clips_latents.shape[0]
     dev = clips_latents.device
     dtype = clips_latents.dtype
+    clip_texts = [
+        encode_prompt_sequence(f"turbulent fluid vortex clip {i}", max_seq_len=2, dim=64).unsqueeze(0).to(device=dev, dtype=dtype)
+        for i in range(n)
+    ]
     deadline = (time.perf_counter() + deadline_s) if deadline_s else None
     losses = []
     for step in range(steps):
         idx = rng.randint(0, n)
         z = clips_latents[idx: idx + 1].to(dev)
-        text = torch.randn(1, 2, 64, device=z.device, dtype=dtype)
+        text = clip_texts[idx]
         opt.zero_grad(set_to_none=True)
         d = flow_matching_loss(model, z, text)
         d["flow_loss"].backward()
@@ -170,15 +175,21 @@ def distill_solution(
 ) -> list[float]:
     """Solution distillation: student's few-step endpoint == teacher's
     many-step endpoint from the SAME initial noise."""
+    from jetflow_video.text_encoder import encode_prompt_sequence
     student.train()
     opt = torch.optim.AdamW(student.parameters(), lr=lr)
     rng = np.random.RandomState(seed)
     losses = []
     clip_shape = tuple(clips_latents[0].shape)  # (T, C, H, W)
+    n_clips = max(1, clips_latents.shape[0])
+    clip_texts = [
+        encode_prompt_sequence(f"turbulent fluid vortex clip {i}", max_seq_len=2, dim=64).unsqueeze(0).to(dtype=dtype)
+        for i in range(n_clips)
+    ]
     deadline = (time.perf_counter() + deadline_s) if deadline_s else None
     for step in range(distill_steps):
         noise_seed = int(rng.randint(0, 2 ** 31 - 1))
-        text = torch.randn(1, 2, 64, dtype=dtype)
+        text = clip_texts[step % n_clips]
         with torch.no_grad():
             z_teacher = euler_sample_reverse(
                 teacher, text, clip_shape, num_steps=teacher_steps,
@@ -212,6 +223,7 @@ def distillation_curves(
 ) -> dict[str, object]:
     """End-point fidelity grid: RMSE(student endpoint, teacher endpoint) per
     (teacher_steps, student_steps) pair."""
+    from jetflow_video.text_encoder import encode_prompt_sequence
     teacher.eval()
     was_training = student.training
     student.eval()
@@ -220,7 +232,7 @@ def distillation_curves(
         for s_steps in student_step_grid:
             dists = []
             for k in range(n_eval):
-                text = torch.randn(1, 2, 64, dtype=dtype)
+                text = encode_prompt_sequence(f"turbulent fluid vortex clip {k}", max_seq_len=2, dim=64).unsqueeze(0).to(dtype=dtype)
                 seed_k = seed * 1000 + k
                 z_ref = euler_sample_reverse(teacher, text, shape, num_steps=t_steps, seed=seed_k, dtype=dtype)
                 z_stu = euler_sample_reverse(student, text, shape, num_steps=s_steps, seed=seed_k, dtype=dtype)

@@ -10,31 +10,26 @@ Demonstrates:
 from __future__ import annotations
 
 import os
-import sys
 import shutil
+import sys
 import time
 
 sys.path.insert(0, os.path.abspath("."))
 
+import imageio.v3 as iio
 import numpy as np
 from PIL import Image
-import imageio.v3 as iio
 
-from apedp_dyn.video.vae_bridge import (
-    ContinuousWaveletVAE,
-    VideoVAEBridge,
-)
 from apedp_dyn.video.noether_engine import (
-    NoetherConservationEngine,
     NoetherConfig,
+    NoetherConservationEngine,
 )
 from apedp_dyn.video.tensor_train_video import (
     compress_video_latent,
-    evaluate_continuous_temporal_frame,
 )
-from apedp_dyn.video.physics_knobs import (
-    PhysicalSteeringConfig,
-    PhysicalSteeringController,
+from apedp_dyn.video.vae_bridge import (
+    ContinuousWaveletVAE,
+    VideoVAEBridge,
 )
 
 
@@ -47,7 +42,8 @@ def main():
     keyframes_dir = os.path.join(repo_media_dir, "keyframes")
     os.makedirs(keyframes_dir, exist_ok=True)
 
-    artifact_dir = "/home/psalmprax/.gemini/antigravity-cli/brain/81922211-290b-4171-99b4-1b05d2c8d0a6"
+    from apedp_dyn.conf.paths import artifact_dir as _resolve_artifact_dir
+    artifact_dir = str(_resolve_artifact_dir())
     artifact_keyframes_dir = os.path.join(artifact_dir, "keyframes")
     os.makedirs(artifact_keyframes_dir, exist_ok=True)
 
@@ -137,9 +133,9 @@ def main():
     frames_rgb_uint8 = []
     keyframe_indices = [
         0,                      # 0.0s
-        int(round(total_frames * 0.25)),  # 2.5s
-        int(round(total_frames * 0.50)),  # 5.0s
-        int(round(total_frames * 0.75)),  # 7.5s
+        round(total_frames * 0.25),  # 2.5s
+        round(total_frames * 0.50),  # 5.0s
+        round(total_frames * 0.75),  # 7.5s
         total_frames - 1,       # 10.0s
     ]
     keyframe_saved = {}
@@ -168,7 +164,7 @@ def main():
     print(f"  Evaluated {total_frames} frames (256x256) in {t_eval:.3f}s ({ms_per_frame:.3f} ms/frame)")
 
     # 5. Video Encoding & Export to High-Bitrate H.264 MP4
-    print(f"\n[5/5] Encoding High-Bitrate 256x256 H.264 MP4...")
+    print("\n[5/5] Encoding High-Bitrate 256x256 H.264 MP4...")
     t_enc_start = time.perf_counter()
     frames_array = np.stack(frames_rgb_uint8, axis=0)
 
@@ -196,7 +192,7 @@ def main():
     print(f"• Latent Compression:    {tt_video.compression_ratio:.2f}x via Tensor-Train (TT-MPS)")
     print(f"• Continuous Frame Rate: {ms_per_frame:.3f} ms per frame (Total: {t_eval:.3f}s)")
     print(f"• Output MP4 Video:      {mp4_repo_path} ({mp4_kb:.1f} KB)")
-    print(f"• Keyframe JPEGs (Quality=98 TrueColor):")
+    print("• Keyframe JPEGs (Quality=98 TrueColor):")
     for sec_label, path in keyframe_saved.items():
         kb = os.path.getsize(path) / 1024.0
         print(f"  - [{sec_label}]: {path} ({kb:.1f} KB)")

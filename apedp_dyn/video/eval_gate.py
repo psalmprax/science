@@ -10,7 +10,8 @@ preregistered cut-lines to ``VideoEvalGate.certify``.
 
 Instruments (all dependency-free, deterministic):
 1. PSNR (per-video, dB).
-2. SSIM (windowed, grayscale, 8x8 windows, no external models).
+2. SSIM (windowed, grayscale, 8x8 windows, canonical squared stabilizers
+   C1 = 1e-4, C2 = 9e-4, no external models).
 3. Temporal consistency: mean |D_t^2 u| acceleration across frames — a smooth
    physically advected clip must beat a per-frame-shuffled clip on this.
 4. FVD proxy: sliced Wasserstein-2 distance between per-frame feature
@@ -48,6 +49,15 @@ def _kernel_video_bridge():
 # Frame metrics
 # ---------------------------------------------------------------------------
 
+# Canonical SSIM stabilizers for unit dynamic range (L=1):
+#   C1 = (K1 * L)^2 = (0.01)^2 = 1e-4
+#   C2 = (K2 * L)^2 = (0.03)^2 = 9e-4
+# The SQUARED forms are the canonical constants (Wang et al. 2004). Recorded
+# benchmark numbers produced before 2026-10-19 used unsquared stabilizers
+# (0.01 / 0.03) and are only comparable under that legacy convention.
+SSIM_C1 = 1e-4
+SSIM_C2 = 9e-4
+
 
 def compute_psnr(original_rgb: np.ndarray, reconstructed_rgb: np.ndarray) -> float:
     """Peak SNR in dB between two RGB videos/frames in [0, 1]."""
@@ -76,7 +86,7 @@ def _grayscale(frame: np.ndarray) -> np.ndarray:
 
 
 def compute_ssim(original_rgb: np.ndarray, reconstructed_rgb: np.ndarray,
-                 win: int = 8, c1: float = 0.01, c2: float = 0.03) -> float:
+                 win: int = 8, c1: float = SSIM_C1, c2: float = SSIM_C2) -> float:
     """Mean windowed SSIM over grayscale; accepts (H, W), (3, H, W),\
  or (T, 3, H, W)."""
     a = np.asarray(original_rgb, dtype=np.float64)

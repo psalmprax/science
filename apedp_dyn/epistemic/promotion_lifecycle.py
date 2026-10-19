@@ -20,6 +20,8 @@ from apedp_dyn.conf.canonical_spec import (
     DIEBOLD_MARIANO_P_VALUE_THRESHOLD,
     DSR_THRESHOLD,
     MAX_LITERATURE_R2,
+    MIN_NET_SHARPE,
+    MIN_OOS_TRANSFER_RETENTION,
 )
 
 
@@ -123,21 +125,44 @@ class PromotionTracker:
 
     def verify_stage_4(
         self,
+        in_sample_ic: float,
         oos_ic: float,
         oos_p_value: float,
         min_oos_ic: float = 0.015,
         alpha: float = 0.05,
+        min_retention: float | None = None,
     ) -> StageVerificationRecord:
-        """Stage 4: Out-of-sample transfer to untouched holdout."""
+        """Stage 4: Out-of-sample transfer to untouched holdout.
+
+        Beyond the absolute OOS IC floor, the preregistered TRANSFER RETENTION
+        gate is enforced: ``oos_ic / max(in_sample_ic, 1e-4)`` must reach
+        ``MIN_OOS_TRANSFER_RETENTION`` (0.50) from the canonical spec. The
+        previously unenforced constant allowed a candidate whose IC collapsed
+        from 0.10 in-sample to 0.016 out-of-sample (16% retention) through on
+        the absolute floor alone.
+        """
         self._assert_stage_reachable(PromotionStage.STAGE_4_OUT_OF_SAMPLE_TRANSFER)
-        passed = (oos_ic >= min_oos_ic and oos_p_value < alpha)
-        reason = f"Out-of-sample transfer verified: OOS IC={oos_ic:.4f} (p={oos_p_value:.4f})." if passed else \
-                 f"Failed OOS transfer: IC={oos_ic:.4f} or p={oos_p_value:.4f}."
+        retention_floor = (
+            MIN_OOS_TRANSFER_RETENTION if min_retention is None else min_retention
+        )
+        retention = oos_ic / max(in_sample_ic, 1e-4)
+        passed = (
+            oos_ic >= min_oos_ic
+            and oos_p_value < alpha
+            and retention >= retention_floor
+        )
+        reason = (
+            f"Out-of-sample transfer verified: OOS IC={oos_ic:.4f} (p={oos_p_value:.4f}), "
+            f"retention={retention:.2f} >= {retention_floor:.2f}."
+            if passed
+            else f"Failed OOS transfer: IC={oos_ic:.4f}, p={oos_p_value:.4f}, "
+            f"retention={retention:.2f} (floor {retention_floor:.2f})."
+        )
         rec = StageVerificationRecord(
             stage=PromotionStage.STAGE_4_OUT_OF_SAMPLE_TRANSFER,
             passed=passed,
             status_label="OUT_OF_SAMPLE_TRANSFER_VERIFIED" if passed else "OUT_OF_SAMPLE_TRANSFER_REFUSED",
-            metrics={"oos_ic": oos_ic, "oos_p_value": oos_p_value},
+            metrics={"oos_ic": oos_ic, "oos_p_value": oos_p_value, "in_sample_ic": in_sample_ic, "retention": retention},
             reason=reason,
         )
         self._record_outcome(rec)
@@ -148,7 +173,7 @@ class PromotionTracker:
         net_sharpe: float,
         dsr_metric: float,
         breakeven_fee_bps: float,
-        min_sharpe_hurdle: float = 0.70,
+        min_sharpe_hurdle: float = MIN_NET_SHARPE,
         min_dsr_hurdle: float = DSR_THRESHOLD,
         min_fee_bps: float = 3.0,
     ) -> StageVerificationRecord:

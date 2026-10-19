@@ -20,8 +20,11 @@ Evaluates:
 """
 from __future__ import annotations
 
+import argparse
 import csv
-from dataclasses import dataclass
+import json
+import os
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Literal
 
@@ -33,6 +36,7 @@ from apedp_dyn.discovery_l2.multiterm_engine import MultiTermL2Engine
 from apedp_dyn.epistemic.adjudicate import (
     DataOrigin,
 )
+from apedp_dyn.epistemic.trial_ledger import CandidateTrialLedger
 
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "market"
 
@@ -81,6 +85,8 @@ WINDOWS: tuple[WindowSpec, ...] = (
     WindowSpec("W6_RECOVERY", "2022-01-03", "2022-12-30", "2023-01-03", "2023-06-30", "2023 Tech Recovery"),
 )
 
+PARTITION_COUNT = 2 * len(WINDOWS)
+
 
 @dataclass(frozen=True)
 class WindowDiscoveryRecord:
@@ -104,6 +110,9 @@ class WindowDiscoveryRecord:
     boundary_artifact: bool
     out_of_grammar: bool
     full_reason: str
+    # Search-size accounting: every candidate the engine scored before one was
+    # promoted. A 1-of-N promotion is optimistically biased without this.
+    trial_multiplicity: dict | None = None
 
 
 def load_series_with_dates(asset: Literal["sp500", "nasdaq100"]) -> tuple[list[str], np.ndarray]:
@@ -296,6 +305,66 @@ def execute_window_discovery(
     if adj.bootstrap_lo is not None and adj.bootstrap_hi is not None:
         boot_margin = float(adj.bootstrap_lo)
 
+    # Multiple-testing accounting for the DISCOVERY search: every candidate the
+    # engine scored is one attempt, and the promoted candidate is an
+    # order statistic over that pool. DSR does not apply (the selection
+    # statistic here is in-sample loss, not a Sharpe ratio), so what is recorded
+    # is the pool itself plus the promoted candidate's rank within it.
+    trial_multiplicity: dict | None = None
+    # MultiTermDiscoveryResult does not retain every scored candidate; it
+    # reports the evaluated count and the surviving Pareto set, so the pool
+    # is reconstructed from the Pareto candidates with the true evaluated
+    # count carried in the metadata.
+    if multiterm:
+        scored_pool = list(m_res.pareto_candidates)
+        evaluated_count = int(m_res.all_evaluated_count)
+    else:
+        scored_pool = list(l2_res.candidates)
+        evaluated_count = len(scored_pool)
+    if scored_pool:
+        ledger = CandidateTrialLedger()
+        search_id = f"l2:{asset}:{window.window_id}:{'multiterm' if multiterm else 'single'}:{seed}"
+        ranked_pool = sorted(
+            scored_pool,
+            key=lambda s: (s.train_loss if s.train_loss is not None and np.isfinite(s.train_loss) else float("inf")),
+        )
+        for rank, sc in enumerate(ranked_pool):
+            ledger.record_trial(
+                candidate_id=sc.candidate.candidate_id,
+                proposer_id="l2_open_discovery",
+                formula=str(sc.candidate.metadata.get("canonical_expr") or sc.candidate.candidate_id),
+                strategy_archetype="continuous_factor",
+                in_sample_sharpe=0.0,
+                n_bars=n_tr,
+                status="EVALUATED",
+                selection_statistic=(
+                    float(sc.train_loss)
+                    if sc.train_loss is not None and np.isfinite(sc.train_loss)
+                    else None
+                ),
+                metadata={
+                    "search_id": search_id,
+                    "selection_pool_size": evaluated_count,
+                    "selection_rank": rank,
+                    "complexity": int(sc.candidate.metadata.get("complexity", 1)),
+                },
+            )
+        promoted_id = (
+            adj.promoted.candidate.candidate_id if adj.promoted is not None else None
+        )
+        promoted_rank = next(
+            (r for r, sc in enumerate(ranked_pool) if sc.candidate.candidate_id == promoted_id),
+            None,
+        )
+        trial_multiplicity = {
+            "recorded_trials": ledger.trial_count,
+            "effective_trials": ledger.effective_trial_count,
+            "evaluated_count": evaluated_count,
+            "search_id": search_id,
+            "promoted_rank": promoted_rank,
+            "selection_statistic": "in_sample_train_loss (lower is better; DSR not applicable)",
+        }
+
     # Boundary artifact check: inspect if error is concentrated on first/last 3 points of holdout
     boundary_artifact = False
     if top_cand is not None:
@@ -327,6 +396,7 @@ def execute_window_discovery(
         boundary_artifact=boundary_artifact,
         out_of_grammar=out_of_grammar,
         full_reason=adj.reason,
+        trial_multiplicity=trial_multiplicity,
     )
 
 
@@ -340,8 +410,66 @@ def run_full_real_market_l2_sweep() -> list[WindowDiscoveryRecord]:
     return records
 
 
+def run_partition(
+    partition_index: int,
+    total_partitions: int,
+    output_dir: str | Path | None = None,
+) -> list[WindowDiscoveryRecord]:
+    """Execute and persist this partition's assigned asset/window discoveries."""
+    if total_partitions < 1 or total_partitions > PARTITION_COUNT:
+        raise ValueError(f"total_partitions must be between 1 and {PARTITION_COUNT}")
+    if not 0 <= partition_index < total_partitions:
+        raise ValueError(
+            f"partition_index must be in [0, {total_partitions}), got {partition_index}"
+        )
+
+    jobs = [(asset, window) for asset in ("sp500", "nasdaq100") for window in WINDOWS]
+    assigned_jobs = [
+        (asset, window)
+        for job_index, (asset, window) in enumerate(jobs)
+        if job_index % total_partitions == partition_index
+    ]
+    records = [
+        execute_window_discovery(asset, window, bootstrap=True)
+        for asset, window in assigned_jobs
+    ]
+
+    results_dir = Path(
+        output_dir or Path(os.environ.get("APEDP_STORAGE_DIR", "artifacts")) / "sweep_results"
+    )
+    results_dir.mkdir(parents=True, exist_ok=True)
+    result_path = results_dir / f"partition_{partition_index:03d}.json"
+    result_path.write_text(
+        json.dumps([asdict(record) for record in records], indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return records
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Run a partition of the real-market L2 sweep.")
+    parser.add_argument("--partition-index", type=int)
+    parser.add_argument("--total-partitions", type=int)
+    args = parser.parse_args(argv)
+    if args.partition_index is None and args.total_partitions is None:
+        records = run_full_real_market_l2_sweep()
+        print(f"Completed {len(records)} rolling window discoveries.")
+        for record in records:
+            print(
+                f"[{record.asset.upper()} {record.window_id}] "
+                f"Verdict: {record.epistemic_verdict} ({record.epistemic_attribution}) | "
+                f"Discovered: {record.discovered_expression} | Gate4 Fail: {record.out_of_grammar}"
+            )
+        return 0
+    if args.partition_index is None or args.total_partitions is None:
+        parser.error("--partition-index and --total-partitions must be provided together")
+    records = run_partition(args.partition_index, args.total_partitions)
+    print(
+        f"Partition {args.partition_index}/{args.total_partitions} completed "
+        f"{len(records)} discoveries."
+    )
+    return 0
+
+
 if __name__ == "__main__":
-    recs = run_full_real_market_l2_sweep()
-    print(f"Completed {len(recs)} rolling window discoveries.")
-    for r in recs:
-        print(f"[{r.asset.upper()} {r.window_id}] Verdict: {r.epistemic_verdict} ({r.epistemic_attribution}) | Discovered: {r.discovered_expression} | Gate4 Fail: {r.out_of_grammar}")
+    raise SystemExit(main())

@@ -157,6 +157,14 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
         overlap = 0.0
         return True, overlap, "No overlap detected; hard contact respected"
 
+    def volume_eval_valid(cand: Any, ds: Any) -> tuple[bool, float, str]:
+        # Global metric volume conservation: predicted density must be spatially flat
+        y = cand.model_callable(ds.X_train)
+        density = np.gradient(y, ds.X_train)
+        variation = float(np.max(np.abs(density - np.mean(density))))
+        passed = variation <= 1e-6
+        return passed, variation, f"Volume density variation {variation:.2e} (tolerance 1e-6)"
+
     inv_geom_valid = DeclaredInvariant(
         name="geometric_non_overlap",
         kind=InvariantKind.BOUND_POSITIVITY,
@@ -171,6 +179,7 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
         description="Global metric volume conservation",
         tolerance=1e-5,
         required_for_tier=ClaimLevel.C6_FORMALLY_VERIFIED,
+        evaluator=volume_eval_valid,
     )
     inv_isostatic_valid = DeclaredInvariant(
         name="isostatic_contact_stability",

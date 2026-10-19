@@ -149,6 +149,67 @@ def test_3arm_ablation_experiment_scorecard():
     assert bench["arm_c_agnostic"]["fpr"] == 0.0       # 0/4 false promotions!
 
 
+def test_no_callable_candidate_fails_closed_not_fabricated_metrics():
+    """Regression: a candidate with no callable and no recorded metrics must not be
+    credited with invented good metrics (previously in_sample_r2=0.95, holdout_rmse=0.02)."""
+    adapter = AgnosticAdapter()
+    x = np.linspace(0, 5, 50)
+    spec = AgnosticCandidateSpecification(
+        candidate_id="NO_CALLABLE",
+        proposed_claim=ClaimLevel.C2_PREDICTIVE,
+        formula_repr="unattached",
+    )
+    ds = AgnosticProblemDataset("Synthetic", X_train=x, y_train=x, X_holdout=x, y_holdout=x)
+
+    metrics = adapter.evaluate_empirical_fit(spec, ds)
+    assert metrics["no_model_callable"] == 1.0
+    assert metrics["in_sample_r2"] == -999.0
+    assert metrics["holdout_rmse"] == 999.0
+
+    res = adapter.adjudicate(spec, ds)
+    assert res.promoted is False
+
+
+def test_no_callable_candidate_uses_recorded_metrics_when_present():
+    """A candidate may report externally computed metrics via `precomputed_metrics`;
+    absence of that key is unavailability, not an implied pass."""
+    adapter = AgnosticAdapter()
+    x = np.linspace(0, 5, 50)
+    spec = AgnosticCandidateSpecification(
+        candidate_id="RECORDED_METRICS",
+        proposed_claim=ClaimLevel.C2_PREDICTIVE,
+        formula_repr="externally_evaluated",
+        metadata={"precomputed_metrics": {"in_sample_r2": 0.99, "holdout_rmse": 0.01}},
+    )
+    ds = AgnosticProblemDataset("Synthetic", X_train=x, y_train=x, X_holdout=x, y_holdout=x)
+    metrics = adapter.evaluate_empirical_fit(spec, ds)
+    assert metrics["in_sample_r2"] == 0.99
+    assert metrics["holdout_rmse"] == 0.01
+
+
+def test_unevaluable_invariant_kind_is_not_a_pass():
+    """Regression: an invariant kind with no evaluator and no built-in check must be
+    reported as unverified (fail-closed), not counted as satisfied."""
+    adapter = AgnosticAdapter()
+    x = np.linspace(0, 5, 50)
+    inv = DeclaredInvariant(
+        name="scale_homogeneity",
+        kind=InvariantKind.SCALE_HOMOGENEITY,
+        tolerance=1e-6,
+    )
+    spec = AgnosticCandidateSpecification(
+        candidate_id="UNHANDLED_KIND",
+        proposed_claim=ClaimLevel.C3_STRUCTURAL,
+        formula_repr="y = x",
+        model_callable=lambda arr: arr,
+        declared_invariants=[inv],
+    )
+    ds = AgnosticProblemDataset("Synthetic", X_train=x, y_train=x, X_holdout=x, y_holdout=x)
+    res = adapter.verify_invariant(inv, spec, ds)
+    assert res.passed is False
+    assert "Unverified" in res.diagnostic_message
+
+
 def test_agnostic_adapter_calibrates_confounded_causal_claim():
     """Candidate claiming C4 with failing do(X) invariance is calibrated to C2 via EEDR-CA."""
     corpus = {c.case_id: c for c in generate_ablation_corpus()}

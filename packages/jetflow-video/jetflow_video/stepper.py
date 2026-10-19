@@ -53,39 +53,29 @@ class JetFlowStepper:
         z: torch.Tensor,
         t: float,
         v_current: torch.Tensor,
+        dt: Optional[float] = None,
     ) -> torch.Tensor:
         r"""Compute total convective acceleration along the flow trajectory:
-        a_t = \partial_t v + (\nabla_z v) * v
-        using directional derivatives without constructing the full Jacobian matrix.
+        a_t = d/dt v(z(t), t) = \partial_t v + (\nabla_z v) * v
+        via a single fused directional derivative along the characteristic ray
+        (z + h * v_t, t + h), requiring only 1 additional velocity evaluation
+        instead of 4 separate partial-derivative probes.
         """
-        eps = self.config.eps_fd
-
-        # 1. Partial temporal derivative: \partial_t v
-        t_plus = min(1.0, t + eps)
-        t_minus = max(0.0, t - eps)
-        dt_span = t_plus - t_minus
-
-        if dt_span > 1e-8:
-            v_t_plus = velocity_fn(z, t_plus)
-            v_t_minus = velocity_fn(z, t_minus)
-            v_t_dot = (v_t_plus - v_t_minus) / dt_span
+        eps = float(self.config.eps_fd)
+        # Step in the integration direction so t + h stays inside [0, 1]
+        if dt is not None and dt < 0.0:
+            h = -eps if (t - eps) >= 0.0 else eps
         else:
-            v_t_dot = torch.zeros_like(v_current)
+            h = eps if (t + eps) <= 1.0 else -eps
 
-        # 2. Convective spatial derivative: (\nabla_z v) * v
-        v_norm = torch.linalg.norm(v_current)
-        if v_norm > 1e-8:
-            h_disp = eps / v_norm.item()
-            z_plus = z + h_disp * v_current
-            z_minus = z - h_disp * v_current
+        t_probe = max(0.0, min(1.0, t + h))
+        h_eff = t_probe - t
+        if abs(h_eff) <= 1e-9:
+            return torch.zeros_like(v_current)
 
-            v_spatial_plus = velocity_fn(z_plus, t)
-            v_spatial_minus = velocity_fn(z_minus, t)
-            convective_dot = (v_spatial_plus - v_spatial_minus) / (2.0 * h_disp)
-        else:
-            convective_dot = torch.zeros_like(v_current)
-
-        return v_t_dot + convective_dot
+        z_probe = z + h_eff * v_current
+        v_probe = velocity_fn(z_probe, t_probe)
+        return (v_probe - v_current) / h_eff
 
     def step(
         self,
@@ -105,8 +95,8 @@ class JetFlowStepper:
             z_next = z_t + dt * v_t
             return z_next, v_t, None
 
-        # 2nd-order Jet2 Taylor expansion
-        a_t = self.compute_acceleration_torch(velocity_fn, z_t, t, v_t)
+        # 2nd-order Jet2 Taylor expansion using fused material derivative (2 evals/step)
+        a_t = self.compute_acceleration_torch(velocity_fn, z_t, t, v_t, dt=dt)
         z_next = z_t + dt * v_t + 0.5 * (dt ** 2) * a_t
         return z_next, v_t, a_t
 

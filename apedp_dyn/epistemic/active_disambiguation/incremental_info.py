@@ -61,13 +61,19 @@ def _dm_hac4(d: np.ndarray) -> tuple[float, float]:
     g = d - m
     L = 4
     w = 1 - np.arange(L + 1) / (L + 1)
-    acov = [float(np.mean(g[: n - k] * g[k:])) for k in range(L + 1)]
-    v = float(sum(w[k] * (acov[k] if k == 0 else 2 * acov[k]) for k in range(L + 1))) / n
+    # Canonical Newey-West estimator: every lagged autocovariance divides by the
+    # TOTAL sample size n, not by (n - k). Dividing by n - k breaks positive
+    # semi-definiteness of the Bartlett-weighted variance (the same defect fixed
+    # earlier in novelty_adjudication.py), producing v <= 0 and spurious NaN
+    # DM statistics whenever the longest lag consumes a visible fraction of
+    # short forward blocks.
+    acov = [float(np.sum(g[: n - k] * g[k:]) / n) for k in range(L + 1)]
+    v = float(sum(w[k] * (acov[k] if k == 0 else 2 * acov[k]) for k in range(L + 1)))
     if v <= 0:
         return float("nan"), float("nan")
     from math import erf, sqrt
 
-    t = m / sqrt(v)
+    t = m / sqrt(v / n)
     p = 1 - erf(abs(t) / sqrt(2))
     return t, max(min(p, 1.0), 0.0)
 

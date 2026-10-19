@@ -200,3 +200,159 @@ def test_video_dataset_hf_streaming():
     assert item["latent"].ndim == 4
     assert item["latent"].shape[0] == 16
     assert item["latent"].shape[1] == 4
+
+
+def test_remediated_flaws_verification():
+    from jetflow_video.tensor_train import TTLinear
+    from jetflow_video.trainer import encode_prompt_deterministic
+
+    # 1. JetFlowBackbone 3D positional encoding + TTLinear FFN support
+    cfg = JetFlowModelConfig(
+        latent_channels=12,
+        hidden_dim=32,
+        num_layers=1,
+        num_heads=2,
+        text_dim=64,
+        use_tt_ffn=True,
+        tt_ffn_rank=8,
+    )
+    model = JetFlowVideoModel(cfg)
+    assert isinstance(model.backbone.blocks[0].ffn[0], TTLinear)
+
+    # Spatially uniform input must produce spatially varying hidden representations due to 3D pos encoding
+    z_uniform = torch.ones(1, 4, 12, 8, 8)
+    pos_feat = model.backbone._build_spatiotemporal_pos_features(4, 8, 8, z_uniform.device, z_uniform.dtype)
+    assert pos_feat.shape == (1, 4, 64, 21)
+    assert not torch.allclose(pos_feat[:, :, 0, :], pos_feat[:, :, -1, :])
+
+    # 2. Subband-preserving Noether conservation does not scramble LL and LH channels
+    wavelet_v = torch.zeros(4, 12, 8, 8)
+    wavelet_v[:, 0, :, :] = 2.0  # Constant LL channel
+    v_proj, _ = model.noether_engine.project_spatial_latent_velocity(wavelet_v)
+    assert torch.allclose(v_proj[:, 1, :, :], torch.zeros_like(v_proj[:, 1, :, :]), atol=1e-6)
+
+    # 3. Jet2 stepper uses exactly 2 velocity evaluations per step (4 total for 2 steps)
+    eval_calls = {"n": 0}
+
+    def counted_v(z_in: torch.Tensor, t_in: float) -> torch.Tensor:
+        eval_calls["n"] += 1
+        return -0.5 * z_in
+
+    stepper = JetFlowStepper(JetFlowConfig(num_steps=2, order=2))
+    _ = stepper.generate(counted_v, torch.randn(2, 4, 8, 8))
+    assert eval_calls["n"] == 4
+
+    # 4. VideoVAEBridge with integrated PerceptualRefiner
+    bridge_refined = VideoVAEBridge(use_diffusers=False, latent_channels=12, downsample_factor=2, enable_perceptual_refiner=True)
+    assert bridge_refined.perceptual_refiner is not None
+    lat_clip = torch.rand(3, 12, 8, 8)
+    rgb_clip = bridge_refined.decode_latent_to_video(lat_clip)
+    assert rgb_clip.shape == (3, 3, 16, 16)
+
+    # 5. Synonym-aligned deterministic prompt encoding in trainer
+    e_car1 = encode_prompt_deterministic("fast red car driving on road")
+    e_car2 = encode_prompt_deterministic("rapid automobile racing on highway")
+    e_ocean = encode_prompt_deterministic("calm ocean water waves")
+    assert torch.allclose(e_car1, encode_prompt_deterministic("fast red car driving on road"))
+    sim_syn = float(torch.dot(e_car1, e_car2).item())
+    sim_unrel = float(torch.dot(e_car1, e_ocean).item())
+    assert sim_syn > sim_unrel
+
+
+def test_four_architectural_pillars_95_readiness():
+    from jetflow_video import (
+        Causal3DSpatioTemporalVAE,
+        CompositionalTextEncoder,
+        DepthAware3DTransportEngine,
+        compute_plucker_rays,
+        encode_prompt_sequence,
+        extract_physical_steering_from_prompt,
+        se3_exp_map,
+    )
+
+    # Pillar 1: Compositional Sequence-Level Text Encoder & Prompt-to-Physics Extraction
+    seq_a = encode_prompt_sequence("red car chasing blue truck", max_seq_len=8, dim=64)
+    seq_b = encode_prompt_sequence("blue car chasing red truck", max_seq_len=8, dim=64)
+    assert seq_a.shape == (8, 64)
+    # Order-sensitive modifier binding: "red car ... blue truck" != "blue car ... red truck"
+    assert not torch.allclose(seq_a, seq_b, atol=1e-3)
+
+    # Negation gating flips semantic polarity of negated token
+    seq_pos = encode_prompt_sequence("storm with rain", max_seq_len=6, dim=64)
+    seq_neg = encode_prompt_sequence("storm without rain", max_seq_len=6, dim=64)
+    rain_dot = float(torch.dot(seq_pos[3], seq_neg[3]).item())
+    assert rain_dot < 0.0
+
+    txt_enc = CompositionalTextEncoder(text_dim=32, max_seq_len=8, num_heads=2, num_layers=1)
+    batch_seq = txt_enc.encode_prompts(["fast red car driving right", "3d rotating sphere orbiting"])
+    assert batch_seq.shape == (2, 8, 32)
+
+    knobs = extract_physical_steering_from_prompt("fast red car driving right and orbiting in 3d with zoom")
+    assert knobs.convection_velocity[0] > 0.0
+    assert knobs.camera_orbit_yaw > 0.0
+    assert knobs.camera_zoom > 0.0
+
+    # Pillar 2: Learned 3D Causal Spatio-Temporal VAE (strict temporal causality + trainable reduction)
+    causal_vae = Causal3DSpatioTemporalVAE(in_channels=3, latent_channels=12, downsample_factor=2, hidden_dim=16)
+    vid1 = torch.rand(1, 4, 3, 16, 16)
+    vid2 = vid1.clone()
+    vid2[:, 2:, :, :, :] = torch.rand(1, 2, 3, 16, 16)  # Modify future frames t=2, 3
+    z1, _ = causal_vae.encode_video(vid1, sample_posterior=False)
+    z2, _ = causal_vae.encode_video(vid2, sample_posterior=False)
+    # Strict causality: frames t=0, 1 must be completely unaffected by changes at t=2, 3
+    assert torch.allclose(z1[:, :2], z2[:, :2], atol=1e-6)
+
+    recon_init = causal_vae.decode_video(z1)
+    assert VideoVAEBridge.compute_psnr(vid1, recon_init) > 40.0
+    fit_stats = causal_vae.fit_video_batch(vid1, num_steps=4, lr=1e-3)
+    assert fit_stats["final_loss"] <= fit_stats["initial_loss"]
+
+    # Pillar 3: Exact SE(3) Exponential Map, 6D Plücker Rays, & DepthAware3DTransportEngine
+    omega = torch.tensor([[0.2, -0.35, 0.1]])
+    trans = torch.tensor([[0.1, -0.05, 0.25]])
+    rot, t_vec = se3_exp_map(omega, trans)
+    assert rot.shape == (1, 3, 3)
+    assert t_vec.shape == (1, 3)
+    assert torch.allclose(torch.bmm(rot.transpose(1, 2), rot), torch.eye(3).unsqueeze(0), atol=1e-5)
+    assert torch.allclose(torch.linalg.det(rot), torch.ones(1), atol=1e-5)
+
+    rays = compute_plucker_rays(t_dim=4, h=8, w=8, omega_per_sec=(0.1, 0.3, 0.0), v_per_sec=(0.2, 0.0, -0.1))
+    assert rays.shape == (1, 4, 64, 6)
+    # Plücker orthogonality invariant: d . (o x d) == 0
+    d_vec, m_vec = rays[..., :3], rays[..., 3:]
+    plucker_ortho = torch.sum(d_vec * m_vec, dim=-1).abs().max().item()
+    assert plucker_ortho < 1e-5
+
+    depth_engine = DepthAware3DTransportEngine(latent_channels=12, hidden_dim=16)
+    z_frame = torch.randn(2, 12, 8, 8)
+    depth, flow_3d, disocc = depth_engine.predict_depth_and_flow(z_frame)
+    assert depth.shape == (2, 1, 8, 8)
+    assert float(depth.min().item()) >= depth_engine.z_min
+    assert float(depth.max().item()) <= depth_engine.z_max
+    warped_3d = depth_engine.warp_frame_se3(z_frame, omega=(0.1, 0.25, 0.0), trans=(0.1, 0.0, -0.1), dt=0.5)
+    assert warped_3d.shape == z_frame.shape
+
+    # Pillar 4: 3D Tubelet Patchification + String-Prompt Generation + EMA & CFG-Dropout Trainer
+    cfg_3d = JetFlowModelConfig(
+        latent_channels=12,
+        hidden_dim=32,
+        num_layers=1,
+        num_heads=2,
+        text_dim=64,
+        patch_size=(2, 2, 2),
+        use_tt_ffn=True,
+        tt_ffn_rank=8,
+        enable_plucker_3d=True,
+        enable_depth_transport=True,
+    )
+    model_3d = JetFlowVideoModel(cfg_3d)
+    tt_vid, rgb_vid = model_3d.generate_video(
+        prompt_embedding="fast red car driving right and orbiting in 3d at sunset",
+        num_steps=2,
+        shape=(4, 12, 8, 8),
+    )
+    assert tt_vid.shape == (4, 12, 8, 8)
+    assert rgb_vid.shape == (4, 3, 16, 16)
+    assert torch.isfinite(rgb_vid).all()
+
+

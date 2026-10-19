@@ -41,6 +41,7 @@ from apedp_dyn.discovery_l2.ast_generator import (
     RollingOpNode,
     UnaryOpNode,
     VariableNode,
+    collect_variable_names,
     generate_dimensionally_typed_ast,
 )
 from apedp_dyn.discovery_l2.dimensional_types import (
@@ -279,6 +280,70 @@ class TestRollingOperators:
                    for s in strs)
 
 
+class TestSymmetricPairGeneration:
+    """Binary-operator pair enumeration must be symmetric.
+
+    The frontier x pool enumeration used to build only (n_new, n_old) pairs, so
+    n_old/n_new was unreachable and the commutative "the reverse pair will
+    create it" guard dropped BOTH orderings; self-products (x*x) were excluded
+    outright, making squares impossible whenever `pow` is absent from the
+    grammar.
+    """
+
+    def test_division_orderings_both_reachable(self):
+        nodes = generate_dimensionally_typed_ast(
+            {"v": DIMENSIONLESS, "w": DIMENSIONLESS},
+            operators=("/",), max_depth=2, max_complexity=6,
+        )
+        strs = {n.to_str() for n in nodes}
+        assert "(v / w)" in strs, sorted(strs)
+        assert "(w / v)" in strs, sorted(strs)
+
+    def test_self_multiplication_reachable_without_pow(self):
+        nodes = generate_dimensionally_typed_ast(
+            {"v": DIMENSIONLESS, "w": DIMENSIONLESS},
+            operators=("*",), max_depth=2, max_complexity=6,
+        )
+        strs = {n.to_str() for n in nodes}
+        assert "(v * v)" in strs, sorted(strs)
+        assert "(w * w)" in strs, sorted(strs)
+        # ...and the squares compose further (v*v*w is reachable at depth 3).
+        deep = generate_dimensionally_typed_ast(
+            {"v": DIMENSIONLESS, "w": DIMENSIONLESS},
+            operators=("*",), max_depth=3, max_complexity=8,
+        )
+        assert any(n.to_str() == "((v * v) * w)" for n in deep)
+
+    def test_subtraction_orderings_are_sign_equivalent_by_design(self):
+        """w - v is deduped against v - w because the fitted coefficient spans the sign.
+
+        The basis fingerprint orients the first significant sample positive
+        (fingerprint.py), so theta*f and -theta*(-f) are one basis function.
+        That is a deliberate completeness statement, not an oversight: the
+        subtraction arm of the audit finding does not apply, while the division
+        and self-product arms do (both covered above).
+        """
+        nodes = generate_dimensionally_typed_ast(
+            {"v": DIMENSIONLESS, "w": DIMENSIONLESS},
+            operators=("-",), max_depth=2, max_complexity=6,
+        )
+        strs = {n.to_str() for n in nodes}
+        assert "(v - w)" in strs
+        import numpy as np
+        env = {"v": np.array([1.0, 2.0, 3.0, 4.0]), "w": np.array([4.0, 1.0, 3.0, 2.0])}
+        fwd = BinaryOpNode("-", VariableNode("v", DIMENSIONLESS), VariableNode("w", DIMENSIONLESS)).evaluate(env)
+        rev = BinaryOpNode("-", VariableNode("w", DIMENSIONLESS), VariableNode("v", DIMENSIONLESS)).evaluate(env)
+        assert np.allclose(fwd, -rev)
+
+    def test_rolling_variables_are_collected(self):
+        """A rolling term depends on its child's variables (was frozenset())."""
+        v = VariableNode("v", DIMENSIONLESS)
+        roll = RollingOpNode("rollmean", v, 5)
+        assert collect_variable_names(roll) == frozenset(("v",))
+        composed = BinaryOpNode("*", roll, VariableNode("w", DIMENSIONLESS))
+        assert collect_variable_names(composed) == frozenset(("v", "w"))
+
+
 class TestPruningGates:
     """Verifies the three-stage pruning pipeline (Gate A, B, C)."""
 
@@ -440,11 +505,15 @@ class TestL2EngineHonestyAndProvenance:
 
         assert len(res.candidates) > 0
         for c in res.candidates:
-            assert c.train_loss is not None and c.train_loss >= 0.0
-            assert c.holdout_rmse is not None and c.holdout_rmse >= 0.0
+            assert c.train_loss is not None and np.isfinite(c.train_loss) and c.train_loss > 0.0
+            assert c.holdout_rmse is not None and np.isfinite(c.holdout_rmse) and c.holdout_rmse > 0.0
             g4 = c.provenance.get("gate4_status", {})
             assert "holdout_residuals" in g4
             assert len(g4["holdout_residuals"]) == 25  # 50% holdout split
+            # Real least-squares holdout: the recorded RMSE must equal the RMSE
+            # recomputed from the recorded signed residuals (no mock values).
+            recomputed_rmse = float(np.sqrt(np.mean(np.asarray(g4["holdout_residuals"]) ** 2)))
+            assert abs(recomputed_rmse - c.holdout_rmse) < 1e-9
             assert c.provenance["benchmark_level"] == BenchmarkLevel.L2_OPEN_DISCOVERY
             assert c.provenance["data_origin"] == DataOrigin.EXPERIMENTAL
 

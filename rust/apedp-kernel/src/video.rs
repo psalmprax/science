@@ -50,15 +50,19 @@ pub fn psnr_series(a: &[f64], b: &[f64]) -> Result<f64, String> {
 /// window yields `NaN`, exactly like `np.mean([])` on the reference side
 /// (an empty-signal pair is a data condition, not a verdict).
 ///
-/// Constants mirror the reference call signature: `c1 = 0.01`, `c2 = 0.03`
-/// (the squared luminance/contrast stabilizers), `win = 8` default.
+/// Constants are supplied by callers. The canonical values for unit-range
+/// inputs are the SQUARED stabilizers `c1 = (K1*L)^2 = 1e-4`,
+/// `c2 = (K2*L)^2 = 9e-4` (K1 = 0.01, K2 = 0.03, L = 1); `win = 8` default.
 pub fn ssim_frame<V: DataCol>(a_rows: &[V], b_rows: &[V], win: usize, c1: f64, c2: f64) -> f64 {
     if a_rows.is_empty() || b_rows.is_empty() || a_rows.len() != b_rows.len() {
         return f64::NAN;
     }
     let h = a_rows.len();
     let w = a_rows[0].row_len();
-    if w == 0 || h < win || w < win {
+    // `win == 0` must be rejected explicitly: `h < win` / `w < win` cannot be
+    // true for an unsigned zero, so the window loops below would increment by
+    // zero forever (100% CPU, unrecoverable from Python through PyO3).
+    if win == 0 || w == 0 || h < win || w < win {
         return f64::NAN;
     }
 
@@ -270,6 +274,89 @@ pub fn warp_bilinear_2d(
     Ok(output)
 }
 
+/// 2D Bilinear Sub-Pixel Coordinate Warping with PERIODIC (wrap-around)
+/// boundary conditions:
+///   I_out(c, y, x) = I_in(c, wrap(y + vy), wrap(x + vx))
+///
+/// Indexing mirrors the fluid-domain generator's semi-Lagrangian backtrace
+/// exactly: the backtrace coordinate is floored FIRST, the integer index is
+/// wrapped with `rem_euclid` (numpy `%` semantics for negative coordinates),
+/// and the fractional weight is `q - floor(q)`. Floor-before-wrap matters:
+/// wrapping the float coordinate first loses exactness for tiny negative
+/// backtraces (a rounded `rem_euclid` can land on `size` instead of `0`).
+pub fn warp_bilinear_2d_periodic(
+    input: &[f64],
+    vx: &[f64],
+    vy: &[f64],
+    channels: usize,
+    height: usize,
+    width: usize,
+) -> Result<Vec<f64>, String> {
+    let plane_len = height * width;
+    if input.len() != channels * plane_len {
+        return Err(format!(
+            "Input length {} != channels {} * height {} * width {}",
+            input.len(),
+            channels,
+            height,
+            width
+        ));
+    }
+    if vx.len() != plane_len || vy.len() != plane_len {
+        return Err(format!(
+            "Flow lengths ({}, {}) != plane_size {}",
+            vx.len(),
+            vy.len(),
+            plane_len
+        ));
+    }
+    if height < 2 || width < 2 {
+        return Err("Dimensions must be at least 2x2".to_string());
+    }
+
+    let mut output = vec![0.0f64; input.len()];
+    let w_i = width as i64;
+    let h_i = height as i64;
+
+    output
+        .par_chunks_mut(plane_len)
+        .enumerate()
+        .for_each(|(c, out_plane)| {
+            let in_plane = &input[c * plane_len..(c + 1) * plane_len];
+            for y in 0..height {
+                let row_idx = y * width;
+                for x in 0..width {
+                    let idx = row_idx + x;
+                    // Backtrace source position (unclamped, un-wrapped).
+                    let qx = (x as f64) + vx[idx];
+                    let qy = (y as f64) + vy[idx];
+                    // Floor first, then wrap the integer index (numpy `%`).
+                    let fx = qx.floor();
+                    let fy = qy.floor();
+                    let x0 = (fx as i64).rem_euclid(w_i) as usize;
+                    let y0 = (fy as i64).rem_euclid(h_i) as usize;
+                    let x1 = (x0 + 1) % width;
+                    let y1 = (y0 + 1) % height;
+
+                    let wx = qx - fx;
+                    let wy = qy - fy;
+
+                    let top_left = in_plane[y0 * width + x0];
+                    let top_right = in_plane[y0 * width + x1];
+                    let bottom_left = in_plane[y1 * width + x0];
+                    let bottom_right = in_plane[y1 * width + x1];
+
+                    let top = top_left * (1.0 - wx) + top_right * wx;
+                    let bottom = bottom_left * (1.0 - wx) + bottom_right * wx;
+
+                    out_plane[idx] = top * (1.0 - wy) + bottom * wy;
+                }
+            }
+        });
+
+    Ok(output)
+}
+
 /// Compute spatial optical flow divergence:
 ///   div(v) = (vx(x+1, y) - vx(x-1, y)) / (2*dx) + (vy(x, y+1) - vy(x, y-1)) / (2*dy)
 pub fn compute_optical_flow_divergence(
@@ -298,6 +385,8 @@ pub fn compute_optical_flow_divergence(
 
     let inv_2dx = 1.0 / (2.0 * dx);
     let inv_2dy = 1.0 / (2.0 * dy);
+    let inv_dx = 1.0 / dx;
+    let inv_dy = 1.0 / dy;
     let mut div = vec![0.0f64; n];
 
     for y in 0..height {
@@ -306,12 +395,23 @@ pub fn compute_optical_flow_divergence(
         let row_curr = y * width;
         let row_m = ym * width;
         let row_p = yp * width;
+        // Border rows use a ONE-SIDED difference: clamping the neighbour index
+        // at the border (xm = 0 when x = 0) makes the numerator span a single
+        // cell while the divisor stays 2*dx, halving every border derivative.
+        let (scale_y, inv_dy_eff) = if y == 0 || y + 1 >= height {
+            (1.0, inv_dy)
+        } else {
+            (2.0, inv_2dy)
+        };
         for x in 0..width {
             let xm = if x == 0 { 0 } else { x - 1 };
             let xp = if x + 1 >= width { width - 1 } else { x + 1 };
+            let border_x = x == 0 || x + 1 >= width;
+            let inv_dx_eff = if border_x { inv_dx } else { inv_2dx };
+            let _ = scale_y;
 
-            let dvx = (vx[row_curr + xp] - vx[row_curr + xm]) * inv_2dx;
-            let dvy = (vy[row_p + x] - vy[row_m + x]) * inv_2dy;
+            let dvx = (vx[row_curr + xp] - vx[row_curr + xm]) * inv_dx_eff;
+            let dvy = (vy[row_p + x] - vy[row_m + x]) * inv_dy_eff;
             div[row_curr + x] = dvx + dvy;
         }
     }
@@ -358,15 +458,55 @@ mod tests {
     }
 
     #[test]
+    fn divergence_border_uses_one_sided_difference() {
+        // vx = x (so d(vx)/dx == 1 everywhere, borders included), vy = 0.
+        // The old clamped-neighbour central difference halved the border values.
+        let (h, w) = (5usize, 6usize);
+        let mut vx = vec![0.0f64; h * w];
+        let vy = vec![0.0f64; h * w];
+        for y in 0..h {
+            for x in 0..w {
+                vx[y * w + x] = x as f64;
+            }
+        }
+        let div = compute_optical_flow_divergence(&vx, &vy, h, w, 1.0, 1.0).unwrap();
+        for (i, d) in div.iter().enumerate() {
+            assert!((d - 1.0).abs() < 1e-12, "divergence at {i} = {d}, expected 1.0");
+        }
+
+        // Same in y for a vy = y field.
+        let vx0 = vec![0.0f64; h * w];
+        let mut vy = vec![0.0f64; h * w];
+        for y in 0..h {
+            for x in 0..w {
+                vy[y * w + x] = y as f64;
+            }
+        }
+        let div_y = compute_optical_flow_divergence(&vx0, &vy, h, w, 1.0, 1.0).unwrap();
+        for (i, d) in div_y.iter().enumerate() {
+            assert!((d - 1.0).abs() < 1e-12, "y-divergence at {i} = {d}, expected 1.0");
+        }
+    }
+
+    #[test]
+    fn ssim_frame_zero_window_returns_nan_instead_of_hanging() {
+        // win == 0 used to pass the unsigned size guard (`h < 0` is never true)
+        // and then spin forever in `x += win`. The call must return promptly.
+        let rows: Vec<Vec<f64>> = (0..8).map(|r| vec![0.2 + r as f64 * 0.01; 8]).collect();
+        let rows_view: Vec<ArrayView1<f64>> = rows.iter().map(|r| ArrayView1::from(r.as_slice())).collect();
+        assert!(ssim_frame(&rows_view, &rows_view, 0, 1e-4, 9e-4).is_nan());
+    }
+
+    #[test]
     fn ssim_frame_is_identity_one_and_nan_when_too_small() {
         let rows: Vec<Vec<f64>> = (0..16).map(|r| vec![0.3; 16]).collect();
         let rows_view: Vec<ArrayView1<f64>> = rows.iter().map(|r| ArrayView1::from(r.as_slice())).collect();
-        let s = ssim_frame(&rows_view, &rows_view, 8, 0.01, 0.03);
+        let s = ssim_frame(&rows_view, &rows_view, 8, 1e-4, 9e-4);
         assert!((s - 1.0).abs() < 1e-12, "{s}");
         // A 4x8 frame cannot host one 8x8 window in h.
         let small: Vec<Vec<f64>> = (0..4).map(|_| vec![0.5; 8]).collect();
         let sv: Vec<ArrayView1<f64>> = small.iter().map(|r| ArrayView1::from(r.as_slice())).collect();
-        assert!(ssim_frame(&sv, &sv, 8, 0.01, 0.03).is_nan());
+        assert!(ssim_frame(&sv, &sv, 8, 1e-4, 9e-4).is_nan());
     }
 
     #[test]
@@ -434,6 +574,46 @@ mod tests {
         assert!((warped[0] - 1.5).abs() < 1e-12);
         // (1,0) samples beyond right border, clamped at 2.0 -> 2.0
         assert!((warped[1] - 2.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn warp_bilinear_2d_periodic_zero_flow_is_identity() {
+        let input = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+            7.0, 8.0, 9.0,
+        ];
+        let vx = vec![0.0; 9];
+        let vy = vec![0.0; 9];
+        let warped = warp_bilinear_2d_periodic(&input, &vx, &vy, 1, 3, 3).unwrap();
+        assert_eq!(warped, input);
+    }
+
+    #[test]
+    fn warp_bilinear_2d_periodic_wraps_across_border() {
+        // Row 0: 1 2, row 1: 3 4. Shift x by +1 with wrap:
+        // out(1,0) = in(0,0) = 1.0 (instead of clamping to 2.0).
+        let input = vec![1.0, 2.0, 3.0, 4.0];
+        let vx = vec![1.0; 4];
+        let vy = vec![0.0; 4];
+        let warped = warp_bilinear_2d_periodic(&input, &vx, &vy, 1, 2, 2).unwrap();
+        assert!((warped[0] - 2.0).abs() < 1e-15); // out(0,0) = in(1,0)
+        assert!((warped[1] - 1.0).abs() < 1e-15); // out(1,0) = in(0,0) wrapped
+        assert!((warped[2] - 4.0).abs() < 1e-15);
+        assert!((warped[3] - 3.0).abs() < 1e-15);
+    }
+
+    #[test]
+    fn warp_bilinear_2d_periodic_negative_backtrace_matches_floor_mod() {
+        // q = -0.5 must sample between the last and first columns with
+        // weight 0.5 (numpy floor-mod semantics), NOT clamp.
+        let input = vec![1.0, 2.0, 3.0, 4.0];
+        let vx = vec![-0.5; 4];
+        let vy = vec![0.0; 4];
+        let warped = warp_bilinear_2d_periodic(&input, &vx, &vy, 1, 2, 2).unwrap();
+        // out(0,0): 0.5 * in(1,0) + 0.5 * in(0,0) = 0.5*2 + 0.5*1 = 1.5
+        assert!((warped[0] - 1.5).abs() < 1e-15);
+        assert!((warped[1] - 1.5).abs() < 1e-15);
     }
 
     #[test]

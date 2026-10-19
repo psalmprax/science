@@ -43,6 +43,12 @@ CONFIG = RepairConfig(
     min_validation_r2_gain=0.02,
     equivalence_tol=1e-9,
     operators=(RepairOperator.R1_PARAM_REFIT, RepairOperator.R2_TERM_INSERT, RepairOperator.R3_LAG_INSERT),
+    # This test pins the complementary-refusal claim (OLS refuses on the flat
+    # low-p third; RIME inserts (p*p) and seals at R2 ~ 0.987). The cross-slice
+    # invariance gate resolves AMBIGUOUS on this world (slices re-propose
+    # different structures, best 2/5) and is a separate identification
+    # criterion, covered by tests/test_dyn_rime_repair_v012_sensitivity.py.
+    invariance_slices=0,
 )
 
 POLICY_FIT_R2 = 0.5  # test-local refusal-rule constant (policy under test, not module threshold)

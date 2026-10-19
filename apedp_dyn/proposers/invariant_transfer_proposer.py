@@ -3,12 +3,22 @@
 Searches for representations that are invariant across multiple environments
 or regimes, enforcing Invariant Risk Minimization (IRM) penalties, strict
 worst-regime retention gating, and active extrapolation barrier checks.
+
+Disclosure contract (AGENTS.md §1.1): every metric in a proposal's metadata
+(``worst_env_r2``, ``r2_dispersion_std``, ``cgi_score``, ...) is computed on the
+SAME development environments the search selected over. This proposer ranks
+candidates but never decides acceptance: that is the epistemic referee's job on
+a sealed holdout. Search size (number of degree trials, gate-passing pool, the
+selected rank, and a shared per-call ``search_id``) is disclosed in every
+emitted candidate's metadata so ``CandidateTrialLedger.effective_trial_count``
+charges the whole search, not just the emitted survivor.
 """
 
 from __future__ import annotations
 
 import json
 import logging
+import uuid
 from collections.abc import Sequence
 from typing import Any
 
@@ -114,6 +124,7 @@ class InvariantTransferProposer(ProposerBase):
             return []
 
         proposals: list[CandidateProposal] = []
+        evaluated_fit_count = 0
 
         for feat in f_cols:
             # Build environment payload for native Rust
@@ -143,6 +154,7 @@ class InvariantTransferProposer(ProposerBase):
             y_pool = np.concatenate([np.array(e["y"]) for e in rust_envs])
 
             for deg in range(1, self._max_poly_degree + 1):
+                evaluated_fit_count += 1
                 try:
                     poly_fit = np.polyfit(x_pool, y_pool, deg)
                     coeffs = poly_fit[::-1].tolist() # ascending order: c0 + c1*x + ...
@@ -218,6 +230,8 @@ class InvariantTransferProposer(ProposerBase):
                             "r2_dispersion_std": res["r2_dispersion_std"],
                             "irm_penalty": res["irm_penalty"],
                             "extrapolation_verdict": res["extrapolation_verdict"],
+                            "degree_trials": self._max_poly_degree,
+                            "dev_side_gates": "passed_retention_gate & extrapolation_safe (pooled dev environments)",
                         },
                     )
                 )
@@ -227,4 +241,14 @@ class InvariantTransferProposer(ProposerBase):
             key=lambda p: p.metadata.get("cgi_score", -float("inf")),
             reverse=True,
         )
+        # Disclose the selection pool and rank: metrics above were selected over
+        # this many order-statistics, so they are optimistically biased without
+        # holdout confirmation.
+        search_id = f"{self.proposer_id}:{uuid.uuid4().hex[:12]}"
+        selection_pool_size = max(evaluated_fit_count, len(proposals))
+        for rank, proposal in enumerate(proposals):
+            proposal.metadata["search_id"] = search_id
+            proposal.metadata["selection_pool_size"] = selection_pool_size
+            proposal.metadata["evaluated_fit_count"] = evaluated_fit_count
+            proposal.metadata["selection_rank"] = rank
         return proposals

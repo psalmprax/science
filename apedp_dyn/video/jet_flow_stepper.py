@@ -10,10 +10,9 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from types import ModuleType
 
 import numpy as np
-
-from types import ModuleType
 
 ak: ModuleType | None = None
 try:
@@ -63,43 +62,35 @@ class JetFlowStepper:
         z: np.ndarray,
         t: float,
         v_current: np.ndarray,
+        dt: float | None = None,
     ) -> np.ndarray:
         r"""Compute total convective acceleration along the flow trajectory:
-        a_t = \partial_t v + (\nabla_z v) * v
-        using directional derivatives without constructing the full Jacobian matrix.
+        a_t = d/dt v(z(t), t) = \partial_t v + (\nabla_z v) * v
+        via a single fused directional derivative along the characteristic ray
+        (z + h * v_t, t + h) without constructing the full Jacobian matrix.
         """
-        eps = self.config.eps_fd
+        eps = float(self.config.eps_fd)
+        h = -eps if (dt is not None and dt < 0.0) else eps
+        t_lo = min(self.config.t_start, self.config.t_end)
+        t_hi = max(self.config.t_start, self.config.t_end)
 
-        # 1. Partial temporal derivative: \partial_t v
-        # Central difference in time: (v(z, t + eps) - v(z, t - eps)) / (2 * eps)
-        t_plus = min(1.0, t + eps)
-        t_minus = max(0.0, t - eps)
-        dt_span = t_plus - t_minus
-        if dt_span > 1e-8:
-            v_t_plus = velocity_fn(z, t_plus)
-            v_t_minus = velocity_fn(z, t_minus)
-            v_t_dot = (v_t_plus - v_t_minus) / dt_span
+        if t_lo <= t <= t_hi:
+            if t + h > t_hi:
+                h_eff = -eps if (t - eps >= t_lo) else (t_hi - t)
+            elif t + h < t_lo:
+                h_eff = eps if (t + eps <= t_hi) else (t_lo - t)
+            else:
+                h_eff = h
         else:
-            v_t_dot = np.zeros_like(v_current)
+            h_eff = h
 
-        # 2. Convective spatial derivative: (\nabla_z v) * v
-        # Directional derivative of v along the direction of vector v itself:
-        # D_v v(z) = [v(z + eps * v) - v(z - eps * v)] / (2 * eps)
-        v_norm = np.linalg.norm(v_current)
-        if v_norm > 1e-8:
-            # Scale displacement so eps is proportional to unit direction
-            h_disp = eps / v_norm
-            z_plus = z + h_disp * v_current
-            z_minus = z - h_disp * v_current
+        t_probe = t + h_eff
+        if abs(h_eff) <= 1e-9:
+            return np.zeros_like(v_current)
 
-            v_spatial_plus = velocity_fn(z_plus, t)
-            v_spatial_minus = velocity_fn(z_minus, t)
-            convective_dot = (v_spatial_plus - v_spatial_minus) / (2.0 * h_disp)
-        else:
-            convective_dot = np.zeros_like(v_current)
-
-        # Total acceleration along trajectory: a_t = v_t_dot + convective_dot
-        return np.asarray(v_t_dot + convective_dot)
+        z_probe = z + h_eff * v_current
+        v_probe = velocity_fn(z_probe, t_probe)
+        return np.asarray((v_probe - v_current) / h_eff)
 
     def step(
         self,
@@ -126,45 +117,49 @@ class JetFlowStepper:
             z_next = z_t + dt * v_t
             return z_next, v_t, None
 
-        # Second-order Jet2 Taylor step with acceleration
+        # Second-order Jet2 Taylor step using fused directional material derivative (2 evals/step)
         if ak is not None and hasattr(ak, "rime_jet2_video_flow_step"):
-            eps = self.config.eps_fd
-            t_plus = min(1.0, t + eps)
-            t_minus = max(0.0, t - eps)
-            dt_span = max(1e-8, t_plus - t_minus)
+            eps = float(self.config.eps_fd)
+            h = -eps if dt < 0.0 else eps
+            t_lo = min(self.config.t_start, self.config.t_end)
+            t_hi = max(self.config.t_start, self.config.t_end)
 
-            v_t_plus = velocity_fn(z_t, t_plus)
-            v_t_minus = velocity_fn(z_t, t_minus)
-
-            v_norm = np.linalg.norm(v_t)
-            if v_norm > 1e-8:
-                h_disp = eps / v_norm
-                z_plus = z_t + h_disp * v_t
-                z_minus = z_t - h_disp * v_t
-                v_sp_plus = velocity_fn(z_plus, t)
-                v_sp_minus = velocity_fn(z_minus, t)
-                two_h = 2.0 * h_disp
+            if t_lo <= t <= t_hi:
+                if t + h > t_hi:
+                    h_eff = -eps if (t - eps >= t_lo) else (t_hi - t)
+                elif t + h < t_lo:
+                    h_eff = eps if (t + eps <= t_hi) else (t_lo - t)
+                else:
+                    h_eff = h
             else:
-                v_sp_plus = v_t
-                v_sp_minus = v_t
-                two_h = 1.0
+                h_eff = h
+
+            t_probe = t + h_eff
+            if abs(h_eff) > 1e-9:
+                v_probe = velocity_fn(z_t + h_eff * v_t, t_probe)
+                dt_span = h_eff
+            else:
+                v_probe = v_t
+                dt_span = 1.0
 
             z_flat = np.ascontiguousarray(z_t.ravel(), dtype=np.float64)
+            v_flat = np.ascontiguousarray(v_t.ravel(), dtype=np.float64)
+            v_probe_flat = np.ascontiguousarray(v_probe.ravel(), dtype=np.float64)
             z_next_flat, a_flat = ak.rime_jet2_video_flow_step(
                 z_flat,
-                np.ascontiguousarray(v_t.ravel(), dtype=np.float64),
-                np.ascontiguousarray(v_t_plus.ravel(), dtype=np.float64),
-                np.ascontiguousarray(v_t_minus.ravel(), dtype=np.float64),
-                np.ascontiguousarray(v_sp_plus.ravel(), dtype=np.float64),
-                np.ascontiguousarray(v_sp_minus.ravel(), dtype=np.float64),
+                v_flat,
+                v_probe_flat,
+                v_flat,
+                v_flat,
+                v_flat,
                 float(dt),
                 float(dt_span),
-                float(two_h),
+                1.0,
                 2,
             )
             return z_next_flat.reshape(z_t.shape), v_t, a_flat.reshape(z_t.shape)
 
-        a_t = self.compute_acceleration(velocity_fn, z_t, t, v_t)
+        a_t = self.compute_acceleration(velocity_fn, z_t, t, v_t, dt=dt)
         z_next = z_t + dt * v_t + 0.5 * (dt ** 2) * a_t
         return z_next, v_t, a_t
 

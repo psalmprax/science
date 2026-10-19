@@ -11,6 +11,8 @@ Verifies:
 """
 from __future__ import annotations
 
+import numpy as np
+
 from apedp_dyn.epistemic.adjudicate import (
     BenchmarkLevel,
     DataOrigin,
@@ -63,12 +65,19 @@ class TestMaterialsDiscoveryL1:
         candidates = fit_l1_materials_candidates(features, y, n_train=30, noise_sigma=0.02)
         assert len(candidates) >= 5
         for c in candidates:
-            assert c.train_loss is not None and c.train_loss >= 0.0
-            assert c.holdout_rmse is not None and c.holdout_rmse >= 0.0
+            assert c.train_loss is not None and np.isfinite(c.train_loss) and c.train_loss > 0.0
+            assert c.holdout_rmse is not None and np.isfinite(c.holdout_rmse) and c.holdout_rmse > 0.0
             g4 = c.provenance.get("gate4_status", {})
             assert g4.get("passed") is True
             assert len(g4.get("holdout_residuals", [])) == 30
             assert len(g4.get("holdout_sq_error", [])) == 30
+            # Real least-squares holdout: recorded RMSE must equal the RMSE
+            # recomputed from the recorded signed residuals, and the recorded
+            # sq-error series must be their exact elementwise squares.
+            residuals = np.asarray(g4["holdout_residuals"])
+            assert np.allclose(np.asarray(g4["holdout_sq_error"]), residuals ** 2, rtol=1e-12, atol=1e-18)
+            recomputed_rmse = float(np.sqrt(np.mean(residuals ** 2)))
+            assert abs(recomputed_rmse - c.holdout_rmse) < 1e-9
 
     def test_provenance_and_benchmark_level_threading(self):
         """Custom data_origin and benchmark_level thread cleanly through candidates to Adjudication."""

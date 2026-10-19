@@ -69,7 +69,7 @@ class FixedPlusSlippageCostModel(ExecutionCostModelBase):
         # Local volatility slippage
         ret = np.zeros(n)
         ret[1:] = np.abs(np.diff(np.log(np.maximum(p, 1e-6))))
-        sigma_local = pd.Series(ret).rolling(20, min_periods=2).std().bfill().fillna(0.01).to_numpy()
+        sigma_local = pd.Series(ret).rolling(20, min_periods=2).std().ffill().fillna(0.01).to_numpy()
         slippage_drag = self.slippage_coeff * sigma_local * dpos
 
         return np.asarray(fee_drag + spread_drag + slippage_drag)
@@ -108,7 +108,7 @@ class AlmgrenChrissImpactCostModel(ExecutionCostModelBase):
         # Volatility estimate
         ret = np.zeros(n)
         ret[1:] = np.abs(np.diff(np.log(np.maximum(p, 1e-6))))
-        sigma_local = pd.Series(ret).rolling(20, min_periods=2).std().bfill().fillna(0.01).to_numpy()
+        sigma_local = pd.Series(ret).rolling(20, min_periods=2).std().ffill().fillna(0.01).to_numpy()
 
         temp_impact = self.eta_temp * participation * dpos
         perm_impact = self.gamma_perm * sigma_local * participation * dpos
@@ -140,14 +140,20 @@ class LimitOrderQueueCostModel(ExecutionCostModelBase):
         pos = np.asarray(positions, dtype=float)
         n = len(pos)
         dpos = np.zeros(n)
+        dpos_signed = np.zeros(n)
         dpos[1:] = np.abs(pos[1:] - pos[:-1])
+        dpos_signed[1:] = pos[1:] - pos[:-1]
 
         # Passive fill earns rebate, but suffers adverse selection if ofi opposes
         rebate = (self.maker_rebate_bps / 10000.0) * dpos
 
         if ofi is not None and len(ofi) == n:
-            # Adverse selection happens when order flow is toxic against position change
-            toxic = (np.sign(ofi) != np.sign(pos)) & (dpos > 0.0)
+            # Adverse selection happens when order flow is toxic against the
+            # SIGN of the trade (the position CHANGE), not the position LEVEL.
+            # Comparing against pos flagged covering an opposite-signed
+            # position (or liquidating a position at pos == 0) as toxic even
+            # when the fill direction matched the order flow.
+            toxic = (np.sign(ofi) != np.sign(dpos_signed)) & (dpos > 0.0)
             adverse_drag = np.zeros(n)
             adverse_drag[toxic] = (self.adverse_selection_bps / 10000.0) * dpos[toxic]
         else:

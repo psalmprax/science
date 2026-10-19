@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from apedp_dyn.epistemic.novelty_adjudication import (
     evaluate_predictive_incrementality,
@@ -182,7 +183,13 @@ def test_predictive_incrementality_diebold_mariano():
 
 
 def test_structural_novelty_detects_literature_reidentification():
-    """A signal collinear with Kyle's lambda must be flagged as REPRESENTATION_REIDENTIFICATION."""
+    """A signal collinear with the literature must be flagged as REPRESENTATION_REIDENTIFICATION.
+
+    Attribution tracks whichever measurement actually set the projection: the
+    candidate is explained by the JOINT span of both baselines (R^2 ~ 0.998)
+    better than by Kyle's lambda alone, so the joint span is reported -- a
+    single-baseline label would misattribute the source of the identification.
+    """
     np.random.seed(42)
     n = 200
     kyle_signal = np.random.randn(n)
@@ -191,10 +198,25 @@ def test_structural_novelty_detects_literature_reidentification():
         "CARHART_MOMENTUM": np.random.randn(n),
     }
 
-    # Candidate is 95% correlated with Kyle's lambda (just scaled and with tiny noise)
     candidate = 2.5 * kyle_signal + 0.1 * np.random.randn(n)
 
     res = evaluate_structural_novelty(candidate, literature, novelty_threshold_r2=0.85)
+    assert res.verdict == "REPRESENTATION_REIDENTIFICATION"
+    assert res.closest_literature_baseline.startswith("JOINT_SPAN(")
+    assert "KYLE_LAMBDA" in res.closest_literature_baseline
+    assert "CARHART_MOMENTUM" in res.closest_literature_baseline
+    assert res.max_projection_r2 > 0.85
+    assert "Linear combination of literature baselines" in res.literature_citation
+
+
+def test_structural_novelty_attributes_single_baseline():
+    """With one literature baseline, attribution stays on that baseline and its citation."""
+    np.random.seed(42)
+    n = 200
+    kyle_signal = np.random.randn(n)
+    candidate = 2.5 * kyle_signal + 0.01 * np.random.randn(n)
+
+    res = evaluate_structural_novelty(candidate, {"KYLE_LAMBDA": kyle_signal}, novelty_threshold_r2=0.85)
     assert res.verdict == "REPRESENTATION_REIDENTIFICATION"
     assert res.closest_literature_baseline == "KYLE_LAMBDA"
     assert res.max_projection_r2 > 0.85
@@ -362,3 +384,90 @@ def test_tactical_strategy_enforces_5_to_90_percent_active_window():
     assert status92 == "GATE_NON_BINDING"
     assert "outside [5%, 90%]" in reason92
 
+
+
+def _seed_trial_family(ledger: CandidateTrialLedger, n: int = 4) -> None:
+    """Record a small family with non-zero Sharpe variance."""
+    for i in range(n):
+        ledger.record_trial(
+            candidate_id=f"fam_{i}",
+            proposer_id="family_proposer",
+            formula=f"m{i}",
+            strategy_archetype="continuous_factor",
+            in_sample_sharpe=0.4 + 0.1 * i,
+            returns=np.random.default_rng(i).normal(0.001, 0.01, 300),
+            status="EVALUATED",
+        )
+
+
+def test_selection_pool_charges_undisclosed_search_trials(tmp_path):
+    """A proposer that emitted its best of 500 must be charged 500 trials, not 1."""
+    ledger = CandidateTrialLedger(persistence_path=tmp_path / "trials.jsonl")
+    _seed_trial_family(ledger)
+    ledger.record_trial(
+        candidate_id="winner",
+        proposer_id="invariant_transfer",
+        formula="x",
+        strategy_archetype="continuous_factor",
+        in_sample_sharpe=1.05,
+        returns=np.random.default_rng(7).normal(0.002, 0.01, 300),
+        status="EVALUATED",
+        metadata={"search_id": "invariant:abc", "selection_pool_size": 500, "selection_rank": 0},
+    )
+
+    assert ledger.trial_count == 5
+    assert ledger.effective_trial_count == 504  # 4 naive + the 500-candidate search
+
+    adjusted = ledger.dsr_with_selection_adjustment(observed_sharpe=1.05, n_bars=300)
+    naive = compute_deflated_sharpe_ratio(
+        observed_sharpe=1.05,
+        n_trials=ledger.trial_count,
+        var_trials=ledger.get_sharpe_distribution()[1],
+        n_bars=300,
+    )
+    assert adjusted["n_trials"] == 504
+    assert adjusted["naive_trial_count"] == 5
+    assert adjusted["hidden_trials"] == 499
+    assert adjusted["dsr"] < naive["dsr"]
+    assert adjusted["expected_max_sr"] > naive["expected_max_sr"]
+
+
+def test_shared_search_id_does_not_double_count_pool(tmp_path):
+    """Co-emitted candidates from one search are one pool, not one pool each."""
+    ledger = CandidateTrialLedger(persistence_path=tmp_path / "trials.jsonl")
+    for i in range(3):
+        ledger.record_trial(
+            candidate_id=f"c{i}",
+            proposer_id="invariant_transfer",
+            formula=f"x**{i + 1}",
+            strategy_archetype="continuous_factor",
+            in_sample_sharpe=0.9 - 0.1 * i,
+            returns=np.random.default_rng(i).normal(0.001, 0.01, 300),
+            status="EVALUATED",
+            metadata={"search_id": "invariant:same-call", "selection_pool_size": 50, "selection_rank": i},
+        )
+    assert ledger.trial_count == 3
+    assert ledger.effective_trial_count == 50
+
+
+def test_invalid_selection_pool_fails_closed(tmp_path):
+    """Multiplicity accounting must never silently ignore a malformed pool size."""
+    ledger = CandidateTrialLedger(persistence_path=tmp_path / "trials.jsonl")
+    ledger.record_trial(
+        candidate_id="bad",
+        proposer_id="p",
+        formula="x",
+        strategy_archetype="continuous_factor",
+        in_sample_sharpe=0.5,
+        status="EVALUATED",
+        metadata={"selection_pool_size": 0},
+    )
+    with pytest.raises(ValueError, match="selection_pool_size"):
+        _ = ledger.effective_trial_count
+
+
+def test_selection_adjusted_dsr_requires_recorded_trials(tmp_path):
+    """Calling the selection-adjusted DSR on an empty ledger fails closed."""
+    ledger = CandidateTrialLedger(persistence_path=tmp_path / "trials.jsonl")
+    with pytest.raises(ValueError, match="empty trial ledger"):
+        ledger.dsr_with_selection_adjustment(observed_sharpe=0.8, n_bars=250)

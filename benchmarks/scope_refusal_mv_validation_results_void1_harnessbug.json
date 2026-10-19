@@ -1,0 +1,1029 @@
+{
+  "prereg_id": "PREREG-RIME-SCOPE-MV-2026-10-17",
+  "generated_at": "2026-10-17T17:39:35.389072+00:00",
+  "provenance": {
+    "git_head": "363e8dfffd6516386cbe809763f8509765d8b3a8",
+    "python": "3.12.3",
+    "numpy": "2.5.3",
+    "pandas": "2.3.3"
+  },
+  "protocol": {
+    "seeds": [
+      700,
+      701,
+      702
+    ],
+    "rows": {
+      "dev": "0:400",
+      "hold": "400:600"
+    },
+    "n": 600,
+    "noise": 0.05,
+    "feature_cols": [
+      "x1_l1",
+      "x2_l1",
+      "x3_l1",
+      "x3_l2"
+    ],
+    "house_config": {
+      "target_col": "target",
+      "budget": 200,
+      "max_depth": 2,
+      "additive_terms": 2,
+      "max_seeds": 120,
+      "lagged_products": true,
+      "gamma": 1.0
+    },
+    "frame_rule": "RandomState(seed): x1,x2,x3 ~ randn(602), noise ~ 0.05*randn(600); aligned columns a=x1[1:-1], b=x2[1:-1], c=x3[1:-1], d=x3[:-2]; y = law(a,b,c,d) + noise; null target: RandomState(seed+777) * 0.05, independent",
+    "g2_cells": [
+      "d2_C1000_uniform_1x_k2",
+      "d3_C100_uniform_1x_k3",
+      "d6_C1e12_log_1x_k6",
+      "d2_C1000_log_1x_k2"
+    ],
+    "adjudication": {
+      "bootstrap": true,
+      "n_boot": 1000,
+      "bootstrap_seed": 7
+    }
+  },
+  "cells": [
+    {
+      "cell": "control",
+      "seed": 700,
+      "kind": "mv",
+      "wall_ms": 14.0,
+      "n_props": 5,
+      "formula": "+1 * (((2.998683 * x3_l2) + (1.999400 * (x1_l1 * x2_l1)))) +9.99974",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l2"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.9997877805147989,
+      "hold_r2": 0.0,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.002542999468710247,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 1.6109400705973365,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.0023347494059556026,
+          "holdout_rmse": NaN
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_abs_linear2: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_am_product: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one"
+      }
+    },
+    {
+      "cell": "w1_sin_interaction",
+      "seed": 700,
+      "kind": "mv",
+      "wall_ms": 23.0,
+      "n_props": 5,
+      "formula": "+1 * (((3.767874 * tanh((x1_l1 * x2_l1))) + (1.492735 * x3_l1))) +2.01101",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.9201848434428225,
+      "hold_r2": 0.0,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.0023450879563757863,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 2.444324814960185,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.9900598114384903,
+          "holdout_rmse": NaN
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_abs_linear2: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_am_product: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one"
+      }
+    },
+    {
+      "cell": "w2_max_switch",
+      "seed": 700,
+      "kind": "mv",
+      "wall_ms": 20.2,
+      "n_props": 5,
+      "formula": "+1 * (((0.864375 * (x1_l1 + x3_l1)) + (0.810038 * (x2_l1 + x3_l1)))) +1.07147",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.8364082615347157,
+      "hold_r2": 0.0,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.23524222703495187,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 0.0023556696039824026,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.33803834207175676,
+          "holdout_rmse": NaN
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_abs_linear2: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_am_product: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one"
+      }
+    },
+    {
+      "cell": "w3_am_product",
+      "seed": 700,
+      "kind": "mv",
+      "wall_ms": 19.8,
+      "n_props": 3,
+      "formula": "+1.20127 * (tanh((x1_l1 * x3_l1))) +2.00851",
+      "inputs_used": [
+        "x1_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.7432486469140641,
+      "hold_r2": 0.0,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.11136347937391894,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 0.3145161931692551,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.002353301815973739,
+          "holdout_rmse": NaN
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_abs_linear2: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_am_product: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one"
+      }
+    },
+    {
+      "cell": "null_noise",
+      "seed": 700,
+      "kind": "g3",
+      "wall_ms": 3.2,
+      "n_props": 0,
+      "classification": "ABSTAINED",
+      "adjudication": null
+    },
+    {
+      "cell": "control",
+      "seed": 701,
+      "kind": "mv",
+      "wall_ms": 23.1,
+      "n_props": 5,
+      "formula": "+1 * (((2.998657 * x3_l2) + (2.000260 * (x1_l1 * x2_l1)))) +9.99745",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l2"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.999826578501853,
+      "hold_r2": 0.0,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.0054839086888554935,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 2.387411933872524,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.0023703801891695624,
+          "holdout_rmse": NaN
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_abs_linear2: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_am_product: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one"
+      }
+    },
+    {
+      "cell": "w1_sin_interaction",
+      "seed": 701,
+      "kind": "mv",
+      "wall_ms": 13.2,
+      "n_props": 5,
+      "formula": "+1 * (((3.704199 * tanh((x1_l1 * x2_l1))) + (1.560306 * x3_l1))) +2.02824",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.91227288861708,
+      "hold_r2": 0.0,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.0022933514713529266,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 2.6938448061193254,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 1.3194731448472858,
+          "holdout_rmse": NaN
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_abs_linear2: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_am_product: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one"
+      }
+    },
+    {
+      "cell": "w2_max_switch",
+      "seed": 701,
+      "kind": "mv",
+      "wall_ms": 11.0,
+      "n_props": 5,
+      "formula": "+1 * (((1.252916 * (x1_l1 + x3_l1)) + (0.915437 * x2_l1))) +1.15837",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.8339661197805015,
+      "hold_r2": 0.0,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.3042186026400996,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 0.0022959110312208543,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.3945568433224226,
+          "holdout_rmse": NaN
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_abs_linear2: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_am_product: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one"
+      }
+    },
+    {
+      "cell": "w3_am_product",
+      "seed": 701,
+      "kind": "mv",
+      "wall_ms": 12.1,
+      "n_props": 3,
+      "formula": "+1 * (((1.522403 * tanh((x1_l1 * x3_l1))) + (-0.234548 * (x1_l1 * x3_l1)))) +1.98523",
+      "inputs_used": [
+        "x1_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.7051005612551396,
+      "hold_r2": 0.0,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.17710251578094705,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 0.3736898850122948,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.0022937581816431635,
+          "holdout_rmse": NaN
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_abs_linear2: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_am_product: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one"
+      }
+    },
+    {
+      "cell": "null_noise",
+      "seed": 701,
+      "kind": "g3",
+      "wall_ms": 5.4,
+      "n_props": 0,
+      "classification": "ABSTAINED",
+      "adjudication": null
+    },
+    {
+      "cell": "control",
+      "seed": 702,
+      "kind": "mv",
+      "wall_ms": 21.1,
+      "n_props": 5,
+      "formula": "+1 * (((3.001152 * x3_l2) + (1.998889 * (x1_l1 * x2_l1)))) +10.0011",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l2"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.9998365750293925,
+      "hold_r2": 0.0,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.003872354264408754,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 2.048357963518491,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.0024216726083716176,
+          "holdout_rmse": NaN
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_abs_linear2: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_am_product: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one"
+      }
+    },
+    {
+      "cell": "w1_sin_interaction",
+      "seed": 702,
+      "kind": "mv",
+      "wall_ms": 12.8,
+      "n_props": 5,
+      "formula": "+1 * (((3.644912 * tanh((x1_l1 * x2_l1))) + (1.519085 * x3_l1))) +1.98615",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.8785998321548002,
+      "hold_r2": 0.0,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.0023265912776834615,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 3.032280329683267,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 1.5250677238507717,
+          "holdout_rmse": NaN
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_abs_linear2: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_am_product: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one"
+      }
+    },
+    {
+      "cell": "w2_max_switch",
+      "seed": 702,
+      "kind": "mv",
+      "wall_ms": 20.5,
+      "n_props": 5,
+      "formula": "+1 * (((1.250802 * (x1_l1 + x3_l1)) + (0.965256 * x2_l1))) +1.0936",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.8379870363528779,
+      "hold_r2": 0.0,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.3048875961389772,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 0.002335762123895235,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.4153370117777584,
+          "holdout_rmse": NaN
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_abs_linear2: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_am_product: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one"
+      }
+    },
+    {
+      "cell": "w3_am_product",
+      "seed": 702,
+      "kind": "mv",
+      "wall_ms": 11.9,
+      "n_props": 4,
+      "formula": "+1 * (((1.633859 * tanh((x1_l1 * x3_l1))) + (-0.334390 * (x1_l1 * x3_l1)))) +1.98483",
+      "inputs_used": [
+        "x1_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.6746077074645684,
+      "hold_r2": 0.0,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.14789112017294978,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 0.3500471057739447,
+          "holdout_rmse": NaN
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.0023341648601484144,
+          "holdout_rmse": NaN
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "insufficient_evidence",
+            "verdict": "declined",
+            "reason": "rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one",
+            "tau_epi": null
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_abs_linear2: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one | probe_mv_am_product: rank-1 passes gate 4 but the holdout record carries no scale (obs_rms/noise_sigma), so no rival can be resolved; pass holdout_scale= or tau_epi= to supply one"
+      }
+    },
+    {
+      "cell": "null_noise",
+      "seed": 702,
+      "kind": "g3",
+      "wall_ms": 4.1,
+      "n_props": 0,
+      "classification": "ABSTAINED",
+      "adjudication": null
+    }
+  ],
+  "determinism": [
+    {
+      "cell": "control",
+      "seed": 700,
+      "digest_a": "64d4bf208740e24a21f0946d5f478474dbaf40516d20cf18742c79344257aeed",
+      "digest_b": "64d4bf208740e24a21f0946d5f478474dbaf40516d20cf18742c79344257aeed",
+      "identical": true
+    },
+    {
+      "cell": "w1_sin_interaction",
+      "seed": 700,
+      "digest_a": "082f36c359627f23e70847d1e65183d9a39a554fc61ce5e53d6e1fa48831eb97",
+      "digest_b": "082f36c359627f23e70847d1e65183d9a39a554fc61ce5e53d6e1fa48831eb97",
+      "identical": true
+    }
+  ],
+  "determinism_ok": false,
+  "family_set": {
+    "declared": [
+      "probe_mv_periodic_quadratic",
+      "probe_mv_abs_linear2",
+      "probe_mv_am_product"
+    ],
+    "final": [],
+    "excluded": {
+      "probe_mv_periodic_quadratic": {
+        "guard_failures": [
+          "control",
+          "control",
+          "control"
+        ],
+        "w_declines": [
+          "w1_sin_interaction",
+          "w2_max_switch",
+          "w3_am_product",
+          "w1_sin_interaction",
+          "w2_max_switch",
+          "w3_am_product",
+          "w1_sin_interaction",
+          "w2_max_switch",
+          "w3_am_product"
+        ]
+      },
+      "probe_mv_abs_linear2": {
+        "guard_failures": [
+          "control",
+          "control",
+          "control"
+        ],
+        "w_declines": [
+          "w1_sin_interaction",
+          "w2_max_switch",
+          "w3_am_product",
+          "w1_sin_interaction",
+          "w2_max_switch",
+          "w3_am_product",
+          "w1_sin_interaction",
+          "w2_max_switch",
+          "w3_am_product"
+        ]
+      },
+      "probe_mv_am_product": {
+        "guard_failures": [
+          "control",
+          "control",
+          "control"
+        ],
+        "w_declines": [
+          "w1_sin_interaction",
+          "w2_max_switch",
+          "w3_am_product",
+          "w1_sin_interaction",
+          "w2_max_switch",
+          "w3_am_product",
+          "w1_sin_interaction",
+          "w2_max_switch",
+          "w3_am_product"
+        ]
+      }
+    }
+  },
+  "criteria": {
+    "w_all_declined": false,
+    "g1_control_promoted": false,
+    "g2_monomials_promoted": true,
+    "g3_no_promotion": true
+  },
+  "raw_w_verdicts": {
+    "w1_sin_interaction": "declined",
+    "w2_max_switch": "declined",
+    "w3_am_product": "declined"
+  },
+  "final_w_declined": {
+    "w1_sin_interaction": false,
+    "w2_max_switch": false,
+    "w3_am_product": false
+  },
+  "errors": [
+    {
+      "cell": "g2_d2_C1000_uniform_1x_k2",
+      "seed": 700,
+      "error": "ValueError: no multivariate probe family could be built on this frame; adjudication is undefined"
+    },
+    {
+      "cell": "g2_d3_C100_uniform_1x_k3",
+      "seed": 700,
+      "error": "ValueError: no multivariate probe family could be built on this frame; adjudication is undefined"
+    },
+    {
+      "cell": "g2_d6_C1e12_log_1x_k6",
+      "seed": 700,
+      "error": "ValueError: no multivariate probe family could be built on this frame; adjudication is undefined"
+    },
+    {
+      "cell": "g2_d2_C1000_log_1x_k2",
+      "seed": 700,
+      "error": "ValueError: no multivariate probe family could be built on this frame; adjudication is undefined"
+    },
+    {
+      "cell": "g2_d2_C1000_uniform_1x_k2",
+      "seed": 701,
+      "error": "ValueError: no multivariate probe family could be built on this frame; adjudication is undefined"
+    },
+    {
+      "cell": "g2_d3_C100_uniform_1x_k3",
+      "seed": 701,
+      "error": "ValueError: no multivariate probe family could be built on this frame; adjudication is undefined"
+    },
+    {
+      "cell": "g2_d6_C1e12_log_1x_k6",
+      "seed": 701,
+      "error": "ValueError: no multivariate probe family could be built on this frame; adjudication is undefined"
+    },
+    {
+      "cell": "g2_d2_C1000_log_1x_k2",
+      "seed": 701,
+      "error": "ValueError: no multivariate probe family could be built on this frame; adjudication is undefined"
+    },
+    {
+      "cell": "g2_d2_C1000_uniform_1x_k2",
+      "seed": 702,
+      "error": "ValueError: no multivariate probe family could be built on this frame; adjudication is undefined"
+    },
+    {
+      "cell": "g2_d3_C100_uniform_1x_k3",
+      "seed": 702,
+      "error": "ValueError: no multivariate probe family could be built on this frame; adjudication is undefined"
+    },
+    {
+      "cell": "g2_d6_C1e12_log_1x_k6",
+      "seed": 702,
+      "error": "ValueError: no multivariate probe family could be built on this frame; adjudication is undefined"
+    },
+    {
+      "cell": "g2_d2_C1000_log_1x_k2",
+      "seed": 702,
+      "error": "ValueError: no multivariate probe family could be built on this frame; adjudication is undefined"
+    }
+  ],
+  "pass": false,
+  "wall_s": 3.4
+}

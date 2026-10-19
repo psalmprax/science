@@ -7,7 +7,10 @@ from typing import Any
 
 import numpy as np
 
-import apedp_kernel as ak
+try:  # pragma: no cover - exercised only on kernel-less installs
+    import apedp_kernel as ak
+except ImportError:  # kernel-only engine: fails at call time with an actionable error
+    from apedp_dyn.kernel_shim import missing_kernel as ak  # type: ignore[assignment]
 from apedp_dyn.epistemic.coupled_discovery import (
     CoupledEquationInfo as CoupledEquationInfo,  # explicit re-export surface
 )

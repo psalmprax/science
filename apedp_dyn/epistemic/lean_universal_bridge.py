@@ -1,5 +1,7 @@
 """Agnostic / Universal Lean 4 Formal Theorem Verification Bridge for APEDP-X.
 
+Status: experimental (end-to-end verification requires an external Lean 4 toolchain)
+
 Provides an agnostic, domain-independent formal verification layer connecting
 arbitrary scientific hypotheses (physics, geometry, epidemiology, fluid mechanics,
 materials, and econometrics) with the Lean 4 interactive theorem prover and
@@ -141,7 +143,90 @@ class VerificationBackend(str, Enum):
 
 # ── Agnostic / Universal Lean 4 Bridge ─────────────────────────────────────
 
+_AST_FUNCTION_NAMES = frozenset({
+    "exp", "sin", "cos", "tan", "asin", "acos", "atan", "tanh", "sinh", "cosh",
+    "log", "sqrt", "Abs", "Min", "Max", "erf", "erfc", "zeta",
+})
+
+def _ast_symbol_locals(text: str) -> dict:
+    """sympify locals mapping every non-function word to a fresh Symbol.
+
+    Prevents sympy name collisions (``gamma`` resolves to the gamma
+    FunctionClass, which breaks unary minus) while keeping the function names
+    used by damping/degree detection native.
+    """
+    import re as _re
+    locals_map: dict = {}
+    for token in _re.findall(r"[A-Za-z_][A-Za-z_0-9]*", text):
+        if token in _AST_FUNCTION_NAMES or token in ("pi", "E", "oo", "zoo", "I"):
+            continue
+        locals_map[token] = sp.Symbol(token)
+    return locals_map
+
+def _liberal_parse_formula(formula: str) -> sp.Expr | None:
+    """Parse a candidate formula's RHS for the AST refutation stage.
+
+    Robust to trailing annotation words (``runaway``, ``leak``, ...) and to
+    sympy name collisions; returns None only when nothing parseable remains.
+    """
+    rhs = formula.split("=", 1)[-1] if "=" in formula else formula
+    rhs = rhs.replace("^", "**").strip()
+    tokens = rhs.split()
+    while tokens:
+        candidate_str = " ".join(tokens)
+        try:
+            parsed = sp.sympify(candidate_str, locals=_ast_symbol_locals(candidate_str))
+            # Only single sympy expressions are a valid AST for the refutation
+            # stages; non-Expr parses (tuple/list forms with stray commas or
+            # annotation tails) crashed ``_ast_polynomial_total_degree``
+            # downstream (AttributeError: 'list' has no free_symbols). Trim
+            # and retry; fail closed to None when nothing parseable remains.
+            if isinstance(parsed, sp.Expr):
+                return parsed
+            tokens = tokens[:-1]
+            continue
+        except Exception:  # noqa: BLE001 - progressive trim of annotation tail is the fallback
+            tokens = tokens[:-1]
+    return None
+
+def _ast_detect_damping_factor(expr: sp.Expr) -> str | None:
+    """First damping factor ``exp(-c * s)`` (or exp(-c)) with c > 0, or None.
+
+    AST-derived replacement for the removed substring traps: a declared
+    *conservation* invariant is refuted by ANY exponential decay, whatever its
+    numeric rate (the old string triggers on exp(-0.1/exp(-0.2/exp(-1 let
+    exp(-0.05 * t) and exp(-0.3 * t) through to a verified tautology).
+    """
+    c = sp.Wild("c", positive=True)
+    s = sp.Wild("s")
+    for node in sp.preorder_traversal(expr):
+        if not isinstance(node, sp.exp):
+            continue
+        arg = node.args[0]
+        if isinstance(arg, sp.Mul) and len(arg.args) == 2:
+            m = arg.match(-c * s)
+            if m is not None and m.get(s) is not None:
+                return str(-arg)
+        elif arg.is_number and arg.is_negative:
+            return str(-arg)
+    return None
+
+
+def _ast_polynomial_total_degree(expr: sp.Expr) -> int | None:
+    """Total polynomial degree of ``expr`` in its free symbols, or None."""
+    if not isinstance(expr, sp.Expr):
+        return None
+    if not expr.free_symbols:
+        return 0 if expr.is_number else None
+    try:
+        poly = expr.as_poly(*expr.free_symbols)
+    except Exception:  # noqa: BLE001 - sympy raises many types for non-polynomials
+        return None
+    return None if poly is None else poly.total_degree()
+
+
 class LeanUniversalBridge:
+
     """Agnostic Lean 4 verification and formal translation bridge for APEDP-X.
 
     Supports:
@@ -159,7 +244,9 @@ class LeanUniversalBridge:
         if output_dir is not None:
             self.output_dir = output_dir
         else:
-            self.output_dir = Path("/home/psalmprax/ALL_PROJECTS/science/apedp_dyn/lean_formal")
+            from apedp_dyn.conf.paths import lean_root
+
+            self.output_dir = lean_root()
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.backend = VerificationBackend(backend) if isinstance(backend, str) else backend
         self.docker_image = docker_image
@@ -557,7 +644,7 @@ class LeanUniversalBridge:
                 "axiom sir_flux_conservation (beta s i gamma : R) : (-beta * s * i) + (beta * s * i - gamma * i) + (gamma * i) = (0 : R)",
                 "axiom norm_sq_nonneg (u : R) : (0 : R) ≤ u * u",
                 "axiom exp_pos (s : R) : (0 : R) ≤ exp s",
-                "axiom exp_damp_le_one (s : R) : exp (-s) ≤ (1 : R)",
+                "axiom exp_damp_le_one (s : R) (hs : (0 : R) ≤ s) : exp (-s) ≤ (1 : R)",
                 "axiom inv_damp_le_one (s : R) : inv_damp s ≤ (1 : R)",
                 "axiom neg_neg (x : R) : -(-x) = x",
                 "axiom abs_le_self (x : R) : |x| ≤ |x|",
@@ -630,23 +717,54 @@ class LeanUniversalBridge:
 
         # Standalone Core Lean 4 path (zero external dependencies, fully checked by `lean` binary)
         if use_core:
-            # Check for refutations (Strict falsification trap checking)
-            if kind == InvariantKind.CONSERVATION_LAW and any(k in full_meta for k in ("leak", "dissipat", "exp(-0.1", "exp(-0.2", "exp(-1")):
-                return (
-                    "(x : Nat) : x = x + 1",
-                    "by sorry -- FALSIFIED: Dissipative energy leak detected in declared conservative invariant",
-                    False,
-                    "conservation_violation",
-                    "Conservation refutation: dissipation detected",
-                )
-            elif kind == InvariantKind.ASYMPTOTIC_LIMIT and any(k in full_meta for k in ("cubic", "runaway")):
-                return (
-                    "(x : Nat) : x = x + 1",
-                    "by sorry -- FALSIFIED: Unbounded degree >= 3 runaway violates saturation bound",
-                    False,
-                    "polynomial_runaway",
-                    "Runaway polynomial fails boundedness",
-                )
+            # Refutation stage, derived from the candidate AST rather than from
+            # benchmark strings: an exp(-c*s) decay with ANY positive c invalidates
+            # a declared conservation law, and a polynomial of total degree >= 3 is
+            # an unbounded runaway. The former string triggers ("leak",
+            # "dissipat", "exp(-0.1"...) were test-case rigging: specific rates
+            # (e.g. exp(-0.05*t), exp(-0.3*t)) bypassed them and reached P2 via an
+            # unrelated tautology.
+            if kind == InvariantKind.CONSERVATION_LAW:
+                ast_ref = sym_expr if sym_expr is not None else _liberal_parse_formula(formula)
+                if ast_ref is None:
+                    # Fail closed: no proof may be emitted for an unparseable claim.
+                    return (
+                        "(x : R) : x = x",
+                        "by sorry -- UNPROVEN: candidate AST unparseable; no axiomatic proof may be emitted without it",
+                        False,
+                        "ast_parse_unavailable",
+                        "Fail-closed: conservation verification requires a parseable candidate AST",
+                    )
+                damping = _ast_detect_damping_factor(ast_ref)
+                if damping is not None:
+                    return (
+                        "(x : Nat) : x = x + 1",
+                        f"by sorry -- FALSIFIED: AST-derived dissipation: damping factor {damping} in declared conservative invariant",
+                        False,
+                        "conservation_violation",
+                        f"Conservation refutation: AST-derived damping factor {damping}",
+                    )
+            elif kind == InvariantKind.ASYMPTOTIC_LIMIT:
+                ast_ref2 = sym_expr if sym_expr is not None else _liberal_parse_formula(formula)
+                if ast_ref2 is None:
+                    # Fail closed: no boundedness proof may be emitted for an
+                    # unparseable claim.
+                    return (
+                        "(x : R) : x = x",
+                        "by sorry -- UNPROVEN: candidate AST unparseable; no axiomatic proof may be emitted without it",
+                        False,
+                        "ast_parse_unavailable",
+                        "Fail-closed: boundedness verification requires a parseable candidate AST",
+                    )
+                degree = _ast_polynomial_total_degree(ast_ref2)
+                if degree is not None and degree >= 3:
+                    return (
+                        "(x : Nat) : x = x + 1",
+                        f"by sorry -- FALSIFIED: Unbounded polynomial of total degree {degree} (>= 3) violates saturation bound",
+                        False,
+                        "polynomial_runaway",
+                        "Runaway polynomial fails boundedness (AST-derived)",
+                    )
 
             # Discrete integer invariants (e.g. PHYS-CORE-CONSERVATIVE)
             if any(k in invariant.name for k in ("discrete_algebraic", "flux_balance")):
@@ -686,9 +804,13 @@ class LeanUniversalBridge:
                     proof = "by exact mul_le_self_of_le_one (|v|) (inv_damp s) (inv_damp_le_one s) hpos"
                     return stmt, proof, True, "axiomatic_damping_bound", "Damping contraction bound verified via axiomatic deduction"
                 elif any(k in full_meta for k in ("squeeze", "exp_damp")):
-                    stmt = "(c s : R) (hpos : (0 : R) ≤ |c|) : |c| * exp (-s) ≤ |c|"
-                    proof = "by exact mul_le_self_of_le_one (|c|) (exp (-s)) (exp_damp_le_one s) hpos"
-                    return stmt, proof, True, "axiomatic_exp_damp_bound", "Exponential squeeze damping bound verified via axiomatic deduction"
+                    # Finding 12 fix: exp(-s) > 1 for s < 0, so the decay bound
+                    # is only true in-damped-regime. The axiom and the
+                    # synthesized theorem both carry the non-negativity
+                    # hypothesis on s instead of asserting a false universal.
+                    stmt = "(c s : R) (hpos : (0 : R) ≤ |c|) (hs : (0 : R) ≤ s) : |c| * exp (-s) ≤ |c|"
+                    proof = "by exact mul_le_self_of_le_one (|c|) (exp (-s)) (exp_damp_le_one s hs) hpos"
+                    return stmt, proof, True, "axiomatic_exp_damp_bound", "Exponential squeeze damping bound verified via axiomatic deduction (damped regime s >= 0)"
                 elif any(k in full_meta for k in ("rank", "certainty", "entropy", "gate")):
                     return "(x : Nat) : x ≤ x + 1", "by omega", True, "lean_core_omega", "Bounded interval verified"
                 else:

@@ -1,0 +1,1085 @@
+{
+  "prereg_id": "PREREG-RIME-SCOPE-MV-2026-10-17",
+  "generated_at": "2026-10-17T17:44:44.192588+00:00",
+  "provenance": {
+    "git_head": "363e8dfffd6516386cbe809763f8509765d8b3a8",
+    "python": "3.12.3",
+    "numpy": "2.5.3",
+    "pandas": "2.3.3"
+  },
+  "protocol": {
+    "seeds": [
+      700,
+      701,
+      702
+    ],
+    "rows": {
+      "dev": "0:400",
+      "hold": "400:600"
+    },
+    "n": 600,
+    "noise": 0.05,
+    "feature_cols": [
+      "x1_l1",
+      "x2_l1",
+      "x3_l1",
+      "x3_l2"
+    ],
+    "house_config": {
+      "target_col": "target",
+      "budget": 200,
+      "max_depth": 2,
+      "additive_terms": 2,
+      "max_seeds": 120,
+      "lagged_products": true,
+      "gamma": 1.0
+    },
+    "frame_rule": "RandomState(seed): x1,x2,x3 ~ randn(602), noise ~ 0.05*randn(600); aligned columns a=x1[1:-1], b=x2[1:-1], c=x3[1:-1], d=x3[:-2]; y = law(a,b,c,d) + noise; null target: RandomState(seed+777) * 0.05, independent",
+    "g2_cells": [
+      "d2_C1000_uniform_1x_k2",
+      "d3_C100_uniform_1x_k3",
+      "d6_C1e12_log_1x_k6",
+      "d2_C1000_log_1x_k2"
+    ],
+    "adjudication": {
+      "bootstrap": true,
+      "n_boot": 1000,
+      "bootstrap_seed": 7
+    }
+  },
+  "cells": [
+    {
+      "cell": "control",
+      "seed": 700,
+      "kind": "mv",
+      "wall_ms": 15.3,
+      "n_props": 5,
+      "formula": "+1 * (((2.998330 * x3_l2) + (2.000092 * (x1_l1 * x2_l1)))) +10.0019",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l2"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.9997589744286781,
+      "hold_r2": 0.9998281985394648,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.0025999484597575588,
+          "holdout_rmse": 0.050054662219821563
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 1.6029115740719857,
+          "holdout_rmse": 1.2871104620299603
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.002384370239824945,
+          "holdout_rmse": 0.04769293866833172
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "rival candidates including probe_mv_periodic_quadratic within \u03c4 (\u0394=0.00238 \u2264 \u03c4=0.547 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion",
+            "tau_epi": 0.5467560055643228
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "unique_support",
+            "verdict": "separated",
+            "reason": "rival probe_mv_abs_linear2 separated by \u0394=1.24 > \u03c4=0.547 [holdout-scale] and confirmed by the paired block bootstrap (branch 'confirm')",
+            "tau_epi": 0.5467560055643228
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "rival candidates including probe_mv_am_product within \u03c4 (\u0394=1.69e-05 \u2264 \u03c4=0.547 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion",
+            "tau_epi": 0.5467560055643228
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rival candidates including probe_mv_periodic_quadratic within \u03c4 (\u0394=0.00238 \u2264 \u03c4=0.547 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion | probe_mv_am_product: rival candidates including probe_mv_am_product within \u03c4 (\u0394=1.69e-05 \u2264 \u03c4=0.547 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion"
+      }
+    },
+    {
+      "cell": "w1_sin_interaction",
+      "seed": 700,
+      "kind": "mv",
+      "wall_ms": 5.8,
+      "n_props": 5,
+      "formula": "+1 * (((3.783319 * tanh((x1_l1 * x2_l1))) + (1.458584 * x3_l1))) +1.99416",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.915152479199159,
+      "hold_r2": 0.9268749536415297,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.0023977148614877804,
+          "holdout_rmse": 0.047805172074822676
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 2.4015724415947703,
+          "holdout_rmse": 1.602741764504567
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.9188144094655069,
+          "holdout_rmse": 1.1282635892748076
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.632 > \u03c4=0.17) does not survive the paired block bootstrap favors the rival (CI [-0.897, -0.146] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.16981152657670473
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "unique_support",
+            "verdict": "separated",
+            "reason": "rival probe_mv_abs_linear2 separated by \u0394=0.922 > \u03c4=0.17 [holdout-scale] and confirmed by the paired block bootstrap (branch 'confirm')",
+            "tau_epi": 0.16981152657670473
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "unique_support",
+            "verdict": "separated",
+            "reason": "rival probe_mv_am_product separated by \u0394=0.448 > \u03c4=0.17 [holdout-scale] and confirmed by the paired block bootstrap (branch 'confirm')",
+            "tau_epi": 0.16981152657670473
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: point margin over emitted_list_top (\u0394=0.632 > \u03c4=0.17) does not survive the paired block bootstrap favors the rival (CI [-0.897, -0.146] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)"
+      }
+    },
+    {
+      "cell": "w2_max_switch",
+      "seed": 700,
+      "kind": "mv",
+      "wall_ms": 12.3,
+      "n_props": 5,
+      "formula": "+1 * (((1.264240 * (x1_l1 + x3_l1)) + (1.026957 * x2_l1))) +1.0752",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.8235198189693249,
+      "hold_r2": 0.8439066527391585,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.2524174409386964,
+          "holdout_rmse": 0.45413278994639245
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 0.0024170432006449818,
+          "holdout_rmse": 0.04769521467848951
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.32168133683644884,
+          "holdout_rmse": 0.6296248244742584
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.418 > \u03c4=0.126) does not survive the paired block bootstrap favors the rival (CI [-0.698, -0.395] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.12568114220720308
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.824 > \u03c4=0.126) does not survive the paired block bootstrap favors the rival (CI [-0.903, -0.618] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.12568114220720308
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.242 > \u03c4=0.126) does not survive the paired block bootstrap favors the rival (CI [-0.517, -0.199] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.12568114220720308
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: point margin over emitted_list_top (\u0394=0.418 > \u03c4=0.126) does not survive the paired block bootstrap favors the rival (CI [-0.698, -0.395] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope) | probe_mv_abs_linear2: point margin over emitted_list_top (\u0394=0.824 > \u03c4=0.126) does not survive the paired block bootstrap favors the rival (CI [-0.903, -0.618] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope) | probe_mv_am_product: point margin over emitted_list_top (\u0394=0.242 > \u03c4=0.126) does not survive the paired block bootstrap favors the rival (CI [-0.517, -0.199] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)"
+      }
+    },
+    {
+      "cell": "w3_am_product",
+      "seed": 700,
+      "kind": "mv",
+      "wall_ms": 4.7,
+      "n_props": 2,
+      "formula": "+1.15382 * (tanh((x1_l1 * x3_l1))) +2.02649",
+      "inputs_used": [
+        "x1_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.7183647459560936,
+      "hold_r2": 0.7820536276607706,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.10805814498892516,
+          "holdout_rmse": 0.3663163835532398
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 0.29294540853696593,
+          "holdout_rmse": 0.6372462922033326
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.002418394869049616,
+          "holdout_rmse": 0.04753923207458675
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "rival candidates including probe_mv_periodic_quadratic within \u03c4 (\u0394=0.0351 \u2264 \u03c4=0.105 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion",
+            "tau_epi": 0.1047701922167901
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "unique_support",
+            "verdict": "separated",
+            "reason": "rival probe_mv_abs_linear2 separated by \u0394=0.306 > \u03c4=0.105 [holdout-scale] and confirmed by the paired block bootstrap (branch 'confirm')",
+            "tau_epi": 0.1047701922167901
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.284 > \u03c4=0.105) does not survive the paired block bootstrap favors the rival (CI [-0.169, -0.0585] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.1047701922167901
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rival candidates including probe_mv_periodic_quadratic within \u03c4 (\u0394=0.0351 \u2264 \u03c4=0.105 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion | probe_mv_am_product: point margin over emitted_list_top (\u0394=0.284 > \u03c4=0.105) does not survive the paired block bootstrap favors the rival (CI [-0.169, -0.0585] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)"
+      }
+    },
+    {
+      "cell": "null_noise",
+      "seed": 700,
+      "kind": "g3",
+      "wall_ms": 3.3,
+      "n_props": 0,
+      "classification": "ABSTAINED",
+      "adjudication": null
+    },
+    {
+      "cell": "g2_d2_C1000_uniform_1x_k2",
+      "seed": 700,
+      "kind": "g2_mv_p1",
+      "formula": "1000.37 * p**2",
+      "status": "undefined_no_probe_buildable",
+      "undefined_reason": "no multivariate probe family could be built on this frame; adjudication is undefined",
+      "probe_families": [],
+      "adjudication": null
+    },
+    {
+      "cell": "g2_d3_C100_uniform_1x_k3",
+      "seed": 700,
+      "kind": "g2_mv_p1",
+      "formula": "100.044 * p**3",
+      "status": "undefined_no_probe_buildable",
+      "undefined_reason": "no multivariate probe family could be built on this frame; adjudication is undefined",
+      "probe_families": [],
+      "adjudication": null
+    },
+    {
+      "cell": "g2_d6_C1e12_log_1x_k6",
+      "seed": 700,
+      "kind": "g2_mv_p1",
+      "formula": "1.00059e+12 * p**6",
+      "status": "undefined_no_probe_buildable",
+      "undefined_reason": "no multivariate probe family could be built on this frame; adjudication is undefined",
+      "probe_families": [],
+      "adjudication": null
+    },
+    {
+      "cell": "g2_d2_C1000_log_1x_k2",
+      "seed": 700,
+      "kind": "g2_mv_p1",
+      "formula": "1000.41 * p**2",
+      "status": "undefined_no_probe_buildable",
+      "undefined_reason": "no multivariate probe family could be built on this frame; adjudication is undefined",
+      "probe_families": [],
+      "adjudication": null
+    },
+    {
+      "cell": "control",
+      "seed": 701,
+      "kind": "mv",
+      "wall_ms": 6.0,
+      "n_props": 5,
+      "formula": "+1 * (((2.998485 * x3_l2) + (2.000998 * (x1_l1 * x2_l1)))) +9.99784",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l2"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.9998212402473052,
+      "hold_r2": 0.999837350981831,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.006584395848531972,
+          "holdout_rmse": 0.06126376130128798
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 2.503689847350865,
+          "holdout_rmse": 1.5030910199189802
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.0024194887804395077,
+          "holdout_rmse": 0.04832761048360406
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "rival candidates including probe_mv_periodic_quadratic within \u03c4 (\u0394=0.0149 \u2264 \u03c4=0.536 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion",
+            "tau_epi": 0.5359255157220544
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "unique_support",
+            "verdict": "separated",
+            "reason": "rival probe_mv_abs_linear2 separated by \u0394=1.46 > \u03c4=0.536 [holdout-scale] and confirmed by the paired block bootstrap (branch 'confirm')",
+            "tau_epi": 0.5359255157220544
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "rival candidates including probe_mv_am_product within \u03c4 (\u0394=0.00192 \u2264 \u03c4=0.536 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion",
+            "tau_epi": 0.5359255157220544
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rival candidates including probe_mv_periodic_quadratic within \u03c4 (\u0394=0.0149 \u2264 \u03c4=0.536 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion | probe_mv_am_product: rival candidates including probe_mv_am_product within \u03c4 (\u0394=0.00192 \u2264 \u03c4=0.536 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion"
+      }
+    },
+    {
+      "cell": "w1_sin_interaction",
+      "seed": 701,
+      "kind": "mv",
+      "wall_ms": 11.4,
+      "n_props": 5,
+      "formula": "+1 * (((3.709675 * tanh((x1_l1 * x2_l1))) + (1.563663 * x3_l1))) +2.05352",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.9238651885766802,
+      "hold_r2": 0.8863959786652277,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.002340850989013855,
+          "holdout_rmse": 0.04751823255843813
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 2.4493265052187,
+          "holdout_rmse": 1.8062916918141567
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 1.0221750675489902,
+          "holdout_rmse": 1.4145110054076073
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.84 > \u03c4=0.166) does not survive the paired block bootstrap favors the rival (CI [-1.43, -0.233] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.16580521220799005
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "unique_support",
+            "verdict": "separated",
+            "reason": "rival probe_mv_abs_linear2 separated by \u0394=0.919 > \u03c4=0.166 [holdout-scale] and confirmed by the paired block bootstrap (branch 'confirm')",
+            "tau_epi": 0.16580521220799005
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "unique_support",
+            "verdict": "separated",
+            "reason": "rival probe_mv_am_product separated by \u0394=0.527 > \u03c4=0.166 [holdout-scale] and confirmed by the paired block bootstrap (branch 'confirm')",
+            "tau_epi": 0.16580521220799005
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: point margin over emitted_list_top (\u0394=0.84 > \u03c4=0.166) does not survive the paired block bootstrap favors the rival (CI [-1.43, -0.233] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)"
+      }
+    },
+    {
+      "cell": "w2_max_switch",
+      "seed": 701,
+      "kind": "mv",
+      "wall_ms": 5.4,
+      "n_props": 5,
+      "formula": "+1 * (((0.833614 * (x1_l1 + x3_l1)) + (0.803217 * (x2_l1 + x3_l1)))) +1.12867",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.8325886945282499,
+      "hold_r2": 0.8407666572438592,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.31954778064817835,
+          "holdout_rmse": 0.5285144302973673
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 0.002342983975411071,
+          "holdout_rmse": 0.047541335007635105
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.3979932273900213,
+          "holdout_rmse": 0.650784535246326
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.364 > \u03c4=0.128) does not survive the paired block bootstrap favors the rival (CI [-0.7, -0.355] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.12782076794602285
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.845 > \u03c4=0.128) does not survive the paired block bootstrap favors the rival (CI [-0.965, -0.649] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.12782076794602285
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.242 > \u03c4=0.128) does not survive the paired block bootstrap favors the rival (CI [-0.516, -0.242] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.12782076794602285
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: point margin over emitted_list_top (\u0394=0.364 > \u03c4=0.128) does not survive the paired block bootstrap favors the rival (CI [-0.7, -0.355] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope) | probe_mv_abs_linear2: point margin over emitted_list_top (\u0394=0.845 > \u03c4=0.128) does not survive the paired block bootstrap favors the rival (CI [-0.965, -0.649] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope) | probe_mv_am_product: point margin over emitted_list_top (\u0394=0.242 > \u03c4=0.128) does not survive the paired block bootstrap favors the rival (CI [-0.516, -0.242] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)"
+      }
+    },
+    {
+      "cell": "w3_am_product",
+      "seed": 701,
+      "kind": "mv",
+      "wall_ms": 9.0,
+      "n_props": 2,
+      "formula": "+1.10026 * (tanh((x1_l1 * x3_l1))) +1.96151",
+      "inputs_used": [
+        "x1_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.6857235574976139,
+      "hold_r2": 0.6726771781433485,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.19865550435629095,
+          "holdout_rmse": 0.38650556197740304
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 0.3332558834881712,
+          "holdout_rmse": 0.692814074867848
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.0023371265989968358,
+          "holdout_rmse": 0.04780268377792324
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "rival candidates including emitted_list_top within \u03c4 (\u0394=0.0563 \u2264 \u03c4=0.108 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion",
+            "tau_epi": 0.10789257341121804
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "unique_support",
+            "verdict": "separated",
+            "reason": "rival probe_mv_abs_linear2 separated by \u0394=0.25 > \u03c4=0.108 [holdout-scale] and confirmed by the paired block bootstrap (branch 'confirm')",
+            "tau_epi": 0.10789257341121804
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.395 > \u03c4=0.108) does not survive the paired block bootstrap favors the rival (CI [-0.324, -0.0947] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.10789257341121804
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rival candidates including emitted_list_top within \u03c4 (\u0394=0.0563 \u2264 \u03c4=0.108 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion | probe_mv_am_product: point margin over emitted_list_top (\u0394=0.395 > \u03c4=0.108) does not survive the paired block bootstrap favors the rival (CI [-0.324, -0.0947] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)"
+      }
+    },
+    {
+      "cell": "null_noise",
+      "seed": 701,
+      "kind": "g3",
+      "wall_ms": 3.3,
+      "n_props": 0,
+      "classification": "ABSTAINED",
+      "adjudication": null
+    },
+    {
+      "cell": "g2_d2_C1000_uniform_1x_k2",
+      "seed": 701,
+      "kind": "g2_mv_p1",
+      "formula": "999.786 * p**2",
+      "status": "undefined_no_probe_buildable",
+      "undefined_reason": "no multivariate probe family could be built on this frame; adjudication is undefined",
+      "probe_families": [],
+      "adjudication": null
+    },
+    {
+      "cell": "g2_d3_C100_uniform_1x_k3",
+      "seed": 701,
+      "kind": "g2_mv_p1",
+      "formula": "99.9703 * p**3",
+      "status": "undefined_no_probe_buildable",
+      "undefined_reason": "no multivariate probe family could be built on this frame; adjudication is undefined",
+      "probe_families": [],
+      "adjudication": null
+    },
+    {
+      "cell": "g2_d6_C1e12_log_1x_k6",
+      "seed": 701,
+      "kind": "g2_mv_p1",
+      "formula": "9.99494e+11 * p**6",
+      "status": "undefined_no_probe_buildable",
+      "undefined_reason": "no multivariate probe family could be built on this frame; adjudication is undefined",
+      "probe_families": [],
+      "adjudication": null
+    },
+    {
+      "cell": "g2_d2_C1000_log_1x_k2",
+      "seed": 701,
+      "kind": "g2_mv_p1",
+      "formula": "999.721 * p**2",
+      "status": "undefined_no_probe_buildable",
+      "undefined_reason": "no multivariate probe family could be built on this frame; adjudication is undefined",
+      "probe_families": [],
+      "adjudication": null
+    },
+    {
+      "cell": "control",
+      "seed": 702,
+      "kind": "mv",
+      "wall_ms": 5.0,
+      "n_props": 5,
+      "formula": "+1 * (((3.001623 * x3_l2) + (1.997441 * (x1_l1 * x2_l1)))) +10.0006",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l2"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.9998242669839539,
+      "hold_r2": 0.9998535849185785,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.004036741266329694,
+          "holdout_rmse": 0.061602226910703925
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 1.9285203862454374,
+          "holdout_rmse": 1.5343808799893794
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.002397952732854706,
+          "holdout_rmse": 0.05083561835273144
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "rival candidates including probe_mv_periodic_quadratic within \u03c4 (\u0394=0.0133 \u2264 \u03c4=0.566 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion",
+            "tau_epi": 0.5661167189647871
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "unique_support",
+            "verdict": "separated",
+            "reason": "rival probe_mv_abs_linear2 separated by \u0394=1.49 > \u03c4=0.566 [holdout-scale] and confirmed by the paired block bootstrap (branch 'confirm')",
+            "tau_epi": 0.5661167189647871
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "rival candidates including probe_mv_am_product within \u03c4 (\u0394=0.00254 \u2264 \u03c4=0.566 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion",
+            "tau_epi": 0.5661167189647871
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rival candidates including probe_mv_periodic_quadratic within \u03c4 (\u0394=0.0133 \u2264 \u03c4=0.566 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion | probe_mv_am_product: rival candidates including probe_mv_am_product within \u03c4 (\u0394=0.00254 \u2264 \u03c4=0.566 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion"
+      }
+    },
+    {
+      "cell": "w1_sin_interaction",
+      "seed": 702,
+      "kind": "mv",
+      "wall_ms": 8.2,
+      "n_props": 5,
+      "formula": "+1 * (((3.703496 * tanh((x1_l1 * x2_l1))) + (1.505793 * x3_l1))) +2.0365",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.8957517489893833,
+      "hold_r2": 0.8420700751861512,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.0023116890596868527,
+          "holdout_rmse": 0.04958205196601631
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 2.6520345270938765,
+          "holdout_rmse": 1.9719247220934024
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 1.2073687371893163,
+          "holdout_rmse": 1.5068472235921397
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=1 > \u03c4=0.173) does not survive the paired block bootstrap favors the rival (CI [-1.8, -0.529] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.17271488830489812
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "unique_support",
+            "verdict": "separated",
+            "reason": "rival probe_mv_abs_linear2 separated by \u0394=0.918 > \u03c4=0.173 [holdout-scale] and confirmed by the paired block bootstrap (branch 'confirm')",
+            "tau_epi": 0.17271488830489812
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "unique_support",
+            "verdict": "separated",
+            "reason": "rival probe_mv_am_product separated by \u0394=0.453 > \u03c4=0.173 [holdout-scale] and confirmed by the paired block bootstrap (branch 'confirm')",
+            "tau_epi": 0.17271488830489812
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: point margin over emitted_list_top (\u0394=1 > \u03c4=0.173) does not survive the paired block bootstrap favors the rival (CI [-1.8, -0.529] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)"
+      }
+    },
+    {
+      "cell": "w2_max_switch",
+      "seed": 702,
+      "kind": "mv",
+      "wall_ms": 9.4,
+      "n_props": 5,
+      "formula": "+1 * (((1.255153 * (x1_l1 + x3_l1)) + (0.978702 * x2_l1))) +1.06612",
+      "inputs_used": [
+        "x1_l1",
+        "x2_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.8419668122226227,
+      "hold_r2": 0.8288972410090859,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.287248981526443,
+          "holdout_rmse": 0.6004306230834789
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 0.002325239551410784,
+          "holdout_rmse": 0.0495176611436773
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.39340276523502055,
+          "holdout_rmse": 0.6953066539441262
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.333 > \u03c4=0.127) does not survive the paired block bootstrap favors the rival (CI [-0.668, -0.348] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.12693509694811797
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.883 > \u03c4=0.127) does not survive the paired block bootstrap favors the rival (CI [-1.01, -0.723] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.12693509694811797
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.238 > \u03c4=0.127) does not survive the paired block bootstrap favors the rival (CI [-0.541, -0.2] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.12693509694811797
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: point margin over emitted_list_top (\u0394=0.333 > \u03c4=0.127) does not survive the paired block bootstrap favors the rival (CI [-0.668, -0.348] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope) | probe_mv_abs_linear2: point margin over emitted_list_top (\u0394=0.883 > \u03c4=0.127) does not survive the paired block bootstrap favors the rival (CI [-1.01, -0.723] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope) | probe_mv_am_product: point margin over emitted_list_top (\u0394=0.238 > \u03c4=0.127) does not survive the paired block bootstrap favors the rival (CI [-0.541, -0.2] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)"
+      }
+    },
+    {
+      "cell": "w3_am_product",
+      "seed": 702,
+      "kind": "mv",
+      "wall_ms": 5.2,
+      "n_props": 5,
+      "formula": "+1.0633 * (tanh((x1_l1 * x3_l1))) +1.97843",
+      "inputs_used": [
+        "x1_l1",
+        "x3_l1"
+      ],
+      "identifiability_status": "UNIQUE_WINNER",
+      "dev_r2": 0.6660639197293221,
+      "hold_r2": 0.5635814843099267,
+      "probe_families": [
+        "probe_mv_periodic_quadratic",
+        "probe_mv_abs_linear2",
+        "probe_mv_am_product"
+      ],
+      "probe_fits": [
+        {
+          "probe": "probe_mv_periodic_quadratic",
+          "train_loss": 0.13599226960905203,
+          "holdout_rmse": 0.4248793070911843
+        },
+        {
+          "probe": "probe_mv_abs_linear2",
+          "train_loss": 0.2869629911204874,
+          "holdout_rmse": 0.7020567866177914
+        },
+        {
+          "probe": "probe_mv_am_product",
+          "train_loss": 0.0023252363219400094,
+          "holdout_rmse": 0.04944315750835198
+        }
+      ],
+      "adjudication": {
+        "scope_verdict": "declined",
+        "emitted_id": "emitted_list_top",
+        "probes": [
+          {
+            "probe": "probe_mv_periodic_quadratic",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "rival candidates including emitted_list_top within \u03c4 (\u0394=0.0637 \u2264 \u03c4=0.103 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion",
+            "tau_epi": 0.10268370117036062
+          },
+          {
+            "probe": "probe_mv_abs_linear2",
+            "status": "unique_support",
+            "verdict": "separated",
+            "reason": "rival probe_mv_abs_linear2 separated by \u0394=0.213 > \u03c4=0.103 [holdout-scale] and confirmed by the paired block bootstrap (branch 'confirm')",
+            "tau_epi": 0.10268370117036062
+          },
+          {
+            "probe": "probe_mv_am_product",
+            "status": "multi_hypothesis",
+            "verdict": "declined",
+            "reason": "point margin over emitted_list_top (\u0394=0.439 > \u03c4=0.103) does not survive the paired block bootstrap favors the rival (CI [-0.324, -0.157] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)",
+            "tau_epi": 0.10268370117036062
+          }
+        ],
+        "reason": "scope emission declined by referee; probe_mv_periodic_quadratic: rival candidates including emitted_list_top within \u03c4 (\u0394=0.0637 \u2264 \u03c4=0.103 [holdout-scale]); observationally indistinguishable under prespecified APEDP resolution criterion; APEDP abstains from unique promotion | probe_mv_am_product: point margin over emitted_list_top (\u0394=0.439 > \u03c4=0.103) does not survive the paired block bootstrap favors the rival (CI [-0.324, -0.157] entirely below 0); promoting the point-winner would contradict the resampled evidence (rank revision is out of scope)"
+      }
+    },
+    {
+      "cell": "null_noise",
+      "seed": 702,
+      "kind": "g3",
+      "wall_ms": 2.8,
+      "n_props": 0,
+      "classification": "ABSTAINED",
+      "adjudication": null
+    },
+    {
+      "cell": "g2_d2_C1000_uniform_1x_k2",
+      "seed": 702,
+      "kind": "g2_mv_p1",
+      "formula": "1000.24 * p**2",
+      "status": "undefined_no_probe_buildable",
+      "undefined_reason": "no multivariate probe family could be built on this frame; adjudication is undefined",
+      "probe_families": [],
+      "adjudication": null
+    },
+    {
+      "cell": "g2_d3_C100_uniform_1x_k3",
+      "seed": 702,
+      "kind": "g2_mv_p1",
+      "formula": "100.022 * p**3",
+      "status": "undefined_no_probe_buildable",
+      "undefined_reason": "no multivariate probe family could be built on this frame; adjudication is undefined",
+      "probe_families": [],
+      "adjudication": null
+    },
+    {
+      "cell": "g2_d6_C1e12_log_1x_k6",
+      "seed": 702,
+      "kind": "g2_mv_p1",
+      "formula": "1.00002e+12 * p**6",
+      "status": "undefined_no_probe_buildable",
+      "undefined_reason": "no multivariate probe family could be built on this frame; adjudication is undefined",
+      "probe_families": [],
+      "adjudication": null
+    },
+    {
+      "cell": "g2_d2_C1000_log_1x_k2",
+      "seed": 702,
+      "kind": "g2_mv_p1",
+      "formula": "1000.23 * p**2",
+      "status": "undefined_no_probe_buildable",
+      "undefined_reason": "no multivariate probe family could be built on this frame; adjudication is undefined",
+      "probe_families": [],
+      "adjudication": null
+    }
+  ],
+  "determinism": [
+    {
+      "cell": "control",
+      "seed": 700,
+      "digest_a": "cd1ab99bd1a3c42acca38d7e6c7dbe2a26431182c9e9515f2952d1350ad700b6",
+      "digest_b": "cd1ab99bd1a3c42acca38d7e6c7dbe2a26431182c9e9515f2952d1350ad700b6",
+      "identical": true
+    },
+    {
+      "cell": "w1_sin_interaction",
+      "seed": 700,
+      "digest_a": "6c9a3aee44eb3fa11910141ec92204a3fe0fabb83fa2ce042b7046b2bd561254",
+      "digest_b": "6c9a3aee44eb3fa11910141ec92204a3fe0fabb83fa2ce042b7046b2bd561254",
+      "identical": true
+    }
+  ],
+  "determinism_ok": true,
+  "family_set": {
+    "declared": [
+      "probe_mv_periodic_quadratic",
+      "probe_mv_abs_linear2",
+      "probe_mv_am_product"
+    ],
+    "final": [
+      "probe_mv_abs_linear2"
+    ],
+    "excluded": {
+      "probe_mv_periodic_quadratic": {
+        "guard_failures": [
+          "control",
+          "control",
+          "control"
+        ],
+        "w_declines": [
+          "w1_sin_interaction",
+          "w2_max_switch",
+          "w3_am_product",
+          "w1_sin_interaction",
+          "w2_max_switch",
+          "w3_am_product",
+          "w1_sin_interaction",
+          "w2_max_switch",
+          "w3_am_product"
+        ]
+      },
+      "probe_mv_am_product": {
+        "guard_failures": [
+          "control",
+          "control",
+          "control"
+        ],
+        "w_declines": [
+          "w2_max_switch",
+          "w3_am_product",
+          "w2_max_switch",
+          "w3_am_product",
+          "w2_max_switch",
+          "w3_am_product"
+        ]
+      }
+    }
+  },
+  "criteria": {
+    "w_all_declined_final_set": false,
+    "w_all_declined_raw": true,
+    "g1_promoted_final_set": true,
+    "g1_promoted_raw": false,
+    "g2_monomials_promoted_final_set": false,
+    "g2_monomials_promoted_raw": false,
+    "g2_cells_defined": "0/12",
+    "g3_no_promotion": true
+  },
+  "raw_w_verdicts": {
+    "w1_sin_interaction|700": "declined",
+    "w2_max_switch|700": "declined",
+    "w3_am_product|700": "declined",
+    "w1_sin_interaction|701": "declined",
+    "w2_max_switch|701": "declined",
+    "w3_am_product|701": "declined",
+    "w1_sin_interaction|702": "declined",
+    "w2_max_switch|702": "declined",
+    "w3_am_product|702": "declined"
+  },
+  "final_w_declined": {
+    "w1_sin_interaction|700": false,
+    "w2_max_switch|700": true,
+    "w3_am_product|700": false,
+    "w1_sin_interaction|701": false,
+    "w2_max_switch|701": true,
+    "w3_am_product|701": false,
+    "w1_sin_interaction|702": false,
+    "w2_max_switch|702": true,
+    "w3_am_product|702": false
+  },
+  "errors": [],
+  "pass": false,
+  "wall_s": 3.2
+}

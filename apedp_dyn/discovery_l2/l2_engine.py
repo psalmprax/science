@@ -84,8 +84,18 @@ class L2DiscoveryEngine:
         seed: int = 42,
         X_holdout: Mapping[str, np.ndarray] | None = None,
         Y_holdout: np.ndarray | None = None,
+        coefficient_synthesis: bool = False,
     ) -> L2DiscoveryResult:
-        """Execute unconstrained L2 discovery pipeline from raw data and dimensions."""
+        """Execute unconstrained L2 discovery pipeline from raw data and dimensions.
+
+        ``coefficient_synthesis`` relaxes Gate B to the repository's
+        dimensional-constant-synthesis convention (every additive term carries
+        its own fitted numeric coefficient, which may absorb the unit bridging
+        the form to the target). Structural constraints — dimensionless
+        transcendental arguments, additive dimensional coherence on bare
+        variables — remain enforced at AST construction regardless. Intended
+        for the ODE discovery path, whose target is a time derivative.
+        """
         y_arr = np.asarray(Y, dtype=float)
         n_samples = len(y_arr)
 
@@ -133,20 +143,25 @@ class L2DiscoveryEngine:
             max_complexity=self.max_complexity,
         )
 
-        # Step 2: Gate A (Algebraic Validity across train and holdout domains)
+        # Step 2: Gate A (Algebraic Validity on the DEVELOPMENT partition only)
+        #
+        # The holdout used to be filtered here as well, which let the proposer
+        # search discard candidates based on unseen data -- a direct violation
+        # of AGENTS.md §1.2 (holdout slices are consumed only by the referee on
+        # frozen candidates). Gate A is now strictly a development-side screen;
+        # holdout behaviour is adjudicated later, once, on the frozen candidate.
         gate_a_passed: list[ASTNode] = []
         for node in generated_nodes:
             ok_tr, _why_tr, _ = gate_a_algebraic_validity(node, X_tr, y_std=y_std)
-            if not ok_tr:
-                continue
-            ok_ho, _why_ho, _ = gate_a_algebraic_validity(node, X_ho, allow_constant=True)
-            if ok_ho:
+            if ok_tr:
                 gate_a_passed.append(node)
 
         # Step 3: Gate B (Physical Validity against Target LHS Dimension)
         gate_b_passed: list[ASTNode] = []
         for node in gate_a_passed:
-            ok, _why = gate_b_physical_validity(node, target_dimension)
+            ok, _why = gate_b_physical_validity(
+                node, target_dimension, coefficient_synthesis=coefficient_synthesis
+            )
             if ok:
                 gate_b_passed.append(node)
 

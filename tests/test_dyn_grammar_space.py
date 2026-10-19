@@ -38,8 +38,15 @@ def test_builders_match_established_panels():
     np.testing.assert_allclose(feats["rankV"], btc["rankV"].to_numpy(), equal_nan=True)
     np.testing.assert_allclose(feats["HA"], btc["HA"].to_numpy(), equal_nan=True)
     tgt = G.build_target(btc)
-    d5 = pd.Series(np.abs(btc["r"].to_numpy())).shift(-1).rolling(5).mean().to_numpy()
+    # Forward-only d5 target (Finding 1 fix, causal contract): the aggregate
+    # over s[t+1 .. t+5], i.e. computed by rolling first and shifting -5. The
+    # pins never accept the old backward window s.shift(-1).rolling(5), which
+    # folded s[t-3 .. t-1] -- 80% past/current data -- into the "future" target.
+    d5 = pd.Series(np.abs(btc["r"].to_numpy())).rolling(5).mean().shift(-5).to_numpy()
     np.testing.assert_allclose(tgt, d5, equal_nan=True)
+    # The trailing 5 rows must be NaN: an aligned t admits no future window.
+    assert bool(np.isnan(tgt[-5:]).all())
+    assert bool(np.isfinite(tgt[:-5]).all())
 
 
 def test_causality_warmup_nans():

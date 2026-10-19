@@ -8,6 +8,7 @@ and eliminates VRAM bottlenecks (75x - 186x compression) via 4D Tensor-Train dec
 from __future__ import annotations
 
 from jetflow_video.tensor_train import (
+    TTLinear,
     TensorTrainVideo,
     compress_video_latent_torch,
     decompress_video_latent_torch,
@@ -27,9 +28,23 @@ from jetflow_video.physics import (
     PhysicalSteeringController,
 )
 from jetflow_video.bridge import (
+    CausalConv3d,
+    CausalResBlock3D,
+    Causal3DSpatioTemporalVAE,
     ContinuousWaveletVAE,
     DiffusersVAEBridge,
     VideoVAEBridge,
+)
+from jetflow_video.depth_se3 import (
+    se3_exp_map,
+    compute_plucker_rays,
+    PluckerRayEmbedder,
+    DepthAware3DTransportEngine,
+)
+from jetflow_video.text_encoder import (
+    CompositionalTextEncoder,
+    encode_prompt_sequence,
+    extract_physical_steering_from_prompt,
 )
 from jetflow_video.model import (
     JetFlowModelConfig,
@@ -39,12 +54,14 @@ from jetflow_video.model import (
 from jetflow_video.trainer import (
     VideoDataset,
     JetFlowTrainer,
+    encode_prompt_deterministic,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
-    # Tensor-Train Compression
+    # Tensor-Train Compression & Factorized Layers
+    "TTLinear",
     "TensorTrainVideo",
     "compress_video_latent_torch",
     "decompress_video_latent_torch",
@@ -59,10 +76,23 @@ __all__ = [
     # Physics Controller
     "PhysicalSteeringConfig",
     "PhysicalSteeringController",
-    # VAE Bridge
+    # VAE Bridge & 3D Causal Spatio-Temporal VAE
+    "CausalConv3d",
+    "CausalResBlock3D",
+    "Causal3DSpatioTemporalVAE",
     "ContinuousWaveletVAE",
     "DiffusersVAEBridge",
     "VideoVAEBridge",
+    # 3D Depth & SE(3) Plücker Ray Transport
+    "se3_exp_map",
+    "compute_plucker_rays",
+    "PluckerRayEmbedder",
+    "DepthAware3DTransportEngine",
+    # Compositional Text Encoder
+    "CompositionalTextEncoder",
+    "encode_prompt_sequence",
+    "extract_physical_steering_from_prompt",
+    "encode_prompt_deterministic",
     # Core Model
     "JetFlowModelConfig",
     "JetFlowBackbone",

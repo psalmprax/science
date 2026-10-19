@@ -1,13 +1,14 @@
 """Blind adversarial benchmark protocol (Stage 4 of the validation ladder).
 
-Method rule: the referee is FROZEN (see APEDPX_FROZEN_v1.json). This runner
+Method rule: the referee is FROZEN (see APEDPX_FROZEN_v1_7.json). This runner
 refuses to score if any guard file changed — edit the referee and you must
 mint a new freeze record first.
 
 Blind cases live OUTSIDE the frozen trap files and register here with hidden
 ground truth (claim warranted or not). Scoring reports blind-only metrics:
 
-  FPR_blind = promoted-but-unwarranted / all promoted      (want -> 0)
+  FPR_blind = promoted-but-unwarranted / unwarranted cases (want -> 0)
+  FDR_blind = promoted-but-unwarranted / all promoted      (want -> 0)
   CAR_blind = correct abstentions / unwarranted cases     (want -> 1)
   VRR_blind = warranted retained / all warranted          (want -> 1)
 
@@ -27,7 +28,7 @@ from typing import Any
 sys.path.insert(0, '.')
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_2.json"
+FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_7.json"
 
 
 def verify_referee() -> dict[str, str]:
@@ -83,7 +84,10 @@ class BlindCase:
 class BlindReport:
     n_blind: int = 0
     n_promoted: int = 0
+    # False-positive rate: false promotions / unwarranted (negative) blind cases.
     fpr_blind: float | None = None
+    # False-discovery rate: false promotions / all promotions.
+    fdr_blind: float | None = None
     car_blind: float | None = None
     vrr_blind: float | None = None
     # False-rejection rate: warranted cases not promoted / all warranted.
@@ -91,9 +95,10 @@ class BlindReport:
     # Coverage: blind cases reaching a decisive outcome
     # (promoted or explicitly rejected) vs abstained.
     coverage_blind: float | None = None
-    # Per-domain breakdown: domain -> {n, fpr, vrr, coverage}.
+    # Per-domain breakdown: domain -> {n, fpr, fdr, vrr, coverage}.
     by_domain: dict[str, dict[str, float]] = field(default_factory=dict)
-    # One-sided 95% upper bound when zero failures observed: 1 - 0.05**(1/n).
+    # One-sided 95% upper bound when zero false promotions observed:
+    # 1 - 0.05**(1/n) with n = number of unwarranted blind cases.
     # An observed 0/n is reported WITH this bound, never as "probability zero".
     fpr_upper95: float | None = None
     populations: dict[str, int] = field(default_factory=dict)
@@ -155,9 +160,12 @@ def score_blind(cases: list[BlindCase]) -> BlindReport:
         # Re-resolve warranted flags from registry (kept out of rows).
         by_id = {c.case_id: c.warranted for c in blind}
         fp = sum(1 for r in prom if not by_id[r["case_id"]])
-        rep.fpr_blind = (fp / len(prom)) if prom else 0.0
-        if fp == 0 and prom:
-            rep.fpr_upper95 = ci_upper95_zero_failures(len(prom))
+        # FPR denominator is the negative-class population; FDR denominator is
+        # the set of promotions. Conflating them understates the error bound.
+        rep.fpr_blind = (fp / len(unw)) if unw else None
+        rep.fdr_blind = (fp / len(prom)) if prom else None
+        if fp == 0 and unw:
+            rep.fpr_upper95 = ci_upper95_zero_failures(len(unw))
         for c in blind:
             if c.population:
                 rep.populations[c.population] = rep.populations.get(c.population, 0) + 1
@@ -180,12 +188,14 @@ def score_blind(cases: list[BlindCase]) -> BlindReport:
         for dom, ids in domains.items():
             pr = sum(1 for i in ids if by_id_row[i]["promoted"])
             fp = sum(1 for i in ids if by_id_row[i]["promoted"] and not by_id[i])
+            uw = sum(1 for i in ids if not by_id[i])
             vp = sum(1 for i in ids if by_id[i] and by_id_row[i]["promoted"])
             vw = sum(1 for i in ids if by_id[i])
             dc = sum(1 for i in ids if by_id_row[i]["promoted"] or by_id_row[i]["rejected"])
             rep.by_domain[dom] = {
                 "n": float(len(ids)),
-                "fpr": (fp / pr) if pr else 0.0,
+                "fpr": (fp / uw) if uw else 0.0,
+                "fdr": (fp / pr) if pr else 0.0,
                 "vrr": (vp / vw) if vw else 0.0,
                 "coverage": dc / len(ids),
             }

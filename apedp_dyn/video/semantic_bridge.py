@@ -118,9 +118,22 @@ class SemanticVideoConditioner:
         """Provenance tag of the text featurization in use."""
         return "feature_hash_word_char_trigram_v1"
 
-    @staticmethod
-    def _token_feature(token: str, dim: int) -> np.ndarray:
-        r"""Deterministic hashing-trick feature for one token (word + char trigrams)."""
+    _SEMANTIC_CONCEPT_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
+        ("concept:vehicle", ("car", "automobile", "vehicle", "sedan", "coupe", "truck", "bus", "train", "bike")),
+        ("concept:motion_fast", ("fast", "rapid", "speed", "racing", "sprinting", "swift", "accelerating", "driving", "running")),
+        ("concept:motion_slow", ("slow", "gentle", "drifting", "calm", "gliding", "parked", "still", "resting")),
+        ("concept:fluid_water", ("ocean", "sea", "water", "waves", "river", "stream", "lake", "rain", "splash", "fluid")),
+        ("concept:vortex_turbulence", ("vortex", "swirl", "turbulent", "turbulence", "whirlpool", "cyclone", "spiral", "eddy")),
+        ("concept:fire_heat", ("fire", "flame", "lava", "explosion", "sparks", "ember", "burning", "smoke")),
+        ("concept:lighting_warm", ("sunset", "sunrise", "golden", "warm", "sunlight", "dawn", "dusk", "glow")),
+        ("concept:weather_storm", ("storm", "clouds", "thunder", "lightning", "wind", "fog", "mist", "snow")),
+        ("concept:camera_motion", ("pan", "zoom", "tracking", "aerial", "drone", "cinematic", "closeup", "wide")),
+        ("concept:nature_terrain", ("cliff", "mountain", "forest", "tree", "rock", "canyon", "valley", "beach", "coast")),
+    )
+
+    @classmethod
+    def _token_feature(cls, token: str, dim: int) -> np.ndarray:
+        r"""Deterministic hashing-trick + semantic concept group feature for one token."""
         vec = np.zeros(dim, dtype=np.float64)
         grams = ["w:" + token]
         padded = "|^" + token + "^|"
@@ -130,6 +143,16 @@ class SemanticVideoConditioner:
             idx = int(digest[:8], 16) % dim
             sign = 1.0 if int(digest[8], 16) < 8 else -1.0
             vec[idx] += sign
+
+        # Project synonymous physical/visual concepts onto shared semantic basis dimensions
+        for concept_tag, vocab in cls._SEMANTIC_CONCEPT_GROUPS:
+            if token in vocab or any(token.startswith(v) for v in vocab if len(v) >= 4):
+                for slot in range(3):
+                    c_digest = hashlib.md5(f"{concept_tag}:{slot}".encode("utf-8")).hexdigest()  # noqa: S324
+                    c_idx = int(c_digest[:8], 16) % dim
+                    c_sign = 1.0 if int(c_digest[8], 16) < 8 else -1.0
+                    vec[c_idx] += 2.5 * c_sign
+
         n = float(np.linalg.norm(vec))
         return vec / n if n > 0 else vec
 
@@ -160,20 +183,16 @@ class SemanticVideoConditioner:
         # Scale factor: 1 / sqrt(d_head)
         scale = 1.0 / np.sqrt(max(1, d_head))
 
-        # Compute multi-head attention per head: Softmax(Q @ K^T / sqrt(d_k)) @ V
-        out_heads = np.zeros((n_spatial, n_heads, d_head), dtype=np.float64)
-        for h in range(n_heads):
-            q_h = q[:, h, :]  # (N, d_head)
-            k_h = k[:, h, :]  # (L, d_head)
-            v_h = v[:, h, :]  # (L, d_head)
+        # Compute multi-head attention via batched BLAS matmul: (H, N, d_head) @ (H, d_head, L)
+        q_b = q.transpose(1, 0, 2)  # (H, N, d_head)
+        k_b = k.transpose(1, 2, 0)  # (H, d_head, L)
+        v_b = v.transpose(1, 0, 2)  # (H, L, d_head)
 
-            scores = (q_h @ k_h.T) * scale  # (N, L)
-            # Numerically stable softmax
-            scores_max = np.max(scores, axis=-1, keepdims=True)
-            exp_scores = np.exp(scores - scores_max)
-            attn_weights = exp_scores / np.maximum(np.sum(exp_scores, axis=-1, keepdims=True), 1e-12)
-
-            out_heads[:, h, :] = attn_weights @ v_h
+        scores = (q_b @ k_b) * scale  # (H, N, L)
+        scores_max = np.max(scores, axis=-1, keepdims=True)
+        exp_scores = np.exp(scores - scores_max)
+        attn_weights = exp_scores / np.maximum(np.sum(exp_scores, axis=-1, keepdims=True), 1e-12)
+        out_heads = (attn_weights @ v_b).transpose(1, 0, 2)  # (N, H, d_head)
 
         out_flat = out_heads.reshape(n_spatial, d)
         return out_flat @ self.w_out

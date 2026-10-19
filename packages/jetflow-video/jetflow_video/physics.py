@@ -24,6 +24,9 @@ class PhysicalSteeringConfig:
     camera_tilt: float = 0.0                              # dy per second
     camera_zoom: float = 0.0                              # zoom velocity (d scale / dt)
     camera_roll: float = 0.0                              # angular velocity (rad/s)
+    camera_orbit_yaw: float = 0.0                         # 3D out-of-plane yaw rotation (rad/s)
+    camera_orbit_pitch: float = 0.0                       # 3D out-of-plane pitch rotation (rad/s)
+    camera_dolly_z: float = 0.0                           # 3D optical-axis dolly translation (dz/s)
     time_dilation: float = 1.0                            # gamma (1.0 = normal, 0.25 = slow-mo, -1.0 = reverse)
 
 
@@ -82,8 +85,9 @@ class PhysicalSteeringController:
         self,
         frame: torch.Tensor,
         t: float,
+        depth_engine: Optional[torch.nn.Module] = None,
     ) -> torch.Tensor:
-        r"""Apply continuous Lie-group SE(3) camera motion (pan, tilt, zoom, roll) using PyTorch grid_sample.
+        r"""Apply continuous Lie-group SE(3) camera motion (pan, tilt, zoom, roll, 3D orbit yaw/pitch/dolly).
 
         frame: (C, H, W) or (B, C, H, W).
         """
@@ -100,9 +104,45 @@ class PhysicalSteeringController:
         zoom = 1.0 + self.config.camera_zoom * t
         zoom = max(0.2, min(5.0, zoom))
         roll = self.config.camera_roll * t
+        yaw = self.config.camera_orbit_yaw * t
+        pitch = self.config.camera_orbit_pitch * t
+        dolly = self.config.camera_dolly_z * t
 
-        if abs(pan) < 1e-6 and abs(tilt) < 1e-6 and abs(zoom - 1.0) < 1e-6 and abs(roll) < 1e-6:
+        has_2d = abs(pan) >= 1e-6 or abs(tilt) >= 1e-6 or abs(zoom - 1.0) >= 1e-6 or abs(roll) >= 1e-6
+        has_3d = abs(yaw) >= 1e-6 or abs(pitch) >= 1e-6 or abs(dolly) >= 1e-6
+
+        if not has_2d and not has_3d:
             return frame.squeeze(0) if orig_ndim == 3 else frame
+
+        transformed = frame
+        if has_3d:
+            if depth_engine is not None and hasattr(depth_engine, "warp_frame_se3"):
+                transformed = depth_engine.warp_frame_se3(
+                    transformed,
+                    omega=(float(pitch), float(yaw), float(roll)),
+                    trans=(float(pan), float(tilt), float(-dolly)),
+                    dt=1.0,
+                )
+                return transformed.squeeze(0) if orig_ndim == 3 else transformed
+            else:
+                from jetflow_video.depth_se3 import se3_exp_map
+                omega_t = torch.tensor([[pitch, yaw, roll]], device=device, dtype=dtype)
+                trans_t = torch.tensor([[pan, tilt, -dolly]], device=device, dtype=dtype)
+                rot, t_vec = se3_exp_map(omega_t, trans_t)
+                yy = (torch.arange(h, device=device, dtype=dtype) / max(1, h - 1)) * 2.0 - 1.0
+                xx = (torch.arange(w, device=device, dtype=dtype) / max(1, w - 1)) * 2.0 - 1.0
+                gy, gx = torch.meshgrid(yy, xx, indexing="ij")
+                # Radial pseudo-depth profile (foreground object closer at center)
+                pseudo_z = 1.0 + 0.35 * (gx * gx + gy * gy)
+                f = 1.5
+                pts = torch.stack([gx * pseudo_z / f, gy * pseudo_z / f, pseudo_z], dim=0).reshape(1, 3, h * w)
+                pts_src = torch.bmm(rot.transpose(-1, -2), pts - t_vec.unsqueeze(-1)).reshape(1, 3, h, w)
+                zs = torch.clamp(pts_src[:, 2], min=0.2)
+                us = (f * pts_src[:, 0] / zs) / zoom
+                vs = (f * pts_src[:, 1] / zs) / zoom
+                grid_3d = torch.stack([us, vs], dim=-1).expand(b, h, w, 2)
+                transformed = F.grid_sample(transformed, grid_3d, mode="bilinear", padding_mode="border", align_corners=False)
+                return transformed.squeeze(0) if orig_ndim == 3 else transformed
 
         cos_t = math.cos(roll)
         sin_t = math.sin(roll)
@@ -122,8 +162,8 @@ class PhysicalSteeringController:
             dtype=dtype,
         ).repeat(b, 1, 1)
 
-        grid = F.affine_grid(theta, frame.size(), align_corners=False)
-        transformed = F.grid_sample(frame, grid, mode="bilinear", padding_mode="border", align_corners=False)
+        grid = F.affine_grid(theta, transformed.size(), align_corners=False)
+        transformed = F.grid_sample(transformed, grid, mode="bilinear", padding_mode="border", align_corners=False)
 
         return transformed.squeeze(0) if orig_ndim == 3 else transformed
 
@@ -133,10 +173,11 @@ class PhysicalSteeringController:
         z_current: torch.Tensor,
         t: float,
         dt: float,
+        depth_engine: Optional[torch.nn.Module] = None,
     ) -> torch.Tensor:
-        r"""Combine base generative flow velocity with physical convective and dissipative terms.
+        r"""Combine base generative flow velocity with physical convective, dissipative, and 3D SE(3) terms.
 
-        v_steered = gamma * v_base - (c \cdot \nabla) z + nu * \nabla^2 z
+        v_steered = gamma * v_base - (c \cdot \nabla) z + nu * \nabla^2 z + v_3d_se3
         """
         gamma = self.config.time_dilation
         v_steered = gamma * base_velocity
@@ -154,5 +195,19 @@ class PhysicalSteeringController:
             d2y = torch.roll(z_current, -1, dims=-2) - 2.0 * z_current + torch.roll(z_current, 1, dims=-2)
             dissipative_velocity = nu * (d2x + d2y)
             v_steered = v_steered + dissipative_velocity
+
+        if depth_engine is not None and hasattr(depth_engine, "compute_3d_velocity_correction"):
+            has_3d = (
+                abs(self.config.camera_orbit_yaw) > 1e-6
+                or abs(self.config.camera_orbit_pitch) > 1e-6
+                or abs(self.config.camera_dolly_z) > 1e-6
+            )
+            if has_3d:
+                v_3d = depth_engine.compute_3d_velocity_correction(
+                    z_current,
+                    omega=(self.config.camera_orbit_pitch, self.config.camera_orbit_yaw, self.config.camera_roll),
+                    trans=(self.config.camera_pan, self.config.camera_tilt, -self.config.camera_dolly_z),
+                )
+                v_steered = v_steered + v_3d
 
         return v_steered

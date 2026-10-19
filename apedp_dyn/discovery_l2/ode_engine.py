@@ -91,16 +91,22 @@ class L2ODEDiscoveryEngine:
         x_dot = estimate_time_derivative(t, x_target, method=derivative_method)
 
         # Target dimension: if caller supplied target_dimension, use it.
-        # Otherwise: if state is dimensionless, autonomous RHS is dimensionless;
-        # if state has dimensions, target is [target_state] / [T].
+        # Otherwise the target is always [target_state] / [T]: the rate of change
+        # of a quantity carries that quantity's dimension per unit time, whether
+        # or not the quantity itself is dimensionless. An angle, strain, or
+        # log-price x has dx/dt of dimension [T^-1] (e.g. x-dot = -gamma*x), so
+        # declaring a dimensionless target screened out every valid physical
+        # rate equation for dimensionless states.
         if target_dimension is not None:
             target_dim = target_dimension
-        elif state_dimensions[target_state].is_dimensionless():
-            target_dim = BaseDimension()
         else:
             target_dim = state_dimensions[target_state] / BaseDimension(t=1)
 
-        # Run unconstrained L2 discovery
+        # Run unconstrained L2 discovery. coefficient_synthesis applies the
+        # repo's dimensional-constant-synthesis convention: the fitted per-term
+        # numeric coefficients carry the units bridging RHS forms such as
+        # theta_1 * x**2 to the rate target [target_state]/[T], including the
+        # [T^-1] target of a dimensionless state's time derivative.
         l2_res = self.engine.discover(
             X=trajectories,
             t=t,
@@ -111,6 +117,7 @@ class L2ODEDiscoveryEngine:
             data_origin=data_origin,
             bootstrap=bootstrap,
             seed=seed,
+            coefficient_synthesis=True,
         )
 
         inferred_eq = f"d({target_state})/dt = [NO PROMOTED EQUATION]"

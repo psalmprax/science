@@ -296,7 +296,12 @@ class SparrowFaultToleranceReferee:
         ratio_blinking = th.blinking_ratio_threshold / max(1e-15, s.blinking_pa_pd_ratio)
         pass_blinking = (s.blinking_pa_pd_ratio >= th.blinking_ratio_threshold)
 
-        # Combined multi-objective noise budget: sum(p_i / p_th_i)
+        # Combined multi-objective noise budget: sum(p_i / p_th_i).
+        # This is the Knill-style consolidated fault-tolerance load: a lattice is
+        # fault-tolerant only if the TOTAL error budget across all 8 channels is
+        # consumed, i.e. sum <= 1.0. Dividing by the channel count (= mean) would
+        # certify lattices where single-channel loads sum to several times the
+        # threshold budget, so the divisor is gone.
         noise_budget_sum = (
             ratio_loss
             + ratio_branch
@@ -306,7 +311,7 @@ class SparrowFaultToleranceReferee:
             + ratio_t2
             + ratio_t2_star
             + ratio_blinking
-        ) / 8.0
+        )
 
         all_passed = (
             pass_loss

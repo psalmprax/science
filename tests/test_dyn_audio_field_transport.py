@@ -44,7 +44,7 @@ def test_stft_ridge_tracks_linear_chirp_instantaneous_frequency():
 
 def test_if_model_recovers_velocity_and_acceleration():
     linear = ChirpSpec(start_freq=700.0, linear_rate=400.0)
-    _, frequencies, times, _, linear_model = _analysis(linear)
+    _, _frequencies, times, _, linear_model = _analysis(linear)
     mid_time = float(times[times.size // 2])
     velocity_error = abs(float(linear_model.velocity(mid_time)) - linear.linear_rate)
     assert velocity_error < 1.0, velocity_error
@@ -71,7 +71,26 @@ def test_transport_prediction_matches_next_frame():
     assert float(np.min(scores)) > 0.99, float(np.min(scores))
 
 
-def test_jet2_order_beats_euler_on_accelerating_chirp():
+def test_r_squared_zero_variance_target_returns_nan_not_crash():
+    """Regression: a constant target made R^2 raise ZeroDivisionError."""
+    constant = np.full(64, 0.25)
+    assert np.isnan(prediction_r_squared(constant, constant))
+    assert np.isnan(prediction_r_squared(np.zeros(64), constant))
+
+
+def test_accelerated_chirp_transport_is_stable_and_order_invariant():
+    """Frequency-axis advection is integrated with a stable upwind scheme.
+
+    A centered Euler/Jet2 attribute-transport stepper is unconditionally
+    unstable for pure advection (von Neumann: |G|^2 = 1 + nu^2 sin^2(k df) > 1
+    for every wavenumber), so ``predict_next_frame`` integrates S_t = -c S_f
+    upwind under an explicit CFL bound and projects magnitudes to their
+    physical range S >= 0. ``order`` is therefore interface-compatible only:
+    both orders must yield the SAME stable, accurate, non-negative prediction.
+    The second-order advantage of the generic stepper is pinned where it is
+    still meaningful -- at the stepper level -- in
+    ``test_accelerated_ridge_transport_order2_error``.
+    """
     spec = ChirpSpec(start_freq=500.0, linear_rate=300.0, quadratic_rate=2000.0)
     magnitude, frequencies, times, _, model = _analysis(spec)
     frequency_step = float(frequencies[1] - frequencies[0])
@@ -89,8 +108,12 @@ def test_jet2_order_beats_euler_on_accelerating_chirp():
 
     euler = scores_for(1)
     jet2 = scores_for(2)
-    assert float(np.mean(jet2)) > float(np.mean(euler)), (float(np.mean(jet2)), float(np.mean(euler)))
-    assert float(np.mean(jet2 > euler)) >= 0.9, float(np.mean(jet2 > euler))
+    assert np.allclose(euler, jet2), "upwind integration must not depend on the order flag"
+    assert float(np.mean(jet2)) > 0.98, float(np.mean(jet2))
+    assert float(np.min(jet2)) > 0.95, float(np.min(jet2))
+    for k in range(2, times.size - 2):
+        prediction = predict_next_frame(magnitude, k, times, model, frequency_step, order=2)
+        assert float(np.min(prediction)) >= 0.0, "spectral magnitudes must stay non-negative"
 
 
 def test_accelerated_ridge_transport_order2_error():

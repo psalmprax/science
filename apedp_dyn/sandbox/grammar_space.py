@@ -244,7 +244,7 @@ def build_features(panel: pd.DataFrame) -> dict[str, np.ndarray]:
 def build_target(panel: pd.DataFrame) -> np.ndarray:
     """d5mean target, strictly after predictor time t (spec §4)."""
     return np.asarray(
-        pd.Series(np.abs(panel["r"].to_numpy(float))).shift(-1).rolling(5).mean().to_numpy()
+        pd.Series(np.abs(panel["r"].to_numpy(float))).rolling(5).mean().shift(-5).to_numpy()
     )
 
 

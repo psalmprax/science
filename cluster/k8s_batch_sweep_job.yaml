@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: apedp-discovery-sweep
+  labels:
+    app.kubernetes.io/name: apedp-x
+    app.kubernetes.io/component: distributed-sweep
+spec:
+  completionMode: Indexed
+  completions: 12
+  parallelism: 8
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: apedp-worker
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: apedp-sweep-worker
+          image: ghcr.io/owner/science:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python3", "-m", "apedp_dyn.sandbox.real_market_l2_sweep"]
+          args:
+            - "--partition-index"
+            - "$(JOB_COMPLETION_INDEX)"
+            - "--total-partitions"
+            - "12"
+          env:
+            - name: JOB_COMPLETION_INDEX
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
+            - name: APEDP_STORAGE_DIR
+              value: "/mnt/apedp_storage"
+            - name: APEDP_TEMP_STORAGE
+              value: "/tmp/scratch"
+          resources:
+            requests:
+              cpu: "4"
+              memory: "16Gi"
+            limits:
+              cpu: "8"
+              memory: "32Gi"
+          volumeMounts:
+            - name: shared-holdout-storage
+              mountPath: /mnt/apedp_storage
+            - name: local-scratch
+              mountPath: /tmp/scratch
+      volumes:
+        - name: shared-holdout-storage
+          persistentVolumeClaim:
+            claimName: apedp-holdout-storage-pvc
+        - name: local-scratch
+          emptyDir: {}

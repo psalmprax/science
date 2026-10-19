@@ -332,13 +332,15 @@ def test_mathematical_axis_surfaces_a_crashed_pole_search(monkeypatch):
 
 def test_boundary_axis_surfaces_a_timed_out_limit(monkeypatch):
     """A limit that times out is unknown: neither a divergence nor a clean pass."""
-    from apedp import falsification
+    from apedp.falsification import probes_boundary as boundary_impl
     from apedp.safety import LimitTimeout
 
     def timeout(*args, **kwargs):
         raise LimitTimeout("injected: limit budget exhausted")
 
-    monkeypatch.setattr(falsification, "limit_with_timeout", timeout)
+    # The boundary probe lives in `apedp.falsification.probes_boundary`; patching
+    # the facade (or `falsifier`) would rebind a name no probe reads.
+    monkeypatch.setattr(boundary_impl, "limit_with_timeout", timeout)
     report = _report_for(
         "boundary",
         "log(x - 5.0)",
@@ -379,6 +381,22 @@ def test_empirical_axis_surfaces_a_skipped_multi_variable_comparison():
     errors = report.detailed_metrics["empirical"]["probe_errors"]
     assert [e["probe"] for e in errors] == ["EmpiricalResidualProbe"]
     assert errors[0]["error"] == "ModelNotUnivariate"
+
+
+def test_empirical_axis_rejects_non_finite_metrics():
+    report = _report_for(
+        "empirical",
+        "2.0 * x",
+        variable_domains={"x": (0.001, 100.0)},
+        physical_invariants=[],
+        critical_boundaries={},
+        empirical_data={"x": [1.0, 2.0, 3.0], "y": [2.0, float("nan"), 6.0]},
+    )
+    assert report.verdict == "INCONCLUSIVE_PROBE_ERROR"
+    errors = report.detailed_metrics["empirical"]["probe_errors"]
+    assert len(errors) == 1
+    assert errors[0]["error"] == "NonFiniteMetrics"
+    assert errors[0]["unresolved"] is True
 
 
 def test_every_falsification_axis_initialises_the_probe_error_channel():

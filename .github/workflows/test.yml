@@ -2,9 +2,12 @@ name: APEDP CI/CD
 
 on:
   push:
-    branches: [master, main, develop]
+    # Every branch is gated, not just the integration branches: work happened
+    # on `stage` for an entire session with no CI coverage because it was
+    # absent from this list, and a broken tree survived as a result.
+    branches: ['**']
   pull_request:
-    branches: [master, main]
+    branches: [master, main, develop, stage]
 
 jobs:
   test:

@@ -12,7 +12,8 @@ Verifies:
 """
 from __future__ import annotations
 
-from pathlib import Path
+import shutil
+import subprocess
 
 import numpy as np
 import pytest
@@ -266,11 +267,11 @@ def test_option2_axiomatic_core_continuous_models_achieve_p2(bridge):
         assert "Option 2: Pure Core Lean 4 Axiomatic Infrastructure" in res.lean_source_code
 
 
-def test_option1_docker_mathlib_execution():
+def test_option1_docker_mathlib_execution(tmp_path):
     """Option 1: Docker containerized Lean dispatcher execution verification."""
     from apedp_dyn.epistemic.lean_universal_bridge import VerificationBackend
 
-    scratch_dir = Path("/home/psalmprax/ALL_PROJECTS/science/scratch/lean_docker_out")
+    scratch_dir = tmp_path / "lean_docker_out"
     scratch_dir.mkdir(parents=True, exist_ok=True)
 
     bridge_docker = LeanUniversalBridge(
@@ -280,6 +281,21 @@ def test_option1_docker_mathlib_execution():
 
     if not bridge_docker.is_docker_available:
         pytest.skip("Docker daemon not available in current test environment")
+    docker_bin = shutil.which("docker")
+    if docker_bin is None:
+        pytest.skip("Docker CLI not available")
+    inspect = subprocess.run(
+        [docker_bin, "image", "inspect", "leanprovercommunity/mathlib:latest"],
+        capture_output=True,
+        timeout=15,
+        check=False,
+    )
+    if inspect.returncode != 0:
+        pytest.skip(
+            "leanprovercommunity/mathlib:latest is not pulled locally; "
+            "the bridge's 25s execution budget cannot include a multi-GB image pull. "
+            "Run `docker pull leanprovercommunity/mathlib:latest` to enable this test."
+        )
 
     spec = AgnosticCandidateSpecification(
         candidate_id="PHYS-DOCKER-CONSERVATIVE",
@@ -339,8 +355,15 @@ def test_in_memory_equation_trap_refuted():
     assert res_leak.all_theorems_proven is False
     assert res_leak.lean_file_path is None
 
-    # Trap 3: Dissipative flow claiming energy conservation
-    res_dissip = verify_equation_in_memory("dx_dt = -gamma * x", candidate_id="DISSIPATIVE_FLOW_TRAP")
+    # Trap 3: Dissipative flow claiming conservation, at a decay rate OUTSIDE
+    # every legacy string trigger (0.05 is not "exp(-0.1"/"exp(-0.2"/"exp(-1").
+    # Refutation is AST-derived: the exp(-c*t) damping factor is read from the
+    # parsed formula, so ANY positive rate is caught. (The previous fixture
+    # relied on the substring "dissipat" in the candidate id, which was the
+    # test-case rigging the remediation removed; the identical formula
+    # "dx_dt = -gamma * x" without the trap name follows the ordinary
+    # linear-flux-balance path, as `LINEAR_SUPERPOSITION_BALANCE` does above.)
+    res_dissip = verify_equation_in_memory("x(t) = exp(-0.05 * t)", candidate_id="DISSIPATIVE_FLOW_TRAP")
     assert res_dissip.proof_claim_status == ProofClaimStatus.P0_NO_PROOF
     assert res_dissip.all_theorems_proven is False
     assert res_dissip.lean_file_path is None

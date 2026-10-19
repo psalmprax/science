@@ -275,6 +275,15 @@ impl OdeSystem {
             }
             if !eval_rhs(t3, &y_tmp, &mut k3) {
                 h *= 0.2;
+                if h < min_h {
+                    return OdeResult {
+                        success: false,
+                        detail: "step size underflow: non-finite derivative".to_string(),
+                        nfev,
+                        t: t_eval.to_vec(),
+                        y: y_out,
+                    };
+                }
                 continue;
             }
 
@@ -285,6 +294,15 @@ impl OdeSystem {
             }
             if !eval_rhs(t4, &y_tmp, &mut k4) {
                 h *= 0.2;
+                if h < min_h {
+                    return OdeResult {
+                        success: false,
+                        detail: "step size underflow: non-finite derivative".to_string(),
+                        nfev,
+                        t: t_eval.to_vec(),
+                        y: y_out,
+                    };
+                }
                 continue;
             }
 
@@ -295,6 +313,15 @@ impl OdeSystem {
             }
             if !eval_rhs(t5, &y_tmp, &mut k5) {
                 h *= 0.2;
+                if h < min_h {
+                    return OdeResult {
+                        success: false,
+                        detail: "step size underflow: non-finite derivative".to_string(),
+                        nfev,
+                        t: t_eval.to_vec(),
+                        y: y_out,
+                    };
+                }
                 continue;
             }
 
@@ -305,6 +332,15 @@ impl OdeSystem {
             }
             if !eval_rhs(t6, &y_tmp, &mut k6) {
                 h *= 0.2;
+                if h < min_h {
+                    return OdeResult {
+                        success: false,
+                        detail: "step size underflow: non-finite derivative".to_string(),
+                        nfev,
+                        t: t_eval.to_vec(),
+                        y: y_out,
+                    };
+                }
                 continue;
             }
 
@@ -337,6 +373,15 @@ impl OdeSystem {
             let t_next = t_n + h;
             if !eval_rhs(t_next, &y_next, &mut k7) {
                 h *= 0.2;
+                if h < min_h {
+                    return OdeResult {
+                        success: false,
+                        detail: "step size underflow: non-finite derivative".to_string(),
+                        nfev,
+                        t: t_eval.to_vec(),
+                        y: y_out,
+                    };
+                }
                 continue;
             }
             nfev += 6;
@@ -516,5 +561,32 @@ mod tests {
         // Energy must decay monotonically due to quadratic drag
         let x_end = res.y[0].last().unwrap().abs();
         assert!(x_end < 2.0, "amplitude should decrease: {x_end}");
+    }
+
+    #[test]
+    fn divergent_rhs_fails_explicitly_without_burning_the_step_budget() {
+        // Regression: stages 3-7 used to shrink h on a non-finite derivative
+        // without the min_h check that stages 2 and the candidate-state guard
+        // already had, so a divergent system could iterate until max_steps
+        // instead of reporting an explicit step-control failure.
+        let eq = vec!["1.0e300 * x * x".to_string()];
+        let states = vec!["x".to_string()];
+        let ode = OdeSystem::compile(&eq, &states, &[], &[]).unwrap();
+        let res = ode.integrate(
+            (0.0, 1.0),
+            &[1.0],
+            &[0.0, 0.5, 1.0],
+            &[],
+            &[],
+            1e-8,
+            1e-10,
+            100_000,
+        );
+        assert!(!res.success, "divergent system must not succeed");
+        assert!(
+            res.detail.contains("underflow") || res.detail.contains("divergence"),
+            "expected an explicit step-control failure, got: {}",
+            res.detail
+        );
     }
 }

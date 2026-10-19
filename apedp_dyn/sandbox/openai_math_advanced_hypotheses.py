@@ -190,7 +190,7 @@ def build_advanced_hypotheses_panel(
     y_asset_clean = fwd_rets - fwd_market_mean
 
     lead_ret = rets_2d[:T_valid, 0]
-    lead_vol = pd.Series(lead_ret).rolling(w_roll, min_periods=5).std().bfill().to_numpy()
+    lead_vol = pd.Series(lead_ret).rolling(w_roll, min_periods=5).std().ffill().to_numpy()
     lead_vol = np.maximum(lead_vol, 1e-4)
 
     cross_mean = np.mean(rets_2d[:T_valid, :], axis=1)
@@ -222,16 +222,17 @@ def build_advanced_hypotheses_panel(
 
         # Rolling statistics
         r_series = pd.Series(r_i)
-        vol_i = r_series.rolling(w_roll, min_periods=5).std().bfill().to_numpy()
+        vol_i = r_series.rolling(w_roll, min_periods=5).std().ffill().to_numpy()
         vol_i = np.maximum(vol_i, 1e-4)
+        vol_mean = pd.Series(vol_i).expanding(min_periods=1).mean().to_numpy()
 
-        ma_p = pd.Series(p_i).rolling(w_roll, min_periods=5).mean().bfill().to_numpy()
-        std_p = pd.Series(p_i).rolling(w_roll, min_periods=5).std().bfill().to_numpy()
+        ma_p = pd.Series(p_i).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
+        std_p = pd.Series(p_i).rolling(w_roll, min_periods=5).std().ffill().to_numpy()
         std_p = np.maximum(std_p, 1e-4)
         spread_i = (p_i - ma_p) / std_p
 
         # Covariance to lead asset
-        cov_lead = pd.Series(r_i * lead_ret).rolling(w_roll, min_periods=5).mean().bfill().to_numpy()
+        cov_lead = pd.Series(r_i * lead_ret).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
         corr_lead = np.clip(cov_lead / np.maximum(vol_i * lead_vol, 1e-6), -1.0, 1.0)
         lead_spill_i = (lead_ret / lead_vol) * corr_lead
 
@@ -263,13 +264,13 @@ def build_advanced_hypotheses_panel(
         p_sharpe_ratio_ret[:, i] = causal_zscore(r_i / vol_i)
         z_ofi = causal_zscore(ofi_i)
         p_ofi[:, i] = z_ofi
-        v_ratio = vol_i / np.mean(vol_i)
-        p_vol_scaled_ofi[:, i] = causal_zscore(v_ratio * z_ofi)
+        v_ratio = vol_i / np.maximum(vol_mean, 1e-4)
+        p_vol_scaled_ofi[:, i] = v_ratio * z_ofi
 
         p_lead_spill[:, i] = causal_zscore(lead_spill_i)
         p_certainty_gated_spill[:, i] = causal_zscore((1.0 - entropy_i) * lead_spill_i)
 
-        mom_i = r_series.rolling(5, min_periods=2).mean().bfill().to_numpy()
+        mom_i = r_series.rolling(5, min_periods=2).mean().ffill().to_numpy()
         p_low_freq_mom[:, i] = causal_zscore(fourier_low_i * mom_i)
         p_high_freq_meanrev[:, i] = causal_zscore((1.0 - fourier_low_i) * spread_i)
 

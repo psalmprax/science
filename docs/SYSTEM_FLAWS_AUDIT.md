@@ -191,3 +191,65 @@ Findings **6** (capability) and the remaining minor-table rows (`BuckinghamPiEng
 groups, variable exponents, god-files) are **not** closed. Two things are fixed but
 deliberately keep a permissive default, and say so: unit assumptions (#3) and the
 unauthenticated server (#2).
+
+---
+
+## Outstanding requirements register (post-review, 2026-10-19)
+
+Checkpoint `47594e7` is frozen as the remediation milestone (tag
+`remediation-checkpoint-47594e7`). Commit `715437b` (the follow-through commit
+on top) records subsequent work — the F17 extreme-scale robustness amendment
+and this register — and does not replace or re-badge the frozen checkpoint:
+the tag continues to anchor `47594e7`, and the register references it as the
+canonical review state. The following requirements are explicitly
+**unresolved** and must not be treated as completed; each carries its exact
+acceptance criterion:
+
+| ID | Requirement | Source | Acceptance criterion |
+| --- | --- | --- | --- |
+| REG-F14 | Caller-layer three-role data protocol: discovery candidates evaluated on selection data; referee pair separation on selection; the archived promotion is evaluated ONCE on a distinct sealed confirmation slice, and the confirmed verdict supersedes the selection verdict | External review (epistemic sign-off) | End-to-end integration test: a candidate pool selected on slice A, promoted head confirmed on untouched slice B; verdict recorded from slice B only; no shared slice |
+| REG-F14b | Multiplicity accounting documentation: how `selection_reused_confirmation_holdout` maps onto the DSR ledger charge for each caller | Same | Every production caller either (a) holds a sealed confirmation split, or (b) exposes the DSR-adjusted multiplicity in its published record |
+| REG-F16 | Formal collision-avoidance guarantee: CBF-QP synthesis (or equivalently rigorous verification) establishing `dot(h) + alpha(h) >= 0` under explicit assumptions for `batch_multi_agent_cbf_step` | External review (safety sign-off) | Formal certificate or model-checking artifact reviewed against the stepper; until then the subsystem is documented as a *collision-deadlock remediation*, not a verified safety guarantee |
+| REG-MUT | Targeted mutation testing of referee and leakage paths (adjudicate anchor, frozen-library term resolution, hawkes standardization constants) | Same | Mutation run report in CI or as a scripted artifact demonstrating each pin fails under its mutation; must not be marked complete silently |
+| REG-LEAN | Independent Lean verification run under a pinned, externally established Lean toolchain (outside this environment) | Same | Reproduce the 323-record sweep exit codes on an independently provisioned toolchain with recorded version hash |
+
+Sources that document the current (non-claiming) boundary: `CHANGELOG.md`
+("Still open", external-review rounds), `tests/test_dyn_blind_audit_round2_remediation.py` docstrings,
+`apedp_dyn/cuda/batch_physics_steppers.py::batch_multi_agent_cbf_step`
+docstring (not-a-certified-CBF-QP disclosure, test-pinned).
+
+---
+
+## Round-3 external assessment record (2026-10-19)
+
+Post-round-3 external review scored update: **6.5/10 overall** (up from ~6/10).
+Reported scorecard retains the distinction between verified remediation state and
+scientific-capability maturity:
+
+| Dimension | Score |
+| --- | --- |
+| Engineering and audit discipline | 8.5/10 |
+| Epistemic safeguards | 8/10 |
+| Robustness and regression evidence | 8/10 |
+| Structural discovery capability | 5.5/10 |
+| Scientific validation and generalization | 4.5/10 |
+| Demonstrated advantage over alternatives | 3/10 |
+
+Reviewer-stated criteria for reaching **8/10** (recorded here as forward
+requirements, not claimed progress):
+1. Completion of the outstanding requirements above (REG-F14/F14b, REG-F16,
+   REG-MUT, REG-LEAN) with per-item acceptance evidence.
+2. Independent review of the mathematical certificates and critical code paths.
+3. A reproducible external evaluation showing APEDP-X reliably distinguishes
+   valid discoveries from false or non-identifiable hypotheses.
+
+For **9/10 or higher**, additionally: measurable advantage over established
+alternatives across multiple independent problem families, not just successful
+individual demonstrations.
+
+Matching the reviewer's framing, this register treats the requirement-closure
+path as: individual acceptance evidence per requirement first, then
+independent external validation of scientific performance. Already-green
+checks (46-pin suite, Rust lib 186/186, branch alignment, frozen checkpoint
+`47594e7` vs follow-through record) are not reopened without a relevant
+change or new failure signal.

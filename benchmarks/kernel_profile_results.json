@@ -5,46 +5,46 @@
     {
       "evaluated": 200,
       "n": 150,
-      "remainder_pct": 58.9,
-      "us_graph_eval_phase": 16.3,
-      "us_per_candidate": 57.0,
-      "us_readout_fit_phase": 7.1,
-      "us_search_bookkeeping_remainder": 33.6
+      "remainder_pct": 87.6,
+      "us_graph_eval_phase": 2.2,
+      "us_per_candidate": 26.5,
+      "us_readout_fit_phase": 1.1,
+      "us_search_bookkeeping_remainder": 23.2
     },
     {
       "evaluated": 200,
       "n": 600,
-      "remainder_pct": 4.3,
-      "us_graph_eval_phase": 61.7,
-      "us_per_candidate": 95.7,
-      "us_readout_fit_phase": 29.9,
-      "us_search_bookkeeping_remainder": 4.1
+      "remainder_pct": 72.3,
+      "us_graph_eval_phase": 3.6,
+      "us_per_candidate": 21.2,
+      "us_readout_fit_phase": 2.2,
+      "us_search_bookkeeping_remainder": 15.3
     },
     {
       "evaluated": 200,
       "n": 1200,
-      "remainder_pct": 0.0,
-      "us_graph_eval_phase": 122.4,
-      "us_per_candidate": 123.2,
-      "us_readout_fit_phase": 57.3,
-      "us_search_bookkeeping_remainder": 0.0
+      "remainder_pct": 46.3,
+      "us_graph_eval_phase": 12.1,
+      "us_per_candidate": 37.1,
+      "us_readout_fit_phase": 7.8,
+      "us_search_bookkeeping_remainder": 17.2
     },
     {
       "evaluated": 200,
       "n": 3000,
-      "remainder_pct": 0.0,
-      "us_graph_eval_phase": 296.1,
-      "us_per_candidate": 220.0,
-      "us_readout_fit_phase": 214.3,
-      "us_search_bookkeeping_remainder": 0.0
+      "remainder_pct": 59.0,
+      "us_graph_eval_phase": 17.8,
+      "us_per_candidate": 70.7,
+      "us_readout_fit_phase": 11.2,
+      "us_search_bookkeeping_remainder": 41.7
     },
     {
       "evaluated": 200,
       "n": 12000,
       "remainder_pct": 0.0,
-      "us_graph_eval_phase": 1348.1,
-      "us_per_candidate": 773.7,
-      "us_readout_fit_phase": 647.3,
+      "us_graph_eval_phase": 187.2,
+      "us_per_candidate": 262.5,
+      "us_readout_fit_phase": 78.7,
       "us_search_bookkeeping_remainder": 0.0
     }
   ]

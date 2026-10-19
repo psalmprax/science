@@ -74,7 +74,7 @@ def _blocks(n: int) -> np.ndarray:
 
 
 def _d5(sig: np.ndarray) -> np.ndarray:
-    return np.asarray(pd.Series(sig).shift(-1).rolling(5).mean().to_numpy())
+    return np.asarray(pd.Series(sig).rolling(5).mean().shift(-5).to_numpy())
 
 
 def _design(panel: pd.DataFrame, asset: str, coefs: dict[str, np.ndarray],

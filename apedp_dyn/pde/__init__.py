@@ -29,6 +29,13 @@ from apedp_dyn.pde.dispatch import (
     evaluate_point_cloud_pde_frozen_oos,
     tikhonov_smooth_trajectory,
 )
+from apedp_dyn.pde.higher_order_engine import (
+    HigherOrderPdeAdjudication,
+    HigherOrderPdeDiscoveryResult,
+    HigherOrderPdeProposer,
+    HigherOrderPdeReferee,
+    discover_higher_order_pde,
+)
 from apedp_dyn.pde.proposer import PdeProposer
 from apedp_dyn.pde.referee import PdeReferee
 
@@ -36,11 +43,16 @@ __all__ = [
     "EpistemicPdeAdjudication",
     "EpistemicPdeVerdict",
     "HighDimPdeDiscoveryResult",
+    "HigherOrderPdeAdjudication",
+    "HigherOrderPdeDiscoveryResult",
+    "HigherOrderPdeProposer",
+    "HigherOrderPdeReferee",
     "PdeGridData",
     "PdePointCloudData",
     "PdeProposer",
     "PdeReferee",
     "adjudicate_high_dim_pde_discovery",
+    "discover_higher_order_pde",
     "discover_pde",
     "discover_pde_1d",
     "discover_pde_2d",

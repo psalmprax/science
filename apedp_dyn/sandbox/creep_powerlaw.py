@@ -100,7 +100,7 @@ def run_creep(noise_sigma: float = 0.03, n_train: int = 24,
                           candidate_id="power_law")
     scored[0] = ScoredCandidate(c, {"gate4_status": g4, "data_origin": DataOrigin.SIMULATION},
                                 train_loss=pw.train_loss, holdout_rmse=rm_rate)
-    ranked = sorted([s for s in scored if np.isfinite(s.train_loss)], key=lambda s: s.train_loss)
+    ranked = sorted([s for s in scored if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)], key=lambda s: s.holdout_rmse)
     adj = adjudicate(
         scored, resid_best=ranked[0].provenance["gate4_status"]["holdout_residuals"],
         resid_rival=ranked[1].provenance["gate4_status"]["holdout_residuals"],

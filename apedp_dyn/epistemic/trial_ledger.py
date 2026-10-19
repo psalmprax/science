@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import datetime
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from typing import Any
 
@@ -37,6 +37,11 @@ class CandidateTrialRecord:
     status: str
     timestamp: str
     metadata: dict[str, Any]
+    # In-sample statistic the search actually selected on. For strategy
+    # searches this is the Sharpe ratio (DSR applies); for equation-discovery
+    # searches it is the in-sample loss (lower is better) and DSR does NOT
+    # apply -- the field exists so the selection metric is never ambiguous.
+    selection_statistic: float | None = None
 
 
 class CandidateTrialLedger:
@@ -47,6 +52,12 @@ class CandidateTrialLedger:
         self._persistence_path = Path(persistence_path) if persistence_path else None
         if self._persistence_path and self._persistence_path.is_file():
             self._load_from_disk()
+
+    @classmethod
+    def from_env(cls, filename: str = "trial_ledger.jsonl") -> CandidateTrialLedger:
+        """Initialize trial ledger using persistent storage path configured by notebook/cloud runtime adapter."""
+        from apedp_dyn.env import get_ledger_path
+        return cls(persistence_path=get_ledger_path(filename))
 
     def record_trial(
         self,
@@ -61,6 +72,7 @@ class CandidateTrialLedger:
         n_bars: int = 0,
         status: str = "EVALUATED",
         metadata: dict[str, Any] | None = None,
+        selection_statistic: float | None = None,
     ) -> CandidateTrialRecord:
         """Record an attempted hypothesis evaluation in the ledger."""
         if returns is not None and len(returns) > 3:
@@ -83,6 +95,7 @@ class CandidateTrialLedger:
             status=status,
             timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat(),
             metadata=metadata or {},
+            selection_statistic=selection_statistic,
         )
         self._records.append(record)
 
@@ -97,6 +110,82 @@ class CandidateTrialLedger:
     def trial_count(self) -> int:
         """Total number of attempted hypotheses evaluated in this trial family."""
         return len(self._records)
+
+    @staticmethod
+    def _search_group_and_pool(record: CandidateTrialRecord) -> tuple[str, int]:
+        """Return the search-group id and declared pool size for a trial record.
+
+        ``selection_pool_size`` is the number of candidates the proposer
+        searched over before emitting this one. Invalid values fail closed
+        rather than silently weakening multiplicity accounting.
+        """
+        raw_pool = record.metadata.get("selection_pool_size", 1)
+        try:
+            pool = int(raw_pool)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"Invalid selection_pool_size {raw_pool!r} for candidate "
+                f"{record.candidate_id}: must be an integer >= 1"
+            ) from exc
+        if pool < 1:
+            raise ValueError(
+                f"Invalid selection_pool_size {pool} for candidate "
+                f"{record.candidate_id}: must be >= 1"
+            )
+        group = str(record.metadata.get("search_id") or record.candidate_id)
+        return group, pool
+
+    @property
+    def effective_trial_count(self) -> int:
+        """Selection-adjusted multiplicity including disclosed search pools.
+
+        Each recorded candidate contributes at least one attempt. Records that
+        share a ``search_id`` form one search group; the group contributes
+        ``max(recorded_candidates, declared selection_pool_size)`` trials. A
+        proposer that searched K candidates and emitted only its best is
+        therefore charged K trials, not one (Bailey & López de Prado selection
+        bias). Without ``search_id``, each record is its own group and any
+        declared pool beyond it is charged as hidden trials.
+        """
+        recorded: dict[str, int] = {}
+        declared: dict[str, int] = {}
+        for record in self._records:
+            group, pool = self._search_group_and_pool(record)
+            recorded[group] = recorded.get(group, 0) + 1
+            declared[group] = max(declared.get(group, 1), pool)
+        return int(sum(max(recorded[group], declared[group]) for group in recorded))
+
+    def dsr_with_selection_adjustment(
+        self,
+        observed_sharpe: float,
+        n_bars: int,
+        skewness: float = 0.0,
+        kurtosis: float = 3.0,
+        annualization_factor: float = 1.0,
+    ) -> dict[str, Any]:
+        """Compute DSR with the ledger's selection-adjusted trial multiplicity.
+
+        Returns the standard DSR payload plus ``n_trials`` (adjusted),
+        ``naive_trial_count`` (records only), and ``hidden_trials`` (declared
+        search attempts that were never individually recorded).
+        """
+        if not self._records:
+            raise ValueError("cannot compute selection-adjusted DSR with an empty trial ledger")
+        _mean_sr, var_trials = self.get_sharpe_distribution()
+        effective = self.effective_trial_count
+        result = compute_deflated_sharpe_ratio(
+            observed_sharpe=observed_sharpe,
+            n_trials=effective,
+            var_trials=var_trials,
+            n_bars=n_bars,
+            skewness=skewness,
+            kurtosis=kurtosis,
+            annualization_factor=annualization_factor,
+        )
+        result["n_trials"] = effective
+        result["naive_trial_count"] = self.trial_count
+        result["hidden_trials"] = max(0, effective - self.trial_count)
+        return result
 
     def get_records(self) -> list[CandidateTrialRecord]:
         return list(self._records)
@@ -116,23 +205,25 @@ class CandidateTrialLedger:
             for line in f:
                 if line.strip():
                     d = json.loads(line)
-                    self._records.append(CandidateTrialRecord(**d))
+                    known = {f.name for f in fields(CandidateTrialRecord)}
+                    self._records.append(CandidateTrialRecord(**{k: v for k, v in d.items() if k in known}))
 
 
-def compute_expected_max_sharpe(n_trials: int, var_trials: float) -> float:
+def compute_expected_max_sharpe(n_trials: int, var_trials: float, min_var: float = 1e-4) -> float:
     """Expected maximum Sharpe ratio under the null hypothesis of uninformative search.
 
     E[max_N SR] ≈ σ_trials * ((1 - γ) * Φ^(-1)(1 - 1/N) + γ * Φ^(-1)(1 - 1/(N*e)))
     using Bailey & López de Prado (2014) closed-form asymptotic approximation.
     """
-    if n_trials <= 1 or var_trials <= 1e-12:
+    if n_trials <= 1:
         return 0.0
 
-    sigma_sr = np.sqrt(var_trials)
-    # Asymptotic Extreme Value Theory for N independent standard normals
-    # z ≈ sqrt(2 * ln(N)) + Euler_Mascheroni / sqrt(2 * ln(N))
-    log_n = np.log(n_trials)
-    np.sqrt(2.0 * log_n)
+    # Ensure trial multiplicity is not bypassed when identical/constant trials are submitted
+    effective_var = max(var_trials, min_var) if min_var > 0 else var_trials
+    if effective_var <= 1e-12:
+        return 0.0
+
+    sigma_sr = np.sqrt(effective_var)
     expected_z = (1.0 - EULER_MASCHERONI) * stats.norm.ppf(1.0 - 1.0 / n_trials) + \
                  EULER_MASCHERONI * stats.norm.ppf(1.0 - 1.0 / (n_trials * np.e))
     return float(sigma_sr * expected_z)

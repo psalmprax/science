@@ -1,0 +1,175 @@
+{
+  "prereg_id": "PREREG-RIME-OOF-MV-2026-10-17",
+  "generated_at": "2026-10-17T17:21:00.330002+00:00",
+  "provenance": {
+    "git_head": "3eabf77c1d9bf0db9a7b2c16350b12abfd85c9c5",
+    "python": "3.12.3",
+    "numpy": "2.5.3",
+    "pandas": "2.3.3"
+  },
+  "protocol": {
+    "seeds": {
+      "train_test": 600,
+      "fresh": 601,
+      "wide": 603
+    },
+    "train_rows": "0:400",
+    "test_rows": "400:600",
+    "n": 600,
+    "noise": 0.05,
+    "wide_scale": 2.5,
+    "rime_proposer_config": {
+      "budget": 200,
+      "max_depth": 2,
+      "additive_terms": 2,
+      "max_seeds": 120,
+      "lagged_products": true,
+      "gamma": 1.0
+    }
+  },
+  "harness_sanity_control_recovered": true,
+  "results": [
+    {
+      "law": "control_in_family",
+      "engine": "RimeProposer",
+      "wall_ms": 8.0,
+      "n_props": 5,
+      "best": {
+        "list_rank": 0,
+        "test_r2": 0.9997986112103272,
+        "fresh_r2": 0.9997960407385822,
+        "wide_r2": 0.9999825520689023,
+        "formula": "+1 * (((3.004366 * x3[t-2]) + (1.993612 * (x1[t-1] * x2[t-1])))) +9.99909",
+        "inputs_used": [
+          "x1",
+          "x2",
+          "x3"
+        ],
+        "identifiability_status": "UNIQUE_WINNER"
+      },
+      "classification": "RECOVERED"
+    },
+    {
+      "law": "control_in_family",
+      "engine": "RimeAdProposer",
+      "wall_ms": 76610.1,
+      "n_props": 10,
+      "best": {
+        "list_rank": 0,
+        "test_r2": -0.0002743681967982692,
+        "fresh_r2": -0.005842669512748255,
+        "wide_r2": -0.008947490776580302,
+        "formula": "0.3026 * (0.3026 * sin((2 / x1)) + 9.9884) + 9.9884",
+        "inputs_used": null,
+        "identifiability_status": null
+      },
+      "classification": "NO_SIGNAL"
+    },
+    {
+      "law": "oof_fn_of_interaction",
+      "engine": "RimeProposer",
+      "wall_ms": 5.7,
+      "n_props": 5,
+      "best": {
+        "list_rank": 0,
+        "test_r2": 0.9433189801931192,
+        "fresh_r2": 0.8660132813451139,
+        "wide_r2": 0.45942415865049024,
+        "formula": "+1 * (((3.601182 * tanh((x1[t-1] * x2[t-1]))) + (1.493427 * x3[t-1]))) +1.92813",
+        "inputs_used": [
+          "x1",
+          "x2",
+          "x3"
+        ],
+        "identifiability_status": "UNIQUE_WINNER"
+      },
+      "classification": "CONFIDENT_SURROGATE"
+    },
+    {
+      "law": "oof_fn_of_interaction",
+      "engine": "RimeAdProposer",
+      "wall_ms": 63520.3,
+      "n_props": 10,
+      "best": {
+        "list_rank": 1,
+        "test_r2": -0.00012045749088485103,
+        "fresh_r2": -0.00981250454538607,
+        "wide_r2": -0.0017834951250539355,
+        "formula": "0.0188 * (0.0188 * ((x2^2) / (x2 - 1)) + 1.9311) + 1.9311",
+        "inputs_used": null,
+        "identifiability_status": null
+      },
+      "classification": "NO_SIGNAL"
+    },
+    {
+      "law": "oof_max_switch",
+      "engine": "RimeProposer",
+      "wall_ms": 19.5,
+      "n_props": 5,
+      "best": {
+        "list_rank": 0,
+        "test_r2": 0.6219541278517355,
+        "fresh_r2": 0.6929050229319248,
+        "wide_r2": 0.494506377705232,
+        "formula": "+1 * (((1.495956 * x3[t-1]) + (1.075305 * x2[t-1]))) +1.04515",
+        "inputs_used": [
+          "x2",
+          "x3"
+        ],
+        "identifiability_status": "UNIQUE_WINNER"
+      },
+      "classification": "CONFIDENT_SURROGATE"
+    },
+    {
+      "law": "oof_max_switch",
+      "engine": "RimeAdProposer",
+      "wall_ms": 56014.3,
+      "n_props": 10,
+      "best": {
+        "list_rank": 5,
+        "test_r2": -0.006600073703263876,
+        "fresh_r2": -2.769969570159958e-05,
+        "wide_r2": -0.11851091432717675,
+        "formula": "0.0000 * (0.0000 * ((1 - x3) / (x3^2)) + 1.0269) + 1.0269",
+        "inputs_used": null,
+        "identifiability_status": null
+      },
+      "classification": "NO_SIGNAL"
+    },
+    {
+      "law": "oof_amplitude_mod",
+      "engine": "RimeProposer",
+      "wall_ms": 5.5,
+      "n_props": 5,
+      "best": {
+        "list_rank": 1,
+        "test_r2": 0.7129586565910726,
+        "fresh_r2": 0.6742887261967199,
+        "wide_r2": 0.05676814903407046,
+        "formula": "+1.05805 * (tanh((x1[t-1] * x3[t-1]))) +1.96708",
+        "inputs_used": [
+          "x1",
+          "x3"
+        ],
+        "identifiability_status": "SUB_OPTIMAL"
+      },
+      "classification": "CONFIDENT_SURROGATE"
+    },
+    {
+      "law": "oof_amplitude_mod",
+      "engine": "RimeAdProposer",
+      "wall_ms": 56960.8,
+      "n_props": 10,
+      "best": {
+        "list_rank": 1,
+        "test_r2": -0.01020765330087503,
+        "fresh_r2": -0.0181809402066051,
+        "wide_r2": 0.0012572487505535523,
+        "formula": "-0.0965 * (-0.0965 * cos((x2 * x2)) + 2.0083) + 2.0083",
+        "inputs_used": null,
+        "identifiability_status": null
+      },
+      "classification": "NO_SIGNAL"
+    }
+  ]
+}

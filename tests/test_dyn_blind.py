@@ -60,9 +60,29 @@ def test_scoring_math():
     ]
     rep = score_blind(cases)
     assert rep.n_blind == 4 and rep.n_promoted == 2
-    assert rep.fpr_blind == 0.5  # 1 FP (C) / 2 promoted
+    assert rep.fpr_blind == 0.5  # 1 FP (C) / 2 unwarranted (C, D)
+    assert rep.fdr_blind == 0.5  # 1 FP (C) / 2 promoted
     assert rep.car_blind == 0.5  # 1 correct abstention (D) / 2 unwarranted
     assert rep.vrr_blind == 0.5  # 1 retained (A) / 2 warranted
+
+
+def test_fpr_and_fdr_use_distinct_denominators():
+    """FPR divides by negatives; FDR divides by promotions. Nobody may conflate them."""
+    cases = [
+        BlindCase("W1", "d", True, _stub(True)),
+        BlindCase("W2", "d", True, _stub(True)),
+        BlindCase("W3", "d", True, _stub(False)),
+        BlindCase("N1", "d", False, _stub(True)),
+        BlindCase("N2", "d", False, _stub(False)),
+        BlindCase("N3", "d", False, _stub(False)),
+        BlindCase("N4", "d", False, _stub(False)),
+    ]
+    rep = score_blind(cases)
+    assert rep.n_promoted == 3
+    assert rep.fpr_blind == 1 / 4  # 1 FP / 4 negatives
+    assert rep.fdr_blind == 1 / 3  # 1 FP / 3 promotions
+    assert rep.by_domain["d"]["fpr"] == 1 / 4
+    assert rep.by_domain["d"]["fdr"] == 1 / 3
 
 
 def test_ci_bound_table():
@@ -85,8 +105,8 @@ def test_populations_and_schema():
     ]
     rep = score_blind(cases)
     assert rep.populations == {"valid": 1, "unsafe": 1, "ambiguous": 1}
-    assert rep.n_promoted == 1 and rep.fpr_blind == 0.0
-    assert rep.fpr_upper95 is not None and abs(rep.fpr_upper95 - ci_upper95_zero_failures(1)) < 1e-12
+    assert rep.n_promoted == 1 and rep.fpr_blind == 0.0 and rep.fdr_blind == 0.0
+    assert rep.fpr_upper95 is not None and abs(rep.fpr_upper95 - ci_upper95_zero_failures(2)) < 1e-12
     assert rep.car_blind == 1.0 and rep.vrr_blind == 1.0
 
 
@@ -118,5 +138,6 @@ def test_frr_coverage_and_domains():
     rep = score_blind(cases)
     assert rep.frr_blind == 0.5  # 1/2 warranted unpromoted
     assert rep.coverage_blind == 0.75  # A promoted, C promoted, D rejected
-    assert rep.by_domain["dyn"] == {"n": 2.0, "fpr": 0.0, "vrr": 0.5, "coverage": 0.5}
-    assert rep.by_domain["fin"] == {"n": 2.0, "fpr": 1.0, "vrr": 0.0, "coverage": 1.0}
+    assert rep.by_domain["dyn"] == {"n": 2.0, "fpr": 0.0, "fdr": 0.0, "vrr": 0.5, "coverage": 0.5}
+    # fin: FPR = 1 FP / 2 negatives; FDR = 1 FP / 1 promotion.
+    assert rep.by_domain["fin"] == {"n": 2.0, "fpr": 0.5, "fdr": 1.0, "vrr": 0.0, "coverage": 1.0}

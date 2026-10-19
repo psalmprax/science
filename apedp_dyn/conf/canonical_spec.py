@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 SPEC_PATH = Path(__file__).resolve().parent.parent.parent / "specifications" / "canonical_preregistered_spec_v1.json"
-PINNED_SPEC_SHA256 = "a6d026f303a77cbb2f1dd5f8a74c394dd09f8139d811a9bfe4142c82063f6d47"
+PINNED_SPEC_SHA256 = "a11fd957c0b787856c62b698a06715e0acf58b393eaa52a70a905d5b0582d141"
 
 
 class SpecificationIntegrityError(RuntimeError):
@@ -68,6 +68,11 @@ REFEREE_MIN_CAR: float = float(_THRESHOLDS["referee_min_car"])
 REFEREE_MIN_VRR: float = float(_THRESHOLDS["referee_min_vrr"])
 
 STOCK_SPLIT_INVARIANCE_TOLERANCE: float = float(_THRESHOLDS["stock_split_invariance_tolerance"])
+PRUNING_HOLDOUT_R2_BASE_FLOOR: float = float(_THRESHOLDS["pruning_holdout_r2_base_floor"])
+PRUNING_HOLDOUT_F_TEST_SIGNIFICANCE_LEVEL: float = float(
+    _THRESHOLDS["pruning_holdout_f_test_significance_level"]
+)
+PRUNING_HOLDOUT_F_TEST_PREDICTOR_DOF: int = int(_THRESHOLDS["pruning_holdout_f_test_predictor_dof"])
 
 LITERATURE_BASELINES: list[str] = list(_SPEC["literature_baselines"])
 PROMOTION_STAGES: list[str] = list(_SPEC["promotion_stages"])

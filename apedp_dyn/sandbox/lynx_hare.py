@@ -36,10 +36,17 @@ from apedp_dyn.grammar.candidate_ir import (
     Term,
 )
 
+_VENDORED_LYNX = Path(__file__).resolve().parents[2] / "data" / "market" / "lynx_maclulich.csv"
+
 
 def load_lynx(path=None):
-    import tempfile
-    path = path or f"{tempfile.gettempdir()}/lynx.csv"
+    """Load the MacLulich lynx series.
+
+    The series is vendored in-repo (data/market/lynx_maclulich.csv, provenance in
+    data/market/PROVENANCE.json) so the sandbox never depends on an untracked
+    /tmp file; an explicit ``path`` still overrides for ad-hoc series.
+    """
+    path = path or _VENDORED_LYNX
     t, y = [], []
     with open(path) as f:
         for row in csv.DictReader(f):

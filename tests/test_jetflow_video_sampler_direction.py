@@ -47,7 +47,7 @@ def _tiny_model():
     model.noether_engine.project_spatial_latent_velocity = (
         lambda v: (v, None))
     model.physics_controller.steer_velocity_field = (
-        lambda v_sol, z_eval, t, dt: v_sol)
+        lambda v_sol, z_eval, t, dt, **kwargs: v_sol)
     return model
 
 
@@ -57,7 +57,7 @@ class _Probe:
         self.zs: list[torch.Tensor] = []
 
     def attach(self, model) -> None:
-        def velocity(z_eval, t, text_tokens=None, guidance_scale=None):
+        def velocity(z_eval, t, text_tokens=None, guidance_scale=None, plucker_rays=None):
             self.ts.append(float(t))
             self.zs.append(z_eval.detach().clone())
             return -z_eval
