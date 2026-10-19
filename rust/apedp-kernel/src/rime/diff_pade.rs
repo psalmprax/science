@@ -398,7 +398,6 @@ pub fn discover_differential_relation(
     };
 
     let deg = config.max_x_degree;
-    let n_poly = deg + 1;
 
     let mut cols = Vec::new();
     let mut names = Vec::new();

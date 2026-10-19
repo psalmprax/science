@@ -200,7 +200,7 @@ def test_flow_supervision_beats_self_supervision_on_known_flow() -> None:
                          flow_targets=flow)
     assert ls[-1] < ls[0], "supervised trainer did not descend"
     hm = LearnedFlowHead(cfg).double()
-    lm = train_flow_head(hm, clip, steps=80, lr=3e-3, seed=0)
+    train_flow_head(hm, clip, steps=80, lr=3e-3, seed=0)
     assert _flow_mse(hs) < _flow_mse(hm), (
         f"supervised {_flow_mse(hs):.3e} must beat self-supervised {_flow_mse(hm):.3e} "
         "at equal budget when a true dense target exists"
@@ -220,7 +220,6 @@ def test_flow_supervision_loss_equals_the_naive_composition() -> None:
     """The shared-forward refactor must be numerically identical to
     flow_consistency_loss + the supervised MSE evaluated separately (same
     seeded head state, no dropout/normalization randomness)."""
-    import pytest
     import torch.nn.functional as F
 
     torch.manual_seed(11)

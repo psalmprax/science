@@ -12,7 +12,6 @@ use apedp_kernel::rime::eval::{
     fit_readout, fitted_mse, mse_finite, score_batch_fitted, FittedScore, ScoreConfig,
 };
 use apedp_kernel::rime::graph::{Graph, Node};
-use apedp_kernel::rime::record::CandidateRecord;
 use apedp_kernel::rime::rewrite::{apply, RewriteOp};
 use apedp_kernel::rime::search::{multiplicity_dof, target_variance};
 
@@ -86,13 +85,6 @@ fn lag_expansions(
         .collect();
     let res = score_batch_fitted(&jobs, cols, &cfg);
     (parent_mse, lags.to_vec(), res)
-}
-
-fn best_index(res: &[FittedScore]) -> Option<usize> {
-    res.iter()
-        .enumerate()
-        .max_by(|(_, a), (_, b)| a.score.partial_cmp(&b.score).unwrap())
-        .map(|(i, _)| i)
 }
 
 #[test]

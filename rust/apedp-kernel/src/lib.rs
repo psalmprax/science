@@ -37,7 +37,7 @@ use parser::Compiled;
 use units::UnitVector as UnitVec;
 
 /// A compiled expression, opaque to Python.
-#[pyclass(module = "apedp_kernel")]
+#[pyclass(module = "apedp_kernel", from_py_object)]
 #[derive(Clone)]
 pub struct CompiledExpression {
     inner: Compiled,
@@ -373,7 +373,7 @@ fn evaluate_precision_boundary(
 }
 
 /// A 7-D SI unit vector.
-#[pyclass(module = "apedp_kernel")]
+#[pyclass(module = "apedp_kernel", from_py_object)]
 #[derive(Clone)]
 pub struct UnitVector {
     inner: UnitVec,
@@ -435,7 +435,7 @@ impl UnitVector {
 }
 
 /// A compiled ODE system for high-performance simulation.
-#[pyclass(module = "apedp_kernel")]
+#[pyclass(module = "apedp_kernel", from_py_object)]
 #[derive(Clone)]
 pub struct CompiledOdeSystem {
     inner: OdeSystem,

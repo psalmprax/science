@@ -445,8 +445,8 @@ pub fn search_rational_pairs(
     var_names: &[String],
     include_trig: bool,
     include_floor: bool,
-    include_exp: bool,
-    include_advanced: bool,
+    _include_exp: bool,
+    _include_advanced: bool,
     max_depth: usize,
     top_k: usize,
 ) -> Vec<EnumerationCandidate> {    use std::cmp::Ordering;

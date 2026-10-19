@@ -114,7 +114,7 @@ mod tests {
         let target: Vec<f64> = (0..n).map(|i| i as f64).collect();
         let graph = Graph::new();
         let analysis = diagnose_residuals(&graph, &cols, &target, 1.0, 1e-9);
-        assert!(analysis.overthreshold_count >= 0);
+        assert!(analysis.overthreshold_count <= n);
         assert!(analysis.max_abs_residual >= 0.0);
         // The reported threshold is exactly what the caller passed.
         assert_eq!(analysis.threshold, 1.0);

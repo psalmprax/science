@@ -1347,7 +1347,10 @@ pub fn discover_pde_rbf_point_cloud_hd(
         }
         (c, a_pos.sqrt().clamp(0.05, 5.0))
     } else {
-        (centroid.clone(), 0.70710678)
+        // Retain the recorded approximation: changing it perturbs the search.
+        #[allow(clippy::approx_constant)]
+        let initial_scale = 0.70710678;
+        (centroid.clone(), initial_scale)
     };
 
     // 3. Construct multi-scale Gaussian RBF dictionary around [est_center, centroid]

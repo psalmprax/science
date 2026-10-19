@@ -499,7 +499,7 @@ mod tests {
 
     #[test]
     fn ssim_frame_is_identity_one_and_nan_when_too_small() {
-        let rows: Vec<Vec<f64>> = (0..16).map(|r| vec![0.3; 16]).collect();
+        let rows: Vec<Vec<f64>> = (0..16).map(|_| vec![0.3; 16]).collect();
         let rows_view: Vec<ArrayView1<f64>> = rows.iter().map(|r| ArrayView1::from(r.as_slice())).collect();
         let s = ssim_frame(&rows_view, &rows_view, 8, 1e-4, 9e-4);
         assert!((s - 1.0).abs() < 1e-12, "{s}");

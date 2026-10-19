@@ -8,10 +8,57 @@ on:
     branches: ['**']
   pull_request:
     branches: [master, main, develop, stage]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  test:
+  python-quality:
+    name: Python quality
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install quality and test tools
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test,orchestration]"
+          python -m pytest --version
+          ruff --version
+          mypy --version
+      - name: Lint Python
+        run: make lint
+      - name: Strict core type check
+        run: make typecheck
+      - name: CI configuration regression checks
+        run: python -m pytest tests/test_ci_quality_contract.py -q
+
+  rust-quality:
+    name: Rust quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format and Clippy correctness gates
+        run: make lint-rust
+      - name: Rust kernel unit tests
+        run: cargo test --workspace --locked
+
+  test:
+    needs: [python-quality, rust-quality]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
     services:
       redis:
         image: redis:7-alpine
@@ -25,6 +72,7 @@ jobs:
     env:
       APEDP_REDIS_URL: redis://localhost:6379/0
     strategy:
+      fail-fast: true
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
 
@@ -42,7 +90,9 @@ jobs:
           python -m venv .venv
           source .venv/bin/activate
           pip install --upgrade pip
-          pip install -e ".[dev,test,orchestration]"
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test,orchestration]"
+          python -m pytest --version
 
       # The native kernel behind `apedp/rust_bridge.py` lives in
       # `rust/apedp-kernel/`. Without it, `is_rust_kernel_available()` is False
@@ -52,8 +102,9 @@ jobs:
       # it is actually importable before any test tier runs. A build that stops
       # building fails loudly instead of turning into sixteen skips.
       - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: '1.99.0'
           components: rustfmt, clippy
 
       - name: Cache cargo build
@@ -61,14 +112,10 @@ jobs:
         with:
           workspaces: rust/apedp-kernel -> target
 
-      - name: Rust kernel unit tests
-        run: cargo test --manifest-path rust/apedp-kernel/Cargo.toml
-
       - name: Build and install the native kernel
         run: |
           source .venv/bin/activate
-          pip install "maturin>=1.5,<2.0"
-          maturin develop --manifest-path rust/apedp-kernel/Cargo.toml
+          maturin develop --locked --manifest-path rust/apedp-kernel/Cargo.toml
 
       # The load-bearing step. If this passes, the conformance suite below runs
       # against a real Rust engine instead of skipping.
@@ -92,55 +139,22 @@ jobs:
       - name: Fast smoke tier (syntax + imports)
         run: |
           source .venv/bin/activate
-          pytest tests/test_smoke_imports.py -q
+          python -m pytest tests/test_smoke_imports.py -q -x
 
       - name: Collection smoke (import every test module)
         run: |
           source .venv/bin/activate
-          pytest tests/ --collect-only -q
+          python -m pytest tests/ --collect-only -q
 
       - name: Run regression tests
         run: |
           source .venv/bin/activate
-          pytest tests/ -v --tb=short -n auto -m "not integration"
+          python -m pytest tests/ -v --tb=short -n auto -x -m "not integration"
 
       - name: Run live integration tests
         run: |
           source .venv/bin/activate
-          pytest tests/ -v --tb=short -n auto -m integration
-
-      # The dynamical package owns the doctrine, so it is gated on its own and
-      # kept at zero. These two steps run before the broader apedp/ gates
-      # below; all four are blocking.
-      - name: Lint apedp_dyn with ruff
-        run: |
-          source .venv/bin/activate
-          ruff check apedp_dyn/
-
-      - name: Type check apedp_dyn with mypy
-        run: |
-          source .venv/bin/activate
-          mypy apedp_dyn/ --ignore-missing-imports
-
-      # Both of these gate. They were annotated as expected failures while
-      # the finding count was carried by untracked files from concurrent
-      # apedp/apedp_dyn sessions; every finding in a *committed* file is now
-      # clear (8c0be24), and CI only ever checks out committed files, so
-      # this is a real gate rather than a decoration.
-      #
-      # The findings that remain locally (~144 ruff, 21 mypy) all live in
-      # apedp_dyn/conf/benchmark_v2.py and five apedp_dyn/sandbox/ demos
-      # that are not yet in version control. They will surface here the
-      # moment they are committed, which is the right time to fix them.
-      - name: Lint with ruff
-        run: |
-          source .venv/bin/activate
-          ruff check apedp/ apedp_dyn/ tests/
-
-      - name: Type check with mypy
-        run: |
-          source .venv/bin/activate
-          mypy apedp/ apedp_dyn/ --ignore-missing-imports
+          python -m pytest tests/ -v --tb=short -n auto -x -m integration
 
       - name: Security scan with bandit
         run: |
@@ -228,8 +242,10 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           working-directory: rust/apedp-kernel
+          rust-toolchain: '1.99.0'
+          maturin-version: '1.14.1'
           command: build
-          args: --release --out ../../wheelhouse --interpreter python3.12
+          args: --release --locked --out ../../wheelhouse --interpreter python3.12
 
       - name: Upload wheel artifact
         uses: actions/upload-artifact@v4
@@ -243,8 +259,9 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       github.event_name == 'push' &&
-      startsWith(github.ref, 'refs/tags/') &&
-      secrets.PYPI_API_TOKEN != ''
+      startsWith(github.ref, 'refs/tags/')
+    env:
+      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
     permissions:
       contents: read
     steps:
@@ -255,6 +272,7 @@ jobs:
           path: wheelhouse
 
       - name: Publish to PyPI
+        if: env.PYPI_API_TOKEN != ''
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: wheelhouse

@@ -300,6 +300,7 @@ impl GeneticOps {
     /// unreachable from a uniform random tree at depth 4 (the frozen N04
     /// forensics: coarse frequency x no phase DOF -> R2 = 0.04); seeding the
     /// template directly is the recorded next-round fix.
+    #[allow(clippy::approx_constant)] // Rounded search bounds, not mathematical pi.
     fn trig_template(rng: &mut FastRng, num_vars: usize) -> Node {
         let func = if rng.next_f64() < 0.5 { Func::Sin } else { Func::Cos };
         let v = rng.gen_range(0, num_vars);
@@ -981,7 +982,7 @@ mod polish_tests {
         );
         let (mse_before, _, _) = score_candidate_affine(&tree, &data, &ys, mean, var);
         let mut evals = 0usize;
-        let (polished, mse_after, _, _) =
+        let (_polished, mse_after, _, _) =
             polish_candidate_constants(&tree, &data, &ys, mean, var, 8, &mut evals);
         assert!(
             mse_after < mse_before * 1e-3,

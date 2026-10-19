@@ -43,7 +43,7 @@ pub struct FlowHeadSpec {
 
 const SQRT2: f64 = std::f64::consts::SQRT_2;
 const FRAC_1_SQRT_2PI: f64 = 0.398_942_280_401_432_7; // 1/sqrt(2*pi) (gelu pdf)
-const FRAC_2_SQRT_PI: f64 = 1.128_379_167_095_512_6; // 2/sqrt(pi) (erf Maclaurin)
+const FRAC_2_SQRT_PI: f64 = std::f64::consts::FRAC_2_SQRT_PI; // 2/sqrt(pi) (erf Maclaurin)
 
 /// Total flat parameter count for a spec.
 pub fn weights_len(spec: FlowHeadSpec) -> usize {
@@ -98,7 +98,7 @@ fn conv3x3(x: &[f64], c_in: usize, h: usize, w_size: usize,
             *v += b[o];
         }
     }
-    out.into_raw_vec()
+    out.into_raw_vec_and_offset().0
 }
 
 /// im2col: (C_in*9, H*W) zero-padded 3x3 windows, row r = i*9 + ky*3 + kx.
@@ -143,7 +143,7 @@ fn conv3x3_backward_input(x_grad: &mut [f64], g_out: &[f64], w_mat: &[f64],
         .expect("conv weight shape");
     let g2 = Array2::from_shape_vec((c_out, plane), g_out.to_vec())
         .expect("grad shape");
-    let din = (w2.t().dot(&g2)).into_raw_vec(); // (c_in*9, plane)
+    let din = (w2.t().dot(&g2)).into_raw_vec_and_offset().0; // (c_in*9, plane)
 
     // slot-wise scatter: the C_in output planes are disjoint, so produce each
     // plane's contribution in parallel (map) and add them sequentially — exact
@@ -194,7 +194,7 @@ fn conv3x3_backward_weights(x: &[f64], g_out: &[f64], w_grad: &mut [f64], b_grad
     let c2 = Array2::from_shape_vec((c_in * 9, plane), cols)
         .expect("im2col shape");
     let dw = g2.dot(&c2.t()); // (c_out, c_in*9)
-    for (wg, d) in w_grad.iter_mut().zip(dw.into_raw_vec().into_iter()) {
+    for (wg, d) in w_grad.iter_mut().zip(dw.into_raw_vec_and_offset().0.into_iter()) {
         *wg += d;
     }
     for o in 0..c_out {
