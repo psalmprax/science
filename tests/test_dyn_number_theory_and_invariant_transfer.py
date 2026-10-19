@@ -108,6 +108,19 @@ def test_invariant_transfer_proposer_promotes_causal_law():
     assert top_p.metadata["worst_env_r2"] > 0.99
     assert top_p.metadata["r2_dispersion_std"] < 0.01
 
+    # Search-size disclosure: dev-side metrics were selected over the whole
+    # degree pool, so the trial counts must be visible on every candidate.
+    assert top_p.metadata["selection_rank"] == 0
+    assert top_p.metadata["selection_pool_size"] == len(proposals)
+    assert top_p.metadata["degree_trials"] == 3  # max_poly_degree default
+    assert "dev environments" in top_p.metadata["dev_side_gates"]
+    search_ids = {p.metadata["search_id"] for p in proposals}
+    assert len(search_ids) == 1, "one fit call must share a single search_id"
+    for p in proposals:
+        assert p.metadata["selection_pool_size"] == len(proposals)
+        assert 0 <= p.metadata["selection_rank"] < len(proposals)
+        assert p.metadata["search_id"] == next(iter(search_ids))
+
     # Evaluate on held-out unseen regime (Environment 3)
     x3 = np.linspace(20.0, 25.0, 50)
     y3 = 3.0 * x3

@@ -56,6 +56,35 @@ class TestRealMarketL2Sweep:
         assert "vol" in rec.discovered_expression
         assert rec.out_of_grammar is False
 
+    def test_window_discovery_records_search_multiplicity(self):
+        """The promoted candidate is an order statistic over the engine's search pool.
+
+        The sweep must record every candidate it scored (shared search id, the
+        true evaluated count, and the promoted candidate's rank) so a 1-of-N
+        promotion is never presented without its selection bias.
+        """
+        w2 = WINDOWS[1]  # W2_2019
+        rec = execute_window_discovery("sp500", w2, bootstrap=False)
+
+        mult = rec.trial_multiplicity
+        assert mult is not None
+        assert mult["recorded_trials"] >= 1
+        assert mult["effective_trials"] == mult["recorded_trials"]
+        assert mult["evaluated_count"] >= mult["recorded_trials"]
+        assert mult["search_id"].startswith("l2:sp500:W2_2019:")
+        assert "DSR not applicable" in mult["selection_statistic"]
+
+        # The rank is a disclosure, not a promise: the promoted candidate is
+        # selected by HOLDOUT adjudication, so it is generally NOT the best
+        # in-sample fit. On this window it ranks 217th of 3195 by train loss
+        # (the better-fitting candidates failed the holdout), which is exactly
+        # the selection bias the disclosure exists to expose.
+        assert 0 <= mult["promoted_rank"] < mult["recorded_trials"]
+        assert mult["promoted_rank"] > 0, (
+            "a rank-0 promotion would mean the winner was also the best "
+            "in-sample fit; the disclosure must reflect the real ordering"
+        )
+
     def test_multiterm_market_sweep_calm_refuses_spurious_models(self):
         """MultiTermL2Engine on W2_2019 calm market abstains with INSUFFICIENT_EVIDENCE."""
         w2 = WINDOWS[1]  # W2_2019

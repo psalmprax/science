@@ -38,6 +38,17 @@ from apedp_dyn.conf.canonical_spec import (
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
+# Pinned documentation-debt ledger (2026-10-19). Debt was reduced from 125 to
+# 67 by indexing the core packages and the benchmark problem catalog, and to ZERO
+# by indexing the remaining historical sandbox harnesses. The ledger is now empty:
+# any new undocumented module fails this test, and there is no pin to hide behind.
+PINNED_UNINDEXED_COUNT = 0
+PINNED_UNINDEXED_MODULES = frozenset(
+    """
+""".split()
+)
+
+
 def test_canonical_spec_hash_integrity():
     """Verify that canonical spec file matches its pinned cryptographic SHA-256 hash."""
     assert SPEC_PATH.exists(), f"Canonical specification missing at {SPEC_PATH}"
@@ -107,51 +118,70 @@ def test_documentation_constants_match_runtime_code():
 
 
 def test_documentation_links_exist_on_disk():
-    """Validate that every relative file link or file:// link in DOCUMENTATION.md points to a real file."""
+    """Validate every repository-relative link in DOCUMENTATION.md.
+
+    Links are resolved from ``docs/`` (ARCHITECTURE.md §4.2). Absolute
+    ``file:///home/<user>/...`` links are rejected outright: they are not
+    portable and this test used to honor only that non-portable form.
+    """
     doc_path = REPO_ROOT / "docs" / "DOCUMENTATION.md"
     content = doc_path.read_text(encoding="utf-8")
 
-    # Match file:///home/psalmprax/ALL_PROJECTS/science/...
-    file_uris = re.findall(r"file:///home/psalmprax/ALL_PROJECTS/science/([a-zA-Z0-9_\-\./]+)", content)
-    for rel_path in file_uris:
-        full_path = REPO_ROOT / rel_path
-        assert full_path.exists(), f"Broken file link in DOCUMENTATION.md: {rel_path} does not exist"
+    assert "file:///" not in content, (
+        "Absolute file:// links are forbidden in the live documentation index "
+        "(use repository-relative links; see ARCHITECTURE.md §4.2)"
+    )
 
-    # Match relative markdown links like [Foo](SYSTEM_CAPABILITIES_AND_PHILOSOPHY.md)
-    rel_md_links = re.findall(r"\]\(([a-zA-Z0-9_\-\./]+\.md)\)", content)
-    for link in rel_md_links:
-        if link.startswith("http"):
+    links = re.findall(r"\]\(([^)\s]+)\)", content)
+    checked = 0
+    for link in links:
+        if link.startswith(("http://", "https://", "mailto:", "#")):
             continue
-        target = (doc_path.parent / link).resolve()
-        assert target.exists(), f"Broken relative doc link in DOCUMENTATION.md: {link} does not exist at {target}"
+        target = (doc_path.parent / link.split("#", 1)[0]).resolve()
+        assert target.exists(), (
+            f"Broken relative link in DOCUMENTATION.md: {link} does not exist at {target}"
+        )
+        checked += 1
+    assert checked >= 200, f"documentation link check covered too few links ({checked})"
 
 
 def test_orphan_module_detection():
-    """Detect active production modules in apedp_dyn that are missing from DOCUMENTATION.md."""
+    """Detect production modules in apedp_dyn missing from DOCUMENTATION.md.
+
+    The scan is recursive over the whole ``apedp_dyn`` tree (the original
+    four-directory, non-recursive scan missed 143/250 modules, including the
+    entire ``epistemic/active_disambiguation`` and most of ``discovery_l2``,
+    which are now indexed). The pinned debt ledger was fully repaid on
+    2026-10-19 (125 -> 67 -> 0): every ``apedp_dyn`` module is now indexed.
+    Adding a module without indexing it fails this test; there is no pin left
+    to mask a regression.
+    """
     doc_path = REPO_ROOT / "docs" / "DOCUMENTATION.md"
     doc_text = doc_path.read_text(encoding="utf-8")
 
-    # Active core packages that MUST be indexed in DOCUMENTATION.md
-    core_dirs = [
-        REPO_ROOT / "apedp_dyn" / "conf",
-        REPO_ROOT / "apedp_dyn" / "epistemic",
-        REPO_ROOT / "apedp_dyn" / "grammar",
-        REPO_ROOT / "apedp_dyn" / "proposers",
-    ]
-
-    orphans = []
-    for d in core_dirs:
-        for py_file in d.glob("*.py"):
-            if py_file.name.startswith("__"):
-                continue
-            rel_str = str(py_file.relative_to(REPO_ROOT))
-            if rel_str not in doc_text:
-                orphans.append(rel_str)
-
-    assert not orphans, (
-        "Orphan module detection failed! The following active modules are missing from DOCUMENTATION.md:\n"
-        + "\n".join(f" - {o}" for o in orphans)
+    all_modules = sorted(
+        py_file
+        for py_file in (REPO_ROOT / "apedp_dyn").rglob("*.py")
+        if "__pycache__" not in py_file.parts and not py_file.name.startswith("__")
     )
+    unindexed = {
+        str(py_file.relative_to(REPO_ROOT))
+        for py_file in all_modules
+        if str(py_file.relative_to(REPO_ROOT)) not in doc_text
+    }
+
+    added = sorted(unindexed - PINNED_UNINDEXED_MODULES)
+    repaid = sorted(PINNED_UNINDEXED_MODULES - unindexed)
+    assert not added, (
+        "New undocumented modules detected (index them in DOCUMENTATION.md "
+        "or the pin may not grow):\n" + "\n".join(f" - {a}" for a in added)
+    )
+    assert not repaid, (
+        "Documentation debt was paid down; shrink PINNED_UNINDEXED_MODULES "
+        "to match (debt must never mask a regression):\n"
+        + "\n".join(f" - {r}" for r in repaid)
+    )
+    assert len(PINNED_UNINDEXED_MODULES) == PINNED_UNINDEXED_COUNT
 
 
 def test_registry_status_tags_match_code_status_labels():
@@ -168,14 +198,14 @@ def test_registry_status_tags_match_code_status_labels():
 
     valid_tags = {"production", "experimental", "audit-only", "deprecated"}
     row_re = re.compile(
-        r"\|\s*\[`([^`]+)`\]\(file:///home/psalmprax/ALL_PROJECTS/science/([^)]+)\)[^|]*\|[^|]*\|\s*`([a-z-]+)`\s*\|"
+        r"\|\s*\[`([^`]+)`\]\((\.\./[^)]+)\)[^|]*\|[^|]*\|\s*`([a-z-]+)`\s*\|"
     )
     status_re = re.compile(r"Status:\s*(production|experimental|audit-only|deprecated)\b")
 
     checked = 0
     for _display, rel, tag in row_re.findall(content):
         assert tag in valid_tags, f"Non-canonical status tag `{tag}` for {rel} in DOCUMENTATION.md"
-        target = REPO_ROOT / rel
+        target = (doc_path.parent / rel).resolve()
         if not target.exists() or target.suffix != ".py":
             continue
         head = target.read_text(encoding="utf-8")[:4000]

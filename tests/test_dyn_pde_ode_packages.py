@@ -27,6 +27,10 @@ import apedp.ode as apedp_ode
 import apedp.pde as apedp_pde
 import apedp_dyn.ode as apedp_dyn_ode
 import apedp_dyn.pde as apedp_dyn_pde
+from apedp_dyn.epistemic.coupled_discovery import (
+    CoupledEquationInfo,
+    CoupledSystemDiscoveryResult,
+)
 
 
 def test_public_package_import_parity():
@@ -205,8 +209,115 @@ def test_continuous_coupled_ode_discovery():
     adj = referee.adjudicate_result(res, traj)
     assert adj.verdict == apedp_ode.EpistemicOdeVerdict.IDENTIFIED_DYNAMICAL_LAW
     assert adj.is_stable
-    assert adj.verdict == apedp_ode.EpistemicOdeVerdict.IDENTIFIED_DYNAMICAL_LAW
-    assert adj.is_stable
+    assert adj.mean_holdout_r2 > 0.95
+    assert adj.worst_state_r2 > 0.85
+
+
+def _lotka_volterra_holdout(n: int = 200, dt: float = 0.005) -> apedp_ode.OdeTrajectoryData:
+    x = np.zeros(n)
+    y = np.zeros(n)
+    x[0], y[0] = 2.0, 1.0
+    for i in range(n - 1):
+        def f(cx: float, cy: float) -> tuple[float, float]:
+            return 1.5 * cx - 1.0 * cx * cy, -3.0 * cy + 1.0 * cx * cy
+
+        k1x, k1y = f(x[i], y[i])
+        k2x, k2y = f(x[i] + 0.5 * dt * k1x, y[i] + 0.5 * dt * k1y)
+        k3x, k3y = f(x[i] + 0.5 * dt * k2x, y[i] + 0.5 * dt * k2y)
+        k4x, k4y = f(x[i] + dt * k3x, y[i] + dt * k3y)
+        x[i + 1] = x[i] + (dt / 6.0) * (k1x + 2.0 * k2x + 2.0 * k3x + k4x)
+        y[i + 1] = y[i] + (dt / 6.0) * (k1y + 2.0 * k2y + 2.0 * k3y + k4y)
+    return apedp_ode.OdeTrajectoryData.from_dict({"prey": x, "predator": y}, dt=dt)
+
+
+def _equation(state: str, terms: list[str], coeffs: list[float]) -> CoupledEquationInfo:
+    return CoupledEquationInfo(
+        state_variable=state,
+        formula="test",
+        active_terms=terms,
+        coefficients=coeffs,
+        r2=0.999,
+        residual_rmse=0.001,
+    )
+
+
+def test_ode_referee_rejects_wrong_structure_despite_in_sample_claim():
+    """Regression: the referee must adjudicate from the HOLD OUT rollout, never
+    from the discovery-side in-sample fit statistic."""
+    wrong = CoupledSystemDiscoveryResult(
+        equations=[
+            _equation("prey", ["prey", "prey*predator"], [1.5, -1.0]),
+            _equation("predator", ["predator", "prey*predator"], [-1.0, 1.0]),  # true value -3.0
+        ],
+        mean_system_r2=0.999,
+        worst_state_r2=0.999,
+        is_exact_recovery=False,
+    )
+    holdout = _lotka_volterra_holdout()
+    referee = apedp_ode.OdeReferee(min_mean_r2=0.95, min_worst_r2=0.85)
+    adj = referee.adjudicate_result(wrong, holdout)
+    assert adj.verdict == apedp_ode.EpistemicOdeVerdict.PREDICTIVE_WRONG_STRUCTURE
+    assert adj.mean_holdout_r2 < 0.95
+
+
+def test_ode_referee_flags_unstable_forward_simulation():
+    """Regression: divergent rollouts get the dedicated unstable verdict."""
+    blow_up = CoupledSystemDiscoveryResult(
+        equations=[_equation("x", ["x"], [500.0])],
+        mean_system_r2=0.999,
+        worst_state_r2=0.999,
+        is_exact_recovery=False,
+    )
+    t = np.arange(50) * 0.01
+    holdout = apedp_ode.OdeTrajectoryData.from_dict({"x": np.exp(-t)}, dt=0.01)
+    referee = apedp_ode.OdeReferee()
+    adj = referee.adjudicate_result(blow_up, holdout)
+    assert adj.verdict == apedp_ode.EpistemicOdeVerdict.UNSTABLE_FORWARD_SIMULATION
+    assert adj.is_stable is False
+
+
+def test_ode_referee_fails_closed_on_unknown_state_reference():
+    """Regression: a TERM referencing a state absent from the holdout fails closed.
+
+    The state sets match, so this reaches term translation: a factor with no
+    holdout trajectory means the discovery result is internally inconsistent,
+    which must crash loudly rather than be silently dropped from the rollout.
+    """
+    import pytest
+
+    bogus = CoupledSystemDiscoveryResult(
+        equations=[
+            _equation("prey", ["prey", "prey*predator"], [1.5, -1.0]),
+            _equation("predator", ["predator", "prey*ghost"], [-1.0, 1.0]),
+        ],
+        mean_system_r2=0.999,
+        worst_state_r2=0.999,
+        is_exact_recovery=False,
+    )
+    holdout = _lotka_volterra_holdout(n=20)
+    referee = apedp_ode.OdeReferee()
+    with pytest.raises(ValueError, match="unknown state"):
+        referee.adjudicate_result(bogus, holdout)
+
+
+def test_ode_referee_refuses_state_set_mismatch_as_insufficient_evidence():
+    """A discovered state set that differs from the holdout is an epistemic refusal.
+
+    Distinguishing this from the raise above: a missing/extra state is a normal
+    incomplete-discovery outcome (refuse with INSUFFICIENT_EVIDENCE), while a
+    term referencing a non-existent state is an inconsistent result (raise).
+    """
+    bogus = CoupledSystemDiscoveryResult(
+        equations=[_equation("ghost", ["ghost"], [1.0])],
+        mean_system_r2=0.999,
+        worst_state_r2=0.999,
+        is_exact_recovery=False,
+    )
+    holdout = _lotka_volterra_holdout(n=20)
+    adj = apedp_ode.OdeReferee().adjudicate_result(bogus, holdout)
+    assert adj.verdict == apedp_ode.EpistemicOdeVerdict.INSUFFICIENT_EVIDENCE
+    assert adj.is_stable is False
+    assert "does not match the holdout state set" in adj.rational_justification
 
 
 def test_coupled_ode_proposer_conforms_to_proposer_base():

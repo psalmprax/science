@@ -102,7 +102,11 @@ def test_sffcc_lattice_hardware_scaling():
 
 
 def test_sparrow_fault_tolerance_referee():
-    # 1. State-of-the-art compliant hardware spec
+    # 1. Multi-channel-marginal spec: every channel individually passes its
+    # threshold, but the channels together consume ~5x the consolidated error
+    # budget (sum p_i / p_th_i ~ 4.97 > 1.0). Under the summed (Knill-style)
+    # fault-tolerance gate this lattice is NOT certifiable: an older referee
+    # divided the sum by 8 (mean semantics) and wrongly certified it.
     good_spec = SparrowHardwareSpec(
         eta_end_to_end=0.93,          # Loss 7.0% < threshold 8.0%
         cyclicity_c=650.0,            # C > 574
@@ -117,8 +121,25 @@ def test_sparrow_fault_tolerance_referee():
     report_good = referee_good.audit_hardware_specification()
 
     assert report_good["all_channels_passed"] is True
-    assert report_good["is_fault_tolerant"] is True
-    assert report_good["normalized_noise_budget_load"] < 1.0
+    assert report_good["is_fault_tolerant"] is False
+    assert report_good["normalized_noise_budget_load"] > 1.0
+
+    # 1b. Genuinely consolidated-budget-compliant spec: summed load < 1.0.
+    ft_spec = SparrowHardwareSpec(
+        eta_end_to_end=0.99,          # loss ratio 0.015/0.08 = 0.125
+        cyclicity_c=2000.0,           # branch load 574/2000 = 0.287
+        hom_visibility_ee=0.999,      # ee load 0.001/0.04 = 0.025
+        hom_visibility_se=0.9998,     # se load 0.0002/0.006 ~ 0.033
+        kappa_bar=2.0e-4,             # kappa load ~ 0.167
+        t2_spin=100.0e-6,             # t2 load 5.75us/100us ~ 0.058
+        t2_star=20.0e-6,              # t2* load 1.55us/20us ~ 0.078
+        blinking_pa_pd_ratio=100.0,   # blinking load 15.4/100 = 0.154
+    )
+    referee_ft = SparrowFaultToleranceReferee(ft_spec)
+    report_ft = referee_ft.audit_hardware_specification()
+    assert report_ft["all_channels_passed"] is True
+    assert report_ft["normalized_noise_budget_load"] < 1.0
+    assert report_ft["is_fault_tolerant"] is True
 
     # 2. Non-compliant hardware spec (excessive loss: 12% > 8% threshold)
     bad_spec = SparrowHardwareSpec(eta_end_to_end=0.88)

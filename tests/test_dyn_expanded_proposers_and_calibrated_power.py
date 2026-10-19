@@ -85,11 +85,85 @@ def test_distributed_lag_interaction_proposer_generates_valid_proposals():
     assert len(proposals) >= 1
     p = proposals[0]
     assert p.strategy_archetype == StrategyArchetype.CONTINUOUS_FACTOR
-    assert p.declared_scale_invariant is True
-    # Evaluate compute_score
+    # The fitted model carries an intercept and raw-scale weights, so it is NOT
+    # invariant under input rescaling; claiming invariance here used to make
+    # referee invariance tests falsify a true statement.
+    assert p.declared_scale_invariant is False
+    # Evaluate compute_score. The first max(lag) rows are unknowable and are
+    # scored NaN rather than fabricated, so the signal check uses the finite
+    # overlap (the same rows the fit used).
     scores = p.compute_score(df)
     assert len(scores) == n
-    assert np.std(scores) > 0.0
+    finite_scores = scores[np.isfinite(scores)]
+    assert finite_scores.size >= n - 2
+    assert np.std(finite_scores) > 0.0
+
+
+def test_distributed_lag_proposer_scores_fitted_model_faithfully():
+    """Regression: coefficients must be mapped back to the raw feature scale.
+
+    Features with large offsets/scales expose any mismatch between the
+    standardized ElasticNet fit and the scorer: applying standardized-fit
+    coefficients directly to raw feature values yields predictions wildly
+    inconsistent with the fitted signal.
+    """
+    rng = np.random.RandomState(7)
+    n = 400
+    x1 = 100.0 + 5.0 * rng.randn(n)
+    x2 = 0.5 + 0.1 * rng.randn(n)
+    lag_x1 = np.roll(x1, 1)
+    lag_x1[0] = 0.0
+    y = 0.3 * lag_x1 + 50.0 * (x1 * x2) + 0.5 * rng.randn(n)
+
+    df = pd.DataFrame({"x1": x1, "x2": x2, "target": y})
+    proposer = DistributedLagInteractionProposer(lags=(1,), include_interactions=True)
+    proposals = proposer.fit_and_propose(df, feature_cols=["x1", "x2"], target_col="target")
+
+    assert len(proposals) >= 1
+    p = proposals[0]
+    assert p.metadata["coefficients_mapped_to_raw_scale"] is True
+    pred = np.asarray(p.compute_score(df), dtype=float)
+    # The first lag rows are unknowable (no earlier observation) and are scored
+    # NaN rather than fabricated, so faithfulness is measured on the finite
+    # overlap -- the same rows the fit itself used.
+    finite = np.isfinite(pred)
+    assert finite.sum() >= n - 2, finite.sum()
+    assert not finite[0], "the first lag row must not be fabricated"
+    ss_res = float(np.sum((y[finite] - pred[finite]) ** 2))
+    ss_tot = float(np.sum((y[finite] - y[finite].mean()) ** 2))
+    r2 = 1.0 - ss_res / ss_tot
+    assert r2 > 0.90, f"scorer does not reproduce the fitted model: R2={r2}"
+
+
+def test_distributed_lag_scorer_is_streaming_safe():
+    """Chunked scoring must equal single-pass scoring (state buffer, not zeros).
+
+    The lag scorer used to zero-fill the first `lag` rows of whatever frame it
+    was handed, so a streaming chunk shorter than the lag lost 100% of the lag
+    signal. With the carried state buffer, scoring a series in short chunks
+    through the same proposal reproduces the single-pass scores exactly.
+    """
+    rng = np.random.RandomState(5)
+    n = 300
+    x1 = rng.randn(n)
+    y = 0.4 * np.roll(x1, 2) + 0.1 * rng.randn(n)
+    df = pd.DataFrame({"x1": x1, "target": y})
+    proposer = DistributedLagInteractionProposer(lags=(2,), include_interactions=False)
+    proposals = proposer.fit_and_propose(df, feature_cols=["x1"], target_col="target")
+    assert len(proposals) >= 1
+    p = proposals[0]
+
+    full = np.asarray(p.compute_score(df), dtype=float)
+
+    chunks = []
+    for start in range(0, n, 7):
+        piece = df.iloc[start:start + 7]
+        chunks.append(np.asarray(p.compute_score(piece), dtype=float))
+    streamed = np.concatenate(chunks)
+
+    both = np.isfinite(full) & np.isfinite(streamed)
+    assert both.sum() > n - 5, both.sum()
+    assert np.allclose(full[both], streamed[both], atol=1e-12), float(np.max(np.abs(full[both] - streamed[both])))
 
 
 def test_regime_switching_proposer_generates_valid_proposals():
@@ -114,6 +188,48 @@ def test_regime_switching_proposer_generates_valid_proposals():
     assert np.std(scores) > 0.0
 
 
+def test_regime_switching_proposer_excludes_unobservable_warmup_rows():
+    """Regression: warmup rows with no observable volatility must not be fitted.
+
+    Before the fix the rolling-std warmup was backfilled, assigning fabricated
+    volatility (and therefore a regime) to early rows and leaking their target
+    values into the low-regime fit.
+    """
+    rng = np.random.RandomState(11)
+    n = 300
+    vol_window = 10
+    warmup = 4  # rolling(min_periods=5) has no value for the first 4 rows
+    x = np.empty(n)
+    x[:200] = 0.5 * rng.randn(200)  # low-amplitude (low-vol) segment
+    x[200:] = 5.0 * rng.randn(100)  # high-amplitude (high-vol) segment
+    y = np.where(np.arange(n) >= 200, 0.5 * x, -0.5 * x)
+    # Misleading early rows: if (wrongly) included in the low regime they
+    # drag the fitted low-regime slope far away from -0.5.
+    y[:warmup] = 10.0 * x[:warmup]
+
+    df = pd.DataFrame({"feat": x, "target": y})
+    proposer = RegimeSwitchingProposer(vol_window=vol_window, regime_threshold_quantile=0.50)
+    proposals = proposer.fit_and_propose(df, feature_cols=["feat"], target_col="target")
+
+    assert len(proposals) >= 1
+    p = proposals[0]
+    # The warmup rows lack a volatility reading: excluded from both fits.
+    assert p.metadata["samples_metric_missing"] == warmup
+    assert p.metadata["samples_low"] + p.metadata["samples_high"] + warmup == n
+
+    import re
+    m = re.search(r"THEN ([+-][\d.]+)\*feat ELSE ([+-][\d.]+)\*feat", p.formula)
+    assert m is not None, p.formula
+    beta_high, beta_low = float(m.group(1)), float(m.group(2))
+    assert abs(beta_high - 0.5) < 0.1, beta_high
+    assert abs(beta_low + 0.5) < 0.1, beta_low
+
+    # Scorer must refuse to classify rows without observable volatility.
+    scores = p.compute_score(df)
+    assert np.all(np.isnan(scores[:warmup]))
+    assert np.all(np.isfinite(scores[warmup:]))
+
+
 def test_hawkes_orderflow_proposer_fits_intensity():
     """HawkesOrderFlowProposer fits self-exciting arrival intensities."""
     # Synthesize clustered timestamps
@@ -127,8 +243,30 @@ def test_hawkes_orderflow_proposer_fits_intensity():
     assert len(proposals) >= 1
     p = proposals[0]
     assert p.strategy_archetype == StrategyArchetype.TAIL_RISK
+    assert p.metadata["binary_surge_viable_on_fit"] is True
     assert 0.0 < p.parameters["branching_ratio"] < 1.0
     assert "hawkes_intensity" in p.formula
+
+
+def test_hawkes_degenerate_threshold_declares_continuous_factor():
+    """Regression: a non-binding threshold emits a continuous signal and must
+    be declared CONTINUOUS_FACTOR, not TAIL_RISK (ledger mis-adjudication)."""
+    rng = np.random.RandomState(3)
+    ts = np.cumsum(rng.exponential(scale=0.5, size=200))
+
+    proposer = HawkesOrderFlowProposer(decay_beta=1.5, intensity_threshold_quantile=1.0)
+    proposals = proposer.fit_and_propose(ts)
+
+    assert len(proposals) == 1
+    cand = proposals[0]
+    assert cand.strategy_archetype == StrategyArchetype.CONTINUOUS_FACTOR
+    assert cand.metadata["binary_surge_viable_on_fit"] is False
+    assert cand.metadata["score_mode"] == "continuous_standardized_intensity"
+
+    scores = cand.compute_score(pd.DataFrame({"timestamp": ts}))
+    assert np.std(scores) > 0.0
+    # Continuous, not a binary 0/1 vector.
+    assert len(np.unique(np.round(scores, 10))) > 2
 
 
 # ── P3: Regime Robustness Diagnostic Tests ───────────────────────────────────

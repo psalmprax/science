@@ -60,6 +60,15 @@ def test_analytic_gradient_matches_finite_differences():
     assert float(np.max(np.abs(numerical - analytic))) < 1e-8
 
 
+def test_coincident_atoms_do_not_produce_nonfinite_energy_or_gradient():
+    """Regression: pair-distance divisions were unguarded (silent inf/NaN)."""
+    coincident = np.zeros((4, 3))  # all atoms at the origin
+    e = energy(coincident, FORCE_FIELD)
+    g = energy_gradient(coincident, FORCE_FIELD)
+    assert np.isfinite(e), e
+    assert np.all(np.isfinite(g)), g
+
+
 def test_velocity_field_equivariant_under_rotations_and_mirrors():
     rng = np.random.default_rng(5)
     rotation = random_rotation(rng)

@@ -82,6 +82,39 @@ def test_cooperative_pingpongduo_turn_taking_safety():
     assert res.target_reached is True
 
 
+def test_three_agent_support_ring_uses_distinct_targets():
+    """Three or more agents must exercise the radial support-ring branch.
+
+    That branch referenced ``_TWO_PI`` before the constant existed in this
+    module, so any run with more than two agents raised NameError instead of
+    assigning distinct support targets. The two-agent test above never reached
+    it (``len(support_ids) == 1``); this one does, and pins both the execution
+    and the geometric separation of the assigned support targets.
+    """
+    initial_poses = np.array([
+        [0.0, 1.0, 0.0],
+        [1.0, -0.5, 0.0],
+        [-1.0, -0.5, 0.0],
+    ])
+    target = np.array([4.0, 0.0])
+
+    res = simulate_multi_agent_coordination(
+        initial_poses=initial_poses,
+        target=target,
+        max_steps=150,
+        dt=0.05,
+        r_safe=0.35,
+        r_warning=0.8,
+    )
+
+    assert isinstance(res, MultiAgentCoordinationResult)
+    assert res.safety_violation is False
+    assert np.all(res.minimum_inter_agent_distances >= 0.35 - 1e-3)
+    # Support agents are placed on a ring around the target: with two supports
+    # their offsets must differ (they are not both collapsed onto one point).
+    assert res.target_reached is True
+
+
 def test_batch_multi_agent_cbf_step_tensorized():
     B = 100
     N = 3
@@ -121,7 +154,6 @@ def test_batch_multi_agent_head_on_collision_avoidance():
     With repulsive potential field steering, the agents deflect laterally and maintain
     inter-agent distance strictly above r_safe throughout the entire trajectory.
     """
-    B, N = 1, 2
     initial_poses = torch.tensor([[[0.0, 0.05, 0.0], [3.0, -0.05, np.pi]]], dtype=torch.float32)
     targets = torch.tensor([[[3.0, 0.05], [0.0, -0.05]]], dtype=torch.float32)
     roles = torch.tensor([[1.0, 1.0]], dtype=torch.float32)

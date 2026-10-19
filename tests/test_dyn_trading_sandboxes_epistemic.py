@@ -34,6 +34,45 @@ from apedp_dyn.sandbox.trading_signals_sandbox import (
 from apedp_dyn.ui.server import app
 
 
+def test_trading_signals_pipeline_charges_ga_multiplicity_and_promotion_refuses():
+    """The live GA pipeline must charge its search to the DSR and run the promotion lifecycle.
+
+    Every GA fitness evaluation is recorded as a trial, so the holdout Sharpe
+    is deflated by the real multiplicity (DSR falls below the single-trial
+    value), and the six-stage promotion state machine actually runs on the
+    candidate: GA strategies have no Lean-verified law, so stage 1 refuses and
+    the candidate halts there instead of reaching economic validity.
+    """
+    df = load_real_btc_orderflow(600)
+    res = run_epistemic_trading_adjudication(
+        panel=df,
+        dataset_name="btc_multiplicity",
+        initial_capital=10000.0,
+        pop_size=20,
+        generations=5,
+        seed=7,
+    )
+
+    mult = res["trial_multiplicity"]
+    assert mult["recorded_trials"] > 0
+    assert mult["effective_trials"] == mult["recorded_trials"]
+    assert mult["hidden_trials"] == 0
+    dsr_adj = mult["dsr_selection_adjusted"]
+    dsr_naive = mult["dsr_single_trial"]
+    assert dsr_adj is not None and dsr_naive is not None
+    assert dsr_adj <= dsr_naive + 1e-12
+    assert mult["expected_max_sr"] > 0.0
+
+    promo = res["promotion_lifecycle"]
+    assert promo["is_halted"] is True
+    assert promo["highest_stage_passed"] == 0
+    assert promo["stage_1_status"] == "MATHEMATICAL_CONSISTENCY_REFUSED"
+    assert "Failed" in (promo["halt_reason"] or "")
+
+    # Evidence bundle carries the deflated value, not the raw Sharpe alone.
+    assert "dsr_selection_adjusted" in res["metrics"] or dsr_adj is not None
+
+
 def test_trading_signals_epistemic_adjudication_and_eedr():
     """Verify Trading Signals Sandbox runs under AEH with C4 -> C2 calibration and invariant enforcement."""
     df = load_real_btc_orderflow(600)
@@ -110,12 +149,27 @@ def test_multi_asset_30_cang_gate_and_aeh_adjudication():
     assert res_stratified["verdict"] == "PROMOTED_ORIGINAL"
     assert res_stratified["promoted"] is True
 
-    # CAN-G Gate Audit & Market Extrapolation Ladder
+    # CAN-G Gate Audit & Market Extrapolation Ladder.
+    #
+    # Re-pinned 2026-10-19 after the lookahead remediation in
+    # multi_asset_signals_sandbox.py (rolling-volatility `bfill` -> causal
+    # `ffill`, with the undefined warm-up rows excluded rather than fabricated):
+    # the gate now DETECTS the cross-asset ranking trap it previously missed,
+    # because the fabricated volatility used to hide the crypto/equity
+    # volatility disparity. Stratified allocation is what makes the candidate
+    # admissible, and the naive pooled arm is negative -- so the trap flag is
+    # the honest reading, not a regression.
     cang = res_stratified["gate_05_cang"]
     assert cang["passed"] is True
     assert cang["status"] == "passed"
-    assert cang["ranking_trap_detected"] is False
+    assert cang["scientific_valid"] is True
+    assert cang["portfolio_admissible"] is True
+    assert cang["volatility_normalized"] is True
+    assert cang["ranking_trap_detected"] is True
+    assert "ranking trap" in cang["reason"]
     assert cang["two_tier_sharpe"] > 0.0
+    assert cang["naive_pooled_sharpe"] < cang["two_tier_sharpe"]
+    assert cang["within_class_sharpes"]["crypto"] > cang["within_class_sharpes"]["equity"]
     assert "crypto" in cang["within_class_sharpes"]
     assert "equity" in cang["within_class_sharpes"]
 

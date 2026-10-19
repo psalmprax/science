@@ -134,7 +134,7 @@ class TestKernelNumPyParity:
 # ---- pure-NumPy reference mirrors (the eval_gate bodies, inlined so this
 # ---- file stays independent of routing decisions in eval_gate itself) ----
 
-def _np_ssim(fa: np.ndarray, fb: np.ndarray, win: int = 8, c1: float = 0.01, c2: float = 0.03) -> float:
+def _np_ssim(fa: np.ndarray, fb: np.ndarray, win: int = 8, c1: float = 1e-4, c2: float = 9e-4) -> float:
     h, w = fa.shape
     vals = []
     for y in range(0, h - win + 1, win):
