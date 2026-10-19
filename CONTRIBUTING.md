@@ -18,6 +18,7 @@ python -m pip install --upgrade pip
 # Install CPU Torch first so pip does not pull the CUDA runtime into CI.
 python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
 python -m pip install -e ".[dev,test,orchestration]"
+python -m pip install -e packages/jetflow-video
 rustup show
 maturin develop --locked --manifest-path rust/apedp-kernel/Cargo.toml
 python -c "from apedp.rust_bridge import is_rust_kernel_available; assert is_rust_kernel_available()"
@@ -88,6 +89,8 @@ against the built kernel, not silently skip.
   above. Some test modules import these runtimes during collection. The broad
   experimental `neural` extra still references unavailable `optax-contrib`;
   fixing that optional dependency surface is deferred.
+- **Missing tqdm/imageio:** install `packages/jetflow-video` as above; its
+  manifest owns the standalone video package's runtime dependencies.
 - **Kernel unavailable or native tests skipped:** run `maturin develop` in
   the activated environment, then repeat the import assertion. Installing
   the Python project alone does not build the Rust extension.

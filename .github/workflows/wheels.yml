@@ -20,6 +20,7 @@ jobs:
   linux-wheels:
     name: Linux Wheels (${{ matrix.target }})
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     strategy:
       fail-fast: true
       matrix:
@@ -53,12 +54,13 @@ jobs:
   macos-wheels:
     name: macOS Wheels (${{ matrix.target }})
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
     strategy:
       fail-fast: true
       matrix:
         include:
           - target: x86_64-apple-darwin
-            runner: macos-13
+            runner: macos-15-intel
           - target: aarch64-apple-darwin
             runner: macos-14
     steps:
@@ -85,6 +87,7 @@ jobs:
   windows-wheels:
     name: Windows Wheels (x86_64)
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -109,6 +112,7 @@ jobs:
   sdist:
     name: Build source distribution (sdist)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -133,6 +137,7 @@ jobs:
   python-packages:
     name: Python Subpackage Wheels (${{ matrix.package }})
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       fail-fast: true
       matrix:

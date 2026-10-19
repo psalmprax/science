@@ -39,6 +39,10 @@ def test_python_test_jobs_install_test_dependencies_before_pytest():
                     dependencies_installed = True
                 if "python -m pytest" in script:
                     assert dependencies_installed, (path.name, step.get("name"))
+    script = "\n".join(
+        step.get("run", "") for step in _workflow("test.yml")["jobs"]["test"]["steps"]
+    )
+    assert "pip install -e packages/jetflow-video" in script
 
 
 def test_rust_builds_use_the_repository_toolchain_and_locked_dependencies():
