@@ -1,0 +1,42 @@
+# Local gate for UNCOMMITTED work. CI only ever checks out committed files, so
+# a broken working tree used to survive until someone ran the suites by hand.
+# These hooks are the fast tier: ruff on changed files, the frozen-referee
+# integrity check, import smoke, and the documentation/audit guards. The full
+# dynamic battery stays in CI (and in scripts/check.sh for a local full run).
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-changed
+        name: ruff (changed files)
+        entry: .venv/bin/ruff check
+        language: system
+        types_or: [python]
+        require_serial: true
+
+      - id: referee-integrity
+        name: frozen referee record integrity (verify_referee)
+        entry: .venv/bin/python -c
+        args: ["from apedp_dyn.sandbox.blind_benchmark import verify_referee; verify_referee(); print('referee integrity OK')"]
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: import-smoke
+        name: import + syntax smoke tier
+        entry: .venv/bin/python -m pytest
+        args: [tests/test_smoke_imports.py, -q]
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: docs-and-audit-guards
+        name: documentation integrity + audit recurrence guards
+        entry: .venv/bin/python -m pytest
+        args:
+          - tests/test_documentation_and_spec_integrity.py
+          - tests/test_audit_open_flaws_remediated.py
+          - tests/test_dyn_blind.py
+          - -q
+        language: system
+        pass_filenames: false
+        always_run: true
