@@ -217,3 +217,39 @@ Sources that document the current (non-claiming) boundary: `CHANGELOG.md`
 ("Still open", external-review rounds), `tests/test_dyn_blind_audit_round2_remediation.py` docstrings,
 `apedp_dyn/cuda/batch_physics_steppers.py::batch_multi_agent_cbf_step`
 docstring (not-a-certified-CBF-QP disclosure, test-pinned).
+
+---
+
+## Round-3 external assessment record (2026-10-19)
+
+Post-round-3 external review scored update: **6.5/10 overall** (up from ~6/10).
+Reported scorecard retains the distinction between verified remediation state and
+scientific-capability maturity:
+
+| Dimension | Score |
+| --- | --- |
+| Engineering and audit discipline | 8.5/10 |
+| Epistemic safeguards | 8/10 |
+| Robustness and regression evidence | 8/10 |
+| Structural discovery capability | 5.5/10 |
+| Scientific validation and generalization | 4.5/10 |
+| Demonstrated advantage over alternatives | 3/10 |
+
+Reviewer-stated criteria for reaching **8/10** (recorded here as forward
+requirements, not claimed progress):
+1. Completion of the outstanding requirements above (REG-F14/F14b, REG-F16,
+   REG-MUT, REG-LEAN) with per-item acceptance evidence.
+2. Independent review of the mathematical certificates and critical code paths.
+3. A reproducible external evaluation showing APEDP-X reliably distinguishes
+   valid discoveries from false or non-identifiable hypotheses.
+
+For **9/10 or higher**, additionally: measurable advantage over established
+alternatives across multiple independent problem families, not just successful
+individual demonstrations.
+
+Matching the reviewer's framing, this register treats the requirement-closure
+path as: individual acceptance evidence per requirement first, then
+independent external validation of scientific performance. Already-green
+checks (46-pin suite, Rust lib 186/186, branch alignment, frozen checkpoint
+`47594e7` vs follow-through record) are not reopened without a relevant
+change or new failure signal.

@@ -4,6 +4,20 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Round-3 external assessment record (2026-10-19)
+
+- Post-round-3 external review: **6.5/10 overall** (up from ~6/10), credited to
+  reliability and audit discipline, while explicitly noting the remediation
+  does not by itself establish stronger scientific discovery capability or a
+  demonstrated advantage over competing methods. Scorecard and the
+  reviewer-stated criteria for reaching 8/10 (REG requirement closure with
+  per-item acceptance evidence, independent review of mathematical
+  certificates and critical code paths, reproducible external evaluation of
+  discovery validity) and 9/10 (measurable advantage over established
+  alternatives across multiple independent problem families) are recorded in
+  `docs/SYSTEM_FLAWS_AUDIT.md` ("Round-3 external assessment record") as
+  forward requirements — not claimed progress.
+
 ## [Unreleased] — Remediation checkpoint frozen at `47594e7`; open-requirements register (2026-10-19)
 
 - `47594e7` is tagged `remediation-checkpoint-47594e7` as the frozen
