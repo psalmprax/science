@@ -48,6 +48,21 @@ def test_rust_kernel_availability():
     assert is_rust_kernel_available(), "apedp_kernel should be compiled and importable"
 
 
+@requires_rust_kernel
+@pytest.mark.parametrize("stride", [1, 2])
+def test_native_numpy_binding_roundtrip(stride):
+    """Exercise list extraction and NumPy output conversion in the native bindings."""
+    import apedp_kernel
+
+    x = np.arange(12, dtype=np.float64)[::stride]
+    compiled = apedp_kernel.compile("x * x + 1", ["x"])
+    result = apedp_kernel.evaluate_batch(compiled, [x])
+
+    assert isinstance(result, np.ndarray)
+    assert result.dtype == np.float64
+    np.testing.assert_array_equal(result, x * x + 1)
+
+
 @pytest.mark.parametrize(
     "expr,vars,data_gen",
     [
