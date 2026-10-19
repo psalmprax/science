@@ -813,6 +813,19 @@ def adjudicate(fitted: list,
     # tiebreaking runs on point estimates alone and must not masquerade as FULL.
     pair_contract = (contract if (bootstrap and resid_best is not None and resid_rival is not None)
                      else EpistemicContract.INCOMPLETE)
+    # External-review follow-through: the pair verdict decides the winner on the
+    # SAME holdout slice that later certifies it (promotion head = holdout-lowest
+    # RMSE), so that holdout is a selection set, not an untouched confirmation
+    # set (review finding on F14). The referee cannot mint new confirmation
+    # data, so every pair-path verdict DISCLOSES the reuse and its pool size;
+    # the calling layer must charge it to the DSR trial ledger via
+    # ``search_id``/``selection_pool_size`` (the standing multiple-testing
+    # correction — see apedp_dyn/epistemic/trial_ledger.py) or obtain an
+    # independent confirmation split. FULL contract claims are therefore only
+    # valid when the caller's ledger separation is honored.
+    selection_reuse_flag = (
+        f"selection_reused_confirmation_holdout(n_candidates={len(ho_scoring)})"
+        if ho_scoring else "")
 
     second = min(rivals, key=lambda s: s.holdout_rmse)
     # delta is measured against the holdout-anchored head, so a genuinely
@@ -925,7 +938,8 @@ def adjudicate(fitted: list,
             benchmark_level=benchmark_level,
             epistemic_attribution=attr,
             promotion_confidence=boot_conf,
-            diagnostic_flags=tuple(boot_flags) + dup_flags,
+            diagnostic_flags=tuple(boot_flags) + dup_flags
+            + ((selection_reuse_flag,) if selection_reuse_flag else ()),
             reason=f"rival {second.candidate.candidate_id} separated by "
                    f"Δ={delta:.3g} > τ={tau:.3g} [{tau_source}] and confirmed "
                    f"by the paired block bootstrap (branch "
@@ -961,6 +975,7 @@ def adjudicate(fitted: list,
         benchmark_level=benchmark_level,
         epistemic_attribution=attr,
             promotion_confidence=diag_conf,
-            diagnostic_flags=tuple(diag_flags) + dup_flags,
+            diagnostic_flags=tuple(diag_flags) + dup_flags
+            + ((selection_reuse_flag,) if selection_reuse_flag else ()),
             reason=f"nearest distinct rival separated by Δ={delta:.3g} > "
         f"τ={tau:.3g} [{tau_source}]{note}")

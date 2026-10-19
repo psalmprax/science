@@ -9,7 +9,7 @@
     "py": "3.12"
   },
   "file_hashes_sha256": {
-    "apedp_dyn/epistemic/adjudicate.py": "5a8f1feae5f4de4959ebd2e2a6cc71dc316b9f7599a6d1e90983f57d69771278",
+    "apedp_dyn/epistemic/adjudicate.py": "f56987b97ec1e297f24e47c0b3f975b9ec3570efc85509f319391f03897d9e75",
     "apedp_dyn/epistemic/claim_ladder.py": "aba9fd0045abc137a36dab90e1316b8934597beb02c553cf35d15c3029c0886c",
     "apedp_dyn/grammar/candidate_ir.py": "3076d6a7c4ceae0952c8bc372f9483097cccae4613dc2f574d5462583fe42a35",
     "apedp_dyn/sandbox/apedp_x_meta_sandbox.py": "3f6e19e1bdb5d33e74e7abbcc893bd5147ea3a51d4753d6add1c4d8ce6bc3b3d",

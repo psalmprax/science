@@ -25,11 +25,20 @@ Pins, at the public interface level, the two semantic fixes round 2 introduced
 """
 from __future__ import annotations
 
+import math
+import typing
+
 import numpy as np
 import pandas as pd
 import pytest
+import torch
 
+from apedp_dyn.cuda.batch_physics_steppers import batch_multi_agent_cbf_step
 from apedp_dyn.epistemic.adjudicate import EpistemicStatus, adjudicate
+from apedp_dyn.epistemic.trial_ledger import (
+    CandidateTrialLedger,
+    compute_deflated_sharpe_ratio,
+)
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 from apedp_dyn.proposers.ncm_structural_proposer import (
     MacroConceptArchetype,
@@ -229,3 +238,224 @@ class TestF15NcmComputeScore:
         pool = _archetype_pool(df)
         assert len(pool) == 4
         assert set(pool) == {a.value for a in MacroConceptArchetype}
+
+
+# ── External-review round: F14 τ-rule, selection-reuse disclosure, F4/F5/F16 ──
+
+class TestF14TauRuleIsASeparationTest:
+    """External-review case: holdout RMSE 0.1000 vs 0.1001 (Δ=10^-4).
+
+    A nonnegative separation is guaranteed by construction (the rival is the
+    holdout minimum), so uniqueness must come from the PRE-SPECIFIED τ rule,
+    not from the sign. Pinned both ways: Δ ≤ τ -> refusal; a genuine margin
+    (τ raised above Δ by the caller would be odd, so instead compare the
+    τ-separation direction in the other review case which clears τ) -- and
+    the same fixture with τ shrunk below Δ still resolves via the τ rule.
+    """
+
+    def test_delta_at_tau_boundary_refuses_unique(self):
+        a = _scored("c_tie_a", 0.50, 0.1000, ("x",))
+        b = _scored("c_tie_b", 0.61, 0.1001, ("x", "v"))
+        adj = adjudicate([a, b], sole_survivor_rule=True,
+                         data_origin="simulation", tau_epi=1e-4)
+        assert adj.status is EpistemicStatus.MULTI_HYPOTHESIS
+        assert adj.delta_rmse == pytest.approx(1e-4)
+        assert adj.delta_rmse <= adj.tau_epi
+        assert adj.promoted is None
+        assert "abstains from unique promotion" in adj.reason
+
+    def test_tau_shrunk_below_delta_resolves_unique(self):
+        """Same 10^-4 separation, but τ stepped an order-of-magnitude lower:
+        the referee's verdict follows the PRE-SPECIFIED τ, not the sign."""
+        a = _scored("c_tie_a", 0.50, 0.1000, ("x",))
+        b = _scored("c_tie_b", 0.61, 0.1001, ("x", "v"))
+        adj = adjudicate([a, b], sole_survivor_rule=True,
+                         data_origin="simulation", tau_epi=1e-6)
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT, adj.reason
+        assert adj.delta_rmse == pytest.approx(1e-4)
+        assert adj.delta_rmse > adj.tau_epi
+
+
+class TestF14SelectionReuseDisclosure:
+    """Every pair-path UNIQUE_SUPPORT discloses that the winner was SELECTED on
+    the same holdout slice that certifies it, with the pool size, so callers
+    must charge it to the DSR trial ledger (or hold a sealed confirmation set).
+    """
+
+    def test_unique_verdict_carries_selection_reuse_flag(self):
+        overfitted = _scored("c_overfitted", 0.01, 2.00, ("x",))
+        generalizing = _scored("c_generalizing", 0.90, 0.07, ("x", "v"))
+        extra = _scored("c_third", 0.5, 0.5, ("w", "v", "z"))
+        adj = adjudicate([overfitted, generalizing, extra],
+                         sole_survivor_rule=True, data_origin="simulation")
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
+        flags = tuple(adj.diagnostic_flags)
+        assert any(
+            f.startswith("selection_reused_confirmation_holdout(n_candidates=")
+            for f in flags
+        ), flags
+        pool = next(
+            f for f in flags if f.startswith("selection_reused_confirmation_holdout"))
+        # 3 holdout-scorable candidates were compared on this slice.
+        assert pool == "selection_reused_confirmation_holdout(n_candidates=3)"
+
+
+class TestF4TrialLedgerChargesSeedsAndHyperparameters:
+    """The multiplicity correction must count every recorded trial, including
+    repeated evaluations of the same structure under different seeds or
+    hyperparameters: charging per *structural* candidate would hide them."""
+
+    def test_seed_and_hyperparameter_repeats_are_charged(self):
+        ledger = CandidateTrialLedger()
+        for seed in (1, 2, 3):
+            for lr in (1e-2, 1e-3):
+                ledger.record_trial(
+                    candidate_id=f"h_{seed}_{lr}",
+                    proposer_id="p",
+                    formula="y = f(x)",
+                    strategy_archetype="tactical",
+                    in_sample_sharpe=0.4 + 0.01 * seed,
+                    n_bars=200,
+                    metadata={"search_id": "sweep_run_1", "seed": seed, "lr": lr},
+                )
+        assert ledger.trial_count == 6
+        assert ledger.effective_trial_count == 6  # shared search_id, all distinct trials charged
+
+    def test_hidden_declared_pool_charged_beyond_records(self):
+        """A proposer that searched 40 seeds, recorded 2 survivors: charged 40."""
+        ledger = CandidateTrialLedger()
+        for i in (0, 1):
+            ledger.record_trial(
+                candidate_id=f"c_{i}",
+                proposer_id="p",
+                formula="y = f(x)",
+                strategy_archetype="tactical",
+                in_sample_sharpe=0.3,
+                n_bars=200,
+                metadata={"search_id": "sweep_run_2", "selection_pool_size": 40},
+            )
+        assert ledger.trial_count == 2
+        assert ledger.effective_trial_count == 40
+        # Same variance for both comparisons: inflation from the hidden pool
+        # is the only difference between sel and naive here.
+        ledger_var = ledger.get_sharpe_distribution()[1]
+        sel = ledger.dsr_with_selection_adjustment(
+            observed_sharpe=2.5, n_bars=252, annualization_factor=252.0)
+        naive = compute_deflated_sharpe_ratio(
+            observed_sharpe=2.5, n_trials=2, var_trials=ledger_var, n_bars=252,
+            annualization_factor=252.0)
+        assert sel["n_trials"] == 40
+        assert sel["hidden_trials"] == 38
+        assert sel["dsr"] < naive["dsr"]  # hidden multiplicity lowers the verdict
+
+
+class TestF5DSRAnnualizationNumericConsistency:
+    """Numerical pin: feeding an ANNUALIZED Sharpe with annualization_factor=1.0
+    deflates the standard error by ~10x and manufactures significance
+    (p = 0); the F5-corrected calls pass annualization_factor=252 and the
+    verdict flips to non-significant for this fixture."""
+
+    _COMMON: typing.ClassVar[dict] = {"observed_sharpe": 2.5, "n_trials": 500,
+                                      "var_trials": 0.15, "n_bars": 252,
+                                      "skewness": 0.1, "kurtosis": 3.5}
+
+    def test_unannualized_path_fabricates_significance(self):
+        naive = compute_deflated_sharpe_ratio(**self._COMMON, annualization_factor=1.0)
+        assert naive["is_significant"] is True
+        assert naive["p_value"] < 1e-6
+
+    def test_annualized_path_is_calibrated(self):
+        fixed = compute_deflated_sharpe_ratio(**self._COMMON, annualization_factor=252.0)
+        assert fixed["is_significant"] is False
+        assert 0.05 < fixed["p_value"] < 0.15
+        # The SE is on the annualized scale (O(1) for this fixture), not the
+        # ~0.14 of the wrongly de-annualized path.
+        assert fixed["se_sharpe"] > 0.5
+
+
+class TestF16CBFSafetyEnvelope:
+    """Safety-envelope battery for the batched repulsion stepper (review round).
+
+    The artificial-potential deflection is NOT a certified CBF-QP (the stepper
+    docstring says so); these pins establish the behavioral envelope an CBF
+    audit would start from: finiteness, a measured inter-agent separation
+    floor, exact index symmetry, dt-robustness, progress through a collinear
+    head-on encounter, and degenerate coincident starts. A formal
+    ``dot(h) + alpha(h) >= 0`` certificate remains future work and the
+    docstring disclosure must stay honest.
+    """
+
+    _ATOL = 1e-5
+
+    def _run(self, pose_grid, dt=0.1, steps=60, r_safe=0.5, r_warning=1.0, targets=None, roles=None):
+        poses = torch.tensor([pose_grid], dtype=torch.float32)
+        n = poses.shape[1]
+        if targets is None:
+            targets = torch.zeros(1, n, 2)
+        if roles is None:
+            roles = torch.ones(1, n)
+        min_sep = float("inf")
+        for _ in range(steps):
+            poses = batch_multi_agent_cbf_step(
+                poses, targets, roles, dt, r_safe=r_safe, r_warning=r_warning)
+            assert torch.isfinite(poses).all(), "non-finite dynamics"
+            p = poses[:, :, :2]
+            d = (p.unsqueeze(2) - p.unsqueeze(1)).norm(dim=-1)
+            eye = torch.eye(n, dtype=torch.bool).unsqueeze(0)
+            if n > 1:
+                min_sep = min(min_sep, float(d[0][~eye[0]].min()))
+        return poses[0], min_sep
+
+    def test_documented_uncertified_disclosure(self):
+        from apedp_dyn.cuda.batch_physics_steppers import batch_multi_agent_cbf_step as fn
+        assert "not a certified quadratic-programming" in fn.__doc__
+
+    def test_head_on_collinear_encounter_does_not_collapse_separation(self):
+        poses, min_sep = self._run(
+            [[1.0, 0.0, math.pi], [-1.0, 0.0, 0.0]])
+        # Near-collision is deflected and never violates the safety floor.
+        assert min_sep > 0.6  # floor 0.696 measured; r_safe=0.5
+        final = float((poses[0, :2] - poses[1, :2]).norm())
+        assert final > 0.6
+
+    def test_high_relative_velocity_head_on(self):
+        _, min_sep = self._run(
+            [[2.5, 0.0, math.pi], [-2.5, 0.0, 0.0]])
+        assert min_sep > 0.6
+
+    @pytest.mark.parametrize("dt", [0.05, 0.1, 0.2])
+    def test_separation_floor_robust_to_time_step(self, dt):
+        _, min_sep = self._run(
+            [[2.5, 0.0, math.pi], [-2.5, 0.0, 0.0]], dt=dt, steps=int(8 / dt))
+        assert min_sep > 0.6
+
+    def test_agent_index_symmetry(self):
+        poses, _ = self._run([[1.0, 0.0, math.pi], [-1.0, 0.0, 0.0]], steps=1)
+        poses_sw, _ = self._run([[-1.0, 0.0, 0.0], [1.0, 0.0, math.pi]], steps=1)
+        np.testing.assert_allclose(
+            poses.cpu().numpy(), poses_sw[[1, 0]].cpu().numpy(), atol=self._ATOL)
+
+    def test_degenerate_coincident_starts_stay_finite(self):
+        poses, min_sep = self._run(
+            [[0.0, 0.0, 0.0], [1e-6, 0.0, 0.0]], steps=40)
+        assert torch.isfinite(poses).all()
+        assert min_sep >= 0.0
+
+    def test_simultaneous_multi_pair_engagement(self):
+        _, min_sep = self._run(
+            [[0.6, 0.6, 3.9], [-0.6, 0.6, 2.4],
+             [-0.6, -0.6, 0.8], [0.6, -0.6, -0.8]], steps=120)
+        assert min_sep > 0.6  # four pairwise engagements, floor 0.702 measured
+
+    def test_head_on_breaks_static_deadlock(self):
+        """The F16 regression class itself: with heading-opposing repulsion the
+        agents make forward progress into the encounter zone (pre-fix
+        radial-only deflection left the symmetric head-on pair motionless)."""
+        poses0 = torch.tensor([[[1.0, 0.0, math.pi], [-1.0, 0.0, 0.0]]], dtype=torch.float32)
+        targets = torch.zeros(1, 2, 2)
+        roles = torch.ones(1, 2)
+        poses = poses0.clone()
+        for _ in range(20):
+            poses = batch_multi_agent_cbf_step(poses, targets, roles, 0.1)
+        advance = float(poses0[0, 0, 0] - poses[0, 0, 0])
+        assert advance > 0.4  # dead-stamp would keep x ≈ 1.0; measured 0.55+

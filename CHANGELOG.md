@@ -4,6 +4,72 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — External-review round: F14 selection-reuse disclosure, F4/F5/F16 verification pins (2026-10-19)
+
+Follow-through on the external remediation review (rating round). All items below are
+pinned by `tests/test_dyn_blind_audit_round2_remediation.py`.
+
+### F14 — holdout selection-reuse disclosure
+- The reviewer's composition critique is accepted: the pair verdict selects the
+  promotion head on the SAME holdout slice that later certifies it, so that slice
+  is a selection set, not an untouched confirmation set. The referee cannot mint
+  new confirmation data, so every pair-path `UNIQUE_SUPPORT` verdict now carries
+  the explicit diagnostic flag
+  `selection_reused_confirmation_holdout(n_candidates=<N>)` (the pool size that
+  was compared on the slice). Callers MUST charge that selection to the DSR trial
+  ledger (`search_id` + `selection_pool_size` — the standing multiple-testing
+  correction) or hold out an independent sealed confirmation split; a FULL
+  contract claim without that separation is misstated and callers/auditors can
+  now detect it mechanically from the verdict record. The former
+  `test_tau_shrunk...` fixture documents the two-directional τ rule (Δ ≤ τ ->
+  `MULTI_HYPOTHESIS`; Δ > τ -> `UNIQUE_SUPPORT`), establishing that uniqueness
+  comes from the prespecified τ, never from the (construction-guaranteed)
+  sign of the separation.
+- Re-minted: `adjudicate.py` SHA pin (`f56987b9…`) in `frozen_spec.py` and
+  `APEDPX_FROZEN_v1_7.json`.
+
+### F4 — multiplicity coverage pins
+- Pinned: the ledger charges every recorded trial including repeated
+  evaluations of the same structure under different seeds/hyperparameter
+  settings (6 records under one `search_id` -> 6 trials), and charges the full
+  declared pool beyond recorded survivors (40 declared, 2 recorded -> 40
+  trials, `hidden_trials=38`), with the DSR verdict decreasing under the
+  hidden multiplicity at matched variance.
+
+### F5 — annualization numerical pin
+- The fixture (annualized SR 2.5, 500 trials): `annualization_factor=1.0`
+  manufactures significance (p < 1e-6, `is_significant=True`); the
+  F5-corrected call passes `annualization_factor=252.0`, yielding SE on the
+  annualized scale (≈1.0) and `p ≈ 0.094` (not significant). Both directions
+  pinned numerically.
+
+### F16 — safety-envelope battery (not a CBF certificate)
+- The reviewer is correct that the pull-away deflection is a heuristic, not a
+  forward-invariance guarantee. The stepper's docstring already states it is
+  "not a certified quadratic-programming CBF-QP with formal
+  forward-invariance certificates"; this disclosure is now itself pinned by a
+  test so it cannot silently regress into an overclaim.
+- New behavioral envelope pins (all on the portable CPU path):
+  finiteness throughout; measured inter-agent separation floor > 0.6 (with
+  `r_safe=0.5`) across a collinear head-on encounter, a high-relative-velocity
+  approach (2.5u/s closing speed), a dt sweep over [0.05, 0.10, 0.20], and
+  simultaneous multi-pair engagement of 4 agents; exact agent-index
+  permutation symmetry (max deviation 0.0); finite escape dynamics from
+  degenerate coincident starts; and the F16 regression class itself —
+  forward progress > 0.4 into a symmetric head-on encounter where the
+  pre-fix radial-only deflection deadlocked.
+- A formal `dot(h) + alpha(h) >= 0` CBF-QP synthesis remains future work
+  (tracked here, not smuggled into the heuristic's claim).
+
+### Honest-scope note
+- Reviewer items NOT closed by code here and deliberately not claimed:
+  (a) F17's `rmse < 1e-5` gate is still an absolute threshold — a scale-aware
+  RMSE normalization is a kernel change deferred with its own acceptance
+  criteria; (b) F8's mathematical compatibility of the non-uniform fitting
+  and scoring libraries needs a dedicated term-audit, not a test tweak; and
+  (c) "full test suite" in prior notes meant the AGENTS.md dynamic battery
+  (a named collection), never the entire repository — wording now matches.
+
 ## [Unreleased] — Blind-audit remediation round 2: F14–F17 + freeze re-mint (2026-10-19)
 
 ### Frozen-record re-mint (rationale, per freeze protocol)
