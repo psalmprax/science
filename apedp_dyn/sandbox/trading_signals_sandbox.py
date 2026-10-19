@@ -30,6 +30,11 @@ from apedp_dyn.epistemic.claim_ladder import (
 from apedp_dyn.epistemic.market_extrapolation import (
     evaluate_single_asset_market_ladder,
 )
+from apedp_dyn.epistemic.promotion_lifecycle import PromotionTracker
+from apedp_dyn.epistemic.trial_ledger import (
+    CandidateTrialLedger,
+    compute_deflated_sharpe_ratio,
+)
 from apedp_dyn.harness import AEH
 from apedp_dyn.harness.manifest import compute_dataset_hash
 from apedp_dyn.sandbox.grammar_space import (
@@ -553,10 +558,19 @@ def run_genetic_algorithm(
     pop_size: int = 80,
     generations: int = 35,
     seed: int = 42,
+    ledger: CandidateTrialLedger | None = None,
+    search_id: str = "ga_trading_signals",
 ) -> Chromosome:
-    """Evolve multi-signal combinations across all 22 signals strictly on train split."""
+    """Evolve multi-signal combinations across all 22 signals strictly on train split.
+
+    When a ``ledger`` is supplied, EVERY fitness evaluation is recorded as a
+    trial in it (in-sample Sharpe per evaluated chromosome). Selection over
+    thousands of chromosomes is then charged to the Deflated Sharpe Ratio as
+    real trial multiplicity instead of being an invisible search.
+    """
     rng = np.random.RandomState(seed)
     K = X_tr.shape[1]
+    eval_counter = {"n": 0}
 
     population: list[Chromosome] = []
     # Seed population with diversity: individual signals, pairs, trios, and random subsets
@@ -589,6 +603,19 @@ def run_genetic_algorithm(
             scores, px_tr, threshold=c.threshold
         )
         c.in_sample_sharpe = sharpe
+
+        if ledger is not None:
+            eval_counter["n"] += 1
+            ledger.record_trial(
+                candidate_id=f"ga_eval_{eval_counter['n']}",
+                proposer_id="ga_trading_signals",
+                formula=f"mask={c.mask.astype(int).tolist()};thr={c.threshold:.3f}",
+                strategy_archetype="continuous_factor",
+                in_sample_sharpe=sharpe,
+                n_bars=len(px_tr),
+                status="EVALUATED",
+                metadata={"search_id": search_id},
+            )
 
         if trades < 6:
             fit = -10.0 + trades
@@ -822,8 +849,14 @@ def run_epistemic_trading_adjudication(
         dataset_hash=compute_dataset_hash(panel),
     )
 
-    # 2. In-sample GA discovery
-    best_chrom = run_genetic_algorithm(X_tr, px_tr, pop_size=pop_size, generations=generations, seed=seed)
+    # 2. In-sample GA discovery (every fitness evaluation is charged as a trial)
+    trial_ledger = CandidateTrialLedger()
+    search_id = f"ga_trading_signals:{dataset_name}:{seed}"
+    best_chrom = run_genetic_algorithm(
+        X_tr, px_tr,
+        pop_size=pop_size, generations=generations, seed=seed,
+        ledger=trial_ledger, search_id=search_id,
+    )
     active_idx = np.where(best_chrom.mask)[0]
     active_sigs = [SIGNAL_REGISTRY[i][0] for i in active_idx]
     combo_str = " + ".join(active_sigs) if len(active_sigs) > 0 else "NO_ACTIVE_SIGNALS"
@@ -882,10 +915,58 @@ def run_epistemic_trading_adjudication(
         "win_rate": float(round(ga_win_rate, 1)),
     })
 
+    # 4c. Multiple-testing control: the GA searched over every evaluated
+    # chromosome, so the holdout Sharpe must be deflated by that multiplicity
+    # (Bailey & Lopez de Prado) before it may be cited as evidence.
+    trial_multiplicity: dict[str, Any] = {
+        "recorded_trials": trial_ledger.trial_count,
+        "effective_trials": trial_ledger.effective_trial_count,
+        "search_id": search_id,
+    }
+    dsr_adjusted: float | None = None
+    dsr_naive: float | None = None
+    if len(px_ho) > 2:
+        sel = trial_ledger.dsr_with_selection_adjustment(observed_sharpe=ga_sharpe, n_bars=len(px_ho))
+        naive = compute_deflated_sharpe_ratio(
+            observed_sharpe=ga_sharpe,
+            n_trials=trial_ledger.trial_count,
+            var_trials=trial_ledger.get_sharpe_distribution()[1],
+            n_bars=len(px_ho),
+        )
+        dsr_adjusted = float(sel["dsr"])
+        dsr_naive = float(naive["dsr"])
+        trial_multiplicity.update({
+            "hidden_trials": int(sel["hidden_trials"]),
+            "dsr_selection_adjusted": dsr_adjusted,
+            "dsr_single_trial": dsr_naive,
+            "expected_max_sr": float(sel["expected_max_sr"]),
+        })
+    else:
+        trial_multiplicity["dsr_selection_adjusted"] = None
+        trial_multiplicity["dsr_single_trial"] = None
+
+    # 4d. Promotion lifecycle: the six-stage state machine runs on the live
+    # candidate. GA strategies carry no Lean-verified law and no dimensional
+    # analysis, so stage 1 refuses and the candidate halts there -- economic
+    # validity (stage 5) is never reachable without mathematical consistency.
+    tracker = PromotionTracker(candidate_id=cand_id)
+    stage1 = tracker.verify_stage_1(
+        lean_status="P1_CANDIDATE",
+        dimensions_consistent=False,
+        bounded=bool(np.all(np.isfinite(best_chrom.weights))),
+    )
+    promotion_block = {
+        "highest_stage_passed": int(tracker.highest_stage_passed),
+        "is_halted": tracker.is_halted,
+        "halt_reason": tracker.halt_reason,
+        "stage_1_status": stage1.status_label,
+    }
+
     # 5. Formulate Evidence Bundle
     bundle = EvidenceBundle(
         metrics={
             "sharpe": float(ga_sharpe),
+            "dsr_selection_adjusted": float(dsr_adjusted) if dsr_adjusted is not None else 0.0,
             "total_return_pct": float(ga_ret),
             "max_dd": float(ga_max_dd),
             "win_rate": float(ga_win_rate),
@@ -899,6 +980,7 @@ def run_epistemic_trading_adjudication(
         # label belongs in metadata where the value type is free-form.
         metadata={
             "market_ladder_highest_rung": market_ladder.highest_rung_passed.value,
+            "trial_multiplicity": trial_multiplicity,
         },
     )
 
@@ -981,6 +1063,8 @@ def run_epistemic_trading_adjudication(
             "directional_accuracy": float(round(ga_acc, 1)),
         },
         "market_extrapolation_ladder": market_ladder.to_dict(),
+        "trial_multiplicity": trial_multiplicity,
+        "promotion_lifecycle": promotion_block,
         "candidates": cand_metrics,
         "epistemic_framework": {
             "version": "APEDP-X v1.0-FROZEN",

@@ -33,6 +33,7 @@ from apedp_dyn.discovery_l2.multiterm_engine import MultiTermL2Engine
 from apedp_dyn.epistemic.adjudicate import (
     DataOrigin,
 )
+from apedp_dyn.epistemic.trial_ledger import CandidateTrialLedger
 
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "market"
 
@@ -104,6 +105,9 @@ class WindowDiscoveryRecord:
     boundary_artifact: bool
     out_of_grammar: bool
     full_reason: str
+    # Search-size accounting: every candidate the engine scored before one was
+    # promoted. A 1-of-N promotion is optimistically biased without this.
+    trial_multiplicity: dict | None = None
 
 
 def load_series_with_dates(asset: Literal["sp500", "nasdaq100"]) -> tuple[list[str], np.ndarray]:
@@ -296,6 +300,66 @@ def execute_window_discovery(
     if adj.bootstrap_lo is not None and adj.bootstrap_hi is not None:
         boot_margin = float(adj.bootstrap_lo)
 
+    # Multiple-testing accounting for the DISCOVERY search: every candidate the
+    # engine scored is one attempt, and the promoted candidate is an
+    # order statistic over that pool. DSR does not apply (the selection
+    # statistic here is in-sample loss, not a Sharpe ratio), so what is recorded
+    # is the pool itself plus the promoted candidate's rank within it.
+    trial_multiplicity: dict | None = None
+    # MultiTermDiscoveryResult does not retain every scored candidate; it
+    # reports the evaluated count and the surviving Pareto set, so the pool
+    # is reconstructed from the Pareto candidates with the true evaluated
+    # count carried in the metadata.
+    if multiterm:
+        scored_pool = list(m_res.pareto_candidates)
+        evaluated_count = int(m_res.all_evaluated_count)
+    else:
+        scored_pool = list(l2_res.candidates)
+        evaluated_count = len(scored_pool)
+    if scored_pool:
+        ledger = CandidateTrialLedger()
+        search_id = f"l2:{asset}:{window.window_id}:{'multiterm' if multiterm else 'single'}:{seed}"
+        ranked_pool = sorted(
+            scored_pool,
+            key=lambda s: (s.train_loss if s.train_loss is not None and np.isfinite(s.train_loss) else float("inf")),
+        )
+        for rank, sc in enumerate(ranked_pool):
+            ledger.record_trial(
+                candidate_id=sc.candidate.candidate_id,
+                proposer_id="l2_open_discovery",
+                formula=str(sc.candidate.metadata.get("canonical_expr") or sc.candidate.candidate_id),
+                strategy_archetype="continuous_factor",
+                in_sample_sharpe=0.0,
+                n_bars=n_tr,
+                status="EVALUATED",
+                selection_statistic=(
+                    float(sc.train_loss)
+                    if sc.train_loss is not None and np.isfinite(sc.train_loss)
+                    else None
+                ),
+                metadata={
+                    "search_id": search_id,
+                    "selection_pool_size": evaluated_count,
+                    "selection_rank": rank,
+                    "complexity": int(sc.candidate.metadata.get("complexity", 1)),
+                },
+            )
+        promoted_id = (
+            adj.promoted.candidate.candidate_id if adj.promoted is not None else None
+        )
+        promoted_rank = next(
+            (r for r, sc in enumerate(ranked_pool) if sc.candidate.candidate_id == promoted_id),
+            None,
+        )
+        trial_multiplicity = {
+            "recorded_trials": ledger.trial_count,
+            "effective_trials": ledger.effective_trial_count,
+            "evaluated_count": evaluated_count,
+            "search_id": search_id,
+            "promoted_rank": promoted_rank,
+            "selection_statistic": "in_sample_train_loss (lower is better; DSR not applicable)",
+        }
+
     # Boundary artifact check: inspect if error is concentrated on first/last 3 points of holdout
     boundary_artifact = False
     if top_cand is not None:
@@ -327,6 +391,7 @@ def execute_window_discovery(
         boundary_artifact=boundary_artifact,
         out_of_grammar=out_of_grammar,
         full_reason=adj.reason,
+        trial_multiplicity=trial_multiplicity,
     )
 
 

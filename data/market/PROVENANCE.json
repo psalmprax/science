@@ -59,5 +59,12 @@
     "assets_crypto": "45 liquid crypto tokens (Layer 1s, Layer 2s, DeFi, Storage, Metaverse, Payments)",
     "assets_equity": "45 traditional instruments (Mega-cap tech, value/defensive equities, sector ETFs, commodities, emerging markets, rates)",
     "constructed": "2026-10-08"
+  },
+  "lynx_maclulich.csv": {
+    "source": "R datasets::lynx (Mackenzie River annual Canadian lynx trappings), series G of Brockwell & Davis (1991)",
+    "url": "https://raw.githubusercontent.com/vincentarelbundock/Rdatasets/master/csv/datasets/lynx.csv",
+    "coverage": "1821-01-01 to 1934-01-01 (114 annual observations; columns time,value)",
+    "fetched": "2026-10-19",
+    "license_note": "public-domain textbook series; replaces the previous /tmp/lynx.csv runtime dependency"
   }
 }

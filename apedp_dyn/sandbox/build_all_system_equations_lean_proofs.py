@@ -43,6 +43,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from apedp.mathematical.mathematical_layer import ProofClaimStatus
+from apedp_dyn.conf.paths import artifact_dir
 from apedp_dyn.epistemic.agnostic_adapter import (
     AgnosticCandidateSpecification,
     DeclaredInvariant,
@@ -57,7 +58,7 @@ from apedp_dyn.epistemic.lean_universal_bridge import (
 from apedp_dyn.sandbox.ga_depth2_equation_discovery import DEPTH2_FEATURE_CATALOG
 from apedp_dyn.sandbox.ga_depth3_equation_discovery import DEPTH3_FEATURE_CATALOG
 
-ARTIFACT_DIR = Path("/home/psalmprax/.gemini/antigravity-cli/brain/81922211-290b-4171-99b4-1b05d2c8d0a6")
+ARTIFACT_DIR = artifact_dir()
 LEAN_FORMAL_DIR = REPO_ROOT / "apedp_dyn" / "lean_formal"
 LEAN_FORMAL_DIR.mkdir(parents=True, exist_ok=True)
 

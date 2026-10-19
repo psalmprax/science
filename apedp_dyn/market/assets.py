@@ -35,7 +35,9 @@ def load_series_with_dates(asset: str) -> tuple[list[str], np.ndarray]:
         col = "SP500" if asset == "sp500" else "NASDAQ100"
         fpath = DATA_DIR / fname
         if not fpath.exists():
-            fpath = Path("/home/psalmprax/ALL_PROJECTS/science/data/market") / fname
+            from apedp_dyn.conf.paths import repo_root
+
+            fpath = repo_root() / "data" / "market" / fname
 
         dates: list[str] = []
         prices: list[float] = []

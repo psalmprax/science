@@ -24,7 +24,6 @@ import sys
 import time
 from collections import Counter
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -90,8 +89,8 @@ def causal_standardize(x: np.ndarray, min_history: int = 5) -> np.ndarray:
     """Robust causal expanding z-score with low warmup to preserve sample size and prevent early-window zeroing."""
     x = np.nan_to_num(np.asarray(x, dtype=float), nan=0.0)
     s = pd.Series(x)
-    mu = s.expanding(min_history).mean().bfill().to_numpy()
-    sd = s.expanding(min_history).std().bfill().to_numpy()
+    mu = s.expanding(min_history).mean().ffill().to_numpy()
+    sd = s.expanding(min_history).std().ffill().to_numpy()
     sd = np.where(sd < 1e-4, 1.0, sd)
     res = (x - mu) / sd
     return np.asarray(np.asarray(np.asarray(np.nan_to_num(res, nan=0.0, posinf=0.0, neginf=0.0))))
@@ -166,7 +165,7 @@ def build_depth3_panel(
     y_asset_clean = fwd_rets - fwd_market_mean
 
     lead_ret = rets_2d[:T_valid, 0]
-    lead_vol = pd.Series(lead_ret).rolling(w_roll, min_periods=5).std().bfill().to_numpy()
+    lead_vol = pd.Series(lead_ret).rolling(w_roll, min_periods=5).std().ffill().to_numpy()
     lead_vol = np.maximum(lead_vol, 1e-4)
 
     cross_mean = np.mean(rets_2d[:T_valid, :], axis=1)
@@ -183,15 +182,15 @@ def build_depth3_panel(
         ofi_i = ofis_2d[:T_valid, i]
 
         r_series = pd.Series(r_i)
-        vol_i = r_series.rolling(w_roll, min_periods=5).std().bfill().to_numpy()
+        vol_i = r_series.rolling(w_roll, min_periods=5).std().ffill().to_numpy()
         vol_i = np.maximum(vol_i, 1e-4)
 
-        ma_p = pd.Series(p_i).rolling(w_roll, min_periods=5).mean().bfill().to_numpy()
-        std_p = pd.Series(p_i).rolling(w_roll, min_periods=5).std().bfill().to_numpy()
+        ma_p = pd.Series(p_i).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
+        std_p = pd.Series(p_i).rolling(w_roll, min_periods=5).std().ffill().to_numpy()
         std_p = np.maximum(std_p, 1e-4)
         spread_i = (p_i - ma_p) / std_p
 
-        cov_lead = pd.Series(r_i * lead_ret).rolling(w_roll, min_periods=5).mean().bfill().to_numpy()
+        cov_lead = pd.Series(r_i * lead_ret).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
         corr_lead = np.clip(cov_lead / np.maximum(vol_i * lead_vol, 1e-6), -1.0, 1.0)
         lead_spill_i = (lead_ret / lead_vol) * corr_lead
 
@@ -792,7 +791,9 @@ def run_all_depth3_ga_sweep(
 
 if __name__ == "__main__":
     out = run_all_depth3_ga_sweep()
-    p_path = Path("/home/psalmprax/.gemini/antigravity-cli/brain/81922211-290b-4171-99b4-1b05d2c8d0a6/ga_depth3_sweep_provenance.json")
+    from apedp_dyn.conf.paths import artifact_dir
+
+    p_path = artifact_dir() / "ga_depth3_sweep_provenance.json"
     with open(p_path, "w") as f:
         json.dump(out, f, indent=2)
     print(f"Sweep completed. Provenance written to {p_path}")

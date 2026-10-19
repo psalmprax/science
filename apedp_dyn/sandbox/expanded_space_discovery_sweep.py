@@ -177,21 +177,21 @@ def build_microstructure_ofi_panel(
 
         # Causal volatility & squeeze
         r_series = pd.Series(r)
-        vol_roll = r_series.rolling(w_roll, min_periods=5).std().bfill().to_numpy()
+        vol_roll = r_series.rolling(w_roll, min_periods=5).std().ffill().to_numpy()
         vol_roll = np.maximum(vol_roll, 1e-4)
 
         # Downside semivariance
         down_r = np.where(r < 0, r**2, 0.0)
-        down_vol2 = pd.Series(down_r).rolling(w_roll, min_periods=5).mean().bfill().to_numpy()
+        down_vol2 = pd.Series(down_r).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
         down_vol2 = np.maximum(down_vol2, 1e-6)
 
         # Squeeze indicator: BB width / KC width
-        bb_std = pd.Series(p).rolling(w_roll, min_periods=5).std().bfill().to_numpy()
-        atr = pd.Series(h - low).rolling(w_roll, min_periods=5).mean().bfill().to_numpy()
+        bb_std = pd.Series(p).rolling(w_roll, min_periods=5).std().ffill().to_numpy()
+        atr = pd.Series(h - low).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
         squeeze = bb_std / np.maximum(atr, 1e-6)
 
         # Mean volume for volume gate
-        v_mean = pd.Series(v).rolling(w_roll, min_periods=5).mean().bfill().to_numpy()
+        v_mean = pd.Series(v).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
 
         # Features
         s_raw_ofi = causal_zscore(ofi)
@@ -269,7 +269,7 @@ def build_cross_asset_lead_lag_panel(
 
     lead_ret = rets_2d[:, 0]  # BTC or primary benchmark
     lead_px = prices_2d[:, 0]
-    lead_vol = pd.Series(lead_ret).rolling(w_roll, min_periods=5).std().bfill().to_numpy()
+    lead_vol = pd.Series(lead_ret).rolling(w_roll, min_periods=5).std().ffill().to_numpy()
     lead_vol = np.maximum(lead_vol, 1e-4)
 
     cross_median = np.median(rets_2d, axis=1)
@@ -278,7 +278,7 @@ def build_cross_asset_lead_lag_panel(
     cross_std = np.maximum(cross_std, 1e-4)
 
     # Market Breadth: fraction of universe above 20-bar SMA
-    sma20_2d = pd.DataFrame(prices_2d).rolling(w_roll, min_periods=5).mean().bfill().to_numpy()
+    sma20_2d = pd.DataFrame(prices_2d).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
     above_ma = (prices_2d > sma20_2d).astype(float)
     breadth = np.mean(above_ma, axis=1)  # T-length vector in [0, 1]
 
@@ -301,8 +301,8 @@ def build_cross_asset_lead_lag_panel(
         p_i = prices_2d[:, i]
 
         # Rolling beta to lead asset
-        cov_lead = pd.Series(r_i * lead_ret).rolling(w_roll, min_periods=5).mean().bfill().to_numpy()
-        var_lead = pd.Series(lead_ret**2).rolling(w_roll, min_periods=5).mean().bfill().to_numpy()
+        cov_lead = pd.Series(r_i * lead_ret).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
+        var_lead = pd.Series(lead_ret**2).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
         beta_i = cov_lead / np.maximum(var_lead, 1e-6)
         beta_i = np.clip(beta_i, -2.0, 3.0)
 
@@ -310,7 +310,7 @@ def build_cross_asset_lead_lag_panel(
         rel_mom = r_i - cross_median
 
         # Cross-sectional rank vs volatility rank
-        vol_i = pd.Series(r_i).rolling(w_roll, min_periods=5).std().bfill().to_numpy()
+        vol_i = pd.Series(r_i).rolling(w_roll, min_periods=5).std().ffill().to_numpy()
         rk_r = trailing_rank(r_i)
         rk_v = trailing_rank(vol_i)
         cs_rank_vol = rk_r - rk_v

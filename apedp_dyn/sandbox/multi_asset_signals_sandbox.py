@@ -1121,6 +1121,26 @@ def run_multi_asset_universe_tournament(initial_capital: float = 100000.0, unive
           f"${bnh_pnl:>+10,.2f} | {'N/A':<9} | {N!s:<7} | {'--':<8} | {'--':<7}")
 
 
+def _drop_volatility_warmup(
+    *arrays: np.ndarray, vols: np.ndarray
+) -> tuple[tuple[np.ndarray, ...], int]:
+    """Exclude rows where the 20-day rolling volatility is undefined.
+
+    ``ffill`` cannot fill LEADING NaNs (there is no earlier observation to carry
+    forward), so the first ``min_periods - 1`` rows stay NaN. Fabricating them
+    (``bfill``) leaks future volatility into the past; the causal alternative is
+    to drop the warm-up rows from every aligned array and report how many were
+    dropped.
+    """
+    finite_rows = np.isfinite(vols).all(axis=1)
+    if not finite_rows.any():
+        raise ValueError("rolling volatility is undefined for the entire panel")
+    start = int(np.argmax(finite_rows))
+    if start == 0:
+        return arrays, 0
+    return tuple(a[start:] for a in arrays), start
+
+
 def run_30_asset_two_tier_analysis(
     initial_capital: float = 100000.0,
     chromosome: MultiAssetChromosome | None = None,
@@ -1147,12 +1167,21 @@ def run_30_asset_two_tier_analysis(
         returns_2d[:, a_idx] = universe[sym]["r"].to_numpy(float)
         prices_2d[:, a_idx] = universe[sym]["price"].to_numpy(float)
 
-    vols_2d = pd.DataFrame(returns_2d).rolling(20, min_periods=5).std().bfill().to_numpy()
+    vols_2d = pd.DataFrame(returns_2d).rolling(20, min_periods=5).std().ffill().to_numpy()
     cross_ret_median = np.median(returns_2d, axis=1)
 
     features_3d = np.zeros((T, N, K))
     for a_idx, sym in enumerate(symbols):
         features_3d[:, a_idx, :] = calc_signals_for_asset(universe[sym], cross_ret_median)
+
+    (returns_2d, prices_2d, vols_2d, features_3d, cross_ret_median), warmup_dropped = (
+        _drop_volatility_warmup(
+            returns_2d, prices_2d, vols_2d, features_3d, cross_ret_median, vols=vols_2d
+        )
+    )
+    T = len(returns_2d)
+    if warmup_dropped:
+        print(f"[warm-up exclusion] dropped {warmup_dropped} leading row(s): 20-day rolling volatility undefined")
 
     n_train = T // 2
     f_tr = features_3d[:n_train]
@@ -1291,12 +1320,19 @@ def run_epistemic_multi_asset_adjudication(
         returns_2d[:, a_idx] = universe[sym]["r"].to_numpy(float)
         prices_2d[:, a_idx] = universe[sym]["price"].to_numpy(float)
 
-    vols_2d = pd.DataFrame(returns_2d).rolling(20, min_periods=5).std().bfill().to_numpy()
+    vols_2d = pd.DataFrame(returns_2d).rolling(20, min_periods=5).std().ffill().to_numpy()
     cross_ret_median = np.median(returns_2d, axis=1)
 
     features_3d = np.zeros((T, N, K))
     for a_idx, sym in enumerate(symbols):
         features_3d[:, a_idx, :] = calc_signals_for_asset(universe[sym], cross_ret_median)
+
+    (returns_2d, prices_2d, vols_2d, features_3d, cross_ret_median), _warmup = (
+        _drop_volatility_warmup(
+            returns_2d, prices_2d, vols_2d, features_3d, cross_ret_median, vols=vols_2d
+        )
+    )
+    T = len(returns_2d)
 
     exp_id = f"EXP_{N}_ASSET_{int(time.time())}"
     harness = AEH(
@@ -1788,12 +1824,18 @@ def run_multi_asset_policy_grammar_audit(
 
     uni_90, syms_90 = load_universe("90")
     rets_full = np.column_stack([uni_90[s]["r"].to_numpy(float) for s in syms_90])
-    vols_full = pd.DataFrame(rets_full).rolling(20, min_periods=5).std().bfill().to_numpy()
+    vols_full = pd.DataFrame(rets_full).rolling(20, min_periods=5).std().ffill().to_numpy()
     cross_med = np.median(rets_full, axis=1)
 
     feats_90 = np.zeros((len(df_90), 90, len(SIGNAL_NAMES)))
     for i, s in enumerate(syms_90):
         feats_90[:, i, :] = calc_signals_for_asset(uni_90[s], cross_med)
+
+    (rets_full, vols_full, cross_med, feats_90), _warmup90 = _drop_volatility_warmup(
+        rets_full, vols_full, cross_med, feats_90, vols=vols_full
+    )
+    dates = dates[len(dates) - len(rets_full):]
+    df_90 = df_90.iloc[len(df_90) - len(rets_full):].reset_index(drop=True)
 
     # 4 magnitude-preserving features for Equation A:
     # Index 9: H-BB, Index 16: H-OBV_MOM, Index 24: NL_TAKER_MOM, Index 25: NL_MASTER_SNR

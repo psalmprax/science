@@ -34,6 +34,10 @@ from apedp_dyn.sandbox.grammar_space import causal_zscore, trailing_rank
 
 FEE = 0.0005  # 5 bps per unit position change
 
+#: Holdout R^2 floor for ``dynamical_system`` archetype candidates (the same
+#: floor the epistemic ODE referee uses for worst-state holdout fit).
+PHYSICAL_ROLLOUT_MIN_R2 = 0.85
+
 
 def raw_features(d: pd.DataFrame) -> tuple[dict[str, np.ndarray], np.ndarray]:
     """Raw (pre-standardization) feature components + log returns."""
@@ -271,6 +275,10 @@ def assert_strategy_class_compliance(
     min_active_tactical: float = TACTICAL_ACTIVE_MIN,
     max_active_tactical: float = TACTICAL_ACTIVE_MAX,
     min_active_continuous: float = CONTINUOUS_FACTOR_ACTIVE_MIN,
+    declared_invariant: str | None = None,
+    invariant_drift: float | None = None,
+    rollout_stable: bool | None = None,
+    holdout_r2: float | None = None,
 ) -> tuple[bool, float, str, str]:
     """Evaluate candidate operational exposure and statistical power per strategy archetype.
 
@@ -279,6 +287,15 @@ def assert_strategy_class_compliance(
          independent trades/episodes in sample to guarantee statistical power.
       2. 'continuous_factor': Broad cross-sectional factor. Requires active fraction >= min_active_continuous.
       3. 'tactical': Dynamic regime/swing signal. Requires active fraction in [5%, 90%].
+      4. 'physical_invariant': Conservation/bound invariant. Financial active-rate gates are
+         meaningless here; compliance requires declared physical evidence: an invariant name and a
+         measured drift bound (``invariant_drift`` <= 1e-6), passed by the caller.
+      5. 'dynamical_system': ODE/PDE law. Compliance requires forward-rollout stability and a
+         holdout R^2 >= 0.85 (``rollout_stable`` / ``holdout_r2``), passed by the caller.
+
+    The two STEM archetypes FAIL CLOSED (``MISSING_PHYSICAL_EVIDENCE``) when their dedicated
+    evidence is not supplied: a physical law can no longer sail through financial turnover
+    gates, and it cannot pass the physics gates without measured evidence either.
 
     Returns: (is_compliant, active_fraction, status_str, reason_str)
     """
@@ -303,6 +320,32 @@ def assert_strategy_class_compliance(
         prev_pos = cur_pos
 
     arch = strategy_archetype.lower()
+    if arch == "physical_invariant":
+        if not declared_invariant:
+            return (False, active_fraction, "MISSING_PHYSICAL_EVIDENCE",
+                    "physical_invariant candidate must declare the invariant; "
+                    "financial active-rate gates do not apply to physical laws.")
+        if invariant_drift is None or invariant_drift > 1e-6:
+            return (False, active_fraction, "INVARIANT_DRIFT_EXCEEDED",
+                    f"Declared invariant '{declared_invariant}' drift "
+                    f"{invariant_drift if invariant_drift is not None else float('nan'):.3e} exceeds the 1e-6 bound.")
+        return (True, active_fraction, "GATE_BINDING",
+                f"Physical invariant contract satisfied: '{declared_invariant}' drift within bound.")
+
+    if arch == "dynamical_system":
+        if rollout_stable is None or holdout_r2 is None:
+            return (False, active_fraction, "MISSING_PHYSICAL_EVIDENCE",
+                    "dynamical_system candidate must supply rollout stability and holdout R^2; "
+                    "financial turnover gates do not apply to dynamical laws.")
+        if not rollout_stable:
+            return (False, active_fraction, "ROLLOUT_UNSTABLE",
+                    "Forward rollout of the discovered dynamical law diverged.")
+        if holdout_r2 < PHYSICAL_ROLLOUT_MIN_R2:
+            return (False, active_fraction, "HOLDOUT_R2_BELOW_FLOOR",
+                    f"Dynamical law holdout R^2 {holdout_r2:.3f} < {PHYSICAL_ROLLOUT_MIN_R2:.2f}.")
+        return (True, active_fraction, "GATE_BINDING",
+                "Dynamical system contract satisfied: stable rollout with holdout R^2 floor met.")
+
     if arch == "tail_risk":
         if active_events < min_events:
             return (
