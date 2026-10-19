@@ -104,7 +104,8 @@ pub fn compute_second_derivatives(x: &[f64], y: &[f64]) -> Vec<f64> {
     d2y[1] = (y[2] - 2.0 * y[1] + y[0]) / h2;
 
     for i in 2..(n - 2) {
-        d2y[i] = (-y[i + 2] + 16.0 * y[i + 1] - 30.0 * y[i] + 16.0 * y[i - 1] - y[i - 2]) / (12.0 * h2);
+        d2y[i] =
+            (-y[i + 2] + 16.0 * y[i + 1] - 30.0 * y[i] + 16.0 * y[i - 1] - y[i - 2]) / (12.0 * h2);
     }
 
     d2y[n - 2] = (y[n - 1] - 2.0 * y[n - 2] + y[n - 3]) / h2;
@@ -229,7 +230,13 @@ fn stlsq_hold_fixed(
 
 /// SR3-lite iterative sparse refinement: alternate least squares on the active
 /// set (with scale anchoring) and re-thresholding until the support stabilizes.
-fn refine_sparse_system(cols: &[Vec<f64>], edge: usize, n: usize, raw_c: &mut [f64], threshold: f64) {
+fn refine_sparse_system(
+    cols: &[Vec<f64>],
+    edge: usize,
+    n: usize,
+    raw_c: &mut [f64],
+    threshold: f64,
+) {
     let k = raw_c.len();
     for _ in 0..4 {
         let active: Vec<usize> = (0..k).filter(|&j| raw_c[j].abs() > threshold).collect();
@@ -360,7 +367,11 @@ fn integrate_trajectory_r2(
 
     let mean_y = y_s.iter().sum::<f64>() / (n as f64);
     let ss_tot = y_s.iter().map(|v| (v - mean_y) * (v - mean_y)).sum::<f64>();
-    let ss_res = y_s.iter().zip(y_sim.iter()).map(|(yi, si)| (yi - si) * (yi - si)).sum::<f64>();
+    let ss_res = y_s
+        .iter()
+        .zip(y_sim.iter())
+        .map(|(yi, si)| (yi - si) * (yi - si))
+        .sum::<f64>();
     let r2 = if ss_tot > 1e-15 {
         1.0 - (ss_res / ss_tot)
     } else {
@@ -405,11 +416,17 @@ pub fn discover_differential_relation(
     // Group 1: Q(x) * y
     let q_start = cols.len();
     for p in 0..=deg {
-        let col: Vec<f64> = x_s.iter().zip(y_s.iter()).map(|(&xv, &yv)| {
-            xv.powi(p as i32) * yv
-        }).collect();
+        let col: Vec<f64> = x_s
+            .iter()
+            .zip(y_s.iter())
+            .map(|(&xv, &yv)| xv.powi(p as i32) * yv)
+            .collect();
         cols.push(col);
-        names.push(if p == 0 { "y".to_string() } else { format!("x^{p}*y") });
+        names.push(if p == 0 {
+            "y".to_string()
+        } else {
+            format!("x^{p}*y")
+        });
     }
     let q_count = cols.len() - q_start;
 
@@ -418,11 +435,17 @@ pub fn discover_differential_relation(
     let r_count = if config.include_riccati {
         let max_r_deg = deg.min(1);
         for p in 0..=max_r_deg {
-            let col: Vec<f64> = x_s.iter().zip(y_s.iter()).map(|(&xv, &yv)| {
-                xv.powi(p as i32) * yv * yv
-            }).collect();
+            let col: Vec<f64> = x_s
+                .iter()
+                .zip(y_s.iter())
+                .map(|(&xv, &yv)| xv.powi(p as i32) * yv * yv)
+                .collect();
             cols.push(col);
-            names.push(if p == 0 { "y^2".to_string() } else { format!("x^{p}*y^2") });
+            names.push(if p == 0 {
+                "y^2".to_string()
+            } else {
+                format!("x^{p}*y^2")
+            });
         }
         cols.len() - r_start
     } else {
@@ -432,11 +455,17 @@ pub fn discover_differential_relation(
     // Group 3: P(x) * y'
     let p_start = cols.len();
     for p in 0..=deg {
-        let col: Vec<f64> = x_s.iter().zip(dy_s.iter()).map(|(&xv, &dyv)| {
-            xv.powi(p as i32) * dyv
-        }).collect();
+        let col: Vec<f64> = x_s
+            .iter()
+            .zip(dy_s.iter())
+            .map(|(&xv, &dyv)| xv.powi(p as i32) * dyv)
+            .collect();
         cols.push(col);
-        names.push(if p == 0 { "y'".to_string() } else { format!("x^{p}*y'") });
+        names.push(if p == 0 {
+            "y'".to_string()
+        } else {
+            format!("x^{p}*y'")
+        });
     }
     let p_count = cols.len() - p_start;
 
@@ -444,11 +473,17 @@ pub fn discover_differential_relation(
     let s_start = cols.len();
     let s_count = if config.max_diff_order >= 2 {
         for p in 0..=deg {
-            let col: Vec<f64> = x_s.iter().zip(d2y_s.iter()).map(|(&xv, &d2yv)| {
-                xv.powi(p as i32) * d2yv
-            }).collect();
+            let col: Vec<f64> = x_s
+                .iter()
+                .zip(d2y_s.iter())
+                .map(|(&xv, &d2yv)| xv.powi(p as i32) * d2yv)
+                .collect();
             cols.push(col);
-            names.push(if p == 0 { "y''".to_string() } else { format!("x^{p}*y''") });
+            names.push(if p == 0 {
+                "y''".to_string()
+            } else {
+                format!("x^{p}*y''")
+            });
         }
         cols.len() - s_start
     } else {
@@ -506,7 +541,11 @@ pub fn discover_differential_relation(
     }
 
     // Normalize so highest magnitude is 1.0
-    let max_abs = raw_c.iter().map(|v| v.abs()).fold(0.0f64, f64::max).max(1e-15);
+    let max_abs = raw_c
+        .iter()
+        .map(|v| v.abs())
+        .fold(0.0f64, f64::max)
+        .max(1e-15);
     for v in raw_c.iter_mut() {
         *v /= max_abs;
     }
@@ -551,14 +590,24 @@ pub fn discover_differential_relation(
     // Baseline trajectory score before refinement
     let blocks_before = extract(&raw_c);
     let (_, traj_before) = integrate_trajectory_r2(
-        &x_s, &y_s, dy_s[0], &blocks_before.0, &blocks_before.2, &blocks_before.1, &blocks_before.3,
+        &x_s,
+        &y_s,
+        dy_s[0],
+        &blocks_before.0,
+        &blocks_before.2,
+        &blocks_before.1,
+        &blocks_before.3,
     );
     let jet_before = jet_of(&raw_c);
 
     // SR3-lite sparse refinement with revert guard (trajectory and jet fidelity)
     let pre_refine = raw_c.clone();
     refine_sparse_system(&cols, edge, n, &mut raw_c, config.sparsity_threshold);
-    let max_abs_r = raw_c.iter().map(|v| v.abs()).fold(0.0f64, f64::max).max(1e-15);
+    let max_abs_r = raw_c
+        .iter()
+        .map(|v| v.abs())
+        .fold(0.0f64, f64::max)
+        .max(1e-15);
     for v in raw_c.iter_mut() {
         *v /= max_abs_r;
     }
@@ -591,7 +640,13 @@ pub fn discover_differential_relation(
     if any_snapped {
         let snap_blocks = extract(&snap_c);
         let (_, traj_s) = integrate_trajectory_r2(
-            &x_s, &y_s, dy_s[0], &snap_blocks.0, &snap_blocks.2, &snap_blocks.1, &snap_blocks.3,
+            &x_s,
+            &y_s,
+            dy_s[0],
+            &snap_blocks.0,
+            &snap_blocks.2,
+            &snap_blocks.1,
+            &snap_blocks.3,
         );
         let jet_s = jet_of(&snap_c);
         if traj_s >= traj_r2 - 5e-3 && jet_s <= (10.0 * jet_current).max(1e-9) {
@@ -619,37 +674,75 @@ pub fn discover_differential_relation(
     let mut p_str_terms = Vec::new();
     for (p, &c) in p_coeffs.iter().enumerate() {
         if c.abs() > 1e-4 {
-            p_str_terms.push(if p == 0 { format!("{:.3}", c) } else { format!("{:.3}*x^{p}", c) });
+            p_str_terms.push(if p == 0 {
+                format!("{:.3}", c)
+            } else {
+                format!("{:.3}*x^{p}", c)
+            });
         }
     }
     let mut q_str_terms = Vec::new();
     for (p, &c) in q_coeffs.iter().enumerate() {
         if c.abs() > 1e-4 {
-            q_str_terms.push(if p == 0 { format!("{:.3}", c) } else { format!("{:.3}*x^{p}", c) });
+            q_str_terms.push(if p == 0 {
+                format!("{:.3}", c)
+            } else {
+                format!("{:.3}*x^{p}", c)
+            });
         }
     }
     let mut r_str_terms = Vec::new();
     for (p, &c) in r_coeffs.iter().enumerate() {
         if c.abs() > 1e-4 {
-            r_str_terms.push(if p == 0 { format!("{:.3}", c) } else { format!("{:.3}*x^{p}", c) });
+            r_str_terms.push(if p == 0 {
+                format!("{:.3}", c)
+            } else {
+                format!("{:.3}*x^{p}", c)
+            });
         }
     }
     let mut s_str_terms = Vec::new();
     for (p, &c) in s_coeffs.iter().enumerate() {
         if c.abs() > 1e-4 {
-            s_str_terms.push(if p == 0 { format!("{:.3}", c) } else { format!("{:.3}*x^{p}", c) });
+            s_str_terms.push(if p == 0 {
+                format!("{:.3}", c)
+            } else {
+                format!("{:.3}*x^{p}", c)
+            });
         }
     }
 
-    let p_formatted = if p_str_terms.is_empty() { "0".to_string() } else { p_str_terms.join(" + ") };
-    let q_formatted = if q_str_terms.is_empty() { "0".to_string() } else { q_str_terms.join(" + ") };
-    let r_formatted = if r_str_terms.is_empty() { "0".to_string() } else { r_str_terms.join(" + ") };
-    let s_formatted = if s_str_terms.is_empty() { "0".to_string() } else { s_str_terms.join(" + ") };
+    let p_formatted = if p_str_terms.is_empty() {
+        "0".to_string()
+    } else {
+        p_str_terms.join(" + ")
+    };
+    let q_formatted = if q_str_terms.is_empty() {
+        "0".to_string()
+    } else {
+        q_str_terms.join(" + ")
+    };
+    let r_formatted = if r_str_terms.is_empty() {
+        "0".to_string()
+    } else {
+        r_str_terms.join(" + ")
+    };
+    let s_formatted = if s_str_terms.is_empty() {
+        "0".to_string()
+    } else {
+        s_str_terms.join(" + ")
+    };
 
     let formula = if has_second_order {
-        format!("({}) * y'' + ({}) * y' + ({}) * y = 0", s_formatted, p_formatted, q_formatted)
+        format!(
+            "({}) * y'' + ({}) * y' + ({}) * y = 0",
+            s_formatted, p_formatted, q_formatted
+        )
     } else if has_riccati {
-        format!("({}) * y' + ({}) * y + ({}) * y^2 = 0", p_formatted, q_formatted, r_formatted)
+        format!(
+            "({}) * y' + ({}) * y + ({}) * y^2 = 0",
+            p_formatted, q_formatted, r_formatted
+        )
     } else {
         format!("({}) * y' + ({}) * y = 0", p_formatted, q_formatted)
     };
@@ -703,7 +796,11 @@ mod tests {
         };
 
         let res = discover_differential_relation(&x, &y, &cfg).unwrap();
-        assert!(res.integrated_trajectory_r2 > 0.99, "Trajectory R2: {}", res.integrated_trajectory_r2);
+        assert!(
+            res.integrated_trajectory_r2 > 0.99,
+            "Trajectory R2: {}",
+            res.integrated_trajectory_r2
+        );
         assert!(res.is_exact_recovery);
     }
 
@@ -730,7 +827,11 @@ mod tests {
         };
 
         let res = discover_differential_relation(&x, &y, &cfg).unwrap();
-        assert!(res.integrated_trajectory_r2 > 0.99, "Trajectory R2: {}", res.integrated_trajectory_r2);
+        assert!(
+            res.integrated_trajectory_r2 > 0.99,
+            "Trajectory R2: {}",
+            res.integrated_trajectory_r2
+        );
         assert!(res.is_exact_recovery);
     }
 
@@ -760,9 +861,17 @@ mod tests {
         println!("PLANCK RICCATI FORMULA: {}", res.formula);
         println!("PLANCK RICCATI JET RMSE: {}", res.jet_rmse);
         println!("PLANCK RICCATI TRAJ R2: {}", res.integrated_trajectory_r2);
-        assert!(res.formula.contains("y^2"), "Formula must have Riccati y^2: {}", res.formula);
+        assert!(
+            res.formula.contains("y^2"),
+            "Formula must have Riccati y^2: {}",
+            res.formula
+        );
         assert!(res.jet_rmse < 0.05, "Jet RMSE: {}", res.jet_rmse);
-        assert!(res.integrated_trajectory_r2 > 0.99, "Trajectory R2: {}", res.integrated_trajectory_r2);
+        assert!(
+            res.integrated_trajectory_r2 > 0.99,
+            "Trajectory R2: {}",
+            res.integrated_trajectory_r2
+        );
         assert!(res.is_exact_recovery, "Riccati recovery must report exact");
     }
 
@@ -796,8 +905,7 @@ mod tests {
         assert!(
             !res.is_exact_recovery,
             "False exact claim on Planck linear fit: traj={}, jet={}",
-            res.integrated_trajectory_r2,
-            res.jet_rmse
+            res.integrated_trajectory_r2, res.jet_rmse
         );
     }
 
@@ -824,8 +932,16 @@ mod tests {
         };
 
         let res = discover_differential_relation(&t, &y, &cfg).unwrap();
-        assert!(res.formula.contains("y''"), "Formula must contain y'': {}", res.formula);
-        assert!(res.integrated_trajectory_r2 > 0.99, "Trajectory R2: {}", res.integrated_trajectory_r2);
+        assert!(
+            res.formula.contains("y''"),
+            "Formula must contain y'': {}",
+            res.formula
+        );
+        assert!(
+            res.integrated_trajectory_r2 > 0.99,
+            "Trajectory R2: {}",
+            res.integrated_trajectory_r2
+        );
         assert!(res.is_exact_recovery);
     }
 }

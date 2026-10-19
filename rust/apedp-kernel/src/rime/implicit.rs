@@ -137,11 +137,19 @@ fn build_features_for_degree(
     for p in 1..=deg {
         let col_x: Vec<f64> = x.iter().map(|&v| v.powi(p as i32)).collect();
         cols.push(col_x);
-        names.push(if p == 1 { "x".to_string() } else { format!("x^{p}") });
+        names.push(if p == 1 {
+            "x".to_string()
+        } else {
+            format!("x^{p}")
+        });
 
         let col_y: Vec<f64> = y.iter().map(|&v| v.powi(p as i32)).collect();
         cols.push(col_y);
-        names.push(if p == 1 { "y".to_string() } else { format!("y^{p}") });
+        names.push(if p == 1 {
+            "y".to_string()
+        } else {
+            format!("y^{p}")
+        });
     }
 
     // Cross terms x^p * y^q with total degree p + q <= deg
@@ -149,12 +157,22 @@ fn build_features_for_degree(
         for p in 1..=deg {
             for q in 1..=deg {
                 if p + q <= deg {
-                    let col_xy: Vec<f64> = x.iter().zip(y.iter()).map(|(&xv, &yv)| {
-                        xv.powi(p as i32) * yv.powi(q as i32)
-                    }).collect();
+                    let col_xy: Vec<f64> = x
+                        .iter()
+                        .zip(y.iter())
+                        .map(|(&xv, &yv)| xv.powi(p as i32) * yv.powi(q as i32))
+                        .collect();
                     cols.push(col_xy);
-                    let str_x = if p == 1 { "x".to_string() } else { format!("x^{p}") };
-                    let str_y = if q == 1 { "y".to_string() } else { format!("y^{q}") };
+                    let str_x = if p == 1 {
+                        "x".to_string()
+                    } else {
+                        format!("x^{p}")
+                    };
+                    let str_y = if q == 1 {
+                        "y".to_string()
+                    } else {
+                        format!("y^{q}")
+                    };
                     names.push(format!("{str_x}*{str_y}"));
                 }
             }
@@ -163,7 +181,11 @@ fn build_features_for_degree(
 
     // Rational resonance cross-terms: x^2 * y (total degree 3, essential for Padé saturation & detuned Rabi)
     if include_rational_products && deg >= 2 && !names.contains(&"x^2*y".to_string()) {
-        let col_x2y: Vec<f64> = x.iter().zip(y.iter()).map(|(&xv, &yv)| xv * xv * yv).collect();
+        let col_x2y: Vec<f64> = x
+            .iter()
+            .zip(y.iter())
+            .map(|(&xv, &yv)| xv * xv * yv)
+            .collect();
         cols.push(col_x2y);
         names.push("x^2*y".to_string());
     }
@@ -223,11 +245,17 @@ fn solve_implicit_for_features(
         }
     }
 
-    let cond = if min_val > 1e-15 { max_val / min_val } else { f64::INFINITY };
+    let cond = if min_val > 1e-15 {
+        max_val / min_val
+    } else {
+        f64::INFINITY
+    };
 
     // Examine candidates in the numerical null space to choose the candidate
     // maximizing sparsity while maintaining minimal algebraic RMSE.
-    let null_cutoff = (min_val * 50.0).max(config.rcond_threshold * max_val).max(1e-7);
+    let null_cutoff = (min_val * 50.0)
+        .max(config.rcond_threshold * max_val)
+        .max(1e-7);
 
     let mut best_c = vec![0.0f64; k];
     let mut best_sparse_c = vec![0.0f64; k];
@@ -242,7 +270,11 @@ fn solve_implicit_for_features(
         for j in 0..k {
             cand_c[j] = evecs[j * k + idx] / norms[j];
         }
-        let max_c = cand_c.iter().map(|v| v.abs()).fold(0.0f64, f64::max).max(1e-15);
+        let max_c = cand_c
+            .iter()
+            .map(|v| v.abs())
+            .fold(0.0f64, f64::max)
+            .max(1e-15);
         for v in cand_c.iter_mut() {
             *v /= max_c;
         }
@@ -282,7 +314,11 @@ fn solve_implicit_for_features(
         for j in 0..k {
             best_c[j] = evecs[j * k + min_idx] / norms[j];
         }
-        let max_c = best_c.iter().map(|v| v.abs()).fold(0.0f64, f64::max).max(1e-15);
+        let max_c = best_c
+            .iter()
+            .map(|v| v.abs())
+            .fold(0.0f64, f64::max)
+            .max(1e-15);
         for v in best_c.iter_mut() {
             *v /= max_c;
         }
@@ -418,7 +454,8 @@ pub fn discover_implicit_relation(
                 return Ok(res);
             }
 
-            let score = res.algebraic_rmse + 0.005 * (res.num_active_terms as f64) + 0.02 * (deg as f64);
+            let score =
+                res.algebraic_rmse + 0.005 * (res.num_active_terms as f64) + 0.02 * (deg as f64);
             if score < min_score {
                 min_score = score;
                 best_result = Some(res);
@@ -483,7 +520,11 @@ mod tests {
         assert!(res.is_exact_recovery);
         assert_eq!(res.num_active_terms, 3);
         // Formula should not contain x*y or degree 3/4 terms
-        assert!(!res.formula.contains("x*y"), "Formula must be minimal, got: {}", res.formula);
+        assert!(
+            !res.formula.contains("x*y"),
+            "Formula must be minimal, got: {}",
+            res.formula
+        );
     }
 
     #[test]

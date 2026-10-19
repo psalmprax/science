@@ -101,7 +101,8 @@ impl OdeSystem {
             return Err("ODE system must have at least one state variable".to_string());
         }
 
-        let mut var_table = Vec::with_capacity(1 + state_names.len() + param_names.len() + input_names.len());
+        let mut var_table =
+            Vec::with_capacity(1 + state_names.len() + param_names.len() + input_names.len());
         var_table.push("t".to_string());
         var_table.extend_from_slice(state_names);
         var_table.extend_from_slice(param_names);
@@ -109,8 +110,12 @@ impl OdeSystem {
 
         let mut exprs = Vec::with_capacity(equations.len());
         for (i, eq) in equations.iter().enumerate() {
-            let compiled = parser::compile(eq, &var_table)
-                .map_err(|e| format!("failed to compile ODE equation for state '{}': {e}", state_names[i]))?;
+            let compiled = parser::compile(eq, &var_table).map_err(|e| {
+                format!(
+                    "failed to compile ODE equation for state '{}': {e}",
+                    state_names[i]
+                )
+            })?;
             exprs.push(compiled);
         }
 
@@ -153,13 +158,25 @@ impl OdeSystem {
         };
 
         if x0.len() != d {
-            return empty_res(&format!("initial state x0 length {} != state count {}", x0.len(), d));
+            return empty_res(&format!(
+                "initial state x0 length {} != state count {}",
+                x0.len(),
+                d
+            ));
         }
         if params.len() != self.num_params {
-            return empty_res(&format!("param count {} != expected {}", params.len(), self.num_params));
+            return empty_res(&format!(
+                "param count {} != expected {}",
+                params.len(),
+                self.num_params
+            ));
         }
         if inputs.len() != self.num_inputs {
-            return empty_res(&format!("input count {} != expected {}", inputs.len(), self.num_inputs));
+            return empty_res(&format!(
+                "input count {} != expected {}",
+                inputs.len(),
+                self.num_inputs
+            ));
         }
         if t_eval.is_empty() {
             return empty_res("t_eval must not be empty");
@@ -328,7 +345,8 @@ impl OdeSystem {
             // Stage 6
             let t6 = t_n + C6 * h;
             for j in 0..d {
-                y_tmp[j] = y_n[j] + h * (A61 * k1[j] + A62 * k2[j] + A63 * k3[j] + A64 * k4[j] + A65 * k5[j]);
+                y_tmp[j] = y_n[j]
+                    + h * (A61 * k1[j] + A62 * k2[j] + A63 * k3[j] + A64 * k4[j] + A65 * k5[j]);
             }
             if !eval_rhs(t6, &y_tmp, &mut k6) {
                 h *= 0.2;
@@ -347,7 +365,13 @@ impl OdeSystem {
             // Candidate 5th-order state
             let mut non_finite = false;
             for j in 0..d {
-                let y5 = y_n[j] + h * (B1 * k1[j] + B2 * k2[j] + B3 * k3[j] + B4 * k4[j] + B5 * k5[j] + B6 * k6[j]);
+                let y5 = y_n[j]
+                    + h * (B1 * k1[j]
+                        + B2 * k2[j]
+                        + B3 * k3[j]
+                        + B4 * k4[j]
+                        + B5 * k5[j]
+                        + B6 * k6[j]);
                 if !y5.is_finite() || y5.abs() > 1e12 {
                     non_finite = true;
                     break;
@@ -389,7 +413,14 @@ impl OdeSystem {
             // Error estimation
             let mut err_sq = 0.0f64;
             for j in 0..d {
-                let err_est = h * (E1 * k1[j] + E2 * k2[j] + E3 * k3[j] + E4 * k4[j] + E5 * k5[j] + E6 * k6[j] + E7 * k7[j]);
+                let err_est = h
+                    * (E1 * k1[j]
+                        + E2 * k2[j]
+                        + E3 * k3[j]
+                        + E4 * k4[j]
+                        + E5 * k5[j]
+                        + E6 * k6[j]
+                        + E7 * k7[j]);
                 let scale = atol + rtol * y_n[j].abs().max(y_next[j].abs());
                 let ratio = err_est / scale;
                 err_sq += ratio * ratio;
@@ -431,7 +462,8 @@ impl OdeSystem {
                     let h11 = -th2 + th3;
 
                     for j in 0..d {
-                        y_out[j][eval_idx] = h00 * y_n[j] + h01 * y_next[j] + h * (h10 * k1[j] + h11 * k7[j]);
+                        y_out[j][eval_idx] =
+                            h00 * y_n[j] + h01 * y_next[j] + h * (h10 * k1[j] + h11 * k7[j]);
                     }
                     eval_idx += 1;
                 }
@@ -462,7 +494,9 @@ impl OdeSystem {
         if eval_idx < n_eval {
             return OdeResult {
                 success: false,
-                detail: format!("span not fully covered (reached t={t_n:.6}, eval_idx={eval_idx}/{n_eval})"),
+                detail: format!(
+                    "span not fully covered (reached t={t_n:.6}, eval_idx={eval_idx}/{n_eval})"
+                ),
                 nfev,
                 t: t_eval.to_vec(),
                 y: y_out,

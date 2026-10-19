@@ -40,7 +40,11 @@ pub struct ScoreConfig {
 impl ScoreConfig {
     /// Single-candidate evaluation: no selection charge.
     pub fn new(lambda_c: f64, ridge: f64) -> Self {
-        ScoreConfig { lambda_c, ridge, selection_dof: 0.0 }
+        ScoreConfig {
+            lambda_c,
+            ridge,
+            selection_dof: 0.0,
+        }
     }
 
     pub fn with_selection_dof(mut self, dof: f64) -> Self {
@@ -128,7 +132,12 @@ pub fn residual_stats(output: &[f64], target: &[f64], a: f64, b: f64) -> (f64, f
         }
     }
     if n == 0 {
-        return (f64::INFINITY, 0.0, 0, skipped + output.len().min(target.len()));
+        return (
+            f64::INFINITY,
+            0.0,
+            0,
+            skipped + output.len().min(target.len()),
+        );
     }
     let my = sy / n as f64;
     let mut tss = 0.0;
@@ -166,7 +175,12 @@ pub struct FittedScore {
 }
 
 /// Fit the readout of a graph and return `(mse, scale, intercept)`.
-pub fn fitted_mse<V: crate::data::DataCol>(graph: &Graph, cols: &[V], target: &[f64], ridge: f64) -> (f64, f64, f64) {
+pub fn fitted_mse<V: crate::data::DataCol>(
+    graph: &Graph,
+    cols: &[V],
+    target: &[f64],
+    ridge: f64,
+) -> (f64, f64, f64) {
     let out = graph.evaluate(cols);
     let (a, b) = fit_readout(&out, target, ridge);
     let (mse, _, _, _) = residual_stats(&out, target, a, b);
@@ -186,8 +200,22 @@ pub fn score_candidate_fitted<V: crate::data::DataCol>(
     let (mse, tss, n_eff, skipped) = residual_stats(&out, target, a, b);
     let complexity = charged_dof(graph, cfg.selection_dof);
     let score = (parent_dev_mse - mse) - cfg.lambda_c * complexity;
-    let r2 = if tss > 0.0 { 1.0 - mse * n_eff as f64 / tss } else { f64::NAN };
-    FittedScore { score, mse, parent_mse: parent_dev_mse, scale: a, intercept: b, r2, n_eff, skipped, complexity }
+    let r2 = if tss > 0.0 {
+        1.0 - mse * n_eff as f64 / tss
+    } else {
+        f64::NAN
+    };
+    FittedScore {
+        score,
+        mse,
+        parent_mse: parent_dev_mse,
+        scale: a,
+        intercept: b,
+        r2,
+        n_eff,
+        skipped,
+        complexity,
+    }
 }
 
 /// Parallel batch scoring on fitted readouts. Returns scores in input order
@@ -335,8 +363,15 @@ mod tests {
         let s_base = score_candidate_fitted(&g, 5.0, &cols, &tgt, &base);
         let s_search = score_candidate_fitted(&g, 5.0, &cols, &tgt, &searched);
         let gap = s_base.score - s_search.score;
-        assert!((gap - 1.0 * searched.selection_dof).abs() < 1e-9, "gap {}", gap);
-        assert_eq!(s_search.complexity, s_base.complexity + searched.selection_dof);
+        assert!(
+            (gap - 1.0 * searched.selection_dof).abs() < 1e-9,
+            "gap {}",
+            gap
+        );
+        assert_eq!(
+            s_search.complexity,
+            s_base.complexity + searched.selection_dof
+        );
     }
 
     #[test]

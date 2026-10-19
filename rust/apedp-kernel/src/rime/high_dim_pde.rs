@@ -92,7 +92,10 @@ pub fn eval_jet2_neural_pde_operator(
     if x_flat.iter().any(|&v| !v.is_finite()) {
         return Err("Non-finite (NaN or Inf) value found in x_flat".to_string());
     }
-    if w1_flat.iter().any(|&v| !v.is_finite()) || b1.iter().any(|&v| !v.is_finite()) || w2.iter().any(|&v| !v.is_finite()) {
+    if w1_flat.iter().any(|&v| !v.is_finite())
+        || b1.iter().any(|&v| !v.is_finite())
+        || w2.iter().any(|&v| !v.is_finite())
+    {
         return Err("Non-finite (NaN or Inf) value found in network parameters".to_string());
     }
 
@@ -107,11 +110,11 @@ pub fn eval_jet2_neural_pde_operator(
         w2_s[j] = w2[j] * s;
     }
 
-    let w1_view = ArrayView2::from_shape((h, d), w1_flat)
-        .map_err(|e| format!("w1 shape error: {}", e))?;
+    let w1_view =
+        ArrayView2::from_shape((h, d), w1_flat).map_err(|e| format!("w1 shape error: {}", e))?;
 
-    let x_view = ArrayView2::from_shape((m, d), x_flat)
-        .map_err(|e| format!("x shape error: {}", e))?;
+    let x_view =
+        ArrayView2::from_shape((m, d), x_flat).map_err(|e| format!("x shape error: {}", e))?;
 
     let mut u_out = vec![0.0f64; m];
     let mut grad_sq_out = vec![0.0f64; m];
@@ -132,7 +135,9 @@ pub fn eval_jet2_neural_pde_operator(
         .zip(lap_out.par_chunks_mut(CHUNK_SIZE))
         .zip(z_mat.par_chunks_mut(CHUNK_SIZE * h))
         .for_each(|((u_chunk, lap_chunk), z_chunk)| {
-            for (offset, (u_val, lap_val)) in u_chunk.iter_mut().zip(lap_chunk.iter_mut()).enumerate() {
+            for (offset, (u_val, lap_val)) in
+                u_chunk.iter_mut().zip(lap_chunk.iter_mut()).enumerate()
+            {
                 let base = offset * h;
                 let mut u = 0.0f64;
                 let mut lap = 0.0f64;
@@ -167,8 +172,11 @@ pub fn eval_jet2_neural_pde_operator(
         .enumerate()
         .for_each(|(chunk_idx, ((gsq_chunk, res_chunk), lap_chunk))| {
             let start_r = chunk_idx * CHUNK_SIZE;
-            for (offset, ((gsq_val, res_val), &lap_val)) in
-                gsq_chunk.iter_mut().zip(res_chunk.iter_mut()).zip(lap_chunk.iter()).enumerate()
+            for (offset, ((gsq_val, res_val), &lap_val)) in gsq_chunk
+                .iter_mut()
+                .zip(res_chunk.iter_mut())
+                .zip(lap_chunk.iter())
+                .enumerate()
             {
                 let r = start_r + offset;
                 let g_row = &grad_mat[r * d..(r + 1) * d];
@@ -215,7 +223,10 @@ pub fn eval_fokker_planck_ou_operator(
     if x_flat.iter().any(|&v| !v.is_finite()) {
         return Err("Non-finite (NaN or Inf) value found in x_flat".to_string());
     }
-    if w1_flat.iter().any(|&v| !v.is_finite()) || b1.iter().any(|&v| !v.is_finite()) || w2.iter().any(|&v| !v.is_finite()) {
+    if w1_flat.iter().any(|&v| !v.is_finite())
+        || b1.iter().any(|&v| !v.is_finite())
+        || w2.iter().any(|&v| !v.is_finite())
+    {
         return Err("Non-finite (NaN or Inf) value found in network parameters".to_string());
     }
 
@@ -229,11 +240,11 @@ pub fn eval_fokker_planck_ou_operator(
         w2_s[j] = w2[j] * s;
     }
 
-    let w1_view = ArrayView2::from_shape((h, d), w1_flat)
-        .map_err(|e| format!("w1 shape error: {}", e))?;
+    let w1_view =
+        ArrayView2::from_shape((h, d), w1_flat).map_err(|e| format!("w1 shape error: {}", e))?;
 
-    let x_view = ArrayView2::from_shape((m, d), x_flat)
-        .map_err(|e| format!("x shape error: {}", e))?;
+    let x_view =
+        ArrayView2::from_shape((m, d), x_flat).map_err(|e| format!("x shape error: {}", e))?;
 
     let mut u_out = vec![0.0f64; m];
     let mut x_dot_grad_out = vec![0.0f64; m];
@@ -256,33 +267,39 @@ pub fn eval_fokker_planck_ou_operator(
         .zip(lap_out.par_chunks_mut(CHUNK_SIZE))
         .zip(res_out.par_chunks_mut(CHUNK_SIZE))
         .enumerate()
-        .for_each(|(chunk_idx, (((u_chunk, xdg_chunk), lap_chunk), res_chunk))| {
-            let start_r = chunk_idx * CHUNK_SIZE;
-            for (offset, (((u_val, xdg_val), lap_val), res_val)) in
-                u_chunk.iter_mut().zip(xdg_chunk.iter_mut()).zip(lap_chunk.iter_mut()).zip(res_chunk.iter_mut()).enumerate()
-            {
-                let r = start_r + offset;
-                let base = r * h;
-                let mut u = 0.0f64;
-                let mut xdg = 0.0f64;
-                let mut lap = 0.0f64;
-                for j in 0..h {
-                    let z_raw = z_mat[base + j];
-                    let z = z_raw + b1[j];
-                    let t = z.tanh();
-                    let dt = 1.0 - t * t;
-                    let d2t = -2.0 * t * dt;
-                    let alpha = w2[j] * dt;
-                    u += w2[j] * t;
-                    lap += w2_s[j] * d2t;
-                    xdg += alpha * z_raw;
+        .for_each(
+            |(chunk_idx, (((u_chunk, xdg_chunk), lap_chunk), res_chunk))| {
+                let start_r = chunk_idx * CHUNK_SIZE;
+                for (offset, (((u_val, xdg_val), lap_val), res_val)) in u_chunk
+                    .iter_mut()
+                    .zip(xdg_chunk.iter_mut())
+                    .zip(lap_chunk.iter_mut())
+                    .zip(res_chunk.iter_mut())
+                    .enumerate()
+                {
+                    let r = start_r + offset;
+                    let base = r * h;
+                    let mut u = 0.0f64;
+                    let mut xdg = 0.0f64;
+                    let mut lap = 0.0f64;
+                    for j in 0..h {
+                        let z_raw = z_mat[base + j];
+                        let z = z_raw + b1[j];
+                        let t = z.tanh();
+                        let dt = 1.0 - t * t;
+                        let d2t = -2.0 * t * dt;
+                        let alpha = w2[j] * dt;
+                        u += w2[j] * t;
+                        lap += w2_s[j] * d2t;
+                        xdg += alpha * z_raw;
+                    }
+                    *u_val = u;
+                    *xdg_val = xdg;
+                    *lap_val = lap;
+                    *res_val = -diffusion_nu * lap + drift_gamma * xdg;
                 }
-                *u_val = u;
-                *xdg_val = xdg;
-                *lap_val = lap;
-                *res_val = -diffusion_nu * lap + drift_gamma * xdg;
-            }
-        });
+            },
+        );
 
     Ok(Jet2PdeOperatorOutput {
         u: u_out,
@@ -322,7 +339,12 @@ pub fn compute_jet3_pde_loss_and_grads(
     hjb_beta: f64,
     reaction_mu: f64,
 ) -> Result<Jet3TrainStepOutput, String> {
-    if x_flat.len() != m * d || target_f.len() != m || w1_flat.len() != h * d || b1.len() != h || w2.len() != h {
+    if x_flat.len() != m * d
+        || target_f.len() != m
+        || w1_flat.len() != h * d
+        || b1.len() != h
+        || w2.len() != h
+    {
         return Err("Dimension mismatch in compute_jet3_pde_loss_and_grads".to_string());
     }
     if !viscosity_nu.is_finite() || !hjb_beta.is_finite() || !reaction_mu.is_finite() {
@@ -331,7 +353,10 @@ pub fn compute_jet3_pde_loss_and_grads(
     if x_flat.iter().any(|&v| !v.is_finite()) || target_f.iter().any(|&v| !v.is_finite()) {
         return Err("Non-finite (NaN or Inf) value found in x_flat or target_f".to_string());
     }
-    if w1_flat.iter().any(|&v| !v.is_finite()) || b1.iter().any(|&v| !v.is_finite()) || w2.iter().any(|&v| !v.is_finite()) {
+    if w1_flat.iter().any(|&v| !v.is_finite())
+        || b1.iter().any(|&v| !v.is_finite())
+        || w2.iter().any(|&v| !v.is_finite())
+    {
         return Err("Non-finite (NaN or Inf) value found in network parameters".to_string());
     }
 
@@ -375,31 +400,33 @@ pub fn compute_jet3_pde_loss_and_grads(
         .zip(u_vec.par_chunks_mut(CHUNK_SIZE))
         .zip(lap_vec.par_chunks_mut(CHUNK_SIZE))
         .zip(z_mat.par_chunks(CHUNK_SIZE * h))
-        .for_each(|(((((((t_chk, dt_chk), d2t_chk), d3t_chk), a_chk), u_chk), lap_chk), z_chk)| {
-            let n_pts = u_chk.len();
-            for i in 0..n_pts {
-                let base = i * h;
-                let mut u_p = 0.0f64;
-                let mut lap_p = 0.0f64;
-                for j in 0..h {
-                    let z = z_chk[base + j] + b1[j];
-                    let t = z.tanh();
-                    let t2 = t * t;
-                    let dt = 1.0 - t2;
-                    let d2t = -2.0 * t * dt;
-                    let d3t = -2.0 * dt * (1.0 - 3.0 * t2);
-                    t_chk[base + j] = t;
-                    dt_chk[base + j] = dt;
-                    d2t_chk[base + j] = d2t;
-                    d3t_chk[base + j] = d3t;
-                    a_chk[base + j] = w2[j] * dt;
-                    u_p += w2[j] * t;
-                    lap_p += w2[j] * d2t * s_norm_sq[j];
+        .for_each(
+            |(((((((t_chk, dt_chk), d2t_chk), d3t_chk), a_chk), u_chk), lap_chk), z_chk)| {
+                let n_pts = u_chk.len();
+                for i in 0..n_pts {
+                    let base = i * h;
+                    let mut u_p = 0.0f64;
+                    let mut lap_p = 0.0f64;
+                    for j in 0..h {
+                        let z = z_chk[base + j] + b1[j];
+                        let t = z.tanh();
+                        let t2 = t * t;
+                        let dt = 1.0 - t2;
+                        let d2t = -2.0 * t * dt;
+                        let d3t = -2.0 * dt * (1.0 - 3.0 * t2);
+                        t_chk[base + j] = t;
+                        dt_chk[base + j] = dt;
+                        d2t_chk[base + j] = d2t;
+                        d3t_chk[base + j] = d3t;
+                        a_chk[base + j] = w2[j] * dt;
+                        u_p += w2[j] * t;
+                        lap_p += w2[j] * d2t * s_norm_sq[j];
+                    }
+                    u_chk[i] = u_p;
+                    lap_chk[i] = lap_p;
                 }
-                u_chk[i] = u_p;
-                lap_chk[i] = lap_p;
-            }
-        });
+            },
+        );
 
     // 2. G = Alpha @ W1 ([M, D]) and C = G @ W1^T ([M, H]) if hjb_beta != 0
     let mut g_mat = vec![0.0f64; m * d];
@@ -451,40 +478,62 @@ pub fn compute_jet3_pde_loss_and_grads(
         .zip(d2t_mat.par_chunks(CHUNK_SIZE * h))
         .zip(d3t_mat.par_chunks(CHUNK_SIZE * h))
         .zip(c_mat.par_chunks(CHUNK_SIZE * h))
-        .map(|((((((((((gamma_chk, eta_chk), u_chk), lap_chk), gsq_chk), tf_chk), t_chk), dt_chk), d2t_chk), d3t_chk), c_chk)| {
-            let n_pts = u_chk.len();
-            let mut local_loss = 0.0f64;
-            let mut local_gb1 = vec![0.0f64; h];
-            let mut local_gw2 = vec![0.0f64; h];
-            let mut local_scale = vec![0.0f64; h];
+        .map(
+            |(
+                (
+                    (
+                        (
+                            ((((((gamma_chk, eta_chk), u_chk), lap_chk), gsq_chk), tf_chk), t_chk),
+                            dt_chk,
+                        ),
+                        d2t_chk,
+                    ),
+                    d3t_chk,
+                ),
+                c_chk,
+            )| {
+                let n_pts = u_chk.len();
+                let mut local_loss = 0.0f64;
+                let mut local_gb1 = vec![0.0f64; h];
+                let mut local_gw2 = vec![0.0f64; h];
+                let mut local_scale = vec![0.0f64; h];
 
-            for i in 0..n_pts {
-                let res_p = -viscosity_nu * lap_chk[i] + 0.5 * hjb_beta * gsq_chk[i] + reaction_mu * u_chk[i] - tf_chk[i];
-                local_loss += 0.5 * inv_m * res_p * res_p;
-                let delta_p = res_p * inv_m;
-                let base = i * h;
+                for i in 0..n_pts {
+                    let res_p = -viscosity_nu * lap_chk[i]
+                        + 0.5 * hjb_beta * gsq_chk[i]
+                        + reaction_mu * u_chk[i]
+                        - tf_chk[i];
+                    local_loss += 0.5 * inv_m * res_p * res_p;
+                    let delta_p = res_p * inv_m;
+                    let base = i * h;
 
-                for j in 0..h {
-                    let t = t_chk[base + j];
-                    let dt = dt_chk[base + j];
-                    let d2t = d2t_chk[base + j];
-                    let d3t = d3t_chk[base + j];
-                    let c_pj = c_chk[base + j];
-                    let s_j = s_norm_sq[j];
-                    let w2_j = w2[j];
+                    for j in 0..h {
+                        let t = t_chk[base + j];
+                        let dt = dt_chk[base + j];
+                        let d2t = d2t_chk[base + j];
+                        let d3t = d3t_chk[base + j];
+                        let c_pj = c_chk[base + j];
+                        let s_j = s_norm_sq[j];
+                        let w2_j = w2[j];
 
-                    local_gw2[j] += delta_p * (-viscosity_nu * d2t * s_j + hjb_beta * dt * c_pj + reaction_mu * t);
+                        local_gw2[j] += delta_p
+                            * (-viscosity_nu * d2t * s_j + hjb_beta * dt * c_pj + reaction_mu * t);
 
-                    let gamma_pj = delta_p * w2_j * (-viscosity_nu * d3t * s_j + hjb_beta * d2t * c_pj + reaction_mu * dt);
-                    gamma_chk[base + j] = gamma_pj;
-                    local_gb1[j] += gamma_pj;
+                        let gamma_pj = delta_p
+                            * w2_j
+                            * (-viscosity_nu * d3t * s_j
+                                + hjb_beta * d2t * c_pj
+                                + reaction_mu * dt);
+                        gamma_chk[base + j] = gamma_pj;
+                        local_gb1[j] += gamma_pj;
 
-                    local_scale[j] += delta_p * (-2.0 * viscosity_nu * w2_j * d2t);
-                    eta_chk[base + j] = delta_p * hjb_beta * w2_j * dt;
+                        local_scale[j] += delta_p * (-2.0 * viscosity_nu * w2_j * d2t);
+                        eta_chk[base + j] = delta_p * hjb_beta * w2_j * dt;
+                    }
                 }
-            }
-            (local_loss, local_gb1, local_gw2, local_scale)
-        })
+                (local_loss, local_gb1, local_gw2, local_scale)
+            },
+        )
         .reduce(
             || (0.0f64, vec![0.0f64; h], vec![0.0f64; h], vec![0.0f64; h]),
             |mut a, b| {
@@ -545,7 +594,11 @@ pub fn step_vlasov_attention_pde_hd(
     damping: f64,
 ) -> Result<Vec<f64>, String> {
     if x_init_flat.len() != n * d {
-        return Err(format!("x_init_flat length {} != n*d ({})", x_init_flat.len(), n * d));
+        return Err(format!(
+            "x_init_flat length {} != n*d ({})",
+            x_init_flat.len(),
+            n * d
+        ));
     }
     if n == 0 || d == 0 {
         return Err("n and d must be >= 1".to_string());
@@ -637,7 +690,8 @@ pub fn step_vlasov_attention_pde_hd(
 
                     {
                         let p_view = ArrayView2::from_shape((br, bc), s_slice).unwrap();
-                        let mut acc_view = ArrayViewMut2::from_shape((br, d), &mut *acc_buf).unwrap();
+                        let mut acc_view =
+                            ArrayViewMut2::from_shape((br, d), &mut *acc_buf).unwrap();
                         // Block-tiled Acc_tile += P_tile @ V_tile in AVX2 FMA registers
                         general_mat_mul(1.0, &p_view, &xk_view, 1.0, &mut acc_view);
                     }
@@ -688,7 +742,9 @@ pub fn discover_pde_point_cloud_hd_flat(
     if u_anchors_flat.len() != nt * m {
         return Err("u_anchors_flat size mismatch".to_string());
     }
-    if u_probes_plus_flat.len() != nt * m * dimension || u_probes_minus_flat.len() != nt * m * dimension {
+    if u_probes_plus_flat.len() != nt * m * dimension
+        || u_probes_minus_flat.len() != nt * m * dimension
+    {
         return Err("u_probes_flat size mismatch".to_string());
     }
 
@@ -769,7 +825,15 @@ pub fn discover_pde_point_cloud_hd_flat(
 
     let n_int_t = nt - 2;
     let method = format!("meshfree_point_cloud_{}d", dimension);
-    run_stridge_with_frozen_holdout(&ut, &columns, &term_names, config, n_int_t, dimension, method)
+    run_stridge_with_frozen_holdout(
+        &ut,
+        &columns,
+        &term_names,
+        config,
+        n_int_t,
+        dimension,
+        method,
+    )
 }
 
 /// Result of high-dimensional or hybrid PDE discovery.
@@ -940,33 +1004,45 @@ pub fn discover_pde_3d_cartesian(
 
                     let (d_x, d_xx, d_y, d_yy, d_z, d_zz) = if use_fourth_order {
                         let ux = (-u_grid[t][i + 2][j][k] + 8.0 * u_grid[t][i + 1][j][k]
-                            - 8.0 * u_grid[t][i - 1][j][k] + u_grid[t][i - 2][j][k])
+                            - 8.0 * u_grid[t][i - 1][j][k]
+                            + u_grid[t][i - 2][j][k])
                             / (12.0 * dx);
                         let uxx = (-u_grid[t][i + 2][j][k] + 16.0 * u_grid[t][i + 1][j][k]
-                            - 30.0 * u_val + 16.0 * u_grid[t][i - 1][j][k] - u_grid[t][i - 2][j][k])
+                            - 30.0 * u_val
+                            + 16.0 * u_grid[t][i - 1][j][k]
+                            - u_grid[t][i - 2][j][k])
                             / (12.0 * dx * dx);
 
                         let uy = (-u_grid[t][i][j + 2][k] + 8.0 * u_grid[t][i][j + 1][k]
-                            - 8.0 * u_grid[t][i][j - 1][k] + u_grid[t][i][j - 2][k])
+                            - 8.0 * u_grid[t][i][j - 1][k]
+                            + u_grid[t][i][j - 2][k])
                             / (12.0 * dy);
                         let uyy = (-u_grid[t][i][j + 2][k] + 16.0 * u_grid[t][i][j + 1][k]
-                            - 30.0 * u_val + 16.0 * u_grid[t][i][j - 1][k] - u_grid[t][i][j - 2][k])
+                            - 30.0 * u_val
+                            + 16.0 * u_grid[t][i][j - 1][k]
+                            - u_grid[t][i][j - 2][k])
                             / (12.0 * dy * dy);
 
                         let uz = (-u_grid[t][i][j][k + 2] + 8.0 * u_grid[t][i][j][k + 1]
-                            - 8.0 * u_grid[t][i][j][k - 1] + u_grid[t][i][j][k - 2])
+                            - 8.0 * u_grid[t][i][j][k - 1]
+                            + u_grid[t][i][j][k - 2])
                             / (12.0 * dz);
                         let uzz = (-u_grid[t][i][j][k + 2] + 16.0 * u_grid[t][i][j][k + 1]
-                            - 30.0 * u_val + 16.0 * u_grid[t][i][j][k - 1] - u_grid[t][i][j][k - 2])
+                            - 30.0 * u_val
+                            + 16.0 * u_grid[t][i][j][k - 1]
+                            - u_grid[t][i][j][k - 2])
                             / (12.0 * dz * dz);
                         (ux, uxx, uy, uyy, uz, uzz)
                     } else {
                         let ux = (u_grid[t][i + 1][j][k] - u_grid[t][i - 1][j][k]) / (2.0 * dx);
-                        let uxx = (u_grid[t][i + 1][j][k] - 2.0 * u_val + u_grid[t][i - 1][j][k]) / (dx * dx);
+                        let uxx = (u_grid[t][i + 1][j][k] - 2.0 * u_val + u_grid[t][i - 1][j][k])
+                            / (dx * dx);
                         let uy = (u_grid[t][i][j + 1][k] - u_grid[t][i][j - 1][k]) / (2.0 * dy);
-                        let uyy = (u_grid[t][i][j + 1][k] - 2.0 * u_val + u_grid[t][i][j - 1][k]) / (dy * dy);
+                        let uyy = (u_grid[t][i][j + 1][k] - 2.0 * u_val + u_grid[t][i][j - 1][k])
+                            / (dy * dy);
                         let uz = (u_grid[t][i][j][k + 1] - u_grid[t][i][j][k - 1]) / (2.0 * dz);
-                        let uzz = (u_grid[t][i][j][k + 1] - 2.0 * u_val + u_grid[t][i][j][k - 1]) / (dz * dz);
+                        let uzz = (u_grid[t][i][j][k + 1] - 2.0 * u_val + u_grid[t][i][j][k - 1])
+                            / (dz * dz);
                         (ux, uxx, uy, uyy, uz, uzz)
                     };
 
@@ -1000,7 +1076,13 @@ pub fn discover_pde_3d_cartesian(
     columns.push(grad_sq);
 
     term_names.push("u*laplacian(u)".to_string());
-    columns.push(u_vals.iter().zip(lap3d.iter()).map(|(&u, &l)| u * l).collect());
+    columns.push(
+        u_vals
+            .iter()
+            .zip(lap3d.iter())
+            .map(|(&u, &l)| u * l)
+            .collect(),
+    );
 
     run_stridge_with_frozen_holdout(
         &ut,
@@ -1037,7 +1119,11 @@ pub fn discover_pde_nd_cartesian(
         ));
     }
     if dxs.len() != dimension {
-        return Err(format!("dxs length {} != dimension {}", dxs.len(), dimension));
+        return Err(format!(
+            "dxs length {} != dimension {}",
+            dxs.len(),
+            dimension
+        ));
     }
     let nt = grid_shape[0];
     if nt < 5 {
@@ -1128,7 +1214,8 @@ pub fn discover_pde_nd_cartesian(
                     let um1 = u_flat[idx - st];
                     let um2 = u_flat[idx - 2 * st];
                     let g1 = (-up2 + 8.0 * up1 - 8.0 * um1 + um2) / (12.0 * dx);
-                    let g2 = (-up2 + 16.0 * up1 - 30.0 * u_val + 16.0 * um1 - um2) / (12.0 * dx * dx);
+                    let g2 =
+                        (-up2 + 16.0 * up1 - 30.0 * u_val + 16.0 * um1 - um2) / (12.0 * dx * dx);
                     (g1, g2)
                 } else {
                     let up1 = u_flat[idx + st];
@@ -1166,10 +1253,24 @@ pub fn discover_pde_nd_cartesian(
     columns.push(grad_sq);
 
     term_names.push("u*laplacian(u)".to_string());
-    columns.push(u_vals.iter().zip(lap_nd.iter()).map(|(&u, &l)| u * l).collect());
+    columns.push(
+        u_vals
+            .iter()
+            .zip(lap_nd.iter())
+            .map(|(&u, &l)| u * l)
+            .collect(),
+    );
 
     let method = format!("eulerian_cartesian_{}d", dimension);
-    run_stridge_with_frozen_holdout(&ut, &columns, &term_names, config, n_int_t, dimension, method)
+    run_stridge_with_frozen_holdout(
+        &ut,
+        &columns,
+        &term_names,
+        config,
+        n_int_t,
+        dimension,
+        method,
+    )
 }
 
 /// Discover D-dimensional PDE via Hyperspherical Radial Invariant Reduction (Technique 2).
@@ -1220,12 +1321,14 @@ pub fn discover_pde_radial_hd(
             let u_val = u_grid[ti][ri];
 
             // 4th order first radial derivative: (-u_{i+2} + 8 u_{i+1} - 8 u_{i-1} + u_{i-2}) / (12 dr)
-            let ur = (-u_grid[ti][ri + 2] + 8.0 * u_grid[ti][ri + 1] - 8.0 * u_grid[ti][ri - 1] + u_grid[ti][ri - 2])
+            let ur = (-u_grid[ti][ri + 2] + 8.0 * u_grid[ti][ri + 1] - 8.0 * u_grid[ti][ri - 1]
+                + u_grid[ti][ri - 2])
                 / (12.0 * dr);
 
             // 4th order second radial derivative
             let urr = (-u_grid[ti][ri + 2] + 16.0 * u_grid[ti][ri + 1] - 30.0 * u_val
-                + 16.0 * u_grid[ti][ri - 1] - u_grid[ti][ri - 2])
+                + 16.0 * u_grid[ti][ri - 1]
+                - u_grid[ti][ri - 2])
                 / (12.0 * dr * dr);
 
             // Exact Hyperspherical D-dimensional Laplacian
@@ -1262,7 +1365,15 @@ pub fn discover_pde_radial_hd(
     }
 
     let method = format!("hyperspherical_radial_{}d", dimension);
-    run_stridge_with_frozen_holdout(&ut, &columns, &term_names, config, nt - 2, dimension, method)
+    run_stridge_with_frozen_holdout(
+        &ut,
+        &columns,
+        &term_names,
+        config,
+        nt - 2,
+        dimension,
+        method,
+    )
 }
 
 /// Discover D-dimensional PDE from a TRUE Scattered Point Cloud (X, U) via Multi-Scale
@@ -1482,10 +1593,24 @@ pub fn discover_pde_rbf_point_cloud_hd(
     columns.push(grad_sq);
 
     term_names.push(format!("u*laplacian_{}d(u)", dimension));
-    columns.push(u_vals.iter().zip(lap_hd.iter()).map(|(&u, &l)| u * l).collect());
+    columns.push(
+        u_vals
+            .iter()
+            .zip(lap_hd.iter())
+            .map(|(&u, &l)| u * l)
+            .collect(),
+    );
 
     let method = format!("meshfree_rbf_point_cloud_{}d", dimension);
-    run_stridge_with_frozen_holdout(&ut, &columns, &term_names, config, n_int_t, dimension, method)
+    run_stridge_with_frozen_holdout(
+        &ut,
+        &columns,
+        &term_names,
+        config,
+        n_int_t,
+        dimension,
+        method,
+    )
 }
 
 /// Discover D-dimensional PDE via Mesh-Free Axis-Star Point Cloud Sampling.
@@ -1496,9 +1621,9 @@ pub fn discover_pde_rbf_point_cloud_hd(
 /// evaluating \nabla^2_D u = \sum_{k=1}^D u_{x_k x_k} and |\nabla_D u|^2.
 /// Requires only M * (2D + 1) points in total, completely bypassing Cartesian N^D grids.
 pub fn discover_pde_point_cloud_hd(
-    u_anchors: &[Vec<f64>],            // [N_t][M]
-    u_probes_plus: &[Vec<Vec<f64>>],   // [N_t][M][D] (value at x_p + h * e_k)
-    u_probes_minus: &[Vec<Vec<f64>>],  // [N_t][M][D] (value at x_p - h * e_k)
+    u_anchors: &[Vec<f64>],           // [N_t][M]
+    u_probes_plus: &[Vec<Vec<f64>>],  // [N_t][M][D] (value at x_p + h * e_k)
+    u_probes_minus: &[Vec<Vec<f64>>], // [N_t][M][D] (value at x_p - h * e_k)
     dt: f64,
     h: f64,
     dimension: usize,
@@ -1566,10 +1691,24 @@ pub fn discover_pde_point_cloud_hd(
     columns.push(grad_sq);
 
     term_names.push(format!("u*laplacian_{}d(u)", dimension));
-    columns.push(u_vals.iter().zip(lap_hd.iter()).map(|(&u, &l)| u * l).collect());
+    columns.push(
+        u_vals
+            .iter()
+            .zip(lap_hd.iter())
+            .map(|(&u, &l)| u * l)
+            .collect(),
+    );
 
     let method = format!("meshfree_point_cloud_{}d", dimension);
-    run_stridge_with_frozen_holdout(&ut, &columns, &term_names, config, nt - 2, dimension, method)
+    run_stridge_with_frozen_holdout(
+        &ut,
+        &columns,
+        &term_names,
+        config,
+        nt - 2,
+        dimension,
+        method,
+    )
 }
 
 /// Discover D-dimensional PDE via Low-Rank Tensor-Train (TT / MPS) Decomposition (Technique 3).
@@ -1594,10 +1733,14 @@ pub fn discover_pde_tensor_train_hd(
         return Err("Tensor-Train HD PDE requires at least 5 time steps".to_string());
     }
     if bond_rank < 1 || dimension < 1 || nx < 7 {
-        return Err("Tensor-Train HD PDE requires bond_rank >= 1, dimension >= 1, nx >= 7".to_string());
+        return Err(
+            "Tensor-Train HD PDE requires bond_rank >= 1, dimension >= 1, nx >= 7".to_string(),
+        );
     }
     if tt_cores_flat.len() != nt * bond_rank * dimension * nx {
-        return Err("tt_cores_flat length mismatch with nt * bond_rank * dimension * nx".to_string());
+        return Err(
+            "tt_cores_flat length mismatch with nt * bond_rank * dimension * nx".to_string(),
+        );
     }
 
     let dt = dt.max(1e-12);
@@ -1666,7 +1809,8 @@ pub fn discover_pde_tensor_train_hd(
 
                     vals[k] = c0;
                     d1_vals[k] = (-cp2 + 8.0 * cp1 - 8.0 * cm1 + cm2) / (12.0 * dx);
-                    d2_vals[k] = (-cp2 + 16.0 * cp1 - 30.0 * c0 + 16.0 * cm1 - cm2) / (12.0 * dx * dx);
+                    d2_vals[k] =
+                        (-cp2 + 16.0 * cp1 - 30.0 * c0 + 16.0 * cm1 - cm2) / (12.0 * dx * dx);
                 }
 
                 let mut prefix = vec![1.0f64; dimension];
@@ -1711,7 +1855,15 @@ pub fn discover_pde_tensor_train_hd(
     columns.push(grad_sq);
 
     let method = format!("tensor_train_mps_{}d", dimension);
-    run_stridge_with_frozen_holdout(&ut, &columns, &term_names, config, n_int_t, dimension, method)
+    run_stridge_with_frozen_holdout(
+        &ut,
+        &columns,
+        &term_names,
+        config,
+        n_int_t,
+        dimension,
+        method,
+    )
 }
 
 /// Discover D-dimensional PDE via Deep BSDE / Neural PINN Jet2 Autodiff (Technique 4).
@@ -1803,10 +1955,24 @@ pub fn discover_pde_neural_pinn_hd(
     columns.push(grad_sq);
 
     term_names.push(format!("u*laplacian_{}d(u)", dimension));
-    columns.push(u_vals.iter().zip(lap_hd.iter()).map(|(&u, &l)| u * l).collect());
+    columns.push(
+        u_vals
+            .iter()
+            .zip(lap_hd.iter())
+            .map(|(&u, &l)| u * l)
+            .collect(),
+    );
 
     let method = format!("neural_pinn_bsde_jet2_{}d", dimension);
-    run_stridge_with_frozen_holdout(&ut, &columns, &term_names, config, n_int_t, dimension, method)
+    run_stridge_with_frozen_holdout(
+        &ut,
+        &columns,
+        &term_names,
+        config,
+        n_int_t,
+        dimension,
+        method,
+    )
 }
 
 /// Discover D-dimensional PDE via Separable Coordinate-Factored Decomposition.
@@ -1877,9 +2043,16 @@ pub fn discover_pde_separable_hd(
     columns.push(lap_hd);
 
     let method = format!("separable_tensor_{}d", dimension);
-    run_stridge_with_frozen_holdout(&ut, &columns, &term_names, config, nt - 2, dimension, method)
+    run_stridge_with_frozen_holdout(
+        &ut,
+        &columns,
+        &term_names,
+        config,
+        nt - 2,
+        dimension,
+        method,
+    )
 }
-
 
 /// Unified AVX2/Rayon SIMD-fused Jet2 Curvature Video Flow Step:
 /// Computes total convective trajectory acceleration:
@@ -1901,7 +2074,11 @@ pub fn jet2_video_flow_step(
 ) -> Result<(Vec<f64>, Vec<f64>), String> {
     let n = z_flat.len();
     if v_current.len() != n {
-        return Err(format!("v_current length {} != z_flat length {}", v_current.len(), n));
+        return Err(format!(
+            "v_current length {} != z_flat length {}",
+            v_current.len(),
+            n
+        ));
     }
     // dt is a *signed* step: backward trajectory inversion (dt < 0) must be
     // accepted. The step is nonlinear-in-dt through 0.5*dt^2 (sign-invariant)
@@ -1927,7 +2104,11 @@ pub fn jet2_video_flow_step(
     }
 
     // Second-order Jet2 Taylor step with acceleration
-    if v_t_plus.len() != n || v_t_minus.len() != n || v_spatial_plus.len() != n || v_spatial_minus.len() != n {
+    if v_t_plus.len() != n
+        || v_t_minus.len() != n
+        || v_spatial_plus.len() != n
+        || v_spatial_minus.len() != n
+    {
         return Err("Directional velocity arrays must have length equal to z_flat".to_string());
     }
     // dt_span carries the SIGNED temporal probe separation and two_h_disp the
@@ -1955,15 +2136,17 @@ pub fn jet2_video_flow_step(
         .zip(v_t_minus.par_chunks(CHUNK))
         .zip(v_spatial_plus.par_chunks(CHUNK))
         .zip(v_spatial_minus.par_chunks(CHUNK))
-        .for_each(|(((((((zn_c, a_c), z_c), vc_c), vtp_c), vtm_c), vsp_c), vsm_c)| {
-            for i in 0..zn_c.len() {
-                let a_temporal = (vtp_c[i] - vtm_c[i]) * inv_dt_span;
-                let a_convective = (vsp_c[i] - vsm_c[i]) * inv_two_h;
-                let a_tot = a_temporal + a_convective;
-                a_c[i] = a_tot;
-                zn_c[i] = z_c[i] + dt * vc_c[i] + half_dt_sq * a_tot;
-            }
-        });
+        .for_each(
+            |(((((((zn_c, a_c), z_c), vc_c), vtp_c), vtm_c), vsp_c), vsm_c)| {
+                for i in 0..zn_c.len() {
+                    let a_temporal = (vtp_c[i] - vtm_c[i]) * inv_dt_span;
+                    let a_convective = (vsp_c[i] - vsm_c[i]) * inv_two_h;
+                    let a_tot = a_temporal + a_convective;
+                    a_c[i] = a_tot;
+                    zn_c[i] = z_c[i] + dt * vc_c[i] + half_dt_sq * a_tot;
+                }
+            },
+        );
 
     Ok((z_next, a_out))
 }
@@ -1984,7 +2167,12 @@ pub fn helmholtz_hodge_div_free_2d(
 ) -> Result<(Vec<f64>, Vec<f64>, f64), String> {
     let n = height * width;
     if vx.len() != n || vy.len() != n {
-        return Err(format!("vx len {} and vy len {} must equal height * width = {}", vx.len(), vy.len(), n));
+        return Err(format!(
+            "vx len {} and vy len {} must equal height * width = {}",
+            vx.len(),
+            vy.len(),
+            n
+        ));
     }
     if height < 3 || width < 3 {
         return Err("Grid dimensions must be at least 3x3".to_string());
@@ -2133,7 +2321,13 @@ pub fn laplacian_dissipation_2d(
     let plane_size = height * width;
     let total_len = channels * plane_size;
     if field.len() != total_len {
-        return Err(format!("Field length {} != channels {} * height {} * width {}", field.len(), channels, height, width));
+        return Err(format!(
+            "Field length {} != channels {} * height {} * width {}",
+            field.len(),
+            channels,
+            height,
+            width
+        ));
     }
     if height < 3 || width < 3 {
         return Err("Grid dimensions must be at least 3x3".to_string());
@@ -2177,8 +2371,11 @@ pub fn laplacian_dissipation_2d(
                     let xm = if x == 0 { width - 1 } else { x - 1 };
                     let xp = if x + 1 == width { 0 } else { x + 1 };
 
-                    let d2x = (in_c[row_curr + xp] - 2.0 * in_c[row_curr + x] + in_c[row_curr + xm]) / dx_sq;
-                    let d2y = (in_c[row_p + x] - 2.0 * in_c[row_curr + x] + in_c[row_m + x]) / dy_sq;
+                    let d2x = (in_c[row_curr + xp] - 2.0 * in_c[row_curr + x]
+                        + in_c[row_curr + xm])
+                        / dx_sq;
+                    let d2y =
+                        (in_c[row_p + x] - 2.0 * in_c[row_curr + x] + in_c[row_m + x]) / dy_sq;
                     let lap = d2x + d2y;
                     out_c[row_curr + x] = in_c[row_curr + x] + factor * lap;
                 }
@@ -2187,8 +2384,6 @@ pub fn laplacian_dissipation_2d(
 
     Ok(out)
 }
-
-
 
 #[cfg(test)]
 mod tests {
@@ -2233,7 +2428,11 @@ mod tests {
         assert_eq!(res.dimension, 20);
         assert!(res.formula.contains("laplacian_20d(u)"));
         // Coeff should be close to alpha = 0.5
-        let lap_idx = res.active_terms.iter().position(|t| t == "laplacian_20d(u)").unwrap();
+        let lap_idx = res
+            .active_terms
+            .iter()
+            .position(|t| t == "laplacian_20d(u)")
+            .unwrap();
         let lap_coeff = res.coefficients[lap_idx];
         assert!((lap_coeff - 0.5).abs() < 0.05, "Lap coeff = {}", lap_coeff);
     }
@@ -2295,7 +2494,11 @@ mod tests {
         assert!(res.is_exact_recovery);
         assert_eq!(res.dimension, 20);
         assert!(res.formula.contains("laplacian_20d(u)"));
-        let lap_idx = res.active_terms.iter().position(|t| t == "laplacian_20d(u)").unwrap();
+        let lap_idx = res
+            .active_terms
+            .iter()
+            .position(|t| t == "laplacian_20d(u)")
+            .unwrap();
         let lap_coeff = res.coefficients[lap_idx];
         assert!((lap_coeff - 0.5).abs() < 0.05, "Lap coeff = {}", lap_coeff);
     }
@@ -2495,8 +2698,9 @@ mod tests {
             w2[j] = ((j * 13 + 2) % 29) as f64 * 0.03 - 0.4;
         }
 
-        let out = compute_jet3_pde_loss_and_grads(&x, &target_f, &w1, &b1, &w2, m, d, h, nu, beta, mu)
-            .expect("jet3 grads failed");
+        let out =
+            compute_jet3_pde_loss_and_grads(&x, &target_f, &w1, &b1, &w2, m, d, h, nu, beta, mu)
+                .expect("jet3 grads failed");
 
         let eps = 1e-6;
         // Check every entry of W1
@@ -2505,8 +2709,16 @@ mod tests {
             let mut w1_m = w1.clone();
             w1_p[idx] += eps;
             w1_m[idx] -= eps;
-            let lp = compute_jet3_pde_loss_and_grads(&x, &target_f, &w1_p, &b1, &w2, m, d, h, nu, beta, mu).unwrap().loss;
-            let lm = compute_jet3_pde_loss_and_grads(&x, &target_f, &w1_m, &b1, &w2, m, d, h, nu, beta, mu).unwrap().loss;
+            let lp = compute_jet3_pde_loss_and_grads(
+                &x, &target_f, &w1_p, &b1, &w2, m, d, h, nu, beta, mu,
+            )
+            .unwrap()
+            .loss;
+            let lm = compute_jet3_pde_loss_and_grads(
+                &x, &target_f, &w1_m, &b1, &w2, m, d, h, nu, beta, mu,
+            )
+            .unwrap()
+            .loss;
             let fd = (lp - lm) / (2.0 * eps);
             assert!(
                 (out.grad_w1[idx] - fd).abs() < 1e-8,
@@ -2522,8 +2734,16 @@ mod tests {
             let mut b1_m = b1.clone();
             b1_p[j] += eps;
             b1_m[j] -= eps;
-            let lp = compute_jet3_pde_loss_and_grads(&x, &target_f, &w1, &b1_p, &w2, m, d, h, nu, beta, mu).unwrap().loss;
-            let lm = compute_jet3_pde_loss_and_grads(&x, &target_f, &w1, &b1_m, &w2, m, d, h, nu, beta, mu).unwrap().loss;
+            let lp = compute_jet3_pde_loss_and_grads(
+                &x, &target_f, &w1, &b1_p, &w2, m, d, h, nu, beta, mu,
+            )
+            .unwrap()
+            .loss;
+            let lm = compute_jet3_pde_loss_and_grads(
+                &x, &target_f, &w1, &b1_m, &w2, m, d, h, nu, beta, mu,
+            )
+            .unwrap()
+            .loss;
             let fd_b = (lp - lm) / (2.0 * eps);
             assert!((out.grad_b1[j] - fd_b).abs() < 1e-8);
 
@@ -2531,8 +2751,16 @@ mod tests {
             let mut w2_m = w2.clone();
             w2_p[j] += eps;
             w2_m[j] -= eps;
-            let lp2 = compute_jet3_pde_loss_and_grads(&x, &target_f, &w1, &b1, &w2_p, m, d, h, nu, beta, mu).unwrap().loss;
-            let lm2 = compute_jet3_pde_loss_and_grads(&x, &target_f, &w1, &b1, &w2_m, m, d, h, nu, beta, mu).unwrap().loss;
+            let lp2 = compute_jet3_pde_loss_and_grads(
+                &x, &target_f, &w1, &b1, &w2_p, m, d, h, nu, beta, mu,
+            )
+            .unwrap()
+            .loss;
+            let lm2 = compute_jet3_pde_loss_and_grads(
+                &x, &target_f, &w1, &b1, &w2_m, m, d, h, nu, beta, mu,
+            )
+            .unwrap()
+            .loss;
             let fd_w2 = (lp2 - lm2) / (2.0 * eps);
             assert!((out.grad_w2[j] - fd_w2).abs() < 1e-8);
         }
@@ -2574,7 +2802,11 @@ mod tests {
         let res = discover_pde_nd_cartesian(&u_flat, &grid_shape, dt, &dxs, &config)
             .expect("4D cartesian discovery failed");
         assert!(res.r2 > 0.999, "4D cartesian R2 = {}", res.r2);
-        assert!(res.frozen_holdout_r2 > 0.999, "4D holdout R2 = {}", res.frozen_holdout_r2);
+        assert!(
+            res.frozen_holdout_r2 > 0.999,
+            "4D holdout R2 = {}",
+            res.frozen_holdout_r2
+        );
         assert_eq!(res.dimension, 4);
         assert_eq!(res.method_used, "eulerian_cartesian_4d");
     }
@@ -2613,13 +2845,26 @@ mod tests {
             ..Default::default()
         };
 
-        let res = discover_pde_rbf_point_cloud_hd(&points_flat, &u_values_flat, nt, m, dim, dt, &config)
-            .expect("20D RBF point cloud discovery failed");
+        let res =
+            discover_pde_rbf_point_cloud_hd(&points_flat, &u_values_flat, nt, m, dim, dt, &config)
+                .expect("20D RBF point cloud discovery failed");
         assert!(res.r2 > 0.999, "20D RBF point cloud R2 = {}", res.r2);
-        assert!(res.frozen_holdout_r2 > 0.999, "20D RBF holdout R2 = {}", res.frozen_holdout_r2);
+        assert!(
+            res.frozen_holdout_r2 > 0.999,
+            "20D RBF holdout R2 = {}",
+            res.frozen_holdout_r2
+        );
         assert_eq!(res.method_used, "meshfree_rbf_point_cloud_20d");
-        let lap_idx = res.active_terms.iter().position(|t| t == "laplacian_20d(u)").unwrap();
-        assert!((res.coefficients[lap_idx] - 0.5).abs() < 0.02, "Lap coeff = {}", res.coefficients[lap_idx]);
+        let lap_idx = res
+            .active_terms
+            .iter()
+            .position(|t| t == "laplacian_20d(u)")
+            .unwrap();
+        assert!(
+            (res.coefficients[lap_idx] - 0.5).abs() < 0.02,
+            "Lap coeff = {}",
+            res.coefficients[lap_idx]
+        );
     }
 
     #[test]
@@ -2661,13 +2906,26 @@ mod tests {
             ..Default::default()
         };
 
-        let res = discover_pde_tensor_train_hd(&tt_cores_flat, nt, bond_rank, dim, nx, dt, dx, &config)
-            .expect("20D Rank-2 TT/MPS discovery failed");
+        let res =
+            discover_pde_tensor_train_hd(&tt_cores_flat, nt, bond_rank, dim, nx, dt, dx, &config)
+                .expect("20D Rank-2 TT/MPS discovery failed");
         assert!(res.r2 > 0.999, "20D TT/MPS R2 = {}", res.r2);
-        assert!(res.frozen_holdout_r2 > 0.999, "20D TT/MPS holdout R2 = {}", res.frozen_holdout_r2);
+        assert!(
+            res.frozen_holdout_r2 > 0.999,
+            "20D TT/MPS holdout R2 = {}",
+            res.frozen_holdout_r2
+        );
         assert_eq!(res.method_used, "tensor_train_mps_20d");
-        let lap_idx = res.active_terms.iter().position(|t| t == "laplacian_20d(u)").unwrap();
-        assert!((res.coefficients[lap_idx] - alpha).abs() < 0.02, "Lap coeff = {}", res.coefficients[lap_idx]);
+        let lap_idx = res
+            .active_terms
+            .iter()
+            .position(|t| t == "laplacian_20d(u)")
+            .unwrap();
+        assert!(
+            (res.coefficients[lap_idx] - alpha).abs() < 0.02,
+            "Lap coeff = {}",
+            res.coefficients[lap_idx]
+        );
     }
 
     #[test]
@@ -2749,11 +3007,23 @@ mod tests {
             w2_time_flat.extend_from_slice(&w2_curr);
             // RK4 step of size dt
             let k1 = eval_dw2(&w2_curr);
-            let w_k2: Vec<f64> = w2_curr.iter().zip(k1.iter()).map(|(&w, &k)| w + 0.5 * dt * k).collect();
+            let w_k2: Vec<f64> = w2_curr
+                .iter()
+                .zip(k1.iter())
+                .map(|(&w, &k)| w + 0.5 * dt * k)
+                .collect();
             let k2 = eval_dw2(&w_k2);
-            let w_k3: Vec<f64> = w2_curr.iter().zip(k2.iter()).map(|(&w, &k)| w + 0.5 * dt * k).collect();
+            let w_k3: Vec<f64> = w2_curr
+                .iter()
+                .zip(k2.iter())
+                .map(|(&w, &k)| w + 0.5 * dt * k)
+                .collect();
             let k3 = eval_dw2(&w_k3);
-            let w_k4: Vec<f64> = w2_curr.iter().zip(k3.iter()).map(|(&w, &k)| w + dt * k).collect();
+            let w_k4: Vec<f64> = w2_curr
+                .iter()
+                .zip(k3.iter())
+                .map(|(&w, &k)| w + dt * k)
+                .collect();
             let k4 = eval_dw2(&w_k4);
             for j in 0..h {
                 w2_curr[j] += (dt / 6.0) * (k1[j] + 2.0 * k2[j] + 2.0 * k3[j] + k4[j]);
@@ -2766,13 +3036,36 @@ mod tests {
             ..Default::default()
         };
 
-        let res = discover_pde_neural_pinn_hd(x_sq, &w1_flat, &b1, &w2_time_flat, nt, m_sq, dim, h, dt, &config)
-            .expect("20D Neural PINN Jet2 discovery failed");
+        let res = discover_pde_neural_pinn_hd(
+            x_sq,
+            &w1_flat,
+            &b1,
+            &w2_time_flat,
+            nt,
+            m_sq,
+            dim,
+            h,
+            dt,
+            &config,
+        )
+        .expect("20D Neural PINN Jet2 discovery failed");
         assert!(res.r2 > 0.999, "20D Neural PINN R2 = {}", res.r2);
-        assert!(res.frozen_holdout_r2 > 0.999, "20D Neural PINN holdout R2 = {}", res.frozen_holdout_r2);
+        assert!(
+            res.frozen_holdout_r2 > 0.999,
+            "20D Neural PINN holdout R2 = {}",
+            res.frozen_holdout_r2
+        );
         assert_eq!(res.method_used, "neural_pinn_bsde_jet2_20d");
-        let lap_idx = res.active_terms.iter().position(|t| t == "laplacian_20d(u)").unwrap();
-        assert!((res.coefficients[lap_idx] - alpha).abs() < 0.02, "Lap coeff = {}", res.coefficients[lap_idx]);
+        let lap_idx = res
+            .active_terms
+            .iter()
+            .position(|t| t == "laplacian_20d(u)")
+            .unwrap();
+        assert!(
+            (res.coefficients[lap_idx] - alpha).abs() < 0.02,
+            "Lap coeff = {}",
+            res.coefficients[lap_idx]
+        );
     }
 
     #[test]
@@ -2796,8 +3089,10 @@ mod tests {
                 let vx_sol = -2.0 * pi * (2.0 * pi * x_coord).sin() * (2.0 * pi * y_coord).cos();
                 let vy_sol = 2.0 * pi * (2.0 * pi * x_coord).cos() * (2.0 * pi * y_coord).sin();
 
-                let grad_phi_x = -2.0 * pi * (2.0 * pi * x_coord).sin() * (2.0 * pi * y_coord).cos();
-                let grad_phi_y = -2.0 * pi * (2.0 * pi * x_coord).cos() * (2.0 * pi * y_coord).sin();
+                let grad_phi_x =
+                    -2.0 * pi * (2.0 * pi * x_coord).sin() * (2.0 * pi * y_coord).cos();
+                let grad_phi_y =
+                    -2.0 * pi * (2.0 * pi * x_coord).cos() * (2.0 * pi * y_coord).sin();
 
                 // Mix solenoidal + irrotational
                 vx[y * w + x] = vx_sol + 0.5 * grad_phi_x;
@@ -2806,12 +3101,17 @@ mod tests {
         }
 
         let (vx_sol_res, vy_sol_res, div_norm) =
-            helmholtz_hodge_div_free_2d(&vx, &vy, h, w, dx, dy, 50).expect("Helmholtz-Hodge projection failed");
+            helmholtz_hodge_div_free_2d(&vx, &vy, h, w, dx, dy, 50)
+                .expect("Helmholtz-Hodge projection failed");
 
         assert_eq!(vx_sol_res.len(), h * w);
         assert_eq!(vy_sol_res.len(), h * w);
         // The solenoidal projection should substantially reduce divergence
-        assert!(div_norm < 1.0, "Remaining divergence norm should be small: {}", div_norm);
+        assert!(
+            div_norm < 1.0,
+            "Remaining divergence norm should be small: {}",
+            div_norm
+        );
     }
 
     #[test]
@@ -2831,7 +3131,8 @@ mod tests {
                 let y_coord = (y as f64) * dy;
                 for x in 0..w {
                     let x_coord = (x as f64) * dx;
-                    let val = (2.0 * pi * x_coord).sin() * (2.0 * pi * y_coord).sin() * ((ch + 1) as f64);
+                    let val =
+                        (2.0 * pi * x_coord).sin() * (2.0 * pi * y_coord).sin() * ((ch + 1) as f64);
                     field[ch * h * w + y * w + x] = val;
                 }
             }
@@ -2848,7 +3149,12 @@ mod tests {
         let orig_val = field[idx];
         let diss_val = diss[idx];
         let ratio = diss_val / orig_val;
-        assert!((ratio - factor_expected).abs() < 0.02, "Decay ratio {} != expected {}", ratio, factor_expected);
+        assert!(
+            (ratio - factor_expected).abs() < 0.02,
+            "Decay ratio {} != expected {}",
+            ratio,
+            factor_expected
+        );
     }
 
     #[test]
@@ -2881,8 +3187,6 @@ mod tests {
         assert!(err.contains("CFL"), "unexpected error: {err}");
     }
 }
-
-
 
 #[cfg(test)]
 mod nu_sign_tests {

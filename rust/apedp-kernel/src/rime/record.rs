@@ -22,14 +22,32 @@ pub struct CandidateRecord {
 }
 
 impl CandidateRecord {
-    pub fn new(graph: &Graph, parent_id: Option<String>, rewrite_op: &str, seed: u64, dev_score: f64) -> Self {
+    pub fn new(
+        graph: &Graph,
+        parent_id: Option<String>,
+        rewrite_op: &str,
+        seed: u64,
+        dev_score: f64,
+    ) -> Self {
         let canonical = graph.canonical();
         let graph_id = graph.id();
         let mut h = Sha256::new();
         h.update(graph_id.as_bytes());
         h.update(seed.to_le_bytes());
-        let record_id = h.finalize().iter().map(|b| format!("{:02x}", b)).collect::<String>();
-        CandidateRecord { record_id, graph_id, parent_id, rewrite_op: rewrite_op.to_string(), seed, dev_score, canonical }
+        let record_id = h
+            .finalize()
+            .iter()
+            .map(|b| format!("{:02x}", b))
+            .collect::<String>();
+        CandidateRecord {
+            record_id,
+            graph_id,
+            parent_id,
+            rewrite_op: rewrite_op.to_string(),
+            seed,
+            dev_score,
+            canonical,
+        }
     }
 }
 

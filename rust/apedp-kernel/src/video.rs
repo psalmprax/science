@@ -21,11 +21,7 @@ use rayon::prelude::*;
 /// be a log10 of a denormal-ish number).
 pub fn psnr_series(a: &[f64], b: &[f64]) -> Result<f64, String> {
     if a.len() != b.len() {
-        return Err(format!(
-            "Shape mismatch: {} vs {}",
-            a.len(),
-            b.len()
-        ));
+        return Err(format!("Shape mismatch: {} vs {}", a.len(), b.len()));
     }
     if a.is_empty() {
         return Err("PSNR needs at least one sample".to_string());
@@ -167,7 +163,11 @@ pub fn sliced_wasserstein2<V: DataCol>(
         let mut sq = 0.0f64;
         for j in 0..n_grid {
             // numpy: np.interp(linspace(0, 1, n), linspace(0, 1, len(px)), px)
-            let u = if n_grid == 1 { 0.0 } else { j as f64 / (n_grid - 1) as f64 };
+            let u = if n_grid == 1 {
+                0.0
+            } else {
+                j as f64 / (n_grid - 1) as f64
+            };
             let vx = quantile_at(&px, u);
             let vy = quantile_at(&py, u);
             let diff = vx - vy;
@@ -420,10 +420,7 @@ pub fn compute_optical_flow_divergence(
 
 /// Detect disocclusion mask based on positive flow divergence:
 /// Mask > 0 where new surfaces/occlusions are exposed, triggering residual injection s(t).
-pub fn detect_disocclusion_mask(
-    div_flow: &[f64],
-    divergence_threshold: f64,
-) -> Vec<f64> {
+pub fn detect_disocclusion_mask(div_flow: &[f64], divergence_threshold: f64) -> Vec<f64> {
     div_flow
         .iter()
         .map(|&d| {
@@ -471,7 +468,10 @@ mod tests {
         }
         let div = compute_optical_flow_divergence(&vx, &vy, h, w, 1.0, 1.0).unwrap();
         for (i, d) in div.iter().enumerate() {
-            assert!((d - 1.0).abs() < 1e-12, "divergence at {i} = {d}, expected 1.0");
+            assert!(
+                (d - 1.0).abs() < 1e-12,
+                "divergence at {i} = {d}, expected 1.0"
+            );
         }
 
         // Same in y for a vy = y field.
@@ -484,7 +484,10 @@ mod tests {
         }
         let div_y = compute_optical_flow_divergence(&vx0, &vy, h, w, 1.0, 1.0).unwrap();
         for (i, d) in div_y.iter().enumerate() {
-            assert!((d - 1.0).abs() < 1e-12, "y-divergence at {i} = {d}, expected 1.0");
+            assert!(
+                (d - 1.0).abs() < 1e-12,
+                "y-divergence at {i} = {d}, expected 1.0"
+            );
         }
     }
 
@@ -493,19 +496,28 @@ mod tests {
         // win == 0 used to pass the unsigned size guard (`h < 0` is never true)
         // and then spin forever in `x += win`. The call must return promptly.
         let rows: Vec<Vec<f64>> = (0..8).map(|r| vec![0.2 + r as f64 * 0.01; 8]).collect();
-        let rows_view: Vec<ArrayView1<f64>> = rows.iter().map(|r| ArrayView1::from(r.as_slice())).collect();
+        let rows_view: Vec<ArrayView1<f64>> = rows
+            .iter()
+            .map(|r| ArrayView1::from(r.as_slice()))
+            .collect();
         assert!(ssim_frame(&rows_view, &rows_view, 0, 1e-4, 9e-4).is_nan());
     }
 
     #[test]
     fn ssim_frame_is_identity_one_and_nan_when_too_small() {
         let rows: Vec<Vec<f64>> = (0..16).map(|_| vec![0.3; 16]).collect();
-        let rows_view: Vec<ArrayView1<f64>> = rows.iter().map(|r| ArrayView1::from(r.as_slice())).collect();
+        let rows_view: Vec<ArrayView1<f64>> = rows
+            .iter()
+            .map(|r| ArrayView1::from(r.as_slice()))
+            .collect();
         let s = ssim_frame(&rows_view, &rows_view, 8, 1e-4, 9e-4);
         assert!((s - 1.0).abs() < 1e-12, "{s}");
         // A 4x8 frame cannot host one 8x8 window in h.
         let small: Vec<Vec<f64>> = (0..4).map(|_| vec![0.5; 8]).collect();
-        let sv: Vec<ArrayView1<f64>> = small.iter().map(|r| ArrayView1::from(r.as_slice())).collect();
+        let sv: Vec<ArrayView1<f64>> = small
+            .iter()
+            .map(|r| ArrayView1::from(r.as_slice()))
+            .collect();
         assert!(ssim_frame(&sv, &sv, 8, 1e-4, 9e-4).is_nan());
     }
 
@@ -549,11 +561,7 @@ mod tests {
 
     #[test]
     fn warp_bilinear_2d_zero_flow_is_identity() {
-        let input = vec![
-            1.0, 2.0, 3.0,
-            4.0, 5.0, 6.0,
-            7.0, 8.0, 9.0,
-        ];
+        let input = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0];
         let vx = vec![0.0; 9];
         let vy = vec![0.0; 9];
         let warped = warp_bilinear_2d(&input, &vx, &vy, 1, 3, 3).unwrap();
@@ -562,10 +570,7 @@ mod tests {
 
     #[test]
     fn warp_bilinear_2d_translation_and_clamping() {
-        let input = vec![
-            1.0, 2.0,
-            3.0, 4.0,
-        ];
+        let input = vec![1.0, 2.0, 3.0, 4.0];
         // Shift x by +0.5 (half pixel right)
         let vx = vec![0.5; 4];
         let vy = vec![0.0; 4];
@@ -578,11 +583,7 @@ mod tests {
 
     #[test]
     fn warp_bilinear_2d_periodic_zero_flow_is_identity() {
-        let input = vec![
-            1.0, 2.0, 3.0,
-            4.0, 5.0, 6.0,
-            7.0, 8.0, 9.0,
-        ];
+        let input = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0];
         let vx = vec![0.0; 9];
         let vy = vec![0.0; 9];
         let warped = warp_bilinear_2d_periodic(&input, &vx, &vy, 1, 3, 3).unwrap();

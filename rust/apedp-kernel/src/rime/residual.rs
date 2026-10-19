@@ -11,7 +11,6 @@
 use super::eval::fit_readout;
 use super::graph::Graph;
 
-
 /// Statistics from a residual analysis.
 #[derive(Clone, Debug, Default)]
 pub struct ResidualAnalysis {
@@ -96,8 +95,8 @@ pub fn diagnose_residuals<V: crate::data::DataCol>(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::graph::Node;
+    use super::*;
 
     fn lag_graph() -> Graph {
         // output = x[t-2].
@@ -128,8 +127,15 @@ mod tests {
         let graph = Graph::new();
         let analysis = diagnose_residuals(&graph, &cols, &target, 1.0, 1e-9);
         // With a perfect linear relationship the residuals should be small.
-        assert!(analysis.max_abs_residual < 1.0, "max residual too large: {}", analysis.max_abs_residual);
-        assert!(analysis.overthreshold_count == 0, "should have few overthreshold residuals");
+        assert!(
+            analysis.max_abs_residual < 1.0,
+            "max residual too large: {}",
+            analysis.max_abs_residual
+        );
+        assert!(
+            analysis.overthreshold_count == 0,
+            "should have few overthreshold residuals"
+        );
     }
 
     #[test]
@@ -160,8 +166,14 @@ mod tests {
         let cols = vec![x];
         let tiny = diagnose_residuals(&g, &cols, &target, 1e-9, 1e-9);
         let huge = diagnose_residuals(&g, &cols, &target, 1e9, 1e-9);
-        assert!(tiny.overthreshold_count > 0, "tiny threshold must flag rows");
-        assert_eq!(huge.overthreshold_count, 0, "huge threshold must flag nothing");
+        assert!(
+            tiny.overthreshold_count > 0,
+            "tiny threshold must flag rows"
+        );
+        assert_eq!(
+            huge.overthreshold_count, 0,
+            "huge threshold must flag nothing"
+        );
         assert_eq!(tiny.threshold, 1e-9);
         assert_eq!(huge.threshold, 1e9);
     }

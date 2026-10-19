@@ -73,13 +73,21 @@ pub(crate) fn shift(n: &Node, off: usize) -> Node {
         Node::SafeExp(a) => Node::SafeExp(a + off),
         Node::SafeLog(a) => Node::SafeLog(a + off),
         Node::Diff(a) => Node::Diff(a + off),
-        Node::Power { src, p_num, p_den } => Node::Power { src: src + off, p_num: *p_num, p_den: *p_den },
+        Node::Power { src, p_num, p_den } => Node::Power {
+            src: src + off,
+            p_num: *p_num,
+            p_den: *p_den,
+        },
         Node::Neg(a) => Node::Neg(a + off),
         Node::Tanh(a) => Node::Tanh(a + off),
         Node::Sign(a) => Node::Sign(a + off),
         Node::Abs(a) => Node::Abs(a + off),
         Node::Lag(a, k) => Node::Lag(a + off, *k),
-        Node::State { src, decay, init } => Node::State { src: src + off, decay: *decay, init: *init },
+        Node::State { src, decay, init } => Node::State {
+            src: src + off,
+            decay: *decay,
+            init: *init,
+        },
     }
 }
 
@@ -165,7 +173,11 @@ pub fn small_forms_with_order(n_inputs: usize, order: SeedOrder) -> Vec<Graph> {
 /// into family 5 (cross-input & same-time products), making non-linear power laws (such
 /// as QEC `p_L = 1000 * p^2`) reachable at depth 0 without requiring manual feature engineering.
 /// Default `false` preserves frozen spec byte identity.
-pub fn small_forms_with_options(n_inputs: usize, order: SeedOrder, square_seeds: bool) -> Vec<Graph> {
+pub fn small_forms_with_options(
+    n_inputs: usize,
+    order: SeedOrder,
+    square_seeds: bool,
+) -> Vec<Graph> {
     small_forms_with_all_options(n_inputs, order, square_seeds, false)
 }
 
@@ -177,7 +189,15 @@ pub fn small_forms_with_all_options(
     square_seeds: bool,
     power_seeds: bool,
 ) -> Vec<Graph> {
-    small_forms_extended(n_inputs, order, square_seeds, power_seeds, None, false, false)
+    small_forms_extended(
+        n_inputs,
+        order,
+        square_seeds,
+        power_seeds,
+        None,
+        false,
+        false,
+    )
 }
 
 /// Build the small-form catalogue with extended options including adaptive seed limits,
@@ -194,10 +214,14 @@ pub fn small_forms_extended(
     let max_forms = max_seeds.unwrap_or(MAX_SEED_FORMS);
     let n = n_inputs.max(1);
     let inputs: Vec<Graph> = (0..n).map(single_input).collect();
-    let lagged: Vec<Vec<Graph>> = inputs.iter().map(|g| LAG_SET.iter().map(|k| lag(g, *k)).collect()).collect();
+    let lagged: Vec<Vec<Graph>> = inputs
+        .iter()
+        .map(|g| LAG_SET.iter().map(|k| lag(g, *k)).collect())
+        .collect();
     let mut out: Vec<Graph> = Vec::new();
     let mut seen: HashSet<String> = HashSet::new();
-    let push = |out: &mut Vec<Graph>, seen: &mut HashSet<String>, g: Graph| add(out, seen, g, max_forms);
+    let push =
+        |out: &mut Vec<Graph>, seen: &mut HashSet<String>, g: Graph| add(out, seen, g, max_forms);
 
     // 1. Levels.
     for g in &inputs {
@@ -243,16 +267,72 @@ pub fn small_forms_extended(
             push(&mut out, &mut seen, add_g(ga, ga));
             push(&mut out, &mut seen, wrap(ga, |node| Node::Cos(node)));
             push(&mut out, &mut seen, wrap(ga, |node| Node::Sin(node)));
-            push(&mut out, &mut seen, wrap(&add_g(ga, ga), |node| Node::Cos(node)));
-            push(&mut out, &mut seen, wrap(&add_g(ga, ga), |node| Node::Sin(node)));
+            push(
+                &mut out,
+                &mut seen,
+                wrap(&add_g(ga, ga), |node| Node::Cos(node)),
+            );
+            push(
+                &mut out,
+                &mut seen,
+                wrap(&add_g(ga, ga), |node| Node::Sin(node)),
+            );
         }
         if power_seeds {
-            push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: 2, p_den: 3 }));
-            push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: 1, p_den: 3 }));
-            push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: 1, p_den: 2 }));
-            push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: -1, p_den: 3 }));
-            push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: -1, p_den: 1 }));
-            push(&mut out, &mut seen, wrap(ga, |node| Node::Power { src: node, p_num: -2, p_den: 1 }));
+            push(
+                &mut out,
+                &mut seen,
+                wrap(ga, |node| Node::Power {
+                    src: node,
+                    p_num: 2,
+                    p_den: 3,
+                }),
+            );
+            push(
+                &mut out,
+                &mut seen,
+                wrap(ga, |node| Node::Power {
+                    src: node,
+                    p_num: 1,
+                    p_den: 3,
+                }),
+            );
+            push(
+                &mut out,
+                &mut seen,
+                wrap(ga, |node| Node::Power {
+                    src: node,
+                    p_num: 1,
+                    p_den: 2,
+                }),
+            );
+            push(
+                &mut out,
+                &mut seen,
+                wrap(ga, |node| Node::Power {
+                    src: node,
+                    p_num: -1,
+                    p_den: 3,
+                }),
+            );
+            push(
+                &mut out,
+                &mut seen,
+                wrap(ga, |node| Node::Power {
+                    src: node,
+                    p_num: -1,
+                    p_den: 1,
+                }),
+            );
+            push(
+                &mut out,
+                &mut seen,
+                wrap(ga, |node| Node::Power {
+                    src: node,
+                    p_num: -2,
+                    p_den: 1,
+                }),
+            );
         }
         for gb in inputs.iter().skip(i + 1) {
             push(&mut out, &mut seen, add_g(ga, gb));
@@ -294,7 +374,15 @@ pub fn small_forms_extended(
     for g in &inputs {
         for (num, den) in DECAY_PRIORS {
             let d = num as f64 / den as f64;
-            push(&mut out, &mut seen, wrap(g, |i| Node::State { src: i, decay: d, init: 0.0 }));
+            push(
+                &mut out,
+                &mut seen,
+                wrap(g, |i| Node::State {
+                    src: i,
+                    decay: d,
+                    init: 0.0,
+                }),
+            );
         }
     }
     // 9. Bounded response of a difference (spec §6 heteroskedastic remedy).
@@ -342,7 +430,12 @@ mod tests {
             let li: HashSet<String> = legacy.iter().map(|g| g.id()).collect();
             let ci: HashSet<String> = cov.iter().map(|g| g.id()).collect();
             assert_eq!(li, ci, "ordering changed the set at n={}", n);
-            assert_eq!(legacy.len(), cov.len(), "ordering changed the count at n={}", n);
+            assert_eq!(
+                legacy.len(),
+                cov.len(),
+                "ordering changed the count at n={}",
+                n
+            );
         }
     }
 
@@ -354,12 +447,19 @@ mod tests {
         assert!(cov.len() <= MAX_SEED_FORMS);
         let described: Vec<String> = cov.iter().map(|g| g.describe()).collect();
         for k in 0..22 {
-            assert!(described.contains(&format!("v{}[t-1]", k)), "input {} lost lag-1", k);
+            assert!(
+                described.contains(&format!("v{}[t-1]", k)),
+                "input {} lost lag-1",
+                k
+            );
         }
         // Legacy, for contrast, loses at least the measured tail inputs.
         let legacy = small_forms(22);
         let ld: Vec<String> = legacy.iter().map(|g| g.describe()).collect();
-        assert!(!ld.contains(&"v19[t-1]".to_string()), "legacy unexpectedly kept v19 lag-1");
+        assert!(
+            !ld.contains(&"v19[t-1]".to_string()),
+            "legacy unexpectedly kept v19 lag-1"
+        );
     }
 
     #[test]
@@ -369,7 +469,8 @@ mod tests {
                 let forms = small_forms_with_order(n, o);
                 assert!(forms.len() <= MAX_SEED_FORMS, "n={} over budget", n);
                 for g in &forms {
-                    g.validate().unwrap_or_else(|e| panic!("invalid seed {}: {}", g.describe(), e));
+                    g.validate()
+                        .unwrap_or_else(|e| panic!("invalid seed {}: {}", g.describe(), e));
                 }
             }
         }
@@ -377,9 +478,13 @@ mod tests {
 
     #[test]
     fn every_seed_is_valid_and_finite_on_a_series() {
-        let cols = vec![vec![0.1, -0.2, 0.3, -0.4, 0.5, -0.6], vec![1.0, 1.5, 2.0, 2.5, 3.0, 3.5]];
+        let cols = vec![
+            vec![0.1, -0.2, 0.3, -0.4, 0.5, -0.6],
+            vec![1.0, 1.5, 2.0, 2.5, 3.0, 3.5],
+        ];
         for g in small_forms(2) {
-            g.validate().unwrap_or_else(|e| panic!("invalid seed {}: {}", g.describe(), e));
+            g.validate()
+                .unwrap_or_else(|e| panic!("invalid seed {}: {}", g.describe(), e));
             let out = g.evaluate(&cols);
             assert_eq!(out.len(), 6);
         }
@@ -396,8 +501,14 @@ mod tests {
         assert!(has("tanh("), "no bounded-response form");
         assert!(has("abs(") && has("sign("), "no shape-wrapper form");
         // Lead-lag product in both orientations: v0[t] * v1[t-1] and v1[t] * v0[t-1].
-        assert!(has("(v0 * v1[t-1])") || has("(v1[t-1] * v0)"), "missing v0 * v1[t-1]");
-        assert!(has("(v1 * v0[t-1])") || has("(v0[t-1] * v1)"), "missing v1 * v0[t-1]");
+        assert!(
+            has("(v0 * v1[t-1])") || has("(v1[t-1] * v0)"),
+            "missing v0 * v1[t-1]"
+        );
+        assert!(
+            has("(v1 * v0[t-1])") || has("(v0[t-1] * v1)"),
+            "missing v1 * v0[t-1]"
+        );
     }
 
     #[test]
@@ -407,7 +518,11 @@ mod tests {
         let described: Vec<String> = forms.iter().map(|g| g.describe()).collect();
         for prior in DECAY_PRIORS {
             let d = format!("state_{:.4}", prior.0 as f64 / prior.1 as f64);
-            assert!(described.iter().any(|s| s.contains(&d)), "missing decay prior {}", d);
+            assert!(
+                described.iter().any(|s| s.contains(&d)),
+                "missing decay prior {}",
+                d
+            );
         }
     }
 
@@ -415,7 +530,10 @@ mod tests {
     fn square_seeds_emits_contemporaneous_self_product() {
         let forms_default = small_forms(1);
         let forms_sq = small_forms_with_options(1, SeedOrder::Legacy, true);
-        assert_eq!(forms_default.iter().any(|g| g.describe() == "(v0 * v0)"), false);
+        assert_eq!(
+            forms_default.iter().any(|g| g.describe() == "(v0 * v0)"),
+            false
+        );
         assert_eq!(forms_sq.iter().any(|g| g.describe() == "(v0 * v0)"), true);
         assert!(forms_sq.len() <= MAX_SEED_FORMS);
     }

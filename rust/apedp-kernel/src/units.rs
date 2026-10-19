@@ -37,9 +37,7 @@ impl std::error::Error for UnitError {}
 
 impl UnitVector {
     pub const fn dimensionless() -> UnitVector {
-        UnitVector {
-            exponents: [0; 7],
-        }
+        UnitVector { exponents: [0; 7] }
     }
 
     pub fn as_tuple(&self) -> (i32, i32, i32, i32, i32, i32, i32) {
@@ -125,9 +123,9 @@ impl UnitVector {
             if let Some(idx) = find_top_level_from_end(text, marker) {
                 let (base, exp_text) = text.split_at(idx);
                 let exp_text = exp_text[marker.len()..].trim();
-                let exponent: i32 = exp_text.parse().map_err(|_| {
-                    UnitError(format!("{exp_text:?} is not an integer exponent"))
-                })?;
+                let exponent: i32 = exp_text
+                    .parse()
+                    .map_err(|_| UnitError(format!("{exp_text:?} is not an integer exponent")))?;
                 return Ok(Self::parse_factor(base.trim())?.pow(exponent));
             }
         }
@@ -141,7 +139,9 @@ impl UnitVector {
             // Dimensionless
             "" | "1" | "dimensionless" => UnitVector::dimensionless(),
             // Mass
-            "g" | "gram" | "grams" => UnitVector::dimensionless().mul(&Self::kg(1)).mul(&Self::kg(-3)),
+            "g" | "gram" | "grams" => UnitVector::dimensionless()
+                .mul(&Self::kg(1))
+                .mul(&Self::kg(-3)),
             "kg" | "kilogram" | "kilograms" => Self::kg(1),
             // Length
             "m" | "meter" | "meters" | "metre" | "metres" => Self::metre(1),
@@ -168,19 +168,18 @@ impl UnitVector {
             // W = m^2 * kg * s^-3
             "w" | "watt" | "watts" => Self::metre(2).mul(&Self::kg(1)).mul(&Self::dim(2, -3)),
             // V = m^2 * kg * s^-3 * A^-1
-            "v" | "volt" | "volts" => {
-                Self::metre(2).mul(&Self::kg(1)).mul(&Self::dim(2, -3)).mul(&Self::dim(3, -1))
-            }
-            "c" | "coulomb" | "coulombs" => {
-                UnitVector::dimensionless().mul(&Self::dim(2, 1)).mul(&Self::dim(3, 1))
-            }
-            "f" | "farad" | "farads" => {
-                UnitVector::dimensionless()
-                    .mul(&Self::metre(-2))
-                    .mul(&Self::kg(-1))
-                    .mul(&Self::dim(2, 4))
-                    .mul(&Self::dim(3, 2))
-            }
+            "v" | "volt" | "volts" => Self::metre(2)
+                .mul(&Self::kg(1))
+                .mul(&Self::dim(2, -3))
+                .mul(&Self::dim(3, -1)),
+            "c" | "coulomb" | "coulombs" => UnitVector::dimensionless()
+                .mul(&Self::dim(2, 1))
+                .mul(&Self::dim(3, 1)),
+            "f" | "farad" | "farads" => UnitVector::dimensionless()
+                .mul(&Self::metre(-2))
+                .mul(&Self::kg(-1))
+                .mul(&Self::dim(2, 4))
+                .mul(&Self::dim(3, 2)),
             // ohm = m^2 * kg * s^-3 * A^-2
             "ohm" | "ohms" => Self::metre(2)
                 .mul(&Self::kg(1))
@@ -259,10 +258,7 @@ fn find_top_level_from_end(haystack: &str, needle: &str) -> Option<usize> {
             b'(' | b'[' => depth += 1,
             b')' | b']' => depth -= 1,
             _ => {
-                if depth == 0
-                    && i + nlen <= bytes.len()
-                    && &haystack[i..i + nlen] == needle
-                {
+                if depth == 0 && i + nlen <= bytes.len() && &haystack[i..i + nlen] == needle {
                     found = Some(i);
                 }
             }
@@ -317,7 +313,10 @@ mod tests {
 
     #[test]
     fn newton_is_kg_m_per_s_squared() {
-        assert_eq!(UnitVector::parse("newton").unwrap().as_tuple(), (1, 1, -2, 0, 0, 0, 0));
+        assert_eq!(
+            UnitVector::parse("newton").unwrap().as_tuple(),
+            (1, 1, -2, 0, 0, 0, 0)
+        );
     }
 
     #[test]
@@ -325,7 +324,10 @@ mod tests {
         let n = UnitVector::parse("newton").unwrap();
         let m = UnitVector::parse("meter").unwrap();
         assert_eq!(n.mul(&m).as_tuple(), (2, 1, -2, 0, 0, 0, 0));
-        assert_eq!(UnitVector::parse("joule").unwrap().as_tuple(), (2, 1, -2, 0, 0, 0, 0));
+        assert_eq!(
+            UnitVector::parse("joule").unwrap().as_tuple(),
+            (2, 1, -2, 0, 0, 0, 0)
+        );
     }
 
     #[test]
@@ -333,7 +335,10 @@ mod tests {
         let j = UnitVector::parse("joule").unwrap();
         let s = UnitVector::parse("second").unwrap();
         assert_eq!(j.div(&s).as_tuple(), (2, 1, -3, 0, 0, 0, 0));
-        assert_eq!(UnitVector::parse("watt").unwrap().as_tuple(), (2, 1, -3, 0, 0, 0, 0));
+        assert_eq!(
+            UnitVector::parse("watt").unwrap().as_tuple(),
+            (2, 1, -3, 0, 0, 0, 0)
+        );
     }
 
     #[test]
@@ -379,9 +384,15 @@ mod tests {
     /// without one of them failing.
     #[test]
     fn matches_the_conformance_suites_unit_algebra() {
-        assert_eq!(UnitVector::dimensionless().as_tuple(), (0, 0, 0, 0, 0, 0, 0));
+        assert_eq!(
+            UnitVector::dimensionless().as_tuple(),
+            (0, 0, 0, 0, 0, 0, 0)
+        );
         assert!(UnitVector::dimensionless().is_dimensionless());
-        assert_eq!(UnitVector::parse("newton").unwrap().as_tuple(), (1, 1, -2, 0, 0, 0, 0));
+        assert_eq!(
+            UnitVector::parse("newton").unwrap().as_tuple(),
+            (1, 1, -2, 0, 0, 0, 0)
+        );
 
         let n = UnitVector::parse("newton").unwrap();
         let m = UnitVector::parse("meter").unwrap();

@@ -367,7 +367,11 @@ mod tests {
         assert!(residual_of_known(&f, 2, &[], &[(0, 1, 1.0)]) < 1e-9);
         let res = discover_point_symmetries(&f, &LieConfig::default()).unwrap();
         assert!(res.nullity >= 1, "nullity: {}", res.nullity);
-        assert!(res.max_basis_residual < 1e-6, "residual: {}", res.max_basis_residual);
+        assert!(
+            res.max_basis_residual < 1e-6,
+            "residual: {}",
+            res.max_basis_residual
+        );
     }
 
     #[test]
