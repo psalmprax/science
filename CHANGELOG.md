@@ -4,6 +4,53 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — E4 divergence-point selection, second JetFlow world, verified-knowledge-module library (2026-10-19)
+
+### Gap-1 generalization: cost-aware divergence-point selection (`experimental`)
+- `apedp_dyn/epistemic/active_disambiguation/divergence_selection.py`: extends the fixed
+  E4 measurement menu to proposing the query point itself on a continuous domain, ranked
+  by EXPECTED COST TO RESOLUTION (`ceil((k·σ/gap)²)·cost(x)`) under an explicit budget —
+  not raw gap maximization. Named abstention causes (`INSUFFICIENT_DIVERGENCE`,
+  `INSUFFICIENT_BUDGET`), preserved P2/P3 no-truth-leakage (selection sees only
+  hypotheses + observation/cost model), P6 re-adjudication through `adjudicate()`,
+  and P8 determinism (frozen grid + deterministic refinement; zero randomness in
+  selection). `policy.py` refactor made the shared `DEFAULT_DETECTABILITY_K` explicit
+  (behavior-identical; 20 E4 regression tests pass). Pins:
+  `tests/test_dyn_divergence_selection.py` (8 tests: analytic optimum near x*=−0.2
+  for the constructed pair, cost-awareness, named abstentions, no-truth-leakage,
+  determinism, budgeted closed-loop resolution to UNIQUE_SUPPORT).
+
+### Second JetFlow problem family: collision/occlusion world (`experimental`) — honest negative
+- `apedp_dyn/video/collision_domain.py`: layered 2D rigid-body scenes (same-layer elastic
+  collisions + wall bounces; cross-layer pass-through with genuine parallax occlusion —
+  real disappearance/reappearance, pinned). Byte-reproducible by construction;
+  manifest split-exclusivity via the shared `held_out_split` instrument.
+- `benchmarks/run_jetflow_vs_diffusion_matched.py`: `--domain` parameter added
+  (default `fluid` preserves the original exploratory path); instrumentation converted
+  to grad-free `_to_np` (fixes a latent `requires_grad` crash in the student path).
+- **Exploratory seed-404 result is a disclosed NEGATIVE result for advantage transfer:**
+  on the collision world the matched diffusion baseline wins every instrument
+  (SSIM 0.065 vs 0.017; PSNR 20.8 vs 13.7 dB; temporal 0.078 vs 0.234; SWD 0.167 vs 0.476)
+  and trains faster (8.2 s vs 11.1 s @300 steps). Conclusion per prereg: the fluid-domain
+  advantage is DOMAIN-SCOPED to continuum transport; no unscoped generalization claim.
+- New prereg frozen: `docs/PREREGISTRATION_JETFLOW_VIDEO_V03_COLLISION.md`
+  (confirmation seeds {407, 508, 509}; H1-collision replicates the ordering on ≥2/3 seeds;
+  v0.2 fluid protocol untouched per the deviation rule). Boundary cross-reference added to
+  `docs/jetflow_vs_diffusion_matched_benchmark.md`. Pins:
+  `tests/test_dyn_collision_domain.py` (8 tests).
+
+### Gap-3 realization: Verified Knowledge Module Library (`experimental`)
+- `apedp_dyn/epistemic/verified_knowledge_module.py`: read-only additive layer over the
+  existing ledgers (they remain the single source of truth). Entry gates: experiment-ledger
+  `CONFIRMED_VALID` + promotion Stage 4 (out-of-sample transfer); economic stages 5–6 are
+  deliberately NOT required (domain-general library; disclosure shipped on every record).
+  Metadata contract: preconditions required; finite ordered validity domains;
+  uncertainty requires value + estimation method (no naked floats); counterexamples
+  REQUIRED (a module without a documented failure is not verified knowledge); dependency
+  closure at registration and in composition; composition INTERSECTS validity domains and
+  refuses disjoint/out-of-chain reuse. Pins: `tests/test_dyn_verified_knowledge_module.py`
+  (12 tests).
+
 ## [Unreleased] — Round-3 external assessment record (2026-10-19)
 
 - Registered the L2 holdout R² base floor, F-test significance level, and fitted

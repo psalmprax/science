@@ -71,17 +71,35 @@ from apedp_dyn.video.eval_gate import (
 from apedp_dyn.video.fluid_domain import fluid_domain_manifest, make_domain_set
 
 
-def _load_latents(n_clips: int, t: int, h: int, w: int):
-    """Manifest-disciplined split: both models fit ONLY train ids (distill-bench helper)."""
-    man = fluid_domain_manifest(n_clips=n_clips, holdout_fraction=0.2, holdout_seed=13,
-                                t=t, h=h, w=w)
-    clips = make_domain_set(tuple(man["train_ids"]), tuple(man["holdout_ids"]), t=t, h=h, w=w)
+def _load_domain_latents(domain: str, n_clips: int, t: int, h: int, w: int):
+    """Manifest-disciplined split for the SELECTED domain: both models fit ONLY
+    train ids. ``domain="fluid"`` preserves the original exploratory path
+    byte-for-byte (same manifest call, same holdout seeding)."""
+    if domain == "fluid":
+        man = fluid_domain_manifest(n_clips=n_clips, holdout_fraction=0.2, holdout_seed=13,
+                                    t=t, h=h, w=w)
+        ids = list(man["train_ids"]) + list(man["holdout_ids"])
+        clips_all = make_domain_set(tuple(man["train_ids"]), tuple(man["holdout_ids"]), t=t, h=h, w=w)
+    elif domain == "collision":
+        from apedp_dyn.video.collision_domain import collision_domain_manifest, make_domain_set as _mk
+        man = collision_domain_manifest(n_clips=n_clips, holdout_fraction=0.2, holdout_seed=13,
+                                        t=t, h=h, w=w)
+        ids = list(man["train_ids"]) + list(man["holdout_ids"])
+        clips_all = _mk(tuple(man["train_ids"]), tuple(man["holdout_ids"]), t=t, h=h, w=w)
+    else:
+        raise ValueError(f"unknown domain: {domain}")
+    clips = clips_all  # already keyed by manifest ids, holdouts included
     vae = ContinuousWaveletVAE(latent_channels=12, downsample_factor=2)
     latents = {}
     for cid in man["train_ids"]:
-        arr = torch.from_numpy(clips[cid][-t:].astype(np.float32))
+        arr = torch.from_numpy(np.asarray(clips[cid][-t:], dtype=np.float32))
         latents[cid] = torch.stack([vae.encode_frame(arr[i]) for i in range(arr.shape[0])], dim=0)
     return torch.stack(list(latents.values()), dim=0).double(), man, clips, vae
+
+
+def _load_latents(n_clips: int, t: int, h: int, w: int):
+    """Fluid-domain wrapper retained for byte-compatible exploratory use."""
+    return _load_domain_latents("fluid", n_clips, t, h, w)
 
 
 def _calibrated_train_steps(train_fn, model, train_lat, budget_s: float, seed: int) -> tuple[int, list[float]]:
@@ -107,6 +125,12 @@ def _median(xs: list[float]) -> float:
     return float(np.median(xs))
 
 
+def _to_np(t: object) -> np.ndarray:
+    """Grad-free torch->numpy conversion for instrumentation (values identical)."""
+    tt = torch.asarray(t, dtype=torch.float64, requires_grad=False)  # type: ignore[arg-type]
+    return tt.detach().cpu().numpy()
+
+
 def _instrument_fwd(model: object, counter: dict[str, int]) -> None:
     """Count actual model-forward passes (JetFlow wraps its backbone)."""
     inner = model.backbone if hasattr(model, "backbone") else model  # type: ignore[attr-defined]
@@ -129,12 +153,12 @@ def _nearest_holdout_metrics(gen_rgb: np.ndarray, holdout_rgb: list[np.ndarray])
 
 def run_matched_benchmark(train_steps: int = 300, n_clips: int = 10, n_gen: int = 8,
                           threads: int = 4, seed: int = 0, train_budget_s: float | None = None,
-                          out_path: str | None = None) -> dict:
+                          out_path: str | None = None, domain: str = "fluid") -> dict:
     torch.set_num_threads(int(threads))
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    train_lat, man, clips, _vae = _load_latents(n_clips, t=6, h=16, w=16)
+    train_lat, man, clips, _vae = _load_domain_latents(domain, n_clips, t=6, h=16, w=16)
     shape = tuple(train_lat.shape[1:])  # (T, C, H', W')
     bridge = VideoVAEBridge(latent_channels=12, downsample_factor=2,
                             device=torch.device("cpu"))
@@ -193,7 +217,7 @@ def run_matched_benchmark(train_steps: int = 300, n_clips: int = 10, n_gen: int 
             t0 = time.perf_counter()
             _tt, rgb = jet.generate_video(conds[k], num_steps=num_steps, shape=shape)
             lats_ms.append((time.perf_counter() - t0) * 1e3)
-            vids.append(torch.asarray(rgb, dtype=torch.float64).numpy())
+            vids.append(_to_np(rgb))
         return vids, lats_ms
 
     cc2: dict[str, int] = {"n": 0}
@@ -212,7 +236,7 @@ def run_matched_benchmark(train_steps: int = 300, n_clips: int = 10, n_gen: int 
         t0 = time.perf_counter()
         tt_crop_v, rgb4 = jet.generate_video(conds[k], num_steps=4, shape=shape)
         jet4_ms.append((time.perf_counter() - t0) * 1e3)
-        jet4.append(torch.asarray(rgb4, dtype=torch.float64).numpy())
+        jet4.append(_to_np(rgb4))
         tt_4 = tt_crop_v
     jet4_passes = cc4["n"] / max(1, n_gen)
 
@@ -247,7 +271,7 @@ def run_matched_benchmark(train_steps: int = 300, n_clips: int = 10, n_gen: int 
         tt_stud = compress_video_latent_torch(z_stud, max_rank=16)
         rgb_stud = bridge.decode_tt_to_video(tt_stud)
         stud_lat_ms.append((time.perf_counter() - t0) * 1e3)
-        stud_vids.append(torch.asarray(rgb_stud, dtype=torch.float64).numpy())
+        stud_vids.append(_to_np(rgb_stud))
     stud_med = _median(stud_lat_ms)
 
     step_grid = (2, 4, 8, 12, 16, 24, 32, 48)
@@ -265,7 +289,7 @@ def run_matched_benchmark(train_steps: int = 300, n_clips: int = 10, n_gen: int 
                                        guidance_scale=3.0)
             ms.append((time.perf_counter() - t0) * 1e3)
             rgb0 = bridge.decode_latent_to_video(z0)
-            vids.append(torch.asarray(rgb0, dtype=torch.float64).numpy())
+            vids.append(_to_np(rgb0))
         base_rows[int(k_steps)] = (vids, ms, ccb["n"] / max(1, n_gen))
 
     # decode-one-clip cost for the shared VAE (excluded from sampler budgets)
@@ -349,6 +373,7 @@ def run_matched_benchmark(train_steps: int = 300, n_clips: int = 10, n_gen: int 
 
     result = {
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "domain": domain,
         "convention_note": "flow param t=0 data / t=1 noise; sampling integrates t: 1 -> 0 (distill.py convention)",
         "honest_labels": {
             "fvd": "sliced-Wasserstein proxy over frozen deterministic features — ranked separation, NOT I3D-FVD",
@@ -396,6 +421,8 @@ def run_matched_benchmark(train_steps: int = 300, n_clips: int = 10, n_gen: int 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
+    ap.add_argument("--domain", type=str, default="fluid", choices=("fluid", "collision"),
+                    help="problem family: fluid (original) or collision (second family, v0.3 prereg)")
     ap.add_argument("--train-steps", type=int, default=300)
     ap.add_argument("--train-budget-s", type=float, default=None,
                     help="equal wall-clock seconds per arch; overrides --train-steps")
@@ -408,7 +435,7 @@ if __name__ == "__main__":
     res = run_matched_benchmark(
         train_steps=args.train_steps, n_clips=args.n_clips, n_gen=args.n_gen,
         threads=args.threads, seed=args.seed, train_budget_s=args.train_budget_s,
-        out_path=args.out)
+        out_path=args.out, domain=args.domain)
     print(json.dumps(res["protocol"], indent=2))
     for r in res["rows"]:
         print({k: r.get(k) for k in ("name", "latency_ms_per_clip_median", "steps",

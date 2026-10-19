@@ -12,6 +12,13 @@ from apedp_dyn.epistemic.active_disambiguation.policy import (
     run_trial,
     select_measurement,
 )
+from apedp_dyn.epistemic.active_disambiguation.divergence_selection import (
+    DivergenceCandidate,
+    DivergenceSelection,
+    DivergenceTrialResult,
+    run_divergence_trial,
+    select_divergence_point,
+)
 
 __all__ = [
     "DiscriminationRow",
@@ -24,4 +31,9 @@ __all__ = [
     "predict_all",
     "run_trial",
     "select_measurement",
+    "DivergenceCandidate",
+    "DivergenceSelection",
+    "DivergenceTrialResult",
+    "run_divergence_trial",
+    "select_divergence_point",
 ]
