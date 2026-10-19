@@ -22,7 +22,10 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-import apedp_kernel as ak
+try:  # pragma: no cover - exercised only on kernel-less installs
+    import apedp_kernel as ak
+except ImportError:  # kernel-only engine: fails at call time with an actionable error
+    from apedp_dyn.kernel_shim import missing_kernel as ak  # type: ignore[assignment]
 from apedp.rust_bridge import RustKernelBridge
 from apedp_dyn.epistemic.autonomous_profiler import profile_dataset
 from apedp_dyn.epistemic.shape_inference import staircase_prior

@@ -1,12 +1,13 @@
 """Notebook, Cloud & Storage Runtime Adapter for APEDP-X / CPMD.
 
 Provides seamless compatibility across Google Colab, Kaggle Notebooks,
-interactive Jupyter / IPython environments, CI/CD runners, and dedicated
-scientific workstations / HPC clusters.
+Databricks (workspace notebooks and job clusters), interactive Jupyter /
+IPython environments, CI/CD runners, and dedicated scientific workstations /
+HPC clusters.
 
 Key capabilities:
 1. Environment Detection:
-   Accurately detects Colab, Kaggle, Jupyter, CI, and Workstation/Cluster environments.
+   Accurately detects Colab, Kaggle, Databricks, Jupyter, CI, and Workstation/Cluster environments.
 2. Configurable Storage Architecture:
    Configures fast temporary storage (via APEDP_TEMP_STORAGE, /tmp, or platform temp)
    and manages persistent storage (Google Drive mount, Kaggle working, or local).
@@ -44,6 +45,7 @@ class PlatformType(str, enum.Enum):
     """Runtime platform classification."""
     COLAB = "colab"
     KAGGLE = "kaggle"
+    DATABRICKS = "databricks"
     JUPYTER = "jupyter"
     WORKSTATION = "workstation"
     CLUSTER = "cluster"
@@ -151,7 +153,7 @@ class NotebookRuntimeConfig:
 
 
 def detect_platform() -> PlatformType:
-    """Detect whether code is running in Colab, Kaggle, Jupyter, CI, or Workstation."""
+    """Detect whether code is running in Colab, Kaggle, Databricks, Jupyter, CI, or Workstation."""
     # 1. Google Colab
     if "google.colab" in sys.modules:
         return PlatformType.COLAB
@@ -166,19 +168,24 @@ def detect_platform() -> PlatformType:
     if os.path.exists("/kaggle/working") and os.path.isdir("/kaggle/working"):
         return PlatformType.KAGGLE
 
-    # 3. Continuous Integration
+    # 3. Databricks (notebooks and clusters set DATABRICKS_RUNTIME_VERSION;
+    #    job compute sets DATABRICKS_CLUSTER_ID)
+    if bool(os.environ.get("DATABRICKS_RUNTIME_VERSION")) or bool(os.environ.get("DATABRICKS_CLUSTER_ID")):
+        return PlatformType.DATABRICKS
+
+    # 4. Continuous Integration
     if os.environ.get("CI") in ("true", "1") or bool(os.environ.get("GITHUB_ACTIONS")):
         return PlatformType.CI
 
-    # 4. HPC / Slurm Cluster
+    # 5. HPC / Slurm Cluster
     if bool(os.environ.get("SLURM_JOB_ID")) or bool(os.environ.get("PBS_JOBID")):
         return PlatformType.CLUSTER
 
-    # 5. Interactive Jupyter / IPython notebook outside cloud
+    # 6. Interactive Jupyter / IPython notebook outside cloud
     if detect_notebook():
         return PlatformType.JUPYTER
 
-    # 6. Default to local workstation
+    # 7. Default to local workstation
     return PlatformType.WORKSTATION
 
 
@@ -207,6 +214,11 @@ def is_colab() -> bool:
 def is_kaggle() -> bool:
     """Return True if running inside Kaggle Notebooks."""
     return detect_platform() == PlatformType.KAGGLE
+
+
+def is_databricks() -> bool:
+    """Return True if running inside a Databricks notebook or job cluster."""
+    return detect_platform() == PlatformType.DATABRICKS
 
 
 def mount_google_drive(mount_point: str = "/content/drive", force_remount: bool = False) -> bool:
@@ -265,6 +277,10 @@ def get_recommended_worker_count(platform: PlatformType | None = None, task_type
     elif platform == PlatformType.KAGGLE:
         # Kaggle typically has 4 vCPUs
         return 2 if task_type in ("cuda", "gpu") else min(4, cpu_count)
+    elif platform == PlatformType.DATABRICKS:
+        # Driver-node forks can deadlock against Spark Connect / ZMQ, and GPU
+        # clusters risk duplicated CUDA contexts on fork.
+        return 1 if task_type in ("cuda", "gpu") else max(1, min(cpu_count, 16))
     elif platform in (PlatformType.JUPYTER, PlatformType.CI):
         return min(4, cpu_count)
     else:
@@ -295,14 +311,16 @@ def configure_storage(
       2. Environment variable `APEDP_TEMP_STORAGE`
       3. Colab: `/content/apedp_temp` (falling back to `<tempfile.gettempdir()>/apedp/temp` if unwritable)
       4. Kaggle: `/kaggle/temp` (falling back to `<tempfile.gettempdir()>/apedp/temp` if unwritable)
-      5. Standard system temp: `<tempfile.gettempdir()>/apedp`
+      5. Databricks: `/local_disk0/apedp_temp` driver-local scratch (falling back to system temp if absent)
+      6. Standard system temp: `<tempfile.gettempdir()>/apedp`
 
     Order of precedence for persistent storage & holdout ledger:
       1. Explicit `persistent_dir` argument
       2. Environment variable `APEDP_STORAGE_DIR`
       3. Colab: `/content/drive/MyDrive/apedp_storage` (if Drive mounted) or `/content/apedp_storage`
       4. Kaggle: `/kaggle/working/apedp_storage`
-      5. Workstation / Local: `<workspace>/artifacts/storage` or `~/.apedp/storage`
+      5. Databricks: `/dbfs/FileStore/apedp_storage` when the DBFS FUSE mount is live
+      6. Workstation / Local: `<workspace>/artifacts/storage` or `~/.apedp/storage`
 
     Returns:
         (resolved_temp_dir, resolved_persistent_dir, storage_tier, warnings)
@@ -325,6 +343,10 @@ def configure_storage(
         kaggle_temp = Path("/kaggle/temp")
         system_temp = Path(tempfile.gettempdir()) / "apedp" / "temp"
         t_dir = _safe_mkdir_or_fallback(kaggle_temp, system_temp)
+    elif platform == PlatformType.DATABRICKS:
+        driver_scratch = Path("/local_disk0/apedp_temp")
+        system_temp = Path(tempfile.gettempdir()) / "apedp" / "temp"
+        t_dir = _safe_mkdir_or_fallback(driver_scratch, system_temp)
     else:
         system_temp = Path(tempfile.gettempdir()) / "apedp"
         system_temp.mkdir(parents=True, exist_ok=True)
@@ -375,6 +397,24 @@ def configure_storage(
             "are preserved only if you 'Save & Run All' (commit). If this interactive session is closed, "
             "uncommitted holdout ledgers will be erased."
         )
+    elif platform == PlatformType.DATABRICKS:
+        dbfs_root = Path("/dbfs/FileStore")
+        system_persist = Path(tempfile.gettempdir()) / "apedp" / "storage"
+        if dbfs_root.is_dir():
+            p_dir = _safe_mkdir_or_fallback(dbfs_root / "apedp_storage", system_persist)
+            tier = StorageTier.PERSISTENT
+        else:
+            driver_storage = Path("/databricks/driver/apedp_storage")
+            p_dir = _safe_mkdir_or_fallback(driver_storage, system_persist)
+            tier = StorageTier.EPHEMERAL
+            warnings.append(
+                "EPISTEMIC RISK: Running on Databricks without a reachable DBFS mount "
+                "(/dbfs/FileStore). The holdout experiment ledger is located in driver-local "
+                "storage, which is erased when the cluster terminates. Under AGENTS.md §1.2, "
+                "burned confirmation holdouts must remain permanently recorded to prevent data "
+                "snooping. Set `APEDP_STORAGE_DIR` to a Unity Catalog Volume, a DBFS path, or "
+                "a cloud object store (e.g. s3://, gs://, abfss://) to keep burned holdouts."
+            )
     else:
         # Dedicated workstation, cluster, or CI
         repo_root = Path(__file__).resolve().parent.parent

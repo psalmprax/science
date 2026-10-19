@@ -29,7 +29,10 @@ import numpy as np
 from scipy import sparse
 from scipy.sparse.linalg import spsolve
 
-import apedp_kernel as ak
+try:  # pragma: no cover - exercised only on kernel-less installs
+    import apedp_kernel as ak
+except ImportError:  # kernel-only engine: fails at call time with an actionable error
+    from apedp_dyn.kernel_shim import missing_kernel as ak  # type: ignore[assignment]
 
 
 class EpistemicPdeVerdict(str, Enum):

@@ -1,8 +1,8 @@
 """Test Suite for Notebook & Cloud Runtime Adapter and Storage Configuration.
 
 Tests:
-1. Platform detection (Colab, Kaggle, Jupyter, CI, Workstation, Cluster).
-2. Storage configuration (APEDP_TEMP_STORAGE, /tmp, Google Drive, Kaggle working).
+1. Platform detection (Colab, Kaggle, Databricks, Jupyter, CI, Workstation, Cluster).
+2. Storage configuration (APEDP_TEMP_STORAGE, /tmp, Google Drive, Kaggle working, DBFS).
 3. Temporary storage scoping context manager.
 4. Epistemic anti-snooping safeguards and holdout ledger directory redirection.
 5. Integration with FullLineageExperimentLedger and CandidateTrialLedger via from_env.
@@ -40,6 +40,7 @@ from apedp_dyn.notebook_adapter import (
     get_recommended_worker_count,
     init_environment,
     is_colab,
+    is_databricks,
     is_kaggle,
     mount_google_drive,
     temporary_storage_scope,
@@ -68,6 +69,26 @@ def test_detect_platform_kaggle_env_var():
         assert detect_platform() == PlatformType.KAGGLE
         assert is_kaggle() is True
         assert is_colab() is False
+
+
+def test_detect_platform_databricks_env_var():
+    """Detect Databricks when DATABRICKS_RUNTIME_VERSION is set (notebooks/clusters)."""
+    with patch.dict(os.environ, {"DATABRICKS_RUNTIME_VERSION": "15.4.x-scala2.12"}, clear=True):
+        with patch.dict(sys.modules, {}):
+            sys.modules.pop("google.colab", None)
+            assert detect_platform() == PlatformType.DATABRICKS
+            assert is_databricks() is True
+            assert is_colab() is False
+            assert is_kaggle() is False
+
+
+def test_detect_platform_databricks_job_cluster_env_var():
+    """Detect Databricks job compute via DATABRICKS_CLUSTER_ID when runtime version is absent."""
+    with patch.dict(os.environ, {"DATABRICKS_CLUSTER_ID": "0710-120000-abcdef12"}, clear=True):
+        with patch.dict(sys.modules, {}):
+            sys.modules.pop("google.colab", None)
+            assert detect_platform() == PlatformType.DATABRICKS
+            assert is_databricks() is True
 
 
 def test_detect_platform_ci():
@@ -221,6 +242,8 @@ def test_recommended_worker_count():
     assert get_recommended_worker_count(PlatformType.COLAB, task_type="gpu") == 1
     assert get_recommended_worker_count(PlatformType.KAGGLE, task_type="cpu") in (1, 2, 3, 4)
     assert get_recommended_worker_count(PlatformType.KAGGLE, task_type="gpu") == 2
+    assert get_recommended_worker_count(PlatformType.DATABRICKS, task_type="cpu") >= 1
+    assert get_recommended_worker_count(PlatformType.DATABRICKS, task_type="gpu") == 1
     assert get_recommended_worker_count(PlatformType.WORKSTATION, task_type="cpu") >= 1
 
 
@@ -375,6 +398,39 @@ def test_configure_storage_kaggle():
             t_dir, p_dir, tier, warnings = configure_storage()
             assert tier == StorageTier.EPHEMERAL
             assert any("Kaggle" in w for w in warnings)
+
+
+def test_configure_storage_databricks_ephemeral_warning():
+    """Databricks without a reachable DBFS mount is ephemeral and warns (AGENTS.md §1.2)."""
+    with patch.dict(os.environ, {"DATABRICKS_RUNTIME_VERSION": "15.4.x-scala2.12"}, clear=True):
+        with patch.dict(sys.modules, {}):
+            sys.modules.pop("google.colab", None)
+            _t_dir, _p_dir, tier, warnings = configure_storage()
+            assert tier == StorageTier.EPHEMERAL
+            assert any("EPISTEMIC RISK" in w and "Databricks" in w for w in warnings)
+            assert any("AGENTS.md §1.2" in w for w in warnings)
+
+
+def test_configure_storage_databricks_dbfs_mount_is_persistent():
+    """Databricks with a live DBFS mount routes holdout ledgers to /dbfs/FileStore."""
+    prior_tempdir = tempfile.tempdir
+    try:
+        with patch.dict(os.environ, {"DATABRICKS_RUNTIME_VERSION": "15.4.x-scala2.12"}, clear=True):
+            with patch.dict(sys.modules, {}):
+                sys.modules.pop("google.colab", None)
+                with patch.object(Path, "is_dir", lambda self: str(self) == "/dbfs/FileStore"):
+                    with patch(
+                        "apedp_dyn.notebook_adapter._safe_mkdir_or_fallback",
+                        side_effect=lambda target, fallback: target,
+                    ):
+                        _t_dir, p_dir, tier, warnings = configure_storage()
+                        assert tier == StorageTier.PERSISTENT
+                        assert p_dir == Path("/dbfs/FileStore/apedp_storage")
+                        assert not any("EPISTEMIC RISK" in w for w in warnings)
+    finally:
+        # configure_storage redirects the stdlib tempdir globally; the mocked
+        # helper never created the driver-scratch path, so restore the pointer.
+        tempfile.tempdir = prior_tempdir
 
 
 def test_temporary_storage_scope_exception_cleanup():

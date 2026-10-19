@@ -7,6 +7,7 @@ setup(
     packages=find_packages(),
     python_requires=">=3.9",
     install_requires=[
+        "apedp>=1.0.0",
         "numpy>=1.22.0",
         "scipy>=1.8.0",
     ],

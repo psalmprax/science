@@ -58,6 +58,11 @@ orchestration = [
 
 [tool.setuptools.packages.find]
 include = ["apedp*"]
+# The native kernel ships exclusively as the `apedp-kernel` wheel built from
+# rust/apedp-kernel. In a dev environment the source tree may contain an
+# apedp_kernel symlink into the venv; excluding it keeps the pure-Python wheel
+# deterministic and prevents shipping a wrapper without its compiled module.
+exclude = ["apedp_kernel*"]
 
 [tool.setuptools.package-data]
 apedp = ["py.typed"]
