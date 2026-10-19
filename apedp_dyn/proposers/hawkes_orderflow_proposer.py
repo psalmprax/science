@@ -6,6 +6,14 @@ univariate self-exciting point processes:
 
 Branching ratio eta = alpha / beta measures system reflexivity / fragility.
 Signals trigger on cluster intensity surges representing liquidity depletion.
+
+Archetype contract: the candidate declares TAIL_RISK (binary surge) only when
+the fitted threshold binds on training data (both classes present). A
+degenerate threshold means the emitted signal is a continuous standardized
+intensity and the candidate is declared CONTINUOUS_FACTOR. If an evaluation
+frame lacks the timestamp/volume features used in fitting, the binary surge
+can still collapse; the scorer then falls back to the continuous standardized
+intensity on that frame and metadata records the score mode.
 """
 from __future__ import annotations
 
@@ -122,6 +130,15 @@ class HawkesOrderFlowProposer(ProposerBase):
         intensities = mu_hat + alpha_hat * R
 
         tau_intensity = float(np.quantile(intensities, self.intensity_threshold_quantile))
+        # Archetype contract: a binary rare-event detector (TAIL_RISK) is only
+        # declared when the fitted surge actually binds on the training data
+        # (both classes present). A degenerate threshold means the emitted
+        # signal is a continuous standardized intensity, which must be declared
+        # as CONTINUOUS_FACTOR so the ledger does not mis-adjudicate it under
+        # tail-risk exposure rules.
+        binary_viable = bool(np.any(intensities > tau_intensity) and not np.all(intensities > tau_intensity))
+        archetype = StrategyArchetype.TAIL_RISK if binary_viable else StrategyArchetype.CONTINUOUS_FACTOR
+        score_mode = "binary_tail_with_continuous_fallback" if binary_viable else "continuous_standardized_intensity"
         formula_str = (
             f"hawkes_intensity(mu={mu_hat:.4f}, alpha={alpha_hat:.4f}, beta={beta:.4f}, "
             f"branching={branching_ratio:.3f}) > {tau_intensity:.4f}"
@@ -177,8 +194,17 @@ class HawkesOrderFlowProposer(ProposerBase):
                     sig[idx] = np.exp(-beta * delta_t) * (weights[idx - 1] + sig[idx - 1])
 
             intens = mu_hat + alpha_hat * sig
+            # Degenerate fit (no binding threshold on training data): emit the
+            # continuous standardized intensity, never a fake binary vector.
+            if not binary_viable:
+                std_intens = float(np.std(intens))
+                if std_intens > 1e-8:
+                    return (intens - np.mean(intens)) / std_intens
+                return intens - np.mean(intens)
             surge = (intens > tau_intensity).astype(float)
-            # If thresholding collapses to constant zero on regular bars, return standardized dynamic intensity
+            # Eval-frame feature mismatch can still collapse the binary surge
+            # (e.g. no timestamp/volume columns); fall back to the continuous
+            # standardized intensity so the signal is never constant.
             if np.all(surge == 0.0) or np.all(surge == 1.0):
                 std_intens = float(np.std(intens))
                 if std_intens > 1e-8:
@@ -191,7 +217,7 @@ class HawkesOrderFlowProposer(ProposerBase):
             proposer_id=self.proposer_id,
             candidate_id=f"{candidate_prefix}_branching{int(branching_ratio*100)}",
             formula=formula_str,
-            strategy_archetype=StrategyArchetype.TAIL_RISK,
+            strategy_archetype=archetype,
             declared_scale_invariant=True,
             declared_nominal_dependencies=(),
             compute_score=compute_score,
@@ -205,6 +231,8 @@ class HawkesOrderFlowProposer(ProposerBase):
             metadata={
                 "n_events": n,
                 "duration_seconds": float(T),
+                "score_mode": score_mode,
+                "binary_surge_viable_on_fit": binary_viable,
             },
         )
         proposals.append(cand)

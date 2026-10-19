@@ -22,6 +22,7 @@ Key Architectural Gates:
 from __future__ import annotations
 
 import itertools
+import logging
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
@@ -31,6 +32,7 @@ import numpy as np
 from apedp_dyn.discovery_l2.ast_generator import (
     ASTNode,
     VariableNode,
+    collect_variable_names,
     generate_dimensionally_typed_ast,
 )
 from apedp_dyn.discovery_l2.dimensional_types import BaseDimension, Dimension
@@ -49,6 +51,8 @@ from apedp_dyn.fitting.parameter_fit import FitResult
 from apedp_dyn.gates.intervention import observation_scale
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 
+_LOG = logging.getLogger(__name__)
+
 
 @dataclass(frozen=True)
 class MultiTermDiscoveryResult:
@@ -59,6 +63,12 @@ class MultiTermDiscoveryResult:
     pareto_candidates: list[ScoredCandidate]
     all_evaluated_count: int
     collinear_pruned_count: int
+
+
+# Minimum finite rows a basis term must contribute in each partition. Warm-up
+# padding (rolling windows, log guards) is legitimate; a term that is finite on
+# fewer rows than this carries no usable signal.
+_MIN_FINITE_ROWS = 8
 
 
 class MultiTermL2Engine:
@@ -102,14 +112,20 @@ class MultiTermL2Engine:
         data_vars = {k: np.asarray(v, dtype=float).ravel() for k, v in X.items()}
 
         if X_holdout is not None and Y_holdout is not None:
+            # Explicit holdout supplied separately: the causal series a term is
+            # evaluated on is train followed by that holdout, so a rolling
+            # operator's state carries across the boundary.
             X_tr = data_vars
             y_tr = y_arr
-            X_ho = {k: np.asarray(v, dtype=float).ravel() for k, v in X_holdout.items()}
             y_ho = np.asarray(Y_holdout, dtype=float).ravel()
+            n_train = n_samples
+            data_vars = {
+                k: np.concatenate([data_vars[k], np.asarray(v, dtype=float).ravel()])
+                for k, v in X_holdout.items()
+            }
         else:
             n_train = max(4, int(n_samples * train_ratio))
             X_tr = {k: v[:n_train] for k, v in data_vars.items()}
-            X_ho = {k: v[n_train:] for k, v in data_vars.items()}
             y_tr = y_arr[:n_train]
             y_ho = y_arr[n_train:]
 
@@ -131,24 +147,40 @@ class MultiTermL2Engine:
         term_vectors_ho: list[np.ndarray] = []
 
         for node in raw_nodes:
+            # Gate A is a DEVELOPMENT-side screen only. It used to also filter on
+            # X_ho, letting the proposer search discard candidates on unseen
+            # data (AGENTS.md §1.2 violation).
             ok_a_tr, _, _ = gate_a_algebraic_validity(node, X_tr, y_std=y_std)
-            ok_a_ho, _, _ = gate_a_algebraic_validity(node, X_ho, allow_constant=True)
-            if not (ok_a_tr and ok_a_ho):
+            if not ok_a_tr:
                 continue
             ok_b, _ = gate_b_physical_validity(node, target_dim)
             if not ok_b:
                 continue
 
-            # Evaluate basis term
+            # Evaluate the basis term on the FULL causal series and slice.
+            # Evaluating the holdout slice in isolation re-warms every rolling
+            # operator inside the holdout (its first W-1 rows become NaN), which
+            # is a property of the slicing, not of the candidate. The term at
+            # time t depends only on data up to t, so this stays causal.
             try:
-                v_tr = node.evaluate(X_tr)
-                v_ho = node.evaluate(X_ho)
-                if np.all(np.isfinite(v_tr)) and np.all(np.isfinite(v_ho)) and not np.all(v_tr == 0):
-                    valid_basis_terms.append(node)
-                    term_vectors_tr.append(v_tr)
-                    term_vectors_ho.append(v_ho)
-            except (ArithmeticError, ValueError, TypeError):
+                v_full = np.asarray(node.evaluate(data_vars), dtype=float)
+            except (ArithmeticError, ValueError, TypeError, KeyError, ZeroDivisionError):
                 continue
+            v_tr = v_full[:n_train]
+            v_ho = v_full[n_train:]
+
+            # Warm-up NaNs are legitimate (rolling operators, log guards):
+            # require a usable finite block in each partition instead of
+            # all-finite, which rejected EVERY rolling term outright.
+            finite_tr = int(np.isfinite(v_tr).sum())
+            finite_ho = int(np.isfinite(v_ho).sum())
+            if finite_tr < _MIN_FINITE_ROWS or finite_ho < _MIN_FINITE_ROWS:
+                continue
+            if not np.any(v_tr[np.isfinite(v_tr)] != 0.0):
+                continue
+            valid_basis_terms.append(node)
+            term_vectors_tr.append(v_tr)
+            term_vectors_ho.append(v_ho)
 
         if not valid_basis_terms:
             adj = adjudicate([], data_origin=data_origin, benchmark_level=BenchmarkLevel.L2_OPEN_DISCOVERY)
@@ -160,28 +192,69 @@ class MultiTermL2Engine:
                 collinear_pruned_count=0,
             )
 
-        # Step 2: Screen Basis Library to prevent combinatorial explosion
-        if len(valid_basis_terms) > self.max_basis_terms:
-            scored_terms = []
+        # Step 2: Screen Basis Library to prevent combinatorial explosion.
+        # Structure-aware split: every primitive variable is kept, and the
+        # remaining slots are shared between the best-correlated univariate
+        # shape terms (three quarters) and multivariate composites (one
+        # quarter, i.e. interactions). Ranking everything by raw target
+        # correlation instead lets drive-carrying mimics crowd out the
+        # physical shape terms they are built from: on a step-forced system
+        # the pre-step dead band dilutes a drag term's correlation below
+        # composites that merely imitate the forcing response, starving
+        # Gate 4 of the true law. The screen only bounds the search; telling
+        # true shape from lookalike stays with the holdout referee.
+        n_valid = len(valid_basis_terms)
+        if n_valid > self.max_basis_terms:
+            n_vars = sum(1 for node in valid_basis_terms if isinstance(node, VariableNode))
+            slots = max(0, self.max_basis_terms - n_vars)
+            n_multi = slots // 4
+            n_uni = slots - n_multi
             std_y = float(np.std(y_tr))
-            for node, v_tr, v_ho in zip(valid_basis_terms, term_vectors_tr, term_vectors_ho, strict=True):
-                std_v = float(np.std(v_tr))
-                r = 0.0
-                if std_v > 1e-12 and std_y > 1e-12:
-                    try:
-                        r_val = float(np.corrcoef(v_tr, y_tr)[0, 1])
-                        r = abs(r_val) if np.isfinite(r_val) else 0.0
-                    except (ValueError, FloatingPointError):
-                        r = 0.0
-                # Preserve primitive state variables with priority
-                score = 100.0 if isinstance(node, VariableNode) else r
-                scored_terms.append((score, node, v_tr, v_ho))
 
-            scored_terms.sort(key=lambda item: item[0], reverse=True)
-            screened = scored_terms[: self.max_basis_terms]
-            valid_basis_terms = [item[1] for item in screened]
-            term_vectors_tr = [item[2] for item in screened]
-            term_vectors_ho = [item[3] for item in screened]
+            def _abs_corr(v: np.ndarray) -> float:
+                if float(np.std(v)) <= 1e-12 or std_y <= 1e-12:
+                    return 0.0
+                try:
+                    r_val = float(np.corrcoef(v, y_tr)[0, 1])
+                except (ValueError, FloatingPointError):
+                    return 0.0
+                return abs(r_val) if np.isfinite(r_val) else 0.0
+
+            ranked_uni: list[tuple[float, int]] = []
+            ranked_multi: list[tuple[float, int]] = []
+            for i, node in enumerate(valid_basis_terms):
+                if isinstance(node, VariableNode):
+                    continue
+                item = (_abs_corr(term_vectors_tr[i]), i)
+                if len(collect_variable_names(node)) == 1:
+                    ranked_uni.append(item)
+                else:
+                    ranked_multi.append(item)
+            ranked_uni.sort(key=lambda item: (-item[0], item[1]))
+            ranked_multi.sort(key=lambda item: (-item[0], item[1]))
+
+            keep: list[int] = [i for i, node in enumerate(valid_basis_terms)
+                               if isinstance(node, VariableNode)]
+            keep.extend(i for _, i in ranked_uni[:n_uni])
+            keep.extend(i for _, i in ranked_multi[:n_multi])
+            if len(keep) < self.max_basis_terms:
+                # Unbalanced pools (e.g. no univariate shapes at all under a
+                # +,-,*,/ grammar) must not waste slots: spill to the best
+                # remaining terms regardless of pool.
+                spill = sorted(ranked_uni[n_uni:] + ranked_multi[n_multi:],
+                               key=lambda item: (-item[0], item[1]))
+                keep.extend(i for _, i in spill[: self.max_basis_terms - len(keep)])
+            keep.sort()
+            _LOG.debug(
+                "basis screen: kept %d of %d (vars=%d univariate=%d multivariate=%d)",
+                len(keep), n_valid, n_vars,
+                sum(1 for i in keep if len(collect_variable_names(valid_basis_terms[i])) == 1
+                    and not isinstance(valid_basis_terms[i], VariableNode)),
+                sum(1 for i in keep if len(collect_variable_names(valid_basis_terms[i])) > 1),
+            )
+            valid_basis_terms = [valid_basis_terms[i] for i in keep]
+            term_vectors_tr = [term_vectors_tr[i] for i in keep]
+            term_vectors_ho = [term_vectors_ho[i] for i in keep]
 
         # Step 3: Form Combinations of 1 to max_terms Basis Functions
         scored_candidates: list[ScoredCandidate] = []
@@ -203,6 +276,21 @@ class MultiTermL2Engine:
                 M_tr = np.column_stack([term_vectors_tr[i] for i in idx_tuple])
                 M_ho = np.column_stack([term_vectors_ho[i] for i in idx_tuple])
 
+                # Finite-overlap fitting: warm-up rows (rolling windows, log
+                # guards) are excluded from BOTH partitions rather than
+                # fabricated, and the row counts actually used are recorded so
+                # candidates remain comparable and auditable.
+                mask_tr = np.isfinite(M_tr).all(axis=1) & np.isfinite(y_tr)
+                mask_ho = np.isfinite(M_ho).all(axis=1) & np.isfinite(y_ho)
+                n_rows_tr = int(mask_tr.sum())
+                n_rows_ho = int(mask_ho.sum())
+                if n_rows_tr < _MIN_FINITE_ROWS or n_rows_ho < _MIN_FINITE_ROWS:
+                    continue
+                M_tr = M_tr[mask_tr]
+                y_tr_m = y_tr[mask_tr]
+                M_ho = M_ho[mask_ho]
+                y_ho_m = y_ho[mask_ho]
+
                 # FIM / Collinearity Gate: condition number of column-scaled design matrix
                 if k > 1:
                     norms = np.linalg.norm(M_tr, axis=0)
@@ -216,14 +304,16 @@ class MultiTermL2Engine:
 
                 # OLS Parameter Fitting
                 try:
-                    coefs, *_ = np.linalg.lstsq(M_tr, y_tr, rcond=None)
+                    coefs, *_ = np.linalg.lstsq(M_tr, y_tr_m, rcond=None)
                 except np.linalg.LinAlgError:
+                    continue
+                if not np.all(np.isfinite(coefs)):
                     continue
 
                 pred_tr = M_tr @ coefs
                 pred_ho = M_ho @ coefs
-                loss_tr = float(np.mean((y_tr - pred_tr) ** 2))
-                resid_ho = y_ho - pred_ho
+                loss_tr = float(np.mean((y_tr_m - pred_tr) ** 2))
+                resid_ho = y_ho_m - pred_ho
                 rmse_ho = float(np.sqrt(np.mean(resid_ho**2)))
 
                 # Residual Whiteness
@@ -269,6 +359,10 @@ class MultiTermL2Engine:
                     "holdout_obs_rms": obs_rms,
                     "holdout_noise_sigma": noise_sigma,
                     "holdout_n_samples": len(y_ho),
+                    "n_rows_used_train": n_rows_tr,
+                    "n_rows_used_holdout": n_rows_ho,
+                    "warmup_rows_excluded_train": int(len(y_tr) - n_rows_tr),
+                    "warmup_rows_excluded_holdout": int(len(y_ho) - n_rows_ho),
                     "rmse": rmse_ho,
                     "r2": r2,
                     "rho1": rho1,

@@ -21,6 +21,40 @@ from apedp_dyn.gates.intervention import observation_scale
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 
 
+def gate_b_physical_validity(
+    node: ASTNode,
+    target_dimension: Dimension,
+    *,
+    coefficient_synthesis: bool = False,
+) -> tuple[bool, str]:
+    """Gate B: Physical Validity check.
+
+    Enforces that expression output dimension strictly matches the target LHS
+    dimension. With ``coefficient_synthesis=True`` the repository's
+    dimensional-constant-synthesis convention applies (see
+    ``apedp.dimensional_layer`` and the per-term fitted-coefficient design in
+    ``_additive_terms``): every additive term is implicitly scaled by its own
+    fitted numeric coefficient, which carries whatever unit the form requires,
+    so a rate-dimension target ([state]/[T]) admits monomial state terms that
+    a bare unit-literal could not represent. Dimensional screening stays strict
+    by default; the ODE discovery engine is the consumer of the synthesis rule.
+    """
+    if coefficient_synthesis:
+        return True, (
+            "Dimensional-constant synthesis: every additive term carries its own "
+            "fitted coefficient, which may absorb the unit bridging "
+            f"[{node.dimension}] to the target [{target_dimension}] (repo coefficient convention; "
+            "structural constraints like dimensionless transcendental arguments "
+            "remain enforced at AST construction)."
+        )
+    if node.dimension != target_dimension:
+        return (
+            False,
+            f"Physical dimension mismatch: expected [{target_dimension}], got [{node.dimension}]",
+        )
+    return True, f"Output dimension [{node.dimension}] matches target LHS"
+
+
 def _additive_terms(node: ASTNode, sign: float = 1.0) -> list[tuple[float, ASTNode]]:
     """Split an expression into top-level additive terms with signs.
 
@@ -84,22 +118,6 @@ def gate_a_algebraic_validity(
             return False, "Trivial constant expression: zero variance across dataset", None
 
     return True, "Algebraically valid", val
-
-
-def gate_b_physical_validity(
-    node: ASTNode,
-    target_dimension: Dimension,
-) -> tuple[bool, str]:
-    """Gate B: Physical Validity check.
-
-    Enforces that expression output dimension strictly matches the target LHS dimension.
-    """
-    if node.dimension != target_dimension:
-        return (
-            False,
-            f"Physical dimension mismatch: expected [{target_dimension}], got [{node.dimension}]",
-        )
-    return True, f"Output dimension [{node.dimension}] matches target LHS"
 
 
 def check_residual_whiteness(
@@ -331,10 +349,23 @@ def fit_and_score_candidate(
         r2 = 1.0 if rmse_ho < 1e-6 else 0.0
 
     # Evidential pass criteria: finite RMSE, variance explained or near-zero
-    # error, and within observation scale.
+    # error, and within observation scale. The R^2 floor is additionally made
+    # small-sample-aware: on short holdouts a fixed 0.20 floor accepts pure
+    # noise-chasing luck (measured: a random-walk trajectory promoted
+    # t**2/x at holdout R^2 = 0.2008 on n_ho = 16). The floor is therefore
+    # at least the F-test significance level of R^2 for one fitted parameter
+    # against the holdout residual degrees of freedom (F(1, n-2) at 95%).
+    n_ho = int(mask_ho.sum())
+    r2_floor = 0.20
+    if n_ho > 3:
+        from scipy.stats import f as _f_dist
+
+        f_crit = float(_f_dist.isf(0.05, 1, n_ho - 2))
+        r2_sig = f_crit / (f_crit + (n_ho - 2))
+        r2_floor = max(r2_floor, r2_sig)
     passed_evidential = bool(
         np.isfinite(rmse_ho)
-        and (r2 >= 0.20 or rmse_ho <= 1e-5)
+        and (r2 >= r2_floor or rmse_ho <= 1e-5)
         and (rmse_ho <= 1.5 * obs_rms if obs_rms > 0 else True)
     )
 

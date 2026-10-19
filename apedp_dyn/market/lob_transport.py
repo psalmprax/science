@@ -98,7 +98,7 @@ def simulate_lob_transport(
         amplitudes = rng.uniform(0.5, 1.0, len(modes))
         phases = rng.uniform(0.0, _TWO_PI, len(modes))
         u0 = np.zeros(n_x)
-        for amplitude, phase, mode in zip(amplitudes, phases, modes):
+        for amplitude, phase, mode in zip(amplitudes, phases, modes, strict=True):
             u0 += amplitude * np.cos(_TWO_PI * mode * x / domain_length + phase)
 
     if method == "spectral":
@@ -137,6 +137,19 @@ def _rk4_evolution(
     diffusion: float,
     decay_rate: float,
 ) -> np.ndarray:
+    # Explicit RK4 on an advection-diffusion operator is only stable inside a
+    # step-size window; without a guard, refining nx (or raising D) silently
+    # pushes D*dt/dx^2 past its limit and the integrator explodes to NaN from
+    # the first step. Refuse before generating unusable snapshots.
+    cfl = diffusion * dt / (dx * dx)
+    peclet = abs(drift_velocity) * dt / dx
+    if cfl > 0.5 or peclet > 2.0:
+        raise ValueError(
+            f"RK4 timestep violates stability limits: diffusion number D*dt/dx^2={cfl:.3f} "
+            f"(<= 0.5 required), transport number |v|*dt/dx={peclet:.3f} (<= 2.0 required). "
+            "Reduce total_time/n_t or refine the spatial grid; alternatively use method='spectral'."
+        )
+
     def rhs(u: np.ndarray) -> np.ndarray:
         u_x = (np.roll(u, -1) - np.roll(u, 1)) / (2.0 * dx)
         u_xx = (np.roll(u, -1) - 2.0 * u + np.roll(u, 1)) / (dx * dx)
@@ -252,23 +265,69 @@ def snapshot_mass(snapshots: np.ndarray, dx: float) -> np.ndarray:
 
 
 def snapshot_centre_of_mass(snapshots: np.ndarray, dx: float) -> np.ndarray:
-    """Centre of mass per snapshot (linear axis, valid before periodic wrap)."""
+    """Centre of mass per snapshot from the first circular moment.
+
+    The linear first moment ``sum(x u)/sum(u)`` (a) jumps discontinuously by the
+    domain length whenever a density packet crosses the periodic wrap point and
+    (b) divides by the total mass, which is near zero for the default zero-mean
+    Fourier-mode initial condition. Both are removed by computing the mean
+    angle ``theta = atan2(sum u sin(q x), sum u cos(q x))`` with ``q = 2*pi/L``,
+    guarding the degenerate zero-mass case with NaN, unwrapping the angle
+    across time (so an advecting packet yields a continuous trajectory), and
+    converting back to axis coordinates. The returned coordinate is
+    ring-unwrapped (not mod L), by design: drift-speed cross-checks see a
+    continuous trajectory that survives full wraps.
+    """
     snapshots = np.asarray(snapshots, dtype=np.float64)
+    if snapshots.ndim != 2:
+        raise ValueError("snapshots must be a (n_t, n_x) array")
     n_x = snapshots.shape[1]
+    domain_length = n_x * dx
+    q = _TWO_PI / domain_length
     x = np.arange(n_x) * dx
-    mass = snapshots.sum(axis=1) * dx
-    return (snapshots * x).sum(axis=1) * dx / mass
+    cos_moment = np.sum(snapshots * np.cos(q * x), axis=1)
+    sin_moment = np.sum(snapshots * np.sin(q * x), axis=1)
+    total_mass = np.sum(snapshots, axis=1) * dx
+    mean_angle = np.arctan2(sin_moment, cos_moment)
+    # A zero/negligible-mass field has no well-defined centre; represent that
+    # honestly with NaN rather than atan2's silent 0/0 -> 0.
+    mean_angle[np.abs(total_mass) < 1e-12] = np.nan
+    unwrapped = np.unwrap(mean_angle)
+    return unwrapped * domain_length / _TWO_PI
 
 
 def snapshot_variance(snapshots: np.ndarray, dx: float) -> np.ndarray:
-    """Variance about the centre of mass per snapshot."""
+    """Variance about the centre of mass per snapshot (periodic-safe, exact).
+
+    Mass-weighted variance of the angular deviation from the mean angle, with
+    deviations wrapped into ``(-pi, pi]``::
+
+        var_x = (L/2pi)**2 * sum_i w_i * wrap(theta_i - mu)**2 / sum_i w_i
+
+    Unlike the mean-resultant approximation ``2*(L/2pi)**2*(1-|R|)`` (which is
+    only first-order accurate for a narrow packet), this reproduces the usual
+    linear variance for any packet width, so diffusion constants recovered
+    from ``d var_x / dt`` stay exact. It never touches the periodic wrap
+    point, and a zero-mass field yields NaN instead of dividing by zero.
+    """
     snapshots = np.asarray(snapshots, dtype=np.float64)
+    if snapshots.ndim != 2:
+        raise ValueError("snapshots must be a (n_t, n_x) array")
     n_x = snapshots.shape[1]
+    domain_length = n_x * dx
+    q = _TWO_PI / domain_length
     x = np.arange(n_x) * dx
-    mass = snapshots.sum(axis=1) * dx
-    centre = snapshot_centre_of_mass(snapshots, dx)
-    squared = (x[None, :] - centre[:, None]) ** 2
-    return (snapshots * squared).sum(axis=1) * dx / mass
+    theta = q * x
+    cos_moment = np.sum(snapshots * np.cos(theta), axis=1)
+    sin_moment = np.sum(snapshots * np.sin(theta), axis=1)
+    total_mass = np.sum(snapshots, axis=1) * dx
+    mean_angle = np.arctan2(sin_moment, cos_moment)
+    deviation = theta[None, :] - mean_angle[:, None]
+    deviation = (deviation + np.pi) % _TWO_PI - np.pi
+    var_theta = np.sum(snapshots * deviation ** 2, axis=1) * dx / total_mass
+    out = (domain_length / _TWO_PI) ** 2 * var_theta
+    out[np.abs(total_mass) < 1e-12] = np.nan
+    return out
 
 
 def discover_transport_with_engine(

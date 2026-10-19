@@ -52,12 +52,14 @@ def compute_hac_variance(d: np.ndarray, max_lags: int | None = None) -> float:
     max_lags = max(min(max_lags, n - 1), 0)
 
     d_dem = d - np.mean(d)
-    gamma_0 = float(np.mean(d_dem ** 2))
+    # Canonical Newey-West divisor is n for every autocovariance term. Using
+    # n-lag shrinks the lagged terms and does not guarantee a PSD estimate.
+    gamma_0 = float(np.sum(d_dem ** 2) / n)
     var_hac = gamma_0
 
     for lag in range(1, max_lags + 1):
         weight = 1.0 - (lag / (max_lags + 1.0))
-        gamma_k = float(np.mean(d_dem[lag:] * d_dem[:-lag]))
+        gamma_k = float(np.sum(d_dem[lag:] * d_dem[:-lag]) / n)
         var_hac += 2.0 * weight * gamma_k
 
     return max(float(var_hac), 1e-12)
@@ -199,8 +201,16 @@ def evaluate_structural_novelty(
                     citation = "Linear combination of literature baselines."
                 elif max_r2 < novelty_threshold_r2 and joint_r2 > max_r2:
                     max_r2 = joint_r2
+                    # Attribution must track whichever measurement actually set
+                    # max_r2: otherwise a candidate can be reported as identified
+                    # with a baseline whose own single-variable R^2 never reached
+                    # the projection, while the real source was the joint span.
+                    closest_baseline = f"JOINT_SPAN({', '.join(col_names)})"
+                    citation = "Linear combination of literature baselines."
                 elif max_r2 >= novelty_threshold_r2 and joint_r2 > max_r2:
                     max_r2 = joint_r2
+                    closest_baseline = f"JOINT_SPAN({', '.join(col_names)})"
+                    citation = "Linear combination of literature baselines."
 
     ortho_var = float(max(0.0, 1.0 - max_r2))
     is_novel = bool(max_r2 < novelty_threshold_r2)

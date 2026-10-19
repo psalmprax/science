@@ -10,15 +10,19 @@ Scientific Scope & Algorithmic Foundation:
        Continuous Khatib potential gradient pushing agents apart when inter-agent distance
        falls below warning radius $r_{warning}$. Note: This is an artificial repulsive potential
        heuristic, not a certified quadratic-programming Control Barrier Function (CBF-QP)
-       with formal forward-invariance proofs.
+       with formal forward-invariance proofs. A tangential breakaway term resolves the
+       symmetric head-on deadlock a purely radial field cannot.
     2. Dynamic Role Allocation & Turn-Taking:
        In cooperative double-agent tasks (e.g. ping-pong doubles or payload handoff),
        agents dynamically switch between "Active Striker" and "Support/Recovery" modes
-       to prevent deadlock and territorial contention.
+       to prevent deadlock and territorial contention. Support agents receive
+       formation-indexed offsets (none share a waypoint), so a fleet cannot collapse
+       into a single point.
     3. Closed-loop Lyapunov distance convergence toward dynamic cooperative waypoints.
 """
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
@@ -26,6 +30,8 @@ from enum import Enum
 import numpy as np
 
 from apedp_dyn.robotics.trajectory_transport import exact_unicycle_step, wrap_angle
+
+_TWO_PI = 2.0 * math.pi
 
 
 class AgentRole(str, Enum):
@@ -59,8 +65,17 @@ def compute_cbf_repulsive_force(
     r_safe: float = 0.5,
     r_warning: float = 1.0,
     k_rep: float = 2.0,
+    heading_i: float | None = None,
 ) -> np.ndarray:
-    """Compute repulsive safety gradient between agent i and agent j."""
+    """Compute repulsive safety gradient between agent i and agent j.
+
+    When a heading is supplied and the agents are oriented head-on (their
+    relative displacement is anti-parallel to their heading), a purely radial
+    repulsion has no lateral component and the smooth control law
+    ``v ~ max(0, cos(heading_error))`` drives *both* agents to speed 0: a
+    symmetric, permanent deadlock. A fixed-sign tangential component breaks the
+    symmetry so each agent slides past the other.
+    """
     diff = pos_i - pos_j
     dist = float(np.linalg.norm(diff))
     if dist < 1e-9:
@@ -72,7 +87,19 @@ def compute_cbf_repulsive_force(
     # Repulsive vector pushing pos_i away from pos_j
     direction = diff / dist
     magnitude = k_rep * (1.0 / max(r_safe, dist) - 1.0 / r_warning) * (1.0 / (dist ** 2.0))
-    return magnitude * direction
+    force = magnitude * direction
+
+    if heading_i is not None:
+        heading_vec = np.array([np.cos(heading_i), np.sin(heading_i)])
+        # Anti-parallel test: radical repulsion opposes the agent's motion.
+        anti_par = float(-direction @ heading_vec)  # > 0 when diff opposes heading
+        if anti_par > 0.7:
+            perp = np.array([-direction[1], direction[0]])
+            # Fixed (rightward) sign breaks the head-on symmetry for THIS agent;
+            # the other agent's own heading resolves to the opposite tangential
+            # side, so the pair separates rather than both freezing.
+            force = force + anti_par * magnitude * perp
+    return force
 
 
 def multi_agent_step(
@@ -121,7 +148,8 @@ def multi_agent_step(
         for j in range(n_agents):
             if i != j:
                 f_rep += compute_cbf_repulsive_force(
-                    p_i, positions[j], r_safe=r_safe, r_warning=r_warning, k_rep=k_rep
+                    p_i, positions[j], r_safe=r_safe, r_warning=r_warning, k_rep=k_rep,
+                    heading_i=theta_i,
                 )
 
         # Net nominal steering vector
@@ -151,7 +179,7 @@ def multi_agent_step(
 def simulate_multi_agent_coordination(
     initial_poses: np.ndarray,
     target: np.ndarray,
-    support_offset: np.ndarray = np.array([-1.0, -1.0]),
+    support_offset: np.ndarray | None = None,
     max_steps: int = 200,
     dt: float = 0.05,
     r_safe: float = 0.4,
@@ -161,8 +189,12 @@ def simulate_multi_agent_coordination(
 
     In ping-pong doubles / cooperative interception:
       - The agent closest to the target becomes the ACTIVE_STRIKER.
-      - The other agent becomes SUPPORT_RECOVERY targeting target + support_offset.
+      - Every other agent becomes SUPPORT_RECOVERY, each targeting a UNIQUE
+        formation waypoint around the target.
     """
+    if support_offset is None:
+        support_offset = np.array([-1.0, -1.0])
+
     n_agents = initial_poses.shape[0]
     traj = np.zeros((max_steps, n_agents, 3))
     min_distances = np.zeros(max_steps)
@@ -187,15 +219,30 @@ def simulate_multi_agent_coordination(
         dist_to_target = np.array([float(np.linalg.norm(current_poses[i, :2] - target)) for i in range(n_agents)])
         striker_idx = int(np.argmin(dist_to_target))
 
+        # Formation-indexed support waypoints: giving every non-striker the SAME
+        # target + support_offset made the whole support fleet converge on one
+        # point, so N - 1 robots fought for an identical slot. Each support
+        # agent holds slot k of a small ring around the target, oriented by the
+        # caller's support_offset direction (falls back to -x). Single-support
+        # (N = 2) keeps exactly the historical offset.
+        support_ids = [i for i in range(n_agents) if i != striker_idx]
+        base_dir = support_offset / (float(np.linalg.norm(support_offset)) or 1.0)
+        support_radial = float(np.linalg.norm(support_offset))
         roles: list[AgentRole] = []
         targets = np.zeros((n_agents, 2))
+        base_angle = float(np.arctan2(base_dir[1], base_dir[0]))
         for i in range(n_agents):
             if i == striker_idx:
                 roles.append(AgentRole.ACTIVE_STRIKER)
                 targets[i] = target
             else:
                 roles.append(AgentRole.SUPPORT_RECOVERY)
-                targets[i] = target + support_offset
+                slot = support_ids.index(i)
+                if len(support_ids) == 1:
+                    targets[i] = target + support_offset
+                else:
+                    angle = base_angle + _TWO_PI * slot / len(support_ids)
+                    targets[i] = target + support_radial * np.array([np.cos(angle), np.sin(angle)])
 
         # Check termination condition
         if dist_to_target[striker_idx] < 0.15:

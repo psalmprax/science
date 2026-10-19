@@ -595,14 +595,15 @@ class RustKernelBridge:
         a_gray: np.ndarray,
         b_gray: np.ndarray,
         win: int = 8,
-        c1: float = 0.01,
-        c2: float = 0.03,
+        c1: float = 1e-4,
+        c2: float = 9e-4,
     ) -> float:
         """Mean windowed SSIM over ONE grayscale frame (2-D), kernel first-line.
 
-        Rows cross the boundary as zero-copy views of the frame buffer. A
-        frame smaller than the window yields NaN on both paths (matching the
-        reference's empty-block mean).
+        Defaults are the canonical squared stabilizers for unit dynamic range
+        ((K1*L)^2 = 1e-4, (K2*L)^2 = 9e-4). Rows cross the boundary as
+        zero-copy views of the frame buffer. A frame smaller than the window
+        yields NaN on both paths (matching the reference's empty-block mean).
         """
         a_g = np.asarray(a_gray, dtype=np.float64)
         b_g = np.asarray(b_gray, dtype=np.float64)

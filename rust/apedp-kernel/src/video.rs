@@ -50,15 +50,19 @@ pub fn psnr_series(a: &[f64], b: &[f64]) -> Result<f64, String> {
 /// window yields `NaN`, exactly like `np.mean([])` on the reference side
 /// (an empty-signal pair is a data condition, not a verdict).
 ///
-/// Constants mirror the reference call signature: `c1 = 0.01`, `c2 = 0.03`
-/// (the squared luminance/contrast stabilizers), `win = 8` default.
+/// Constants are supplied by callers. The canonical values for unit-range
+/// inputs are the SQUARED stabilizers `c1 = (K1*L)^2 = 1e-4`,
+/// `c2 = (K2*L)^2 = 9e-4` (K1 = 0.01, K2 = 0.03, L = 1); `win = 8` default.
 pub fn ssim_frame<V: DataCol>(a_rows: &[V], b_rows: &[V], win: usize, c1: f64, c2: f64) -> f64 {
     if a_rows.is_empty() || b_rows.is_empty() || a_rows.len() != b_rows.len() {
         return f64::NAN;
     }
     let h = a_rows.len();
     let w = a_rows[0].row_len();
-    if w == 0 || h < win || w < win {
+    // `win == 0` must be rejected explicitly: `h < win` / `w < win` cannot be
+    // true for an unsigned zero, so the window loops below would increment by
+    // zero forever (100% CPU, unrecoverable from Python through PyO3).
+    if win == 0 || w == 0 || h < win || w < win {
         return f64::NAN;
     }
 
@@ -381,6 +385,8 @@ pub fn compute_optical_flow_divergence(
 
     let inv_2dx = 1.0 / (2.0 * dx);
     let inv_2dy = 1.0 / (2.0 * dy);
+    let inv_dx = 1.0 / dx;
+    let inv_dy = 1.0 / dy;
     let mut div = vec![0.0f64; n];
 
     for y in 0..height {
@@ -389,12 +395,23 @@ pub fn compute_optical_flow_divergence(
         let row_curr = y * width;
         let row_m = ym * width;
         let row_p = yp * width;
+        // Border rows use a ONE-SIDED difference: clamping the neighbour index
+        // at the border (xm = 0 when x = 0) makes the numerator span a single
+        // cell while the divisor stays 2*dx, halving every border derivative.
+        let (scale_y, inv_dy_eff) = if y == 0 || y + 1 >= height {
+            (1.0, inv_dy)
+        } else {
+            (2.0, inv_2dy)
+        };
         for x in 0..width {
             let xm = if x == 0 { 0 } else { x - 1 };
             let xp = if x + 1 >= width { width - 1 } else { x + 1 };
+            let border_x = x == 0 || x + 1 >= width;
+            let inv_dx_eff = if border_x { inv_dx } else { inv_2dx };
+            let _ = scale_y;
 
-            let dvx = (vx[row_curr + xp] - vx[row_curr + xm]) * inv_2dx;
-            let dvy = (vy[row_p + x] - vy[row_m + x]) * inv_2dy;
+            let dvx = (vx[row_curr + xp] - vx[row_curr + xm]) * inv_dx_eff;
+            let dvy = (vy[row_p + x] - vy[row_m + x]) * inv_dy_eff;
             div[row_curr + x] = dvx + dvy;
         }
     }
@@ -441,15 +458,55 @@ mod tests {
     }
 
     #[test]
+    fn divergence_border_uses_one_sided_difference() {
+        // vx = x (so d(vx)/dx == 1 everywhere, borders included), vy = 0.
+        // The old clamped-neighbour central difference halved the border values.
+        let (h, w) = (5usize, 6usize);
+        let mut vx = vec![0.0f64; h * w];
+        let vy = vec![0.0f64; h * w];
+        for y in 0..h {
+            for x in 0..w {
+                vx[y * w + x] = x as f64;
+            }
+        }
+        let div = compute_optical_flow_divergence(&vx, &vy, h, w, 1.0, 1.0).unwrap();
+        for (i, d) in div.iter().enumerate() {
+            assert!((d - 1.0).abs() < 1e-12, "divergence at {i} = {d}, expected 1.0");
+        }
+
+        // Same in y for a vy = y field.
+        let vx0 = vec![0.0f64; h * w];
+        let mut vy = vec![0.0f64; h * w];
+        for y in 0..h {
+            for x in 0..w {
+                vy[y * w + x] = y as f64;
+            }
+        }
+        let div_y = compute_optical_flow_divergence(&vx0, &vy, h, w, 1.0, 1.0).unwrap();
+        for (i, d) in div_y.iter().enumerate() {
+            assert!((d - 1.0).abs() < 1e-12, "y-divergence at {i} = {d}, expected 1.0");
+        }
+    }
+
+    #[test]
+    fn ssim_frame_zero_window_returns_nan_instead_of_hanging() {
+        // win == 0 used to pass the unsigned size guard (`h < 0` is never true)
+        // and then spin forever in `x += win`. The call must return promptly.
+        let rows: Vec<Vec<f64>> = (0..8).map(|r| vec![0.2 + r as f64 * 0.01; 8]).collect();
+        let rows_view: Vec<ArrayView1<f64>> = rows.iter().map(|r| ArrayView1::from(r.as_slice())).collect();
+        assert!(ssim_frame(&rows_view, &rows_view, 0, 1e-4, 9e-4).is_nan());
+    }
+
+    #[test]
     fn ssim_frame_is_identity_one_and_nan_when_too_small() {
         let rows: Vec<Vec<f64>> = (0..16).map(|r| vec![0.3; 16]).collect();
         let rows_view: Vec<ArrayView1<f64>> = rows.iter().map(|r| ArrayView1::from(r.as_slice())).collect();
-        let s = ssim_frame(&rows_view, &rows_view, 8, 0.01, 0.03);
+        let s = ssim_frame(&rows_view, &rows_view, 8, 1e-4, 9e-4);
         assert!((s - 1.0).abs() < 1e-12, "{s}");
         // A 4x8 frame cannot host one 8x8 window in h.
         let small: Vec<Vec<f64>> = (0..4).map(|_| vec![0.5; 8]).collect();
         let sv: Vec<ArrayView1<f64>> = small.iter().map(|r| ArrayView1::from(r.as_slice())).collect();
-        assert!(ssim_frame(&sv, &sv, 8, 0.01, 0.03).is_nan());
+        assert!(ssim_frame(&sv, &sv, 8, 1e-4, 9e-4).is_nan());
     }
 
     #[test]

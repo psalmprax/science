@@ -231,6 +231,13 @@ fn erf_hp(x: f64) -> f64 {
     } else {
         // NR gcf: Gamma(a, z) = exp(-z + a ln z) * h, a = 1/2, z = ax^2
         let z = ax * ax;
+        // Overflow/infinity guard: erf saturates to ±1 long before ax*ax can
+        // overflow (erfc(6) ≈ 2.2e-17 < f64::EPSILON), so any x whose square
+        // is not finite returns the saturated value instead of NaN from
+        // (−z + a·ln z) = −inf + inf.
+        if !z.is_finite() {
+            return x.signum();
+        }
         let a = 0.5f64;
         let tiny = 1e-300f64;
         let mut b = z + 1.0 - a;
@@ -332,6 +339,15 @@ pub fn loss_and_v_grad(
     weights: &[f64], h: usize, w: usize,
     dt: f64, lambda_div: f64, lambda_smooth: f64,
 ) -> Result<(f64, Vec<f64>), String> {
+    // Degenerate planes used to fall through: `n_all = plane * c` became 0.0
+    // and the advection loss divided by it, so a 0x0 / 1x1 field silently
+    // returned NaN instead of an explicit error.
+    if w < 2 || h < 2 {
+        return Err(format!(
+            "loss_and_v_grad requires height >= 2 and width >= 2, got H={} W={}",
+            h, w
+        ));
+    }
     let plane = h * w;
     let c = spec.c_in;
     let (vx, vy) = forward_v(z_prev, z_curr, spec, weights, h, w)?;
@@ -663,6 +679,39 @@ pub fn transport_step(
         z_next = laplacian_dissipation_2d(&z_next, h, w, c, nu, dt, dx, dy)?;
     }
     Ok((z_next, vx_eff, vy_eff, rem_div))
+}
+
+#[cfg(test)]
+mod degenerate_dim_tests {
+    use super::*;
+
+    fn spec() -> FlowHeadSpec {
+        FlowHeadSpec { c_in: 2, hidden: 2, n_layers: 1, flow_scale: 1.0 }
+    }
+
+    #[test]
+    fn loss_and_v_grad_rejects_degenerate_planes_with_error_not_nan() {
+        // A 0x0 / 1x1 plane used to reach `adv_loss /= n_all` with n_all == 0.0
+        // and silently return NaN. It must be an explicit error instead.
+        let s = spec();
+        let w = weights_len(s);
+        let weights = vec![0.1f64; w];
+        for (h, wd) in [(0usize, 0usize), (1, 1), (1, 4), (4, 1)] {
+            let res = loss_and_v_grad(
+                &vec![0.0; h * wd * s.c_in],
+                &vec![0.0; h * wd * s.c_in],
+                &vec![0.0; h * wd * s.c_in],
+                s,
+                &weights,
+                h,
+                wd,
+                0.1,
+                0.0,
+                0.0,
+            );
+            assert!(res.is_err(), "H={h} W={wd} must error, got {res:?}");
+        }
+    }
 }
 
 #[cfg(test)]
@@ -1499,5 +1548,19 @@ mod erf_hp_grid_tests {
             "erf_hp max grid deviation {:.3e} at x={} (ref {:.17e})",
             worst.0, worst.1, worst.2
         );
+    }
+
+    #[test]
+    fn erf_hp_saturates_instead_of_nan_when_x_squared_overflows() {
+        // Regression: beyond |x| ~ 1.34e154, x*x overflows to +inf and the
+        // gcf path evaluated (-z + a*ln z) = -inf + inf = NaN, poisoning
+        // GELU. erf saturates to +/-1 far earlier (erfc(6) ~ 2.2e-17), so
+        // overflow must return the saturated value; NaN propagates.
+        assert_eq!(erf_hp(f64::INFINITY), 1.0);
+        assert_eq!(erf_hp(f64::NEG_INFINITY), -1.0);
+        assert_eq!(erf_hp(1.6e154), 1.0);
+        assert_eq!(erf_hp(-1.6e154), -1.0);
+        assert!(erf_hp(f64::NAN).is_nan());
+        assert!((erf_hp(1.2e2) - 1.0).abs() <= 8e-16);
     }
 }

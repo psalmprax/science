@@ -17,8 +17,8 @@ Scope & honesty ceiling:
 """
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 import numpy as np
 
@@ -58,7 +58,7 @@ def synthesize_chirps(
     duration: float,
 ) -> np.ndarray:
     """Sum of phase-continuous chirps sampled on ``[0, duration)``."""
-    n_samples = int(round(sample_rate * duration))
+    n_samples = round(sample_rate * duration)
     t = np.arange(n_samples) / sample_rate
     signal = np.zeros(n_samples)
     for spec in specs:
@@ -111,7 +111,7 @@ def _parabolic_peak(values: np.ndarray, index: int) -> float:
 def ridge_instantaneous_frequency(magnitude: np.ndarray, frequencies: np.ndarray) -> np.ndarray:
     """Sub-bin dominant frequency per frame via parabolic ridge interpolation."""
     magnitude = np.asarray(magnitude, dtype=np.float64)
-    n_freq, n_frames = magnitude.shape
+    _n_freq, n_frames = magnitude.shape
     bin_width = float(frequencies[1] - frequencies[0])
     ridge = np.empty(n_frames, dtype=np.float64)
     for frame in range(n_frames):
@@ -162,6 +162,38 @@ def frequency_advection_velocity_fn(
     return velocity_fn
 
 
+def _upwind_advection_step(
+    field: np.ndarray,
+    c: float,
+    dt: float,
+    frequency_step: float,
+) -> np.ndarray:
+    """One stable upwind step of ``S_t = -c * S_f`` (periodic frequency axis).
+
+    The spectral magnitudes are advected along the frequency axis by the ridge
+    velocity ``c = df_r/dt``. Discretizing that advection with *centered*
+    differences (which is what a generic Euler/Jet2 attribute-transport stepper
+    does) is unconditionally unstable under von Neumann analysis: the
+    amplification factor obeys ``|G|^2 = 1 + nu^2 sin^2(k df) > 1`` for every
+    wavenumber, so autoregressive rollouts explode. Sweeping the difference
+    upwind (stencil direction chosen by the sign of ``c``) makes ``|G| <= 1``
+    whenever the CFL number ``nu = |c| dt / df <= 1``, which is enforced here.
+    """
+    u = np.asarray(field, dtype=np.float64)
+    cfl = abs(c) * dt / frequency_step
+    if cfl > 1.0:
+        raise ValueError(
+            f"Upwind advection violates CFL: nu = |c|*dt/df = {cfl:.3f} > 1; "
+            "reduce dt or coarsen the frequency step."
+        )
+    if c >= 0.0:
+        # Info travels upward in frequency: differences must look backwards.
+        slope = (u - np.roll(u, 1)) / frequency_step
+    else:
+        slope = (np.roll(u, -1) - u) / frequency_step
+    return np.maximum(u - c * dt * slope, 0.0)
+
+
 def predict_next_frame(
     magnitude: np.ndarray,
     frame_index: int,
@@ -172,23 +204,31 @@ def predict_next_frame(
 ):
     """Transport-predict frame ``frame_index + 1`` from ``frame_index``.
 
-    Wraps ``apedp_dyn.video.jet_flow_stepper.JetFlowStepper`` with the ridge
-    velocity field; ``order=1`` is Euler, ``order=2`` is the Jet2 Taylor step.
+    The spectral advection problem ``S_t = -c(t) S_f`` is integrated with a
+    first-order upwind scheme (stable for the modeled ridge velocities), and
+    magnitudes are projected to their physical range ``S >= 0`` at the end of
+    every step. ``order`` is retained for interface compatibility; the generic
+    Euler/Jet2 attribute-transport stepper remains available through
+    ``jet_flow_stepper`` for caller-side use, but it is intentionally NOT used
+    here: its centered spatial differencing is unconditionally unstable for
+    pure advection and its rollouts accumulate negative spectral magnitudes.
     """
-    from apedp_dyn.video.jet_flow_stepper import JetFlowConfig, JetFlowStepper
-
-    config = JetFlowConfig(num_steps=1, order=order)
-    stepper = JetFlowStepper(config)
+    magnitude = np.asarray(magnitude, dtype=np.float64)
+    c = float(model.velocity(times[frame_index]))
     dt = float(times[frame_index + 1] - times[frame_index])
-    velocity_fn = frequency_advection_velocity_fn(model, frequency_step)
-    prediction, _, _ = stepper.step(velocity_fn, magnitude[:, frame_index], float(times[frame_index]), dt)
-    return prediction
+    return _upwind_advection_step(magnitude[:, frame_index], c, dt, frequency_step)
 
 
 def prediction_r_squared(prediction: np.ndarray, target: np.ndarray) -> float:
-    """Coefficient of determination of a predicted frame against the true frame."""
+    """Coefficient of determination of a predicted frame against the true frame.
+
+    A constant (zero-variance) target makes R^2 undefined: report NaN, never
+    crash with ZeroDivisionError and never 0.0 (which would read as "no skill").
+    """
     prediction = np.asarray(prediction, dtype=np.float64)
     target = np.asarray(target, dtype=np.float64)
     residual = float(np.sum((prediction - target) ** 2))
     total = float(np.sum((target - target.mean()) ** 2))
+    if total <= 1e-18:
+        return float("nan")
     return 1.0 - residual / total

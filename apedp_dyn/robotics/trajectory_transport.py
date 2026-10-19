@@ -16,8 +16,8 @@ Scope & honesty ceiling:
 """
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from typing import Callable, Sequence
 
 import numpy as np
 
@@ -25,8 +25,14 @@ _TWO_PI = 2.0 * np.pi
 
 
 def wrap_angle(angle: float) -> float:
-    """Wrap to ``(-pi, pi]``."""
-    return (angle + np.pi) % _TWO_PI - np.pi
+    """Wrap to the documented codomain ``(-pi, pi]``.
+
+    The naive ``(angle + pi) % 2*pi - pi`` formulation maps ``+pi`` to ``-pi``,
+    silently emitting ``-pi`` (outside the declared codomain) exactly at the
+    boundary case; canonicalizing ``-pi`` to ``+pi`` restores the contract.
+    """
+    wrapped = (angle + np.pi) % _TWO_PI - np.pi
+    return np.pi if wrapped <= -np.pi else float(wrapped)
 
 
 @dataclass

@@ -475,8 +475,6 @@ pub fn score_candidate_affine<V: crate::data::DataCol>(
     let num_vars = data.len();
 
     let mut sum_f = 0.0f64;
-    let mut sum_f2 = 0.0f64;
-    let mut sum_fy = 0.0f64;
 
     let mut f_vals = Vec::with_capacity(n);
     let mut row_buf = vec![0.0f64; num_vars];
@@ -490,21 +488,42 @@ pub fn score_candidate_affine<V: crate::data::DataCol>(
             return (f64::INFINITY, 0.0, 0.0);
         }
         sum_f += val;
-        sum_f2 += val * val;
-        sum_fy += val * target[i];
         f_vals.push(val);
     }
 
     let nf = n as f64;
     let mean_f = sum_f / nf;
-    let var_f = (sum_f2 / nf) - (mean_f * mean_f);
+    // Two-pass variance: the single-pass E[f^2] − E[f]^2 form suffers
+    // catastrophic cancellation for near-constant predictors with large
+    // offsets (e.g. all outputs ≈ 1e6), misclassifying them as non-constant
+    // and emitting a spurious slope. f_vals is already materialized, so the
+    // exact two-pass form is free.
+    let var_f = (f_vals
+        .iter()
+        .map(|&v| {
+            let dv = v - mean_f;
+            dv * dv
+        })
+        .sum::<f64>()
+        / nf)
+        .max(0.0);
 
     if var_f <= 1e-12 {
         // Constant predictor
         return (var_target, 0.0, mean_target);
     }
 
-    let cov_fy = (sum_fy / nf) - (mean_f * mean_target);
+    // Two-pass centered covariance, matching the two-pass variance above: the
+    // single-pass E[f*y] - E[f]E[y] form cancels catastrophically when the
+    // feature carries a large offset (e.g. everything ~ 1e6 + signal), giving a
+    // slope and intercept with no significant digits. f_vals is already
+    // materialized, so the centered second pass is free.
+    let cov_fy = f_vals
+        .iter()
+        .zip(target.iter())
+        .map(|(&f, &y)| (f - mean_f) * (y - mean_target))
+        .sum::<f64>()
+        / nf;
     let a = cov_fy / var_f;
     let b = mean_target - a * mean_f;
 
@@ -1022,6 +1041,24 @@ mod polish_tests {
         let (x, f) = golden_section_min(-3.0, 5.0, 60, |t| (t - 1.25) * (t - 1.25));
         assert!((x - 1.25).abs() < 1e-6, "x={}", x);
         assert!(f < 1e-12);
+    }
+
+    #[test]
+    fn test_constant_predictor_with_awkward_offset_gets_no_spurious_slope() {
+        // Regression: the single-pass variance E[f^2]-E[f]^2 suffered
+        // catastrophic cancellation for a large non-representable constant,
+        // slipping past `var_f <= 1e-12` and manufacturing an affine slope
+        // from a pure constant predictor. The two-pass variance is exactly 0.
+        let n = 60usize;
+        let x: Vec<f64> = (0..n).map(|i| i as f64 / (n as f64 - 1.0)).collect();
+        let data = vec![x];
+        let target: Vec<f64> = (0..n).map(|i| 3.0 + 0.5 * i as f64).collect();
+        let (mean, var) = stats(&target);
+        let tree = Node::Const(123456.789);
+        let (mse, a, b) = score_candidate_affine(&tree, &data, &target, mean, var);
+        assert_eq!(a, 0.0, "constant predictor must have zero slope");
+        assert_eq!(b, mean, "constant predictor must predict the target mean");
+        assert_eq!(mse, var, "constant predictor MSE equals target variance");
     }
 }
 

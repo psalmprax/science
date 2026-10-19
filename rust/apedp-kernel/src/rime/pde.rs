@@ -126,6 +126,19 @@ pub fn fornberg_weights(x: &[f64], z: f64, m_max: usize) -> Vec<Vec<f64>> {
 }
 
 /// Generic Sequentially Thresholded Ridge Regression (STRidge) solver.
+/// |t|-bar for the ``run_stridge`` pruning rescue: a term failing the relative
+/// contribution cut is kept only when its effect is numerically irrefutable —
+/// at least ``STRIDGE_SIGNIFICANCE_T`` residual standard errors from zero.
+///
+/// The bar is scale-free (the t-statistic is invariant under column
+/// rescaling) and sits between two empirically separated regimes observed in
+/// the regression suite: in noise-free-but-collinear windows, least-squares
+/// alias terms reach |t| ~= 15 at most (Lotka-Volterra coupled recovery),
+/// while a genuine term of an exactly sampled law clears |t| ~= 1e7 (the KPZ
+/// |grad u|^2 point-cloud case). 1e3 keeps the rescue >= 2 orders below the
+/// smallest irrefutable real term and >= 2 orders above the largest alias.
+const STRIDGE_SIGNIFICANCE_T: f64 = 1.0e3;
+
 pub fn run_stridge(
     target: &[f64],
     columns: &[Vec<f64>],
@@ -139,8 +152,36 @@ pub fn run_stridge(
         return Err("Empty data for STRidge".to_string());
     }
 
-    let mut active = vec![true; k];
-    let mut coeffs = vec![0.0f64; k];
+    // Scale-invariant STRidge. Thresholding raw regression coefficients prunes
+    // large-scale columns prematurely and never prunes small-scale ones, and it
+    // lets the raw inner products (~ sum col^2 ~ N) dwarf a fixed ridge_alpha
+    // as sample count grows. Two changes:
+    //   1. Library columns are normalized to unit L2 norm before the solve and
+    //      coefficients rescaled back at the end, so the sparsity decisions are
+    //      made on scale-free (contribution) magnitudes.
+    //   2. On the normalized Gram (unit diagonals), each column receives the
+    //      ridge alpha / s_j^2: this is algebraically the SAME Tikhonov
+    //      augmentation as (A^T A + alpha I), so the fitted values are
+    //      unchanged from the historical raw-column solve, while relative
+    //      regularization no longer decays under column rescaling.
+    let col_scales: Vec<f64> = columns
+        .iter()
+        .map(|col| col.iter().map(|v| v * v).sum::<f64>().sqrt())
+        .collect();
+    let normalized: Vec<Vec<f64>> = columns
+        .iter()
+        .zip(col_scales.iter())
+        .map(|(col, s)| {
+            if *s > 1e-30 {
+                col.iter().map(|v| v / s).collect()
+            } else {
+                vec![0.0f64; col.len()]
+            }
+        })
+        .collect();
+
+    let mut active: Vec<bool> = col_scales.iter().map(|&s| s > 1e-30).collect();
+    let mut norm_coeffs = vec![0.0f64; k];
     let max_iter = 20;
 
     for _iter in 0..max_iter {
@@ -154,7 +195,7 @@ pub fn run_stridge(
         let mut b_vec = vec![0.0f64; k_act];
 
         for i in 0..k_act {
-            let col_i = &columns[active_indices[i]];
+            let col_i = &normalized[active_indices[i]];
             let mut dot_b = 0.0f64;
             for s in 0..num_samples {
                 dot_b += col_i[s] * target[s];
@@ -162,13 +203,13 @@ pub fn run_stridge(
             b_vec[i] = dot_b;
 
             for j in i..k_act {
-                let col_j = &columns[active_indices[j]];
+                let col_j = &normalized[active_indices[j]];
                 let mut dot_a = 0.0f64;
                 for s in 0..num_samples {
                     dot_a += col_i[s] * col_j[s];
                 }
                 if i == j {
-                    dot_a += config.ridge_alpha;
+                    dot_a += config.ridge_alpha / (col_scales[active_indices[i]] * col_scales[active_indices[i]]);
                 }
                 a_mat[i * k_act + j] = dot_a;
                 a_mat[j * k_act + i] = dot_a;
@@ -181,14 +222,80 @@ pub fn run_stridge(
         };
 
         for (idx, &act_i) in active_indices.iter().enumerate() {
-            coeffs[act_i] = sol[idx];
+            norm_coeffs[act_i] = sol[idx];
+        }
+
+        // Small-sample significance floor for the relative cut. A term whose
+        // normalized contribution is small RELATIVE to the largest active term
+        // may still be a real, well-conditioned effect (e.g. a small true
+        // coefficient beside a physically balanced dominant term). Its
+        // t-statistic |g| / se -- se estimated from the regularized normal
+        // matrix and the fitted model's residual noise -- separates that case
+        // from noise. A candidate is pruned only when it fails BOTH the
+        // relative cut AND the significance test: pure-noise libraries still
+        // prune everything (noise coefficients sit within ~1 se, |t| ~ 1),
+        // while a genuine small-contribution term survives.
+        let mut ss_fit_res = 0.0f64;
+        for s_idx in 0..num_samples {
+            let mut pred = 0.0f64;
+            for &act_i in &active_indices {
+                let scale = col_scales[act_i];
+                if scale > 1e-30 {
+                    pred += (norm_coeffs[act_i] / scale) * columns[act_i][s_idx];
+                }
+            }
+            let diff = target[s_idx] - pred;
+            ss_fit_res += diff * diff;
+        }
+        let dof = if num_samples > k_act { num_samples - k_act } else { 1 } as f64;
+        let s_hat = (ss_fit_res / dof).sqrt();
+        let mut se_g = vec![0.0f64; k_act];
+        for idx in 0..k_act {
+            let mut unit_rhs = vec![0.0f64; k_act];
+            unit_rhs[idx] = 1.0;
+            // Column idx of A^{-1}: solve A x = e_idx; (A^{-1})_{jj} = x[idx].
+            // `a_mat` already carries the ridge-augmented diagonal.
+            if let Ok(inv_col) = solve_linear_system(&a_mat, &unit_rhs, k_act) {
+                se_g[idx] = s_hat * inv_col[idx].abs().sqrt();
+            }
         }
 
         let mut changed = false;
-        for &act_i in &active_indices {
-            if coeffs[act_i].abs() < config.sparsity_threshold {
+        // Relative scale-free pruning: `sparsity_threshold` is now a FRACTION of
+        // the largest active contribution (normalized coefficient), not an
+        // absolute raw-coefficient magnitude. Comparing raw coefficients was
+        // the defect: on a library with heterogeneous column scales it pruned
+        // large-scale columns prematurely and never pruned small-scale ones.
+        // The significance rescue above prevents the relative cut from also
+        // discarding numerically irrefutable small-contribution terms (see the
+        // STRIDGE_SIGNIFICANCE_T rationale). Set STRIDGE_DEBUG=1 to trace the
+        // per-term decisions.
+        let max_active_g = active_indices
+            .iter()
+            .map(|&i| norm_coeffs[i].abs())
+            .fold(0.0f64, f64::max);
+        if std::env::var("STRIDGE_DEBUG").as_deref() == Ok("1") {
+            eprintln!(
+                "[stridge:{target_label}] s_hat={s_hat:.3e} rel_cut={:.3e}",
+                config.sparsity_threshold * max_active_g
+            );
+            for (idx, &act_i) in active_indices.iter().enumerate() {
+                eprintln!(
+                    "  {} g={:.6e} se={:.3e} t={:.3e} below_cut={}",
+                    term_names[act_i],
+                    norm_coeffs[act_i],
+                    se_g[idx],
+                    norm_coeffs[act_i].abs() / se_g[idx].max(1e-300),
+                    norm_coeffs[act_i].abs() < config.sparsity_threshold * max_active_g
+                );
+            }
+        }
+        for (idx, &act_i) in active_indices.iter().enumerate() {
+            let magnitude = norm_coeffs[act_i].abs();
+            let significant = magnitude >= STRIDGE_SIGNIFICANCE_T * se_g[idx];
+            if magnitude < config.sparsity_threshold * max_active_g && !significant {
                 active[act_i] = false;
-                coeffs[act_i] = 0.0;
+                norm_coeffs[act_i] = 0.0;
                 changed = true;
             }
         }
@@ -197,6 +304,15 @@ pub fn run_stridge(
             break;
         }
     }
+
+    // Rescale normalized coefficients back to original column units. The
+    // sparsity decisions above were made against the scale-free
+    // (contribution) magnitudes; degenerate (all-zero) columns stay at 0.
+    let coeffs: Vec<f64> = norm_coeffs
+        .iter()
+        .zip(col_scales.iter())
+        .map(|(&g, &s)| if s > 1e-30 { g / s } else { 0.0 })
+        .collect();
 
     let mut ss_res = 0.0f64;
     let mean_target = target.iter().sum::<f64>() / (num_samples as f64);
@@ -226,8 +342,11 @@ pub fn run_stridge(
     let mut active_coeffs = Vec::new();
     let mut formula_terms = Vec::new();
 
+    // Active-set membership was already decided in the iterative loop under
+    // the relative cut + significance rescue; here only terms explicitly
+    // zeroed during pruning are excluded.
     for j in 0..k {
-        if coeffs[j].abs() >= config.sparsity_threshold {
+        if norm_coeffs[j].abs() > 0.0 {
             active_terms.push(term_names[j].clone());
             active_coeffs.push(coeffs[j]);
             formula_terms.push(format!("{:.4} * ({})", coeffs[j], term_names[j]));

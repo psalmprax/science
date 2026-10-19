@@ -35,6 +35,13 @@ from apedp_dyn.grammar.proposer_interface import CandidateProposal, ProposerBase
 PROPOSER_ID = "rime_ad_proposer"
 
 
+# Differential-Pade integrator bounds. The target step keeps the RK4 error small;
+# the cap refuses to burn an unbounded pure-Python loop (a single unit of
+# distance at the target step is 2000 iterations; 20000 is a 10x safety margin).
+_PADE_TARGET_STEP = 0.0005
+_PADE_MAX_STEPS = 20_000
+
+
 class RimeAdProposer(ProposerBase):
     """Unified autonomous proposer combining all RIME-AD representations."""
 
@@ -445,13 +452,36 @@ class RimeAdProposer(ProposerBase):
                 qval = sum(c * (x_val ** p) for p, c in enumerate(q_c))
                 rval = sum(c * (x_val ** p) for p, c in enumerate(r_c)) if r_c else 0.0
                 if abs(pval) < 1e-12:
-                    return 0.0
-                return float(float(float((-qval * y_val - rval * (y_val ** 2)) / pval)))
+                    # Denominator vanishes: the ODE is singular here. Returning
+                    # 0.0 used to hide the pole and poison the trajectory.
+                    return float("nan")
+                return float((-qval * y_val - rval * (y_val ** 2)) / pval)
 
+            # Bounded, pole-aware integration.
+            #
+            # Two defects are fixed here:
+            #  1. A pole (|p| ~ 0) used to return 0.0 from `f`, so the RK4
+            #     marched through the singularity and every later point was
+            #     computed from a corrupted state. A pole now yields NaN, and a
+            #     non-finite state ends the integration: the remaining sorted
+            #     points are scored NaN (fail honest) instead of inheriting the
+            #     poisoned trajectory.
+            #  2. `steps` was unbounded (up to ~200k Python iterations per unit
+            #     distance), which hung the scorer. The step budget is capped;
+            #     exceeding it marks the suffix unreachable rather than spinning.
+            max_steps = _PADE_MAX_STEPS
             curr_x, curr_y = x0, y0
+            broken = False
             for i, target_x in enumerate(xs_sorted):
+                if broken:
+                    ys_sorted[i] = np.nan
+                    continue
                 dist = target_x - curr_x
-                steps = max(20, int(abs(dist) / 0.0005))
+                steps = max(20, int(abs(dist) / _PADE_TARGET_STEP))
+                if steps > max_steps:
+                    broken = True
+                    ys_sorted[i] = np.nan
+                    continue
                 h = dist / steps
                 for _ in range(steps):
                     k1 = f(curr_x, curr_y)
@@ -460,6 +490,12 @@ class RimeAdProposer(ProposerBase):
                     k4 = f(curr_x + h, curr_y + h * k3)
                     curr_y += (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
                     curr_x += h
+                    if not (np.isfinite(curr_y) and np.isfinite(curr_x)):
+                        broken = True
+                        break
+                if broken:
+                    ys_sorted[i] = np.nan
+                    continue
                 ys_sorted[i] = curr_y
 
             out = np.zeros_like(ys_sorted)
@@ -492,18 +528,13 @@ class RimeAdProposer(ProposerBase):
             try:
                 pred = bridge.evaluate_expression(formula, [feat_name], [xv])
                 return np.asarray(pred, dtype=float)
-            except Exception:  # noqa: BLE001 - fallback evaluator: any bridge failure must degrade to the analytic fallback, never abort scoring
-                if "cos(" in formula and "^2" in formula:
-                    base = np.cos(xv) ** 2
-                elif "cos(" in formula:
-                    base = np.cos(xv)
-                elif "1 / (R^2)" in formula or "1 / (x^2)" in formula:
-                    base = 1.0 / (xv ** 2)
-                elif "1 / (" in formula:
-                    base = 1.0 / (xv + 1e-12)
-                else:
-                    base = xv
-                return np.asarray(slope * base + intercept, dtype=float)
+            except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
+                # The bridge already includes its own sympy reference evaluator,
+                # so reaching this point means BOTH engines could not evaluate
+                # the formula. Never fabricate a different function from
+                # substring matching: fail honest with NaN so downstream
+                # finite-masks drop the candidate instead of scoring garbage.
+                return np.full_like(xv, np.nan)
 
         return CandidateProposal(
             proposer_id=self.proposer_id,

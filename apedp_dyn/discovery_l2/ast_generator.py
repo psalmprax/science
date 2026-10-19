@@ -412,6 +412,30 @@ class PowNode(ASTNode):
         return sp.Pow(bs, p)
 
 
+def collect_variable_names(node: ASTNode) -> frozenset[str]:
+    """Names of every variable leaf reachable from ``node``.
+
+    Screening uses this to separate univariate shape terms (one variable
+    family, e.g. ``v * abs(v)``) from multivariate composites without
+    re-evaluating or symbolically expanding the expression.
+    """
+    if isinstance(node, VariableNode):
+        return frozenset((node.name,))
+    if isinstance(node, BinaryOpNode):
+        return collect_variable_names(node.left) | collect_variable_names(node.right)
+    if isinstance(node, UnaryOpNode):
+        return collect_variable_names(node.child)
+    if isinstance(node, PowNode):
+        return collect_variable_names(node.base)
+    if isinstance(node, RollingOpNode):
+        # A rolling operator is dimensionally transparent w.r.t. its child, so
+        # the variables it depends on are the child's variables. Omitting this
+        # made every rolling term look variable-free and misrouted univariate
+        # rolling terms (rollmean(x)) into the multivariate interaction quota.
+        return collect_variable_names(node.child)
+    return frozenset()
+
+
 DEFAULT_POWERS: tuple[Fraction, ...] = (
     Fraction(-3, 1),
     Fraction(-2, 1),
@@ -425,14 +449,30 @@ DEFAULT_POWERS: tuple[Fraction, ...] = (
 )
 
 
+# SymPy cancellation and trig normalisation exist here only to give the
+# canonical-dedup map a normal form.  `cancel` (poly gcd / rational gcd) and
+# `trigsimp` (futrig / TR8) are super-linear on dense trig expressions and can
+# run for minutes on a single pathological candidate -- observed on
+# quadratic_drag at max_depth=3/max_term_complexity=8, where one candidate
+# froze discovery inside an unbounded combinatorial frontier.  Above these
+# size budgets the structural string form is used instead: deterministic,
+# terminated, and numeric duplicates are already merged by the
+# FingerprintDeduplicator before the key is ever consulted.
+_CANONICAL_CANCEL_MAX_OPS = 24
+_CANONICAL_TRIGSIMP_MAX_OPS = 12
+
+
 def _canonical_key_and_validity(node: ASTNode) -> tuple[bool, str]:
     """Return whether node is algebraically non-trivial, and its canonical monic SymPy key."""
     try:
         expr = node.to_sympy()
         if expr.is_number:
             return False, str(expr)
+        if sp.count_ops(expr, visual=False) > _CANONICAL_CANCEL_MAX_OPS:
+            return True, node.to_str()
         cancelled = sp.cancel(expr)
-        if cancelled.has(sp.sin, sp.cos):
+        if (cancelled.has(sp.sin, sp.cos)
+                and sp.count_ops(cancelled, visual=False) <= _CANONICAL_TRIGSIMP_MAX_OPS):
             try:
                 cancelled = sp.trigsimp(cancelled)
             except (TypeError, ValueError, ArithmeticError, sp.SympifyError):
@@ -578,48 +618,63 @@ def generate_dimensionally_typed_ast(
                             pass
 
         # 3. Binary operators (+, -, *, /)
-        candidate_pool = list(canonical_map.values())
+        #
+        # Symmetric enumeration. The previous formulation drew n1 exclusively
+        # from the new frontier and n2 from the whole pool, so only the
+        # ordering (n_new, n_old) ever existed: n_old/n_new, n_old-n_new and
+        # every self-product were permanently unreachable, and the commutative
+        # "the reverse pair will create it" guard silently dropped BOTH
+        # orderings. Unordered pairs over the pool are enumerated instead, with
+        # at least one member new (old-old pairs were already emitted at earlier
+        # depths and the canonical map dedups anyway).
+        candidate_pool = sorted(canonical_map.values(), key=lambda n: n.to_str())
+        frontier_ids = {id(n) for n in current_frontier}
         pairs = [
             (n1, n2)
-            for n1 in current_frontier
-            for n2 in candidate_pool
-            if n1.complexity + n2.complexity + 1 <= max_complexity
+            for i, n1 in enumerate(candidate_pool)
+            for n2 in candidate_pool[i:]
+            if (id(n1) in frontier_ids or id(n2) in frontier_ids)
+            and n1.complexity + n2.complexity + 1 <= max_complexity
         ]
         pairs.sort(key=lambda p: p[0].complexity + p[1].complexity)
 
         for n1, n2 in pairs:
-            # Multiplication: commutative deduplication
+            # Multiplication: commutative, one node per unordered pair.
+            # Self-products (x*x = x^2) ARE emitted: when `pow` is absent from
+            # the grammar no linear combination can produce a square, so the
+            # old `!=` guard made squaring impossible.
             if "*" in ops_set:
-                if n1.to_str() <= n2.to_str() and n1.to_str() != n2.to_str():
+                try:
+                    bn = BinaryOpNode("*", n1, n2)
+                    try_register(bn, next_frontier)
+                except DimensionalError:
+                    pass
+
+            # Division: non-commutative, BOTH orderings (x/y and y/x).
+            # Self-division is skipped: it collapses to the constant 1.
+            if "/" in ops_set and n1.to_str() != n2.to_str():
+                for left, right in ((n1, n2), (n2, n1)):
                     try:
-                        bn = BinaryOpNode("*", n1, n2)
+                        bn = BinaryOpNode("/", left, right)
                         try_register(bn, next_frontier)
                     except DimensionalError:
                         pass
 
-            # Division
-            if "/" in ops_set:
-                if n1.to_str() != n2.to_str():
-                    try:
-                        bn = BinaryOpNode("/", n1, n2)
-                        try_register(bn, next_frontier)
-                    except DimensionalError:
-                        pass
+            # Addition: commutative, one node per unordered pair. Self-addition
+            # is skipped: x + x is a pure rescaling of x.
+            if "+" in ops_set and n1.dimension == n2.dimension and n1.to_str() != n2.to_str():
+                try:
+                    bn = BinaryOpNode("+", n1, n2)
+                    try_register(bn, next_frontier)
+                except DimensionalError:
+                    pass
 
-            # Addition: requires identical dimensions [u] == [v]
-            if "+" in ops_set:
-                if n1.dimension == n2.dimension and n1.to_str() < n2.to_str():
+            # Subtraction: non-commutative, BOTH orderings (x-y and y-x).
+            # Self-subtraction is skipped: it collapses to the constant 0.
+            if "-" in ops_set and n1.dimension == n2.dimension and n1.to_str() != n2.to_str():
+                for left, right in ((n1, n2), (n2, n1)):
                     try:
-                        bn = BinaryOpNode("+", n1, n2)
-                        try_register(bn, next_frontier)
-                    except DimensionalError:
-                        pass
-
-            # Subtraction: requires identical dimensions [u] == [v]
-            if "-" in ops_set:
-                if n1.dimension == n2.dimension and n1.to_str() != n2.to_str():
-                    try:
-                        bn = BinaryOpNode("-", n1, n2)
+                        bn = BinaryOpNode("-", left, right)
                         try_register(bn, next_frontier)
                     except DimensionalError:
                         pass

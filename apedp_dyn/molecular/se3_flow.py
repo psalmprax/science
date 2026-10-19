@@ -19,6 +19,7 @@ Scope & honesty ceiling:
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -62,6 +63,41 @@ def _pairwise(coords: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return deltas, distances
 
 
+# Divisions against pair distances are clamped to this floor, mirroring the
+# CUDA steppers' `.clamp(min=1e-8)` so coincident atoms yield finite forces
+# instead of silent inf/NaN propagation.
+_MIN_PAIR_DISTANCE = 1e-8
+
+# Soft-core width (Angstrom): repulsion is evaluated at the smoothed distance
+# r_eff = sqrt(r^2 + delta^2) instead of the raw pair distance. The hard
+# r^-12 wall at r -> 0 produced energies ~1e90 and gradient magnitudes ~1e96
+# (float64 overflow two steps after any near-coincident start) and, worse, a
+# fake equilibrium: at exact coincidence the direction vector is the zero
+# vector, so a hard-wall potential simultaneously had E ~ 1e90 and grad E = 0,
+# which relaxers registered as a stable minimum. The soft core saturates both
+# energy and force at small r while keeping the physical r^-12 regime for all
+# r >> delta.
+_SOFT_CORE_WIDTH = 0.1
+
+
+def _non_bonded_pairs(force_field: MolecularForceField, n: int) -> list[tuple[int, int]]:
+    """Pair list for the non-bonded core repulsion: all pairs minus 1-2 bonds.
+
+    Pairwise r^-12 repulsion applied to covalently bonded atoms is a modeling
+    error, not a numerical one: when the equilibrium bond length r0 <= sigma the
+    non-bonded wall dominates the harmonic spring and distorts every relaxed
+    geometry. Bonded terms already carry their own exchange repulsion; the
+    non-bonded term exists to keep *non-bonded* atoms apart.
+    """
+    bonded = set(force_field.bonds)
+    return [
+        (i, j)
+        for i in range(n)
+        for j in range(i + 1, n)
+        if (i, j) not in bonded
+    ]
+
+
 def energy(coords: np.ndarray, force_field: MolecularForceField) -> float:
     """Invariant potential energy of a configuration."""
     coords = np.asarray(coords, dtype=np.float64)
@@ -72,9 +108,11 @@ def energy(coords: np.ndarray, force_field: MolecularForceField) -> float:
     n = coords.shape[0]
     sigma = force_field.repulsion_sigma
     strength = force_field.repulsion_strength
-    for i in range(n):
-        for j in range(i + 1, n):
-            total += strength * (sigma / distances[i, j]) ** force_field.pair_cutoff_power
+    delta_sq = _SOFT_CORE_WIDTH * _SOFT_CORE_WIDTH
+    for i, j in _non_bonded_pairs(force_field, n):
+        r2 = float(distances[i, j]) ** 2 + delta_sq
+        r_eff = math.sqrt(r2)
+        total += strength * (sigma / r_eff) ** force_field.pair_cutoff_power
     return float(total)
 
 
@@ -85,21 +123,28 @@ def energy_gradient(coords: np.ndarray, force_field: MolecularForceField) -> np.
     n = coords.shape[0]
     gradient = np.zeros_like(coords)
     for i, j in force_field.bonds:
-        direction = deltas[i, j] / distances[i, j]
+        d = max(float(distances[i, j]), _MIN_PAIR_DISTANCE)
+        direction = deltas[i, j] / d
         force = force_field.spring_constant * (distances[i, j] - force_field.target_length)
         gradient[i] += force * direction
         gradient[j] -= force * direction
     sigma = force_field.repulsion_sigma
     strength = force_field.repulsion_strength
     power = force_field.pair_cutoff_power
-    coefficient = power * strength * sigma ** power
-    for i in range(n):
-        for j in range(i + 1, n):
-            r = distances[i, j]
-            factor = coefficient / r ** (power + 2)
-            contribution = -factor * deltas[i, j]
-            gradient[i] += contribution
-            gradient[j] -= contribution
+    delta_sq = _SOFT_CORE_WIDTH * _SOFT_CORE_WIDTH
+    for i, j in _non_bonded_pairs(force_field, n):
+        r2_eff = float(distances[i, j]) ** 2 + delta_sq
+        r_eff = math.sqrt(r2_eff)
+        # d E / d x_i for E = strength*(sigma/r_eff)^p is
+        # (dE/dr) * u with dE/dr = -p*strength*sigma^p * r / r_eff^(p+2) and
+        # u = deltas/r, which collapses to the clean vector form below; the
+        # |contribution| ~ r / delta^(p+2) -> 0 for r -> 0, so coincident starts
+        # yield bounded energies and a force that is repulsive but finite at any
+        # accessible separation instead of ~1e96 N.
+        coefficient = power * strength * sigma ** power
+        contribution = -coefficient * deltas[i, j] / r_eff ** (power + 2)
+        gradient[i] += contribution
+        gradient[j] -= contribution
     return gradient
 
 

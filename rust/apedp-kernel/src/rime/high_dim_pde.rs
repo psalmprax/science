@@ -83,8 +83,11 @@ pub fn eval_jet2_neural_pde_operator(
     if x_flat.len() != m * d {
         return Err(format!("x_flat length {} != m*d ({})", x_flat.len(), m * d));
     }
-    if !viscosity_nu.is_finite() {
-        return Err("viscosity_nu must be finite".to_string());
+    if !viscosity_nu.is_finite() || viscosity_nu < 0.0 {
+        // A negative viscosity turns the Laplacian term anti-diffusive (the
+        // backward heat equation): high-frequency modes grow without bound, so
+        // the operator is refused rather than silently exploding.
+        return Err("viscosity_nu must be finite and non-negative".to_string());
     }
     if x_flat.iter().any(|&v| !v.is_finite()) {
         return Err("Non-finite (NaN or Inf) value found in x_flat".to_string());
@@ -203,7 +206,10 @@ pub fn eval_fokker_planck_ou_operator(
     if x_flat.len() != m * d || w1_flat.len() != h * d || b1.len() != h || w2.len() != h {
         return Err("Dimension mismatch in eval_fokker_planck_ou_operator".to_string());
     }
-    if !diffusion_nu.is_finite() || !drift_gamma.is_finite() {
+    if !diffusion_nu.is_finite() || diffusion_nu < 0.0 {
+        return Err("diffusion_nu must be finite and non-negative".to_string());
+    }
+    if !drift_gamma.is_finite() {
         return Err("diffusion_nu and drift_gamma must be finite".to_string());
     }
     if x_flat.iter().any(|&v| !v.is_finite()) {
@@ -1894,8 +1900,11 @@ pub fn jet2_video_flow_step(
     if v_current.len() != n {
         return Err(format!("v_current length {} != z_flat length {}", v_current.len(), n));
     }
-    if !dt.is_finite() || dt <= 0.0 {
-        return Err("dt must be positive and finite".to_string());
+    // dt is a *signed* step: backward trajectory inversion (dt < 0) must be
+    // accepted. The step is nonlinear-in-dt through 0.5*dt^2 (sign-invariant)
+    // and linear through dt*v, so only non-finite or zero dt is invalid.
+    if !dt.is_finite() || dt == 0.0 {
+        return Err("dt must be finite and non-zero".to_string());
     }
 
     if order == 1 {
@@ -1918,8 +1927,12 @@ pub fn jet2_video_flow_step(
     if v_t_plus.len() != n || v_t_minus.len() != n || v_spatial_plus.len() != n || v_spatial_minus.len() != n {
         return Err("Directional velocity arrays must have length equal to z_flat".to_string());
     }
-    if !dt_span.is_finite() || dt_span <= 0.0 || !two_h_disp.is_finite() || two_h_disp <= 0.0 {
-        return Err("dt_span and two_h_disp must be positive and finite".to_string());
+    // dt_span carries the SIGNED temporal probe separation and two_h_disp the
+    // SIGNED spatial probe separation: a directional difference divided by its
+    // (signed) span is the derivative in that direction, so rejecting one side
+    // silently forbade backward flows. Only non-finite/zero spans are invalid.
+    if !dt_span.is_finite() || dt_span == 0.0 || !two_h_disp.is_finite() || two_h_disp == 0.0 {
+        return Err("dt_span and two_h_disp must be finite and non-zero".to_string());
     }
 
     let inv_dt_span = 1.0 / dt_span;
@@ -2125,9 +2138,25 @@ pub fn laplacian_dissipation_2d(
     if dx <= 0.0 || dy <= 0.0 || dt <= 0.0 {
         return Err("dx, dy, dt must be positive".to_string());
     }
-
+    // Negative viscosity turns the Laplacian term anti-diffusive: a backward
+    // heat equation in which every high-frequency component grows without
+    // bound. Non-finite nu guards NaN propagation through the grid as well.
+    if !nu.is_finite() || nu < 0.0 {
+        return Err("viscosity/diffusion nu must be finite and non-negative".to_string());
+    }
+    // Explicit explicit-scheme stability: for the discrete update
+    // z += nu*dt*(lap_dx + lap_dy) the amplification magnitude stays <= 1
+    // only under the diffusion CFL limit nu*dt*(1/dx^2 + 1/dy^2) <= 1/2.
+    // Crossing it makes every step a noise amplifier instead of a smoother.
     let dx_sq = dx * dx;
     let dy_sq = dy * dy;
+    let cfl = nu * dt * (1.0 / dx_sq + 1.0 / dy_sq);
+    if cfl > 0.5 {
+        return Err(format!(
+            "diffusion CFL violated: nu*dt*(1/dx^2 + 1/dy^2) = {:.6} > 0.5 (reduce dt or nu, or increase dx/dy)",
+            cfl
+        ));
+    }
     let factor = nu * dt;
 
     let mut out = vec![0.0f64; total_len];
@@ -2818,6 +2847,54 @@ mod tests {
         let ratio = diss_val / orig_val;
         assert!((ratio - factor_expected).abs() < 0.02, "Decay ratio {} != expected {}", ratio, factor_expected);
     }
+
+    #[test]
+    fn laplacian_dissipation_refuses_negative_viscosity() {
+        // nu < 0 turns the Laplacian term anti-diffusive (backward heat
+        // equation): every high-frequency component grows without bound.
+        let field = vec![0.5f64; 2 * 5 * 5];
+        let err = laplacian_dissipation_2d(&field, 5, 5, 2, -0.01, 0.01, 1.0, 1.0)
+            .err()
+            .expect("negative nu must be rejected");
+        assert!(err.contains("non-negative"), "unexpected error: {err}");
+
+        let err = laplacian_dissipation_2d(&field, 5, 5, 2, f64::NAN, 0.01, 1.0, 1.0)
+            .err()
+            .expect("NaN nu must be rejected");
+        assert!(err.contains("non-negative"), "unexpected error: {err}");
+    }
+
+    #[test]
+    fn laplacian_dissipation_enforces_diffusion_cfl() {
+        // nu*dt*(1/dx^2 + 1/dy^2) > 1/2 must be refused: the explicit update
+        // becomes an instability amplifier.
+        let field = vec![0.5f64; 2 * 5 * 5];
+        // nu=0.01, dt=0.1, dx=dy=0.1 -> cfl = 0.01*0.1*(100+100) = 0.2 -> OK.
+        assert!(laplacian_dissipation_2d(&field, 5, 5, 2, 0.01, 0.1, 0.1, 0.1).is_ok());
+        // nu=0.05, dt=0.1, dx=dy=0.1 -> cfl = 1.0 > 0.5 -> refused.
+        let err = laplacian_dissipation_2d(&field, 5, 5, 2, 0.05, 0.1, 0.1, 0.1)
+            .err()
+            .expect("CFL violation must be rejected");
+        assert!(err.contains("CFL"), "unexpected error: {err}");
+    }
 }
 
 
+
+#[cfg(test)]
+mod nu_sign_tests {
+    use super::*;
+
+    #[test]
+    fn negative_viscosity_is_refused() {
+        // A negative nu is the backward heat equation (high-frequency modes grow
+        // without bound): the operator must refuse it rather than explode.
+        let (m, d, hidden) = (2usize, 2usize, 2usize);
+        let x = vec![0.0f64, 0.5, 1.0, 1.5]; // m*d
+        let w1 = vec![0.1f64; hidden * d];
+        let b1 = vec![0.0f64; hidden];
+        let w2 = vec![0.2f64; hidden];
+        assert!(eval_jet2_neural_pde_operator(&x, &w1, &b1, &w2, m, d, hidden, -0.5).is_err());
+        assert!(eval_jet2_neural_pde_operator(&x, &w1, &b1, &w2, m, d, hidden, 0.5).is_ok());
+    }
+}

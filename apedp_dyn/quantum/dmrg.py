@@ -16,6 +16,7 @@ Scope & honesty ceiling:
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -81,7 +82,24 @@ class MatrixProductState:
         return psi.reshape(-1)
 
     def norm(self) -> float:
-        return float(np.linalg.norm(self.to_statevector()))
+        """``sqrt(<psi|psi>)`` via transfer-matrix contraction, never a statevector.
+
+        The previous implementation squared the MPS through
+        :meth:`to_statevector`, allocating a dense ``2**n`` vector (about 8.8 TB
+        at n=40) inside a routine the energy expectation calls once per sweep.
+        Contracting ``conj(A)`` against ``A`` site-by-site keeps every
+        intermediate object at bond-dimension size, i.e. ``O(n * D**3)``.
+        """
+        if not self.tensors:
+            raise ValueError("cannot take the norm of an empty MPS")
+        left = np.ones((1, 1), dtype=np.float64)
+        for tensor in self.tensors:
+            # E(l, r) = sum_{a, b, p} E[a, b] * conj(A[a, p, l]) * A[b, p, r]
+            left = np.einsum(
+                "ab,apc,bpd->cd", left, tensor, tensor.conj(), optimize=True
+            )
+        norm_sq = float(np.real(left[0, 0]))
+        return math.sqrt(norm_sq)
 
 
 _CH_START = 0
