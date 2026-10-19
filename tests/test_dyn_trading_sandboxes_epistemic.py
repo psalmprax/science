@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
+import apedp_dyn.sandbox.trading_signals_sandbox as trading_sandbox
 from apedp_dyn.epistemic.claim_ladder import (
     ClaimLevel,
     EvidenceBundle,
@@ -34,7 +35,7 @@ from apedp_dyn.sandbox.trading_signals_sandbox import (
 from apedp_dyn.ui.server import app
 
 
-def test_trading_signals_pipeline_charges_ga_multiplicity_and_promotion_refuses():
+def test_trading_signals_pipeline_charges_ga_multiplicity_and_promotion_refuses(monkeypatch):
     """The live GA pipeline must charge its search to the DSR and run the promotion lifecycle.
 
     Every GA fitness evaluation is recorded as a trial, so the holdout Sharpe
@@ -43,6 +44,18 @@ def test_trading_signals_pipeline_charges_ga_multiplicity_and_promotion_refuses(
     candidate: GA strategies have no Lean-verified law, so stage 1 refuses and
     the candidate halts there instead of reaching economic validity.
     """
+    captured_evidence_metrics = {}
+    adjudicate = trading_sandbox.adjudicate_scientific_claim
+
+    def capture_evidence_metrics(candidate_id, claimed_tier, evidence):
+        captured_evidence_metrics.update(evidence.metrics)
+        return adjudicate(candidate_id, claimed_tier, evidence)
+
+    monkeypatch.setattr(
+        trading_sandbox,
+        "adjudicate_scientific_claim",
+        capture_evidence_metrics,
+    )
     df = load_real_btc_orderflow(600)
     res = run_epistemic_trading_adjudication(
         panel=df,
@@ -70,7 +83,7 @@ def test_trading_signals_pipeline_charges_ga_multiplicity_and_promotion_refuses(
     assert "Failed" in (promo["halt_reason"] or "")
 
     # Evidence bundle carries the deflated value, not the raw Sharpe alone.
-    assert "dsr_selection_adjusted" in res["metrics"] or dsr_adj is not None
+    assert captured_evidence_metrics["dsr_selection_adjusted"] == dsr_adj
 
 
 def test_trading_signals_epistemic_adjudication_and_eedr():
@@ -390,6 +403,4 @@ def test_riemann_rust_sandbox_and_ui_endpoint():
     assert data["verdict"] == "PROMOTED_REPAIRED"
     assert "series" in data
     assert len(data["series"]["x"]) > 0
-
-
 

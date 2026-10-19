@@ -56,6 +56,16 @@ class _EmpiricalProbesMixin:
             metrics["r_squared"] = r_squared
             metrics["nrmse"] = nrmse
 
+            if not np.isfinite(r_squared) or not np.isfinite(nrmse):
+                self._record_probe_error(
+                    metrics,
+                    "EmpiricalResidualProbe",
+                    "NonFiniteMetrics",
+                    "empirical comparison produced a non-finite R^2 or NRMSE",
+                )
+                metrics["evidence_tier"] = EvidenceTier.UNRESOLVED.value
+                return ces, metrics
+
             if r_squared < 0.70 or nrmse > 0.35:
                 ces.append(Counterexample(
                     axis=FalsificationAxis.EMPIRICAL,

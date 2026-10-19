@@ -124,7 +124,7 @@ class InvariantTransferProposer(ProposerBase):
             return []
 
         proposals: list[CandidateProposal] = []
-        total_evaluated = 0
+        evaluated_fit_count = 0
 
         for feat in f_cols:
             # Build environment payload for native Rust
@@ -154,7 +154,7 @@ class InvariantTransferProposer(ProposerBase):
             y_pool = np.concatenate([np.array(e["y"]) for e in rust_envs])
 
             for deg in range(1, self._max_poly_degree + 1):
-                total_evaluated += 1
+                evaluated_fit_count += 1
                 try:
                     poly_fit = np.polyfit(x_pool, y_pool, deg)
                     coeffs = poly_fit[::-1].tolist() # ascending order: c0 + c1*x + ...
@@ -245,9 +245,10 @@ class InvariantTransferProposer(ProposerBase):
         # this many order-statistics, so they are optimistically biased without
         # holdout confirmation.
         search_id = f"{self.proposer_id}:{uuid.uuid4().hex[:12]}"
-        selection_pool_size = max(total_evaluated, len(proposals))
+        selection_pool_size = max(evaluated_fit_count, len(proposals))
         for rank, proposal in enumerate(proposals):
             proposal.metadata["search_id"] = search_id
             proposal.metadata["selection_pool_size"] = selection_pool_size
+            proposal.metadata["evaluated_fit_count"] = evaluated_fit_count
             proposal.metadata["selection_rank"] = rank
         return proposals

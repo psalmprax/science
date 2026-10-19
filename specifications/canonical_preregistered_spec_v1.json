@@ -17,7 +17,10 @@
     "referee_max_fpr": 0.05,
     "referee_min_car": 0.70,
     "referee_min_vrr": 0.75,
-    "stock_split_invariance_tolerance": 1e-6
+    "stock_split_invariance_tolerance": 1e-6,
+    "pruning_holdout_r2_base_floor": 0.20,
+    "pruning_holdout_f_test_significance_level": 0.05,
+    "pruning_holdout_f_test_predictor_dof": 1
   },
   "notes": {
     "tactical_active_fraction_max": "Harmonized and pinned to 0.90 after resolving historical documentation drift from 0.95 in audit."

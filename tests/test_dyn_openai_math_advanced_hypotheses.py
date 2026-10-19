@@ -7,13 +7,34 @@ Validates:
   - Strict boundary truncation and asset-level cross-sectional excess return panel
 """
 import numpy as np
+import pandas as pd
 
 from apedp_dyn.sandbox.openai_math_advanced_hypotheses import (
     ADVANCED_HYPOTHESIS_SPECS,
+    build_advanced_hypotheses_panel,
     run_preflight_controlled_verification,
     run_single_advanced_cell,
     verify_gate_minus_1_causality,
 )
+
+
+def test_vol_scaled_ofi_survives_volatility_warmup():
+    rng = np.random.default_rng(42)
+    n = 100
+    universe = {}
+    for symbol, scale in (("A", 0.01), ("B", 0.02)):
+        returns = rng.normal(0.0, scale, n)
+        universe[symbol] = pd.DataFrame({
+            "r": returns,
+            "price": 100.0 * np.exp(np.cumsum(returns)),
+            "ofi": rng.normal(size=n),
+        })
+
+    features, _, _ = build_advanced_hypotheses_panel(universe, ("A", "B"), 15)
+    scaled_ofi = features["vol_scaled_ofi"]
+
+    assert np.isfinite(scaled_ofi).all()
+    assert np.any(np.abs(scaled_ofi[-40:]) > 0.0)
 
 
 def test_gate_minus_1_causality_detection():

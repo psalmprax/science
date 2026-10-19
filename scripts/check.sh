@@ -11,7 +11,7 @@ QUICK=0
 [[ "${1:-}" == "--quick" ]] && QUICK=1
 
 echo "== ruff (changed files: blocking) =="
-CHANGED=$(git diff --name-only HEAD | rg '\.py$' || true)
+CHANGED=$(git diff --name-only --diff-filter=ACMRT HEAD | rg '\.py$' || true)
 if [[ -n "$CHANGED" ]]; then
   .venv/bin/ruff check $CHANGED
 else

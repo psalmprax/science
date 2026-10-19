@@ -1,6 +1,10 @@
 """Unit test for real market L2 open discovery sweep."""
 from __future__ import annotations
 
+import json
+from dataclasses import dataclass
+
+import apedp_dyn.sandbox.real_market_l2_sweep as sweep
 from apedp_dyn.sandbox.real_market_l2_sweep import (
     WINDOWS,
     execute_window_discovery,
@@ -100,3 +104,22 @@ class TestRealMarketL2Sweep:
         assert rec.epistemic_verdict == "unique_support"
         assert "vol" in rec.discovered_expression
 
+    def test_partition_cli_executes_and_persists_assigned_window(self, tmp_path, monkeypatch):
+        @dataclass
+        class FakeRecord:
+            asset: str
+            window_id: str
+
+        calls = []
+
+        def fake_execute(asset, window, bootstrap):
+            calls.append((asset, window.window_id, bootstrap))
+            return FakeRecord(asset, window.window_id)
+
+        monkeypatch.setattr(sweep, "execute_window_discovery", fake_execute)
+        records = sweep.run_partition(0, sweep.PARTITION_COUNT, tmp_path)
+
+        assert calls == [("sp500", WINDOWS[0].window_id, True)]
+        assert len(records) == 1
+        saved = json.loads((tmp_path / "partition_000.json").read_text(encoding="utf-8"))
+        assert saved == [{"asset": "sp500", "window_id": WINDOWS[0].window_id}]
