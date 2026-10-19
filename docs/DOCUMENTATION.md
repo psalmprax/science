@@ -30,6 +30,30 @@
 
 APEDP (Autonomous Physics & Engineering Discovery Platform) is an end-to-end scientific computing platform for discovering, validating, and repairing physical equations from experimental data. It combines symbolic regression, dimensional analysis, Bayesian model selection, physical anomaly repair, epistemic tracking, quantum error correction, metrology, and applied defect auditing in a unified framework.
 
+### Epistemic integrity notes (2026-10-19, blind-audit round 2)
+
+- **Referee pair anchoring (`apedp_dyn/epistemic/adjudicate.py`).** The pair
+  evaluation between a promoted head and its nearest rival is anchored on
+  frame holdout RMSE (gate-4-certified), never on the train-loss ordering, so
+  an overfitted train-loss winner can no longer manufacture a spurious
+  `MULTI_HYPOTHESIS` refusal. Recorded in the frozen re-mint (see
+  `CHANGELOG.md`, blind-audit round 2) and pinned by the epistemic referee
+  tests.
+- **NCM structural proposer (`apedp_dyn/proposers/ncm_structural_proposer.py`).**
+  All four archetype branches emit real forward `compute_score` closures that
+  reproduce the fit-time prediction; the zero-vector default in
+  `CandidateProposal` is no longer reachable from this proposer.
+- **Hawkes order-flow scorer causality.** The standardized-intensity
+  `compute_score` couples only to fit-time intensity distribution constants;
+  no eval-frame-wide mean/std (holdout-future statistics) inside scoring.
+- **Lean bridge axiom hygiene (`apedp_dyn/epistemic/lean_universal_bridge.py`).**
+  `exp_damp_le_one` carries the explicit `(hs : 0 ≤ s)` non-negativity
+  hypothesis; the decay bound is never asserted out of the damped regime.
+- **RIME implicit Rust kernel (`rust/apedp-kernel/src/rime/implicit.rs`).**
+  `is_exact_recovery` additionally requires `active_count >= 2`, so the
+  all-zero "0 = 0" pruned vector cannot be certified as an exact discovery.
+
+
 For an in-depth breakdown of system capabilities and why the platform balances autonomous discovery with domain constraints, see [System Capabilities & Architectural Philosophy](SYSTEM_CAPABILITIES_AND_PHILOSOPHY.md).
 
 APEDP should be described as a **domain-general evidence and model-adjudication

@@ -212,8 +212,8 @@ class OdeReferee:
         discovered_states = {eq.state_variable for eq in result.equations}
         holdout_states = set(states)
         if discovered_states != holdout_states:
-            missing = sorted(discovered_states - holdout_states)
-            extra = sorted(holdout_states - discovered_states)
+            missing = sorted(holdout_states - discovered_states)
+            extra = sorted(discovered_states - holdout_states)
             return EpistemicOdeAdjudication(
                 verdict=EpistemicOdeVerdict.INSUFFICIENT_EVIDENCE,
                 mean_holdout_r2=float("nan"),

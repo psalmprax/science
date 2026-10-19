@@ -926,12 +926,17 @@ def run_epistemic_trading_adjudication(
     dsr_adjusted: float | None = None
     dsr_naive: float | None = None
     if len(px_ho) > 2:
-        sel = trial_ledger.dsr_with_selection_adjustment(observed_sharpe=ga_sharpe, n_bars=len(px_ho))
+        sel = trial_ledger.dsr_with_selection_adjustment(
+            observed_sharpe=ga_sharpe,
+            n_bars=len(px_ho),
+            annualization_factor=252.0,
+        )
         naive = compute_deflated_sharpe_ratio(
             observed_sharpe=ga_sharpe,
             n_trials=trial_ledger.trial_count,
             var_trials=trial_ledger.get_sharpe_distribution()[1],
             n_bars=len(px_ho),
+            annualization_factor=252.0,
         )
         dsr_adjusted = float(sel["dsr"])
         dsr_naive = float(naive["dsr"])

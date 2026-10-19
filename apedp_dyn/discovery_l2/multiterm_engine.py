@@ -170,11 +170,10 @@ class MultiTermL2Engine:
             v_ho = v_full[n_train:]
 
             # Warm-up NaNs are legitimate (rolling operators, log guards):
-            # require a usable finite block in each partition instead of
-            # all-finite, which rejected EVERY rolling term outright.
+            # require a usable finite block in training partition.
+            # Holdout finite rows are checked strictly at confirmation time.
             finite_tr = int(np.isfinite(v_tr).sum())
-            finite_ho = int(np.isfinite(v_ho).sum())
-            if finite_tr < _MIN_FINITE_ROWS or finite_ho < _MIN_FINITE_ROWS:
+            if finite_tr < _MIN_FINITE_ROWS:
                 continue
             if not np.any(v_tr[np.isfinite(v_tr)] != 0.0):
                 continue
@@ -320,7 +319,7 @@ class MultiTermL2Engine:
                 is_white, rho1 = check_residual_whiteness(resid_ho, threshold=0.5)
 
                 # Gate 4 evidential pass criteria
-                ss_tot = float(np.sum((y_ho - np.mean(y_ho)) ** 2))
+                ss_tot = float(np.sum((y_ho_m - np.mean(y_ho_m)) ** 2))
                 ss_res = float(np.sum(resid_ho**2))
                 r2 = 1.0 - (ss_res / ss_tot) if ss_tot > 1e-14 else (1.0 if rmse_ho < 1e-6 else 0.0)
 

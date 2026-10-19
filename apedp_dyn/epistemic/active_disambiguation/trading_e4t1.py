@@ -134,7 +134,7 @@ def run_origin(panels: dict[str, pd.DataFrame], origin: str, policy: str, seed: 
     ftr = {h: btc[feats[h]].to_numpy() for h in feats}
     base_pred = {h: coefs[h][0] + coefs[h][1] * ftr[h] for h in feats}
     d1 = btc["sig"].shift(-1).to_numpy()
-    d5 = btc["sig"].shift(-1).rolling(5).mean().to_numpy()
+    d5 = btc["sig"].rolling(5).mean().shift(-5).to_numpy()
     tv = btc["trailvol20"].to_numpy()
     tv_cut = np.nanquantile(tv[m_tr], 2 / 3)
     hi_tv, hi_vr = tv > tv_cut, btc["rankV"].to_numpy() > 2 / 3
@@ -224,7 +224,7 @@ def _forward_score(panels, coefs, feats, mid, fw_idx):
             rms[h] = float(np.sqrt(np.mean(fwd[h] ** 2)))
         return rms, fwd
     btc = panels["BTC"]
-    ty = (btc["sig"].shift(-1).rolling(5).mean().to_numpy() if mid in ("m2", "m6")
+    ty = (btc["sig"].rolling(5).mean().shift(-5).to_numpy() if mid in ("m2", "m6")
           else btc["sig"].shift(-1).to_numpy())[fw_idx]
     tv = btc["trailvol20"].to_numpy()[fw_idx]
     ok = np.isfinite(ty)

@@ -11,14 +11,14 @@ Demonstrates:
 from __future__ import annotations
 
 import os
-import sys
 import shutil
+import sys
 import time
 
 sys.path.insert(0, os.path.abspath("."))
 
-import numpy as np
 import imageio.v3 as iio
+import numpy as np
 
 from apedp_dyn.video.jet_flow_model import (
     JetFlowModelConfig,
@@ -40,7 +40,8 @@ def main():
     mp4_repo_path = os.path.join(repo_media_dir, "jet_flow_10s_demo.mp4")
     gif_repo_path = os.path.join(repo_media_dir, "jet_flow_10s_demo.gif")
 
-    artifact_dir = "/home/psalmprax/.gemini/antigravity-cli/brain/81922211-290b-4171-99b4-1b05d2c8d0a6"
+    from apedp_dyn.conf.paths import artifact_dir as _resolve_artifact_dir
+    artifact_dir = str(_resolve_artifact_dir())
     os.makedirs(artifact_dir, exist_ok=True)
     mp4_artifact_path = os.path.join(artifact_dir, "jet_flow_10s_demo.mp4")
     gif_artifact_path = os.path.join(artifact_dir, "jet_flow_10s_demo.gif")
@@ -87,14 +88,14 @@ def main():
     print(f"  Wind Convection: c = {physical_knobs.convection_velocity}")
     print(f"  Fluid Viscosity: nu = {physical_knobs.viscosity_nu}")
     print(f"  Camera Motion: pan={physical_knobs.camera_pan}, zoom={physical_knobs.camera_zoom}, roll={physical_knobs.camera_roll}")
-    print(f"  Noether Divergence-Free Constraint: Active (Helmholtz-Hodge solenoidal)")
+    print("  Noether Divergence-Free Constraint: Active (Helmholtz-Hodge solenoidal)")
 
     # 3. 2-Step Jet2 Curvature Generation
     print("\n[3/5] Executing 2-Step Jet2 Curvature Flow Integration...")
     t_gen_start = time.perf_counter()
     # Latent shape: 32 temporal anchor slices x 12 channels x 32 x 32 spatial
     latent_shape = (32, 12, 32, 32)
-    tt_video, base_rgb = model.generate_video(
+    tt_video, _base_rgb = model.generate_video(
         prompt_embedding=prompt_embedding,
         num_steps=2,
         shape=latent_shape,
@@ -112,7 +113,7 @@ def main():
     timestamps = np.linspace(0.0, 1.0, total_frames)
 
     frames_rgb_uint8 = []
-    for i, tau in enumerate(timestamps):
+    for tau in timestamps:
         # Continuous time evaluation from TT cores directly to RGB
         frame_rgb = model.vae_bridge.decode_continuous_frame_rgb(tt_video, float(tau))
         # (3, 64, 64) -> (64, 64, 3) in [0, 255] uint8
@@ -124,7 +125,7 @@ def main():
     print(f"  Evaluated {total_frames} continuous frames in {t_eval:.3f}s ({ms_per_frame:.3f} ms/frame)")
 
     # 5. Video Encoding & Export
-    print(f"\n[5/5] Encoding Video Files...")
+    print("\n[5/5] Encoding Video Files...")
     frames_array = np.stack(frames_rgb_uint8, axis=0)
 
     # Export MP4
@@ -158,11 +159,11 @@ def main():
     print("=" * 70)
     print(f"• Total Duration:        {duration_seconds:.1f} seconds")
     print(f"• Frame Rate:            {fps} FPS ({total_frames} total frames)")
-    print(f"• Output Resolution:     64 x 64 RGB")
-    print(f"• Flow Matching Steps:   2 Steps (Jet2 Taylor Curvature)")
+    print("• Output Resolution:     64 x 64 RGB")
+    print("• Flow Matching Steps:   2 Steps (Jet2 Taylor Curvature)")
     print(f"• Latent Compression:    {tt_video.compression_ratio:.2f}x via Tensor-Train (TT-MPS)")
     print(f"• Continuous Frame Rate: {ms_per_frame:.3f} ms per frame")
-    print(f"• Output Files:")
+    print("• Output Files:")
     print(f"  - MP4: {mp4_repo_path} ({mp4_kb:.1f} KB)")
     print(f"  - GIF: {gif_repo_path} ({gif_kb:.1f} KB)")
     print(f"  - Artifact MP4: {mp4_artifact_path}")

@@ -128,6 +128,32 @@ class HawkesOrderFlowProposer(ProposerBase):
         for i in range(1, n):
             R[i] = np.exp(-beta * dt[i - 1]) * (1.0 + R[i - 1])
         intensities = mu_hat + alpha_hat * R
+        # Finding 10 fix: the standardized-intensity scorer must not use the
+        # evaluated frame's own mean/std — over a holdout that folds the whole
+        # future distribution into every t. The scoring standardization couples
+        # only to the FIT-time intensity distribution (the same constants the
+        # surge threshold quantile already uses), so scoring stays causal.
+        fit_intens_mean = float(np.mean(intensities))
+        fit_intens_std = float(np.std(intensities))
+
+        fit_mean_v: float | None = None
+        fit_mean_dp: float | None = None
+        if isinstance(input_data, pd.DataFrame):
+            for vcol in ("volume", "vol", "size", "trades", "count"):
+                if vcol in input_data.columns:
+                    rv = np.nan_to_num(input_data[vcol].to_numpy(dtype=float), nan=0.0)
+                    mv = float(np.mean(rv))
+                    if mv > 1e-12:
+                        fit_mean_v = mv
+                    break
+            for pcol in ("close", "price"):
+                if pcol in input_data.columns:
+                    p = input_data[pcol].to_numpy(dtype=float)
+                    dp = np.diff(p, prepend=p[0])
+                    mdp = float(np.mean(np.abs(dp)))
+                    if mdp > 1e-12:
+                        fit_mean_dp = mdp
+                    break
 
         tau_intensity = float(np.quantile(intensities, self.intensity_threshold_quantile))
         # Archetype contract: a binary rare-event detector (TAIL_RISK) is only
@@ -150,14 +176,19 @@ class HawkesOrderFlowProposer(ProposerBase):
                 return np.zeros(0, dtype=float)
 
             # 1. Identify arrival weights / order-flow volume if available
+            # Normalized against fit-time distribution or causal expanding mean (no future leak)
             weights = np.ones(n_samples, dtype=float)
             has_vol = False
             for vcol in ("volume", "vol", "size", "trades", "count"):
                 if vcol in df.columns:
                     raw_v = np.nan_to_num(df[vcol].to_numpy(dtype=float), nan=0.0)
-                    mean_v = float(np.mean(raw_v))
-                    if mean_v > 1e-12:
-                        weights = raw_v / mean_v
+                    if fit_mean_v is not None and fit_mean_v > 1e-12:
+                        weights = raw_v / fit_mean_v
+                        has_vol = True
+                    else:
+                        cum_v = np.cumsum(raw_v)
+                        exp_v = cum_v / np.arange(1, n_samples + 1)
+                        weights = np.where(exp_v > 1e-12, raw_v / np.maximum(exp_v, 1e-12), 1.0)
                         has_vol = True
                     break
 
@@ -168,9 +199,13 @@ class HawkesOrderFlowProposer(ProposerBase):
                         p = df[pcol].to_numpy(dtype=float)
                         dp = np.diff(p, prepend=p[0])
                         abs_dp = np.abs(dp)
-                        mean_dp = float(np.mean(abs_dp))
-                        if mean_dp > 1e-12:
-                            weights = abs_dp / mean_dp
+                        if fit_mean_dp is not None and fit_mean_dp > 1e-12:
+                            weights = abs_dp / fit_mean_dp
+                            has_vol = True
+                        else:
+                            cum_dp = np.cumsum(abs_dp)
+                            exp_dp = cum_dp / np.arange(1, n_samples + 1)
+                            weights = np.where(exp_dp > 1e-12, abs_dp / np.maximum(exp_dp, 1e-12), 1.0)
                             has_vol = True
                         break
 
@@ -196,20 +231,20 @@ class HawkesOrderFlowProposer(ProposerBase):
             intens = mu_hat + alpha_hat * sig
             # Degenerate fit (no binding threshold on training data): emit the
             # continuous standardized intensity, never a fake binary vector.
+            # Standardized against the fit-coupling constants, not eval-frame
+            # statistics (Finding 10: eval-frame mean/std is full-future leak).
             if not binary_viable:
-                std_intens = float(np.std(intens))
-                if std_intens > 1e-8:
-                    return (intens - np.mean(intens)) / std_intens
-                return intens - np.mean(intens)
+                if fit_intens_std > 1e-8:
+                    return (intens - fit_intens_mean) / fit_intens_std
+                return intens - fit_intens_mean
             surge = (intens > tau_intensity).astype(float)
             # Eval-frame feature mismatch can still collapse the binary surge
             # (e.g. no timestamp/volume columns); fall back to the continuous
             # standardized intensity so the signal is never constant.
             if np.all(surge == 0.0) or np.all(surge == 1.0):
-                std_intens = float(np.std(intens))
-                if std_intens > 1e-8:
-                    return (intens - np.mean(intens)) / std_intens
-                return intens - np.mean(intens)
+                if fit_intens_std > 1e-8:
+                    return (intens - fit_intens_mean) / fit_intens_std
+                return intens - fit_intens_mean
 
             return surge
 

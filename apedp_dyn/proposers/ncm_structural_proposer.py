@@ -90,7 +90,7 @@ class NCMStructuralProposer(ProposerBase):
         valid_mask = valid_mask & np.all(np.isfinite(X_base), axis=1)
         y = y[valid_mask]
         X_base = X_base[valid_mask]
-        n_samples = len(y)
+        # (n_samples: unused by the archetype loop below)
 
         # Iterate over macroscopic concept archetypes
         for arch in self.archetypes:
@@ -142,6 +142,14 @@ class NCMStructuralProposer(ProposerBase):
                 strategy_archetype=StrategyArchetype.CONTINUOUS_FACTOR,
                 declared_scale_invariant=False,
                 declared_nominal_dependencies=tuple(feature_names),
+                compute_score=lambda frame, _coefs=pruned_coef, _intercept=float(
+                    r_num.intercept_
+                ), _cols=tuple(feature_names): (
+                    np.zeros(len(frame))
+                    if any(c not in frame.columns for c in _cols) or len(frame) < 2
+                    else (np.nan_to_num(frame[list(_cols)].to_numpy(dtype=float)) @ _coefs + _intercept)
+                    / (1.0 + 0.1 * np.mean(np.abs(np.nan_to_num(frame[list(_cols)].to_numpy(dtype=float))), axis=1))
+                ),
                 parameters={
                     "r2": r2,
                     "coefs": pruned_coef.tolist(),
@@ -175,6 +183,16 @@ class NCMStructuralProposer(ProposerBase):
             active_terms = int(np.sum(np.abs(pruned_coef) > 0))
             formula = f"DampedOscillator({feature_names[0]}, k={pruned_coef[0]:.3f}, gamma={pruned_coef[1]:.3f})"
 
+            # DampedOscillator prediction: [x, dx/dt] @ [omega^2, gamma],
+            # from the frame's own first feature series (frame-local gradient,
+            # consistent with how the fit design was built).
+            def _compute_score_oscillator(frame: pd.DataFrame) -> np.ndarray:
+                if feature_names[0] not in frame.columns or len(frame) < 2:
+                    return np.zeros(len(frame))
+                x0 = np.nan_to_num(frame[feature_names[0]].to_numpy(dtype=float))
+                dx = np.gradient(x0)
+                return np.column_stack([x0, dx]) @ pruned_coef
+
             return CandidateProposal(
                 proposer_id=self.proposer_id,
                 candidate_id=candidate_id,
@@ -182,6 +200,7 @@ class NCMStructuralProposer(ProposerBase):
                 strategy_archetype=StrategyArchetype.TACTICAL,
                 declared_scale_invariant=True,
                 declared_nominal_dependencies=(feature_names[0],),
+                compute_score=_compute_score_oscillator,
                 parameters={
                     "r2": r2,
                     "omega_sq": float(pruned_coef[0]),
@@ -214,6 +233,18 @@ class NCMStructuralProposer(ProposerBase):
             active_terms = int(np.sum(np.abs(pruned_coef) > 0))
             formula = f"AdvectionDiffusion({feature_names[0]}, advection_v={pruned_coef[0]:.3f}, diff_D={pruned_coef[-1]:.3f})"
 
+            # AdvectionDiffusion prediction: [x, d1, d2] @ coefs from the
+            # frame's own spatial-temporal gradients (frame-local design).
+            def _compute_score_pde(frame: pd.DataFrame) -> np.ndarray:
+                if any(c not in frame.columns for c in feature_names) or len(frame) < 2:
+                    return np.zeros(len(frame))
+                xf = np.nan_to_num(frame[list(feature_names)].to_numpy(dtype=float))
+                g1 = np.gradient(xf, axis=0)
+                g2 = np.gradient(g1, axis=0)
+                design = (np.column_stack([xf, g1[:, :2], g2[:, :2]])
+                          if xf.shape[1] >= 2 else np.column_stack([xf, g1, g2]))
+                return design @ pruned_coef
+
             return CandidateProposal(
                 proposer_id=self.proposer_id,
                 candidate_id=candidate_id,
@@ -221,6 +252,7 @@ class NCMStructuralProposer(ProposerBase):
                 strategy_archetype=StrategyArchetype.CONTINUOUS_FACTOR,
                 declared_scale_invariant=True,
                 declared_nominal_dependencies=tuple(feature_names[:2]),
+                compute_score=_compute_score_pde,
                 parameters={
                     "r2": r2,
                     "pde_coefs": pruned_coef[:4].tolist(),
@@ -253,6 +285,16 @@ class NCMStructuralProposer(ProposerBase):
             active_terms = int(np.sum(np.abs(pruned_coef) > 0))
             formula = f"CyclicHarmonicRegime({feature_names[0]}, amp_sin={pruned_coef[0]:.3f}, amp_cos={pruned_coef[1]:.3f})"
 
+            # CyclicHarmonicRegime prediction: [sin(ome t), cos(ome t), x] @ coefs.
+            def _compute_score_harmonic(frame: pd.DataFrame) -> np.ndarray:
+                if feature_names[0] not in frame.columns:
+                    return np.zeros(len(frame))
+                n_frame = max(len(frame), 1)
+                t_frame = np.linspace(0.0, 4.0 * np.pi, n_frame)
+                xf = np.nan_to_num(frame[feature_names[0]].to_numpy(dtype=float))
+                design = np.column_stack([np.sin(t_frame), np.cos(t_frame), xf])
+                return design @ pruned_coef
+
             return CandidateProposal(
                 proposer_id=self.proposer_id,
                 candidate_id=candidate_id,
@@ -260,6 +302,7 @@ class NCMStructuralProposer(ProposerBase):
                 strategy_archetype=StrategyArchetype.TACTICAL,
                 declared_scale_invariant=False,
                 declared_nominal_dependencies=(feature_names[0],),
+                compute_score=_compute_score_harmonic,
                 parameters={
                     "r2": r2,
                     "harmonic_coefs": pruned_coef.tolist(),

@@ -333,7 +333,13 @@ fn solve_implicit_for_features(
         format!("{} = 0", terms.join(" + ").replace("+ -", "- "))
     };
 
-    let is_exact = rmse < 1e-5;
+    // A pruned-away candidate (active_count == 0) is the tautology "0 = 0":
+    // its algebraic residual is identically 0.0, so an rmse-only check would
+    // certify the empty relation as an exact physical recovery and let it
+    // bypass every downstream sanity filter. Exactness also demands that the
+    // discovered relation actually has content (>= 2 active terms; a single
+    // term c*phi = 0 is a degenerate if non-empty edge case and is allowed).
+    let is_exact = rmse < 1e-5 && active_count >= 2;
 
     Some(ImplicitResult {
         feature_names: names.to_vec(),

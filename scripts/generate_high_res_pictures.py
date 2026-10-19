@@ -14,8 +14,8 @@ Eliminates GIF limitations completely:
 from __future__ import annotations
 
 import os
-import sys
 import shutil
+import sys
 import time
 
 sys.path.insert(0, os.path.abspath("."))
@@ -23,12 +23,12 @@ sys.path.insert(0, os.path.abspath("."))
 import numpy as np
 from PIL import Image
 
+from apedp_dyn.video.noether_engine import (
+    NoetherConfig,
+    NoetherConservationEngine,
+)
 from apedp_dyn.video.vae_bridge import (
     ContinuousWaveletVAE,
-)
-from apedp_dyn.video.noether_engine import (
-    NoetherConservationEngine,
-    NoetherConfig,
 )
 
 
@@ -39,7 +39,6 @@ def synthesize_picture(
     seed: int = 42,
 ) -> np.ndarray:
     """Synthesize 12-channel continuous physical wavelet latent for 512x512 image synthesis."""
-    rng = np.random.RandomState(seed)
     y, x = np.meshgrid(np.linspace(-1, 1, h_lat), np.linspace(-1, 1, w_lat), indexing="ij")
     r = np.sqrt(x ** 2 + y ** 2)
     theta = np.arctan2(y, x)
@@ -140,7 +139,8 @@ def main():
     repo_pictures_dir = os.path.abspath("docs/media/pictures")
     os.makedirs(repo_pictures_dir, exist_ok=True)
 
-    artifact_dir = "/home/psalmprax/.gemini/antigravity-cli/brain/81922211-290b-4171-99b4-1b05d2c8d0a6"
+    from apedp_dyn.conf.paths import artifact_dir as _resolve_artifact_dir
+    artifact_dir = str(_resolve_artifact_dir())
     artifact_pictures_dir = os.path.join(artifact_dir, "pictures")
     os.makedirs(artifact_pictures_dir, exist_ok=True)
 
@@ -195,7 +195,7 @@ def main():
         kb = os.path.getsize(repo_jpg) / 1024.0
         generated_info.append((title, repo_jpg, art_jpg_root, kb, dt))
         print(f"  ✓ {title}")
-        print(f"    - Resolution: 512x512 TrueColor RGB (Quality=100)")
+        print("    - Resolution: 512x512 TrueColor RGB (Quality=100)")
         print(f"    - Generated in: {dt * 1000.0:.2f} ms")
         print(f"    - File: {repo_jpg} ({kb:.1f} KB)\n")
 

@@ -4,6 +4,89 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Blind-audit remediation round 2: F14–F17 + freeze re-mint (2026-10-19)
+
+### Frozen-record re-mint (rationale, per freeze protocol)
+- `apedp_dyn/epistemic/adjudicate.py` (F14 remediation below),
+  `apedp_dyn/sandbox/grammar_space.py` (F1 causal-target remediation below),
+  `apedp_dyn/sandbox/trading_signals_sandbox.py` (F5 annualization wiring), and
+  `apedp_dyn/ui/server.py` (F7 state-series dictionary reconstruction) are
+  frozen guard files; all four required edits in this round. Both freeze
+  surfaces were re-minted: `frozen_spec.py`'s pinned SHA-256 registry (for the
+  two files it registers) and a new blind-protocol record
+  `apedp_dyn/sandbox/APEDPX_FROZEN_v1_7.json` (supersedes v1_6;
+  `blind_benchmark.py` now consumes v1_7 via `FROZEN_RECORD`): each remint
+  rationale is logged in the record's `remint_log`. Referee threshold semantics
+  and grammar-space primitive sets are untouched; verification is covered by
+  `tests/test_audit_open_flaws_remediated.py::
+test_all_frozen_records_verified_against_pinned_hashes`, `tests/test_dyn_blind.py`
+  (`verify_referee()`), and `tests/test_documentation_and_spec_integrity.py`.
+
+### Critical fixes (new audit Findings 14–17)
+- **F14 — `apedp_dyn/epistemic/adjudicate.py`:** the pair evaluation was anchored
+  on the train-loss ordering. An overfitted train-loss winner made
+  `delta = rival_ho − best_ho` negative, trivially tripping `delta <= tau` for
+  any `tau > 0` and denying `UNIQUE_SUPPORT` to genuine generalizing candidates
+  (misclassified `MULTI_HYPOTHESIS`). The pair anchor is now the holdout-lowest
+  RMSE candidate when it is gate-4 certified; `delta` is therefore always a
+  holdout separation and the `delta <= tau` check verifies the holdout criterion
+  directly before any `MULTI_HYPOTHESIS` verdict. A re-anchored pass falls back
+  to the honest point-estimate contract for the bootstrap tiebreaker (residual
+  series correspondence cannot be attributed across the re-anchor).
+- **F15 — `apedp_dyn/proposers/ncm_structural_proposer.py`:** all four archetype
+  branches (BOUNDED_RATIONAL_SATURATION, CONSERVED_DAMPED_OSCILLATOR,
+  DIFFUSION_ADVECTION_CONTINUUM, CYCLIC_HARMONIC_REGIME) now emit real
+  `compute_score` closures. Each closure builds its design matrix from the
+  candidate frame the same way the fit did (frame-local gradients / lens, not
+  fit-time arrays), falls back to an all-zero vector only for missing columns,
+  and reproduces the fit-time prediction in-sample.
+- **F16 — `apedp_dyn/cuda/batch_physics_steppers.py`:** `batch_multi_agent_cbf_step`
+  now applies the reference CPU implementation's anti-parallel tangential
+  breakaway force (`|anti-parallel| > 0.7` → perpendicular breakaway scaled by
+  `anti_par * k_rep * (1/d − 1/r_w)/d^*2`), eliminating permanent deadlock on
+  collinear trajectories.
+- **F17 — `rust/apedp-kernel/src/rime/implicit.rs`:** `is_exact_recovery` now
+  requires `active_count >= 2` in addition to `rmse < 1e-5`; the all-zero
+  pruned vector (algebraic residual identically 0, the "0 = 0" tautology) can no
+  longer be certified as an exact physical recovery.
+- **F10 — `apedp_dyn/proposers/hawkes_orderflow_proposer.py`:** the
+  standardized-intensity scorer standardized against the *evaluated frame's*
+  mean/std, which over a holdout folds the whole future distribution of the
+  point process into every `t`. Scoring standardization now couples only to the
+  FIT-time intensity distribution constants (`fit_intens_mean`/
+  `fit_intens_std`, the same frozen coupling already used by the surge
+  threshold quantile), so the emitted signal is strictly causal at evaluation
+  time.
+- **F12 — `apedp_dyn/epistemic/lean_universal_bridge.py`:** the prover axiom
+  `exp_damp_le_one (s : R) : exp (-s) ≤ (1 : R)` was a false universal
+  (`exp(-s) > 1` for `s < 0`). The axiom and the synthesized squeeze/exponential
+  damping theorem both now carry the non-negativity hypothesis `(hs : (0 : R) ≤ s)`;
+  the bound is only claimed in-damped-regime.
+
+### Verification notes
+- `tests/test_dyn_grammar_space.py`: the frozen d5-target pin was stale — it
+  still pinned the backward window `s.shift(-1).rolling(5)` (80% leakage into
+  the "future" target); it now pins the shipped forward-only
+  `s.rolling(5).mean().shift(-5)` (aggregate over s[t+1..t+5]) plus NaN-tail and
+  finiteness invariants.
+- F2 (basis screening holdout leak) and F3 (mismatched SS_tot mask) were
+  verified already remediated on disk in
+  `apedp_dyn/discovery_l2/multiterm_engine.py` (full-series causal evaluation;
+  masked-partition `ss_tot` on `y_ho_m`), pinned by
+  `tests/test_audit_open_flaws_remediated.py`.
+- **F8 — `apedp_dyn/epistemic/pde_discovery.py`:** Added missing spatial stencil
+  term `u_xxx` and polynomial term `u^3` to the non-uniform PDE holdout evaluation
+  library, aligning with 1D/2D discovery terms.
+- **F9 — `apedp_dyn/proposers/distributed_lag_interaction_proposer.py`:** Replaced
+  single `lag_state["buffer"]` with per-column buffer dictionary `lag_state["buffers"]`
+  so multi-column lag features do not overwrite each other during streaming evaluation.
+- **F10 — `apedp_dyn/proposers/hawkes_orderflow_proposer.py`:** Eliminated full-frame
+  mean volume and price-change leakage in arrival weight normalization by using
+  fit-time reference scales or causal expanding means.
+- **F11 — `apedp_dyn/molecular/se3_flow.py`:** Symmetrized bond pair exclusions in
+  `_non_bonded_pairs` so reversed bond tuples `(j, i)` are correctly excluded from
+  non-bonded core repulsion.
+
 ## [Unreleased] — forensic audit remediation, §4.1 freeze re-mint
 
 - `apedp_dyn/sandbox/multi_asset_signals_sandbox.py` is pinned by

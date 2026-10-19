@@ -89,7 +89,7 @@ Earlier scientific generations were sealed as immutable benchmark records rather
 - `apedp_dyn/sandbox/APEDPX_FROZEN_v1.json` — original sealed generation.
 - `apedp_dyn/sandbox/APEDPX_FROZEN_v1_1.json` — first revision.
 - `apedp_dyn/sandbox/APEDPX_FROZEN_v1_2.json` — second revision.
-- `apedp_dyn/sandbox/APEDPX_FROZEN_v1_6.json` — current sealed generation (the one consumed by `blind_benchmark.py` via `FROZEN_RECORD`; supersedes v1_5 after the deep-forensic audit remediation in `ui/server.py`, with blind outcomes unchanged).
+- `apedp_dyn/sandbox/APEDPX_FROZEN_v1_7.json` — current sealed generation (the one consumed by `blind_benchmark.py` via `FROZEN_RECORD`; supersedes v1_6 after blind-audit remediation round 2 re-minted `adjudicate.py` (F14 holdout-anchored pair), `grammar_space.py` (F1 forward-only d5 target), `trading_signals_sandbox.py` (F5 annualization_factor=252) and `ui/server.py` (F7 state-series dictionary), with blind outcomes unchanged).
 - `apedp_dyn/sandbox/APEDPX_FROZEN_v1_4.json`, `APEDPX_FROZEN_v1_3.json`, `APEDPX_FROZEN_v1_2.json`, `APEDPX_FROZEN_v1_1.json`, `APEDPX_FROZEN_v1.json` — superseded generations retained as immutable historical records.
 - `apedp_dyn/sandbox/governance_manifest.json` — manifest enumerating the sealed artifacts.
 

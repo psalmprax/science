@@ -13,15 +13,14 @@ Supported Batched Steppers:
 """
 from __future__ import annotations
 
-import math
-from typing import Any, Callable
+from collections.abc import Callable
 
 import torch
 
 # Check for Triton availability
 try:
-    import triton  # type: ignore[import-untyped]
-    import triton.language as tl  # type: ignore[import-untyped]
+    import triton  # type: ignore[import-untyped]  # noqa: F401 (kernel scope, availability probe)
+    import triton.language as tl  # type: ignore[import-untyped]  # noqa: F401 (kernel scope, availability probe)
     HAS_TRITON = True
 except ImportError:
     HAS_TRITON = False
@@ -124,8 +123,6 @@ def batch_unicycle_arc_step(
     Returns:
         Tensor of shape [B, 3] with new poses.
     """
-    x = poses[:, 0]
-    y = poses[:, 1]
     theta = poses[:, 2]
 
     theta_next = theta + omega * dt
@@ -173,7 +170,6 @@ def batch_molecular_conformation_flow(
     Returns:
         Tensor of shape [B, N, 3] with relaxed coordinates.
     """
-    B, N, _ = coords.shape
     grad = torch.zeros_like(coords)
 
     for i, j in bonds:
@@ -255,6 +251,26 @@ def batch_multi_agent_cbf_step(
     safe_dist = torch.clamp(dist_pair, min=r_safe)
     rep_magnitude = k_rep * (1.0 / safe_dist - 1.0 / r_warning) * (1.0 / (dist_pair ** 2))
     f_rep_pairs = torch.where(in_warning, rep_magnitude * (diff / dist_pair), torch.zeros_like(diff))
+
+    # Tangential breakaway (mirrors multi_agent_transport.py:92-101): on
+    # head-on/collinear approaches the radial repulsion is exactly
+    # anti-parallel to the attraction, so the net force collapses and both
+    # agents deadlock. When repulsion strongly opposes the CURRENT HEADING
+    # (anti-parallel component > 0.7), inject the CPU reference's fixed
+    # rightward tangential component; the opposing agent resolves the
+    # mirrored heading to the opposite side, breaking the symmetry.
+    heading_vec = torch.stack([torch.cos(thetas), torch.sin(thetas)], dim=-1)  # [B, N, 2]
+    rep_dir = diff / dist_pair  # [B, N, N, 2] unit repulsion direction
+    # anti_par[b, i, j] > 0 when repulsion opposes agent i's heading
+    anti_par = -(rep_dir * heading_vec.unsqueeze(2)).sum(dim=-1)  # [B, N, N]
+    perp = torch.stack([-rep_dir[..., 1], rep_dir[..., 0]], dim=-1)  # [B, N, N, 2]
+    tangential = torch.where(
+        (anti_par > 0.7).unsqueeze(-1),
+        anti_par.unsqueeze(-1) * rep_magnitude * perp,
+        torch.zeros_like(perp),
+    )
+    tangential = torch.where(in_warning, tangential, torch.zeros_like(tangential))
+    f_rep_pairs = f_rep_pairs + tangential
     f_rep = torch.sum(f_rep_pairs, dim=2)  # [B, N, 2]
 
     # 3. Role-weighted net force

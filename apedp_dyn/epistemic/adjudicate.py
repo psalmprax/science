@@ -708,6 +708,31 @@ def adjudicate(fitted: list,
             reason="rank-1 passes gate 4 but the holdout record carries no "
                    "scale (obs_rms/noise_sigma), so no rival can be resolved; "
                    "pass holdout_scale= or tau_epi= to supply one")
+    # Finding 14 (inverted pair anchor): the pair evaluation must be separated
+    # on holdout evidence, never on the training-loss ordering. The train-loss
+    # winner can be the most overfitted candidate in the pool; anchoring the
+    # pair on it made delta = rival_ho - best_ho negative whenever a
+    # generalizing rival existed, which trivially tripped `delta <= tau` for
+    # any tau > 0 and denied UNIQUE_SUPPORT to genuine discoveries
+    # (misclassified as MULTI_HYPOTHESIS with a contradictory diagnostic).
+    # Re-anchor the promotion head on the holdout-lowest-RMSE candidate when
+    # that candidate is itself gate-4 certified; otherwise the gate-4-certified
+    # train-loss anchor stays.
+    ho_scoring = [s for s in ranked
+                  if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)]
+    if ho_scoring:
+        ho_head = min(ho_scoring, key=lambda s: s.holdout_rmse)
+        if ho_head is not best and ho_head.provenance.get(
+                "gate4_status", {}).get("passed", False):
+            # The holdout head takes over the pair. The bootstrap tiebreaker
+            # compares the paired residual series the caller supplied for the
+            # *original* pair; their correspondence cannot be verified after a
+            # re-anchor, so the re-anchored pass falls back to the honest
+            # point-estimate contract instead of asserting a bootstrap
+            # confirmation it cannot attribute.
+            best = ho_head
+            ranked = [ho_head] + [s for s in ranked if s is not ho_head]
+            bootstrap = False
     best_rmse = best.holdout_rmse
     rivals = [s for s in ranked[1:]
               if _identity(s) != _identity(best) and s.holdout_rmse is not None
@@ -790,6 +815,11 @@ def adjudicate(fitted: list,
                      else EpistemicContract.INCOMPLETE)
 
     second = min(rivals, key=lambda s: s.holdout_rmse)
+    # delta is measured against the holdout-anchored head, so a genuinely
+    # generalizing candidate now earns a nonnegative separation instead of a
+    # spurious refusal (Finding 14). delta IS delta_ho; the `delta <= tau`
+    # comparison below therefore verifies the holdout criterion directly
+    # before any MULTI_HYPOTHESIS verdict is issued.
     delta = float(second.holdout_rmse - best_rmse)
     margin = float(delta - tau)
     if delta <= tau:
