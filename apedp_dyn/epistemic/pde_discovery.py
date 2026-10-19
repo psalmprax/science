@@ -82,13 +82,26 @@ def _frozen_residual_r2(
     active_terms: list[str],
     coefficients: list[float],
 ) -> float:
-    """R^2 of the FROZEN operator (dev-discovered coefficients) against u_t."""
+    """R^2 of the FROZEN operator (dev-discovered coefficients) against u_t.
+
+    F8 audit rule (fail-closed): the Python frozen library is explicitly
+    documented as a mirror of the Rust discovery library. A dev-discovered
+    active term that the cold-end library cannot resolve must raise, never be
+    silently skipped — an untouched dropped column would corrupt the frozen
+    R^2 toward a flattering value (the original F8 defect class).
+    """
     coeff_by_term = dict(zip(active_terms, coefficients, strict=True))
+    missing = [term for term in coeff_by_term if term not in columns_by_name]
+    if missing:
+        raise ValueError(
+            "Frozen scoring library cannot resolve dev-discovered active term(s): "
+            + ", ".join(sorted(missing))
+            + " — the Python mirror and the Rust discovery library have drifted; "
+              "refuse scoring instead of silently dropping coefficient terms"
+    )
     prediction = np.zeros(ut.shape[0], dtype=float)
     for term, coeff in coeff_by_term.items():
-        column = columns_by_name.get(term)
-        if column is not None:
-            prediction += coeff * column
+        prediction += coeff * columns_by_name[term]
     residual = ut - prediction
     ss_res = float(np.sum(residual ** 2))
     ss_tot = float(np.sum((ut - ut.mean()) ** 2))

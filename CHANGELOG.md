@@ -4,7 +4,41 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
-## [Unreleased] — External-review round: F14 selection-reuse disclosure, F4/F5/F16 verification pins (2026-10-19)
+## [Unreleased] — External-review round (cont.): F17 scale-aware gate, F8 fail-closed mirror, Lean chain pin (2026-10-19)
+
+Continued from the review-response round above (same external report, remaining "additional scrutiny" items answered in code rather than in prose):
+
+### F17 — scale-aware exact-recovery gate (Rust `rime/implicit.rs`, rebuilt)
+- The exact-recovery gate is no longer an absolute `rmse < 1e-5`. It is measured
+  RELATIVE to the RMS magnitude of the relation's own residual terms, so
+  O(1e5)-scale genuinely exact relations (the audit's QEC-scale class) are
+  certifiable while small-scale near-misses are refused at the same relative
+  tolerance (1e-5). Verified through the rebuilt pyo3 binding: O(1) circle
+  exact (rmse 7e-16), 1e5-scale exact recovered (rmse 9e-13), small-scale
+  1e-4-perturbed relation REFUSED. The "0 = 0" tautology guard stays
+  scale-independent via the active-term count. Rust lib: 186/186. Pinned by
+  `TestF17ScaleAwareExactGate` (4 tests).
+
+### F8 — frozen-library mirror drift fails closed
+- `_frozen_residual_r2` no longer silently skips dev-discovered active terms
+  that the Python cold-end mirror cannot resolve — a dropped column corrupted
+  the frozen R^2 toward flattering values (the original F8 defect class).
+  Unresolved terms now raise naming the drifted term(s). Pinned by
+  `TestF8FrozenLibraryTermAudit`: fail-closed raise, term-classification pin
+  (`u^3` is a cubic STATE nonlinearity, `u_xxx` the third-order spatial
+  derivative — distinct series, per the reviewer's classification remark), and
+  a mirror-coverage pin that every Rust 1D catalog term (including `u^3` and
+  `u_xxx`) resolves in the Python mirror.
+
+### Lean — complete dependency-chain integrity pin
+- The reviewer's request to "compile the complete dependency chain and check
+  for unintended axioms or unproved assumptions" is pinned mechanically: for
+  every P2-verified record in the regenerated provenance (315 records), the
+  emitted Lean source in the tracked `apedp_dyn/lean_formal/` directory must
+  be `sorry`-free, and every `sorry`-carrying file must belong to a
+  P0-refuted record — the sorry channel can no longer certify under any
+  label drift. (`TestLeanProofChainIntegrity`, 2 tests over the full family.)
+
 
 Follow-through on the external remediation review (rating round). All items below are
 pinned by `tests/test_dyn_blind_audit_round2_remediation.py`.

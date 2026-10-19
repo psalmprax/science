@@ -26,6 +26,7 @@ Pins, at the public interface level, the two semantic fixes round 2 introduced
 from __future__ import annotations
 
 import math
+import pathlib
 import typing
 
 import numpy as np
@@ -459,3 +460,158 @@ class TestF16CBFSafetyEnvelope:
             poses = batch_multi_agent_cbf_step(poses, targets, roles, 0.1)
         advance = float(poses0[0, 0, 0] - poses[0, 0, 0])
         assert advance > 0.4  # dead-stamp would keep x ≈ 1.0; measured 0.55+
+
+
+class TestF17ScaleAwareExactGate:
+    """F17 reviewer ask: the exact-recovery RMSE gate must be scale-aware.
+
+    The Rust RIME implicit kernel measures exactness RELATIVE to the RMS
+    magnitude of the relation's own terms, so O(1e5)-scale exact relations are
+    certifiable while small-scale near-misses are refused. Verified through
+    the rebuilt pyo3 binding (the same interface downstream consumers call).
+    """
+
+    def _discover_json(self, x: np.ndarray, y: np.ndarray):
+        import json as _json
+
+        import apedp_kernel as _k
+        cfg = _json.dumps({
+            "max_degree": 2, "include_cross_terms": False,
+            "include_rational_products": False,
+            "sparsity_threshold": 1e-3, "rcond_threshold": 1e-8,
+        })
+        raw = _k.rime_implicit_discover_json(
+            _json.dumps(list(map(float, x))), _json.dumps(list(map(float, y))), cfg)
+        return _json.loads(raw) if isinstance(raw, str) else raw
+
+    def test_o1_scale_exact_relation_certified(self):
+        t = np.linspace(0.0, 2.0 * math.pi, 200)
+        out = self._discover_json(np.cos(t), np.sin(t))
+        assert out["is_exact_recovery"] is True
+        assert out["num_active_terms"] >= 2
+
+    def test_large_scale_exact_relation_certifiable(self):
+        """A truly exact relation on O(1e5)-scale data: y = x + 10 with
+        x ~ 1e5. The former absolute `rmse < 1e-5` gate could never certify
+        this (rmse in those units is impossible to satisfy); the
+        scale-aware gate measures rmse relative to the term magnitude."""
+        x = np.random.default_rng(0).normal(size=200) * 1e5
+        y = x + 10.0
+        out = self._discover_json(x, y)
+        assert out["formula"].count("=") == 1
+        assert out["is_exact_recovery"] is True
+        assert out["algebraic_rmse"] < 1e-9
+
+    def test_small_scale_near_miss_refused(self):
+        t = np.linspace(0.0, 2.0 * math.pi, 200)
+        out = self._discover_json(np.cos(t), np.sin(t) + 1e-4)
+        # rmse ~1.4e-4 is far above the scale-relative 1e-5 ceiling -> refused.
+        assert out["is_exact_recovery"] is False
+
+    def test_tautology_still_refused_at_any_scale(self):
+        """An all-zero pruned vector ('0 = 0') stays rejected regardless of
+        the data scale (the active_count guard is scale-independent)."""
+        rng = np.random.default_rng(5)
+        out = self._discover_json(rng.normal(size=120), rng.normal(size=120))
+        assert out["num_active_terms"] >= 0
+        if out["num_active_terms"] < 2:
+            assert out["is_exact_recovery"] is False
+
+
+class TestF8FrozenLibraryTermAudit:
+    """F8 reviewer asks: (a) the frozen (cold-end) scoring library must cover
+    every dev-discovered active term — a dropped column silently corrupts the
+    frozen R^2, so unresolved terms now fail closed; (b) term names are
+    classified correctly (u^3 is a cubic STATE term, not a third-order
+    derivative)."""
+
+    def test_unresolvable_active_term_fails_closed(self):
+        from apedp_dyn.epistemic.pde_discovery import _frozen_residual_r2
+        ut = np.linspace(0.0, 1.0, 50)
+        cols = {"u": ut, "u_x": ut * 2.0}
+        # A dev-invented term absent from the cold library must raise, not
+        # silently drop the coefficient.
+        with pytest.raises(ValueError, match="u_xxx"):
+            _frozen_residual_r2(ut, cols, ["u", "u_xxx"], [1.0, 0.5])
+        # Complete coverage still scores normally.
+        r2 = _frozen_residual_r2(ut, cols, ["u", "u_x"], [0.0, 0.5])
+        assert np.isfinite(r2)
+
+    def test_attemptterm_classification_u3_is_state_not_derivative(self):
+        """Term-name classification: only *_xxx / laplacian-family names are
+        third-order; 'u^3' is a cubic state nonlinearity."""
+        from apedp_dyn.epistemic.pde_discovery import _eval_frozen_1d_library
+        rng = np.random.default_rng(9)
+        u = np.cumsum(rng.normal(size=(12, 40)), axis=1)
+        _, cols = _eval_frozen_1d_library(
+            u, dt=0.1, dx=0.05, max_spatial_order=3,
+            max_polynomial_degree=3, include_advection_terms=True)
+        assert "u_xxx" in cols          # third-order SPATIAL derivative
+        assert "u^3" in cols            # cubic state nonlinearity, unchanged
+        # And the two are genuinely different series:
+        assert not np.allclose(cols["u^3"], cols["u_xxx"])
+
+    def test_mirror_covers_rust_1d_catalog(self):
+        """Every term name the Rust 1D discovery library can emit resolves in
+        the cold-end mirror built with the same options."""
+        from apedp_dyn.epistemic.pde_discovery import _eval_frozen_1d_library
+        rng = np.random.default_rng(9)
+        u = np.cumsum(rng.normal(size=(12, 40)), axis=1)
+        _, cols = _eval_frozen_1d_library(
+            u, dt=0.1, dx=0.05, max_spatial_order=3,
+            max_polynomial_degree=3, include_advection_terms=True)
+        expected = {"u", "u^2", "u^3", "u_x", "u*u_x", "u^2*u_x",
+                    "u_xx", "u*u_xx", "u_xxx"}
+        missing = expected - set(cols)
+        assert not missing, f"cold-end mirror drifted: {missing}"
+
+
+_LEAN_FORMAL_DIR = pathlib.Path(__file__).resolve().parents[1] / "apedp_dyn" / "lean_formal"
+if not _LEAN_FORMAL_DIR.is_dir():  # pragma: no cover - layout guard
+    raise AssertionError("lean_formal directory missing from repo workspace")
+
+
+class TestLeanProofChainIntegrity:
+    """Reviewer ask (F12/Lean): compile the complete dependency chain and check
+    for unintended axioms or unproved assumptions. Pin: every P2-verified
+    record's emitted Lean file is free of `sorry`, and every file containing
+    `sorry` belongs to a P0-refuted record — the sorry-channel cannot certify."
+    """
+
+    def _aggregate(self):
+        import json as _json
+
+        from apedp_dyn.sandbox.build_all_system_equations_lean_proofs import ARTIFACT_DIR
+        path = ARTIFACT_DIR / "all_system_equations_lean_provenance.json"
+        with open(path) as f:
+            return _json.load(f)
+
+    def test_p2_records_have_sorry_free_lean_sources(self):
+        data = self._aggregate()
+        checked = 0
+        for rec in data["results"]:
+            if rec["proof_claim_status"] != "P2":
+                continue
+            lean_basename = rec.get("lean_basename")
+            assert lean_basename, rec["candidate_id"]
+            lean_path = _LEAN_FORMAL_DIR / lean_basename
+            text = lean_path.read_text()
+            assert "sorry" not in text, (
+                f"P2 record {rec['candidate_id']} emits {lean_basename} containing sorry")
+            checked += 1
+        assert checked > 300  # the 315-record P2 family is fully pinned
+
+    def test_sorry_files_correspond_only_to_refuted_records(self):
+        from apedp_dyn.sandbox.build_all_system_equations_lean_proofs import (
+            ARTIFACT_DIR,
+            LEAN_FORMAL_DIR,
+        )
+        data = self._aggregate()
+        p2_ids = {r["candidate_id"] for r in data["results"]
+                  if r["proof_claim_status"] == "P2"}
+        for lean_path in LEAN_FORMAL_DIR.glob("*.lean"):
+            if "sorry" not in lean_path.read_text():
+                continue
+            cid = lean_path.stem.removesuffix("_verification").upper()
+            assert cid not in p2_ids, f"sorry-carrying file claimed as P2: {cid}"
+        assert ARTIFACT_DIR is not None

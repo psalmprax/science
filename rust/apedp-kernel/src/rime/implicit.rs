@@ -307,6 +307,15 @@ fn solve_implicit_for_features(
     let rmse = best_rmse;
     let rel_null_err = (min_val / (n as f64).max(1.0)).sqrt();
 
+    // Scale-aware exactness gate (external-review item on F17): an absolute
+    // `rmse < 1e-5` is meaningless when the relation's terms live on a large
+    // scale (e.g. QEC-style slopes ~1e5) and over-permissive for badly
+    // conditioned small-scale data. Exactness is therefore measured RELATIVE
+    // to the RMS magnitude of the residual's own terms (the design columns),
+    // with the same 1e-5 relative tolerance the gate previously held in
+    // absolute units. The all-zero pruned vector still fails on active_count,
+    // independent of scale.
+
     // Construct human-readable formula
     let mut terms = Vec::new();
     let mut active_count = 0usize;
@@ -339,7 +348,17 @@ fn solve_implicit_for_features(
     // bypass every downstream sanity filter. Exactness also demands that the
     // discovered relation actually has content (>= 2 active terms; a single
     // term c*phi = 0 is a degenerate if non-empty edge case and is allowed).
-    let is_exact = rmse < 1e-5 && active_count >= 2;
+    let mut sum_sq_scale = 0.0f64;
+    let mut n_scale_entries = 0usize;
+    for col in raw_cols.iter() {
+        for &v in col.iter() {
+            sum_sq_scale += v * v;
+            n_scale_entries += 1;
+        }
+    }
+    let term_scale = (sum_sq_scale / (n_scale_entries.max(1) as f64)).sqrt();
+    let exact_rmse_ceiling = 1e-5 * term_scale.max(1e-12);
+    let is_exact = rmse < exact_rmse_ceiling && active_count >= 2;
 
     Some(ImplicitResult {
         feature_names: names.to_vec(),

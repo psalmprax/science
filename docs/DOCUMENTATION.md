@@ -51,7 +51,22 @@ APEDP (Autonomous Physics & Engineering Discovery Platform) is an end-to-end sci
   hypothesis; the decay bound is never asserted out of the damped regime.
 - **RIME implicit Rust kernel (`rust/apedp-kernel/src/rime/implicit.rs`).**
   `is_exact_recovery` additionally requires `active_count >= 2`, so the
-  all-zero "0 = 0" pruned vector cannot be certified as an exact discovery.
+  all-zero "0 = 0" pruned vector cannot be certified as an exact discovery;
+  the exactness RMSE gate is scale-aware (relative to the RMS magnitude of
+  the relation's residual terms) so O(1e5)-scale exact laws are certifiable
+  while small-scale near-misses are refused.
+- **PDE frozen-scoring library (`apedp_dyn/epistemic/pde_discovery.py`).**
+  The Python cold-end library is a strict mirror of the Rust discovery
+  library: a dev-discovered active term the mirror cannot resolve now fails
+  closed (raises naming the term) instead of silently dropping a coefficient
+  column; `u^3` is classified as a cubic state nonlinearity and `u_xxx` as
+  the third-order spatial derivative, and the mirror's coverage of the full
+  Rust 1D catalog is pinned.
+- **Lean chain integrity (`apedp_dyn/lean_formal/`).** Every P2-verified
+  record's emitted Lean source is `sorry`-free and every `sorry`-carrying
+  file maps to a P0-refuted record, pinned against the regenerated
+  provenance in `artifacts/all_system_equations_lean_provenance.json`.
+
 
 
 For an in-depth breakdown of system capabilities and why the platform balances autonomous discovery with domain constraints, see [System Capabilities & Architectural Philosophy](SYSTEM_CAPABILITIES_AND_PHILOSOPHY.md).
