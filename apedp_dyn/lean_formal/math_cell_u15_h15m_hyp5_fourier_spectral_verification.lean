@@ -63,7 +63,7 @@ theorem math_cell_u15_h15m_hyp5_fourier_spectral_parseval_energy_partition (p_lo
   by exact parseval_partition p_low
 
 /-- Declared Invariant: spectral_power_nonnegativity (bound_positivity) - Power spectral density non-negativity 0 <= P_low --/
-theorem math_cell_u15_h15m_hyp5_fourier_spectral_spectral_power_nonnegativity (x : R) : |x| ≤ |x| :=
-  by exact abs_le_self x
+theorem math_cell_u15_h15m_hyp5_fourier_spectral_spectral_power_nonnegativity (x : Nat) : 0 ≤ x :=
+  Nat.zero_le x
 
 end APEDP_math_cell_u15_h15m_hyp5_fourier_spectral

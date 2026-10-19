@@ -45,12 +45,12 @@ def raw_features(d: pd.DataFrame) -> tuple[dict[str, np.ndarray], np.ndarray]:
     std20 = pd.Series(p).rolling(20, min_periods=20).std().to_numpy()
     out = {
         "H-BB": (p - (sma20 - 2 * std20)) / np.maximum(4 * std20, 1e-12),
-        "H-MOM": pd.Series(p).pct_change(5).to_numpy(),
+        "H-MOM": pd.Series(p).pct_change(5, fill_method=None).to_numpy(),
     }
     obv = np.zeros(len(p))
     for t in range(1, len(p)):
         obv[t] = obv[t - 1] + (v[t] if p[t] > p[t - 1] else (-v[t] if p[t] < p[t - 1] else 0.0))
-    out["H-OBV_MOM"] = pd.Series(obv).pct_change(10).to_numpy()
+    out["H-OBV_MOM"] = pd.Series(obv).pct_change(10, fill_method=None).to_numpy()
     vc = np.maximum(v, 1e-12)
     out["CVD"] = (2.0 * tb - vc) / vc
     sa = np.maximum(0.01 + 0.3 * np.abs(r) + 0.5 * np.where(r < 0, np.abs(r), 0.0), 1e-4)
@@ -59,6 +59,8 @@ def raw_features(d: pd.DataFrame) -> tuple[dict[str, np.ndarray], np.ndarray]:
     h = np.full(len(p), np.nan)
     for t in range(30, len(p)):
         sub = r[t - 30:t]
+        if not np.all(np.isfinite(sub)):
+            continue
         cd = np.cumsum(sub - np.mean(sub))
         rr = np.max(cd) - np.min(cd)
         s = np.std(sub)
@@ -66,7 +68,7 @@ def raw_features(d: pd.DataFrame) -> tuple[dict[str, np.ndarray], np.ndarray]:
             h[t] = (np.log(rr / s) / np.log(30)) - 0.5
     out["HURST"] = h
     ema12 = pd.Series(p).ewm(span=12, adjust=False).mean()
-    ema26 = pd.Series(p).ewm(span=21, adjust=False).mean()
+    ema26 = pd.Series(p).ewm(span=26, adjust=False).mean()
     ml = ema12 - ema26
     out["MACD"] = (ml - ml.ewm(span=9, adjust=False).mean()).to_numpy()
     return out, r
@@ -106,7 +108,7 @@ def run_ledger(syms: list[str], data: dict[str, pd.DataFrame],
             np.nan_to_num(z["H-MOM"], nan=0.0)), nan=0.0)
         snr = np.nan_to_num(causal_zscore(
             np.nan_to_num(z["H-MOM"], nan=0.0) /
-            (np.nan_to_num(raw["SIG_ASYM"], nan=1.0) ** 2)), nan=0.0)
+            (np.clip(np.nan_to_num(raw["SIG_ASYM"], nan=1.0), -1e100, 1e100) ** 2)), nan=0.0)
         if not ablate_feature_rank:
             rv = np.nan_to_num(trailing_rank(np.asarray(raw["RV"], dtype=float)), nan=0.0)
         else:
@@ -173,15 +175,23 @@ def run_ledger(syms: list[str], data: dict[str, pd.DataFrame],
     net = sum(x["net"] for x in out)
     assert abs((gross - fees) - net) < 1e-9, "accounting identity violated"
 
-    # Non-binding threshold check: assert active fraction lies within [5%, 95%]
+    # Non-binding threshold check: assert active fraction lies within operational bounds
     is_binding = True
     active_fraction = sum(1 for x in out if abs(x["pos"]) > 0) / max(len(out), 1)
     status = "GATE_BINDING"
     notes = "Valid binding policy run."
-    net_returns = [x["net"] for x in out]
+
+    if len(syms) > 1:
+        # Group by timestamp for contemporaneous multi-asset portfolio Sharpe
+        by_t: dict[int, list[float]] = {}
+        for x in out:
+            by_t.setdefault(x["t"], []).append(x["net"])
+        net_returns = [float(np.mean(vals)) for _, vals in sorted(by_t.items())]
+    else:
+        net_returns = [x["net"] for x in out]
     computed_sharpe = float(np.mean(net_returns) / np.std(net_returns) * np.sqrt(365)) if (len(net_returns) > 1 and np.std(net_returns) > 1e-9) else 0.0
 
-    if check_binding and (rule != "base" or th_in > 0.0 or strategy_archetype != "tactical"):
+    if check_binding:
         is_binding, active_fraction, gate_status, gate_reason = assert_strategy_class_compliance(
             out, strategy_archetype=strategy_archetype, min_events=min_tail_events
         )
@@ -235,10 +245,10 @@ def assert_mask_first_compliance(
 
 def assert_threshold_binding(
     rows: list[dict],
-    min_active: float = 0.05,
-    max_active: float = 0.95,
+    min_active: float = TACTICAL_ACTIVE_MIN,
+    max_active: float = TACTICAL_ACTIVE_MAX,
 ) -> tuple[bool, float, str]:
-    """Assert that threshold-conditioned positions actually bind within [5%, 95%].
+    """Assert that threshold-conditioned positions actually bind within tactical window.
 
     Outside that interval, the gate is purely decorative and does not actively condition trades.
     Returns: (is_binding, active_fraction, status_str)
@@ -267,7 +277,7 @@ def assert_strategy_class_compliance(
     Strategy Archetypes:
       1. 'tail_risk': Rare-event crisis alpha. Active rate may be < 5%, but requires >= min_events
          independent trades/episodes in sample to guarantee statistical power.
-      2. 'continuous_factor': Broad cross-sectional factor. Requires active fraction >= 85%.
+      2. 'continuous_factor': Broad cross-sectional factor. Requires active fraction >= min_active_continuous.
       3. 'tactical': Dynamic regime/swing signal. Requires active fraction in [5%, 90%].
 
     Returns: (is_compliant, active_fraction, status_str, reason_str)
@@ -281,8 +291,13 @@ def assert_strategy_class_compliance(
     # Count distinct active trading events/episodes (transitions from flat to active)
     active_events = 0
     prev_pos = 0.0
+    prev_asset = None
     for r in rows:
         cur_pos = r["pos"]
+        cur_asset = r.get("asset")
+        if cur_asset != prev_asset:
+            prev_pos = 0.0
+            prev_asset = cur_asset
         if abs(cur_pos) > 0.0 and abs(prev_pos) == 0.0:
             active_events += 1
         prev_pos = cur_pos
@@ -306,12 +321,12 @@ def assert_strategy_class_compliance(
         return True, active_fraction, "GATE_BINDING", f"Tail-risk contract satisfied: {active_events} crisis events."
 
     elif arch == "continuous_factor":
-        if active_fraction < 0.85:
+        if active_fraction < min_active_continuous:
             return (
                 False,
                 active_fraction,
                 "NON_CONTINUOUS_FACTOR_EXPOSURE",
-                f"Continuous factor active fraction {active_fraction:.1%} falls below 85% continuous threshold.",
+                f"Continuous factor active fraction {active_fraction:.1%} falls below {min_active_continuous:.0%} continuous threshold.",
             )
         return True, active_fraction, "GATE_BINDING", "Continuous factor exposure contract satisfied."
 
@@ -346,9 +361,9 @@ def assert_stock_split_invariance(
     df_split = df.copy()
     for col in df_split.columns:
         col_lower = col.lower()
-        if any(p in col_lower for p in price_cols):
+        if any(p == col_lower or col_lower.endswith(f"_{p}") or col_lower.startswith(f"{p}_") for p in price_cols):
             df_split[col] = df_split[col] / split_ratio
-        elif any(v in col_lower for v in vol_cols):
+        elif any(v == col_lower or col_lower.endswith(f"_{v}") or col_lower.startswith(f"{v}_") for v in vol_cols):
             df_split[col] = df_split[col] * split_ratio
 
     s_split = np.asarray(compute_signal_fn(df_split), dtype=float)

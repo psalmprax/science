@@ -21,8 +21,13 @@ Design contract (pinned in tests/test_dyn_flow_head_rust.py):
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
+from typing import TYPE_CHECKING
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from apedp_dyn.video.learned_flow_head import LearnedFlowHead
 
 try:  # kernel is optional at runtime: fall back loudly, never silently
     import apedp_kernel
@@ -30,6 +35,47 @@ try:  # kernel is optional at runtime: fall back loudly, never silently
 except ImportError:  # pragma: no cover - exercised only in fallback mode
     apedp_kernel = None
     _RUST_AVAILABLE = False
+
+
+class SpatialFlowConvention(str, Enum):
+    """Formal mathematical specification of velocity and warp displacement conventions.
+
+    1. EULERIAN_VELOCITY:
+       v = (v_x, v_y) defined as continuous field where frame transport pulls back
+       source coordinates via x_src = x - dt * v(x).
+    2. LAGRANGIAN_DISPLACEMENT:
+       disp = (dx, dy) defined as forward/point offset added directly to sampling
+       coordinates: x_sample = x + dx.
+
+    Fundamental Identity:
+       disp = -dt * v  (Eulerian advective backtrace)
+    """
+    EULERIAN_VELOCITY = "eulerian_velocity"
+    LAGRANGIAN_DISPLACEMENT = "lagrangian_displacement"
+
+
+def eulerian_velocity_to_displacement(
+    vx: np.ndarray, vy: np.ndarray, dt: float = 1.0
+) -> tuple[np.ndarray, np.ndarray]:
+    """Convert Eulerian flow velocity field v to backward sampling displacement field disp.
+
+    disp_x = -dt * vx
+    disp_y = -dt * vy
+    """
+    return -dt * np.asarray(vx, dtype=float), -dt * np.asarray(vy, dtype=float)
+
+
+def displacement_to_eulerian_velocity(
+    dx: np.ndarray, dy: np.ndarray, dt: float = 1.0
+) -> tuple[np.ndarray, np.ndarray]:
+    """Convert backward sampling displacement field disp to Eulerian velocity field v.
+
+    vx = -dx / dt
+    vy = -dy / dt
+    """
+    if abs(dt) < 1e-12:
+        raise ValueError(f"dt must be non-zero, got {dt}")
+    return -np.asarray(dx, dtype=float) / dt, -np.asarray(dy, dtype=float) / dt
 
 
 @dataclass(frozen=True)
@@ -61,7 +107,14 @@ def pack_weights(state_dict: dict) -> np.ndarray:
     to the kernel's per-layer (W, b) sequence.
     """
     weights: list[np.ndarray] = []
-    keys = sorted(k for k in state_dict if k.startswith("net.") and k.endswith(".weight"))
+    def _layer_idx(k: str) -> int:
+        parts = k.split(".")
+        return int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
+
+    keys = sorted(
+        [k for k in state_dict if k.startswith("net.") and k.endswith(".weight")],
+        key=_layer_idx,
+    )
     for wk in keys:
         bk = wk.replace(".weight", ".bias")
         weights.append(np.asarray(state_dict[wk], dtype=np.float64).ravel())
@@ -181,7 +234,7 @@ class RustFlowRollout:
         hc = self._head_channels(c_full)
         head_prev = ctx[0][hc]
         head_curr = ctx[1][hc]
-        state = ctx[1].copy()
+        state = np.asarray(state0, dtype=np.float64).copy() if state0 is not None else ctx[1].copy()
         frames = [ctx[0].copy(), ctx[1].copy()]
         for _ in range(horizon):
             z_next, vx, vy = self.step(state, head_prev, head_curr)
@@ -226,7 +279,6 @@ def from_learned_flow_head(head: LearnedFlowHead, spec: RustFlowHeadSpec | None 
     RustFlowRollout
         A rollout ready for end-to-end kernel transport.
     """
-    import torch
     from apedp_dyn.video.learned_flow_head import FlowHeadConfig
 
     if spec is None:
@@ -238,7 +290,19 @@ def from_learned_flow_head(head: LearnedFlowHead, spec: RustFlowHeadSpec | None 
             flow_scale=cfg.flow_scale,
         )
 
-    packed = pack_weights(head.state_dict())
+    state_dict = head.state_dict()
+    # Slicing flow channels if predict_gain is enabled (output channels > 2)
+    if getattr(head.cfg, "predict_gain", False):
+        last_w = f"net.{2 * spec.n_layers}.weight"
+        last_b = f"net.{2 * spec.n_layers}.bias"
+        sd = dict(state_dict)
+        if last_w in sd:
+            sd[last_w] = sd[last_w][:2]
+        if last_b in sd:
+            sd[last_b] = sd[last_b][:2]
+        state_dict = sd
+
+    packed = pack_weights(state_dict)
     return RustFlowRollout(
         spec=spec,
         weights=packed,

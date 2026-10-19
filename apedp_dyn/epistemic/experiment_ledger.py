@@ -15,7 +15,10 @@ import json
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from apedp_dyn.epistemic.remote_storage import BaseStorageBackend
 
 
 class CandidateLifecycleState(str, Enum):
@@ -83,13 +86,53 @@ class CandidateExperimentNode:
 class FullLineageExperimentLedger:
     """Immutable experiment ledger managing hypothesis lineage and preventing holdout reuse."""
 
-    def __init__(self, persistence_path: Path | str | None = None):
+    def __init__(
+        self,
+        persistence_path: Path | str | None = None,
+        storage_backend: BaseStorageBackend | None = None,
+        remote_key: str = "experiment_ledger.jsonl",
+        auto_sync: bool = False,
+    ):
         self._nodes: dict[str, CandidateExperimentNode] = {}
         # Tracks burned holdout slices: (dataset_id, slice_identifier) -> failing_candidate_id
         self._burned_holdouts: dict[tuple[str, str], str] = {}
+        self._storage_backend = storage_backend
+        self._remote_key = remote_key
+        self._auto_sync = auto_sync
         self._persistence_path = Path(persistence_path) if persistence_path else None
+
+        if self._persistence_path is None and self._storage_backend is not None:
+            from apedp_dyn.env import get_temp_storage_dir
+            self._persistence_path = get_temp_storage_dir() / f"cached_{remote_key}"
+
+        if self._storage_backend and self._persistence_path and not self._persistence_path.is_file():
+            self.pull_from_remote()
+
         if self._persistence_path and self._persistence_path.is_file():
             self._load_from_disk()
+
+    @classmethod
+    def from_env(
+        cls,
+        filename: str = "experiment_ledger.jsonl",
+        storage_backend: BaseStorageBackend | None = None,
+        auto_sync: bool | None = None,
+    ) -> FullLineageExperimentLedger:
+        """Initialize ledger using persistent storage path configured by runtime adapter or remote storage."""
+        import os
+
+        from apedp_dyn.env import get_ledger_path
+        backend = storage_backend
+        if backend is None and os.environ.get("APEDP_STORAGE_BACKEND"):
+            from apedp_dyn.epistemic.remote_storage import get_storage_backend
+            backend = get_storage_backend()
+        sync_enabled = auto_sync if auto_sync is not None else (backend is not None)
+        return cls(
+            persistence_path=get_ledger_path(filename),
+            storage_backend=backend,
+            remote_key=filename,
+            auto_sync=sync_enabled,
+        )
 
     def register_candidate(
         self,
@@ -144,6 +187,8 @@ class FullLineageExperimentLedger:
                     f"was previously burned by failing candidate '{failing_cand}'. "
                     f"Confirmation holdouts may not be reused for replacement hypotheses."
                 )
+            if outcome_status == "FAILED":
+                self._burned_holdouts[holdout_key] = candidate_id
 
         exposure = DatasetExposureRecord(
             candidate_id=candidate_id,
@@ -178,9 +223,15 @@ class FullLineageExperimentLedger:
             node.metrics.update(metrics)
         node.updated_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
 
-        # If rejected at confirmation or economic stage, permanently burn all confirmation slices it inspected
-        if new_state in (CandidateLifecycleState.CONFIRMATION_REJECTED,
-                         CandidateLifecycleState.ECONOMIC_EVALUATION_FAILED):
+        # If rejected at confirmation or economic stage (or failed any gate), permanently burn all confirmation slices it inspected
+        terminal_failure_states = (
+            CandidateLifecycleState.CONFIRMATION_REJECTED,
+            CandidateLifecycleState.ECONOMIC_EVALUATION_FAILED,
+            CandidateLifecycleState.CALIBRATION_FAILED,
+            CandidateLifecycleState.PRE_SCREEN_REJECTED,
+            CandidateLifecycleState.UNRESOLVED,
+        )
+        if new_state in terminal_failure_states:
             for exp in node.data_exposures:
                 if exp.role == DatasetRole.CONFIRMATION_HOLDOUT:
                     self._burned_holdouts[(exp.dataset_id, exp.slice_identifier)] = candidate_id
@@ -197,11 +248,49 @@ class FullLineageExperimentLedger:
     def get_burned_holdouts(self) -> dict[tuple[str, str], str]:
         return dict(self._burned_holdouts)
 
+    @property
+    def storage_backend(self) -> BaseStorageBackend | None:
+        return self._storage_backend
+
+    def sync_to_remote(self) -> None:
+        """Synchronize local ledger state to the configured remote storage backend."""
+        if self._storage_backend and self._persistence_path and self._persistence_path.is_file():
+            self._storage_backend.sync_to_remote(self._persistence_path, self._remote_key)
+
+    def pull_from_remote(self) -> bool:
+        """Pull remote ledger from storage backend, load candidates and burned holdouts."""
+        if not self._storage_backend or not self._persistence_path:
+            return False
+        pulled = self._storage_backend.pull_from_remote(self._remote_key, self._persistence_path)
+        if pulled and self._persistence_path.is_file():
+            self._load_from_disk()
+            return True
+        return False
+
+    def export_snapshot(self, snapshot_name: str | None = None) -> str:
+        """Export an immutable, timestamped snapshot of the current ledger state."""
+        if self._storage_backend and self._persistence_path and self._persistence_path.is_file():
+            return self._storage_backend.export_snapshot(self._persistence_path, snapshot_name)
+        elif self._persistence_path and self._persistence_path.is_file():
+            import shutil
+            import uuid
+            now_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+            name = snapshot_name or f"{self._persistence_path.stem}_{now_str}_{uuid.uuid4().hex[:8]}{self._persistence_path.suffix}"
+            snap_dir = self._persistence_path.parent / "snapshots"
+            snap_dir.mkdir(parents=True, exist_ok=True)
+            snap_path = snap_dir / name
+            shutil.copy2(self._persistence_path, snap_path)
+            return str(snap_path)
+        else:
+            raise RuntimeError("Cannot export snapshot: ledger has no persistence path or data on disk.")
+
     def _persist_append(self, node: CandidateExperimentNode) -> None:
         if self._persistence_path:
             self._persistence_path.parent.mkdir(parents=True, exist_ok=True)
             with open(self._persistence_path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(node.to_dict()) + "\n")
+            if self._auto_sync and self._storage_backend:
+                self.sync_to_remote()
 
     def _load_from_disk(self) -> None:
         assert self._persistence_path is not None
@@ -238,8 +327,14 @@ class FullLineageExperimentLedger:
                     updated_at=d.get("updated_at", ""),
                 )
                 self._nodes[node.candidate_id] = node
-                if node.state in (CandidateLifecycleState.CONFIRMATION_REJECTED,
-                                  CandidateLifecycleState.ECONOMIC_EVALUATION_FAILED):
-                    for exp in exposures:
-                        if exp.role == DatasetRole.CONFIRMATION_HOLDOUT:
+                terminal_failure_states = (
+                    CandidateLifecycleState.CONFIRMATION_REJECTED,
+                    CandidateLifecycleState.ECONOMIC_EVALUATION_FAILED,
+                    CandidateLifecycleState.CALIBRATION_FAILED,
+                    CandidateLifecycleState.PRE_SCREEN_REJECTED,
+                    CandidateLifecycleState.UNRESOLVED,
+                )
+                for exp in exposures:
+                    if exp.role == DatasetRole.CONFIRMATION_HOLDOUT:
+                        if exp.result_status == "FAILED" or node.state in terminal_failure_states:
                             self._burned_holdouts[(exp.dataset_id, exp.slice_identifier)] = node.candidate_id

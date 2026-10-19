@@ -440,11 +440,15 @@ class TestL2EngineHonestyAndProvenance:
 
         assert len(res.candidates) > 0
         for c in res.candidates:
-            assert c.train_loss is not None and c.train_loss >= 0.0
-            assert c.holdout_rmse is not None and c.holdout_rmse >= 0.0
+            assert c.train_loss is not None and np.isfinite(c.train_loss) and c.train_loss > 0.0
+            assert c.holdout_rmse is not None and np.isfinite(c.holdout_rmse) and c.holdout_rmse > 0.0
             g4 = c.provenance.get("gate4_status", {})
             assert "holdout_residuals" in g4
             assert len(g4["holdout_residuals"]) == 25  # 50% holdout split
+            # Real least-squares holdout: the recorded RMSE must equal the RMSE
+            # recomputed from the recorded signed residuals (no mock values).
+            recomputed_rmse = float(np.sqrt(np.mean(np.asarray(g4["holdout_residuals"]) ** 2)))
+            assert abs(recomputed_rmse - c.holdout_rmse) < 1e-9
             assert c.provenance["benchmark_level"] == BenchmarkLevel.L2_OPEN_DISCOVERY
             assert c.provenance["data_origin"] == DataOrigin.EXPERIMENTAL
 

@@ -366,23 +366,26 @@ pub fn loss_and_v_grad(
             let y1 = (y0 + 1).min(h - 1);
             let wx = sx - x0 as f64;
             let wy = sy - y0 as f64;
-            // channel-summed dz_pred at the output lattice point (y, x_c)
-            let mut g_pred = 0.0f64;
-            for ch in 0..c {
-                g_pred += dz_pred[ch * plane + idx];
-            }
             let in_range_x = sx > 0.0 && sx < (w - 1) as f64;
             let in_range_y = sy > 0.0 && sy < (h - 1) as f64;
-            if in_range_x {
-                let d_sx = (1.0 - wy) * (z_curr[y1 * w + x0] - z_curr[y0 * w + x0])
-                    + wy * (z_curr[y1 * w + x1] - z_curr[y0 * w + x1]);
-                v_grad[idx] += -dt * g_pred * d_sx;
+            let mut sum_g_dsx = 0.0f64;
+            let mut sum_g_dsy = 0.0f64;
+            for ch in 0..c {
+                let g = dz_pred[ch * plane + idx];
+                let ch_offset = ch * plane;
+                if in_range_x {
+                    let d_sx = (1.0 - wy) * (z_curr[ch_offset + y0 * w + x1] - z_curr[ch_offset + y0 * w + x0])
+                        + wy * (z_curr[ch_offset + y1 * w + x1] - z_curr[ch_offset + y1 * w + x0]);
+                    sum_g_dsx += g * d_sx;
+                }
+                if in_range_y {
+                    let d_sy = (1.0 - wx) * (z_curr[ch_offset + y1 * w + x0] - z_curr[ch_offset + y0 * w + x0])
+                        + wx * (z_curr[ch_offset + y1 * w + x1] - z_curr[ch_offset + y0 * w + x1]);
+                    sum_g_dsy += g * d_sy;
+                }
             }
-            if in_range_y {
-                let d_sy = (1.0 - wx) * (z_curr[y0 * w + x1] - z_curr[y0 * w + x0])
-                    + wx * (z_curr[y1 * w + x1] - z_curr[y1 * w + x0]);
-                v_grad[plane + idx] += -dt * g_pred * d_sy;
-            }
+            v_grad[idx] += -dt * sum_g_dsx;
+            v_grad[plane + idx] += -dt * sum_g_dsy;
         }
     }
 
@@ -407,15 +410,15 @@ pub fn loss_and_v_grad(
         div_loss = lambda_div * sum_sq / n_int;
     }
 
-    // --- TV smoothness (forward diffs, both channels, torch-mean semantics) ---
+    // --- TV smoothness (forward diffs, both velocity channels, torch-mean semantics) ---
     // value = lambda * (mean|dv/dx| + mean|dv/dy|); gradient via sign scatter.
     let mut tv_loss = 0.0f64;
     if lambda_smooth != 0.0 && h > 1 && w > 1 {
-        let cnt_h = (c * h * (w - 1)) as f64;
-        let cnt_v = (c * (h - 1) * w) as f64;
+        let cnt_h = (2 * h * (w - 1)) as f64;
+        let cnt_v = (2 * (h - 1) * w) as f64;
         let mut h_sum = 0.0f64;
         let mut v_sum = 0.0f64;
-        for ch in 0..c {
+        for ch in 0..2 {
             let f0: &[f64] = if ch == 0 { &vx } else { &vy };
             for y in 0..h {
                 for x_c in 0..w - 1 {

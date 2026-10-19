@@ -18,6 +18,10 @@ from apedp_dyn.proposers.distributed_lag_interaction_proposer import (
     DistributedLagInteractionProposer,
 )
 from apedp_dyn.proposers.hawkes_orderflow_proposer import HawkesOrderFlowProposer
+from apedp_dyn.proposers.ncm_structural_proposer import (
+    MacroConceptArchetype,
+    NCMStructuralProposer,
+)
 from apedp_dyn.proposers.regime_switching_proposer import RegimeSwitchingProposer
 from apedp_dyn.proposers.resiliency_proposer import OrderBookResiliencyProposer
 from apedp_dyn.proposers.rime_proposer import RimeProposer, is_rime_available
@@ -34,6 +38,8 @@ __all__ = [
     "DistributedLagInteractionProposer",
     "HamiltonianProposer",
     "HawkesOrderFlowProposer",
+    "MacroConceptArchetype",
+    "NCMStructuralProposer",
     "OrderBookResiliencyProposer",
     "ProposerBase",
     "RegimeSwitchingProposer",

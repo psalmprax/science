@@ -152,3 +152,40 @@ def test_orphan_module_detection():
         "Orphan module detection failed! The following active modules are missing from DOCUMENTATION.md:\n"
         + "\n".join(f" - {o}" for o in orphans)
     )
+
+
+def test_registry_status_tags_match_code_status_labels():
+    """Registry Status tags and module docstring `Status:` lines must agree.
+
+    AGENTS.md section 3 defines exactly four canonical status tags. The
+    DOCUMENTATION.md module registry must use only those tags, and wherever a
+    linked module carries an explicit `Status:` line in its docstring, it must
+    match the registry tag: documentation cannot certify a stability level
+    the code does not declare.
+    """
+    doc_path = REPO_ROOT / "docs" / "DOCUMENTATION.md"
+    content = doc_path.read_text(encoding="utf-8")
+
+    valid_tags = {"production", "experimental", "audit-only", "deprecated"}
+    row_re = re.compile(
+        r"\|\s*\[`([^`]+)`\]\(file:///home/psalmprax/ALL_PROJECTS/science/([^)]+)\)[^|]*\|[^|]*\|\s*`([a-z-]+)`\s*\|"
+    )
+    status_re = re.compile(r"Status:\s*(production|experimental|audit-only|deprecated)\b")
+
+    checked = 0
+    for _display, rel, tag in row_re.findall(content):
+        assert tag in valid_tags, f"Non-canonical status tag `{tag}` for {rel} in DOCUMENTATION.md"
+        target = REPO_ROOT / rel
+        if not target.exists() or target.suffix != ".py":
+            continue
+        head = target.read_text(encoding="utf-8")[:4000]
+        m = status_re.search(head)
+        if m is None:
+            continue
+        assert m.group(1) == tag, (
+            f"Status mismatch for {rel}: DOCUMENTATION.md says `{tag}`, "
+            f"module docstring says `{m.group(1)}`"
+        )
+        checked += 1
+
+    assert checked >= 10, f"registry status consistency check covered too few modules ({checked})"

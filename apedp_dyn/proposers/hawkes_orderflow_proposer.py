@@ -9,6 +9,8 @@ Signals trigger on cluster intensity surges representing liquidity depletion.
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
@@ -18,6 +20,29 @@ from apedp_dyn.grammar.proposer_interface import (
     ProposerBase,
     StrategyArchetype,
 )
+
+
+def _extract_timestamps(data: Any) -> np.ndarray:
+    if isinstance(data, dict):
+        all_ts = []
+        for v in data.values():
+            if isinstance(v, (pd.DataFrame, pd.Series, np.ndarray, list, tuple)):
+                ts = _extract_timestamps(v)
+                if len(ts) > 0:
+                    all_ts.append(ts)
+        return np.sort(np.concatenate(all_ts)) if all_ts else np.array([], dtype=float)
+    if isinstance(data, pd.DataFrame):
+        for col in ("timestamp", "t", "time"):
+            if col in data.columns:
+                return np.sort(np.asarray(data[col].to_numpy(dtype=float)))
+        if isinstance(data.index, pd.DatetimeIndex):
+            return np.sort(data.index.astype(np.int64).to_numpy() / 1e9)
+        return np.sort(np.asarray(data.index.to_numpy(dtype=float)))
+    if isinstance(data, pd.Series):
+        return np.sort(np.asarray(data.to_numpy(dtype=float)))
+    if isinstance(data, (np.ndarray, list, tuple)):
+        return np.sort(np.asarray(data, dtype=float))
+    return np.array([], dtype=float)
 
 
 class HawkesOrderFlowProposer(ProposerBase):
@@ -37,12 +62,18 @@ class HawkesOrderFlowProposer(ProposerBase):
 
     def fit_and_propose(
         self,
-        event_timestamps: np.ndarray | pd.Series,
+        event_data: dict[str, pd.DataFrame] | pd.DataFrame | np.ndarray | pd.Series | None = None,
         candidate_prefix: str = "H-HWK",
+        event_timestamps: np.ndarray | pd.Series | None = None,
+        **kwargs: Any,
     ) -> list[CandidateProposal]:
         """Fit Hawkes process parameters via maximum likelihood and emit CandidateProposals."""
         proposals: list[CandidateProposal] = []
-        t_arr = np.sort(np.asarray(event_timestamps, dtype=float))
+        input_data = event_data if event_data is not None else event_timestamps
+        if input_data is None:
+            return proposals
+
+        t_arr = _extract_timestamps(input_data)
         n = len(t_arr)
         if n < 50:
             return proposals
@@ -59,7 +90,7 @@ class HawkesOrderFlowProposer(ProposerBase):
             mu, alpha = params[0], params[1]
             if mu <= 1e-5 or alpha <= 1e-5 or alpha >= beta:
                 return 1e9
-            # Compute recursive recursive intensity terms R[i] = exp(-beta * dt) * (1 + R[i-1])
+            # Compute recursive intensity terms R[i] = exp(-beta * dt) * (1 + R[i-1])
             dt = np.diff(t_norm)
             R = np.zeros(n)
             for i in range(1, n):
@@ -97,17 +128,64 @@ class HawkesOrderFlowProposer(ProposerBase):
         )
 
         def compute_score(df: pd.DataFrame) -> np.ndarray:
-            # If timestamp column available, compute intensity; otherwise zero
-            if "t" in df.columns or "timestamp" in df.columns:
-                col = "t" if "t" in df.columns else "timestamp"
-                ts = df[col].to_numpy(dtype=float)
-                # Simple trailing exponential sum approximation
-                sig = np.zeros(len(ts))
-                for idx in range(1, len(ts)):
+            n_samples = len(df)
+            if n_samples == 0:
+                return np.zeros(0, dtype=float)
+
+            # 1. Identify arrival weights / order-flow volume if available
+            weights = np.ones(n_samples, dtype=float)
+            has_vol = False
+            for vcol in ("volume", "vol", "size", "trades", "count"):
+                if vcol in df.columns:
+                    raw_v = np.nan_to_num(df[vcol].to_numpy(dtype=float), nan=0.0)
+                    mean_v = float(np.mean(raw_v))
+                    if mean_v > 1e-12:
+                        weights = raw_v / mean_v
+                        has_vol = True
+                    break
+
+            # If no volume, check for price activity
+            if not has_vol:
+                for pcol in ("close", "price"):
+                    if pcol in df.columns:
+                        p = df[pcol].to_numpy(dtype=float)
+                        dp = np.diff(p, prepend=p[0])
+                        abs_dp = np.abs(dp)
+                        mean_dp = float(np.mean(abs_dp))
+                        if mean_dp > 1e-12:
+                            weights = abs_dp / mean_dp
+                            has_vol = True
+                        break
+
+            # 2. Extract timestamps or default to unit time steps
+            ts = None
+            for col in ("timestamp", "t", "time"):
+                if col in df.columns:
+                    ts = df[col].to_numpy(dtype=float)
+                    break
+            if ts is None and isinstance(df.index, pd.DatetimeIndex):
+                ts = df.index.astype(np.int64).to_numpy() / 1e9
+
+            sig = np.zeros(n_samples, dtype=float)
+            if ts is not None and len(ts) == n_samples:
+                for idx in range(1, n_samples):
                     delta_t = max(ts[idx] - ts[idx - 1], 1e-6)
-                    sig[idx] = np.exp(-beta * delta_t) * (1.0 + sig[idx - 1])
-                return (mu_hat + alpha_hat * sig > tau_intensity).astype(float)
-            return np.zeros(len(df))
+                    sig[idx] = np.exp(-beta * delta_t) * (weights[idx - 1] + sig[idx - 1])
+            else:
+                delta_t = 1.0
+                for idx in range(1, n_samples):
+                    sig[idx] = np.exp(-beta * delta_t) * (weights[idx - 1] + sig[idx - 1])
+
+            intens = mu_hat + alpha_hat * sig
+            surge = (intens > tau_intensity).astype(float)
+            # If thresholding collapses to constant zero on regular bars, return standardized dynamic intensity
+            if np.all(surge == 0.0) or np.all(surge == 1.0):
+                std_intens = float(np.std(intens))
+                if std_intens > 1e-8:
+                    return (intens - np.mean(intens)) / std_intens
+                return intens - np.mean(intens)
+
+            return surge
 
         cand = CandidateProposal(
             proposer_id=self.proposer_id,

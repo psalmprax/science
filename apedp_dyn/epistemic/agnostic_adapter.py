@@ -133,12 +133,14 @@ class AgnosticAdapter:
         metrics: dict[str, float] = {}
 
         if candidate.model_callable is None:
-            # Fall back to metadata-provided metrics if no callable is attached
-            return dict(candidate.metadata.get("precomputed_metrics", {
-                "in_sample_r2": 0.95,
-                "holdout_rmse": 0.02,
-                "extrap_rmse": 0.05,
-            }))
+            if "precomputed_metrics" in candidate.metadata:
+                return dict(candidate.metadata["precomputed_metrics"])
+            return {
+                "no_model_callable": 1.0,
+                "execution_error": 1.0,
+                "in_sample_r2": -999.0,
+                "holdout_rmse": 999.0,
+            }
 
         try:
             # 1. In-sample fit
@@ -196,15 +198,24 @@ class AgnosticAdapter:
 
         # Standard built-in generic invariant evaluators
         if candidate.model_callable is None:
-            # Check precomputed metadata flags
-            meta_passed = candidate.metadata.get(f"invariant_{invariant.name}", True)
+            key = f"invariant_{invariant.name}"
+            if key in candidate.metadata:
+                meta_passed = bool(candidate.metadata[key])
+                return InvariantVerificationResult(
+                    name=invariant.name,
+                    kind=invariant.kind,
+                    passed=meta_passed,
+                    observed_metric=0.0 if meta_passed else 1.0,
+                    tolerance=invariant.tolerance,
+                    diagnostic_message="Verified from candidate specification metadata" if meta_passed else "Violation recorded in specification",
+                )
             return InvariantVerificationResult(
                 name=invariant.name,
                 kind=invariant.kind,
-                passed=bool(meta_passed),
-                observed_metric=0.0 if meta_passed else 1.0,
+                passed=False,
+                observed_metric=0.0,
                 tolerance=invariant.tolerance,
-                diagnostic_message="Verified from candidate specification metadata" if meta_passed else "Violation recorded in specification",
+                diagnostic_message="Unverified: no evaluator, no model callable, and no recorded result",
             )
 
         f = candidate.model_callable
@@ -250,9 +261,13 @@ class AgnosticAdapter:
             msg = f"Asymptotic max absolute value {max_abs:.3f} (ceiling: {ceiling})"
             return InvariantVerificationResult(invariant.name, invariant.kind, passed, max_abs, invariant.tolerance, msg)
 
-        # Fallback for custom or unhandled
         return InvariantVerificationResult(
-            invariant.name, invariant.kind, True, 0.0, invariant.tolerance, "Default pass: no evaluator failure detected"
+            invariant.name,
+            invariant.kind,
+            False,
+            0.0,
+            invariant.tolerance,
+            "Unverified: no evaluator and no built-in check for this invariant kind",
         )
 
     def evaluate_structural_rivals(

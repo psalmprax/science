@@ -187,7 +187,8 @@ def _advance(z_curr: torch.Tensor, v: torch.Tensor,
 def flow_consistency_loss(model: LearnedFlowHead,
                           z_prev: torch.Tensor, z_curr: torch.Tensor,
                           z_next: torch.Tensor, dt: float = 1.0,
-                          periodic: bool = False) -> torch.Tensor:
+                          periodic: bool = False,
+                          return_pred: bool = False) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
     """Self-supervised advection-consistency objective for one transition.
 
     All tensors (B,C,H,W); C should equal the head's context_channels.
@@ -204,14 +205,18 @@ def flow_consistency_loss(model: LearnedFlowHead,
         torch.mean(torch.abs(torch.diff(v, dim=-1)))
         + torch.mean(torch.abs(torch.diff(v, dim=-2)))
     )
-    return adv_loss + div_sq + tv
+    total = adv_loss + div_sq + tv
+    if return_pred:
+        return total, z_pred
+    return total
 
 
 def flow_supervision_loss(model: LearnedFlowHead,
                           z_prev: torch.Tensor, z_curr: torch.Tensor,
                           vx_teacher: torch.Tensor, vy_teacher: torch.Tensor,
                           z_next: torch.Tensor, dt: float = 1.0,
-                          periodic: bool = False) -> torch.Tensor:
+                          periodic: bool = False,
+                          return_pred: bool = False) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
     """Teacher-supervised flow objective (Stage 3): consistency + flow MSA.
 
     Adds ``MSE(v_head, v_teacher)`` to :func:`flow_consistency_loss`. The
@@ -227,10 +232,6 @@ def flow_supervision_loss(model: LearnedFlowHead,
     residual self-supervision, so the gradient is not tied to the dye
     renormalization floor.
     """
-    # SHARED FORWARD (halves the per-step model cost): one head evaluation
-    # feeds both the consistency warp and the supervised MSE. Numerically
-    # identical to the naive composition (same v Into both terms — conv/GELU
-    # are deterministic), pinned by test at 1e-12.
     v, s, b = model.predict_flow_and_gain(z_prev, z_curr)
     z_pred = _advance(z_curr, v, s, b, dt, periodic)
     adv_loss = F.mse_loss(z_pred, z_next)
@@ -240,7 +241,10 @@ def flow_supervision_loss(model: LearnedFlowHead,
         + torch.mean(torch.abs(torch.diff(v, dim=-2)))
     )
     flow_mse = F.mse_loss(v[:, 0], vx_teacher) + F.mse_loss(v[:, 1], vy_teacher)
-    return adv_loss + div_sq + tv + flow_mse
+    total = adv_loss + div_sq + tv + flow_mse
+    if return_pred:
+        return total, z_pred
+    return total
 
 
 def train_flow_head(model: LearnedFlowHead,
@@ -352,19 +356,16 @@ def train_flow_head(model: LearnedFlowHead,
         for j in range(k):
             z_next = data[ti + 1 + j: ti + 2 + j]
             if flow is None:
-                loss = flow_consistency_loss(model, z_prev, z_curr, z_next,
-                                             dt=dt, periodic=periodic)
+                loss, z_pred = flow_consistency_loss(model, z_prev, z_curr, z_next,
+                                                     dt=dt, periodic=periodic, return_pred=True)
             else:
-                loss = flow_supervision_loss(model, z_prev, z_curr,
-                                             flow[ti + 1 + j: ti + 2 + j, 0],
-                                             flow[ti + 1 + j: ti + 2 + j, 1],
-                                             z_next, dt=dt, periodic=periodic)
+                loss, z_pred = flow_supervision_loss(model, z_prev, z_curr,
+                                                     flow[ti + 1 + j: ti + 2 + j, 0],
+                                                     flow[ti + 1 + j: ti + 2 + j, 1],
+                                                     z_next, dt=dt, periodic=periodic, return_pred=True)
             total = loss if total is None else total + loss
             if j + 1 < k:
-                # advance with the GRAPH-CARRYING prediction (BPTT across the
-                # window): the next step sees the model's own output
-                v_s, s_s, b_s = model.predict_flow_and_gain(z_prev, z_curr)
-                z_pred = _advance(z_curr, v_s, s_s, b_s, dt, periodic)
+                # advance with the graph-carrying prediction (computed in flow loss above)
                 z_prev, z_curr = z_curr, z_pred
         total.backward()
         opt.step()

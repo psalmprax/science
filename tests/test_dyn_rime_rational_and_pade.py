@@ -8,6 +8,8 @@ Validates the three implementation pathways for rational and saturating discover
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -162,6 +164,14 @@ def test_option_2_epistemic_repair_engine_end_to_end_repair():
         equivalence_tol=1e-9,
         operators=(RepairOperator.R5_PADE_SATURATION,),
     )
+    # Mechanism assertions run with the cross-slice invariance probe disabled:
+    # this frame is a single-variable narrow-band grid (p in [0.001, 0.025]),
+    # and contiguous slices re-propose structurally different originals (state
+    # vs lag forms) by construction, so the gate resolves AMBIGUOUS regardless
+    # of the R5 fit quality. The gate's refusal behaviour is asserted
+    # explicitly below and covered by
+    # tests/test_dyn_rime_repair_v012_sensitivity.py.
+    mech_config = replace(config, invariance_slices=0)
 
     cuts = {
         "rho_flag": RESID_RHO_FLAG,
@@ -172,13 +182,20 @@ def test_option_2_epistemic_repair_engine_end_to_end_repair():
         "min_rows": 30,
     }
 
-    out = repair(base_prop, parts, config, **cuts)
+    out = repair(base_prop, parts, mech_config, **cuts)
     assert out.status == RepairStatus.IMPROVED, f"Repair failed: {out.submit_note}"
     assert out.winner is not None
     assert out.winner.metadata["operator"] == RepairOperator.R5_PADE_SATURATION.value
     assert out.sealed is not None
     assert out.sealed["winner_r2"] > 0.99
     assert out.sealed["sealed_r2_gain"] > 0
+
+    # With the default pair-mode invariance probe the same frame resolves
+    # AMBIGUOUS: independent dev slices cannot re-discover the pooled
+    # structure, so the identification claim is withheld (fail-closed).
+    gated = repair(base_prop, parts, config, **cuts)
+    assert gated.status == RepairStatus.AMBIGUOUS
+    assert "cross-slice invariance" in gated.submit_note
 
 
 @pytest.mark.skipif(not _RIME_AVAILABLE, reason="apedp_kernel with RIME required")
@@ -266,6 +283,11 @@ def test_options_123_under_2pct_and_10pct_noise():
         max_candidates_per_round=4, max_rounds=1, max_added_terms=1,
         min_validation_r2_gain=0.01, equivalence_tol=1e-9,
         operators=(RepairOperator.R5_PADE_SATURATION,),
+        # Same narrow-band-grid rationale as test_option_2: this test pins the
+        # R5 sealed-R2 behaviour under noise. The cross-slice invariance gate
+        # is a separate identification criterion, covered by
+        # tests/test_dyn_rime_repair_v012_sensitivity.py.
+        invariance_slices=0,
     )
     cuts = {
         "rho_flag": RESID_RHO_FLAG, "bias_ratio_cut": 0.25, "variance_ratio_cut": 4.0,

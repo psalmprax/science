@@ -48,6 +48,12 @@ class CandidateTrialLedger:
         if self._persistence_path and self._persistence_path.is_file():
             self._load_from_disk()
 
+    @classmethod
+    def from_env(cls, filename: str = "trial_ledger.jsonl") -> CandidateTrialLedger:
+        """Initialize trial ledger using persistent storage path configured by notebook/cloud runtime adapter."""
+        from apedp_dyn.env import get_ledger_path
+        return cls(persistence_path=get_ledger_path(filename))
+
     def record_trial(
         self,
         candidate_id: str,
@@ -119,20 +125,21 @@ class CandidateTrialLedger:
                     self._records.append(CandidateTrialRecord(**d))
 
 
-def compute_expected_max_sharpe(n_trials: int, var_trials: float) -> float:
+def compute_expected_max_sharpe(n_trials: int, var_trials: float, min_var: float = 1e-4) -> float:
     """Expected maximum Sharpe ratio under the null hypothesis of uninformative search.
 
     E[max_N SR] ≈ σ_trials * ((1 - γ) * Φ^(-1)(1 - 1/N) + γ * Φ^(-1)(1 - 1/(N*e)))
     using Bailey & López de Prado (2014) closed-form asymptotic approximation.
     """
-    if n_trials <= 1 or var_trials <= 1e-12:
+    if n_trials <= 1:
         return 0.0
 
-    sigma_sr = np.sqrt(var_trials)
-    # Asymptotic Extreme Value Theory for N independent standard normals
-    # z ≈ sqrt(2 * ln(N)) + Euler_Mascheroni / sqrt(2 * ln(N))
-    log_n = np.log(n_trials)
-    np.sqrt(2.0 * log_n)
+    # Ensure trial multiplicity is not bypassed when identical/constant trials are submitted
+    effective_var = max(var_trials, min_var) if min_var > 0 else var_trials
+    if effective_var <= 1e-12:
+        return 0.0
+
+    sigma_sr = np.sqrt(effective_var)
     expected_z = (1.0 - EULER_MASCHERONI) * stats.norm.ppf(1.0 - 1.0 / n_trials) + \
                  EULER_MASCHERONI * stats.norm.ppf(1.0 - 1.0 / (n_trials * np.e))
     return float(sigma_sr * expected_z)

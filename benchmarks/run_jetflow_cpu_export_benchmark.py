@@ -25,9 +25,11 @@ Run:
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
 import os
 import sys
+import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -53,8 +55,14 @@ def export_backbone_to_onnx(model: JetFlowVideoModel, out_path: str, *,
     z = torch.randn(1, frames, latent_channels, lat, lat)
     t = torch.tensor([0.5])
     txt = torch.randn(1, 2, 64)
+    export_kwargs = {}
+    if "dynamo" in inspect.signature(torch.onnx.export).parameters:
+        # torch >= 2.6 defaults to the dynamo exporter; pin the legacy
+        # TorchScript path this traced-graph export depends on. Older torch
+        # (no `dynamo` kwarg) always uses the legacy path.
+        export_kwargs["dynamo"] = False
     torch.onnx.export(
-        bb, (z, t, txt), out_path, opset_version=17, dynamo=False,
+        bb, (z, t, txt), out_path, opset_version=17, **export_kwargs,
         input_names=["z", "t", "text_tokens"], output_names=["v"],
     )
     return out_path
@@ -82,7 +90,7 @@ def run_benchmark(hidden: int = 32, layers: int = 1, frames: int = 6, lat: int =
         latent_channels=12, hidden_dim=hidden, num_layers=layers)).eval()
     n_params = sum(p.numel() for p in model.parameters())
 
-    tmp_dir = "/tmp"
+    tmp_dir = tempfile.gettempdir()
     fp32_path = os.path.join(tmp_dir, "jetflow_backbone_fp32.onnx")
     int8_path = os.path.join(tmp_dir, "jetflow_backbone_int8.onnx")
     export_backbone_to_onnx(model, fp32_path, frames=frames, latent_channels=12, lat=lat)

@@ -55,7 +55,7 @@ from __future__ import annotations
 import enum
 import re
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 import numpy as np
@@ -818,7 +818,12 @@ def _invariance_verdict(best, partitions, config, cutoffs) -> _InvVerdict:
 
     pair = config.invariance_mode == "pair"
     min_slice = 40
-    order = np.random.RandomState(0).permutation(len(dev_x))
+    # Contiguous, order-preserving slices. The dev pool is temporal (concatenated
+    # discovery/repair/validation roles), and pairwise slice evaluation splits
+    # head/tail in time, so shuffling rows would destroy the serial structure the
+    # lag-family findings and repairs are about, and would fabricate slices from
+    # unrelated regimes.
+    order = np.arange(len(dev_x))
     bounds = np.linspace(0, len(dev_x), k + 1).astype(int)
     key_counts: dict[str, int] = {}
     winner_keys: set[str] = set()
@@ -886,11 +891,16 @@ def _slice_pair_key(sl_x, sl_y, config, cutoffs) -> str | None:
         return None
     sp = RepairPartitions.from_frame(sl_x, np.asarray(sl_y, dtype=float))
     so = _slice_original(sp)
+    # "With no gates" per this probe's contract: R5 identifiability gating is a
+    # pooled-fit stability criterion, not a reproducibility criterion; slices are
+    # smaller by construction and would otherwise be judged unstable a priori.
+    # The identifiability status still travels with each slice candidate.
+    slice_config = replace(config, r5_emit_unidentified=True)
     reps = generate_repairs(so, (diagmod.FINDING_CURVATURE_SUSPECT,
                                  diagmod.FINDING_INTERACTION_SUSPECT,
                                  diagmod.FINDING_TEMPORAL_DEPENDENCE,
                                  diagmod.FINDING_INTERCEPT_BIAS),
-                            fit_x, fit_y, config)
+                            fit_x, fit_y, slice_config)
     if not reps:
         return None
     best = max(reps, key=lambda q: _paired_metrics(ev_y, np.asarray(q.compute_score(ev_x), dtype=float))[0])

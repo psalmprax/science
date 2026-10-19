@@ -128,7 +128,7 @@ def run_tournament():
             resid = yy - pred
             cands.append(_mk(cid, terms, rm, resid, float(np.sqrt(np.mean(yy ** 2))),
                              float(np.std(resid)), len(yy)))
-        ranked = sorted([s for s in cands if np.isfinite(s.train_loss)], key=lambda s: s.train_loss)
+        ranked = sorted([s for s in cands if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)], key=lambda s: s.holdout_rmse)
         adj = adjudicate(
             cands, resid_best=ranked[0].provenance["gate4_status"]["holdout_residuals"],
             resid_rival=ranked[1].provenance["gate4_status"]["holdout_residuals"],

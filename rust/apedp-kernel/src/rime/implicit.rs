@@ -117,11 +117,13 @@ pub fn jacobi_eigen(a: &[f64], k: usize, max_rotations: usize, tol: f64) -> (Vec
     (eigenvalues, v)
 }
 
-/// Construct feature matrix Theta(x, y).
-fn build_features(
+/// Construct feature matrix Theta(x, y) up to a specified maximum degree.
+fn build_features_for_degree(
     x: &[f64],
     y: &[f64],
-    config: &ImplicitConfig,
+    deg: usize,
+    include_cross_terms: bool,
+    include_rational_products: bool,
 ) -> (Vec<Vec<f64>>, Vec<String>) {
     let n = x.len();
     let mut cols = Vec::new();
@@ -132,7 +134,7 @@ fn build_features(
     names.push("1".to_string());
 
     // Single variable powers x^p, y^q
-    for p in 1..=config.max_degree {
+    for p in 1..=deg {
         let col_x: Vec<f64> = x.iter().map(|&v| v.powi(p as i32)).collect();
         cols.push(col_x);
         names.push(if p == 1 { "x".to_string() } else { format!("x^{p}") });
@@ -142,11 +144,11 @@ fn build_features(
         names.push(if p == 1 { "y".to_string() } else { format!("y^{p}") });
     }
 
-    // Cross terms x^p * y^q
-    if config.include_cross_terms {
-        for p in 1..=config.max_degree {
-            for q in 1..=config.max_degree {
-                if p + q <= config.max_degree + 1 {
+    // Cross terms x^p * y^q with total degree p + q <= deg
+    if include_cross_terms {
+        for p in 1..=deg {
+            for q in 1..=deg {
+                if p + q <= deg {
                     let col_xy: Vec<f64> = x.iter().zip(y.iter()).map(|(&xv, &yv)| {
                         xv.powi(p as i32) * yv.powi(q as i32)
                     }).collect();
@@ -159,8 +161,8 @@ fn build_features(
         }
     }
 
-    // Rational resonance cross-terms: x^2 * y (essential for Padé saturation & detuned Rabi)
-    if config.include_rational_products && !names.contains(&"x^2*y".to_string()) {
+    // Rational resonance cross-terms: x^2 * y (total degree 3, essential for Padé saturation & detuned Rabi)
+    if include_rational_products && deg >= 2 && !names.contains(&"x^2*y".to_string()) {
         let col_x2y: Vec<f64> = x.iter().zip(y.iter()).map(|(&xv, &yv)| xv * xv * yv).collect();
         cols.push(col_x2y);
         names.push("x^2*y".to_string());
@@ -169,22 +171,17 @@ fn build_features(
     (cols, names)
 }
 
-/// Discover implicit algebraic relations F(x, y) = 0.
-pub fn discover_implicit_relation(
-    x: &[f64],
-    y: &[f64],
+fn solve_implicit_for_features(
+    raw_cols: &[Vec<f64>],
+    names: &[String],
+    n: usize,
+    deg: usize,
     config: &ImplicitConfig,
-) -> Result<ImplicitResult, String> {
-    let n = x.len();
-    if n < 10 {
-        return Err("Implicit discovery requires at least 10 observations".to_string());
-    }
-    if y.len() != n {
-        return Err("x and y lengths do not match".to_string());
-    }
-
-    let (raw_cols, names) = build_features(x, y, config);
+) -> Option<ImplicitResult> {
     let k = raw_cols.len();
+    if k == 0 {
+        return None;
+    }
 
     // Column norms for scaling
     let mut norms = vec![0.0f64; k];
@@ -206,8 +203,9 @@ pub fn discover_implicit_relation(
         }
     }
 
-    // Jacobi Eigendecomposition of Gram matrix
-    let (evals, evecs) = jacobi_eigen(&gram, k, 150, 1e-15);
+    // Jacobi Eigendecomposition of Gram matrix with adequate sweep depth
+    let max_rotations = (20 * k * (k - 1) / 2).max(600);
+    let (evals, evecs) = jacobi_eigen(&gram, k, max_rotations, 1e-15);
 
     // Find smallest non-negative eigenvalue and its eigenvector
     let mut min_idx = 0usize;
@@ -227,36 +225,86 @@ pub fn discover_implicit_relation(
 
     let cond = if min_val > 1e-15 { max_val / min_val } else { f64::INFINITY };
 
-    // Extract null-space vector: v_j / norm_j
-    let mut raw_c = vec![0.0f64; k];
-    for j in 0..k {
-        raw_c[j] = evecs[j * k + min_idx] / norms[j];
-    }
+    // Examine candidates in the numerical null space to choose the candidate
+    // maximizing sparsity while maintaining minimal algebraic RMSE.
+    let null_cutoff = (min_val * 50.0).max(config.rcond_threshold * max_val).max(1e-7);
 
-    // Normalize so maximum absolute coefficient is 1.0
-    let max_c = raw_c.iter().map(|v| v.abs()).fold(0.0f64, f64::max).max(1e-15);
-    for v in raw_c.iter_mut() {
-        *v /= max_c;
-    }
+    let mut best_c = vec![0.0f64; k];
+    let mut best_sparse_c = vec![0.0f64; k];
+    let mut best_score = f64::INFINITY;
+    let mut best_rmse = f64::INFINITY;
 
-    // Apply sparsity thresholding
-    let mut sparse_c = raw_c.clone();
-    for v in sparse_c.iter_mut() {
-        if v.abs() < config.sparsity_threshold {
-            *v = 0.0;
+    for (idx, &val) in evals.iter().enumerate() {
+        if val.abs() > null_cutoff && idx != min_idx {
+            continue;
         }
-    }
-
-    // Compute residual error: ||Theta * c|| / sqrt(N)
-    let mut sum_sq_err = 0.0f64;
-    for row in 0..n {
-        let mut r = 0.0f64;
+        let mut cand_c = vec![0.0f64; k];
         for j in 0..k {
-            r += raw_cols[j][row] * sparse_c[j];
+            cand_c[j] = evecs[j * k + idx] / norms[j];
         }
-        sum_sq_err += r * r;
+        let max_c = cand_c.iter().map(|v| v.abs()).fold(0.0f64, f64::max).max(1e-15);
+        for v in cand_c.iter_mut() {
+            *v /= max_c;
+        }
+        let mut cand_sparse = cand_c.clone();
+        let mut active_count = 0usize;
+        for v in cand_sparse.iter_mut() {
+            if v.abs() < config.sparsity_threshold {
+                *v = 0.0;
+            } else {
+                active_count += 1;
+            }
+        }
+        if active_count == 0 {
+            continue;
+        }
+
+        // Compute residual error: ||Theta * c|| / sqrt(N)
+        let mut sum_sq_err = 0.0f64;
+        for row in 0..n {
+            let mut r = 0.0f64;
+            for j in 0..k {
+                r += raw_cols[j][row] * cand_sparse[j];
+            }
+            sum_sq_err += r * r;
+        }
+        let cand_rmse = (sum_sq_err / (n as f64)).sqrt();
+        let score = cand_rmse + 0.005 * (active_count as f64) + 0.02 * (deg as f64);
+        if score < best_score {
+            best_score = score;
+            best_rmse = cand_rmse;
+            best_c = cand_c;
+            best_sparse_c = cand_sparse;
+        }
     }
-    let rmse = (sum_sq_err / (n as f64)).sqrt();
+
+    if best_score == f64::INFINITY {
+        for j in 0..k {
+            best_c[j] = evecs[j * k + min_idx] / norms[j];
+        }
+        let max_c = best_c.iter().map(|v| v.abs()).fold(0.0f64, f64::max).max(1e-15);
+        for v in best_c.iter_mut() {
+            *v /= max_c;
+        }
+        best_sparse_c = best_c.clone();
+        for v in best_sparse_c.iter_mut() {
+            if v.abs() < config.sparsity_threshold {
+                *v = 0.0;
+            }
+        }
+        let mut sum_sq_err = 0.0f64;
+        for row in 0..n {
+            let mut r = 0.0f64;
+            for j in 0..k {
+                r += raw_cols[j][row] * best_sparse_c[j];
+            }
+            sum_sq_err += r * r;
+        }
+        best_rmse = (sum_sq_err / (n as f64)).sqrt();
+    }
+
+    let sparse_c = best_sparse_c;
+    let rmse = best_rmse;
     let rel_null_err = (min_val / (n as f64).max(1.0)).sqrt();
 
     // Construct human-readable formula
@@ -287,8 +335,8 @@ pub fn discover_implicit_relation(
 
     let is_exact = rmse < 1e-5;
 
-    Ok(ImplicitResult {
-        feature_names: names,
+    Some(ImplicitResult {
+        feature_names: names.to_vec(),
         coefficients: sparse_c,
         formula,
         algebraic_rmse: rmse,
@@ -297,6 +345,52 @@ pub fn discover_implicit_relation(
         num_active_terms: active_count,
         is_exact_recovery: is_exact,
     })
+}
+
+/// Discover implicit algebraic relations F(x, y) = 0.
+/// Searches incrementally across degrees 1..=max_degree to ensure minimal relations
+/// (e.g. x^2 + y^2 - 1 = 0) are prioritized over higher-order algebraic multiples.
+pub fn discover_implicit_relation(
+    x: &[f64],
+    y: &[f64],
+    config: &ImplicitConfig,
+) -> Result<ImplicitResult, String> {
+    let n = x.len();
+    if n < 10 {
+        return Err("Implicit discovery requires at least 10 observations".to_string());
+    }
+    if y.len() != n {
+        return Err("x and y lengths do not match".to_string());
+    }
+
+    let max_deg = config.max_degree.max(1);
+    let mut best_result: Option<ImplicitResult> = None;
+    let mut min_score = f64::INFINITY;
+
+    for deg in 1..=max_deg {
+        let (raw_cols, names) = build_features_for_degree(
+            x,
+            y,
+            deg,
+            config.include_cross_terms,
+            config.include_rational_products,
+        );
+
+        if let Some(res) = solve_implicit_for_features(&raw_cols, &names, n, deg, config) {
+            // If an exact minimal relation is recovered at this degree, stop search immediately.
+            if res.is_exact_recovery && res.algebraic_rmse < 1e-6 && res.num_active_terms > 1 {
+                return Ok(res);
+            }
+
+            let score = res.algebraic_rmse + 0.005 * (res.num_active_terms as f64) + 0.02 * (deg as f64);
+            if score < min_score {
+                min_score = score;
+                best_result = Some(res);
+            }
+        }
+    }
+
+    best_result.ok_or_else(|| "Failed to fit implicit relation".to_string())
 }
 
 #[cfg(test)]
@@ -326,6 +420,34 @@ mod tests {
         let res = discover_implicit_relation(&x, &y, &cfg).unwrap();
         assert!(res.algebraic_rmse < 1e-8, "RMSE: {}", res.algebraic_rmse);
         assert!(res.is_exact_recovery);
+    }
+
+    #[test]
+    fn test_implicit_circle_discovery_max_degree_3() {
+        // Must discover minimal relation x^2 + y^2 - 1 = 0, NOT x*y*(x^2 + y^2 - 1) = 0
+        let n = 50;
+        let mut x = Vec::with_capacity(n);
+        let mut y = Vec::with_capacity(n);
+        for i in 0..n {
+            let theta = 2.0 * std::f64::consts::PI * (i as f64) / (n as f64);
+            x.push(theta.cos());
+            y.push(theta.sin());
+        }
+
+        let cfg = ImplicitConfig {
+            max_degree: 3,
+            include_cross_terms: true,
+            include_rational_products: false,
+            sparsity_threshold: 0.05,
+            rcond_threshold: 1e-12,
+        };
+
+        let res = discover_implicit_relation(&x, &y, &cfg).unwrap();
+        assert!(res.algebraic_rmse < 1e-8, "RMSE: {}", res.algebraic_rmse);
+        assert!(res.is_exact_recovery);
+        assert_eq!(res.num_active_terms, 3);
+        // Formula should not contain x*y or degree 3/4 terms
+        assert!(!res.formula.contains("x*y"), "Formula must be minimal, got: {}", res.formula);
     }
 
     #[test]

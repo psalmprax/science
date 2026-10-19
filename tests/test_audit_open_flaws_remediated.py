@@ -3,7 +3,7 @@
 Fault 1: Rank ablation – reimplement feature-rank ablation with live executable code path.
 Fault 5: Stale freezes – make drift fail loudly (verify_all_frozen_records_or_raise & provenance check).
 Fault 6: Missing-data masking – mandate mask-first path (invalid data strictly forces flat with reason).
-Fault 7: Non-binding thresholds – binding check asserts active fraction in [5%, 95%], else GATE_NON_BINDING.
+Fault 7: Non-binding thresholds – binding check asserts active fraction in [5%, 90%], else GATE_NON_BINDING.
 """
 from __future__ import annotations
 
@@ -162,7 +162,7 @@ def test_mask_first_compliance_assertion_detects_violations():
 # ── Fault 7: Non-Binding Threshold Assertion ───────────────────────────────
 
 def test_binding_threshold_passes_assertion():
-    """Active fraction within [5%, 95%] is deemed binding and reports Sharpe."""
+    """Active fraction within [5%, 90%] is deemed binding and reports Sharpe."""
     # 50% active positions
     rows = [{"pos": -1.0 if i % 2 == 0 else 0.0} for i in range(100)]
     is_binding, active_frac, status = assert_threshold_binding(rows)
@@ -182,7 +182,7 @@ def test_decorative_high_threshold_reports_gate_non_binding():
 
 
 def test_decorative_low_threshold_reports_gate_non_binding():
-    """Threshold too loose (> 95% trades active) reports GATE_NON_BINDING and suppresses Sharpe."""
+    """Threshold too loose (> 90% trades active) reports GATE_NON_BINDING and suppresses Sharpe."""
     # 98% active positions (threshold theta << |S|)
     rows = [{"pos": -1.0 if i < 98 else 0.0} for i in range(100)]
     is_binding, active_frac, status = assert_threshold_binding(rows)
@@ -217,3 +217,70 @@ def test_run_ledger_decorative_threshold_suppresses_sharpe():
     assert summary["gate_binding"] is False
     assert summary["sharpe"] is None
     assert "Gate is non-binding/decorative" in summary["notes"]
+
+
+
+def test_rime_ad_dag_candidate_single_application_of_slope_intercept():
+    """Verify RimeAdProposer._make_dag_candidate does not apply slope/intercept twice."""
+    from apedp_dyn.proposers.rime_ad_proposer import RimeAdProposer
+
+    proposer = RimeAdProposer()
+    item = {
+        "formula": "2.5000 * cos(feat) + 1.2000",
+        "slope": 2.5,
+        "intercept": 1.2,
+        "r2": 1.0,
+    }
+    cand = proposer._make_dag_candidate(item, "feat")
+    assert cand is not None
+    assert cand.formula == "2.5000 * cos(feat) + 1.2000"
+
+    # Evaluate on test values
+    xv = np.linspace(0.1, 2.0, 50)
+    expected_y = 2.5 * np.cos(xv) + 1.2
+    df = pd.DataFrame({"feat": xv})
+    computed_y = cand.compute_score(df)
+    max_err = float(np.max(np.abs(computed_y - expected_y)))
+    assert max_err < 1e-4, f"max error {max_err} indicates slope/intercept was applied twice!"
+
+
+def test_rime_implicit_circle_max_degree_3_minimal_relation():
+    """Verify RIME implicit on a circle with max_degree=3 recovers minimal x^2+y^2-1=0, not xy(x^2+y^2-1)=0."""
+    import json
+
+    import apedp_kernel as ak
+
+    theta = np.linspace(0, 2 * np.pi, 200, endpoint=False)
+    x = np.cos(theta)
+    y = np.sin(theta)
+    cfg = {
+        "max_degree": 3,
+        "include_cross_terms": True,
+        "include_rational_products": False,
+        "sparsity_threshold": 0.05,
+        "rcond_threshold": 1e-12,
+    }
+    res = json.loads(ak.rime_implicit_discover_json(json.dumps(x.tolist()), json.dumps(y.tolist()), json.dumps(cfg)))
+    assert res.get("algebraic_rmse", 1.0) < 1e-8
+    assert res.get("is_exact_recovery", False) is True
+    assert res.get("num_active_terms") == 3
+    formula = res.get("formula", "")
+    assert "x*y" not in formula, f"Formula must be minimal, got non-minimal: {formula}"
+
+
+def test_hawkes_orderflow_dynamic_on_regular_bars():
+    """Verify HawkesOrderFlowProposer emits dynamic non-constant signals on regular timestamped bars."""
+    from apedp_dyn.proposers.hawkes_orderflow_proposer import HawkesOrderFlowProposer
+
+    ts = np.arange(100, dtype=float)
+    vol = 1000.0 + 500.0 * np.sin(np.linspace(0, 10, 100))
+    df = pd.DataFrame({"timestamp": ts, "volume": vol})
+
+    proposer = HawkesOrderFlowProposer()
+    props = proposer.fit_and_propose(event_data=df)
+    assert len(props) > 0
+    score = props[0].compute_score(df)
+    assert score.shape == (100,)
+    assert float(np.std(score)) > 0.0, "Hawkes must not emit a constant [0.] signal on regular bars"
+
+

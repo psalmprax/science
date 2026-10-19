@@ -1,5 +1,7 @@
 """Agnostic / Universal Lean 4 Formal Theorem Verification Bridge for APEDP-X.
 
+Status: experimental (end-to-end verification requires an external Lean 4 toolchain)
+
 Provides an agnostic, domain-independent formal verification layer connecting
 arbitrary scientific hypotheses (physics, geometry, epidemiology, fluid mechanics,
 materials, and econometrics) with the Lean 4 interactive theorem prover and

@@ -20,6 +20,7 @@ from apedp_dyn.conf.canonical_spec import (
     DIEBOLD_MARIANO_P_VALUE_THRESHOLD,
     DSR_THRESHOLD,
     MAX_LITERATURE_R2,
+    MIN_NET_SHARPE,
 )
 
 
@@ -148,7 +149,7 @@ class PromotionTracker:
         net_sharpe: float,
         dsr_metric: float,
         breakeven_fee_bps: float,
-        min_sharpe_hurdle: float = 0.70,
+        min_sharpe_hurdle: float = MIN_NET_SHARPE,
         min_dsr_hurdle: float = DSR_THRESHOLD,
         min_fee_bps: float = 3.0,
     ) -> StageVerificationRecord:

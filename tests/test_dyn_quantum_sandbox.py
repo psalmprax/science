@@ -112,8 +112,8 @@ class TestQuantumVacuumSandboxHonesty:
         }
 
         for sc in candidates:
-            assert sc.train_loss is not None and sc.train_loss >= 0.0
-            assert sc.holdout_rmse is not None and sc.holdout_rmse > 0.0
+            assert sc.train_loss is not None and np.isfinite(sc.train_loss) and sc.train_loss > 0.0
+            assert sc.holdout_rmse is not None and np.isfinite(sc.holdout_rmse) and sc.holdout_rmse > 0.0
             g4 = sc.provenance["gate4_status"]
             assert g4["passed"] is True
             assert len(g4["holdout_residuals"]) == 20

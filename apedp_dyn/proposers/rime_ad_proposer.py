@@ -25,8 +25,8 @@ import pandas as pd
 import apedp_kernel as ak
 from apedp.rust_bridge import RustKernelBridge
 from apedp_dyn.epistemic.autonomous_profiler import profile_dataset
-from apedp_dyn.epistemic.prior_guided_search import _fit_floor_rule, _floor_rule_candidate
 from apedp_dyn.epistemic.shape_inference import staircase_prior
+from apedp_dyn.grammar.floor_rules import fit_floor_rule, floor_rule_candidate
 from apedp_dyn.grammar.proposer_interface import CandidateProposal, ProposerBase, StrategyArchetype
 
 PROPOSER_ID = "rime_ad_proposer"
@@ -93,7 +93,10 @@ class RimeAdProposer(ProposerBase):
     ) -> Sequence[CandidateProposal]:
         t_col = target_col or self._target_col
         if isinstance(train_data, dict):
-            df = next(iter(train_data.values()))
+            dfs = [d for d in train_data.values() if isinstance(d, pd.DataFrame) and not d.empty]
+            if not dfs:
+                return ()
+            df = pd.concat(dfs, axis=0, ignore_index=True)
         else:
             df = train_data
 
@@ -169,10 +172,10 @@ class RimeAdProposer(ProposerBase):
         # Representation 1: Step / Plateau (BV-ROF)
         if prior.family == "piecewise_constant" or profile.flat_derivative_fraction > 0.35:
             if seeds is not None and len(seeds.thresholds) >= 2:
-                rule = _fit_floor_rule(x, y, seeds.thresholds)
+                rule = fit_floor_rule(x, y, seeds.thresholds)
                 if rule is not None:
                     q0, w, off, b, r2 = rule
-                    cand: CandidateProposal | None = _floor_rule_candidate(x, q0, w, off, b, r2, feat_name)
+                    cand: CandidateProposal | None = floor_rule_candidate(x, q0, w, off, b, r2, feat_name)
                     if cand is not None:
                         candidates.append(cand)
 
@@ -478,24 +481,31 @@ class RimeAdProposer(ProposerBase):
         formula = item.get("formula", "")
         slope = item.get("slope", 1.0)
         intercept = item.get("intercept", 0.0)
+        bridge = RustKernelBridge()
 
-        # Safe evaluator for common DAG expressions
+        # Safe evaluator for DAG expressions
         def _scorer(df: pd.DataFrame) -> np.ndarray:
             xv = df[feat_name].to_numpy(dtype=float)
-            if "cos(" in formula and "^2" in formula:
-                base = np.cos(xv) ** 2
-            elif "cos(" in formula:
-                base = np.cos(xv)
-            elif "1 / (R^2)" in formula or "1 / (x^2)" in formula or "1 / (" in formula:
-                base = 1.0 / (xv ** 2)
-            else:
-                base = xv
-            return np.asarray(np.asarray(np.asarray(slope * base + intercept)))
+            try:
+                pred = bridge.evaluate_expression(formula, [feat_name], [xv])
+                return np.asarray(pred, dtype=float)
+            except Exception:  # noqa: BLE001 - fallback evaluator: any bridge failure must degrade to the analytic fallback, never abort scoring
+                if "cos(" in formula and "^2" in formula:
+                    base = np.cos(xv) ** 2
+                elif "cos(" in formula:
+                    base = np.cos(xv)
+                elif "1 / (R^2)" in formula or "1 / (x^2)" in formula:
+                    base = 1.0 / (xv ** 2)
+                elif "1 / (" in formula:
+                    base = 1.0 / (xv + 1e-12)
+                else:
+                    base = xv
+                return np.asarray(slope * base + intercept, dtype=float)
 
         return CandidateProposal(
             proposer_id=self.proposer_id,
             candidate_id="dag_expression",
-            formula=f"{slope:.4f} * ({formula}) + {intercept:.4f}",
+            formula=formula,
             strategy_archetype=self._strategy_archetype,
             declared_scale_invariant=False,
             declared_nominal_dependencies=(feat_name,),

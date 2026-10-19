@@ -10,10 +10,9 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from types import ModuleType
 
 import numpy as np
-
-from types import ModuleType
 
 ak: ModuleType | None = None
 try:
@@ -71,13 +70,21 @@ class JetFlowStepper:
         (z + h * v_t, t + h) without constructing the full Jacobian matrix.
         """
         eps = float(self.config.eps_fd)
-        if dt is not None and dt < 0.0:
-            h = -eps if (t - eps) >= 0.0 else eps
-        else:
-            h = eps if (t + eps) <= 1.0 else -eps
+        h = -eps if (dt is not None and dt < 0.0) else eps
+        t_lo = min(self.config.t_start, self.config.t_end)
+        t_hi = max(self.config.t_start, self.config.t_end)
 
-        t_probe = max(0.0, min(1.0, t + h))
-        h_eff = t_probe - t
+        if t_lo <= t <= t_hi:
+            if t + h > t_hi:
+                h_eff = -eps if (t - eps >= t_lo) else (t_hi - t)
+            elif t + h < t_lo:
+                h_eff = eps if (t + eps <= t_hi) else (t_lo - t)
+            else:
+                h_eff = h
+        else:
+            h_eff = h
+
+        t_probe = t + h_eff
         if abs(h_eff) <= 1e-9:
             return np.zeros_like(v_current)
 
@@ -113,9 +120,21 @@ class JetFlowStepper:
         # Second-order Jet2 Taylor step using fused directional material derivative (2 evals/step)
         if ak is not None and hasattr(ak, "rime_jet2_video_flow_step"):
             eps = float(self.config.eps_fd)
-            h = (-eps if (t - eps) >= 0.0 else eps) if dt < 0.0 else (eps if (t + eps) <= 1.0 else -eps)
-            t_probe = max(0.0, min(1.0, t + h))
-            h_eff = t_probe - t
+            h = -eps if dt < 0.0 else eps
+            t_lo = min(self.config.t_start, self.config.t_end)
+            t_hi = max(self.config.t_start, self.config.t_end)
+
+            if t_lo <= t <= t_hi:
+                if t + h > t_hi:
+                    h_eff = -eps if (t - eps >= t_lo) else (t_hi - t)
+                elif t + h < t_lo:
+                    h_eff = eps if (t + eps <= t_hi) else (t_lo - t)
+                else:
+                    h_eff = h
+            else:
+                h_eff = h
+
+            t_probe = t + h_eff
             if abs(h_eff) > 1e-9:
                 v_probe = velocity_fn(z_t + h_eff * v_t, t_probe)
                 dt_span = h_eff

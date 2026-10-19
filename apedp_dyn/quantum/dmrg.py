@@ -218,6 +218,9 @@ def _split_theta(
     u = u[:, :keep]
     s = s[:keep]
     vh = vh[:keep, :]
+    norm_s = float(np.linalg.norm(s))
+    if norm_s > 1e-15:
+        s = s / norm_s
     if left_canonical:
         tensor_left = u.reshape(d_l, d_p1, keep)
         tensor_right = (s[:, None] * vh).reshape(keep, d_p2, d_r)
@@ -233,6 +236,17 @@ def _initial_mps(n_sites: int, max_bond_dim: int, rng: np.random.Generator) -> M
         d_l = 1 if site == 0 else min(max_bond_dim, 2 ** site)
         d_r = 1 if site == n_sites - 1 else min(max_bond_dim, 2 ** (site + 1))
         tensors.append(rng.standard_normal((d_l, _SITE_DIM, d_r)) * 0.1)
+    # Right-canonicalize so that right environments are orthonormal from sweep 0
+    for site in range(n_sites - 1, 0, -1):
+        t = tensors[site]
+        dl, dp, dr = t.shape
+        mat = t.reshape(dl, dp * dr)
+        u, s, vh = np.linalg.svd(mat, full_matrices=False)
+        tensors[site] = vh.reshape(vh.shape[0], dp, dr)
+        tensors[site - 1] = np.tensordot(tensors[site - 1], u * s, axes=([2], [0]))
+    norm0 = float(np.linalg.norm(tensors[0]))
+    if norm0 > 1e-15:
+        tensors[0] = tensors[0] / norm0
     return MatrixProductState(tensors)
 
 

@@ -162,6 +162,8 @@ def evaluate_structural_novelty(
     citation = "NONE"
     fit_details = {}
 
+    valid_cols = []
+    col_names = []
     for name, feat in literature_features.items():
         f = np.asarray(feat, dtype=float)
         mask = np.isfinite(s) & np.isfinite(f)
@@ -174,8 +176,33 @@ def evaluate_structural_novelty(
             max_r2 = r2
             closest_baseline = name
             citation = CANONICAL_LITERATURE_REGISTRY.get(name, {}).get("citation", "Standard literature baseline.")
+        valid_cols.append(f)
+        col_names.append(name)
 
-    ortho_var = float(1.0 - max_r2)
+    # Joint linear span projection: candidate onto joint literature matrix [F_1, ..., F_m, 1]
+    if len(valid_cols) > 1:
+        joint_mask = np.isfinite(s)
+        for col in valid_cols:
+            joint_mask &= np.isfinite(col)
+        if int(np.sum(joint_mask)) > len(valid_cols) + 5:
+            s_j = s[joint_mask]
+            var_s = float(np.var(s_j))
+            if var_s > 1e-12:
+                A = np.column_stack([col[joint_mask] for col in valid_cols] + [np.ones(len(s_j))])
+                coef, *_ = np.linalg.lstsq(A, s_j, rcond=None)
+                pred_j = A @ coef
+                joint_r2 = float(max(0.0, 1.0 - np.mean((s_j - pred_j) ** 2) / var_s))
+                fit_details["JOINT_LITERATURE_SPAN"] = {"r2": joint_r2}
+                if max_r2 < novelty_threshold_r2 and joint_r2 >= novelty_threshold_r2:
+                    max_r2 = joint_r2
+                    closest_baseline = f"JOINT_SPAN({', '.join(col_names)})"
+                    citation = "Linear combination of literature baselines."
+                elif max_r2 < novelty_threshold_r2 and joint_r2 > max_r2:
+                    max_r2 = joint_r2
+                elif max_r2 >= novelty_threshold_r2 and joint_r2 > max_r2:
+                    max_r2 = joint_r2
+
+    ortho_var = float(max(0.0, 1.0 - max_r2))
     is_novel = bool(max_r2 < novelty_threshold_r2)
     verdict = "STRUCTURALLY_NOVEL" if is_novel else "REPRESENTATION_REIDENTIFICATION"
 

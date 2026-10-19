@@ -136,7 +136,39 @@ def test_noether_spatial_latent_velocity_and_metrics():
     assert "mass_drift" in metrics
     assert "kinetic_energy_drift" in metrics
     assert "mean_divergence" in metrics
-    assert metrics["mean_divergence"] >= 0.0
+
+    dx, dy = engine.config.dx, engine.config.dy
+
+    def _mean_div_norm(field: np.ndarray) -> float:
+        """Independent recomputation of the per-pair finite-difference divergence norm."""
+        norms = []
+        for ti in range(field.shape[0]):
+            for ci in range(0, field.shape[1] - 1, 2):
+                dvx = (np.roll(field[ti, ci], -1, axis=1) - np.roll(field[ti, ci], 1, axis=1)) / (2.0 * dx)
+                dvy = (np.roll(field[ti, ci + 1], -1, axis=0) - np.roll(field[ti, ci + 1], 1, axis=0)) / (2.0 * dy)
+                norms.append(float(np.sqrt(np.mean((dvx + dvy) ** 2))))
+        return float(np.mean(norms))
+
+    # mean_divergence must be the real divergence norm of the projected field,
+    # not a stub: recompute it independently and require exact agreement.
+    expected_div = _mean_div_norm(proj_v)
+    assert abs(metrics["mean_divergence"] - expected_div) < 1e-9
+
+    # The Helmholtz-Hodge projection must actually reduce divergence against
+    # the raw random field it was applied to.
+    raw_div = _mean_div_norm(velocity)
+    assert metrics["mean_divergence"] < raw_div, (
+        f"Projection must reduce mean divergence: raw={raw_div:.4f}, projected={metrics['mean_divergence']:.4f}"
+    )
+
+    # Mass and kinetic-energy drift are exact functions of the inputs.
+    masses = np.array([float(np.sum(video_latent[ti] ** 2)) for ti in range(video_latent.shape[0])])
+    expected_mass_drift = float(np.max(np.abs(masses - masses[0])) / max(1e-12, masses[0]))
+    assert abs(metrics["mass_drift"] - expected_mass_drift) < 1e-9
+
+    ke = np.array([float(0.5 * np.sum(proj_v[ti] ** 2)) for ti in range(proj_v.shape[0])])
+    expected_ke_drift = float(np.max(np.abs(ke - ke[0])) / max(1e-12, ke[0]))
+    assert abs(metrics["kinetic_energy_drift"] - expected_ke_drift) < 1e-9
 
 
 def test_physics_knobs_convection_and_viscosity():
