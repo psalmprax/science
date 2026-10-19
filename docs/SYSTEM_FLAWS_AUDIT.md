@@ -197,7 +197,11 @@ unauthenticated server (#2).
 ## Outstanding requirements register (post-review, 2026-10-19)
 
 Checkpoint `47594e7` is frozen as the remediation milestone (tag
-`remediation-checkpoint-47594e7`). The following requirements are explicitly
+`remediation-checkpoint-47594e7`). Commit `715437b` (the follow-through commit
+on top) records subsequent work — the F17 extreme-scale robustness amendment
+and this register — and does not replace or re-badge the frozen checkpoint:
+the tag continues to anchor `47594e7`, and the register references it as the
+canonical review state. The following requirements are explicitly
 **unresolved** and must not be treated as completed; each carries its exact
 acceptance criterion:
 
