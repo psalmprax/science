@@ -32,6 +32,14 @@ APEDP (Autonomous Physics & Engineering Discovery Platform) is an end-to-end sci
 
 ### Epistemic integrity notes (2026-10-19, blind-audit round 2)
 
+> **Outstanding requirements.** F14 (three-role data protocol), F16 (formal
+> CBF-QP certificate), referee-path mutation testing, and an independent Lean
+> toolchain verification are explicitly unresolved; their exact acceptance
+> criteria live in [`SYSTEM_FLAWS_AUDIT.md`](SYSTEM_FLAWS_AUDIT.md)
+> ("Outstanding requirements register", REG-F14/REG-F14b/REG-F16/REG-MUT/
+> REG-LEAN). The remediation checkpoint is frozen at commit `47594e7`
+> (tag `remediation-checkpoint-47594e7`).
+
 - **Referee pair anchoring (`apedp_dyn/epistemic/adjudicate.py`).** The pair
   evaluation between a promoted head and its nearest rival is anchored on
   frame holdout RMSE (gate-4-certified), never on the train-loss ordering, so

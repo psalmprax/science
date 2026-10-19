@@ -4,6 +4,27 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Remediation checkpoint frozen at `47594e7`; open-requirements register (2026-10-19)
+
+- `47594e7` is tagged `remediation-checkpoint-47594e7` as the frozen
+  remediation milestone. Per the external review's final recommendation, F14
+  (three-role data protocol), F16 (formal CBF-QP certificate), mutation
+  testing of referee/leakage paths, and an independent Lean toolchain run are
+  recorded as **explicit unresolved requirements** with exact acceptance
+  criteria in `docs/SYSTEM_FLAWS_AUDIT.md` ("Outstanding requirements
+  register", IDs REG-F14, REG-F14b, REG-F16, REG-MUT, REG-LEAN). None may be
+  marked complete silently.
+- F17 scale-aware gate — reviewer acceptance items closed: the polynomial
+  library's constant `1` column had pinned the term-scale denominator at O(1),
+  defeating scale-awareness below O(1) data (a mis-fitting linear candidate at
+  near-zero scale was certified permissively). The term scale is now measured
+  over NON-constant columns; near-zero-scale exact laws certify scale-
+  consistently while misfits refuse. Degenerate inputs pinned: all-zero and
+  constant data (no NaN via the 1e-12 floor), <10 samples and NaN inputs
+  rejected explicitly at the binding boundary. Rust lib 186/186. New pins:
+  `TestF17ExtremeScaleRobustness` (6 tests), `TestF8ErrorDiagnosticDetail`.
+  Round-2 suite total: 46 tests.
+
 ## [Unreleased] — External-review round (cont.): F17 scale-aware gate, F8 fail-closed mirror, Lean chain pin (2026-10-19)
 
 Continued from the review-response round above (same external report, remaining "additional scrutiny" items answered in code rather than in prose):

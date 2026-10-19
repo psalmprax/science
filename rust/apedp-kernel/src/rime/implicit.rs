@@ -350,7 +350,18 @@ fn solve_implicit_for_features(
     // term c*phi = 0 is a degenerate if non-empty edge case and is allowed).
     let mut sum_sq_scale = 0.0f64;
     let mut n_scale_entries = 0usize;
-    for col in raw_cols.iter() {
+    // External-review round 2 amendment: the polynomial library carries a
+    // constant "1" column whose magnitude is fixed at 1 regardless of the
+    // data scale; including it pins the denominator to O(1) and destroys the
+    // scale-awareness this gate exists for (near-zero-scale data would be
+    // judged against an O(1) ceiling and permissively certified). The
+    // residual's term scale is therefore measured over the NON-constant
+    // columns; when every column is constant (or all zero), the max(1e-12)
+    // floor keeps the ceiling finite instead of NaN.
+    for (j, col) in raw_cols.iter().enumerate() {
+        if names[j] == "1" {
+            continue;
+        }
         for &v in col.iter() {
             sum_sq_scale += v * v;
             n_scale_entries += 1;

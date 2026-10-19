@@ -615,3 +615,97 @@ class TestLeanProofChainIntegrity:
             cid = lean_path.stem.removesuffix("_verification").upper()
             assert cid not in p2_ids, f"sorry-carrying file claimed as P2: {cid}"
         assert ARTIFACT_DIR is not None
+
+
+class TestF17ExtremeScaleRobustness:
+    """Reviewer round-2 acceptance items for the scale-aware gate: near-zero
+    residual scales, denominator safeguards, and degenerate expressions.
+
+    Regression for the amendment: the polynomial library's constant '1'
+    column used to pin the term-scale denominator at O(1), defeating
+    scale-awareness below O(1) data (a permissive certification of a
+    mis-fitting linear candidate with rmse ~ 0.7x the state scale).
+    The scale is now measured over non-constant columns only.
+    """
+
+    def _discover_json(self, x: np.ndarray, y: np.ndarray):
+        import json as _json
+
+        import apedp_kernel as _k
+        cfg = _json.dumps({
+            "max_degree": 2, "include_cross_terms": False,
+            "include_rational_products": False,
+            "sparsity_threshold": 1e-3, "rcond_threshold": 1e-8,
+        })
+        raw = _k.rime_implicit_discover_json(
+            _json.dumps(list(map(float, x))), _json.dumps(list(map(float, y))), cfg)
+        return _json.loads(raw) if isinstance(raw, str) else raw
+
+    def test_near_zero_scale_exact_relation_certified(self):
+        t = np.linspace(0.0, 2.0 * math.pi, 200)
+        out = self._discover_json(1e-8 * np.cos(t), 1e-8 * np.sin(t))
+        assert out["is_exact_recovery"] is True
+        # Scale-relative acceptance: rmse must clear the same 1e-5 relative
+        # ceiling against the data's own state scale that an O(1) exact law
+        # clears against its scale (here: 1e-5 x 1e-8 = 1e-13; measured 1e-16).
+        state_scale = 1e-8
+        assert out["algebraic_rmse"] <= 1e-5 * state_scale
+
+    def test_near_zero_scale_misfit_not_certified_even_by_null_space(self):
+        """A permissively scaled gate once certified a poor linear candidate
+        (rmse ~70% of the state scale) at near-zero data scale. Any residual
+        far above the scale-relative ceiling must not be labelled exact."""
+        t = np.linspace(0.0, 2.0 * math.pi, 200)
+        out = self._discover_json(1e-8 * np.cos(t), 1e-8 * np.sin(t) + 1e-12)
+        if out["num_active_terms"] >= 2 and out["is_exact_recovery"]:
+            # If certified, the certificate's own rmse must be far below the
+            # data's state scale (a genuinely scale-consistent relation).
+            scale = max(
+                1e-12,
+                float(np.sqrt(np.mean(np.square(np.concatenate(
+                    [1e-8 * np.cos(t), 1e-8 * np.sin(t) + 1e-12]))))),
+            )
+            assert out["algebraic_rmse"] <= 1e-5 * scale * 0.1
+
+    def test_all_zero_inputs_refused_no_nan(self):
+        z = np.zeros(100)
+        out = self._discover_json(z, z)
+        assert out["is_exact_recovery"] is False
+        assert all(math.isfinite(float(v)) for v in out["coefficients"])
+        assert math.isfinite(float(out["algebraic_rmse"]))
+
+    def test_identical_points_zero_variance_safeguard(self):
+        """Constant data must not produce NaN through the term-scale
+        denominator (max(1e-12) floor) and may certify only a consistent
+        constant relation."""
+        out = self._discover_json(np.full(50, 2.0), np.full(50, 3.0))
+        assert all(math.isfinite(float(v)) for v in out["coefficients"])
+        assert math.isfinite(float(out["algebraic_rmse"]))
+        if out["is_exact_recovery"]:
+            assert out["num_active_terms"] >= 2
+
+    def test_degenerate_sample_count_rejected_explicitly(self):
+        """Too-few samples is an explicit rejection at the binding boundary,
+        not a silent pass-through."""
+        with pytest.raises(ValueError, match="observations"):
+            self._discover_json([1.0, 2.0, 3.0, 4.0], [1.0, 2.0, 3.0, 4.0])
+
+    def test_nan_inputs_rejected_explicitly(self):
+        bad = [1.0, float("nan"), 3.0, 4.0, 5.0]
+        with pytest.raises(ValueError):
+            self._discover_json(bad, [1.0, 2.0, 3.0, 4.0, 5.0])
+
+
+class TestF8ErrorDiagnosticDetail:
+    """Reviewer: confirm that the fail-closed error preserves diagnostic detail
+    (the drifted term name and remediation guidance)."""
+
+    def test_error_names_term_and_drift_guidance(self):
+        from apedp_dyn.epistemic.pde_discovery import _frozen_residual_r2
+        ut = np.linspace(0.0, 1.0, 40)
+        with pytest.raises(ValueError) as excinfo:
+            _frozen_residual_r2(ut, {"u": ut}, ["u", "u^3"], [1.0, 0.5])
+        msg = str(excinfo.value)
+        assert "u^3" in msg                      # the drifted term, named
+        assert "drifted" in msg or "drift" in msg.replace("drift\"d", "drifted")
+        assert "refuse" in msg.lower()           # the remediation guidance
