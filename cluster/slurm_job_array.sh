@@ -12,7 +12,7 @@
 #SBATCH --job-name=apedp_discovery_sweep
 #SBATCH --output=logs/slurm_%A_%a.out
 #SBATCH --error=logs/slurm_%A_%a.err
-#SBATCH --array=0-99%20
+#SBATCH --array=0-11%8
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
@@ -40,12 +40,8 @@ mkdir -p "${APEDP_STORAGE_DIR}"
 trap 'rm -rf "${APEDP_TEMP_STORAGE}"' EXIT
 
 # 4. Execute Partition Sweep
-python3 -m apedp_dyn.distributed.chunked_executor \
+python3 -m apedp_dyn.sandbox.real_market_l2_sweep \
     --partition-index "${SLURM_ARRAY_TASK_ID}" \
-    --total-partitions 100 \
-    --chunk-size 1000 \
-    --backend multiprocessing \
-    --workers "${SLURM_CPUS_PER_TASK}" \
-    --checkpoint-dir "${APEDP_STORAGE_DIR}/checkpoints"
+    --total-partitions 12
 
 echo "=== APEDP-X Task ${SLURM_ARRAY_TASK_ID} Finished Successfully ==="

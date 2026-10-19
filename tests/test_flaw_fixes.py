@@ -383,6 +383,22 @@ def test_empirical_axis_surfaces_a_skipped_multi_variable_comparison():
     assert errors[0]["error"] == "ModelNotUnivariate"
 
 
+def test_empirical_axis_rejects_non_finite_metrics():
+    report = _report_for(
+        "empirical",
+        "2.0 * x",
+        variable_domains={"x": (0.001, 100.0)},
+        physical_invariants=[],
+        critical_boundaries={},
+        empirical_data={"x": [1.0, 2.0, 3.0], "y": [2.0, float("nan"), 6.0]},
+    )
+    assert report.verdict == "INCONCLUSIVE_PROBE_ERROR"
+    errors = report.detailed_metrics["empirical"]["probe_errors"]
+    assert len(errors) == 1
+    assert errors[0]["error"] == "NonFiniteMetrics"
+    assert errors[0]["unresolved"] is True
+
+
 def test_every_falsification_axis_initialises_the_probe_error_channel():
     """The channel exists on all five axes, so 'no errors' is distinguishable from 'not recorded'."""
     from apedp.falsification import IndependentAdversarialFalsifier

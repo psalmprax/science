@@ -30,5 +30,8 @@ def artifact_dir() -> Path:
     """Scratch/artifact output directory; ``APEDP_ARTIFACT_DIR`` overrides the in-repo default."""
     env = os.environ.get("APEDP_ARTIFACT_DIR")
     if env:
-        return Path(env).expanduser().resolve()
-    return repo_root() / "artifacts"
+        path = Path(env).expanduser().resolve()
+    else:
+        path = repo_root() / "artifacts"
+    path.mkdir(parents=True, exist_ok=True)
+    return path

@@ -63,6 +63,8 @@ def test_canonical_spec_hash_integrity():
     spec_data = load_and_verify_canonical_spec(enforce_hash=True)
     assert spec_data["spec_id"] == "APEDPX_PREREGISTERED_CANONICAL_V1"
     assert spec_data["thresholds"]["tactical_active_fraction_max"] == 0.90
+    assert spec_data["thresholds"]["pruning_holdout_f_test_significance_level"] == 0.05
+    assert spec_data["thresholds"]["pruning_holdout_r2_base_floor"] == 0.20
 
 
 def test_runtime_code_matches_canonical_spec():

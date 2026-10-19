@@ -3,13 +3,22 @@ Frozen seeds; permutation (200 draws) is the pre-registered headline —
 DM reported alongside. Slow (~15 min): full battery, run rarely.
 """
 
+import numpy as np
 import pytest
 
 import apedp_dyn.epistemic.active_disambiguation.e5_market as M
-from apedp_dyn.epistemic.active_disambiguation.incremental_info import run_asset
+from apedp_dyn.epistemic.active_disambiguation.incremental_info import _dm_hac4, run_asset
 
 ASSETS = ("BTC", "ETH", "SOL", "BNB", "DOGE", "AVAX")
 PANELS = None
+
+
+def test_dm_hac4_normalizes_long_run_variance_for_mean():
+    differentials = [value for _ in range(32) for value in (-0.8, 1.2)]
+    t_stat, p_value = _dm_hac4(np.asarray(differentials))
+
+    assert t_stat > 3.0
+    assert p_value < 0.001
 
 
 def _panels():

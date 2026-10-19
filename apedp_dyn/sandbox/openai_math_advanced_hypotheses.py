@@ -224,6 +224,7 @@ def build_advanced_hypotheses_panel(
         r_series = pd.Series(r_i)
         vol_i = r_series.rolling(w_roll, min_periods=5).std().ffill().to_numpy()
         vol_i = np.maximum(vol_i, 1e-4)
+        vol_mean = pd.Series(vol_i).expanding(min_periods=1).mean().to_numpy()
 
         ma_p = pd.Series(p_i).rolling(w_roll, min_periods=5).mean().ffill().to_numpy()
         std_p = pd.Series(p_i).rolling(w_roll, min_periods=5).std().ffill().to_numpy()
@@ -263,8 +264,8 @@ def build_advanced_hypotheses_panel(
         p_sharpe_ratio_ret[:, i] = causal_zscore(r_i / vol_i)
         z_ofi = causal_zscore(ofi_i)
         p_ofi[:, i] = z_ofi
-        v_ratio = vol_i / np.mean(vol_i)
-        p_vol_scaled_ofi[:, i] = causal_zscore(v_ratio * z_ofi)
+        v_ratio = vol_i / np.maximum(vol_mean, 1e-4)
+        p_vol_scaled_ofi[:, i] = v_ratio * z_ofi
 
         p_lead_spill[:, i] = causal_zscore(lead_spill_i)
         p_certainty_gated_spill[:, i] = causal_zscore((1.0 - entropy_i) * lead_spill_i)

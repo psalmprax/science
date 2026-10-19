@@ -73,7 +73,7 @@ def _dm_hac4(d: np.ndarray) -> tuple[float, float]:
         return float("nan"), float("nan")
     from math import erf, sqrt
 
-    t = m / sqrt(v)
+    t = m / sqrt(v / n)
     p = 1 - erf(abs(t) / sqrt(2))
     return t, max(min(p, 1.0), 0.0)
 

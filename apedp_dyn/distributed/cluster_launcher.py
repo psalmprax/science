@@ -26,9 +26,8 @@ class ClusterScheduler(str, enum.Enum):
 class ClusterJobSpec:
     """Specification for distributed multi-node hypothesis sweeps."""
     job_name: str = "apedp-discovery-sweep"
-    total_partitions: int = 100
-    max_parallel: int = 20
-    chunk_size: int = 1000
+    total_partitions: int = 12
+    max_parallel: int = 8
     cpus_per_worker: int = 8
     memory_gb: int = 32
     gpus_per_worker: int = 0
@@ -46,8 +45,6 @@ def validate_cluster_spec(spec: ClusterJobSpec) -> list[str]:
         errors.append("total_partitions must be > 0.")
     if spec.max_parallel <= 0 or spec.max_parallel > spec.total_partitions:
         errors.append("max_parallel must be between 1 and total_partitions.")
-    if spec.chunk_size <= 0:
-        errors.append("chunk_size must be > 0.")
     if spec.cpus_per_worker <= 0:
         errors.append("cpus_per_worker must be > 0.")
     if spec.memory_gb <= 0:
@@ -55,9 +52,16 @@ def validate_cluster_spec(spec: ClusterJobSpec) -> list[str]:
     return errors
 
 
+def _validate_partitioned_sweep_spec(spec: ClusterJobSpec) -> list[str]:
+    errors = validate_cluster_spec(spec)
+    if spec.total_partitions > 12:
+        errors.append("total_partitions must be <= 12 for the real-market L2 sweep.")
+    return errors
+
+
 def generate_slurm_script(spec: ClusterJobSpec) -> str:
     """Generate a production Slurm job array submission script."""
-    errors = validate_cluster_spec(spec)
+    errors = _validate_partitioned_sweep_spec(spec)
     if errors:
         raise ValueError(f"Invalid ClusterJobSpec: {'; '.join(errors)}")
 
@@ -86,19 +90,15 @@ mkdir -p "${{APEDP_STORAGE_DIR}}"
 
 trap 'rm -rf "${{APEDP_TEMP_STORAGE}}"' EXIT
 
-python3 -m apedp_dyn.distributed.chunked_executor \\
-    --partition-index "${{SLURM_ARRAY_TASK_ID}}" \\
-    --total-partitions {spec.total_partitions} \\
-    --chunk-size {spec.chunk_size} \\
-    --backend multiprocessing \\
-    --workers "${{SLURM_CPUS_PER_TASK}}" \\
-    --checkpoint-dir "${{APEDP_STORAGE_DIR}}/checkpoints"
+python3 -m apedp_dyn.sandbox.real_market_l2_sweep \\
+--partition-index "${{SLURM_ARRAY_TASK_ID}}" \\
+--total-partitions {spec.total_partitions}
 """
 
 
 def generate_kubernetes_job_manifest(spec: ClusterJobSpec) -> str:
     """Generate a Kubernetes Indexed batch Job manifest."""
-    errors = validate_cluster_spec(spec)
+    errors = _validate_partitioned_sweep_spec(spec)
     if errors:
         raise ValueError(f"Invalid ClusterJobSpec: {'; '.join(errors)}")
 
@@ -126,18 +126,12 @@ spec:
         - name: sweep-worker
           image: {spec.container_image}
           imagePullPolicy: IfNotPresent
-          command: ["python3", "-m", "apedp_dyn.distributed.chunked_executor"]
+          command: ["python3", "-m", "apedp_dyn.sandbox.real_market_l2_sweep"]
           args:
             - "--partition-index"
             - "$(JOB_COMPLETION_INDEX)"
             - "--total-partitions"
             - "{spec.total_partitions}"
-            - "--chunk-size"
-            - "{spec.chunk_size}"
-            - "--backend"
-            - "multiprocessing"
-            - "--workers"
-            - "{spec.cpus_per_worker}"
           env:
             - name: JOB_COMPLETION_INDEX
               valueFrom:

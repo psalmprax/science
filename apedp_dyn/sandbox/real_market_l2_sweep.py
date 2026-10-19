@@ -20,8 +20,11 @@ Evaluates:
 """
 from __future__ import annotations
 
+import argparse
 import csv
-from dataclasses import dataclass
+import json
+import os
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Literal
 
@@ -81,6 +84,8 @@ WINDOWS: tuple[WindowSpec, ...] = (
     WindowSpec("W5_BEAR", "2021-01-04", "2021-12-31", "2022-01-03", "2022-12-30", "2022 Bear Market (Rate Hikes)"),
     WindowSpec("W6_RECOVERY", "2022-01-03", "2022-12-30", "2023-01-03", "2023-06-30", "2023 Tech Recovery"),
 )
+
+PARTITION_COUNT = 2 * len(WINDOWS)
 
 
 @dataclass(frozen=True)
@@ -405,8 +410,66 @@ def run_full_real_market_l2_sweep() -> list[WindowDiscoveryRecord]:
     return records
 
 
+def run_partition(
+    partition_index: int,
+    total_partitions: int,
+    output_dir: str | Path | None = None,
+) -> list[WindowDiscoveryRecord]:
+    """Execute and persist this partition's assigned asset/window discoveries."""
+    if total_partitions < 1 or total_partitions > PARTITION_COUNT:
+        raise ValueError(f"total_partitions must be between 1 and {PARTITION_COUNT}")
+    if not 0 <= partition_index < total_partitions:
+        raise ValueError(
+            f"partition_index must be in [0, {total_partitions}), got {partition_index}"
+        )
+
+    jobs = [(asset, window) for asset in ("sp500", "nasdaq100") for window in WINDOWS]
+    assigned_jobs = [
+        (asset, window)
+        for job_index, (asset, window) in enumerate(jobs)
+        if job_index % total_partitions == partition_index
+    ]
+    records = [
+        execute_window_discovery(asset, window, bootstrap=True)
+        for asset, window in assigned_jobs
+    ]
+
+    results_dir = Path(
+        output_dir or Path(os.environ.get("APEDP_STORAGE_DIR", "artifacts")) / "sweep_results"
+    )
+    results_dir.mkdir(parents=True, exist_ok=True)
+    result_path = results_dir / f"partition_{partition_index:03d}.json"
+    result_path.write_text(
+        json.dumps([asdict(record) for record in records], indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return records
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Run a partition of the real-market L2 sweep.")
+    parser.add_argument("--partition-index", type=int)
+    parser.add_argument("--total-partitions", type=int)
+    args = parser.parse_args(argv)
+    if args.partition_index is None and args.total_partitions is None:
+        records = run_full_real_market_l2_sweep()
+        print(f"Completed {len(records)} rolling window discoveries.")
+        for record in records:
+            print(
+                f"[{record.asset.upper()} {record.window_id}] "
+                f"Verdict: {record.epistemic_verdict} ({record.epistemic_attribution}) | "
+                f"Discovered: {record.discovered_expression} | Gate4 Fail: {record.out_of_grammar}"
+            )
+        return 0
+    if args.partition_index is None or args.total_partitions is None:
+        parser.error("--partition-index and --total-partitions must be provided together")
+    records = run_partition(args.partition_index, args.total_partitions)
+    print(
+        f"Partition {args.partition_index}/{args.total_partitions} completed "
+        f"{len(records)} discoveries."
+    )
+    return 0
+
+
 if __name__ == "__main__":
-    recs = run_full_real_market_l2_sweep()
-    print(f"Completed {len(recs)} rolling window discoveries.")
-    for r in recs:
-        print(f"[{r.asset.upper()} {r.window_id}] Verdict: {r.epistemic_verdict} ({r.epistemic_attribution}) | Discovered: {r.discovered_expression} | Gate4 Fail: {r.out_of_grammar}")
+    raise SystemExit(main())

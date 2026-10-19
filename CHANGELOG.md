@@ -6,6 +6,9 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ## [Unreleased] — Round-3 external assessment record (2026-10-19)
 
+- Registered the L2 holdout R² base floor, F-test significance level, and fitted
+  predictor degrees of freedom in the canonical preregistered specification;
+  pruning now consumes those pinned values rather than hardcoding the 95% gate.
 - Post-round-3 external review: **6.5/10 overall** (up from ~6/10), credited to
   reliability and audit discipline, while explicitly noting the remediation
   does not by itself establish stronger scientific discovery capability or a
