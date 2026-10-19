@@ -218,6 +218,13 @@ Sources that document the current (non-claiming) boundary: `CHANGELOG.md`
 `apedp_dyn/cuda/batch_physics_steppers.py::batch_multi_agent_cbf_step`
 docstring (not-a-certified-CBF-QP disclosure, test-pinned).
 
+### Register status updates (2026-10-19, evidence-linked)
+
+| ID | Status | Evidence / remaining work |
+| --- | --- | --- |
+| REG-MUT | **CLOSED-WITH-EVIDENCE** | `scripts/run_mutation_battery.py` (dependency-free battery, byte-identical-restoration invariant, hard-fail exit), report `benchmarks/mutation_battery_report.json` (status ALL_KILLED, 5/5 mutants, sanity-verified pristine pins), CI gate `mutation-battery` job in `.github/workflows/test.yml` + `scripts/check.sh` full tier. **Honesty trail:** the first run was an honest FAILURE — MUT-C1 (hawkes eval-frame-leak mutant) SURVIVED because the inherited dynamic pin scored a fit/eval-identical frame, exposing a real coverage gap; the pin was SHARPENED (`tests/test_dyn_hawkes_standardization_pins.py`: fit-vs-eval distribution divergence makes the Finding-10 property load-bearing), never weakened, and the battery re-run kills all five. |
+| REG-F14/F14b | **OPEN (reference implementation landed, wiring pending)** | Design + module + acceptance pins: `docs/CALLER_DATA_THREE_ROLE_PROTOCOL.md`, `apedp_dyn/epistemic/caller_data_protocol.py` (sealed one-shot confirmation slice, role-overlap refusal, ledger exposure integration, ledger-derived DSR multiplicity with compliance validator), `tests/test_dyn_caller_data_protocol.py` (7 pins, incl. the register's end-to-end letter). The full criterion still requires per-caller wiring of every production caller (mode a or b); the compliance validator gates that wiring — NOT silently complete. |
+
 ---
 
 ## Round-3 external assessment record (2026-10-19)

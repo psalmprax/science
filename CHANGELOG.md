@@ -4,6 +4,56 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — REG-MUT closed-with-evidence, v0.3 confirmation runs, caller three-role protocol (2026-10-19)
+
+### REG-MUT — targeted mutation battery, CI-gated (CLOSED-WITH-EVIDENCE)
+- `scripts/run_mutation_battery.py`: dependency-free battery for the register's
+  three targets (Finding-14 adjudicate anchor ×2 mutants, F8
+  frozen-library-term-resolution fail-closed + diagnostic-detail ×2, hawkes
+  standardization ×1), each pinned via targeted pytest runs in fresh
+  interpreters with byte-identical restoration verified and pristine sanity
+  pins. Exit 0 requires ALL mutants killed; a survivor is a REG-MUT failure.
+- **Honest first run:** MUT-C1 (eval-frame-leak standardization) SURVIVED —
+  the inherited dynamic pin scored a fit/eval-identical frame, so it could
+  not distinguish the property. The pin was SHARPENED
+  (`tests/test_dyn_hawkes_standardization_pins.py`: degenerate-fit continuous
+  fallback + distribution-shifted eval frame; Finding-10 property now
+  load-bearing), never weakened; re-run: ALL_KILLED (5/5, pinned report at
+  `benchmarks/mutation_battery_report.json`).
+- CI gate: new `mutation-battery` job in `.github/workflows/test.yml`
+  (survived mutant fails CI; report uploaded, never hidden) and
+  `scripts/check.sh` full tier. Register row updated with status + honesty
+  trail (`docs/SYSTEM_FLAWS_AUDIT.md` register status updates).
+
+### JetFlow v0.3 collision-world confirmation — honest H1 boundary result
+- `benchmarks/run_jetflow_video_v03_confirmation.py` ran the frozen
+  confirmation seeds {407, 508, 509} (exploratory 404 excluded):
+  **H1-collision CONFIRMED 3/3** — the fluid-domain JetFlow advantage does NOT
+  transfer (diffusion wins SSIM + temporal on every seed): the published
+  advantage is DOMAIN-SCOPED to continuum transport. H2 (PSNR floor), H3
+  (train-ratio ceiling) CONFIRMED; H4 CONFIRMED after **ERR-H4-UNITS**, a
+  disclosed units erratum: the prereg text mis-stated the passes metric as
+  amortized-over-n_gen; verdicts recomputed from the SAME committed per-seed
+  artifacts — no re-run, no threshold moved, no seed changed.
+- Report: `docs/JETFLOW_VIDEO_V03_CONFIRMATION_REPORT.md`; verdicts:
+  `benchmarks/jetflow_video_v03_confirmation_results.json` (+ per-seed
+  artifacts under `benchmarks/jetflow_video_v03_confirmation/`).
+
+### Caller-layer three-role data protocol (REG-F14/F14b reference implementation)
+- `docs/CALLER_DATA_THREE_ROLE_PROTOCOL.md` +
+  `apedp_dyn/epistemic/caller_data_protocol.py` (`experimental`, additive):
+  disjoint SELECTION/CONFIRMATION/PROSPECTIVE roles at issue time; sealed
+  one-shot confirmation consumption (REG-F14 letter); confirmation exposure
+  records integrate the existing anti-snooping burn ledger; archived verdict
+  source must be `confirmation` with selection superseded; F14b either-or
+  compliance (sealed split OR ledger-derived DSR-adjusted multiplicity —
+  computed, never hand-written; refuses deflation; reuse events inflate).
+- Acceptance pins `tests/test_dyn_caller_data_protocol.py` (7) include the
+  register's end-to-end letter: pool on slice A, head confirmed exactly once
+  on sealed slice B, verdict provenance from B only, A∩B=∅, second consume
+  refused. Register status: OPEN — per-caller wiring of every production
+  caller (mode a/b) is still pending and remains the acceptance gate.
+
 ## [Unreleased] — E4 divergence-point selection, second JetFlow world, verified-knowledge-module library (2026-10-19)
 
 ### Gap-1 generalization: cost-aware divergence-point selection (`experimental`)

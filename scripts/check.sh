@@ -52,6 +52,12 @@ echo "== dynamic regression battery =="
   tests/test_dyn_trading_sandboxes_epistemic.py \
   -q
 
+echo "== targeted mutation battery (REG-MUT gate: survived mutant fails the run) =="
+.venv/bin/python scripts/run_mutation_battery.py || {
+  echo "MUTATION BATTERY FAILED: a pinned referee/leakage mutant SURVIVED its pins (see benchmarks/mutation_battery_report.json)"
+  exit 1
+}
+
 echo "== rust kernel battery =="
 if command -v cargo >/dev/null 2>&1; then
   (cd rust/apedp-kernel && cargo test --lib -q)
