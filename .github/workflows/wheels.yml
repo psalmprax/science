@@ -39,7 +39,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --manifest-path rust/apedp-kernel/Cargo.toml
+          args: --release --locked --find-interpreter --out dist --manifest-path rust/apedp-kernel/Cargo.toml
           manylinux: auto
 
       - name: Upload wheel artifact

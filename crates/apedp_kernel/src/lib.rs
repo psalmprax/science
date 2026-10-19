@@ -174,7 +174,7 @@ pub fn evaluate_batch<'py>(
     vm.evaluate_batch(&expr.inner, &data_slices, &mut out_vec)
         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e))?;
 
-    Ok(out_vec.into_pyarray_bound(py))
+    Ok(out_vec.into_pyarray(py))
 }
 
 #[pyfunction]
@@ -225,7 +225,7 @@ pub fn score_candidates_parallel<'py>(
 
     let raw_candidates: Vec<CompiledExpression> = candidates.iter().map(|c| c.inner.clone()).collect();
 
-    let scored = py.allow_threads(|| {
+    let scored = py.detach(|| {
         MetricsEngine::score_candidates_parallel(&raw_candidates, &data_slices, target_slice)
     });
 
