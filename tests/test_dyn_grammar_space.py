@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 import apedp_dyn.epistemic.active_disambiguation.e5_market as M
+from apedp_dyn.sandbox import multi_grammar_sandbox as MG
 from apedp_dyn.sandbox import grammar_space as G
 
 
@@ -47,6 +48,52 @@ def test_builders_match_established_panels():
     # The trailing 5 rows must be NaN: an aligned t admits no future window.
     assert bool(np.isnan(tgt[-5:]).all())
     assert bool(np.isfinite(tgt[:-5]).all())
+
+
+@pytest.mark.parametrize(
+    "fit",
+    [
+        lambda panel: MG._fit_grammar_candidate(panel, "H-P"),
+        lambda panel: MG._fit_combo_candidate(panel, "M_P"),
+    ],
+)
+def test_candidate_fit_purges_forward_target_overlap(fit):
+    rng = np.random.default_rng(23)
+    r = rng.normal(0, 0.01, 120)
+    changed = r.copy()
+    changed[60] += 1.0
+    panels = [pd.DataFrame({"r": values}) for values in (r, changed)]
+
+    scores = [fit(panel) for panel in panels]
+
+    assert all(score is not None for score in scores)
+    weights = [score.provenance["gate4_status"]["weights"] for score in scores]
+    np.testing.assert_allclose(weights[0], weights[1])
+
+
+def test_pooled_fit_purges_forward_target_overlap(monkeypatch):
+    import apedp_dyn.sandbox.multi_asset_signals_sandbox as signals
+
+    rng = np.random.default_rng(29)
+    universe = {
+        asset: pd.DataFrame({"r": rng.normal(0, 0.01, 120)})
+        for asset in ("A", "B")
+    }
+    changed = {asset: panel.copy() for asset, panel in universe.items()}
+    changed["A"].loc[60, "r"] += 1.0
+    monkeypatch.setattr(signals, "SIGNAL_NAMES", ["test_signal"])
+    monkeypatch.setattr(signals, "calc_signals_for_asset",
+                        lambda panel, median: np.arange(len(panel), dtype=float)[:, None])
+    monkeypatch.setattr(MG, "adjudicate", lambda *args, **kwargs: None)
+
+    losses = []
+    for panels in (universe, changed):
+        monkeypatch.setattr(signals, "load_universe", lambda _: (panels, list(panels)))
+        _, candidates = MG.run_pooled_multi_asset_discovery(bootstrap=False)
+        assert candidates
+        losses.append(candidates[0].train_loss)
+
+    np.testing.assert_allclose(losses[0], losses[1])
 
 
 def test_causality_warmup_nans():

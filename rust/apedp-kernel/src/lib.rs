@@ -82,7 +82,7 @@ struct PythonColumns<'py> {
 impl<'py> PythonColumns<'py> {
     fn extract(obj: &'py Bound<'_, PyAny>, what: &str) -> PyResult<Self> {
         let list = obj
-            .downcast::<PyList>()
+            .cast::<PyList>()
             .map_err(|_| PyValueError::new_err(format!("{what} must be a list of 1-D float64 arrays")))?;
         let mut sources = Vec::with_capacity(list.len());
         for item in list.iter() {
@@ -138,7 +138,7 @@ impl<'py> GuardedVector<'py> {
     /// The returned borrow is tied to `&self` (the guard), and the guard pins
     /// a Python reference — so callers that release the GIL must hoist this
     /// call *outside* the closure. The `&[f64]` slice it yields is
-    /// `Send + Sync` and safe to hold across `allow_threads`.
+    /// `Send + Sync` and safe to hold across `detach`.
     fn slice(&self) -> &[f64] {
         if !self.owned.is_empty() {
             return &self.owned;
@@ -169,7 +169,7 @@ fn evaluate_batch<'py>(
         .inner
         .evaluate(&cols)
         .map_err(PyValueError::new_err)?;
-    Ok(values.into_pyarray_bound(py))
+    Ok(values.into_pyarray(py))
 }
 
 #[pyfunction]
@@ -206,7 +206,7 @@ fn score_candidates_parallel(
 
     // Release the GIL for the fan-out: the whole point of this entry point is
     // using more than one core, and holding the GIL would serialise it.
-    let rows = py.allow_threads(|| {
+    let rows = py.detach(|| {
         compiled
             .par_iter()
             .enumerate()
@@ -505,7 +505,7 @@ impl CompiledOdeSystem {
         max_steps: usize,
     ) -> PyResult<(bool, String, usize, Bound<'py, PyArray1<f64>>, Bound<'py, PyArray2<f64>>)> {
         let in_vals = input_values.unwrap_or_default();
-        let res = py.allow_threads(|| {
+        let res = py.detach(|| {
             self.inner.integrate(t_span, &x0, &t_eval, &param_values, &in_vals, rtol, atol, max_steps)
         });
 
@@ -520,8 +520,8 @@ impl CompiledOdeSystem {
             }
         }
 
-        let py_t = res.t.into_pyarray_bound(py);
-        let py_y = arr.into_pyarray_bound(py);
+        let py_t = res.t.into_pyarray(py);
+        let py_y = arr.into_pyarray(py);
         Ok((res.success, res.detail, res.nfev, py_t, py_y))
     }
 }
@@ -561,7 +561,7 @@ fn simulate_ode_rk45<'py>(
     let ivals = input_values.unwrap_or_default();
     let sys = OdeSystem::compile(&equations, &state_names, &param_names, &inames)
         .map_err(PyValueError::new_err)?;
-    let res = py.allow_threads(|| {
+    let res = py.detach(|| {
         sys.integrate(t_span, &x0, &t_eval, &param_values, &ivals, rtol, atol, max_steps)
     });
 
@@ -576,8 +576,8 @@ fn simulate_ode_rk45<'py>(
         }
     }
 
-    let py_t = res.t.into_pyarray_bound(py);
-    let py_y = arr.into_pyarray_bound(py);
+    let py_t = res.t.into_pyarray(py);
+    let py_y = arr.into_pyarray(py);
     Ok((res.success, res.detail, res.nfev, py_t, py_y))
 }
 
@@ -647,7 +647,7 @@ fn evolve_native<'py>(
         seed,
     };
 
-    let (pareto, total_evals) = py.allow_threads(|| {
+    let (pareto, total_evals) = py.detach(|| {
         genetic::run_native_evolutionary_search(&columns, target_slice, &variable_names, &config)
     });
 
@@ -687,7 +687,7 @@ fn rime_evaluate_json(
     // Single-candidate evaluation: no selection charge is added here, because
     // the caller knows how many candidates it looked at; the search sets it.
     let score_cfg = rime::eval::ScoreConfig::new(lambda_c, ridge);
-    let s = py.allow_threads(|| {
+    let s = py.detach(|| {
         rime::eval::score_candidate_fitted(&graph, parent_mse, &columns, target_slice, &score_cfg)
     });
     Ok((graph.id(), s.score, s.mse, s.skipped, s.scale, s.intercept, s.r2, s.complexity))
@@ -708,7 +708,7 @@ fn rime_evaluate_series_json(
         .map_err(|e| PyValueError::new_err(format!("rime: bad graph JSON: {}", e)))?;
     let columns_guard = PythonColumns::extract(data, "data")?;
     let columns = columns_guard.views();
-    py.allow_threads(|| graph.evaluate_checked(&columns))
+    py.detach(|| graph.evaluate_checked(&columns))
         .map_err(|e| PyValueError::new_err(format!("rime: invalid graph: {}", e)))
 }
 
@@ -860,7 +860,7 @@ fn rime_search_envs_json(
         cfg.harmonic_seeds,
     );
     let outcome =
-        py.allow_threads(|| rime::search::search_envs(&seeds, &envs, &cfg, agg, gamma_gate));
+        py.detach(|| rime::search::search_envs(&seeds, &envs, &cfg, agg, gamma_gate));
     let mut packet = outcome.to_json();
     if let Some(names) = variable_names.filter(|n| !n.is_empty()) {
         if let Some(list) = packet.get_mut("proposals").and_then(|v| v.as_array_mut()) {
@@ -989,7 +989,7 @@ fn rime_search_json(
     // Opt-in multi-term refinement (`additive_terms` >= 2). Absent, 0 or 1 is
     // exactly the frozen single-term `search`, so existing callers see no change.
     let additive_terms = raw.get("additive_terms").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
-    let outcome = py.allow_threads(|| {
+    let outcome = py.detach(|| {
         rime::additive::search_additive(&seeds, &columns, target_slice, &cfg, additive_terms)
     });
     let mut packet = outcome.to_json();
@@ -1510,7 +1510,7 @@ fn rime_jet2_neural_pde_operator<'py>(
         .map_err(|_| PyValueError::new_err("w2 must be C-contiguous"))?;
 
     let out = py
-        .allow_threads(|| {
+        .detach(|| {
             rime::high_dim_pde::eval_jet2_neural_pde_operator(
                 x_slice,
                 w1_slice,
@@ -1525,10 +1525,10 @@ fn rime_jet2_neural_pde_operator<'py>(
         .map_err(|e| PyValueError::new_err(e))?;
 
     Ok((
-        out.u.into_pyarray_bound(py),
-        out.grad_norm_sq.into_pyarray_bound(py),
-        out.laplacian.into_pyarray_bound(py),
-        out.pde_residual.into_pyarray_bound(py),
+        out.u.into_pyarray(py),
+        out.grad_norm_sq.into_pyarray(py),
+        out.laplacian.into_pyarray(py),
+        out.pde_residual.into_pyarray(py),
     ))
 }
 
@@ -1548,14 +1548,14 @@ fn rime_vlasov_attention_pde_step<'py>(
         .map_err(|_| PyValueError::new_err("x_init must be C-contiguous"))?;
 
     let evolved = py
-        .allow_threads(|| {
+        .detach(|| {
             rime::high_dim_pde::step_vlasov_attention_pde_hd(x_slice, n, d, steps, dt, damping)
         })
         .map_err(|e| PyValueError::new_err(e))?;
 
     let arr = Array2::from_shape_vec((n, d), evolved)
         .map_err(|e| PyValueError::new_err(format!("shape error: {}", e)))?;
-    Ok(arr.into_pyarray_bound(py))
+    Ok(arr.into_pyarray(py))
 }
 
 #[pyfunction]
@@ -1589,7 +1589,7 @@ fn rime_high_dim_pde_point_cloud_flat_json<'py>(
     };
 
     let res = py
-        .allow_threads(|| {
+        .detach(|| {
             rime::high_dim_pde::discover_pde_point_cloud_hd_flat(
                 anc_slice,
                 plus_slice,
@@ -1638,7 +1638,7 @@ fn rime_fokker_planck_ou_operator<'py>(
     let w2_slice = w2.as_slice().map_err(|_| PyValueError::new_err("w2 must be C-contiguous"))?;
 
     let out = py
-        .allow_threads(|| {
+        .detach(|| {
             rime::high_dim_pde::eval_fokker_planck_ou_operator(
                 x_slice,
                 w1_slice,
@@ -1654,10 +1654,10 @@ fn rime_fokker_planck_ou_operator<'py>(
         .map_err(|e| PyValueError::new_err(e))?;
 
     Ok((
-        out.u.into_pyarray_bound(py),
-        out.grad_norm_sq.into_pyarray_bound(py),
-        out.laplacian.into_pyarray_bound(py),
-        out.pde_residual.into_pyarray_bound(py),
+        out.u.into_pyarray(py),
+        out.grad_norm_sq.into_pyarray(py),
+        out.laplacian.into_pyarray(py),
+        out.pde_residual.into_pyarray(py),
     ))
 }
 
@@ -1694,7 +1694,7 @@ fn rime_jet3_pde_loss_and_grads<'py>(
     let w2_slice = w2.as_slice().map_err(|_| PyValueError::new_err("w2 must be C-contiguous"))?;
 
     let out = py
-        .allow_threads(|| {
+        .detach(|| {
             rime::high_dim_pde::compute_jet3_pde_loss_and_grads(
                 x_slice,
                 f_slice,
@@ -1716,9 +1716,9 @@ fn rime_jet3_pde_loss_and_grads<'py>(
 
     Ok((
         out.loss,
-        gw1_arr.into_pyarray_bound(py),
-        out.grad_b1.into_pyarray_bound(py),
-        out.grad_w2.into_pyarray_bound(py),
+        gw1_arr.into_pyarray(py),
+        out.grad_b1.into_pyarray(py),
+        out.grad_w2.into_pyarray(py),
     ))
 }
 
@@ -1742,7 +1742,7 @@ fn rime_pde_discover_nd_cartesian_json<'py>(
     };
 
     let res = py
-        .allow_threads(|| {
+        .detach(|| {
             rime::high_dim_pde::discover_pde_nd_cartesian(u_slice, &grid_shape, dt, &dxs, &config)
         })
         .map_err(|e| PyValueError::new_err(e))?;
@@ -1776,7 +1776,7 @@ fn rime_high_dim_pde_rbf_point_cloud_json<'py>(
     };
 
     let res = py
-        .allow_threads(|| {
+        .detach(|| {
             rime::high_dim_pde::discover_pde_rbf_point_cloud_hd(
                 pts_slice, u_slice, nt, m, dimension, dt, &config,
             )
@@ -1810,7 +1810,7 @@ fn rime_high_dim_pde_tensor_train_json<'py>(
     };
 
     let res = py
-        .allow_threads(|| {
+        .detach(|| {
             rime::high_dim_pde::discover_pde_tensor_train_hd(
                 cores_slice,
                 nt,
@@ -1862,7 +1862,7 @@ fn rime_high_dim_pde_neural_pinn_json<'py>(
     };
 
     let res = py
-        .allow_threads(|| {
+        .detach(|| {
             rime::high_dim_pde::discover_pde_neural_pinn_hd(
                 x_slice, w1_slice, b1_slice, w2_slice, nt, m, dimension, h, dt, &config,
             )
@@ -1907,7 +1907,7 @@ fn rime_jet2_video_flow_step<'py>(
         .map_err(|_| PyValueError::new_err("v_spatial_minus must be C-contiguous"))?;
 
     let (z_next, a_out) = py
-        .allow_threads(|| {
+        .detach(|| {
             rime::high_dim_pde::jet2_video_flow_step(
                 z_slice,
                 vc_slice,
@@ -1923,7 +1923,7 @@ fn rime_jet2_video_flow_step<'py>(
         })
         .map_err(|e| PyValueError::new_err(e))?;
 
-    Ok((z_next.into_pyarray_bound(py), a_out.into_pyarray_bound(py)))
+    Ok((z_next.into_pyarray(py), a_out.into_pyarray(py)))
 }
 
 #[pyfunction]
@@ -1942,12 +1942,12 @@ fn rime_helmholtz_hodge_div_free_2d<'py>(
     let vy_slice = vy.as_slice().map_err(|_| PyValueError::new_err("vy must be C-contiguous"))?;
 
     let (vx_sol, vy_sol, rem_div) = py
-        .allow_threads(|| {
+        .detach(|| {
             rime::high_dim_pde::helmholtz_hodge_div_free_2d(vx_slice, vy_slice, height, width, dx, dy, num_iter)
         })
         .map_err(|e| PyValueError::new_err(e))?;
 
-    Ok((vx_sol.into_pyarray_bound(py), vy_sol.into_pyarray_bound(py), rem_div))
+    Ok((vx_sol.into_pyarray(py), vy_sol.into_pyarray(py), rem_div))
 }
 
 #[pyfunction]
@@ -1966,12 +1966,12 @@ fn rime_laplacian_dissipation_2d<'py>(
     let field_slice = field.as_slice().map_err(|_| PyValueError::new_err("field must be C-contiguous"))?;
 
     let out = py
-        .allow_threads(|| {
+        .detach(|| {
             rime::high_dim_pde::laplacian_dissipation_2d(field_slice, height, width, channels, nu, dt, dx, dy)
         })
         .map_err(|e| PyValueError::new_err(e))?;
 
-    Ok(out.into_pyarray_bound(py))
+    Ok(out.into_pyarray(py))
 }
 
 /// First-line port of `apedp_dyn/video/eval_gate.py` frame metrics.
@@ -2039,12 +2039,12 @@ fn video_warp_bilinear_2d<'py>(
     let vy_slice = vy.as_slice().map_err(|_| PyValueError::new_err("vy must be C-contiguous"))?;
 
     let out = py
-        .allow_threads(|| {
+        .detach(|| {
             video::warp_bilinear_2d(in_slice, vx_slice, vy_slice, channels, height, width)
         })
         .map_err(PyValueError::new_err)?;
 
-    Ok(out.into_pyarray_bound(py))
+    Ok(out.into_pyarray(py))
 }
 
 /// 2D Bilinear Sub-Pixel Coordinate Warping with periodic (wrap-around)
@@ -2066,12 +2066,12 @@ fn video_warp_bilinear_2d_periodic<'py>(
     let vy_slice = vy.as_slice().map_err(|_| PyValueError::new_err("vy must be C-contiguous"))?;
 
     let out = py
-        .allow_threads(|| {
+        .detach(|| {
             video::warp_bilinear_2d_periodic(in_slice, vx_slice, vy_slice, channels, height, width)
         })
         .map_err(PyValueError::new_err)?;
 
-    Ok(out.into_pyarray_bound(py))
+    Ok(out.into_pyarray(py))
 }
 
 /// Compute spatial optical flow divergence: div(v) = d(vx)/dx + d(vy)/dy.
@@ -2090,12 +2090,12 @@ fn video_compute_optical_flow_divergence<'py>(
     let vy_slice = vy.as_slice().map_err(|_| PyValueError::new_err("vy must be C-contiguous"))?;
 
     let out = py
-        .allow_threads(|| {
+        .detach(|| {
             video::compute_optical_flow_divergence(vx_slice, vy_slice, height, width, dx, dy)
         })
         .map_err(PyValueError::new_err)?;
 
-    Ok(out.into_pyarray_bound(py))
+    Ok(out.into_pyarray(py))
 }
 
 /// Detect disocclusion mask where flow divergence exceeds threshold.
@@ -2109,11 +2109,11 @@ fn video_detect_disocclusion_mask<'py>(
     let div_slice = div_flow.as_slice().map_err(|_| PyValueError::new_err("div_flow must be C-contiguous"))?;
 
     let out = py
-        .allow_threads(|| {
+        .detach(|| {
             video::detect_disocclusion_mask(div_slice, divergence_threshold)
         });
 
-    Ok(out.into_pyarray_bound(py))
+    Ok(out.into_pyarray(py))
 }
 
 /// Learned flow-head forward pass: v = head(z_prev, z_curr).
@@ -2136,9 +2136,9 @@ fn flow_head_forward<'py>(
     let zc = z_curr.as_slice().map_err(|_| PyValueError::new_err("z_curr must be C-contiguous"))?;
     let wt = weights.as_slice().map_err(|_| PyValueError::new_err("weights must be C-contiguous"))?;
     let (vx, vy) = py
-        .allow_threads(|| flow_head::forward_v(zp, zc, spec, wt, height, width))
+        .detach(|| flow_head::forward_v(zp, zc, spec, wt, height, width))
         .map_err(PyValueError::new_err)?;
-    Ok((vx.into_pyarray_bound(py), vy.into_pyarray_bound(py)))
+    Ok((vx.into_pyarray(py), vy.into_pyarray(py)))
 }
 
 /// Self-supervised flow-head training over explicit frame triples.
@@ -2179,7 +2179,7 @@ fn flow_head_train<'py>(
         .collect();
     let w0 = weights.as_slice().map_err(|_| PyValueError::new_err("weights must be C-contiguous"))?.to_vec();
     let (losses, w_out) = py
-        .allow_threads(move || {
+        .detach(move || {
             let mut w_mut = w0;
             let res = flow_head::train(
                 d, &triples, spec, &mut w_mut, height, width, steps, lr, weight_decay,
@@ -2188,7 +2188,7 @@ fn flow_head_train<'py>(
             res.map(|losses| (losses, w_mut))
         })
         .map_err(PyValueError::new_err)?;
-    Ok((losses.into_pyarray_bound(py), w_out.into_pyarray_bound(py)))
+    Ok((losses.into_pyarray(py), w_out.into_pyarray(py)))
 }
 
 /// One full DC-STT transport step (head + optional Leray + warp + optional
@@ -2222,14 +2222,14 @@ fn flow_head_transport_step<'py>(
     let hc = head_curr.as_slice().map_err(|_| PyValueError::new_err("head_curr must be C-contiguous"))?;
     let wt = weights.as_slice().map_err(|_| PyValueError::new_err("weights must be C-contiguous"))?;
     let (z_next, vx, vy, rem) = py
-        .allow_threads(|| {
+        .detach(|| {
             flow_head::transport_step(
                 st, hp, hc, spec, wt, height, width, dt, enforce_hh, hh_iters, nu,
                 use_dissipation, dx, dy,
             )
         })
         .map_err(PyValueError::new_err)?;
-    Ok((z_next.into_pyarray_bound(py), vx.into_pyarray_bound(py), vy.into_pyarray_bound(py), rem))
+    Ok((z_next.into_pyarray(py), vx.into_pyarray(py), vy.into_pyarray(py), rem))
 }
 
 #[pymodule]
