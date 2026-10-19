@@ -52,4 +52,11 @@ echo "== dynamic regression battery =="
   tests/test_dyn_trading_sandboxes_epistemic.py \
   -q
 
+echo "== rust kernel battery =="
+if command -v cargo >/dev/null 2>&1; then
+  (cd rust/apedp-kernel && cargo test --lib -q)
+else
+  echo "cargo not installed - Rust kernel tests SKIPPED (reported explicitly, not silently hidden)"
+fi
+
 echo "== full check complete =="
