@@ -23,6 +23,9 @@ from apedp_dyn.epistemic.adjudicate import adjudicate
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 
 
+DEFAULT_DETECTABILITY_K = 3.0
+
+
 @dataclass(frozen=True)
 class Measurement:
     """One candidate observation: query point + measurement noise."""
@@ -70,7 +73,7 @@ def discrimination_table(
 def select_measurement(
     hypotheses: Mapping[str, Callable[[float], float]],
     measurements: list[Measurement],
-    detectability_k: float = 3.0,
+    detectability_k: float = DEFAULT_DETECTABILITY_K,
 ) -> SelectionOutcome:
     """Max-D_sigma policy with abstention (P7: INSUFFICIENT_DISCRIMINATION)."""
     preds = predict_all(hypotheses, measurements)
@@ -112,7 +115,7 @@ def run_trial(
     y_pre: np.ndarray,
     truth_fn: Callable[[float], float],
     rng: np.random.Generator,
-    detectability_k: float = 3.0,
+    detectability_k: float = DEFAULT_DETECTABILITY_K,
     oracle_mid: str | None = None,
     max_rounds: int = 3,
 ) -> TrialResult:
@@ -169,7 +172,7 @@ def run_trial(
 
 @dataclass
 class HarnessConfig:
-    detectability_k: float = 3.0
+    detectability_k: float = DEFAULT_DETECTABILITY_K
     n_trials: int = 40
     seed: int = 7
 
