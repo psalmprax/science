@@ -1,6 +1,6 @@
 """Blind adversarial benchmark protocol (Stage 4 of the validation ladder).
 
-Method rule: the referee is FROZEN (see APEDPX_FROZEN_v1_7.json). This runner
+Method rule: the referee is FROZEN (see APEDPX_FROZEN_v1_8.json). This runner
 refuses to score if any guard file changed — edit the referee and you must
 mint a new freeze record first.
 
@@ -28,7 +28,7 @@ from typing import Any
 sys.path.insert(0, '.')
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_7.json"
+FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_8.json"
 
 
 def verify_referee() -> dict[str, str]:
