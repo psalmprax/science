@@ -23,6 +23,7 @@ from apedp_dyn.sandbox.build_all_system_equations_lean_proofs import (
     assemble_exhaustive_candidate_specifications,
 )
 
+
 def test_system_wide_candidate_inventory():
     """Verify that all 323 candidate specifications are assembled across all 10 sources."""
     specs = assemble_exhaustive_candidate_specifications()
