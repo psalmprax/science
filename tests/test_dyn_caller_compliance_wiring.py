@@ -290,6 +290,9 @@ def test_mode_a_record_refused_with_foreign_provenance():
     suite_cases = _blind_suite_cases()
     conf_ids = [c.case_id for c in suite_cases]
     ledger = FullLineageExperimentLedger()
+    # I3 fail-closed: the consuming candidate must be ledger-registered
+    # BEFORE the sealed slice can be spent on it.
+    ledger.register_candidate("variant_A", proposer_id="blind_benchmark", formula="caller::blind_benchmark")
     protocol, split, sealed = open_sealed_confirmation_lead(
         ledger=ledger,
         selection_case_ids=_selection_case_ids(),
