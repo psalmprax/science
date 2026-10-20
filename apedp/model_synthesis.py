@@ -957,12 +957,7 @@ class AutonomousModelSynthesizer:
         # exact no-op; y values are never rescaled so all MSEs stay comparable.
         x_scale_all = 1.0
         _xam = float(np.max(np.abs(x_train))) if len(x_train) > 0 else 1.0
-        # Regime gate: normalize ONLY for sub-unity x (max|x| < 0.1), where
-        # amplitude bounds demonstrably fail (QEC A=1e5, small-x B=1e7). At
-        # normal scales the legacy trajectory is kept byte-identical: Stage D
-        # landscapes are multimodal, and reparameterization alone can flip
-        # basins (observed: Planck R^2 0.95 -> 0.94 with identical math).
-        if np.isfinite(_xam) and 0.0 < _xam < 0.1:
+        if np.isfinite(_xam) and _xam > 0.0:
             x_scale_all = _xam
         x_train_n = x_train if x_scale_all == 1.0 else x_train / x_scale_all
         x_val_n = x_val if x_scale_all == 1.0 else x_val / x_scale_all
@@ -1328,17 +1323,14 @@ class AutonomousModelSynthesizer:
             "logarithmic_boundary_layer", "rational_exponential_envelope",
             "linear_baseline", "polynomial_baseline",
         })
-        # Regime gate (mirrors refine_stage_d): normalize ONLY for sub-unity x
-        # (max|x| < 0.1), where amplitude bounds demonstrably fail. At normal
-        # scales the identical math can still flip multimodal basins (observed:
-        # Planck rational fit degraded below the R^2 bar after reparameterizing
-        # a healthy-scale problem), so legacy trajectories are preserved there.
+        # Normalize every scale-compatible family so fitting is invariant to
+        # the caller's choice of x units.
         normalize_ok = (
             family_label in _NORMALIZE_FAMILIES and "abs(" not in struct_template
         )
         x_scale = 1.0
         x_abs_max = float(np.max(np.abs(x_train))) if len(x_train) > 0 else 1.0
-        if (normalize_ok and np.isfinite(x_abs_max) and 0.0 < x_abs_max < 0.1):
+        if normalize_ok and np.isfinite(x_abs_max) and x_abs_max > 0.0:
             x_scale = x_abs_max
         param_exp: dict[str, float] = {}
         if x_scale != 1.0:

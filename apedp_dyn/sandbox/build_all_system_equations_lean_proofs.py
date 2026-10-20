@@ -344,6 +344,19 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
             )
         )
 
+    def add_checked_in_specs(prefix: str) -> None:
+        """Use committed Lean module headers when scratch provenance is absent."""
+        for path in sorted(LEAN_FORMAL_DIR.glob("*_verification.lean")):
+            candidate_id = ""
+            formula = ""
+            for line in path.read_text(encoding="utf-8").splitlines()[:8]:
+                if line.startswith("  Candidate: "):
+                    candidate_id = line.removeprefix("  Candidate: ").strip()
+                elif line.startswith("  Formula: "):
+                    formula = line.removeprefix("  Formula: ").strip()
+            if candidate_id.startswith(prefix) and formula:
+                add_spec(candidate_id, formula, meta="checked-in Lean candidate")
+
     # ──────────────────────────────────────────────────────────────────────────
     # Group 1: Fluid ODE Dynamical Sweeps (120 Fitted Cell Equations)
     # ──────────────────────────────────────────────────────────────────────────
@@ -354,6 +367,7 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
             cid = f"{cid_prefix}-{eq_key.upper()}"
             formula = eq_info.get("fitted_formula") or eq_info.get("formula") or "y = c1*lead_spill + c2*ofi"
             add_spec(cid, formula, meta=f"{eq_info.get('name', '')} {eq_key}")
+    add_checked_in_specs("FLUID-CELL-")
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 2: OpenAI Math Advanced Hypotheses Sweeps (80 Fitted Cell Equations)
@@ -365,6 +379,7 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
             cid = f"{cid_prefix}-{hyp_key.upper()}"
             formula = hyp_info.get("fitted_formula") or hyp_info.get("formula") or "y = c1*spread + c2*velocity"
             add_spec(cid, formula, meta=f"{hyp_info.get('name', '')} {hyp_key}")
+    add_checked_in_specs("MATH-CELL-")
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 3: GA Depth-2 Evolved Champion Equations (16 Cells)
@@ -374,6 +389,7 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
         cid = f"GA-D2-CHAMPION-{cell['cell_id'].upper()}"
         formula = cell.get("evolved_formula", "y = c1*lead_disp_prod")
         add_spec(cid, formula, meta="ga depth2 evolved champion")
+    add_checked_in_specs("GA-D2-CHAMPION-")
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 4: GA Depth-3 Evolved Champion Equations (16 Cells)
@@ -383,6 +399,7 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
         cid = f"GA-D3-CHAMPION-{cell['cell_id'].upper()}"
         formula = cell.get("evolved_formula", "y = c1*vel_four_disp_3w")
         add_spec(cid, formula, meta="ga depth3 evolved champion")
+    add_checked_in_specs("GA-D3-CHAMPION-")
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 5: Walk-Forward Rolling Window Discovered Equations (11 Windows)
@@ -392,6 +409,7 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
         cid = f"WALKFORWARD-WIN-M{w.get('month_idx', 0)}"
         formula = w.get("winning_formula", "y = c1*lead_spill")
         add_spec(cid, formula, meta="walkforward rolling window champion")
+    add_checked_in_specs("WALKFORWARD-WIN-")
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 6: Attested Canonical Multi-Asset Split Equations (5 Equations)
@@ -401,6 +419,7 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
             cid = f"EXP-SPLIT-{split_name.upper()}-{eq_key.upper()}"
             formula = eq_val.get("fitted_formula") or eq_val.get("formula") or "y = c1*rel_mom"
             add_spec(cid, formula, meta=f"{split_name} canonical equation")
+    add_checked_in_specs("EXP-SPLIT-")
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 7: APEDP-Evolved Universe Scoring Equations & Ablation Baselines (8)
