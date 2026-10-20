@@ -284,6 +284,15 @@ _XSCALE_ROLES: dict[str, dict[str, str | float]] = {
 }
 
 
+def _decade_x_scale(xs: np.ndarray) -> float:
+    """Return the power-of-ten scale of a finite, nonzero x domain."""
+    x_max = float(np.max(np.abs(xs))) if xs.size else 1.0
+    if not np.isfinite(x_max) or x_max <= 0.0:
+        return 1.0
+    scale = 10.0 ** float(np.floor(np.log10(x_max)))
+    return scale if np.isfinite(scale) and scale > 0.0 else 1.0
+
+
 #: Minimum samples before :func:`_regime_identifiability` will let
 #: ``detect_regimes`` classify at all.
 #:
@@ -955,10 +964,9 @@ class AutonomousModelSynthesizer:
         # their bounds and rail). Stored values map back per-parameter as
         # P = P_tilde / x_scale**e (see _XSCALE_ROLES). x_scale == 1.0 is an
         # exact no-op; y values are never rescaled so all MSEs stay comparable.
-        x_scale_all = 1.0
-        _xam = float(np.max(np.abs(x_train))) if len(x_train) > 0 else 1.0
-        if np.isfinite(_xam) and _xam > 0.0:
-            x_scale_all = _xam
+        x_scale_all = (
+            _decade_x_scale(x_train) if fam in _XSCALE_ROLES else 1.0
+        )
         x_train_n = x_train if x_scale_all == 1.0 else x_train / x_scale_all
         x_val_n = x_val if x_scale_all == 1.0 else x_val / x_scale_all
         with np.errstate(all="ignore"):
@@ -1323,15 +1331,12 @@ class AutonomousModelSynthesizer:
             "logarithmic_boundary_layer", "rational_exponential_envelope",
             "linear_baseline", "polynomial_baseline",
         })
-        # Normalize every scale-compatible family so fitting is invariant to
-        # the caller's choice of x units.
-        normalize_ok = (
-            family_label in _NORMALIZE_FAMILIES and "abs(" not in struct_template
-        )
-        x_scale = 1.0
-        x_abs_max = float(np.max(np.abs(x_train))) if len(x_train) > 0 else 1.0
-        if normalize_ok and np.isfinite(x_abs_max) and x_abs_max > 0.0:
-            x_scale = x_abs_max
+        # These families have x-scale roles for every fitted coefficient, so
+        # decade normalization preserves their model class and maps parameters
+        # back exactly. Templates with fixed absolute x coordinates remain on
+        # the legacy path.
+        normalize_ok = family_label in _NORMALIZE_FAMILIES and "abs(" not in struct_template
+        x_scale = _decade_x_scale(x_train) if normalize_ok else 1.0
         param_exp: dict[str, float] = {}
         if x_scale != 1.0:
             for pm in re.finditer(
