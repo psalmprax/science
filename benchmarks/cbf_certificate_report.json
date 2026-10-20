@@ -1,6 +1,6 @@
 {
   "title": "REG-F16 formal CBF-QP certificate + model-check battery",
-  "generated_at": "2026-10-20T02:21:56.802655+00:00",
+  "generated_at": "2026-10-20T05:28:39.262067+00:00",
   "assumptions": {
     "v_max": 1.0,
     "r_safe": 0.5,
