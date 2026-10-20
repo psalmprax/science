@@ -1,0 +1,34 @@
+{
+  "title": "REG-F16 formal CBF-QP certificate + model-check battery",
+  "generated_at": "2026-10-20T02:21:56.802655+00:00",
+  "assumptions": {
+    "v_max": 1.0,
+    "r_safe": 0.5,
+    "gamma": 2.0,
+    "dt": 0.05,
+    "gamma_dt": 0.1,
+    "max_agents": 64,
+    "tol": 1e-09
+  },
+  "assumption_gate": "refuses gamma*dt > 0.5, non-positive margins, out-of-scope agent counts",
+  "formal_layer": {
+    "claim": "FORMAL (velocity layer, under the explicit assumption set)",
+    "environments_checked": 64,
+    "qp_releases_verified": 64,
+    "worst_pair_constraint_slack": -3.3306690738754696e-16,
+    "worst_projection_optimality_excess": 0.0,
+    "discrete_invariance_horizons": "4 envs x 120 steps, h > 0 at every step",
+    "fail_closed_refusal": "uncertified commands raise CertificateViolation (never released)"
+  },
+  "model_check_layer": {
+    "claim": "MODEL-CHECKED (unicycle realization through the production arc stepper \u2014 evidence, NOT a formal claim)",
+    "environments": 16,
+    "agents_per_env": 6,
+    "steps_per_env": 60,
+    "scenario": "adversarial symmetric head-on courses (deadlock geometry)",
+    "min_barrier_observed": 0.3587654506581208,
+    "collisions": 0
+  },
+  "boundary_disclosure": "batch_multi_agent_cbf_step REMAINS the artificial-potential deadlock-remediation heuristic (its docstring's not-a-certified-CBF disclosure is pinned and unmodified). certified_cbf_guard is the additive certified layer; the unicycle realization is model-checked evidence, not a formal result. External safety sign-off (register source) remains the outstanding step.",
+  "seed": 1618
+}

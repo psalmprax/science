@@ -1113,20 +1113,26 @@ class LeanUniversalBridge:
                 kernel_stderr = "Docker daemon unavailable"
         elif self.is_lean_compiler_available and self._lean_binary:
             try:
+                # Robustness fix (REG-LEAN reproduction finding, 2026-10-20):
+                # the previous 15 s compile timeout killed the two heaviest
+                # verification files (NavierStokes / forced-ODE fluid cells)
+                # under 8-way parallel contention — a wall-clock artifact, not
+                # a verification failure (both compile clean standalone).
+                # Raised so exit codes reflect verification, not contention.
                 if in_memory:
                     proc = subprocess.run(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
                         [self._lean_binary, "--stdin"],
                         input=lean_code,
                         capture_output=True,
                         text=True,
-                        timeout=15,
+                        timeout=240,
                     )
                 else:
                     proc = subprocess.run(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (bundled tooling)
                         [self._lean_binary, str(lean_file)],
                         capture_output=True,
                         text=True,
-                        timeout=15,
+                        timeout=240,
                     )
                 kernel_exit = proc.returncode
                 kernel_stdout = proc.stdout

@@ -469,3 +469,27 @@ def ledger_hash(rows: list[dict]) -> str:
         h.update(repr(sorted(x.items())).encode())
     return h.hexdigest()
 
+
+
+# --------------------------------------------------------------------------
+# REG-F14b per-caller wiring (docs/SYSTEM_FLAWS_AUDIT.md register): this
+# production caller publishes a LEDGER-DERIVED DSR-adjusted multiplicity
+# record (mode b, never hand-written), validated at publish time. See
+# apedp_dyn/epistemic/caller_registry.py for the census and discipline.
+# --------------------------------------------------------------------------
+def publish_caller_compliance_record(
+    ledger=None,
+    candidate_id: str = "",
+    dataset_id: str = None,
+    nominal_variants: int = None,
+):
+    "Publish this caller's REG-F14b mode-(b) compliance record."
+    from apedp_dyn.epistemic.caller_registry import publish_compliance_record
+
+    return publish_compliance_record(
+        ledger=ledger,
+        caller_id="canonical_ledger",
+        candidate_id=candidate_id,
+        dataset_id=dataset_id,
+        nominal_variants=nominal_variants,
+    )

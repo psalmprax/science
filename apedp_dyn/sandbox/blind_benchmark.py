@@ -1,6 +1,6 @@
 """Blind adversarial benchmark protocol (Stage 4 of the validation ladder).
 
-Method rule: the referee is FROZEN (see APEDPX_FROZEN_v1_7.json). This runner
+Method rule: the referee is FROZEN (see APEDPX_FROZEN_v1_8.json). This runner
 refuses to score if any guard file changed — edit the referee and you must
 mint a new freeze record first.
 
@@ -28,7 +28,7 @@ from typing import Any
 sys.path.insert(0, '.')
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_7.json"
+FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_8.json"
 
 
 def verify_referee() -> dict[str, str]:
@@ -222,3 +222,27 @@ if __name__ == "__main__":
     print(f"blind cases: {rep.n_blind} (example excluded by design)")
     for r in rep.rows:
         print(f"  {r['case_id']}: promoted={r['promoted']} abstained={r['abstained']}")
+
+
+# --------------------------------------------------------------------------
+# REG-F14b per-caller wiring (docs/SYSTEM_FLAWS_AUDIT.md register): this
+# production caller publishes a LEDGER-DERIVED DSR-adjusted multiplicity
+# record (mode b, never hand-written), validated at publish time. See
+# apedp_dyn/epistemic/caller_registry.py for the census and discipline.
+# --------------------------------------------------------------------------
+def publish_caller_compliance_record(
+    ledger=None,
+    candidate_id: str = "",
+    dataset_id: str = None,
+    nominal_variants: int = None,
+):
+    "Publish this caller's REG-F14b mode-(b) compliance record."
+    from apedp_dyn.epistemic.caller_registry import publish_compliance_record
+
+    return publish_compliance_record(
+        ledger=ledger,
+        caller_id="blind_benchmark",
+        candidate_id=candidate_id,
+        dataset_id=dataset_id,
+        nominal_variants=nominal_variants,
+    )
