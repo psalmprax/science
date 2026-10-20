@@ -1,0 +1,73 @@
+{
+  "seed": 3,
+  "steps": 60,
+  "latent_std": 0.6160480976104736,
+  "invertibility_check": {
+    "ssim": 1.0,
+    "psnr_db": 100.0
+  },
+  "jpeg": {
+    "q_train": 15,
+    "baseline": {
+      "ssim": 0.977109,
+      "psnr_db": 31.034
+    },
+    "refined": {
+      "ssim": 0.977927,
+      "psnr_db": 31.081
+    },
+    "ssim_gain": 0.000818,
+    "psnr_gain_db": 0.047,
+    "heldout_q_eval": 60,
+    "heldout_baseline": {
+      "ssim": 0.995739,
+      "psnr_db": 36.936
+    },
+    "heldout_refined": {
+      "ssim": 0.995537,
+      "psnr_db": 34.127
+    },
+    "heldout_ssim_gain": -0.000202,
+    "hist_recon_l1_first_last": [
+      0.01796364225447178,
+      0.013724726624786854
+    ],
+    "hist_grad_first_last": [
+      0.011998359113931656,
+      0.011255776509642601
+    ],
+    "train_wall_s": 41.7
+  },
+  "noisy_latent": {
+    "sigma_train": 0.09240721464157105,
+    "baseline": {
+      "ssim": 0.365778,
+      "psnr_db": 21.46
+    },
+    "refined": {
+      "ssim": 0.375502,
+      "psnr_db": 21.738
+    },
+    "ssim_gain": 0.009724,
+    "psnr_gain_db": 0.278,
+    "heldout_sigma": 0.030802404880523684,
+    "heldout_baseline": {
+      "ssim": 0.782434,
+      "psnr_db": 30.917
+    },
+    "heldout_refined": {
+      "ssim": 0.784503,
+      "psnr_db": 27.449
+    },
+    "heldout_ssim_gain": 0.002069,
+    "hist_recon_l1_first_last": [
+      0.06251846253871918,
+      0.055266279727220535
+    ],
+    "hist_grad_first_last": [
+      0.1769358515739441,
+      0.14306694269180298
+    ],
+    "train_wall_s": 49.1
+  }
+}
