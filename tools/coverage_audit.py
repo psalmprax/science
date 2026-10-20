@@ -63,6 +63,13 @@ SKIP_DIRS = frozenset({
     ".git", "__pycache__", ".venv", "node_modules", "target", "outputs",
     ".refact", ".mypy_cache", ".pytest_cache", ".ruff_cache",
     ".kilo", "worktrees", "htmlcov",
+    # Packaging/build artifact trees: stale copies of the source packages that
+    # setuptools/pip left behind after earlier builds. They are byte-for-byte
+    # shims of the real facades, so scanning them made the facade detector
+    # claim artifacts like `build.lib.apedp.visualization` were façades —
+    # test imports of those dotted names fail (build/ is not a package).
+    # Mirror rationale to .kilo/worktrees: not the tree under test.
+    "build", "dist",
 })
 
 #: A module with fewer executed lines than this is reported but not called

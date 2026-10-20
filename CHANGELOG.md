@@ -16,6 +16,60 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ## [Unreleased] — register limitations addressed: F14b wiring, F16 CBF certificate, LEAN reproduction (2026-10-20)
 
+### Full-suite failure triage and first-wave fixes (2026-10-20)
+- Reproduced the full red state in one non-deselected run:
+  `pytest tests/ -q` → **97 failed / 3,321 passed / 4 skipped / 68:35 (rc=1)**.
+  Triage below; first wave of true-root-cause fixes landed this commit:
+  1. **Facade-observer regression → 62 tests red** (`tests/test_facade_contracts.py`):
+     the shared detector scanned the stale `build/lib` packaging artifacts
+     (`tools/coverage_audit.py` had `build`/`dist` missing from `SKIP_DIRS`; the
+     built node_modules are byte-for-byte shims of the real facades), then
+     importlib can not import `build.lib.apedp.*`. Fix: `build`/`dist` pruned
+     from the audit's own source-tree scans (same rationale as the
+     `.kilo/worktrees` exclusion: not the tree under test). `tests/
+     test_facade_contracts.py` now 65/65 green. Facade-pin tools regression
+     green: `test_coverage_audit`(23) + `test_affected_tests`(22) +
+     `test_check_tools_fail_loudly`(10).
+  2. **Trading E4T1 data-plumbing import never wired (7 red)**:
+     `test_dyn_trading_e4t1.py` reads snapshots via `T1.load_frames()` (v2's
+     docstring pins the same panels as v1); was written against `T` (v2) that
+     never re-exported the loaders. True fix: switch `_panels()` in the test's
+     setup path to v1 (data-identical), keep T for hypotheses and T1 for v1's
+     protocol. `tests/test_dyn_trading_e4t1.py` now 9/9 (was 2/9).
+  3. **RIME_SUITE_TOTAL 212 → 213** (`tests/test_dyn_reporting_integrity.py`):
+     every file the machine-verification counter scans was re-collected;
+     actual = 213. Per that test's own failure message the constant is
+     re-derived, never hand-edited from prose.
+- **Remaining 27 failures, triaged but NOT silently re-pinned** (each needs a
+  data- or referee-recalibration decision, which is exactly why they were not
+  jogged): (a) physics/adjudication flips on borderline regimes — dashboard
+  (4, promoted binding now MULTI), quantum_vacuum/sandbox/ui_sandbox creep
+  abstains (3, expected MULTI got UNIQUE): opposite-direction verdict drift
+  through the shared discovery/adjudicate path; (b) market-panel numeric pins
+  drift (16: e5_r1 3, ensemble 3, gated_ensemble 3, e5_market 1, policy
+  grammar index 1, ha_coupling 1, eseds scorecard 1, ui_studio series
+  reconstruction 1, system classes/gate counts/R²): all read the Oct-2
+  `crypto_top15_orderflow.csv` snapshot — needs one joint re-derivation
+  session over a declared data version; (c) contract-evolution pins:
+  `stem_grammar` strategic-arch (1), `external_60` near-OOD-floor (1),
+  scale-invariance 1e9 edge (1), `tier_b` Planck R² 0.94 vs 0.95 floor (1),
+  `rust` native GA advanced-ops (1); (d) governance-manifest SHA (1): needs
+  renewed trustee certification (external).
+
+### Local credential remediation: PAT stripped from the remote URL, credential helper installed (2026-10-20)
+- `remote.origin.url` rewritten from the token-embedded URL to the bare
+  `https://github.com/psalmprax/science.git`; repo-local
+  `credential.helper = store` installed. Public read path verified live
+  (`git ls-remote origin HEAD` rc=0); the next push will prompt once and the
+  helper persists the credential (plaintext `~/.git-credentials` — prefer
+  `gh auth login` or `git-credential-libsecret` to avoid that if available).
+- Workspace sweep: the embedded-token URL pattern matches NO tracked file
+  and only one vendored third-party fixture (`.venv/.../LibGit2/test/
+  libgit2-tests.jl`) — the leak is local-config-only. **The exposed PAT is
+  still live until deleted on GitHub** (Settings → Developer settings →
+  Personal access tokens): rotation there is the user's step — an agent
+  session cannot do it without account credentials.
+
 ### REG-F14 — restart-proof sealed-slice consumption + fail-closed ledger writes + canonical-spec shrink import (2026-10-20)
 - `apedp_dyn/epistemic/caller_data_protocol.py`:
   1. **Durable lead state (I2 across restarts):** `CallerSplitProtocol` now
