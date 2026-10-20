@@ -1351,11 +1351,15 @@ class AutonomousModelSynthesizer:
         x_tr = x_train if x_scale == 1.0 else x_train / x_scale
         x_va = x_val if x_scale == 1.0 else x_val / x_scale
 
-        # Normalize y at every scale as well so optimizer tolerances and bounds
-        # are independent of the caller's choice of response units.
+        # y-scale normalization (sub-unity-y regime only): L-BFGS-B's absolute
+        # tolerances misbehave when objectives live at ~1e-12 scales (observed:
+        # ABNORMAL line-search stop 150x above the noise floor at y~1e-6, while
+        # the y-normalized problem converges to true parameters). y_scale == 1.0
+        # is an exact no-op. Stored amplitudes map back per y-linearity role;
+        # reported MSEs are recomputed on raw data and consistency-verified.
         y_scale_n = 1.0
         _ysm = float(np.max(np.abs(y_train))) if len(y_train) > 0 else 1.0
-        if np.isfinite(_ysm) and _ysm > 0.0:
+        if np.isfinite(_ysm) and 0.0 < _ysm < 1e-2:
             y_scale_n = _ysm
         y_tr = y_train if y_scale_n == 1.0 else y_train / y_scale_n
         y_va = y_val if y_scale_n == 1.0 else y_val / y_scale_n
