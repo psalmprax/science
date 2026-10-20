@@ -20,31 +20,11 @@ from apedp.mathematical.mathematical_layer import ProofClaimStatus
 from apedp_dyn.epistemic.lean_universal_bridge import LeanUniversalBridge, VerificationBackend
 from apedp_dyn.sandbox.build_all_system_equations_lean_proofs import (
     ARTIFACT_DIR,
-    REPO_ROOT,
     assemble_exhaustive_candidate_specifications,
 )
 
-_PROVENANCE_INPUTS = (
-    "fluid_ode_dynamical_sweep_provenance.json",
-    "openai_math_advanced_hypotheses_sweep_provenance.json",
-    "ga_depth2_sweep_provenance.json",
-    "ga_depth3_sweep_provenance.json",
-    "expanded_space_discovery_provenance.json",
-)
-
-
-def _require_provenance_inputs():
-    missing = [
-        name for name in _PROVENANCE_INPUTS
-        if not (ARTIFACT_DIR / name).is_file() and not (REPO_ROOT / name).is_file()
-    ]
-    if missing:
-        pytest.skip(f"exhaustive inventory requires generated provenance inputs: {missing}")
-
-
 def test_system_wide_candidate_inventory():
     """Verify that all 323 candidate specifications are assembled across all 10 sources."""
-    _require_provenance_inputs()
     specs = assemble_exhaustive_candidate_specifications()
     assert len(specs) == 323
     candidate_ids = {s.candidate_id for s in specs}
@@ -89,7 +69,6 @@ def test_provenance_file_integrity():
 
 def test_spot_check_lean_kernel_compilation():
     """Directly compile representative spot-check modules via local Lean binary."""
-    _require_provenance_inputs()
     bridge = LeanUniversalBridge(backend=VerificationBackend.CORE_AXIOMATIC)
     if not bridge.is_lean_compiler_available:
         pytest.skip("spot-check compilation requires the Lean 4 compiler")
