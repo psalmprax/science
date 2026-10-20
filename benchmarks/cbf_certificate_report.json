@@ -1,6 +1,6 @@
 {
   "title": "REG-F16 formal CBF-QP certificate + model-check battery",
-  "generated_at": "2026-10-20T05:28:39.262067+00:00",
+  "generated_at": "2026-10-20T05:38:53.606087+00:00",
   "assumptions": {
     "v_max": 1.0,
     "r_safe": 0.5,
@@ -28,6 +28,147 @@
     "scenario": "adversarial symmetric head-on courses (deadlock geometry)",
     "min_barrier_observed": 0.3587654506581208,
     "collisions": 0
+  },
+  "scaling_layer": {
+    "claim": "SCALED-VERIFICATION (same formal checks re-verified at larger grids; latencies are WALL-CLOCK MEASUREMENTS of the environment that ran the battery, not guarantees)",
+    "guard_layer": "certified_cbf_guard -> unicycle_commands_from_certified -> batch_unicycle_arc_step (production arc stepper)",
+    "measured_on": "python 3.12.3 / Linux x86_64",
+    "grids": [
+      {
+        "agents": 16,
+        "envs_verified": 16,
+        "envs_realized": 8,
+        "steps_per_env": 40,
+        "releases_verified": 640,
+        "worst_pair_constraint_slack": 1.1192687414035518,
+        "realized_min_barrier": 3.6866106322504857,
+        "invariance_check": "16 envs x 40 Euler steps, h > 0 at every step",
+        "realized_check": "8 envs x 40 arc-stepper steps, h > 0 at every step",
+        "latency_qp_ms": {
+          "mean_ms": 0.1714985421875,
+          "p50_ms": 0.151424,
+          "p95_ms": 0.264362,
+          "max_ms": 0.615535,
+          "samples": 640
+        },
+        "latency_guard_ms": {
+          "mean_ms": 0.3247269875,
+          "p50_ms": 0.301829,
+          "p95_ms": 0.450262,
+          "max_ms": 0.631083,
+          "samples": 320
+        },
+        "latency_guard_step_ms": {
+          "mean_ms": 0.596411134375,
+          "p50_ms": 0.565557,
+          "p95_ms": 0.817193,
+          "max_ms": 1.018395,
+          "samples": 320
+        }
+      },
+      {
+        "agents": 32,
+        "envs_verified": 12,
+        "envs_realized": 6,
+        "steps_per_env": 40,
+        "releases_verified": 480,
+        "worst_pair_constraint_slack": -3.3306690738754696e-16,
+        "realized_min_barrier": 2.0227300083993183,
+        "invariance_check": "12 envs x 40 Euler steps, h > 0 at every step",
+        "realized_check": "6 envs x 40 arc-stepper steps, h > 0 at every step",
+        "latency_qp_ms": {
+          "mean_ms": 0.2722475375,
+          "p50_ms": 0.246613,
+          "p95_ms": 0.397732,
+          "max_ms": 0.839098,
+          "samples": 480
+        },
+        "latency_guard_ms": {
+          "mean_ms": 0.48369671249999996,
+          "p50_ms": 0.459504,
+          "p95_ms": 0.673496,
+          "max_ms": 0.861477,
+          "samples": 240
+        },
+        "latency_guard_step_ms": {
+          "mean_ms": 0.7709191000000001,
+          "p50_ms": 0.731816,
+          "p95_ms": 1.02847,
+          "max_ms": 2.21258,
+          "samples": 240
+        }
+      },
+      {
+        "agents": 64,
+        "envs_verified": 8,
+        "envs_realized": 4,
+        "steps_per_env": 30,
+        "releases_verified": 240,
+        "worst_pair_constraint_slack": -9.6474273014735e-10,
+        "realized_min_barrier": 1.1193323349394277,
+        "invariance_check": "8 envs x 30 Euler steps, h > 0 at every step",
+        "realized_check": "4 envs x 30 arc-stepper steps, h > 0 at every step",
+        "latency_qp_ms": {
+          "mean_ms": 0.7106903291666666,
+          "p50_ms": 0.602779,
+          "p95_ms": 1.643379,
+          "max_ms": 2.387414,
+          "samples": 240
+        },
+        "latency_guard_ms": {
+          "mean_ms": 0.9893821583333333,
+          "p50_ms": 0.967141,
+          "p95_ms": 1.219749,
+          "max_ms": 1.465081,
+          "samples": 120
+        },
+        "latency_guard_step_ms": {
+          "mean_ms": 1.3094423833333333,
+          "p50_ms": 1.265202,
+          "p95_ms": 1.703255,
+          "max_ms": 1.895163,
+          "samples": 120
+        }
+      },
+      {
+        "agents": 128,
+        "envs_verified": 4,
+        "envs_realized": 4,
+        "steps_per_env": 20,
+        "releases_verified": 80,
+        "worst_pair_constraint_slack": -9.906362397060775e-10,
+        "realized_min_barrier": 0.3919259297762283,
+        "invariance_check": "4 envs x 20 Euler steps, h > 0 at every step",
+        "realized_check": "4 envs x 20 arc-stepper steps, h > 0 at every step",
+        "latency_qp_ms": {
+          "mean_ms": 4.521215325,
+          "p50_ms": 3.568021,
+          "p95_ms": 9.986752,
+          "max_ms": 10.868722,
+          "samples": 80
+        },
+        "latency_guard_ms": {
+          "mean_ms": 2.970003,
+          "p50_ms": 2.91594,
+          "p95_ms": 3.544894,
+          "max_ms": 4.075932,
+          "samples": 80
+        },
+        "latency_guard_step_ms": {
+          "mean_ms": 3.3850641875000003,
+          "p50_ms": 3.345083,
+          "p95_ms": 4.205648,
+          "max_ms": 4.548151,
+          "samples": 80
+        }
+      }
+    ],
+    "realization_scope_probe": {
+      "stress": "fresh full-range random nominals redrawn at every step, 128 agents",
+      "observed_min_barrier": -0.11024998458650387,
+      "collision_steps": 17,
+      "claim": "DISCLOSED SCOPE BOUNDARY: outside the realized layer's evidence \u2014 the realized layer is model-checked evidence under the deadlock / realized-feedback discipline, NOT certified versus this stress (no formal claim is made or rescinded)."
+    }
   },
   "boundary_disclosure": "batch_multi_agent_cbf_step REMAINS the artificial-potential deadlock-remediation heuristic (its docstring's not-a-certified-CBF disclosure is pinned and unmodified). certified_cbf_guard is the additive certified layer; the unicycle realization is model-checked evidence, not a formal result. External safety sign-off (register source) remains the outstanding step.",
   "seed": 1618

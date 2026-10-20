@@ -38,7 +38,7 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   pipeline operationally holds a sealed confirmation split; mode (a) stays
   available per caller and is claimed for no one.
 
-### REG-F16 — formal CBF-QP certificate + model-check artifact
+### REG-F16 — formal CBF-QP certificate + model-check artifact (+ scaled verification)
 - `apedp_dyn/robotics/cbf_certificate.py` + `tests/test_dyn_cbf_certificate.py`
   (8 pins) + `benchmarks/cbf_certificate_report.json` (battery exit 0, 64
   certified releases verified, worst slack −3.3e-16; unicycle realization
@@ -48,6 +48,39 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   γ·dt > 0.5); the unicycle realization is disclosed as model-checked
   evidence, NOT formal. `batch_multi_agent_cbf_step` is untouched and its
   not-a-certified-CBF disclosure pin intact; `certified_cbf_guard` is additive.
+- NEW scaled-verification layer in the same battery: the same fail-closed
+  formal checks re-verified on deterministic jittered-lattice grids at
+  16/32/64/128 agents (1440 additional releases, worst slack −9.91e-10 ≥ −tol;
+  Euler invariance h > 0 at every step at every scale; realized guard
+  collision-free at every scale under the physically-consistent
+  realized-velocity-feedback nominal discipline — 128-agent realized min
+  barrier 0.3919) plus recorded per-step WALL-CLOCK guard and guard+arc-stepper
+  latencies (measurement of the environment that ran the battery, explicitly
+  not a guarantee; mean guard+step 0.60/0.77/1.31/3.39 ms at 16/32/64/128
+  agents). A separate DISCLOSED scope probe records verbatim that fresh
+  full-range random nominals redrawn every step at 128 agents are OUTSIDE the
+  realized layer's evidence (deterministic breach −0.1102, 17 collision steps)
+  — the realized layer stays scenario-scoped evidence.
+
+### REG-F14/F14b — mode (a) operational wiring landed (blind_benchmark first)
+- `apedp_dyn/epistemic/caller_registry.py`: mode-(a) registry helpers
+  `issue_sealed_confirmation_lead` (census- and dataset-family-checked) and
+  `publish_sealed_compliance_record` (refuses publication while the sealed
+  confirmation slice is unconsumed, with foreign provenance, or for a foreign
+  head; demands one-shot provenance and `archived_verdict_source =
+  "confirmation"`).
+- `apedp_dyn/sandbox/blind_benchmark.py`: first census caller wired for mode
+  (a) over its OWN real slice axis — `open_sealed_confirmation_lead`
+  (selection = worked-example/selection case ids, confirmation = the SEALED
+  blind case ids), `evaluate_confirmation_cases` (frozen-referee-checked,
+  closed confirmation family, blind-metrics verdict),
+  `publish_sealed_compliance_record`.
+- Pins: `tests/test_dyn_caller_compliance_wiring.py` 8 → 12 (sealed consume
+  exactly once; second candidate refused; publication refused while
+  unconsumed / with foreign provenance; sealed record validates).
+  Honest boundary: the five remaining callers remain mode (b) by default and
+  the pinned mode-(a) demonstration is the wiring path — a live production
+  promotion through the sealed slice is pending, disclosed as such.
 
 ### REG-LEAN — pinned-toolchain reproduction of the 323-record sweep
 - `scripts/run_lean_pinned_reproduction.py` +

@@ -16,11 +16,20 @@ selection-family exposures on the caller's dataset; reuse charges via the
 ``selection_reused_confirmation_holdout`` labels). Nothing is hand-writable:
 the registry refuses a published effective n that does not equal the ledger
 recomputation, and deflation below nominal is refused upstream by the
-protocol validator. Mode (a) — sealed confirmation splits — remains the
-per-caller operational upgrade (the ``CallerSplitProtocol`` reference path)
-and is already accepted by the same validator; the census wires every caller
-into mode (b) because no production pipeline currently holds an operational
-sealed confirmation split.
+protocol validator.
+
+Mode (a) — sealed confirmation splits — is now operationally wired per-caller
+through this registry: :func:`issue_sealed_confirmation_lead` issues a lead
+over the caller's OWN real slice ids against its registered dataset family
+(the census is closed: leads cannot be issued for unknown callers or unknown
+datasets), and :func:`publish_sealed_compliance_record` refuses to publish a
+sealed record until the confirmation slice has actually been spent (exactly
+once, via ``SealedConfirmationSlice.consume``) and the archived verdict
+source is the confirmation slice. ``blind_benchmark`` is the first census
+caller wired at its own module level (its blind cases are the natural sealed
+confirmation family); the other five census callers remain published in mode
+(b) by default until a real sealed lead is spent in a live promotion event —
+that wiring gap is disclosed in the register, not silently claimed.
 
 Selection-stage exposure discipline: at selection time a caller records its
 candidate variants as ``DatasetRole.TRAINING_DEVELOPMENT`` exposures on its
@@ -40,6 +49,11 @@ from importlib import import_module
 from typing import Any, Iterable
 
 from apedp_dyn.epistemic.caller_data_protocol import (
+    CallerSplit,
+    CallerSplitProtocol,
+    ConfirmationProvenance,
+    ConfirmationVerdict,
+    SealedConfirmationSlice,
     multiplicity_from_ledger,
     validate_caller_compliance,
 )
@@ -220,6 +234,121 @@ def publish_compliance_record(
     ok, why = validate_caller_compliance(record)
     if not ok:
         raise CallerRegistryComplianceError(f"{caller_id}: published record refused — {why}")
+    return record
+
+
+# --------------------------------------------------------------------------
+# REG-F14 mode (a): operational sealed-confirmation-split wiring.
+# --------------------------------------------------------------------------
+
+def issue_sealed_confirmation_lead(
+    ledger: FullLineageExperimentLedger | None,
+    caller_id: str,
+    selection_ids: list[str],
+    confirmation_ids: list[str],
+    dataset_id: str | None = None,
+    protocol: CallerSplitProtocol | None = None,
+) -> tuple[CallerSplitProtocol, CallerSplit, SealedConfirmationSlice]:
+    """Issue the caller's own real three-role lead (mode (a) wiring).
+
+    Census discipline enforced here:
+      * the caller must be a registered production caller (closed census);
+      * the split must be issued against the caller's REGISTERED dataset
+        family (``dataset_id`` defaults to it and must match exactly) — a
+        caller cannot claim a split over a dataset outside its census row;
+      * the protocol instance is returned, so the same object that issued
+        the lead must be used for consumption and archiving (no re-issuance
+        under a fresh protocol: a caller cannot be issued twice per lead).
+    """
+    reg = caller_registration(caller_id)
+    ds_id = dataset_id or reg.dataset_family
+    if ds_id != reg.dataset_family:
+        raise CallerRegistryComplianceError(
+            f"{caller_id}: sealed lead dataset {ds_id!r} is not this caller's "
+            f"registered dataset family {reg.dataset_family!r} — the census is closed"
+        )
+    protocol = protocol or CallerSplitProtocol(ledger)
+    split, sealed = protocol.issue_caller_split(
+        caller_id=caller_id,
+        dataset_id=ds_id,
+        selection_ids=list(selection_ids),
+        confirmation_ids=list(confirmation_ids),
+    )
+    return protocol, split, sealed
+
+
+def publish_sealed_compliance_record(
+    ledger: FullLineageExperimentLedger | None,
+    caller_id: str,
+    candidate_id: str,
+    protocol: CallerSplitProtocol,
+    sealed: SealedConfirmationSlice,
+    confirmation_verdict: ConfirmationVerdict,
+    selection_verdict: Any = None,
+) -> dict[str, Any]:
+    """Build + validate this caller's REG-F14b mode-(a) record.
+
+    Refuses to publish (fail-closed) unless EVERY letter of F14's sealed path
+    actually happened on the objects passed in:
+      * the sealed confirmation slice was CONSUMED (exactly once — an
+        unconsumed slice means the only evaluation so far was on selection
+        data, which may never be archived as the promoted claim);
+      * the verdict provenance carries one-shot / second-consume-refused
+        flags and belongs to this sealed slice's ids and dataset family;
+      * the archived record labels the CONFIRMATION slice as the verdict
+        source and marks the selection verdict superseded.
+    """
+    reg = caller_registration(caller_id)
+    if not sealed.consumed:
+        raise CallerRegistryComplianceError(
+            f"{caller_id}: mode-(a) record refused — the sealed confirmation "
+            "slice has NOT been consumed; a promotion verdict cannot be "
+            "archived from selection-only evaluation (REG-F14: evaluated ONCE)"
+        )
+    prov: ConfirmationProvenance | None = confirmation_verdict.provenance
+    if prov is None:
+        raise CallerRegistryComplianceError(
+            f"{caller_id}: confirmation verdict carries no one-shot provenance"
+        )
+    if not tuple(prov.slice_ids) == tuple(sealed.ids):
+        raise CallerRegistryComplianceError(
+            f"{caller_id}: verdict provenance does not belong to the sealed "
+            "confirmation slice held"
+        )
+    if prov.slice_dataset_id != reg.dataset_family:
+        raise CallerRegistryComplianceError(
+            f"{caller_id}: sealed slice dataset {prov.slice_dataset_id!r} is not "
+            f"this caller's registered dataset family {reg.dataset_family!r}"
+        )
+    archived = protocol.archive_promotion_verdict(
+        caller_id=caller_id,
+        confirmation_verdict=confirmation_verdict,
+        selection_verdict=selection_verdict,
+    )
+    if archived["candidate_id"] != candidate_id:
+        raise CallerRegistryComplianceError(
+            f"{caller_id}: archived head is {archived['candidate_id']!r}, not {candidate_id!r}"
+        )
+    record: dict[str, Any] = {
+        "caller_id": caller_id,
+        "confirmation_mode": "sealed",
+        "dataset_id": reg.dataset_family,
+        "candidate_id": candidate_id,
+        "confirmation_slice_ids": list(archived["confirmation_slice_ids"]),
+        "confirmation_provenance": {
+            "consumed_at": archived["confirmation_provenance"]["consumed_at"],
+            "one_shot": archived["confirmation_provenance"]["one_shot"],
+            "second_consume_refused": archived["confirmation_provenance"]["second_consume_refused"],
+            "candidate_id": candidate_id,
+            "slice_ids": list(archived["confirmation_slice_ids"]),
+        },
+        "archived_verdict_source": archived["archived_verdict_source"],
+        "superseded_selection_verdict_marked": archived["superseded_selection_marked"],
+        "confirmation_verdict": archived["confirmation_verdict"],
+    }
+    ok, why = validate_caller_compliance(record)
+    if not ok:
+        raise CallerRegistryComplianceError(f"{caller_id}: published sealed record refused — {why}")
     return record
 
 
