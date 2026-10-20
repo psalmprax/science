@@ -1,0 +1,226 @@
+{
+  "timestamp_utc": "2026-10-19T22:05:38.939651+00:00",
+  "prereg_target": "REG-MUT (docs/SYSTEM_FLAWS_AUDIT.md Outstanding requirements register)",
+  "status": "ALL_KILLED",
+  "summary": {
+    "n_mutants": 5,
+    "n_killed": 5,
+    "all_pinned_mutants_killed": true,
+    "all_restorations_byte_identical": true
+  },
+  "sanity": {
+    "round2": {
+      "argv": [
+        "-m",
+        "pytest",
+        "-q",
+        "-x",
+        "--no-header",
+        "tests/test_dyn_blind_audit_round2_remediation.py",
+        "-k",
+        "reanchor or F8"
+      ],
+      "returncode": 0,
+      "passed": true,
+      "tail": "collected 46 items / 40 deselected / 6 selected\n\ntests/test_dyn_blind_audit_round2_remediation.py ......                  [100%]\n\n======================= 6 passed, 40 deselected in 5.63s =======================",
+      "duration_s": 7.3
+    },
+    "hawkes": {
+      "argv": [
+        "-m",
+        "pytest",
+        "-q",
+        "-x",
+        "--no-header",
+        "tests/test_audit_open_flaws_remediated.py::test_hawkes_orderflow_dynamic_on_regular_bars"
+      ],
+      "returncode": 0,
+      "passed": true,
+      "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 2.77s ===============================",
+      "duration_s": 3.9
+    },
+    "hawkes_sharp": {
+      "argv": [
+        "-m",
+        "pytest",
+        "-q",
+        "-x",
+        "--no-header",
+        "tests/test_dyn_hawkes_standardization_pins.py"
+      ],
+      "returncode": 0,
+      "passed": true,
+      "tail": "collected 2 items\n\ntests/test_dyn_hawkes_standardization_pins.py ..                         [100%]\n\n============================== 2 passed in 3.21s ===============================",
+      "duration_s": 4.5
+    }
+  },
+  "mutants": [
+    {
+      "id": "MUT-A1",
+      "target": "adjudicate anchor (Finding 14)",
+      "file": "apedp_dyn/epistemic/adjudicate.py",
+      "description": "invert holdout anchor min -> max (anchor on the WORST certified rival)",
+      "pin_note": "Finding-14 anchor pins",
+      "pin_commands": [
+        [
+          "-m",
+          "pytest",
+          "-q",
+          "-x",
+          "--no-header",
+          "tests/test_dyn_blind_audit_round2_remediation.py",
+          "-k",
+          "reanchor or F8"
+        ]
+      ],
+      "killed": true,
+      "all_pins_yield": true,
+      "restoration_byte_identical": true,
+      "duration_s": 6.8,
+      "pin_tails": [
+        {
+          "returncode": 1,
+          "passed": false,
+          "duration_s": 6.8,
+          "tail": "E    +  and   <EpistemicStatus.UNIQUE_SUPPORT: 'unique_support'> = EpistemicStatus.UNIQUE_SUPPORT\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchored_pass_skips_bootstrap_confirmation\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 1 passed, 40 deselected in 5.07s =================="
+        }
+      ]
+    },
+    {
+      "id": "MUT-A2",
+      "target": "adjudicate anchor (Finding 14)",
+      "file": "apedp_dyn/epistemic/adjudicate.py",
+      "description": "drop the gate-4-certified guard on the holdout re-anchor",
+      "pin_note": "test_reanchor_requires_gate4_certified_holdout_head",
+      "pin_commands": [
+        [
+          "-m",
+          "pytest",
+          "-q",
+          "-x",
+          "--no-header",
+          "tests/test_dyn_blind_audit_round2_remediation.py",
+          "-k",
+          "reanchor or F8"
+        ]
+      ],
+      "killed": true,
+      "all_pins_yield": true,
+      "restoration_byte_identical": true,
+      "duration_s": 7.3,
+      "pin_tails": [
+        {
+          "returncode": 1,
+          "passed": false,
+          "duration_s": 7.3,
+          "tail": "E    +  and   <EpistemicStatus.MULTI_HYPOTHESIS: 'multi_hypothesis'> = EpistemicStatus.MULTI_HYPOTHESIS\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchor_requires_gate4_certified_holdout_head\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n======================= 1 failed, 40 deselected in 5.51s ======================="
+        }
+      ]
+    },
+    {
+      "id": "MUT-B1",
+      "target": "frozen-library term resolution (F8 fail-closed)",
+      "file": "apedp_dyn/epistemic/pde_discovery.py",
+      "description": "defang the fail-closed refusal (unresolved term silently skipped)",
+      "pin_note": "TestF8FrozenLibraryTermAudit",
+      "pin_commands": [
+        [
+          "-m",
+          "pytest",
+          "-q",
+          "-x",
+          "--no-header",
+          "tests/test_dyn_blind_audit_round2_remediation.py",
+          "-k",
+          "reanchor or F8"
+        ]
+      ],
+      "killed": true,
+      "all_pins_yield": true,
+      "restoration_byte_identical": true,
+      "duration_s": 7.4,
+      "pin_tails": [
+        {
+          "returncode": 1,
+          "passed": false,
+          "duration_s": 7.4,
+          "tail": "E   KeyError: 'u_xxx'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 40 deselected in 5.39s =================="
+        }
+      ]
+    },
+    {
+      "id": "MUT-B2",
+      "target": "frozen-library term resolution (F8 diagnostic detail)",
+      "file": "apedp_dyn/epistemic/pde_discovery.py",
+      "description": "redact the drifted term names from the refusal diagnostic",
+      "pin_note": "TestF8ErrorDiagnosticDetail",
+      "pin_commands": [
+        [
+          "-m",
+          "pytest",
+          "-q",
+          "-x",
+          "--no-header",
+          "tests/test_dyn_blind_audit_round2_remediation.py",
+          "-k",
+          "reanchor or F8"
+        ]
+      ],
+      "killed": true,
+      "all_pins_yield": true,
+      "restoration_byte_identical": true,
+      "duration_s": 6.8,
+      "pin_tails": [
+        {
+          "returncode": 1,
+          "passed": false,
+          "duration_s": 6.8,
+          "tail": "E     Actual message: 'Frozen scoring library cannot resolve dev-discovered active term(s): (term names redacted) \u2014 the Python mirror and the Rust discovery library have drifted; refuse scoring instead of silently dropping coefficient terms'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 40 deselected in 5.09s =================="
+        }
+      ]
+    },
+    {
+      "id": "MUT-C1",
+      "target": "hawkes standardization constants (Finding 10)",
+      "file": "apedp_dyn/proposers/hawkes_orderflow_proposer.py",
+      "description": "standardize against eval-frame mean/std (full-future leak)",
+      "pin_note": "hawkes dynamic pin + sharp fit-constant standardization pin",
+      "pin_commands": [
+        [
+          "-m",
+          "pytest",
+          "-q",
+          "-x",
+          "--no-header",
+          "tests/test_audit_open_flaws_remediated.py::test_hawkes_orderflow_dynamic_on_regular_bars"
+        ],
+        [
+          "-m",
+          "pytest",
+          "-q",
+          "-x",
+          "--no-header",
+          "tests/test_dyn_hawkes_standardization_pins.py"
+        ]
+      ],
+      "killed": true,
+      "all_pins_yield": true,
+      "restoration_byte_identical": true,
+      "duration_s": 8.6,
+      "pin_tails": [
+        {
+          "returncode": 0,
+          "passed": true,
+          "duration_s": 4.1,
+          "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 2.94s ==============================="
+        },
+        {
+          "returncode": 1,
+          "passed": false,
+          "duration_s": 4.5,
+          "tail": "E    +    where <function allclose at 0x7ef124bb26f0> = np.allclose\n=========================== short test summary info ============================\nFAILED tests/test_dyn_hawkes_standardization_pins.py::test_score_couples_to_fit_constants_not_eval_frame\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 1 passed in 3.31s =========================="
+        }
+      ]
+    }
+  ]
+}

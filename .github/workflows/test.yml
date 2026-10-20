@@ -263,3 +263,30 @@ jobs:
           packages-dir: wheelhouse
           password: ${{ secrets.PYPI_API_TOKEN }}
           skip-existing: true
+
+  # REG-MUT gate (docs/SYSTEM_FLAWS_AUDIT.md, outstanding-requirements register):
+  # targeted mutation testing of the referee and leakage paths. A survived
+  # mutant FAILS CI — this gate is the mechanism by which the register
+  # requirement stays closed-by-evidence rather than closed-by-assertion.
+  mutation-battery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev,test]"
+      - name: Run targeted mutation battery (referee + leakage paths)
+        run: python scripts/run_mutation_battery.py
+      - name: Upload the mutation-battery report (never hidden)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-battery-report
+          path: benchmarks/mutation_battery_report.json
+          if-no-files-found: warn

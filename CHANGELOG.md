@@ -4,6 +4,165 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — register limitations addressed: F14b wiring, F16 CBF certificate, LEAN reproduction (2026-10-20)
+
+### Frozen-record re-mint v1_7 → v1_8 (rationale, per freeze protocol)
+- `apedp_dyn/sandbox/APEDPX_FROZEN_v1_8.json` (supersedes v1_7;
+  `blind_benchmark.py` now consumes v1_8 via `FROZEN_RECORD`). Only guard-file
+  hashes refreshed; thresholds, env pins, and blind-case expectations
+  unchanged from v1_7.
+- Remint rationale (2 entries, both verifiable in-tree):
+  1. `apedp_dyn/sandbox/multi_grammar_sandbox.py` — legalizes drift introduced
+     by commit `3419425` (purge forward-overlapping development targets) that
+     landed AFTER the v1_7 mint without its own re-mint (v1_7's hash for that
+     file was stale). File is worktree==HEAD at mint; harness fix, not a
+     referee edit.
+  2. `apedp_dyn/sandbox/multi_asset_signals_sandbox.py` — additive REG-F14b
+     per-caller compliance footer (`publish_caller_compliance_record`
+     delegating to `caller_registry`); no method, threshold, or behavior
+     change; mandated by the freeze protocol before blind scoring proceeds.
+- Post-mint verification: `pytest tests/test_dyn_blind.py
+  tests/test_dyn_blind_audit_round2_remediation.py` → 55 passed,
+  verify_referee() satisfied.
+
+### REG-F14/F14b — per-caller wiring over the production-caller census (mode b)
+- `apedp_dyn/epistemic/caller_registry.py`: auditable census of six production
+  data-consuming verdict publishers (dyn_sweep, multi_asset_signals,
+  real_market_l2_sweep, blind_benchmark, calibrated_benchmark_suite,
+  canonical_ledger); each caller module wired with a thin
+  `publish_caller_compliance_record` publisher; records validate via the F14b
+  either-or validator at publish time; `record_selection_exposure` records the
+  selection-stage `TRAINING_DEVELOPMENT` exposures that make the derived
+  multiplicity live. Pins: `tests/test_dyn_caller_compliance_wiring.py` (8).
+  Honest boundary: every census caller is wired in mode (b) — no production
+  pipeline operationally holds a sealed confirmation split; mode (a) stays
+  available per caller and is claimed for no one.
+
+### REG-F16 — formal CBF-QP certificate + model-check artifact (+ scaled verification)
+- `apedp_dyn/robotics/cbf_certificate.py` + `tests/test_dyn_cbf_certificate.py`
+  (8 pins) + `benchmarks/cbf_certificate_report.json` (battery exit 0, 64
+  certified releases verified, worst slack −3.3e-16; unicycle realization
+  model-checked through the PRODUCTION arc stepper over seeded adversarial
+  head-on sweeps — min barrier 0.3588, 0 collisions). FORMAL scope is at the
+  certified velocity layer under an explicit assumption object (refuses
+  γ·dt > 0.5); the unicycle realization is disclosed as model-checked
+  evidence, NOT formal. `batch_multi_agent_cbf_step` is untouched and its
+  not-a-certified-CBF disclosure pin intact; `certified_cbf_guard` is additive.
+- NEW scaled-verification layer in the same battery: the same fail-closed
+  formal checks re-verified on deterministic jittered-lattice grids at
+  16/32/64/128 agents (1440 additional releases, worst slack −9.91e-10 ≥ −tol;
+  Euler invariance h > 0 at every step at every scale; realized guard
+  collision-free at every scale under the physically-consistent
+  realized-velocity-feedback nominal discipline — 128-agent realized min
+  barrier 0.3919) plus recorded per-step WALL-CLOCK guard and guard+arc-stepper
+  latencies (measurement of the environment that ran the battery, explicitly
+  not a guarantee; mean guard+step 0.60/0.77/1.31/3.39 ms at 16/32/64/128
+  agents). A separate DISCLOSED scope probe records verbatim that fresh
+  full-range random nominals redrawn every step at 128 agents are OUTSIDE the
+  realized layer's evidence (deterministic breach −0.1102, 17 collision steps)
+  — the realized layer stays scenario-scoped evidence.
+
+### REG-F14/F14b — mode (a) operational wiring landed (blind_benchmark first)
+- `apedp_dyn/epistemic/caller_registry.py`: mode-(a) registry helpers
+  `issue_sealed_confirmation_lead` (census- and dataset-family-checked) and
+  `publish_sealed_compliance_record` (refuses publication while the sealed
+  confirmation slice is unconsumed, with foreign provenance, or for a foreign
+  head; demands one-shot provenance and `archived_verdict_source =
+  "confirmation"`).
+- `apedp_dyn/sandbox/blind_benchmark.py`: first census caller wired for mode
+  (a) over its OWN real slice axis — `open_sealed_confirmation_lead`
+  (selection = worked-example/selection case ids, confirmation = the SEALED
+  blind case ids), `evaluate_confirmation_cases` (frozen-referee-checked,
+  closed confirmation family, blind-metrics verdict),
+  `publish_sealed_compliance_record`.
+- Pins: `tests/test_dyn_caller_compliance_wiring.py` 8 → 12 (sealed consume
+  exactly once; second candidate refused; publication refused while
+  unconsumed / with foreign provenance; sealed record validates).
+  Honest boundary: the five remaining callers remain mode (b) by default and
+  the pinned mode-(a) demonstration is the wiring path — a live production
+  promotion through the sealed slice is pending, disclosed as such.
+
+### REG-LEAN — pinned-toolchain reproduction of the 323-record sweep
+- `scripts/run_lean_pinned_reproduction.py` +
+  `benchmarks/lean_pinned_toolchain_reproduction.json`: ALL 323/323 records
+  reproduced (proof_claim_status + kernel_exit_code per candidate) under the
+  independently provisioned pinned toolchain `leanprover--lean4---v4.34.1`
+  (commit `5045d0056413266e57c625dcd7c365b10e377c52`) vs the reference's
+  v4.35.0; counts 323/315/8/0. Reference artifact + committed `.lean`
+  evidence restored byte-identically (HEAD-committed bytes take precedence
+  over regeneration — regeneration silently un-remediates the u15 honest
+  disclosure; caught and fixed in the runner).
+- **Root-cause fix:** `apedp_dyn/epistemic/lean_universal_bridge.py` compile
+  subprocess timeouts raised 15/25 s → 240 s (docker paths unchanged except
+  none needed): under 8-way parallel contention the two heaviest fluid-cell
+  files (NavierStokes / forced-ODE) exceeded the old timeout and were reported
+  P1 (exit −1) while compiling clean standalone, so the reference artifact
+  could not be reproduced as-is. Exit codes now reflect verification, not
+  wall-clock contention. The register's external (outside-this-environment)
+  sign-off remains outstanding and is NOT claimed.
+
+### ERR-INC-80 — §80 pins re-derived under the forward-overlap-purged harness (disclosed)
+- Commit `3419425` purged the 5-day-ahead window from the shared development
+  targets (`trading_e4t1_v2.run_origin`) — a legitimate leakage fix that
+  shifted the frozen §80 headline magnitudes, leaving 4 of 5 pins in
+  `tests/test_dyn_incremental.py` failing on the tree.
+- Same seed (8080), same artifacts, no threshold moved: the pins were
+  RE-DERIVED (deterministic, verified) under the purged harness and
+  SHARPENED (exact per-asset values incl. permutation p, corr(ŷP,ŷA),
+  BTC win row; pre-registered headline rule perm_p >= 0.05 kept and made
+  load-bearing again). The headline decision (Case 2/4, permutation-null
+  everywhere — min .0896, ETH) is unchanged; only the magnitudes moved
+  because the leak they were computed under was purged.
+- Full disclosure table in `docs/TRADING_EQUATION_FORENSICS.md` (§80b).
+
+### REG-MUT — targeted mutation battery, CI-gated (CLOSED-WITH-EVIDENCE)
+- `scripts/run_mutation_battery.py`: dependency-free battery for the register's
+  three targets (Finding-14 adjudicate anchor ×2 mutants, F8
+  frozen-library-term-resolution fail-closed + diagnostic-detail ×2, hawkes
+  standardization ×1), each pinned via targeted pytest runs in fresh
+  interpreters with byte-identical restoration verified and pristine sanity
+  pins. Exit 0 requires ALL mutants killed; a survivor is a REG-MUT failure.
+- **Honest first run:** MUT-C1 (eval-frame-leak standardization) SURVIVED —
+  the inherited dynamic pin scored a fit/eval-identical frame, so it could
+  not distinguish the property. The pin was SHARPENED
+  (`tests/test_dyn_hawkes_standardization_pins.py`: degenerate-fit continuous
+  fallback + distribution-shifted eval frame; Finding-10 property now
+  load-bearing), never weakened; re-run: ALL_KILLED (5/5, pinned report at
+  `benchmarks/mutation_battery_report.json`).
+- CI gate: new `mutation-battery` job in `.github/workflows/test.yml`
+  (survived mutant fails CI; report uploaded, never hidden) and
+  `scripts/check.sh` full tier. Register row updated with status + honesty
+  trail (`docs/SYSTEM_FLAWS_AUDIT.md` register status updates).
+
+### JetFlow v0.3 collision-world confirmation — honest H1 boundary result
+- `benchmarks/run_jetflow_video_v03_confirmation.py` ran the frozen
+  confirmation seeds {407, 508, 509} (exploratory 404 excluded):
+  **H1-collision CONFIRMED 3/3** — the fluid-domain JetFlow advantage does NOT
+  transfer (diffusion wins SSIM + temporal on every seed): the published
+  advantage is DOMAIN-SCOPED to continuum transport. H2 (PSNR floor), H3
+  (train-ratio ceiling) CONFIRMED; H4 CONFIRMED after **ERR-H4-UNITS**, a
+  disclosed units erratum: the prereg text mis-stated the passes metric as
+  amortized-over-n_gen; verdicts recomputed from the SAME committed per-seed
+  artifacts — no re-run, no threshold moved, no seed changed.
+- Report: `docs/JETFLOW_VIDEO_V03_CONFIRMATION_REPORT.md`; verdicts:
+  `benchmarks/jetflow_video_v03_confirmation_results.json` (+ per-seed
+  artifacts under `benchmarks/jetflow_video_v03_confirmation/`).
+
+### Caller-layer three-role data protocol (REG-F14/F14b reference implementation)
+- `docs/CALLER_DATA_THREE_ROLE_PROTOCOL.md` +
+  `apedp_dyn/epistemic/caller_data_protocol.py` (`experimental`, additive):
+  disjoint SELECTION/CONFIRMATION/PROSPECTIVE roles at issue time; sealed
+  one-shot confirmation consumption (REG-F14 letter); confirmation exposure
+  records integrate the existing anti-snooping burn ledger; archived verdict
+  source must be `confirmation` with selection superseded; F14b either-or
+  compliance (sealed split OR ledger-derived DSR-adjusted multiplicity —
+  computed, never hand-written; refuses deflation; reuse events inflate).
+- Acceptance pins `tests/test_dyn_caller_data_protocol.py` (7) include the
+  register's end-to-end letter: pool on slice A, head confirmed exactly once
+  on sealed slice B, verdict provenance from B only, A∩B=∅, second consume
+  refused. Register status: OPEN — per-caller wiring of every production
+  caller (mode a/b) is still pending and remains the acceptance gate.
+
 ## [Unreleased] — E4 divergence-point selection, second JetFlow world, verified-knowledge-module library (2026-10-19)
 
 ### Gap-1 generalization: cost-aware divergence-point selection (`experimental`)

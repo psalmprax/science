@@ -1504,6 +1504,40 @@ failed AND incremental information not established at permutation
 level — H-A ≈ persistence-conditioned association stands. Suite 4/4,
 ruff clean. Status: §80 DONE.
 
+### §80b — ERR-INC-80 erratum (2026-10-20, disclosed): re-derivation after the
+### forward-overlap purge of the development harness
+
+Commit `3419425` ("Purge forward-overlapping development targets") legiti-
+mately removed the 5-day-ahead window from the *shared* development targets
+(`trading_e4t1_v2.run_origin`: `tr_blocks = tr_idx[tr_idx + 5 < origin_idx]`),
+fixing a real target-leakage flaw — but the §80 headline numbers above and the
+pins in `tests/test_dyn_incremental.py` had been computed under the contamin-
+ated harness and began failing. Per the honest-erratum discipline (same
+seed 8080, same artifacts, no threshold moved, no re-registration beyond the
+harness fix already merged), the values were RE-DERIVED from the same panels
+under the purged harness (deterministic, verified twice) and the pins were
+sharpened to exact per-asset values:
+
+| Quantity | Old (overlapping harness) | Re-derived (purged) |
+|---|---|---|
+| A\|P,RV | .0287/.0093/.0078/.0053/−.0043/−.0071 | .013693/.017228/.016629/.018592/.000086/.000308 |
+| perm p | .60/.88/.62/.72/.94/1.0 | .7164/.0896/.2189/.7363/.8557/.5622 |
+| DM-HAC4 p | BTC .036*, AVAX .016* | BTC .0585, ETH .000557, SOL .000971, BNB .366, DOGE .966, AVAX .941 |
+| corr(ŷP,ŷA) | .72–.94 (panel) | .630/.887/.863/.387/.741/.855 |
+| BTC wins P+RV+A / P+A | 4/5 | 3/3 |
+
+(* = DM-significant at .05; both contradicted by their own permutations.)
+
+Subscribe unchanged conclusions: the permutation headline remains PRIMARY and
+NULL everywhere (minETH = .0896 > alpha = .05); DM significant somewhere
+(ETH/SOL) is again contradicted by the permutation null — same Case 2/4. The
+suppressor pattern holds (RV\|P,A all dead, |x| < .008; HA sign-flips 100% on
+every asset; redundancy weaker — BNB .387 — recorded, suppressor interpret-
+ation unchanged). Thresholds and the §80 decision stand; only the frozen
+magnitudes moved, and only because the harness leak they were computed under
+was purged. Pins updated in `tests/test_dyn_incremental.py` with this
+disclosure in the docstring.
+
 ## 81. Grammar Space executable in sandbox (spec §§1–19 as code)
 
 New `apedp_dyn/sandbox/grammar_space.py` (additive): primitive/operator
