@@ -6,6 +6,46 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ## [Unreleased] — Repair Python 3.12 blind-freeze CI failure (2026-10-20)
 
+### Lorenz public benchmark: prereg frozen + confirmation harness built (2026-10-20)
+- Context: an external evaluation transcript (bare-BIC Lorenz trial) claimed a
+  successful "validation" while its own stress test showed the spurious x²y
+  term winning training-BIC; its operational model mixed ground-truth constants
+  into the "discovered" physics and validated by 3D-plot eyeballing (explicit
+  Euler diverges from RK45 truth at t≈0.26–0.34 even with exact coefficients,
+  so the plot instrument is uninformative). This prereg turns that exchange
+  into a properly measured registered protocol.
+- `docs/PREREGISTRATION_LORENZ_PUBLIC_BENCHMARK_V1.md` — FROZEN: catalog Lorenz
+  world σ=10/ρ=28/β=8/3, seeds {101,202,303} × noise {0.5–3%} (12 registered
+  runs/path), SG(21,3)+np.gradient estimator declared, 70/30 dev/sealed-holdout
+  split with full-lineage burn; four registered paths — PATH-R (referee-gated
+  forward selection, dev-BIC ordered), PATH-B (greedy forward training-BIC),
+  PATH-B′ (curated 4-candidate transcript ranking), PATH-C (user-instructed
+  second negative control: the true-constants chimera + magnitude pruning +
+  Euler validation — a plot-validated anti-pattern registered specifically to
+  test the instruments); hypotheses H1–H6 with margin provenance labeled
+  [Pilot]/[Design]. H4's drafted 0.5-SE floor was REFUTED by the 12-run pilot
+  (SG derivative bias is systematic and WORST at low noise: 1.4–2.0 SE at
+  0–0.5%) and corrected to ≤ 2.5 SE PRE-freeze, never post-hoc. Pilot
+  observations: the referee never promoted the BIC winner (0/12); greedy BIC
+  admits 3rd-order spurious terms 12/12 (stronger than the transcript's
+  curated ranking); referee settings frozen at n_boot=1000/seed=7.
+- `benchmarks/run_lorenz_public_benchmark.py` — the frozen harness (audit-only):
+  implements all four paths over the registered grid, computes the registered
+  instruments verbatim, burns the sealed confirmation windows in the full-
+  lineage ledger (`lorenz_public_benchmark_ledger.jsonl`), writes
+  `benchmarks/lorenz_public_benchmark_results.json` with git-head + argv +
+  timestamp provenance, and a `--smoke` wiring mode (single seed, 100 boot)
+  explicitly labeled non-confirmation. The same-integrator divergence-horizon
+  control makes integrator error cancel by construction (the H6 instrument).
+- Pins: `tests/test_dyn_lorenz_public_benchmark.py` (3 — payload schema, H1
+  wiring margin, H6 chimera-catch margin; smoke settings). Smoke verified
+  green (3/3) plus harness exit-0; results artifacts commit separately after
+  the full confirmation runs per the prereg's decision rule. Expected honest
+  outcome risk disclosed up front: PATH-R's smoke wiring missed the true
+  structure (the spurious x² proxy promoted first); H3's [Design] margin may
+  come back NOT CONFIRMED — that is a registered outcome, never a post-hoc
+  harness redesign.
+
 ### Frozen referee record refresh
 - The Actions regression failure was `verify_referee()` rejecting
   `apedp_dyn/sandbox/multi_grammar_sandbox.py`: its current SHA-256 no longer
