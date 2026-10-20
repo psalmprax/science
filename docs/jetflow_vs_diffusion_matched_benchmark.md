@@ -32,6 +32,20 @@ Following the remediation of the 7 structural flaws in the JetFlow-Video stack (
 | `diffusion_frontier_K48` | 48 | 96.0 | 10.92 | 0.492 | 0.517 | 0.372 |
 | `jet_tt_4step` (remediated) | 4 | 16.0 | 10.44 | 0.495 | 0.517 | **0.244** |
 
+## Second problem family (collision/occlusion, v0.3 prereg) — honest boundary result
+
+The matched-benchmark protocol now carries a second world (`--domain collision`,
+`docs/PREREGISTRATION_JETFLOW_VIDEO_V03_COLLISION.md`, exploratory seed 404):
+layered rigid-body scenes with elastic same-layer collisions and genuine cross-layer
+parallax occlusion (`apedp_dyn/video/collision_domain.py`). The exploratory run is a
+disclosed NEGATIVE result for advantage transfer: on the collision world, the matched
+diffusion baseline wins on every instrument (SSIM 0.065 vs 0.017, PSNR 20.8 vs 13.7 dB,
+temporal smoothness 0.078 vs 0.234, SWD vs holdout 0.167 vs 0.476) and trains faster
+(8.2 s vs 11.1 s at 300 fixed steps). Conclusion recorded per the prereg: the
+fluid-domain advantage is DOMAIN-SCOPED to continuum transport; no unscoped
+generalization claim is made. Confirmation seeds {407, 508, 509} are frozen in the
+v0.3 prereg to replicate the ordering (H1-collision).
+
 Notes on instrument symbolism:
 - **FVD-proxy SWD** = sliced-Wasserstein-2 on a frozen deterministic featurizer (NOT I3D-FVD; honest label per [`apedp_dyn/video/eval_gate.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/video/eval_gate.py)). Real-vs-holdout anchor SWD = `0.388`.
 - **Temp. smooth** = temporal second-difference of per-frame grayscale; lower = smoother (less flicker).
