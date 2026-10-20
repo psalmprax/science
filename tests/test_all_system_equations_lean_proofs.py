@@ -18,6 +18,7 @@ import pytest
 
 from apedp.mathematical.mathematical_layer import ProofClaimStatus
 from apedp_dyn.epistemic.lean_universal_bridge import LeanUniversalBridge, VerificationBackend
+from apedp_dyn.sandbox import build_all_system_equations_lean_proofs as proof_builder
 from apedp_dyn.sandbox.build_all_system_equations_lean_proofs import (
     ARTIFACT_DIR,
     assemble_exhaustive_candidate_specifications,
@@ -44,6 +45,49 @@ def test_system_wide_candidate_inventory():
     assert "GRAMMAR-D3-VEL_TANH_OFI_SPREAD_3W" in candidate_ids
     assert "PHYS-ENERGY-LEAK-TRAP" in candidate_ids
     assert "FIN-CUBIC-RUNAWAY-POLYNOMIAL" in candidate_ids
+
+
+def test_provenance_and_checked_in_fallback_preserve_declared_obligations(monkeypatch):
+    """Both candidate assembly paths retain the Lean module's declared invariants."""
+    candidate_id = "GA-D2-CHAMPION-U15_H30M"
+    module_path = proof_builder.LEAN_FORMAL_DIR / "ga_d2_champion_u15_h30m_verification.lean"
+    module_lines = module_path.read_text(encoding="utf-8").splitlines()
+    formula = next(
+        line.removeprefix("  Formula: ").strip()
+        for line in module_lines[:8]
+        if line.startswith("  Formula: ")
+    )
+
+    monkeypatch.setattr(proof_builder, "load_provenance_json", lambda _filename: {})
+    fallback = next(
+        spec for spec in assemble_exhaustive_candidate_specifications()
+        if spec.candidate_id == candidate_id
+    )
+
+    def provenance_for_candidate(filename):
+        if filename == "ga_depth2_sweep_provenance.json":
+            return {
+                "cell_evaluations": [
+                    {"cell_id": "U15_H30M", "evolved_formula": formula},
+                ],
+            }
+        return {}
+
+    monkeypatch.setattr(proof_builder, "load_provenance_json", provenance_for_candidate)
+    provenance = next(
+        spec for spec in assemble_exhaustive_candidate_specifications()
+        if spec.candidate_id == candidate_id
+    )
+
+    obligations = lambda spec: [
+        (invariant.name, invariant.kind, invariant.description, invariant.required_for_tier)
+        for invariant in spec.declared_invariants
+    ]
+    assert [invariant.name for invariant in fallback.declared_invariants] == [
+        "variance_nonnegativity",
+        "dispersion_zero_sum_flux",
+    ]
+    assert obligations(fallback) == obligations(provenance)
 
 
 def test_provenance_file_integrity():

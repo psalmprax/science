@@ -27,6 +27,7 @@ from __future__ import annotations
 import concurrent.futures
 import json
 import logging
+import re
 import sys
 import time
 from pathlib import Path
@@ -325,24 +326,49 @@ def infer_invariants_for_formula(cid: str, formula: str, meta: str = "") -> list
     return invariants
 
 
+def parse_declared_invariants(path: Path) -> list[DeclaredInvariant]:
+    """Read invariant declarations from a checked-in Lean verification module."""
+    invariants: list[DeclaredInvariant] = []
+    declaration_pattern = re.compile(
+        r"/-- Declared Invariant: (?P<name>[^()]+) \((?P<kind>[^()]+)\) - "
+        r"(?P<description>.*) --/"
+    )
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.startswith("/-- Declared Invariant: "):
+            continue
+        match = declaration_pattern.fullmatch(line)
+        if match is None:
+            raise ValueError(f"Malformed declared invariant in {path}: {line}")
+        invariants.append(
+            DeclaredInvariant(
+                name=match.group("name"),
+                kind=InvariantKind(match.group("kind")),
+                description=match.group("description"),
+                required_for_tier=ClaimLevel.C3_STRUCTURAL,
+            )
+        )
+    return invariants
+
+
 def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpecification]:
     """Assemble all 320+ candidate specifications across all 10 sources."""
     specs: list[AgnosticCandidateSpecification] = []
-    seen_ids: set[str] = set()
+    specs_by_id: dict[str, AgnosticCandidateSpecification] = {}
 
     def add_spec(cid: str, formula: str, meta: str = "", invariants: list[DeclaredInvariant] | None = None):
-        if cid in seen_ids:
+        if cid in specs_by_id:
+            if invariants is not None:
+                specs_by_id[cid].declared_invariants = invariants
             return
-        seen_ids.add(cid)
         invs = invariants or infer_invariants_for_formula(cid, formula, meta)
-        specs.append(
-            AgnosticCandidateSpecification(
-                candidate_id=cid,
-                proposed_claim=ClaimLevel.C3_STRUCTURAL,
-                formula_repr=formula,
-                declared_invariants=invs,
-            )
+        spec = AgnosticCandidateSpecification(
+            candidate_id=cid,
+            proposed_claim=ClaimLevel.C3_STRUCTURAL,
+            formula_repr=formula,
+            declared_invariants=invs,
         )
+        specs.append(spec)
+        specs_by_id[cid] = spec
 
     def add_checked_in_specs(prefix: str) -> None:
         """Use committed Lean module headers when scratch provenance is absent."""
@@ -355,7 +381,13 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
                 elif line.startswith("  Formula: "):
                     formula = line.removeprefix("  Formula: ").strip()
             if candidate_id.startswith(prefix) and formula:
-                add_spec(candidate_id, formula, meta="checked-in Lean candidate")
+                invariants = parse_declared_invariants(path)
+                add_spec(
+                    candidate_id,
+                    formula,
+                    meta="checked-in Lean candidate",
+                    invariants=invariants or None,
+                )
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 1: Fluid ODE Dynamical Sweeps (120 Fitted Cell Equations)
