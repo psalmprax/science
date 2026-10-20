@@ -16,6 +16,48 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ## [Unreleased] — register limitations addressed: F14b wiring, F16 CBF certificate, LEAN reproduction (2026-10-20)
 
+### REG-F14 — restart-proof sealed-slice consumption + fail-closed ledger writes + canonical-spec shrink import (2026-10-20)
+- `apedp_dyn/epistemic/caller_data_protocol.py`:
+  1. **Durable lead state (I2 across restarts):** `CallerSplitProtocol` now
+     persists issued leads and sealed-consumption provenance to an atomic
+     JSON state file (`persistence_path` argument, or derived from the
+     attached ledger's persistence directory, e.g.
+     `caller_lead_protocol_state.json` next to `experiment_ledger.jsonl`).
+     A restarted process reloads the store: an open lead cannot be re-issued,
+     a consumed slice cannot be re-consumed (`ConfirmationAlreadyConsumedError`
+     from the durable record), the slice is claimed spent BEFORE evaluation
+     (a mid-evaluation crash leaves it spent, never resurrectable), and a
+     corrupt store fails CLOSED (`CallerProtocolStateError`) — the protocol
+     never silently falls back to memory-only operation. Without a resolvable
+     state path (in-memory unit pins), in-memory-only behavior is retained as
+     a documented unit-use limitation.
+  2. **Fail-closed I3:** the silent `except Exception: pass` around ledger
+     exposure writes in `SealedConfirmationSlice.consume` is REMOVED —
+     ledger write failures now propagate. Additionally, with a ledger
+     attached, `consume` refuses an UNREGISTERED candidate BEFORE spending
+     the sealed slice (`CallerComplianceError`), so an evaluation that could
+     not be written up afterwards can never happen.
+  3. **No hardcoded threshold literal:** the mode-(b) `dsr_shrink`
+     disclosure constant is now imported from the frozen canonical spec
+     (`apedp_dyn.conf.canonical_spec.DSR_THRESHOLD`, hash-verified at
+     import). The spec JSON itself was NOT modified — it is quorum-signed
+     under `specifications/governance_manifest.json` (external trustees);
+     changing a preregistered constant requires a re-signed revision, not an
+     edit. Values are unchanged (0.95).
+- Pins updated: `tests/test_dyn_caller_data_protocol.py` (7 → 14: end-to-end
+  restart durability, open-lead restart refusal, aborted-evaluation spent
+  claim, corrupt-store fail-closed (3 shapes), unregistered-candidate
+  pre-spend refusal, ledger-failure propagation, canonical-spec import pin);
+  `tests/test_dyn_caller_compliance_wiring.py` updated for I3 (mode-(a)
+  register-first discipline). Two wiring-census rows in
+  `docs/DOCUMENTATION.md` + the register updated accordingly.
+- **Pre-existing (NOT introduced here), disclosed:**
+  `tests/test_dyn_governance.py::test_canonical_repository_governance_manifest_valid`
+  fails at the committed tip independent of this work — the governance
+  manifest pins spec SHA `a6d026…` while the spec on disk hashes `a11fd957…`
+  (the same value `canonical_spec.py` import-check passes against). Fixing
+  it requires trustee re-certification of the manifest, not a code edit.
+
 ### Frozen-record re-mint v1_7 → v1_8 (rationale, per freeze protocol)
 - `apedp_dyn/sandbox/APEDPX_FROZEN_v1_8.json` (supersedes v1_7;
   `blind_benchmark.py` now consumes v1_8 via `FROZEN_RECORD`). Only guard-file

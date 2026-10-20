@@ -252,6 +252,14 @@ class FullLineageExperimentLedger:
     def storage_backend(self) -> BaseStorageBackend | None:
         return self._storage_backend
 
+    @property
+    def persistence_path(self) -> Path | None:
+        """The ledger's own durable file path (or None for in-memory use).
+
+        Consumed by the caller-layer protocol to derive its durable lead
+        state location (restart-proof sealed-slice consumption)."""
+        return self._persistence_path
+
     def sync_to_remote(self) -> None:
         """Synchronize local ledger state to the configured remote storage backend."""
         if self._storage_backend and self._persistence_path and self._persistence_path.is_file():

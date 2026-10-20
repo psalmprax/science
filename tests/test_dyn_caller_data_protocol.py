@@ -17,18 +17,32 @@ Acceptance criteria (docs/CALLER_DATA_THREE_ROLE_PROTOCOL.md):
       effective n >= nominal, and a reuse-charged record must show reuses > 0.
   F7  Multiplicity is monotone in variants and reuses and equals the
       ledger-derived value (no hand-tuning).
+  F8  Durability: issued leads and sealed-slice consumption survive process
+      restarts via the protocol's durable state store — a restarted process
+      cannot re-issue an open lead, cannot re-consume a spent slice, and a
+      corrupt store fails CLOSED (no silent memory-only fallback).
+  F9  Fail-closed I3: with a ledger attached, consume() refuses an
+      UNREGISTERED candidate BEFORE the sealed slice is spent, and ledger
+      write failures after evaluation propagate (never swallowed).
+  F10 No hardcoded threshold literal: the mode-(b) ``dsr_shrink`` disclosure
+      is the preregistered DSR constant imported from the canonical spec.
 """
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
+from apedp_dyn.conf.canonical_spec import DSR_THRESHOLD
 from apedp_dyn.epistemic.caller_data_protocol import (
     CallerComplianceError,
+    CallerProtocolStateError,
     CallerRoleOverlapError,
     CallerSplitProtocol,
     ConfirmationAlreadyConsumedError,
     ConfirmationVerdict,
+    DYNAMIC_DSR_SHRINK,
     multiplicity_from_ledger,
     mark_selection_reuse,
     validate_caller_compliance,
@@ -63,6 +77,9 @@ def test_end_to_end_pool_on_A_confirmed_once_on_sealed_B():  # F1
     # A candidate POOL is scored on slice A (selection); head = carved-off best.
     pool_scores = {"hyp_a": 0.31, "hyp_b": 0.12, "hyp_c": 0.55}
     head_by_selection = max(pool_scores, key=pool_scores.get)
+    # I3 fail-closed: the archived head MUST be ledger-registered before the
+    # sealed slice may be spent on it.
+    ledger.register_candidate(head_by_selection, proposer_id="demo", formula="y=x")
 
     v = sealed.consume(head_by_selection, _verdict_factory(), caller_id="dyn_caller_01")
     assert v.verdict == "UNIQUE_SUPPORT"
@@ -158,3 +175,155 @@ def test_multiplicity_monotone_and_matches_ledger():  # F7
     assert m1["dsr_adjusted_effective_n"] > m0["dsr_adjusted_effective_n"]  # reuse inflates
     mBigger = multiplicity_from_ledger(ledger, "c5", "dsF7", "h1", nominal_variants=4)
     assert mBigger["dsr_adjusted_effective_n"] > m1["dsr_adjusted_effective_n"]  # variants inflate
+
+
+# --------------------------------------------------------------------------
+# F8: durable sealed-slice consumption (restart-proof one-shot)
+# --------------------------------------------------------------------------
+
+def _ready_ledger(tmp_path, filename="experiment_ledger.jsonl"):
+    """A ledger with a real on-disk persistence path (production shape)."""
+    from apedp_dyn.epistemic.experiment_ledger import FullLineageExperimentLedger as LL
+
+    return LL(persistence_path=tmp_path / filename)
+
+
+def test_sealed_consumption_survives_process_restart(tmp_path):  # F8
+    ledger = _ready_ledger(tmp_path)
+    ledger.register_candidate("hyp_head", proposer_id="p", formula="y=x")
+
+    # "Process A": issue the lead and spend the sealed slice.
+    proto_a = CallerSplitProtocol(ledger=ledger, persistence_path=tmp_path / "caller_lead_protocol_state.json")
+    proto_a.issue_caller_split("dyn_caller_09", "dsF8", ["a1", "a2"], ["b1", "b2"])
+    sealed_a = proto_a._require_open_lead("dyn_caller_09")[1]
+    v = sealed_a.consume("hyp_head", _verdict_factory())
+    assert v.provenance.one_shot is True
+
+    # "Process B": a FRESH protocol (same durable state path) must see the
+    # spent slice — no fresh unconsumed sealed slice can be handed out.
+    proto_b = CallerSplitProtocol(ledger=ledger, persistence_path=tmp_path / "caller_lead_protocol_state.json")
+    with pytest.raises(ConfirmationAlreadyConsumedError):
+        proto_b.issue_caller_split("dyn_caller_09", "dsF8", ["a1", "a2"], ["b1", "b2"])
+    sealed_b = proto_b._require_open_lead("dyn_caller_09")[1]
+    assert sealed_b.consumed is True
+    with pytest.raises(ConfirmationAlreadyConsumedError) as ei:
+        sealed_b.consume("hyp_head", _verdict_factory())
+    assert "durable state across restart" in str(ei.value)
+    assert sealed_b.consumed_provenance is not None
+    assert sealed_b.consumed_provenance.candidate_id == "hyp_head"
+    assert sealed_b.consumed_provenance.slice_ids == ("b1", "b2")
+
+    # The spent slice remains archivable after the restart (provenance intact).
+    rec = proto_b.archive_promotion_verdict("dyn_caller_09", v, selection_verdict=None)
+    assert rec["archived_verdict_source"] == "confirmation"
+
+
+def test_restart_refuses_open_lead_reissue_and_keeps_it_open(tmp_path):  # F8
+    # "Process A" issues an open (unconsumed) lead, then dies.
+    ledger = _ready_ledger(tmp_path)
+    proto_a = CallerSplitProtocol(ledger=ledger, persistence_path=tmp_path / "state.json")
+    proto_a.issue_caller_split("c_restart", "dsF8b", ["a1"], ["b1"])
+
+    # "Process B" must not be able to mint a fresh unconsumed sealed slice.
+    proto_b = CallerSplitProtocol(ledger=ledger, persistence_path=tmp_path / "state.json")
+    with pytest.raises(ConfirmationAlreadyConsumedError):
+        proto_b.issue_caller_split("c_restart", "dsF8b", ["a1"], ["b1"])
+    sealed_b = proto_b._require_open_lead("c_restart")[1]
+    assert sealed_b.consumed is False  # still unconsumed — but not re-issuable
+
+
+def test_aborted_evaluation_leaves_the_slice_spent_after_restart(tmp_path):  # F8
+    ledger = _ready_ledger(tmp_path)
+    ledger.register_candidate("hyp_x", proposer_id="p", formula="y=x")
+    proto_a = CallerSplitProtocol(ledger=ledger, persistence_path=tmp_path / "state.json")
+    proto_a.issue_caller_split("c_crash", "dsF8c", ["a1"], ["b1"])
+    sealed = proto_a._require_open_lead("c_crash")[1]
+
+    def _exploding_evaluate(**kw):
+        raise RuntimeError("crash mid-evaluation")
+
+    with pytest.raises(RuntimeError):
+        sealed.consume("hyp_x", _exploding_evaluate)
+    assert sealed.consumed is True  # consumed-by-claim, no fabricated provenance
+    assert sealed.consumed_provenance is None
+
+    proto_b = CallerSplitProtocol(ledger=ledger, persistence_path=tmp_path / "state.json")
+    sealed_b = proto_b._require_open_lead("c_crash")[1]
+    with pytest.raises(ConfirmationAlreadyConsumedError) as ei:
+        sealed_b.consume("hyp_x", _verdict_factory())
+    assert "claimed-unprovened" in str(ei.value)
+    # The claimed-but-unprovenanced slice cannot archive a promotion either.
+    with pytest.raises(CallerComplianceError):
+        proto_b.archive_promotion_verdict("c_crash", ConfirmationVerdict("c_crash", "hyp_x", None), None)
+
+
+def test_corrupt_state_store_fails_closed(tmp_path):  # F8 (fail-closed)
+    from apedp_dyn.epistemic.caller_data_protocol import PROTOCOL_STATE_VERSION
+    store = tmp_path / "state.json"
+    store.write_text("{not json", encoding="utf-8")
+    with pytest.raises(CallerProtocolStateError):
+        CallerSplitProtocol(ledger=_ready_ledger(tmp_path), persistence_path=store)
+
+    # Corrupt CONTENT that parses is refused too (wrong version marker).
+    store2 = tmp_path / "state_wrong_version.json"
+    store2.write_text(json.dumps(
+        {"protocol_state_version": PROTOCOL_STATE_VERSION + 1, "leads": {}}), encoding="utf-8")
+    with pytest.raises(CallerProtocolStateError):
+        CallerSplitProtocol(persistence_path=store2)
+
+    # A tampered record (provenance claiming ids outside the held slice) is
+    # rejected at load, not trusted.
+    store3 = tmp_path / "state_tampered.json"
+    store3.write_text(json.dumps({
+        "protocol_state_version": PROTOCOL_STATE_VERSION,
+        "leads": {"rogue": {"dataset_id": "ds", "selection_ids": ["a"],
+                            "confirmation_ids": ["b"], "consumed": True,
+                            "provenance": {"consumed_at": "t", "candidate_id": "x",
+                                           "slice_dataset_id": "ds",
+                                           "slice_ids": ["other"],
+                                           "one_shot": True, "second_consume_refused": True}}},
+    }), encoding="utf-8")
+    with pytest.raises(CallerProtocolStateError):
+        CallerSplitProtocol(persistence_path=store3)
+
+
+def test_unregistered_candidate_refused_before_slice_is_spent(tmp_path):  # F9
+    ledger = _ready_ledger(tmp_path)  # candidate NOT registered
+    proto = CallerSplitProtocol(ledger=ledger, persistence_path=tmp_path / "state.json")
+    _, sealed = proto.issue_caller_split("c_f9", "dsF9", ["a1"], ["b1"])
+    with pytest.raises(CallerComplianceError) as ei:
+        sealed.consume("hyp_ghost", _verdict_factory())
+    assert "not registered" in str(ei.value)
+    assert sealed.consumed is False  # the slice was NOT spent by the refusal
+    # After registering, the same slice still evaluates exactly once.
+    ledger.register_candidate("hyp_late", proposer_id="p", formula="y=x")
+    v = sealed.consume("hyp_late", _verdict_factory())
+    assert v.verdict == "UNIQUE_SUPPORT"
+
+
+def test_ledger_write_failure_propagates_from_consume():  # F9 (no silent swallow)
+    class _ExplodingLedger:
+        def get_candidate(self, candidate_id):
+            return object()  # pre-flight passes
+
+        def record_data_exposure(self, **kw):
+            raise OSError("ledger disk failure")
+
+    proto = CallerSplitProtocol(ledger=_ExplodingLedger())
+    _, sealed = proto.issue_caller_split("c_f9b", "dsF9b", ["a1"], ["b1"])
+    with pytest.raises(OSError):
+        sealed.consume("hyp_reg", _verdict_factory())
+    assert sealed.consumed is True  # spent by claim; never silently "recorded"
+
+
+def test_dsr_shrink_imported_from_canonical_spec_not_hardcoded():  # F10
+    from apedp_dyn.epistemic.caller_data_protocol import (
+        DYNAMIC_DSR_SHRINK,
+        multiplicity_from_ledger as mfl,
+    )
+
+    assert DYNAMIC_DSR_SHRINK == DSR_THRESHOLD  # the preregistered constant
+    ledger = FullLineageExperimentLedger(persistence_path=None)
+    ledger.register_candidate("h1", proposer_id="p", formula="y=x")
+    m = mfl(ledger, "c", "dsF10", "h1", nominal_variants=1)
+    assert m["dynamics"]["dsr_shrink"] == DSR_THRESHOLD
