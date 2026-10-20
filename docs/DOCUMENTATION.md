@@ -23,6 +23,7 @@
 19. [Traceability & Verification Matrix](#19-traceability--verification-matrix)
 20. [Transformer Proposer Design — Q&A Record](TRANSFORMER_PROPOSER_DESIGN_QA.md)
 21. [Sparrow Quantum Deterministic Photonics Blueprint](SPARROW_QUANTUM_DETERMINISTIC_PHOTONICS.md)
+22. [Reproducibility, Provenance & Benchmark Governance](#22-reproducibility-provenance--benchmark-governance)
 
 ---
 
@@ -117,6 +118,31 @@ the information firewall.
 Repeated seeds are robustness measurements, not independent scientific
 replications. A single-seed result without stability evidence should remain
 `INCONCLUSIVE`.
+
+## 22. Reproducibility, Provenance & Benchmark Governance
+
+`apedp.reproducibility` provides shared seed controls, dataset content hashing,
+and schema-versioned run artifacts. Neural discovery configs expose a seed
+(default `42`) and deterministic-mode setting (default on); JAX randomness
+remains explicit through PRNG keys. The standalone evolutionary
+`SymbolicRegressor` uses a seeded per-instance generator. Deterministic flags
+constrain supported framework operations but cannot guarantee bitwise-identical
+results across different hardware and runtime versions.
+
+Neural training with `log_dir` set writes
+`<log_dir>/provenance/training-<dataset-sha256>.json`. The version `1.0` JSON
+schema records a best-effort Git commit, dataset hash, full config and its hash,
+seed, deterministic flag, metrics, and optional results. The same artifact
+writer is available to other experiment entrypoints. The known-truth challenge
+automatically writes a `<results-file>.provenance.json` sidecar.
+
+`benchmarks/scientific_benchmark_manifest.json` pins the frozen known-truth
+metrics and corpus checksum inventory. Run
+`python benchmarks/check_scientific_drift.py` to check drift; protocol-approved
+baseline updates must be reviewed and update the baseline and allowed drift
+together. CI labels this gate separately from the canonical known-truth
+scientific-regression test; setup, build, lint, type, and general test failures
+are reported in their own workflow steps.
 
 ### Sensitivity analysis
 
