@@ -1,0 +1,15 @@
+{
+  "gt_layout_note": "all tensors aligned to (T,3,H,W) before scoring",
+  "repo_vae": {
+    "ssim": 1.0,
+    "psnr_db": 100.0
+  },
+  "sharp_pipeline": {
+    "ssim": 0.929685,
+    "psnr_db": 29.107
+  },
+  "files": {
+    "panel": "/home/psalmprax/ALL_PROJECTS/science/benchmarks/sharp_vae_panel/sharp_vae_panel.png",
+    "per_frame_count": 24
+  }
+}

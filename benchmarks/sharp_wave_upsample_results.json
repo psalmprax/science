@@ -1,0 +1,15 @@
+{
+  "variant": "Upsample(trilinear,(1,2,2))+Conv3d vs base ConvTranspose3d",
+  "param_count_equal": true,
+  "rng_control": "encoder+backbone bit-identical by construction order",
+  "epochs": 80,
+  "loss_last": 0.007809337228536606,
+  "wall_seconds": 1172.2,
+  "device": "cpu",
+  "ssim_vs_target": 0.924918,
+  "psnr_vs_target_db": 27.807,
+  "checker_metric_variant": 0.0008535980092195435,
+  "checker_metric_base": 0.007209385266113107,
+  "ssim_base": 0.929685,
+  "psnr_base_db": 29.107
+}
