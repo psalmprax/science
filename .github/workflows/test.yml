@@ -136,6 +136,21 @@ jobs:
           print("apedp_kernel", apedp_kernel.__version__, "active")
           PY
 
+      - name: Scientific benchmark drift guardrail
+        id: benchmark_drift
+        run: |
+          source .venv/bin/activate
+          python benchmarks/check_scientific_drift.py
+
+      - name: Scientific regression gate (known-truth recovery)
+        id: scientific_gate
+        run: |
+          source .venv/bin/activate
+          if ! python -m pytest tests/test_scientific_recovery.py tests/test_dyn_rime_known_truth.py -q -m scientific_regression; then
+            echo "::error title=Scientific regression::Known-truth equation recovery missed its preregistered structure or score criteria."
+            exit 1
+          fi
+
       # Fast tier first: seconds, not minutes. It parses every source file and
       # imports every apedp_dyn module, so a syntax or import-time break fails
       # in ~2s instead of after a ten-minute suite run. It also imports every
@@ -151,11 +166,13 @@ jobs:
           python -m pytest tests/ --collect-only -q
 
       - name: Run regression tests
+        id: regression_tests
         run: |
           source .venv/bin/activate
-          python -m pytest tests/ -v --tb=short -n auto -x -m "not integration"
+          python -m pytest tests/ -v --tb=short -n auto -x -m "not integration and not scientific_regression"
 
       - name: Run live integration tests
+        id: integration_tests
         run: |
           source .venv/bin/activate
           python -m pytest tests/ -v --tb=short -n auto -x -m integration
@@ -164,6 +181,19 @@ jobs:
         run: |
           source .venv/bin/activate
           bandit -r apedp/ -ll
+
+      - name: Classify test-job failure
+        if: failure()
+        run: |
+          if [ "${{ steps.benchmark_drift.outcome }}" = "failure" ] || [ "${{ steps.scientific_gate.outcome }}" = "failure" ]; then
+            echo "Failure category: scientific-regression (known-truth recovery or benchmark drift)." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.regression_tests.outcome }}" = "failure" ]; then
+            echo "Failure category: non-scientific regression (general test suite)." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.integration_tests.outcome }}" = "failure" ]; then
+            echo "Failure category: integration/runtime; inspect service and application logs." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Failure category: infrastructure/tooling (setup, build, quality, or security step)." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   build:
     needs: test

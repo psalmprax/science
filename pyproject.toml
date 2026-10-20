@@ -105,6 +105,7 @@ markers = [
     # explicitly slow or implicitly fast. `-m 'not slow'` already gives the
     # fast set; `fast` exists so intent is legible at the mark site.
     "fast: runs in the default inner loop (the complement of `slow`)",
+    "scientific_regression: deterministic known-ground-truth discovery checks",
 ]
 
 [tool.ruff]

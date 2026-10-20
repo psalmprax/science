@@ -42,6 +42,7 @@ class RegressionConfig:
     mutation_rate: float = 0.3
     crossover_rate: float = 0.6
     allowed_functions: tuple[Callable[[sp.Expr], sp.Expr], ...] = (sp.sin, sp.cos, sp.exp)
+    seed: int = 42
 
 
 class SymbolicRegressor:
@@ -76,26 +77,27 @@ class SymbolicRegressor:
         self.symbols = {name: sp.Symbol(name) for name in variable_names}
         self.target_unit = self.engine.registry(target_unit_str)
         self.config = config or RegressionConfig()
+        self.rng = random.Random(self.config.seed)
 
     # ----------------------- Expression generation -----------------------
     # NOTE: randomness below drives evolutionary search, not cryptography;
     # stdlib random is the correct tool (secrets is non-seedable and slower).
 
     def _random_variable(self) -> sp.Symbol:
-        return self.symbols[random.choice(self.variable_names)]  # nosec B311
+        return self.symbols[self.rng.choice(self.variable_names)]  # nosec B311
 
     def _random_constant(self) -> sp.Float:
         # small numeric constants
-        return sp.Float(random.uniform(-5.0, 5.0))  # nosec B311
+        return sp.Float(self.rng.uniform(-5.0, 5.0))  # nosec B311
 
     def _random_unary(self, expr: sp.Expr) -> sp.Expr:
-        func = random.choice(self.config.allowed_functions)  # nosec B311
+        func = self.rng.choice(self.config.allowed_functions)  # nosec B311
         return func(expr)
 
     def _grow_tree(self, depth: int) -> sp.Expr:
         if depth == 0:
             # leaf: variable or constant
-            if random.random() < 0.5:  # nosec B311
+            if self.rng.random() < 0.5:  # nosec B311
                 return self._random_variable()
             return self._random_constant()
 
@@ -103,7 +105,7 @@ class SymbolicRegressor:
         valid_ops = ['add', 'sub', 'mul', 'div', 'pow']
         if self.config.allowed_functions:
             valid_ops.append('unary')
-        op = random.choice(valid_ops)  # nosec B311
+        op = self.rng.choice(valid_ops)  # nosec B311
         if op in ('add', 'sub', 'mul', 'div'):
             left = self._grow_tree(depth - 1)
             right = self._grow_tree(depth - 1)
@@ -118,7 +120,7 @@ class SymbolicRegressor:
         elif op == 'pow':
             base = self._grow_tree(depth - 1)
             # restrict exponent to small integers for stability
-            exp = random.choice([sp.Integer(2), sp.Integer(3), sp.Integer(-1)])  # nosec B311
+            exp = self.rng.choice([sp.Integer(2), sp.Integer(3), sp.Integer(-1)])  # nosec B311
             return base ** exp
         else:  # unary
             inner = self._grow_tree(depth - 1)
@@ -167,7 +169,7 @@ class SymbolicRegressor:
                 )
 
         while len(pop) < self.config.population_size:
-            pop.append(random.choice(pop))  # nosec B311
+            pop.append(self.rng.choice(pop))  # nosec B311
         return pop
 
     # ----------------------- Fitness evaluation -------------------------
@@ -208,28 +210,28 @@ class SymbolicRegressor:
     # ----------------------- Genetic operators --------------------------
 
     def _tournament_select(self, population: list[sp.Expr], scores: dict[sp.Expr, float]) -> sp.Expr:
-        contestants = random.sample(population, k=min(self.config.tournament_size, len(population)))  # nosec B311
+        contestants = self.rng.sample(population, k=min(self.config.tournament_size, len(population)))  # nosec B311
         best = min(contestants, key=lambda e: scores[e])
         return best
 
     def _mutate(self, expr: sp.Expr) -> sp.Expr:
-        if random.random() > self.config.mutation_rate:  # nosec B311
+        if self.rng.random() > self.config.mutation_rate:  # nosec B311
             return expr
         # simple mutation: replace a random subtree with a new random tree
         expr_tree = list(sp.preorder_traversal(expr))
-        target = random.choice(expr_tree)  # nosec B311
+        target = self.rng.choice(expr_tree)  # nosec B311
         new_subtree = self._grow_tree(depth=2)
         return expr.xreplace({target: new_subtree})
 
     def _crossover(self, parent1: sp.Expr, parent2: sp.Expr) -> tuple[sp.Expr, sp.Expr]:
-        if random.random() > self.config.crossover_rate:  # nosec B311
+        if self.rng.random() > self.config.crossover_rate:  # nosec B311
             return parent1, parent2
         tree1 = list(sp.preorder_traversal(parent1))
         tree2 = list(sp.preorder_traversal(parent2))
         if not tree1 or not tree2:
             return parent1, parent2
-        cut1 = random.choice(tree1)  # nosec B311
-        cut2 = random.choice(tree2)  # nosec B311
+        cut1 = self.rng.choice(tree1)  # nosec B311
+        cut2 = self.rng.choice(tree2)  # nosec B311
         child1 = parent1.xreplace({cut1: cut2})
         child2 = parent2.xreplace({cut2: cut1})
         return child1, child2
@@ -242,6 +244,7 @@ class SymbolicRegressor:
         X: dict mapping variable name -> numpy array of values.
         y: numpy array of target values.
         """
+        self.rng = random.Random(self.config.seed)
         population = self._generate_population()
         history: list[dict[str, Any]] = []
 
@@ -276,7 +279,7 @@ class SymbolicRegressor:
                         break
 
             while len(new_population) < self.config.population_size:
-                new_population.append(random.choice(population))  # nosec B311
+                new_population.append(self.rng.choice(population))  # nosec B311
 
             population = new_population
             scores = {expr: self._fitness(expr, X, y) for expr in population}

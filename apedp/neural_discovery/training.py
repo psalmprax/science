@@ -17,6 +17,7 @@ from sklearn.model_selection import KFold
 
 from apedp.neural_discovery.architectures import init_model
 from apedp.neural_discovery.config import NeuralDiscoveryConfig, TrainingConfig
+from apedp.reproducibility import dataset_sha256, seed_everything, write_provenance_artifact
 
 Array = jnp.ndarray
 PRNGKey = jax.Array
@@ -51,6 +52,7 @@ class NeuralDiscoveryTrainer:
     def __init__(self, config: NeuralDiscoveryConfig):
         self.config = config
         self.training_config = TrainingConfig.from_discovery_config(config)
+        seed_everything(config.seed, deterministic=config.deterministic)
 
     def train(self,
               model: nn.Module,
@@ -165,6 +167,25 @@ class NeuralDiscoveryTrainer:
 
         # Return best params
         final_params = best_params if best_params is not None else params
+        if self.config.log_dir is not None:
+            dataset = {"x_train": x_train, "y_train": y_train}
+            if val_ds is not None:
+                dataset.update({"x_validation": val_ds[0], "y_validation": val_ds[1]})
+            dataset_hash = dataset_sha256(dataset)
+            write_provenance_artifact(
+                f"{self.config.log_dir}/provenance/training-{dataset_hash}.json",
+                dataset=dataset,
+                config=self.config,
+                seed=self.config.seed,
+                deterministic=self.config.deterministic,
+                metrics={
+                    "train_loss": history.train_loss[-1],
+                    "train_r2": history.train_r2[-1],
+                    "validation_loss": history.val_loss[-1] if history.val_loss else None,
+                    "validation_r2": history.val_r2[-1] if history.val_r2 else None,
+                    "epochs": len(history.train_loss),
+                },
+            )
         return final_params, history
 
     def cross_validate(self,
@@ -323,6 +344,7 @@ class HyperparameterOptimizer:
         study = optuna.create_study(
             direction="minimize",
             pruner=optuna.pruners.MedianPruner() if self.config.hyperopt_pruner == "median" else None,
+            sampler=optuna.samplers.TPESampler(seed=self.config.seed),
         )
 
         study.optimize(objective, n_trials=self.config.hyperopt_trials,

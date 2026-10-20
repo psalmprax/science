@@ -70,12 +70,16 @@ import os
 import sys
 import time
 from dataclasses import dataclass
-from typing import Any, Callable
+from pathlib import Path
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from apedp.reproducibility import write_provenance_artifact
 
 RECOVERY_R2 = 0.99  # preregistered recovery threshold (both row orders)
 COEF_TOL = 0.05     # preregistered coefficient tolerance
@@ -375,6 +379,29 @@ def run_challenge(json_path: str = "benchmarks/known_truth_results.json",
                          noise_seed=noise_seed)
     with open(json_path, "w") as fh:
         json.dump(artifact, fh, indent=2)
+    dataset = {
+        world.world.name: {
+            "development_csv": world.dev.to_csv(index=False),
+            "holdout_csv": world.hold.to_csv(index=False),
+        }
+        for world in built
+    }
+    write_provenance_artifact(
+        Path(json_path).with_suffix(Path(json_path).suffix + ".provenance.json"),
+        dataset=dataset,
+        config={
+            "seed": noise_seed,
+            "noise_seed": noise_seed,
+            "deterministic": True,
+            "adjudicated": adjudicated,
+            "recovery_r2": RECOVERY_R2,
+            "coefficient_relative_error_max": COEF_TOL,
+        },
+        seed=noise_seed,
+        deterministic=True,
+        metrics=artifact["rates"],
+        results={"result_artifact": str(json_path), "protocol": artifact["protocol"]},
+    )
     return artifact
 
 
@@ -503,8 +530,16 @@ def run_challenge_repeats(json_path: str = "benchmarks/known_truth_results_repea
     the adjudication layer too.
     """
     per_seed: list[tuple[int, dict[str, Any]]] = []
+    datasets: dict[str, Any] = {}
     for seed in seeds:
         built = build_worlds(noise_seed=seed)
+        datasets[str(seed)] = {
+            world.world.name: {
+                "development_csv": world.dev.to_csv(index=False),
+                "holdout_csv": world.hold.to_csv(index=False),
+            }
+            for world in built
+        }
         per_seed.append((seed, _run_core(built, adjudicated=adjudicated,
                                          noise_seed=seed)))
 
@@ -556,6 +591,22 @@ def run_challenge_repeats(json_path: str = "benchmarks/known_truth_results_repea
     }
     with open(json_path, "w") as fh:
         json.dump(artifact, fh, indent=2)
+    write_provenance_artifact(
+        Path(json_path).with_suffix(Path(json_path).suffix + ".provenance.json"),
+        dataset=datasets,
+        config={
+            "seed": seeds[0] if seeds else 0,
+            "seeds": list(seeds),
+            "deterministic": True,
+            "adjudicated": adjudicated,
+            "recovery_r2": RECOVERY_R2,
+            "coefficient_relative_error_max": COEF_TOL,
+        },
+        seed=seeds[0] if seeds else 0,
+        deterministic=True,
+        metrics=artifact["rates"],
+        results={"result_artifact": str(json_path), "protocol": artifact["protocol"]},
+    )
     return artifact
 
 

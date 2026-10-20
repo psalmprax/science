@@ -19,6 +19,7 @@ re-run and re-preregistered, not quietly patched.
 """
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -32,6 +33,8 @@ from benchmarks.known_truth_challenge import (
     RECOVERY_R2,
     run_challenge,
 )
+
+pytestmark = pytest.mark.scientific_regression
 
 
 @pytest.fixture(scope="module")
@@ -91,6 +94,12 @@ def test_challenge_is_deterministic(tmp_path: Path) -> None:
     probe = tmp_path / "kt_determinism_probe.json"
     a = run_challenge(str(probe))
     b = run_challenge(str(probe))
+    provenance = probe.with_suffix(probe.suffix + ".provenance.json")
+    assert provenance.is_file()
+    manifest = json.loads(provenance.read_text())
+    assert manifest["seed"] == 0
+    assert manifest["deterministic"] is True
+    assert manifest["dataset_sha256"]
     v_a = [(c["world"], c["method"], c["verdict"]) for c in a["cells"]]
     v_b = [(c["world"], c["method"], c["verdict"]) for c in b["cells"]]
     assert v_a == v_b

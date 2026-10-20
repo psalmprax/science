@@ -56,6 +56,44 @@ APEDP_REDIS_URL=redis://localhost:6379/0 \
   python -m pytest tests/ -v --tb=short -n auto -x -m integration
 ```
 
+## Reproducibility and provenance
+
+`NeuralDiscoveryConfig` and `TrainingConfig` default to `seed=42` and
+`deterministic=True`. A trainer seeds Python, NumPy, and available Torch RNGs;
+JAX uses explicit keys (`apedp.reproducibility.jax_key(seed)`). Deterministic
+mode requests deterministic Torch algorithms and disables cuDNN benchmarking.
+The standalone evolutionary `SymbolicRegressor` accepts a `seed` in
+`RegressionConfig` and uses an isolated, per-run random generator.
+It does not promise bitwise identity across accelerator models, drivers, or
+framework versions; retain the device/runtime versions with reported results.
+
+When `NeuralDiscoveryConfig.log_dir` is set, each training call writes a JSON
+record at `log_dir/provenance/training-<dataset-sha256>.json`. Other discovery
+entrypoints can use `write_provenance_artifact(path, dataset=..., config=...,
+seed=..., deterministic=..., metrics=..., results=...)`. Schema `1.0` includes
+the best-effort Git commit, dataset SHA-256, complete config snapshot and hash,
+seed/determinism flags, key metrics, and optional results. Records are replaced
+atomically; treat the referenced dataset and result artifacts as part of the
+same run record.
+Both known-truth challenge entrypoints write a `<results-file>.provenance.json`
+sidecar for each run, including the generated dataset hash and recovery metrics.
+
+## Benchmark drift workflow and CI failure categories
+
+`benchmarks/scientific_benchmark_manifest.json` pins the benchmark checksum
+inventory and baseline recovery metrics. CI runs
+`python benchmarks/check_scientific_drift.py` and a separate
+`scientific_regression` known-truth test gate. A baseline change is intentional
+only after reviewing the protocol and rerunning the full challenge; update the
+baseline and maximum drift together in a reviewed change. Do not loosen a
+threshold to hide an unexplained regression.
+
+The CI step named **Scientific regression gate** (and its explicit error
+annotation and job summary) indicates a failed recovery criterion. The job
+summary separately labels general-suite regression, integration/runtime
+failures, and infrastructure/tooling failures (setup, build, quality, or
+security); use the named step and its logs for the specific cause.
+
 Run the complete dynamic regression battery listed in [AGENTS.md](AGENTS.md)
 before submitting scientific changes. Native conformance tests must run
 against the built kernel, not silently skip.
