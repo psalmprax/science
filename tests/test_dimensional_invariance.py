@@ -50,6 +50,7 @@ import pytest
 
 from apedp.model_synthesis import (
     AutonomousModelSynthesizer,
+    _input_normalization_scale,
     _regime_identifiability,
     _robust_noise_floor,
 )
@@ -480,6 +481,17 @@ class TestAbstentionRules:
         assert below[0], "n=7 must abstain on the sample gate"
         assert not above[0], "n=9 must clear the sample gate"
         assert "samples" in below[1], f"n=7 abstained for the wrong reason: {below[1]}"
+
+
+def test_bare_log_template_is_not_x_normalized() -> None:
+    """Bare log(x) needs an intercept shift that the current map-back omits."""
+    x = np.array([10.0, 20.0])
+    assert _input_normalization_scale(
+        "logarithmic_boundary_layer", "A * log(x) + B", x
+    ) == 1.0
+    assert _input_normalization_scale(
+        "logarithmic_boundary_layer", "A * log(1 + B*x)", x
+    ) == 20.0
 
 
 @pytest.mark.slow
