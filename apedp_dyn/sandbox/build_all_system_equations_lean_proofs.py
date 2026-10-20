@@ -27,6 +27,7 @@ from __future__ import annotations
 import concurrent.futures
 import json
 import logging
+import re
 import sys
 import time
 from pathlib import Path
@@ -325,24 +326,68 @@ def infer_invariants_for_formula(cid: str, formula: str, meta: str = "") -> list
     return invariants
 
 
+def parse_declared_invariants(path: Path) -> list[DeclaredInvariant]:
+    """Read invariant declarations from a checked-in Lean verification module."""
+    invariants: list[DeclaredInvariant] = []
+    declaration_pattern = re.compile(
+        r"/-- Declared Invariant: (?P<name>[^()]+) \((?P<kind>[^()]+)\) - "
+        r"(?P<description>.*) --/"
+    )
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.startswith("/-- Declared Invariant: "):
+            continue
+        match = declaration_pattern.fullmatch(line)
+        if match is None:
+            raise ValueError(f"Malformed declared invariant in {path}: {line}")
+        invariants.append(
+            DeclaredInvariant(
+                name=match.group("name"),
+                kind=InvariantKind(match.group("kind")),
+                description=match.group("description"),
+                required_for_tier=ClaimLevel.C3_STRUCTURAL,
+            )
+        )
+    return invariants
+
+
 def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpecification]:
     """Assemble all 320+ candidate specifications across all 10 sources."""
     specs: list[AgnosticCandidateSpecification] = []
-    seen_ids: set[str] = set()
+    specs_by_id: dict[str, AgnosticCandidateSpecification] = {}
 
     def add_spec(cid: str, formula: str, meta: str = "", invariants: list[DeclaredInvariant] | None = None):
-        if cid in seen_ids:
+        if cid in specs_by_id:
+            if invariants is not None:
+                specs_by_id[cid].declared_invariants = invariants
             return
-        seen_ids.add(cid)
         invs = invariants or infer_invariants_for_formula(cid, formula, meta)
-        specs.append(
-            AgnosticCandidateSpecification(
-                candidate_id=cid,
-                proposed_claim=ClaimLevel.C3_STRUCTURAL,
-                formula_repr=formula,
-                declared_invariants=invs,
-            )
+        spec = AgnosticCandidateSpecification(
+            candidate_id=cid,
+            proposed_claim=ClaimLevel.C3_STRUCTURAL,
+            formula_repr=formula,
+            declared_invariants=invs,
         )
+        specs.append(spec)
+        specs_by_id[cid] = spec
+
+    def add_checked_in_specs(prefix: str) -> None:
+        """Use committed Lean module headers when scratch provenance is absent."""
+        for path in sorted(LEAN_FORMAL_DIR.glob("*_verification.lean")):
+            candidate_id = ""
+            formula = ""
+            for line in path.read_text(encoding="utf-8").splitlines()[:8]:
+                if line.startswith("  Candidate: "):
+                    candidate_id = line.removeprefix("  Candidate: ").strip()
+                elif line.startswith("  Formula: "):
+                    formula = line.removeprefix("  Formula: ").strip()
+            if candidate_id.startswith(prefix) and formula:
+                invariants = parse_declared_invariants(path)
+                add_spec(
+                    candidate_id,
+                    formula,
+                    meta="checked-in Lean candidate",
+                    invariants=invariants or None,
+                )
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 1: Fluid ODE Dynamical Sweeps (120 Fitted Cell Equations)
@@ -354,6 +399,7 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
             cid = f"{cid_prefix}-{eq_key.upper()}"
             formula = eq_info.get("fitted_formula") or eq_info.get("formula") or "y = c1*lead_spill + c2*ofi"
             add_spec(cid, formula, meta=f"{eq_info.get('name', '')} {eq_key}")
+    add_checked_in_specs("FLUID-CELL-")
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 2: OpenAI Math Advanced Hypotheses Sweeps (80 Fitted Cell Equations)
@@ -365,6 +411,7 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
             cid = f"{cid_prefix}-{hyp_key.upper()}"
             formula = hyp_info.get("fitted_formula") or hyp_info.get("formula") or "y = c1*spread + c2*velocity"
             add_spec(cid, formula, meta=f"{hyp_info.get('name', '')} {hyp_key}")
+    add_checked_in_specs("MATH-CELL-")
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 3: GA Depth-2 Evolved Champion Equations (16 Cells)
@@ -374,6 +421,7 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
         cid = f"GA-D2-CHAMPION-{cell['cell_id'].upper()}"
         formula = cell.get("evolved_formula", "y = c1*lead_disp_prod")
         add_spec(cid, formula, meta="ga depth2 evolved champion")
+    add_checked_in_specs("GA-D2-CHAMPION-")
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 4: GA Depth-3 Evolved Champion Equations (16 Cells)
@@ -383,6 +431,7 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
         cid = f"GA-D3-CHAMPION-{cell['cell_id'].upper()}"
         formula = cell.get("evolved_formula", "y = c1*vel_four_disp_3w")
         add_spec(cid, formula, meta="ga depth3 evolved champion")
+    add_checked_in_specs("GA-D3-CHAMPION-")
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 5: Walk-Forward Rolling Window Discovered Equations (11 Windows)
@@ -392,6 +441,7 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
         cid = f"WALKFORWARD-WIN-M{w.get('month_idx', 0)}"
         formula = w.get("winning_formula", "y = c1*lead_spill")
         add_spec(cid, formula, meta="walkforward rolling window champion")
+    add_checked_in_specs("WALKFORWARD-WIN-")
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 6: Attested Canonical Multi-Asset Split Equations (5 Equations)
@@ -401,6 +451,7 @@ def assemble_exhaustive_candidate_specifications() -> list[AgnosticCandidateSpec
             cid = f"EXP-SPLIT-{split_name.upper()}-{eq_key.upper()}"
             formula = eq_val.get("fitted_formula") or eq_val.get("formula") or "y = c1*rel_mom"
             add_spec(cid, formula, meta=f"{split_name} canonical equation")
+    add_checked_in_specs("EXP-SPLIT-")
 
     # ──────────────────────────────────────────────────────────────────────────
     # Group 7: APEDP-Evolved Universe Scoring Equations & Ablation Baselines (8)

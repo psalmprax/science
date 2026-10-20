@@ -89,8 +89,12 @@ where
         for i in 0..n {
             let xi = env.x[i];
             let yi = env.y[i];
-            if xi < global_min_x { global_min_x = xi; }
-            if xi > global_max_x { global_max_x = xi; }
+            if xi < global_min_x {
+                global_min_x = xi;
+            }
+            if xi > global_max_x {
+                global_max_x = xi;
+            }
 
             let pred = f(xi);
             if !pred.is_finite() {
@@ -132,12 +136,20 @@ where
     let mean_env_r2 = env_r2s.iter().sum::<f64>() / num_envs;
     let worst_env_r2 = env_r2s.iter().copied().fold(f64::INFINITY, f64::min);
 
-    let r2_var = env_r2s.iter().map(|&r| (r - mean_env_r2).powi(2)).sum::<f64>() / num_envs;
+    let r2_var = env_r2s
+        .iter()
+        .map(|&r| (r - mean_env_r2).powi(2))
+        .sum::<f64>()
+        / num_envs;
     let r2_std = r2_var.sqrt();
 
     // IRM penalty: variance of optimal environmental multipliers + variance of relative MSE
     let mean_scale = env_scales.iter().sum::<f64>() / num_envs;
-    let scale_var = env_scales.iter().map(|&s| (s - mean_scale).powi(2)).sum::<f64>() / num_envs;
+    let scale_var = env_scales
+        .iter()
+        .map(|&s| (s - mean_scale).powi(2))
+        .sum::<f64>()
+        / num_envs;
     let irm_penalty = scale_var + r2_var;
 
     // Cross-Regime Generalization Index (CGI)
@@ -215,15 +227,21 @@ where
         let x = (x_min - margin) + (i as f64) * step_extrap;
         let y = f(x);
         if !y.is_finite() {
-            return (false, format!("Pole/Singularity in left extrapolation at x={:.4}", x));
+            return (
+                false,
+                format!("Pole/Singularity in left extrapolation at x={:.4}", x),
+            );
         }
         let y_plus = f(x + step_extrap * 0.1);
         let grad = ((y_plus - y) / (step_extrap * 0.1)).abs();
         if grad / safe_in_grad > max_gradient_ratio {
             return (
                 false,
-                format!("Gradient explosion in left extrapolation (ratio {:.1} > {:.1})",
-                        grad / safe_in_grad, max_gradient_ratio),
+                format!(
+                    "Gradient explosion in left extrapolation (ratio {:.1} > {:.1})",
+                    grad / safe_in_grad,
+                    max_gradient_ratio
+                ),
             );
         }
     }
@@ -233,15 +251,21 @@ where
         let x = x_max + (i as f64) * step_extrap;
         let y = f(x);
         if !y.is_finite() {
-            return (false, format!("Pole/Singularity in right extrapolation at x={:.4}", x));
+            return (
+                false,
+                format!("Pole/Singularity in right extrapolation at x={:.4}", x),
+            );
         }
         let y_plus = f(x + step_extrap * 0.1);
         let grad = ((y_plus - y) / (step_extrap * 0.1)).abs();
         if grad / safe_in_grad > max_gradient_ratio {
             return (
                 false,
-                format!("Gradient explosion in right extrapolation (ratio {:.1} > {:.1})",
-                        grad / safe_in_grad, max_gradient_ratio),
+                format!(
+                    "Gradient explosion in right extrapolation (ratio {:.1} > {:.1})",
+                    grad / safe_in_grad,
+                    max_gradient_ratio
+                ),
             );
         }
     }
@@ -295,7 +319,8 @@ mod tests {
             0.10,
             0.50,
             10.0,
-        ).expect("Evaluation should succeed");
+        )
+        .expect("Evaluation should succeed");
 
         assert!(true_res.passed_retention_gate);
         assert!(true_res.worst_env_r2 > 0.999);
@@ -314,22 +339,21 @@ mod tests {
             0.10,
             0.50,
             10.0,
-        ).expect("Evaluation should succeed");
+        )
+        .expect("Evaluation should succeed");
 
-        assert!(!spurious_res.passed_retention_gate, "Spurious candidate must be rejected by retention gate");
+        assert!(
+            !spurious_res.passed_retention_gate,
+            "Spurious candidate must be rejected by retention gate"
+        );
         assert!(spurious_res.worst_env_r2 < 0.0);
     }
 
     #[test]
     fn test_extrapolation_barrier_detects_runge_explosion() {
         // High-degree polynomial: f(x) = x^8 - 100 x^6
-        let (safe, reason) = check_extrapolation_barrier(
-            |x| x.powi(8) - 100.0 * x.powi(6),
-            -1.0,
-            1.0,
-            1.0,
-            10.0,
-        );
+        let (safe, reason) =
+            check_extrapolation_barrier(|x| x.powi(8) - 100.0 * x.powi(6), -1.0, 1.0, 1.0, 10.0);
         assert!(!safe);
         assert!(reason.contains("Gradient explosion"));
     }
@@ -337,13 +361,7 @@ mod tests {
     #[test]
     fn test_extrapolation_barrier_detects_pole() {
         // Rational function with pole right outside domain at x = 2.2
-        let (safe, reason) = check_extrapolation_barrier(
-            |x| 1.0 / (2.2 - x),
-            0.0,
-            2.0,
-            0.5,
-            10.0,
-        );
+        let (safe, reason) = check_extrapolation_barrier(|x| 1.0 / (2.2 - x), 0.0, 2.0, 0.5, 10.0);
         assert!(!safe);
         assert!(reason.contains("Pole/Singularity") || reason.contains("Gradient explosion"));
     }

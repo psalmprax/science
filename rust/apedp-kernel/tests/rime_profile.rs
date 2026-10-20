@@ -49,8 +49,10 @@ fn profile_size(n: usize) -> serde_json::Value {
     }
     let cols = vec![x, hash_noise(n, 7.0)];
     let seeds = seeds::small_forms(1);
-    let mut cfg =
-        SearchConfig::default().with_max_depth(2).with_beam(8).with_budget(200);
+    let mut cfg = SearchConfig::default()
+        .with_max_depth(2)
+        .with_beam(8)
+        .with_budget(200);
     {
         // The proposer's calibration: 1.5 * var(y) / n_dev.
         let ndev = (n - 2) as f64;
@@ -121,10 +123,11 @@ fn profile_size(n: usize) -> serde_json::Value {
 
 #[test]
 fn writes_kernel_phase_profile() {
-    let rows: Vec<serde_json::Value> =
-        [150usize, 600, 1200, 3000, 12000].iter().map(|&n| profile_size(n)).collect();
-    let method_note = "phase decomposition, median of 7 reps per measurement; phases "
-        .to_string()
+    let rows: Vec<serde_json::Value> = [150usize, 600, 1200, 3000, 12000]
+        .iter()
+        .map(|&n| profile_size(n))
+        .collect();
+    let method_note = "phase decomposition, median of 7 reps per measurement; phases ".to_string()
         + "measured SINGLE-THREADED on the seed catalogue against a planted "
         + "lag-2 world, while the production search wall is rayon-parallel — at "
         + "large n the phase sum can exceed us_per_candidate and the remainder "

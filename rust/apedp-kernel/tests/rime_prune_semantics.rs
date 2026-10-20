@@ -7,7 +7,7 @@
 //! way every consumer does, predictions must survive serialization round-trips,
 //! and pruning must not disturb unrelated graph components.
 
-use apedp_kernel::rime::eval::{charged_dof, fit_readout, fitted_mse, READOUT_PARAMS, ScoreConfig};
+use apedp_kernel::rime::eval::{charged_dof, fit_readout, fitted_mse, ScoreConfig, READOUT_PARAMS};
 use apedp_kernel::rime::graph::{Graph, Node};
 use apedp_kernel::rime::rewrite::{apply, RewriteOp};
 
@@ -53,7 +53,11 @@ fn simplification_and_complexity_treat_inactive_edges_consistently() {
         pruned.edge_count() as f64 + READOUT_PARAMS
     );
     // Rendered form: the zeroed branch is visible, not hidden.
-    assert!(pruned.describe().contains("(0.000000"), "got {}", pruned.describe());
+    assert!(
+        pruned.describe().contains("(0.000000"),
+        "got {}",
+        pruned.describe()
+    );
     // And `canonical` — the content address — CHANGES, so the pruned candidate
     // cannot be confused with its unpruned parent in any ledger.
     assert_ne!(pruned.id(), g.id());
@@ -109,7 +113,11 @@ fn pruned_readout_is_intercept_only_not_rescued() {
     let p0 = apply(&p01, &RewriteOp::PruneEdge { node: 2 }).unwrap(); // the Add node itself
     let cols = vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]];
     let out = p0.evaluate(&cols);
-    assert!(out.iter().all(|v| *v == 0.0), "both terms zeroed: {:?}", out);
+    assert!(
+        out.iter().all(|v| *v == 0.0),
+        "both terms zeroed: {:?}",
+        out
+    );
     let y = vec![3.0, 5.0, 7.0];
     let (a, b) = fit_readout(&out, &y, 1e-9);
     assert_eq!(a, 0.0, "constant output: scale must be exactly 0");
@@ -121,5 +129,9 @@ fn pruned_readout_is_intercept_only_not_rescued() {
     let sc = ScoreConfig::new(0.01, 1e-9);
     let var_y = 8.0 / 3.0; // mean([3,5,7])=5, var = ((3-5)²+(0)²+(7-5)²)/3
     let s = apedp_kernel::rime::eval::score_candidate_fitted(&p0, var_y, &cols, &y, &sc);
-    assert!(s.score <= 0.0, "intercept-only model cannot outscore the null: {}", s.score);
+    assert!(
+        s.score <= 0.0,
+        "intercept-only model cannot outscore the null: {}",
+        s.score
+    );
 }

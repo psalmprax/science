@@ -310,7 +310,6 @@ class DiffusersVAEBridge:
         if frame_rgb.ndim != 3 or frame_rgb.shape[0] != 3:
             raise ValueError(f"Expected frame (3, H, W), got {frame_rgb.shape}")
         import torch
-        import torch.nn.functional as F
 
         x = torch.from_numpy(np.asarray(frame_rgb, np.float32)[None]).mul_(2.0).sub_(1.0)
         with torch.no_grad():

@@ -12,7 +12,6 @@ use apedp_kernel::rime::eval::{
     fit_readout, fitted_mse, mse_finite, score_batch_fitted, FittedScore, ScoreConfig,
 };
 use apedp_kernel::rime::graph::{Graph, Node};
-use apedp_kernel::rime::record::CandidateRecord;
 use apedp_kernel::rime::rewrite::{apply, RewriteOp};
 use apedp_kernel::rime::search::{multiplicity_dof, target_variance};
 
@@ -36,10 +35,16 @@ fn hash_noise(n: usize, phase: f64) -> Vec<f64> {
 /// model.
 fn planted_world() -> (Vec<Vec<f64>>, Vec<f64>) {
     let x = hash_noise(500, 0.0);
-// Exact lag‑2 law, no extra sinusoidal noise so that lag‑2 wins decisively.
+    // Exact lag‑2 law, no extra sinusoidal noise so that lag‑2 wins decisively.
     // Use a large amplitude so the MSE reduction dominates the lambda_c penalty.
     let y: Vec<f64> = (0..500)
-        .map(|t| if t >= 2 { PLANTED_AMP * x[t - 2] } else { f64::NAN })
+        .map(|t| {
+            if t >= 2 {
+                PLANTED_AMP * x[t - 2]
+            } else {
+                f64::NAN
+            }
+        })
         .collect();
     (vec![x], y)
 }
@@ -63,7 +68,8 @@ fn lag_score_config(target: &[f64], n_candidates: usize) -> ScoreConfig {
     // `score > 0.5*var` bar — an internally inconsistent control. At 25.0 a
     // perfect fit yields ≈0.69·var (> 0.5·var) while the null world still
     // abstains for any positive charge (wrong-lag ΔMSE ≈ 0, minus charge).
-    ScoreConfig::new(25.0 * var / n_dev as f64, 1e-9).with_selection_dof(multiplicity_dof(n_candidates))
+    ScoreConfig::new(25.0 * var / n_dev as f64, 1e-9)
+        .with_selection_dof(multiplicity_dof(n_candidates))
 }
 
 fn lag_expansions(
@@ -88,22 +94,24 @@ fn lag_expansions(
     (parent_mse, lags.to_vec(), res)
 }
 
-fn best_index(res: &[FittedScore]) -> Option<usize> {
-    res.iter()
-        .enumerate()
-        .max_by(|(_, a), (_, b)| a.score.partial_cmp(&b.score).unwrap())
-        .map(|(i, _)| i)
-}
-
 #[test]
 fn planted_two_lag_mechanism_recovered() {
     let (cols, target) = planted_world();
     let (_, lags, res) = lag_expansions(&cols, &target, lag_score_config(&target, 5));
     let i = (0..res.len())
-        .max_by(|&a, &b| res[a].score.partial_cmp(&res[b].score).unwrap_or(std::cmp::Ordering::Equal))
+        .max_by(|&a, &b| {
+            res[a]
+                .score
+                .partial_cmp(&res[b].score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
         .unwrap();
     assert_eq!(lags[i], 2, "planted lag-2 mechanism must score best");
-    assert!(res[i].score > 0.0, "winner must clear the gate: {}", res[i].score);
+    assert!(
+        res[i].score > 0.0,
+        "winner must clear the gate: {}",
+        res[i].score
+    );
     // The fitted readout must recover the planted amplitude, not just rank it.
     assert!(
         (res[i].scale - PLANTED_AMP).abs() < 0.05 && res[i].r2 > 0.99,
@@ -124,7 +132,12 @@ fn positive_control_promotes_a_planted_mechanism() {
     let (parent_mse, lags, res) = lag_expansions(&cols, &target, lag_score_config(&target, 5));
     assert!(parent_mse.is_finite());
     let i = (0..res.len())
-        .max_by(|&a, &b| res[a].score.partial_cmp(&res[b].score).unwrap_or(std::cmp::Ordering::Equal))
+        .max_by(|&a, &b| {
+            res[a]
+                .score
+                .partial_cmp(&res[b].score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
         .unwrap();
     assert_eq!(lags[i], 2);
     assert!(
@@ -137,7 +150,12 @@ fn positive_control_promotes_a_planted_mechanism() {
     // No free promotion for the wrong lags: the gate is discriminative.
     for (j, s) in res.iter().enumerate() {
         if lags[j] != 2 {
-            assert!(s.score <= 0.0, "lag {} spuriously promoted (score {})", lags[j], s.score);
+            assert!(
+                s.score <= 0.0,
+                "lag {} spuriously promoted (score {})",
+                lags[j],
+                s.score
+            );
         }
     }
 }

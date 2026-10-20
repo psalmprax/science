@@ -130,9 +130,8 @@ pub fn discover_linear_spectrum(
     let r = config.ridge.max(0.0);
     s[0][0] += r;
     s[1][1] += r;
-    let w = solve_3x3(s, b).ok_or_else(|| {
-        "Koopman discovery: degenerate regressor matrix".to_string()
-    })?;
+    let w = solve_3x3(s, b)
+        .ok_or_else(|| "Koopman discovery: degenerate regressor matrix".to_string())?;
     let (a1, a2, intercept) = (w[0], w[1], w[2]);
     if !a1.is_finite() || !a2.is_finite() || !intercept.is_finite() {
         return Err("Koopman discovery: non-finite recurrence coefficients".to_string());
@@ -149,7 +148,11 @@ pub fn discover_linear_spectrum(
     }
     let m = (n - 2) as f64;
     let fit_rmse = (ss_res / m).sqrt();
-    let fit_r2 = if ss_tot > 1e-15 { 1.0 - ss_res / ss_tot } else { 1.0 };
+    let fit_r2 = if ss_tot > 1e-15 {
+        1.0 - ss_res / ss_tot
+    } else {
+        1.0
+    };
 
     // Eigenvalues of the companion matrix [[a1, a2], [1, 0]].
     let disc = a1 * a1 + 4.0 * a2;
@@ -250,7 +253,9 @@ mod tests {
         let n = 200usize;
         let y: Vec<f64> = (0..n).map(|i| (2.0 * dt * (i as f64)).cos()).collect();
         let res = discover_linear_spectrum(&y, dt, &KoopmanConfig::default()).unwrap();
-        let freq = res.frequency.expect("harmonic spectrum must be a complex pair");
+        let freq = res
+            .frequency
+            .expect("harmonic spectrum must be a complex pair");
         assert!((freq - 2.0).abs() < 0.02, "frequency: {freq}");
         assert!(
             (res.spectral_radius - 1.0).abs() < 0.02,
@@ -281,7 +286,9 @@ mod tests {
             })
             .collect();
         let res = discover_linear_spectrum(&y, dt, &KoopmanConfig::default()).unwrap();
-        let freq = res.frequency.expect("damped spectrum must be a complex pair");
+        let freq = res
+            .frequency
+            .expect("damped spectrum must be a complex pair");
         assert!((freq - 3.0).abs() < 0.05, "frequency: {freq}");
         assert!(
             (res.decay_rate + 0.5).abs() < 0.05,

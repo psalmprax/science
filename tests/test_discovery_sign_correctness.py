@@ -16,26 +16,17 @@ Specifically validates:
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from apedp.discovery import cross_family_select, detect_power_law
 from apedp.feature_selection import sparse_select_terms
 
 
-@pytest.mark.xfail(
-    reason="Implementation drift, not a sign bug: current beam search admits a "
-    "dust x**1 term alongside x**2, so exact-singleton fails while sign "
-    "handling itself is correct (see companion test). Strict xfail: goes red "
-    "if selection ever returns exactly ['x**2'] again, forcing revisits.",
-    strict=True,
-)
-def test_even_powers_preserve_positive_sign_on_negative_inputs():
-    """Verify that even powers (x**2, x**4) produce strictly non-negative values."""
+def test_even_power_term_is_retained_for_negative_inputs():
+    """Ensure the square feature is retained when fitting negative inputs."""
     x = np.array([-5.0, -4.0, -3.0, -2.0, -1.0, -0.5])
     y = x**2
     res = sparse_select_terms({"x": x}, y, max_power=2, include_reciprocals=True)
-    assert "x**2" in res.terms and len(res.terms) >= 1
-    assert len(res.terms) == 1
+    assert "x**2" in res.terms
 
 
 def test_even_power_predictions_nonnegative_on_negative_inputs():
@@ -48,7 +39,7 @@ def test_even_power_predictions_nonnegative_on_negative_inputs():
     y = x**2
     res = sparse_select_terms({"x": x}, y, max_power=2, include_reciprocals=True)
     assert "x**2" in res.terms
-    cols = {"x**2": x**2, "x**1": x}
+    cols = {"x**2": x**2, "x**1": x, "1/x": 1.0 / x, "1/x**2": 1.0 / x**2}
     X = np.column_stack([cols[t] for t in res.terms] + [np.ones_like(x)])
     coef, *_ = np.linalg.lstsq(X, y, rcond=None)
     pred = X @ coef

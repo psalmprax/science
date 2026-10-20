@@ -4,6 +4,16 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Repair Python 3.12 blind-freeze CI failure (2026-10-20)
+
+### Frozen referee record refresh
+- The Actions regression failure was `verify_referee()` rejecting
+  `apedp_dyn/sandbox/multi_grammar_sandbox.py`: its current SHA-256 no longer
+  matched the v1.7 pin after the Python 3.12 CI regression fix added the file.
+  Preserved the integrity check and minted `APEDPX_FROZEN_v1_8.json` with the
+  current source hash; `blind_benchmark.py` now consumes v1.8. No thresholds or
+  runtime behavior changed in this record-only refresh.
+
 ## [Unreleased] — register limitations addressed: F14b wiring, F16 CBF certificate, LEAN reproduction (2026-10-20)
 
 ### Frozen-record re-mint v1_7 → v1_8 (rationale, per freeze protocol)

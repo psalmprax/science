@@ -36,12 +36,18 @@ PINNED_FROZEN_REGISTRY: dict[str, str] = {
     "apedp_dyn/epistemic/adjudicate.py": "f56987b97ec1e297f24e47c0b3f975b9ec3570efc85509f319391f03897d9e75",
     "apedp_dyn/epistemic/claim_ladder.py": "aba9fd0045abc137a36dab90e1316b8934597beb02c553cf35d15c3029c0886c",
     "apedp_dyn/sandbox/grammar_space.py": "b9b669521328bdbf5e6cc476634629211f891d8c9909f3037eee02dc09e78632",
+    "benchmarks/l2_control_freeze.json": "ec117721d1cd9da0b09950bb9b5894110c2411475dfec073b684477c33e96872",
+}
+
+# These records are generated under outputs/, which is intentionally ignored by
+# git. Keep checking their pins whenever a local/generated copy is available,
+# without requiring per-run artifacts to exist in a clean checkout.
+PINNED_GENERATED_OUTPUT_REGISTRY: dict[str, str] = {
     "outputs/trading_np93_freeze.json": "462655b914271f06ccc095362d30a87935f4977527170e7080b53b72961cca0e",
     "outputs/nano_ds10_freeze.json": "b809ddcba1eefff2f7d3f21cc21247467c60dcda2f482ba0df1b528d6a28376f",
     "outputs/dyn_epistemic_freeze.json": "d3b8665230bce749a645111c08b8c53d0a8e5897d42c4678dc9c7a34cad10556",
     "outputs/d5_conf_freeze.json": "d9e1a17b46765f5096f5e2c63beee8d9e6bd3c9df82ea8d67c44bfb0ee0ab453",
     "outputs/d5_conf_v2_freeze.json": "26b2a1914db9a01f6987beda3463c3f079294f1896493e57059ec67bedb03ac6",
-    "benchmarks/l2_control_freeze.json": "ec117721d1cd9da0b09950bb9b5894110c2411475dfec073b684477c33e96872",
 }
 
 
@@ -91,7 +97,7 @@ FROZEN_SPEC: dict[str, Any] = {
     "referee_kernel_sha256": compute_file_sha256(ADJUDICATE_PATH),
     "claim_ladder_sha256": compute_file_sha256(CLAIM_LADDER_PATH),
     "thresholds": FROZEN_THRESHOLDS,
-    "pinned_registry": PINNED_FROZEN_REGISTRY,
+    "pinned_registry": {**PINNED_FROZEN_REGISTRY, **PINNED_GENERATED_OUTPUT_REGISTRY},
 }
 
 
@@ -107,9 +113,12 @@ def verify_all_frozen_records_or_raise() -> dict[str, str]:
     """
     results: dict[str, str] = {}
     drifts: list[str] = []
-    for rel_path, expected_hash in PINNED_FROZEN_REGISTRY.items():
+    registry = {**PINNED_FROZEN_REGISTRY, **PINNED_GENERATED_OUTPUT_REGISTRY}
+    for rel_path, expected_hash in registry.items():
         file_path = BASE_DIR / rel_path
         if not file_path.is_file():
+            if rel_path in PINNED_GENERATED_OUTPUT_REGISTRY:
+                continue
             drifts.append(f"MISSING: {rel_path} does not exist")
             continue
         actual_hash = compute_file_sha256(file_path)
@@ -164,4 +173,3 @@ def format_frozen_spec_banner() -> str:
         f"  • Referee Kernel Hash   (SHA256): {spec['referee_kernel_sha256'][:16]}...\n"
         f"  • Claim Ladder Hash     (SHA256): {spec['claim_ladder_sha256'][:16]}..."
     )
-

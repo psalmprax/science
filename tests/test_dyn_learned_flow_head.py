@@ -83,7 +83,7 @@ def test_training_decreases_loss_on_frozen_pair() -> None:
     # final flow must be near zero (tanh head at optimum ~0)
     z = torch.from_numpy(frames[1:2])
     v = head(torch.from_numpy(frames[0:1]), z)
-    assert float(v.abs().max()) < 0.5
+    assert float(v.detach().abs().max()) < 0.5
 
 
 def test_rollout_shape_and_frozen_consistency() -> None:
@@ -123,7 +123,7 @@ def test_flow_consistency_loss_zero_for_perfect_constant_translation() -> None:
     model.predict_flow_and_gain = fixed.predict_flow_and_gain.__get__(model)  # type: ignore[method-assign]
     loss = flow_consistency_loss(model, z1, z1, z2, dt=1.0)
     # smooth term off; advection term ~0; only tiny div-terms from finite diff at borders
-    assert float(loss) < 0.05
+    assert float(loss.detach()) < 0.05
 
 
 def test_teacher_flow_matches_the_generator_semantics() -> None:
@@ -192,7 +192,7 @@ def test_flow_supervision_beats_self_supervision_on_known_flow() -> None:
         z2 = torch.from_numpy(clip[1:2, 1:3])
         v = head(z1, z2)
         vt = torch.from_numpy(flow[2:3])
-        return float(((v - vt) ** 2).mean())
+        return float(((v - vt) ** 2).mean().detach())
 
     cfg = FlowHeadConfig(hidden_dim=8, n_layers=2, lambda_div=0.0, lambda_smooth=0.0)
     hs = LearnedFlowHead(cfg).double()
@@ -200,7 +200,7 @@ def test_flow_supervision_beats_self_supervision_on_known_flow() -> None:
                          flow_targets=flow)
     assert ls[-1] < ls[0], "supervised trainer did not descend"
     hm = LearnedFlowHead(cfg).double()
-    lm = train_flow_head(hm, clip, steps=80, lr=3e-3, seed=0)
+    train_flow_head(hm, clip, steps=80, lr=3e-3, seed=0)
     assert _flow_mse(hs) < _flow_mse(hm), (
         f"supervised {_flow_mse(hs):.3e} must beat self-supervised {_flow_mse(hm):.3e} "
         "at equal budget when a true dense target exists"
@@ -220,7 +220,6 @@ def test_flow_supervision_loss_equals_the_naive_composition() -> None:
     """The shared-forward refactor must be numerically identical to
     flow_consistency_loss + the supervised MSE evaluated separately (same
     seeded head state, no dropout/normalization randomness)."""
-    import pytest
     import torch.nn.functional as F
 
     torch.manual_seed(11)

@@ -17,6 +17,7 @@ import pytest
 
 from apedp_dyn.epistemic.frozen_spec import (
     PINNED_FROZEN_REGISTRY,
+    PINNED_GENERATED_OUTPUT_REGISTRY,
     FreezeDriftError,
     MissingProvenanceError,
     require_table_provenance_record,
@@ -80,16 +81,17 @@ def test_feature_rank_ablation_live_code_path():
 def test_all_frozen_records_verified_against_pinned_hashes():
     """All registered frozen files in repository must exactly match their pinned SHA256 digests."""
     verified = verify_all_frozen_records_or_raise()
-    assert len(verified) == len(PINNED_FROZEN_REGISTRY)
+    assert set(PINNED_FROZEN_REGISTRY) <= set(verified)
+    registry = {**PINNED_FROZEN_REGISTRY, **PINNED_GENERATED_OUTPUT_REGISTRY}
     for path, h in verified.items():
         assert len(h) == 64
-        assert h == PINNED_FROZEN_REGISTRY[path]
+        assert h == registry[path]
 
 
 def test_freeze_drift_fails_loudly_on_mutation(monkeypatch):
     """Mutation test: Any drift in a frozen file must raise FreezeDriftError immediately."""
     tampered_registry = dict(PINNED_FROZEN_REGISTRY)
-    tampered_registry["outputs/trading_np93_freeze.json"] = "0000000000000000000000000000000000000000000000000000000000000000"
+    tampered_registry["benchmarks/l2_control_freeze.json"] = "0000000000000000000000000000000000000000000000000000000000000000"
 
     monkeypatch.setattr("apedp_dyn.epistemic.frozen_spec.PINNED_FROZEN_REGISTRY", tampered_registry)
 

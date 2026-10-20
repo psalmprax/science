@@ -6,8 +6,8 @@
 //! such as Lotka-Volterra, FitzHugh-Nagumo, coupled Hamiltonian phase spaces,
 //! and Lorenz attractors.
 
-use serde::{Deserialize, Serialize};
 use super::pde::{run_stridge, PdeConfig};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CoupledConfig {
@@ -107,8 +107,16 @@ pub fn discover_coupled_system(
     // 3. Quadratic & cross-interaction terms: x_i * x_j
     if config.max_polynomial_degree >= 2 {
         for i in 0..d {
-            let start_j = if config.include_cross_interactions { i } else { i };
-            let end_j = if config.include_cross_interactions { d } else { i + 1 };
+            let start_j = if config.include_cross_interactions {
+                i
+            } else {
+                i
+            };
+            let end_j = if config.include_cross_interactions {
+                d
+            } else {
+                i + 1
+            };
             for j in start_j..end_j {
                 let name = if i == j {
                     format!("{}^2", state_labels[i])

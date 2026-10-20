@@ -104,13 +104,21 @@ pub fn fornberg_weights(x: &[f64], z: f64, m_max: usize) -> Vec<Vec<f64>> {
             c2 *= c3;
             for m in 0..=m_max.min(i) {
                 let term1 = (x[i] - z) * c[m][i - 1][j];
-                let term2 = if m > 0 { (m as f64) * c[m - 1][i - 1][j] } else { 0.0 };
+                let term2 = if m > 0 {
+                    (m as f64) * c[m - 1][i - 1][j]
+                } else {
+                    0.0
+                };
                 c[m][i][j] = (term1 - term2) / c3;
             }
         }
         for m in 0..=m_max.min(i) {
             let term1 = (x[i - 1] - z) * c[m][i - 1][i - 1];
-            let term2 = if m > 0 { (m as f64) * c[m - 1][i - 1][i - 1] } else { 0.0 };
+            let term2 = if m > 0 {
+                (m as f64) * c[m - 1][i - 1][i - 1]
+            } else {
+                0.0
+            };
             c[m][i][i] = (c1 / c2) * (term2 - term1);
         }
         c1 = c2;
@@ -209,7 +217,8 @@ pub fn run_stridge(
                     dot_a += col_i[s] * col_j[s];
                 }
                 if i == j {
-                    dot_a += config.ridge_alpha / (col_scales[active_indices[i]] * col_scales[active_indices[i]]);
+                    dot_a += config.ridge_alpha
+                        / (col_scales[active_indices[i]] * col_scales[active_indices[i]]);
                 }
                 a_mat[i * k_act + j] = dot_a;
                 a_mat[j * k_act + i] = dot_a;
@@ -247,7 +256,11 @@ pub fn run_stridge(
             let diff = target[s_idx] - pred;
             ss_fit_res += diff * diff;
         }
-        let dof = if num_samples > k_act { num_samples - k_act } else { 1 } as f64;
+        let dof = if num_samples > k_act {
+            num_samples - k_act
+        } else {
+            1
+        } as f64;
         let s_hat = (ss_fit_res / dof).sqrt();
         let mut se_g = vec![0.0f64; k_act];
         for idx in 0..k_act {
@@ -406,17 +419,20 @@ pub fn discover_pde_1d(
             ut.push(d_t);
             u_vals.push(u_grid[i][j]);
 
-            let d_x = (-u_grid[i][j + 2] + 8.0 * u_grid[i][j + 1] - 8.0 * u_grid[i][j - 1] + u_grid[i][j - 2])
+            let d_x = (-u_grid[i][j + 2] + 8.0 * u_grid[i][j + 1] - 8.0 * u_grid[i][j - 1]
+                + u_grid[i][j - 2])
                 / (12.0 * dx);
             ux.push(d_x);
 
             let d_xx = (-u_grid[i][j + 2] + 16.0 * u_grid[i][j + 1] - 30.0 * u_grid[i][j]
-                + 16.0 * u_grid[i][j - 1] - u_grid[i][j - 2])
+                + 16.0 * u_grid[i][j - 1]
+                - u_grid[i][j - 2])
                 / (12.0 * dx * dx);
             uxx.push(d_xx);
 
             if config.max_spatial_order >= 3 {
-                let d_xxx = (u_grid[i][j + 2] - 2.0 * u_grid[i][j + 1] + 2.0 * u_grid[i][j - 1] - u_grid[i][j - 2])
+                let d_xxx = (u_grid[i][j + 2] - 2.0 * u_grid[i][j + 1] + 2.0 * u_grid[i][j - 1]
+                    - u_grid[i][j - 2])
                     / (2.0 * dx.powi(3));
                 uxxx.push(d_xxx);
             }
@@ -443,11 +459,23 @@ pub fn discover_pde_1d(
 
     if config.include_advection_terms {
         term_names.push("u*u_x".to_string());
-        columns.push(u_vals.iter().zip(ux.iter()).map(|(&u, &ux)| u * ux).collect());
+        columns.push(
+            u_vals
+                .iter()
+                .zip(ux.iter())
+                .map(|(&u, &ux)| u * ux)
+                .collect(),
+        );
 
         if config.max_polynomial_degree >= 2 {
             term_names.push("u^2*u_x".to_string());
-            columns.push(u_vals.iter().zip(ux.iter()).map(|(&u, &ux)| u * u * ux).collect());
+            columns.push(
+                u_vals
+                    .iter()
+                    .zip(ux.iter())
+                    .map(|(&u, &ux)| u * u * ux)
+                    .collect(),
+            );
         }
     }
 
@@ -457,7 +485,13 @@ pub fn discover_pde_1d(
 
         if config.include_advection_terms {
             term_names.push("u*u_xx".to_string());
-            columns.push(u_vals.iter().zip(uxx.iter()).map(|(&u, &uxx)| u * uxx).collect());
+            columns.push(
+                u_vals
+                    .iter()
+                    .zip(uxx.iter())
+                    .map(|(&u, &uxx)| u * uxx)
+                    .collect(),
+            );
         }
     }
 
@@ -479,7 +513,9 @@ pub fn discover_pde_nonuniform(
     let m = u_grid.len();
     let n = x_coords.len();
     if m < 5 || n < 7 {
-        return Err("Non-uniform PDE requires at least 5 time steps and 7 spatial points".to_string());
+        return Err(
+            "Non-uniform PDE requires at least 5 time steps and 7 spatial points".to_string(),
+        );
     }
 
     let mut ut = Vec::new();
@@ -493,7 +529,9 @@ pub fn discover_pde_nonuniform(
         let w_t = fornberg_weights(&t_sub, t_coords[i], 1);
 
         for j in 2..(n - 2) {
-            let d_t = w_t[1][0] * u_grid[i - 1][j] + w_t[1][1] * u_grid[i][j] + w_t[1][2] * u_grid[i + 1][j];
+            let d_t = w_t[1][0] * u_grid[i - 1][j]
+                + w_t[1][1] * u_grid[i][j]
+                + w_t[1][2] * u_grid[i + 1][j];
             ut.push(d_t);
             u_vals.push(u_grid[i][j]);
 
@@ -535,7 +573,13 @@ pub fn discover_pde_nonuniform(
 
     if config.include_advection_terms {
         term_names.push("u*u_x".to_string());
-        columns.push(u_vals.iter().zip(ux.iter()).map(|(&u, &ux)| u * ux).collect());
+        columns.push(
+            u_vals
+                .iter()
+                .zip(ux.iter())
+                .map(|(&u, &ux)| u * ux)
+                .collect(),
+        );
     }
 
     term_names.push("u_xx".to_string());
@@ -582,21 +626,29 @@ pub fn discover_pde_2d(
                 ut.push(d_t);
                 u_vals.push(u_grid[t][x][y]);
 
-                let d_x = (-u_grid[t][x + 2][y] + 8.0 * u_grid[t][x + 1][y] - 8.0 * u_grid[t][x - 1][y] + u_grid[t][x - 2][y])
+                let d_x = (-u_grid[t][x + 2][y] + 8.0 * u_grid[t][x + 1][y]
+                    - 8.0 * u_grid[t][x - 1][y]
+                    + u_grid[t][x - 2][y])
                     / (12.0 * dx);
                 ux.push(d_x);
 
-                let d_y = (-u_grid[t][x][y + 2] + 8.0 * u_grid[t][x][y + 1] - 8.0 * u_grid[t][x][y - 1] + u_grid[t][x][y - 2])
+                let d_y = (-u_grid[t][x][y + 2] + 8.0 * u_grid[t][x][y + 1]
+                    - 8.0 * u_grid[t][x][y - 1]
+                    + u_grid[t][x][y - 2])
                     / (12.0 * dy);
                 uy.push(d_y);
 
-                let d_xx = (-u_grid[t][x + 2][y] + 16.0 * u_grid[t][x + 1][y] - 30.0 * u_grid[t][x][y]
-                    + 16.0 * u_grid[t][x - 1][y] - u_grid[t][x - 2][y])
+                let d_xx = (-u_grid[t][x + 2][y] + 16.0 * u_grid[t][x + 1][y]
+                    - 30.0 * u_grid[t][x][y]
+                    + 16.0 * u_grid[t][x - 1][y]
+                    - u_grid[t][x - 2][y])
                     / (12.0 * dx * dx);
                 uxx.push(d_xx);
 
-                let d_yy = (-u_grid[t][x][y + 2] + 16.0 * u_grid[t][x][y + 1] - 30.0 * u_grid[t][x][y]
-                    + 16.0 * u_grid[t][x][y - 1] - u_grid[t][x][y - 2])
+                let d_yy = (-u_grid[t][x][y + 2] + 16.0 * u_grid[t][x][y + 1]
+                    - 30.0 * u_grid[t][x][y]
+                    + 16.0 * u_grid[t][x][y - 1]
+                    - u_grid[t][x][y - 2])
                     / (12.0 * dy * dy);
                 uyy.push(d_yy);
 
@@ -634,10 +686,22 @@ pub fn discover_pde_2d(
 
     if config.include_advection_terms {
         term_names.push("u*u_x".to_string());
-        columns.push(u_vals.iter().zip(ux.iter()).map(|(&u, &ux)| u * ux).collect());
+        columns.push(
+            u_vals
+                .iter()
+                .zip(ux.iter())
+                .map(|(&u, &ux)| u * ux)
+                .collect(),
+        );
 
         term_names.push("u*u_y".to_string());
-        columns.push(u_vals.iter().zip(uy.iter()).map(|(&u, &uy)| u * uy).collect());
+        columns.push(
+            u_vals
+                .iter()
+                .zip(uy.iter())
+                .map(|(&u, &uy)| u * uy)
+                .collect(),
+        );
     }
 
     run_stridge(&ut, &columns, &term_names, config, "u_t")
@@ -662,7 +726,8 @@ mod tests {
         let d = 0.5f64;
         for i in 0..(nt - 1) {
             for j in 1..(nx - 1) {
-                u[i + 1][j] = u[i][j] + dt * d * (u[i][j + 1] - 2.0 * u[i][j] + u[i][j - 1]) / (dx * dx);
+                u[i + 1][j] =
+                    u[i][j] + dt * d * (u[i][j + 1] - 2.0 * u[i][j] + u[i][j - 1]) / (dx * dx);
             }
             u[i + 1][0] = u[i + 1][1];
             u[i + 1][nx - 1] = u[i + 1][nx - 2];
@@ -759,6 +824,10 @@ mod tests {
         // Either laplacian(u) or u_xx + u_yy should be identified
         let has_laplacian = res.active_terms.contains(&"laplacian(u)".to_string());
         let has_uxx = res.active_terms.contains(&"u_xx".to_string());
-        assert!(has_laplacian || has_uxx, "Must find diffusion operator: {:?}", res.active_terms);
+        assert!(
+            has_laplacian || has_uxx,
+            "Must find diffusion operator: {:?}",
+            res.active_terms
+        );
     }
 }

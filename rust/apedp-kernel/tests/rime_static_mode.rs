@@ -63,7 +63,11 @@ fn static_mode_recovers_quadratic_law_via_transformed_column() {
     );
     // The winner must read the SQUARED column (v1), not the raw axis (v0):
     // physics, not grid order.
-    assert!(best.equation.contains("v1"), "winner must use the transformed column: {}", best.equation);
+    assert!(
+        best.equation.contains("v1"),
+        "winner must use the transformed column: {}",
+        best.equation
+    );
     // And no proposal anywhere may read time — the point of the mode.
     for p in &out.proposals {
         assert!(
@@ -71,7 +75,11 @@ fn static_mode_recovers_quadratic_law_via_transformed_column() {
             "temporal form leaked into a static search: {}",
             p.equation
         );
-        assert!(!p.graph.is_temporal(), "temporal graph in static packet: {}", p.canonical);
+        assert!(
+            !p.graph.is_temporal(),
+            "temporal graph in static packet: {}",
+            p.canonical
+        );
     }
 }
 
@@ -110,12 +118,23 @@ fn temporal_mode_unchanged_by_static_flag_default() {
         .map(|t| if t >= 2 { 3.0 * x[t - 2] } else { f64::NAN })
         .collect();
     let seeds = seeds::small_forms(1);
-    let cfg = SearchConfig { static_ops: false, ..SearchConfig::default() }.with_max_depth(1);
+    let cfg = SearchConfig {
+        static_ops: false,
+        ..SearchConfig::default()
+    }
+    .with_max_depth(1);
     let out = search(&seeds, &[x], &y, &cfg);
     let best = out
         .best()
         .expect("temporal default must still recover a lag-2 law");
-    assert!(best.r2 > 0.99, "lag-2 recovery broken: eq={}", best.equation);
-    assert!(best.equation.contains("[t-2]"), "lag not expressed: {}", best.equation);
+    assert!(
+        best.r2 > 0.99,
+        "lag-2 recovery broken: eq={}",
+        best.equation
+    );
+    assert!(
+        best.equation.contains("[t-2]"),
+        "lag not expressed: {}",
+        best.equation
+    );
 }
-

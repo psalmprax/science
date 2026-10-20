@@ -27,13 +27,19 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
-    "ruff>=0.1",
-    "mypy>=1.5",
+    "ruff==0.15.14",
+    "mypy==2.1.0",
+    "maturin==1.14.1",
+    "PyYAML==6.0.3",
     "bandit>=1.7",
     "pytest-xdist>=3.6",
 ]
 test = [
     "pytest>=8.0",
+    "torch==2.9.1",
+    "jax>=0.4",
+    "flax>=0.8",
+    "optax>=0.2",
     "httpx>=0.27",
     "scikit-learn>=1.3",
     "scipy>=1.10",
@@ -184,14 +190,9 @@ python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
-files = ["apedp"]
-# Blocking CI gate: core package must type-check clean. The neural stack
-# (jax/flax) carries its own advisory job (see mypy-neural.ini); flip it into
-# this default run once it reaches zero errors.
-exclude = ["neural_discovery/"]
-
-[[tool.mypy.overrides]]
-# `exclude` alone still follows imports into excluded files; `skip` makes the
-# neural package opaque (imported names resolve to Any) without touching runtime.
-module = "apedp.neural_discovery.*"
+files = ["apedp_dyn/conf/paths.py", "apedp_dyn/conf/canonical_spec.py"]
+strict = true
+# Phase 1 checks the path/specification integrity boundary strictly. Keep
+# imported legacy modules opaque until their typing debt is remediated.
 follow_imports = "skip"
+exclude = ["neural_discovery/"]

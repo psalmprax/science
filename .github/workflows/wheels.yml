@@ -20,8 +20,9 @@ jobs:
   linux-wheels:
     name: Linux Wheels (${{ matrix.target }})
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         target: [x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu]
     steps:
@@ -38,6 +39,8 @@ jobs:
       - name: Build manylinux wheels
         uses: PyO3/maturin-action@v1
         with:
+          rust-toolchain: '1.99.0'
+          maturin-version: '1.14.1'
           target: ${{ matrix.target }}
           args: --release --locked --find-interpreter --out dist --manifest-path rust/apedp-kernel/Cargo.toml
           manylinux: auto
@@ -51,12 +54,13 @@ jobs:
   macos-wheels:
     name: macOS Wheels (${{ matrix.target }})
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - target: x86_64-apple-darwin
-            runner: macos-13
+            runner: macos-15-intel
           - target: aarch64-apple-darwin
             runner: macos-14
     steps:
@@ -69,8 +73,10 @@ jobs:
       - name: Build macOS wheels
         uses: PyO3/maturin-action@v1
         with:
+          rust-toolchain: '1.99.0'
+          maturin-version: '1.14.1'
           target: ${{ matrix.target }}
-          args: --release --out dist --manifest-path rust/apedp-kernel/Cargo.toml
+          args: --release --locked --out dist --manifest-path rust/apedp-kernel/Cargo.toml
 
       - name: Upload wheel artifact
         uses: actions/upload-artifact@v4
@@ -81,6 +87,7 @@ jobs:
   windows-wheels:
     name: Windows Wheels (x86_64)
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -91,8 +98,10 @@ jobs:
       - name: Build Windows wheels
         uses: PyO3/maturin-action@v1
         with:
+          rust-toolchain: '1.99.0'
+          maturin-version: '1.14.1'
           target: x86_64-pc-windows-msvc
-          args: --release --out dist --manifest-path rust/apedp-kernel/Cargo.toml
+          args: --release --locked --out dist --manifest-path rust/apedp-kernel/Cargo.toml
 
       - name: Upload wheel artifact
         uses: actions/upload-artifact@v4
@@ -103,6 +112,7 @@ jobs:
   sdist:
     name: Build source distribution (sdist)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -113,6 +123,8 @@ jobs:
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
+          rust-toolchain: '1.99.0'
+          maturin-version: '1.14.1'
           command: sdist
           args: --out dist --manifest-path rust/apedp-kernel/Cargo.toml
 
@@ -125,8 +137,9 @@ jobs:
   python-packages:
     name: Python Subpackage Wheels (${{ matrix.package }})
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         package:
           - apedp-continuum

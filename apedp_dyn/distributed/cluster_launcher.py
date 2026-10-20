@@ -11,8 +11,7 @@ shared persistent volumes for holdout ledgers and node-local fast scratch storag
 from __future__ import annotations
 
 import enum
-from dataclasses import dataclass, field
-from pathlib import Path
+from dataclasses import dataclass
 
 
 class ClusterScheduler(str, enum.Enum):
