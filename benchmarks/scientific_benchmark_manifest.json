@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "description": "Guardrails for the frozen synthetic known-truth suite and benchmark corpus.",
+  "corpus": {
+    "checksums_file": "benchmark_corpus/checksums.sha256",
+    "checksums_sha256": "f2caf9848c7152e2ff038e00a70c2668b212e03e69fde1a55180fd25955d7b48"
+  },
+  "results_file": "benchmarks/known_truth_results.json",
+  "metrics": {
+    "rates.rime_static.recovery_rate": {
+      "baseline": 1.0,
+      "max_absolute_drift": 0.0
+    },
+    "rates.rime_static.false_promotion": {
+      "baseline": 0,
+      "max_absolute_drift": 0
+    },
+    "rates.ols_monomial.recovery_rate": {
+      "baseline": 1.0,
+      "max_absolute_drift": 0.0
+    },
+    "rates.ols_monomial.false_promotion": {
+      "baseline": 0,
+      "max_absolute_drift": 0
+    }
+  },
+  "controlled_update": "Review the protocol, run the full known-truth challenge, then update the baseline and drift limit in this manifest in the same reviewed change."
+}

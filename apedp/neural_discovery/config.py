@@ -87,6 +87,7 @@ class NeuralDiscoveryConfig:
 
     # Hardware / reproducibility
     seed: int = 42
+    deterministic: bool = True
     device: str = "cpu"  # cpu, gpu, tpu
     compile: bool = True  # jax.jit
 
@@ -126,6 +127,7 @@ class TrainingConfig:
     gradient_clip: float = 1.0
     mixed_precision: bool = True
     seed: int = 42
+    deterministic: bool = True
     device: str = "cpu"
     compile: bool = True
     log_interval: int = 10
@@ -144,6 +146,7 @@ class TrainingConfig:
             gradient_clip=config.gradient_clip,
             mixed_precision=config.mixed_precision,
             seed=config.seed,
+            deterministic=config.deterministic,
             device=config.device,
             compile=config.compile,
             log_interval=config.log_interval,
