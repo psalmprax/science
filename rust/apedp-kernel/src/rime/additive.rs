@@ -151,7 +151,12 @@ fn ols(xs: &[&[f64]], y: &[f64], rows: &[usize], ridge: f64) -> Option<(Vec<f64>
 /// Rows where the target and every series are finite.
 fn joint_rows(target: &[f64], series: &[&[f64]]) -> Vec<usize> {
     (0..target.len())
-        .filter(|&t| target[t].is_finite() && series.iter().all(|s| s.get(t).map_or(false, |v| v.is_finite())))
+        .filter(|&t| {
+            target[t].is_finite()
+                && series
+                    .iter()
+                    .all(|s| s.get(t).map_or(false, |v| v.is_finite()))
+        })
         .collect()
 }
 
@@ -204,7 +209,11 @@ pub fn search_additive<V: crate::data::DataCol>(
     let mut pool: Vec<Graph> = Vec::new();
     let mut seen = std::collections::HashSet::new();
     let admissible = |g: &Graph| g.validate().is_ok() && !(cfg.static_ops && g.is_temporal());
-    for g in seeds.iter().cloned().chain(outcome.proposals.iter().map(|p| p.graph.clone())) {
+    for g in seeds
+        .iter()
+        .cloned()
+        .chain(outcome.proposals.iter().map(|p| p.graph.clone()))
+    {
         if admissible(&g) && seen.insert(g.describe()) {
             pool.push(g);
         }
@@ -212,7 +221,10 @@ pub fn search_additive<V: crate::data::DataCol>(
     let series: Vec<Vec<f64>> = pool.par_iter().map(|g| g.evaluate(cols)).collect();
     let sel = multiplicity_dof(pool.len());
 
-    let mut terms = vec![Term { graph: first.graph.clone(), series: first.graph.evaluate(cols) }];
+    let mut terms = vec![Term {
+        graph: first.graph.clone(),
+        series: first.graph.evaluate(cols),
+    }];
     let mut used: Vec<String> = vec![first.graph.describe()];
     let mut added_dof = 0.0f64;
     let mut added_selection = 0.0f64;
@@ -257,7 +269,10 @@ pub fn search_additive<V: crate::data::DataCol>(
         added_dof += pool[bi].edge_count() as f64 + 1.0;
         added_selection += sel;
         used.push(pool[bi].describe());
-        terms.push(Term { graph: pool[bi].clone(), series: series[bi].clone() });
+        terms.push(Term {
+            graph: pool[bi].clone(),
+            series: series[bi].clone(),
+        });
     }
 
     if terms.len() < 2 {
@@ -267,7 +282,9 @@ pub fn search_additive<V: crate::data::DataCol>(
     // ---- final joint fit on the rows every term can see ----
     let all: Vec<&[f64]> = terms.iter().map(|t| t.series.as_slice()).collect();
     let rows = joint_rows(target, &all);
-    let Some((coeffs, _)) = ols(&all, target, &rows, cfg.ridge) else { return outcome };
+    let Some((coeffs, _)) = ols(&all, target, &rows, cfg.ridge) else {
+        return outcome;
+    };
     let graph = compose(&terms, &coeffs);
     if graph.validate().is_err() {
         return outcome;
@@ -279,10 +296,14 @@ pub fn search_additive<V: crate::data::DataCol>(
         masked[r] = target[r];
     }
     let (parent_mse, _, _) = fitted_mse(&first.graph, cols, &masked, cfg.ridge);
-    let fs = score_batch_fitted(&[(graph.clone(), parent_mse, masked.clone())], cols, &cfg.score_config())
-        .into_iter()
-        .next()
-        .expect("one job in, one score out");
+    let fs = score_batch_fitted(
+        &[(graph.clone(), parent_mse, masked.clone())],
+        cols,
+        &cfg.score_config(),
+    )
+    .into_iter()
+    .next()
+    .expect("one job in, one score out");
     if !fs.mse.is_finite() {
         return outcome;
     }
@@ -340,7 +361,13 @@ mod tests {
         let z = hash_noise(n, 7.0);
         let eps = hash_noise(n, 900.0);
         let y: Vec<f64> = (0..n)
-            .map(|t| if t >= 5 { x[t - 1] + 0.5 * z[t - 5] + noise * eps[t] } else { f64::NAN })
+            .map(|t| {
+                if t >= 5 {
+                    x[t - 1] + 0.5 * z[t - 5] + noise * eps[t]
+                } else {
+                    f64::NAN
+                }
+            })
             .collect();
         (vec![x, z], y)
     }
@@ -357,7 +384,11 @@ mod tests {
         let (cols, y) = world(3000, 0.05);
         let out = search(&small_forms(2), &cols, &y, &cfg_for(&y));
         let best = out.best().expect("a partial term is still promoted");
-        assert!(best.r2 < 0.9, "single term unexpectedly complete: r2 {}", best.r2);
+        assert!(
+            best.r2 < 0.9,
+            "single term unexpectedly complete: r2 {}",
+            best.r2
+        );
     }
 
     #[test]
@@ -370,18 +401,32 @@ mod tests {
         // Executable graph: evaluates to the planted law up to the readout.
         let pred = best.graph.evaluate(&cols);
         let truth: Vec<f64> = (0..y.len())
-            .map(|t| if t >= 5 { cols[0][t - 1] + 0.5 * cols[1][t - 5] } else { f64::NAN })
+            .map(|t| {
+                if t >= 5 {
+                    cols[0][t - 1] + 0.5 * cols[1][t - 5]
+                } else {
+                    f64::NAN
+                }
+            })
             .collect();
         let (mut sab, mut saa, mut sbb, mut n) = (0.0, 0.0, 0.0, 0.0);
         let (mut ma, mut mb) = (0.0, 0.0);
-        for (p, q) in pred.iter().zip(truth.iter()).filter(|(p, q)| p.is_finite() && q.is_finite()) {
+        for (p, q) in pred
+            .iter()
+            .zip(truth.iter())
+            .filter(|(p, q)| p.is_finite() && q.is_finite())
+        {
             ma += p;
             mb += q;
             n += 1.0;
         }
         ma /= n;
         mb /= n;
-        for (p, q) in pred.iter().zip(truth.iter()).filter(|(p, q)| p.is_finite() && q.is_finite()) {
+        for (p, q) in pred
+            .iter()
+            .zip(truth.iter())
+            .filter(|(p, q)| p.is_finite() && q.is_finite())
+        {
             sab += (p - ma) * (q - mb);
             saa += (p - ma) * (p - ma);
             sbb += (q - mb) * (q - mb);
@@ -415,10 +460,23 @@ mod tests {
         let x = hash_noise(n, 0.0);
         let z = hash_noise(n, 7.0);
         let eps = hash_noise(n, 900.0);
-        let y: Vec<f64> = (0..n).map(|t| if t >= 2 { 3.0 * x[t - 2] + 0.5 * eps[t] } else { f64::NAN }).collect();
+        let y: Vec<f64> = (0..n)
+            .map(|t| {
+                if t >= 2 {
+                    3.0 * x[t - 2] + 0.5 * eps[t]
+                } else {
+                    f64::NAN
+                }
+            })
+            .collect();
         let cols = vec![x, z];
         let out = search_additive(&small_forms(2), &cols, &y, &cfg_for(&y), 4);
-        assert_ne!(out.best().unwrap().rewrite_op, "AddTerm", "{}", out.best().unwrap().equation);
+        assert_ne!(
+            out.best().unwrap().rewrite_op,
+            "AddTerm",
+            "{}",
+            out.best().unwrap().equation
+        );
     }
 
     #[test]
@@ -427,13 +485,20 @@ mod tests {
         let cols = vec![hash_noise(n, 0.0), hash_noise(n, 7.0)];
         let y = hash_noise(n, 4242.0);
         let cfg = cfg_for(&y);
-        assert!(search_additive(&small_forms(2), &cols, &y, &cfg, 4).proposals.is_empty());
+        assert!(search_additive(&small_forms(2), &cols, &y, &cfg, 4)
+            .proposals
+            .is_empty());
         // max_terms = 1 is exactly `search`.
         let (c2, y2) = world(2000, 0.05);
         let cfg2 = cfg_for(&y2);
         let a = search(&small_forms(2), &c2, &y2, &cfg2);
         let b = search_additive(&small_forms(2), &c2, &y2, &cfg2, 1);
-        let ids = |o: &SearchOutcome| o.proposals.iter().map(|p| p.graph_id.clone()).collect::<Vec<_>>();
+        let ids = |o: &SearchOutcome| {
+            o.proposals
+                .iter()
+                .map(|p| p.graph_id.clone())
+                .collect::<Vec<_>>()
+        };
         assert_eq!(ids(&a), ids(&b));
     }
 
@@ -443,7 +508,12 @@ mod tests {
         let cfg = cfg_for(&y);
         let a = search_additive(&small_forms(2), &cols, &y, &cfg, 3);
         let b = search_additive(&small_forms(2), &cols, &y, &cfg, 3);
-        let ids = |o: &SearchOutcome| o.proposals.iter().map(|p| p.graph_id.clone()).collect::<Vec<_>>();
+        let ids = |o: &SearchOutcome| {
+            o.proposals
+                .iter()
+                .map(|p| p.graph_id.clone())
+                .collect::<Vec<_>>()
+        };
         assert_eq!(ids(&a), ids(&b));
     }
 

@@ -53,11 +53,19 @@ pub enum Node {
     /// default `init = 0`). NaN in `u` poisons the state forward, exactly like
     /// every other node: warmup rows of a lagged input are NaN and are skipped
     /// (counted) by the scorer, never imputed.
-    State { src: usize, decay: f64, init: f64 },
+    State {
+        src: usize,
+        decay: f64,
+        init: f64,
+    },
     /// Rational power operator: `x^(p_num / p_den)`.
     /// Supports fractional powers (e.g. 1/3, 2/3, 1/2) and integer powers (2, 3, -1).
     /// Evaluated safely: sign-preserving for odd denominators, pole-safe for negative powers.
-    Power { src: usize, p_num: i32, p_den: u32 },
+    Power {
+        src: usize,
+        p_num: i32,
+        p_den: u32,
+    },
 }
 
 /// Frozen lag set (spec §4).
@@ -91,7 +99,11 @@ impl std::fmt::Display for GraphError {
                 node, operand
             ),
             GraphError::LagNotFrozen { node, k } => {
-                write!(f, "node {} uses lag {} outside the frozen set {:?}", node, k, LAG_SET)
+                write!(
+                    f,
+                    "node {} uses lag {} outside the frozen set {:?}",
+                    node, k, LAG_SET
+                )
             }
             GraphError::NonFiniteConstant { node } => {
                 write!(f, "node {} carries a non-finite constant", node)
@@ -111,7 +123,10 @@ pub struct Graph {
 
 impl Graph {
     pub fn new() -> Self {
-        Graph { nodes: Vec::new(), output: 0 }
+        Graph {
+            nodes: Vec::new(),
+            output: 0,
+        }
     }
 
     pub fn push(&mut self, n: Node) -> usize {
@@ -157,7 +172,10 @@ impl Graph {
     pub fn id(&self) -> String {
         let mut h = Sha256::new();
         h.update(self.canonical().as_bytes());
-        h.finalize().iter().map(|b| format!("{:02x}", b)).collect::<String>()
+        h.finalize()
+            .iter()
+            .map(|b| format!("{:02x}", b))
+            .collect::<String>()
     }
 
     /// Human-readable closed form of the output expression (for referee
@@ -195,7 +213,12 @@ impl Graph {
                 Some(Node::Abs(a)) => format!("abs({})", rec(g, *a, memo)),
                 Some(Node::Lag(a, k)) => format!("{}[t-{}]", rec(g, *a, memo), k),
                 Some(Node::State { src, decay, init }) => {
-                    format!("state_{:.4}({}; init={:.4})", decay, rec(g, *src, memo), init)
+                    format!(
+                        "state_{:.4}({}; init={:.4})",
+                        decay,
+                        rec(g, *src, memo),
+                        init
+                    )
                 }
             };
             if i < memo.len() {
@@ -227,7 +250,10 @@ impl Graph {
             return Err(GraphError::Empty);
         }
         if self.output >= self.nodes.len() {
-            return Err(GraphError::OutputOutOfRange { output: self.output, nodes: self.nodes.len() });
+            return Err(GraphError::OutputOutOfRange {
+                output: self.output,
+                nodes: self.nodes.len(),
+            });
         }
         for (i, n) in self.nodes.iter().enumerate() {
             let check = |operand: usize| -> Result<(), GraphError> {
@@ -332,7 +358,10 @@ impl Graph {
     /// never computed. Memory is therefore O(depth × n), not O(nodes × n), and
     /// time is O(edges × n) instead of the old O(nodes × n) recursive walk that
     /// allocated a fresh memo per row.
-    pub fn evaluate_checked<V: crate::data::DataCol>(&self, cols: &[V]) -> Result<Vec<f64>, GraphError> {
+    pub fn evaluate_checked<V: crate::data::DataCol>(
+        &self,
+        cols: &[V],
+    ) -> Result<Vec<f64>, GraphError> {
         self.validate()?;
         let n = cols.iter().map(|c| c.row_len()).max().unwrap_or(0);
 
@@ -417,7 +446,12 @@ impl Graph {
                         .collect()
                 }
                 Node::Neg(a) => vals[*a].as_ref().unwrap().iter().map(|v| -v).collect(),
-                Node::Tanh(a) => vals[*a].as_ref().unwrap().iter().map(|v| v.tanh()).collect(),
+                Node::Tanh(a) => vals[*a]
+                    .as_ref()
+                    .unwrap()
+                    .iter()
+                    .map(|v| v.tanh())
+                    .collect(),
                 Node::Sign(a) => vals[*a]
                     .as_ref()
                     .unwrap()
@@ -437,7 +471,9 @@ impl Graph {
                 Node::Abs(a) => vals[*a].as_ref().unwrap().iter().map(|v| v.abs()).collect(),
                 Node::Lag(a, k) => {
                     let x = vals[*a].as_ref().unwrap();
-                    (0..n).map(|t| if t >= *k { x[t - k] } else { f64::NAN }).collect()
+                    (0..n)
+                        .map(|t| if t >= *k { x[t - k] } else { f64::NAN })
+                        .collect()
                 }
                 Node::State { src, decay, init } => {
                     let u = vals[*src].as_ref().unwrap();
@@ -469,7 +505,8 @@ impl Graph {
     /// score) — use [`Graph::evaluate_checked`] to see the reason.
     pub fn evaluate<V: crate::data::DataCol>(&self, cols: &[V]) -> Vec<f64> {
         let n = cols.iter().map(|c| c.row_len()).max().unwrap_or(0);
-        self.evaluate_checked(cols).unwrap_or_else(|_| vec![f64::NAN; n])
+        self.evaluate_checked(cols)
+            .unwrap_or_else(|_| vec![f64::NAN; n])
     }
 
     pub fn edge_count(&self) -> usize {
@@ -578,7 +615,11 @@ mod tests {
     fn state_recurrence_and_init() {
         let mut g = Graph::new();
         let u = g.push(Node::Input(0));
-        g.output = g.push(Node::State { src: u, decay: 0.5, init: 0.0 });
+        g.output = g.push(Node::State {
+            src: u,
+            decay: 0.5,
+            init: 0.0,
+        });
         let out = g.evaluate(&[vec![1.0, 1.0, 1.0, 1.0]]);
         assert_eq!(out, vec![1.0, 1.5, 1.75, 1.875]);
 
@@ -586,7 +627,11 @@ mod tests {
         // prior state is itself carried through one decay step to t = 0.
         let mut h = Graph::new();
         let u = h.push(Node::Input(0));
-        h.output = h.push(Node::State { src: u, decay: 0.5, init: 1.0 });
+        h.output = h.push(Node::State {
+            src: u,
+            decay: 0.5,
+            init: 1.0,
+        });
         assert_eq!(h.evaluate(&[vec![0.0, 0.0]]), vec![0.5, 0.25]);
     }
 
@@ -602,17 +647,32 @@ mod tests {
 
     #[test]
     fn validate_rejects_forward_reference_and_bad_lag() {
-        let g = Graph { nodes: vec![Node::Const(1.0), Node::Add(0, 1)], output: 1 };
-        assert_eq!(g.validate(), Err(GraphError::NotTopological { node: 1, operand: 1 }));
+        let g = Graph {
+            nodes: vec![Node::Const(1.0), Node::Add(0, 1)],
+            output: 1,
+        };
+        assert_eq!(
+            g.validate(),
+            Err(GraphError::NotTopological {
+                node: 1,
+                operand: 1
+            })
+        );
         // Violating graph must not silently produce numbers.
         assert!(g.evaluate(&[vec![1.0]]).iter().all(|v| v.is_nan()));
 
         let mut h = Graph::new();
         let x = h.push(Node::Input(0));
         h.output = h.push(Node::Lag(x, 3));
-        assert_eq!(h.validate(), Err(GraphError::LagNotFrozen { node: 1, k: 3 }));
+        assert_eq!(
+            h.validate(),
+            Err(GraphError::LagNotFrozen { node: 1, k: 3 })
+        );
 
-        let k = Graph { nodes: vec![], output: 0 };
+        let k = Graph {
+            nodes: vec![],
+            output: 0,
+        };
         assert_eq!(k.validate(), Err(GraphError::Empty));
     }
 
@@ -632,7 +692,11 @@ mod tests {
     fn state_edge_is_charged() {
         let mut g = Graph::new();
         let x = g.push(Node::Input(0));
-        g.output = g.push(Node::State { src: x, decay: 0.5, init: 0.0 });
+        g.output = g.push(Node::State {
+            src: x,
+            decay: 0.5,
+            init: 0.0,
+        });
         assert_eq!(g.edge_count(), 1);
     }
 
@@ -641,7 +705,11 @@ mod tests {
         let mut g = Graph::new();
         let x = g.push(Node::Input(0));
         // Test x^(2/3)
-        g.output = g.push(Node::Power { src: x, p_num: 2, p_den: 3 });
+        g.output = g.push(Node::Power {
+            src: x,
+            p_num: 2,
+            p_den: 3,
+        });
         let out = g.evaluate(&[vec![1.0, 8.0, 27.0]]);
         assert!((out[0] - 1.0).abs() < 1e-10);
         assert!((out[1] - 4.0).abs() < 1e-10);
@@ -650,7 +718,11 @@ mod tests {
         // Test odd-root sign preservation: (-8)^(1/3) = -2
         let mut h = Graph::new();
         let y = h.push(Node::Input(0));
-        h.output = h.push(Node::Power { src: y, p_num: 1, p_den: 3 });
+        h.output = h.push(Node::Power {
+            src: y,
+            p_num: 1,
+            p_den: 3,
+        });
         let out_h = h.evaluate(&[vec![-8.0, 8.0]]);
         assert!((out_h[0] - (-2.0)).abs() < 1e-10);
         assert!((out_h[1] - 2.0).abs() < 1e-10);
@@ -658,7 +730,11 @@ mod tests {
         // Test negative power: 8^(-1/3) = 0.5, 0^(-1/3) = 0.0 (safe pole)
         let mut k = Graph::new();
         let z = k.push(Node::Input(0));
-        k.output = k.push(Node::Power { src: z, p_num: -1, p_den: 3 });
+        k.output = k.push(Node::Power {
+            src: z,
+            p_num: -1,
+            p_den: 3,
+        });
         let out_k = k.evaluate(&[vec![8.0, 0.0]]);
         assert!((out_k[0] - 0.5).abs() < 1e-10);
         assert_eq!(out_k[1], 0.0);

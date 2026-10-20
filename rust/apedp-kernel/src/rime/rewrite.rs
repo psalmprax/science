@@ -3,8 +3,8 @@
 //! Each op is a pure function `&Graph -> Graph`. No other rewrites exist in
 //! v0.1; adding one requires a new RIME version.
 
-use serde::{Deserialize, Serialize};
 use super::graph::{Graph, Node, LAG_SET};
+use serde::{Deserialize, Serialize};
 
 /// The seven frozen rewrite operations (v0.1 core + two controlled expansions).
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -27,15 +27,15 @@ pub enum RewriteOp {
 
 /// Permitted rational power parameters: (numerator, denominator).
 pub const PERMITTED_POWERS: [(i32, u32); 9] = [
-    (1, 2),   // x^(1/2) = sqrt(|x|)
-    (1, 3),   // x^(1/3) = cbrt(x)
-    (2, 3),   // x^(2/3) = cbrt(x)^2
-    (-1, 2),  // x^(-1/2) = 1 / sqrt(|x|)
-    (-1, 3),  // x^(-1/3) = 1 / cbrt(|x|)
-    (2, 1),   // x^2
-    (3, 1),   // x^3
-    (-1, 1),  // x^(-1) = 1 / x
-    (-2, 1),  // x^(-2) = 1 / x^2
+    (1, 2),  // x^(1/2) = sqrt(|x|)
+    (1, 3),  // x^(1/3) = cbrt(x)
+    (2, 3),  // x^(2/3) = cbrt(x)^2
+    (-1, 2), // x^(-1/2) = 1 / sqrt(|x|)
+    (-1, 3), // x^(-1/3) = 1 / cbrt(|x|)
+    (2, 1),  // x^2
+    (3, 1),  // x^3
+    (-1, 1), // x^(-1) = 1 / x
+    (-2, 1), // x^(-2) = 1 / x^2
 ];
 
 impl RewriteOp {
@@ -81,7 +81,10 @@ pub fn apply(g: &Graph, op: &RewriteOp) -> Option<Graph> {
             }
             h.output = h.push(Node::Mul(*a, *b));
         }
-        RewriteOp::AddState { decay_num, decay_den } => {
+        RewriteOp::AddState {
+            decay_num,
+            decay_den,
+        } => {
             if *decay_den == 0 || *decay_num > *decay_den {
                 return None;
             }
@@ -94,7 +97,11 @@ pub fn apply(g: &Graph, op: &RewriteOp) -> Option<Graph> {
             // which is not a recursion (the input term has the wrong sign and
             // the feedback is read from the parent series, not from the state).
             let d = (*decay_num as f64) / (*decay_den as f64);
-            h.output = h.push(Node::State { src: g.output, decay: d, init: 0.0 });
+            h.output = h.push(Node::State {
+                src: g.output,
+                decay: d,
+                init: 0.0,
+            });
         }
         RewriteOp::WrapNonlinearity { src } => {
             if !valid(src) {
@@ -162,7 +169,11 @@ pub fn apply(g: &Graph, op: &RewriteOp) -> Option<Graph> {
             if !valid(src) || !PERMITTED_POWERS.contains(&(*p_num, *p_den)) {
                 return None;
             }
-            h.output = h.push(Node::Power { src: *src, p_num: *p_num, p_den: *p_den });
+            h.output = h.push(Node::Power {
+                src: *src,
+                p_num: *p_num,
+                p_den: *p_den,
+            });
         }
     }
     Some(h)
@@ -185,7 +196,14 @@ mod tests {
         let g = base();
         assert!(apply(&g, &RewriteOp::AddLagEdge { src: 0, k: 5 }).is_some());
         assert!(apply(&g, &RewriteOp::AddInteraction { a: 0, b: 1 }).is_some());
-        assert!(apply(&g, &RewriteOp::AddState { decay_num: 9, decay_den: 10 }).is_some());
+        assert!(apply(
+            &g,
+            &RewriteOp::AddState {
+                decay_num: 9,
+                decay_den: 10
+            }
+        )
+        .is_some());
         assert!(apply(&g, &RewriteOp::WrapNonlinearity { src: 2 }).is_some());
         assert!(apply(&g, &RewriteOp::PruneEdge { node: 0 }).is_some());
     }
@@ -196,7 +214,14 @@ mod tests {
         assert!(apply(&g, &RewriteOp::AddLagEdge { src: 99, k: 5 }).is_none());
         assert!(apply(&g, &RewriteOp::AddLagEdge { src: 0, k: 7 }).is_none()); // k not frozen
         assert!(apply(&g, &RewriteOp::AddInteraction { a: 0, b: 50 }).is_none());
-        assert!(apply(&g, &RewriteOp::AddState { decay_num: 3, decay_den: 0 }).is_none());
+        assert!(apply(
+            &g,
+            &RewriteOp::AddState {
+                decay_num: 3,
+                decay_den: 0
+            }
+        )
+        .is_none());
         assert!(apply(&g, &RewriteOp::PruneEdge { node: 77 }).is_none());
     }
 
@@ -220,14 +245,31 @@ mod tests {
         // the geometric partial sums.
         let mut g = Graph::new();
         g.output = g.push(Node::Input(0));
-        let s = apply(&g, &RewriteOp::AddState { decay_num: 1, decay_den: 2 }).unwrap();
-        assert_eq!(s.evaluate(&[vec![1.0, 1.0, 1.0, 1.0]]), vec![1.0, 1.5, 1.75, 1.875]);
+        let s = apply(
+            &g,
+            &RewriteOp::AddState {
+                decay_num: 1,
+                decay_den: 2,
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            s.evaluate(&[vec![1.0, 1.0, 1.0, 1.0]]),
+            vec![1.0, 1.5, 1.75, 1.875]
+        );
     }
 
     #[test]
     fn add_state_state_node_keeps_parent_as_input() {
         let g = base();
-        let s = apply(&g, &RewriteOp::AddState { decay_num: 9, decay_den: 10 }).unwrap();
+        let s = apply(
+            &g,
+            &RewriteOp::AddState {
+                decay_num: 9,
+                decay_den: 10,
+            },
+        )
+        .unwrap();
         match s.nodes[s.output] {
             Node::State { src, decay, init } => {
                 assert_eq!(src, g.output);
@@ -259,13 +301,29 @@ mod tests {
     #[test]
     fn add_power_applies() {
         let g = base();
-        let h = apply(&g, &RewriteOp::AddPower { src: 0, p_num: 2, p_den: 3 }).unwrap();
+        let h = apply(
+            &g,
+            &RewriteOp::AddPower {
+                src: 0,
+                p_num: 2,
+                p_den: 3,
+            },
+        )
+        .unwrap();
         assert_ne!(h.output, g.output);
         let out = h.evaluate(&[vec![8.0], vec![1.0]]);
         assert!((out[0] - 4.0).abs() < 1e-10);
 
         // Invalid power rejected
-        assert!(apply(&g, &RewriteOp::AddPower { src: 0, p_num: 5, p_den: 7 }).is_none());
+        assert!(apply(
+            &g,
+            &RewriteOp::AddPower {
+                src: 0,
+                p_num: 5,
+                p_den: 7
+            }
+        )
+        .is_none());
     }
 
     #[test]
@@ -273,11 +331,23 @@ mod tests {
         let ops = [
             RewriteOp::AddLagEdge { src: 0, k: 1 },
             RewriteOp::AddInteraction { a: 0, b: 0 },
-            RewriteOp::AddState { decay_num: 1, decay_den: 2 },
+            RewriteOp::AddState {
+                decay_num: 1,
+                decay_den: 2,
+            },
             RewriteOp::WrapNonlinearity { src: 0 },
             RewriteOp::PruneEdge { node: 0 },
         ];
         let names: Vec<_> = ops.iter().map(|o| o.name()).collect();
-        assert_eq!(names, vec!["AddLagEdge", "AddInteraction", "AddState", "WrapNonlinearity", "PruneEdge"]);
+        assert_eq!(
+            names,
+            vec![
+                "AddLagEdge",
+                "AddInteraction",
+                "AddState",
+                "WrapNonlinearity",
+                "PruneEdge"
+            ]
+        );
     }
 }

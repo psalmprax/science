@@ -51,7 +51,11 @@ pub fn vector_gcd(vec: &[i64]) -> i64 {
             g = if g == 0 { x.abs() } else { gcd(g, x.abs()) };
         }
     }
-    if g == 0 { 1 } else { g }
+    if g == 0 {
+        1
+    } else {
+        g
+    }
 }
 
 /// Continued fraction expansion and convergent generator.
@@ -226,7 +230,17 @@ pub fn find_integer_relation(
 
         for c in ordered_coeffs {
             current_m[idx] = c;
-            search(idx + 1, n, x, max_coeff, eps, current_m, best_m, best_residual, best_l1_norm);
+            search(
+                idx + 1,
+                n,
+                x,
+                max_coeff,
+                eps,
+                current_m,
+                best_m,
+                best_residual,
+                best_l1_norm,
+            );
         }
     }
 
@@ -252,7 +266,11 @@ pub fn find_integer_relation(
         if c == 0 {
             continue;
         }
-        let lbl = if i < var_labels.len() { &var_labels[i] } else { "x" };
+        let lbl = if i < var_labels.len() {
+            &var_labels[i]
+        } else {
+            "x"
+        };
         if terms.is_empty() {
             if c == 1 {
                 terms.push(lbl.to_string());
@@ -352,7 +370,11 @@ pub fn detect_modular_lattice(
                 .iter()
                 .map(|&v| {
                     let m = v % test_spacing;
-                    if m < 0.0 { m + test_spacing } else { m }
+                    if m < 0.0 {
+                        m + test_spacing
+                    } else {
+                        m
+                    }
                 })
                 .collect();
             mods.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
@@ -405,14 +427,14 @@ mod tests {
     fn test_farey_recovers_exact_rational_fractions() {
         // Quantum Hall fractions & physical coefficients
         let cases = [
-            (0.28, 7, 25),             // 7/25
-            (0.3333333333, 1, 3),      // 1/3
-            (0.6666666667, 2, 3),      // 2/3
-            (0.125, 1, 8),             // 1/8
-            (0.40, 2, 5),              // 2/5 (Laughlin)
-            (0.714285714, 5, 7),       // 5/7
-            (2.45, 49, 20),            // 49/20
-            (-0.75, -3, 4),            // -3/4
+            (0.28, 7, 25),        // 7/25
+            (0.3333333333, 1, 3), // 1/3
+            (0.6666666667, 2, 3), // 2/3
+            (0.125, 1, 8),        // 1/8
+            (0.40, 2, 5),         // 2/5 (Laughlin)
+            (0.714285714, 5, 7),  // 5/7
+            (2.45, 49, 20),       // 49/20
+            (-0.75, -3, 4),       // -3/4
         ];
 
         for (val, exp_num, exp_den) in cases {
@@ -427,12 +449,15 @@ mod tests {
         // Water formation: 2 H2 + 1 O2 -> 2 H2O
         // Relation: 2*x0 + 1*x1 - 2*x2 = 0
         let mole_weights = [2.016, 31.998, 18.015]; // weights of H2, O2, H2O
-        // 2*2.016 + 1*31.998 - 2*18.015 = 4.032 + 31.998 - 36.030 = 0
+                                                    // 2*2.016 + 1*31.998 - 2*18.015 = 4.032 + 31.998 - 36.030 = 0
         let labels = vec!["H2".to_string(), "O2".to_string(), "H2O".to_string()];
         let res = find_integer_relation(&mole_weights, 3, 1e-2, Some(&labels))
             .expect("Should discover stoichiometric balance");
         assert_eq!(res.coefficients, vec![2, 1, -2]);
-        assert!(res.formula.contains("2*H2 + O2 - 2*H2O = 0") || res.formula.contains("2*H2 + 1*O2 - 2*H2O = 0"));
+        assert!(
+            res.formula.contains("2*H2 + O2 - 2*H2O = 0")
+                || res.formula.contains("2*H2 + 1*O2 - 2*H2O = 0")
+        );
     }
 
     #[test]
@@ -450,8 +475,8 @@ mod tests {
         // Discrete crystal lattice or quantum staircase steps
         // Spacing = 1.5, offset = 0.5
         let data = vec![0.5, 2.0, 3.5, 5.0, 6.5, 8.0, 9.5];
-        let res = detect_modular_lattice(&data, 0.5, 3.0, 1e-4)
-            .expect("Should discover modular lattice");
+        let res =
+            detect_modular_lattice(&data, 0.5, 3.0, 1e-4).expect("Should discover modular lattice");
         assert!((res.spacing - 1.5).abs() < 1e-4);
         assert!((res.offset - 0.5).abs() < 1e-4);
         assert_eq!(res.integer_indices, vec![0, 1, 2, 3, 4, 5, 6]);

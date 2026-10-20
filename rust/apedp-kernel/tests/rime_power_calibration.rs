@@ -91,12 +91,48 @@ impl Mech {
         (0..n)
             .map(|t| match self {
                 Mech::Null | Mech::State80 | Mech::StateOffGrid87 => f64::NAN, // handled in `feature`
-                Mech::Lag2 => if t >= 2 { x[t - 2] } else { f64::NAN },
-                Mech::Momentum => if t >= 1 { x[t] - x[t - 1] } else { f64::NAN },
-                Mech::Interaction => if t >= 1 { z[t] * x[t - 1] } else { f64::NAN },
-                Mech::TanhLag5 => if t >= 5 { x[t - 5].tanh() } else { f64::NAN },
-                Mech::TwoLagSum => if t >= 2 { x[t - 1] + x[t - 2] } else { f64::NAN },
-                Mech::MixedSum => if t >= 5 { x[t - 1] + 0.5 * z[t - 5] } else { f64::NAN },
+                Mech::Lag2 => {
+                    if t >= 2 {
+                        x[t - 2]
+                    } else {
+                        f64::NAN
+                    }
+                }
+                Mech::Momentum => {
+                    if t >= 1 {
+                        x[t] - x[t - 1]
+                    } else {
+                        f64::NAN
+                    }
+                }
+                Mech::Interaction => {
+                    if t >= 1 {
+                        z[t] * x[t - 1]
+                    } else {
+                        f64::NAN
+                    }
+                }
+                Mech::TanhLag5 => {
+                    if t >= 5 {
+                        x[t - 5].tanh()
+                    } else {
+                        f64::NAN
+                    }
+                }
+                Mech::TwoLagSum => {
+                    if t >= 2 {
+                        x[t - 1] + x[t - 2]
+                    } else {
+                        f64::NAN
+                    }
+                }
+                Mech::MixedSum => {
+                    if t >= 5 {
+                        x[t - 1] + 0.5 * z[t - 5]
+                    } else {
+                        f64::NAN
+                    }
+                }
             })
             .collect()
     }
@@ -152,10 +188,18 @@ fn make_target(f: &[f64], rho: f64, rng: &mut Rng) -> Vec<f64> {
     let fin: Vec<f64> = f.iter().copied().filter(|v| v.is_finite()).collect();
     let n = fin.len().max(1) as f64;
     let m = fin.iter().sum::<f64>() / n;
-    let sd = (fin.iter().map(|v| (v - m) * (v - m)).sum::<f64>() / n).sqrt().max(1e-12);
+    let sd = (fin.iter().map(|v| (v - m) * (v - m)).sum::<f64>() / n)
+        .sqrt()
+        .max(1e-12);
     let s = (1.0 - rho * rho).max(0.0).sqrt();
     f.iter()
-        .map(|v| if v.is_finite() { rho * (v - m) / sd + s * rng.normal() } else { f64::NAN })
+        .map(|v| {
+            if v.is_finite() {
+                rho * (v - m) / sd + s * rng.normal()
+            } else {
+                f64::NAN
+            }
+        })
         .collect()
 }
 
@@ -207,7 +251,8 @@ fn run_cell(m: Mech, rho: f64, n: usize, reps: usize, base_seed: u64, terms: usi
             }
             if !matches!(m, Mech::Null) {
                 // Fresh independent series from the same generator.
-                let mut rng2 = Rng(base_seed ^ 0xA5A5_A5A5 ^ ((r as u64 + 7).wrapping_mul(0x9E37_79B9)));
+                let mut rng2 =
+                    Rng(base_seed ^ 0xA5A5_A5A5 ^ ((r as u64 + 7).wrapping_mul(0x9E37_79B9)));
                 let xf = rng2.normals(FRESH_N);
                 let zf = rng2.normals(FRESH_N);
                 let ff = feature(m, &xf, &zf);
@@ -222,7 +267,10 @@ fn run_cell(m: Mech, rho: f64, n: usize, reps: usize, base_seed: u64, terms: usi
 }
 
 fn reps() -> usize {
-    std::env::var("RIME_POWER_REPS").ok().and_then(|v| v.parse().ok()).unwrap_or(40)
+    std::env::var("RIME_POWER_REPS")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(40)
 }
 
 /// Always-on smoke: the harness itself must separate a strong signal from a
@@ -230,9 +278,18 @@ fn reps() -> usize {
 #[test]
 fn harness_positive_and_null_controls() {
     let strong = run_cell(Mech::Lag2, 0.80, 1500, 6, 11, 1);
-    assert_eq!(strong.recovered, strong.reps, "harness cannot recover an easy lag-2: {:?}", strong.recovered);
+    assert_eq!(
+        strong.recovered, strong.reps,
+        "harness cannot recover an easy lag-2: {:?}",
+        strong.recovered
+    );
     let null = run_cell(Mech::Null, 0.0, 1500, 12, 13, 1);
-    assert!(null.promoted <= 2, "null world promoted {} of {}", null.promoted, null.reps);
+    assert!(
+        null.promoted <= 2,
+        "null world promoted {} of {}",
+        null.promoted,
+        null.reps
+    );
 }
 
 #[test]
@@ -260,10 +317,19 @@ fn power_curves() {
     ];
     let rhos = [0.02, 0.05, 0.10, 0.15, 0.30];
     let ns = [1000usize, 5000, 15000];
-    println!("reps per cell = {reps}; recovery = |corr(best, truth)| >= {RECOVERY_CORR} on fresh data");
-    println!("{:<20} {:>5} {:>6}  {:>22}  {:>22}", "mechanism", "rho", "n", "recovered [95% CI]", "promoted [95% CI]");
+    println!(
+        "reps per cell = {reps}; recovery = |corr(best, truth)| >= {RECOVERY_CORR} on fresh data"
+    );
+    println!(
+        "{:<20} {:>5} {:>6}  {:>22}  {:>22}",
+        "mechanism", "rho", "n", "recovered [95% CI]", "promoted [95% CI]"
+    );
     for m in mechs {
-        let rho_list: &[f64] = if matches!(m, Mech::Null) { &[0.0] } else { &rhos };
+        let rho_list: &[f64] = if matches!(m, Mech::Null) {
+            &[0.0]
+        } else {
+            &rhos
+        };
         for &rho in rho_list {
             for &n in &ns {
                 let t = run_cell(m, rho, n, reps, 0xC0FFEE ^ (n as u64), 1);
@@ -271,7 +337,17 @@ fn power_curves() {
                 let (pl, ph) = wilson(t.promoted, t.reps);
                 println!(
                     "{:<20} {:>5.2} {:>6}  {:>3}/{:<3} [{:.2},{:.2}]    {:>3}/{:<3} [{:.2},{:.2}]",
-                    m.name(), rho, n, t.recovered, t.reps, rl, rh, t.promoted, t.reps, pl, ph
+                    m.name(),
+                    rho,
+                    n,
+                    t.recovered,
+                    t.reps,
+                    rl,
+                    rh,
+                    t.promoted,
+                    t.reps,
+                    pl,
+                    ph
                 );
             }
         }
@@ -287,16 +363,34 @@ fn power_curves() {
 #[ignore = "audit-only: slow; run with --release --ignored --nocapture"]
 fn additive_vs_single_term() {
     let reps = reps();
-    let mechs = [Mech::Null, Mech::Lag2, Mech::Momentum, Mech::TanhLag5, Mech::TwoLagSum, Mech::MixedSum];
+    let mechs = [
+        Mech::Null,
+        Mech::Lag2,
+        Mech::Momentum,
+        Mech::TanhLag5,
+        Mech::TwoLagSum,
+        Mech::MixedSum,
+    ];
     let rhos = [0.10, 0.15, 0.30];
     let ns = [1000usize, 5000, 15000];
     println!("reps per cell = {reps}");
     println!(
         "{:<18} {:>5} {:>6} | {:>15} {:>9} | {:>15} {:>9} {:>11}",
-        "mechanism", "rho", "n", "single recov", "promoted", "additive recov", "promoted", "multi-term"
+        "mechanism",
+        "rho",
+        "n",
+        "single recov",
+        "promoted",
+        "additive recov",
+        "promoted",
+        "multi-term"
     );
     for m in mechs {
-        let rho_list: &[f64] = if matches!(m, Mech::Null) { &[0.0] } else { &rhos };
+        let rho_list: &[f64] = if matches!(m, Mech::Null) {
+            &[0.0]
+        } else {
+            &rhos
+        };
         for &rho in rho_list {
             for &n in &ns {
                 let seed = 0xC0FFEE ^ (n as u64);

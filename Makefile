@@ -1,4 +1,4 @@
-.PHONY: install test lint format clean clean-cache kernel wheel reproduce
+.PHONY: install test lint typecheck lint-rust format clean clean-cache kernel wheel reproduce
 
 install:
 	pip install -e .
@@ -27,7 +27,15 @@ test:
 	pytest tests/ -v
 
 lint:
-	ruff check apedp/ tests/
+	ruff check apedp/ apedp_dyn/ tests/ --select E9,F
+	ruff check apedp_dyn/conf/
+
+typecheck:
+	mypy
+
+lint-rust:
+	cargo fmt --all --check
+	cargo clippy --workspace --all-targets --locked -- -A clippy::all -W clippy::correctness -D warnings
 
 format:
 	ruff format apedp/ tests/

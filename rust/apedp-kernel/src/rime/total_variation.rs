@@ -184,7 +184,10 @@ pub fn tv1d_dual_fista(y: &[f64], lambda: f64, max_iters: usize, tol: f64) -> Ve
     }
     dt_p[n - 1] = p[m - 1];
 
-    y.iter().zip(dt_p.iter()).map(|(yi, dti)| yi - dti).collect()
+    y.iter()
+        .zip(dt_p.iter())
+        .map(|(yi, dti)| yi - dti)
+        .collect()
 }
 
 /// A detected jump event in 1D data.
@@ -267,7 +270,11 @@ pub fn tv_denoise_and_analyze(
     // Reconstruction R^2 against original y
     let mean_y = y.iter().sum::<f64>() / (n as f64);
     let ss_tot = y.iter().map(|v| (v - mean_y) * (v - mean_y)).sum::<f64>();
-    let ss_res = y.iter().zip(u.iter()).map(|(yi, ui)| (yi - ui) * (yi - ui)).sum::<f64>();
+    let ss_res = y
+        .iter()
+        .zip(u.iter())
+        .map(|(yi, ui)| (yi - ui) * (yi - ui))
+        .sum::<f64>();
     let r2 = if ss_tot > 1e-15 {
         1.0 - (ss_res / ss_tot)
     } else {
@@ -317,8 +324,14 @@ mod tests {
     fn test_tv_noisy_staircase_recovers_plateaus() {
         // True steps at 0, 1, 2, with 5% noise added
         let true_y = [0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0];
-        let noise = [0.02, -0.01, 0.03, -0.02, 0.01, -0.03, 0.02, -0.01, 0.01, -0.02, 0.02, -0.01];
-        let y: Vec<f64> = true_y.iter().zip(noise.iter()).map(|(a, b)| a + b).collect();
+        let noise = [
+            0.02, -0.01, 0.03, -0.02, 0.01, -0.03, 0.02, -0.01, 0.01, -0.02, 0.02, -0.01,
+        ];
+        let y: Vec<f64> = true_y
+            .iter()
+            .zip(noise.iter())
+            .map(|(a, b)| a + b)
+            .collect();
         let x: Vec<f64> = (0..12).map(|i| i as f64).collect();
 
         let report = tv_denoise_and_analyze(&x, &y, 0.2, 0.5).unwrap();

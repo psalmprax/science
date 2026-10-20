@@ -332,7 +332,10 @@ impl Compiled {
                 return Err(format!(
                     "variable '{}' has length {} but '{}' has length {}; \
                      all data arrays must have the same length",
-                    self.variables[i], col.row_len(), self.variables[0], expected
+                    self.variables[i],
+                    col.row_len(),
+                    self.variables[0],
+                    expected
                 ));
             }
         }
@@ -698,7 +701,11 @@ mod tests {
         assert_eq!(eval1("1 + 2 * 3"), 7.0);
         assert_eq!(eval1("(1 + 2) * 3"), 9.0);
         assert_eq!(eval1("2 ** 3 ** 2"), 512.0, "power is right associative");
-        assert_eq!(eval("x - 1 - 1", &["x"], &[&[3.0]]), vec![1.0], "subtraction is left associative");
+        assert_eq!(
+            eval("x - 1 - 1", &["x"], &[&[3.0]]),
+            vec![1.0],
+            "subtraction is left associative"
+        );
         assert_eq!(eval("-x + 1", &["x"], &[&[1.0, 2.0]]), vec![0.0, -1.0]);
         assert_eq!(eval1("2 ** -1"), 0.5);
     }
@@ -717,7 +724,10 @@ mod tests {
         assert!((eval("ln(x)", &["x"], &[&[std::f64::consts::E]])[0] - 1.0).abs() < 1e-15);
         assert!((eval("sqrt(x)", &["x"], &[&[4.0]])[0] - 2.0).abs() < 1e-15);
         assert!(eval("tanh(x)", &["x"], &[&[0.0]])[0].abs() < 1e-15);
-        assert!((eval("log(E)", &["x"], &[&[1.0]])[0] - 1.0).abs() < 1e-15, "`E` is a named constant");
+        assert!(
+            (eval("log(E)", &["x"], &[&[1.0]])[0] - 1.0).abs() < 1e-15,
+            "`E` is a named constant"
+        );
         assert!((eval("pi", &["x"], &[&[1.0]])[0] - std::f64::consts::PI).abs() < 1e-15);
     }
 
@@ -749,7 +759,11 @@ mod tests {
         let one = compile("x + 1", &vars(&["x"])).unwrap();
         assert!(one.evaluate(&[vec![1.0, 2.0], vec![1.0, 2.0]]).is_err());
 
-        let c = compile("a0 + a1 * x + a2 * Abs(v) * v", &vars(&["x", "v", "a0", "a1", "a2"])).unwrap();
+        let c = compile(
+            "a0 + a1 * x + a2 * Abs(v) * v",
+            &vars(&["x", "v", "a0", "a1", "a2"]),
+        )
+        .unwrap();
         let pt = [2.0, -3.0, 1.0, 4.0, 0.5];
         let res = c.eval_point(&pt);
         assert!((res - 4.5).abs() < 1e-12, "got {res}, expected 4.5");

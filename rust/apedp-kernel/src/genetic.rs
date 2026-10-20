@@ -3,9 +3,9 @@
 //! Evaluates candidate equation trees in native Rust using Rayon multi-core parallelism,
 //! exact affine variable projection, subtree crossover, mutation, and Pareto archiving.
 
-use std::sync::atomic::{AtomicUsize, Ordering};
-use rayon::prelude::*;
 use crate::parser::{Func, Node};
+use rayon::prelude::*;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// Fast, reproducible, seedable 64-bit XorShift PRNG (zero-allocation).
 #[derive(Clone, Debug)]
@@ -84,7 +84,11 @@ impl NodeExt for Node {
                 let b = l.eval_row(vars);
                 let p = r.eval_row(vars);
                 let res = b.powf(p);
-                if res.is_finite() { res } else { f64::NAN }
+                if res.is_finite() {
+                    res
+                } else {
+                    f64::NAN
+                }
             }
             Node::Neg(inner) => -inner.eval_row(vars),
             Node::Call(func, inner) => func.apply(inner.eval_row(vars)),
@@ -95,9 +99,13 @@ impl NodeExt for Node {
         match self {
             Node::Const(_) | Node::Var(_) | Node::Ident(_) => 0,
             Node::Neg(inner) | Node::Call(_, inner) => 1 + inner.depth(),
-            Node::Add(l, r) | Node::Sub(l, r) | Node::Mul(l, r) | Node::Div(l, r) | Node::Pow(l, r) | Node::Min(l, r) | Node::Max(l, r) => {
-                1 + l.depth().max(r.depth())
-            }
+            Node::Add(l, r)
+            | Node::Sub(l, r)
+            | Node::Mul(l, r)
+            | Node::Div(l, r)
+            | Node::Pow(l, r)
+            | Node::Min(l, r)
+            | Node::Max(l, r) => 1 + l.depth().max(r.depth()),
         }
     }
 
@@ -106,9 +114,13 @@ impl NodeExt for Node {
             Node::Const(_) | Node::Var(_) | Node::Ident(_) => 1,
             Node::Neg(inner) => 1 + inner.complexity(),
             Node::Call(_, inner) => 2 + inner.complexity(),
-            Node::Add(l, r) | Node::Sub(l, r) | Node::Mul(l, r) | Node::Div(l, r) | Node::Pow(l, r) | Node::Min(l, r) | Node::Max(l, r) => {
-                1 + l.complexity() + r.complexity()
-            }
+            Node::Add(l, r)
+            | Node::Sub(l, r)
+            | Node::Mul(l, r)
+            | Node::Div(l, r)
+            | Node::Pow(l, r)
+            | Node::Min(l, r)
+            | Node::Max(l, r) => 1 + l.complexity() + r.complexity(),
         }
     }
 
@@ -126,14 +138,45 @@ impl NodeExt for Node {
                 }
             }
             Node::Ident(s) => s.clone(),
-            Node::Var(idx) => var_names.get(*idx).cloned().unwrap_or_else(|| format!("x{}", idx)),
-            Node::Add(l, r) => format!("({} + {})", l.to_equation_string(var_names), r.to_equation_string(var_names)),
-            Node::Sub(l, r) => format!("({} - {})", l.to_equation_string(var_names), r.to_equation_string(var_names)),
-            Node::Mul(l, r) => format!("({} * {})", l.to_equation_string(var_names), r.to_equation_string(var_names)),
-            Node::Div(l, r) => format!("({} / {})", l.to_equation_string(var_names), r.to_equation_string(var_names)),
-            Node::Pow(l, r) => format!("({}**{})", l.to_equation_string(var_names), r.to_equation_string(var_names)),
-            Node::Min(l, r) => format!("min({}, {})", l.to_equation_string(var_names), r.to_equation_string(var_names)),
-            Node::Max(l, r) => format!("max({}, {})", l.to_equation_string(var_names), r.to_equation_string(var_names)),
+            Node::Var(idx) => var_names
+                .get(*idx)
+                .cloned()
+                .unwrap_or_else(|| format!("x{}", idx)),
+            Node::Add(l, r) => format!(
+                "({} + {})",
+                l.to_equation_string(var_names),
+                r.to_equation_string(var_names)
+            ),
+            Node::Sub(l, r) => format!(
+                "({} - {})",
+                l.to_equation_string(var_names),
+                r.to_equation_string(var_names)
+            ),
+            Node::Mul(l, r) => format!(
+                "({} * {})",
+                l.to_equation_string(var_names),
+                r.to_equation_string(var_names)
+            ),
+            Node::Div(l, r) => format!(
+                "({} / {})",
+                l.to_equation_string(var_names),
+                r.to_equation_string(var_names)
+            ),
+            Node::Pow(l, r) => format!(
+                "({}**{})",
+                l.to_equation_string(var_names),
+                r.to_equation_string(var_names)
+            ),
+            Node::Min(l, r) => format!(
+                "min({}, {})",
+                l.to_equation_string(var_names),
+                r.to_equation_string(var_names)
+            ),
+            Node::Max(l, r) => format!(
+                "max({}, {})",
+                l.to_equation_string(var_names),
+                r.to_equation_string(var_names)
+            ),
             Node::Neg(inner) => format!("(-{})", inner.to_equation_string(var_names)),
             Node::Call(func, inner) => {
                 let fname = match func {
@@ -170,7 +213,13 @@ impl NodeExt for Node {
                 next.push(0);
                 inner.collect_paths(&next, acc);
             }
-            Node::Add(l, r) | Node::Sub(l, r) | Node::Mul(l, r) | Node::Div(l, r) | Node::Pow(l, r) | Node::Min(l, r) | Node::Max(l, r) => {
+            Node::Add(l, r)
+            | Node::Sub(l, r)
+            | Node::Mul(l, r)
+            | Node::Div(l, r)
+            | Node::Pow(l, r)
+            | Node::Min(l, r)
+            | Node::Max(l, r) => {
                 let mut next_l = current.to_vec();
                 next_l.push(0);
                 l.collect_paths(&next_l, acc);
@@ -190,9 +239,19 @@ impl NodeExt for Node {
         let tail = &path[1..];
         match self {
             Node::Neg(inner) | Node::Call(_, inner) => {
-                if head == 0 { inner.get_subtree(tail) } else { None }
+                if head == 0 {
+                    inner.get_subtree(tail)
+                } else {
+                    None
+                }
             }
-            Node::Add(l, r) | Node::Sub(l, r) | Node::Mul(l, r) | Node::Div(l, r) | Node::Pow(l, r) | Node::Min(l, r) | Node::Max(l, r) => {
+            Node::Add(l, r)
+            | Node::Sub(l, r)
+            | Node::Mul(l, r)
+            | Node::Div(l, r)
+            | Node::Pow(l, r)
+            | Node::Min(l, r)
+            | Node::Max(l, r) => {
                 if head == 0 {
                     l.get_subtree(tail)
                 } else if head == 1 {
@@ -290,8 +349,25 @@ impl GeneticOps {
     /// tan/sinh/cosh/tanh/asin/acos/atan and general Pow(x, y) with a
     /// random exponent. Overflowed or out-of-domain evaluations score as
     /// non-finite and are discarded by selection, so no clamp is applied.
-    pub fn random_tree(rng: &mut FastRng, max_depth: usize, num_vars: usize, allow_trans: bool, allow_exp: bool, allow_misc: bool, allow_advanced: bool) -> Node {
-        Self::random_tree_inner(rng, max_depth, num_vars, allow_trans, allow_exp, allow_misc, allow_advanced, true)
+    pub fn random_tree(
+        rng: &mut FastRng,
+        max_depth: usize,
+        num_vars: usize,
+        allow_trans: bool,
+        allow_exp: bool,
+        allow_misc: bool,
+        allow_advanced: bool,
+    ) -> Node {
+        Self::random_tree_inner(
+            rng,
+            max_depth,
+            num_vars,
+            allow_trans,
+            allow_exp,
+            allow_misc,
+            allow_advanced,
+            true,
+        )
     }
 
     /// Trig frequency/phase template: `sin|cos(f*x + p)` with `f` and `p`
@@ -300,8 +376,13 @@ impl GeneticOps {
     /// unreachable from a uniform random tree at depth 4 (the frozen N04
     /// forensics: coarse frequency x no phase DOF -> R2 = 0.04); seeding the
     /// template directly is the recorded next-round fix.
+    #[allow(clippy::approx_constant)] // Rounded search bounds, not mathematical pi.
     fn trig_template(rng: &mut FastRng, num_vars: usize) -> Node {
-        let func = if rng.next_f64() < 0.5 { Func::Sin } else { Func::Cos };
+        let func = if rng.next_f64() < 0.5 {
+            Func::Sin
+        } else {
+            Func::Cos
+        };
         let v = rng.gen_range(0, num_vars);
         let f = ((rng.uniform(0.3, 2.8) * 10.0).round()) / 10.0;
         let arg = if rng.next_f64() < 0.35 {
@@ -316,7 +397,16 @@ impl GeneticOps {
         Node::Call(func, Box::new(arg))
     }
 
-    fn random_tree_inner(rng: &mut FastRng, max_depth: usize, num_vars: usize, allow_trans: bool, allow_exp: bool, allow_misc: bool, allow_advanced: bool, top: bool) -> Node {
+    fn random_tree_inner(
+        rng: &mut FastRng,
+        max_depth: usize,
+        num_vars: usize,
+        allow_trans: bool,
+        allow_exp: bool,
+        allow_misc: bool,
+        allow_advanced: bool,
+        top: bool,
+    ) -> Node {
         if top && allow_trans && num_vars > 0 && max_depth >= 3 && rng.next_f64() < 0.18 {
             return Self::trig_template(rng, num_vars);
         }
@@ -349,7 +439,16 @@ impl GeneticOps {
             let n_advanced = if allow_advanced { 7 } else { 0 };
             let op_choice = rng.gen_range(0, 5 + n_trans + n_exp + n_misc + n_advanced);
             let mk_sub = |rng: &mut FastRng| {
-                Self::random_tree_inner(rng, max_depth - 1, num_vars, allow_trans, allow_exp, allow_misc, allow_advanced, false)
+                Self::random_tree_inner(
+                    rng,
+                    max_depth - 1,
+                    num_vars,
+                    allow_trans,
+                    allow_exp,
+                    allow_misc,
+                    allow_advanced,
+                    false,
+                )
             };
             if op_choice < 5 {
                 let (l, r) = (mk_sub(rng), mk_sub(rng));
@@ -434,7 +533,16 @@ impl GeneticOps {
         parent1.clone()
     }
 
-    pub fn mutate(node: &Node, max_depth: usize, num_vars: usize, allow_trans: bool, allow_exp: bool, allow_misc: bool, allow_advanced: bool, rng: &mut FastRng) -> Node {
+    pub fn mutate(
+        node: &Node,
+        max_depth: usize,
+        num_vars: usize,
+        allow_trans: bool,
+        allow_exp: bool,
+        allow_misc: bool,
+        allow_advanced: bool,
+        rng: &mut FastRng,
+    ) -> Node {
         let roll = rng.next_f64();
         if roll < 0.4 {
             // Subtree replacement
@@ -442,7 +550,15 @@ impl GeneticOps {
             node.collect_paths(&[], &mut paths);
             if !paths.is_empty() {
                 let p = &paths[rng.gen_range(0, paths.len())];
-                let sub = Self::random_tree(rng, 2, num_vars, allow_trans, allow_exp, allow_misc, allow_advanced);
+                let sub = Self::random_tree(
+                    rng,
+                    2,
+                    num_vars,
+                    allow_trans,
+                    allow_exp,
+                    allow_misc,
+                    allow_advanced,
+                );
                 return node.set_subtree(p, &sub);
             }
         } else if roll < 0.7 {
@@ -457,7 +573,15 @@ impl GeneticOps {
             }
         }
         // Grow new
-        Self::random_tree(rng, max_depth, num_vars, allow_trans, allow_exp, allow_misc, allow_advanced)
+        Self::random_tree(
+            rng,
+            max_depth,
+            num_vars,
+            allow_trans,
+            allow_exp,
+            allow_misc,
+            allow_advanced,
+        )
     }
 }
 
@@ -565,7 +689,11 @@ fn golden_section_min<F: FnMut(f64) -> f64>(
             f2 = f(x2);
         }
     }
-    if f1 < f2 { (x1, f1) } else { (x2, f2) }
+    if f1 < f2 {
+        (x1, f1)
+    } else {
+        (x2, f2)
+    }
 }
 
 /// Coordinate-descent polish of a candidate's inner constants via
@@ -633,8 +761,7 @@ pub fn polish_candidate_constants<V: crate::data::DataCol>(
             };
             let (c_best, _) = golden_section_min(lo, hi, 28, &mut probe);
             let cand = best.set_subtree(path, &Node::Const(c_best));
-            let (mse, a, b) =
-                score_candidate_affine(&cand, data, target, mean_target, var_target);
+            let (mse, a, b) = score_candidate_affine(&cand, data, target, mean_target, var_target);
             *evals += 1;
             if mse < best_mse {
                 best = cand;
@@ -670,8 +797,7 @@ pub fn polish_candidate_constants<V: crate::data::DataCol>(
             for (path, (a, d)) in const_paths.iter().zip(after_vals.iter().zip(dir.iter())) {
                 cand = cand.set_subtree(path, &Node::Const(a + t_best * d));
             }
-            let (mse, a, b) =
-                score_candidate_affine(&cand, data, target, mean_target, var_target);
+            let (mse, a, b) = score_candidate_affine(&cand, data, target, mean_target, var_target);
             *evals += 1;
             if mse < best_mse {
                 best = cand;
@@ -763,7 +889,11 @@ pub fn run_native_evolutionary_search<V: crate::data::DataCol>(
     let num_vars = data.len();
     let nf = n as f64;
     let mean_target = target.iter().sum::<f64>() / nf;
-    let var_target = target.iter().map(|v| (v - mean_target) * (v - mean_target)).sum::<f64>() / nf;
+    let var_target = target
+        .iter()
+        .map(|v| (v - mean_target) * (v - mean_target))
+        .sum::<f64>()
+        / nf;
 
     let total_evaluations = AtomicUsize::new(0);
 
@@ -772,12 +902,22 @@ pub fn run_native_evolutionary_search<V: crate::data::DataCol>(
         .into_par_iter()
         .map(|island_id| {
             let mut rng = FastRng::new(config.seed.wrapping_add((island_id as u64) * 10007 + 1));
-            let mut population: Vec<(Node, f64, f64, f64)> = Vec::with_capacity(config.population_size);
+            let mut population: Vec<(Node, f64, f64, f64)> =
+                Vec::with_capacity(config.population_size);
 
             // Initial population
             for _ in 0..config.population_size {
-                let node = GeneticOps::random_tree(&mut rng, config.max_depth, num_vars, config.allow_trans, config.allow_exp, config.allow_misc, config.allow_advanced);
-                let (mse, a, b) = score_candidate_affine(&node, data, target, mean_target, var_target);
+                let node = GeneticOps::random_tree(
+                    &mut rng,
+                    config.max_depth,
+                    num_vars,
+                    config.allow_trans,
+                    config.allow_exp,
+                    config.allow_misc,
+                    config.allow_advanced,
+                );
+                let (mse, a, b) =
+                    score_candidate_affine(&node, data, target, mean_target, var_target);
                 population.push((node, mse, a, b));
             }
             total_evaluations.fetch_add(config.population_size, Ordering::Relaxed);
@@ -811,15 +951,26 @@ pub fn run_native_evolutionary_search<V: crate::data::DataCol>(
                     };
 
                     let mutated = if rng.next_f64() < config.mutation_rate {
-                        GeneticOps::mutate(&child, config.max_depth, num_vars, config.allow_trans, config.allow_exp, config.allow_misc, config.allow_advanced, &mut rng)
+                        GeneticOps::mutate(
+                            &child,
+                            config.max_depth,
+                            num_vars,
+                            config.allow_trans,
+                            config.allow_exp,
+                            config.allow_misc,
+                            config.allow_advanced,
+                            &mut rng,
+                        )
                     } else {
                         child
                     };
 
-                    let (mse, a, b) = score_candidate_affine(&mutated, data, target, mean_target, var_target);
+                    let (mse, a, b) =
+                        score_candidate_affine(&mutated, data, target, mean_target, var_target);
                     next_gen.push((mutated, mse, a, b));
                 }
-                total_evaluations.fetch_add(config.population_size - elite_count, Ordering::Relaxed);
+                total_evaluations
+                    .fetch_add(config.population_size - elite_count, Ordering::Relaxed);
                 population = next_gen;
             }
 
@@ -866,7 +1017,9 @@ pub fn run_native_evolutionary_search<V: crate::data::DataCol>(
 
     for (node, mse, a, b) in all_scored {
         let compl = node.complexity();
-        let dominated = pareto_front.iter().any(|p| p.complexity <= compl && p.mse <= mse);
+        let dominated = pareto_front
+            .iter()
+            .any(|p| p.complexity <= compl && p.mse <= mse);
         if !dominated {
             let raw_str = node.to_equation_string(var_names);
             let final_formula = if a.abs() > 1e-4 && (a - 1.0).abs() > 1e-4 && b.abs() > 1e-4 {
@@ -917,10 +1070,7 @@ mod polish_tests {
     fn sin_const_tree(c: f64) -> Node {
         Node::Call(
             Func::Sin,
-            Box::new(Node::Mul(
-                Box::new(Node::Const(c)),
-                Box::new(Node::Var(0)),
-            )),
+            Box::new(Node::Mul(Box::new(Node::Const(c)), Box::new(Node::Var(0)))),
         )
     }
 
@@ -981,7 +1131,7 @@ mod polish_tests {
         );
         let (mse_before, _, _) = score_candidate_affine(&tree, &data, &ys, mean, var);
         let mut evals = 0usize;
-        let (polished, mse_after, _, _) =
+        let (_polished, mse_after, _, _) =
             polish_candidate_constants(&tree, &data, &ys, mean, var, 8, &mut evals);
         assert!(
             mse_after < mse_before * 1e-3,
@@ -1003,7 +1153,10 @@ mod polish_tests {
         assert_eq!(polished, tree);
         let (mse_before, _, _) = score_candidate_affine(&tree, &data, &target, mean, var);
         assert!((mse_after - mse_before).abs() < 1e-15);
-        assert_eq!(evals, 1, "constant-free tree costs exactly one scoring eval");
+        assert_eq!(
+            evals, 1,
+            "constant-free tree costs exactly one scoring eval"
+        );
     }
 
     #[test]
@@ -1021,19 +1174,28 @@ mod polish_tests {
             polish_constants: false,
             ..base.clone()
         };
-        let (pareto_off, evals_off) =
-            run_native_evolutionary_search(&data, &target, &names, &off);
-        let (pareto_on, evals_on) =
-            run_native_evolutionary_search(&data, &target, &names, &base);
-        let best_off = pareto_off.iter().map(|p| p.mse).fold(f64::INFINITY, f64::min);
-        let best_on = pareto_on.iter().map(|p| p.mse).fold(f64::INFINITY, f64::min);
+        let (pareto_off, evals_off) = run_native_evolutionary_search(&data, &target, &names, &off);
+        let (pareto_on, evals_on) = run_native_evolutionary_search(&data, &target, &names, &base);
+        let best_off = pareto_off
+            .iter()
+            .map(|p| p.mse)
+            .fold(f64::INFINITY, f64::min);
+        let best_on = pareto_on
+            .iter()
+            .map(|p| p.mse)
+            .fold(f64::INFINITY, f64::min);
         assert!(
             best_on <= best_off + 1e-12,
             "polish worsened the best MSE: {} -> {}",
             best_off,
             best_on
         );
-        assert!(evals_on > evals_off, "polish evals must be counted: {} vs {}", evals_on, evals_off);
+        assert!(
+            evals_on > evals_off,
+            "polish evals must be counted: {} vs {}",
+            evals_on,
+            evals_off
+        );
     }
 
     #[test]

@@ -16,7 +16,7 @@ import numpy as np
 
 from scipy.interpolate import CubicSpline
 
-from apedp_dyn.video.tensor_train_video import TensorTrainVideo, evaluate_continuous_temporal_frame
+from apedp_dyn.video.tensor_train_video import TensorTrainVideo
 
 
 class ContinuousTemporalInterpolator:

@@ -145,7 +145,6 @@ def test_pretrained_weights_path_when_available(model_id: str) -> None:
         urllib.request.urlopen(
             f"https://huggingface.co/{model_id}/resolve/main/config.json", timeout=6
         ).read()
-        weights_ok = True
     except Exception as exc:  # offline / dns / proxy
         pytest.skip(f"pretrained VAE weights unavailable in this env: {exc!r}")
     br = DiffusersVAEBridge(model_id=model_id)

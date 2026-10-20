@@ -20,5 +20,6 @@ def test_rust_lint_components_remain_installed():
     setup = workflow.split("      - name: Set up Rust toolchain\n", 1)[1].split(
         "\n      - name:", 1
     )[0]
-    assert "uses: dtolnay/rust-toolchain@stable" in setup
+    assert "uses: dtolnay/rust-toolchain@" in setup
+    assert "toolchain: '1.99.0'" in setup
     assert "components: rustfmt, clippy" in setup

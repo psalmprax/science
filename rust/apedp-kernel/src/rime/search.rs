@@ -19,7 +19,9 @@ use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
-use super::eval::{charged_dof, fitted_mse, score_batch_fitted, FittedScore, ScoreConfig, READOUT_PARAMS};
+use super::eval::{
+    charged_dof, fitted_mse, score_batch_fitted, FittedScore, ScoreConfig, READOUT_PARAMS,
+};
 use super::graph::{Graph, Node, LAG_SET};
 use super::record::CandidateRecord;
 use super::rewrite::{apply, RewriteOp};
@@ -57,7 +59,10 @@ pub struct SearchConfig {
     /// input-major and can drop whole inputs' shortest lag; `CoverageFirst`
     /// is lag-major so every input keeps lag-1 first. Opt-in: the frozen §7
     /// catalogue is unchanged for every existing caller.
-    #[serde(default, skip_serializing_if = "crate::rime::seeds::SeedOrder::is_legacy")]
+    #[serde(
+        default,
+        skip_serializing_if = "crate::rime::seeds::SeedOrder::is_legacy"
+    )]
     pub seed_order: SeedOrder,
     /// Contemporaneous self-products (`(x_i * x_i)`): admits lag-0
     /// self-multiplication into the seed catalogue (spec §7 algebraic extension).
@@ -108,10 +113,25 @@ pub struct SearchConfig {
 
 impl Default for SearchConfig {
     fn default() -> Self {
-        SearchConfig { max_depth: 2, beam: 8, budget: 200, lambda_c: 1e-3, ridge: 1e-9, seed: 0,
-            static_ops: false, seed_order: SeedOrder::Legacy, square_seeds: false, rational_ops: false,
-            stem_ops: false, power_ops: false, diverse_beam: false, max_seeds: None, lagged_products: false,
-            harmonic_seeds: false, additive_terms: 0 }
+        SearchConfig {
+            max_depth: 2,
+            beam: 8,
+            budget: 200,
+            lambda_c: 1e-3,
+            ridge: 1e-9,
+            seed: 0,
+            static_ops: false,
+            seed_order: SeedOrder::Legacy,
+            square_seeds: false,
+            rational_ops: false,
+            stem_ops: false,
+            power_ops: false,
+            diverse_beam: false,
+            max_seeds: None,
+            lagged_products: false,
+            harmonic_seeds: false,
+            additive_terms: 0,
+        }
     }
 }
 
@@ -128,7 +148,10 @@ impl SearchConfig {
     /// permissive on short series — prefer [`SearchConfig::noise_scaled`].
     pub fn scaled_to(target: &[f64], rel_penalty: f64) -> Self {
         let v = target_variance(target);
-        SearchConfig { lambda_c: rel_penalty * v, ..Default::default() }
+        SearchConfig {
+            lambda_c: rel_penalty * v,
+            ..Default::default()
+        }
     }
 
     /// Sample-size-aware penalty: `gamma * var(y) / n_dev` per charged degree of
@@ -143,7 +166,10 @@ impl SearchConfig {
     /// world that a fixed-fraction penalty would wave through.
     pub fn noise_scaled(target: &[f64], n_dev: usize, gamma: f64) -> Self {
         let v = target_variance(target);
-        SearchConfig { lambda_c: gamma * v / n_dev.max(1) as f64, ..Default::default() }
+        SearchConfig {
+            lambda_c: gamma * v / n_dev.max(1) as f64,
+            ..Default::default()
+        }
     }
 
     /// Selection charge in degrees of freedom for a search over `budget`
@@ -155,7 +181,11 @@ impl SearchConfig {
 
     /// The scoring configuration this search runs with.
     pub fn score_config(&self) -> ScoreConfig {
-        ScoreConfig { lambda_c: self.lambda_c, ridge: self.ridge, selection_dof: self.selection_dof() }
+        ScoreConfig {
+            lambda_c: self.lambda_c,
+            ridge: self.ridge,
+            selection_dof: self.selection_dof(),
+        }
     }
 
     /// Per-environment aggregation rule (§8 "mean loss reduction across dev
@@ -444,7 +474,10 @@ pub fn search_envs(
     agg: EnvAggregation,
     gamma_gate: f64,
 ) -> SearchEnvsOutcome {
-    assert!(!envs.is_empty(), "search_envs needs at least one environment");
+    assert!(
+        !envs.is_empty(),
+        "search_envs needs at least one environment"
+    );
     // Frozen pre-scoring validation (spec §1 v0.1.2: define how short, ragged
     // and invalid environments are handled BEFORE benchmarking, not after).
     let expected_cols = envs[0].cols.len();
@@ -537,7 +570,7 @@ pub fn search_envs(
         for env in &usable_envs {
             let (mse, _s_a, _s_b) = fitted_mse(graph, &env.cols, &env.target, cfg.ridge);
             cand_by_env.push(mse);
-        }        // Aggregate dMSE across envs (both rules aggregate MSE; score = ΔMSE - λ·dof)。
+        } // Aggregate dMSE across envs (both rules aggregate MSE; score = ΔMSE - λ·dof)。
         let agg_cand = aggregate(&cand_by_env, agg);
 
         let score = (baseline_mse - agg_cand) - sc.lambda_c * charged_dof(graph, sc.selection_dof);
@@ -618,7 +651,10 @@ pub fn enumerate_ops(g: &Graph) -> Vec<RewriteOp> {
     let mut ops = Vec::new();
     ops.push(RewriteOp::WrapNonlinearity { src: g.output });
     for (decay_num, decay_den) in super::seeds::DECAY_PRIORS {
-        ops.push(RewriteOp::AddState { decay_num, decay_den });
+        ops.push(RewriteOp::AddState {
+            decay_num,
+            decay_den,
+        });
     }
     for src in 0..n {
         for k in LAG_SET {
@@ -923,26 +959,48 @@ pub fn search<V: crate::data::DataCol>(
     }
     if seed_keep.is_empty() {
         // No seed beats the mean predictor: abstain without expanding.
-        return SearchOutcome { proposals, baseline_mse, baseline_graph_id, evaluated, accepted: 0,
-            rejected_score, dropped_dedup, dropped_scope };
+        return SearchOutcome {
+            proposals,
+            baseline_mse,
+            baseline_graph_id,
+            evaluated,
+            accepted: 0,
+            rejected_score,
+            dropped_dedup,
+            dropped_scope,
+        };
     }
     seed_keep.sort_by(|a, b| rank_desc(&a.2, &b.2));
     for (_, _, p) in &seed_keep {
         proposals.push(p.clone());
     }
     let mut frontier: Vec<(Graph, f64)> = if !cfg.diverse_beam {
-        seed_keep.into_iter().take(cfg.beam).map(|(g, mse, _)| (g, mse)).collect()
+        seed_keep
+            .into_iter()
+            .take(cfg.beam)
+            .map(|(g, mse, _)| (g, mse))
+            .collect()
     } else {
         // Diverse beam: round-robin selection across structural archetypes
-        let mut families: std::collections::BTreeMap<&'static str, Vec<(Graph, f64)>> = std::collections::BTreeMap::new();
+        let mut families: std::collections::BTreeMap<&'static str, Vec<(Graph, f64)>> =
+            std::collections::BTreeMap::new();
         for (g, mse, _) in seed_keep {
-            let fam = if g.nodes.iter().any(|n| matches!(n, Node::Sin(_) | Node::Cos(_) | Node::SafeExp(_) | Node::SafeLog(_))) {
+            let fam = if g.nodes.iter().any(|n| {
+                matches!(
+                    n,
+                    Node::Sin(_) | Node::Cos(_) | Node::SafeExp(_) | Node::SafeLog(_)
+                )
+            }) {
                 "transcendental"
             } else if g.nodes.iter().any(|n| matches!(n, Node::Power { .. })) {
                 "power"
             } else if g.nodes.iter().any(|n| matches!(n, Node::SafeDiv(_, _))) {
                 "rational"
-            } else if g.nodes.iter().any(|n| matches!(n, Node::Tanh(_) | Node::Sign(_) | Node::Abs(_))) {
+            } else if g
+                .nodes
+                .iter()
+                .any(|n| matches!(n, Node::Tanh(_) | Node::Sign(_) | Node::Abs(_)))
+            {
                 "bounded"
             } else {
                 "polynomial"
@@ -980,7 +1038,12 @@ pub fn search<V: crate::data::DataCol>(
                 // Static mode: temporal rewrites are removed from the grammar,
                 // so no candidate reachable from any beam member reads time.
                 if cfg.static_ops
-                    && matches!(op, RewriteOp::AddLagEdge { .. } | RewriteOp::AddState { .. } | RewriteOp::DiffNode { .. })
+                    && matches!(
+                        op,
+                        RewriteOp::AddLagEdge { .. }
+                            | RewriteOp::AddState { .. }
+                            | RewriteOp::DiffNode { .. }
+                    )
                 {
                     dropped_scope += 1;
                     continue;
@@ -1009,7 +1072,10 @@ pub fn search<V: crate::data::DataCol>(
                 if evaluated + jobs.len() >= cfg.budget {
                     break 'outer;
                 }
-                let Some(child) = apply(parent, &op) else { dropped_scope += 1; continue };
+                let Some(child) = apply(parent, &op) else {
+                    dropped_scope += 1;
+                    continue;
+                };
                 child.validate().ok();
                 if !seen.insert(child.id()) || !seen_expr.insert(child.describe()) {
                     dropped_dedup += 1;
@@ -1065,8 +1131,16 @@ pub fn search<V: crate::data::DataCol>(
 
     proposals.sort_by(rank_desc);
     let accepted = proposals.len();
-    SearchOutcome { proposals, baseline_mse, baseline_graph_id, evaluated, accepted,
-        rejected_score, dropped_dedup, dropped_scope }
+    SearchOutcome {
+        proposals,
+        baseline_mse,
+        baseline_graph_id,
+        evaluated,
+        accepted,
+        rejected_score,
+        dropped_dedup,
+        dropped_scope,
+    }
 }
 
 /// Count the parameters spent by the whole pipeline (edges + readout), for
@@ -1146,7 +1220,10 @@ mod tests {
     }
 
     fn recovered_equation(outcome: &SearchOutcome) -> String {
-        outcome.best().map(|p| p.equation.clone()).unwrap_or_default()
+        outcome
+            .best()
+            .map(|p| p.equation.clone())
+            .unwrap_or_default()
     }
 
     /// The calibration the proposer uses: sample-size aware, conservative.
@@ -1203,10 +1280,16 @@ mod tests {
         }
         .with_max_depth(1);
 
-        let out_gated =
-            search_envs(&small_forms(1), &envs, &cfg, EnvAggregation::MedianWorstGated, 1.5);
+        let out_gated = search_envs(
+            &small_forms(1),
+            &envs,
+            &cfg,
+            EnvAggregation::MedianWorstGated,
+            1.5,
+        );
         assert_eq!(
-            out_gated.accepted, 0,
+            out_gated.accepted,
+            0,
             "a mechanism that wins only in the big env must be gated by the \
              worst env: {}",
             out_gated.to_json()
@@ -1216,10 +1299,16 @@ mod tests {
         let good_a = env_of(150, 1.0, 3.0, 0.02);
         let good_b = env_of(1500, 2.0, 3.0, 0.02);
         let envs_both = envs_from_frames(&[good_a, good_b]);
-        let out_both =
-            search_envs(&small_forms(1), &envs_both, &cfg, EnvAggregation::MedianWorstGated, 1.5);
+        let out_both = search_envs(
+            &small_forms(1),
+            &envs_both,
+            &cfg,
+            EnvAggregation::MedianWorstGated,
+            1.5,
+        );
         assert_eq!(
-            out_both.accepted, 1,
+            out_both.accepted,
+            1,
             "consistent law across envs must pass: {}",
             out_both.to_json()
         );
@@ -1247,12 +1336,22 @@ mod tests {
     fn search_envs_reports_the_null_reference_and_clean_accounting() {
         let envs = envs_from_frames(&[env_of(200, 5.0, 3.0, 0.02)]);
         let cfg = SearchConfig::default().with_max_depth(1);
-        let out = search_envs(&small_forms(1), &envs, &cfg, EnvAggregation::MeanPerEnv, 1.5);
+        let out = search_envs(
+            &small_forms(1),
+            &envs,
+            &cfg,
+            EnvAggregation::MeanPerEnv,
+            1.5,
+        );
         // The reference is the null model's aggregated MSE = the env variance.
         let y = &envs[0].target;
         assert!((out.baseline_mse - target_variance(y)).abs() < 1e-9);
         assert_eq!(out.aggregation, EnvAggregation::MeanPerEnv);
-        assert!(out.accepted > 0, "single consistent env must promote: {}", out.to_json());
+        assert!(
+            out.accepted > 0,
+            "single consistent env must promote: {}",
+            out.to_json()
+        );
         assert!(out.evaluated > 0);
         assert_eq!(out.proposals.len(), out.accepted);
     }
@@ -1284,7 +1383,13 @@ mod tests {
         // checking every env's candidate MSE. A "Excellent/Poor/Poor" mechanism
         // computes one env where it barely improves; the gate/median ordering
         // must rank the across-env winner first.
-        let out = search_envs(&small_forms(1), &envs, &cfg, EnvAggregation::MedianWorstGated, 1.5);
+        let out = search_envs(
+            &small_forms(1),
+            &envs,
+            &cfg,
+            EnvAggregation::MedianWorstGated,
+            1.5,
+        );
         assert_eq!(out.accepted, 1, "median: {}", out.to_json());
         // The promoted candidate must improve EVERY env beyond that env's floor.
         let p = &out.proposals[0];
@@ -1323,12 +1428,26 @@ mod tests {
 
         // The search itself must exclude them and still work on the good env.
         let cfg = SearchConfig::default().with_max_depth(1);
-        let out = search_envs(&small_forms(1), &envs, &cfg, EnvAggregation::MeanPerEnv, 1.5);
+        let out = search_envs(
+            &small_forms(1),
+            &envs,
+            &cfg,
+            EnvAggregation::MeanPerEnv,
+            1.5,
+        );
         assert_eq!(
             out.env_statuses,
-            vec![EnvStatus::TooFewRows, EnvStatus::Malformed, EnvStatus::Scored]
+            vec![
+                EnvStatus::TooFewRows,
+                EnvStatus::Malformed,
+                EnvStatus::Scored
+            ]
         );
-        assert!(out.accepted > 0, "good env must still be searched: {}", out.to_json());
+        assert!(
+            out.accepted > 0,
+            "good env must still be searched: {}",
+            out.to_json()
+        );
     }
 
     #[test]
@@ -1339,10 +1458,22 @@ mod tests {
         let short_b = env_of(8, 32.0, 3.0, 0.0);
         let envs = envs_from_frames(&[short_a, short_b]);
         let cfg = SearchConfig::default().with_max_depth(1);
-        let out = search_envs(&small_forms(1), &envs, &cfg, EnvAggregation::MeanPerEnv, 1.5);
+        let out = search_envs(
+            &small_forms(1),
+            &envs,
+            &cfg,
+            EnvAggregation::MeanPerEnv,
+            1.5,
+        );
         assert_eq!(out.accepted, 0);
-        assert_eq!(out.evaluated, 0, "no candidate may be scored on unusable data");
-        assert!(out.baseline_mse.is_infinite(), "reference is explicitly undefined");
+        assert_eq!(
+            out.evaluated, 0,
+            "no candidate may be scored on unusable data"
+        );
+        assert!(
+            out.baseline_mse.is_infinite(),
+            "reference is explicitly undefined"
+        );
         assert_eq!(
             out.env_statuses,
             vec![EnvStatus::TooFewRows, EnvStatus::TooFewRows]
@@ -1362,8 +1493,19 @@ mod tests {
         }
         let envs = envs_from_frames(&[gapped]);
         let cfg = SearchConfig::default().with_max_depth(1);
-        let out = search_envs(&small_forms(1), &envs, &cfg, EnvAggregation::MeanPerEnv, 1.5);
-        assert_eq!(out.accepted, 1, "gaps are skipped, not fatal: {}", out.to_json());
+        let out = search_envs(
+            &small_forms(1),
+            &envs,
+            &cfg,
+            EnvAggregation::MeanPerEnv,
+            1.5,
+        );
+        assert_eq!(
+            out.accepted,
+            1,
+            "gaps are skipped, not fatal: {}",
+            out.to_json()
+        );
         let p = &out.proposals[0];
         assert!(p.n_eff < 398, "skipped rows must reduce n_eff: {}", p.n_eff);
         assert!(p.r2 > 0.99, "recovery under gaps: {}", p.r2);
@@ -1394,7 +1536,11 @@ mod tests {
         // The winner must contain both the level and a lag-1 read of it: this is
         // the exact form the per-node memo cache used to zero out.
         let eq = recovered_equation(&out);
-        assert!(eq.contains("v0") && eq.contains("[t-1]"), "difference not represented: {}", eq);
+        assert!(
+            eq.contains("v0") && eq.contains("[t-1]"),
+            "difference not represented: {}",
+            eq
+        );
     }
 
     #[test]
@@ -1404,7 +1550,11 @@ mod tests {
         let out = search(&small_forms(1), &cols, &y, &cfg);
         let best = out.best().expect("must propose a memory form");
         assert!(best.r2 > 0.99, "r2 {} eq {}", best.r2, best.equation);
-        assert!(best.equation.contains("state_0.8000"), "eq {}", best.equation);
+        assert!(
+            best.equation.contains("state_0.8000"),
+            "eq {}",
+            best.equation
+        );
         assert!(best.depth == 0 || best.depth <= cfg.max_depth);
     }
 
@@ -1435,7 +1585,11 @@ mod tests {
         );
         assert!(out.proposals.is_empty());
         // The search must actually have looked before abstaining.
-        assert!(out.evaluated >= 20, "only {} candidates scored", out.evaluated);
+        assert!(
+            out.evaluated >= 20,
+            "only {} candidates scored",
+            out.evaluated
+        );
         assert!((out.baseline_mse - target_variance(&y)).abs() < 1e-9);
     }
 
@@ -1449,7 +1603,11 @@ mod tests {
             serde_json::to_string(&a.to_json()).unwrap(),
             serde_json::to_string(&b.to_json()).unwrap()
         );
-        assert!(a.evaluated <= cfg.budget, "budget exceeded: {}", a.evaluated);
+        assert!(
+            a.evaluated <= cfg.budget,
+            "budget exceeded: {}",
+            a.evaluated
+        );
     }
 
     #[test]
@@ -1463,12 +1621,27 @@ mod tests {
             assert!(!p[key].is_null(), "proposal missing {}", key);
         }
         for key in [
-            "score", "mse", "r2", "scale", "intercept", "complexity", "edges",
-            "readout_params", "selection_dof", "n_eff",
+            "score",
+            "mse",
+            "r2",
+            "scale",
+            "intercept",
+            "complexity",
+            "edges",
+            "readout_params",
+            "selection_dof",
+            "n_eff",
         ] {
-            assert!(!p["dev_evidence"][key].is_null(), "dev evidence missing {}", key);
+            assert!(
+                !p["dev_evidence"][key].is_null(),
+                "dev evidence missing {}",
+                key
+            );
         }
-        assert_eq!(out.proposals[0].record().rewrite_op, out.proposals[0].rewrite_op);
+        assert_eq!(
+            out.proposals[0].record().rewrite_op,
+            out.proposals[0].rewrite_op
+        );
     }
 
     #[test]
@@ -1487,7 +1660,10 @@ mod tests {
     #[test]
     fn charged_parameters_include_the_readout() {
         let g = small_forms(1)[0].clone();
-        assert_eq!(charged_parameters(&g), g.edge_count() as f64 + READOUT_PARAMS);
+        assert_eq!(
+            charged_parameters(&g),
+            g.edge_count() as f64 + READOUT_PARAMS
+        );
     }
 
     #[test]
@@ -1554,13 +1730,26 @@ mod tests {
     #[test]
     fn seed_only_operators_only_reachable_through_the_catalogue() {
         let seeds = small_forms(1);
-        let abs_seeds: Vec<&Graph> = seeds.iter().filter(|g| g.describe().contains("abs(")).collect();
-        let sign_seeds: Vec<&Graph> = seeds.iter().filter(|g| g.describe().contains("sign(")).collect();
-        assert_eq!(abs_seeds.len(), 1, "exactly one Abs seed (documented budget tail)");
+        let abs_seeds: Vec<&Graph> = seeds
+            .iter()
+            .filter(|g| g.describe().contains("abs("))
+            .collect();
+        let sign_seeds: Vec<&Graph> = seeds
+            .iter()
+            .filter(|g| g.describe().contains("sign("))
+            .collect();
+        assert_eq!(
+            abs_seeds.len(),
+            1,
+            "exactly one Abs seed (documented budget tail)"
+        );
         assert_eq!(sign_seeds.len(), 1, "exactly one Sign seed");
         // And each is depth 0 (never reachable from another seed via one rewrite).
         for g in abs_seeds.iter().chain(sign_seeds.iter()) {
-            for s in seeds.iter().filter(|other| other.describe() != g.describe()) {
+            for s in seeds
+                .iter()
+                .filter(|other| other.describe() != g.describe())
+            {
                 for op in enumerate_ops(s) {
                     if let Some(child) = apply(s, &op) {
                         assert_ne!(
@@ -1586,11 +1775,18 @@ mod tests {
         let out = search(&small_forms(1), &cols, &y, &cfg);
         let best = out.best().expect("memory family must still be proposed");
         assert!(best.equation.contains("state_"), "eq {}", best.equation);
-        assert!
-            (!best.equation.contains("state_0.8700"), "off-grid decay must never be reported as exact: {}", best.equation);
+        assert!(
+            !best.equation.contains("state_0.8700"),
+            "off-grid decay must never be reported as exact: {}",
+            best.equation
+        );
         // The evidence frame: fit quality is reported with its actual R², which
         // is genuinely < 1 for an off-grid approximation — no overclaim.
-        assert!(best.r2 > 0.9 && best.r2 < 1.0, "approximate fit reported honestly: {}", best.r2);
+        assert!(
+            best.r2 > 0.9 && best.r2 < 1.0,
+            "approximate fit reported honestly: {}",
+            best.r2
+        );
     }
 
     #[test]
@@ -1600,7 +1796,12 @@ mod tests {
         let (cols, y) = planted("lag2", 300);
         let cfg = cfg_for(&y, 1).with_budget(1);
         let out = search(&small_forms(1), &cols, &y, &cfg);
-        assert_eq!(out.accepted, 0, "budget 1 cannot fund a promotable candidate: {}", out.to_json());
+        assert_eq!(
+            out.accepted,
+            0,
+            "budget 1 cannot fund a promotable candidate: {}",
+            out.to_json()
+        );
         assert!(out.proposals.is_empty());
         assert!(out.evaluated <= cfg.budget);
 
@@ -1622,7 +1823,9 @@ mod tests {
         let x = hash_noise(n, 0.0);
         let y = hash_noise(n, 900.0);
         let n_dev = y.iter().filter(|v| v.is_finite()).count();
-        let cfg = SearchConfig::noise_scaled(&y, n_dev, 1.5).with_max_depth(1).with_budget(60);
+        let cfg = SearchConfig::noise_scaled(&y, n_dev, 1.5)
+            .with_max_depth(1)
+            .with_budget(60);
         let out = search(&small_forms(1), &[x], &y, &cfg);
         assert_eq!(out.accepted, 0, "best: {}", recovered_equation(&out));
         // Positive control: the same configuration must still find a real law.
@@ -1631,7 +1834,9 @@ mod tests {
         for t in 2..n {
             y_signal[t] = 3.0 * x_signal[t - 2];
         }
-        let cfg2 = SearchConfig::noise_scaled(&y_signal, n_dev, 1.5).with_max_depth(1).with_budget(60);
+        let cfg2 = SearchConfig::noise_scaled(&y_signal, n_dev, 1.5)
+            .with_max_depth(1)
+            .with_budget(60);
         let out2 = search(&small_forms(1), &[x_signal], &y_signal, &cfg2);
         assert!(out2.accepted > 0, "positive control must be found");
     }

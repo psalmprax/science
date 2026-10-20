@@ -3,11 +3,11 @@
 //! read by a downstream process to compute disagreement metrics against other
 //! proposers (e.g. PySR).  It does not alter search or promotion decisions.
 
+use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
-use std::path::PathBuf;
 use std::io::Write;
-use serde::{Serialize, Deserialize};
 use std::path::Path;
+use std::path::PathBuf;
 
 /// Path helper: creates a timestamp‑named log file under the given directory.
 /// Returns the full path to the log file.
@@ -35,11 +35,7 @@ pub struct CandidateRecord {
 // Append a `CandidateRecord` to the run‑specific log file.
 // The file is created if it does not exist and appended to otherwise.
 pub fn log_candidate(log_path: &Path, record: &CandidateRecord) {
-    if let Ok(mut file) = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(log_path)
-    {
+    if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(log_path) {
         if let Ok(line) = serde_json::to_string(record) {
             let _ = writeln!(file, "{}", line);
         }

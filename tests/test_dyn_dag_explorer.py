@@ -33,11 +33,11 @@ def test_dag_lineage_extraction_and_cytoscape():
         ledger = FullLineageExperimentLedger(persistence_path=ledger_path)
 
         # Register Parent Candidate A
-        c_a = ledger.register_candidate("cand_A", "proposer_1", "y = sin(x)")
+        ledger.register_candidate("cand_A", "proposer_1", "y = sin(x)")
         ledger.update_lifecycle_state("cand_A", CandidateLifecycleState.DEVELOPMENT_PASSED, metrics={"rmse": 0.45})
 
         # Register Child Candidate B mutated from A
-        c_b = ledger.register_candidate("cand_B", "proposer_1", "y = sin(x) + cos(x)", parent_candidate_id="cand_A")
+        ledger.register_candidate("cand_B", "proposer_1", "y = sin(x) + cos(x)", parent_candidate_id="cand_A")
         ledger.update_lifecycle_state("cand_B", CandidateLifecycleState.CONFIRMED_VALID, metrics={"rmse": 0.12, "dsr": 0.98})
 
         # Extract DAG

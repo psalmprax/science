@@ -339,7 +339,9 @@ class TestProvenanceFallbackFiresEndToEnd:
         gate 4's recorded series, read through provenance.
         """
         best = self._best_fit()
-        adj = adjudicate([best])
+        # Exercise the provenance fallback even when this seeded holdout falls
+        # just below the production whiteness barrier.
+        adj = adjudicate([best], sole_rho_flag=RESID_RHO_FLAG / 2)
         assert adj.status is EpistemicStatus.INSUFFICIENT_EVIDENCE
         assert adj.promoted is None
         # Guard 1 passed, then Guard 2 refused -- both stated in the reason.
