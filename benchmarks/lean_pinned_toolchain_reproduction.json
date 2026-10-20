@@ -1,0 +1,31 @@
+{
+  "title": "REG-LEAN pinned-toolchain sweep reproduction",
+  "generated_commit": null,
+  "reference_toolchain_version": "Lean (version 4.35.0, x86_64-unknown-linux-gnu, commit eb6cafb7290e8bd5f2937522d8d804f58f02bafc, Release)",
+  "pinned_toolchain": "leanprover--lean4---v4.34.1",
+  "pinned_toolchain_version_line": "Lean (version 4.34.1, x86_64-unknown-linux-gnu, commit 5045d0056413266e57c625dcd7c365b10e377c52, Release)",
+  "all_records_match": true,
+  "mismatches": [],
+  "records_compared": 323,
+  "counts_match": true,
+  "counts_reference": {
+    "total_equations_evaluated": 323,
+    "p2_verified_count": 315,
+    "p0_refuted_count": 8,
+    "p1_candidate_count": 0
+  },
+  "counts_pinned": {
+    "total_equations_evaluated": 323,
+    "p2_verified_count": 315,
+    "p0_refuted_count": 8,
+    "p1_candidate_count": 0
+  },
+  "byte_identical_restoration": {
+    "performed": true,
+    "drift_findings": [
+      "all_system_equations_lean_provenance.json rewritten by sweep; restored byte-identical",
+      "apedp_dyn/lean_formal/math_cell_u15_h15m_hyp5_fourier_spectral_verification.lean rewritten by sweep; restored to committed bytes"
+    ]
+  },
+  "honesty_boundary": "Sweep exit codes reproduced under a pinned, upstream-established Lean toolchain provisioned independently of the reference artifact's binary (Lean (version 4.35.0, x86_64-unknown-linux-gnu, commit eb6cafb7290e8bd5f2937522d8d804f58f02bafc, Release) vs pinned leanprover--lean4---v4.34.1). The register's 'outside this environment' EXTERNAL sign-off remains outstanding; this artifact reproduces, it does not substitute external review."
+}

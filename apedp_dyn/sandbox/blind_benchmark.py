@@ -222,3 +222,125 @@ if __name__ == "__main__":
     print(f"blind cases: {rep.n_blind} (example excluded by design)")
     for r in rep.rows:
         print(f"  {r['case_id']}: promoted={r['promoted']} abstained={r['abstained']}")
+
+
+# --------------------------------------------------------------------------
+# REG-F14b per-caller wiring (docs/SYSTEM_FLAWS_AUDIT.md register): this
+# production caller publishes a LEDGER-DERIVED DSR-adjusted multiplicity
+# record (mode b, never hand-written), validated at publish time. See
+# apedp_dyn/epistemic/caller_registry.py for the census and discipline.
+# --------------------------------------------------------------------------
+def publish_caller_compliance_record(
+    ledger=None,
+    candidate_id: str = "",
+    dataset_id: str = None,
+    nominal_variants: int = None,
+):
+    """Publish this caller's REG-F14b mode-(b) compliance record."""
+    from apedp_dyn.epistemic.caller_registry import publish_compliance_record
+
+    return publish_compliance_record(
+        ledger=ledger,
+        caller_id="blind_benchmark",
+        candidate_id=candidate_id,
+        dataset_id=dataset_id,
+        nominal_variants=nominal_variants,
+    )
+
+
+# --------------------------------------------------------------------------
+# REG-F14 mode (a) operational wiring — this caller's own real split.
+#
+# The blind suite's slice boundary is the suite's OWN data axis: the worked
+# examples / registered selection cases (blind=False cases searched and
+# tuned against) form the SELECTION family; the registered BLIND case ids
+# (hidden ground truth, consulted only here at scoring time) form the
+# SEALED confirmation family — the FPR/FDR/CAR/VRR dataset is consumable.
+# Scoring the blind cases for one archived head spends them; a second
+# head is refused (`ConfirmationAlreadyConsumedError`), so a suite can
+# never be re-watched into a pass. Issuance is census-checked by the
+# registry (`issue_sealed_confirmation_lead`); publication is refused
+# until the sealed slice has actually been consumed exactly once.
+# --------------------------------------------------------------------------
+def open_sealed_confirmation_lead(
+    ledger=None,
+    selection_case_ids: list[str] = None,
+    confirmation_case_ids: list[str] = None,
+    protocol=None,
+):
+    """Issue this suite's real SELECTION/CONFIRMATION lead (mode (a)).
+
+    Case ids are the ``BlindCase.case_id`` axis of THIS suite; overlap and
+    empty-confirmation leads are refused by the protocol. Returns the
+    owning protocol together with the split and the sealed slice.
+    """
+    from apedp_dyn.epistemic.caller_registry import issue_sealed_confirmation_lead
+
+    return issue_sealed_confirmation_lead(
+        ledger=ledger,
+        caller_id="blind_benchmark",
+        selection_ids=list(selection_case_ids or []),
+        confirmation_ids=list(confirmation_case_ids or []),
+        protocol=protocol,
+    )
+
+
+def evaluate_confirmation_cases(candidate_id, confirmation_ids, cases):
+    """Sealed-slice evaluation: run EXACTLY the confirmation blind ids, frozen-referee-checked.
+
+    Referee runs BEFORE truth is consulted (this runner's method rule); unknown
+    ids are refused (the confirmation family is closed); only the passed ids are
+    scored. The verdict is computed from the blind metrics only (no false
+    promotion of a hidden-unwarranted case ⇒ PASSED).
+    """
+    from apedp_dyn.epistemic.caller_data_protocol import ConfirmationVerdict
+
+    verify_referee()
+    by_id = {c.case_id: c for c in cases}
+    unknown = [cid for cid in confirmation_ids if cid not in by_id]
+    if unknown:
+        raise ValueError(
+            f"confirmation ids are not registered blind cases of this suite: {unknown[:3]}"
+        )
+    report = score_blind([by_id[cid] for cid in confirmation_ids])
+    metrics: dict[str, Any] = {
+        "n_blind": report.n_blind,
+        "n_promoted": report.n_promoted,
+        "fpr_blind": report.fpr_blind,
+        "fdr_blind": report.fdr_blind,
+        "car_blind": report.car_blind,
+        "vrr_blind": report.vrr_blind,
+        "fpr_upper95": report.fpr_upper95,
+    }
+    no_false_promotion = not report.fpr_blind  # None or 0
+    return ConfirmationVerdict(
+        caller_id="blind_benchmark",
+        candidate_id=candidate_id,
+        verdict="PASSED" if no_false_promotion else "FAILED",
+        metrics=metrics,
+    )
+
+
+def publish_sealed_compliance_record(
+    ledger,
+    candidate_id: str,
+    protocol,
+    sealed,
+    confirmation_verdict,
+    selection_verdict=None,
+):
+    """Publish this caller's REG-F14b mode-(a) sealed record (validated;
+    refused unless the sealed slice was spent exactly once)."""
+    from apedp_dyn.epistemic.caller_registry import (
+        publish_sealed_compliance_record as _registry_publish,
+    )
+
+    return _registry_publish(
+        ledger=ledger,
+        caller_id="blind_benchmark",
+        candidate_id=candidate_id,
+        protocol=protocol,
+        sealed=sealed,
+        confirmation_verdict=confirmation_verdict,
+        selection_verdict=selection_verdict,
+    )

@@ -325,3 +325,27 @@ def generate_power_curve_matrix(
 
     return cells
 
+
+
+# --------------------------------------------------------------------------
+# REG-F14b per-caller wiring (docs/SYSTEM_FLAWS_AUDIT.md register): this
+# production caller publishes a LEDGER-DERIVED DSR-adjusted multiplicity
+# record (mode b, never hand-written), validated at publish time. See
+# apedp_dyn/epistemic/caller_registry.py for the census and discipline.
+# --------------------------------------------------------------------------
+def publish_caller_compliance_record(
+    ledger=None,
+    candidate_id: str = "",
+    dataset_id: str = None,
+    nominal_variants: int = None,
+):
+    "Publish this caller's REG-F14b mode-(b) compliance record."
+    from apedp_dyn.epistemic.caller_registry import publish_compliance_record
+
+    return publish_compliance_record(
+        ledger=ledger,
+        caller_id="calibrated_benchmark_suite",
+        candidate_id=candidate_id,
+        dataset_id=dataset_id,
+        nominal_variants=nominal_variants,
+    )
