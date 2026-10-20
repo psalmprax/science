@@ -283,14 +283,28 @@ _XSCALE_ROLES: dict[str, dict[str, str | float]] = {
     "logbound": {"A": "a", "B": "b"},
 }
 
+_NORMALIZE_X_FAMILIES = frozenset({
+    "power_law", "rational_transition", "rational_saturation",
+    "exponential_envelope", "exponential_decay",
+    "logarithmic_boundary_layer", "rational_exponential_envelope",
+    "linear_baseline", "polynomial_baseline",
+})
 
-def _decade_x_scale(xs: np.ndarray) -> float:
-    """Return the power-of-ten scale of a finite, nonzero x domain."""
-    x_max = float(np.max(np.abs(xs))) if xs.size else 1.0
-    if not np.isfinite(x_max) or x_max <= 0.0:
+
+def _input_normalization_scale(
+    family_label: str,
+    struct_template: str,
+    x_values: np.ndarray,
+) -> float:
+    """Choose an x scale equivariantly, excluding templates without map-back."""
+    if (
+        family_label not in _NORMALIZE_X_FAMILIES
+        or "abs(" in struct_template
+        or ("log(x)" in struct_template and "log(1" not in struct_template)
+    ):
         return 1.0
-    scale = 10.0 ** float(np.floor(np.log10(x_max)))
-    return scale if np.isfinite(scale) and scale > 0.0 else 1.0
+    x_abs_max = float(np.max(np.abs(x_values))) if len(x_values) else 1.0
+    return x_abs_max if np.isfinite(x_abs_max) and x_abs_max > 0.0 else 1.0
 
 
 #: Minimum samples before :func:`_regime_identifiability` will let
@@ -964,9 +978,13 @@ class AutonomousModelSynthesizer:
         # their bounds and rail). Stored values map back per-parameter as
         # P = P_tilde / x_scale**e (see _XSCALE_ROLES). x_scale == 1.0 is an
         # exact no-op; y values are never rescaled so all MSEs stay comparable.
-        x_scale_all = (
-            _decade_x_scale(x_train) if fam in _XSCALE_ROLES else 1.0
-        )
+        x_scale_all = 1.0
+        _xam = float(np.max(np.abs(x_train))) if len(x_train) > 0 else 1.0
+        # Normalize by the observed input span so a change of x units leaves
+        # the optimizer's domain unchanged. The form-specific map-back below
+        # restores parameters to the caller's units.
+        if np.isfinite(_xam) and _xam > 0.0:
+            x_scale_all = _xam
         x_train_n = x_train if x_scale_all == 1.0 else x_train / x_scale_all
         x_val_n = x_val if x_scale_all == 1.0 else x_val / x_scale_all
         with np.errstate(all="ignore"):
@@ -1325,18 +1343,7 @@ class AutonomousModelSynthesizer:
         # baked constants cannot be mapped back. Those families keep the legacy
         # unnormalized path. When adding a family, audit its templates: any
         # absolute coordinate or fixed frequency disqualifies it here.
-        _NORMALIZE_FAMILIES = frozenset({
-            "power_law", "rational_transition", "rational_saturation",
-            "exponential_envelope", "exponential_decay",
-            "logarithmic_boundary_layer", "rational_exponential_envelope",
-            "linear_baseline", "polynomial_baseline",
-        })
-        # These families have x-scale roles for every fitted coefficient, so
-        # decade normalization preserves their model class and maps parameters
-        # back exactly. Templates with fixed absolute x coordinates remain on
-        # the legacy path.
-        normalize_ok = family_label in _NORMALIZE_FAMILIES and "abs(" not in struct_template
-        x_scale = _decade_x_scale(x_train) if normalize_ok else 1.0
+        x_scale = _input_normalization_scale(family_label, struct_template, x_train)
         param_exp: dict[str, float] = {}
         if x_scale != 1.0:
             for pm in re.finditer(

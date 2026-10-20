@@ -71,6 +71,9 @@ jobs:
           --health-retries 20
     env:
       APEDP_REDIS_URL: redis://localhost:6379/0
+      # Avoid component conflicts in the hosted runner's preinstalled toolchains.
+      # All Rust steps share this job-local home, including the default toolchain.
+      RUSTUP_HOME: ${{ runner.temp }}/rustup
     strategy:
       fail-fast: true
       matrix:
