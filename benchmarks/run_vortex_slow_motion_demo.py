@@ -23,7 +23,10 @@ import sys
 import numpy as np
 import torch
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+_REPO = Path(__file__).resolve().parents[1]
+for p in (str(_REPO), str(_REPO / "packages" / "jetflow-video")):
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 from apedp_dyn.video.continuous_interpolator import ContinuousTemporalInterpolator
 from jetflow_video.bridge import VideoVAEBridge
