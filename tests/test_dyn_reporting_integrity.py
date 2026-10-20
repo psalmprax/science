@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 # Machine-verified total: updated only by re-running this test, which fails
 # if it is wrong. Anything quoted in prose must match it or be labelled a
 # subset.
-RIME_SUITE_TOTAL = 212
+RIME_SUITE_TOTAL = 213
 
 RIME_TEST_FILES = [
     "test_dyn_shape_inference.py",

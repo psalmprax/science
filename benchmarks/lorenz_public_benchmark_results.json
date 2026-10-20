@@ -1,0 +1,193 @@
+{
+  "frozen": {
+    "estimator": {
+      "derivative": "np.gradient",
+      "savgol": [
+        21,
+        3
+      ]
+    },
+    "noise_sweep": [
+      0.005,
+      0.01,
+      0.02,
+      0.03
+    ],
+    "prereg_id": "PREREG-LORENZ-PUB-V1-2026-10-20",
+    "referee": {
+      "benchmark_level": "unknown",
+      "data_origin": "unknown",
+      "n_boot": 1000,
+      "seed": 7
+    },
+    "seeds": [
+      101,
+      202,
+      303
+    ],
+    "split": {
+      "dev_fraction": 0.7,
+      "holdout_fraction": 0.3
+    },
+    "spurious_tolerance": 0.001,
+    "world": {
+      "beta": 2.6666666666666665,
+      "dt_sample": 0.005,
+      "holdout_x0": [
+        2.0,
+        2.0,
+        25.0
+      ],
+      "ic": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rho": 28.0,
+      "sigma": 10.0,
+      "t_span": [
+        0.0,
+        10.0
+      ]
+    }
+  },
+  "git_head": "f9ef82f778e2a68a8eeb907695fea0f717e643b8",
+  "mode": "smoke",
+  "prereg_id": "PREREG-LORENZ-PUB-V1-2026-10-20",
+  "recorded_at": "2026-10-20T11:01:52.224709+00:00",
+  "rows": [
+    {
+      "all_coeffs_within_2p5se": true,
+      "coefficients": [
+        30.618009044302244,
+        -2.091853099685414,
+        0.14761005650923684,
+        -1.1199776205249525,
+        0.04469973132518822,
+        -0.0010190009223027124,
+        -5.664885969824951e-05,
+        -0.0008531218105196081,
+        -0.0004408408377352402,
+        0.0014084479654287163
+      ],
+      "divergence_horizon_model": 0.25,
+      "divergence_horizon_oracle": 10.0,
+      "divergence_horizon_ratio": 0.025,
+      "max_coefficient_error_se": 0.3451394971694533,
+      "noise_frac": 0.02,
+      "path": "B",
+      "referee_promoted": null,
+      "referee_reason": "nearest distinct rival true within \u03c4 (\u0394=0.0106 \u2264 \u03c4=1.57 [holdout-scale] on holdout RMSE); observationally indistinguishable under the prespecified APEDP resolution criterion; APEDP abstains from unique promotion",
+      "referee_status": "multi_hypothesis",
+      "seed": 101,
+      "structure_clean": false,
+      "terms": [
+        "x",
+        "y",
+        "z",
+        "xz",
+        "yz",
+        "x3",
+        "z3",
+        "x2y",
+        "xy2",
+        "xz2"
+      ],
+      "winner_true_holdout_gap": 0.010571732775593201
+    },
+    {
+      "all_coeffs_within_2p5se": true,
+      "coefficients": [
+        27.65814714131639,
+        -0.8570744040919503,
+        -0.9912173072577923,
+        -0.0005144906255376558
+      ],
+      "divergence_horizon_model": 1.04,
+      "divergence_horizon_oracle": 10.0,
+      "divergence_horizon_ratio": 0.10400000000000001,
+      "max_coefficient_error_se": 0.3451394971694533,
+      "noise_frac": 0.02,
+      "path": "B-prime",
+      "referee_promoted": null,
+      "referee_reason": "nearest distinct rival true within \u03c4 (\u0394=0.00117 \u2264 \u03c4=1.57 [holdout-scale] on holdout RMSE); observationally indistinguishable under the prespecified APEDP resolution criterion; APEDP abstains from unique promotion",
+      "referee_status": "multi_hypothesis",
+      "seed": 101,
+      "selected": "spur1_plus_x2y",
+      "structure_clean": true,
+      "terms": [
+        "x",
+        "y",
+        "xz",
+        "x2y"
+      ],
+      "winner_true_holdout_gap": 0.0011703357357562005
+    },
+    {
+      "all_coeffs_within_2p5se": true,
+      "coefficients": [
+        14.512163705631735,
+        13.640084909719159,
+        -0.016255309728782308
+      ],
+      "declined": [
+        {
+          "reason": "nearest distinct rival incumbent within \u03c4 (\u0394=0.487 \u2264 \u03c4=1.57 [holdout-scale] on holdout RMSE); observationally indistinguishable under the prespecified APEDP resolution criterion; APEDP abstains from u",
+          "status": "multi_hypothesis",
+          "term": "xz"
+        },
+        {
+          "reason": "nearest distinct rival incumbent within \u03c4 (\u0394=0.269 \u2264 \u03c4=1.57 [holdout-scale] on holdout RMSE); observationally indistinguishable under the prespecified APEDP resolution criterion; APEDP abstains from u",
+          "status": "multi_hypothesis",
+          "term": "xy2"
+        },
+        {
+          "reason": "nearest distinct rival incumbent within \u03c4 (\u0394=0.212 \u2264 \u03c4=1.57 [holdout-scale] on holdout RMSE); observationally indistinguishable under the prespecified APEDP resolution criterion; APEDP abstains from u",
+          "status": "multi_hypothesis",
+          "term": "x2y"
+        }
+      ],
+      "divergence_horizon_model": 0.05,
+      "divergence_horizon_oracle": 10.0,
+      "divergence_horizon_ratio": 0.005,
+      "max_coefficient_error_se": 0.3451394971694533,
+      "noise_frac": 0.02,
+      "path": "R",
+      "referee_promoted": null,
+      "referee_reason": "nearest distinct rival winner within \u03c4 (\u0394=0.587 \u2264 \u03c4=1.57 [holdout-scale] on holdout RMSE); observationally indistinguishable under the prespecified APEDP resolution criterion; APEDP abstains from unique promotion",
+      "referee_status": "multi_hypothesis",
+      "seed": 101,
+      "structure_clean": false,
+      "terms": [
+        "1",
+        "x",
+        "xz2"
+      ],
+      "winner_true_holdout_gap": 0.5874326771887486
+    },
+    {
+      "all_coeffs_within_2p5se": null,
+      "coefficients": [
+        27.268612,
+        -1.0,
+        -1.00261
+      ],
+      "divergence_horizon_model": 0.295,
+      "divergence_horizon_oracle": 10.0,
+      "divergence_horizon_ratio": 0.0295,
+      "max_coefficient_error_se": null,
+      "noise_frac": 0.02,
+      "path": "C",
+      "referee_promoted": null,
+      "referee_status": "not-adjudicated-chimera",
+      "seed": 101,
+      "structure_clean": false,
+      "terms": [
+        "x",
+        "y",
+        "xz"
+      ],
+      "winner_true_holdout_gap": null
+    }
+  ]
+}

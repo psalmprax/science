@@ -37,8 +37,12 @@ def _synthetic_panels(n=1200):
 def _panels():
     global PANELS
     if PANELS is None:
-        frames = T.load_frames()
-        PANELS = {a: T.build_asset_panel(frames["raw"], a) for a in T.ASSETS}
+        # The panel loaders live on the v1 module (v2 shares "the same panels
+        # as v1" per its own docstring but never re-exported them). Loading
+        # through T1 keeps the data plumbing on the one defined API while the
+        # protocol pins below stay on T (v2) and T1 (v1) respectively.
+        frames = T1.load_frames()
+        PANELS = {a: T1.build_asset_panel(frames["raw"], a) for a in T1.ASSETS}
     return PANELS
 
 
