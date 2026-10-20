@@ -1,6 +1,6 @@
 # JetFlow-Video: Continuous Spatio-Temporal PDE Video Generation Benchmark
 
-**Date:** 2026-10-16T17:07:04Z  
+**Date:** 2026-10-20T15:08:18Z  
 **Status:** Certified Benchmark Report  
 
 ---
@@ -28,10 +28,10 @@ JetFlow-Video resolves the two fundamental bottlenecks of modern generative vide
 
 | Stepper Method | Steps | Order | Latency (ms) | Speedup vs 50-Step | Trajectory RMSE | Trajectory $R^2$ |
 |---|---|---|---|---|---|---|
-| **50-Step Euler Diffusion (Baseline)** | 50 | 1st | 1.251 ms | 1.00x | 0.00148 | 1.0 |
-| **10-Step Euler Diffusion** | 10 | 1st | 0.248 ms | 5.05x | 0.00761 | 0.9998 |
-| **4-Step Jet2 Curvature Flow** | 4 | 2nd | **0.315 ms** | **3.97x** | **0.0058** | **0.9999** |
-| **2-Step Jet2 Curvature Flow** | 2 | 2nd | **0.156 ms** | **8.03x** | **0.02406** | **0.9981** |
+| **50-Step Euler Diffusion (Baseline)** | 50 | 1st | 1.089 ms | 1.00x | 0.00148 | 1.0 |
+| **10-Step Euler Diffusion** | 10 | 1st | 0.271 ms | 4.01x | 0.00761 | 0.9998 |
+| **4-Step Jet2 Curvature Flow** | 4 | 2nd | **0.319 ms** | **3.41x** | **0.0058** | **0.9999** |
+| **2-Step Jet2 Curvature Flow** | 2 | 2nd | **0.187 ms** | **5.82x** | **0.02406** | **0.9981** |
 
 ---
 
@@ -40,8 +40,8 @@ JetFlow-Video resolves the two fundamental bottlenecks of modern generative vide
 | Upsampling Target | Output Frames | Total Time (ms) | Time Per Frame (ms) | Temporal Smoothness $\|D_t^2 u\|$ |
 |---|---|---|---|---|
 | **Original 24 FPS** | 16 | - | - | 0.003291 |
-| **Upsampled 60 FPS** | 39 | 30.49 ms | **0.782 ms** | **8.1e-05** |
-| **Upsampled 120 FPS Slow-Mo** | 76 | 47.97 ms | **0.631 ms** | **5e-06** |
+| **Upsampled 60 FPS** | 39 | 3.51 ms | **0.09 ms** | **8.1e-05** |
+| **Upsampled 120 FPS Slow-Mo** | 76 | 30.63 ms | **0.403 ms** | **5e-06** |
 
 ---
 

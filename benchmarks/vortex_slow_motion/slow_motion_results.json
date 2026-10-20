@@ -1,0 +1,24 @@
+{
+  "demo": "vortex_slow_motion_8to24",
+  "interpolator": "VideoVAEBridge.decode_continuous_frame_rgb (C^1 Catmull-Rom spline over the TT temporal core)",
+  "source_frames": 8,
+  "rendered_frames": 24,
+  "playback_fps": 12.0,
+  "tt_bond_ranks": [
+    8,
+    16,
+    16
+  ],
+  "tt_compression_ratio": 9.540372670807454,
+  "tt_mem_saving_pct": 89.51822916666666,
+  "total_render_ms": 2236.99,
+  "ms_per_frame": 93.208,
+  "temporal_smoothness_dt2_l2": 2.8643047017500987e-05,
+  "frames_saved": 24,
+  "wall_total_s": 2.8,
+  "artifacts": {
+    "gif": "/home/psalmprax/ALL_PROJECTS/science/benchmarks/vortex_slow_motion/vortex_slow_motion_12fps.gif",
+    "contact_sheet": "/home/psalmprax/ALL_PROJECTS/science/benchmarks/vortex_slow_motion/slow_motion_contact_sheet.png",
+    "results_json": "/home/psalmprax/ALL_PROJECTS/science/benchmarks/vortex_slow_motion/slow_motion_results.json"
+  }
+}

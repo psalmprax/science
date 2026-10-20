@@ -1,0 +1,39 @@
+{
+  "clean_baseline_haar": {
+    "ssim": 1.0,
+    "psnr_db": 100.0
+  },
+  "clean_refiner": {
+    "ssim": 1.0,
+    "psnr_db": 88.621
+  },
+  "degraded_tt8_haar": {
+    "ssim": 0.989199,
+    "psnr_db": 38.046
+  },
+  "degraded_tt8_refiner": {
+    "ssim": 0.989198,
+    "psnr_db": 38.047
+  },
+  "gain_clean_ssim": 0.0,
+  "gain_deg_ssim": -1e-06,
+  "gain_deg_psnr_db": 0.001,
+  "training": {
+    "steps": 60,
+    "recon_l1_first": 1.756792045171096e-08,
+    "recon_l1_last": 3.61030652129557e-05,
+    "grad_first": 5.314529616384789e-08,
+    "grad_last": 3.868633484671591e-06,
+    "seed": 3,
+    "device": "cpu"
+  },
+  "tt8": {
+    "compression": 31.346938775510203,
+    "mem_saved_pct": 96.80989583333334
+  },
+  "parity_at_init": {
+    "ssim": 1.0,
+    "psnr_db": 100.0,
+    "note": "UNTRAINED zero-init refiner output == GT (exact Haar parity, measured); clean-path 88.62 dB after 60 steps is training-caused adversarial drift"
+  }
+}
