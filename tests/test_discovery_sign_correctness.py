@@ -48,7 +48,7 @@ def test_even_power_predictions_nonnegative_on_negative_inputs():
     y = x**2
     res = sparse_select_terms({"x": x}, y, max_power=2, include_reciprocals=True)
     assert "x**2" in res.terms
-    cols = {"x**2": x**2, "x**1": x}
+    cols = {"x**2": x**2, "x**1": x, "1/x": 1.0 / x, "1/x**2": 1.0 / x**2}
     X = np.column_stack([cols[t] for t in res.terms] + [np.ones_like(x)])
     coef, *_ = np.linalg.lstsq(X, y, rcond=None)
     pred = X @ coef
