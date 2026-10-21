@@ -106,6 +106,49 @@ edits; FLAW-01 remains OPEN by protocol:
   16 pending appends with a flush before snapshots.
 - **FLAW-19:** dead `np.gradient` removed from the SIR proposer; formula uses
   `i_col` physical notation instead of the internal `I_arr` identifier.
+- **FLAW-STRAITA (same-day follow-through; exact-RMSE gate audit):**
+  `rime/implicit.rs` still carried two COMPENSATING anchored gauges in
+  raw-coefficient space — a raw `max_c = max|c_j|` rescale applied after the
+  strata-coherent `c_j = v_j/norm_j` mapping, and a raw `|c_j| > 1e-6`
+  active-count threshold that the first gauge had been accidentally inflating
+  above threshold. At O(1e6)-scale strata the pair degenerated the genuinely
+  pure 1e6 circle to the constant fallback `-1 = 0` (rmse 1.0, refusal) —
+  probed before the fix; removing only the first gauge exposed the second
+  (`test_large_scale_exact_relation_certifiable` failed at rmse 3.6e-17).
+  Fixed with coherent contribution-space gauges: no normalization after
+  `v/norm` (the Jacobi eigenvector is already 2-normalized), and membership
+  by contribution ratio `|c_j|·norm_j > 1e-6·max_j(|c_j|·norm_j)`. Post-fix
+  probes (rebuilt extension): pure 1e6 circle certifies rmse 4.1e-17,
+  near-zero-scale pure circle 1.6e-18, unit circle 5.7e-16 unchanged;
+  MUT-E4's kill restored on the natural near-miss fixture. Pins:
+  `test_flaw_straita_implicit_rs_raw_gauges_removed` +
+  `test_flaw_straita_extreme_scale_circle_certifies_not_degenerate`.
+  Verification: `cargo test --lib` 193/193, mutation battery ALL KILLED,
+  `scripts/check.sh` full tier green.
+- **FLAW-A01 (Set A follow-through; 4-module lookahead leak):**
+  `ensemble_gated.py`, `ensemble_m.py`, `incremental_info.py` and
+  `e5_market.py` built train blocks with the raw `dates < origin` mask while
+  the `_d5` target forward-shifts the 5-day rolling mean (`shift(-5)`) —
+  blocks within 5 days of the origin boundary read forward out-of-sample
+  rows. Fixed by the shared helper `trading_e4t1_v2::_train_blocks_no_leak`
+  (mirrors `run_origin`'s corrected mask `tr[tr + 5 < origin_idx]`) applied at
+  every train-block call site in the four modules. Pins: behavioral pin
+  (pre-fix leak demonstrated inline) + four-consumer text pin in
+  `tests/test_dyn_external_audit_2026_10_21_pins.py`.
+- **FLAW-A09 (Set A follow-through; sibling lag-buffer leak):** the
+  distributed-lag scorer wrote `lag_state["buffers"][base_col]` on the first
+  lag term of a call, so a second lag term on the same base column read that
+  same call's own tail as prior history (future data prepended to the head).
+  Buffer is now snapshotted pre-call and written once per (call, base
+  column). Pin:
+  `test_distributed_lag_multi_lag_same_column_streaming_safe` (chunked ==
+  single-pass with two lag terms sharing one column).
+- **FLAW-A13 (Set A follow-through; zero-denominator masking):** blind
+  benchmark per-domain metrics reported `0.0` on zero denominators — falsely
+  certifying a 0% FPR where no negative controls exist. Per-domain
+  `fpr`/`fdr`/`vrr` now report `None` on empty denominators, mirroring the
+  headline convention; pins updated to the honest contract and a dedicated
+  zero-denominator pin added (`tests/test_dyn_blind.py`).
 - **Frozen-record re-mint v1_8 → v1_9 (per freeze protocol):** the FLAW-07 and
   FLAW-08 referee edits legitimate the guard-file refresh;
   `apedp_dyn/sandbox/APEDPX_FROZEN_v1_9.json` supersedes v1_8 with

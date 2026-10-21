@@ -63,7 +63,36 @@ APEDP (Autonomous Physics & Engineering Discovery Platform) is an end-to-end sci
   all-zero "0 = 0" pruned vector cannot be certified as an exact discovery;
   the exactness RMSE gate is scale-aware (relative to the RMS magnitude of
   the relation's residual terms) so O(1e5)-scale exact laws are certifiable
-  while small-scale near-misses are refused.
+  while small-scale near-misses are refused. FLAW-STRAITA (2026-10-21,
+  exact-RMSE gate audit): the raw-space `max_c = max|c_j|` coefficient gauge
+  applied after the strata-coherent `c_j = v_j/norm_j` mapping and the raw
+  `|c_j| > 1e-6` active-count recount were two compensating anchored gauges
+  in coefficient space; at O(1e6)-scale strata they degenerated a genuinely
+  pure 1e6 circle to the constant fallback `-1 = 0` (probed: rmse 1.0,
+  exact relation refused). Both are now coherent contribution-space gauges
+  (no normalization after `v/norm`; membership by contribution ratio
+  `|c_j|·norm_j > 1e-6·max_j(|c_j|·norm_j)`); evidence trail in
+  `docs/SYSTEM_FLAWS_AUDIT.md` (FLAW-STRAITA) — pure 1e6 circle certifies at
+  rmse 4.1e-17 after the fix, MUT-E4's kill restored on the natural
+  near-miss fixture.
+- **Active-disambiguation train-block masking (FLAW-A01, 2026-10-21).**
+  `ensemble_gated.py`, `ensemble_m.py`, `incremental_info.py` and
+  `e5_market.py` build train blocks through the shared
+  `trading_e4t1_v2::_train_blocks_no_leak` helper, which applies the 5-day
+  boundary mask (`tr[tr + 5 < origin_idx]`) required because the `_d5`
+  target forward-shifts the 5-day rolling mean; raw `dates < origin` blocks
+  leaked forward out-of-sample rows into every fit in those modules.
+- **Distributed-lag streaming buffer (FLAW-A09, 2026-10-21).**
+  `apedp_dyn/proposers/distributed_lag_interaction_proposer.py::compute_score`
+  snapshots the persistent lag buffer once per (call, base column) and
+  writes it once per (call, base column), so sibling lag terms on the same
+  column (e.g. `lag_1_x` + `lag_2_x`) cannot read each other's same-call
+  tail as prior history; chunked scoring equals single-pass scoring.
+- **Blind benchmark zero-denominator reporting (FLAW-A13, 2026-10-21).**
+  `apedp_dyn/sandbox/blind_benchmark.py` per-domain `fpr`/`fdr`/`vrr`
+  report `None` when the denominator is zero, mirroring the headline
+  metrics: a domain with no negative controls has an UNMEASURED rate, never
+  a certified 0% error rate.
 - **PDE frozen-scoring library (`apedp_dyn/epistemic/pde_discovery.py`).**
   The Python cold-end library is a strict mirror of the Rust discovery
   library: a dev-discovered active term the mirror cannot resolve now fails

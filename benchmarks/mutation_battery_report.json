@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-10-21T12:54:10.805256+00:00",
+  "timestamp_utc": "2026-10-21T14:08:53.470457+00:00",
   "prereg_target": "REG-MUT (docs/SYSTEM_FLAWS_AUDIT.md Outstanding requirements register)",
   "status": "ALL_KILLED",
   "summary": {
@@ -22,8 +22,8 @@
       ],
       "returncode": 0,
       "passed": true,
-      "tail": "collected 46 items / 40 deselected / 6 selected\n\ntests/test_dyn_blind_audit_round2_remediation.py ......                  [100%]\n\n======================= 6 passed, 40 deselected in 4.02s =======================",
-      "duration_s": 5.8
+      "tail": "collected 47 items / 41 deselected / 6 selected\n\ntests/test_dyn_blind_audit_round2_remediation.py ......                  [100%]\n\n======================= 6 passed, 41 deselected in 7.93s =======================",
+      "duration_s": 10.1
     },
     "hawkes": {
       "argv": [
@@ -36,8 +36,8 @@
       ],
       "returncode": 0,
       "passed": true,
-      "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 2.49s ===============================",
-      "duration_s": 4.0
+      "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 3.90s ===============================",
+      "duration_s": 5.7
     },
     "hawkes_sharp": {
       "argv": [
@@ -50,8 +50,8 @@
       ],
       "returncode": 0,
       "passed": true,
-      "tail": "collected 2 items\n\ntests/test_dyn_hawkes_standardization_pins.py ..                         [100%]\n\n============================== 2 passed in 2.73s ===============================",
-      "duration_s": 4.2
+      "tail": "collected 2 items\n\ntests/test_dyn_hawkes_standardization_pins.py ..                         [100%]\n\n============================== 2 passed in 3.66s ===============================",
+      "duration_s": 5.0
     }
   },
   "mutants": [
@@ -76,13 +76,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 5.7,
+      "duration_s": 7.8,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 5.7,
-          "tail": "E    +  and   <EpistemicStatus.UNIQUE_SUPPORT: 'unique_support'> = EpistemicStatus.UNIQUE_SUPPORT\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchored_pass_skips_bootstrap_confirmation\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 1 passed, 40 deselected in 3.95s =================="
+          "duration_s": 7.8,
+          "tail": "E    +  and   <EpistemicStatus.UNIQUE_SUPPORT: 'unique_support'> = EpistemicStatus.UNIQUE_SUPPORT\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchored_pass_skips_bootstrap_confirmation\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 1 passed, 41 deselected in 5.78s =================="
         }
       ]
     },
@@ -107,13 +107,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 5.6,
+      "duration_s": 8.0,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 5.6,
-          "tail": "E    +  and   <EpistemicStatus.MULTI_HYPOTHESIS: 'multi_hypothesis'> = EpistemicStatus.MULTI_HYPOTHESIS\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchor_requires_gate4_certified_holdout_head\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n======================= 1 failed, 40 deselected in 3.93s ======================="
+          "duration_s": 8.0,
+          "tail": "E    +  and   <EpistemicStatus.MULTI_HYPOTHESIS: 'multi_hypothesis'> = EpistemicStatus.MULTI_HYPOTHESIS\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchor_requires_gate4_certified_holdout_head\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n======================= 1 failed, 41 deselected in 5.98s ======================="
         }
       ]
     },
@@ -138,13 +138,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 5.8,
+      "duration_s": 7.6,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 5.8,
-          "tail": "E   KeyError: 'u_xxx'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 40 deselected in 4.01s =================="
+          "duration_s": 7.6,
+          "tail": "E   KeyError: 'u_xxx'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 41 deselected in 5.78s =================="
         }
       ]
     },
@@ -169,13 +169,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 5.9,
+      "duration_s": 7.6,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 5.9,
-          "tail": "E    Input: 'Frozen scoring library cannot resolve dev-discovered active term(s): (term names redacted) \u2014 the Python mirror and the Rust discovery library have drifted; refuse scoring instead of silently dropping coefficient terms'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 40 deselected in 4.13s =================="
+          "duration_s": 7.6,
+          "tail": "E     Actual message: 'Frozen scoring library cannot resolve dev-discovered active term(s): (term names redacted) \u2014 the Python mirror and the Rust discovery library have drifted; refuse scoring instead of silently dropping coefficient terms'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 41 deselected in 5.83s =================="
         }
       ]
     },
@@ -206,19 +206,19 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 8.8,
+      "duration_s": 9.4,
       "pin_tails": [
         {
           "returncode": 0,
           "passed": true,
           "duration_s": 4.4,
-          "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 2.97s ==============================="
+          "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 3.19s ==============================="
         },
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 4.4,
-          "tail": "E    +    where <function allclose at 0x7534527b4930> = np.allclose\n=========================== short test summary info ============================\nFAILED tests/test_dyn_hawkes_standardization_pins.py::test_score_couples_to_fit_constants_not_eval_frame\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 1 passed in 2.93s =========================="
+          "duration_s": 5.0,
+          "tail": "E    +    where <function allclose at 0x7de99d5d28f0> = np.allclose\n=========================== short test summary info ============================\nFAILED tests/test_dyn_hawkes_standardization_pins.py::test_score_couples_to_fit_constants_not_eval_frame\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 1 passed in 3.67s =========================="
         }
       ]
     },
@@ -241,13 +241,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 3.3,
+      "duration_s": 3.2,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 3.3,
-          "tail": "E   Failed: DID NOT RAISE <class 'apedp_dyn.epistemic.remote_storage.StorageLockError'>\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw03_contested_lock_cannot_be_stolen\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 1 passed in 1.94s =========================="
+          "duration_s": 3.2,
+          "tail": "E   Failed: DID NOT RAISE StorageLockError\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw03_contested_lock_cannot_be_stolen\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 1 passed in 2.14s =========================="
         }
       ]
     },
@@ -276,7 +276,7 @@
           "returncode": 1,
           "passed": false,
           "duration_s": 5.8,
-          "tail": "E   apedp_dyn.epistemic.remote_storage.StorageLockError: Timed out after 2.0s acquiring S3 lock on ledger.\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw03_parameter_rejected_fallback_still_verifies_ownership\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 2 passed in 4.45s =========================="
+          "tail": "E   apedp_dyn.epistemic.remote_storage.StorageLockError: Timed out after 2.0s acquiring S3 lock on ledger.\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw03_parameter_rejected_fallback_still_verifies_ownership\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 2 passed in 4.69s =========================="
         }
       ]
     },
@@ -299,13 +299,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 8.4,
+      "duration_s": 10.2,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 8.4,
-          "tail": "E   apedp_dyn.robotics.cbf_certificate.CertificateViolation: CBF-QP failed the norm-ball constraint (A1)\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw17_cbf_final_projection_prevents_norm_violation\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 13 passed in 6.52s ========================="
+          "duration_s": 10.2,
+          "tail": "E   apedp_dyn.robotics.cbf_certificate.CertificateViolation: CBF-QP failed the norm-ball constraint (A1)\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw17_cbf_final_projection_prevents_norm_violation\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 13 passed in 8.10s ========================="
         }
       ]
     },
@@ -328,13 +328,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 4.0,
+      "duration_s": 3.8,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 4.0,
-          "tail": "E    +  and   <EpistemicStatus.UNIQUE_SUPPORT: 'unique_support'> = <enum 'EpistemicStatus'>.UNIQUE_SUPPORT\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw08_re_anchor_runs_bootstrap_on_paired_residuals\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 5 passed in 2.47s =========================="
+          "duration_s": 3.8,
+          "tail": "E    +  and   <EpistemicStatus.UNIQUE_SUPPORT: 'unique_support'> = <enum 'EpistemicStatus'>.UNIQUE_SUPPORT\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw08_re_anchor_runs_bootstrap_on_paired_residuals\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 5 passed in 2.70s =========================="
         }
       ]
     },
@@ -356,13 +356,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 4.0,
+      "duration_s": 5.9,
       "pin_tails": [
         {
           "returncode": 101,
           "passed": false,
-          "duration_s": 4.0,
-          "tail": "\nfailures:\n    rime::diff_pade::tests::test_nonuniform_grid_derivatives_use_fornberg_fallback\n\ntest result: FAILED. 191 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.91s"
+          "duration_s": 5.9,
+          "tail": "\nfailures:\n    rime::diff_pade::tests::test_nonuniform_grid_derivatives_use_fornberg_fallback\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.02s"
         }
       ]
     },
@@ -384,13 +384,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 3.8,
+      "duration_s": 5.6,
       "pin_tails": [
         {
           "returncode": 101,
           "passed": false,
-          "duration_s": 3.8,
-          "tail": "\nfailures:\n    rime::diff_pade::tests::test_nonuniform_grid_derivatives_use_fornberg_fallback\n\ntest result: FAILED. 191 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.83s"
+          "duration_s": 5.6,
+          "tail": "\nfailures:\n    rime::diff_pade::tests::test_nonuniform_grid_derivatives_use_fornberg_fallback\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.84s"
         }
       ]
     },
@@ -412,13 +412,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 3.8,
+      "duration_s": 5.9,
       "pin_tails": [
         {
           "returncode": 101,
           "passed": false,
-          "duration_s": 3.8,
-          "tail": "\nfailures:\n    rime::diff_pade::tests::test_pole_masked_second_order_is_not_exact_recovery\n\ntest result: FAILED. 191 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.89s"
+          "duration_s": 5.9,
+          "tail": "\nfailures:\n    rime::diff_pade::tests::test_pole_masked_second_order_is_not_exact_recovery\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.13s"
         }
       ]
     },
@@ -440,13 +440,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 3.8,
+      "duration_s": 7.3,
       "pin_tails": [
         {
           "returncode": 101,
           "passed": false,
-          "duration_s": 3.8,
-          "tail": "\nfailures:\n    rime::diff_pade::tests::test_pole_masked_first_order_reported\n\ntest result: FAILED. 191 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.89s"
+          "duration_s": 7.3,
+          "tail": "\nfailures:\n    rime::diff_pade::tests::test_pole_masked_first_order_reported\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.15s"
         }
       ]
     },
@@ -468,13 +468,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 3.8,
+      "duration_s": 5.9,
       "pin_tails": [
         {
           "returncode": 101,
           "passed": false,
-          "duration_s": 3.8,
-          "tail": "\nfailures:\n    rime::implicit::tests::test_near_zero_scale_misfit_not_certified\n\ntest result: FAILED. 191 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.84s"
+          "duration_s": 5.9,
+          "tail": "\nfailures:\n    rime::implicit::tests::test_near_zero_scale_misfit_not_certified\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.83s"
         }
       ]
     },
@@ -496,13 +496,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 3.8,
+      "duration_s": 5.6,
       "pin_tails": [
         {
           "returncode": 101,
           "passed": false,
-          "duration_s": 3.8,
-          "tail": "\nfailures:\n    rime::lie_symmetry::tests::test_scale_dominant_ode_keeps_genuine_symmetries\n\ntest result: FAILED. 191 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.84s"
+          "duration_s": 5.6,
+          "tail": "\nfailures:\n    rime::lie_symmetry::tests::test_scale_dominant_ode_keeps_genuine_symmetries\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.79s"
         }
       ]
     }
