@@ -51,10 +51,10 @@
       ]
     }
   },
-  "git_head": "f9ef82f778e2a68a8eeb907695fea0f717e643b8",
+  "git_head": "db9fa119dddea067106ed986da0856b9d23e7bb1",
   "mode": "smoke",
   "prereg_id": "PREREG-LORENZ-PUB-V1-2026-10-20",
-  "recorded_at": "2026-10-20T11:01:52.224709+00:00",
+  "recorded_at": "2026-10-21T07:51:52.588757+00:00",
   "rows": [
     {
       "all_coeffs_within_2p5se": true,
