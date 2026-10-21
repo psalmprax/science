@@ -36,7 +36,17 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   Artifact: `benchmarks/rime_microsample_adjudication_results.json`.
 - Also independently re-measured: `cargo test --lib` = 186 passed / 0 failed
   (the "186/186" claim reproduces exactly as the lib-only scope; full
-  `cargo test` = 204 passed / 2 ignored).
+  `cargo test` = 204 passed / 2 ignored). The dynamic pytest scope
+  (`pytest tests/test_dyn_*.py`, 1664 collected) measured **1639 passed /
+  24 failed / 1 skipped in 25 min (exit 1)** — the external "125 of 125"
+  claim does not reproduce in this scope; all 24 failures are pre-existing
+  tree-state failures (dashboard promoted-binding ×4, e5_market/e5_r1 ×4,
+  ensembles ×6, governance manifest, eseds scorecard, ha_coupling,
+  policy_grammar, quantum-sandbox honesty ×2 minus one duplicate, rust
+  advanced-ops, stem Hamiltonian, ui sandbox/studio), each reproduced
+  identically in a 74 s isolated rerun of the 24 node IDs on the committed
+  tree — an additive-only commit was present during that rerun, so the new
+  files cannot be their cause.
 
 ---
 
