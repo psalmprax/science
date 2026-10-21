@@ -5,22 +5,24 @@
   "description": "Canonical frozen preregistered constants and thresholds for APEDP-X / CPMD discovery and adjudication.",
   "thresholds": {
     "tactical_active_fraction_min": 0.05,
-    "tactical_active_fraction_max": 0.90,
+    "tactical_active_fraction_max": 0.9,
     "continuous_factor_active_fraction_min": 0.85,
-    "continuous_factor_active_fraction_max": 1.00,
+    "continuous_factor_active_fraction_max": 1.0,
     "tail_risk_min_events": 30,
     "deflated_sharpe_ratio_threshold": 0.95,
     "diebold_mariano_p_value_threshold": 0.01,
     "max_literature_r2": 0.85,
-    "min_oos_transfer_retention": 0.50,
-    "min_net_sharpe": 1.00,
+    "min_oos_transfer_retention": 0.5,
+    "min_net_sharpe": 1.0,
     "referee_max_fpr": 0.05,
-    "referee_min_car": 0.70,
+    "referee_min_car": 0.7,
     "referee_min_vrr": 0.75,
-    "stock_split_invariance_tolerance": 1e-6,
-    "pruning_holdout_r2_base_floor": 0.20,
+    "stock_split_invariance_tolerance": 1e-06,
+    "pruning_holdout_r2_base_floor": 0.2,
     "pruning_holdout_f_test_significance_level": 0.05,
-    "pruning_holdout_f_test_predictor_dof": 1
+    "pruning_holdout_f_test_predictor_dof": 1,
+    "ode_referee_min_mean_r2": 0.95,
+    "ode_referee_min_worst_r2": 0.85
   },
   "notes": {
     "tactical_active_fraction_max": "Harmonized and pinned to 0.90 after resolving historical documentation drift from 0.95 in audit."

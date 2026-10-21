@@ -407,17 +407,69 @@ class S3StorageBackend(BaseStorageBackend):
                 lock_is_active = False
 
             if not lock_is_active:
-                try:
-                    payload = f"{token}:{time.time()}".encode()
-                    self.client.put_object(Bucket=self.bucket, Key=lock_key, Body=payload)
-                    self._active_locks[token] = lock_key
+                token, acquired = self._put_lock_atomically(lock_key)
+                if acquired:
                     return token
-                except Exception:
-                    pass
 
             if time.time() >= deadline:
                 raise StorageLockError(f"Timed out after {timeout:.1f}s acquiring S3 lock on {key}.")
             time.sleep(0.05)
+
+    def _put_lock_atomically(self, lock_key: str) -> tuple[str, bool]:
+        """FLAW-03 remediation: make lock-takeover single-winner.
+
+        The previous check-then-put had a TOCTOU race: two workers could both
+        observe an absent lock and both win via an unconditional S3 overwrite,
+        corrupting the remote ledger/holdout registry. Defense in depth:
+
+          1. Preferred: S3 conditional put with ``IfNoneMatch="*"`` — the
+             write fails with 412 PreconditionFailed when the lock object
+             already exists, so exactly one contender wins.
+          2. Fallback (older boto3 unreachable conditional API, or non-AWS
+             storages that reject the parameter): unconditional put followed
+             by an immediate read-back verification — the put only wins if it
+             reads back OUR unique token; a racing write overwrote us and we
+             lose and retry. The read-back is itself the serializing step.
+        """
+        token = uuid.uuid4().hex
+        payload = f"{token}:{time.time()}".encode()
+        try:
+            self.client.put_object(
+                Bucket=self.bucket, Key=lock_key, Body=payload, IfNoneMatch="*"
+            )
+        except Exception as exc:
+            ctype = type(exc).__name__
+            is_precondition_failed = (
+                ctype == "ClientError"
+                and "412" in str(exc)
+            )
+            if is_precondition_failed:
+                return token, False
+            # Older botocore rejects the unknown parameter before any request
+            # is sent; fall through to put-then-verify rather than looping.
+            if not isinstance(exc, (ValueError, TypeError, AttributeError)):
+                if not self._parameter_rejected(exc):
+                    return token, False
+        # Read-back verification (also runs on the success path so a racing
+        # write after our put is detected immediately).
+        return self._verify_lock_ownership(lock_key, token)
+
+    @staticmethod
+    def _parameter_rejected(exc: Exception) -> bool:
+        text = str(exc)
+        return "IfNoneMatch" in text or "unknown parameter" in text.lower()
+
+    def _verify_lock_ownership(self, lock_key: str, token: str) -> tuple[str, bool]:
+        try:
+            resp = self.client.get_object(Bucket=self.bucket, Key=lock_key)
+            body = resp["Body"].read().decode("utf-8")
+        except Exception:
+            return token, False
+        holder = body.split(":", 1)[0].strip()
+        if holder == token:
+            self._active_locks[token] = lock_key
+            return token, True
+        return holder, False
 
     def release_lock(self, key: str, lock_token: str) -> bool:
         lock_key = self._active_locks.pop(lock_token, self._full_key(f"locks/{key}.lock"))

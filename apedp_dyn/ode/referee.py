@@ -23,6 +23,12 @@ class EpistemicOdeVerdict(str, Enum):
     """Epistemic taxonomy for continuous dynamical systems."""
     IDENTIFIED_DYNAMICAL_LAW = "IDENTIFIED_DYNAMICAL_LAW"
     PREDICTIVE_WRONG_STRUCTURE = "PREDICTIVE_WRONG_STRUCTURE"
+    # FLAW-13: a rollout that is numerically finite yet catastrophically
+    # non-predictive (worst-state or mean holdout R^2 < 0) is not "predictive
+    # with the wrong structure" — it tracks the holdout WORSE than its own
+    # mean would. A dedicated honest verdict keeps R^2 >= 0 wrong-structure
+    # cases and negative-R² divergences apart.
+    UNSTABLE_DIVERGENT = "UNSTABLE_DIVERGENT"
     UNSTABLE_FORWARD_SIMULATION = "UNSTABLE_FORWARD_SIMULATION"
     INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
 
@@ -156,11 +162,21 @@ class OdeReferee:
 
     def __init__(
         self,
-        min_mean_r2: float = 0.95,
-        min_worst_r2: float = 0.85,
+        min_mean_r2: float | None = None,
+        min_worst_r2: float | None = None,
     ):
-        self._min_mean_r2 = min_mean_r2
-        self._min_worst_r2 = min_worst_r2
+        # FLAW-13: thresholds must come from the preregistered canonical
+        # specification (AGENTS.md §1.3), not ad-hoc literals. The prior
+        # hardcoded values (0.95 / 0.85) are preserved exactly as the
+        # spec-pinned defaults; explicit constructor arguments still win so
+        # callers can widen a contract, but a default is now an import.
+        from apedp_dyn.conf.canonical_spec import (
+            ODE_REFEREE_MIN_MEAN_R2,
+            ODE_REFEREE_MIN_WORST_R2,
+        )
+
+        self._min_mean_r2 = float(min_mean_r2) if min_mean_r2 is not None else ODE_REFEREE_MIN_MEAN_R2
+        self._min_worst_r2 = float(min_worst_r2) if min_worst_r2 is not None else ODE_REFEREE_MIN_WORST_R2
 
     def adjudicate_result(
         self,
@@ -254,8 +270,16 @@ class OdeReferee:
         metrics = ", ".join(f"{name} R^2={value:.6f}" for name, value in per_state_r2.items())
 
         if not np.isfinite(mean_r2) or mean_r2 < self._min_mean_r2:
+            # FLAW-13: mean R^2 < 0 means the rollout tracks the holdout
+            # WORSE than the data mean — a catastrophically divergent
+            # trajectory, not merely "predictive with the wrong structure".
+            divergent = np.isfinite(mean_r2) and mean_r2 < 0.0
             return EpistemicOdeAdjudication(
-                verdict=EpistemicOdeVerdict.PREDICTIVE_WRONG_STRUCTURE,
+                verdict=(
+                    EpistemicOdeVerdict.UNSTABLE_DIVERGENT
+                    if divergent
+                    else EpistemicOdeVerdict.PREDICTIVE_WRONG_STRUCTURE
+                ),
                 mean_holdout_r2=mean_r2,
                 worst_state_r2=worst_r2,
                 is_stable=True,

@@ -4,6 +4,92 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — External 19-flaw audit remediation (2026-10-21, same day)
+
+An independent adversarial audit catalogued 19 flaws (Flaw severity matrix in
+`docs/SYSTEM_FLAWS_AUDIT.md`, 2026-10-21 round). 18 fixed by execution-verified
+edits; FLAW-01 remains OPEN by protocol:
+
+- **FLAW-01 (Critical, OPEN — trustee-blocked):** the Ed25519 governance
+  manifest still seals the deprecated spec SHA `a6d026…`. Re-signing requires
+  trustee private keys held outside the repository; the distributor must not
+  bypass the manifest. (Spec centralization for FLAW-13 below follows the
+  written §1.3 workflow and does not mint governance claims.)
+- **FLAW-02:** `apedp_dyn/ode/proposer.py` scored the identity instead of the
+  discovered ODE RHS — every ODE proposal evaluation was `y = x_i`. The
+  scorer now evaluates `sum(coeff · basis(x))` over the kernel term encoding
+  (measured: RHS-vs-true-derivative RMSE 0.0000 on a probe where the identity
+  was 1.67).
+- **FLAW-03:** S3 lock takeover was a TOCTOU race; now conditional
+  (`IfNoneMatch="*"`, 412 → contested) with a read-back token verification
+  fallback that serializes non-conditional backends.
+- **FLAW-04:** uniform-grid stencils in `rime/diff_pade.rs` now gate on actual
+  grid uniformity (1e-4) and fall back to Fornberg arbitrary-grid weights.
+- **FLAW-05:** the constant-field `R² = 1.0` tautology is removed in
+  `rime/pde.rs`, `pde_discovery.py` and `pde_transfer.py` (perfect resorbed
+  constant may claim 1.0; real residual energy on a flat target scores 0.0);
+  a failed linear `solve` no longer unhides the STRidge significance rescue
+  (se = 0 ⇒ rescue disabled, pure relative pruning).
+- **FLAW-06:** pole evaluations in the diff-Padé rollout set
+  `pole_singularity_hit` and disqualify `is_exact_recovery` instead of
+  silently integrating through singularities; Koopman ss_tot is centered and
+  zero-variance targets score 0.0.
+- **FLAW-07:** C6 apex evidence set now includes `EQUIVALENCE_RIVALS_REJECTED`
+  and `INTERVENTIONAL_INVARIANCE` (tier monotonicity restored).
+- **FLAW-08:** re-anchored referees run the block-bootstrap tiebreak on
+  provenance-recovered paired residuals; unpairable pairs stay on the
+  disclosed point-estimate contract (INCOMPLETE).
+- **FLAW-09:** the Hawkes eval-time binary collapse returns the collapsed
+  binary vector instead of silently switching to an unbounded z-score; the
+  pinned fit-time continuous declaration is untouched.
+- **FLAW-10:** core-mode Lean theorems relying on injected axioms are labeled
+  `syntactic_schema_check::…` — never presented as independent FORMAL_PROOF.
+- **FLAW-11:** opposed one-sided limit probes on an asymptote raise rather
+  than averaging a fake 0.0 (previously `limit(1/x, x→0)` timed-path
+  returned 0.0); the wall-clock regression retains its budget contract.
+- **FLAW-12:** the implicit-RIME exact-RMSE ceiling measures scale over ACTIVE
+  non-constant library columns only.
+- **FLAW-13 (spec centralization per AGENTS §1.3):** preregistered spec gains
+  `ode_referee_min_mean_r2=0.95` / `ode_referee_min_worst_r2=0.85`
+  (`canonical_preregistered_spec_v1.json` re-pinned:
+  `a11fd957…` →
+  `5bb42f0341b7a024d21280ee69922bd7dbfebd33cf55506253e3f5248411ec04`;
+  rationale: removing hardcoded referee literals per the
+  specification-centralization rule; Ed25519 manifest re-certification remains
+  trustee-blocked as recorded under FLAW-01); `OdeReferee` defaults bind to the
+  spec, and mean holdout R² < 0 earns the new honest `UNSTABLE_DIVERGENT`
+  verdict instead of `PREDICTIVE_WRONG_STRUCTURE`.
+- **FLAW-14:** one-sided upwind stencils with zero-flux Neumann boundaries
+  replace toroidal `np.roll` in the audio spectral advection.
+- **FLAW-15:** the Lie-symmetry nullspace gate is normalized
+  (`|λ| ≤ tol · λ_max`).
+- **FLAW-16:** Hamiltonian archetype aligned to the pinned
+  `CONTINUOUS_FACTOR` contract.
+- **FLAW-17:** CBF-QP closes with a final norm-ball projection before the
+  fail-closed certificate checks.
+- **FLAW-18:** ledger appends are flock-guarded (`LOCK_EX`/`LOCK_UN`, graceful
+  degradation without fcntl) and remote auto-sync is amortized in batches of
+  16 pending appends with a flush before snapshots.
+- **FLAW-19:** dead `np.gradient` removed from the SIR proposer; formula uses
+  `i_col` physical notation instead of the internal `I_arr` identifier.
+- **Frozen-record re-mint v1_8 → v1_9 (per freeze protocol):** the FLAW-07 and
+  FLAW-08 referee edits legitimate the guard-file refresh;
+  `apedp_dyn/sandbox/APEDPX_FROZEN_v1_9.json` supersedes v1_8 with
+  `remint_log` rationale for `adjudicate.py` + `claim_ladder.py` (13/15 other
+  guard files byte-identical); thresholds, env pins, and blind-case
+  expectations unchanged. Post-mint: blind + round-2 suites 56 passed.
+- Scope note: Rust kernel edits (`diff_pade.rs`, `koopman.rs`, `implicit.rs`,
+  `lie_symmetry.rs`, `pde.rs`) are outside the Python freeze record;
+  `cargo test` 186/187→186/186 covers them (see FLAW-04/05/06/12/15).
+
+Verification: Rust `cargo test` 186/186; affected Python suites re-run green
+(`test_dyn_pde_ode_packages`, `test_dyn_claim_ladder`, `test_evidence_tiers`,
+`test_dyn_lean_universal_bridge`, `test_flaw_fixes`, hawkes pins, STEM
+contracts, CBF certificate, ledger benchmarks, audio transport, remote
+storage, correspondence epistemic bootstrap/caller/incremental/reporting).
+
+---
+
 ## [Unreleased] — Micro-sample referee remediation (2026-10-21)
 
 ### Two referee defects found by execution, fixed with regression pins

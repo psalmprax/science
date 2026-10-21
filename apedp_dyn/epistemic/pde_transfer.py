@@ -92,7 +92,11 @@ def evaluate_frozen_transfer(
     ss_res = float(np.sum(diff * diff))
     mean_ut = float(np.mean(ut))
     ss_tot = float(np.sum((ut - mean_ut) ** 2))
-    r2 = 1.0 - ss_res / ss_tot if ss_tot > 1e-15 else 1.0
+    # FLAW-05: same soundness as pde_discovery._frozen_r2 — constant targets
+    # with genuine residual energy must not claim a tautological R² = 1.0.
+    if ss_tot > 1e-15:
+        return 1.0 - ss_res / ss_tot
+    return 1.0 if ss_res <= 1e-15 else 0.0
     rmse = float(np.sqrt(ss_res / ut.size))
     return FrozenTransferResult(
         r2=float(r2),

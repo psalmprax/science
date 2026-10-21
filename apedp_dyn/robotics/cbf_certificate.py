@@ -168,6 +168,17 @@ def solve_cbf_qp(
         # loop exhausted without convergence — final recheck decides
         pass
 
+    # FLAW-17: a barrier correction applied AFTER the last norm-ball
+    # projection could push |v_i| back over v_max, so legitimate safe
+    # trajectories that needed minor repulsion were then rejected by the
+    # fail-closed A1 check below. Close the alternating scheme with one
+    # final norm-ball projection, then re-check BOTH contracts in order;
+    # if the projection re-breaks a barrier deficit, the fail-closed
+    # verdict below is honest and raises — never silently satisfied.
+    norms = np.linalg.norm(v, axis=1, keepdims=True)
+    scale = np.minimum(1.0, np.divide(box, norms, out=np.full_like(norms, box), where=norms > 1e-12))
+    v *= scale
+
     # Fail-closed certificate check (the guarantee is only released when it HOLDS).
     norms = np.linalg.norm(v, axis=1)
     if float(np.max(norms)) > box + assumptions.tol:

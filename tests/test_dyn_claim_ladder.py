@@ -74,6 +74,11 @@ def test_claim_ladder_promotes_when_all_evidence_satisfied():
     bundle = EvidenceBundle()
     bundle.add(EvidenceRequirement.IN_SAMPLE_CONVERGENCE)
     bundle.add(EvidenceRequirement.OUT_OF_SAMPLE_HOLDOUT)
+    # FLAW-07 follow-through: C6 strictness is monotone in tier, so the apex
+    # bundle must also carry the rival-equivalence and interventional
+    # evidence that C3/C4 already mandated.
+    bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
+    bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
     bundle.add(EvidenceRequirement.PHYSICAL_CONSERVATION)
     bundle.add(EvidenceRequirement.NUMERICAL_CFL_STABILITY)
     bundle.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)

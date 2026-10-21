@@ -390,12 +390,15 @@ fn solve_implicit_for_features(
     // constant "1" column whose magnitude is fixed at 1 regardless of the
     // data scale; including it pins the denominator to O(1) and destroys the
     // scale-awareness this gate exists for (near-zero-scale data would be
-    // judged against an O(1) ceiling and permissively certified). The
-    // residual's term scale is therefore measured over the NON-constant
-    // columns; when every column is constant (or all zero), the max(1e-12)
-    // floor keeps the ceiling finite instead of NaN.
+    // judged against an O(1) ceiling and permissively certified).
+    // FLAW-12: same argument excludes INACTIVE columns — high-order pruned
+    // monomials (e.g. x⁴ ≈ 10⁶) inflated term_scale, relaxing the exact-RMSE
+    // ceiling so low-order noisy fits were certified as exact. The residual
+    // term scale is therefore measured over the ACTIVE, non-constant columns
+    // of the final sparse candidate; when every remaining column is constant
+    // (or all zero), the max(1e-12) floor keeps the ceiling finite.
     for (j, col) in raw_cols.iter().enumerate() {
-        if names[j] == "1" {
+        if names[j] == "1" || sparse_c[j] == 0.0 {
             continue;
         }
         for &v in col.iter() {

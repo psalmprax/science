@@ -396,6 +396,25 @@ def limit_with_timeout(
 
         finite = [x for x in vals if math.isfinite(x)]
         if finite:
+            # FLAW-11: symmetric probe pairs cancel across odd poles —
+            # f(x) = 1/x at x -> 0 averages (+1e6, -1e6) to exactly 0.0 and
+            # the fallback reported a smooth limit across a vertical
+            # asymptote. Detect sign opposition across the approach point:
+            # probing on both sides (finite value less than +/- oo -> both
+            # directions present) with non-negligible opposite-signed
+            # magnitudes is asymptote evidence, not a finite two-sided limit.
+            if value not in (sp.oo, -sp.oo, sp.zoo) and len(finite) >= 2:
+                left = [x for x, p in zip(vals, probes, strict=False) if math.isfinite(x) and p < float(value)]
+                right = [x for x, p in zip(vals, probes, strict=False) if math.isfinite(x) and p > float(value)]
+                if left and right:
+                    l_val, r_val = left[-1], right[-1]
+                    if (l_val < 0.0) != (r_val < 0.0) and min(abs(l_val), abs(r_val)) > 1e-6:
+                        raise LimitTimeout(
+                            f"limit({expr}, {sym} -> {value}) timed out; numerically "
+                            f"detected opposed one-sided behaviour (f(v-)={l_val:.3e} "
+                            f"vs f(v+)={r_val:.3e}) — refusing to average across a "
+                            "probable pole/asymptote"
+                        )
             return sp.Float(sum(finite) / len(finite))
     except (ValueError, TypeError, ArithmeticError):
         logger.warning("Numeric limit fallback failed", exc_info=True)

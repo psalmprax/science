@@ -270,16 +270,23 @@ pub fn discover_point_symmetries(
     }
     let (evals, evecs) = crate::rime::implicit::jacobi_eigen(&gram, k, 150, 1e-15);
 
+    // FLAW-15: the nullspace gate must be RELATIVE to the operator norm.
+    // Eigenvalues of MᵀM scale quadratically with data amplitude and linearly
+    // with sample count, so an unnormalized absolute tolerance missed genuine
+    // symmetries on large/high-amplitude data and fabricated them on
+    // small-amplitude data. Normalize: null ⇔ |λ| ≤ tol · λ_max. When every
+    // eigenvalue is 0 (all-zero Gram matrix) the singular value structure is
+    // degenerate and all directions lie in the nullspace.
+    let max_eval = evals.iter().map(|v| v.abs()).fold(0.0f64, f64::max);
     let tol = config.null_tol.max(0.0);
     let mut null_idx = Vec::new();
     for (idx, &v) in evals.iter().enumerate() {
-        if v.abs() <= tol {
+        if v.abs() <= tol * max_eval.max(1e-300) {
             null_idx.push(idx);
         }
     }
 
     let min_eval = evals.iter().map(|v| v.abs()).fold(f64::INFINITY, f64::min);
-    let max_eval = evals.iter().map(|v| v.abs()).fold(0.0f64, f64::max);
 
     let monos = monomials_upto(config.ansatz_degree);
     let nm = monos.len();

@@ -33,8 +33,11 @@ GRAMMAR_SPACE_PATH = BASE_DIR / "apedp_dyn" / "sandbox" / "grammar_space.py"
 
 # Cryptographic Pinned Registry for All Frozen Records (drift fails loudly)
 PINNED_FROZEN_REGISTRY: dict[str, str] = {
-    "apedp_dyn/epistemic/adjudicate.py": "f56987b97ec1e297f24e47c0b3f975b9ec3570efc85509f319391f03897d9e75",
-    "apedp_dyn/epistemic/claim_ladder.py": "aba9fd0045abc137a36dab90e1316b8934597beb02c553cf35d15c3029c0886c",
+    # v1_9 re-mint (2026-10-21): FLAW-08 re-anchor bootstrap (adjudicate.py) and
+    # FLAW-07 monotone C6 evidence set (claim_ladder.py) — rationale recorded in
+    # APEDPX_FROZEN_v1_9.json::remint_log.
+    "apedp_dyn/epistemic/adjudicate.py": "13691be2e15053658f00f4ba7b925ae5fe29c7f72812b072dcc2964ccce1b931",
+    "apedp_dyn/epistemic/claim_ladder.py": "2e4de9284910f48ea40d38b094c61e3e1d18b4a4fed579d614d2ae2aae10543b",
     "apedp_dyn/sandbox/grammar_space.py": "b9b669521328bdbf5e6cc476634629211f891d8c9909f3037eee02dc09e78632",
     "benchmarks/l2_control_freeze.json": "ec117721d1cd9da0b09950bb9b5894110c2411475dfec073b684477c33e96872",
 }

@@ -168,7 +168,7 @@ def _upwind_advection_step(
     dt: float,
     frequency_step: float,
 ) -> np.ndarray:
-    """One stable upwind step of ``S_t = -c * S_f`` (periodic frequency axis).
+    """One stable upwind step of ``S_t = -c * S_f`` (non-periodic frequency axis).
 
     The spectral magnitudes are advected along the frequency axis by the ridge
     velocity ``c = df_r/dt``. Discretizing that advection with *centered*
@@ -178,6 +178,12 @@ def _upwind_advection_step(
     wavenumber, so autoregressive rollouts explode. Sweeping the difference
     upwind (stencil direction chosen by the sign of ``c``) makes ``|G| <= 1``
     whenever the CFL number ``nu = |c| dt / df <= 1``, which is enforced here.
+
+    FLAW-14: the frequency domain [0, f_Nyquist] is NOT periodic — the
+    previous ``np.roll`` stencils wrapped 20 kHz energy into the DC bin.
+    Boundary handling is zero-flux Neumann: the slope across an unsampled
+    boundary is set to 0 exactly where the upwind stencil would need an
+    out-of-domain neighbor, so no spectral energy crosses the domain edge.
     """
     u = np.asarray(field, dtype=np.float64)
     cfl = abs(c) * dt / frequency_step
@@ -186,11 +192,14 @@ def _upwind_advection_step(
             f"Upwind advection violates CFL: nu = |c|*dt/df = {cfl:.3f} > 1; "
             "reduce dt or coarsen the frequency step."
         )
+    slope = np.zeros_like(u)
     if c >= 0.0:
         # Info travels upward in frequency: differences must look backwards.
-        slope = (u - np.roll(u, 1)) / frequency_step
+        # Backward differences need u[i-1]; unavailable at i = 0 → zero flux.
+        slope[1:] = (u[1:] - u[:-1]) / frequency_step
     else:
-        slope = (np.roll(u, -1) - u) / frequency_step
+        # Forward differences need u[i+1]; unavailable at i = n-1 → zero flux.
+        slope[:-1] = (u[1:] - u[:-1]) / frequency_step
     return np.maximum(u - c * dt * slope, 0.0)
 
 

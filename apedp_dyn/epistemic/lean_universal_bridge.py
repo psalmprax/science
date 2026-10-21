@@ -663,6 +663,22 @@ class LeanUniversalBridge:
                 standalone_core=standalone_core,
             )
 
+            # FLAW-10: in the standalone core axiomatic mode (no Mathlib) the
+            # module DECLARES the invariant properties it needs as axioms
+            # (inv_damp_le_one, sir_flux_conservation, mul_le_self_of_le_one)
+            # and discharges the theorem against them. The Lean kernel does
+            # run over that module, but the conclusion is embedded in the
+            # premises: this is a SYNTACTIC_SCHEMA_CHECK, not an independent
+            # FORMAL_PROOF, and downstream reports must say so.
+            if use_core and is_provable and (
+                method == "lean_ring_tactic" or method.startswith("axiomatic_")
+            ):
+                method = f"syntactic_schema_check::{method}"
+                diag = (
+                    "[syntactic_schema_check — core axiomatic mode relies on "
+                    "injected axioms, no Mathlib-independent proof] " + diag
+                )
+
             thm_record = LeanTheoremVerification(
                 invariant_name=inv.name,
                 invariant_kind=inv.kind,

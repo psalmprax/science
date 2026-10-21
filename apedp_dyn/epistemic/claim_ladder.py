@@ -90,6 +90,13 @@ CLAIM_EVIDENCE_MAP: dict[ClaimLevel, set[EvidenceRequirement]] = {
     ClaimLevel.C6_FORMALLY_VERIFIED: {
         EvidenceRequirement.IN_SAMPLE_CONVERGENCE,
         EvidenceRequirement.OUT_OF_SAMPLE_HOLDOUT,
+        # FLAW-07: the apex tier previously omitted the rival-equivalence
+        # and interventional-invariance evidence mandated by C3/C4, so a
+        # candidate with unresolved observationally-equivalent rivals could
+        # leapfrog straight to C6. Claim-ladder strictness is monotone in
+        # tier: C6 requires everything C4 requires, plus the apex evidence.
+        EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED,
+        EvidenceRequirement.INTERVENTIONAL_INVARIANCE,
         EvidenceRequirement.PHYSICAL_CONSERVATION,
         EvidenceRequirement.NUMERICAL_CFL_STABILITY,
         EvidenceRequirement.DUAL_BOUND_CERTIFICATE,

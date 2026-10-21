@@ -99,6 +99,10 @@ class FullLineageExperimentLedger:
         self._storage_backend = storage_backend
         self._remote_key = remote_key
         self._auto_sync = auto_sync
+        # FLAW-18: full-ledger remote re-upload amortized over this many
+        # appends (each append is still durably journaled locally first).
+        self._auto_sync_batch = 16
+        self._remote_ops_pending = 0
         self._persistence_path = Path(persistence_path) if persistence_path else None
 
         if self._persistence_path is None and self._storage_backend is not None:
@@ -264,6 +268,7 @@ class FullLineageExperimentLedger:
         """Synchronize local ledger state to the configured remote storage backend."""
         if self._storage_backend and self._persistence_path and self._persistence_path.is_file():
             self._storage_backend.sync_to_remote(self._persistence_path, self._remote_key)
+            self._remote_ops_pending = 0
 
     def pull_from_remote(self) -> bool:
         """Pull remote ledger from storage backend, load candidates and burned holdouts."""
@@ -278,6 +283,11 @@ class FullLineageExperimentLedger:
     def export_snapshot(self, snapshot_name: str | None = None) -> str:
         """Export an immutable, timestamped snapshot of the current ledger state."""
         if self._storage_backend and self._persistence_path and self._persistence_path.is_file():
+            # FLAW-18: a snapshot is an externally visible checkpoint — flush
+            # any pending amortized syncs first so remote state is not stale
+            # relative to the exported snapshot.
+            if self._auto_sync and self._remote_ops_pending > 0:
+                self.sync_to_remote()
             return self._storage_backend.export_snapshot(self._persistence_path, snapshot_name)
         elif self._persistence_path and self._persistence_path.is_file():
             import shutil
@@ -295,10 +305,37 @@ class FullLineageExperimentLedger:
     def _persist_append(self, node: CandidateExperimentNode) -> None:
         if self._persistence_path:
             self._persistence_path.parent.mkdir(parents=True, exist_ok=True)
+            # FLAW-18 (part 1): an OS advisory lock wraps the append so that
+            # parallel discovery workers cannot interleave partial JSONL
+            # records and corrupt the ledger. flock is POSIX advisory and is
+            # transparent on single-writer flows; on platforms without
+            # fcntl (Windows) the append degrades gracefully to the previous
+            # single-open behavior rather than crashing a legitimate run.
+            try:
+                import fcntl
+                lock_ctx = fcntl.flock  # resolved only to assert availability
+            except ImportError:  # pragma: no cover - Windows-only path
+                fcntl = None  # type: ignore[assignment]
             with open(self._persistence_path, "a", encoding="utf-8") as f:
-                f.write(json.dumps(node.to_dict()) + "\n")
+                if fcntl is not None:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                    try:
+                        f.write(json.dumps(node.to_dict()) + "\n")
+                        f.flush()
+                    finally:
+                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                else:
+                    f.write(json.dumps(node.to_dict()) + "\n")
+            # FLAW-18 (part 2): full-ledger re-upload after EVERY append is
+            # O(N²) network traffic on parallel discovery runs. Remote sync
+            # is now amortized: pending appends accumulate locally (each one
+            # is still durably journaled on disk first) and flush to remote
+            # in batches, or immediately on context close / explicit sync.
             if self._auto_sync and self._storage_backend:
-                self.sync_to_remote()
+                self._remote_ops_pending = getattr(self, "_remote_ops_pending", 0) + 1
+                if self._remote_ops_pending >= self._auto_sync_batch:
+                    self.sync_to_remote()
+                    self._remote_ops_pending = 0
 
     def _load_from_disk(self) -> None:
         assert self._persistence_path is not None
