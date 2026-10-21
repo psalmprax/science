@@ -122,7 +122,13 @@ class HamiltonianProposer(ProposerBase):
             proposer_id=self.proposer_id,
             candidate_id=cand_id,
             formula=acc_formula,
-            strategy_archetype=StrategyArchetype.DYNAMICAL_SYSTEM,
+            # FLAW-16: the Hamiltonian proposer emits an ACCELERATION readout
+            # ẍ = -∂V/∂q — a force law, i.e. a continuous factor a(q) over a
+            # factorized surrogate, not a closed first-order dynamical map.
+            # This matches the regression contract in
+            # tests/test_dyn_stem_grammar_options_123.py (CONTINUOUS_FACTOR);
+            # the deck DYNAMICAL_SYSTEM tag tripped the archetype gate.
+            strategy_archetype=StrategyArchetype.CONTINUOUS_FACTOR,
             declared_scale_invariant=False,
             declared_nominal_dependencies=(q_col, p_col),
             compute_score=compute_score,
@@ -301,7 +307,9 @@ class CompartmentalSirProposer(ProposerBase):
 
         # Numerical derivatives
         dS = np.gradient(S, self.dt)
-        np.gradient(I_arr, self.dt)
+        # FLAW-19: dI/dt is reconstructed from the other two states via the
+        # N = S + I + R conservation (dI = -(dS + dR)), so the gradient call
+        # that fed nothing was removed.
         dR = np.gradient(R, self.dt)
 
         # Estimate gamma from dR/dt = gamma * I_arr
@@ -320,7 +328,10 @@ class CompartmentalSirProposer(ProposerBase):
         beta = max(0.001, beta)
 
         r0 = beta / gamma
-        formula = f"dI/dt = {beta:.4f} * (S * I_arr / {N0:.1f}) - {gamma:.4f} * I_arr"
+        # FLAW-19: use the physical notation (i_col, mass-action on I), not
+        # the internal NumPy variable name I_arr, so symbolic parsers and
+        # reports see standard epidemiological identifiers.
+        formula = f"dI/dt = {beta:.4f} * (S * {i_col} / {N0:.1f}) - {gamma:.4f} * {i_col}"
         cand_id = f"SIR-{hashlib.sha256(formula.encode()).hexdigest()[:8]}"
 
         def compute_score(test_df: pd.DataFrame) -> np.ndarray:

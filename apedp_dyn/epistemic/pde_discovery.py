@@ -105,7 +105,12 @@ def _frozen_residual_r2(
     residual = ut - prediction
     ss_res = float(np.sum(residual ** 2))
     ss_tot = float(np.sum((ut - ut.mean()) ** 2))
-    return 1.0 - ss_res / ss_tot if ss_tot > 1e-15 else 1.0
+    # FLAW-05: a constant/near-constant target (ss_tot ≤ 1e-15) must NOT
+    # receive a tautological R² = 1.0 when real residual energy remains.
+    # Perfect prediction of the constant may claim 1.0; anything else = 0.0.
+    if ss_tot > 1e-15:
+        return 1.0 - ss_res / ss_tot
+    return 1.0 if ss_res <= 1e-15 else 0.0
 
 
 def _eval_frozen_1d_library(

@@ -256,7 +256,11 @@ def test_ode_referee_rejects_wrong_structure_despite_in_sample_claim():
     holdout = _lotka_volterra_holdout()
     referee = apedp_ode.OdeReferee(min_mean_r2=0.95, min_worst_r2=0.85)
     adj = referee.adjudicate_result(wrong, holdout)
-    assert adj.verdict == apedp_ode.EpistemicOdeVerdict.PREDICTIVE_WRONG_STRUCTURE
+    # FLAW-13 follow-through: this fixture's rollout tracks the holdout
+    # worse than the data mean (mean_holdout_r2 < 0), which now gets the
+    # dedicated honest verdict UNSTABLE_DIVERGENT; mean_holdout_r2 < 0.95
+    # alone keeps adjudication holdout-driven, never in-sample-derived.
+    assert adj.verdict == apedp_ode.EpistemicOdeVerdict.UNSTABLE_DIVERGENT
     assert adj.mean_holdout_r2 < 0.95
 
 

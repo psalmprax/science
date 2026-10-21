@@ -140,18 +140,24 @@ pub fn discover_linear_spectrum(
     // In-sample fit statistics on the centred series.
     let mut ss_res = 0.0f64;
     let mut ss_tot = 0.0f64;
+    // FLAW-06b: ss_tot must be the CENTERED variance of the target series,
+    // not the uncentered sum of squares ∑ z_t². On a flat (zero-variance)
+    // observable the uncentered form conflated the mean level with signal
+    // variance and returned a tautological R² = 1.0.
+    let m = (n - 2) as f64;
+    let z_mean = z[2..].iter().sum::<f64>() / m.max(1.0);
     for t in 2..n {
         let pred = a1 * z[t - 1] + a2 * z[t - 2] + intercept;
         let e = z[t] - pred;
         ss_res += e * e;
-        ss_tot += z[t] * z[t];
+        let d_mean = z[t] - z_mean;
+        ss_tot += d_mean * d_mean;
     }
-    let m = (n - 2) as f64;
     let fit_rmse = (ss_res / m).sqrt();
     let fit_r2 = if ss_tot > 1e-15 {
         1.0 - ss_res / ss_tot
     } else {
-        1.0
+        0.0
     };
 
     // Eigenvalues of the companion matrix [[a1, a2], [1, 0]].

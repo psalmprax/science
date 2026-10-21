@@ -271,6 +271,11 @@ pub fn run_stridge(
             if let Ok(inv_col) = solve_linear_system(&a_mat, &unit_rhs, k_act) {
                 se_g[idx] = s_hat * inv_col[idx].abs().sqrt();
             }
+            // FLAW-05: when the linear solve fails, se_g[idx] stays 0.0 and
+            // `magnitude >= T * 0.0` was unconditionally true — the
+            // significance rescue then defeated the sparsity threshold on
+            // ill-conditioned systems. An invalid standard error means NO
+            // significance rescue: fall back to pure relative thresholding.
         }
 
         let mut changed = false;
@@ -305,7 +310,8 @@ pub fn run_stridge(
         }
         for (idx, &act_i) in active_indices.iter().enumerate() {
             let magnitude = norm_coeffs[act_i].abs();
-            let significant = magnitude >= STRIDGE_SIGNIFICANCE_T * se_g[idx];
+            let significant =
+                se_g[idx] > 0.0 && magnitude >= STRIDGE_SIGNIFICANCE_T * se_g[idx];
             if magnitude < config.sparsity_threshold * max_active_g && !significant {
                 active[act_i] = false;
                 norm_coeffs[act_i] = 0.0;
@@ -345,10 +351,17 @@ pub fn run_stridge(
     }
 
     let residual_rmse = (ss_res / (num_samples as f64)).sqrt();
+    // FLAW-05: on a constant/near-constant target (ss_tot ≤ 1e-15) the old
+    // code returned a tautological R² = 1.0 regardless of residual error, so
+    // degenerate noise models scored perfectly. Only a genuinely zero
+    // residual (perfect prediction of the constant) may claim 1.0; any real
+    // residual energy must score 0.0.
     let r2 = if ss_tot > 1e-15 {
         1.0 - (ss_res / ss_tot)
-    } else {
+    } else if ss_res <= 1e-15 {
         1.0
+    } else {
+        0.0
     };
 
     let mut active_terms = Vec::new();

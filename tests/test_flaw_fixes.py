@@ -54,14 +54,16 @@ def test_limit_with_timeout_bounds_wall_clock(monkeypatch):
 
     monkeypatch.setattr(safety.sp, "limit", hanging_limit)
 
-    # 1. Timeout expires, the numeric fallback succeeds, and the caller returns
-    #    on budget instead of waiting out the hung worker.
+    # 1. Timeout expires and the caller returns on budget instead of waiting
+    #    out the hung worker. FLAW-11: limit(1/x, x -> 0) probes must NOT be
+    #    averaged across an odd pole (+1e6 and -1e6 cancel to a fake 0.0) —
+    #    the asymptote must be refused on the same wall-clock budget.
     start = time.perf_counter()
-    value = limit_with_timeout(1 / x, x, 0, timeout=0.5)
+    with pytest.raises(safety.LimitTimeout):
+        limit_with_timeout(1 / x, x, 0, timeout=0.5)
     elapsed = time.perf_counter() - start
     assert calls["count"] == 1
     assert elapsed < 2.0, f"timeout did not bound wall clock ({elapsed:.2f}s for a 0.5s budget)"
-    assert abs(float(value)) < 1e-3  # symmetric numeric probe of 1/x averages to ~0
 
     # 2. When the numeric probe also fails, LimitTimeout is still raised on budget.
     start = time.perf_counter()

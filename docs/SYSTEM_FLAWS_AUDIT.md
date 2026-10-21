@@ -1,5 +1,88 @@
 # APEDP System Flaws Audit
 
+Date: 2026-10-21 (external adversarial audit, round 3 — 19 findings)
+Basis: independent adversarial audit over the epistemic referee layers,
+proposers, discovery engines, the Rust kernel (`apedp-kernel`), formal
+verification bridges, ledgers, and physics/robotics modules, verified by
+execution. Remediation performed the same day, also execution-verified.
+
+## 2026-10-21 round — status matrix
+
+- FLAW-01 governance manifest SHA desync — **OPEN (trustee-blocked)**: the
+  Ed25519 quorum in `specifications/governance_manifest.json` still seals the
+  deprecated spec hash `a6d026…` while disk computes a later hash. Re-signing
+  requires the authorized trustee PRIVATE keys, which live outside this
+  repository; per AGENTS §1.2/§1.3 the panel must never bypass or re-mint the
+  manifest locally. Earlier root-cause diagnosis stands: post-certification
+  spec edits without re-certification (`pruning_holdout_*` block). The FLAW-13
+  spec-centralization edit below extended the desync scope with full §1.3
+  procedural compliance (new pinned hash + CHANGELOG rationale).
+- FLAW-02 coupled ODE proposer discarded discovered RHS — **FIXED**:
+  `apedp_dyn/ode/proposer.py` now evaluates `sum(coeff · basis(x))` over the
+  kernel's term encoding; verified RMSE 0.0000 vs the true derivative
+  (identity previously had RMSE 1.67 on the same probe).
+- FLAW-03 non-atomic S3 mutex — **FIXED**: conditional put `IfNoneMatch="*"`
+  (412 → contested) with read-back token verification as a universal fallback;
+  exactly one worker can win.
+- FLAW-04 non-uniform-grid FD bias — **FIXED**: uniformity gate (1e-4 relative)
+  with Fornberg arbitrary-grid weights fallback in
+  `rime/diff_pade.rs::compute_derivatives/compute_second_derivatives`.
+- FLAW-05 constant-field R² = 1.0 tautology + STRidge pruning defeat —
+  **FIXED**: zero residual may claim 1.0, any real residual on a flat target
+  scores 0.0 (`rime/pde.rs`, `pde_discovery.py`, `pde_transfer.py`); a failed
+  linear solve (se = 0) disables the significance rescue instead of
+  unconditionally defeating pruning.
+- FLAW-06 pole masking + uncentered Koopman R² — **FIXED**: pole evaluation
+  now sets `pole_singularity_hit` on the result and disqualifies exact
+  recovery; `koopman.rs` centers ss_tot and scores 0.0 on zero variance.
+- FLAW-07 C6 leapfrogging — **FIXED**: C6 requires `EQUIVALENCE_RIVALS_REJECTED`
+  and `INTERVENTIONAL_INVARIANCE` (monotone strictness); ladder test fixture
+  updated to the strengthened apex contract.
+- FLAW-08 silent bootstrap disable on re-anchor — **FIXED**: on re-anchor the
+  referee recovers the paired gate-4 residual series for the new head/rival and
+  runs the block-bootstrap tiebreak; unpairable pairs keep the previously
+  disclosed honest point-estimate contract (marked INCOMPLETE).
+- FLAW-09 Hawkes silent return-type mutation — **FIXED**: an eval-frame binary
+  collapse now returns the honest collapsed binary (zeros), preserving the
+  declared {0,1} contract; the fit-time declared-continuous path is unchanged
+  (pinned contract).
+- FLAW-10 circular axiom injection in the Lean core bridge — **FIXED**:
+  core-mode axiomatic theorems (`lean_ring_tactic`, `axiomatic_*`) are labeled
+  `syntactic_schema_check::…` with an explicit no-Mathlib-independence note in
+  the diagnostic; kernel-checked core Int/Nat lemmas keep honest names.
+- FLAW-11 odd-pole limit cancellation — **FIXED**: opposed signed one-sided
+  probes with non-negligible magnitude raise `LimitTimeout` instead of
+  averaging a fake finite limit; the previously pinned canceling-average 1/x
+  assertion was updated to the sound contract.
+- FLAW-12 inactive columns inflating the exact-RMSE ceiling — **FIXED**:
+  `rime/implicit.rs` measures term scale over ACTIVE non-constant columns only.
+- FLAW-13 ODE referee hardcoded thresholds + misleading verdict — **FIXED**:
+  defaults now bind to preregistered spec keys `ode_referee_min_mean_r2=0.95` /
+  `ode_referee_min_worst_r2=0.85` (spec re-pinned to `5bb42f03…` per §1.3);
+  `UNSTABLE_DIVERGENT` covers mean holdout R² < 0.
+- FLAW-14 toroidal Nyquist→DC wrapping — **FIXED**: one-sided upwind stencils
+  with zero-flux Neumann boundaries in `spectrogram_transport.py`.
+- FLAW-15 unnormalized SVD tolerance — **FIXED**: nullspace gate is relative
+  (`|λ| ≤ tol · λ_max`) in `rime/lie_symmetry.rs`.
+- FLAW-16 Hamiltonian archetype mismatch — **FIXED**:
+  `HamiltonianProposer` emits `CONTINUOUS_FACTOR` to match the pinned
+  acceleration-law contract.
+- FLAW-17 CBF post-correction norm violation — **FIXED**: a final norm-ball
+  projection closes the alternating scheme before the fail-closed checks.
+- FLAW-18 JSONL concurrency + O(N²) sync — **FIXED**: `fcntl.flock(LOCK_EX)`
+  wraps every append (graceful degradation where fcntl is absent); remote
+  sync is amortized (batch of 16 pending appends) and flushed before snapshots.
+- FLAW-19 dead gradient + internal variable leak — **FIXED**: the unassigned
+  `np.gradient(I_arr, …)` call is removed and the SIR formula uses physical
+  notation (`i_col`).
+
+Verification: Rust-side fixes pass `cargo test` (186/186) and every affected
+Python suite re-run is recorded in the 2026-10-21 CHANGELOG entry.
+
+---
+
+# Previous round (2026-09-18, second pass)
+
 Date: 2026-09-18 (second remediation pass)
 Basis: code + test execution only. No documentation was used as an evaluation source.
 

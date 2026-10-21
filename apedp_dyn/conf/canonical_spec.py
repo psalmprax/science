@@ -15,7 +15,17 @@ from pathlib import Path
 from typing import Any
 
 SPEC_PATH = Path(__file__).resolve().parent.parent.parent / "specifications" / "canonical_preregistered_spec_v1.json"
-PINNED_SPEC_SHA256 = "a11fd957c0b787856c62b698a06715e0acf58b393eaa52a70a905d5b0582d141"
+PINNED_SPEC_SHA256 = "5bb42f0341b7a024d21280ee69922bd7dbfebd33cf55506253e3f5248411ec04"
+# Pin history (AGENTS.md §1.3 re-certification trail, stored in-code next to the
+# pin):
+#   a11fd957c0b787856c62b698a06715e0acf58b393eaa52a70a905d5b0582d141
+#   → 5bb42f0341b7a024d21280ee69922bd7dbfebd33cf55506253e3f5248411ec04
+#   (2026-10-21 external audit FLAW-13 remediation: added the ODE referee's
+#   preregistered holdout thresholds ode_referee_min_mean_r2=0.95 and
+#   ode_referee_min_worst_r2=0.85 — values unchanged in behavior, moved from
+#   hardcoded literals into the canonical file per the specification-
+#   centralization rule. Ed25519 governance manifest re-signing remains
+#   trustee-blocked; see FLAW-01.)
 
 
 class SpecificationIntegrityError(RuntimeError):
@@ -66,6 +76,9 @@ MIN_NET_SHARPE: float = float(_THRESHOLDS["min_net_sharpe"])
 REFEREE_MAX_FPR: float = float(_THRESHOLDS["referee_max_fpr"])
 REFEREE_MIN_CAR: float = float(_THRESHOLDS["referee_min_car"])
 REFEREE_MIN_VRR: float = float(_THRESHOLDS["referee_min_vrr"])
+
+ODE_REFEREE_MIN_MEAN_R2: float = float(_THRESHOLDS["ode_referee_min_mean_r2"])
+ODE_REFEREE_MIN_WORST_R2: float = float(_THRESHOLDS["ode_referee_min_worst_r2"])
 
 STOCK_SPLIT_INVARIANCE_TOLERANCE: float = float(_THRESHOLDS["stock_split_invariance_tolerance"])
 PRUNING_HOLDOUT_R2_BASE_FLOOR: float = float(_THRESHOLDS["pruning_holdout_r2_base_floor"])

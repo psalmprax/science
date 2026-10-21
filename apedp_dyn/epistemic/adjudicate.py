@@ -724,15 +724,31 @@ def adjudicate(fitted: list,
         ho_head = min(ho_scoring, key=lambda s: s.holdout_rmse)
         if ho_head is not best and ho_head.provenance.get(
                 "gate4_status", {}).get("passed", False):
-            # The holdout head takes over the pair. The bootstrap tiebreaker
-            # compares the paired residual series the caller supplied for the
-            # *original* pair; their correspondence cannot be verified after a
-            # re-anchor, so the re-anchored pass falls back to the honest
-            # point-estimate contract instead of asserting a bootstrap
-            # confirmation it cannot attribute.
+            # FLAW-08: the holdout head takes over the pair. The caller-supplied
+            # residual pair belonged to the ORIGINAL pair and cannot be reused
+            # blindly after the re-anchor — but when both the re-anchored head
+            # and the re-anchored nearest rival preserve their own gate-4
+            # holdout residual series in provenance, the paired block-bootstrap
+            # tiebreak can and must run; silently downgrading to point
+            # estimates awarded unverified UNIQUE_SUPPORT (Winner's Curse).
             best = ho_head
             ranked = [ho_head] + [s for s in ranked if s is not ho_head]
-            bootstrap = False
+            _anchor_resid = _residual_series(best)
+            _runner = next((s for s in ranked[1:]
+                            if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)), None)
+            _runner_resid = _residual_series(_runner) if _runner is not None else None
+            if (_anchor_resid is not None and _runner_resid is not None
+                    and len(_anchor_resid) == len(_runner_resid)
+                    and len(_anchor_resid) > 1):
+                resid_best = np.asarray(_anchor_resid, dtype=float)
+                resid_rival = np.asarray(_runner_resid, dtype=float)
+                bootstrap = True
+            else:
+                # Series are unpairable — fall back to the honest
+                # point-estimate contract (disclosed via pair_contract=
+                # INCOMPLETE below) instead of asserting a bootstrap
+                # confirmation that cannot be attributed.
+                bootstrap = False
     best_rmse = best.holdout_rmse
     rivals = [s for s in ranked[1:]
               if _identity(s) != _identity(best) and s.holdout_rmse is not None

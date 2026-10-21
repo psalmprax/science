@@ -54,6 +54,72 @@ pub struct DiffPadeResult {
     pub is_exact_recovery: bool,
     #[serde(default)]
     pub snapped_terms: bool, // true when rational snapping was accepted
+    #[serde(default)]
+    pub pole_singularity_hit: bool, // FLAW-06a: true when a pole of the discovered ODE was masked during the rollout
+}
+
+/// Fornberg finite-difference weights for a 1st- or 2nd-order derivative
+/// evaluated at ``x0`` on an arbitrary (possibly non-uniform) node set.
+/// FLAW-04 remediation: the uniform-grid stencils are only valid when
+/// max_i |Δx_i − Δx_0| / Δx_0 <= 1e-4; otherwise arbitrary-grid weights are
+/// used over the same stencil width, so non-uniformly sampled scientific
+/// data no longer corrupts the Padé differential coefficients.
+fn fornberg_weights(x_nodes: &[f64], x0: f64, m: usize) -> Vec<f64> {
+    let n = x_nodes.len();
+    let mut c = vec![vec![0.0f64; m + 1]; n];
+    c[0][0] = 1.0;
+    let mut c1 = 1.0f64;
+    let mut c4 = x_nodes[0] - x0;
+    for i in 1..n {
+        let mn = i.min(m);
+        let mut c2 = 1.0f64;
+        let c5 = c4;
+        c4 = x_nodes[i] - x0;
+        for j in 0..i {
+            let c3 = x_nodes[i] - x_nodes[j];
+            c2 *= c3;
+            if j == i - 1 {
+                for k in (1..=mn).rev() {
+                    c[i][k] = c1 * (c[i - 1][k - 1] as f64 - (i as f64 - 1.0) * c[i - 1][k] as f64)
+                        / (i as f64);
+                }
+                c[i][0] = -c1 * (i as f64 - 1.0) * c[i - 1][0] as f64 / (i as f64);
+            }
+            for k in (0..=mn).rev() {
+                c[j][k] = (c4 * c[j][k] - c5 * (if k == 0 { 0.0 } else { c[j][k - 1] })) / c3;
+            }
+        }
+        c1 = c2;
+    }
+    (0..n).map(|i| c[i][m]).collect()
+}
+
+/// Grid uniformity gate: true when every internal spacing matches x[1]-x[0]
+/// within 1e-4 relative tolerance.
+fn is_uniform_grid(x: &[f64]) -> bool {
+    let h0 = x[1] - x[0];
+    if h0.abs() < 1e-300 {
+        return false;
+    }
+    x.windows(2).all(|w| ((w[1] - w[0]) - h0).abs() <= h0.abs() * 1e-4)
+}
+
+/// Evaluate the ``m``-th derivative of ``y`` at every node of an arbitrary
+/// grid via Fornberg weights on a centered (edge-clamped) 5-point window.
+fn derivatives_nonuniform(x: &[f64], y: &[f64], m: usize) -> Vec<f64> {
+    let n = x.len();
+    let mut d = vec![0.0f64; n];
+    for i in 0..n {
+        let lo = i.saturating_sub(2);
+        let hi = ((i + 3).min(n)).max(lo + 1);
+        let w = fornberg_weights(&x[lo..hi], x[i], m);
+        let mut acc = 0.0f64;
+        for (k, &w_ij) in w.iter().enumerate() {
+            acc += w_ij * y[lo + k];
+        }
+        d[i] = acc;
+    }
+    d
 }
 
 /// Compute numerical first derivative y' using 4th-order central difference and 2nd-order boundary stencils.
@@ -72,6 +138,10 @@ pub fn compute_derivatives(x: &[f64], y: &[f64]) -> Vec<f64> {
     }
 
     let h = (x[1] - x[0]).max(1e-12);
+
+    if !is_uniform_grid(x) {
+        return derivatives_nonuniform(x, y, 1);
+    }
 
     // 2nd-order one-sided at edges
     dy[0] = (-3.0 * y[0] + 4.0 * y[1] - y[2]) / (2.0 * h);
@@ -99,6 +169,10 @@ pub fn compute_second_derivatives(x: &[f64], y: &[f64]) -> Vec<f64> {
 
     let h = (x[1] - x[0]).max(1e-12);
     let h2 = h * h;
+
+    if !is_uniform_grid(x) {
+        return derivatives_nonuniform(x, y, 2);
+    }
 
     d2y[0] = (2.0 * y[0] - 5.0 * y[1] + 4.0 * y[2] - y[3]) / h2;
     d2y[1] = (y[2] - 2.0 * y[1] + y[0]) / h2;
@@ -277,12 +351,20 @@ fn integrate_trajectory_r2(
     p_coeffs: &[f64],
     r_coeffs: &[f64],
     s_coeffs: &[f64],
-) -> (Vec<f64>, f64) {
+) -> (Vec<f64>, f64, bool) {
     let n = x_s.len();
     let mut y_sim = vec![0.0f64; n];
     y_sim[0] = y_s[0];
 
     let has_second_order = s_coeffs.iter().any(|&c| c.abs() > 1e-4);
+
+    // FLAW-06a: poles of the discovered differential equation (S(x) ≈ 0 in
+    // the second-order branch, P(x) ≈ 0 in the linear/Riccati branch) are
+    // interior singularities. The previous behavior silently integrated
+    // dy/dx = 0 across them, hiding fatal trajectory splits behind a smooth
+    // zero. Share this flag across both branch closures and return it so the
+    // caller can refuse exact-recovery certification for singular candidates.
+    let pole_hit = std::cell::Cell::new(false);
 
     if has_second_order {
         // 2nd-order ODE: S(x) y'' + P(x) y' + Q(x) y = 0
@@ -305,6 +387,7 @@ fn integrate_trajectory_r2(
             if s_val.abs() > 1e-10 {
                 (-p_val * y2_v - q_val * y1_v) / s_val
             } else {
+                pole_hit.set(true);
                 0.0
             }
         };
@@ -347,6 +430,7 @@ fn integrate_trajectory_r2(
             if p_val.abs() > 1e-10 {
                 (-q_val * yv - r_val * yv * yv) / p_val
             } else {
+                pole_hit.set(true);
                 0.0
             }
         };
@@ -374,10 +458,12 @@ fn integrate_trajectory_r2(
         .sum::<f64>();
     let r2 = if ss_tot > 1e-15 {
         1.0 - (ss_res / ss_tot)
-    } else {
+    } else if ss_res <= 1e-15 {
         1.0
+    } else {
+        0.0
     };
-    (y_sim, r2)
+    (y_sim, r2, pole_hit.get())
 }
 
 /// Discover differential equation in Jet space (Linear, Riccati, or 2nd-order).
@@ -589,7 +675,7 @@ pub fn discover_differential_relation(
 
     // Baseline trajectory score before refinement
     let blocks_before = extract(&raw_c);
-    let (_, traj_before) = integrate_trajectory_r2(
+    let (_, traj_before, _) = integrate_trajectory_r2(
         &x_s,
         &y_s,
         dy_s[0],
@@ -612,7 +698,7 @@ pub fn discover_differential_relation(
         *v /= max_abs_r;
     }
     let mut blocks = extract(&raw_c);
-    let (_, mut traj_r2) = integrate_trajectory_r2(
+    let (_, mut traj_r2, _) = integrate_trajectory_r2(
         &x_s, &y_s, dy_s[0], &blocks.0, &blocks.2, &blocks.1, &blocks.3,
     );
     let jet_mid = jet_of(&raw_c);
@@ -639,7 +725,7 @@ pub fn discover_differential_relation(
     }
     if any_snapped {
         let snap_blocks = extract(&snap_c);
-        let (_, traj_s) = integrate_trajectory_r2(
+        let (_, traj_s, _) = integrate_trajectory_r2(
             &x_s,
             &y_s,
             dy_s[0],
@@ -660,7 +746,7 @@ pub fn discover_differential_relation(
     let (q_coeffs, r_coeffs, p_coeffs, s_coeffs) = blocks;
 
     // Final trajectory simulation for the accepted coefficients
-    let (y_sim, _) = integrate_trajectory_r2(
+    let (y_sim, _, pole_final) = integrate_trajectory_r2(
         &x_s, &y_s, dy_s[0], &q_coeffs, &p_coeffs, &r_coeffs, &s_coeffs,
     );
 
@@ -753,7 +839,10 @@ pub fn discover_differential_relation(
     // cases: Landau-Zener/BCS/Planck-Riccati snap exactly; harmonic hits
     // jet ~1e-14; while fitted non-laws (cubic-linear Planck radiance) keep
     // irrational coefficients and snapped_terms=false at jet ~1e-4.
-    let is_exact = traj_r2 > 0.99 && jet_rmse < 0.05 && (snapped_terms || jet_rmse < 1e-9);
+    let is_exact = !pole_final
+        && traj_r2 > 0.99
+        && jet_rmse < 0.05
+        && (snapped_terms || jet_rmse < 1e-9);
 
     Ok(DiffPadeResult {
         formula,
@@ -766,6 +855,7 @@ pub fn discover_differential_relation(
         integrated_y: y_sim,
         is_exact_recovery: is_exact,
         snapped_terms,
+        pole_singularity_hit: pole_final,
     })
 }
 

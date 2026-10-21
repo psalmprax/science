@@ -238,14 +238,15 @@ class HawkesOrderFlowProposer(ProposerBase):
                     return (intens - fit_intens_mean) / fit_intens_std
                 return intens - fit_intens_mean
             surge = (intens > tau_intensity).astype(float)
-            # Eval-frame feature mismatch can still collapse the binary surge
-            # (e.g. no timestamp/volume columns); fall back to the continuous
-            # standardized intensity so the signal is never constant.
-            if np.all(surge == 0.0) or np.all(surge == 1.0):
-                if fit_intens_std > 1e-8:
-                    return (intens - fit_intens_mean) / fit_intens_std
-                return intens - fit_intens_mean
-
+            # FLAW-09: an eval-frame collapse (e.g. a low-volatility interval
+            # where the surge never binds) used to switch the scorer's return
+            # type to an unbounded continuous z-score — mutating the declared
+            # binary-regime contract {0, 1} and corrupting downstream sizing.
+            # The honest binary output in a collapsed regime is the collapsed
+            # binary itself (all zeros: no surges fired), so the return TYPE
+            # stays constant. The fit-time continuous declaration is the
+            # separate, deliberate path (binary_viable=False → the candidate
+            # is declared CONTINUOUS_FACTOR above) and is untouched.
             return surge
 
         cand = CandidateProposal(

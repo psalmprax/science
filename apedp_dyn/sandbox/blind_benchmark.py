@@ -28,7 +28,10 @@ from typing import Any
 sys.path.insert(0, '.')
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_8.json"
+# v1_9 re-mint (2026-10-21, per freeze protocol): external-audit FLAW-07/08
+# referee remediation; guard-file hashes for adjudicate.py and claim_ladder.py
+# refreshed with recorded rationale, thresholds/blind expectations unchanged.
+FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_9.json"
 
 
 def verify_referee() -> dict[str, str]:
