@@ -32,6 +32,7 @@ archive host live in the results JSON under ``timing_scopes``.
 from __future__ import annotations
 
 import json
+import re
 import time
 from pathlib import Path
 from typing import Any, Callable
@@ -407,6 +408,159 @@ def run_timing_scopes() -> dict[str, Any]:
     }
 
 
+def _family_of(formula: str) -> str:
+    """Coarse structural family tag of a RIME proposal formula."""
+    for tag in ("sat_sq_norm", "sat_norm", "sat_sq", "sat", "ssqrt", "slog", "sq", "cub", "raw"):
+        if tag in formula:
+            return tag
+    if "(p)" in formula:
+        return "linear"
+    return "other"
+
+
+def run_fold_level_rime_recovery(seed: int = 42) -> dict[str, Any]:
+    """Run RimeProposer inside each Langmuir LOOCV fold and record recovery/abstention.
+
+    Two disclosed modes (the audit-verified distinction):
+      - ``bank_restricted``: 8 Python-built saturation columns sat_m with
+        s_m = m*std(p_train) passed as RIME's feature set (selection within a
+        declared bank; NOT unrestricted structural discovery).
+      - ``unrestricted_grammar``: raw p plus the declared algebraic transform
+        repertoire; the KERNEL derives transform scales from the development
+        rows itself (``_specs`` uses nanstd) and picks the structure per fold.
+
+    Per fold this records: proposals emitted or abstention, selected
+    structure/family, fitted scale/intercept/dev_r2, held-out error, and the
+    partial-gate referee decision (capacity_positive only -- gate set is a
+    disclosed subset; graph-structural validation is NOT wired here).
+    """
+    from apedp_dyn.proposers.rime_proposer import RimeProposer
+
+    def capacity_positive_gate(pr) -> tuple[bool, str]:
+        w = float(pr.parameters["scale"])
+        return (w > 0), f"scale {w:+.4f}"
+
+    df = pd.DataFrame({"p": _LANGMUIR_P, "q": _LANGMUIR_Q})
+    bank_rows: list[dict[str, Any]] = []
+    gram_rows: list[dict[str, Any]] = []
+    errs_bank: list[float] = []
+    errs_gram: list[float] = []
+    for i in range(len(df)):
+        df_train = df.drop(index=i).reset_index(drop=True)
+        df_test = df.iloc[[i]].reset_index(drop=True)
+        s_tr = float(np.std(df_train["p"].values))
+
+        # ── Mode A: bank-restricted (Python-built sat_m columns) ──
+        feat_cols, bank_s = [], {}
+        for m in _LANGMUIR_MULTS:
+            col = f"sat_{m}"
+            s_m = m * s_tr
+            df_train[col] = (df_train["p"] / s_m) / (1.0 + df_train["p"] / s_m)
+            df_test[col] = (df_test["p"] / s_m) / (1.0 + df_test["p"] / s_m)
+            feat_cols.append(col)
+            bank_s[col] = s_m
+        props_bank = RimeProposer(
+            feature_cols=feat_cols, target_col="q", static_mode=True,
+            min_rows=5, max_proposals=1, seed=seed,
+        ).fit_and_propose(df_train)
+        if props_bank:
+            p0 = props_bank[0]
+            pred = float(p0.compute_score(df_test)[0])
+            err = pred - float(df_test["q"].values[0])
+            verdict, _, why = classify_referee_decision(
+                [p0], {"capacity_positive": capacity_positive_gate})
+            sel_m = None
+            mm_ = re.search(r"sat_(0\.[0-9]+|1\.0|2\.0)", p0.formula)
+            if mm_:
+                sel_m = float(mm_.group(1))
+            bank_rows.append(dict(
+                fold=i, abstained=False, formula=p0.formula,
+                selected_scale_m=sel_m, family=_family_of(p0.formula),
+                dev_r2=float(p0.parameters["dev_r2"]),
+                readout_scale=float(p0.parameters["scale"]),
+                readout_intercept=float(p0.parameters["intercept"]),
+                held_out_p=float(df_test["p"].values[0]),
+                held_out_q=float(df_test["q"].values[0]),
+                predicted=pred, error=err,
+                partial_gate_decision=verdict, partial_gate_reason=why,
+            ))
+            errs_bank.append(err)
+        else:
+            bank_rows.append(dict(
+                fold=i, abstained=True, formula=None, family="ABSTAIN",
+                held_out_p=float(df_test["p"].values[0]),
+                held_out_q=float(df_test["q"].values[0]),
+                partial_gate_decision=_ABSTAIN,
+            ))
+            errs_bank.append(float("nan"))
+
+        # ── Mode B: unrestricted declared grammar (kernel-chosen scales) ──
+        props_gram = RimeProposer(
+            feature_cols=["p"], target_col="q", static_mode=True,
+            algebraic_transforms=["sq", "cub", "ssqrt", "slog", "sat", "sat_sq", "sat_norm"],
+            min_rows=5, max_proposals=1, seed=seed,
+        ).fit_and_propose(df_train)
+        if props_gram:
+            p0 = props_gram[0]
+            pred = float(p0.compute_score(df_test)[0])
+            err = pred - float(df_test["q"].values[0])
+            verdict, _, why = classify_referee_decision(
+                [p0], {"capacity_positive": capacity_positive_gate})
+            gram_rows.append(dict(
+                fold=i, abstained=False, formula=p0.formula,
+                family=_family_of(p0.formula),
+                dev_r2=float(p0.parameters["dev_r2"]),
+                readout_scale=float(p0.parameters["scale"]),
+                readout_intercept=float(p0.parameters["intercept"]),
+                held_out_p=float(df_test["p"].values[0]),
+                held_out_q=float(df_test["q"].values[0]),
+                predicted=pred, error=err,
+                partial_gate_decision=verdict, partial_gate_reason=why,
+            ))
+            errs_gram.append(err)
+        else:
+            gram_rows.append(dict(
+                fold=i, abstained=True, formula=None, family="ABSTAIN",
+                held_out_p=float(df_test["p"].values[0]),
+                held_out_q=float(df_test["q"].values[0]),
+                partial_gate_decision=_ABSTAIN,
+            ))
+            errs_gram.append(float("nan"))
+
+    rmse_bank = float(np.sqrt(np.nanmean(np.array(errs_bank) ** 2)))
+    rmse_gram = float(np.sqrt(np.nanmean(np.array(errs_gram) ** 2)))
+    sat_bank = int(sum(1 for r in bank_rows if str(r.get("family", "")).startswith("sat")))
+    sat_gram = int(sum(1 for r in gram_rows if str(r.get("family", "")).startswith("sat")))
+    sel_m_counts: dict[str, int] = {}
+    for r in bank_rows:
+        sel = r.get("selected_scale_m")
+        key = "ABSTAIN" if sel is None else f"m={sel}"
+        sel_m_counts[key] = sel_m_counts.get(key, 0) + 1
+    return {
+        "dataset": "langmuir_1918_table_vii (N=11, LOOCV)",
+        "seed": seed,
+        "disclosed_limit": (
+            "bank_restricted mode selects WITHIN a Python-predefined saturation bank "
+            "(structural recovery claim holds unrestrictedly via unrestricted_grammar "
+            "mode; the two are NOT the same experiment)"
+        ),
+        "bank_restricted": {
+            "loocv_rmse": rmse_bank,
+            "recovery": {"sat_family_top_rank_folds": sat_bank, "n": len(bank_rows)},
+            "abstentions": int(sum(1 for r in bank_rows if r["abstained"])),
+            "selected_scale_m_counts": sel_m_counts,
+            "folds": bank_rows,
+        },
+        "unrestricted_grammar": {
+            "grammar": ["sq", "cub", "ssqrt", "slog", "sat", "sat_sq", "sat_norm"],
+            "loocv_rmse": rmse_gram,
+            "recovery": {"sat_family_top_rank_folds": sat_gram, "n": len(gram_rows)},
+            "abstentions": int(sum(1 for r in gram_rows if r["abstained"])),
+            "folds": gram_rows,
+        },
+    }
+
+
 def main() -> int:
     results = {
         "harness": "rime_microsample_adjudication",
@@ -414,6 +568,8 @@ def main() -> int:
         "monotonicity_engine": "sound_monotonicity_v2 (exact root isolation, NO tolerance filter, UNRESOLVED fallback)",
         "decision_protocol": "ABSTAIN/REJECT/PROMOTE with empty-packet guard (defect-2 fix)",
         "langmuir_1918": run_langmuir_1918(),
+        "fold_level_rime": run_fold_level_rime_recovery(),
+        "michaelis_menten": run_michaelis_menten(),
         "michaelis_menten": run_michaelis_menten(),
         "negative_controls": run_negative_controls(),
         "timing_scopes": run_timing_scopes(),
@@ -424,7 +580,13 @@ def main() -> int:
     l8 = results["langmuir_1918"]
     mm = results["michaelis_menten"]
     nc = results["negative_controls"]
+    fl = results["fold_level_rime"]
     print(f"Langmuir 8-scale RMSE {l8['loocv_rmse_8scale']:.6f} | continuous {l8['loocv_rmse_continuous']:.6f}")
+    print(f"Fold-level RIME: bank-restricted RMSE {fl['bank_restricted']['loocv_rmse']:.6f} "
+          f"(sat {fl['bank_restricted']['recovery']['sat_family_top_rank_folds']}/11) | "
+          f"unrestricted RMSE {fl['unrestricted_grammar']['loocv_rmse']:.6f} "
+          f"(sat {fl['unrestricted_grammar']['recovery']['sat_family_top_rank_folds']}/11) | "
+          f"abstentions {fl['bank_restricted']['abstentions']}+{fl['unrestricted_grammar']['abstentions']}")
     print(f"MM {mm['n']}-fold RMSE {mm['loocv_rmse']:.4f} | admissible {sum(f['admissible'] for f in mm['folds'])}/{mm['n']}")
     for k, v in nc.items():
         if isinstance(v, dict):

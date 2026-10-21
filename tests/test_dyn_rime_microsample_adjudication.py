@@ -32,6 +32,7 @@ if _REPO not in sys.path:
 from benchmarks.run_rime_microsample_adjudication import (
     classify_referee_decision,
     certify_origin_constrained_rime,
+    run_fold_level_rime_recovery,
     run_langmuir_1918,
     run_michaelis_menten,
     sound_monotonicity_v2,
@@ -118,6 +119,49 @@ def test_michaelis_menten_12fold_unanimity_pinned() -> None:
     assert admissible == 12, res["per_gate_passes"]
     assert res["unanimity"] is True
     assert 0.10 <= res["loocv_rmse"] <= 0.30, res["loocv_rmse"]
+
+
+# ── fold-level RimeProposer recovery/abstention record ──────────────────
+def test_fold_level_bank_restricted_pins() -> None:
+    """RimeProposer inside each LOOCV fold over the Python-built sat_m bank:
+    the v5-claimed per-fold result must hold -- RMSE 0.482436, selections
+    sat_0.8 x1 + sat_0.7 x1 + sat_0.6 x2 + sat_0.66 x7, zero abstentions."""
+    res = run_fold_level_rime_recovery()
+    bank = res["bank_restricted"]
+    assert bank["abstentions"] == 0
+    assert abs(bank["loocv_rmse"] - 0.482436) < 2e-3, bank["loocv_rmse"]
+    assert bank["recovery"]["sat_family_top_rank_folds"] == 11
+    # per-fold anchor from the frozen run
+    fold0 = bank["folds"][0]
+    assert abs(fold0["error"] - (-0.728939)) < 1e-3
+    assert abs(fold0["selected_scale_m"] - 0.8) < 1e-9
+    counts = bank["selected_scale_m_counts"]
+    assert counts.get("m=0.66", 0) == 7
+    assert counts.get("m=0.6", 0) == 2
+    assert counts.get("m=0.8", 0) == 1
+    assert counts.get("m=0.7", 0) == 1
+    # every fold must record BOTH outcomes explicitly (recovery/abstention)
+    assert all("partial_gate_decision" in f for f in bank["folds"])
+
+
+def test_fold_level_unrestricted_grammar_pins() -> None:
+    """Unrestricted declared grammar (kernel-chosen scales): the kernel
+    re-selects a saturation family in 11/11 folds autonomously; LOOCV RMSE
+    0.629997 is the measured cost of kernel-scale freedom; zero abstentions."""
+    res = run_fold_level_rime_recovery()
+    gram = res["unrestricted_grammar"]
+    assert gram["abstentions"] == 0
+    assert abs(gram["loocv_rmse"] - 0.629997) < 5e-3, gram["loocv_rmse"]
+    assert gram["recovery"]["sat_family_top_rank_folds"] == 11
+    fams = {f["family"] for f in gram["folds"]}
+    assert all(f.startswith("sat") for f in fams), fams
+
+
+def test_fold_level_disclosed_limit_present() -> None:
+    """The artifact must keep the two modes explicitly separated (the
+    bank-restricted experiment is NOT unrestricted structural discovery)."""
+    res = run_fold_level_rime_recovery()
+    assert "NOT the same experiment" in res["disclosed_limit"]
 
 
 def test_langmuir_8scale_trace_pinned() -> None:

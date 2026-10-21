@@ -34,6 +34,18 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   re-executes it (LOOCV RMSE 0.1740, 12/12 admissible under the exact family
   certificate q′(p) = w·s/(s+p)² > 0 ratified by symbolic identity check).
   Artifact: `benchmarks/rime_microsample_adjudication_results.json`.
+- **Fold-level proposer recovery frozen (2026-10-21 followup):**
+  `run_fold_level_rime_recovery` executes RimeProposer inside each of the 11
+  Langmuir LOOCV folds and records fold-level recovery/abstention in the
+  artifact, in two disclosed modes: bank-restricted (Python-built sat_m
+  columns; RMSE 0.482436, selections {0.8×1, 0.7×1, 0.6×2, 0.66×7}, zero
+  abstentions) and unrestricted-grammar (raw p + declared repertoire,
+  kernel-derived scales; the engine re-selects a saturation family in 11/11
+  folds at measured cost 0.629997). A disclosed_limit field pins that the
+  two modes are not the same experiment; per-fold partial-gate decisions
+  (capacity_positive subset) are recorded with the graph-structural gap
+  disclosed as not-yet-wired. Three new pins (14 total in
+  tests/test_dyn_rime_microsample_adjudication.py).
 - Also independently re-measured: `cargo test --lib` = 186 passed / 0 failed
   (the "186/186" claim reproduces exactly as the lib-only scope; full
   `cargo test` = 204 passed / 2 ignored). The dynamic pytest scope
