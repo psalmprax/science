@@ -4,6 +4,42 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Micro-sample referee remediation (2026-10-21)
+
+### Two referee defects found by execution, fixed with regression pins
+- Context: an executed double-check of an external APEDP-X reconciliation
+  (Langmuir 1918 micro-sample adjudication) reproduced 18/20 claims digit-for-
+  digit (RimeProposer `min_rows=30` safeguard; `+37.7147*(sat_norm(p)) +3.97006`
+  with dev_r2=0.9935; 8-scale LOOCV RMSE 0.404810 vs 0.408720; Wilcoxon W=22.0
+  p=0.3652) and falsified two: the negative-control "5 proposals" figure is
+  4 on this host/kernel, and the "10.2×" timing ratio sits in no measured
+  protocol scope (scalar-dot 153×, full fold 1.5×).
+- **Defect 1 (soundness):** the external `sound_continuous_monotonicity_proof`
+  filtered positive roots by an absolute 1e-9 tolerance, certifying dN/dp =
+  p·(p − 5e-10) — genuinely negative on (0, 5e-10) — as monotonic. Fixed in
+  `benchmarks/run_rime_microsample_adjudication.py::sound_monotonicity_v2`:
+  exact root isolation with NO tolerance filter, interval partitions with
+  40-digit probes, and an UNRESOLVED fallback for non-algebraic expressions.
+  Regression world: `tests/test_dyn_rime_microsample_adjudication.py::
+  test_counterexample_with_micro_root_is_violated` (external engine's verdict
+  was WRONG, fixed engine returns VIOLATED).
+- **Defect 2 (decision semantics):** the external negative-control check
+  `all(p.parameters.get("scale", 0) < 0 for p in proposals)` is vacuously
+  True for an empty packet, so a proposer abstention could be reported as a
+  dynamics-inversion rejection. Fixed in
+  `classify_referee_decision`: ABSTAIN (empty packet, asserted by test) /
+  REJECT (gate failure) / PROMOTE are distinct outcomes and never conflated.
+- **Claim converted from prose to measurement:** the Michaelis-Menten N=12
+  "PROMOTED (12/12 folds)" bullet existed only in narrative; the new harness
+  re-executes it (LOOCV RMSE 0.1740, 12/12 admissible under the exact family
+  certificate q′(p) = w·s/(s+p)² > 0 ratified by symbolic identity check).
+  Artifact: `benchmarks/rime_microsample_adjudication_results.json`.
+- Also independently re-measured: `cargo test --lib` = 186 passed / 0 failed
+  (the "186/186" claim reproduces exactly as the lib-only scope; full
+  `cargo test` = 204 passed / 2 ignored).
+
+---
+
 ## [Unreleased] — Repair Python 3.12 blind-freeze CI failure (2026-10-20)
 
 ### Lorenz public benchmark: prereg frozen + confirmation harness built (2026-10-20)

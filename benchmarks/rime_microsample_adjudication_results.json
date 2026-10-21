@@ -1,0 +1,348 @@
+{
+  "harness": "rime_microsample_adjudication",
+  "status": "audit-only",
+  "monotonicity_engine": "sound_monotonicity_v2 (exact root isolation, NO tolerance filter, UNRESOLVED fallback)",
+  "decision_protocol": "ABSTAIN/REJECT/PROMOTE with empty-packet guard (defect-2 fix)",
+  "langmuir_1918": {
+    "system": "langmuir_1918_table_vii",
+    "n": 11,
+    "scale_multipliers": [
+      0.4,
+      0.5,
+      0.6,
+      0.66,
+      0.7,
+      0.8,
+      1.0,
+      2.0
+    ],
+    "loocv_rmse_8scale": 0.4048098909748366,
+    "loocv_rmse_continuous": 0.4087201137382717,
+    "wilcoxon": {
+      "W": 22.0,
+      "p": 0.365234375
+    },
+    "interpretation_disclosed": "p = 0.3652 does NOT establish statistical equivalence on N = 11; it is absence-of-detection, with a slight observed RMSE edge",
+    "unanimity_certified_by_exact_family_proof": true,
+    "folds": [
+      {
+        "fold": 0,
+        "base_s": 6.52243052856832,
+        "selected_s": 6.52243052856832,
+        "w0": 39.32704834090485,
+        "pred8": 32.99702476257181,
+        "residual8": -0.002975237428188393,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 1,
+        "base_s": 9.034849196306489,
+        "selected_s": 6.324394437414542,
+        "w0": 38.90310918297443,
+        "pred8": 30.735688329881572,
+        "residual8": -0.06431167011842831,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 2,
+        "base_s": 9.72604750142626,
+        "selected_s": 6.419191350941332,
+        "w0": 39.188503129817875,
+        "pred8": 28.582808499453478,
+        "residual8": 0.3828084994534784,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 3,
+        "base_s": 9.902832928006006,
+        "selected_s": 6.535869732483964,
+        "w0": 39.49649324618274,
+        "pred8": 26.282649261661025,
+        "residual8": 0.7826492616610246,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 4,
+        "base_s": 9.893816250567827,
+        "selected_s": 6.529918725374766,
+        "w0": 39.239797116129665,
+        "pred8": 23.25514427051573,
+        "residual8": -0.6448557294842701,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 5,
+        "base_s": 9.822774557119796,
+        "selected_s": 6.483031207699066,
+        "w0": 39.14042570801525,
+        "pred8": 20.86281777416798,
+        "residual8": -0.7371822258320222,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 6,
+        "base_s": 9.753645472334947,
+        "selected_s": 6.437406011741065,
+        "w0": 39.15846787877921,
+        "pred8": 19.052318624511216,
+        "residual8": 0.05231862451121572,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 7,
+        "base_s": 9.679777890013801,
+        "selected_s": 6.388653407409109,
+        "w0": 39.0681971668402,
+        "pred8": 17.152246086189447,
+        "residual8": 0.15224608618944657,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 8,
+        "base_s": 9.60010937437694,
+        "selected_s": 6.336072187088781,
+        "w0": 38.93769387562808,
+        "pred8": 15.068661739521044,
+        "residual8": -0.031338260478955604,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 9,
+        "base_s": 9.546460076908089,
+        "selected_s": 6.300663650759339,
+        "w0": 38.88832727404967,
+        "pred8": 13.630027541612481,
+        "residual8": 0.23002754161248085,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 10,
+        "base_s": 9.488334943497726,
+        "selected_s": 6.2623010627085,
+        "w0": 38.78554199350943,
+        "pred8": 11.983658105193062,
+        "residual8": -0.016341894806938484,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      }
+    ]
+  },
+  "michaelis_menten": {
+    "system": "michaelis_menten",
+    "n": 12,
+    "scale_multipliers": [
+      0.25,
+      0.33,
+      0.5,
+      0.67,
+      1.0,
+      2.0
+    ],
+    "loocv_rmse": 0.174002511167721,
+    "unanimity": true,
+    "per_gate_passes": {
+      "gate_origin": 12,
+      "gate_saturation": 12,
+      "gate_monotonicity": 12
+    },
+    "folds": [
+      {
+        "fold": 0,
+        "selected_s": 2.049545681364531,
+        "w0": 9.526604104365866,
+        "pred": 1.035705028776908,
+        "true": 0.9686966074522569,
+        "residual": 0.06700842132465112,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 1,
+        "selected_s": 2.056340803466196,
+        "w0": 9.542589443326932,
+        "pred": 1.866454862041074,
+        "true": 1.6500749505261245,
+        "residual": 0.2163799115149494,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 2,
+        "selected_s": 2.062786343759334,
+        "w0": 9.550348077721436,
+        "pred": 2.5465002253665423,
+        "true": 2.3854149322643905,
+        "residual": 0.1610852931021518,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 3,
+        "selected_s": 2.068885569576046,
+        "w0": 9.553178680560388,
+        "pred": 3.1129145952092694,
+        "true": 3.03990643991182,
+        "residual": 0.0730081552974493,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 4,
+        "selected_s": 2.0800570905626605,
+        "w0": 9.589200694091641,
+        "pred": 4.017757448353101,
+        "true": 3.7219015950331995,
+        "residual": 0.2958558533199014,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 5,
+        "selected_s": 2.0898773887479623,
+        "w0": 9.603746454704616,
+        "pred": 4.696349323882601,
+        "true": 4.416348009610543,
+        "residual": 0.28000131427205854,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 6,
+        "selected_s": 2.1055373423428048,
+        "w0": 9.589437618584828,
+        "pred": 5.634727733193587,
+        "true": 5.644050992406341,
+        "residual": -0.009323259212753676,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 7,
+        "selected_s": 2.1212938268896178,
+        "w0": 9.606838714956695,
+        "pred": 6.745149791939348,
+        "true": 6.758758834165016,
+        "residual": -0.013609042225668055,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 8,
+        "selected_s": 2.1122588619769123,
+        "w0": 9.608061581869464,
+        "pred": 7.4967250569030774,
+        "true": 7.443663073687806,
+        "residual": 0.05306198321527145,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 9,
+        "selected_s": 2.0708422199675183,
+        "w0": 9.515720059546448,
+        "pred": 7.883227935665995,
+        "true": 8.065107205230316,
+        "residual": -0.18187926956432054,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 10,
+        "selected_s": 2.849487049677712,
+        "w0": 10.45881499166586,
+        "pred": 8.78917273299574,
+        "true": 8.515818448291075,
+        "residual": 0.2733542847046646,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 11,
+        "selected_s": 2.2703965321553725,
+        "w0": 9.766078834559728,
+        "pred": 8.770457966887891,
+        "true": 8.83300131846046,
+        "residual": -0.06254335157256818,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      }
+    ]
+  },
+  "negative_controls": {
+    "noise_control": {
+      "n_proposals": 0,
+      "decision": "ABSTAIN_NO_HYPOTHESIS_GENERATED",
+      "rationale": "proposal packet empty; proposer abstained (zero false-discovery path)"
+    },
+    "decay_control": {
+      "n_proposals": 4,
+      "decision": "REJECTED",
+      "rationale": "CandidateProposal(proposer_id='rime_symbolic_mechanism_search', candidate_id='ri: capacity_positive \u2014 scale -3.0353; CandidateProposal(proposer_id='rime_symbolic_mechanism_search', candidate_id='ri: capacity_positive \u2014 scale -3.0353; CandidateProposal(proposer_id='rime_symbolic_mechanism_search', candidate_id='ri: capacity_positive \u2014 scale -69.6523",
+      "proposal_formulas": [
+        "-3.03529 * (t) +29.9478",
+        "-3.03529 * (abs(t)) +29.9478",
+        "-69.6523 * (tanh(t)) +76.9287",
+        "-0.199143 * ((t * t)) +21.3501"
+      ],
+      "all_scales_negative": true
+    },
+    "empty_packet_decision": "ABSTAIN_NO_HYPOTHESIS_GENERATED"
+  },
+  "timing_scopes": {
+    "protocol": "warm, 2000/200/2000 iterations; costs are per-call milliseconds on the archiving host",
+    "dot_product_ms": 0.0023,
+    "curve_fit_ms": 0.3365,
+    "full_fold_ms": 0.1943,
+    "ratios_disclosed": {
+      "dot_vs_curve_fit": 143.3,
+      "fold_vs_curve_fit": 1.7,
+      "note": "scope-dependent; the external '10.2x' matches neither scope"
+    }
+  }
+}
