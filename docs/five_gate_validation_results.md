@@ -35,11 +35,11 @@
 
 | Task / Representation | Holdout R² | Execution Time | Discovered Formula / Search Detail |
 | :--- | :---: | :---: | :--- |
-| Rabi: RIME shared DAG | `1.000000` | `20.73 ms` | `-1.0000 * (cos(t)^2) + 1.0000` |
-| Rabi: Native GA | `0.999992` | `69.61 ms` | `18.8415 * besselj(sin(besselj(sin(t)))) + -15.6500` (3798 evals) |
-| Brus: RIME single-term DAG | `-34.567941` | `16.41 ms` | `2.0654 * (1 / (R^2)) + 1.7003` (collapses on holdout) |
+| Rabi: RIME shared DAG | `1.000000` | `22.92 ms` | `-1.0000 * (cos(t)^2) + 1.0000` |
+| Rabi: Native GA | `0.999992` | `37.36 ms` | `18.8415 * besselj(sin(besselj(sin(t)))) + -15.6500` (3798 evals) |
+| Brus: RIME single-term DAG | `-34.567941` | `14.78 ms` | `2.0654 * (1 / (R^2)) + 1.7003` (collapses on holdout) |
 | Brus: RIME multi-rational | `1.000000` | `< 1.0 ms` | `1.7400 - 0.2800*(1/R) + 2.4500*(1/R^2)` (exact holdout recovery) |
-| Brus: Native GA single tree | `-17.539540` | `4.34 ms` | `1.7533 * tan(((1.1112 / t) / t)) + 1.7062` (1845 evals, collapses on holdout) |
+| Brus: Native GA single tree | `-17.539540` | `4.64 ms` | `1.7533 * tan(((1.1112 / t) / t)) + 1.7062` (1845 evals, collapses on holdout) |
 
 ### Gate 5 — Sealed Confirmation (fresh seed 12345, frozen configs)
 
