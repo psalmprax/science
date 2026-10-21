@@ -99,6 +99,36 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   tree — an additive-only commit was present during that rerun, so the new
   files cannot be their cause.
 
+### Tutorial notebook refreshed to the current platform record (2026-10-21)
+
+`notebooks/apedp_scientific_discovery_tutorial.ipynb` (guard: `tests/
+test_dyn_notebook_adapter.py::test_tutorial_notebook_structure_and_execution
+— every cell executes in one sequential namespace) was updated to the
+current frozen record:
+
+- **Badge launch URLs fixed**: the Colab / Kaggle badges pointed at
+  `owner/science` and `blob/main/` — neither exists. They now target
+  `psalmprax/science` at `blob/master/` (the only launchable default branch,
+  verified by rendering the GitHub view).
+- **Step 5 demo-vs-production marker**: the tutorial's synthetic holdout
+  demo (`cand_alpha_01`/`cand_beta_02` on `holdout_slice_Q3`) now recreates
+  its demo ledger when a previous run already burned the slice at the
+  default path (`[demo-reset]` notice). Production holdout ledgers use other
+  filenames and are never touched (AGENTS.md §1.2 discipline unaffected).
+- **Step 7 — micro-sample symbolic discovery**: live `RimeProposer` search
+  on Langmuir 1918 (N=11) plus the structure-aware, graph-validated referee
+  (`adjudicate_structure_aware`, `certify_origin_constrained_rime`,
+  `sound_monotonicity_v2`); cells reproduce the frozen semantics (saturation
+  family UNIQUE_WINNER, PROMOTED with `origin_strict_satisfied` reported as
+  False, no `|b|` tolerance gating).
+- **Step 8 — companion pathways**: SIR epidemiology discovery via
+  `CompartmentalSirProposer` (fitted β=0.2996/γ=0.1199/R0=2.499 against
+  true 0.30/0.12/2.50 with exact mass conservation) and the frozen
+  Michaelis-Menten pathway re-executed through the graph-validated referee
+  (12/12 folds PROMOTED, actual-RIME LOOCV RMSE 0.1316, tournament PROMOTED
+  6/6) — matching `benchmarks/rime_microsample_adjudication_results.json`
+  digit-for-digit.
+
 ---
 
 ## [Unreleased] — Repair Python 3.12 blind-freeze CI failure (2026-10-20)
