@@ -38,6 +38,7 @@ from benchmarks.run_rime_microsample_adjudication import (
     run_graph_validated_fold_referee,
     run_langmuir_1918,
     run_michaelis_menten,
+    run_michaelis_menten_graph_validated,
     run_structure_aware_referee,
     sound_monotonicity_v2,
     validate_kernel_graph_structure,
@@ -319,6 +320,39 @@ def test_graph_validation_rejects_tampered_affine_readout() -> None:
     assert checks["affine_readout_verified"] is False
     assert checks["validated"] is False
     assert checks["failed_check"] == "affine_readout_verified"
+
+
+# ── Michaelis-Menten path through the graph-validated referee ───────────
+def test_mm_graph_validated_folds_pinned() -> None:
+    """The MM system through the SAME graph-validated referee: 12/12 folds
+    promoted with 12/12 structure-validation (graph metadata + affine readout
+    machine-exact), zero abstentions; actual-RIME LOOCV RMSE 0.1316 is the
+    measured per-fold result and BEATS the b≡0 baseline (0.1740) here."""
+    res = run_michaelis_menten_graph_validated()
+    assert res["abstentions"] == 0
+    assert res["promoted"] == 12 and res["structure_validated_folds"] == 12
+    assert abs(res["loocv_rmse_actual_rime"] - 0.1316) < 2e-3, res["loocv_rmse_actual_rime"]
+    assert res["graph_checks_max_affine_dev"] < 1e-12
+    for f in res["folds"]:
+        assert f["graph_id"] and f["kernel_equation"]
+        assert f["verdict"] == "PROMOTED"
+        assert all(f["gates"].values())
+        assert f["origin_strict_satisfied"] is False  # b != 0 per fold
+    # physical recovery: readout w estimates Vmax = 10 within 5%
+    ws = [f["w"] for f in res["folds"]]
+    assert abs(sum(ws) / len(ws) - 10.0) < 0.05 * 10.0, sum(ws) / len(ws)
+
+
+def test_mm_full_tournament_adjudicated_pinned() -> None:
+    """The existing 'MM: 6 proposals PROMOTED' table row is reproduced with
+    measured semantics: exactly 6 bank proposals, all pass the structure-
+    aware gates, saturation family at rank #1."""
+    res = run_michaelis_menten_graph_validated()
+    t = res["tournament"]
+    assert t["n_proposals"] == 6
+    assert t["referee_verdict"] == "PROMOTED"
+    assert t["admissible"] == 6
+    assert t["top_rank_family"] == "sat"
 
 
 def test_langmuir_8scale_trace_pinned() -> None:

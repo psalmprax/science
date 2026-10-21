@@ -575,6 +575,139 @@ def run_graph_validated_fold_referee(seed: int = 42) -> dict[str, Any]:
     }
 
 
+_MM_S_GRID = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 7.5, 10.0, 15.0, 20.0]
+
+
+def run_michaelis_menten_graph_validated(seed: int = 42) -> dict[str, Any]:
+    """Michaelis-Menten pathway through SAME graph-validated referee as Langmuir.
+
+    Mirrors ``run_graph_validated_fold_referee`` exactly for the MM system
+    (N=12, S grid + v = 10·S/(2.5+S) + eps, same dataset as
+    ``run_michaelis_menten``): the actual RimeProposer runs inside each LOOCV
+    fold over the Python-built MM saturating bank (sat_m, m·std(S_train),
+    m in _MM_MULTS), each proposal's executable graph is validated on kernel
+    metadata + affine readout, then the structure-aware gates apply with the
+    declared s_m. A full-data tournament over the same bank is additionally
+    adjudicated through the structure-aware referee (recovering the external
+    '6 proposals PROMOTED' row with measured semantics). All invariants live
+    in the record; no MM claim remains prose.
+    """
+    from apedp_dyn.proposers.rime_proposer import RimeProposer
+
+    np.random.seed(seed)
+    S = np.array(_MM_S_GRID, dtype=float)
+    v_true = 10.0 * S / (2.5 + S)
+    v_obs = v_true + np.random.normal(0, 0.12, size=len(S))
+    df = pd.DataFrame({"S": S, "v": v_obs})
+
+    folds: list[dict[str, Any]] = []
+    for i in range(len(df)):
+        df_train = df.drop(index=i).reset_index(drop=True)
+        df_test = df.iloc[[i]].reset_index(drop=True)
+        s_tr = float(np.std(df_train["S"].values))
+        feat_cols: list[str] = []
+        bank_s: dict[str, float] = {}
+        for m in _MM_MULTS:
+            col = f"sat_{m}"
+            s_m = m * s_tr
+            df_train[col] = (df_train["S"] / s_m) / (1.0 + df_train["S"] / s_m)
+            df_test[col] = (df_test["S"] / s_m) / (1.0 + df_test["S"] / s_m)
+            feat_cols.append(col)
+            bank_s[col] = s_m
+        props = RimeProposer(
+            feature_cols=feat_cols, target_col="v", static_mode=True,
+            min_rows=5, max_proposals=1, seed=seed,
+        ).fit_and_propose(df_train)
+        if not props:
+            folds.append(dict(fold=i, abstained=True))
+            continue
+        prop = props[0]
+        feature_tok = prop.metadata.get("equation")
+        s_m = bank_s.get(feature_tok)
+        graph_checks = validate_kernel_graph_structure(prop, df_train=df_train)
+        w = float(prop.parameters["scale"])
+        b = float(prop.parameters["intercept"])
+        mono_v, mono_why = certify_origin_constrained_rime(w, s_m) if s_m else ("UNRESOLVED", "no declared scale")
+        q_inf = w + b
+        gates = {
+            "capacity_positive": bool(w > 0),
+            "saturation_finite_positive": bool(np.isfinite(q_inf) and q_inf > 0),
+            "exact_monotonicity": bool(mono_v == "CERTIFIED_MONOTONIC"),
+        }
+        verdict = "PROMOTED" if graph_checks["validated"] and all(gates.values()) else "REJECTED"
+        pred = float(prop.compute_score(df_test)[0])
+        folds.append(dict(
+            fold=i, abstained=False, formula=prop.formula,
+            graph_id=prop.metadata.get("graph_id"),
+            kernel_equation=feature_tok,
+            inputs_used_names=list(prop.metadata.get("inputs_used_names") or []),
+            declared_s_m=s_m,
+            w=w, b=b, q_inf=q_inf,
+            dev_r2=float(prop.parameters["dev_r2"]),
+            held_out_S=float(df_test["S"].values[0]),
+            held_out_v=float(df_test["v"].values[0]),
+            predicted=pred,
+            integral_check_error=pred - float(df_test["v"].values[0]),
+            graph_checks=graph_checks,
+            gates=gates,
+            monotonicity=mono_v, mono_rationale=mono_why,
+            origin_strict_satisfied=bool(b == 0),
+            verdict=verdict,
+            structure_validated=bool(graph_checks["validated"]),
+        ))
+    err_arr = np.array([
+        f["integral_check_error"] if "integral_check_error" in f else np.nan
+        for f in folds if not f["abstained"]
+    ], dtype=float)
+    rmse_fold = float(np.sqrt(np.nanmean(err_arr ** 2)))
+
+    # ── full-data tournament over the same bank, adjudicated structure-aware ──
+    df_full = df.copy()
+    s_full = float(np.std(df["S"].values))
+    feat_cols_full: list[str] = []
+    for m in _MM_MULTS:
+        col = f"sat_{m}"
+        s_m = m * s_full
+        df_full[col] = (df_full["S"] / s_m) / (1.0 + df_full["S"] / s_m)
+        feat_cols_full.append(col)
+    t_props = RimeProposer(
+        feature_cols=feat_cols_full, target_col="v", static_mode=True,
+        min_rows=5, max_proposals=6, seed=seed,
+    ).fit_and_propose(df_full)
+    t_entries = []
+    for p in t_props:
+        tok = p.metadata.get("equation")
+        t_entries.append(dict(
+            proposal=p, s=bank_s.get(tok.replace("m=" , "") if tok and tok.startswith("m=") else tok)
+            if tok else None,
+        ))
+    verdict_t, reports_t, why_t = adjudicate_structure_aware(t_entries)
+    top_family = _family_of(t_props[0].formula) if t_props else "ABSTAIN"
+    return {
+        "system": "michaelis_menten (S: mmol-ish grid, v: rate, true Vmax=10, Km=2.5)",
+        "n_folds": len(df),
+        "seed": seed,
+        "scale_multipliers": _MM_MULTS,
+        "folds": folds,
+        "abstentions": int(sum(1 for f in folds if f["abstained"])),
+        "promoted": int(sum(1 for f in folds if f.get("verdict") == "PROMOTED")),
+        "structure_validated_folds": int(sum(1 for f in folds if f.get("structure_validated"))),
+        "loocv_rmse_actual_rime": rmse_fold,
+        "graph_checks_max_affine_dev": max(
+            (f["graph_checks"]["affine_readout_max_abs_dev"]
+             for f in folds if not f["abstained"]),
+            default=None),
+        "tournament": {
+            "n_proposals": len(t_props),
+            "top_rank_family": top_family,
+            "referee_verdict": verdict_t,
+            "admissible": int(sum(1 for r in reports_t if r.get("promoted"))),
+            "formulas": [p.formula for p in t_props],
+            "rationale": why_t,
+        },
+    }
+
+
 def _fit_scale_bank(
     x_tr: np.ndarray, y_tr: np.ndarray, mults: list[float]
 ) -> tuple[float, float, float]:
@@ -954,6 +1087,7 @@ def main() -> int:
         "negative_controls": run_negative_controls(),
         "structure_aware_referee": run_structure_aware_referee(),
         "graph_validated_fold_referee": run_graph_validated_fold_referee(),
+        "michaelis_menten_graph_validated": run_michaelis_menten_graph_validated(),
         "timing_scopes": run_timing_scopes(),
     }
     path = _REPO / "benchmarks" / "rime_microsample_adjudication_results.json"
@@ -979,6 +1113,11 @@ def main() -> int:
     print(f"graph-validated folds: {gv['promoted']}/{gv['n_folds']} promoted | "
           f"structure-validated {gv['structure_validated_folds']}/{gv['n_folds']} | "
           f"max affine-readout dev {gv['max_affine_readout_dev']:.2e}")
+    mg = results["michaelis_menten_graph_validated"]
+    print(f"MM graph-validated: {mg['promoted']}/{mg['n_folds']} promoted | "
+          f"structure-validated {mg['structure_validated_folds']}/{mg['n_folds']} | "
+          f"RMSE {mg['loocv_rmse_actual_rime']:.4f} | tournament {mg['tournament']['referee_verdict']} "
+          f"({mg['tournament']['n_proposals']} proposals, top {mg['tournament']['top_rank_family']})")
     print(f"MM {mm['n']}-fold RMSE {mm['loocv_rmse']:.4f} | admissible {sum(f['admissible'] for f in mm['folds'])}/{mm['n']}")
     for k, v in nc.items():
         if isinstance(v, dict):

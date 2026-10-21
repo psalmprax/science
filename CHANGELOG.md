@@ -73,6 +73,18 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   structure-validated and per-fold graph ids/equations/gates frozen.
   A tampered-graph test proves the validator rejects when the executable
   readout deviates while metadata checks pass. Three new pins (22 total).
+- **Michaelis-Menten pathway frozen (2026-10-21 followup):**
+  `run_michaelis_menten_graph_validated` executes the same graph-validated
+  referee path for the MM system: the actual RimeProposer runs inside each
+  of the 12 LOOCV folds over the MM saturating bank, every proposal is
+  metadata-validated with a machine-exact affine-readout check (max dev
+  0.0), structure-aware gates apply with declared s_m. Measured: 12/12
+  PROMOTED, 12/12 structure-validated, zero abstentions, actual-RIME LOOCV
+  RMSE 0.1316 (beats the b≡0 baseline 0.1740 on this dataset); readout w
+  recovers Vmax=10.0 within 5%; per-fold origin deviations disclosed.
+  The full-data tournament reproduces the external '6 proposals PROMOTED'
+  row with measured semantics (6/6 admissible, saturation top). Two new
+  pins (24 total).
 - Also independently re-measured: `cargo test --lib` = 186 passed / 0 failed
   (the "186/186" claim reproduces exactly as the lib-only scope; full
   `cargo test` = 204 passed / 2 ignored). The dynamic pytest scope
