@@ -29,6 +29,12 @@ edits; FLAW-01 remains OPEN by protocol:
   timeout.
 - **FLAW-04:** uniform-grid stencils in `rime/diff_pade.rs` now gate on actual
   grid uniformity (1e-4) and fall back to Fornberg arbitrary-grid weights.
+  v2 (mutation-pin run): the first Fornberg translation was structurally wrong
+  (weights stopped annihilating constants; ~1e3x error at stencil edges) —
+  `fornberg_weights` now mirrors the proven Python
+  `_fornberg_centered_weights` recurrence, pinned by
+  `test_nonuniform_grid_derivatives_use_fornberg_fallback` (quadratics
+  differentiated exactly on a strongly non-uniform grid).
 - **FLAW-05:** the constant-field `R² = 1.0` tautology is removed in
   `rime/pde.rs`, `pde_discovery.py` and `pde_transfer.py` (perfect resorbed
   constant may claim 1.0; real residual energy on a flat target scores 0.0);
@@ -37,7 +43,10 @@ edits; FLAW-01 remains OPEN by protocol:
 - **FLAW-06:** pole evaluations in the diff-Padé rollout set
   `pole_singularity_hit` and disqualify `is_exact_recovery` instead of
   silently integrating through singularities; Koopman ss_tot is centered and
-  zero-variance targets score 0.0.
+  zero-variance targets score 0.0. The pole-flag report contract is now
+  mutation-pinned on BOTH rollout branches: Bessel-J0 (forces the 2nd-order
+  branch, S(0)=0) and the parabola with `max_diff_order=1` (forces the
+  1st-order branch, P(0)=0).
 - **FLAW-07:** C6 apex evidence set now includes `EQUIVALENCE_RIVALS_REJECTED`
   and `INTERVENTIONAL_INVARIANCE` (tier monotonicity restored).
 - **FLAW-08:** re-anchored referees run the block-bootstrap tiebreak on
@@ -52,7 +61,9 @@ edits; FLAW-01 remains OPEN by protocol:
   than averaging a fake 0.0 (previously `limit(1/x, x→0)` timed-path
   returned 0.0); the wall-clock regression retains its budget contract.
 - **FLAW-12:** the implicit-RIME exact-RMSE ceiling measures scale over ACTIVE
-  non-constant library columns only.
+  non-constant library columns only (`test_near_zero_scale_misfit_not_certified`
+  pins the near-zero-scale refusal with its O(1e5) exact positive control;
+  MUT-E4 kills the re-included constant column).
 - **FLAW-13 (spec centralization per AGENTS §1.3):** preregistered spec gains
   `ode_referee_min_mean_r2=0.95` / `ode_referee_min_worst_r2=0.85`
   (`canonical_preregistered_spec_v1.json` re-pinned:
@@ -67,6 +78,19 @@ edits; FLAW-01 remains OPEN by protocol:
   replace toroidal `np.roll` in the audio spectral advection.
 - **FLAW-15:** the Lie-symmetry nullspace gate is normalized
   (`|λ| ≤ tol · λ_max`).
+  v2 (mutation-pin run, 2026-10-21): the v1 relative gate left the EIGENSOLVE
+  itself scale-blind — on O(1e6)-amplitude ODEs the multi-stratum Gram matrix
+  corrupted a structural zero into eigenvalue ~1.0 (basis residual ~7e5, 9
+  vs 4 genuine directions reported); `discover_point_symmetries` now solves
+  the CORRELATION matrix (kernel-preserving congruence, generators map back
+  via D⁻¹v) and `jacobi_eigen` pre-normalizes to unit spectral scale — the
+  scaled system now reports the same symmetry verdict as the unscaled one
+  (`test_scale_dominant_ode_keeps_genuine_symmetries`). An
+  absolute-tolerance-gate mutant was registered and GREW no natural kill
+  after this fix (the defect expression it targeted is dissolved by the
+  corrected eigensolve); it was removed from the battery with its rationale
+  recorded in `scripts/run_mutation_battery.py` rather than shipped as a
+  silent survivor.
 - **FLAW-16:** Hamiltonian archetype aligned to the pinned
   `CONTINUOUS_FACTOR` contract.
 - **FLAW-17:** CBF-QP closes with a final norm-ball projection before the

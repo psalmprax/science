@@ -25,6 +25,32 @@ Register targets and mutants:
        MUT-C1  standardize the intensity against EVAL-frame mean/std instead
                of the fit-coupling constants (full-future leakage).
      Pin: test_hawkes_orderflow_dynamic_on_regular_bars.
+  4. 2026-10-21 external audit remediations (round 3, tests/
+     test_dyn_external_audit_2026_10_21_pins.py):
+       MUT-D1  S3 conditional-lock 412 silently wins (FLAW-03)
+       MUT-D2  S3 parameter-rejection path skips the fallback put (FLAW-03)
+       MUT-D3  CBF endpoint-headroom deficit split -> equal split (FLAW-17)
+       MUT-D4  re-anchor residual recovery dropped (FLAW-08)
+  5. 2026-10-21 rust-kernel remediations (cargo lib pins; cargo recompiles
+     from the mutated source, so the pins see the mutation without touching
+     the user's installed maturin extension):
+       MUT-E1   Fornberg delta-sign defect reintroduced (FLAW-04)
+       MUT-E2   uniformity-gate routing disabled (FLAW-04)
+       MUT-E3   pole flag dropped, 2nd-order rollout branch (FLAW-06a;
+                killed by the Bessel-J0 2nd-order pin)
+       MUT-E3b  pole flag dropped, 1st-order rollout branch (FLAW-06a;
+                killed by the max_diff_order=1 parabola pin)
+       MUT-E4   O(1)-constant column back in the exact-RMSE ceiling scale
+                (FLAW-12)
+       MUT-E6   correlation-space eigensolve -> raw multi-stratum Gram
+                (FLAW-15 v2)
+     Neutralized mutant NOT registered (honesty trail): MUT-E5 candidate,
+     the absolute-tolerance gate revert — after the v2 well-scaled
+     eigensolve (corr-space congruence + jack-of-all-strata spectral
+     normalization) it grew no natural kill on any probe fixture (corr
+     spectra sit at O(0.5) for both O(1) and O(1e6) amplitudes), i.e. the
+     defect expression it targets is dissolved by the v2 fix; the
+     corr-space solve itself is mutation-protected by MUT-E6.
 
 Method, kept deliberately dependency-free (no third-party mutation framework):
 each mutant is a single exact source substitution applied to the target file;
@@ -60,6 +86,10 @@ PIN_HAWKES_SHARP = ["tests/test_dyn_hawkes_standardization_pins.py"]
 # 2026-10-21 external audit remediation pins: each MUT-D* mutant below must be
 # killed (pin MUST fail under the mutation) by this suite.
 PIN_ROUND3 = ["tests/test_dyn_external_audit_2026_10_21_pins.py"]
+# Rust-kernel mutants are pinned by cargo lib tests (cargo recompiles from the
+# mutated source, so the pins see the mutation without touching the user's
+# installed maturin extension).
+CARGO_LIB_PIN = ["cargo", "test", "--lib", "-q", "--manifest-path", "rust/apedp-kernel/Cargo.toml"]
 
 MUTANTS: list[dict] = [
     {
@@ -154,16 +184,90 @@ MUTANTS: list[dict] = [
         "pins": [PIN_ROUND3],
         "pin_note": "test_flaw08_re_anchor_runs_bootstrap_on_paired_residuals",
     },
+    # ── 2026-10-21 external audit rust-kernel remediation pins (cargo lib) ──
+    {
+        "id": "MUT-E1",
+        "target": "Fornberg weights recurrence (FLAW-04)",
+        "file": "rust/apedp-kernel/src/rime/diff_pade.rs",
+        "description": "reintroduce the delta-sign defect (weights stop annihilating constants)",
+        "find": "                let term1 = (x_nodes[i] - x0) * c[k][i - 1][j];",
+        "replace": "                let term1 = (x0 - x_nodes[i]) * c[k][i - 1][j];",
+        "pins": [CARGO_LIB_PIN],
+        "pin_note": "test_nonuniform_grid_derivatives_use_fornberg_fallback",
+    },
+    {
+        "id": "MUT-E2",
+        "target": "uniform-grid gate (FLAW-04 routing)",
+        "file": "rust/apedp-kernel/src/rime/diff_pade.rs",
+        "description": "disable the uniformity gate (non-uniform grids hit the wrong 4th-order stencil)",
+        "find": "    if !is_uniform_grid(x) {\n        return derivatives_nonuniform(x, y, 1);\n    }",
+        "replace": "    if false {\n        return derivatives_nonuniform(x, y, 1);\n    }",
+        "pins": [CARGO_LIB_PIN],
+        "pin_note": "test_nonuniform_grid_derivatives_use_fornberg_fallback",
+    },
+    {
+        "id": "MUT-E3",
+        "target": "pole mask on the delta-Pade rollout (FLAW-06a)",
+        "file": "rust/apedp-kernel/src/rime/diff_pade.rs",
+        "description": "drop the pole_hit flag at the 2nd-order branch (silently integrating through the singularity again)",
+        "find": "            if s_val.abs() > 1e-10 {\n                (-p_val * y2_v - q_val * y1_v) / s_val\n            } else {\n                pole_hit.set(true);",  
+        "replace": "            if s_val.abs() > 1e-10 {\n                (-p_val * y2_v - q_val * y1_v) / s_val\n            } else {\n                let _ = &pole_hit;",
+        "pins": [CARGO_LIB_PIN],
+        "pin_note": "test_pole_masked_second_order_is_not_exact_recovery (pole_singularity_hit assert)",
+    },
+    {
+        "id": "MUT-E3b",
+        "target": "pole mask on the delta-Pade 1st-order branch (FLAW-06a)",
+        "file": "rust/apedp-kernel/src/rime/diff_pade.rs",
+        "description": "drop the pole_hit flag at the 1st-order branch (the branch the parabola fixture actually selects)",
+        "find": "            if p_val.abs() > 1e-10 {\n                (-q_val * yv - r_val * yv * yv) / p_val\n            } else {\n                pole_hit.set(true);",
+        "replace": "            if p_val.abs() > 1e-10 {\n                (-q_val * yv - r_val * yv * yv) / p_val\n            } else {\n                let _ = &pole_hit;",
+        "pins": [CARGO_LIB_PIN],
+        "pin_note": "test_pole_masked_second_order_is_not_exact_recovery (pole_singularity_hit assert)",
+    },
+    {
+        "id": "MUT-E4",
+        "target": "exact-RMSE ceiling over active non-constant columns (FLAW-12)",
+        "file": "rust/apedp-kernel/src/rime/implicit.rs",
+        "description": "include the O(1) constant column again (scale-awareness destroyed)",
+        "find": "        if names[j] == \"1\" || sparse_c[j] == 0.0 {\n            continue;\n        }",
+        "replace": "        if false {\n            continue;\n        }",
+        "pins": [CARGO_LIB_PIN],
+        "pin_note": "test_near_zero_scale_misfit_not_certified + test_large_scale_exact_relation_certifiable",
+    },
+    # MUT-E5 note (2026-10-21, honesty trail): an absolute-tolerance gate
+        # reverted over the CORRELATION-space spectrum was registered as a
+        # candidate mutant and GREW no kill on any natural fixture — the v2
+        # well-scaled eigensolve removed the absolute/relative failure-mode
+        # difference the v1 defect expressed (corr spectra probe: structurally
+        # nonzero eigenvalues sit at O(0.5) for both O(1) and O(1e6) ODE
+        # amplitudes; nothing natural lands in the <=1e-8 band). The v1
+        # failure-mode itself is still mutation-protected by MUT-E6 (the
+        # corr-space eigensolve itself). Registered mutations must kill; the
+        # neutralized mutant is documented here instead of being shipped.
+    {
+        "id": "MUT-E6",
+        "target": "correlation-space eigensolve (FLAW-15 v2)",
+        "file": "rust/apedp-kernel/src/rime/lie_symmetry.rs",
+        "description": "solve the RAW multi-stratum Gram again (extreme strata corrupt the nullspace)",
+        "find": "            corr[i * k + j] = if div > 0.0 { gram[i * k + j] / div } else { 0.0 };",
+        "replace": "            corr[i * k + j] = gram[i * k + j];",
+        "pins": [CARGO_LIB_PIN],
+        "pin_note": "test_scale_dominant_ode_keeps_genuine_symmetries",
+    },
 ]
 
 _FROZEN_SNIPPETS: dict[str, str] = {}
 
 
 def _pin_cmd(group: list[str]) -> list[str]:
-    """Pin groups stored as (file, -k, selector) or full argv."""
+    """Pin groups stored as (file, -k, selector) for pytest, or as LITERAL
+    argv (first token is an executable, e.g. cargo) run from the repo root."""
     if group and group[0].startswith("tests/"):
         argv = [sys.executable, "-m", "pytest", "-q", "-x", "--no-header"] + group
         return argv
+    if group and group[0] == "cargo":
+        return list(group)
     return [sys.executable, "-m", "pytest", "-q", "--no-header"] + group
 
 

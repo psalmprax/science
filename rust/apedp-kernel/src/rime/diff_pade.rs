@@ -65,33 +65,41 @@ pub struct DiffPadeResult {
 /// used over the same stencil width, so non-uniformly sampled scientific
 /// data no longer corrupts the Padé differential coefficients.
 fn fornberg_weights(x_nodes: &[f64], x0: f64, m: usize) -> Vec<f64> {
-    let n = x_nodes.len();
-    let mut c = vec![vec![0.0f64; m + 1]; n];
-    c[0][0] = 1.0;
+    // Fornberg (1988) recurrence, FLAW-04 remediation v2 (2026-10-21): the
+    // original 2-index translation (and the sign-only correction drafted
+    // against it) both broke the recurrence's sign/c1-c2 structure — the
+    // weights no longer annihilated constants (probe: 3-node window returned
+    // {-0.435, 1.769, -0.0015} instead of {-478.26, 189.74, -111.48}), so the
+    // Fornberg route was numerically ~1e3x off at the stencil edges. This now
+    // mirrors the PROVEN Python mirror `apedp_dyn.epistemic.pde_discovery.
+    // _fornberg_centered_weights` (3-index C[m][i][j]) term-for-term; the
+    // test_nonuniform_grid_derivatives_use_fornberg_fallback pin holds the
+    // exactness contract (a quadratic must be differentiated exactly).
+    let n_last = x_nodes.len() - 1;
+    let mut c = vec![vec![vec![0.0f64; n_last + 1]; n_last + 1]; m + 1];
+    c[0][0][0] = 1.0;
     let mut c1 = 1.0f64;
-    let mut c4 = x_nodes[0] - x0;
-    for i in 1..n {
-        let mn = i.min(m);
+
+    for i in 1..=n_last {
         let mut c2 = 1.0f64;
-        let c5 = c4;
-        c4 = x_nodes[i] - x0;
         for j in 0..i {
             let c3 = x_nodes[i] - x_nodes[j];
             c2 *= c3;
-            if j == i - 1 {
-                for k in (1..=mn).rev() {
-                    c[i][k] = c1 * (c[i - 1][k - 1] as f64 - (i as f64 - 1.0) * c[i - 1][k] as f64)
-                        / (i as f64);
-                }
-                c[i][0] = -c1 * (i as f64 - 1.0) * c[i - 1][0] as f64 / (i as f64);
+            for k in 0..=(m.min(i)) {
+                let term1 = (x_nodes[i] - x0) * c[k][i - 1][j];
+                let term2 = if k > 0 { (k as f64) * c[k - 1][i - 1][j] } else { 0.0 };
+                c[k][i][j] = (term1 - term2) / c3;
             }
-            for k in (0..=mn).rev() {
-                c[j][k] = (c4 * c[j][k] - c5 * (if k == 0 { 0.0 } else { c[j][k - 1] })) / c3;
-            }
+        }
+        for k in 0..=(m.min(i)) {
+            let term1 = (x_nodes[i - 1] - x0) * c[k][i - 1][i - 1];
+            let term2 = if k > 0 { (k as f64) * c[k - 1][i - 1][i - 1] } else { 0.0 };
+            c[k][i][i] = (c1 / c2) * (term2 - term1);
         }
         c1 = c2;
     }
-    (0..n).map(|i| c[i][m]).collect()
+
+    (0..=n_last).map(|j| c[m][n_last][j]).collect()
 }
 
 /// Grid uniformity gate: true when every internal spacing matches x[1]-x[0]
@@ -1034,4 +1042,123 @@ mod tests {
         );
         assert!(res.is_exact_recovery);
     }
+
+    #[test]
+    fn test_nonuniform_grid_derivatives_use_fornberg_fallback() {
+        // FLAW-04 pin: an aggressively non-uniform grid must route through the
+        // Fornberg arbitrary-grid weights. The pre-fix defect returned the
+        // uniform 4th-order stencil with h taken from the FIRST spacing when
+        // the uniformity gate was inverted, mis-scaling interior stencils by
+        // orders of magnitude. y = x^2 (y' = 2x, y'' = 2) is a quadratic, so
+        // Fornberg weights on every (edge-clamped) window reproduce it
+        // EXACTLY — the tolerances below fail loudly under the defect.
+        let n = 24usize;
+        // Adjacent spacings grow 30% per step; the uniformity relative
+        // tolerance is 1e-4, so 1.3 fails it decisively.
+        let x: Vec<f64> = (0..n).map(|i| 0.01f64 * 1.3f64.powi(i as i32)).collect();
+        let y: Vec<f64> = x.iter().map(|&v| v * v).collect();
+
+        let d1 = super::compute_derivatives(&x, &y);
+        for i in 0..n {
+            let exact = 2.0 * x[i];
+            let rel = (d1[i] - exact).abs() / (exact.abs() + 1e-12);
+            assert!(
+                rel < 1e-9,
+                "y'[{}] = {} vs exact {} (rel {}): non-uniform grid must use Fornberg weights",
+                i, d1[i], exact, rel
+            );
+        }
+        let d2 = super::compute_second_derivatives(&x, &y);
+        for i in 0..n {
+            let rel = (d2[i] - 2.0).abs() / 2.0;
+            assert!(
+                rel < 1e-9,
+                "y''[{}] = {} vs exact 2.0 (rel {})",
+                i, d2[i], rel
+            );
+        }
+    }
+
+    #[test]
+    fn test_pole_masked_second_order_is_not_exact_recovery() {
+        // FLAW-06 pin: y = x^2 satisfies S y'' - P y' = 0 with S(x) = x,
+        // P(x) = -1 (x*2 - 2x = 0 for all x). S vanishes AT x = 0, which the
+        // rollout starts on, so the rollout must flag the interior
+        // singularity and the certificate must refuse exact recovery. The
+        // pre-fix behavior silently integrated dy/dx = 0 across the pole and
+        // certified the masked candidate as an exact law.
+        // FLAW-06 v2 fixture: J0(x) satisfies x*y'' + y' + y = 0 — a
+        // SECOND-order relation whose leading coefficient S(x) = x vanishes
+        // exactly at x = 0, the rollout start. (The earlier parabola
+        // fixture's sparse pick landed on the 1st-order branch — right for
+        // MUT-E3b, wrong for this site; J0 forces the 2nd-order branch
+        // through sparse selection.)
+        let n = 80usize;
+        let x: Vec<f64> = (0..n).map(|i| i as f64 * 3.0 / ((n - 1) as f64)).collect();
+        let y: Vec<f64> = x
+            .iter()
+            .map(|&v| {
+                // J0(x) = sum_k (-1)^k (x^2/4)^k / (k!)^2
+                let q = v * v / 4.0;
+                let (mut term, mut sum) = (1.0f64, 1.0f64);
+                for k in 1..12 {
+                    term = -term * q / ((k as f64) * (k as f64));
+                    sum += term;
+                }
+                sum
+            })
+            .collect();
+
+        let cfg = DiffPadeConfig {
+            max_x_degree: 2,
+            max_diff_order: 2,
+            sparsity_threshold: 0.02,
+            rcond_threshold: 1e-12,
+            ..DiffPadeConfig::default()
+        };
+        let res = discover_differential_relation(&x, &y, &cfg).unwrap();
+        assert!(
+            res.formula.contains("y''"),
+            "expected the 2nd-order branch (formula: {})",
+            res.formula
+        );
+        assert!(
+            res.pole_singularity_hit,
+            "expected the discovered ODE's leading coefficient to vanish at x=0 (formula: {})",
+            res.formula
+        );
+        assert!(
+            !res.is_exact_recovery,
+            "pole-dominant candidate must not be certified exact (traj={}, jet={})",
+            res.integrated_trajectory_r2, res.jet_rmse
+        );
+    }
+
+    #[test]
+    fn test_pole_masked_first_order_reported() {
+        // MUT-E3b pin: y = x^2 satisfies (-x^2/2) y' + x y = 0 — a 1st-order
+        // relation whose leading coefficient P(x) vanishes at x = 0, the
+        // rollout start (the sparse selection's default branch for this
+        // family). Restricting max_diff_order to 1 pins the branch the same
+        // way the 2nd-order pin above does, so BOTH rollout sites carry the
+        // pole-mask report contract.
+        let n = 60usize;
+        let x: Vec<f64> = (0..n).map(|i| i as f64 * 0.02).collect();
+        let y: Vec<f64> = x.iter().map(|&v| v * v).collect();
+
+        let cfg = DiffPadeConfig {
+            max_x_degree: 2,
+            max_diff_order: 1,
+            sparsity_threshold: 0.02,
+            rcond_threshold: 1e-12,
+            ..DiffPadeConfig::default()
+        };
+        let res = discover_differential_relation(&x, &y, &cfg).unwrap();
+        assert!(
+            res.pole_singularity_hit,
+            "expected the 1st-order branch's leading coefficient to vanish at x=0 (formula: {})",
+            res.formula
+        );
+    }
 }
+

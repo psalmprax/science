@@ -45,7 +45,21 @@ pub struct ImplicitResult {
 
 /// SVD / Jacobi Eigendecomposition for symmetric K x K matrix.
 pub fn jacobi_eigen(a: &[f64], k: usize, max_rotations: usize, tol: f64) -> (Vec<f64>, Vec<f64>) {
+    // FLAW-15 v2 (exposed by the rime::lie_symmetry scale pin): Gram matrices
+    // entering here can carry extreme scale (O(1e12) for an O(1e6) ODE
+    // amplitude), while the off-diagonal termination test below is ABSOLUTE
+    // (max_off < tol). At extreme scale the test can never fire, the
+    // rotation budget depletes before relative accuracy, and the
+    // tiny-eigenvalue eigenvectors feeding the nullspace gate come out
+    // corrupted (basis residual ~1e5 instead of eps). Normalize to unit
+    // spectral scale first: eigenvectors are scale-free, eigenvalues are
+    // rescaled back afterwards.
     let mut mat = a.to_vec();
+    let norm = mat.iter().map(|v| v.abs()).fold(0.0f64, f64::max);
+    let scale = if norm > 0.0 && norm.is_finite() { norm } else { 1.0 };
+    for entry in mat.iter_mut() {
+        *entry /= scale;
+    }
     let mut v = vec![0.0f64; k * k];
     for i in 0..k {
         v[i * k + i] = 1.0;
@@ -111,7 +125,7 @@ pub fn jacobi_eigen(a: &[f64], k: usize, max_rotations: usize, tol: f64) -> (Vec
 
     let mut eigenvalues = vec![0.0f64; k];
     for i in 0..k {
-        eigenvalues[i] = mat[i * k + i];
+        eigenvalues[i] = mat[i * k + i] * scale;
     }
 
     (eigenvalues, v)
@@ -554,5 +568,60 @@ mod tests {
         let res = discover_implicit_relation(&x, &y, &cfg).unwrap();
         assert!(res.algebraic_rmse < 1e-8, "RMSE: {}", res.algebraic_rmse);
         assert!(res.is_exact_recovery);
+    }
+
+    #[test]
+    fn test_large_scale_exact_relation_certifiable() {
+        // FLAW-12 companion: a truly exact relation on O(1e5)-scale data
+        // (y = x + 10) must still certify — the scale-aware gate is exactly
+        // what makes this possible in both directions.
+        let n = 200usize;
+        let x: Vec<f64> = (0..n).map(|i| ((i as f64 * 7919.0) % 1000.0 - 500.0) * 1e5 / 500.0).collect();
+        let y: Vec<f64> = x.iter().map(|&v| v + 10.0).collect();
+
+        let cfg = ImplicitConfig {
+            max_degree: 2,
+            include_cross_terms: false,
+            include_rational_products: false,
+            sparsity_threshold: 1e-3,
+            rcond_threshold: 1e-8,
+        };
+        let res = discover_implicit_relation(&x, &y, &cfg).unwrap();
+        assert!(res.is_exact_recovery, "rmse: {}", res.algebraic_rmse);
+        assert!(res.algebraic_rmse < 1e-9, "rmse: {}", res.algebraic_rmse);
+    }
+
+    #[test]
+    fn test_near_zero_scale_misfit_not_certified() {
+        // FLAW-12 pin: the residual term scale is measured over the ACTIVE,
+        // non-constant columns only. Data: near-zero-scale circle (state
+        // scale 1e-8) perturbed at O(1e-11) — the remaining quadratic-fit
+        // misfit (rmse ~1e-20) sits far ABOVE the scale-relative ceiling
+        // (1e-5 x the active columns' ~1e-16 scale = ~1e-21), so the
+        // certificate must refuse. The pre-fix defect included the O(1)
+        // constant "1" column in the scale estimator (ceiling ~1e-5) and
+        // permissively certified this misfit as an exact physical law.
+        let n = 200usize;
+        let mut x = Vec::with_capacity(n);
+        let mut y = Vec::with_capacity(n);
+        for i in 0..n {
+            let t = 2.0 * std::f64::consts::PI * (i as f64) / (n as f64);
+            x.push(1e-8 * t.cos());
+            y.push(1e-8 * t.sin() + 1e-11 * (3.0 * t).sin());
+        }
+
+        let cfg = ImplicitConfig {
+            max_degree: 3,
+            include_cross_terms: true,
+            include_rational_products: false,
+            sparsity_threshold: 1e-3,
+            rcond_threshold: 1e-8,
+        };
+        let res = discover_implicit_relation(&x, &y, &cfg).unwrap();
+        assert!(
+            !res.is_exact_recovery,
+            "near-zero-scale misfit certified as exact (rmse {}, active {})",
+            res.algebraic_rmse, /*dbg*/ 0
+        );
     }
 }

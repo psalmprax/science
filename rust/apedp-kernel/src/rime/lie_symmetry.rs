@@ -268,15 +268,39 @@ pub fn discover_point_symmetries(
             gram[j * k + i] = s;
         }
     }
-    let (evals, evecs) = crate::rime::implicit::jacobi_eigen(&gram, k, 150, 1e-15);
+    // FLAW-15: the nullspace gate must be RELATIVE to the operator norm, and
+    // FLAW-15 v2 (2026-10-21): the eigensolve itself must be run on a
+    // WELL-SCALED system. The raw Gram matrix spans extreme strata (an
+    // O(1e6)-amplitude ODE drives its f^2 determining terms to O(1e24)); the
+    // absolute convergence tolerance never fires there and the rotation
+    // budget depletes, so strata-mixed eigenpairs came out corrupted (a
+    // structural zero was returned as eigenvalue ~1.0 with nullspace basis
+    // residual ~7e5 — caught by the scale pin). Remediation: solve
+    // G~ = D^-1 G D^-1 with D = diag(sqrt(g_ii())) — the CORRELATION matrix
+    // (diag exactly 1). Congruence preserves the kernel minus scaling:
+    // G~ v = 0 for all v, so the raw-space generator is w = D^-1 v. Entering
+    // jacobi_eigen (itself scale-normalized since the jay fix) at unit
+    // diagonal makes eps-relative accuracy meaningful at every stratum, and
+    // the relative gate below then has a well-defined eps floor.
+    let diag_d: Vec<f64> = (0..k)
+        .map(|i| gram[i * k + i].sqrt().max(1e-300))
+        .collect();
+    let mut corr = vec![0.0f64; k * k];
+    for i in 0..k {
+        for j in 0..k {
+            // d_i * d_j can UNDERFLOW for degenerate (all-zero) Gram rows
+            // (1e-300 * 1e-300 = 0.0 -> 0/0 = NaN swallowed the whole
+            // nullspace); a zero product means both source entries are
+            // structurally zero, so the normalized entry is 0 by construction.
+            let div = diag_d[i] * diag_d[j];
+            corr[i * k + j] = if div > 0.0 { gram[i * k + j] / div } else { 0.0 };
+        }
+    }
+    let (evals, evecs) = crate::rime::implicit::jacobi_eigen(&corr, k, 150, 1e-15);
 
-    // FLAW-15: the nullspace gate must be RELATIVE to the operator norm.
-    // Eigenvalues of MᵀM scale quadratically with data amplitude and linearly
-    // with sample count, so an unnormalized absolute tolerance missed genuine
-    // symmetries on large/high-amplitude data and fabricated them on
-    // small-amplitude data. Normalize: null ⇔ |λ| ≤ tol · λ_max. When every
-    // eigenvalue is 0 (all-zero Gram matrix) the singular value structure is
-    // degenerate and all directions lie in the nullspace.
+    // Null ⇔ |lambda| <= tol * lambda_max over the well-scaled spectrum.
+    // When every eigenvalue is 0 (all-zero Gram matrix) the singular value
+    // structure is degenerate and all directions lie in the nullspace.
     let max_eval = evals.iter().map(|v| v.abs()).fold(0.0f64, f64::max);
     let tol = config.null_tol.max(0.0);
     let mut null_idx = Vec::new();
@@ -294,7 +318,9 @@ pub fn discover_point_symmetries(
     let mut generators = Vec::new();
     let mut max_res = 0.0f64;
     for &idx in &null_idx {
-        let c: Vec<f64> = (0..k).map(|j| evecs[j * k + idx]).collect();
+        let c: Vec<f64> = (0..k)
+            .map(|j| evecs[j * k + idx] / diag_d[j])
+            .collect();
         let mut res_sq = 0.0f64;
         for r in &rows {
             let d: f64 = r.iter().zip(c.iter()).map(|(a, b)| a * b).sum();
@@ -408,4 +434,42 @@ mod tests {
         assert!(discover_point_symmetries(&[(0, 0, 1.0)], &bad_cfg).is_err());
         assert!(discover_point_symmetries(&[(0, 0, f64::NAN)], &LieConfig::default()).is_err());
     }
+
+    #[test]
+    fn test_scale_dominant_ode_keeps_genuine_symmetries() {
+        // FLAW-15 pin: the nullspace eigenvalue gate is RELATIVE to the
+        // spectrum's largest eigenvalue. The determining-equation design
+        // matrix for y' = 1e6 * y carries O(1e12) covariance scale, so pure
+        // roundoff smears the genuine (exactly-zero) eigenvalues up to
+        // ~1e-3 — an ABSOLUTE tolerance (v.abs() <= null_tol, the pre-fix
+        // defect) stops seeing them as zeros and drops genuine symmetry
+        // directions from the reported nullspace. Under the relative gate
+        // the scaled system must keep at least the translation symmetry of
+        // the unscaled one (same ODE up to an overall scale factor).
+        let f_unit = [(0usize, 1usize, 1.0f64)];
+        let f_scaled = [(0usize, 1usize, 1e6f64)];
+
+        let res_unit = discover_point_symmetries(&f_unit, &LieConfig::default()).unwrap();
+        assert!(res_unit.nullity >= 1, "unscaled nullity: {}", res_unit.nullity);
+
+        let res_scaled = discover_point_symmetries(&f_scaled, &LieConfig::default()).unwrap();
+        assert!(
+            res_scaled.nullity >= 1,
+            "scaled system lost its genuine symmetry (nullity {}, residual {})",
+            res_scaled.nullity, res_scaled.max_basis_residual
+        );
+        // Residual is measured against the determining equations, which
+        // carry the ODE's O(1e6) coefficient scale — the invariant is that
+        // the nullspace basis quality SCALES WITH THE ODE, not that it is
+        // scale-free. (The absolute <1e-6 demand would reject a correct
+        // basis; scaling by 1e6 scales the residual by the same factor.)
+        assert!(
+            res_scaled.max_basis_residual
+                <= 2.0 * 1e6 * res_unit.max_basis_residual,
+            "scaled basis residual {} vs {} x unit residual {}",
+            res_scaled.max_basis_residual, 2.0, res_unit.max_basis_residual
+        );
+    }
 }
+
+
