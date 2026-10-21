@@ -166,6 +166,57 @@ def test_distributed_lag_scorer_is_streaming_safe():
     assert np.allclose(full[both], streamed[both], atol=1e-12), float(np.max(np.abs(full[both] - streamed[both])))
 
 
+def test_distributed_lag_multi_lag_same_column_streaming_safe():
+    """FLAW-A09 pin: sibling lag terms on the SAME base column must not leak.
+
+    The old buffer handling wrote ``lag_state["buffers"][base_col]`` on the
+    first lag term of a call, so a second lag term on the same base column
+    (e.g. lag_1_x AND lag_2_x both selected) read this call's own tail as
+    prior history and prepended future batch data to the head of the array —
+    corrupting the sibling term both on the full frame and on every chunk.
+    The fix snapshots the pre-call buffer once per (call, base col) and
+    updates it once per (call, base col), so chunked scoring equals single-pass
+    scoring exactly for multi-lag selections too.
+
+    Mutation demonstration: under the old code the sibling term's head rows
+    shift with the chunking, so full-vs-chunked equality fails.
+    """
+    from apedp_dyn.proposers.distributed_lag_interaction_proposer import (
+        DistributedLagInteractionProposer,
+    )
+
+    rng = np.random.RandomState(11)
+    n = 240
+    x1 = rng.randn(n)
+    # Target depends on BOTH lag 1 and lag 2 of the same column so the
+    # ElasticNet selection retains two lag terms sharing the base column.
+    y = np.roll(x1, 1) + 0.5 * np.roll(x1, 2) + 0.05 * rng.randn(n)
+    y[0] = y[1] = np.nan  # raw lag rows hold nothing; scorer fabricates no values
+    df = pd.DataFrame({"x1": x1, "target": y})
+    proposer = DistributedLagInteractionProposer(
+        lags=(1, 2), include_interactions=False
+    )
+    proposals = proposer.fit_and_propose(df, feature_cols=["x1"], target_col="target")
+    assert len(proposals) >= 1
+    p = proposals[0]
+    selected = p.metadata["selected_terms"]
+    assert sum(1 for t in selected if "lag" in t) >= 2, (
+        "fixture must retain two lag terms on the same column" + str(selected)
+    )
+    full = np.asarray(p.compute_score(df), dtype=float)
+    for head in (2, 7):
+        streamed = np.concatenate([
+            np.asarray(p.compute_score(df.iloc[i:i + head]), dtype=float)
+            for i in range(0, n, head)
+        ])
+        both = np.isfinite(full) & np.isfinite(streamed)
+        assert both.sum() > n - 8, both.sum()
+        assert np.allclose(full[both], streamed[both], atol=1e-10), (
+            f"head={head}: sibling lag-term buffer leaked "
+            f"(max diff {float(np.max(np.abs(full[both] - streamed[both]))):.3g})"
+        )
+
+
 def test_regime_switching_proposer_generates_valid_proposals():
     """RegimeSwitchingProposer generates piecewise threshold candidate models."""
     rng = np.random.RandomState(42)

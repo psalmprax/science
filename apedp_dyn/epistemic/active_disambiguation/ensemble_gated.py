@@ -19,7 +19,12 @@ import numpy as np
 import numpy.linalg as la
 import pandas as pd
 
-from apedp_dyn.epistemic.active_disambiguation.trading_e4t1_v2 import ORIGINS, _blocks, _d5
+from apedp_dyn.epistemic.active_disambiguation.trading_e4t1_v2 import (
+    ORIGINS,
+    _blocks,
+    _d5,
+    _train_blocks_no_leak,
+)
 
 EPS = 1e-8
 N_PERM = 200
@@ -68,9 +73,10 @@ def run_asset(panels: dict[str, pd.DataFrame], asset: str) -> AssetOut:
     out = AssetOut(asset)
     for origin in ORIGINS:
         nxt = str(pd.Timestamp(origin) + pd.offsets.MonthBegin(1))
-        tr = np.where((dates < origin).to_numpy())[0]
         fw = np.where((dates >= origin).to_numpy() & (dates < nxt).to_numpy())[0]
-        tb = np.intersect1d(_blocks(len(dates)), tr)
+        # FLAW-A01: d5 carries a forward 5-day span; train blocks within 5
+        # days of the origin leak forward data through shift(-5).
+        tb = _train_blocks_no_leak(dates, origin)
         fb = np.intersect1d(_blocks(len(dates)), fw)
         # Train-only gate: time-ordered 70/30 fit/val split within train blocks.
         cut = tb[: int(len(tb) * 0.7)]
@@ -117,9 +123,9 @@ def _forward_dr2(a: pd.DataFrame, tgt: np.ndarray, dates: pd.Series, order: list
     num = den = 0.0
     for k, origin in enumerate(ORIGINS):
         nxt = str(pd.Timestamp(origin) + pd.offsets.MonthBegin(1))
-        tr = np.where((dates < origin).to_numpy())[0]
         fw = np.where((dates >= origin).to_numpy() & (dates < nxt).to_numpy())[0]
-        tb = np.intersect1d(_blocks(len(dates)), tr)
+        # FLAW-A01: same corrected mask as run_asset above.
+        tb = _train_blocks_no_leak(dates, origin)
         fb = np.intersect1d(_blocks(len(dates)), fw)
         yt = tgt[tb]
         Ct = {c: a[c].to_numpy()[tb] for c in ("sig", "HA")}

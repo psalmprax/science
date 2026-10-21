@@ -15,7 +15,12 @@ import numpy as np
 import numpy.linalg as la
 import pandas as pd
 
-from apedp_dyn.epistemic.active_disambiguation.trading_e4t1_v2 import ORIGINS, _blocks, _d5
+from apedp_dyn.epistemic.active_disambiguation.trading_e4t1_v2 import (
+    ORIGINS,
+    _blocks,
+    _d5,
+    _train_blocks_no_leak,
+)
 
 ENSEMBLES = ("M_hist", "M0", "M1", "M2", "M3")
 MEMBERS = {"M0": ("sig",), "M1": ("sig", "rankV"), "M2": ("sig", "HA"), "M3": ("sig", "rankV", "HA")}
@@ -42,9 +47,10 @@ def run_asset(panels: dict[str, pd.DataFrame], asset: str) -> EnsembleResult:
     per_origin_m0: list[float] = []
     for origin in ORIGINS:
         nxt = str(pd.Timestamp(origin) + pd.offsets.MonthBegin(1))
-        tr = np.where((dates < origin).to_numpy())[0]
         fw = np.where((dates >= origin).to_numpy() & (dates < nxt).to_numpy())[0]
-        tb = np.intersect1d(_blocks(len(dates)), tr)
+        # FLAW-A01: d5 carries a forward 5-day span; train blocks within 5
+        # days of the origin leak forward data through shift(-5).
+        tb = _train_blocks_no_leak(dates, origin)
         fb = np.intersect1d(_blocks(len(dates)), fw)
         cols_tr = {c: a[c].to_numpy()[tb] for c in ("sig", "rankV", "HA")}
         y_tr = tgt[tb]

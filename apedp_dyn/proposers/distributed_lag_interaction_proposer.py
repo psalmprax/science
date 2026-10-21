@@ -137,6 +137,16 @@ class DistributedLagInteractionProposer(ProposerBase):
 
         def compute_score(d: pd.DataFrame) -> np.ndarray:
             sig = np.full(len(d), bias, dtype=float)
+            # FLAW-A09 (2026-10-21 external audit): the persistent buffer used
+            # to be WRITTEN by the first lag term of a call, so a SECOND lag
+            # term on the same base column (e.g. lag_1_x and lag_2_x both
+            # selected) read this call's own tail as if it were prior history
+            # and prepended future batch data to the head of the array. The
+            # buffer must therefore be read ONCE per (call, base column)
+            # — snapshotting the pre-call value — and written once per (call,
+            # base column), after the term that first touches it.
+            seen_base: set[str] = set()
+            call_buffers: dict[str, np.ndarray] = {}
             for name, w in raw_weights.items():
                 spec = column_spec[name]
                 if spec[0] == "interaction":
@@ -148,7 +158,9 @@ class DistributedLagInteractionProposer(ProposerBase):
                     _, base_col, lag_n = spec
                     if base_col in d.columns:
                         s_raw = d[base_col].to_numpy(dtype=float)
-                        col_buffer = lag_state["buffers"].get(base_col)
+                        if base_col not in call_buffers:
+                            call_buffers[base_col] = lag_state["buffers"].get(base_col)
+                        col_buffer = call_buffers[base_col]
                         if col_buffer is not None and len(col_buffer) > 0:
                             history = np.concatenate([col_buffer, s_raw])
                             l_prev = len(col_buffer)
@@ -165,7 +177,9 @@ class DistributedLagInteractionProposer(ProposerBase):
                             valid_start = -shift_pos
                             if valid_start < len(s_raw):
                                 lagged[valid_start:] = history[: len(s_raw) - valid_start]
-                        lag_state["buffers"][base_col] = s_raw[-max_lag:].copy() if max_lag else s_raw[-1:].copy()
+                        if base_col not in seen_base:
+                            seen_base.add(base_col)
+                            lag_state["buffers"][base_col] = s_raw[-max_lag:].copy() if max_lag else s_raw[-1:].copy()
                         sig += w * lagged
                 else:
                     if name in d.columns:
