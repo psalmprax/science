@@ -62,16 +62,32 @@ def discover_ode(
     *,
     max_degree: int = 2,
 ) -> dict[str, Any]:
-    """Discover 1st-order rational ODE u'/u = P(x)/Q(x) via Differential Padé & Jet algebra."""
+    """Discover 1st-order rational ODE u'/u = P(x)/Q(x) via Differential Padé & Jet algebra.
+
+    The kernel seam is ``rime_diff_pade_discover_json(x_json, y_json,
+    config_json)`` — three JSON STRINGS (matching every other caller in the
+    repository, e.g. tests/test_dyn_planck_limitation.py); the previous
+    wrapper passed raw Python lists plus an int, which no kernel call site
+    ever exercised end-to-end.
+    """
     x_arr = np.ascontiguousarray(x, dtype=np.float64)
     y_arr = np.ascontiguousarray(y, dtype=np.float64)
     if len(x_arr) != len(y_arr):
         raise ValueError(f"Length of x ({len(x_arr)}) != length of y ({len(y_arr)})")
 
+    config = {
+        # Rust DiffPadeConfig defaults with max_x_degree overridden:
+        "max_x_degree": int(max_degree),
+        "max_diff_order": 1,
+        "smooth_window": 5,
+        "sparsity_threshold": 0.05,
+        "rcond_threshold": 1e-12,
+        "include_riccati": False,
+    }
     raw_json = ak.rime_diff_pade_discover_json(
-        x_arr.tolist(),
-        y_arr.tolist(),
-        int(max_degree),
+        json.dumps(x_arr.tolist()),
+        json.dumps(y_arr.tolist()),
+        json.dumps(config),
     )
     parsed = json.loads(raw_json)
     if not isinstance(parsed, dict):

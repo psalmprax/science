@@ -4,6 +4,121 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — EHI re-foundation per external review (2026-10-21)
+
+The external architecture critique's four build items and the fifth pillar
+landed, each replacing a math shortcut the review named (all `experimental`;
+pins `tests/test_dyn_ehi_phase5_pins.py`, 16 mixed behavior+mutation pins;
+none of the touched layers decides acceptance — the referee keeps authority):
+
+**Dispatch wiring (follow-up, same review thread):** the sieve + selector now
+route proposals AUTOMATICALLY (`apedp_dyn/orchestration/dispatch.py`):
+decisive agreement on both layers ⇒ the one engine runs (L2 open discovery /
+ODE diff-Padé / frozen-operator PDE / Hawkes MLE); selector ambiguity keeps
+every sieve-admitted family live (MULTIPLE_ROUTES, masks honored even with
+wired runners); decisive disagreement ⇒ CONFLICT abstention, never an
+override; unresolved structure ⇒ UNROUTABLE with open questions. Per-family
+failures are recorded in `errors`, never laundered; products carry
+referee-facing material only. Pins `tests/test_dyn_discovery_dispatch_wiring.py`
+(9). **Two broken seams fixed on the way:** `discover_ode` called the kernel
+with raw lists + an int while the seam takes three JSON strings (matching
+every other caller — no test had exercised it end-to-end); and a decisive
+route is now refused when the winner's DEFINING diagnostic never fired
+(pure noise on a time axis can no longer fabricate a PDE claim via
+competitive misfit).
+
+- **Model-class selection replaces deterministic routing**
+  (`apedp_dyn/orchestration/model_class_selector.py`): P(M|D) over
+  documented per-class diagnostic profiles with ambiguity-preserving
+  outcomes (`MULTIPLE_CLASSES_PLAUSIBLE`, `INSUFFICIENT_METADATA`); the
+  declaration-narrowed class table keeps point processes as point
+  processes. **Bug fixed by the pin probe:** the sieve's empty-string axis
+  sentinel was treated as a found axis, stamping `time_axis=1.0` onto pure
+  isotherms (routing to `ode_kinetic` at bf 1.0); and the class-firing
+  penalty now keys on NON-shared diagnostics (`time_axis≈1` no longer rides
+  for every dynamic class at PDE/ODE ties) with a documented 2-nat cost.
+  A documented aggregation-validity criterion (mean-field amplitude vs
+  field spread) keeps a traveling wave's negligible ripple from being
+  mis-badged as a kinetic ODE signal while still allowing genuinely kinetic
+  2D fields to contest ODE against a firing PDE diagnostic.
+- **Constraint STATES replace automatic enforcement**
+  (`apedp/dimensional_invariant_engine.py::classify_constraints`): boundary
+  conditions are hypotheses with states `KNOWN` / `EMPIRICAL` /
+  `UNRESOLVED` / `REJECTED`; training-partition evidence carries
+  `is_physical_claim=False`; subsection cases (offset-Langmuir → origin
+  REJECTED; sub-critical window → saturation UNRESOLVED, not rejected);
+  declared independent laws alone express `KNOWN`.
+- **Expected information gain replaces unbounded-gap maximization**
+  (`apedp_dyn/epistemic/active_experimentalist.py`): I(H;Y|x) by exact
+  Gaussian-mixture quadrature, argmax under feasible ranges / cost / noise,
+  field-complete `ExperimentOrder` requests and fail-closed refusal of
+  zero-noise models and no-honest-experiment conditions.
+- **Fifth pillar: research controller**
+  (`apedp_dyn/epistemic/research_controller.py`): belief/governance state
+  separation (referee constants fingerprints re-verified before every
+  planned action; in-session tamper raises), deterministic planner over
+  {inspect, test-constraints, information experiment, improve data quality,
+  ABSTAIN}, five-part evidence ledger, controlled exits
+  (`ABSTAINED` / `BLOCKED_ON_PROBLEM_SPECIFICATION` /
+  `EVIDENCE_INTEGRATED_AWAITING_REFEREE`; one acquisition per session —
+  incorporation requires a referee re-adjudication, never self-adjudication),
+  and in-run protocol revisions returned as versioned
+  `PROPOSED_NOT_APPLIED` artifacts.
+
+---
+
+## [Unreleased] — Level-5 autonomy pillars (2026-10-21)
+
+Four autonomous-scientist pillars landed at the roadmap's named module
+paths (all `experimental`; each with a dedicated pin file, 23 pins total,
+and the honest disclosure that none of them touches acceptance authority):
+
+- **Pillar 1** `apedp_dyn/orchestration/modality_sieve.py`: autonomous
+  modality & topology sieve — structural evidence detectors (isochronous
+  monotone time axis with a declared-only irregular-axis contract, bounded
+  relative curvature, log-axis 2D spectral dispersion, Fano burstiness)
+  classify raw data into static-manifold / ODE-kinetic / PDE-field /
+  Hawkes-event modalities and MASK ill-posed engine families before any
+  proposer runs; fail-closed UNRESOLVED on conflicting evidence.
+  Pins: `tests/test_dyn_modality_sieve.py` (6, incl. the isotherm-vs-
+  kinetics discriminator and the Poisson-refusal).
+- **Pillar 2** `apedp/dimensional_invariant_engine.py`: autonomous
+  dimensional & boundary synthesis — unit→exponent conversion (pint SI
+  bases, integral-exponent fail-closed) feeding the audit-proven
+  Buckingham-Π engine (exact integer nullspace in
+  `apedp_dyn/conf.dimensionless`), log-band empirical limit estimators
+  (origin pin q(0)=0 AND independent finite-plateau detection steering the
+  rational saturation family; fail-closed on ambiguous curves), and the
+  interpolated half-max characteristic scale with the {s*/3, s*, s*·3}
+  search bank. Pins: `tests/test_dyn_dimensional_invariant_engine.py`
+  (5, incl. pint-verified dimensionless Π and both Langmuir constraints).
+- **Pillar 3** `apedp_dyn/epistemic/active_experimentalist.py`:
+  closed-loop active experimental disambiguation — x* = argmax pairwise
+  divergence − k·σ with k imported from the frozen E4 policy
+  (`DEFAULT_DETECTABILITY_K`, no new threshold), deterministic clustered
+  target-range acquisition orders, fail-closed out-of-band/NaN point
+  rejection (instruments that lie are counted, never clamped), and residual
+  referee handoff — no promotion decision inside the layer.
+  Pins: `tests/test_dyn_active_experimentalist.py` (5).
+- **Pillar 4** `apedp_dyn/epistemic/enclave_referee.py`: confidential
+  adjudication — Stage-C pair verdicts computed in a fresh OS subprocess
+  over permission-sealed inputs (aggregates only, no shared sys.modules),
+  an Ed25519-signed attestation binding verdict + request SHA-256 +
+  aggregates, tamper-fail verification, and UNRESOLVED on any
+  infrastructure failure (timeout/crash/missing output). Honest
+  "process-isolated" executed_by claim — TEE only by explicit runtime
+  declaration (`APEDX_TEE_ENCLAVE`), never auto-upgraded.
+  Pins: `tests/test_dyn_enclave_referee.py` (7, incl. reproducibility,
+  forged-signature tampering, hash-binding failure and fail-closed
+  timeout).
+
+Verification: pillar pins 23/23 (`EXIT_STATUS=0`); AGENTS.md dynamic
+regression suite green after the DOCUMENTATION.md registry indexing; the
+new modules are registered `experimental` in the §18.1 registry with
+docstring `Status:` lines matching the tags.
+
+---
+
 ## [Unreleased] — External 19-flaw audit remediation (2026-10-21, same day)
 
 An independent adversarial audit catalogued 19 flaws (Flaw severity matrix in
