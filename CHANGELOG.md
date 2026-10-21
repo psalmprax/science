@@ -46,6 +46,19 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   (capacity_positive subset) are recorded with the graph-structural gap
   disclosed as not-yet-wired. Three new pins (14 total in
   tests/test_dyn_rime_microsample_adjudication.py).
+- **Structure-aware referee patch (defect-3 closure):** the external referee
+  promoted a physically unstructured counterfeit quadratic (w=5, |b|=0.5,
+  positive data correlation) while rejecting the tournament's own verified
+  sat_norm winner via a |b|<=1.0 tolerance. `adjudicate_structure_aware` in
+  the artifact reads structure from the declared formula family, applies the
+  exact family certificate (monotone for ANY intercept), gates on {w>0,
+  q_inf=w+b>0, exact monotonicity}, and REPORTS q(0)=b with an explicit
+  origin_strict_satisfied flag instead of a tolerance gate. Measured:
+  counterfeit -> REJECTED; discovery (w=37.7147, b=3.97006) -> PROMOTED with
+  q(0) deviation disclosed; negative-scale saturation -> inversion rejection;
+  b=0 baseline -> origin-strict PROMOTED; the 11 bank-restricted fold
+  proposals re-adjudicate 11/11 PROMOTED as verified structures with 0/11
+  origin-strict. Five new pins (19 total).
 - Also independently re-measured: `cargo test --lib` = 186 passed / 0 failed
   (the "186/186" claim reproduces exactly as the lib-only scope; full
   `cargo test` = 204 passed / 2 ignored). The dynamic pytest scope

@@ -715,14 +715,332 @@
     },
     "empty_packet_decision": "ABSTAIN_NO_HYPOTHESIS_GENERATED"
   },
+  "structure_aware_referee": {
+    "cases": {
+      "discovery_sat_norm_winner": {
+        "verdict": "PROMOTED",
+        "invariant_report": {
+          "idx": 0,
+          "formula": "+37.7146770 * (sat_norm(p)) +3.9700646",
+          "family": "sat_norm",
+          "w": 37.71467702437663,
+          "b": 3.970064638094019,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 9.45417831454991,
+          "q0": 3.970064638094019,
+          "q_inf": 41.68474166247064,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        "rationale": "1/1 entries passed the structure-aware gates; origin invariant q(0) reported with origin_strict_satisfied flag (strict-law promotion is governed by that flag, not by a |b| tolerance)"
+      },
+      "counterfeit_quadratic": {
+        "verdict": "REJECTED",
+        "invariant_report": {
+          "idx": 0,
+          "formula": "+5.0 * (sq(p)) +0.5",
+          "family": "sq",
+          "w": 5.0,
+          "b": 0.5,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "rejected": "non-saturating structure 'sq': no finite positive saturation limit; capacity/monotonicity gates not applicable to this structure"
+        },
+        "rationale": "+5.0 * (sq(p)) +0.5: structure \u2014 non-saturating structure 'sq': no finite positive saturation limit; capacity/monotonicity gates not applicable to this structure"
+      },
+      "negative_scale_saturation": {
+        "verdict": "REJECTED_QUALITATIVE_DYNAMICS_INVERSION",
+        "invariant_report": {
+          "idx": 0,
+          "formula": "-64.15 * (sat_norm(t)) +47.44",
+          "family": "sat_norm",
+          "w": -64.15,
+          "b": 47.44,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 9.45417831454991,
+          "q0": 47.44,
+          "q_inf": -16.710000000000008,
+          "monotonicity": "VIOLATED",
+          "mono_rationale": "exact family certificate fails: requires w > 0; got w = -64.15",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": false,
+            "saturation_finite_positive": false,
+            "exact_monotonicity": false
+          },
+          "rejected": "capacity_positive; saturation_finite_positive; exact_monotonicity"
+        },
+        "rationale": "-64.15 * (sat_norm(t)) +47.44: gates \u2014 capacity_positive; saturation_finite_positive; exact_monotonicity"
+      },
+      "zero_intercept_baseline": {
+        "verdict": "PROMOTED",
+        "invariant_report": {
+          "idx": 0,
+          "formula": "+39.33 * (sat_norm(p)) +0",
+          "family": "sat_norm",
+          "w": 39.33,
+          "b": 0.0,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.52,
+          "q0": 0.0,
+          "q_inf": 39.33,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": true,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        "rationale": "1/1 entries passed the structure-aware gates; origin invariant q(0) reported with origin_strict_satisfied flag (strict-law promotion is governed by that flag, not by a |b| tolerance)"
+      }
+    },
+    "elevenfold": {
+      "verdict": "PROMOTED",
+      "promoted": 11,
+      "total": 11,
+      "origin_strict_satisfied_count": 0,
+      "rationale": "11/11 entries passed the structure-aware gates; origin invariant q(0) reported with origin_strict_satisfied flag (strict-law promotion is governed by that flag, not by a |b| tolerance)",
+      "reports": [
+        {
+          "idx": 0,
+          "formula": "+39.6685 * (sat_0.8) -2.11956",
+          "family": "sat",
+          "w": 39.66851753919593,
+          "b": -2.119563617698674,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 5.217944422854656,
+          "q0": -2.119563617698674,
+          "q_inf": 37.54895392149726,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 1,
+          "formula": "+39.1948 * (sat_0.66) -0.663809",
+          "family": "sat",
+          "w": 39.19484881562625,
+          "b": -0.6638087104354646,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 5.9630004695622825,
+          "q0": -0.6638087104354646,
+          "q_inf": 38.53104010519078,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 2,
+          "formula": "+39.0185 * (sat_0.66) +0.10119",
+          "family": "sat",
+          "w": 39.01848034795596,
+          "b": 0.10118982920500841,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.419191350941332,
+          "q0": 0.10118982920500841,
+          "q_inf": 39.11967017716097,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 3,
+          "formula": "+39.5927 * (sat_0.6) -0.834627",
+          "family": "sat",
+          "w": 39.59274094328422,
+          "b": -0.8346272503360126,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 5.941699756803604,
+          "q0": -0.8346272503360126,
+          "q_inf": 38.75811369294821,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 4,
+          "formula": "+38.6651 * (sat_0.66) +0.350417",
+          "family": "sat",
+          "w": 38.66510651070928,
+          "b": 0.3504172385247166,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.529918725374766,
+          "q0": 0.3504172385247166,
+          "q_inf": 39.01552374923399,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 5,
+          "formula": "+38.5392 * (sat_0.7) +0.837973",
+          "family": "sat",
+          "w": 38.539176376318935,
+          "b": 0.8379734632515579,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.875942189983857,
+          "q0": 0.8379734632515579,
+          "q_inf": 39.37714983957049,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 6,
+          "formula": "+39.3649 * (sat_0.6) -0.890402",
+          "family": "sat",
+          "w": 39.36485545149151,
+          "b": -0.8904016646577873,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 5.852187283400968,
+          "q0": -0.8904016646577873,
+          "q_inf": 38.47445378683372,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 7,
+          "formula": "+38.7873 * (sat_0.66) +0.17563",
+          "family": "sat",
+          "w": 38.78734709813642,
+          "b": 0.17563016098701567,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.388653407409109,
+          "q0": 0.17563016098701567,
+          "q_inf": 38.962977259123434,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 8,
+          "formula": "+38.9201 * (sat_0.66) +0.0110633",
+          "family": "sat",
+          "w": 38.920096750155935,
+          "b": 0.0110632787017515,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.336072187088781,
+          "q0": 0.0110632787017515,
+          "q_inf": 38.93116002885769,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 9,
+          "formula": "+38.7738 * (sat_0.66) +0.072186",
+          "family": "sat",
+          "w": 38.773821103496445,
+          "b": 0.07218602372264726,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.300663650759339,
+          "q0": 0.07218602372264726,
+          "q_inf": 38.846007127219096,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 10,
+          "formula": "+39.0514 * (sat_0.66) -0.167952",
+          "family": "sat",
+          "w": 39.05140357017093,
+          "b": -0.16795235956687904,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.2623010627085,
+          "q0": -0.16795235956687904,
+          "q_inf": 38.88345121060405,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        }
+      ]
+    }
+  },
   "timing_scopes": {
     "protocol": "warm, 2000/200/2000 iterations; costs are per-call milliseconds on the archiving host",
-    "dot_product_ms": 0.0021,
-    "curve_fit_ms": 0.2443,
-    "full_fold_ms": 0.162,
+    "dot_product_ms": 0.0015,
+    "curve_fit_ms": 0.2734,
+    "full_fold_ms": 0.1655,
     "ratios_disclosed": {
-      "dot_vs_curve_fit": 114.5,
-      "fold_vs_curve_fit": 1.5,
+      "dot_vs_curve_fit": 178.9,
+      "fold_vs_curve_fit": 1.7,
       "note": "scope-dependent; the external '10.2x' matches neither scope"
     }
   }

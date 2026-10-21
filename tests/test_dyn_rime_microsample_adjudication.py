@@ -30,11 +30,14 @@ if _REPO not in sys.path:
     sys.path.insert(0, _REPO)
 
 from benchmarks.run_rime_microsample_adjudication import (
+    _NamespaceProposal,
+    adjudicate_structure_aware,
     classify_referee_decision,
     certify_origin_constrained_rime,
     run_fold_level_rime_recovery,
     run_langmuir_1918,
     run_michaelis_menten,
+    run_structure_aware_referee,
     sound_monotonicity_v2,
 )
 
@@ -162,6 +165,74 @@ def test_fold_level_disclosed_limit_present() -> None:
     bank-restricted experiment is NOT unrestricted structural discovery)."""
     res = run_fold_level_rime_recovery()
     assert "NOT the same experiment" in res["disclosed_limit"]
+
+
+# ── structure-aware referee (defect-3 patch): structure beats proxies ────
+def test_counterfeit_quadratic_is_rejected_on_structure() -> None:
+    """The external referee PROMOTEd this exact candidate (w>0, |b|=0.5,
+    positive data correlation). The patched referee rejects it on declared
+    structure: no saturating form, no finite positive limit."""
+    verdict, reports, why = adjudicate_structure_aware([
+        {"proposal": _NamespaceProposal("+5.0 * (sq(p)) +0.5", 5.0, 0.5), "s": None}
+    ])
+    assert verdict == "REJECTED", why
+    assert "non-saturating structure" in reports[0]["rejected"]
+
+
+def test_verified_sat_norm_discovery_is_promoted_with_disclosed_origin() -> None:
+    """The tournament's verified winner (w=37.7147, b=3.97006) must be
+    PROMOTED through the exact family certificate (monotonic for ANY
+    intercept), with its origin deviation q(0)=b disclosed via
+    origin_strict_satisfied=False — never gated by a |b| tolerance."""
+    import numpy as np
+    s_dev = float(np.std([34.0, 23.8, 17.3, 13.0, 9.5, 7.4, 6.1, 5.0, 4.0, 3.4, 2.8]))
+    verdict, reports, why = adjudicate_structure_aware([
+        {"proposal": _NamespaceProposal(
+            "+37.7146770 * (sat_norm(p)) +3.9700646",
+            37.71467702437663, 3.970064638094019), "s": s_dev}
+    ])
+    assert verdict == "PROMOTED", why
+    rep = reports[0]
+    assert all(rep["gates"].values())
+    assert rep["origin_strict_satisfied"] is False
+    assert abs(rep["q0"] - 3.9700646) < 1e-5
+    assert abs(rep["q_inf"] - 41.6847) < 5e-3
+    assert rep["monotonicity"] == "CERTIFIED_MONOTONIC"
+
+
+def test_zero_intercept_baseline_is_strict_origin_promoted() -> None:
+    verdict, reports, _ = adjudicate_structure_aware([
+        {"proposal": _NamespaceProposal("+39.33 * (sat_norm(p)) +0", 39.33, 0.0), "s": 6.52}
+    ])
+    assert verdict == "PROMOTED"
+    assert reports[0]["origin_strict_satisfied"] is True
+    assert reports[0]["q0"] == 0.0
+
+
+def test_negative_scale_saturation_is_inversion_rejected() -> None:
+    verdict, reports, _ = adjudicate_structure_aware([
+        {"proposal": _NamespaceProposal("-64.15 * (sat_norm(t)) +47.44", -64.15, 47.44),
+         "s": 6.52}
+    ])
+    assert verdict == "REJECTED_QUALITATIVE_DYNAMICS_INVERSION"
+    assert "capacity_positive" in reports[0]["rejected"]
+
+
+def test_structure_aware_elevenfold_record_pinned() -> None:
+    """Full frozen-path check: the 11 bank-restricted fold proposals pass the
+    structure-aware gates 11/11 as verified structures, each with its origin
+    deviation disclosed (0/11 satisfy strict q(0)=0) — the honest joint claim
+    the reviewer asked to be observable from one artifact."""
+    res = run_structure_aware_referee()
+    cases = res["cases"]
+    assert cases["counterfeit_quadratic"]["verdict"] == "REJECTED"
+    assert cases["discovery_sat_norm_winner"]["verdict"] == "PROMOTED"
+    assert cases["negative_scale_saturation"]["verdict"] == "REJECTED_QUALITATIVE_DYNAMICS_INVERSION"
+    assert cases["zero_intercept_baseline"]["verdict"] == "PROMOTED"
+    ef = res["elevenfold"]
+    assert ef["verdict"] == "PROMOTED"
+    assert ef["promoted"] == 11 and ef["total"] == 11
+    assert ef["origin_strict_satisfied_count"] == 0
 
 
 def test_langmuir_8scale_trace_pinned() -> None:
