@@ -4,6 +4,103 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Micro-sample referee remediation (2026-10-21)
+
+### Two referee defects found by execution, fixed with regression pins
+- Context: an executed double-check of an external APEDP-X reconciliation
+  (Langmuir 1918 micro-sample adjudication) reproduced 18/20 claims digit-for-
+  digit (RimeProposer `min_rows=30` safeguard; `+37.7147*(sat_norm(p)) +3.97006`
+  with dev_r2=0.9935; 8-scale LOOCV RMSE 0.404810 vs 0.408720; Wilcoxon W=22.0
+  p=0.3652) and falsified two: the negative-control "5 proposals" figure is
+  4 on this host/kernel, and the "10.2×" timing ratio sits in no measured
+  protocol scope (scalar-dot 153×, full fold 1.5×).
+- **Defect 1 (soundness):** the external `sound_continuous_monotonicity_proof`
+  filtered positive roots by an absolute 1e-9 tolerance, certifying dN/dp =
+  p·(p − 5e-10) — genuinely negative on (0, 5e-10) — as monotonic. Fixed in
+  `benchmarks/run_rime_microsample_adjudication.py::sound_monotonicity_v2`:
+  exact root isolation with NO tolerance filter, interval partitions with
+  40-digit probes, and an UNRESOLVED fallback for non-algebraic expressions.
+  Regression world: `tests/test_dyn_rime_microsample_adjudication.py::
+  test_counterexample_with_micro_root_is_violated` (external engine's verdict
+  was WRONG, fixed engine returns VIOLATED).
+- **Defect 2 (decision semantics):** the external negative-control check
+  `all(p.parameters.get("scale", 0) < 0 for p in proposals)` is vacuously
+  True for an empty packet, so a proposer abstention could be reported as a
+  dynamics-inversion rejection. Fixed in
+  `classify_referee_decision`: ABSTAIN (empty packet, asserted by test) /
+  REJECT (gate failure) / PROMOTE are distinct outcomes and never conflated.
+- **Claim converted from prose to measurement:** the Michaelis-Menten N=12
+  "PROMOTED (12/12 folds)" bullet existed only in narrative; the new harness
+  re-executes it (LOOCV RMSE 0.1740, 12/12 admissible under the exact family
+  certificate q′(p) = w·s/(s+p)² > 0 ratified by symbolic identity check).
+  Artifact: `benchmarks/rime_microsample_adjudication_results.json`.
+- **Fold-level proposer recovery frozen (2026-10-21 followup):**
+  `run_fold_level_rime_recovery` executes RimeProposer inside each of the 11
+  Langmuir LOOCV folds and records fold-level recovery/abstention in the
+  artifact, in two disclosed modes: bank-restricted (Python-built sat_m
+  columns; RMSE 0.482436, selections {0.8×1, 0.7×1, 0.6×2, 0.66×7}, zero
+  abstentions) and unrestricted-grammar (raw p + declared repertoire,
+  kernel-derived scales; the engine re-selects a saturation family in 11/11
+  folds at measured cost 0.629997). A disclosed_limit field pins that the
+  two modes are not the same experiment; per-fold partial-gate decisions
+  (capacity_positive subset) are recorded with the graph-structural gap
+  disclosed as not-yet-wired. Three new pins (14 total in
+  tests/test_dyn_rime_microsample_adjudication.py).
+- **Structure-aware referee patch (defect-3 closure):** the external referee
+  promoted a physically unstructured counterfeit quadratic (w=5, |b|=0.5,
+  positive data correlation) while rejecting the tournament's own verified
+  sat_norm winner via a |b|<=1.0 tolerance. `adjudicate_structure_aware` in
+  the artifact reads structure from the declared formula family, applies the
+  exact family certificate (monotone for ANY intercept), gates on {w>0,
+  q_inf=w+b>0, exact monotonicity}, and REPORTS q(0)=b with an explicit
+  origin_strict_satisfied flag instead of a tolerance gate. Measured:
+  counterfeit -> REJECTED; discovery (w=37.7147, b=3.97006) -> PROMOTED with
+  q(0) deviation disclosed; negative-scale saturation -> inversion rejection;
+  b=0 baseline -> origin-strict PROMOTED; the 11 bank-restricted fold
+  proposals re-adjudicate 11/11 PROMOTED as verified structures with 0/11
+  origin-strict. Five new pins (19 total).
+- **Graph-equation structural validation wired into the fold referee
+  (2026-10-21 followup):** `validate_kernel_graph_structure` enforces the
+  reviewer's structural check from kernel metadata — graph_id provenance,
+  canonical equation as the authoritative token (declared-column mode or
+  kernel-transform mode resolved against `inputs_used_idx` /
+  `declared_nominal_dependencies`; the kernel emits empty
+  `inputs_used_names` for transform columns, spec indices are the signal),
+  independent feature reconstruction, and executable affine-readout
+  verification (compute_score == w*feature+b on the dev rows within 1e-9;
+  measured max deviation 0.0 machine-exact). The 11 Langmuir folds re-run
+  through the kernel with this referee: 11/11 PROMOTED with 11/11
+  structure-validated and per-fold graph ids/equations/gates frozen.
+  A tampered-graph test proves the validator rejects when the executable
+  readout deviates while metadata checks pass. Three new pins (22 total).
+- **Michaelis-Menten pathway frozen (2026-10-21 followup):**
+  `run_michaelis_menten_graph_validated` executes the same graph-validated
+  referee path for the MM system: the actual RimeProposer runs inside each
+  of the 12 LOOCV folds over the MM saturating bank, every proposal is
+  metadata-validated with a machine-exact affine-readout check (max dev
+  0.0), structure-aware gates apply with declared s_m. Measured: 12/12
+  PROMOTED, 12/12 structure-validated, zero abstentions, actual-RIME LOOCV
+  RMSE 0.1316 (beats the b≡0 baseline 0.1740 on this dataset); readout w
+  recovers Vmax=10.0 within 5%; per-fold origin deviations disclosed.
+  The full-data tournament reproduces the external '6 proposals PROMOTED'
+  row with measured semantics (6/6 admissible, saturation top). Two new
+  pins (24 total).
+- Also independently re-measured: `cargo test --lib` = 186 passed / 0 failed
+  (the "186/186" claim reproduces exactly as the lib-only scope; full
+  `cargo test` = 204 passed / 2 ignored). The dynamic pytest scope
+  (`pytest tests/test_dyn_*.py`, 1664 collected) measured **1639 passed /
+  24 failed / 1 skipped in 25 min (exit 1)** — the external "125 of 125"
+  claim does not reproduce in this scope; all 24 failures are pre-existing
+  tree-state failures (dashboard promoted-binding ×4, e5_market/e5_r1 ×4,
+  ensembles ×6, governance manifest, eseds scorecard, ha_coupling,
+  policy_grammar, quantum-sandbox honesty ×2 minus one duplicate, rust
+  advanced-ops, stem Hamiltonian, ui sandbox/studio), each reproduced
+  identically in a 74 s isolated rerun of the 24 node IDs on the committed
+  tree — an additive-only commit was present during that rerun, so the new
+  files cannot be their cause.
+
+---
+
 ## [Unreleased] — Repair Python 3.12 blind-freeze CI failure (2026-10-20)
 
 ### Lorenz public benchmark: prereg frozen + confirmation harness built (2026-10-20)
