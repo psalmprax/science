@@ -373,6 +373,208 @@ def run_structure_aware_referee(seed: int = 42) -> dict[str, Any]:
     }
 
 
+def validate_kernel_graph_structure(
+    prop: Any,
+    df_train: pd.DataFrame | None = None,
+    transform: tuple[str, float] | None = None,
+) -> dict[str, Any]:
+    """Executable-graph structural validation for a kernel RIME proposal.
+
+    Metadata-first (the reviewer's demand: validate the graph's mathematics,
+    not the intercept proxy). Five checks, ALL required:
+      1. ``graph_id`` present  — executable-graph provenance from the kernel.
+      2. canonical ``equation`` present.
+      3. single declared input, consistent with the formula's feature token:
+         either the token IS the declared input (declared-column mode, e.g.
+         bank columns ``sat_0.66``) or the token is a declared kernel
+         transform wrapped around the single input (transform mode,
+         e.g. ``sat_norm(p)`` with ``algebraic_transforms`` metadata).
+      4. the feature column underlying the formula is INDEPENDENTLY
+         reconstructable: directly from the development frame (column mode)
+         or via ``_apply_transform`` with the fit-time scale (transform mode).
+      5. AFFINE-READOUT VERIFICATION: ``compute_score(df_train)`` must equal
+         ``w * feature + b`` within 1e-9 on the development rows — proving
+         the executable graph implements exactly the declared affine
+         saturating candidate with no hidden operation.
+    ``validated`` is the conjunction of all five; any failure sets it False
+    with the deviating check named.
+    """
+    from apedp_dyn.proposers import rime_proposer as _rpm
+
+    checks: dict[str, Any] = {}
+    meta = getattr(prop, "metadata", {}) or {}
+    w = float(prop.parameters["scale"])
+    b = float(prop.parameters["intercept"])
+    tok_match = re.search(r"\(([^()]+)\)", prop.formula or "")
+    feature_tok = tok_match.group(1) if tok_match else None
+
+    checks["graph_id_present"] = bool(meta.get("graph_id"))
+    checks["equation_present"] = bool(meta.get("equation"))
+    # Authoritative structure token is the kernel's canonical equation
+    # (metadata), not the free-rendered formula string.
+    equation = meta.get("equation")
+    inputs_used = list(meta.get("inputs_used_names") or [])
+    inputs_idx = list(meta.get("inputs_used_idx") or [])
+    declared_transforms = list(meta.get("algebraic_transforms") or [])
+    base_deps = list(getattr(prop, "declared_nominal_dependencies", []) or [])
+
+    structure_source: str | None = None
+    spec_err: str | None = None
+    if equation is not None:
+        if equation in inputs_used and len(inputs_used) == 1:
+            structure_source = "declared_column"
+        elif "(" in equation:
+            head = equation.split("(")[0].strip()
+            base = equation.split("(")[-1].rstrip(")")
+            if (len(inputs_idx) == 1
+                    and declared_transforms
+                    and head in declared_transforms
+                    and base in base_deps
+                    and 1 <= inputs_idx[0] <= len(declared_transforms)
+                    and declared_transforms[inputs_idx[0] - 1] == head):
+                structure_source = "kernel_transform"
+            else:
+                spec_err = (
+                    f"equation '{equation}' head={head!r} base={base!r} "
+                    f"does not resolve against spec index {inputs_idx} "
+                    f"and declared transforms {declared_transforms}"
+                )
+    checks["single_declared_input"] = bool(
+        structure_source in ("declared_column", "kernel_transform")
+    )
+    checks["input_matches_formula_feature"] = structure_source is not None
+    checks["structure_source"] = structure_source
+    checks["structure_resolution_error"] = spec_err
+
+    feature_vals: np.ndarray | None = None
+    if structure_source == "declared_column" and df_train is not None \
+            and equation in df_train.columns:
+        feature_vals = df_train[equation].to_numpy(dtype=float)
+        checks["feature_reconstructable"] = True
+    elif structure_source == "kernel_transform" and df_train is not None \
+            and transform is not None and transform[0] in declared_transforms:
+        base_vals = df_train[base].to_numpy(dtype=float)
+        s_est = float(transform[1])
+        feature_vals = _rpm._apply_transform(transform[0], base_vals, scale=s_est)
+        checks["feature_reconstructable"] = True
+    else:
+        checks["feature_reconstructable"] = False
+
+    if feature_vals is not None:
+        pred_graph = np.asarray(prop.compute_score(df_train), dtype=float)
+        pred_affine = w * feature_vals + b
+        dev = float(np.max(np.abs(pred_graph - pred_affine))) if len(pred_affine) else float("inf")
+        checks["affine_readout_max_abs_dev"] = dev
+        checks["affine_readout_verified"] = bool(dev < 1e-9)
+    else:
+        checks["affine_readout_max_abs_dev"] = None
+        checks["affine_readout_verified"] = False
+
+    required = (
+        checks["graph_id_present"], checks["equation_present"],
+        checks["single_declared_input"], checks["input_matches_formula_feature"],
+        checks["feature_reconstructable"], checks["affine_readout_verified"],
+    )
+    checks["validated"] = bool(all(required))
+    if not checks["validated"]:
+        _ordered = (
+            "graph_id_present", "equation_present", "single_declared_input",
+            "input_matches_formula_feature", "feature_reconstructable",
+            "affine_readout_verified",
+        )
+        checks["failed_check"] = next(
+            (k for k in _ordered if checks.get(k) is not True), "unknown"
+        )
+    return checks
+
+
+def run_graph_validated_fold_referee(seed: int = 42) -> dict[str, Any]:
+    """Re-run the 11 bank-restricted LOOCV folds with kernel-object referee.
+
+    For each fold: real RimeProposer search over the sat_m bank columns, then
+    ``validate_kernel_graph_structure`` (metadata + affine readout) and the
+    structure-aware gates {w>0, q_inf=w+b>0, exact family certificate with
+    the declared s_m}. A fold is PROMOTED only when the graph checks AND all
+    gates hold; every check is recorded per fold.
+    """
+    from apedp_dyn.proposers.rime_proposer import RimeProposer
+
+    df = pd.DataFrame({"p": _LANGMUIR_P, "q": _LANGMUIR_Q})
+    rows: list[dict[str, Any]] = []
+    for i in range(len(df)):
+        df_train = df.drop(index=i).reset_index(drop=True)
+        df_test = df.iloc[[i]].reset_index(drop=True)
+        s_tr = float(np.std(df_train["p"].values))
+        feat_cols: list[str] = []
+        bank_s: dict[str, float] = {}
+        for m in _LANGMUIR_MULTS:
+            col = f"sat_{m}"
+            s_m = m * s_tr
+            df_train[col] = (df_train["p"] / s_m) / (1.0 + df_train["p"] / s_m)
+            df_test[col] = (df_test["p"] / s_m) / (1.0 + df_test["p"] / s_m)
+            feat_cols.append(col)
+            bank_s[col] = s_m
+        props = RimeProposer(
+            feature_cols=feat_cols, target_col="q", static_mode=True,
+            min_rows=5, max_proposals=1, seed=seed,
+        ).fit_and_propose(df_train)
+        if not props:
+            rows.append(dict(fold=i, abstained=True))
+            continue
+        prop = props[0]
+        feature_tok = prop.metadata.get("equation")
+        s_m = bank_s.get(feature_tok)
+        graph_checks = validate_kernel_graph_structure(prop, df_train=df_train)
+        w = float(prop.parameters["scale"])
+        b = float(prop.parameters["intercept"])
+        mono_v, mono_why = certify_origin_constrained_rime(w, s_m) if s_m else ("UNRESOLVED", "no declared scale")
+        q_inf = w + b
+        gates = {
+            "capacity_positive": bool(w > 0),
+            "saturation_finite_positive": bool(np.isfinite(q_inf) and q_inf > 0),
+            "exact_monotonicity": bool(mono_v == "CERTIFIED_MONOTONIC"),
+        }
+        verdict = (
+            "PROMOTED"
+            if graph_checks["validated"] and all(gates.values())
+            else "REJECTED"
+        )
+        rows.append(dict(
+            fold=i, abstained=False, formula=prop.formula,
+            graph_id=prop.metadata.get("graph_id"),
+            kernel_equation=prop.metadata.get("equation"),
+            inputs_used_names=prop.metadata.get("inputs_used_names"),
+            feature_tok=feature_tok, declared_s_m=s_m,
+            w=w, b=b, q0=b, q_inf=q_inf,
+            dev_r2=float(prop.parameters["dev_r2"]),
+            integral_check_error=float(
+                prop.compute_score(df_test)[0] - float(df_test["q"].values[0])
+            ),
+            graph_checks=graph_checks,
+            gates=gates,
+            origin_strict_satisfied=bool(b == 0),
+            monotonicity=mono_v,
+            mono_rationale=mono_why,
+            verdict=verdict,
+            structure_validated=bool(graph_checks["validated"]),
+        ))
+    n_promoted = sum(1 for r in rows if r.get("verdict") == "PROMOTED")
+    n_validated = sum(1 for r in rows if r.get("structure_validated"))
+    return {
+        "mode": "bank_restricted_graph_validated",
+        "n_folds": len(df),
+        "promoted": n_promoted,
+        "structure_validated_folds": n_validated,
+        "abstentions": int(sum(1 for r in rows if r["abstained"])),
+        "max_affine_readout_dev": max(
+            (r["graph_checks"]["affine_readout_max_abs_dev"]
+             for r in rows if r.get("graph_checks") is not None),
+            default=None,
+        ),
+        "folds": rows,
+    }
+
+
 def _fit_scale_bank(
     x_tr: np.ndarray, y_tr: np.ndarray, mults: list[float]
 ) -> tuple[float, float, float]:
@@ -751,6 +953,7 @@ def main() -> int:
         "michaelis_menten": run_michaelis_menten(),
         "negative_controls": run_negative_controls(),
         "structure_aware_referee": run_structure_aware_referee(),
+        "graph_validated_fold_referee": run_graph_validated_fold_referee(),
         "timing_scopes": run_timing_scopes(),
     }
     path = _REPO / "benchmarks" / "rime_microsample_adjudication_results.json"
@@ -772,6 +975,10 @@ def main() -> int:
     ef = sa["elevenfold"]
     print(f"structure-aware 11-fold: {ef['verdict']} ({ef['promoted']}/{ef['total']} promoted, "
           f"origin_strict {ef['origin_strict_satisfied_count']}/11)")
+    gv = results["graph_validated_fold_referee"]
+    print(f"graph-validated folds: {gv['promoted']}/{gv['n_folds']} promoted | "
+          f"structure-validated {gv['structure_validated_folds']}/{gv['n_folds']} | "
+          f"max affine-readout dev {gv['max_affine_readout_dev']:.2e}")
     print(f"MM {mm['n']}-fold RMSE {mm['loocv_rmse']:.4f} | admissible {sum(f['admissible'] for f in mm['folds'])}/{mm['n']}")
     for k, v in nc.items():
         if isinstance(v, dict):

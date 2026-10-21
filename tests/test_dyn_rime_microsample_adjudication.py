@@ -35,10 +35,12 @@ from benchmarks.run_rime_microsample_adjudication import (
     classify_referee_decision,
     certify_origin_constrained_rime,
     run_fold_level_rime_recovery,
+    run_graph_validated_fold_referee,
     run_langmuir_1918,
     run_michaelis_menten,
     run_structure_aware_referee,
     sound_monotonicity_v2,
+    validate_kernel_graph_structure,
 )
 
 _P = sp.Symbol("p", positive=True, real=True)
@@ -233,6 +235,90 @@ def test_structure_aware_elevenfold_record_pinned() -> None:
     assert ef["verdict"] == "PROMOTED"
     assert ef["promoted"] == 11 and ef["total"] == 11
     assert ef["origin_strict_satisfied_count"] == 0
+
+
+# ── graph-equation structural validation (reviewer milestone) ───────────
+def test_graph_validated_folds_pinned() -> None:
+    """The 11 bank-restricted folds through kernel-object referee: every fold
+    validates on kernel metadata (graph_id/equation/single input) AND the
+    executable affine-readout check (compute_score == w*col+b), then all
+    gates; expected 11/11 PROMOTED with the affine readout exact."""
+    res = run_graph_validated_fold_referee()
+    assert res["abstentions"] == 0
+    assert res["promoted"] == 11 and res["structure_validated_folds"] == 11
+    assert res["max_affine_readout_dev"] < 1e-12, res["max_affine_readout_dev"]
+    for f in res["folds"]:
+        assert f["graph_checks"]["validated"] is True
+        assert f["graph_id"] and f["kernel_equation"]
+        assert f["verdict"] == "PROMOTED"
+        assert f["origin_strict_satisfied"] is False  # b != 0 per fold
+
+
+def test_kernel_graph_structure_tournament_winner_transform_mode() -> None:
+    """Transform-mode validation: the full-grammar tournament winner declared
+    as sat_norm(p) over base feature p must validate via kernel metadata and
+    reproduce the fitted feature through _apply_transform with the fit-time
+    scale, with the affine readout verified to machine precision."""
+    import numpy as np
+    import pandas as pd
+    from apedp_dyn.proposers.rime_proposer import RimeProposer
+
+    df = pd.DataFrame({
+        "p": [34.0, 23.8, 17.3, 13.0, 9.5, 7.4, 6.1, 5.0, 4.0, 3.4, 2.8],
+        "q": [33.0, 30.8, 28.2, 25.5, 23.9, 21.6, 19.0, 17.0, 15.1, 13.4, 12.0],
+    })
+    prop = RimeProposer(
+        feature_cols=["p"], target_col="q", static_mode=True,
+        algebraic_transforms=["sq", "ssqrt", "slog", "sat_norm"],
+        min_rows=5, max_proposals=1, seed=42,
+    ).fit_and_propose(df)[0]
+    s_est = float(np.nanstd(df["p"].to_numpy(dtype=float)))
+    checks = validate_kernel_graph_structure(
+        prop, df_train=df, transform=("sat_norm", s_est)
+    )
+    assert checks["validated"] is True, checks
+    assert checks["structure_source"] == "kernel_transform"
+    assert checks["affine_readout_max_abs_dev"] < 1e-9
+
+
+def test_graph_validation_rejects_tampered_affine_readout() -> None:
+    """The validator must have teeth: metadata checks passing is NOT sufficient.
+    A proposal whose compute_score deviates from the affine readout w*col+b
+    fails exactly on affine_readout_verified while every metadata check holds."""
+    import pandas as pd
+
+    class Tampered:
+        def __init__(self):
+            # exact kernel-emitted shapes (bank mode): equation IS the column
+            self.formula = "-3.03529 * (sat_0.66) +29.9478"
+            self.declared_nominal_dependencies = ("sat_0.66",)
+            self.parameters = {"scale": -3.03529, "intercept": 29.9478}
+            self._meta = {
+                "graph_id": "tampered_graph_id",
+                "equation": "sat_0.66",
+                "inputs_used_names": ["sat_0.66"],
+                "inputs_used_idx": [0],
+                "algebraic_transforms": None,
+            }
+
+        @property
+        def metadata(self):
+            return self._meta
+
+        def compute_score(self, df):
+            col = df["sat_0.66"].to_numpy(dtype=float)
+            return self.parameters["scale"] * col + self.parameters["intercept"] + 1e-3
+
+    df_train = pd.DataFrame({
+        "p": [34.0, 23.8, 17.3, 13.0, 9.5, 7.4, 6.1, 5.0, 4.0, 3.4],
+    })
+    s_m = 0.66 * float(df_train["p"].std())
+    df_train["sat_0.66"] = (df_train["p"] / s_m) / (1.0 + df_train["p"] / s_m)
+    checks = validate_kernel_graph_structure(Tampered(), df_train=df_train)
+    assert checks["graph_id_present"] and checks["equation_present"]
+    assert checks["affine_readout_verified"] is False
+    assert checks["validated"] is False
+    assert checks["failed_check"] == "affine_readout_verified"
 
 
 def test_langmuir_8scale_trace_pinned() -> None:

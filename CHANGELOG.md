@@ -59,6 +59,20 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
   b=0 baseline -> origin-strict PROMOTED; the 11 bank-restricted fold
   proposals re-adjudicate 11/11 PROMOTED as verified structures with 0/11
   origin-strict. Five new pins (19 total).
+- **Graph-equation structural validation wired into the fold referee
+  (2026-10-21 followup):** `validate_kernel_graph_structure` enforces the
+  reviewer's structural check from kernel metadata — graph_id provenance,
+  canonical equation as the authoritative token (declared-column mode or
+  kernel-transform mode resolved against `inputs_used_idx` /
+  `declared_nominal_dependencies`; the kernel emits empty
+  `inputs_used_names` for transform columns, spec indices are the signal),
+  independent feature reconstruction, and executable affine-readout
+  verification (compute_score == w*feature+b on the dev rows within 1e-9;
+  measured max deviation 0.0 machine-exact). The 11 Langmuir folds re-run
+  through the kernel with this referee: 11/11 PROMOTED with 11/11
+  structure-validated and per-fold graph ids/equations/gates frozen.
+  A tampered-graph test proves the validator rejects when the executable
+  readout deviates while metadata checks pass. Three new pins (22 total).
 - Also independently re-measured: `cargo test --lib` = 186 passed / 0 failed
   (the "186/186" claim reproduces exactly as the lib-only scope; full
   `cargo test` = 204 passed / 2 ignored). The dynamic pytest scope
