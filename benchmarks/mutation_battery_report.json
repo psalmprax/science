@@ -1,10 +1,10 @@
 {
-  "timestamp_utc": "2026-10-19T22:05:38.939651+00:00",
+  "timestamp_utc": "2026-10-21T11:59:09.585251+00:00",
   "prereg_target": "REG-MUT (docs/SYSTEM_FLAWS_AUDIT.md Outstanding requirements register)",
   "status": "ALL_KILLED",
   "summary": {
-    "n_mutants": 5,
-    "n_killed": 5,
+    "n_mutants": 9,
+    "n_killed": 9,
     "all_pinned_mutants_killed": true,
     "all_restorations_byte_identical": true
   },
@@ -22,8 +22,8 @@
       ],
       "returncode": 0,
       "passed": true,
-      "tail": "collected 46 items / 40 deselected / 6 selected\n\ntests/test_dyn_blind_audit_round2_remediation.py ......                  [100%]\n\n======================= 6 passed, 40 deselected in 5.63s =======================",
-      "duration_s": 7.3
+      "tail": "collected 46 items / 40 deselected / 6 selected\n\ntests/test_dyn_blind_audit_round2_remediation.py ......                  [100%]\n\n======================= 6 passed, 40 deselected in 4.74s =======================",
+      "duration_s": 6.6
     },
     "hawkes": {
       "argv": [
@@ -36,8 +36,8 @@
       ],
       "returncode": 0,
       "passed": true,
-      "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 2.77s ===============================",
-      "duration_s": 3.9
+      "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 2.64s ===============================",
+      "duration_s": 4.2
     },
     "hawkes_sharp": {
       "argv": [
@@ -50,7 +50,7 @@
       ],
       "returncode": 0,
       "passed": true,
-      "tail": "collected 2 items\n\ntests/test_dyn_hawkes_standardization_pins.py ..                         [100%]\n\n============================== 2 passed in 3.21s ===============================",
+      "tail": "collected 2 items\n\ntests/test_dyn_hawkes_standardization_pins.py ..                         [100%]\n\n============================== 2 passed in 2.92s ===============================",
       "duration_s": 4.5
     }
   },
@@ -76,13 +76,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 6.8,
+      "duration_s": 6.1,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 6.8,
-          "tail": "E    +  and   <EpistemicStatus.UNIQUE_SUPPORT: 'unique_support'> = EpistemicStatus.UNIQUE_SUPPORT\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchored_pass_skips_bootstrap_confirmation\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 1 passed, 40 deselected in 5.07s =================="
+          "duration_s": 6.1,
+          "tail": "E    +  and   <EpistemicStatus.UNIQUE_SUPPORT: 'unique_support'> = EpistemicStatus.UNIQUE_SUPPORT\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchored_pass_skips_bootstrap_confirmation\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 1 passed, 40 deselected in 4.33s =================="
         }
       ]
     },
@@ -107,13 +107,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 7.3,
+      "duration_s": 6.1,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 7.3,
-          "tail": "E    +  and   <EpistemicStatus.MULTI_HYPOTHESIS: 'multi_hypothesis'> = EpistemicStatus.MULTI_HYPOTHESIS\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchor_requires_gate4_certified_holdout_head\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n======================= 1 failed, 40 deselected in 5.51s ======================="
+          "duration_s": 6.1,
+          "tail": "E    +  and   <EpistemicStatus.MULTI_HYPOTHESIS: 'multi_hypothesis'> = EpistemicStatus.MULTI_HYPOTHESIS\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchor_requires_gate4_certified_holdout_head\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n======================= 1 failed, 40 deselected in 4.33s ======================="
         }
       ]
     },
@@ -138,13 +138,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 7.4,
+      "duration_s": 6.3,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 7.4,
-          "tail": "E   KeyError: 'u_xxx'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 40 deselected in 5.39s =================="
+          "duration_s": 6.3,
+          "tail": "E   KeyError: 'u_xxx'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 40 deselected in 4.43s =================="
         }
       ]
     },
@@ -169,13 +169,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 6.8,
+      "duration_s": 6.3,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 6.8,
-          "tail": "E     Actual message: 'Frozen scoring library cannot resolve dev-discovered active term(s): (term names redacted) \u2014 the Python mirror and the Rust discovery library have drifted; refuse scoring instead of silently dropping coefficient terms'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 40 deselected in 5.09s =================="
+          "duration_s": 6.3,
+          "tail": "E    Input: 'Frozen scoring library cannot resolve dev-discovered active term(s): (term names redacted) \u2014 the Python mirror and the Rust discovery library have drifted; refuse scoring instead of silently dropping coefficient terms'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 40 deselected in 4.44s =================="
         }
       ]
     },
@@ -206,19 +206,135 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 8.6,
+      "duration_s": 8.7,
       "pin_tails": [
         {
           "returncode": 0,
           "passed": true,
-          "duration_s": 4.1,
-          "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 2.94s ==============================="
+          "duration_s": 4.4,
+          "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 2.79s ==============================="
         },
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 4.5,
-          "tail": "E    +    where <function allclose at 0x7ef124bb26f0> = np.allclose\n=========================== short test summary info ============================\nFAILED tests/test_dyn_hawkes_standardization_pins.py::test_score_couples_to_fit_constants_not_eval_frame\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 1 passed in 3.31s =========================="
+          "duration_s": 4.3,
+          "tail": "E    +    where <function allclose at 0x7dda97130770> = np.allclose\n=========================== short test summary info ============================\nFAILED tests/test_dyn_hawkes_standardization_pins.py::test_score_couples_to_fit_constants_not_eval_frame\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 1 passed in 2.84s =========================="
+        }
+      ]
+    },
+    {
+      "id": "MUT-D1",
+      "target": "S3 lock atomic take-over (FLAW-03)",
+      "file": "apedp_dyn/epistemic/remote_storage.py",
+      "description": "412 PreconditionFailed silently wins the lock (double-winner race back)",
+      "pin_note": "test_flaw03_contested_lock_cannot_be_stolen",
+      "pin_commands": [
+        [
+          "-m",
+          "pytest",
+          "-q",
+          "-x",
+          "--no-header",
+          "tests/test_dyn_external_audit_2026_10_21_pins.py"
+        ]
+      ],
+      "killed": true,
+      "all_pins_yield": true,
+      "restoration_byte_identical": true,
+      "duration_s": 3.8,
+      "pin_tails": [
+        {
+          "returncode": 1,
+          "passed": false,
+          "duration_s": 3.8,
+          "tail": "E   Failed: DID NOT RAISE <class 'apedp_dyn.epistemic.remote_storage.StorageLockError'>\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw03_contested_lock_cannot_be_stolen\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 1 passed in 2.46s =========================="
+        }
+      ]
+    },
+    {
+      "id": "MUT-D2",
+      "target": "S3 lock fallback put (FLAW-03 read-back ownership)",
+      "file": "apedp_dyn/epistemic/remote_storage.py",
+      "description": "parameter-rejection path skips the fallback put (acquire deadlocks)",
+      "pin_note": "test_flaw03_parameter_rejected_fallback_still_verifies_ownership",
+      "pin_commands": [
+        [
+          "-m",
+          "pytest",
+          "-q",
+          "-x",
+          "--no-header",
+          "tests/test_dyn_external_audit_2026_10_21_pins.py"
+        ]
+      ],
+      "killed": true,
+      "all_pins_yield": true,
+      "restoration_byte_identical": true,
+      "duration_s": 5.9,
+      "pin_tails": [
+        {
+          "returncode": 1,
+          "passed": false,
+          "duration_s": 5.9,
+          "tail": "E   apedp_dyn.epistemic.remote_storage.StorageLockError: Timed out after 2.0s acquiring S3 lock on ledger.\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw03_parameter_rejected_fallback_still_verifies_ownership\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 2 passed in 4.49s =========================="
+        }
+      ]
+    },
+    {
+      "id": "MUT-D3",
+      "target": "CBF endpoint-headroom deficit split (FLAW-17)",
+      "file": "apedp_dyn/robotics/cbf_certificate.py",
+      "description": "revert to the least-change equal split (re-introduces the post-correction A1 violation)",
+      "pin_note": "test_flaw17_cbf_final_projection_prevents_norm_violation",
+      "pin_commands": [
+        [
+          "-m",
+          "pytest",
+          "-q",
+          "-x",
+          "--no-header",
+          "tests/test_dyn_external_audit_2026_10_21_pins.py"
+        ]
+      ],
+      "killed": true,
+      "all_pins_yield": true,
+      "restoration_byte_identical": true,
+      "duration_s": 10.3,
+      "pin_tails": [
+        {
+          "returncode": 1,
+          "passed": false,
+          "duration_s": 10.3,
+          "tail": "E   apedp_dyn.robotics.cbf_certificate.CertificateViolation: CBF-QP failed the norm-ball constraint (A1)\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw17_cbf_final_projection_prevents_norm_violation\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 13 passed in 8.20s ========================="
+        }
+      ]
+    },
+    {
+      "id": "MUT-D4",
+      "target": "re-anchor residual recovery + bootstrap (FLAW-08)",
+      "file": "apedp_dyn/epistemic/adjudicate.py",
+      "description": "drop the recovered paired series, force the point-estimate downgrade back",
+      "pin_note": "test_flaw08_re_anchor_runs_bootstrap_on_paired_residuals",
+      "pin_commands": [
+        [
+          "-m",
+          "pytest",
+          "-q",
+          "-x",
+          "--no-header",
+          "tests/test_dyn_external_audit_2026_10_21_pins.py"
+        ]
+      ],
+      "killed": true,
+      "all_pins_yield": true,
+      "restoration_byte_identical": true,
+      "duration_s": 4.1,
+      "pin_tails": [
+        {
+          "returncode": 1,
+          "passed": false,
+          "duration_s": 4.1,
+          "tail": "E    +  and   <EpistemicStatus.UNIQUE_SUPPORT: 'unique_support'> = <enum 'EpistemicStatus'>.UNIQUE_SUPPORT\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw08_re_anchor_runs_bootstrap_on_paired_residuals\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 5 passed in 2.58s =========================="
         }
       ]
     }

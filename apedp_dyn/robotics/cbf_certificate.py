@@ -150,7 +150,10 @@ def solve_cbf_qp(
     b_ij = -assumptions.gamma * bar.h[idx_i, idx_j]      # constraint: (v_i-v_j).n_ij >= -gamma*h_ij
 
     box = assumptions.v_max
+    solved = False
+    loop_ran = False
     for _ in range(max_iter):
+        loop_ran = True
         # projection onto the norm ball FIRST (A1: |v_i| <= v_max as a MAGNITUDE)
         norms = np.linalg.norm(v, axis=1, keepdims=True)
         scale = np.minimum(1.0, np.divide(box, norms, out=np.full_like(norms, box), where=norms > 1e-12))
@@ -159,25 +162,55 @@ def solve_cbf_qp(
         deficit = b_ij - lhs                          # violated when deficit > 0
         bad = deficit > assumptions.tol
         if not bad.any():
+            solved = True
             break
         kappa = deficit[bad] / 2.0                    # least-change pairwise fix
         corr = a_ij[bad] * kappa[:, None]
         np.add.at(v, idx_i[bad], corr)                   # v_i += kappa * n_ij
         np.add.at(v, idx_j[bad], -corr)                  # v_j -= kappa * n_ij
-    else:
-        # loop exhausted without convergence — final recheck decides
-        pass
 
     # FLAW-17: a barrier correction applied AFTER the last norm-ball
     # projection could push |v_i| back over v_max, so legitimate safe
     # trajectories that needed minor repulsion were then rejected by the
-    # fail-closed A1 check below. Close the alternating scheme with one
-    # final norm-ball projection, then re-check BOTH contracts in order;
-    # if the projection re-breaks a barrier deficit, the fail-closed
-    # verdict below is honest and raises — never silently satisfied.
-    norms = np.linalg.norm(v, axis=1, keepdims=True)
-    scale = np.minimum(1.0, np.divide(box, norms, out=np.full_like(norms, box), where=norms > 1e-12))
-    v *= scale
+    # fail-closed A1 check. A plain global re-scaling is NOT sufficient:
+    # scaling the corrected endpoint shrinks the deflection that repaired
+    # its pair and re-breaks the barrier (the remediation v1 defect).
+    # Remediation: distribute each remaining deficit BETWEEN ITS TWO
+    # ENDPOINTS, each share bounded by the endpoint's direction-aware
+    # norm-ball headroom
+    #     budget(v, d) = -(v.d) + sqrt((v.d)^2 - (|v|^2 - box^2)),
+    # which moves v along a direction the pair constraint authorizes while
+    # keeping |v| <= v_max EXACTLY (equalities preserved). If the combined
+    # headroom cannot absorb a deficit, the fail-closed re-check below
+    # raises honestly — never silently satisfied.
+    # The remedy runs ONLY when the loop EXHAUSTED its iterations while
+    # carrying pending corrections (its break-iteration projections already
+    # keep every released state in the feasible set). A caller passing
+    # max_iter=0 is asking for an UNsolved command: that must reach the
+    # fail-closed verdict refused, not be silently repaired.
+    if not solved and loop_ran:
+        norms = np.linalg.norm(v, axis=1, keepdims=True)
+        scale = np.minimum(1.0, np.divide(box, norms, out=np.full_like(norms, box), where=norms > 1e-12))
+        v *= scale
+
+        def _budget(v_dot_d: np.ndarray, nrm: np.ndarray) -> np.ndarray:
+            return -v_dot_d + np.sqrt(np.maximum(v_dot_d ** 2 - (nrm ** 2 - box ** 2), 0.0))
+
+        for _pass in range(4):
+            lhs = np.einsum("pk,pk->p", a_ij, v[idx_i] - v[idx_j])
+            deficit = b_ij - lhs
+            bad = deficit > assumptions.tol
+            if not bad.any():
+                break
+            nrm = np.linalg.norm(v, axis=1)
+            dirs = a_ij[bad]                                   # [B, 2]
+            vi_d = np.einsum("pk,pk->p", v[idx_i[bad]], dirs)  # v_i . n_ij
+            vj_d = np.einsum("pk,pk->p", v[idx_j[bad]], dirs)  # v_j . n_ij
+            d = deficit[bad]
+            kap_i = np.minimum(_budget(vi_d, nrm[idx_i[bad]]), d)
+            kap_j = np.minimum(d - kap_i, _budget(-vj_d, nrm[idx_j[bad]]))
+            np.add.at(v, idx_j[bad], dirs * (-kap_j)[:, None])  # v_j -= kappa_j * n_ij
+            np.add.at(v, idx_i[bad], dirs * kap_i[:, None])     # v_i += kappa_i * n_ij
 
     # Fail-closed certificate check (the guarantee is only released when it HOLDS).
     norms = np.linalg.norm(v, axis=1)

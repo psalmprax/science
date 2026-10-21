@@ -22,7 +22,11 @@ edits; FLAW-01 remains OPEN by protocol:
   was 1.67).
 - **FLAW-03:** S3 lock takeover was a TOCTOU race; now conditional
   (`IfNoneMatch="*"`, 412 → contested) with a read-back token verification
-  fallback that serializes non-conditional backends.
+  fallback that serializes non-conditional backends. v2 (mutation-pin run):
+  the parameter-rejection fallback now ISSUES the unconditional put before
+  the read-back — the first draft skipped it, so the read-back could never
+  see our token and every acquire on old-botocore backends deadlocked to
+  timeout.
 - **FLAW-04:** uniform-grid stencils in `rime/diff_pade.rs` now gate on actual
   grid uniformity (1e-4) and fall back to Fornberg arbitrary-grid weights.
 - **FLAW-05:** the constant-field `R² = 1.0` tautology is removed in
@@ -66,7 +70,13 @@ edits; FLAW-01 remains OPEN by protocol:
 - **FLAW-16:** Hamiltonian archetype aligned to the pinned
   `CONTINUOUS_FACTOR` contract.
 - **FLAW-17:** CBF-QP closes with a final norm-ball projection before the
-  fail-closed certificate checks.
+  fail-closed certificate checks. v2 (mutation-pin run): the plain re-scale
+  is provably insufficient (scaling the corrected endpoint shrinks the
+  deflection that repaired its pair and re-breaks the barrier); the close-out
+  now distributes each remaining deficit BETWEEN ITS ENDPOINTS, each share
+  bounded by the endpoint's direction-aware norm-ball headroom, |v| ≤ v_max
+  exactly, and runs only when the loop exhausted with pending corrections —
+  `max_iter=0` still refuses fail-closed.
 - **FLAW-18:** ledger appends are flock-guarded (`LOCK_EX`/`LOCK_UN`, graceful
   degradation without fcntl) and remote auto-sync is amortized in batches of
   16 pending appends with a flush before snapshots.
@@ -78,6 +88,16 @@ edits; FLAW-01 remains OPEN by protocol:
   `remint_log` rationale for `adjudicate.py` + `claim_ladder.py` (13/15 other
   guard files byte-identical); thresholds, env pins, and blind-case
   expectations unchanged. Post-mint: blind + round-2 suites 56 passed.
+- **Mutation-pin coverage for the 2026-10-21 remediation:**
+  `tests/test_dyn_external_audit_2026_10_21_pins.py` (23 tests) pins
+  FLAW-02/03/05/07/08/09/10/11/13/14/16/17/18/19; each pin carries an inline
+  old-semantics mirror so reverting the fix flips the pin. Four
+  reintroduction mutants (MUT-D1..D4: S3 conditional take-over, fallback-put
+  deadlock, CBF budget-aware deficit split, re-anchor residual recovery)
+  registered in `scripts/run_mutation_battery.py` and wired to the pin suite —
+  battery re-run: ALL_KILLED, 9/9 mutants
+  (`benchmarks/mutation_battery_report.json`), byte-identical restoration
+  verified per mutant.
 - Scope note: Rust kernel edits (`diff_pade.rs`, `koopman.rs`, `implicit.rs`,
   `lie_symmetry.rs`, `pde.rs`) are outside the Python freeze record;
   `cargo test` 186/187→186/186 covers them (see FLAW-04/05/06/12/15).

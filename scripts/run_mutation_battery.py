@@ -57,6 +57,9 @@ PIN_HAWKES = ["tests/test_audit_open_flaws_remediated.py::test_hawkes_orderflow_
 # variant of the static pin — the battery did its job: it exposed a coverage
 # gap, and the pin was sharpened, never weakened).
 PIN_HAWKES_SHARP = ["tests/test_dyn_hawkes_standardization_pins.py"]
+# 2026-10-21 external audit remediation pins: each MUT-D* mutant below must be
+# killed (pin MUST fail under the mutation) by this suite.
+PIN_ROUND3 = ["tests/test_dyn_external_audit_2026_10_21_pins.py"]
 
 MUTANTS: list[dict] = [
     {
@@ -108,6 +111,48 @@ MUTANTS: list[dict] = [
         "replace": "            if not binary_viable:\n                if fit_intens_std > 1e-8:\n                    return (intens - intens.mean()) / intens.std()",
         "pins": [PIN_HAWKES, PIN_HAWKES_SHARP],
         "pin_note": "hawkes dynamic pin + sharp fit-constant standardization pin",
+    },
+    # ── 2026-10-21 external audit remediation pins (tests/
+    # test_dyn_external_audit_2026_10_21_pins.py) ──
+    {
+        "id": "MUT-D1",
+        "target": "S3 lock atomic take-over (FLAW-03)",
+        "file": "apedp_dyn/epistemic/remote_storage.py",
+        "description": "412 PreconditionFailed silently wins the lock (double-winner race back)",
+        "find": "            if is_precondition_failed:\n                return token, False",
+        "replace": "            if is_precondition_failed:\n                return token, True",
+        "pins": [PIN_ROUND3],
+        "pin_note": "test_flaw03_contested_lock_cannot_be_stolen",
+    },
+    {
+        "id": "MUT-D2",
+        "target": "S3 lock fallback put (FLAW-03 read-back ownership)",
+        "file": "apedp_dyn/epistemic/remote_storage.py",
+        "description": "parameter-rejection path skips the fallback put (acquire deadlocks)",
+        "find": "            if not isinstance(exc, (ValueError, TypeError, AttributeError)):\n                if not self._parameter_rejected(exc):\n                    return token, False",
+        "replace": "            if not isinstance(exc, (ValueError, TypeError, AttributeError)):\n                if not self._parameter_rejected(exc):\n                    return token, False\n            return token, False",
+        "pins": [PIN_ROUND3],
+        "pin_note": "test_flaw03_parameter_rejected_fallback_still_verifies_ownership",
+    },
+    {
+        "id": "MUT-D3",
+        "target": "CBF endpoint-headroom deficit split (FLAW-17)",
+        "file": "apedp_dyn/robotics/cbf_certificate.py",
+        "description": "revert to the least-change equal split (re-introduces the post-correction A1 violation)",
+        "find": "            kap_i = np.minimum(_budget(vi_d, nrm[idx_i[bad]]), d)\n            kap_j = np.minimum(d - kap_i, _budget(-vj_d, nrm[idx_j[bad]]))",
+        "replace": "            kap_i = d / 2.0\n            kap_j = d / 2.0",
+        "pins": [PIN_ROUND3],
+        "pin_note": "test_flaw17_cbf_final_projection_prevents_norm_violation",
+    },
+    {
+        "id": "MUT-D4",
+        "target": "re-anchor residual recovery + bootstrap (FLAW-08)",
+        "file": "apedp_dyn/epistemic/adjudicate.py",
+        "description": "drop the recovered paired series, force the point-estimate downgrade back",
+        "find": "                resid_best = np.asarray(_anchor_resid, dtype=float)\n                resid_rival = np.asarray(_runner_resid, dtype=float)\n                bootstrap = True",
+        "replace": "                resid_best = None\n                resid_rival = None\n                bootstrap = False",
+        "pins": [PIN_ROUND3],
+        "pin_note": "test_flaw08_re_anchor_runs_bootstrap_on_paired_residuals",
     },
 ]
 

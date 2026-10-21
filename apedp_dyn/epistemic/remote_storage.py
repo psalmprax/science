@@ -446,10 +446,18 @@ class S3StorageBackend(BaseStorageBackend):
             if is_precondition_failed:
                 return token, False
             # Older botocore rejects the unknown parameter before any request
-            # is sent; fall through to put-then-verify rather than looping.
+            # is sent. Fall back to an UNCONDITIONAL put whose take-over can
+            # still be detected: the immediate read-back only accepts our own
+            # unique token, so a racing write that overwrote us makes us lose
+            # and retry. Skipping the put here must never happen: without it
+            # the read-back can never see our token and acquire deadlocks.
             if not isinstance(exc, (ValueError, TypeError, AttributeError)):
                 if not self._parameter_rejected(exc):
                     return token, False
+            try:
+                self.client.put_object(Bucket=self.bucket, Key=lock_key, Body=payload)
+            except Exception:
+                return token, False
         # Read-back verification (also runs on the success path so a racing
         # write after our put is detected immediately).
         return self._verify_lock_ownership(lock_key, token)
