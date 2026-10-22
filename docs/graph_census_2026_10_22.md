@@ -49,11 +49,19 @@ recorded here as backlog categories, not promises:
 
 1. **Robotics proximity interaction graphs (k-NN / dynamic G(V, E(t)))
    in `cbf_certificate.py` / `multi_agent_transport.py`** — dense O(N²)
-   all-pairs broadcasting is exact and validated (CBF pins green); a
-   proximity graph is a performance optimization that would need
-   soundness re-verification of barrier certificates at reduced
-   connectivity. Backlog: profile first, upgrade only if N grows into
-   regimes where O(N²) actually dominates.
+   all-pairs broadcasting is exact and validated (CBF pins green). **Gate
+   decision 2026-10-22 measured and recorded**
+   (`docs/cbf_proximity_graph_backlog_gate.md`,
+   `benchmarks/cbf_scaling_profile_results.json`): the heuristic transport
+   stepper crosses a 5 ms real-time budget at N=32 — its first fix is
+   VECTORIZED pair-force computation (behavior-identical for the
+   heuristic; no certificate question), not a proximity graph; the
+   CERTIFIED QP holds real-time through N≈128, and proximity
+   restructuring activates only for production N ≥ 256 real-time
+   certified control AND a soundness proof that non-neighbor pairs cannot
+   violate barriers within the assumption box — because the certified
+   contract is all-pairs by definition and pruning AFTER the dense
+   barriers build buys nothing (the build alone is over budget at N=256).
 2. **Irregular mesh graphs for PDE DISCOVERY** — meshes and laplacians
    exist for FORWARD FEM solving (`apedp/meshing.py`, `pde_solvers.py`);
    the discovery surface is still structured-grid + Fornberg stencils.

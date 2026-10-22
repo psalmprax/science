@@ -4,6 +4,30 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — CBF proximity-graph backlog gate decision (2026-10-22)
+
+- **O(N²) profile recorded** (`benchmarks/run_cbf_scaling_profile.py`,
+  results in `benchmarks/cbf_scaling_profile_results.json`, gate record in
+  `docs/cbf_proximity_graph_backlog_gate.md`; status `audit-only`):
+  deterministic A3-guarded fixtures; the certified QP's factory-lemma
+  1-pass FLOOR isolated from adversarial-iteration growth — the all-pairs
+  barriers build + constraint sweep alone costs 9.9 ms at N=256 (43 ms at
+  N=512), with uniformly-random commands adding ≈8× more at N≥256; the
+  heuristic transport stepper costs ≈6 µs per Python pair invocation and
+  crosses the 5 ms real-time budget at N=32 (50 ms at N=128).
+- **Gate decision (criteria preregistered in the harness BEFORE
+  measuring)**: the heuristic path activates NOW at N≥32 — its first fix
+  is VECTORIZED pair-force computation (behavior-identical, no certificate
+  soundness question; a k-NN graph adds nothing a distance mask does
+  not); the certified path's proximity restructuring activates only for
+  production N ≥ 256 real-time certified control AND a soundness proof
+  that non-neighbor pairs cannot violate barriers within the assumption
+  box (pair-ratio counterfactuals 0.38→0.011 at k=4 recorded as
+  computational estimates only — pruning AFTER the dense barriers build
+  keeps the O(N²) floor, so a production structure must use a spatial
+  index instead). Certified code, pins and battery mutants untouched —
+  measurement + gate record only.
+
 ## [Unreleased] — Graph census verification and gap closure (2026-10-22)
 
 Response to the external master graph census. Verified ground truth
