@@ -120,6 +120,8 @@ class PdeMathModel:
             raise ValueError("PDE system model must declare at least one field variable")
         if len(set(self.fields)) != len(self.fields):
             raise ValueError("PDE field variables must be unique")
+        if len(set(self.independent_variables)) != len(self.independent_variables):
+            raise ValueError("PDE independent variables must be unique")
         if len(self.independent_variables) < 2:
             raise ValueError(
                 "PDE system model needs at least one temporal and one spatial "
