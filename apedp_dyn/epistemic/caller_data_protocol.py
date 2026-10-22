@@ -41,9 +41,10 @@ import datetime
 import json
 import os
 import tempfile
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from apedp_dyn.conf.canonical_spec import DSR_THRESHOLD
 from apedp_dyn.epistemic.experiment_ledger import (
@@ -246,7 +247,7 @@ def _validated_lead_record(caller_id: str, rec: Any) -> dict[str, Any]:
             f"{caller_id}: CONFIRMATION slice must be non-empty — "
             "a lead without a sealed confirmation cannot promote"
         )
-    if not isinstance(rec["consumed"], bool) or rec["consumed"] is False and rec["provenance"] is not None:
+    if not isinstance(rec["consumed"], bool) or (rec["consumed"] is False and rec["provenance"] is not None):
         raise CallerProtocolStateError(
             f"{caller_id}: unconsumed lead may not carry provenance"
         )
@@ -504,7 +505,7 @@ class CallerSplitProtocol:
         confirmation_verdict: ConfirmationVerdict,
         selection_verdict: Any,
     ) -> dict[str, Any]:
-        split, sealed = self._require_open_lead(caller_id)
+        _split, sealed = self._require_open_lead(caller_id)
         if not sealed.consumed:
             raise ConfirmationAlreadyConsumedError(
                 f"{caller_id}: archive refused — the sealed slice has not been consumed; "

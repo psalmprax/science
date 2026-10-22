@@ -51,7 +51,7 @@ K = 3.0
 
 
 def test_selects_analytic_divergence_optimum():  # D1 (selection half)
-    hyps, h1, _ = _quad_pair()
+    hyps, _h1, _ = _quad_pair()
     # gap(x) = |0.5x^2 - (0.5 - 0.2x)|; on the branch where h2 > h1 (x in
     # [-0.61, 0.41]) the gap is g(x) = 0.5 - 0.2x - 0.5x^2, maximized where
     # g'(x) = -0.2 - x = 0 -> x* = -0.2, g(x*) = 0.52. With flat noise and
@@ -110,7 +110,7 @@ def test_no_truth_leakage():  # D4
 
 
 def test_determinism():  # D5
-    hyps, h1, h2 = _quad_pair()
+    hyps, _h1, _h2 = _quad_pair()
     runs = [
         select_divergence_point(hyps, DOMAIN, lambda x: 0.05, lambda x: 1.0, budget=100.0)
         for _ in range(3)
@@ -120,7 +120,7 @@ def test_determinism():  # D5
 
 
 def test_closed_loop_resolves_within_budget():  # D1 (loop half)
-    hyps, h1, h2 = _quad_pair()
+    hyps, h1, _h2 = _quad_pair()
     rng = np.random.default_rng(7)
     x_pre = np.linspace(-0.9, 0.9, 20)
     y_pre = np.array([h1(x) for x in x_pre]) + rng.normal(0, 0.02, size=x_pre.shape)
@@ -140,7 +140,7 @@ def test_closed_loop_resolves_within_budget():  # D1 (loop half)
 
 
 def test_closed_loop_budget_starve_named():  # D3b (loop half)
-    hyps, h1, h2 = _quad_pair()
+    hyps, h1, _h2 = _quad_pair()
     rng = np.random.default_rng(7)
     x_pre = np.linspace(-0.9, 0.9, 20)
     y_pre = np.array([h1(x) for x in x_pre]) + rng.normal(0, 0.02, size=x_pre.shape)

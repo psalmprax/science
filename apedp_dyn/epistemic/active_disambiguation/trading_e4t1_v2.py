@@ -77,6 +77,26 @@ def _d5(sig: np.ndarray) -> np.ndarray:
     return np.asarray(pd.Series(sig).rolling(5).mean().shift(-5).to_numpy())
 
 
+def _train_blocks_no_leak(dates, origin: str) -> np.ndarray:
+    """FLAW-A01 (2026-10-21 external audit): train blocks with the 5-day
+    boundary excluded.
+
+    The ``_d5`` target forward-shifts the 5-day rolling mean (``shift(-5)``),
+    so a train block landing within 5 days of the origin boundary absorbs
+    forward out-of-sample data through the shifted window (rows
+    ``[origin-5, origin-1]`` read data from ``[origin, origin+4]``).
+    ``run_origin`` already applies the correct mask directly; the four other
+    train-block consumers (ensemble_gated, ensemble_m, incremental_info,
+    e5_market) previously intersected with the raw ``dates < origin`` mask
+    and leaked. This helper mirrors run_origin's mask so every consumer
+    shares one corrected definition: blocks strictly 5 days before the
+    origin boundary are the only admissible training rows.
+    """
+    tr = np.where((dates < origin).to_numpy())[0]
+    origin_idx = int(np.searchsorted(dates.to_numpy(), np.datetime64(origin), side="left"))
+    return np.intersect1d(_blocks(len(dates)), tr[tr + 5 < origin_idx])
+
+
 def _design(panel: pd.DataFrame, asset: str, coefs: dict[str, np.ndarray],
             idx: np.ndarray, target: np.ndarray) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
     """Predictions + residuals per hypothesis on index set (transfer-ready)."""

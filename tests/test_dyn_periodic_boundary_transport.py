@@ -31,11 +31,11 @@ if str(_REPO) not in sys.path:
     sys.path.insert(0, str(_REPO))
 
 from apedp.rust_bridge import RustKernelBridge
-from apedp_dyn.video.fluid_domain import _advect
 from apedp_dyn.video.decoupled_transport import (
     DecoupledSpatioTemporalTransport,
     DecoupledTransportConfig,
 )
+from apedp_dyn.video.fluid_domain import _advect
 from apedp_dyn.video.learned_flow_head import warp_frames
 
 

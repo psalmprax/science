@@ -36,15 +36,15 @@ import pytest
 
 from apedp_dyn.conf.canonical_spec import DSR_THRESHOLD
 from apedp_dyn.epistemic.caller_data_protocol import (
+    DYNAMIC_DSR_SHRINK,
     CallerComplianceError,
     CallerProtocolStateError,
     CallerRoleOverlapError,
     CallerSplitProtocol,
     ConfirmationAlreadyConsumedError,
     ConfirmationVerdict,
-    DYNAMIC_DSR_SHRINK,
-    multiplicity_from_ledger,
     mark_selection_reuse,
+    multiplicity_from_ledger,
     validate_caller_compliance,
 )
 from apedp_dyn.epistemic.experiment_ledger import (
@@ -70,7 +70,7 @@ def test_end_to_end_pool_on_A_confirmed_once_on_sealed_B():  # F1
     assert not (set(A) & set(B))  # register: "no shared slice"
     ledger = FullLineageExperimentLedger(persistence_path=None)
     proto = CallerSplitProtocol(ledger=ledger)
-    split, sealed = proto.issue_caller_split(
+    _split, sealed = proto.issue_caller_split(
         caller_id="dyn_caller_01", dataset_id="ds_leak_demo",
         selection_ids=A, confirmation_ids=B)
 
@@ -108,7 +108,7 @@ def test_overlapping_roles_refused_at_issue():  # F2
 
 def test_archive_requires_consumed_sealed_slice():  # F3 (negative half)
     proto = CallerSplitProtocol()
-    split, sealed = proto.issue_caller_split("c2", "ds", ["a"], ["b"])
+    _split, _sealed = proto.issue_caller_split("c2", "ds", ["a"], ["b"])
     dummy = ConfirmationVerdict(caller_id="c2", candidate_id="h", verdict=None)
     with pytest.raises(ConfirmationAlreadyConsumedError):
         proto.archive_promotion_verdict("c2", dummy, selection_verdict="x")
@@ -318,7 +318,6 @@ def test_ledger_write_failure_propagates_from_consume():  # F9 (no silent swallo
 
 def test_dsr_shrink_imported_from_canonical_spec_not_hardcoded():  # F10
     from apedp_dyn.epistemic.caller_data_protocol import (
-        DYNAMIC_DSR_SHRINK,
         multiplicity_from_ledger as mfl,
     )
 

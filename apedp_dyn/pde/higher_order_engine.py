@@ -22,7 +22,7 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -43,8 +43,8 @@ class HigherOrderPdeDiscoveryResult:
     temporal_order: int  # 1 for u_t, 2 for u_tt
     target_lhs: str      # "u_t" or "u_tt"
     formula: str
-    active_terms: Tuple[str, ...]
-    coefficients: Tuple[float, ...]
+    active_terms: tuple[str, ...]
+    coefficients: tuple[float, ...]
     r2_dev: float
     residual_rmse: float
     bic: float
@@ -127,7 +127,7 @@ def build_higher_order_dictionary_1d(
     periodic: bool = True,
     max_spatial_order: int = 4,
     include_nonlinear: bool = True,
-) -> Tuple[np.ndarray, np.ndarray, Dict[str, np.ndarray]]:
+) -> tuple[np.ndarray, np.ndarray, dict[str, np.ndarray]]:
     """Construct u_t, u_tt, and higher-order spatial candidate dictionary for 1D field u(T, X)."""
     if u.ndim != 2:
         raise ValueError(f"Expected 2D array (T, X), got shape {u.shape}")
@@ -142,7 +142,7 @@ def build_higher_order_dictionary_1d(
     ) / (12.0 * (dt ** 2))
     u_mid = u[2:-2]
 
-    terms: Dict[str, np.ndarray] = {}
+    terms: dict[str, np.ndarray] = {}
     if periodic:
         u_core = u_mid
         u_t = u_t_full.reshape(-1)
@@ -182,7 +182,7 @@ def build_higher_order_dictionary_2d(
     dy: float,
     max_spatial_order: int = 4,
     include_nonlinear: bool = True,
-) -> Tuple[np.ndarray, np.ndarray, Dict[str, np.ndarray]]:
+) -> tuple[np.ndarray, np.ndarray, dict[str, np.ndarray]]:
     """Construct u_t, u_tt, and 2D isotropic/anisotropic higher-order PDE dictionary for u(T, H, W)."""
     if u.ndim != 3:
         raise ValueError(f"Expected 3D array (T, H, W), got shape {u.shape}")
@@ -206,7 +206,7 @@ def build_higher_order_dictionary_2d(
     uyy = _spectral_derivative_1d(u_mid, dy, order=2, axis=-2)
     lap = (uxx + uyy).reshape(-1)
 
-    terms: Dict[str, np.ndarray] = {
+    terms: dict[str, np.ndarray] = {
         "u": u_flat,
         "u_t": u_t,
         "u_x": ux,
@@ -243,7 +243,7 @@ def _stridge_regression(
     sparsity_threshold: float = 0.02,
     ridge_alpha: float = 1e-6,
     max_iter: int = 12,
-) -> Tuple[Tuple[str, ...], Tuple[float, ...], np.ndarray]:
+) -> tuple[tuple[str, ...], tuple[float, ...], np.ndarray]:
     """Column-normalized Sequentially Thresholded Ridge Regression (STRidge) with OLS refit."""
     n_samples, n_terms = theta.shape
     col_norms = np.linalg.norm(theta, axis=0) / np.sqrt(max(1, n_samples))
@@ -296,8 +296,8 @@ def discover_higher_order_pde(
     u: np.ndarray,
     dt: float = 0.01,
     dx: float = 0.1,
-    dy: Optional[float] = None,
-    temporal_order: Optional[int] = None,
+    dy: float | None = None,
+    temporal_order: int | None = None,
     max_spatial_order: int = 4,
     periodic: bool = True,
     include_nonlinear: bool = True,
@@ -329,7 +329,7 @@ def discover_higher_order_pde(
         raise ValueError(f"Expected 2D (T, X) or 3D (T, H, W) field, got {u.shape}")
 
     orders_to_test = [temporal_order] if temporal_order in (1, 2) else [1, 2]
-    candidates: List[HigherOrderPdeDiscoveryResult] = []
+    candidates: list[HigherOrderPdeDiscoveryResult] = []
 
     for t_ord in orders_to_test:
         lhs_name = "u_t" if t_ord == 1 else "u_tt"
@@ -368,7 +368,7 @@ def discover_higher_order_pde(
                 max_ord_found = max(max_ord_found, 1)
 
         if active_terms:
-            rhs_str = " + ".join(f"{c:+.4f}*{name}" for name, c in zip(active_terms, coeffs))
+            rhs_str = " + ".join(f"{c:+.4f}*{name}" for name, c in zip(active_terms, coeffs, strict=True))
         else:
             rhs_str = "0.0"
         formula = f"{lhs_name} = {rhs_str}"
@@ -399,7 +399,7 @@ class HigherOrderPdeProposer(ProposerBase):
         self,
         dt: float = 0.01,
         dx: float = 0.1,
-        temporal_order: Optional[int] = None,
+        temporal_order: int | None = None,
         max_spatial_order: int = 4,
         periodic: bool = True,
         include_nonlinear: bool = True,
@@ -425,12 +425,12 @@ class HigherOrderPdeProposer(ProposerBase):
         self,
         dev_field: np.ndarray,
         compress_tt: bool = True,
-    ) -> Tuple[HigherOrderPdeDiscoveryResult, Sequence[CandidateProposal], Optional[Any]]:
+    ) -> tuple[HigherOrderPdeDiscoveryResult, Sequence[CandidateProposal], Any | None]:
         """Discover higher-order PDE on development field (T, X) or (T, H, W) or video (T, C, H, W).
 
         Never inspects holdout data or decides its own acceptance (AGENTS.md Rule 1.1).
         """
-        tt_summary: Optional[Dict[str, Any]] = None
+        tt_summary: dict[str, Any] | None = None
         if dev_field.ndim == 4 and compress_tt:
             # 4D video/field tensor (T, C, H, W): compress via JetFlow 4D Tensor-Train & analyze channel 0
             import torch
@@ -463,14 +463,14 @@ class HigherOrderPdeProposer(ProposerBase):
 
         cid_hash = hashlib.sha256(f"{res.formula}_{res.coefficients}".encode()).hexdigest()[:12]
         candidate_id = f"ho_pde_{cid_hash}"
-        param_dict = {term: float(coeff) for term, coeff in zip(res.active_terms, res.coefficients)}
+        param_dict = {term: float(coeff) for term, coeff in zip(res.active_terms, res.coefficients, strict=True)}
 
         def score_fn(eval_df: pd.DataFrame) -> np.ndarray:
             if "u" not in eval_df.columns:
                 return np.zeros(len(eval_df))
             return np.nan_to_num(eval_df["u"].to_numpy(dtype=np.float64), nan=0.0)
 
-        meta: Dict[str, Any] = {
+        meta: dict[str, Any] = {
             "temporal_order": res.temporal_order,
             "target_lhs": res.target_lhs,
             "max_spatial_order": res.max_spatial_order,
@@ -528,7 +528,7 @@ class HigherOrderPdeReferee:
         self._enforce_ultraviolet_stability = enforce_ultraviolet_stability
 
     @staticmethod
-    def check_ultraviolet_well_posedness(result: HigherOrderPdeDiscoveryResult) -> Tuple[bool, str]:
+    def check_ultraviolet_well_posedness(result: HigherOrderPdeDiscoveryResult) -> tuple[bool, str]:
         """Verify high-wavenumber (ultraviolet) Fourier symbol damping for parabolic/biharmonic PDEs.
 
         For 1st-order-in-time PDEs u_t = sum c_k d^k u / dx^k:
@@ -542,7 +542,7 @@ class HigherOrderPdeReferee:
         if result.temporal_order != 1:
             return True, "Hyperbolic 2nd-order temporal evolution (wave/dispersive)."
 
-        param_map = dict(zip(result.active_terms, result.coefficients))
+        param_map = dict(zip(result.active_terms, result.coefficients, strict=True))
         c4 = param_map.get("u_xxxx", param_map.get("biharmonic_lap2(u)", None))
         c2 = param_map.get("u_xx", param_map.get("laplacian(u)", None))
 
@@ -570,7 +570,7 @@ class HigherOrderPdeReferee:
         holdout_u: np.ndarray,
         dt: float = 0.01,
         dx: float = 0.1,
-        dy: Optional[float] = None,
+        dy: float | None = None,
         periodic: bool = True,
     ) -> HigherOrderPdeAdjudication:
         """Evaluate frozen discovered coefficients on a sealed holdout trajectory."""
@@ -597,7 +597,7 @@ class HigherOrderPdeReferee:
 
         target = u_t if result.temporal_order == 1 else u_tt
         pred = np.zeros_like(target)
-        for name, coeff in zip(result.active_terms, result.coefficients):
+        for name, coeff in zip(result.active_terms, result.coefficients, strict=True):
             if name in terms:
                 pred = pred + coeff * terms[name]
 

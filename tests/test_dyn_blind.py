@@ -138,6 +138,30 @@ def test_frr_coverage_and_domains():
     rep = score_blind(cases)
     assert rep.frr_blind == 0.5  # 1/2 warranted unpromoted
     assert rep.coverage_blind == 0.75  # A promoted, C promoted, D rejected
-    assert rep.by_domain["dyn"] == {"n": 2.0, "fpr": 0.0, "fdr": 0.0, "vrr": 0.5, "coverage": 0.5}
-    # fin: FPR = 1 FP / 2 negatives; FDR = 1 FP / 1 promotion.
-    assert rep.by_domain["fin"] == {"n": 2.0, "fpr": 0.5, "fdr": 1.0, "vrr": 0.0, "coverage": 1.0}
+    # FLAW-A13: "dyn" has no negative controls (both cases warranted) -> fpr
+    # is UNMEASURED (None), never a certified 0.0.
+    assert rep.by_domain["dyn"] == {"n": 2.0, "fpr": None, "fdr": 0.0, "vrr": 0.5, "coverage": 0.5}
+    # fin: FPR = 1 FP / 2 negatives; FDR = 1 FP / 1 promotion; no warranted
+    # cases -> vrr is None (FLAW-A13), not a certified 0% retention rate.
+    assert rep.by_domain["fin"] == {"n": 2.0, "fpr": 0.5, "fdr": 1.0, "vrr": None, "coverage": 1.0}
+
+
+def test_zero_denominator_domains_report_none_not_certified_zero():
+    """FLAW-A13 pin: zero-denominator per-domain metrics report None.
+
+    A domain with zero negative-control cases has NO measured false-positive
+    rate; reporting 0.0 falsely certifies a 0% FPR where no negative controls
+    exist. None must propagate exactly like the headline metrics (which
+    already report None on empty populations).
+    """
+    cases = [
+        BlindCase("WP1", "pos-only", True, _run3(True)),
+        BlindCase("UP1", "neg-only", False, _run3(False, rejected=True)),
+    ]
+    rep = score_blind(cases)
+    dom = rep.by_domain
+    # pos-only: warranted case promoted; no unwarranted -> fpr None.
+    assert dom["pos-only"] == {"n": 1.0, "fpr": None, "fdr": 0.0, "vrr": 1.0, "coverage": 1.0}
+    # neg-only: unwarranted case rejected; no warranted -> vrr None, and no
+    # promotions at all -> fdr None as well.
+    assert dom["neg-only"] == {"n": 1.0, "fpr": 0.0, "fdr": None, "vrr": None, "coverage": 1.0}

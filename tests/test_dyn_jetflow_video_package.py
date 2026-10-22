@@ -325,7 +325,7 @@ def test_four_architectural_pillars_95_readiness():
 
     depth_engine = DepthAware3DTransportEngine(latent_channels=12, hidden_dim=16)
     z_frame = torch.randn(2, 12, 8, 8)
-    depth, flow_3d, disocc = depth_engine.predict_depth_and_flow(z_frame)
+    depth, _flow_3d, _disocc = depth_engine.predict_depth_and_flow(z_frame)
     assert depth.shape == (2, 1, 8, 8)
     assert float(depth.min().item()) >= depth_engine.z_min
     assert float(depth.max().item()) <= depth_engine.z_max

@@ -13,7 +13,6 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 import numpy as np
-
 from scipy.interpolate import CubicSpline
 
 from apedp_dyn.video.tensor_train_video import TensorTrainVideo

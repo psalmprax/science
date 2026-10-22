@@ -28,6 +28,10 @@ Flaw map (external audit, docs/SYSTEM_FLAWS_AUDIT.md, 2026-10-21 round):
   FLAW-19 dead gradient / I_arr leak   -> test_flaw19_sir_formula_uses_physical_notation
   FLAW-06a pole masking (Rust)         -> rust test + text pin (pole flag + is_exact guard)
   FLAW-06b koopman centered R^2 (Rust) -> text pin (centered ss_tot + 0.0 floor)
+  FLAW-A01 d5 5-day lookahead (4 modules) -> test_flaw_a01_* (helper behavior + consumer text pins)
+  FLAW-A09 lag-buffer sibling overwrite -> tests/test_dyn_expanded_proposers_and_calibrated_power.py
+  FLAW-A13 zero-denominator 0.0 masking-> tests/test_dyn_blind.py (None, never certified 0.0)
+  FLAW-STRAITA raw-coefficient gauge   -> test_flaw_straita_* (implicit.rs text + bridge behavior)
 """
 from __future__ import annotations
 
@@ -121,7 +125,7 @@ class _RacyContestedClient:
         self._gets = 0
         self.store_body: bytes | None = None
 
-    def get_object(self, Bucket, Key):  # noqa: ARG002
+    def get_object(self, Bucket, Key):
         self._gets += 1
         if self._gets == 1:
             raise KeyError(Key)
@@ -132,7 +136,7 @@ class _RacyContestedClient:
         )
         return {"Body": _FakeBody(body)}
 
-    def put_object(self, Bucket, Key, Body, IfNoneMatch=None, **_kw):  # noqa: ARG002
+    def put_object(self, Bucket, Key, Body, IfNoneMatch=None, **_kw):
         if IfNoneMatch is not None:
             raise _ClientError(
                 "An error occurred (PreconditionFailed) when calling the "
@@ -142,7 +146,7 @@ class _RacyContestedClient:
         self.store_body = Body
         return {}
 
-    def delete_object(self, Bucket, Key):  # noqa: ARG002
+    def delete_object(self, Bucket, Key):
         self.store_body = None
         return {}
 
@@ -176,7 +180,7 @@ def _old_style_acquire(backend, key: str, timeout: float = 0.4) -> str:
                 lock_active = True
             else:
                 backend.client.delete_object(Bucket=backend.bucket, Key=lock_key)
-        except Exception:
+        except Exception:  # noqa: BLE001 — legacy acquire pinned verbatim; the blind catch is the defect under test
             lock_active = False
         if not lock_active:
             backend.client.put_object(
@@ -218,16 +222,16 @@ class _ParamRejectedFallbackClient:
     def __init__(self) -> None:
         self.last_put_body: bytes | None = None
 
-    def get_object(self, Bucket, Key):  # noqa: ARG002
+    def get_object(self, Bucket, Key):
         return {"Body": _FakeBody(self.last_put_body or b"")}  # read-back wins
 
-    def put_object(self, Bucket, Key, Body, IfNoneMatch=None, **_kw):  # noqa: ARG002
+    def put_object(self, Bucket, Key, Body, IfNoneMatch=None, **_kw):
         if IfNoneMatch is not None:
             raise ValueError("unknown parameter IfNoneMatch for method put_object")
         self.last_put_body = Body
         return {}
 
-    def delete_object(self, Bucket, Key):  # noqa: ARG002
+    def delete_object(self, Bucket, Key):
         self.last_put_body = None
         return {}
 
@@ -328,7 +332,6 @@ def _re_anchor_fixture(with_series: bool = True):
     from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 
     n = 60
-    t = np.arange(n)
 
     def scored(cid: str, train_loss: float, ho_rmse: float, signed_resid: np.ndarray, terms) -> ScoredCandidate:
         cand = CandidateDynamics(
@@ -379,8 +382,7 @@ def test_flaw08_re_anchor_runs_bootstrap_on_paired_residuals():
     (bootstrap forced False, residuals dropped) grants UNIQUE_SUPPORT — so
     reverting the fix flips the first assertion.
     """
-    from apedp_dyn.epistemic.adjudicate import adjudicate
-    from apedp_dyn.epistemic.adjudicate import EpistemicStatus
+    from apedp_dyn.epistemic.adjudicate import EpistemicStatus, adjudicate
 
     fitted, _a_signed, _b_signed = _re_anchor_fixture()
 
@@ -723,13 +725,13 @@ class _CountingBackend:
     def __init__(self) -> None:
         self.sync_calls = 0
 
-    def sync_to_remote(self, local_path, remote_key):  # noqa: ARG002
+    def sync_to_remote(self, local_path, remote_key):
         self.sync_calls += 1
 
-    def pull_from_remote(self, remote_key, local_path):  # noqa: ARG002
+    def pull_from_remote(self, remote_key, local_path):
         return False
 
-    def export_snapshot(self, local_path, snapshot_name=None):  # noqa: ARG002
+    def export_snapshot(self, local_path, snapshot_name=None):
         return str(local_path)
 
 
@@ -742,7 +744,6 @@ def test_flaw18_ledger_flock_and_amortized_sync(tmp_path):
     """
     from apedp_dyn.epistemic.experiment_ledger import (
         CandidateExperimentNode,
-        CandidateLifecycleState,
         FullLineageExperimentLedger,
     )
 
@@ -767,7 +768,6 @@ def test_flaw18_ledger_flock_and_amortized_sync(tmp_path):
     # racing-writer hammering).
     from concurrent.futures import ThreadPoolExecutor
 
-    state = CandidateLifecycleState.PROPOSED
     nodes = [
         CandidateExperimentNode(
             candidate_id=f"racer_{w:02d}_{k:02d}",
@@ -782,7 +782,7 @@ def test_flaw18_ledger_flock_and_amortized_sync(tmp_path):
         ledger._persist_append(node)
         return node.candidate_id
 
-    with ThreadPoolExecutor(max_workers=4) as pool:  # noqa: S110
+    with ThreadPoolExecutor(max_workers=4) as pool:
         list(pool.map(_append, nodes))
 
     lines = (tmp_path / "ledger.jsonl").read_text().strip().splitlines()
@@ -802,14 +802,14 @@ def test_flaw19_sir_formula_uses_physical_notation():
     from apedp_dyn.proposers.stem_proposers import CompartmentalSirProposer
 
     n_pop, dt, n_steps = 1_000_000.0, 1.0, 80
-    S, I, R = np.empty(n_steps), np.empty(n_steps), np.empty(n_steps)
-    S[0], I[0], R[0] = 0.99 * n_pop, 0.01 * n_pop, 0.0
+    S, I_pop, R = np.empty(n_steps), np.empty(n_steps), np.empty(n_steps)
+    S[0], I_pop[0], R[0] = 0.99 * n_pop, 0.01 * n_pop, 0.0
     for t in range(1, n_steps):
-        dS = -0.3 * S[t - 1] * I[t - 1] / n_pop * dt
-        dI = (0.3 * S[t - 1] * I[t - 1] / n_pop - 0.12 * I[t - 1]) * dt
-        S[t], I[t], R[t] = S[t - 1] + dS, I[t - 1] + dI, R[t - 1] - dS - dI
+        dS = -0.3 * S[t - 1] * I_pop[t - 1] / n_pop * dt
+        dI = (0.3 * S[t - 1] * I_pop[t - 1] / n_pop - 0.12 * I_pop[t - 1]) * dt
+        S[t], I_pop[t], R[t] = S[t - 1] + dS, I_pop[t - 1] + dI, R[t - 1] - dS - dI
     proposals = CompartmentalSirProposer(dt=dt).fit_and_propose(
-        pd.DataFrame({"S": S, "I": I, "R": R})
+        pd.DataFrame({"S": S, "I": I_pop, "R": R})
     )
     assert proposals, "SIR proposer must not abstain on the pinned fixture"
     formula = proposals[0].formula
@@ -896,3 +896,111 @@ def test_flaw01_documented_open_and_not_bypassed():
     assert disk_hash == PINNED_SPEC_SHA256
     # And the manifest is still NOT re-signed (no local forgery present).
     assert "a6d026f3" in manifest or disk_hash not in manifest
+
+
+# ---------------------------------------------------------------------------
+# FLAW-A01 (external audit, Set A item 01): the d5 target forward-shifts the
+# 5-day rolling mean, so train blocks within 5 days of the origin absorb
+# forward out-of-sample data. trading_e4t1(_v2).py already applied the mask
+# directly; ensemble_gated / ensemble_m / incremental_info / e5_market leaked.
+# Fixed by the shared _train_blocks_no_leak helper in trading_e4t1_v2.
+# ---------------------------------------------------------------------------
+
+
+def test_flaw_a01_corrected_mask_excludes_five_day_boundary_blocks():
+    """Pin: train blocks strictly 5 days before the origin boundary only.
+
+    Mutation demonstration: the raw ``dates < origin`` intersection (pre-fix
+    behavior) admits the boundary block that shift(-5) walks into forward
+    data; the corrected mask excludes it.
+    """
+    from apedp_dyn.epistemic.active_disambiguation.trading_e4t1_v2 import (
+        _blocks,
+        _train_blocks_no_leak,
+    )
+
+    dates = pd.Series(pd.date_range("2022-01-01", periods=40, freq="D"))
+    origin = "2022-01-21"  # boundary index 20
+    tb = _train_blocks_no_leak(dates, origin)
+    old_raw = np.where((dates < origin).to_numpy())[0]
+    old_tb = np.intersect1d(_blocks(len(dates)), old_raw)
+    # The pre-fix mask leaks the block at index 15 (15 + 5 == 20: its d5
+    # window reads rows 15..19 of the TARGET as the mean over rows 20..24 —
+    # forward out-of-sample data).
+    assert 15 in old_tb, "pre-fix behavior lost — the leak is no longer demonstrated"
+    assert all(b + 5 < 20 for b in tb)
+    assert np.array_equal(tb, np.array([0, 5, 10]))
+
+
+def test_flaw_a01_all_four_consumers_use_corrected_mask():
+    """Text pin: the four leaking train-block consumers share the fixed mask."""
+    rel_files = [
+        "apedp_dyn/epistemic/active_disambiguation/ensemble_gated.py",
+        "apedp_dyn/epistemic/active_disambiguation/ensemble_m.py",
+        "apedp_dyn/epistemic/active_disambiguation/incremental_info.py",
+        "apedp_dyn/epistemic/active_disambiguation/e5_market.py",
+    ]
+    old_pattern = "np.intersect1d(_blocks(len(dates)), tr)"
+    for rel in rel_files:
+        src = (REPO_ROOT / rel).read_text()
+        assert "_train_blocks_no_leak(dates, origin)" in src, (
+            f"{rel}: corrected FLAW-A01 mask not applied"
+        )
+        assert old_pattern not in src, (
+            f"{rel}: raw dates<origin train-block intersection (FLAW-A01) still present"
+        )
+        assert "FLAW-A01" in src, f"{rel}: FLAW-A01 rationale comment missing"
+
+
+# ---------------------------------------------------------------------------
+# FLAW-STRAITA (this round, implicit.rs exact-RMSE gate audit): the raw-space
+# max-coefficient gauge and the raw |c|>1e-6 active-count threshold were two
+# compensating anchored gauges in coefficient space; removing one exposed the
+# other, and at O(1e6)-scale strata the pair degenerated the true relation to
+# the constant-only "-1 = 0" fallback. Fixed by coherent contribution-space
+# gauges (see rust/apedp-kernel/src/rime/implicit.rs FLAW-STRAITA notes).
+# ---------------------------------------------------------------------------
+
+
+def test_flaw_straita_implicit_rs_raw_gauges_removed():
+    src = _kernel_source("rust/apedp-kernel/src/rime/implicit.rs")
+    assert "FLAW-STRAITA" in src, "gauge-removal rationale comment missing"
+    # The raw-coefficient rescale must be gone from BOTH application sites.
+    assert "let max_c = cand_c" not in src and "let max_c = best_c" not in src, (
+        "raw-space max-coefficient gauge reappeared (FLAW-STRAITA reverted)"
+    )
+    # Active membership must be judged in contribution space (ratio to the
+    # strongest contribution), not on raw |c| alone.
+    assert "if val.abs() > 1e-6 {" not in src, (
+        "raw-coefficient active-count threshold reappeared (FLAW-STRAITA reverted)"
+    )
+    assert "1e-6 * max_contrib" in src, (
+        "contribution-space membership criterion missing"
+    )
+
+
+def test_flaw_straita_extreme_scale_circle_certifies_not_degenerate():
+    """Bridge pin: a pure circle at O(1e6) strata must certify.
+
+    Under the gauges this round removed, the nullspace mapping surfaced
+    extreme-stratum terms with raw coefficients ~1e-12, the max_c gauge (or
+    the 1e-6 raw threshold) annihilated them, and the returned formula was the
+    constant fallback '-1 = 0' with rmse 1.0 (i.e. the gate refused a genuinely
+    exact relation).
+    """
+    apedp_kernel = pytest.importorskip("apedp_kernel")
+    th = np.linspace(0.0, 2.0 * np.pi, 200)
+    state_scale = 1e6
+    x = state_scale * np.cos(th)
+    y = state_scale * np.sin(th)
+    res = json.loads(apedp_kernel.rime_implicit_discover_json(
+        json.dumps(x.tolist()), json.dumps(y.tolist()),
+        json.dumps({"max_degree": 2, "include_cross_terms": False,
+                    "include_rational_products": False,
+                    "sparsity_threshold": 1e-3, "rcond_threshold": 1e-8}),
+    ))
+    assert res["is_exact_recovery"], (
+        f"pure 1e6-scale circle refused (formula: {res['formula']}, rmse: {res['algebraic_rmse']})"
+    )
+    assert res["algebraic_rmse"] < 1e-6, res["algebraic_rmse"]
+    assert res["formula"] != "-1.0000 = 0", res["formula"]

@@ -202,7 +202,8 @@ def detect_notebook() -> bool:
         if "google.colab" in str(shell.__class__):
             return True
         return False
-    except Exception:
+    except Exception as exc:  # noqa: BLE001 — platform probing: any failure means "not a notebook platform"
+        logger.debug("notebook platform detection failed: %r", exc)
         return False
 
 
@@ -240,7 +241,7 @@ def mount_google_drive(mount_point: str = "/content/drive", force_remount: bool 
         from google.colab import drive  # type: ignore[import-untyped]
         drive.mount(mount_point, force_remount=force_remount)
         return drive_root.exists()
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 — gdrive mounts raise heterogeneous colab/jupyter errors; bound and reported
         logger.warning("Failed to mount Google Drive: %s", exc)
         return False
 
@@ -262,7 +263,8 @@ def check_cuda_available() -> tuple[bool, str | None]:
             device_name = torch.cuda.get_device_name(0)
             return True, device_name
         return False, None
-    except Exception:
+    except Exception as exc:  # noqa: BLE001 — probe of optional torch/CUDA; absence is the normal outcome
+        logger.debug("GPU probe unavailable: %r", exc)
         return False, None
 
 
@@ -464,7 +466,7 @@ def ensure_kernel(
     if precompiled_wheel_url:
         try:
             logger.info("Attempting to install pre-compiled wheel from %s", precompiled_wheel_url)
-            subprocess.check_call(
+            subprocess.check_call(  # noqa: S603 — installs the operator-supplied wheel URL by design; argv list is fixed
                 [sys.executable, "-m", "pip", "install", "--no-cache-dir", precompiled_wheel_url]
             )
             if check_rust_kernel_available():
@@ -473,7 +475,7 @@ def ensure_kernel(
                 result["wheel_installed"] = True
                 result["message"] = "Successfully installed pre-compiled apedp_kernel wheel."
                 return result
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — wheel install: pip/packaging errors are heterogeneous by design
             logger.warning("Failed to install precompiled wheel: %s", exc)
 
     # Try auto-compiling if requested and cargo exists
@@ -490,8 +492,11 @@ def ensure_kernel(
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
-                subprocess.check_call(
-                    ["maturin", "develop", "--release"],
+                maturin_path = shutil.which("maturin")
+                if maturin_path is None:
+                    raise RuntimeError("maturin not found on PATH after pip install")
+                subprocess.check_call(  # noqa: S603 — maturin resolved via shutil.which; argv is a fixed list
+                    [maturin_path, "develop", "--release"],
                     cwd=str(rust_dir),
                 )
                 if check_rust_kernel_available():
@@ -500,7 +505,7 @@ def ensure_kernel(
                     result["compiled"] = True
                     result["message"] = "Successfully built apedp_kernel via maturin."
                     return result
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — maturin/cargo/packaging errors are heterogeneous by design
             logger.warning("Auto-compilation of apedp_kernel failed: %s", exc)
 
     if allow_pure_python_fallback:
@@ -605,7 +610,8 @@ def init_environment(
     try:
         import psutil  # type: ignore[import-untyped]
         mem_gb = psutil.virtual_memory().total / (1024 ** 3)
-    except Exception:
+    except Exception as exc:  # noqa: BLE001 — optional psutil; fallback reads /proc/meminfo below
+        logger.debug("psutil unavailable (%r); falling back to /proc/meminfo", exc)
         # Fallback reading /proc/meminfo on Linux
         try:
             if os.path.exists("/proc/meminfo"):
@@ -615,8 +621,8 @@ def init_environment(
                             kb = float(line.split()[1])
                             mem_gb = kb / (1024 * 1024)
                             break
-        except Exception:
-            pass
+        except Exception as exc2:  # noqa: BLE001 — best-effort memory reporting; N/A elsewhere
+            logger.debug("/proc/meminfo read failed: %r", exc2)
 
     config = NotebookRuntimeConfig(
         platform=platform,

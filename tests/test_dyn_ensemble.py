@@ -1,6 +1,14 @@
 """Pins for §§77-78: coupling replication table + M0-M3 ensemble table.
-Frozen data + deterministic OLS: values are regression pins. No claim that
-any member 'should' win; ensemble asserts utility, never mechanism.
+
+Re-minted by ERR-INC-74-79: re-derived under the corrected harness — F1 d5
+forward-shift fix (``68a3dadb``), forward-overlap purge (``3419425``) and A01
+no-leak train blocks (``9a73170``). Frozen data + deterministic OLS: values
+are regression pins. No claim that any member 'should' win; ensemble asserts
+utility, never mechanism. Substantive updates carried by the re-derivation:
+the coupling table now splits 3 stable / 3 drifting, H-A rank-1 counts rose
+across the board, and the "M2≈M3 everywhere" claim inverts on ETH/AVAX
+(rankV earns an incremental place; the spread is capped and pinned).
+Forensics doc §80c carries the erratum table.
 """
 
 import pytest
@@ -22,29 +30,33 @@ def _panels():
 
 
 def test_coupling_replication_classes():
-    expected = {"BTC": "stable-ambiguous", "ETH": "drifting", "SOL": "drifting",
-                "BNB": "drifting", "DOGE": "drifting", "AVAX": "drifting"}
+    expected = {"BTC": "stable-ambiguous", "ETH": "stable-ambiguous",
+                "SOL": "stable-ambiguous", "BNB": "drifting",
+                "DOGE": "drifting", "AVAX": "drifting"}
     for a in ASSETS:
         _, traj = M.run_coupling(_panels(), a)
         assert classify(traj) == expected[a]
 
 
 def test_coupling_ha_counts():
-    expected = {"BTC": 1, "ETH": 1, "SOL": 1, "BNB": 0, "DOGE": 3, "AVAX": 5}
+    expected = {"BTC": 3, "ETH": 3, "SOL": 5, "BNB": 1, "DOGE": 7, "AVAX": 6}
     for a in ASSETS:
         rows, _ = M.run_coupling(_panels(), a)
         assert sum(s == "H-A" for s in rows[-1].rank_sequence) == expected[a]
 
 
 def test_ensemble_table():
-    expected_d = {"BTC": 0.1361, "ETH": 0.0393, "SOL": 0.0577,
-                  "BNB": 0.0342, "DOGE": 0.0064, "AVAX": -0.0979}
+    expected_d = {"BTC": 0.0913, "ETH": 0.0643, "SOL": 0.0906,
+                  "BNB": 0.0970, "DOGE": -0.0237, "AVAX": -0.1120}
     for a in ASSETS:
         r = run_asset({a: _panels()[a]}, a)
         assert r.n_origins == 11
         assert abs(r.r2["M_hist"]) < 1e-9
         assert abs(r.delta_m3_m0 - expected_d[a]) < 1e-3
-        assert abs(r.r2["M2"] - r.r2["M3"]) < 0.03  # rankV adds ~nothing once H-A present
+        # ERR-INC-74-79: M2≈M3 no longer holds universally under the
+        # corrected target — ETH (+.0408) and AVAX (+.0721) earn an
+        # incremental rankV place. The spread is capped and pinned.
+        assert abs(r.r2["M2"] - r.r2["M3"]) < 0.08
 
 
 def test_coupling_no_promotions():

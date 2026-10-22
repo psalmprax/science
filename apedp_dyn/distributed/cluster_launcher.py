@@ -32,7 +32,7 @@ class ClusterJobSpec:
     gpus_per_worker: int = 0
     walltime_hours: int = 4
     shared_storage_dir: str = "/mnt/apedp_storage"
-    local_scratch_dir: str = "/tmp/scratch"
+    local_scratch_dir: str = "/tmp/scratch"  # noqa: S108 — per-node scratch/config default, never a file write; env override supported
     container_image: str = "ghcr.io/owner/science:latest"
     slurm_partition: str = "compute"
 

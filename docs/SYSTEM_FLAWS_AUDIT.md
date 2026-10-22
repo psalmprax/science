@@ -8,15 +8,30 @@ execution. Remediation performed the same day, also execution-verified.
 
 ## 2026-10-21 round — status matrix
 
-- FLAW-01 governance manifest SHA desync — **OPEN (trustee-blocked)**: the
-  Ed25519 quorum in `specifications/governance_manifest.json` still seals the
-  deprecated spec hash `a6d026…` while disk computes a later hash. Re-signing
-  requires the authorized trustee PRIVATE keys, which live outside this
-  repository; per AGENTS §1.2/§1.3 the panel must never bypass or re-mint the
-  manifest locally. Earlier root-cause diagnosis stands: post-certification
-  spec edits without re-certification (`pruning_holdout_*` block). The FLAW-13
+- FLAW-01 governance manifest SHA desync — **OPEN (trustee-blocked; ceremony
+  mechanism now UNBLOCKED, 2026-10-22)**: the Ed25519 quorum in
+  `specifications/governance_manifest.json` still seals the deprecated spec
+  hash `a6d026…` while disk computes a later hash. Re-signing requires the
+  authorized trustee PRIVATE keys, which live outside this repository; per
+  AGENTS §1.2/§1.3 the panel must never bypass or re-mint the manifest
+  locally. Earlier root-cause diagnosis stands: post-certification spec edits
+  without re-certification (`pruning_holdout_*` block). The FLAW-13
   spec-centralization edit below extended the desync scope with full §1.3
   procedural compliance (new pinned hash + CHANGELOG rationale).
+  **2026-10-22 structural gap closed (mechanism only):** the re-certification
+  PROCEDURE now exists and is pinned —
+  `scripts/run_governance_remint_ceremony.py` (audit-only, fail-closed:
+  `--status` / `--request` / `--collect` / `--mint`), verified against the
+  REGISTERED public keys only, chaining `PREREGISTRATION_RECERTIFICATION`
+  entries through the production transparency-log API and writing the
+  manifest only after full production verification + quorum. It never
+  generates keys, never forges signatures, never touches the spec JSON, and
+  refuses to run on pin disagreement. Pinned in
+  `tests/test_dyn_governance_remint_ceremony.py` (5 pins: sandbox end-to-end
+  re-certification, forgery/unregistered refusals, below-quorum refusal,
+  pin-drift fail-closed, and the live-repo guard proving the repo CANNOT be
+  minted without real trustees). Only the external signature ceremony with
+  the two registered trustees remains to flip the red.
 - FLAW-02 coupled ODE proposer discarded discovered RHS — **FIXED**:
   `apedp_dyn/ode/proposer.py` now evaluates `sum(coeff · basis(x))` over the
   kernel's term encoding; verified RMSE 0.0000 vs the true derivative
@@ -127,6 +142,110 @@ execution. Remediation performed the same day, also execution-verified.
 
 Verification: Rust-side fixes pass `cargo test` (186/186) and every affected
 Python suite re-run is recorded in the 2026-10-21 CHANGELOG entry.
+
+---
+
+## 2026-10-21 follow-through round (Set A sweep + FLAW-STRAITA)
+
+Independent verification audit of the items above plus the historical Set A
+catalog, with line-by-line confirmation. Final remaining items addressed (or
+honestly re-documented) the same day, execution-verified:
+
+- FLAW-A01 active 5-day lookahead in 4 train-block consumers — **FIXED**:
+  `ensemble_gated.py`, `ensemble_m.py`, `incremental_info.py` and `e5_market.py`
+  built train blocks as `np.intersect1d(_blocks(len(dates)), tr)` with the raw
+  `dates < origin` mask, while the `_d5` target forward-shifts the
+  5-day rolling mean (`shift(-5)`); blocks landing within 5 days of the origin
+  boundary `[origin-5, origin-1]` read forward rows `[origin, origin+4]` —
+  look-ahead contamination of every fit in those modules. Fixed by the shared
+  helper `trading_e4t1_v2::_train_blocks_no_leak` (mirrors `run_origin`'s
+  original corrected mask `tr[tr + 5 < origin_idx]`), applied at every train
+  block call site in the four modules. Pins:
+  `tests/test_dyn_external_audit_2026_10_21_pins.py::
+  test_flaw_a01_corrected_mask_excludes_five_day_boundary_blocks`
+  (behavioral, with the pre-fix leak demonstrated inline) and
+  `…::test_flaw_a01_all_four_consumers_use_corrected_mask` (text pin).
+- FLAW-A09 sibling lag-term buffer overwrite in streaming scoring — **FIXED**:
+  `apedp_dyn/proposers/distributed_lag_interaction_proposer.py::compute_score`
+  wrote `lag_state["buffers"][base_col]` on the FIRST lag term of a call, so a
+  second lag term on the same base column (`lag_1_x` + `lag_2_x` both selected)
+  read that same call's own tail as prior history and prepended future batch
+  data to the head of the array (both on the full frame and in every chunk).
+  The buffer is now snapshotted pre-call per (call, base column) and written
+  once per (call, base column). Pin:
+  `tests/test_dyn_expanded_proposers_and_calibrated_power.py::
+  test_distributed_lag_multi_lag_same_column_streaming_safe`
+  (chunked == single-pass with two lag terms sharing one column).
+- FLAW-A13 zero-denominator blind metrics masked as certified 0.0 — **FIXED**:
+  `apedp_dyn/sandbox/blind_benchmark.py` per-domain breakdowns reported
+  `fpr: 0.0` when a domain had zero negative controls (and likewise
+  `fdr`/`vrr` on empty denominators) — falsely certifying a 0% error rate
+  where nothing was measured. The per-domain metrics now report `None` on a
+  zero denominator, matching the headline metrics' existing convention; the
+  affected pins updated to the honest contract. Pins:
+  `tests/test_dyn_blind.py::test_zero_denominator_domains_report_none_not_certified_zero`
+  plus the repaired `test_frr_coverage_and_domains`.
+- FLAW-B01 governance quorum desync — **STILL OPEN (trustee-blocked)**:
+  unchanged from FLAW-01 above: the manifest still seals the deprecated spec
+  hash while the disk spec hashes differently; re-signing requires trustee
+  private keys outside this repository. Documented, not bypassed.
+- FLAW-STRAITA (exact-RMSE gate audit, this session)
+  — **FIXED**: auditing MUT-E4's survival in
+  `scripts/run_mutation_battery.py` exposed that `rime/implicit.rs` still
+  carried two COMPENSATING anchored gauges in raw-coefficient space: (1) a
+  `max_c = max|c_j|` rescale applied AFTER the strata-coherent
+  `c_j = v_j/norm_j` mapping (raw coefficients span strata: const ~O(1/√n) vs
+  x² ~O(1/norm); at O(1e6)-scale strata the gauge
+  annihilated the small-coefficient large-stratum terms and the pure 1e6
+  circle degenerated to the constant-only fallback `-1 = 0` with rmse 1.0 —
+  refusing a genuinely exact relation), and (2) a raw `|c_j| > 1e-6`
+  active-count recount that the max_c gauge had been accidentally inflating
+  above threshold. Removing only (1) exposed (2)
+  (`test_large_scale_exact_relation_certifiable` failed with rmse 3.6e-17);
+  both gauges were replaced by contribution-space equivalents inside one
+  coherent rule: no further normalization after `v/norm` (the Jacobi
+  eigenvector is already 2-normalized), and membership by contribution ratio
+  (`|c_j|·norm_j > 1e-6 · max_j(|c_j|·norm_j)`). Post-fix probes (rebuilt
+  extension): pure 1e6 circle certifies at rmse 4.1e-17, near-zero-scale pure
+  circle 1.6e-18, unit circle 5.7e-16 unchanged; MUT-E4's kill is restored on
+  the natural near-miss fixture (pristine refuses the 3.16e-12 sin(2θ) misfit
+  at rmse 1.58e-8 > contracted ceiling; the mutant's inflated ceiling
+  certifies it, the conditional pin rejects the leaked certificate).
+  Pins: `test_flaw_straita_implicit_rs_raw_gauges_removed` (text) and
+  `test_flaw_straita_extreme_scale_circle_certifies_not_degenerate` (bridge).
+
+Verification round: `cargo test --lib` 193/193; mutation battery
+ALL CONFIGURED MUTANTS KILLED (MUT-E4 back among them);
+`scripts/check.sh` full tier green end-to-end (tier-1 pytest 125 passed,
+battery all-killed, Rust 193/193); pins 27/27; blind + expanded-proposers
+suites 24 passed.
+
+### Code-only external rating (8.1/10) — blocker-list closure mapping
+
+A subsequent code-only external assessment rated the system 8.1/10 and
+listed "what prevents 9.0+" as four verified code flaws. Same-day closure
+mapping (source-verified, 2026-10-21):
+
+1. "Active Lookahead Leakage in 4 Modules" — RESOLVED above (FLAW-A01):
+   the raw `np.intersect1d(_blocks(len(dates)), tr)` pattern has ZERO hits
+   in the package; all four modules go through
+   `trading_e4t1_v2::_train_blocks_no_leak`, pinned by
+   `test_flaw_a01_corrected_mask_excludes_five_day_boundary_blocks` and
+   `test_flaw_a01_all_four_consumers_use_corrected_mask`.
+2. "Distributed Lag Buffer Keying" — RESOLVED above (FLAW-A09): buffers are
+   snapshotted pre-call and written once per (call, base column); pinned by
+   `test_distributed_lag_multi_lag_same_column_streaming_safe`.
+3. "Benchmark Division-by-Zero Semantics" — RESOLVED above (FLAW-A13):
+   per-domain fpr/fdr/vrr report `None` on zero denominators; pinned by
+   `test_zero_denominator_domains_report_none_not_certified_zero`.
+4. "Governance Manifest Re-Signing" — REMAINS OPEN (trustee-blocked):
+   re-verified live — `tests/test_dyn_governance.py` runs 3 passed / 1
+   failed with `GovernanceTamperingError: Specification SHA-256 mismatch:
+   manifest specifies a6d026…, but actual disk file computes to 5bb42f…`
+   (the disk hash matches `canonical_spec.py`'s import pin, per FLAW-01
+   above). Resolution requires renewed trustee Ed25519 signatures held
+   outside this repository; per AGENTS §1.2/§1.3 the manifest is never
+   re-minted or bypassed locally.
 
 ---
 
@@ -354,7 +473,7 @@ docstring (not-a-certified-CBF-QP disclosure, test-pinned).
 
 | ID | Status | Evidence / remaining work |
 | --- | --- | --- |
-| REG-MUT | **CLOSED-WITH-EVIDENCE** | `scripts/run_mutation_battery.py` (dependency-free battery, byte-identical-restoration invariant, hard-fail exit), report `benchmarks/mutation_battery_report.json` (status ALL_KILLED, 14/14 mutants, sanity-verified pristine pins), CI gate `mutation-battery` job in `.github/workflows/test.yml` + `scripts/check.sh` full tier. **2026-10-21 extension:** the external 19-flaw remediation pins (`tests/test_dyn_external_audit_2026_10_21_pins.py`, 23 tests, each carrying an inline old-semantics mirror) are wired into the battery as MUT-D1..D4 — S3 conditional-put take-over (FLAW-03), fallback-put deadlock (FLAW-03), CBF budget-aware deficit split (FLAW-17), re-anchor residual recovery (FLAW-08). **2026-10-21 rust-kernel extension:** the battery's pin runner now accepts literal argv (`cargo test --lib` recompiles from mutated source, so pins see the mutation without touching the installed maturin extension) and the cargo pins cover MUT-E1 (Fornberg weight sign, FLAW-04), MUT-E2 (uniformity-gate route, FLAW-04), MUT-E3/E3b (pole-mask flag drop on the 2nd-/1st-order rollout branches, FLAW-06), MUT-E4 (constant column back into the exact-RMSE ceiling, FLAW-12), MUT-E6 (raw multi-stratum Gram eigensolve, FLAW-15); battery re-run kills all fourteen. **Honesty trail #1:** MUT-C1 (hawkes eval-frame-leak mutant) SURVIVED the first run because the inherited dynamic pin scored a fit/eval-identical frame, exposing a real coverage gap; the pin was SHARPENED (`tests/test_dyn_hawkes_standardization_pins.py`), never weakened, and the battery re-run kills it. **Honesty trail #2:** the pin runs surfaced three REAL defects inside the v1 remediations themselves — the wrong-structured Fornberg recurrence (FLAW-04, fixed by mirroring the proven Python reference), the provably-insufficient global re-scale in the CBF close-out (FLAW-17, fixed by endpoint-headroom deficit distribution), and the scale-blind eigensolve behind the FLAW-15 relative gate (fixed by correlation-space congruence + spectral normalization). **Honesty trail #3:** an absolute-tolerance-gate mutant (MUT-E5 candidate) was registered and GREW no natural kill after the v2 rime fixes — the defect expression it targeted is dissolved by the corrected eigensolve — so it was removed with its rationale recorded in the battery rather than shipped as a silent survivor. |
+| REG-MUT | **CLOSED-WITH-EVIDENCE** | `scripts/run_mutation_battery.py` (dependency-free battery, byte-identical-restoration invariant, hard-fail exit), report `benchmarks/mutation_battery_report.json` (status ALL_KILLED, 15/15 mutants, sanity-verified pristine pins), CI gate `mutation-battery` job in `.github/workflows/test.yml` + `scripts/check.sh` full tier. **2026-10-21 extension:** the external 19-flaw remediation pins (`tests/test_dyn_external_audit_2026_10_21_pins.py`, 23 tests, each carrying an inline old-semantics mirror) are wired into the battery as MUT-D1..D4 — S3 conditional-put take-over (FLAW-03), fallback-put deadlock (FLAW-03), CBF budget-aware deficit split (FLAW-17), re-anchor residual recovery (FLAW-08). **2026-10-21 rust-kernel extension:** the battery's pin runner now accepts literal argv (`cargo test --lib` recompiles from mutated source, so pins see the mutation without touching the installed maturin extension) and the cargo pins cover MUT-E1 (Fornberg weight sign, FLAW-04), MUT-E2 (uniformity-gate route, FLAW-04), MUT-E3/E3b (pole-mask flag drop on the 2nd-/1st-order rollout branches, FLAW-06), MUT-E4 (constant column back into the exact-RMSE ceiling, FLAW-12), MUT-E6 (raw multi-stratum Gram eigensolve, FLAW-15); battery re-run kills all fifteen. **Honesty trail #1:** MUT-C1 (hawkes eval-frame-leak mutant) SURVIVED the first run because the inherited dynamic pin scored a fit/eval-identical frame, exposing a real coverage gap; the pin was SHARPENED (`tests/test_dyn_hawkes_standardization_pins.py`), never weakened, and the battery re-run kills it. **Honesty trail #2:** the pin runs surfaced three REAL defects inside the v1 remediations themselves — the wrong-structured Fornberg recurrence (FLAW-04, fixed by mirroring the proven Python reference), the provably-insufficient global re-scale in the CBF close-out (FLAW-17, fixed by endpoint-headroom deficit distribution), and the scale-blind eigensolve behind the FLAW-15 relative gate (fixed by correlation-space congruence + spectral normalization). **Honesty trail #3:** an absolute-tolerance-gate mutant (MUT-E5 candidate) was registered and GREW no natural kill after the v2 rime fixes — the defect expression it targeted is dissolved by the corrected eigensolve — so it was removed with its rationale recorded in the battery rather than shipped as a silent survivor. |
 | REG-F14/F14b | **CLOSED-WITH-EVIDENCE (mode (b) wiring landed; mode (a) NOW operationally wired — blind_benchmark first census caller)** | Reference implementation (`docs/CALLER_DATA_THREE_ROLE_PROTOCOL.md`, `apedp_dyn/epistemic/caller_data_protocol.py`, `tests/test_dyn_caller_data_protocol.py`, 7 pins incl. the register's end-to-end sealed-slice-B letter) PLUS the per-caller wiring gate the register demanded: the production-caller census `apedp_dyn/epistemic/caller_registry.py` (6 callers: dyn_sweep, multi_asset_signals, real_market_l2_sweep, blind_benchmark, calibrated_benchmark_suite, canonical_ledger), each wired with a `publish_caller_compliance_record` publisher in its module and validated at publish time; selection-stage exposure hook (`record_selection_exposure`) makes the derived multiplicity LIVE. Pins `tests/test_dyn_caller_compliance_wiring.py` (12): census closure/publishers, per-caller mode-(b) validation, missing/unknown/duplicate-refusal, reuse charge flow (`mark_selection_reuse` → effective n inflates), hand-written multiplicity refusal, end-to-end wiring letter — PLUS four mode-(a) operational pins: sealed split issued over the caller's OWN real slice ids (`issue_sealed_confirmation_lead`, census/dataset-family-checked), blind confirmation slice consumed EXACTLY ONCE through the real `evaluate_confirmation_cases` scoring path (frozen-referee-checked, unknown ids refused), publication REFUSED while the slice is unconsumed or with foreign provenance, and the spent slice cannot be re-watched by a second candidate; the published sealed record (mode (a), one-shot provenance, `archived_verdict_source = "confirmation"`, selection superseded) validates under the same F14b validator. **Honest boundary:** the five remaining census callers stay published in mode (b) by default and the blind suite's mode-(a) record is demonstrated at wiring level through the pinned registration/consumption/archive/publish path — a LIVE production promotion claim through the sealed slice is still pending and is disclosed as such, not silently claimed. External epistemic sign-off (register source) remains the outstanding step. **Restart durability (2026-10-20):** sealed-slice consumption is now durable across process restarts — issued leads and consumption provenance persist to an atomic state file (`caller_lead_protocol_state.json`, path explicit or derived from the ledger's persistence directory), the slice is claimed spent BEFORE evaluation so a mid-evaluation crash cannot resurrect it, re-issue/re-consume after restart is refused from the durable record, and a corrupt store fails CLOSED (`CallerProtocolStateError`, no silent memory-only fallback). Ledger exposure writes are FAIL-CLOSED (the prior silent except-and-pass is removed: write failures propagate; an unregistered candidate is refused before the sealed slice is spent). The mode-(b) `dsr_shrink` disclosure imports the preregistered `DSR_THRESHOLD` from the hash-verified canonical spec (spec JSON unmodified — it is quorum-signed; a value change requires a re-signed revision). The one-shot guarantee remains in-memory-only ONLY where no durable state path resolves (in-memory unit pins), disclosed as a unit-use limitation. **Pre-existing, retroactively disclosed (outside this register's mandated suite):** `tests/test_dyn_governance.py::test_canonical_repository_governance_manifest_valid` fails at the committed tip independent of this work — `specifications/governance_manifest.json` pins spec SHA `a6d026…` while the spec on disk hashes `a11fd957…` (matching `canonical_spec.py`'s import-time pin); resolution requires renewed trustee certification, not a code edit, and is disclosed rather than claimed. |
 | REG-F16 | **CLOSED-WITH-EVIDENCE (formal certificate artifact; external safety sign-off still outstanding)** | `apedp_dyn/robotics/cbf_certificate.py` + `tests/test_dyn_cbf_certificate.py` (8 pins) + artifact `benchmarks/cbf_certificate_report.json` (`benchmarks/run_cbf_certificate_battery.py`, exit 0). FORMAL scope (machine-checked under the explicit assumption object, which refuses γ·dt > 0.5 etc.): pairwise barrier h = dist − r_safe; certificate-by-construction for every released command (every release re-checked fail-closed), closed-form factory feasibility lemma (identical velocities ⇒ the QP set is never empty ⇒ alternating projections converge), projection-optimality containment vs the feasible zero command, discrete forward invariance h_{k+1} ≥ (1−γdt)h_k > 0 over certified Euler horizons (4 envs × 120 steps pinned), 64 certified releases verified with worst slack −3.3e-16. SCALED-VERIFICATION layer (same formal checks re-verified at larger grids under the same assumption object with `max_agents=128`, in-scope): 16/32/64/128-agent deterministic jittered-lattice grids (A3 margin assertion-checked) — 1440 additional releases fail-closed-verified (worst slack −9.91e-10 ≥ −tol at 128 agents), Euler forward invariance h > 0 at every step on every scale, and the REALIZED guard (certify → `unicycle_commands_from_certified` → PRODUCTION `batch_unicycle_arc_step`) collision-free at every scale under the physically-consistent realized-velocity-feedback nominal discipline (128-agent realized min barrier 0.3919). Guard latencies recorded as WALL-CLOCK measurements (measurement of the environment that ran the battery, explicitly NOT guarantees): mean guard 0.32/0.48/0.99/2.97 ms and mean guard+stepper step 0.60/0.77/1.31/3.39 ms at 16/32/64/128 agents. DISCLOSED SCOPE PROBE (recorded verbatim, not exit-affecting): fresh full-range random nominals redrawn every step at 128 agents are OUTSIDE the realized layer's evidence (deterministic breach: min barrier −0.1102, 17 collision steps) — the realized layer remains model-checked EVIDENCE scenario-scoped (deadlock / realized-feedback disciplines), never a formal claim. MODEL-CHECKED baseline kept: adversarial symmetric head-on sweeps — min barrier 0.3588, 0 collisions. `batch_multi_agent_cbf_step` is UNTOUCHED and its not-a-certified-CBF disclosure stays pinned; `certified_cbf_guard` is additive. External safety sign-off (register source) remains the outstanding review step. |
 | REG-LEAN | **CLOSED-WITH-EVIDENCE (pinned-toolchain reproduction; physically-external provision still outstanding)** | `scripts/run_lean_pinned_reproduction.py` + artifact `benchmarks/lean_pinned_toolchain_reproduction.json`: ALL 323/323 records reproduced (proof_claim_status + kernel_exit_code per candidate) under the independently provisioned pinned toolchain `leanprover--lean4---v4.34.1` (commit `5045d0056413266e57c625dcd7c365b10e377c52`) vs the reference run's v4.35.0 (`eb6cafb7…`); counts match (323/315/8/0). Byte-identical restoration of the reference artifact AND the committed `.lean` evidence verified (the script restores HEAD-committed bytes — a bare regeneration silently corrupts the remediated u15 honest disclosure back into a vacuous theorem, caught and fixed). **Root-cause fix landed:** the reference sweep itself was re-produceable only after raising the bridge's 15/25 s compile subprocess timeouts to 240 s — under 8-way contention the two heaviest fluid-cell files were being wall-clock-killed to P1 (exit −1) while compiling clean standalone; disclosed in `CHANGELOG.md`. The register's "outside this environment" EXTERNAL provisioning/sign-off remains the outstanding step and is not claimed here. |

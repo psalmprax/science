@@ -164,7 +164,7 @@ def compute_pareto_frontier(
 
     for i, (cand_a, vals_a) in enumerate(valid_candidates):
         is_dominated = False
-        for j, (cand_b, vals_b) in enumerate(valid_candidates):
+        for j, (_cand_b, vals_b) in enumerate(valid_candidates):
             if i == j:
                 continue
 

@@ -22,7 +22,12 @@ import numpy.linalg as la
 import pandas as pd
 
 from apedp_dyn.epistemic.active_disambiguation.ensemble_gated import qlike
-from apedp_dyn.epistemic.active_disambiguation.trading_e4t1_v2 import ORIGINS, _blocks, _d5
+from apedp_dyn.epistemic.active_disambiguation.trading_e4t1_v2 import (
+    ORIGINS,
+    _blocks,
+    _d5,
+    _train_blocks_no_leak,
+)
 
 COMBOS = ("P", "RV", "A", "P+RV", "P+A", "P+RV+A")
 MEMBERS = {"P": ("sig",), "RV": ("rankV",), "A": ("HA",),
@@ -99,9 +104,10 @@ class AssetBattery:
 
 def _origin_data(a: pd.DataFrame, tgt: np.ndarray, dates: pd.Series, origin: str):
     nxt = str(pd.Timestamp(origin) + pd.offsets.MonthBegin(1))
-    tr = np.where((dates < origin).to_numpy())[0]
     fw = np.where((dates >= origin).to_numpy() & (dates < nxt).to_numpy())[0]
-    tb = np.intersect1d(_blocks(len(dates)), tr)
+    # FLAW-A01: d5 carries a forward 5-day span; train blocks within 5 days
+    # of the origin leak forward data through shift(-5).
+    tb = _train_blocks_no_leak(dates, origin)
     fb = np.intersect1d(_blocks(len(dates)), fw)
     return tb, fb
 
@@ -211,9 +217,9 @@ def _forward_contrast(a: pd.DataFrame, tgt: np.ndarray, dates: pd.Series, order:
               for o in ORIGINS]
     for k, origin in enumerate(ORIGINS):
         nxt = str(pd.Timestamp(origin) + pd.offsets.MonthBegin(1))
-        tr = np.where((dates < origin).to_numpy())[0]
         fw = np.where((dates >= origin).to_numpy() & (dates < nxt).to_numpy())[0]
-        tb = np.intersect1d(_blocks(len(dates)), tr)
+        # FLAW-A01: same corrected mask as run_asset above.
+        tb = _train_blocks_no_leak(dates, origin)
         fb = np.intersect1d(_blocks(len(dates)), fw)
         Ct, yt = {c: a[c].to_numpy()[tb] for c in ("sig", "rankV", "HA")}, tgt[tb]
         okt = np.isfinite(yt) & np.isfinite(Ct["sig"]) & np.isfinite(Ct["rankV"]) & np.isfinite(Ct["HA"])

@@ -336,8 +336,8 @@ def generate_power_curve_matrix(
 def publish_caller_compliance_record(
     ledger=None,
     candidate_id: str = "",
-    dataset_id: str = None,
-    nominal_variants: int = None,
+    dataset_id: str | None = None,
+    nominal_variants: int | None = None,
 ):
     "Publish this caller's REG-F14b mode-(b) compliance record."
     from apedp_dyn.epistemic.caller_registry import publish_compliance_record

@@ -219,11 +219,31 @@ fn solve_implicit_for_features(
         return None;
     }
 
-    // Column norms for scaling
+    // Column norms for scaling. NOTE: these norms pre-normalize the Gram
+    // below to unit diagonals — the multi-stratum eigen-corruption class
+    // fixed in lie_symmetry (FLAW-15) structurally cannot occur on this
+    // Gram; the scale hazard lived in the SELECTOR scoring instead (see the
+    // FLAW-12 v2 note at the candidate loop).
     let mut norms = vec![0.0f64; k];
     for j in 0..k {
         let sum_sq: f64 = raw_cols[j].iter().map(|v| v * v).sum();
         norms[j] = sum_sq.sqrt().max(1e-12);
+    }
+    // Scale anchor for the selector score: the largest raw column norm among
+    // the DATA columns — the constant "1" column is excluded, otherwise the
+    // anchor sits in an O(1) stratum while the data lives at O(1e-8) and the
+    // per-term bonus dominates exactly as before (probed: the first draft
+    // anchored on the constant column's sqrt(n) norm and still returned the
+    // degenerate "x = 0").
+    let mut scale_ref = 0.0f64;
+    for (j, name) in names.iter().enumerate() {
+        if name == "1" {
+            continue;
+        }
+        scale_ref = scale_ref.max(norms[j]);
+    }
+    if scale_ref <= 0.0 {
+        scale_ref = norms.iter().cloned().fold(0.0f64, f64::max).max(1e-300);
     }
 
     // Gram matrix M = (Theta_norm)^T * Theta_norm
@@ -284,20 +304,72 @@ fn solve_implicit_for_features(
         for j in 0..k {
             cand_c[j] = evecs[j * k + idx] / norms[j];
         }
-        let max_c = cand_c
-            .iter()
-            .map(|v| v.abs())
-            .fold(0.0f64, f64::max)
-            .max(1e-15);
-        for v in cand_c.iter_mut() {
-            *v /= max_c;
+        // FLAW-STRAITA (2026-10-21, exposed by the 1e6-scale circle probe):
+        // the previous raw-space max-coefficient gauge (c /= max|c|) mixed
+        // term strata: raw coefficients span magnitudes (const ~ O(1) vs
+        // x^2 ~ O(1/norm)) so the gauge annihilated the small-coefficient /
+        // large-stratum terms and the true relation degenerated to the
+        // const-only "-1 = 0" fallback every time max|c| came from the
+        // O(1) stratum. The eigenvector v is already Jacobi-normalized
+        // (||v|| = 1) and c_j = v_j/norm_j is the strata-coherent transform
+        // (term contribution c_j*col_j ~ v_j*norm_j), so no further
+        // normalization is applied here.
+        // FLAW-12 v3 sparsifier (2026-10-21, exposed by rebuilding the
+        // maturin extension): ALL anchored pruning thresholds mix term-unit
+        // strata — a raw-coefficient threshold zeroed the intercept of the
+        // exact near-zero-scale circle (raw coefficient ~ minus-1e-16, yet
+        // that intercept CARRIES the law x^2 + y^2 = 1e-16), and a
+        // contribution-space alternative conversely broke the O(1e5)-scale
+        // intercept. Neither anchored criterion is scale-free. Retention is
+        // therefore a BACKWARD ELIMINATION in rmse-RATIO space: a term is
+        // removed only when dropping it multiplies the candidate's
+        // algebraic rmse by at most (1 + sparsity_threshold) — a comparison
+        // between two rmse values from the SAME column set, invariant under
+        // any data-scale. (Numerical noise coordinates die here too: their
+        // removal barely moves the rmse.)
+        let sup_rmse = |sup: &[bool]| -> f64 {
+            let mut acc = 0.0f64;
+            for row in 0..n {
+                let mut r = 0.0f64;
+                for j in 0..k {
+                    if sup[j] {
+                        r += raw_cols[j][row] * cand_c[j];
+                    }
+                }
+                acc += r * r;
+            }
+            (acc / (n as f64)).sqrt()
+        };
+        let mut support = vec![true; k];
+        let mut cur_rmse = sup_rmse(&support);
+        loop {
+            let mut best_j: Option<usize> = None;
+            let mut best_after = f64::INFINITY;
+            for j in 0..k {
+                if !support[j] {
+                    continue;
+                }
+                support[j] = false;
+                let after = sup_rmse(&support);
+                support[j] = true;
+                if after < best_after {
+                    best_after = after;
+                    best_j = Some(j);
+                }
+            }
+            match best_j {
+                Some(j) if best_after <= cur_rmse * (1.0 + config.sparsity_threshold) => {
+                    support[j] = false;
+                    cur_rmse = best_after;
+                }
+                _ => break,
+            }
         }
-        let mut cand_sparse = cand_c.clone();
+        let mut cand_sparse = vec![0.0f64; k];
         let mut active_count = 0usize;
-        for v in cand_sparse.iter_mut() {
-            if v.abs() < config.sparsity_threshold {
-                *v = 0.0;
-            } else {
+        for j in 0..k {
+            if support[j] {
+                cand_sparse[j] = cand_c[j];
                 active_count += 1;
             }
         }
@@ -315,7 +387,19 @@ fn solve_implicit_for_features(
             sum_sq_err += r * r;
         }
         let cand_rmse = (sum_sq_err / (n as f64)).sqrt();
-        let score = cand_rmse + 0.005 * (active_count as f64) + 0.02 * (deg as f64);
+        // FLAW-12 v2 selector score (2026-10-21, exposed by rebuilding the
+        // maturin extension — the stale pre-rebuild wheel had masked this):
+        // with the raw ABSOLUTE rmse the fixed per-term sparsity bonus
+        // (0.005) dominates the rmse difference at extreme data scales: the
+        // exact near-zero-scale circle (2 active terms, rmse ~1e-20) lost to
+        // the degenerate single-term "y = 0" candidate (rmse ~1e-8 —
+        // relative misfit ~1) because 0.005 > 1e-8. The score must compare
+        // candidates on rmse RELATIVE to the column strata (the largest raw
+        // column norm anchors the scale), keeping the sparsity bonus
+        // meaningful at every magnitude.
+        let score = cand_rmse / scale_ref
+            + 0.005 * (active_count as f64)
+            + 0.02 * (deg as f64);
         if score < best_score {
             best_score = score;
             best_rmse = cand_rmse;
@@ -328,14 +412,8 @@ fn solve_implicit_for_features(
         for j in 0..k {
             best_c[j] = evecs[j * k + min_idx] / norms[j];
         }
-        let max_c = best_c
-            .iter()
-            .map(|v| v.abs())
-            .fold(0.0f64, f64::max)
-            .max(1e-15);
-        for v in best_c.iter_mut() {
-            *v /= max_c;
-        }
+        // FLAW-STRAITA: no raw-space max-coefficient gauge (see the
+        // candidate-loop note above).
         best_sparse_c = best_c.clone();
         for v in best_sparse_c.iter_mut() {
             if v.abs() < config.sparsity_threshold {
@@ -368,11 +446,26 @@ fn solve_implicit_for_features(
 
     // Construct human-readable formula
     let mut terms = Vec::new();
-    let mut active_count = 0usize;
-    for j in 0..k {
-        let val = sparse_c[j];
-        if val.abs() > 1e-6 {
-            active_count += 1;
+    let mut active_count = 0usize;        let mut contrib = vec![0.0f64; k];
+        let mut max_contrib = 0.0f64;
+        for j in 0..k {
+            contrib[j] = sparse_c[j].abs() * norms[j];
+            max_contrib = max_contrib.max(contrib[j]);
+        }
+        for j in 0..k {
+            let val = sparse_c[j];
+            // FLAW-STRAITA (2026-10-21): the old raw-coefficient gate
+            // (|c| > 1e-6) belongs to the same strata-mixing defect class
+            // as the removed max_c gauge: raw coefficients span magnitudes
+            // (c_j = v_j/norm_j), so at O(1e5)-scale strata every true term
+            // recounted as inactive. Membership is judged in CONTRIBUTION
+            // space — |c_j|*norm_j relative to the strongest contribution —
+            // a scale-free ratio over the SAME candidate (the same gauge
+            // rule as the backward elimination). Previously two anchored
+            // coefficient-space gauges accidentally compensated for one
+            // another; fixing one alone exposed the other.
+            if contrib[j] > 1e-6 * max_contrib {
+                active_count += 1;
             let term_str = if names[j] == "1" {
                 format!("{:.4}", val)
             } else if (val - 1.0).abs() < 1e-4 {
@@ -471,8 +564,27 @@ pub fn discover_implicit_relation(
                 return Ok(res);
             }
 
-            let score =
-                res.algebraic_rmse + 0.005 * (res.num_active_terms as f64) + 0.02 * (deg as f64);
+            // FLAW-12 v2 degree score (2026-10-21): ABSOLUTE rmse here let a
+            // degenerate deg-1 candidate ("x = 0", relative misfit ~1,
+            // rmse ~1e-8 on 1e-8-scale data) beat the true deg-2 circle
+            // (rmse ~1e-16) — the fixed per-term penalties outweighed the
+            // all-but-zero rmse difference at extreme scales. Anchor the
+            // score on the data columns' largest raw norm (constant "1"
+            // excluded, same rationale as the selector's scale_ref).
+            let mut data_scale = 0.0f64;
+            for (j, name) in names.iter().enumerate() {
+                if name == "1" {
+                    continue;
+                }
+                let nrm: f64 = raw_cols[j].iter().map(|v| v * v).sum::<f64>().sqrt();
+                data_scale = data_scale.max(nrm);
+            }
+            if data_scale <= 0.0 {
+                data_scale = 1e-300;
+            }
+            let score = res.algebraic_rmse / data_scale
+                + 0.005 * (res.num_active_terms as f64)
+                + 0.02 * (deg as f64);
             if score < min_score {
                 min_score = score;
                 best_result = Some(res);
@@ -595,33 +707,91 @@ mod tests {
     fn test_near_zero_scale_misfit_not_certified() {
         // FLAW-12 pin: the residual term scale is measured over the ACTIVE,
         // non-constant columns only. Data: near-zero-scale circle (state
-        // scale 1e-8) perturbed at O(1e-11) — the remaining quadratic-fit
-        // misfit (rmse ~1e-20) sits far ABOVE the scale-relative ceiling
-        // (1e-5 x the active columns' ~1e-16 scale = ~1e-21), so the
-        // certificate must refuse. The pre-fix defect included the O(1)
-        // constant "1" column in the scale estimator (ceiling ~1e-5) and
-        // permissively certified this misfit as an exact physical law.
+        // scale 1e-8) perturbed by a NON-ABSORBABLE misfit: sin(2theta) is
+        // not in the no-cross deg-2 library span {1, cos(theta), sin(theta),
+        // cos(2theta)} (x^2 and y^2 both reduce to const + cos(2theta)), so
+        // its relative misfit (~0.07) is unexplainable by any member of the
+        // family. Two earlier fixture shapes could not discriminate: (a) an
+        // abs-mode 1e-11 sin-3theta amplitude was fully absorbed by the y
+        // column (certified rmse ~1e-23 regardless of the ceiling), and (b)
+        // with cross terms enabled the sin-2theta misfit is itself
+        // representable (2 sin cos = the xy column) and the x^3 family
+        // absorbs the cross-coupling, certifying at rmse ~1e-18. The fixture
+        // therefore pins the config its premise names: no-cross deg-2. The
+        // honest contract is the round-2 conditional (certified => rmse <=
+        // 1e-5 x state scale): the mutant's inflated ceiling (const column
+        // included: max|entry| ~0.45) lets the ~7e-11 relative misfit
+        // through and this pin then rejects it.
         let n = 200usize;
         let mut x = Vec::with_capacity(n);
         let mut y = Vec::with_capacity(n);
         for i in 0..n {
             let t = 2.0 * std::f64::consts::PI * (i as f64) / (n as f64);
             x.push(1e-8 * t.cos());
-            y.push(1e-8 * t.sin() + 1e-11 * (3.0 * t).sin());
+            y.push(1e-8 * t.sin() + 3.16e-12 * (2.0 * t).sin());
+        }
+
+        // No-cross deg-2 (see the premise note above: with cross terms the
+        // sin-2theta misfit is representable via xy and cannot discriminate).
+        let cfg = ImplicitConfig {
+            max_degree: 2,
+            include_cross_terms: false,
+            include_rational_products: false,
+            sparsity_threshold: 1e-3,
+            rcond_threshold: 1e-8,
+        };
+        let res = discover_implicit_relation(&x, &y, &cfg).unwrap();
+        // Honesty contract (mirrors the round-2 conditional pin): a
+        // certified relation must EXPLAIN the data — its own rmse sits far
+        // below the state scale (rmse <= 1e-5 x 1e-8). Here sin-2theta is
+        // unexplainable (relative misfit ~7%), so a certified relation can
+        // only mean the ceiling was inflated past the state scale and a
+        // permissive certificate leaked through.
+        if res.is_exact_recovery {
+            assert!(
+                res.algebraic_rmse <= 1e-13,
+                "certified misfit rmse {} exceeds the scale-relative ceiling",
+                res.algebraic_rmse
+            );
+        }
+    }
+
+    #[test]
+    fn test_near_zero_scale_exact_relation_certified() {
+        // FLAW-12 v2 companion (mirrors the pinned Python bridge at
+        // round-2: tests/test_dyn_blind_audit_round2_remediation.py::
+        // TestF17ExtremeScaleRobustness). The EXACT near-zero-scale circle
+        // must still certify: the scale-aware selector score keeps the
+        // genuine 2-term relation ahead of the degenerate single-term
+        // "y = 0" candidate whose ABSOLUTE rmse (~1e-8) is small in raw
+        // units but ~1 in relative terms.
+        let n = 200usize;
+        let mut x = Vec::with_capacity(n);
+        let mut y = Vec::with_capacity(n);
+        for i in 0..n {
+            let t = 2.0 * std::f64::consts::PI * (i as f64) / (n as f64);
+            x.push(1e-8 * t.cos());
+            y.push(1e-8 * t.sin());
         }
 
         let cfg = ImplicitConfig {
-            max_degree: 3,
-            include_cross_terms: true,
+            max_degree: 2,
+            include_cross_terms: false,
             include_rational_products: false,
             sparsity_threshold: 1e-3,
             rcond_threshold: 1e-8,
         };
         let res = discover_implicit_relation(&x, &y, &cfg).unwrap();
         assert!(
-            !res.is_exact_recovery,
-            "near-zero-scale misfit certified as exact (rmse {}, active {})",
-            res.algebraic_rmse, /*dbg*/ 0
+            res.is_exact_recovery,
+            "exact near-zero-scale circle refused (formula: {}, rmse {})",
+            res.formula, res.algebraic_rmse
+        );
+        assert!(
+            res.algebraic_rmse <= 1e-13,
+            "rmse {} exceeds the scale-relative ceiling 1e-5 x 1e-8",
+            res.algebraic_rmse
         );
     }
 }
+

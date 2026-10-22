@@ -32,8 +32,8 @@ if _REPO not in sys.path:
 from benchmarks.run_rime_microsample_adjudication import (
     _NamespaceProposal,
     adjudicate_structure_aware,
-    classify_referee_decision,
     certify_origin_constrained_rime,
+    classify_referee_decision,
     run_fold_level_rime_recovery,
     run_graph_validated_fold_referee,
     run_langmuir_1918,
@@ -262,6 +262,7 @@ def test_kernel_graph_structure_tournament_winner_transform_mode() -> None:
     scale, with the affine readout verified to machine precision."""
     import numpy as np
     import pandas as pd
+
     from apedp_dyn.proposers.rime_proposer import RimeProposer
 
     df = pd.DataFrame({

@@ -1,0 +1,519 @@
+{
+  "protocol": "deterministic RK4 fixtures, noise-free; term names canonicalized (y*x \u2261 x*y); mirror intercept '1' retained by construction and excluded from the structure metrics",
+  "seed": 20261022,
+  "systems": {
+    "fitzhugh_nagumo": {
+      "dense_columns": 8,
+      "dense_mean_system_r2": 1.0,
+      "dense_structure_exact_all_states": true,
+      "dense_truth_recovered_all_states": true,
+      "dense_worst_state_r2": 1.0,
+      "dt": 0.01,
+      "library_reduction_measured_k2": {
+        "x": 0.25,
+        "y": 0.25
+      },
+      "n_rows": 800,
+      "per_state": {
+        "x": {
+          "dense": {
+            "active_terms": [
+              "x",
+              "x^3",
+              "y"
+            ],
+            "library_columns": 8,
+            "r2": 1.0,
+            "structure_exact": true,
+            "truth_recovered": true
+          },
+          "screened_k1": {
+            "active_terms_no_intercept": [
+              "x",
+              "x^3",
+              "y"
+            ],
+            "false_exclusions": [],
+            "kept_parents": [
+              "y"
+            ],
+            "library_columns": 6,
+            "missing_truth_terms": [],
+            "overcomplete_terms": [],
+            "structure_exact": true,
+            "train_r2": 0.999998,
+            "train_rmse": 0.00075136,
+            "truth_recovered": true
+          },
+          "screened_k2": {
+            "active_terms_no_intercept": [
+              "x",
+              "x^3",
+              "y"
+            ],
+            "false_exclusions": [],
+            "kept_parents": [
+              "y"
+            ],
+            "library_columns": 6,
+            "missing_truth_terms": [],
+            "overcomplete_terms": [],
+            "structure_exact": true,
+            "train_r2": 0.999998,
+            "train_rmse": 0.00075136,
+            "truth_recovered": true
+          },
+          "true_rhs_terms": [
+            "x",
+            "x^3",
+            "y"
+          ],
+          "truth_parents": [
+            "x",
+            "y"
+          ]
+        },
+        "y": {
+          "dense": {
+            "active_terms": [
+              "x",
+              "y"
+            ],
+            "library_columns": 8,
+            "r2": 1.0,
+            "structure_exact": true,
+            "truth_recovered": true
+          },
+          "screened_k1": {
+            "active_terms_no_intercept": [
+              "x",
+              "y"
+            ],
+            "false_exclusions": [],
+            "kept_parents": [
+              "x"
+            ],
+            "library_columns": 6,
+            "missing_truth_terms": [],
+            "overcomplete_terms": [],
+            "structure_exact": true,
+            "train_r2": 1.0,
+            "train_rmse": 5.536e-05,
+            "truth_recovered": true
+          },
+          "screened_k2": {
+            "active_terms_no_intercept": [
+              "x",
+              "y"
+            ],
+            "false_exclusions": [],
+            "kept_parents": [
+              "x"
+            ],
+            "library_columns": 6,
+            "missing_truth_terms": [],
+            "overcomplete_terms": [],
+            "structure_exact": true,
+            "train_r2": 1.0,
+            "train_rmse": 5.536e-05,
+            "truth_recovered": true
+          },
+          "true_rhs_terms": [
+            "x",
+            "y"
+          ],
+          "truth_parents": [
+            "x",
+            "y"
+          ]
+        }
+      },
+      "referee_note": "screen exclusions reported verbatim; the dense result in the same outcome carries any structure the screen dropped (mandatory escape hatch); no acceptance computed here",
+      "runtime_seconds": {
+        "ode_arm_outcome_k1": 0.0035,
+        "ode_arm_outcome_k2": 0.0029
+      },
+      "screened_k1_false_exclusions_total": 0,
+      "screened_k1_suppressed_parents": {
+        "x": [],
+        "y": []
+      },
+      "screened_k2_false_exclusions_total": 0,
+      "screened_k2_structure_exact_all_states": true,
+      "screened_library_columns_k2": {
+        "x": 6,
+        "y": 6
+      }
+    },
+    "lorenz": {
+      "dense_columns": 10,
+      "dense_mean_system_r2": 1.0,
+      "dense_structure_exact_all_states": true,
+      "dense_truth_recovered_all_states": true,
+      "dense_worst_state_r2": 1.0,
+      "dt": 0.002,
+      "library_reduction_measured_k2": {
+        "x": 0.1,
+        "y": 0.1,
+        "z": 0.1
+      },
+      "n_rows": 8000,
+      "per_state": {
+        "x": {
+          "dense": {
+            "active_terms": [
+              "x",
+              "y"
+            ],
+            "library_columns": 10,
+            "r2": 1.0,
+            "structure_exact": true,
+            "truth_recovered": true
+          },
+          "screened_k1": {
+            "active_terms_no_intercept": [
+              "x",
+              "y"
+            ],
+            "false_exclusions": [],
+            "kept_parents": [
+              "y"
+            ],
+            "library_columns": 6,
+            "missing_truth_terms": [],
+            "overcomplete_terms": [],
+            "structure_exact": true,
+            "train_r2": 1.0,
+            "train_rmse": 0.00336134,
+            "truth_recovered": true
+          },
+          "screened_k2": {
+            "active_terms_no_intercept": [
+              "x",
+              "y"
+            ],
+            "false_exclusions": [],
+            "kept_parents": [
+              "y",
+              "z"
+            ],
+            "library_columns": 9,
+            "missing_truth_terms": [],
+            "overcomplete_terms": [],
+            "structure_exact": true,
+            "train_r2": 1.0,
+            "train_rmse": 0.00336134,
+            "truth_recovered": true
+          },
+          "true_rhs_terms": [
+            "x",
+            "y"
+          ],
+          "truth_parents": [
+            "x",
+            "y"
+          ]
+        },
+        "y": {
+          "dense": {
+            "active_terms": [
+              "x",
+              "x*z",
+              "y"
+            ],
+            "library_columns": 10,
+            "r2": 1.0,
+            "structure_exact": true,
+            "truth_recovered": true
+          },
+          "screened_k1": {
+            "active_terms_no_intercept": [
+              "x",
+              "x*y",
+              "y",
+              "y^2",
+              "y^3"
+            ],
+            "false_exclusions": [
+              "z"
+            ],
+            "kept_parents": [
+              "x"
+            ],
+            "library_columns": 6,
+            "missing_truth_terms": [
+              "x*z"
+            ],
+            "overcomplete_terms": [
+              "x*y",
+              "y^2",
+              "y^3"
+            ],
+            "structure_exact": false,
+            "train_r2": 0.625925,
+            "train_rmse": 36.25252007,
+            "truth_recovered": false
+          },
+          "screened_k2": {
+            "active_terms_no_intercept": [
+              "x",
+              "x*z",
+              "y"
+            ],
+            "false_exclusions": [],
+            "kept_parents": [
+              "x",
+              "z"
+            ],
+            "library_columns": 9,
+            "missing_truth_terms": [],
+            "overcomplete_terms": [],
+            "structure_exact": true,
+            "train_r2": 1.0,
+            "train_rmse": 0.02873663,
+            "truth_recovered": true
+          },
+          "true_rhs_terms": [
+            "x",
+            "x*z",
+            "y"
+          ],
+          "truth_parents": [
+            "x",
+            "y",
+            "z"
+          ]
+        },
+        "z": {
+          "dense": {
+            "active_terms": [
+              "x*y",
+              "z"
+            ],
+            "library_columns": 10,
+            "r2": 1.0,
+            "structure_exact": true,
+            "truth_recovered": true
+          },
+          "screened_k1": {
+            "active_terms_no_intercept": [
+              "y",
+              "y*z",
+              "z",
+              "z^2",
+              "z^3"
+            ],
+            "false_exclusions": [
+              "x"
+            ],
+            "kept_parents": [
+              "y"
+            ],
+            "library_columns": 6,
+            "missing_truth_terms": [
+              "x*y"
+            ],
+            "overcomplete_terms": [
+              "y",
+              "y*z",
+              "z^2",
+              "z^3"
+            ],
+            "structure_exact": false,
+            "train_r2": 0.038011,
+            "train_rmse": 69.95705585,
+            "truth_recovered": false
+          },
+          "screened_k2": {
+            "active_terms_no_intercept": [
+              "x*y",
+              "z"
+            ],
+            "false_exclusions": [],
+            "kept_parents": [
+              "x",
+              "y"
+            ],
+            "library_columns": 9,
+            "missing_truth_terms": [],
+            "overcomplete_terms": [],
+            "structure_exact": true,
+            "train_r2": 1.0,
+            "train_rmse": 0.00077714,
+            "truth_recovered": true
+          },
+          "true_rhs_terms": [
+            "x*y",
+            "z"
+          ],
+          "truth_parents": [
+            "x",
+            "y",
+            "z"
+          ]
+        }
+      },
+      "referee_note": "screen exclusions reported verbatim; the dense result in the same outcome carries any structure the screen dropped (mandatory escape hatch); no acceptance computed here",
+      "runtime_seconds": {
+        "ode_arm_outcome_k1": 0.0415,
+        "ode_arm_outcome_k2": 0.0409
+      },
+      "screened_k1_false_exclusions_total": 2,
+      "screened_k1_suppressed_parents": {
+        "x": [],
+        "y": [
+          "z"
+        ],
+        "z": [
+          "x"
+        ]
+      },
+      "screened_k2_false_exclusions_total": 0,
+      "screened_k2_structure_exact_all_states": true,
+      "screened_library_columns_k2": {
+        "x": 9,
+        "y": 9,
+        "z": 9
+      }
+    },
+    "lotka_volterra": {
+      "dense_columns": 6,
+      "dense_mean_system_r2": 1.0,
+      "dense_structure_exact_all_states": true,
+      "dense_truth_recovered_all_states": true,
+      "dense_worst_state_r2": 1.0,
+      "dt": 0.01,
+      "library_reduction_measured_k2": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "n_rows": 800,
+      "per_state": {
+        "x": {
+          "dense": {
+            "active_terms": [
+              "x",
+              "x*y"
+            ],
+            "library_columns": 6,
+            "r2": 1.0,
+            "structure_exact": true,
+            "truth_recovered": true
+          },
+          "screened_k1": {
+            "active_terms_no_intercept": [
+              "x",
+              "x*y"
+            ],
+            "false_exclusions": [],
+            "kept_parents": [
+              "y"
+            ],
+            "library_columns": 6,
+            "missing_truth_terms": [],
+            "overcomplete_terms": [],
+            "structure_exact": true,
+            "train_r2": 1.0,
+            "train_rmse": 0.00203968,
+            "truth_recovered": true
+          },
+          "screened_k2": {
+            "active_terms_no_intercept": [
+              "x",
+              "x*y"
+            ],
+            "false_exclusions": [],
+            "kept_parents": [
+              "y"
+            ],
+            "library_columns": 6,
+            "missing_truth_terms": [],
+            "overcomplete_terms": [],
+            "structure_exact": true,
+            "train_r2": 1.0,
+            "train_rmse": 0.00203968,
+            "truth_recovered": true
+          },
+          "true_rhs_terms": [
+            "x",
+            "x*y"
+          ],
+          "truth_parents": [
+            "x",
+            "y"
+          ]
+        },
+        "y": {
+          "dense": {
+            "active_terms": [
+              "x*y",
+              "y"
+            ],
+            "library_columns": 6,
+            "r2": 1.0,
+            "structure_exact": true,
+            "truth_recovered": true
+          },
+          "screened_k1": {
+            "active_terms_no_intercept": [
+              "x*y",
+              "y"
+            ],
+            "false_exclusions": [],
+            "kept_parents": [
+              "x"
+            ],
+            "library_columns": 6,
+            "missing_truth_terms": [],
+            "overcomplete_terms": [],
+            "structure_exact": true,
+            "train_r2": 1.0,
+            "train_rmse": 0.00263942,
+            "truth_recovered": true
+          },
+          "screened_k2": {
+            "active_terms_no_intercept": [
+              "x*y",
+              "y"
+            ],
+            "false_exclusions": [],
+            "kept_parents": [
+              "x"
+            ],
+            "library_columns": 6,
+            "missing_truth_terms": [],
+            "overcomplete_terms": [],
+            "structure_exact": true,
+            "train_r2": 1.0,
+            "train_rmse": 0.00263942,
+            "truth_recovered": true
+          },
+          "true_rhs_terms": [
+            "x*y",
+            "y"
+          ],
+          "truth_parents": [
+            "x",
+            "y"
+          ]
+        }
+      },
+      "referee_note": "screen exclusions reported verbatim; the dense result in the same outcome carries any structure the screen dropped (mandatory escape hatch); no acceptance computed here",
+      "runtime_seconds": {
+        "ode_arm_outcome_k1": 0.0032,
+        "ode_arm_outcome_k2": 0.0043
+      },
+      "screened_k1_false_exclusions_total": 0,
+      "screened_k1_suppressed_parents": {
+        "x": [],
+        "y": []
+      },
+      "screened_k2_false_exclusions_total": 0,
+      "screened_k2_structure_exact_all_states": true,
+      "screened_library_columns_k2": {
+        "x": 6,
+        "y": 6
+      }
+    }
+  }
+}

@@ -4,6 +4,461 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Tutorial notebook: full engine-tour section (GA/GP, RIME-AD, ODE, PDE, dispatch, all graph surfaces) (2026-10-22)
+
+The tutorial previously demonstrated only Hawkes/microstructure, basic
+RIME, and the adjudication/ledger path. New "Step 9: Engine Tour"
+sections mirror the pinned APIs of the rest of the discovery surface:
+
+- 9.1 automatic routing — `dispatch_frame` on kinetic, event-stream, and
+  ambiguous frames (fail-closed abstention pinned at lowercase enum values);
+- 9.2 GA/GP — native `evolve`/`SearchConfig` with the min-MSE-best pin;
+- 9.3 RIME-AD — `RimeAdProposer(target_col=...)` end to end;
+- 9.4 coupled ODE — `CoupledOdeProposer(dt=...).fit_and_propose(df)`;
+- 9.5 PDE — `discover_pde` with the FROZEN-coefficient holdout contract,
+  pointers to `discover_pde_2d` and `pde_transfer`;
+- 9.6 all three graph surfaces — `ProvenanceGraph`, `plot_epistemic_graph`
+  PNG, and the `apedp_kernel.rime_rewrite_json` PyO3 FFI.
+
+Executed proof: the full notebook-adapter suite runs every cell —
+30/30 passed including the structure+execution pin; one enum-value
+assertion corrected at cause (`Modality` string values are lowercase).
+
+## [Unreleased] — Governance re-certification ceremony UNBLOCKED (structural gap addressed, 2026-10-22)
+
+The one measured structural gap — the governance manifest desync that could
+only be described as "trustee-blocked" with no formal procedure to resolve —
+now has its mechanism:
+
+- `scripts/run_governance_remint_ceremony.py` (audit-only, fail-closed):
+  `--status` reports the desync and the outstanding quorum exactly;
+  `--request` mints the certification request anchored to
+  `canonical_spec.py`'s import-time pin (refuses on pin disagreement);
+  `--collect` records a trustee signature ONLY after verifying it against
+  the manifest's REGISTERED public key (forgeries and unregistered signers
+  are refused; keys come from the environment, never from the repo, and are
+  never generated or stored here); `--mint` re-verifies every collected
+  signature from scratch, extends the transparency log with
+  `PREREGISTRATION_RECERTIFICATION` entries through the production hashing
+  API, verifies the draft with the production verifier against the disk
+  spec, and writes the manifest only on full quorum.
+- Boundaries preserved per AGENTS §1.2/§1.3: bypassing, local re-minting,
+  fabrication, and spec-file mutation are all structurally impossible in
+  the tool; the live red remains red until real external trustees run the
+  ceremony.
+- Pinned in `tests/test_dyn_governance_remint_ceremony.py` (5):
+  sandbox end-to-end re-certification (2-of-3, roster/spec_id carried
+  through, log chain verified), forgery/unregistered/stale refusals,
+  below-quorum refusal, pin-drift fail-closed, and the live-repo guard
+  asserting the repository cannot be minted without real trustees.
+- FLAW-01 status in `docs/SYSTEM_FLAWS_AUDIT.md` updated: mechanism
+  unblocked; only the external signature ceremony is outstanding.
+
+## [Unreleased] — Margin theorem ADJUDICATED into the certified boundary (2026-10-22)
+
+Promotion-checklist item 2 of the CBF proximity-backlog gate is now closed
+at theorem level:
+
+- Deciding layer: `benchmarks/run_margin_theorem_referee_decision.py`
+  (audit-only, fail-closed) re-reproduces the packet's 6/6 machine checks
+  fresh at HEAD, verifies all evidence pointers against disk, and applies
+  the preregistered criteria C1–C5 mechanically.
+- **Verdict: ACCEPTED_INTO_CERTIFIED_BOUNDARY** (5/5 criteria, 0
+  refusals, evidence fingerprint fdfda1611e452495…) recorded durable in
+  `benchmarks/margin_theorem_referee_decision.json`; the packet's decision
+  slot is stamped from the record on every rebuild (merge hook in the
+  packet builder; the identity fingerprint excludes the slot itself).
+- Scope: the verdict grants the THEOREM's acceptance only. Checklist
+  items 1 (N ≥ 256 production requirement) and 3 (scipy gate / Rust port)
+  remain open; the restricted certified path stays `experimental`, wired
+  to nothing; the full all-pairs fail-closed re-check remains the
+  revocation trigger in every release.
+- Durability: the record is never silently overwritten — re-adjudication
+  requires `--re-adjudicate --reason` and preserves the prior verdict.
+
+## [Unreleased] — SRE gate instrumented: tree-vs-arena baseline recorded, port DEFERRED (2026-10-22)
+
+The Rust-migration decision record's rank-1 item ("port `genetic.rs` trees
+onto the rime arena `Graph`, Rust→Rust") was supposed to be evidence-gated
+but had no tree-vs-arena measurement. Instrumented:
+
+- `tests/sre_tree_vs_arena_profile.rs`: deterministic GP workload (169
+  candidates from the production `GeneticOps::random_tree` builder at the
+  SRE arithmetic flags, 60k rows ×2 vars), semantics-identical
+  tree→arena conversion (IEEE-exact Sub→Add∘Neg, parity-gated bit-exact
+  incl. NaN on the covered subset), throughput on the identical candidate
+  set, artifact written to `benchmarks/sre_tree_vs_arena_baseline.json`.
+- **Measured (gate: TREE-FAVORED)**: arena 0.51× of the tree path (403 ms
+  vs 784 ms) on unshared GP trees; the semantics-identical conversion
+  covers only 10.1% of the pool (tree Div/Min/Max/powf/unbounded
+  transcendentals have no drift-free arena counterpart — tree `a−b` maps
+  exactly as `Add∘Neg`, which is what parity is pinned on). The 222×
+  figure is Python-vs-Rust, NOT tree-vs-arena.
+- Decision record §4 rank 1 revised honestly: **evaluation-speed case for
+  the Rust→Rust port is measured-NEGATIVE**; revisit only with a measured
+  structural-sharing/hash-consing upside. `MultiVariableSRE` keeps
+  delegating via FFI to the native tree engine.
+
+## [Unreleased] — Blocker-sweep repairs: dashboard PDE-transfer regression + stale E5/E4-T1 pins re-minted (2026-10-22)
+
+Release-blocker sweep on current HEAD (bisection-verified causes):
+
+- **`pde_transfer.py` FLAW-05 regression repaired at the cause**: the soundness
+  guard had been inserted as early `return`s that bypassed the
+  `FrozenTransferResult` construction (bare-float path — callers expecting
+  `.r2` got AttributeError; the dataclass return was dead code). The guard's
+  semantics now live in the `r2` VALUE, never the return TYPE.
+  `tests/test_dyn_pde_transfer.py` 4/4.
+- **Dashboard contract fixture re-minted**: after the lawful pool widening
+  (Gate A dev-only per the §1.2 anti-snooping rule + symmetric AST
+  enumeration in `0eb7a04`), the duffing fixture at noise=0.05 honestly
+  abstains (`multi_hypothesis`) and must not be test-forced — noise=0.01
+  restores the Δ/τ≈1.3 unique path the contract verifies.
+- **E5 / E4-T1 diagnostics re-derived and re-minted (ERR-INC-74-79, disclosed
+  in `docs/TRADING_EQUATION_FORENSICS.md` §80c)**: the §74–79 signatures had
+  been established under the buggy backward-windowed d5 target (F1, fixed in
+  `68a3dadb`) and pre-A01 leaky train blocks (fixed in `9a73170`). Corrected
+  harness re-derivation (deterministic, verified twice): market/null E5
+  parity replaces the withdrawn **drifting contrast; coupling table splits
+  3 stable/3 drifting; §78 deltas re-pinned (M2≈M3 inverted on ETH/AVAX,
+  spread capped .08); §79 gates 10/6/8/1/0/0 with ETH as the one pinned
+  marginal permutation survivor (.0498); §80 incremental battery re-minted
+  again under the fully corrected harness (permutation NULL everywhere,
+  min ETH .0846 > α; BTC HA sign-flip 9/11 pinned)
+  (`tests/test_dyn_e5_market.py`, `test_dyn_e5_r1.py`, `test_dyn_ensemble.py`,
+  `test_dyn_gated_ensemble.py`, `test_dyn_incremental.py`).
+- **Quantum-vacuum subthreshold re-pin under the F14 referee**: the old
+  abstention was a manufactured refusal (train-loss anchor; Δ was negative) —
+  under the holdout-anchored pair the saturated residuals separate at
+  Δ/τ≈1.09 with a bootstrap-confirmed weak-margin promotion carrying the
+  RESIDUAL_STRUCTURE_UNRESOLVED diagnostic (`tests/test_dyn_quantum_sandbox.py`).
+- **Governance remaining OPEN (documented, trustee-blocked)**: the manifest
+  still seals the pre-v1.8 spec hash (FLAW-01; quorum signatures not
+  producible locally). Typecheck scope is the documented 2-file pyproject
+  Phase-1 boundary (green).
+
+## [Unreleased] — Gate-limitation closure: spatial index + model-checked proximity lock (2026-10-22)
+
+The gate decision's three recorded limitations are each acted on at the
+measured cause (`docs/cbf_proximity_graph_backlog_gate.md` completion
+addendum):
+
+- **"Spatial index needed to beat the dense [N,N,2] floor" — measured.**
+  `apedp_dyn/robotics/proximity_margin.py` gains `indexed_proximity_pairs`
+  (scipy cKDTree, candidate radius r_safe + h* + slack: a SUPERSET of the
+  constrained band by construction, so every EXCLUDED pair is provably
+  free — soundness pinned, including the exact boundary-equality semantics
+  where scipy's `at most r` admits the pair the dense h < h* filter
+  excludes) and `indexed_barrier_components` (exact sparse mirror of the
+  dense formulas, array-equal pinned). Measured: the index beats the dense
+  build floor 3.3–3.6× at N=256 and 3.1–5.8× at N=512 (at N=128 the tree
+  overhead has not paid off — recorded as gate information). The COMPOSED
+  restricted path (index + restricted alternating projections + FULL
+  all-pairs fail-closed re-check) measures 3.31× over the dense solve at
+  N=256 (64.0 → 19.3 ms, constraint ratio 0.054) and 3.6× at N=512
+  (258 → 71.6 ms, ratio 0.028); at N=128 only 1.31× — the certified
+  contract's own all-pairs re-check dominates there, and that re-check is
+  the fail-closed honesty floor, deliberately never removed.
+- **"Pitch-only, wired to no pipeline" → evidence class completed.**
+  `model_check_unicycle_horizon_proximity` realizes the proximity-LOCKED
+  commands through the production arc stepper on adversarial horizons
+  (head-on top-speed closing; multi-agent closing grids, 2 seeds):
+  min h > 1e-3 throughout (measured evidence, explicitly not a formal
+  claim). Promotion checklist added to the gate doc (production N ≥ 256
+  requirement + referee-adjudication acceptance of the margin theorem
+  into the certified boundary + scipy-or-kernel-port decision + the
+  all-pairs re-check stays in every release, forever).
+- **"Dev-box medians" → variance quantified** over two full reruns of the
+  same seeded harness: certified 5 ms gate crossing stable (N=256 twice);
+  QP-time noise 5–6% at N ≥ 256, ~31% at N=128 (scheduling dominated); the
+  heuristic 50 ms boundary sits exactly at its edge (N=512: 47.5 vs 50 ms
+  flipped between runs) — recorded verbatim as the boundary sensitivity;
+  thresholds remain decision thresholds, not constants.
+- Pins: `tests/test_dyn_proximity_margin_pins.py` 10/10 green
+  (index superset + provably-free exclusions, boundary-equality pair,
+  array-exact sparse-vs-dense, collision-free horizons, fail-closed
+  max_iter=0 refusal, midpoint saturation).
+
+## [Unreleased] — Gate 1 executed: vectorized pair sweep + margin pitch (2026-10-22)
+
+- **Heuristic pair-loop VECTORIZED** (`multi_agent_step` now uses ONE
+  `pairwise_repulsive_forces` sweep): EXACT per-pair mirror of the scalar
+  rule — degenerate [k_rep, 0] fallback, r_warning zeros filter (the mask
+  IS the proximity filter a graph would replicate), head-on tangential
+  term at anti > 0.7. Pinned branch-exact per pair AND against an inline
+  legacy reference at whole-step level across N = 2/5/8/33
+  (`tests/test_dyn_multi_agent_vectorized_pins.py`, 9 tests green;
+  pre-existing robotics suites 14/14 green). Re-profiled with the same
+  seeded harness: exponent 1.91 → 1.06, 5 ms budget crossing N=32 →
+  N=128, 50 ms no longer crossed in-sweep, 26× faster at N=256 — a
+  proximity graph is NOT needed for this path (the gate doc carries the
+  pre/post tables; certified-path gate numbers unchanged).
+- **Non-neighbor barrier MARGIN argument pitched + machine-checked**
+  (`apedp_dyn/robotics/proximity_margin.py`, experimental/evidence-only,
+  wired to no pipeline): pairs at h ≥ h* = 2·v_max/γ hold hdot ≥ −γ·h
+  CONSTRUCTIVELY (box-bounded worst case −2·v_max saturates the law
+  EXACTLY at h = h*, never violates); `solve_cbf_qp_proximity` solves the
+  alternating-projection QP over the h < h* restricted set and releases
+  ONLY through the FULL all-pairs fail-closed re-check (the margin
+  algebra re-verified numerically at release); FREE/CONSTRAINED
+  bookkeeping re-decided per step from the h matrix the barriers build
+  already computes. Measured on the A3-guarded grid: constraint ratio
+  0.19 at N=64. This is the soundness prerequisite the certified-path
+  N≥256 gate demanded — STILL experimental: no production wiring, and a
+  production proximity structure additionally needs a spatial index (the
+  dense [N,N,2] floor stands). Pins: `tests/test_dyn_proximity_margin_pins.py`
+  (margin formula, midpoint saturation, restricted-solve full re-check on
+  randomized fixtures, provably-violated max_iter=0 refusal, constraint
+  bookkeeping).
+- **Hygiene**: two pre-existing ruff flags in `cbf_certificate.py`
+  surfaced by package-level linting fixed at the cause (genuinely-unused
+  `import torch` removed after grep confirmation; unused unpack renamed).
+
+## [Unreleased] — CBF proximity-graph backlog gate decision (2026-10-22)
+
+- **O(N²) profile recorded** (`benchmarks/run_cbf_scaling_profile.py`,
+  results in `benchmarks/cbf_scaling_profile_results.json`, gate record in
+  `docs/cbf_proximity_graph_backlog_gate.md`; status `audit-only`):
+  deterministic A3-guarded fixtures; the certified QP's factory-lemma
+  1-pass FLOOR isolated from adversarial-iteration growth — the all-pairs
+  barriers build + constraint sweep alone costs 9.9 ms at N=256 (43 ms at
+  N=512), with uniformly-random commands adding ≈8× more at N≥256; the
+  heuristic transport stepper costs ≈6 µs per Python pair invocation and
+  crosses the 5 ms real-time budget at N=32 (50 ms at N=128).
+- **Gate decision (criteria preregistered in the harness BEFORE
+  measuring)**: the heuristic path activates NOW at N≥32 — its first fix
+  is VECTORIZED pair-force computation (behavior-identical, no certificate
+  soundness question; a k-NN graph adds nothing a distance mask does
+  not); the certified path's proximity restructuring activates only for
+  production N ≥ 256 real-time certified control AND a soundness proof
+  that non-neighbor pairs cannot violate barriers within the assumption
+  box (pair-ratio counterfactuals 0.38→0.011 at k=4 recorded as
+  computational estimates only — pruning AFTER the dense barriers build
+  keeps the O(N²) floor, so a production structure must use a spatial
+  index instead). Certified code, pins and battery mutants untouched —
+  measurement + gate record only.
+
+## [Unreleased] — Graph census verification and gap closure (2026-10-22)
+
+Response to the external master graph census. Verified ground truth
+BEFORE acting; then closed the actionable slots and corrected the record
+(`docs/graph_census_2026_10_22.md`):
+
+- **Three "implemented but untested" graph surfaces are now pinned**
+  (`tests/test_dyn_graph_census_pins.py`, 5 tests green; census claim of
+  zero coverage verified by search first): W3C PROV-lite
+  `ProvenanceGraph` (nodes + links verbatim, no shared-mutable-default
+  leak), `plot_epistemic_graph` (real deterministic PNG render, magic
+  bytes verified), and the `ak.rime_rewrite_json` PyO3 FFI binding for the
+  frozen structural rewrites — valid `WrapNonlinearity` appends the
+  wrapped node and makes it the output per `rewrite.rs` `apply` semantics,
+  a bad operand index is REJECTED (no fabricated dangling references),
+  malformed graph/op JSON fails closed.
+- **Two census rows corrected as stale/clarified:** the Level-1 state
+  dependency graph EXISTS as the DE arm's screening + dense escape hatch
+  (never a causal adjacency verdict — kernel `coupled_system.rs` stays
+  flat SINDy as the escape hatch); the AD row clarified — exact-rule
+  SYMBOLIC service in `de_arm/ad_service.py`, kernel rightly keeps forward
+  Taylor Jets, torch stays the reverse-mode runtime.
+- **Genuinely unimplemented classes** (robotics proximity graphs, mesh
+  PDE discovery, GP-tree→DAG sharing, 2D/3D tensor networks, kernel
+  reverse-mode tape) recorded as rationale'd backlog categories, not
+  promises — each with the deprioritization reason and its gate.
+- **Honest pin-failure note:** the census FFI pin initially expected a
+  named-field serde shape for the `Tanh(usize)` variant; the test
+  assertion was corrected to the true newtype-variant serialization — the
+  FFI matched `rewrite.rs` exactly (cause fixed at the failing assertion,
+  not at the pinned boundary).
+
+## [Unreleased] — DE-arm frozen benchmark vs dense flat library (2026-10-22)
+
+- **Frozen benchmark** (`benchmarks/run_de_arm_vs_dense_benchmarks.py`,
+  results in `benchmarks/de_arm_vs_dense_benchmark_results.json`, doc in
+  `docs/de_arm_vs_dense_benchmarks.md`; status `audit-only`): deterministic
+  RK4 fixtures of Lotka-Volterra, FitzHugh-Nagumo and Lorenz (noise-free,
+  seeded). Dense kernel and the arm's screened mirror both structurally
+  exact on all three systems at the default screen depth (top_k=2, 0 false
+  exclusions). Library-reduction hypothesis MEASURED, not assumed:
+  ≈10% (Lorenz, 10→9 columns), 25% (FHN), 0% (LV) at D≤3 — matching the
+  review's correction that the 90% claim is a hypothesis for higher
+  dimensions/richer grammars. The aggressive screen (top_k=1) drops 2 true
+  parents on Lorenz with visible R² collapse (0.63, 0.04) — demonstrating
+  the dense escape hatch is load-bearing; screen exclusions are reported
+  verbatim, never hidden.
+- **Fixture-integrity finding (recorded as evidence, not patched away)**:
+  a first Lorenz fixture with a narrow slow-manifold window yielded
+  identically-zero-residual but NON-physical polynomial fits in BOTH
+  engines (R²=1.0 with wrong structure) — noise-free near-collinear data
+  makes many column combinations exactly degenerate. The benchmark now
+  guards window sweep on BOTH the full window and its train partition.
+- **Representational fix** (`de_arm/dependency_screen.py`): the reduced
+  mirror library gains kept·kept parent products — without them the
+  screened library could not express parent×parent monomials the dense
+  engine demonstrably recovers (Lorenz ẏ = 28x − y − xz needs x·z).
+  Excluded parents still never enter the screened library (pin holds).
+- **Hygiene**: corrupted docstring token in `de_arm/typed_model.py`
+  repaired; ruff clean; DE-arm pin suite re-verified after each change.
+
+## [Unreleased] — DE-discovery arm, separate arm boundary (2026-10-21)
+
+Per the RIME–APEDP-X review thread (build the differential-equation
+discovery capability as a SEPARATE arm reusing shared infrastructure,
+never as new graph nodes inside the RIME core; reviewers' corrections
+applied literally — no claimed 90% library reduction, no causal-topology
+oracle claim, dense escape always present), phase 1 lands behind a clean
+module boundary (`apedp_dyn/de_arm/`, all `experimental`):
+
+- **Typed mathematical semantics** (`de_arm/typed_model.py`): every arm
+  candidate declares its kind — STATIC_EXPRESSION / ODE_SYSTEM (states +
+  independent variable + dt + initial conditions) / PDE_SYSTEM (fields +
+  spatial axes with positive dx + declared boundary treatment). Incomplete
+  declarations are fail-closed refusals, so structural checks run BEFORE a
+  search, not after it.
+- **AD as shared infrastructure** (`de_arm/ad_service.py`): a symbolic
+  derivative service over a closed typed expression vocabulary with exact
+  product/quotient/chain rules and declared domain refusals; the module
+  documents both honest limits — it differentiates the implemented
+  candidate computation (a perfect derivative of a wrong hypothesis stays
+  wrong) and measured data keeps its existing finite-difference stencils
+  for residuals. Fornberg remains valid on irregular grids (correction C:
+  no blanket first-order degradation claim).
+- **Level-1 dependency screening with a MANDATORY escape hatch**
+  (`de_arm/dependency_screen.py`): per-state predictive-increment ranking
+  of candidate parents (lag-embedded relative-RSS gains on the training
+  partition; deterministic, dependency-free) prunes each state's candidate
+  library, but the DENSE kernel result always ships beside the screened
+  mirror fits in one referee-facing `OdeArmOutcome` — a parent the screen
+  excluded can never silently vanish, and the screen's ranking travels
+  with an explicit not-a-causal-verdict disclaimer. The screened fit is a
+  documented python ridge+prune mirror whose provenance never claims
+  kernel parity.
+- **Pipeline/lifecycle integration**: the dispatch surface's coupled-ODE
+  route now hands the arm's evidence artifact to the referee path; the arm
+  contains no acceptance/promotion/verdict field anywhere (pinned), and
+  the referee's frozen protocol stays the sole authority.
+
+Pins: `tests/test_dyn_de_arm_p1_pins.py` (10: typing refusals, AD
+exactness incl. the product-rule mutation boundary, screening semantics
+with the escape hatch, dispatch integration, referee independence). The
+arm's mutants join the mutation battery register (MUT-G1..G3).
+
+---
+
+## [Unreleased] — EHI re-foundation per external review (2026-10-21)
+
+The external architecture critique's four build items and the fifth pillar
+landed, each replacing a math shortcut the review named (all `experimental`;
+pins `tests/test_dyn_ehi_phase5_pins.py`, 16 mixed behavior+mutation pins;
+none of the touched layers decides acceptance — the referee keeps authority):
+
+**Dispatch wiring (follow-up, same review thread):** the sieve + selector now
+route proposals AUTOMATICALLY (`apedp_dyn/orchestration/dispatch.py`):
+decisive agreement on both layers ⇒ the one engine runs (L2 open discovery /
+ODE diff-Padé / frozen-operator PDE / Hawkes MLE); selector ambiguity keeps
+every sieve-admitted family live (MULTIPLE_ROUTES, masks honored even with
+wired runners); decisive disagreement ⇒ CONFLICT abstention, never an
+override; unresolved structure ⇒ UNROUTABLE with open questions. Per-family
+failures are recorded in `errors`, never laundered; products carry
+referee-facing material only. Pins `tests/test_dyn_discovery_dispatch_wiring.py`
+(9). **Two broken seams fixed on the way:** `discover_ode` called the kernel
+with raw lists + an int while the seam takes three JSON strings (matching
+every other caller — no test had exercised it end-to-end); and a decisive
+route is now refused when the winner's DEFINING diagnostic never fired
+(pure noise on a time axis can no longer fabricate a PDE claim via
+competitive misfit).
+
+- **Model-class selection replaces deterministic routing**
+  (`apedp_dyn/orchestration/model_class_selector.py`): P(M|D) over
+  documented per-class diagnostic profiles with ambiguity-preserving
+  outcomes (`MULTIPLE_CLASSES_PLAUSIBLE`, `INSUFFICIENT_METADATA`); the
+  declaration-narrowed class table keeps point processes as point
+  processes. **Bug fixed by the pin probe:** the sieve's empty-string axis
+  sentinel was treated as a found axis, stamping `time_axis=1.0` onto pure
+  isotherms (routing to `ode_kinetic` at bf 1.0); and the class-firing
+  penalty now keys on NON-shared diagnostics (`time_axis≈1` no longer rides
+  for every dynamic class at PDE/ODE ties) with a documented 2-nat cost.
+  A documented aggregation-validity criterion (mean-field amplitude vs
+  field spread) keeps a traveling wave's negligible ripple from being
+  mis-badged as a kinetic ODE signal while still allowing genuinely kinetic
+  2D fields to contest ODE against a firing PDE diagnostic.
+- **Constraint STATES replace automatic enforcement**
+  (`apedp/dimensional_invariant_engine.py::classify_constraints`): boundary
+  conditions are hypotheses with states `KNOWN` / `EMPIRICAL` /
+  `UNRESOLVED` / `REJECTED`; training-partition evidence carries
+  `is_physical_claim=False`; subsection cases (offset-Langmuir → origin
+  REJECTED; sub-critical window → saturation UNRESOLVED, not rejected);
+  declared independent laws alone express `KNOWN`.
+- **Expected information gain replaces unbounded-gap maximization**
+  (`apedp_dyn/epistemic/active_experimentalist.py`): I(H;Y|x) by exact
+  Gaussian-mixture quadrature, argmax under feasible ranges / cost / noise,
+  field-complete `ExperimentOrder` requests and fail-closed refusal of
+  zero-noise models and no-honest-experiment conditions.
+- **Fifth pillar: research controller**
+  (`apedp_dyn/epistemic/research_controller.py`): belief/governance state
+  separation (referee constants fingerprints re-verified before every
+  planned action; in-session tamper raises), deterministic planner over
+  {inspect, test-constraints, information experiment, improve data quality,
+  ABSTAIN}, five-part evidence ledger, controlled exits
+  (`ABSTAINED` / `BLOCKED_ON_PROBLEM_SPECIFICATION` /
+  `EVIDENCE_INTEGRATED_AWAITING_REFEREE`; one acquisition per session —
+  incorporation requires a referee re-adjudication, never self-adjudication),
+  and in-run protocol revisions returned as versioned
+  `PROPOSED_NOT_APPLIED` artifacts.
+
+---
+
+## [Unreleased] — Level-5 autonomy pillars (2026-10-21)
+
+Four autonomous-scientist pillars landed at the roadmap's named module
+paths (all `experimental`; each with a dedicated pin file, 23 pins total,
+and the honest disclosure that none of them touches acceptance authority):
+
+- **Pillar 1** `apedp_dyn/orchestration/modality_sieve.py`: autonomous
+  modality & topology sieve — structural evidence detectors (isochronous
+  monotone time axis with a declared-only irregular-axis contract, bounded
+  relative curvature, log-axis 2D spectral dispersion, Fano burstiness)
+  classify raw data into static-manifold / ODE-kinetic / PDE-field /
+  Hawkes-event modalities and MASK ill-posed engine families before any
+  proposer runs; fail-closed UNRESOLVED on conflicting evidence.
+  Pins: `tests/test_dyn_modality_sieve.py` (6, incl. the isotherm-vs-
+  kinetics discriminator and the Poisson-refusal).
+- **Pillar 2** `apedp/dimensional_invariant_engine.py`: autonomous
+  dimensional & boundary synthesis — unit→exponent conversion (pint SI
+  bases, integral-exponent fail-closed) feeding the audit-proven
+  Buckingham-Π engine (exact integer nullspace in
+  `apedp_dyn/conf.dimensionless`), log-band empirical limit estimators
+  (origin pin q(0)=0 AND independent finite-plateau detection steering the
+  rational saturation family; fail-closed on ambiguous curves), and the
+  interpolated half-max characteristic scale with the {s*/3, s*, s*·3}
+  search bank. Pins: `tests/test_dyn_dimensional_invariant_engine.py`
+  (5, incl. pint-verified dimensionless Π and both Langmuir constraints).
+- **Pillar 3** `apedp_dyn/epistemic/active_experimentalist.py`:
+  closed-loop active experimental disambiguation — x* = argmax pairwise
+  divergence − k·σ with k imported from the frozen E4 policy
+  (`DEFAULT_DETECTABILITY_K`, no new threshold), deterministic clustered
+  target-range acquisition orders, fail-closed out-of-band/NaN point
+  rejection (instruments that lie are counted, never clamped), and residual
+  referee handoff — no promotion decision inside the layer.
+  Pins: `tests/test_dyn_active_experimentalist.py` (5).
+- **Pillar 4** `apedp_dyn/epistemic/enclave_referee.py`: confidential
+  adjudication — Stage-C pair verdicts computed in a fresh OS subprocess
+  over permission-sealed inputs (aggregates only, no shared sys.modules),
+  an Ed25519-signed attestation binding verdict + request SHA-256 +
+  aggregates, tamper-fail verification, and UNRESOLVED on any
+  infrastructure failure (timeout/crash/missing output). Honest
+  "process-isolated" executed_by claim — TEE only by explicit runtime
+  declaration (`APEDX_TEE_ENCLAVE`), never auto-upgraded.
+  Pins: `tests/test_dyn_enclave_referee.py` (7, incl. reproducibility,
+  forged-signature tampering, hash-binding failure and fail-closed
+  timeout).
+
+Verification: pillar pins 23/23 (`EXIT_STATUS=0`); AGENTS.md dynamic
+regression suite green after the DOCUMENTATION.md registry indexing; the
+new modules are registered `experimental` in the §18.1 registry with
+docstring `Status:` lines matching the tags.
+
+---
+
 ## [Unreleased] — External 19-flaw audit remediation (2026-10-21, same day)
 
 An independent adversarial audit catalogued 19 flaws (Flaw severity matrix in
@@ -106,6 +561,49 @@ edits; FLAW-01 remains OPEN by protocol:
   16 pending appends with a flush before snapshots.
 - **FLAW-19:** dead `np.gradient` removed from the SIR proposer; formula uses
   `i_col` physical notation instead of the internal `I_arr` identifier.
+- **FLAW-STRAITA (same-day follow-through; exact-RMSE gate audit):**
+  `rime/implicit.rs` still carried two COMPENSATING anchored gauges in
+  raw-coefficient space — a raw `max_c = max|c_j|` rescale applied after the
+  strata-coherent `c_j = v_j/norm_j` mapping, and a raw `|c_j| > 1e-6`
+  active-count threshold that the first gauge had been accidentally inflating
+  above threshold. At O(1e6)-scale strata the pair degenerated the genuinely
+  pure 1e6 circle to the constant fallback `-1 = 0` (rmse 1.0, refusal) —
+  probed before the fix; removing only the first gauge exposed the second
+  (`test_large_scale_exact_relation_certifiable` failed at rmse 3.6e-17).
+  Fixed with coherent contribution-space gauges: no normalization after
+  `v/norm` (the Jacobi eigenvector is already 2-normalized), and membership
+  by contribution ratio `|c_j|·norm_j > 1e-6·max_j(|c_j|·norm_j)`. Post-fix
+  probes (rebuilt extension): pure 1e6 circle certifies rmse 4.1e-17,
+  near-zero-scale pure circle 1.6e-18, unit circle 5.7e-16 unchanged;
+  MUT-E4's kill restored on the natural near-miss fixture. Pins:
+  `test_flaw_straita_implicit_rs_raw_gauges_removed` +
+  `test_flaw_straita_extreme_scale_circle_certifies_not_degenerate`.
+  Verification: `cargo test --lib` 193/193, mutation battery ALL KILLED,
+  `scripts/check.sh` full tier green.
+- **FLAW-A01 (Set A follow-through; 4-module lookahead leak):**
+  `ensemble_gated.py`, `ensemble_m.py`, `incremental_info.py` and
+  `e5_market.py` built train blocks with the raw `dates < origin` mask while
+  the `_d5` target forward-shifts the 5-day rolling mean (`shift(-5)`) —
+  blocks within 5 days of the origin boundary read forward out-of-sample
+  rows. Fixed by the shared helper `trading_e4t1_v2::_train_blocks_no_leak`
+  (mirrors `run_origin`'s corrected mask `tr[tr + 5 < origin_idx]`) applied at
+  every train-block call site in the four modules. Pins: behavioral pin
+  (pre-fix leak demonstrated inline) + four-consumer text pin in
+  `tests/test_dyn_external_audit_2026_10_21_pins.py`.
+- **FLAW-A09 (Set A follow-through; sibling lag-buffer leak):** the
+  distributed-lag scorer wrote `lag_state["buffers"][base_col]` on the first
+  lag term of a call, so a second lag term on the same base column read that
+  same call's own tail as prior history (future data prepended to the head).
+  Buffer is now snapshotted pre-call and written once per (call, base
+  column). Pin:
+  `test_distributed_lag_multi_lag_same_column_streaming_safe` (chunked ==
+  single-pass with two lag terms sharing one column).
+- **FLAW-A13 (Set A follow-through; zero-denominator masking):** blind
+  benchmark per-domain metrics reported `0.0` on zero denominators — falsely
+  certifying a 0% FPR where no negative controls exist. Per-domain
+  `fpr`/`fdr`/`vrr` now report `None` on empty denominators, mirroring the
+  headline convention; pins updated to the honest contract and a dedicated
+  zero-denominator pin added (`tests/test_dyn_blind.py`).
 - **Frozen-record re-mint v1_8 → v1_9 (per freeze protocol):** the FLAW-07 and
   FLAW-08 referee edits legitimate the guard-file refresh;
   `apedp_dyn/sandbox/APEDPX_FROZEN_v1_9.json` supersedes v1_8 with

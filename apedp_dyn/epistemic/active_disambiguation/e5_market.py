@@ -32,9 +32,9 @@ from apedp_dyn.epistemic.active_disambiguation.trading_e4t1_v2 import (
     HIDS,
     ORIGINS,
     _adjudicate,
-    _blocks,
     _d5,
     _score,
+    _train_blocks_no_leak,
     run_origin,
 )
 from apedp_dyn.epistemic.adjudicate import REL_FLOOR
@@ -70,8 +70,9 @@ def run_coupling(panels: dict[str, pd.DataFrame], asset: str = "BTC") -> tuple[l
     ranks: list[str] = []
     n_promotions = 0
     for i, origin in enumerate(ORIGINS):
-        tr = np.where((dates < origin).to_numpy())[0]
-        tb = np.intersect1d(_blocks(len(dates)), tr)
+        # FLAW-A01: d5 carries a forward 5-day span; train blocks within 5
+        # days of the origin leak forward data through shift(-5).
+        tb = _train_blocks_no_leak(dates, origin)
         loc_idx = tb[-LOCAL_BLOCKS:]
         coefs = {}
         for h in hids:
@@ -155,8 +156,8 @@ def run_trajectory(panels: dict[str, pd.DataFrame], asset: str = "BTC",
     ranks: list[str] = []
     n_promotions = 0
     for i, origin in enumerate(ORIGINS):
-        tr = np.where((dates < origin).to_numpy())[0]
-        tb = np.intersect1d(_blocks(len(dates)), tr)
+        # FLAW-A01: same corrected mask as run_coupling above.
+        tb = _train_blocks_no_leak(dates, origin)
         loc_idx = tb[-LOCAL_BLOCKS:]
         _, pred_loc = _fit_predict(btc, loc_idx, full_target)
         y_loc = full_target[loc_idx]

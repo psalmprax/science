@@ -503,10 +503,30 @@ class TestF17ScaleAwareExactGate:
         assert out["algebraic_rmse"] < 1e-9
 
     def test_small_scale_near_miss_refused(self):
+        """A TRUE near-miss must refuse. Honesty trale note (2026-10-21): the
+        original fixture's misfit (sin(t) + 1e-4) is itself EXACTLY on the
+        shifted circle x^2 + (y - 1e-4)^2 = 1 + 1e-8, so once the scale-free
+        sparsifier kept the load-bearing intercept (FLAW-12 v3), the
+        certificate legitimately recognized that genuine 4-term exact law —
+        the old pin was accidentally an exact-law construction, not a
+        near-miss (exposed by rebuilding the stale maturin extension). The
+        fixture was SHARPENED (never weakened): sin(5t) is NOT representable
+        in the deg-2, no-cross library {1, x, y, x^2, y^2}, so its misfit is
+        a real unexplainable residual far above the ceiling.
+        """
+        t = np.linspace(0.0, 2.0 * math.pi, 200)
+        out = self._discover_json(np.cos(t), np.sin(t) + 1e-4 * np.sin(5.0 * t))
+        # rmse ~1e-4 relative misfit ~1e-4: far above the 1e-5 ceiling -> refused.
+        assert out["is_exact_recovery"] is False
+
+    def test_small_scale_exact_shifted_circle_certified(self):
+        """The original misfit fixture is a GENUINE exact law: the certificate
+        must recognize it (disclosed contract update paired with the
+        sharpened near-miss above, 2026-10-21)."""
         t = np.linspace(0.0, 2.0 * math.pi, 200)
         out = self._discover_json(np.cos(t), np.sin(t) + 1e-4)
-        # rmse ~1.4e-4 is far above the scale-relative 1e-5 ceiling -> refused.
-        assert out["is_exact_recovery"] is False
+        assert out["is_exact_recovery"] is True
+        assert out["algebraic_rmse"] <= 1e-13
 
     def test_tautology_still_refused_at_any_scale(self):
         """An all-zero pruned vector ('0 = 0') stays rejected regardless of

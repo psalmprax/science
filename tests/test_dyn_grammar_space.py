@@ -8,8 +8,8 @@ import pandas as pd
 import pytest
 
 import apedp_dyn.epistemic.active_disambiguation.e5_market as M
-from apedp_dyn.sandbox import multi_grammar_sandbox as MG
 from apedp_dyn.sandbox import grammar_space as G
+from apedp_dyn.sandbox import multi_grammar_sandbox as MG
 
 
 def _btc():
@@ -88,7 +88,8 @@ def test_pooled_fit_purges_forward_target_overlap(monkeypatch):
 
     losses = []
     for panels in (universe, changed):
-        monkeypatch.setattr(signals, "load_universe", lambda _: (panels, list(panels)))
+        monkeypatch.setattr(signals, "load_universe",
+                            lambda _path, p=panels: (p, list(p)))  # p: bind loop var (B023)
         _, candidates = MG.run_pooled_multi_asset_discovery(bootstrap=False)
         assert candidates
         losses.append(candidates[0].train_loss)

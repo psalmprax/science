@@ -313,7 +313,7 @@ class FullLineageExperimentLedger:
             # single-open behavior rather than crashing a legitimate run.
             try:
                 import fcntl
-                lock_ctx = fcntl.flock  # resolved only to assert availability
+                assert fcntl.flock is not None  # resolved only to assert availability
             except ImportError:  # pragma: no cover - Windows-only path
                 fcntl = None  # type: ignore[assignment]
             with open(self._persistence_path, "a", encoding="utf-8") as f:

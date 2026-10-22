@@ -22,8 +22,8 @@ be built at all, the builder raises (adjudication would be undefined).
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from itertools import combinations, combinations_with_replacement
-from typing import Callable
 
 import numpy as np
 import pandas as pd

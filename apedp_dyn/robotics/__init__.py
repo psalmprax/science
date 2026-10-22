@@ -10,6 +10,7 @@ from apedp_dyn.robotics.multi_agent_transport import (
     MultiAgentState,
     compute_cbf_repulsive_force,
     multi_agent_step,
+    pairwise_repulsive_forces,
     simulate_multi_agent_coordination,
 )
 from apedp_dyn.robotics.trajectory_transport import (
@@ -33,6 +34,7 @@ __all__ = [
     "goal_feedback_velocity_fn",
     "multi_agent_step",
     "navigate_to_goal",
+    "pairwise_repulsive_forces",
     "propagate_with_stepper",
     "simulate_multi_agent_coordination",
     "simulate_unicycle_exact",

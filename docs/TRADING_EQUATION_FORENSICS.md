@@ -1538,6 +1538,77 @@ magnitudes moved, and only because the harness leak they were computed under
 was purged. Pins updated in `tests/test_dyn_incremental.py` with this
 disclosure in the docstring.
 
+### §80c — ERR-INC-74-79 erratum (2026-10-22, disclosed): re-derivation after
+### the F1 d5-target correction and A01 no-leak block mask
+
+Two further harness corrections landed after commit `3419425` and the
+§74–79 signatures above were computed under the earlier (contaminated or
+backward-windowed) target and never re-derived at the time:
+
+- `68a3dadb` (F1): the d5 target was `sig.shift(-1).rolling(5).mean()` — a
+  mixed backward/forward window — and was corrected to the true 5-day
+  forward mean `sig.rolling(5).mean().shift(-5)`. Every §72+ target series
+  consumed by e5/ensemble machinery changed identity.
+- `9a73170` (A01): `ensemble_gated`/`ensemble_m`/`e5_market`/`incremental_info`
+  train blocks were rebuilt on the shared no-leak mask
+  (`tr[tr + 5 < origin_idx]`), removing the forward reach of the corrected
+  target into day+0..+4 of each fit.
+
+Per the honest-erratum discipline (same frozen data, same seeds/artifacts,
+no threshold moved, no re-registration beyond the already-merged harness
+corrections), the §74–79 values were RE-DERIVED deterministically under
+the fully corrected harness (verified twice) and the suites
+`test_dyn_e5_market.py`, `test_dyn_e5_r1.py`, `test_dyn_ensemble.py`,
+`test_dyn_gated_ensemble.py` were re-minted:
+
+| Quantity | Old (pre-correction) | Re-derived (corrected harness) |
+|---|---|---|
+| §74 market/null class | market drifting, null stable-ambiguous | BOTH stable-ambiguous (parity; the contrast was an artifact of the backward-windowed target) |
+| §75 market classes | 6/6 drifting | 6/6 stable-ambiguous, zero promotions, oracle MULTI (unchanged) |
+| §75 nulls @5150 | 4/6 stable-ambiguous (ETH+BNB FP) | 5/6 stable-ambiguous; BNB drifting (single FP, seed-pinned) |
+| §75 calendar | rotations on all 10 boundaries, 2–4 assets; Nov-22 none | sizes [2,4,3,4,3,4,2,4,4,4] on all 10 boundaries (no empty boundary; ≥4 clustering persists) |
+| §77 coupling classes | BTC stable; other 5 drifting (H-A# 1/1/1/0/3/5) | BTC/ETH/SOL stable-ambiguous; BNB/DOGE/AVAX drifting (H-A# 3/3/5/1/7/6) |
+| §78 ΔM3−M0 | .136/.039/.058/.034/.006/−.098 | +.0913/+.0643/+.0906/+.0970/−.0237/−.1120 |
+| §78 M2−M3 spread | ≈0 everywhere ("rankV adds nothing") | .0065/.0408/.0106/−.0216/.0233/.0721 — rankV EARNS a place on ETH/AVAX; spread capped at .08 (pinned) |
+| §79 gate counts | 11/9/11/9/11/2 | 10/6/8/1/0/0 |
+| §79 perm p | .58/.82/.24/.56/.38/.99 (all null) | .6169/.0498/.1244/.2985/.4129/.2836 — null holds on 5/6; ETH a single marginal survivor (.0498 ≈ 1/201), disclosed and pinned |
+| §79 BTC r2_m2 spots | 2022-10-01 ≈ .638, 2023-06-01 ≈ −.304 | .0749 (2022-10-01), .6400 (2023-02-01), −.5755 (2023-06-01) |
+
+Subscribe unchanged conclusions: (a) the E5 microscope is diagnostic-only
+and implements no new status — unchanged; (b) the permutation headline
+remains PRIMARY and NULL except the one pinned ETH marginal survivor
+(similar in kind to §80b's ETH/SOL DM-significant-but-permutation-null
+pattern, but here a survivor at the exact 5% boundary — recorded, not
+explained away); (c) nothing was promoted, no threshold moved, no strategy
+claim minted. The §74 "drifting" and §75 "6/6 vs null" contrast claims are
+WITHDRAWN as harness artifacts of the backward-windowed target: under the
+corrected forward target the volume-family margins never clear the kernel
+resolution floor in any window on any asset. Pins re-minted in the four
+test files with this disclosure in their docstrings; §74–§79 body text
+left as historical record.
+
+Same cause, same re-derivation, §80 amendment: the §80b table had been
+minted BEFORE the A01 no-leak block mask (`incremental_info` now shares
+`trading_e4t1_v2::_train_blocks_no_leak`, commit `9a73170`) and missed the
+F1 d5 target correction too. The incremental battery values re-derived
+once more under the fully corrected harness (seed 8080, deterministic,
+verified twice) and `tests/test_dyn_incremental.py` re-minted:
+
+| Quantity | §80b (purged harness) | Re-derived (fully corrected) |
+|---|---|---|
+| A\|P,RV | .013693/.017228/.016629/.018592/.000086/.000308 | .012767/.017194/.016678/.018920/.000279/−.000455 |
+| perm p | .7164/.0896/.2189/.7363/.8557/.5622 | .6766/.0846/.2139/.7662/.8408/.6119 |
+| DM-HAC4 p | BTC .0585, ETH .000557, SOL .000971, BNB .366, DOGE .966, AVAX .941 | BTC .0711, ETH .000498, SOL .000843, BNB .2639, DOGE .8813, AVAX .9169 |
+| corr(ŷP,ŷA) | .630/.887/.863/.387/.741/.855 | .6636/.8926/.8640/.4095/.7391/.8434 |
+| HA sign-flip | ≥ .9 everywhere (pinned) | BTC 9/11 = .818; 11/11 all others (pinned ≥ .8) |
+| BTC wins P+RV+A / P+A | 3/3 | 3/3 (unchanged) |
+
+Subscribe unchanged §80 conclusions: permutation headline NULL on all six
+(min ETH .0846, above α = .05; slightly lower than §80b's .0896 and
+recorded exactly); DM significant on ETH/SOL again contradicted
+by the permutation null; RV|P,A dead (max |x| = .0071 < .008); the
+suppressor interpretation and the Case 2/4 decision stand unchanged.
+
 ## 81. Grammar Space executable in sandbox (spec §§1–19 as code)
 
 New `apedp_dyn/sandbox/grammar_space.py` (additive): primitive/operator

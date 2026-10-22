@@ -51,7 +51,7 @@ def rime_runs():
 
 
 def test_control_recovers_exactly(rime_runs) -> None:
-    props, (test, fresh, wide, cand) = rime_runs["control_in_family"]
+    props, (test, _fresh, wide, cand) = rime_runs["control_in_family"]
     assert len(props) > 0
     assert test >= 0.99 and wide >= 0.95
     assert "x1[t-1] * x2[t-1]" in cand.formula

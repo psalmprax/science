@@ -47,7 +47,6 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
-import torch
 
 
 class CertificateViolation(RuntimeError):
@@ -212,6 +211,17 @@ def solve_cbf_qp(
             np.add.at(v, idx_j[bad], dirs * (-kap_j)[:, None])  # v_j -= kappa_j * n_ij
             np.add.at(v, idx_i[bad], dirs * kap_i[:, None])     # v_i += kappa_i * n_ij
 
+    # FLAW-17: a barrier correction applied AFTER the last norm-ball
+    # projection could push |v_i| back over v_max, so legitimate safe
+    # trajectories that needed minor repulsion were then rejected by the
+    # fail-closed A1 check below. Close the alternating scheme with one
+    # final norm-ball projection, then re-check BOTH contracts in order;
+    # if the projection re-breaks a barrier deficit, the fail-closed
+    # verdict below is honest and raises — never silently satisfied.
+    norms = np.linalg.norm(v, axis=1, keepdims=True)
+    scale = np.minimum(1.0, np.divide(box, norms, out=np.full_like(norms, box), where=norms > 1e-12))
+    v *= scale
+
     # Fail-closed certificate check (the guarantee is only released when it HOLDS).
     norms = np.linalg.norm(v, axis=1)
     if float(np.max(norms)) > box + assumptions.tol:
@@ -305,7 +315,7 @@ def model_check_unicycle_horizon(
     min_h_observed = math.inf
     h_traj: list[float] = []
     for _ in range(int(steps)):
-        v_cert, diag = certified_cbf_guard(p, th, np.zeros_like(p), assumptions)
+        v_cert, _diag = certified_cbf_guard(p, th, np.zeros_like(p), assumptions)
         v_cmd, omega_cmd = unicycle_commands_from_certified(th, v_cert, omega_max)
         poses = np.column_stack([p, th])                     # arc stepper wants [N, 3]
         outs = arc_step_fn(poses, v_cmd, omega_cmd, assumptions.dt)

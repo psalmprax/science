@@ -138,7 +138,7 @@ def test_g3_abstained(results) -> None:
 
 
 def test_live_linearization_floor_on_control() -> None:
-    dev, hold = aligned_frame(700, law_control)
+    dev, _hold = aligned_frame(700, law_control)
     Xd = dev[FEATS].to_numpy(dtype=float)
     y = dev["target"].to_numpy(dtype=float)
     _mse, key, _w = _select_periodic_quadratic(Xd, y)

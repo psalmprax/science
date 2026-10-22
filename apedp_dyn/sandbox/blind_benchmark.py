@@ -99,7 +99,11 @@ class BlindReport:
     # (promoted or explicitly rejected) vs abstained.
     coverage_blind: float | None = None
     # Per-domain breakdown: domain -> {n, fpr, fdr, vrr, coverage}.
-    by_domain: dict[str, dict[str, float]] = field(default_factory=dict)
+    # FLAW-A13 (2026-10-21 external audit): fpr/fdr/vrr are None when the
+    # domain's denominator is zero — a None must never be masked as a
+    # certified 0.0 (a domain with no negative controls has NO measured
+    # false-positive rate; reporting 0.0 certifies a false 0% error rate).
+    by_domain: dict[str, dict[str, float | None]] = field(default_factory=dict)
     # One-sided 95% upper bound when zero false promotions observed:
     # 1 - 0.05**(1/n) with n = number of unwarranted blind cases.
     # An observed 0/n is reported WITH this bound, never as "probability zero".
@@ -195,11 +199,15 @@ def score_blind(cases: list[BlindCase]) -> BlindReport:
             vp = sum(1 for i in ids if by_id[i] and by_id_row[i]["promoted"])
             vw = sum(1 for i in ids if by_id[i])
             dc = sum(1 for i in ids if by_id_row[i]["promoted"] or by_id_row[i]["rejected"])
+            # FLAW-A13: zero-denominator metrics report None, mirroring the
+            # headline metrics (fpr_blind etc. already report None when the
+            # unwarranted population is empty). A missing negative-control
+            # class is an UNMEASURED rate, never a certified 0% rate.
             rep.by_domain[dom] = {
                 "n": float(len(ids)),
-                "fpr": (fp / uw) if uw else 0.0,
-                "fdr": (fp / pr) if pr else 0.0,
-                "vrr": (vp / vw) if vw else 0.0,
+                "fpr": (fp / uw) if uw else None,
+                "fdr": (fp / pr) if pr else None,
+                "vrr": (vp / vw) if vw else None,
                 "coverage": dc / len(ids),
             }
     return rep
@@ -236,8 +244,8 @@ if __name__ == "__main__":
 def publish_caller_compliance_record(
     ledger=None,
     candidate_id: str = "",
-    dataset_id: str = None,
-    nominal_variants: int = None,
+    dataset_id: str | None = None,
+    nominal_variants: int | None = None,
 ):
     """Publish this caller's REG-F14b mode-(b) compliance record."""
     from apedp_dyn.epistemic.caller_registry import publish_compliance_record
@@ -267,8 +275,8 @@ def publish_caller_compliance_record(
 # --------------------------------------------------------------------------
 def open_sealed_confirmation_lead(
     ledger=None,
-    selection_case_ids: list[str] = None,
-    confirmation_case_ids: list[str] = None,
+    selection_case_ids: list[str] | None = None,
+    confirmation_case_ids: list[str] | None = None,
     protocol=None,
 ):
     """Issue this suite's real SELECTION/CONFIRMATION lead (mode (a)).

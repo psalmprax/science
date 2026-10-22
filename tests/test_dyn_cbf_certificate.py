@@ -31,7 +31,7 @@ SEED = 1618
 
 
 def _assumptions(**overrides) -> CBFQPCertificateAssumptions:
-    base = dict(v_max=1.0, r_safe=0.5, gamma=2.0, dt=0.05)
+    base = {"v_max": 1.0, "r_safe": 0.5, "gamma": 2.0, "dt": 0.05}
     base.update(overrides)
     return CBFQPCertificateAssumptions(**base)
 
@@ -153,7 +153,6 @@ def test_unicycle_realization_model_check_through_production_stepper():
     (head-on courses included)."""
     assm = _assumptions()
     n_envs, n_agents = 8, 6
-    rng = np.random.default_rng(SEED + 6)
     positions = _sweep_positions(n_envs, n_agents, 0.05, SEED + 7)
     # adversarial head-on pairs: point each straight at the nearest neighbour
     headings = np.empty((n_envs, n_agents))

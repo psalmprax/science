@@ -1,9 +1,16 @@
-"""E5-market pins (doc S74): diagnostic-only trajectory signatures.
+"""E5-market pins (doc S74, re-minted by ERR-INC-74-79): diagnostic-only signatures.
 
-Frozen data + frozen seeds: market BTC trajectory classifies drifting while
-the pipeline-matched stationary null classifies stable-ambiguous (control
-passes: the machinery does not manufacture rotation). No status, no
-strategy, no selection use — microscope only.
+Re-derived under the corrected harness: the F1 d5 target-definition fix
+(``68a3dadb``: ``rolling(5).mean().shift(-5)`` — a true 5-day forward mean)
+and the A01 no-leak train-block mask (``9a73170``). Under honest forward
+targets the market-vs-null drifting contrast the original pins recorded is
+GONE: every hypothesis-level margin sits below the kernel resolution floor
+in every window, so the raw rank flips (still present descriptively in the
+rank sequences) count as zero floor-gated rotation for BOTH the market
+trajectory and the stationary null. The earlier BTC "drifting" class was a
+harness artifact of the buggy (backward-windowed) target, not a market
+property; the microscope now honestly reports stable-ambiguous on both
+sides. Forensics doc §80c carries the disclosed erratum table.
 """
 
 import pytest
@@ -22,12 +29,16 @@ def _panels():
     return PANELS
 
 
-def test_market_drifting_null_stable():
+def test_market_null_signatures_corrected_d5():
     _, traj = M.run_trajectory(_panels())
     _, ntraj = M.run_null(_panels())
-    assert classify(traj) == "drifting"
+    assert classify(traj) == "stable-ambiguous"
     assert classify(ntraj) == "stable-ambiguous"
-    assert classify(traj) != classify(ntraj)
+    # The raw rank sequences may still rotate descriptively, but under the
+    # corrected harness no rotation clears the resolution floor on either
+    # side — and critically the CONTRAST the old pins asserted (market
+    # drifting while null stays stable) does not survive: it required the
+    # pre-fix contaminated target. Parity is the honest signature.
 
 
 def test_no_promotions_anywhere_oracle_multi():

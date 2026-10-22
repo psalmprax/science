@@ -249,8 +249,8 @@ def test_gain_head_recovers_affine_after_warp() -> None:
     rng = np.random.RandomState(21)
     frames = rng.randn(3, 2, 16, 16)
     frames[2] = 0.5 * frames[1] + 0.1
-    cfg = dict(hidden_dim=8, n_layers=2, context_channels=2,
-               lambda_div=0.0, lambda_smooth=0.0)
+    cfg = {"hidden_dim": 8, "n_layers": 2, "context_channels": 2,
+           "lambda_div": 0.0, "lambda_smooth": 0.0}
 
     hg = LearnedFlowHead(FlowHeadConfig(predict_gain=True, **cfg)).double()
     lg = train_flow_head(hg, frames, steps=150, lr=3e-3, seed=0)
@@ -263,7 +263,7 @@ def test_gain_head_recovers_affine_after_warp() -> None:
     with torch.no_grad():
         z0 = torch.from_numpy(frames[0:1])
         z1 = torch.from_numpy(frames[1:2])
-        v_g, s_g, b_g = hg.predict_flow_and_gain(z0, z1)
+        _v_g, s_g, b_g = hg.predict_flow_and_gain(z0, z1)
         v_n, s_n, b_n = hn.predict_flow_and_gain(z0, z1)
     assert s_n is None and b_n is None and v_n.shape == (1, 2, 16, 16)
     assert s_g is not None and b_g is not None

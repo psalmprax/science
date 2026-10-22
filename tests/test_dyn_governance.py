@@ -60,7 +60,7 @@ def test_governance_quorum_and_tampering_detection():
         # 3 trustees
         priv1, pub1 = generate_trustee_keypair()
         priv2, pub2 = generate_trustee_keypair()
-        priv3, pub3 = generate_trustee_keypair()
+        _priv3, pub3 = generate_trustee_keypair()
 
         t1 = TrusteeIdentity("t1", "Trustee 1", pub1)
         t2 = TrusteeIdentity("t2", "Trustee 2", pub2)

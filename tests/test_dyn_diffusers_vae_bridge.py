@@ -37,7 +37,7 @@ requires_diffusers = pytest.mark.skipif(
 
 
 @pytest.fixture(scope="module")
-def bridge() -> "DiffusersVAEBridge":
+def bridge() -> DiffusersVAEBridge:
     assert diffusers_available
     return DiffusersVAEBridge(config_only=True)
 
@@ -139,13 +139,14 @@ def test_pretrained_weights_path_when_available(model_id: str) -> None:
     """Real pretrained prior: exercised only when the HF cache/network is
     available; otherwise recorded as SKIPPED, never as a pass."""
     try:
-        from huggingface_hub import snapshot_download  # noqa: F401
         import urllib.request
+
+        from huggingface_hub import snapshot_download  # noqa: F401
 
         urllib.request.urlopen(
             f"https://huggingface.co/{model_id}/resolve/main/config.json", timeout=6
         ).read()
-    except Exception as exc:  # offline / dns / proxy
+    except Exception as exc:  # noqa: BLE001 — any network failure (offline/dns/proxy) means weights unavailable; skip reports it
         pytest.skip(f"pretrained VAE weights unavailable in this env: {exc!r}")
     br = DiffusersVAEBridge(model_id=model_id)
     assert br.pretrained_weights_loaded is True

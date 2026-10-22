@@ -15,7 +15,15 @@ from apedp_dyn.ui.server import app
 client = TestClient(app, raise_server_exceptions=False)
 
 
-def _physics(system="duffing", noise=0.05):
+def _physics(system="duffing", noise=0.01):
+    # noise=0.01: after commit 0eb7a04 the duffing candidate pool widened
+    # lawfully (Gate A is now dev-only per the holdout anti-snooping rule, and
+    # the AST generator enumerates symmetric subtractions/self-products), so
+    # the 2-term rival (x)^(3/2) + (v-x) sits inside the resolution floor at
+    # noise=0.05 (delta 0.0134 <= tau 0.0271) and the referee HONESTLY returns
+    # multi_hypothesis there. That abstention is correct and must not be
+    # test-forced. The mismatch floor keeps delta/tau ~1.3 at noise=0.01, so
+    # the unique path this contract verifies is again exercised.
     r = client.post("/api/discover/physics",
                     json={"system": system, "noise": noise, "multiterm": True})
     assert r.status_code == 200, r.text[:200]
