@@ -185,7 +185,11 @@ def evaluate(e: Expr, values: Mapping[str, float]) -> float:
 
 
 def _eval_pow(e: Pow, values: Mapping[str, float]) -> float:
-    return float(evaluate(e.base, values)) ** float(e.exponent)
+    base = float(evaluate(e.base, values))
+    exponent = float(e.exponent)
+    if (base < 0.0 and not exponent.is_integer()) or (base == 0.0 and exponent < 0.0):
+        raise ValueError("power evaluated outside its declared real domain")
+    return base ** exponent
 
 
 def numerical_check(
