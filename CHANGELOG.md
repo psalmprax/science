@@ -4,6 +4,29 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — SRE gate instrumented: tree-vs-arena baseline recorded, port DEFERRED (2026-10-22)
+
+The Rust-migration decision record's rank-1 item ("port `genetic.rs` trees
+onto the rime arena `Graph`, Rust→Rust") was supposed to be evidence-gated
+but had no tree-vs-arena measurement. Instrumented:
+
+- `tests/sre_tree_vs_arena_profile.rs`: deterministic GP workload (169
+  candidates from the production `GeneticOps::random_tree` builder at the
+  SRE arithmetic flags, 60k rows ×2 vars), semantics-identical
+  tree→arena conversion (IEEE-exact Sub→Add∘Neg, parity-gated bit-exact
+  incl. NaN on the covered subset), throughput on the identical candidate
+  set, artifact written to `benchmarks/sre_tree_vs_arena_baseline.json`.
+- **Measured (gate: TREE-FAVORED)**: arena 0.51× of the tree path (403 ms
+  vs 784 ms) on unshared GP trees; the semantics-identical conversion
+  covers only 10.1% of the pool (tree Div/Min/Max/powf/unbounded
+  transcendentals have no drift-free arena counterpart — tree `a−b` maps
+  exactly as `Add∘Neg`, which is what parity is pinned on). The 222×
+  figure is Python-vs-Rust, NOT tree-vs-arena.
+- Decision record §4 rank 1 revised honestly: **evaluation-speed case for
+  the Rust→Rust port is measured-NEGATIVE**; revisit only with a measured
+  structural-sharing/hash-consing upside. `MultiVariableSRE` keeps
+  delegating via FFI to the native tree engine.
+
 ## [Unreleased] — Blocker-sweep repairs: dashboard PDE-transfer regression + stale E5/E4-T1 pins re-minted (2026-10-22)
 
 Release-blocker sweep on current HEAD (bisection-verified causes):

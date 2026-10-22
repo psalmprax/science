@@ -1,0 +1,41 @@
+{
+  "conversion": {
+    "coverage_fraction": 0.10059171597633136,
+    "covered": 17,
+    "paranote": "Sub is mapped as Add∘Neg (IEEE-exact equality incl. NaN); parity gate is exact on the covered set",
+    "unmapped_ops": [
+      "Div(->SafeDiv differs)",
+      "Min/Max(absent)",
+      "Pow(safe-rational differs)",
+      "unbounded transcendentals(exp/ln/log/erf/tan/... ...)"
+    ]
+  },
+  "gates": {
+    "gate_decision": "TREE-FAVORED: the arena does not deliver a throughput win on unshared GP trees; the port case must come from sharing/dedup benefits, not evaluation speed",
+    "parity_mismatches": 0
+  },
+  "purpose": "SRE gate instrumentation for docs/rust_migration_decision_record.md rank 1 (tree-vs-arena)",
+  "recorded_at": "1792644945",
+  "throughput": {
+    "arena_ms": 783.802904,
+    "arena_over_tree_ratio": 0.5141433158048111,
+    "arena_us_per_candidate": 23053.026588235294,
+    "tree_ms": 402.987024,
+    "tree_us_per_candidate": 11852.559529411767
+  },
+  "workload": {
+    "builder_flags": {
+      "allow_advanced": false,
+      "allow_exp": false,
+      "allow_misc": false,
+      "allow_trans": false
+    },
+    "loops_per_rep": 2,
+    "max_depth": 4,
+    "n_candidates": 169,
+    "num_vars": 2,
+    "reps": 3,
+    "rng_seed": 20261022,
+    "rows": 60000
+  }
+}
