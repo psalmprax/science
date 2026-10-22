@@ -480,7 +480,14 @@ ratio, description, log_ratio = BayesianRefinementEngine.compute_likelihood_rati
 (`C0`, `C1`, … — dimensionless placeholders that become constant features),
 term-vector least-squares fitting (one coefficient per additive term, with
 rational snapping and pruning), and constant-shift mutation, so laws with
-additive offsets such as `2*x**2 + 3` are exactly recoverable.
+additive offsets such as `2*x**2 + 3` are exactly recoverable. The
+Occam complexity penalty inside the fitness (`mse + 1e-4*complexity`) is
+scale-free: it is multiplied by `min(var(y), 1)`, so targets whose variance
+is far below 1 (e.g. price-impact data with R² ≈ 1.6% signal) are no longer
+over-penalized into losing a true structured model to the sample-mean
+constant — verified by the pinned trading constant-collapse regression
+(`tests/test_dyn_trading_constant_collapse_pin.py`); var(y) ≥ 1 targets
+keep the exact legacy penalty.
 ```python
 from apedp.discovery import MultiVariableSRE
 from apedp.core import ClosedLoopAssuranceSystem

@@ -2137,6 +2137,30 @@ class MultiVariableSRE:
         except (TypeError, ValueError, ArithmeticError):
             return float("inf")
 
+    @staticmethod
+    def _fitness_penalty_scale(y_data: np.ndarray) -> float:
+        """Scale factor making the Occam penalty scale-free (var-bounded).
+
+        The legacy fitness added an absolute ``1e-4 * complexity`` penalty,
+        calibrated for O(1)-variance targets. On small-variance targets the
+        penalty could exceed the ENTIRE recoverable signal: e.g. the trading
+        price-impact case (var(dp) ~ 2.5e-3, R^2 ~ 1.6%) lost a true
+        ``0.04``-MSE-gain ``lambda*ofi`` model to a two-extra-node penalty
+        of ``2e-4`` — 4.96x the signal — so the search returned the
+        sample-mean constant. Multiplying the penalty by
+        ``min(var(y), 1.0)`` keeps bit-identical legacy behavior for
+        var(y) >= 1 targets (scale is exactly 1.0) and shrinks it
+        proportionally on small-variance ones, so fitness selection is
+        governed by signal-to-noise, not by the target's measurement units.
+        """
+        try:
+            var = float(np.var(np.asarray(y_data, dtype=float)))
+        except (TypeError, ValueError):
+            return 1.0
+        if np.isfinite(var) and var > 0.0:
+            return float(min(var, 1.0))
+        return 1.0  # degenerate target: preserve legacy absolute penalty
+
     def fitness(self, candidate: sp.Expr, x_data: dict[str, np.ndarray], y_data: np.ndarray) -> float:
         if bool(getattr(self, "allow_implicit_fitness", False)):
             return self.implicit_fitness(candidate, x_data, y_data)
@@ -2160,7 +2184,8 @@ class MultiVariableSRE:
             if np.isinf(mse) or np.isnan(mse):
                 return float('inf')
             complexity = len(list(sp.preorder_traversal(calibrated_expr)))
-            return mse + 1e-4 * complexity
+            penalty_scale = self._fitness_penalty_scale(y_data)
+            return mse + 1e-4 * complexity * penalty_scale
         except (ValueError, TypeError, ArithmeticError) as e:
             logger.warning("Parameter optimization failed, returning inf: %s", e)
             return float('inf')

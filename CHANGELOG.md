@@ -4,6 +4,31 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Fitness penalty made scale-free: trading constant-collapse root cause fixed (2026-10-22)
+
+Forensic verification (bit-exact reproduction in-session) established that
+`MultiVariableSRE.fitness`'s Occam term `mse + 1e-4*complexity` is
+calibrated for O(1)-variance targets and is NOT scale-free: on the tutorial
+microstructure price-impact data (`var(dp)` ~ 2.5e-3, true linear signal
+R² ~ 1.6%) the two-node penalty (2e-4) exceeded the entire MSE gain of the
+correct `lambda*ofi` model (4.0e-5, ratio 4.96x), so the search returned
+the sample-mean constant `-0.0005104...` REGARDLESS of budget (proven
+budget-independent: identical constant at generations=60/pop_size=200,
+and the true model is hard-seeded into the initial population).
+
+- Fix: the penalty is now multiplied by `min(var(y), 1.0)` — bit-identical
+  legacy behavior for var(y) >= 1 targets (exact scale == 1.0),
+  signal-proportional for smaller-variance ones; degenerate/zero-variance
+  targets keep the legacy absolute penalty.
+- Pins: `tests/test_dyn_trading_constant_collapse_pin.py` (5) — the
+  notebook-exact simulation must NOT return a bare constant (budget- and
+  variance-regime invariant, with documented 1% OLS slack only for the
+  engine's legacy coefficient snapping), legacy scale == 1.0 for var >= 1,
+  scale == var(y) below the bound, and the degenerate-target fallback.
+- Verified: AGENTS.md dynamic suite 110 passed; discovery-adjacent suite
+  171 passed (incl. the suite's exact-semantics fitness tests and all
+  seeded discovery-outcome pins); notebook-adapter suite 30/30.
+
 ## [Unreleased] — Tutorial notebook: full engine-tour section (GA/GP, RIME-AD, ODE, PDE, dispatch, all graph surfaces) (2026-10-22)
 
 The tutorial previously demonstrated only Hawkes/microstructure, basic
