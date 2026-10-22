@@ -177,6 +177,16 @@ on at the measured cause:
    hold: the box-bounded worst case saturates −γ·h at exactly h = h*,
    never violates) is accepted into the certified boundary — the argument
    shares the certified module's exact assumption box A1/A2/A5.
+   EVIDENCE PACK ASSEMBLED (2026-10-22, decision still
+   UNADJUDICATED): adjudication-ready pack at
+   `docs/margin_theorem_referee_packet.md` + regenerable machine-check
+   artifact `benchmarks/margin_theorem_referee_packet.json`
+   (builder `benchmarks/run_margin_theorem_referee_packet.py`, exit-gated;
+   6/6 checks green incl. the exact-saturation pin at h = h*, the sampled
+   A1 norm-ball worst-case bound, the all-pairs re-check honesty sweep,
+   the fail-closed unsolved-nominal refusal and a 60-step production
+   stepper horizon at min_h = 2.28); the deciding layer records its
+   verdict in the artifact's decision slot.
 3. scipy-availability accepted at runtime (cKDTree), OR the index +
    restricted projections ported into the Rust kernel (rank-4 backlog).
 4. The all-pairs fail-closed re-check stays in EVERY release, forever —

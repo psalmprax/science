@@ -1,0 +1,144 @@
+{
+  "packet_kind": "margin_theorem_referee_packet",
+  "assembled_by": "benchmarks/run_margin_theorem_referee_packet.py (re-runnable)",
+  "theorem": {
+    "name": "non-neighbor margin argument (velocity layer)",
+    "statement": "Under assumption box A1/A2/A5 (|v_i| \u2264 v_max, \u03b3\u00b7dt \u2264 0.5, deterministic numerics \u2014 the certified module's EXACT box): (v_i \u2212 v_j)\u00b7n_ij \u2265 \u2212\u2016v_i\u2212v_j\u2016 \u2265 \u22122\u00b7v_max, so for every pair with h_ij \u2265 h* := 2\u00b7v_max/\u03b3 the barrier law hdot_ij \u2265 \u2212\u03b3\u00b7h_ij holds CONSTRUCTIVELY; the anti-aligned top-speed pair at h = h* satisfies it with EXACT saturation. The restricted QP constrains only pairs with h_ij < h* and re-checks ALL pairs fail-closed per step; free pairs extend the certified discrete invariance h_{k+1} \u2265 (1\u2212\u03b3\u00b7dt)\u00b7h_k.",
+    "assumption_box": {
+      "v_max": 1.0,
+      "r_safe": 0.5,
+      "gamma": 0.5,
+      "dt": 0.05,
+      "gamma_dt": 0.025,
+      "max_agents": 256,
+      "tol": 1e-09
+    },
+    "certified_module_share": "the box and the all-pairs fail-closed re-check are the CERTIFIED module's, nothing stronger is claimed"
+  },
+  "machine_checks": {
+    "exact_saturation_at_h_star": {
+      "h_star": 4.0,
+      "worst_case_hdot": -2.0,
+      "barrier_rhs": -2.0,
+      "lapse": 0.0,
+      "passes": true,
+      "statement": "(v_i \u2212 v_j)\u00b7n_ij = \u22122\u00b7v_max = \u2212\u03b3\u00b7h* at h = h* \u2014 SATURATION, not violation"
+    },
+    "headroom_above_h_star": {
+      "h": 4.004,
+      "slack": 0.0019999999999997797,
+      "passes": true
+    },
+    "box_worst_case_bound_sampled": {
+      "samples": 20000,
+      "min_observed_hdot": -1.9134794613426467,
+      "theoretical_floor": -2.0,
+      "passes": true
+    },
+    "restricted_solve_all_pairs_recheck_honesty": {
+      "seeds": [
+        {
+          "seed": 0,
+          "all_pairs": 66,
+          "constrained_pairs": 23,
+          "free_pairs": 43,
+          "constraint_ratio": 0.3484848484848485,
+          "h_star": 4.0,
+          "worst_all_pairs_deficit_after_release": 0.0,
+          "box_conform": true
+        },
+        {
+          "seed": 1,
+          "all_pairs": 66,
+          "constrained_pairs": 27,
+          "free_pairs": 39,
+          "constraint_ratio": 0.4090909090909091,
+          "h_star": 4.0,
+          "worst_all_pairs_deficit_after_release": 0.0,
+          "box_conform": true
+        },
+        {
+          "seed": 2,
+          "all_pairs": 66,
+          "constrained_pairs": 27,
+          "free_pairs": 39,
+          "constraint_ratio": 0.4090909090909091,
+          "h_star": 4.0,
+          "worst_all_pairs_deficit_after_release": -0.016212907815082556,
+          "box_conform": true
+        },
+        {
+          "seed": 3,
+          "all_pairs": 66,
+          "constrained_pairs": 25,
+          "free_pairs": 41,
+          "constraint_ratio": 0.3787878787878788,
+          "h_star": 4.0,
+          "worst_all_pairs_deficit_after_release": 0.0,
+          "box_conform": true
+        },
+        {
+          "seed": 4,
+          "all_pairs": 66,
+          "constrained_pairs": 26,
+          "free_pairs": 40,
+          "constraint_ratio": 0.3939393939393939,
+          "h_star": 4.0,
+          "worst_all_pairs_deficit_after_release": 1.1102230246251565e-16,
+          "box_conform": true
+        }
+      ],
+      "passes": true,
+      "constraint_ratio_range": [
+        0.3484848484848485,
+        0.4090909090909091
+      ]
+    },
+    "unsolved_nominal_refused_fail_closed": {
+      "refused": true,
+      "detail": "CBF-QP(proximity) failed to certify: max all-pairs deficit 2.000e+00 (free-pair worst -inf; margin covers it algebraically)",
+      "passes": true
+    },
+    "proximity_horizon_model_check": {
+      "steps": 60,
+      "min_h_observed": 2.284532051498216,
+      "h_last": 2.284532051498216,
+      "claim_disclosure": "model_checked_proximity_locked_unicycle_realization (NOT a formal claim; margin + fail-closed re-check each step)",
+      "passes": true,
+      "torch_present": true,
+      "note": "passes=True counts only where the production stepper ran (torch present)"
+    }
+  },
+  "verification_pointers": {
+    "pitch_module": {
+      "path": "apedp_dyn/robotics/proximity_margin.py",
+      "sha256": "998874c093c63d50507a43ddf9a1ac1e3df686bd6e2b3410f40f809d9ce6055c"
+    },
+    "certified_module": {
+      "path": "apedp_dyn/robotics/cbf_certificate.py",
+      "sha256": "a5b892707c8e2ba402d25ee2f7e2a1301d37397d1c71b2e0d92b656fca05b004"
+    },
+    "pin_tests": {
+      "path": "tests/test_dyn_proximity_margin_pins.py",
+      "sha256": "23b63fa11a619a572b825411a7fdcbcbf8b72ca93b22cc8a7da89b2a5e9faf8d",
+      "pins_collected": 10
+    },
+    "certificate_battery_artifact": {
+      "path": "benchmarks/cbf_certificate_report.json",
+      "exists": true,
+      "sha256": "7cc658d2cc04430dcd601f9f5f276bd1066b577525c1052f86f6352d841d74a6"
+    }
+  },
+  "claim_boundary": [
+    "sufficient-condition argument under A1/A2/A5 only",
+    "unicycle realization is MODEL-CHECKED, never a formal claim",
+    "kernel parity for the restricted solver is NOT claimed (python mirror provenance)",
+    "production wiring stays behind the N \u2265 256 real-time gate; default cap N \u2264 64 does not trigger it",
+    "the FULL all-pairs fail-closed re-check must ship in EVERY release: the compositional honesty floor"
+  ],
+  "decision_slot": {
+    "status": "UNADJUDICATED",
+    "instruction": "Acceptance of the margin theorem into the certified boundary belongs to the frozen referee protocol (AGENTS.md \u00a71.1: a proposer never decides its own acceptance). This packet is proposer-side evidence only; the deciding layer must record its verdict, date and evidence fingerprint here."
+  },
+  "builder_exit_code": 0
+}
