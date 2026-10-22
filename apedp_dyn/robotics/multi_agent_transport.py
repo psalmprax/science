@@ -127,6 +127,8 @@ def pairwise_repulsive_forces(
     summation vs sequential +=), pinned at <=1e-12 relative.
     """
     p = np.asarray(positions, dtype=float)
+    if not np.isfinite(p).all():
+        raise ValueError("positions must contain only finite coordinates")
     n = p.shape[0]
     diff = p[:, None, :] - p[None, :, :]                     # [N, N, 2]
     dist = np.sqrt((diff * diff).sum(-1))                    # [N, N] (raw)
