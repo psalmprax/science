@@ -96,6 +96,52 @@ def test_non_strict_still_falls_back_to_python(monkeypatch):
     assert res.pareto_front, "fallback produced no frontier"
 
 
+def test_enforcement_refuses_fallback_from_evolve(monkeypatch):
+    """The process-wide switch closes the hole a forgotten flag would leave."""
+    from apedp.rust_bridge import enforce_native_search
+
+    monkeypatch.setattr(
+        "apedp.evolutionary_search.is_rust_kernel_available", lambda: False)
+    x, y = _tiny_data()
+    enforce_native_search(True)
+    try:
+        with pytest.raises(NativeSearchUnavailableError,
+                           match="enforce_native_search"):
+            evolve(x, y, config=SearchConfig(use_native_ga=True, **_TINY))
+        # A harness that never asked for the kernel is refused too, rather than
+        # silently timed on the Python loop.
+        with pytest.raises(ValueError, match="requires use_native_ga=True"):
+            evolve(x, y, config=SearchConfig(**_TINY))
+    finally:
+        enforce_native_search(False)
+
+
+def test_enforcement_refuses_fallback_from_the_bridge(monkeypatch):
+    import apedp_kernel
+
+    from apedp.rust_bridge import RustKernelBridge, enforce_native_search
+
+    def _boom(*args, **kwargs):
+        raise RuntimeError("simulated kernel failure")
+
+    monkeypatch.setattr(apedp_kernel, "evolve_native", _boom, raising=False)
+    data, target = _tiny_data()
+    columns = [data["x"]]
+    enforce_native_search(True)
+    try:
+        with pytest.raises(NativeSearchUnavailableError,
+                           match="simulated kernel failure"):
+            RustKernelBridge().evolve_native(
+                columns, ["x"], target, population_size=4, generations=1)
+        # An explicitly requested fallback stays legal: the rust-vs-python
+        # sweeps measure both paths on purpose.
+        pareto, _ = RustKernelBridge(force_fallback=True).evolve_native(
+            columns, ["x"], target, population_size=4, generations=1)
+        assert pareto and all(p["kernel_path"] == "fallback" for p in pareto)
+    finally:
+        enforce_native_search(False)
+
+
 def test_benchmark_harnesses_refuse_the_python_fallback():
     """A benchmark number must never come from the Python loop by accident.
 

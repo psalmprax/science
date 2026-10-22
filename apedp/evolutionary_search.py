@@ -37,7 +37,7 @@ from typing import Any, cast
 import numpy as np
 import sympy as sp
 
-from apedp.rust_bridge import is_rust_kernel_available
+from apedp.rust_bridge import is_rust_kernel_available, native_search_enforced
 from apedp.safety import safe_parse_expr
 
 try:
@@ -807,9 +807,15 @@ def evolve(
     runs remain comparable with uninstrumented ones.
     """
     cfg = config or SearchConfig()
-    if cfg.strict_native_ga and not cfg.use_native_ga:
+    # ``strict_native_ga`` is per-call; the benchmark enforcement switch is
+    # process-wide so a harness that forgets the flag still cannot record a
+    # Python-loop result as a native one.
+    strict_native = cfg.strict_native_ga or native_search_enforced()
+    strict_reason = ("strict_native_ga=True" if cfg.strict_native_ga
+                     else "enforce_native_search() is on")
+    if strict_native and not cfg.use_native_ga:
         raise ValueError(
-            "strict_native_ga=True requires use_native_ga=True; refusing to run "
+            f"{strict_reason} requires use_native_ga=True; refusing to run "
             "the Python loop under a flag that promises the Rust kernel")
     rng = random.Random(cfg.seed)
     names = list(x_train.keys())
@@ -819,9 +825,9 @@ def evolve(
 
     native_probe = is_rust_kernel_available()
     native_available = native_probe and apedp_kernel is not None
-    if cfg.use_native_ga and cfg.strict_native_ga and not native_available:
+    if cfg.use_native_ga and strict_native and not native_available:
         raise NativeSearchUnavailableError(
-            "strict_native_ga=True, but the native Rust kernel cannot serve the "
+            f"{strict_reason}, but the native Rust kernel cannot serve the "
             f"search (is_rust_kernel_available()={native_probe}, "
             f"apedp_kernel imported={apedp_kernel is not None}); the Python "
             "fallback is refused by strict mode")
@@ -878,9 +884,9 @@ def evolve(
                 denormalized_pick=grouped_pick,
             )
         except Exception as e:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
-            if cfg.strict_native_ga:
+            if strict_native:
                 raise NativeSearchUnavailableError(
-                    "strict_native_ga=True and the native Rust search failed: "
+                    f"{strict_reason} and the native Rust search failed: "
                     f"{type(e).__name__}: {e}") from e
             logger.debug("Native Rust evolve failed (%s), falling back to Python loop.", e)
 

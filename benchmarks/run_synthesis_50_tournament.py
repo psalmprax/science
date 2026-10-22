@@ -29,7 +29,7 @@ from scipy import stats
 from sklearn.neural_network import MLPRegressor
 
 from apedp.model_synthesis import AutonomousModelSynthesizer
-from apedp.rust_bridge import RustKernelBridge
+from apedp.rust_bridge import RustKernelBridge, enforce_native_search
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("tournament_50")
@@ -102,6 +102,10 @@ class Synthesis50TournamentRunner:
         self._mlp_models: dict[str, Any] = {}
 
     def run_all(self) -> dict[str, Any]:
+        # No measurement in this tournament may be a Python-fallback number: the
+        # engine and the baseline adapters build their own bridges, so the
+        # refusal has to be process-wide rather than per call.
+        enforce_native_search(True)
         competitors = ["apedp_4_0", "neural_automl", "gplearn", "wrapped_ai_feynman", "llm_sr"]
         summary: dict[str, Any] = {"competitors": {}, "statistical_tests": {}}
 

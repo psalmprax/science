@@ -397,6 +397,19 @@ impl GeneticOps {
         Node::Call(func, Box::new(arg))
     }
 
+    /// One rounded uniform constant on a 0.1 grid, mirroring the leaf
+    /// generator. Shared with the Pow arm so a constant exponent is drawn from
+    /// exactly the same distribution as a constant leaf -- and is therefore
+    /// just as tunable by the polish stage -- instead of from a fixed list.
+    fn random_const_value(rng: &mut FastRng, lo: f64, hi: f64) -> f64 {
+        let val = ((rng.uniform(lo, hi) * 10.0).round()) / 10.0;
+        if val.abs() < 1e-4 {
+            1.0
+        } else {
+            val
+        }
+    }
+
     fn random_tree_inner(
         rng: &mut FastRng,
         max_depth: usize,
@@ -422,8 +435,7 @@ impl GeneticOps {
                     std::f64::consts::E
                 })
             } else {
-                let val = ((rng.uniform(-3.0, 3.0) * 10.0).round()) / 10.0;
-                Node::Const(if val.abs() < 1e-4 { 1.0 } else { val })
+                Node::Const(Self::random_const_value(rng, -3.0, 3.0))
             }
         } else {
             // Operator branch. Choices are packed contiguously per enabled
@@ -462,12 +474,17 @@ impl GeneticOps {
                             // General Pow(x, y) with a random exponent subtree.
                             Node::Pow(Box::new(l), Box::new(mk_sub(rng)))
                         } else {
-                            let p = match rng.gen_range(0, 4) {
-                                0 => 2.0,
-                                1 => 3.0,
-                                2 => -1.0,
-                                _ => 0.5,
-                            };
+                            // A power's exponent is a tunable parameter, not a
+                            // menu: the old fixed set {2, 3, -1, 0.5} could not
+                            // represent exponents like 2.5 at all, so those
+                            // only appeared through the general-Pow subtree or
+                            // by constant jitter drifting 2.0 upward. Drawing
+                            // the exponent from the same continuous grid as any
+                            // other constant makes every exponent in the range
+                            // reachable IN PRINCIPLE, and the polish stage
+                            // refines it (span = max(|p|, 0.5)); no exponent
+                            // value is privileged by the generator.
+                            let p = Self::random_const_value(rng, -3.0, 3.0);
                             Node::Pow(Box::new(l), Box::new(Node::Const(p)))
                         }
                     }
@@ -696,6 +713,19 @@ fn golden_section_min<F: FnMut(f64) -> f64>(
     }
 }
 
+/// Whether a tree carries a power whose exponent is a constant -- i.e. a form
+/// whose exponent the polish stage can actually tune.
+pub fn has_pow_const(node: &Node) -> bool {
+    let mut paths = Vec::new();
+    node.collect_paths(&[], &mut paths);
+    paths.iter().any(|p| {
+        matches!(
+            node.get_subtree(p),
+            Some(Node::Pow(_, exp)) if matches!(exp.as_ref(), Node::Const(_))
+        )
+    })
+}
+
 /// Coordinate-descent polish of a candidate's inner constants via
 /// golden-section line search (the LM-style local stage of the pipeline).
 ///
@@ -916,6 +946,28 @@ pub fn run_native_evolutionary_search<V: crate::data::DataCol>(
                     config.allow_misc,
                     config.allow_advanced,
                 );
+                // A power's exponent is a tunable parameter, so fit it where the
+                // candidate is born. Scored with a random exponent, a power-law
+                // candidate loses to the polynomial rivals and never reaches the
+                // top-k polish stage -- measured: x**2.5 stayed unrecovered on
+                // 6/10 seeds at the small budget even though polishing a Pow
+                // tree recovers the exponent to machine precision.
+                let node = if has_pow_const(&node) {
+                    let mut fit_evals = 0usize;
+                    let (fitted, ..) = polish_candidate_constants(
+                        &node,
+                        data,
+                        target,
+                        mean_target,
+                        var_target,
+                        2,
+                        &mut fit_evals,
+                    );
+                    total_evaluations.fetch_add(fit_evals, Ordering::Relaxed);
+                    fitted
+                } else {
+                    node
+                };
                 let (mse, a, b) =
                     score_candidate_affine(&node, data, target, mean_target, var_target);
                 population.push((node, mse, a, b));
@@ -1221,6 +1273,93 @@ mod polish_tests {
         assert_eq!(a, 0.0, "constant predictor must have zero slope");
         assert_eq!(b, mean, "constant predictor must predict the target mean");
         assert_eq!(mse, var, "constant predictor MSE equals target variance");
+    }
+}
+
+#[cfg(test)]
+mod pow_exponent_tests {
+    use super::*;
+
+    fn stats(target: &[f64]) -> (f64, f64) {
+        let mean = target.iter().sum::<f64>() / target.len() as f64;
+        let var = target.iter().map(|v| (v - mean) * (v - mean)).sum::<f64>()
+            / target.len() as f64;
+        (mean, var)
+    }
+
+    /// The exponent is only *tunable* if the polish stage actually moves it.
+    /// This pins the mechanism: a Pow tree seeded with the wrong exponent has
+    /// to come out of polish with the right one, otherwise a continuous draw
+    /// changes nothing about reachability.
+    #[test]
+    fn test_polish_refines_pow_exponent_to_the_true_value() {
+        let data = vec![(0..100)
+            .map(|i| 0.5 + 3.5 * (i as f64) / 99.0)
+            .collect::<Vec<f64>>()];
+        let target: Vec<f64> = data[0].iter().map(|v| v.powf(2.5)).collect();
+        let (mean, var) = stats(&target);
+        let tree = Node::Pow(
+            Box::new(Node::Var(0)),
+            Box::new(Node::Const(1.5)),
+        );
+        let (mse_before, _, _) = score_candidate_affine(&tree, &data, &target, mean, var);
+        let mut evals = 0usize;
+        let (polished, mse_after, _, _) =
+            polish_candidate_constants(&tree, &data, &target, mean, var, 8, &mut evals);
+        assert!(
+            mse_after < mse_before * 1e-6,
+            "polish must fit the exponent: {} -> {}",
+            mse_before,
+            mse_after
+        );
+        // Machine precision, not exact zero: f64 powf on 100 points leaves a
+        // residual around 1e-13 even at the true exponent.
+        assert!(mse_after < 1e-10, "exponent not recovered: mse={}", mse_after);
+        let exponent = recover_pow_exponent(&polished).expect("Pow exponent vanished");
+        assert!(
+            (exponent - 2.5).abs() < 1e-2,
+            "polished exponent {} is not 2.5 (tree {:?})",
+            exponent,
+            polished
+        );
+    }
+
+    fn recover_pow_exponent(node: &Node) -> Option<f64> {
+        let mut paths = Vec::new();
+        node.collect_paths(&[], &mut paths);
+        for p in paths {
+            if let Some(Node::Pow(_, exp)) = node.get_subtree(&p) {
+                if let Node::Const(c) = exp.as_ref() {
+                    return Some(*c);
+                }
+            }
+        }
+        None
+    }
+
+    /// The exponent of a generated `Pow` must come from the tunable constant
+    /// grid, not a fixed menu. Before this, exponents could only be 2, 3, -1 or
+    /// 0.5, so a law like x**2.5 needed the general-Pow subtree or upward
+    /// jitter of 2.0 -- measured at 5/10 seeds on the pinned small budget.
+    #[test]
+    fn test_pow_exponents_are_not_a_fixed_menu() {
+        let mut rng = FastRng::new(2026);
+        let mut exponents = std::collections::BTreeSet::new();
+        for _ in 0..4000 {
+            let tree = GeneticOps::random_tree(&mut rng, 2, 1, true, true, true, true);
+            if let Node::Pow(_, exp) = tree {
+                if let Node::Const(p) = *exp {
+                    exponents.insert((p * 10.0).round() as i64);
+                }
+            }
+        }
+        let old_menu = [20_i64, 30, -10, 5];
+        let off_menu = exponents.iter().filter(|v| !old_menu.contains(v)).count();
+        assert!(
+            off_menu >= 3,
+            "Pow exponents collapsed to the old fixed menu: {:?}",
+            exponents
+        );
     }
 }
 

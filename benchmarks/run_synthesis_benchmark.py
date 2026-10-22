@@ -27,7 +27,7 @@ import scipy.optimize as opt
 from sklearn.neural_network import MLPRegressor
 
 from apedp.model_synthesis import AutonomousModelSynthesizer
-from apedp.rust_bridge import RustKernelBridge
+from apedp.rust_bridge import RustKernelBridge, enforce_native_search
 from benchmarks.synthetic_synthesis_generator import CORPUS_SYNTHESIS_DIR
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -56,6 +56,10 @@ def load_synth_dataset(problem_id: str = "SYNTH_01"):
 
 
 def run_benchmark():
+    # The synthesis engine builds its own bridge internally, so a per-call flag
+    # cannot reach it: this switch makes every search in the process refuse the
+    # Python fallback instead of scoring it under the engine's name.
+    enforce_native_search(True)
     print("==========================================================================")
     print("        APEDP 4.0 BLIND SYNTHESIS BENCHMARK: SYNTH_01 EXPERIMENT         ")
     print("==========================================================================")

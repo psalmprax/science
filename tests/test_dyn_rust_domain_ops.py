@@ -94,14 +94,13 @@ def test_enumeration_advanced_ops_gated_off_by_default():
 
 def test_native_ga_discovers_advanced_ops():
     x = np.linspace(0.5, 4.0, 100)
-    # x**2.5 is reachable only through the general-Pow arm: the fixed exponent
-    # set is {2, 3, -1, 0.5}, so 2.5 has to arrive as a random exponent subtree
-    # or by multiplicative constant jitter. That is a rare event per node, and
-    # at 2 islands x 30 x 15 generations (~4.5k evaluations) exact recovery was
-    # measured on 5/10 seeds (seed 123 among the misses, hence the old red pin).
-    # The larger budget below recovered x**2.5 on 10/10 seeds with a worst best
-    # MSE of 1.4e-30, in about 1 s, so the assertion tests the general-Pow
-    # capability instead of the luck of one seed at the old budget.
+    # A power's exponent is a tunable parameter now: the kernel draws it from
+    # the same continuous grid as any other constant and fits it when the
+    # candidate is born, so 2.5 needs no hard-coded menu entry. That raised
+    # recovery at the old 2 x 30 x 15 budget from 5/10 to 17/20 seeds -- still
+    # not a deterministic claim, so this pin keeps the larger budget below
+    # (10/10 seeds, worst best MSE 1.4e-30, ~1 s). Seed sensitivity of every GA
+    # capability pin is tabulated in docs/ga_seed_fragility_audit.md.
     r_pow = evolve({"x": x}, x ** 2.5, config=SearchConfig(
         use_native_ga=True, strict_native_ga=True, islands=4, island_size=120,
         generations=80, seed=123))

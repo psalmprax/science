@@ -17,8 +17,8 @@ inferred in either case):
   `SearchConfig.strict_native_ga` raises `NativeSearchUnavailableError` (exported)
   on both paths; `strict_native_ga` without `use_native_ga` raises `ValueError`
   instead of quietly running Python. Default behaviour unchanged (fallback still
-  happens, still logged). Pins: `tests/test_dyn_native_ga_best.py` (5 tests added,
-  including a pin that the fallback path is never reported as `native_rust`).
+  happens, still logged). Pins: `tests/test_dyn_native_ga_best.py` (including a
+  pin that the fallback path is never reported as `native_rust`).
 - **`adjudicate()` consumed `provenance["gate4_status"]` that only
   `apedp_dyn/sandbox/` produced.** Every non-test writer of that key lived under
   the demo harnesses (152 non-test references, producers all sandbox), so the
@@ -43,13 +43,31 @@ inferred in either case):
   `tests/test_dyn_native_ga_best.py::test_benchmark_harnesses_refuse_the_python_fallback`
   scans every `SearchConfig(` under `benchmarks/`.
 - **`test_native_ga_discovers_advanced_ops` was a seed lottery, not a red
-  capability.** The fixed exponent set is {2, 3, -1, 0.5}, so `x**2.5` must
-  arrive as a random general-Pow exponent subtree or by multiplicative constant
-  jitter; at the pinned 2 × 30 × 15 budget (~4.5k evaluations) exact recovery
-  was measured on 5/10 seeds, with seed 123 among the misses. The pin now runs
-  4 × 120 × 80 (10/10 seeds, worst best MSE 1.4e-30, ~1 s) and sets
-  `strict_native_ga`, so the assertion tests the general-Pow capability and
-  cannot be satisfied by the Python loop.
+  capability.** A power's exponent was a fixed menu ({2, 3, -1, 0.5}) and was
+  never fitted where the candidate was born, so `x**2.5` could only arrive as a
+  general-Pow exponent subtree or by constant jitter drifting 2.0 upward; exact
+  recovery at the pinned 2 × 30 × 15 budget (~4.5k evaluations) measured 5/10
+  seeds, with seed 123 among the misses. `genetic.rs` now draws a constant
+  exponent from the same continuous 0.1 grid as every other constant and fits it
+  during population construction for Pow-bearing candidates, so no exponent
+  value is privileged (same budget: 17/20; the classic-form pins stay 10/10).
+  The test pin runs 4 × 120 × 80 (10/10) with `strict_native_ga`, so the
+  assertion tests the capability and cannot be satisfied by the Python loop.
+  Every GA capability pin was re-swept across seeds — the full table, including
+  the pins that are NOT seed-sensitive, is `docs/ga_seed_fragility_audit.md`.
+- **A benchmark path that bypasses `SearchConfig` could still measure Python.**
+  `apedp.rust_bridge.enforce_native_search()` is a process-wide switch honoured
+  by both `evolve()` and `RustKernelBridge.evolve_native`, so an engine that
+  builds its own bridge cannot silently downgrade; the synthesis harnesses turn
+  it on. An explicitly requested fallback (`force_fallback=True`, which the
+  rust-vs-python sweeps measure on purpose) stays legal: the bridge suspends the
+  switch only for that nested call.
+- **`RustKernelBridge.evolve_native`'s Python fallback had never worked.** It
+  unpacked `SearchResult.pareto_front` as `(expr, mse, complexity)` triples, but
+  the entries are dicts, so the fallback ran the whole search and then raised
+  `ValueError: invalid literal for int() ... 'complexity'`. It now reads
+  `entry["expression"]`/`["train_mse"]`/`["complexity"]`; pinned by
+  `test_enforcement_refuses_fallback_from_the_bridge`.
 
 ---
 

@@ -61,6 +61,31 @@ _KERNEL_PATH_FALLBACK = "fallback"
 
 _missing_kernel_warned = False
 
+# Benchmark-wide switch: when on, an *unrequested* downgrade of the search
+# raises instead of quietly running the Python loop, so a measurement cannot be
+# labelled native when it is not. Constructing a bridge with
+# ``force_fallback=True`` stays legal -- the rust-vs-python sweeps measure both
+# paths on purpose -- because that fallback was asked for.
+_ENFORCE_NATIVE_SEARCH = False
+
+
+def enforce_native_search(enabled: bool = True) -> None:
+    """Require the native kernel for every search in this process.
+
+    Process-wide on purpose: benchmark harnesses do not all reach the search
+    through one call site (``evolve()`` builds its own bridge, and
+    ``AutonomousModelSynthesizer`` builds another), so a per-call flag would
+    leave silent holes. Harnesses that measure the engine call this once at
+    start-up; tests reset it by calling ``enforce_native_search(False)``.
+    """
+    global _ENFORCE_NATIVE_SEARCH
+    _ENFORCE_NATIVE_SEARCH = bool(enabled)
+
+
+def native_search_enforced() -> bool:
+    """Whether :func:`enforce_native_search` is currently on."""
+    return _ENFORCE_NATIVE_SEARCH
+
 
 class _RustKernel(Protocol):
     """Surface of the pyo3 `apedp_kernel` extension used by this bridge.
@@ -503,6 +528,14 @@ class RustKernelBridge:
         data_f64 = [np.ascontiguousarray(d, dtype=np.float64) for d in data]
         target_f64 = np.ascontiguousarray(target, dtype=np.float64)
 
+        if self.use_rust and native_search_enforced() and not hasattr(apedp_kernel, "evolve_native"):
+            from apedp.evolutionary_search import NativeSearchUnavailableError
+
+            raise NativeSearchUnavailableError(
+                "enforce_native_search() is on, but apedp_kernel.evolve_native "
+                "is unavailable; refusing to measure the Python fallback as a "
+                "native search")
+
         if self.use_rust and hasattr(apedp_kernel, "evolve_native"):
             try:
                 raw_pareto, total_evals = cast(Any, apedp_kernel).evolve_native(
@@ -539,10 +572,19 @@ class RustKernelBridge:
                 self._tally(_KERNEL_PATH_RUST)
                 return formatted, total_evals
             except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
+                if native_search_enforced():
+                    from apedp.evolutionary_search import NativeSearchUnavailableError
+
+                    raise NativeSearchUnavailableError(
+                        "enforce_native_search() is on and the native Rust "
+                        f"search failed: {type(e).__name__}: {e}") from e
                 logger.debug("Rust evolve_native failed (%s), falling back to Python.", e)
                 self._tally(_KERNEL_PATH_FALLBACK)
 
-        # Fallback to pure Python evolve
+        # Fallback to pure Python evolve. Reaching here means the fallback was
+        # either requested (``force_fallback=True``) or permitted, so the
+        # nested ``evolve`` must not re-trip the process-wide enforcement -- a
+        # rust-vs-python sweep has to keep measuring both arms.
         self._tally(_KERNEL_PATH_FALLBACK)
         from apedp.evolutionary_search import SearchConfig, evolve
 
@@ -554,11 +596,20 @@ class RustKernelBridge:
             max_depth=max_depth,
             seed=seed,
         )
-        res = evolve(x_dict, target_f64, config=cfg)
+        enforcement_was = _ENFORCE_NATIVE_SEARCH
+        enforce_native_search(False)
+        try:
+            res = evolve(x_dict, target_f64, config=cfg)
+        finally:
+            enforce_native_search(enforcement_was)
+        # `SearchResult.pareto_front` holds dicts, not (expr, mse, complexity)
+        # triples: unpacking it raised TypeError, so the fallback path died
+        # after doing the work and callers saw an exception instead of results.
         formatted = [
-            {"expression": expr, "mse": mse, "complexity": int(compl), "scale": 1.0, "bias": 0.0,
+            {"expression": entry["expression"], "mse": entry["train_mse"],
+             "complexity": int(entry["complexity"]), "scale": 1.0, "bias": 0.0,
              "kernel_path": _KERNEL_PATH_FALLBACK}
-            for expr, mse, compl in res.pareto_front
+            for entry in res.pareto_front
         ]
         return formatted, res.n_evaluations
 
