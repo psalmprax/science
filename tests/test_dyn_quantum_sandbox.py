@@ -60,9 +60,25 @@ class TestQuantumVacuumSandboxHonesty:
             rmses.append(adj.best_rmse)
         assert rmses[0] < rmses[1] < rmses[2], f"RMSE did not scale monotonically: {rmses}"
 
-    def test_subthreshold_regime_abstains(self):
-        """Below pair creation threshold (E << Ec), pair production is exponentially suppressed;
-        models are observationally indistinguishable from vacuum stability; adjudicator abstains."""
+    def test_subthreshold_regime_resolved_under_f14_referee(self):
+        """Below pair creation threshold (E << Ec), pair production is exponentially
+        suppressed and all four models predict ~0. The referee still separates
+        their saturated residuals at 5% noise: Δ/τ ≈ 1.09, paired block
+        bootstrap 'confirm' ON THE MATCHED RE-ANCHORED PAIR (orphaned Note: the
+        winner must be the holdout-best candidate), winner carries the
+        RESIDUAL_STRUCTURE_UNRESOLVED diagnostic.
+
+        Reasoned re-mint (F14, commit 68a3dadb): the previous abstention was a
+        MANUFACTURED refusal — the pre-F14 pair anchor was the train-loss
+        winner (classical_linear, train 5.49e-06) whose holdout RMSE (0.0140)
+        was worse than a generalizing rival (thermal_constant, 0.0108), so
+        delta was negative and trivially <= tau. F14 re-anchors the pair on
+        the holdout-lowest gate-4-certified head, which this fixture now
+        exercises; the residual pair handed to the bootstrap is computed from
+        the same holdout ordering, so the confirmation is attributably to the
+        anchored pair. 'Observational indistinguishability' is now a *physics*
+        claim to re-establish (larger holdout, lower noise), not a referee
+        artifact to assert."""
         adj, _, _ = run_quantum_vacuum_discovery(
             noise_sigma=0.05,
             E_min=0.05,
@@ -70,8 +86,14 @@ class TestQuantumVacuumSandboxHonesty:
             E_c=1.5,
             bootstrap=True,
         )
-        assert adj.status == EpistemicStatus.MULTI_HYPOTHESIS
-        assert adj.promoted is None
+        assert adj.status == EpistemicStatus.UNIQUE_SUPPORT
+        assert adj.promoted is not None
+        assert adj.promoted.candidate.candidate_id == "thermal_constant"
+        # Boundary case: the point margin clears tau by only ~9%. Disclose
+        # the weak-margin diagnostics the referee must have raised.
+        assert adj.delta_rmse is not None and adj.tau_epi is not None
+        assert 1.0 < adj.delta_rmse / adj.tau_epi < 2.0
+        assert "WEAK_PROMOTION_MARGIN" in adj.diagnostic_flags
 
     def test_asymptotic_saturation_regime_abstains(self):
         """In deep asymptotic field window (E >> Ec), curvature is negligible and linear surrogate

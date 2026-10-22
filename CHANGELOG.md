@@ -4,6 +4,44 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Blocker-sweep repairs: dashboard PDE-transfer regression + stale E5/E4-T1 pins re-minted (2026-10-22)
+
+Release-blocker sweep on current HEAD (bisection-verified causes):
+
+- **`pde_transfer.py` FLAW-05 regression repaired at the cause**: the soundness
+  guard had been inserted as early `return`s that bypassed the
+  `FrozenTransferResult` construction (bare-float path — callers expecting
+  `.r2` got AttributeError; the dataclass return was dead code). The guard's
+  semantics now live in the `r2` VALUE, never the return TYPE.
+  `tests/test_dyn_pde_transfer.py` 4/4.
+- **Dashboard contract fixture re-minted**: after the lawful pool widening
+  (Gate A dev-only per the §1.2 anti-snooping rule + symmetric AST
+  enumeration in `0eb7a04`), the duffing fixture at noise=0.05 honestly
+  abstains (`multi_hypothesis`) and must not be test-forced — noise=0.01
+  restores the Δ/τ≈1.3 unique path the contract verifies.
+- **E5 / E4-T1 diagnostics re-derived and re-minted (ERR-INC-74-79, disclosed
+  in `docs/TRADING_EQUATION_FORENSICS.md` §80c)**: the §74–79 signatures had
+  been established under the buggy backward-windowed d5 target (F1, fixed in
+  `68a3dadb`) and pre-A01 leaky train blocks (fixed in `9a73170`). Corrected
+  harness re-derivation (deterministic, verified twice): market/null E5
+  parity replaces the withdrawn **drifting contrast; coupling table splits
+  3 stable/3 drifting; §78 deltas re-pinned (M2≈M3 inverted on ETH/AVAX,
+  spread capped .08); §79 gates 10/6/8/1/0/0 with ETH as the one pinned
+  marginal permutation survivor (.0498); §80 incremental battery re-minted
+  again under the fully corrected harness (permutation NULL everywhere,
+  min ETH .0846 > α; BTC HA sign-flip 9/11 pinned)
+  (`tests/test_dyn_e5_market.py`, `test_dyn_e5_r1.py`, `test_dyn_ensemble.py`,
+  `test_dyn_gated_ensemble.py`, `test_dyn_incremental.py`).
+- **Quantum-vacuum subthreshold re-pin under the F14 referee**: the old
+  abstention was a manufactured refusal (train-loss anchor; Δ was negative) —
+  under the holdout-anchored pair the saturated residuals separate at
+  Δ/τ≈1.09 with a bootstrap-confirmed weak-margin promotion carrying the
+  RESIDUAL_STRUCTURE_UNRESOLVED diagnostic (`tests/test_dyn_quantum_sandbox.py`).
+- **Governance remaining OPEN (documented, trustee-blocked)**: the manifest
+  still seals the pre-v1.8 spec hash (FLAW-01; quorum signatures not
+  producible locally). Typecheck scope is the documented 2-file pyproject
+  Phase-1 boundary (green).
+
 ## [Unreleased] — Gate-limitation closure: spatial index + model-checked proximity lock (2026-10-22)
 
 The gate decision's three recorded limitations are each acted on at the
