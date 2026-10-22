@@ -4,6 +4,36 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Governance re-certification ceremony UNBLOCKED (structural gap addressed, 2026-10-22)
+
+The one measured structural gap — the governance manifest desync that could
+only be described as "trustee-blocked" with no formal procedure to resolve —
+now has its mechanism:
+
+- `scripts/run_governance_remint_ceremony.py` (audit-only, fail-closed):
+  `--status` reports the desync and the outstanding quorum exactly;
+  `--request` mints the certification request anchored to
+  `canonical_spec.py`'s import-time pin (refuses on pin disagreement);
+  `--collect` records a trustee signature ONLY after verifying it against
+  the manifest's REGISTERED public key (forgeries and unregistered signers
+  are refused; keys come from the environment, never from the repo, and are
+  never generated or stored here); `--mint` re-verifies every collected
+  signature from scratch, extends the transparency log with
+  `PREREGISTRATION_RECERTIFICATION` entries through the production hashing
+  API, verifies the draft with the production verifier against the disk
+  spec, and writes the manifest only on full quorum.
+- Boundaries preserved per AGENTS §1.2/§1.3: bypassing, local re-minting,
+  fabrication, and spec-file mutation are all structurally impossible in
+  the tool; the live red remains red until real external trustees run the
+  ceremony.
+- Pinned in `tests/test_dyn_governance_remint_ceremony.py` (5):
+  sandbox end-to-end re-certification (2-of-3, roster/spec_id carried
+  through, log chain verified), forgery/unregistered/stale refusals,
+  below-quorum refusal, pin-drift fail-closed, and the live-repo guard
+  asserting the repository cannot be minted without real trustees.
+- FLAW-01 status in `docs/SYSTEM_FLAWS_AUDIT.md` updated: mechanism
+  unblocked; only the external signature ceremony is outstanding.
+
 ## [Unreleased] — Margin theorem ADJUDICATED into the certified boundary (2026-10-22)
 
 Promotion-checklist item 2 of the CBF proximity-backlog gate is now closed

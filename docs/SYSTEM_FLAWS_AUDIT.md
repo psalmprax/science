@@ -8,15 +8,30 @@ execution. Remediation performed the same day, also execution-verified.
 
 ## 2026-10-21 round — status matrix
 
-- FLAW-01 governance manifest SHA desync — **OPEN (trustee-blocked)**: the
-  Ed25519 quorum in `specifications/governance_manifest.json` still seals the
-  deprecated spec hash `a6d026…` while disk computes a later hash. Re-signing
-  requires the authorized trustee PRIVATE keys, which live outside this
-  repository; per AGENTS §1.2/§1.3 the panel must never bypass or re-mint the
-  manifest locally. Earlier root-cause diagnosis stands: post-certification
-  spec edits without re-certification (`pruning_holdout_*` block). The FLAW-13
+- FLAW-01 governance manifest SHA desync — **OPEN (trustee-blocked; ceremony
+  mechanism now UNBLOCKED, 2026-10-22)**: the Ed25519 quorum in
+  `specifications/governance_manifest.json` still seals the deprecated spec
+  hash `a6d026…` while disk computes a later hash. Re-signing requires the
+  authorized trustee PRIVATE keys, which live outside this repository; per
+  AGENTS §1.2/§1.3 the panel must never bypass or re-mint the manifest
+  locally. Earlier root-cause diagnosis stands: post-certification spec edits
+  without re-certification (`pruning_holdout_*` block). The FLAW-13
   spec-centralization edit below extended the desync scope with full §1.3
   procedural compliance (new pinned hash + CHANGELOG rationale).
+  **2026-10-22 structural gap closed (mechanism only):** the re-certification
+  PROCEDURE now exists and is pinned —
+  `scripts/run_governance_remint_ceremony.py` (audit-only, fail-closed:
+  `--status` / `--request` / `--collect` / `--mint`), verified against the
+  REGISTERED public keys only, chaining `PREREGISTRATION_RECERTIFICATION`
+  entries through the production transparency-log API and writing the
+  manifest only after full production verification + quorum. It never
+  generates keys, never forges signatures, never touches the spec JSON, and
+  refuses to run on pin disagreement. Pinned in
+  `tests/test_dyn_governance_remint_ceremony.py` (5 pins: sandbox end-to-end
+  re-certification, forgery/unregistered refusals, below-quorum refusal,
+  pin-drift fail-closed, and the live-repo guard proving the repo CANNOT be
+  minted without real trustees). Only the external signature ceremony with
+  the two registered trustees remains to flip the red.
 - FLAW-02 coupled ODE proposer discarded discovered RHS — **FIXED**:
   `apedp_dyn/ode/proposer.py` now evaluates `sum(coeff · basis(x))` over the
   kernel's term encoding; verified RMSE 0.0000 vs the true derivative
