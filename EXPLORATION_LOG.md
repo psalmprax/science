@@ -1205,3 +1205,28 @@ Suite: +4 tests (16/16 green incl. scale-trap regression test); existing
 ### Still open (declined with reason, unchanged)
 - Unidentifiability at fixed range, GP trapping cure, live hardware,
   full shell model, performance envelope: see prior entries.
+
+### Discarded stashes (2026-10-22)
+
+Two stale September-2026 stash shelves whose prototype ideas all landed in
+evolved, tested form were dropped by owner decision, with the last-copy
+hashes recorded here for full recoverability:
+
+- `77b3063ba99236c54eec1f9dd62ff1f4ab1a3268` — "shelf: dirty worktree
+  shelved 2026-09-27 during cleanup (all sessions' uncommitted work)",
+  base 998d511 (2026-09-27 recovery hardening), ~3.3k diff lines:
+  pint-based coefficient-unit machinery (`resolve_units`,
+  `CoefficientUnits`, `propagate_coefficient_units`) → landed evolved as
+  Dimensional Constant Synthesis (`apedp/dimensional_layer.py`,
+  `allow_constant_synthesis=True`, adversarial test battery);
+  coefficient term decomposition → `_linear_outer_fit`'s `as_coeff_add`
+  + `run_discovery_additive`.
+- `6c19e0802f7f3ffc242a3e69e1d4a41324101189` — "WIP on e563be1
+  CHECKPOINT", base 2026-09-23, ~8.6k diff lines: same unit machinery plus
+  an islands/migration evolutionary extension with its own test suite →
+  landed upgraded in `apedp/evolutionary_search.py` (ring-migration
+  islands, ALPS age layering, threads).
+
+Both are restorable from these hashes at any time. Discarding basis: every
+never-landed identifier the shelves add was grepped against the current
+tree and matched to a stronger committed counterpart.
