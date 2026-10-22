@@ -4,6 +4,26 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Tutorial notebook: full engine-tour section (GA/GP, RIME-AD, ODE, PDE, dispatch, all graph surfaces) (2026-10-22)
+
+The tutorial previously demonstrated only Hawkes/microstructure, basic
+RIME, and the adjudication/ledger path. New "Step 9: Engine Tour"
+sections mirror the pinned APIs of the rest of the discovery surface:
+
+- 9.1 automatic routing — `dispatch_frame` on kinetic, event-stream, and
+  ambiguous frames (fail-closed abstention pinned at lowercase enum values);
+- 9.2 GA/GP — native `evolve`/`SearchConfig` with the min-MSE-best pin;
+- 9.3 RIME-AD — `RimeAdProposer(target_col=...)` end to end;
+- 9.4 coupled ODE — `CoupledOdeProposer(dt=...).fit_and_propose(df)`;
+- 9.5 PDE — `discover_pde` with the FROZEN-coefficient holdout contract,
+  pointers to `discover_pde_2d` and `pde_transfer`;
+- 9.6 all three graph surfaces — `ProvenanceGraph`, `plot_epistemic_graph`
+  PNG, and the `apedp_kernel.rime_rewrite_json` PyO3 FFI.
+
+Executed proof: the full notebook-adapter suite runs every cell —
+30/30 passed including the structure+execution pin; one enum-value
+assertion corrected at cause (`Modality` string values are lowercase).
+
 ## [Unreleased] — Governance re-certification ceremony UNBLOCKED (structural gap addressed, 2026-10-22)
 
 The one measured structural gap — the governance manifest desync that could
