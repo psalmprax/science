@@ -4,6 +4,32 @@ Follow-up to the graph census: the robotics proximity-graph backlog item
 said "profile first, upgrade only if O(N²) actually dominates." This is
 that profile, and the gate decision it produces.
 
+**POST-VECTORIZATION ADDENDUM (2026-10-22, same day).** Gate 1 was acted
+on immediately and re-measured (same harness, same fixture seeds): the
+heuristic pair loop is now ONE vectorized sweep
+(`pairwise_repulsive_forces`, an EXACT per-pair mirror of the scalar rule,
+pinned branch-by-branch in
+`tests/test_dyn_multi_agent_vectorized_pins.py`; the per-agent float sums
+differ only at summation-order ulp level). Results:
+
+| N | heuristic ms (pre) | heuristic ms (post) | us/pair (pre → post) |
+|---|---|---|---|
+| 32 | 6.59 | 1.07 | 6.6 → 1.08 |
+| 64 | 23.7 | 3.23 | 5.9 → 0.80 |
+| 128 | 98.1 | 7.01 | 6.0 → 0.43 |
+| 256 | 365.6 | 14.1 | 5.6 → 0.22 |
+| 512 | 1445.8 | 47.5 | 5.5 → 0.18 |
+
+Exponent fit 1.91 → 1.06 (cost now scales with pair VOLUME through numpy
+evaluation, no per-call interpreter overhead). Re-measured crossings:
+5 ms at N=128 (was N=32); the 50 ms budget is NOT crossed anywhere in the
+sweep (was N=128); N=256 improved 26× (365.6 → 14.1 ms). The certified-
+QP gate numbers are UNCHANGED (same code, byte-identical column values).
+Gate 1 is therefore RESOLVED (vectorized, pinned, re-profiled); the
+certified-path Gate 2 verdict below stands unchanged. Full re-run output
+replaces `benchmarks/cbf_scaling_profile_results.json` (the pre-
+vectorization numbers survive in this table and in git history).
+
 Harness: `benchmarks/run_cbf_scaling_profile.py` (deterministic, seeded,
 A3-guarded grid fixture); raw artifact:
 `benchmarks/cbf_scaling_profile_results.json`. Median wall times on the

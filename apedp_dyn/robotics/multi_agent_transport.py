@@ -102,6 +102,62 @@ def compute_cbf_repulsive_force(
     return force
 
 
+def pairwise_repulsive_forces(
+    positions: np.ndarray,
+    headings: np.ndarray | None,
+    r_safe: float = 0.5,
+    r_warning: float = 1.0,
+    k_rep: float = 2.0,
+) -> np.ndarray:
+    """Vectorized all-pairs repulsive-force sweep, EXACTLY mirroring
+    :func:`compute_cbf_repulsive_force` per pair (same elementwise IEEE ops,
+    same branch masks), summed over j ≠ i.
+
+    Per-pair semantics replicated exactly:
+      * dist < 1e-9 (degenerate collision): force = [k_rep, 0.0]
+      * dist >= r_warning: zeros (the distance filter a proximity structure
+        would replicate more expensively — the mask IS the filter)
+      * else magnitude = k_rep * (1/max(r_safe, dist) - 1/r_warning) *
+        (1/dist²), direction = (p_i - p_j)/dist, with the head-on
+        tangential term added when -direction·heading > 0.7.
+
+    Returns [N, 2] summed force per agent. Per-pair equality with the
+    scalar function is pinned (branch structure AND values); the per-agent
+    SUM differs only at float summation-order ulp level (numpy pairwise
+    summation vs sequential +=), pinned at <=1e-12 relative.
+    """
+    p = np.asarray(positions, dtype=float)
+    n = p.shape[0]
+    diff = p[:, None, :] - p[None, :, :]                     # [N, N, 2]
+    dist = np.sqrt((diff * diff).sum(-1))                    # [N, N] (raw)
+    offdiag = ~np.eye(n, dtype=bool)
+    degen = (dist < 1e-9) & offdiag
+    near = (dist < r_warning) & offdiag & ~degen
+
+    # Branch 1: degenerate collision -> the FIXED [k_rep, 0.0] vector.
+    f = np.zeros((n, n, 2), dtype=float)                     # [N, N, 2]
+    f[degen] = np.array([k_rep, 0.0])
+
+    # Branch 2: active repulsion, elementwise ops in the scalar order.
+    d = dist[near]                                           # [P,]
+    dirv = diff[near] / d[:, None]
+    mag = k_rep * (1.0 / np.maximum(r_safe, d) - 1.0 / r_warning) * (1.0 / (d ** 2.0))
+    force = mag[:, None] * dirv                              # [P, 2]
+    if headings is not None:
+        th = np.asarray(headings, dtype=float)
+        hv = np.stack([np.cos(th), np.sin(th)], axis=1)      # [N, 2]
+        rows_i, _rows_j = np.nonzero(near)
+        anti = -(dirv * hv[rows_i]).sum(axis=1)              # -direction·heading
+        hit = anti > 0.7
+        perp = np.stack([-dirv[:, 1], dirv[:, 0]], axis=1)
+        force[hit] += (anti[hit] * mag[hit])[:, None] * perp[hit]
+    f[near] = force
+
+    # Sum over j != i (masked). Diagonal contributions are always zero:
+    # degen/near are both off-diagonal, and far pairs stay zeros.
+    return f.sum(axis=1)
+
+
 def multi_agent_step(
     poses: np.ndarray,
     targets: np.ndarray,
@@ -127,6 +183,12 @@ def multi_agent_step(
     ang_vels = np.zeros(n_agents)
 
     positions = poses[:, :2]
+    # ONE vectorized all-pairs sweep up front (exact per-pair mirror of
+    # compute_cbf_repulsive_force; the per-pair Python loop was the
+    # measured bottleneck: ~6 µs/invocation, 5 ms budget crossing at N=32).
+    rep2d = pairwise_repulsive_forces(
+        positions, poses[:, 2], r_safe=r_safe, r_warning=r_warning, k_rep=k_rep,
+    )
 
     for i in range(n_agents):
         pose_i = poses[i]
@@ -143,14 +205,12 @@ def multi_agent_step(
         else:
             f_att = np.zeros(2)
 
-        # 2. Artificial-potential repulsive force from other agents
-        f_rep = np.zeros(2)
-        for j in range(n_agents):
-            if i != j:
-                f_rep += compute_cbf_repulsive_force(
-                    p_i, positions[j], r_safe=r_safe, r_warning=r_warning, k_rep=k_rep,
-                    heading_i=theta_i,
-                )
+        # 2. Artificial-potential repulsive force from other agents —
+        #    ONE vectorized all-pairs sweep (exact mirror of the per-pair
+        #    scalar rule, see pairwise_repulsive_forces); the per-pair
+        #    Python loop it replaces was the measured bottleneck (~6 µs
+        #    per invocation, 5 ms budget crossing at N=32).
+        f_rep = rep2d[i]
 
         # Net nominal steering vector
         # Support recovery agent gives right of way by scaling down aggressive forward drive

@@ -5,168 +5,168 @@
     "strict_ms": 5.0
   },
   "certified_path": {
-    "exponent_fit": 1.663,
+    "exponent_fit": 1.681,
     "gate_crossing_first_N_relaxed": 256,
     "gate_crossing_first_N_strict": 256,
     "per_n": {
       "8": {
-        "barriers_build_ms": 0.0334,
+        "barriers_build_ms": 0.0509,
         "pairs": 28,
-        "qp_ms": 0.392,
-        "us_per_pair": 14.0003
+        "qp_ms": 0.3241,
+        "us_per_pair": 11.5754
       },
       "16": {
-        "barriers_build_ms": 0.049,
+        "barriers_build_ms": 0.0453,
         "knn4": {
-          "estimated_qp_ms": 0.1962,
+          "estimated_qp_ms": 0.1765,
           "pair_ratio_of_dense": 0.3833,
           "pairs_reduced": 46,
-          "restricted_setup_ms": 0.0585
+          "restricted_setup_ms": 0.0654
         },
         "knn8": {
-          "estimated_qp_ms": 0.3146,
+          "estimated_qp_ms": 0.282,
           "pair_ratio_of_dense": 0.6917,
           "pairs_reduced": 83,
-          "restricted_setup_ms": 0.0326
+          "restricted_setup_ms": 0.0459
         },
         "pairs": 120,
-        "qp_ms": 0.433,
-        "us_per_pair": 3.6087
+        "qp_ms": 0.3876,
+        "us_per_pair": 3.2296
       },
       "32": {
-        "barriers_build_ms": 0.0542,
+        "barriers_build_ms": 0.089,
         "knn4": {
-          "estimated_qp_ms": 0.1364,
+          "estimated_qp_ms": 0.1939,
           "pair_ratio_of_dense": 0.1794,
           "pairs_reduced": 89,
-          "restricted_setup_ms": 0.0557
+          "restricted_setup_ms": 0.0818
         },
         "knn8": {
-          "estimated_qp_ms": 0.2012,
+          "estimated_qp_ms": 0.2765,
           "pair_ratio_of_dense": 0.3206,
           "pairs_reduced": 159,
-          "restricted_setup_ms": 0.0378
+          "restricted_setup_ms": 0.0409
         },
         "pairs": 496,
-        "qp_ms": 0.5128,
-        "us_per_pair": 1.0338
+        "qp_ms": 0.674,
+        "us_per_pair": 1.359
       },
       "64": {
-        "barriers_build_ms": 0.1673,
+        "barriers_build_ms": 0.2524,
         "knn4": {
-          "estimated_qp_ms": 0.357,
+          "estimated_qp_ms": 0.4278,
           "pair_ratio_of_dense": 0.0858,
           "pairs_reduced": 173,
-          "restricted_setup_ms": 0.0601
+          "restricted_setup_ms": 0.0488
         },
         "knn8": {
-          "estimated_qp_ms": 0.5171,
+          "estimated_qp_ms": 0.5758,
           "pair_ratio_of_dense": 0.1582,
           "pairs_reduced": 319,
-          "restricted_setup_ms": 0.064
+          "restricted_setup_ms": 0.0647
         },
         "pairs": 2016,
-        "qp_ms": 2.3782,
-        "us_per_pair": 1.1797
+        "qp_ms": 2.2959,
+        "us_per_pair": 1.1389
       },
       "128": {
-        "barriers_build_ms": 1.1045,
+        "barriers_build_ms": 0.9461,
         "knn4": {
-          "estimated_qp_ms": 1.1947,
+          "estimated_qp_ms": 1.0271,
           "pair_ratio_of_dense": 0.0424,
           "pairs_reduced": 345,
-          "restricted_setup_ms": 0.0551
+          "restricted_setup_ms": 0.0948
         },
         "knn8": {
-          "estimated_qp_ms": 1.2671,
+          "estimated_qp_ms": 1.0922,
           "pair_ratio_of_dense": 0.0765,
           "pairs_reduced": 622,
-          "restricted_setup_ms": 0.0676
+          "restricted_setup_ms": 0.0873
         },
         "pairs": 8128,
-        "qp_ms": 3.2288,
-        "us_per_pair": 0.3972
+        "qp_ms": 2.855,
+        "us_per_pair": 0.3513
       },
       "256": {
-        "barriers_build_ms": 5.4732,
+        "barriers_build_ms": 6.3152,
         "knn4": {
-          "estimated_qp_ms": 7.0819,
+          "estimated_qp_ms": 7.8522,
           "pair_ratio_of_dense": 0.0213,
           "pairs_reduced": 696,
-          "restricted_setup_ms": 0.1154
+          "restricted_setup_ms": 0.1814
         },
         "knn8": {
-          "estimated_qp_ms": 8.3255,
+          "estimated_qp_ms": 9.0402,
           "pair_ratio_of_dense": 0.0378,
           "pairs_reduced": 1234,
-          "restricted_setup_ms": 0.1303
+          "restricted_setup_ms": 0.2471
         },
         "pairs": 32640,
-        "qp_ms": 80.9173,
-        "us_per_pair": 2.4791
+        "qp_ms": 78.3941,
+        "us_per_pair": 2.4018
       },
       "512": {
-        "barriers_build_ms": 22.4104,
+        "barriers_build_ms": 23.1111,
         "knn4": {
-          "estimated_qp_ms": 25.4331,
+          "estimated_qp_ms": 26.144,
           "pair_ratio_of_dense": 0.0106,
           "pairs_reduced": 1393,
-          "restricted_setup_ms": 0.2705
+          "restricted_setup_ms": 0.2062
         },
         "knn8": {
-          "estimated_qp_ms": 27.7093,
+          "estimated_qp_ms": 28.4279,
           "pair_ratio_of_dense": 0.0187,
           "pairs_reduced": 2442,
-          "restricted_setup_ms": 0.2899
+          "restricted_setup_ms": 0.3445
         },
         "pairs": 130816,
-        "qp_ms": 306.2689,
-        "us_per_pair": 2.3412
+        "qp_ms": 307.9282,
+        "us_per_pair": 2.3539
       }
     }
   },
   "decision_note": "backlog ACTIVATES for a path when its measured per-call wall time exceeds the budget above; a proximity graph also requires the soundness re-verification of barrier certificates at reduced connectivity before ANY production use",
   "heuristic_path": {
-    "exponent_fit": 1.91,
+    "exponent_fit": 1.064,
     "gate_crossing_first_N_strict": {
-      "5.0": 32,
-      "50.0": 128
+      "5.0": 128,
+      "50.0": null
     },
     "per_n": {
       "8": {
         "pair_invocations": 56,
-        "step_ms": 0.5547,
-        "us_per_pair_call": 9.9058
+        "step_ms": 0.676,
+        "us_per_pair_call": 12.0721
       },
       "16": {
         "pair_invocations": 240,
-        "step_ms": 1.6804,
-        "us_per_pair_call": 7.0018
+        "step_ms": 0.6948,
+        "us_per_pair_call": 2.8949
       },
       "32": {
         "pair_invocations": 992,
-        "step_ms": 6.5924,
-        "us_per_pair_call": 6.6456
+        "step_ms": 1.0693,
+        "us_per_pair_call": 1.0779
       },
       "64": {
         "pair_invocations": 4032,
-        "step_ms": 23.7358,
-        "us_per_pair_call": 5.8869
+        "step_ms": 3.229,
+        "us_per_pair_call": 0.8008
       },
       "128": {
         "pair_invocations": 16256,
-        "step_ms": 98.1377,
-        "us_per_pair_call": 6.037
+        "step_ms": 7.0097,
+        "us_per_pair_call": 0.4312
       },
       "256": {
         "pair_invocations": 65280,
-        "step_ms": 365.6197,
-        "us_per_pair_call": 5.6008
+        "step_ms": 14.0684,
+        "us_per_pair_call": 0.2155
       },
       "512": {
         "pair_invocations": 261632,
-        "step_ms": 1445.8245,
-        "us_per_pair_call": 5.5262
+        "step_ms": 47.5384,
+        "us_per_pair_call": 0.1817
       }
     }
   },

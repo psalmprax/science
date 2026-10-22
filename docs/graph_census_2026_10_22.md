@@ -50,18 +50,21 @@ recorded here as backlog categories, not promises:
 1. **Robotics proximity interaction graphs (k-NN / dynamic G(V, E(t)))
    in `cbf_certificate.py` / `multi_agent_transport.py`** — dense O(N²)
    all-pairs broadcasting is exact and validated (CBF pins green). **Gate
-   decision 2026-10-22 measured and recorded**
-   (`docs/cbf_proximity_graph_backlog_gate.md`,
-   `benchmarks/cbf_scaling_profile_results.json`): the heuristic transport
-   stepper crosses a 5 ms real-time budget at N=32 — its first fix is
-   VECTORIZED pair-force computation (behavior-identical for the
-   heuristic; no certificate question), not a proximity graph; the
-   CERTIFIED QP holds real-time through N≈128, and proximity
+   decision 2026-10-22 measured and recorded; Vectorization RESOLVED
+   same day** (`docs/cbf_proximity_graph_backlog_gate.md` addendum,
+   `tests/test_dyn_multi_agent_vectorized_pins.py`): the heuristic
+   transport stepper's Python pair loop is replaced by ONE vectorized
+   all-pairs sweep, EXACT per-pair mirror of the scalar rule (pinned at
+   per-pair branch structure + whole-step legacy-reference equality);
+   re-measured: 5 ms crossing 32 → 128, exponent 1.91 → 1.06, 26× at
+   N=256; a proximity graph is NOT needed for this path. The CERTIFIED
+   QP gate stands unchanged: real-time through N≈128, proximity
    restructuring activates only for production N ≥ 256 real-time
-   certified control AND a soundness proof that non-neighbor pairs cannot
-   violate barriers within the assumption box — because the certified
-   contract is all-pairs by definition and pruning AFTER the dense
-   barriers build buys nothing (the build alone is over budget at N=256).
+   certified control AND a soundness proof (pitched separately in the
+   margin module) that non-neighbor pairs cannot violate barriers within
+   the assumption box — the certified contract is all-pairs by definition
+   and pruning AFTER the dense barriers build buys nothing (the build
+   alone is over budget at N=256).
 2. **Irregular mesh graphs for PDE DISCOVERY** — meshes and laplacians
    exist for FORWARD FEM solving (`apedp/meshing.py`, `pde_solvers.py`);
    the discovery surface is still structured-grid + Fornberg stencils.

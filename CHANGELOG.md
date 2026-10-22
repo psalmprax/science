@@ -4,6 +4,41 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Gate 1 executed: vectorized pair sweep + margin pitch (2026-10-22)
+
+- **Heuristic pair-loop VECTORIZED** (`multi_agent_step` now uses ONE
+  `pairwise_repulsive_forces` sweep): EXACT per-pair mirror of the scalar
+  rule — degenerate [k_rep, 0] fallback, r_warning zeros filter (the mask
+  IS the proximity filter a graph would replicate), head-on tangential
+  term at anti > 0.7. Pinned branch-exact per pair AND against an inline
+  legacy reference at whole-step level across N = 2/5/8/33
+  (`tests/test_dyn_multi_agent_vectorized_pins.py`, 9 tests green;
+  pre-existing robotics suites 14/14 green). Re-profiled with the same
+  seeded harness: exponent 1.91 → 1.06, 5 ms budget crossing N=32 →
+  N=128, 50 ms no longer crossed in-sweep, 26× faster at N=256 — a
+  proximity graph is NOT needed for this path (the gate doc carries the
+  pre/post tables; certified-path gate numbers unchanged).
+- **Non-neighbor barrier MARGIN argument pitched + machine-checked**
+  (`apedp_dyn/robotics/proximity_margin.py`, experimental/evidence-only,
+  wired to no pipeline): pairs at h ≥ h* = 2·v_max/γ hold hdot ≥ −γ·h
+  CONSTRUCTIVELY (box-bounded worst case −2·v_max saturates the law
+  EXACTLY at h = h*, never violates); `solve_cbf_qp_proximity` solves the
+  alternating-projection QP over the h < h* restricted set and releases
+  ONLY through the FULL all-pairs fail-closed re-check (the margin
+  algebra re-verified numerically at release); FREE/CONSTRAINED
+  bookkeeping re-decided per step from the h matrix the barriers build
+  already computes. Measured on the A3-guarded grid: constraint ratio
+  0.19 at N=64. This is the soundness prerequisite the certified-path
+  N≥256 gate demanded — STILL experimental: no production wiring, and a
+  production proximity structure additionally needs a spatial index (the
+  dense [N,N,2] floor stands). Pins: `tests/test_dyn_proximity_margin_pins.py`
+  (margin formula, midpoint saturation, restricted-solve full re-check on
+  randomized fixtures, provably-violated max_iter=0 refusal, constraint
+  bookkeeping).
+- **Hygiene**: two pre-existing ruff flags in `cbf_certificate.py`
+  surfaced by package-level linting fixed at the cause (genuinely-unused
+  `import torch` removed after grep confirmation; unused unpack renamed).
+
 ## [Unreleased] — CBF proximity-graph backlog gate decision (2026-10-22)
 
 - **O(N²) profile recorded** (`benchmarks/run_cbf_scaling_profile.py`,

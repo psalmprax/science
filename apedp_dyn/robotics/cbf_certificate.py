@@ -47,7 +47,6 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
-import torch
 
 
 class CertificateViolation(RuntimeError):
@@ -305,7 +304,7 @@ def model_check_unicycle_horizon(
     min_h_observed = math.inf
     h_traj: list[float] = []
     for _ in range(int(steps)):
-        v_cert, diag = certified_cbf_guard(p, th, np.zeros_like(p), assumptions)
+        v_cert, _diag = certified_cbf_guard(p, th, np.zeros_like(p), assumptions)
         v_cmd, omega_cmd = unicycle_commands_from_certified(th, v_cert, omega_max)
         poses = np.column_stack([p, th])                     # arc stepper wants [N, 3]
         outs = arc_step_fn(poses, v_cmd, omega_cmd, assumptions.dt)
