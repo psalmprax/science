@@ -298,6 +298,17 @@ class RimeADNativeAdapter:
             islands=self.islands,
             seed=self.seed,
         )
+        if any(p.get("kernel_path") != "rust" for p in pareto):
+            # A fallback result carries different per-candidate tuning and a
+            # different cost profile, so it is not a measurement OF this
+            # engine. Abstain rather than score the Python loop as RIME-AD.
+            return AdapterResult(
+                competitor=self.name, problem_id=problem_id, expression="",
+                abstained=True,
+                abstain_reason=("native kernel unavailable; refusing to report "
+                                "the Python fallback as this engine"),
+                wall_seconds=time.time() - t0,
+            )
         if not pareto:
             return AdapterResult(
                 competitor=self.name, problem_id=problem_id, expression="",

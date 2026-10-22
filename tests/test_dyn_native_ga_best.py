@@ -6,9 +6,16 @@ reported the simplest candidate (the mean constant) instead of the best.
 Fast (native path, no scipy).
 """
 
-import numpy as np
+import re
 
-from apedp.evolutionary_search import SearchConfig, evolve
+import numpy as np
+import pytest
+
+from apedp.evolutionary_search import (
+    NativeSearchUnavailableError,
+    SearchConfig,
+    evolve,
+)
 
 
 def test_native_best_is_minimum_mse_recovery():
@@ -25,3 +32,101 @@ def test_native_best_is_minimum_mse_recovery():
     entry = next(p for p in res.pareto_front if p["train_mse"] == best_mse)
     assert res.best_expression == entry["expression"]
     assert "x" in res.best_expression
+
+
+# ---------------------------------------------------------------------------
+# strict_native_ga: the Python fallback must never be taken silently.
+# The two paths differ by orders of magnitude in cost, so a downgrade has to be
+# an exception the caller sees, not a DEBUG log line.
+# ---------------------------------------------------------------------------
+
+_TINY = dict(islands=1, island_size=4, generations=1, seed=0,
+             tune_restarts=0, tune_iters=1)
+
+
+def _tiny_data(n=10):
+    x = np.linspace(-1.0, 1.0, n)
+    return {"x": x}, 2.0 * x + 1.0
+
+
+def test_strict_requires_use_native_ga():
+    x, y = _tiny_data()
+    with pytest.raises(ValueError, match="requires use_native_ga=True"):
+        evolve(x, y, config=SearchConfig(strict_native_ga=True, **_TINY))
+
+
+def test_strict_raises_when_kernel_is_unavailable(monkeypatch):
+    monkeypatch.setattr(
+        "apedp.evolutionary_search.is_rust_kernel_available", lambda: False)
+    x, y = _tiny_data()
+    with pytest.raises(NativeSearchUnavailableError, match="cannot serve the search"):
+        evolve(x, y, config=SearchConfig(
+            use_native_ga=True, strict_native_ga=True, **_TINY))
+
+
+def test_strict_raises_when_the_native_call_fails(monkeypatch):
+    class _ExplodingBridge:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def evolve_native(self, *args, **kwargs):
+            raise RuntimeError("simulated kernel failure")
+
+    monkeypatch.setattr("apedp.rust_bridge.RustKernelBridge", _ExplodingBridge)
+    x, y = _tiny_data()
+    with pytest.raises(NativeSearchUnavailableError, match="simulated kernel failure"):
+        evolve(x, y, config=SearchConfig(
+            use_native_ga=True, strict_native_ga=True, **_TINY))
+
+
+def test_non_strict_still_falls_back_to_python(monkeypatch):
+    """The default behaviour is unchanged: fallback, but now observable."""
+    class _ExplodingBridge:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def evolve_native(self, *args, **kwargs):
+            raise RuntimeError("simulated kernel failure")
+
+    monkeypatch.setattr("apedp.rust_bridge.RustKernelBridge", _ExplodingBridge)
+    x, y = _tiny_data()
+    res = evolve(x, y, config=SearchConfig(use_native_ga=True, **_TINY))
+    assert "native_rust" not in res.history[0], (
+        "the Python fallback path must not be reported as a native run")
+    assert res.pareto_front, "fallback produced no frontier"
+
+
+def test_benchmark_harnesses_refuse_the_python_fallback():
+    """A benchmark number must never come from the Python loop by accident.
+
+    Every ``SearchConfig`` a harness under ``benchmarks/`` builds has to set
+    ``strict_native_ga=True``; otherwise a kernel-less machine silently records
+    fallback timings and error rates as native ones. Source scan on purpose:
+    importing the harnesses would execute their experiments.
+    """
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1] / "benchmarks"
+    offenders = []
+    for path in sorted(root.rglob("*.py")):
+        source = path.read_text(encoding="utf-8")
+        for match in re.finditer(r"SearchConfig\(", source):
+            # The config literal that follows; wide enough for every harness's
+            # argument block, narrow enough not to reach a neighbouring call.
+            window = source[match.start(): match.start() + 600]
+            if "strict_native_ga" not in window:
+                line = source[: match.start()].count("\n") + 1
+                offenders.append(f"{path.relative_to(root.parent)}:{line}")
+    assert not offenders, (
+        "benchmark harness builds a SearchConfig without strict_native_ga, so a "
+        "missing kernel would be measured as Python: " + ", ".join(offenders))
+
+
+def test_strict_succeeds_when_the_kernel_is_present():
+    x = np.linspace(-3, 3, 200)
+    y = 3.0 * x ** 2 + 2.0
+    res = evolve({"x": x}, y, config=SearchConfig(
+        use_native_ga=True, strict_native_ga=True, islands=4, island_size=50,
+        generations=20, seed=42))
+    assert res.history[0].get("native_rust") is True
+    assert min(p["train_mse"] for p in res.pareto_front) < 1e-6

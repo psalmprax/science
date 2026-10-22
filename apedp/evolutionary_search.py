@@ -53,6 +53,18 @@ logger = logging.getLogger("apedp.evolutionary_search")
 _TRANSCENDENTAL = (sp.exp, sp.log, sp.sin, sp.cos, sp.tan, sp.sinh, sp.cosh, sp.sqrt)
 
 
+class NativeSearchUnavailableError(RuntimeError):
+    """Raised when ``strict_native_ga`` refuses the silently slower Python path.
+
+    A native search and its Python fallback are not interchangeable: the
+    fallback carries per-candidate constant tuning the kernel does not, and the
+    measured cost difference on a 2,000-row problem is orders of magnitude
+    (0.08 s native vs >180 s Python for the same 1,629 evaluations). Callers
+    that requested the kernel get an exception rather than a result they did
+    not measure for.
+    """
+
+
 @dataclass
 class SearchConfig:
     """Tunable search configuration; every upgrade is a flag."""
@@ -108,6 +120,18 @@ class SearchConfig:
     use_native_ga: bool = False
     """Execute the multi-island genetic search inside the native Rayon-parallel
     Rust kernel for high-throughput searches exploring up to millions of candidates."""
+
+    strict_native_ga: bool = False
+    """Refuse the Python fallback instead of silently taking it.
+
+    The native and Python paths differ by orders of magnitude in wall clock
+    (the Python loop carries per-candidate constant tuning that the kernel
+    does not), so a silent downgrade produces a result whose cost class is not
+    the one the caller asked for. With this flag set, an unavailable kernel or
+    a failed native call raises :class:`NativeSearchUnavailableError` rather
+    than logging at DEBUG and continuing in Python. Requires
+    ``use_native_ga=True``; setting it alone is refused loudly.
+    """
 
 
 @dataclass
@@ -783,13 +807,26 @@ def evolve(
     runs remain comparable with uninstrumented ones.
     """
     cfg = config or SearchConfig()
+    if cfg.strict_native_ga and not cfg.use_native_ga:
+        raise ValueError(
+            "strict_native_ga=True requires use_native_ga=True; refusing to run "
+            "the Python loop under a flag that promises the Rust kernel")
     rng = random.Random(cfg.seed)
     names = list(x_train.keys())
     data_symbols = [sp.Symbol(name) for name in names]
     raw_arrays = {name: np.asarray(x_train[name], dtype=float).ravel() for name in names}
     raw_target = np.asarray(y_train, dtype=float).ravel()
 
-    if cfg.use_native_ga and is_rust_kernel_available() and apedp_kernel is not None:
+    native_probe = is_rust_kernel_available()
+    native_available = native_probe and apedp_kernel is not None
+    if cfg.use_native_ga and cfg.strict_native_ga and not native_available:
+        raise NativeSearchUnavailableError(
+            "strict_native_ga=True, but the native Rust kernel cannot serve the "
+            f"search (is_rust_kernel_available()={native_probe}, "
+            f"apedp_kernel imported={apedp_kernel is not None}); the Python "
+            "fallback is refused by strict mode")
+
+    if cfg.use_native_ga and native_available:
         try:
             from apedp.rust_bridge import RustKernelBridge
             bridge = RustKernelBridge()
@@ -841,6 +878,10 @@ def evolve(
                 denormalized_pick=grouped_pick,
             )
         except Exception as e:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
+            if cfg.strict_native_ga:
+                raise NativeSearchUnavailableError(
+                    "strict_native_ga=True and the native Rust search failed: "
+                    f"{type(e).__name__}: {e}") from e
             logger.debug("Native Rust evolve failed (%s), falling back to Python loop.", e)
 
     # Normalize numerics for conditioning; symbols keep original units so
@@ -1106,6 +1147,7 @@ def evolve(
 
 
 __all__ = [
+    "NativeSearchUnavailableError",
     "SearchConfig",
     "SearchResult",
     "_IslandSearch",

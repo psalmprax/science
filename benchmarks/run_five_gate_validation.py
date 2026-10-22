@@ -162,7 +162,8 @@ def gate3_adversarial_controls() -> dict:
 def _ga_holdout_r2(t_tr, y_tr, t_ho, y_ho, seed=42):
     t0 = time.perf_counter()
     ga = evolve({"t": t_tr}, y_tr, config=SearchConfig(
-        use_native_ga=True, islands=2, island_size=30,
+        use_native_ga=True, strict_native_ga=True,
+        islands=2, island_size=30,
         generations=15, seed=seed))
     ms = (time.perf_counter() - t0) * 1000.0
     bridge = RustKernelBridge()

@@ -4,6 +4,47 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Silent native-GA fallback made refusable; core-side Gate-4 provenance (2026-10-22)
+
+Two gaps found while auditing the engine-tournament demo (measured, not
+inferred in either case):
+
+- **`evolve(use_native_ga=True)` could downgrade to the Python loop silently.**
+  An unavailable kernel skipped the native branch and an exception inside it was
+  logged at DEBUG, so a caller received a valid-looking `SearchResult` for a
+  search whose cost class was different: measured on 2,000 rows / 1,629
+  evaluations, 0.08 s native vs >180 s (killed) in Python. New
+  `SearchConfig.strict_native_ga` raises `NativeSearchUnavailableError` (exported)
+  on both paths; `strict_native_ga` without `use_native_ga` raises `ValueError`
+  instead of quietly running Python. Default behaviour unchanged (fallback still
+  happens, still logged). Pins: `tests/test_dyn_native_ga_best.py` (5 tests added,
+  including a pin that the fallback path is never reported as `native_rust`).
+- **`adjudicate()` consumed `provenance["gate4_status"]` that only
+  `apedp_dyn/sandbox/` produced.** Every non-test writer of that key lived under
+  the demo harnesses (152 non-test references, producers all sandbox), so the
+  central referee was reachable only by hand-assembling gate evidence. New
+  `apedp_dyn/epistemic/gate4_provenance.py` measures the holdout record from a
+  `CandidateProposal` (`measure_proposal`: MSE/RMSE/MAE/R²/residuals), emits the
+  same key set the harnesses emit, marks `passed` only on a demonstrated
+  Diebold-Mariano win at the canonical alpha against a supplied incumbent, and
+  bridges to `ScoredCandidate` so `adjudicate([...])` runs with no sandbox. The
+  noise scale is never invented, and free-form proposal formulas are recorded as
+  `canonicalisation: untyped` rather than being given a grammar IR they do not
+  have. Pins: `tests/test_dyn_gate4_provenance.py` (7 tests).
+- **Benchmark harnesses could record a Python-loop result as a native one.**
+  The harnesses ran with `use_native_ga=True` but no strictness, so on a
+  kernel-less machine they timed and scored the fallback under a native label.
+  `benchmarks/run_langmuir_referee_demo.py` and
+  `benchmarks/run_five_gate_validation.py` now build their `SearchConfig` with
+  `strict_native_ga=True`, and `benchmarks/external_60_adapters.py` (which calls
+  `RustKernelBridge.evolve_native` directly, bypassing `SearchConfig`) abstains
+  when any returned candidate reports `kernel_path != "rust"` instead of
+  scoring the fallback search as the RIME-AD engine. Pin:
+  `tests/test_dyn_native_ga_best.py::test_benchmark_harnesses_refuse_the_python_fallback`
+  scans every `SearchConfig(` under `benchmarks/`.
+
+---
+
 ## [Unreleased] — Profiling artifacts regenerated on the current tip (first live cargo run this session) (2026-10-22)
 
 Both kernel profiling harnesses were executed on `f7be8c1` in the release

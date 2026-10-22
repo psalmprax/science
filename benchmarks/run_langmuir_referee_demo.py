@@ -131,7 +131,8 @@ ad_proposals = RimeAdProposer(target_col='q').fit_and_propose(
 print(f"RIME-AD: {len(ad_proposals)} candidates emitted")
 
 ga_res = evolve({'p': p_tr}, q_tr, config=SearchConfig(
-    use_native_ga=True, islands=3, island_size=20, generations=10, seed=42))
+    use_native_ga=True, strict_native_ga=True,
+    islands=3, island_size=20, generations=10, seed=42))
 assert ga_res.history[0].get('native_rust') is True, "GA fell back to the Python loop"
 print(f"GA/GP (Rust): {ga_res.n_evaluations} evals; best = {ga_res.best_expression}")
 
