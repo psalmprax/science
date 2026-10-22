@@ -5,168 +5,216 @@
     "strict_ms": 5.0
   },
   "certified_path": {
-    "exponent_fit": 1.681,
+    "exponent_fit": 1.678,
     "gate_crossing_first_N_relaxed": 256,
     "gate_crossing_first_N_strict": 256,
     "per_n": {
       "8": {
-        "barriers_build_ms": 0.0509,
+        "barriers_build_ms": 0.0173,
         "pairs": 28,
-        "qp_ms": 0.3241,
-        "us_per_pair": 11.5754
+        "qp_ms": 0.2872,
+        "us_per_pair": 10.257
       },
       "16": {
-        "barriers_build_ms": 0.0453,
+        "barriers_build_ms": 0.0631,
         "knn4": {
-          "estimated_qp_ms": 0.1765,
+          "estimated_qp_ms": 0.1569,
           "pair_ratio_of_dense": 0.3833,
           "pairs_reduced": 46,
-          "restricted_setup_ms": 0.0654
+          "restricted_setup_ms": 0.0467
         },
         "knn8": {
-          "estimated_qp_ms": 0.282,
+          "estimated_qp_ms": 0.2324,
           "pair_ratio_of_dense": 0.6917,
           "pairs_reduced": 83,
-          "restricted_setup_ms": 0.0459
+          "restricted_setup_ms": 0.0319
         },
         "pairs": 120,
-        "qp_ms": 0.3876,
-        "us_per_pair": 3.2296
+        "qp_ms": 0.3078,
+        "us_per_pair": 2.5654
       },
       "32": {
         "barriers_build_ms": 0.089,
         "knn4": {
-          "estimated_qp_ms": 0.1939,
+          "estimated_qp_ms": 0.184,
           "pair_ratio_of_dense": 0.1794,
           "pairs_reduced": 89,
-          "restricted_setup_ms": 0.0818
+          "restricted_setup_ms": 0.0365
         },
         "knn8": {
-          "estimated_qp_ms": 0.2765,
+          "estimated_qp_ms": 0.2586,
           "pair_ratio_of_dense": 0.3206,
           "pairs_reduced": 159,
-          "restricted_setup_ms": 0.0409
+          "restricted_setup_ms": 0.0247
         },
         "pairs": 496,
-        "qp_ms": 0.674,
-        "us_per_pair": 1.359
+        "qp_ms": 0.6182,
+        "us_per_pair": 1.2463
       },
       "64": {
-        "barriers_build_ms": 0.2524,
+        "barriers_build_ms": 0.1584,
         "knn4": {
-          "estimated_qp_ms": 0.4278,
+          "estimated_qp_ms": 0.3614,
           "pair_ratio_of_dense": 0.0858,
           "pairs_reduced": 173,
-          "restricted_setup_ms": 0.0488
+          "restricted_setup_ms": 0.0308
         },
         "knn8": {
-          "estimated_qp_ms": 0.5758,
+          "estimated_qp_ms": 0.5327,
           "pair_ratio_of_dense": 0.1582,
           "pairs_reduced": 319,
-          "restricted_setup_ms": 0.0647
+          "restricted_setup_ms": 0.0479
         },
         "pairs": 2016,
-        "qp_ms": 2.2959,
-        "us_per_pair": 1.1389
+        "qp_ms": 2.524,
+        "us_per_pair": 1.252
       },
       "128": {
-        "barriers_build_ms": 0.9461,
+        "barriers_build_ms": 0.8086,
+        "indexed_build": {
+          "candidate_pairs": 817,
+          "dense_build_ms": 0.8259,
+          "dense_pair_count": 8128,
+          "indexed_build_ms": 1.1166,
+          "pair_reduction": 0.8995,
+          "soundness": "candidates \u2287 constrained band (h < h*); excluded pairs provably free (h \u2265 h*), re-checked at release",
+          "speedup": 0.74
+        },
         "knn4": {
-          "estimated_qp_ms": 1.0271,
+          "estimated_qp_ms": 0.8912,
           "pair_ratio_of_dense": 0.0424,
           "pairs_reduced": 345,
-          "restricted_setup_ms": 0.0948
+          "restricted_setup_ms": 0.0431
         },
         "knn8": {
-          "estimated_qp_ms": 1.0922,
+          "estimated_qp_ms": 0.9575,
           "pair_ratio_of_dense": 0.0765,
           "pairs_reduced": 622,
-          "restricted_setup_ms": 0.0873
+          "restricted_setup_ms": 0.0839
         },
         "pairs": 8128,
-        "qp_ms": 2.855,
-        "us_per_pair": 0.3513
+        "qp_ms": 2.7548,
+        "restricted_composed": {
+          "constrained_pairs": 817,
+          "constraint_ratio": 0.10051673228346457,
+          "note": "index + restricted alternating projections + FULL all-pairs fail-closed re-check; the re-check keeps one O(N\u00b2) einsum pass by design \u2014 certified honesty is not negotiable",
+          "total_ms": 2.0969,
+          "vs_dense_ms": 1.31
+        },
+        "us_per_pair": 0.3389
       },
       "256": {
-        "barriers_build_ms": 6.3152,
+        "barriers_build_ms": 5.5549,
+        "indexed_build": {
+          "candidate_pairs": 1757,
+          "dense_build_ms": 5.482,
+          "dense_pair_count": 32640,
+          "indexed_build_ms": 1.6405,
+          "pair_reduction": 0.9462,
+          "soundness": "candidates \u2287 constrained band (h < h*); excluded pairs provably free (h \u2265 h*), re-checked at release",
+          "speedup": 3.34
+        },
         "knn4": {
-          "estimated_qp_ms": 7.8522,
+          "estimated_qp_ms": 6.8009,
           "pair_ratio_of_dense": 0.0213,
           "pairs_reduced": 696,
-          "restricted_setup_ms": 0.1814
+          "restricted_setup_ms": 0.114
         },
         "knn8": {
-          "estimated_qp_ms": 9.0402,
+          "estimated_qp_ms": 7.764,
           "pair_ratio_of_dense": 0.0378,
           "pairs_reduced": 1234,
-          "restricted_setup_ms": 0.2471
+          "restricted_setup_ms": 0.1148
         },
         "pairs": 32640,
-        "qp_ms": 78.3941,
-        "us_per_pair": 2.4018
+        "qp_ms": 63.9871,
+        "restricted_composed": {
+          "constrained_pairs": 1757,
+          "constraint_ratio": 0.0538296568627451,
+          "note": "index + restricted alternating projections + FULL all-pairs fail-closed re-check; the re-check keeps one O(N\u00b2) einsum pass by design \u2014 certified honesty is not negotiable",
+          "total_ms": 19.3089,
+          "vs_dense_ms": 3.31
+        },
+        "us_per_pair": 1.9604
       },
       "512": {
-        "barriers_build_ms": 23.1111,
+        "barriers_build_ms": 21.4768,
+        "indexed_build": {
+          "candidate_pairs": 3679,
+          "dense_build_ms": 21.6198,
+          "dense_pair_count": 130816,
+          "indexed_build_ms": 4.257,
+          "pair_reduction": 0.9719,
+          "soundness": "candidates \u2287 constrained band (h < h*); excluded pairs provably free (h \u2265 h*), re-checked at release",
+          "speedup": 5.08
+        },
         "knn4": {
-          "estimated_qp_ms": 26.144,
+          "estimated_qp_ms": 23.9968,
           "pair_ratio_of_dense": 0.0106,
           "pairs_reduced": 1393,
-          "restricted_setup_ms": 0.2062
+          "restricted_setup_ms": 0.1837
         },
         "knn8": {
-          "estimated_qp_ms": 28.4279,
+          "estimated_qp_ms": 25.8945,
           "pair_ratio_of_dense": 0.0187,
           "pairs_reduced": 2442,
-          "restricted_setup_ms": 0.3445
+          "restricted_setup_ms": 0.2538
         },
         "pairs": 130816,
-        "qp_ms": 307.9282,
-        "us_per_pair": 2.3539
+        "qp_ms": 258.1318,
+        "restricted_composed": {
+          "constrained_pairs": 3679,
+          "constraint_ratio": 0.028123471135029353,
+          "note": "index + restricted alternating projections + FULL all-pairs fail-closed re-check; the re-check keeps one O(N\u00b2) einsum pass by design \u2014 certified honesty is not negotiable",
+          "total_ms": 71.6307,
+          "vs_dense_ms": 3.6
+        },
+        "us_per_pair": 1.9732
       }
     }
   },
   "decision_note": "backlog ACTIVATES for a path when its measured per-call wall time exceeds the budget above; a proximity graph also requires the soundness re-verification of barrier certificates at reduced connectivity before ANY production use",
   "heuristic_path": {
-    "exponent_fit": 1.064,
+    "exponent_fit": 1.022,
     "gate_crossing_first_N_strict": {
       "5.0": 128,
-      "50.0": null
+      "50.0": 512
     },
     "per_n": {
       "8": {
         "pair_invocations": 56,
-        "step_ms": 0.676,
-        "us_per_pair_call": 12.0721
+        "step_ms": 0.8848,
+        "us_per_pair_call": 15.7999
       },
       "16": {
         "pair_invocations": 240,
-        "step_ms": 0.6948,
-        "us_per_pair_call": 2.8949
+        "step_ms": 0.9254,
+        "us_per_pair_call": 3.856
       },
       "32": {
         "pair_invocations": 992,
-        "step_ms": 1.0693,
-        "us_per_pair_call": 1.0779
+        "step_ms": 1.8491,
+        "us_per_pair_call": 1.864
       },
       "64": {
         "pair_invocations": 4032,
-        "step_ms": 3.229,
-        "us_per_pair_call": 0.8008
+        "step_ms": 2.5943,
+        "us_per_pair_call": 0.6434
       },
       "128": {
         "pair_invocations": 16256,
-        "step_ms": 7.0097,
-        "us_per_pair_call": 0.4312
+        "step_ms": 6.0678,
+        "us_per_pair_call": 0.3733
       },
       "256": {
         "pair_invocations": 65280,
-        "step_ms": 14.0684,
-        "us_per_pair_call": 0.2155
+        "step_ms": 11.8861,
+        "us_per_pair_call": 0.1821
       },
       "512": {
         "pair_invocations": 261632,
-        "step_ms": 47.5384,
-        "us_per_pair_call": 0.1817
+        "step_ms": 80.8909,
+        "us_per_pair_call": 0.3092
       }
     }
   },

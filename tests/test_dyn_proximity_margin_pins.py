@@ -29,9 +29,13 @@ import pytest
 from apedp_dyn.robotics.cbf_certificate import (
     CBFQPCertificateAssumptions,
     CertificateViolation,
+    _pair_barriers,
 )
 from apedp_dyn.robotics.proximity_margin import (
     free_margin,
+    indexed_barrier_components,
+    indexed_proximity_pairs,
+    model_check_unicycle_horizon_proximity,
     solve_cbf_qp_proximity,
 )
 
@@ -129,3 +133,84 @@ def test_constrained_pair_bookkeeping_and_ratio():
     v0 = np.full((64, 2), 0.5)
     out0 = solve_cbf_qp_proximity(pts, v0, a)
     assert np.allclose(out0.commands, v0, atol=1e-12)
+
+
+# ── spatial index: the dense floor can never hide a constrained pair ─────
+def test_index_candidates_superset_and_excluded_provably_free(seed=5, n=128):
+    a = _assumptions()
+    rng = np.random.default_rng(seed)
+    side = int(np.sqrt(n)) + 1
+    xs, ys = np.meshgrid(np.arange(side), np.arange(side))
+    pts = np.stack([xs.ravel(), ys.ravel()], 1)[:n] * 2.0
+    pts = pts + rng.uniform(-0.4, 0.4, pts.shape)
+
+    pairs, diag = indexed_proximity_pairs(pts, a)
+    bar = _pair_barriers(pts, a.r_safe)
+    h_star = free_margin(a)
+    idxi, idxj = np.triu_indices(n, k=1)
+    cand = {(int(p), int(q)) for p, q in pairs}
+    constrained = {(int(i), int(j)) for i, j in
+                   zip(idxi[bar.h[idxi, idxj] < h_star],
+                       idxj[bar.h[idxi, idxj] < h_star], strict=True)}
+    # 1. the candidate set covers the ENTIRE constrained band
+    assert constrained <= cand
+    # 2. every EXCLUDED pair provably free: d ≥ r_safe + h* (exact margin)
+    dist_all = np.linalg.norm(pts[:, None, :] - pts[None, :, :], axis=-1)
+    excluded = {(int(i), int(j)) for i, j in zip(idxi, idxj, strict=True)} - cand
+    for p, q in excluded:
+        assert dist_all[p, q] >= a.r_safe + h_star - 1e-9, (p, q)
+    assert diag["pair_reduction"] > 0.8   # the counted evidence, measured
+
+
+def test_boundary_equality_pair_is_free_and_still_certified():
+    """d == r_safe + h* exactly: scipy's `at most r` candidates include it,
+    the dense h < h* filter does NOT (h = h* → free). Either way the
+    release must pass the all-pairs re-check."""
+    a = _assumptions()
+    gap = a.r_safe + free_margin(a)
+    pts = np.array([[0.0, 0.0], [gap, 0.0]])
+    pairs, _diag = indexed_proximity_pairs(pts, a)
+    assert (0, 1) in {(int(p), int(q)) for p, q in pairs}   # candidate (free)
+    vel = np.array([[a.v_max, 0.0], [-a.v_max, 0.0]])       # worst-case closing
+    out = solve_cbf_qp_proximity(pts, vel, a)               # must certify, not raise
+    assert out.constrained_pairs == 0                       # free at the exact boundary
+
+
+def test_indexed_barrier_components_match_dense_exactly(seed=5, n=128):
+    a = _assumptions()
+    rng = np.random.default_rng(seed)
+    side = int(np.sqrt(n)) + 1
+    xs, ys = np.meshgrid(np.arange(side), np.arange(side))
+    pts = np.stack([xs.ravel(), ys.ravel()], 1)[:n] * 2.0
+    pts = pts + rng.uniform(-0.4, 0.4, pts.shape)
+
+    pairs, unit, h, _diag = indexed_barrier_components(pts, a)
+    bar = _pair_barriers(pts, a.r_safe)
+    assert np.array_equal(unit, bar.unit[pairs[:, 0], pairs[:, 1]])
+    assert np.array_equal(h, bar.h[pairs[:, 0], pairs[:, 1]])
+
+
+@pytest.mark.parametrize("seed", [9, 11])
+def test_horizon_model_check_proximity_collision_free(seed):
+    """The proximity-LOCKED realization through the production arc stepper
+    must hold h > 0 on adversarial horizons — measured evidence, explicitly
+    not a formal claim."""
+    a = _assumptions()
+    # adversarial head-on courses: both agents top-speed toward each other
+    p0 = np.array([[0.0, 0.0], [3.0, 0.0]])
+    th0 = np.array([0.0, np.pi])
+    res = model_check_unicycle_horizon_proximity(p0, th0, a, steps=60, seed=seed)
+    assert res["min_h_observed"] > 0.0
+    assert res["min_h_observed"] >= 1e-3   # realized margin never approaches r_safe
+
+    # random multi-agent grid closing under adversarial headings
+    rng = np.random.default_rng(seed)
+    n = 16
+    side = int(np.sqrt(n)) + 1
+    xs, ys = np.meshgrid(np.arange(side), np.arange(side))
+    pts = np.stack([xs.ravel(), ys.ravel()], 1)[:n] * 1.6
+    pts = pts + rng.uniform(-0.3, 0.3, pts.shape)
+    th = rng.uniform(-np.pi, np.pi, n)
+    res2 = model_check_unicycle_horizon_proximity(pts, th, a, steps=80, seed=seed)
+    assert res2["min_h_observed"] > 0.0
+    assert res2["min_h_observed"] >= 1e-3

@@ -129,12 +129,70 @@ Budget: strict = 5 ms per control step (module runs at dt=0.05 → 20 Hz;
    at N≥256) is fixture-conditional; the floor numbers are the robust
    planning figures.
 
-## What this does not establish
+## POST-COMPLETION ADDENDUM (2026-10-22, gate-answer round — remaining limitations addressed)
 
-- No soundness claim for proximity-restricted certified sets (explicitly
-  unproven here; the pair-ratio numbers are computational only).
+The three recorded limitations of the gate decision have each been acted
+on at the measured cause:
+
+1. **"Pitch-only, wired to no pipeline" → the pitch now carries the same
+   evidence class the certified path has.** `model_check_unicycle_horizon_proximity`
+   steps the proximity-LOCKED realization through the production arc
+   stepper on adversarial horizons (head-on top-speed closing; multi-agent
+   closing grids, 2 seeds × 60–80 steps): min h > 1e-3 throughout,
+   reported as measured evidence, never a formal claim
+   (`tests/test_dyn_proximity_margin_pins.py`, 10 pins green).
+2. **"Spatial index needed to beat the dense [N,N,2] floor" → measured.**
+   `indexed_proximity_pairs` (scipy cKDTree, candidate radius
+   r_safe + h* + slack — a SUPERSET of the constrained band by
+   construction, so excluded pairs are provably free; exact-boundary
+   pinned) plus `indexed_barrier_components` (exact sparse mirror of the
+   dense formulas, array-equal pinned):
+
+   | N | dense build (2 runs) | indexed build | speedup |
+   |---|---|---|---|
+   | 128 | 0.60–0.80 ms | 0.67–1.53 ms | 0.53–0.89× (too few pairs — tree not yet worth it) |
+   | 256 | 5.17–6.05 ms | 1.44–1.84 ms | 3.3–3.6× |
+   | 512 | 20.1–22.6 ms | 3.91–6.55 ms | 3.1–5.8× |
+
+   End-to-end COMPOSED restricted path (index + restricted alternating
+   projections + FULL all-pairs fail-closed re-check) vs the dense solve:
+   N=256: 64.0 → 19.3 ms (3.31×, constraint ratio 0.054); N=512: 258 →
+   71.6 ms (3.6×, ratio 0.028); N=128: only 1.31× — because the certified
+   contract's own all-pairs re-check dominates there, and that re-check
+   IS the fail-closed honesty floor, deliberately never removed.
+3. **"Dev-box medians" → variance quantified, two full reruns of the same
+   seeded harness.** Certified 5 ms gate crossing stable (N=256 both
+   runs); QP-time noise 5–6% at N ≥ 256, ~31% at N=128 (scheduling
+   dominated); the heuristic 50 ms boundary sits exactly at its edge
+   (N=512: 47.5 vs 50 ms flipped between runs) — recorded verbatim as the
+   boundary sensitivity. What a target-host re-measure requires is a rerun
+   of the same deterministic harness; thresholds remain decision
+   thresholds, not constants.
+
+### Promotion checklist for the certified-path proximity lock (still experimental — wired to nothing)
+
+1. A production requirement for certified real-time control at N ≥ 256
+   (the gate; default cap N ≤ 64 does not trigger it).
+2. A referee/adjudication decision that the margin theorem (h ≥ h* pairs
+   hold: the box-bounded worst case saturates −γ·h at exactly h = h*,
+   never violates) is accepted into the certified boundary — the argument
+   shares the certified module's exact assumption box A1/A2/A5.
+3. scipy-availability accepted at runtime (cKDTree), OR the index +
+   restricted projections ported into the Rust kernel (rank-4 backlog).
+4. The all-pairs fail-closed re-check stays in EVERY release, forever —
+   compositional honesty is the deliverable, not a performance knob.
+
+## Original gate sections (pre-addendum numbers retained below — history, kept verbatim; the certified-path dense-QP figures predate the index/composed measurements above)
+
+### What this does not establish (now PARTLY superseded by the addendum: the soundness claim is pitched and machine-checked at evidence level; production wiring remains gated)
+
+- ~~No soundness claim for proximity-restricted certified sets~~ → the
+  margin argument is now formal (algebraic) + machine-checked (midpoint
+  saturation exact at 1e-12, index-superset soundness pinned, horizon
+  model-checked); production wiring STILL gated by the checklist above.
 - No production timing claim: dev-box medians, one fixture family;
-  re-measure on target hardware before treating thresholds as constants.
+  re-measure on target hardware before treating thresholds as constants
+  (variance now recorded).
 - No change to certified code: the certified implementation, its pins and
   the battery mutants that protect it are untouched — this is a
-  measurement + gate record.
+  measurement + gate + evidence record.

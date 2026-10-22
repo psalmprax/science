@@ -60,11 +60,19 @@ recorded here as backlog categories, not promises:
    N=256; a proximity graph is NOT needed for this path. The CERTIFIED
    QP gate stands unchanged: real-time through N≈128, proximity
    restructuring activates only for production N ≥ 256 real-time
-   certified control AND a soundness proof (pitched separately in the
-   margin module) that non-neighbor pairs cannot violate barriers within
-   the assumption box — the certified contract is all-pairs by definition
-   and pruning AFTER the dense barriers build buys nothing (the build
-   alone is over budget at N=256).
+   certified control AND a soundness proof — **the soundness proof is now
+   DELIVERED at evidence level**
+   (`apedp_dyn/robotics/proximity_margin.py`: pairs at h ≥ h* = 2·v_max/γ
+   hold hdot ≥ −γ·h constructively — the box-bounded worst case saturates
+   the law EXACTLY at h = h*, never violates; midpoint pinned at 1e-12;
+   index candidate-superset soundness pinned; horizon model-checked
+   collision-free through the production arc stepper), the KD-tree index
+   beats the dense [N,N,2] floor 3.1–5.8× at N=256–512, and the composed
+   restricted solve measures 3.3–3.6× over the dense QP at N≥256
+   (`docs/cbf_proximity_graph_backlog_gate.md` addendum + promotion
+   checklist). Production wiring stays gated by that checklist
+   (referee-adjudication decision required; the all-pairs fail-closed
+   re-check stays in every release).
 2. **Irregular mesh graphs for PDE DISCOVERY** — meshes and laplacians
    exist for FORWARD FEM solving (`apedp/meshing.py`, `pde_solvers.py`);
    the discovery surface is still structured-grid + Fornberg stencils.

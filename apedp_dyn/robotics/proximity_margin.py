@@ -63,6 +63,7 @@ Status: experimental (certified-adjacent pitch; never self-adjudicating).
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Any
 
@@ -77,6 +78,9 @@ from apedp_dyn.robotics.cbf_certificate import (
 __all__ = [
     "ProximityOutcome",
     "free_margin",
+    "indexed_barrier_components",
+    "indexed_proximity_pairs",
+    "model_check_unicycle_horizon_proximity",
     "solve_cbf_qp_proximity",
 ]
 
@@ -216,3 +220,137 @@ def solve_cbf_qp_proximity(
         dense_floor_last_deficit=worst if worst > float("-inf") else 0.0,
         meta=meta,
     )
+
+
+# ── spatial index: beat the dense [N,N,2] floor ──────────────────────────
+def indexed_proximity_pairs(
+    positions: np.ndarray,
+    assumptions: CBFQPCertificateAssumptions,
+    radius_slack: float = 1e-9,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    """KD-tree candidate pairs for the constrained band WITHOUT the dense
+    [N,N,2] distance matrix (the measured 5.5 ms build floor at N=256).
+
+    SOUNDNESS (why the index cannot break the margin argument): a pair is
+    CONSTRAINED iff h_ij < h* ⟺ d_ij < r_safe + h*. The candidate query
+    radius is r_safe + h* + slack, so the candidate set is a SUPERSET of
+    every constrained pair (slack covers float error; scipy's query
+    semantics are distance ≤ radius, which also admits the exact
+    boundary-equality pair — that pair is FREE at h = h*, so an extra
+    constraint there is wasted work, never unsound). Conversely every
+    EXCLUDED pair provably has d_ij > r_safe + h*, i.e. h_ij > h*: free
+    by the margin algebra, machine-checked per release by the all-pairs
+    re-check in :func:`solve_cbf_qp_proximity`.
+
+    Returns (pairs [P, 2] row-sorted, diagnostics with the boundary-tie
+    accounting and reduction bookkeeping). Lazy scipy import: the error
+    names the missing dependency (cKDTree ships with scipy).
+    """
+    try:
+        from scipy.spatial import cKDTree
+    except ImportError as exc:  # pragma: no cover - env-dependent
+        raise ImportError(
+            "indexed_proximity_pairs needs scipy (cKDTree); install scipy "
+            "or fall back to the dense all-pairs path") from exc
+    p = np.asarray(positions, dtype=float)
+    n = p.shape[0]
+    radius = assumptions.r_safe + free_margin(assumptions) + float(radius_slack)
+    pairs = np.asarray(sorted(cKDTree(p).query_pairs(radius)), dtype=int).reshape(-1, 2)
+    dense_pairs = n * (n - 1) // 2
+    diag: dict[str, Any] = {
+        "method": "scipy.cKDTree.query_pairs",
+        "radius": float(radius),
+        "radius_slack": float(radius_slack),
+        "candidate_pairs": len(pairs),
+        "dense_pair_count": dense_pairs,
+        "pair_reduction": (round(1.0 - len(pairs) / dense_pairs, 4)
+                           if dense_pairs else 0.0),
+        "soundness": ("candidates ⊇ constrained band (h < h*); excluded "
+                      "pairs provably free (h ≥ h*), re-checked at release"),
+    }
+    return pairs, diag
+
+
+def indexed_barrier_components(
+    positions: np.ndarray,
+    assumptions: CBFQPCertificateAssumptions,
+    radius_slack: float = 1e-9,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, Any]]:
+    """Sparse barrier components over the index candidates ONLY:
+    (pairs [P, 2], unit_i_j [P, 2], h_ij [P], diagnostics).
+
+    Exact same elementwise formulas as the dense ``_pair_barriers`` →
+    ``[idx_i, idx_j]`` extraction (pinned). Assembly cost scales with the
+    CANDIDATE count, not N².
+    """
+    p = np.asarray(positions, dtype=float)
+    pairs, diag = indexed_proximity_pairs(p, assumptions, radius_slack)
+    if len(pairs) == 0:
+        return (pairs, np.zeros((0, 2)), np.zeros(0), diag)
+    diff = p[pairs[:, 0]] - p[pairs[:, 1]]
+    dist = np.sqrt((diff * diff).sum(-1))
+    dist = np.maximum(dist, 1e-12)
+    unit = diff / dist[:, None]
+    h = dist - assumptions.r_safe
+    diag["barrier_kind"] = "sparse-over-candidates (exact dense formulas)"
+    return pairs, unit, h, diag
+
+
+def model_check_unicycle_horizon_proximity(
+    positions0: np.ndarray,
+    headings0: np.ndarray,
+    assumptions: CBFQPCertificateAssumptions,
+    steps: int = 200,
+    omega_max: float = 2.0,
+    arc_step_fn=None,
+    seed: int = 0,
+) -> dict[str, Any]:
+    """Model-check marker evidence (measured), does not necessarily imply or
+    certify any specific practical outcome.
+    """
+    from apedp_dyn.robotics.cbf_certificate import unicycle_commands_from_certified
+
+    p = np.array(positions0, dtype=float)
+    th = np.array(headings0, dtype=float)
+    if arc_step_fn is None:
+        # numpy↔torch adapter: batch_unicycle_arc_step is a torch kernel.
+        import torch as _torch
+
+        from apedp_dyn.cuda.batch_physics_steppers import (
+            batch_unicycle_arc_step as _raw,
+        )
+
+        def arc_step_fn(poses, v, om, dt):
+            outs = _raw(_torch.from_numpy(np.asarray(poses, dtype=float)),
+                        _torch.from_numpy(np.asarray(v, dtype=float)),
+                        _torch.from_numpy(np.asarray(om, dtype=float)), dt)
+            return outs.numpy() if hasattr(outs, "numpy") else np.asarray(outs)
+
+    min_h_observed = math.inf
+    h_traj: list[float] = []
+    constrained_counts: list[int] = []
+    for _ in range(int(steps)):
+        out = solve_cbf_qp_proximity(p, np.zeros_like(p), assumptions)
+        v_cmd, omega_cmd = unicycle_commands_from_certified(
+            np.asarray(th, dtype=float), out.commands, omega_max)
+        poses = np.column_stack([p, th])
+        outs = np.asarray(arc_step_fn(poses, v_cmd, omega_cmd, assumptions.dt))
+        p = outs[:, :2]
+        th = outs[:, 2]
+        bar = _pair_barriers(p, assumptions.r_safe)   # OBSERVATION only
+        h_now = bar.min_h
+        h_traj.append(h_now)
+        min_h_observed = min(min_h_observed, h_now)
+        n = p.shape[0]
+        idxi, idxj = np.triu_indices(n, k=1)
+        constrained_counts.append(int((bar.h[idxi, idxj] < out.h_star).sum()))
+    return {
+        "steps": int(steps),
+        "min_h_observed": float(min_h_observed),
+        "h_last": float(h_traj[-1]) if h_traj else float("nan"),
+        "constrained_pairs_last": int(constrained_counts[-1]) if constrained_counts else 0,
+        "assumptions": assumptions.to_dict(),
+        "seed": int(seed),
+        "claim": ("model_checked_proximity_locked_unicycle_realization "
+                  "(NOT a formal claim; margin + fail-closed re-check each step)"),
+    }

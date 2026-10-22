@@ -108,6 +108,30 @@ def _median_ms(fn, args: tuple = (), kwargs: dict | None = None, reps: int = 3) 
     return float(np.median(times))
 
 
+def _indexed_build_ms(positions, assumptions, reps: int = 5) -> dict:
+    """Measured KD-tree INDEX floor: cKDTree build + candidate query + sparse
+    barrier components, versus the dense ``_pair_barriers`` build. This is
+    the direct answer to the dense-floor limitation: the index must beat
+    the [N,N,2] matrix without ever missing a constrained pair (soundness
+    pinned in tests/test_dyn_proximity_margin_pins.py)."""
+    from apedp_dyn.robotics.cbf_certificate import _pair_barriers
+    from apedp_dyn.robotics.proximity_margin import indexed_barrier_components
+
+    dense = _median_ms(_pair_barriers, (positions, assumptions.r_safe), reps=reps)
+    indexed = _median_ms(indexed_barrier_components, (positions, assumptions),
+                         reps=reps)
+    _, _unit, _h, diag = indexed_barrier_components(positions, assumptions)
+    return {
+        "dense_build_ms": round(dense, 4),
+        "indexed_build_ms": round(indexed, 4),
+        "speedup": round(dense / indexed, 2),
+        "candidate_pairs": diag["candidate_pairs"],
+        "dense_pair_count": diag["dense_pair_count"],
+        "pair_reduction": diag["pair_reduction"],
+        "soundness": diag["soundness"],
+    }
+
+
 def _fit_exponent(nss: list[int], ts: list[float]) -> float | None:
     if len(nss) < 3:
         return None
@@ -148,6 +172,25 @@ def run() -> dict:
             # milliseconds per 1000 pair-constraints (throughput density)
             "us_per_pair": round(qp_ms * 1000.0 / pairs, 4),
         }
+        if n >= 128:
+            # the dense-floor limitation's direct counter-measure, measured
+            entry["indexed_build"] = _indexed_build_ms(poses[:, :2], a)
+            # the COMPOSED restricted path: index + restricted projections +
+            # full all-pairs fail-closed re-check (end-to-end vs dense QP)
+            from apedp_dyn.robotics.proximity_margin import solve_cbf_qp_proximity
+            t_prox = _median_ms(solve_cbf_qp_proximity,
+                                (poses[:, :2], vel, a), reps=CERT_REPS.get(n, 10))
+            out = solve_cbf_qp_proximity(poses[:, :2], vel, a)
+            entry["restricted_composed"] = {
+                "total_ms": round(t_prox, 4),
+                "vs_dense_ms": round(qp_ms / max(t_prox, 1e-9), 2),
+                "constrained_pairs": out.constrained_pairs,
+                "constraint_ratio": out.constraint_ratio,
+                "note": ("index + restricted alternating projections + FULL "
+                         "all-pairs fail-closed re-check; the re-check keeps "
+                         "one O(N²) einsum pass by design — certified honesty "
+                         "is not negotiable"),
+            }
         # k-NN computational counterfactual (prototype estimate; NOT a
         # soundness claim — see module docstring).
         if n >= 16:

@@ -4,6 +4,48 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Gate-limitation closure: spatial index + model-checked proximity lock (2026-10-22)
+
+The gate decision's three recorded limitations are each acted on at the
+measured cause (`docs/cbf_proximity_graph_backlog_gate.md` completion
+addendum):
+
+- **"Spatial index needed to beat the dense [N,N,2] floor" — measured.**
+  `apedp_dyn/robotics/proximity_margin.py` gains `indexed_proximity_pairs`
+  (scipy cKDTree, candidate radius r_safe + h* + slack: a SUPERSET of the
+  constrained band by construction, so every EXCLUDED pair is provably
+  free — soundness pinned, including the exact boundary-equality semantics
+  where scipy's `at most r` admits the pair the dense h < h* filter
+  excludes) and `indexed_barrier_components` (exact sparse mirror of the
+  dense formulas, array-equal pinned). Measured: the index beats the dense
+  build floor 3.3–3.6× at N=256 and 3.1–5.8× at N=512 (at N=128 the tree
+  overhead has not paid off — recorded as gate information). The COMPOSED
+  restricted path (index + restricted alternating projections + FULL
+  all-pairs fail-closed re-check) measures 3.31× over the dense solve at
+  N=256 (64.0 → 19.3 ms, constraint ratio 0.054) and 3.6× at N=512
+  (258 → 71.6 ms, ratio 0.028); at N=128 only 1.31× — the certified
+  contract's own all-pairs re-check dominates there, and that re-check is
+  the fail-closed honesty floor, deliberately never removed.
+- **"Pitch-only, wired to no pipeline" → evidence class completed.**
+  `model_check_unicycle_horizon_proximity` realizes the proximity-LOCKED
+  commands through the production arc stepper on adversarial horizons
+  (head-on top-speed closing; multi-agent closing grids, 2 seeds):
+  min h > 1e-3 throughout (measured evidence, explicitly not a formal
+  claim). Promotion checklist added to the gate doc (production N ≥ 256
+  requirement + referee-adjudication acceptance of the margin theorem
+  into the certified boundary + scipy-or-kernel-port decision + the
+  all-pairs re-check stays in every release, forever).
+- **"Dev-box medians" → variance quantified** over two full reruns of the
+  same seeded harness: certified 5 ms gate crossing stable (N=256 twice);
+  QP-time noise 5–6% at N ≥ 256, ~31% at N=128 (scheduling dominated); the
+  heuristic 50 ms boundary sits exactly at its edge (N=512: 47.5 vs 50 ms
+  flipped between runs) — recorded verbatim as the boundary sensitivity;
+  thresholds remain decision thresholds, not constants.
+- Pins: `tests/test_dyn_proximity_margin_pins.py` 10/10 green
+  (index superset + provably-free exclusions, boundary-equality pair,
+  array-exact sparse-vs-dense, collision-free horizons, fail-closed
+  max_iter=0 refusal, midpoint saturation).
+
 ## [Unreleased] — Gate 1 executed: vectorized pair sweep + margin pitch (2026-10-22)
 
 - **Heuristic pair-loop VECTORIZED** (`multi_agent_step` now uses ONE
