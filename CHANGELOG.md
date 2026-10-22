@@ -4,6 +4,30 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Profiling artifacts regenerated on the current tip (first live cargo run this session) (2026-10-22)
+
+Both kernel profiling harnesses were executed on `f7be8c1` in the release
+profile, replacing tracked artifacts that described earlier source-tree
+generations and superseding the pre-merge stash copies (which stay stashed):
+
+- `cargo test --lib -q`: **193 passed** (exit 0) — the first live in-session
+  cargo verification of the merged Rust tree, closing the prior
+  source-text-pins-only caveat.
+- `tests/rime_profile.rs` → `benchmarks/kernel_profile_results.json`:
+  bookkeeping ≈94% of per-candidate cost at n=150 (32.9 µs), graph
+  evaluation dominating at n=12 000 (176.7 µs vs readout fit 114.6 µs).
+- `tests/sre_tree_vs_arena_profile.rs` → `benchmarks/sre_tree_vs_arena_baseline.json`:
+  same workload universe (169 candidates × 60k rows ×2 loops, seed 20261022),
+  parity 0 mismatches, conversion coverage unchanged (10.06%); throughput
+  tree 67.25 ms vs arena 78.75 ms → arena 0.854× TREE-FAVORED (earlier
+  same-seed run recorded 0.51× at 403/784 ms — disclosed drift, gate
+  conclusion unchanged; recorded in
+  `docs/rust_migration_decision_record.md`).
+- Disclosure: revision-note numbers in
+  `docs/rust_migration_decision_record.md` and the
+  `docs/DOCUMENTATION.md` rime-profile row were updated to the fresh
+  measurement WITH the drift noted inline; no silent rewrite.
+
 ## [Unreleased] — Fitness penalty made scale-free: trading constant-collapse root cause fixed (2026-10-22)
 
 Forensic verification (bit-exact reproduction in-session) established that

@@ -11,17 +11,17 @@
     ]
   },
   "gates": {
-    "gate_decision": "TREE-FAVORED: the arena does not deliver a throughput win on unshared GP trees; the port case must come from sharing/dedup benefits, not evaluation speed",
+    "gate_decision": "PARITY-THROUGHPUT: no decisive throughput case from representation alone; the dump should weigh the coverage fraction and structural-sharing upside instead",
     "parity_mismatches": 0
   },
   "purpose": "SRE gate instrumentation for docs/rust_migration_decision_record.md rank 1 (tree-vs-arena)",
-  "recorded_at": "1792644945",
+  "recorded_at": "1792679316",
   "throughput": {
-    "arena_ms": 783.802904,
-    "arena_over_tree_ratio": 0.5141433158048111,
-    "arena_us_per_candidate": 23053.026588235294,
-    "tree_ms": 402.987024,
-    "tree_us_per_candidate": 11852.559529411767
+    "arena_ms": 78.74699100000001,
+    "arena_over_tree_ratio": 0.8539727187798197,
+    "arena_us_per_candidate": 2316.0879705882357,
+    "tree_ms": 67.247782,
+    "tree_us_per_candidate": 1977.8759411764709
   },
   "workload": {
     "builder_flags": {
