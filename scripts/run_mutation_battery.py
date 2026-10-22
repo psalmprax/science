@@ -44,6 +44,20 @@ Register targets and mutants:
                 (FLAW-12)
        MUT-E6   correlation-space eigensolve -> raw multi-stratum Gram
                 (FLAW-15 v2)
+  6. EHI pillar + dispatch surfaces (tests/test_dyn_ehi_phase5_pins.py,
+     tests/test_dyn_discovery_dispatch_wiring.py):
+       MUT-F1  selector fabrication guard disabled (competitive misfit could
+               fabricate a decisive class route — flat-field pin)
+       MUT-F2  dispatch conflict overridden instead of abstained (CONFLICT)
+       MUT-F3  selector ambiguity demoted to a decisive ROUTED status
+       MUT-F4  planned-action governance re-verification dropped
+       MUT-F5  controller loops acquisition without the referee re-adjudication
+       MUT-F6  per-family engine failure swallowed instead of recorded
+  7. DE-discovery arm surfaces (tests/test_dyn_de_arm_p1_pins.py):
+       MUT-G1  screen records empty exclusions (the Level-1 pass vanishes
+               from the referee-facing artifact instead of ordering it)
+       MUT-G2  parent ranking inverted (ascending rather than descending)
+       MUT-G3  AD product rule replaced by the naive d(fg) = f'·g' rule
      Neutralized mutant NOT registered (honesty trail): MUT-E5 candidate,
      the absolute-tolerance gate revert — after the v2 well-scaled
      eigensolve (corr-space congruence + jack-of-all-strata spectral
@@ -86,6 +100,16 @@ PIN_HAWKES_SHARP = ["tests/test_dyn_hawkes_standardization_pins.py"]
 # 2026-10-21 external audit remediation pins: each MUT-D* mutant below must be
 # killed (pin MUST fail under the mutation) by this suite.
 PIN_ROUND3 = ["tests/test_dyn_external_audit_2026_10_21_pins.py"]
+# EHI pillar pins (selector fabrication guard, constraint states, information
+# orders, fifth-pillar controller) and the dispatch-wiring pins: each MUT-F*
+# pillar mutant below must be killed (pin MUST fail under the mutation) by
+# these suites.
+PIN_EHI_PILLARS = ["tests/test_dyn_ehi_phase5_pins.py"]
+PIN_DISPATCH_WIRING = ["tests/test_dyn_discovery_dispatch_wiring.py"]
+# DE-discovery arm pins (typed semantics, shared AD service, Level-1 screen
+# with the mandatory dense escape hatch): each MUT-G* arm mutant below must
+# be killed (pin MUST fail under the mutation) by this suite.
+PIN_DE_ARM = ["tests/test_dyn_de_arm_p1_pins.py"]
 # Rust-kernel mutants are pinned by cargo lib tests (cargo recompiles from the
 # mutated source, so the pins see the mutation without touching the user's
 # installed maturin extension).
@@ -184,6 +208,101 @@ MUTANTS: list[dict] = [
         "pins": [PIN_ROUND3],
         "pin_note": "test_flaw08_re_anchor_runs_bootstrap_on_paired_residuals",
     },
+    # ── EHI pillar + dispatch mutants (tests/test_dyn_ehi_phase5_pins.py,
+    # tests/test_dyn_discovery_dispatch_wiring.py) — the pillar surfaces" own
+    # discipline, mutation-protected like the referee paths: ──
+    {
+        "id": "MUT-F1",
+        "target": "selector fabrication guard (EHI Phase 1)",
+        "file": "apedp_dyn/orchestration/model_class_selector.py",
+        "description": "disable the guard that refuses decisive routing when the winner's defining diagnostic never fired (pure noise / flat fields would fabricate a class claim via competitors' misfit)",
+        "find": "    if lacks_defining[top_cls]:",
+        "replace": "    if False:",
+        "pins": [PIN_EHI_PILLARS],
+        "pin_note": "test_phase1_fabrication_guard_flat_field_grid",
+    },
+    {
+        "id": "MUT-F2",
+        "target": "dispatch conflict discipline (EHI dispatch wiring)",
+        "file": "apedp_dyn/orchestration/dispatch.py",
+        "description": "a decisive selector class the sieve masks gets dispatched anyway (override instead of a conflict abstention)",
+        "find": "            chosen_engines=(), masked_engines=tuple(verdict.masked_engine_families),\n            status=\"CONFLICT\",\n            reason=(f\"selector decisively proposes",
+        "replace": "            chosen_engines=(selector_family,), masked_engines=tuple(verdict.masked_engine_families),\n            status=\"CONFLICT\",\n            reason=(f\"selector decisively proposes",
+        "pins": [PIN_DISPATCH_WIRING],
+        "pin_note": "test_dispatch_conflict_is_abstention_not_override",
+    },
+    {
+        "id": "MUT-F3",
+        "target": "dispatch ambiguity visibility (EHI dispatch wiring)",
+        "file": "apedp_dyn/orchestration/dispatch.py",
+        "description": "selector ambiguity silently demoted to a decisive ROUTED status (hidden default route)",
+        "find": "            status=(\"MULTIPLE_ROUTES\" if verdict.admissible_engine_families\n                    else \"UNROUTABLE\"),",
+        "replace": "            status=\"ROUTED\",",
+        "pins": [PIN_DISPATCH_WIRING],
+        "pin_note": "test_dispatch_selector_ambiguity_keeps_admitted_families_live",
+    },
+    {
+        "id": "MUT-F4",
+        "target": "controller governance separation (EHI fifth pillar)",
+        "file": "apedp_dyn/epistemic/research_controller.py",
+        "description": "drop the planned-action governance re-verification (in-session referee tamper no longer aborts the run)",
+        "find": "        if not self.verify_governance():\n            raise RuntimeError(",
+        "replace": "        if False:\n            raise RuntimeError(",
+        "pins": [PIN_EHI_PILLARS],
+        "pin_note": "test_phase5_governance_state_never_shadow_adjudication",
+    },
+    {
+        "id": "MUT-F5",
+        "target": "controller self-adjudication ban (EHI fifth pillar)",
+        "file": "apedp_dyn/epistemic/research_controller.py",
+        "description": "continue looping instead of breaking after acquisition (the controller re-designs and re-executes its own orders without the external re-adjudication it exists to require)",
+        "find": "                    # self-adjudicates its own order. The run ends here and\n                    # reports evidence-integrated-awaiting-external-verdict.\n                    break",
+        "replace": "                    # self-adjudicates its own order. The run ends here and\n                    # reports evidence-integrated-awaiting-external-verdict.\n                    continue",
+        "pins": [PIN_EHI_PILLARS],
+        "pin_note": "test_phase5_controller_langmuir_loop_end_to_end (exactly one acquisition per session)",
+    },
+    {
+        "id": "MUT-F6",
+        "target": "dispatch failure honesty (EHI dispatch wiring)",
+        "file": "apedp_dyn/orchestration/dispatch.py",
+        "description": "swallow the per-family engine failure (a broken engine would be laundered into silence instead of a recorded error)",
+        "find": "                errors[family] = f\"{type(exc).__name__}: {exc}\"",
+        "replace": "                pass  # MUTANT: engine failure swallowed",
+        "pins": [PIN_DISPATCH_WIRING],
+        "pin_note": "test_dispatch_records_engine_failure_without_laundering",
+    },
+    # ── DE-discovery arm mutants (tests/test_dyn_de_arm_p1_pins.py) — the
+    # arm's own discipline, mutation-protected like the referee paths: ──
+    {
+        "id": "MUT-G1",
+        "target": "screen exclusion honesty (DE arm Level-1)",
+        "file": "apedp_dyn/de_arm/dependency_screen.py",
+        "description": "the screen records empty exclusions (the Level-1 pass stops ordering what it pruned, hiding the escape set from the referee)",
+        "find": "            excluded=tuple(p for p, _ in scored[k:]),",
+        "replace": "            excluded=(),",
+        "pins": [PIN_DE_ARM],
+        "pin_note": "test_screening_ranks_direct_parent_first_and_records_exclusions",
+    },
+    {
+        "id": "MUT-G2",
+        "target": "screen ranking direction (DE arm Level-1)",
+        "file": "apedp_dyn/de_arm/dependency_screen.py",
+        "description": "parent ranking inverted to ascending (the weakest predictor becomes the kept parent)",
+        "find": "        scored.sort(key=lambda kv: (-kv[1], kv[0]))",
+        "replace": "        scored.sort(key=lambda kv: (kv[1], -ord(kv[0][0]) if kv[0] else 0))",
+        "pins": [PIN_DE_ARM],
+        "pin_note": "test_screening_ranks_direct_parent_first_and_records_exclusions",
+    },
+    {
+        "id": "MUT-G3",
+        "target": "AD product rule (DE arm shared AD service)",
+        "file": "apedp_dyn/de_arm/ad_service.py",
+        "description": "naive differentiating rule (d(fg) = f'·g') replaces the exact product rule",
+        "find": "        return Add(Mul(_diff(e.left, var), e.right), Mul(e.left, _diff(e.right, var)))",
+        "replace": "        return Add(_diff(e.left, var), _diff(e.right, var))",
+        "pins": [PIN_DE_ARM],
+        "pin_note": "test_ad_service_exact_rules (multivar product/quotient expression)",
+    },
     # ── 2026-10-21 external audit rust-kernel remediation pins (cargo lib) ──
     {
         "id": "MUT-E1",
@@ -264,16 +383,17 @@ def _pin_cmd(group: list[str]) -> list[str]:
     """Pin groups stored as (file, -k, selector) for pytest, or as LITERAL
     argv (first token is an executable, e.g. cargo) run from the repo root."""
     if group and group[0].startswith("tests/"):
-        argv = [sys.executable, "-m", "pytest", "-q", "-x", "--no-header"] + group
+        argv = [sys.executable, "-m", "pytest", "-q", "-x", "--no-header", *group]
         return argv
     if group and group[0] == "cargo":
         return list(group)
-    return [sys.executable, "-m", "pytest", "-q", "--no-header"] + group
+    return [sys.executable, "-m", "pytest", "-q", "--no-header", *group]
 
 
 def _run_and_capture(argv: list[str]) -> dict:
     t0 = time.perf_counter()
-    proc = subprocess.run(argv, cwd=str(_REPO), capture_output=True, text=True, timeout=1800)
+    proc = subprocess.run(  # noqa: S603 - subprocess argv is fixed, non-user-controlled (battery pin groups are code constants)
+        argv, cwd=str(_REPO), capture_output=True, text=True, timeout=1800)
     return {
         "argv": argv[1:],
         "returncode": proc.returncode,
@@ -301,7 +421,10 @@ def main() -> int:
         #    the battery is misconfigured, NOT a strong referee).
         sanity: dict[str, dict] = {}
         for group_key, group in (("round2", PIN_ROUND2), ("hawkes", PIN_HAWKES),
-                                 ("hawkes_sharp", PIN_HAWKES_SHARP)):
+                                 ("hawkes_sharp", PIN_HAWKES_SHARP),
+                                 ("ehi_pillars", PIN_EHI_PILLARS),
+                                 ("dispatch_wiring", PIN_DISPATCH_WIRING),
+                                 ("de_arm", PIN_DE_ARM)):
             argv = _pin_cmd(group)
             sanity[group_key] = _run_and_capture(argv)
             print(f"pristine sanity [{group_key}]: passed={sanity[group_key]['passed']}", flush=True)

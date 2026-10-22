@@ -4,6 +4,112 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Graph census verification and gap closure (2026-10-22)
+
+Response to the external master graph census. Verified ground truth
+BEFORE acting; then closed the actionable slots and corrected the record
+(`docs/graph_census_2026_10_22.md`):
+
+- **Three "implemented but untested" graph surfaces are now pinned**
+  (`tests/test_dyn_graph_census_pins.py`, 5 tests green; census claim of
+  zero coverage verified by search first): W3C PROV-lite
+  `ProvenanceGraph` (nodes + links verbatim, no shared-mutable-default
+  leak), `plot_epistemic_graph` (real deterministic PNG render, magic
+  bytes verified), and the `ak.rime_rewrite_json` PyO3 FFI binding for the
+  frozen structural rewrites — valid `WrapNonlinearity` appends the
+  wrapped node and makes it the output per `rewrite.rs` `apply` semantics,
+  a bad operand index is REJECTED (no fabricated dangling references),
+  malformed graph/op JSON fails closed.
+- **Two census rows corrected as stale/clarified:** the Level-1 state
+  dependency graph EXISTS as the DE arm's screening + dense escape hatch
+  (never a causal adjacency verdict — kernel `coupled_system.rs` stays
+  flat SINDy as the escape hatch); the AD row clarified — exact-rule
+  SYMBOLIC service in `de_arm/ad_service.py`, kernel rightly keeps forward
+  Taylor Jets, torch stays the reverse-mode runtime.
+- **Genuinely unimplemented classes** (robotics proximity graphs, mesh
+  PDE discovery, GP-tree→DAG sharing, 2D/3D tensor networks, kernel
+  reverse-mode tape) recorded as rationale'd backlog categories, not
+  promises — each with the deprioritization reason and its gate.
+- **Honest pin-failure note:** the census FFI pin initially expected a
+  named-field serde shape for the `Tanh(usize)` variant; the test
+  assertion was corrected to the true newtype-variant serialization — the
+  FFI matched `rewrite.rs` exactly (cause fixed at the failing assertion,
+  not at the pinned boundary).
+
+## [Unreleased] — DE-arm frozen benchmark vs dense flat library (2026-10-22)
+
+- **Frozen benchmark** (`benchmarks/run_de_arm_vs_dense_benchmarks.py`,
+  results in `benchmarks/de_arm_vs_dense_benchmark_results.json`, doc in
+  `docs/de_arm_vs_dense_benchmarks.md`; status `audit-only`): deterministic
+  RK4 fixtures of Lotka-Volterra, FitzHugh-Nagumo and Lorenz (noise-free,
+  seeded). Dense kernel and the arm's screened mirror both structurally
+  exact on all three systems at the default screen depth (top_k=2, 0 false
+  exclusions). Library-reduction hypothesis MEASURED, not assumed:
+  ≈10% (Lorenz, 10→9 columns), 25% (FHN), 0% (LV) at D≤3 — matching the
+  review's correction that the 90% claim is a hypothesis for higher
+  dimensions/richer grammars. The aggressive screen (top_k=1) drops 2 true
+  parents on Lorenz with visible R² collapse (0.63, 0.04) — demonstrating
+  the dense escape hatch is load-bearing; screen exclusions are reported
+  verbatim, never hidden.
+- **Fixture-integrity finding (recorded as evidence, not patched away)**:
+  a first Lorenz fixture with a narrow slow-manifold window yielded
+  identically-zero-residual but NON-physical polynomial fits in BOTH
+  engines (R²=1.0 with wrong structure) — noise-free near-collinear data
+  makes many column combinations exactly degenerate. The benchmark now
+  guards window sweep on BOTH the full window and its train partition.
+- **Representational fix** (`de_arm/dependency_screen.py`): the reduced
+  mirror library gains kept·kept parent products — without them the
+  screened library could not express parent×parent monomials the dense
+  engine demonstrably recovers (Lorenz ẏ = 28x − y − xz needs x·z).
+  Excluded parents still never enter the screened library (pin holds).
+- **Hygiene**: corrupted docstring token in `de_arm/typed_model.py`
+  repaired; ruff clean; DE-arm pin suite re-verified after each change.
+
+## [Unreleased] — DE-discovery arm, separate arm boundary (2026-10-21)
+
+Per the RIME–APEDP-X review thread (build the differential-equation
+discovery capability as a SEPARATE arm reusing shared infrastructure,
+never as new graph nodes inside the RIME core; reviewers' corrections
+applied literally — no claimed 90% library reduction, no causal-topology
+oracle claim, dense escape always present), phase 1 lands behind a clean
+module boundary (`apedp_dyn/de_arm/`, all `experimental`):
+
+- **Typed mathematical semantics** (`de_arm/typed_model.py`): every arm
+  candidate declares its kind — STATIC_EXPRESSION / ODE_SYSTEM (states +
+  independent variable + dt + initial conditions) / PDE_SYSTEM (fields +
+  spatial axes with positive dx + declared boundary treatment). Incomplete
+  declarations are fail-closed refusals, so structural checks run BEFORE a
+  search, not after it.
+- **AD as shared infrastructure** (`de_arm/ad_service.py`): a symbolic
+  derivative service over a closed typed expression vocabulary with exact
+  product/quotient/chain rules and declared domain refusals; the module
+  documents both honest limits — it differentiates the implemented
+  candidate computation (a perfect derivative of a wrong hypothesis stays
+  wrong) and measured data keeps its existing finite-difference stencils
+  for residuals. Fornberg remains valid on irregular grids (correction C:
+  no blanket first-order degradation claim).
+- **Level-1 dependency screening with a MANDATORY escape hatch**
+  (`de_arm/dependency_screen.py`): per-state predictive-increment ranking
+  of candidate parents (lag-embedded relative-RSS gains on the training
+  partition; deterministic, dependency-free) prunes each state's candidate
+  library, but the DENSE kernel result always ships beside the screened
+  mirror fits in one referee-facing `OdeArmOutcome` — a parent the screen
+  excluded can never silently vanish, and the screen's ranking travels
+  with an explicit not-a-causal-verdict disclaimer. The screened fit is a
+  documented python ridge+prune mirror whose provenance never claims
+  kernel parity.
+- **Pipeline/lifecycle integration**: the dispatch surface's coupled-ODE
+  route now hands the arm's evidence artifact to the referee path; the arm
+  contains no acceptance/promotion/verdict field anywhere (pinned), and
+  the referee's frozen protocol stays the sole authority.
+
+Pins: `tests/test_dyn_de_arm_p1_pins.py` (10: typing refusals, AD
+exactness incl. the product-rule mutation boundary, screening semantics
+with the escape hatch, dispatch integration, referee independence). The
+arm's mutants join the mutation battery register (MUT-G1..G3).
+
+---
+
 ## [Unreleased] — EHI re-foundation per external review (2026-10-21)
 
 The external architecture critique's four build items and the fifth pillar

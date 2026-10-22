@@ -324,7 +324,8 @@ def _run_static(value_cols, coord_col):
 
 def _run_ode(value_cols, time_col):
     def run():
-        from apedp_dyn.ode.dispatch import discover_coupled_ode, discover_ode
+        from apedp_dyn.de_arm.dependency_screen import discover_ode_system
+        from apedp_dyn.ode.dispatch import discover_ode
 
         frame = _frame_or_raise()
         if time_col is None:
@@ -354,7 +355,10 @@ def _run_ode(value_cols, time_col):
             c: pd.to_numeric(frame[c], errors="coerce").to_numpy(dtype=float)[use]
             for c in numeric
         }
-        return discover_coupled_ode(table, dt=dt)
+        # the COUPLED route owns the DE arm: dense kernel result + Level-1
+        # dependency screening + screened mirror fits as ONE referee-facing
+        # evidence artifact (no acceptance decision inside the arm)
+        return discover_ode_system(table, dt=dt)
     return run
 
 
