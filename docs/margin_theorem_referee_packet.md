@@ -59,10 +59,38 @@ satisfies the box while violating the magnitude bound) and could falsely
 - certificate battery artifact `benchmarks/cbf_certificate_report.json`,
 - this packet's builder script (re-runnable, exit-code gated).
 
-## Decision slot
+## Decision record (ADJUDICATED 2026-10-22)
 
-`"status": "UNADJUDICATED"` — the artifact ends here DELIBERATELY. The
-deciding layer (frozen referee/adjudication protocol) must record its
-verdict, date, and evidence fingerprint in that slot. Until then, item 2
-of the proximity-lock promotion checklist remains open, and the
-restricted certified path stays `experimental`, wired to nothing.
+The deciding layer has now recorded its verdict in the packet's decision
+slot — sourced, on every rebuild, verbatim from the durable referee
+record **`benchmarks/margin_theorem_referee_decision.json`** (builder
+`benchmarks/run_margin_theorem_referee_decision.py`, audit-only,
+fail-closed; re-runs re-reproduce the packet fresh at HEAD before
+re-applying the criteria).
+
+- **Verdict: `ACCEPTED_INTO_CERTIFIED_BOUNDARY`** (2026-10-22T05:51:10Z,
+  5/5 criteria passed, 0 refusals; evidence fingerprint
+  `fdfda1611e452495…` = SHA-256 of the packet WITHOUT its decision slot).
+- The criteria C1–C5 were PREREGISTERED — carried verbatim from this
+  packet's claim boundary and gate checklist item 2 — and applied
+  mechanically: C1 fresh reproduction + evidence-pointer drift check,
+  C2 exact-saturation sharp point (lapse < 1e-12), C3 box admission
+  THROUGH the certified module's own assumption gate (A1/A2/A5 as a
+  predicate; the certified battery runs its own parameterization), C4
+  behavioral fail-closed refusal of an unsolved violated nominal at the
+  current HEAD, C5 claim-boundary scope fidelity.
+- **Scope conditions** (what this verdict does NOT grant): production
+  wiring for N ≥ 256 real-time control remains behind checklist item 1;
+  the scipy/kD-tree dependency gate (item 3) remains open; the FULL
+  all-pairs fail-closed re-check must ship in EVERY release — any release
+  that removes it vacates the acceptance automatically.
+- **Reservations recorded**: horizon evidence is model-checked only;
+  timing figures are dev-box medians (decision thresholds, not
+  constants); the Rust-side seam is unverified and unclaimed.
+- Re-adjudication is deliberate and lineage-preserving: an existing
+  record is never silently overwritten (`--re-adjudicate --reason`), and
+  the prior verdict survives in the record.
+
+The restricted certified path therefore stays `experimental` and wired to
+nothing — theorem-level acceptance (checklist item 2) is one gate of the
+promotion checklist, not the gate.

@@ -51,11 +51,50 @@ from apedp_dyn.robotics.proximity_margin import (
 )
 
 PACKET_PATH = _REPO_ROOT / "benchmarks" / "margin_theorem_referee_packet.json"
+DECISION_PATH = _REPO_ROOT / "benchmarks" / "margin_theorem_referee_decision.json"
 CHECKS: dict[str, dict] = {}
 
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def packet_identity_sha256(packet: dict) -> str:
+    """SHA-256 of the packet EXCLUDING the decision slot and this field.
+
+    The identity fingerprint the referee layer records must be stable under
+    decision-slot stamping (a rebuild after adjudication re-writes the slot
+    from ``benchmarks/margin_theorem_referee_decision.json``), so the
+    adjudicated identity covers the evidence, never the slot or the
+    self-referential field itself.
+    """
+    without_slot = {
+        k: v for k, v in packet.items()
+        if k not in ("decision_slot", "packet_identity_sha256")
+    }
+    return hashlib.sha256(json.dumps(without_slot, indent=2).encode()).hexdigest()
+
+
+def merge_decision_slot(packet: dict) -> dict:
+    """Stamp the decision slot from the referee decision record if one exists.
+
+    Keeps the packet re-runnable: a hand-edited slot would be erased by the
+    next rebuild, so the slot is ALWAYS sourced from the decision record.
+    """
+    if not DECISION_PATH.exists():
+        return packet
+    decision = json.loads(DECISION_PATH.read_text())
+    slot = decision.get("decision_slot", {})
+    if slot.get("status") and slot.get("packet_identity_sha256"):
+        return {
+            **slot,
+            "instruction": (
+                "ADJUDICATED — the recorded slot is sourced verbatim from "
+                f"{DECISION_PATH.relative_to(_REPO_ROOT)}; re-running the "
+                "packet builder preserves it. The identity fingerprint "
+                "refers to the packet WITHOUT its decision slot."),
+        }
+    return packet
 
 
 def check(name: str, block: dict) -> None:
@@ -298,7 +337,7 @@ def main() -> int:
             "production wiring stays behind the N ≥ 256 real-time gate; default cap N ≤ 64 does not trigger it",
             "the FULL all-pairs fail-closed re-check must ship in EVERY release: the compositional honesty floor",
         ],
-        "decision_slot": {
+        "decision_slot": merge_decision_slot({
             "status": "UNADJUDICATED",
             "instruction": (
                 "Acceptance of the margin theorem into the certified boundary "
@@ -306,13 +345,14 @@ def main() -> int:
                 "proposer never decides its own acceptance). This packet is "
                 "proposer-side evidence only; the deciding layer must "
                 "record its verdict, date and evidence fingerprint here."),
-        },
+        }),
     }
 
     all_mandatory_pass = all(
         c["passes"] for k, c in CHECKS.items() if k != "proximity_horizon_model_check"
     )
     packet["builder_exit_code"] = 0 if all_mandatory_pass else 1
+    packet["packet_identity_sha256"] = packet_identity_sha256(packet)
 
     PACKET_PATH.write_text(json.dumps(packet, indent=2))
     print(f"packet written: {PACKET_PATH}")

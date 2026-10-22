@@ -4,6 +4,28 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Margin theorem ADJUDICATED into the certified boundary (2026-10-22)
+
+Promotion-checklist item 2 of the CBF proximity-backlog gate is now closed
+at theorem level:
+
+- Deciding layer: `benchmarks/run_margin_theorem_referee_decision.py`
+  (audit-only, fail-closed) re-reproduces the packet's 6/6 machine checks
+  fresh at HEAD, verifies all evidence pointers against disk, and applies
+  the preregistered criteria C1–C5 mechanically.
+- **Verdict: ACCEPTED_INTO_CERTIFIED_BOUNDARY** (5/5 criteria, 0
+  refusals, evidence fingerprint fdfda1611e452495…) recorded durable in
+  `benchmarks/margin_theorem_referee_decision.json`; the packet's decision
+  slot is stamped from the record on every rebuild (merge hook in the
+  packet builder; the identity fingerprint excludes the slot itself).
+- Scope: the verdict grants the THEOREM's acceptance only. Checklist
+  items 1 (N ≥ 256 production requirement) and 3 (scipy gate / Rust port)
+  remain open; the restricted certified path stays `experimental`, wired
+  to nothing; the full all-pairs fail-closed re-check remains the
+  revocation trigger in every release.
+- Durability: the record is never silently overwritten — re-adjudication
+  requires `--re-adjudicate --reason` and preserves the prior verdict.
+
 ## [Unreleased] — SRE gate instrumented: tree-vs-arena baseline recorded, port DEFERRED (2026-10-22)
 
 The Rust-migration decision record's rank-1 item ("port `genetic.rs` trees

@@ -137,8 +137,13 @@
     "the FULL all-pairs fail-closed re-check must ship in EVERY release: the compositional honesty floor"
   ],
   "decision_slot": {
-    "status": "UNADJUDICATED",
-    "instruction": "Acceptance of the margin theorem into the certified boundary belongs to the frozen referee protocol (AGENTS.md \u00a71.1: a proposer never decides its own acceptance). This packet is proposer-side evidence only; the deciding layer must record its verdict, date and evidence fingerprint here."
+    "status": "ADJUDICATED",
+    "verdict": "ACCEPTED_INTO_CERTIFIED_BOUNDARY",
+    "adjudicated_at": "2026-10-22T05:54:21.393212+00:00",
+    "decided_by_record": "benchmarks/run_margin_theorem_referee_decision.json",
+    "packet_identity_sha256": "fdfda1611e452495162cfe8be3aa89c809802897a5559f68f20d1ab87c84eab8",
+    "instruction": "ADJUDICATED \u2014 the recorded slot is sourced verbatim from benchmarks/margin_theorem_referee_decision.json; re-running the packet builder preserves it. The identity fingerprint refers to the packet WITHOUT its decision slot."
   },
-  "builder_exit_code": 0
+  "builder_exit_code": 0,
+  "packet_identity_sha256": "fdfda1611e452495162cfe8be3aa89c809802897a5559f68f20d1ab87c84eab8"
 }
