@@ -44,7 +44,7 @@ def test_clip_contract_and_split_exclusivity():  # C2
     assert not (set(man["train_ids"]) & set(man["holdout_ids"]))
     clips = make_domain_set(tuple(man["train_ids"]), tuple(man["holdout_ids"]), t=6, h=16, w=16)
     assert len(clips) == 20
-    for cid, arr in clips.items():
+    for arr in clips.values():
         assert arr.shape == (6, 3, 16, 16)
         assert arr.dtype == np.float64
         assert arr.min() >= 0.0 and arr.max() <= 1.0

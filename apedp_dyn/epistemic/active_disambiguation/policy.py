@@ -22,7 +22,6 @@ import numpy as np
 from apedp_dyn.epistemic.adjudicate import adjudicate
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 
-
 DEFAULT_DETECTABILITY_K = 3.0
 
 

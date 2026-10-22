@@ -207,7 +207,7 @@ class TestFailClosedRefusals:
             assemble_cotangent_laplacian(v, triangles=tris)
 
     def test_refuses_disconnected_zero_area_vertex(self, assembled):
-        v, _L, _areas, _interior, _diag = assembled
+        _v, _L, _areas, _interior, _diag = assembled
         # a vertex NOT covered by any supplied triangle has zero incident
         # area -> mesh inconsistent (Delaunay always covers the hull, so the
         # pin uses hand-built triangles that skip vertex 3)
@@ -229,7 +229,7 @@ class TestFailClosedRefusals:
             discover_mesh_pde(bad, _fixture_mesh(), dt=dt, boundary="dirichlet")
 
     def test_refuses_under_excited_target(self, assembled):
-        v, L, _areas, _interior, _diag = assembled
+        v, _L, _areas, _interior, _diag = assembled
         # absolutely stationary field: frames constant in time -> u_t = 0
         u0 = 0.4 + 0.6 * np.sin(np.pi * v[:, 0]) * np.sin(np.pi * v[:, 1])
         frames = np.repeat(u0[None, :], 9, axis=0)

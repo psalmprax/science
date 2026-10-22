@@ -31,7 +31,10 @@ import datetime
 from dataclasses import dataclass, field
 from typing import Any
 
-from apedp_dyn.epistemic.experiment_ledger import CandidateLifecycleState, FullLineageExperimentLedger
+from apedp_dyn.epistemic.experiment_ledger import (
+    CandidateLifecycleState,
+    FullLineageExperimentLedger,
+)
 from apedp_dyn.epistemic.promotion_lifecycle import PromotionStage, PromotionTracker
 
 

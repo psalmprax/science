@@ -56,16 +56,16 @@ def _tracker_through_stage_4(cid: str = "c1") -> PromotionTracker:
 
 
 def _spec(mid: str = "m1", cid: str = "c1", **kw) -> ValidatedModuleSpec:
-    base = dict(
-        module_id=mid,
-        candidate_id=cid,
-        formula="y = a0 + a1*x",
-        preconditions=("unit_interval_inputs",),
-        validity_domain={"x": (0.0, 1.0)},
-        uncertainty={"oos_rmse": {"value": 0.05, "method": "sealed_holdout_bootstrap"}},
-        counterexamples=("diverges for x > 1.0 (documented, domain-closed)",),
-        dependencies=(),
-    )
+    base = {
+        "module_id": mid,
+        "candidate_id": cid,
+        "formula": "y = a0 + a1*x",
+        "preconditions": ("unit_interval_inputs",),
+        "validity_domain": {"x": (0.0, 1.0)},
+        "uncertainty": {"oos_rmse": {"value": 0.05, "method": "sealed_holdout_bootstrap"}},
+        "counterexamples": ("diverges for x > 1.0 (documented, domain-closed)",),
+        "dependencies": (),
+    }
     base.update(kw)
     return ValidatedModuleSpec(**base)
 

@@ -44,9 +44,10 @@ wiring gate in mode (b).
 """
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from importlib import import_module
-from typing import Any, Iterable
+from typing import Any
 
 from apedp_dyn.epistemic.caller_data_protocol import (
     CallerSplit,
@@ -380,8 +381,8 @@ def validate_census_compliance(records: Iterable[dict[str, Any]]) -> dict[str, t
         if rec is None:
             verdicts[reg.caller_id] = (
                 False,
-                f"no published compliance record — REG-F14b requires every production "
-                f"caller to certify mode (a) or (b)",
+                "no published compliance record — REG-F14b requires every production "
+                "caller to certify mode (a) or (b)",
             )
             continue
         ok, why = validate_caller_compliance(rec)

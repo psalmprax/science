@@ -125,7 +125,7 @@ class _RacyContestedClient:
         self._gets = 0
         self.store_body: bytes | None = None
 
-    def get_object(self, Bucket, Key):  # noqa: ARG002
+    def get_object(self, Bucket, Key):
         self._gets += 1
         if self._gets == 1:
             raise KeyError(Key)
@@ -136,7 +136,7 @@ class _RacyContestedClient:
         )
         return {"Body": _FakeBody(body)}
 
-    def put_object(self, Bucket, Key, Body, IfNoneMatch=None, **_kw):  # noqa: ARG002
+    def put_object(self, Bucket, Key, Body, IfNoneMatch=None, **_kw):
         if IfNoneMatch is not None:
             raise _ClientError(
                 "An error occurred (PreconditionFailed) when calling the "
@@ -146,7 +146,7 @@ class _RacyContestedClient:
         self.store_body = Body
         return {}
 
-    def delete_object(self, Bucket, Key):  # noqa: ARG002
+    def delete_object(self, Bucket, Key):
         self.store_body = None
         return {}
 
@@ -180,7 +180,7 @@ def _old_style_acquire(backend, key: str, timeout: float = 0.4) -> str:
                 lock_active = True
             else:
                 backend.client.delete_object(Bucket=backend.bucket, Key=lock_key)
-        except Exception:
+        except Exception:  # noqa: BLE001 — legacy acquire pinned verbatim; the blind catch is the defect under test
             lock_active = False
         if not lock_active:
             backend.client.put_object(
@@ -222,16 +222,16 @@ class _ParamRejectedFallbackClient:
     def __init__(self) -> None:
         self.last_put_body: bytes | None = None
 
-    def get_object(self, Bucket, Key):  # noqa: ARG002
+    def get_object(self, Bucket, Key):
         return {"Body": _FakeBody(self.last_put_body or b"")}  # read-back wins
 
-    def put_object(self, Bucket, Key, Body, IfNoneMatch=None, **_kw):  # noqa: ARG002
+    def put_object(self, Bucket, Key, Body, IfNoneMatch=None, **_kw):
         if IfNoneMatch is not None:
             raise ValueError("unknown parameter IfNoneMatch for method put_object")
         self.last_put_body = Body
         return {}
 
-    def delete_object(self, Bucket, Key):  # noqa: ARG002
+    def delete_object(self, Bucket, Key):
         self.last_put_body = None
         return {}
 
@@ -332,7 +332,6 @@ def _re_anchor_fixture(with_series: bool = True):
     from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 
     n = 60
-    t = np.arange(n)
 
     def scored(cid: str, train_loss: float, ho_rmse: float, signed_resid: np.ndarray, terms) -> ScoredCandidate:
         cand = CandidateDynamics(
@@ -383,8 +382,7 @@ def test_flaw08_re_anchor_runs_bootstrap_on_paired_residuals():
     (bootstrap forced False, residuals dropped) grants UNIQUE_SUPPORT — so
     reverting the fix flips the first assertion.
     """
-    from apedp_dyn.epistemic.adjudicate import adjudicate
-    from apedp_dyn.epistemic.adjudicate import EpistemicStatus
+    from apedp_dyn.epistemic.adjudicate import EpistemicStatus, adjudicate
 
     fitted, _a_signed, _b_signed = _re_anchor_fixture()
 
@@ -727,13 +725,13 @@ class _CountingBackend:
     def __init__(self) -> None:
         self.sync_calls = 0
 
-    def sync_to_remote(self, local_path, remote_key):  # noqa: ARG002
+    def sync_to_remote(self, local_path, remote_key):
         self.sync_calls += 1
 
-    def pull_from_remote(self, remote_key, local_path):  # noqa: ARG002
+    def pull_from_remote(self, remote_key, local_path):
         return False
 
-    def export_snapshot(self, local_path, snapshot_name=None):  # noqa: ARG002
+    def export_snapshot(self, local_path, snapshot_name=None):
         return str(local_path)
 
 
@@ -746,7 +744,6 @@ def test_flaw18_ledger_flock_and_amortized_sync(tmp_path):
     """
     from apedp_dyn.epistemic.experiment_ledger import (
         CandidateExperimentNode,
-        CandidateLifecycleState,
         FullLineageExperimentLedger,
     )
 
@@ -771,7 +768,6 @@ def test_flaw18_ledger_flock_and_amortized_sync(tmp_path):
     # racing-writer hammering).
     from concurrent.futures import ThreadPoolExecutor
 
-    state = CandidateLifecycleState.PROPOSED
     nodes = [
         CandidateExperimentNode(
             candidate_id=f"racer_{w:02d}_{k:02d}",
@@ -786,7 +782,7 @@ def test_flaw18_ledger_flock_and_amortized_sync(tmp_path):
         ledger._persist_append(node)
         return node.candidate_id
 
-    with ThreadPoolExecutor(max_workers=4) as pool:  # noqa: S110
+    with ThreadPoolExecutor(max_workers=4) as pool:
         list(pool.map(_append, nodes))
 
     lines = (tmp_path / "ledger.jsonl").read_text().strip().splitlines()
@@ -806,14 +802,14 @@ def test_flaw19_sir_formula_uses_physical_notation():
     from apedp_dyn.proposers.stem_proposers import CompartmentalSirProposer
 
     n_pop, dt, n_steps = 1_000_000.0, 1.0, 80
-    S, I, R = np.empty(n_steps), np.empty(n_steps), np.empty(n_steps)
-    S[0], I[0], R[0] = 0.99 * n_pop, 0.01 * n_pop, 0.0
+    S, I_pop, R = np.empty(n_steps), np.empty(n_steps), np.empty(n_steps)
+    S[0], I_pop[0], R[0] = 0.99 * n_pop, 0.01 * n_pop, 0.0
     for t in range(1, n_steps):
-        dS = -0.3 * S[t - 1] * I[t - 1] / n_pop * dt
-        dI = (0.3 * S[t - 1] * I[t - 1] / n_pop - 0.12 * I[t - 1]) * dt
-        S[t], I[t], R[t] = S[t - 1] + dS, I[t - 1] + dI, R[t - 1] - dS - dI
+        dS = -0.3 * S[t - 1] * I_pop[t - 1] / n_pop * dt
+        dI = (0.3 * S[t - 1] * I_pop[t - 1] / n_pop - 0.12 * I_pop[t - 1]) * dt
+        S[t], I_pop[t], R[t] = S[t - 1] + dS, I_pop[t - 1] + dI, R[t - 1] - dS - dI
     proposals = CompartmentalSirProposer(dt=dt).fit_and_propose(
-        pd.DataFrame({"S": S, "I": I, "R": R})
+        pd.DataFrame({"S": S, "I": I_pop, "R": R})
     )
     assert proposals, "SIR proposer must not abstain on the pinned fixture"
     formula = proposals[0].formula

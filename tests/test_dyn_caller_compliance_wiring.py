@@ -18,8 +18,8 @@ from apedp_dyn.epistemic.caller_data_protocol import (
 )
 from apedp_dyn.epistemic.caller_registry import (
     PRODUCTION_CALLERS,
-    CallerRegistryComplianceError,
     CallerRegistration,
+    CallerRegistryComplianceError,
     census_is_compliant,
     module_publisher,
     validate_census_compliance,
@@ -258,11 +258,12 @@ def test_mode_a_refused_before_consumption():
     archived as the promoted claim)."""
     from apedp_dyn.epistemic.caller_data_protocol import ConfirmationVerdict
     from apedp_dyn.sandbox.blind_benchmark import (
-        open_sealed_confirmation_lead, publish_sealed_compliance_record,
+        open_sealed_confirmation_lead,
+        publish_sealed_compliance_record,
     )
 
     ledger = FullLineageExperimentLedger()
-    protocol, split, sealed = open_sealed_confirmation_lead(
+    protocol, _split, sealed = open_sealed_confirmation_lead(
         ledger=ledger,
         selection_case_ids=_selection_case_ids(),
         confirmation_case_ids=[c.case_id for c in _blind_suite_cases()],
@@ -284,7 +285,8 @@ def test_mode_a_record_refused_with_foreign_provenance():
     from apedp_dyn.epistemic.caller_data_protocol import ConfirmationProvenance, ConfirmationVerdict
     from apedp_dyn.sandbox.blind_benchmark import (
         evaluate_confirmation_cases,
-        open_sealed_confirmation_lead, publish_sealed_compliance_record,
+        open_sealed_confirmation_lead,
+        publish_sealed_compliance_record,
     )
 
     suite_cases = _blind_suite_cases()
@@ -293,7 +295,7 @@ def test_mode_a_record_refused_with_foreign_provenance():
     # I3 fail-closed: the consuming candidate must be ledger-registered
     # BEFORE the sealed slice can be spent on it.
     ledger.register_candidate("variant_A", proposer_id="blind_benchmark", formula="caller::blind_benchmark")
-    protocol, split, sealed = open_sealed_confirmation_lead(
+    protocol, _split, sealed = open_sealed_confirmation_lead(
         ledger=ledger,
         selection_case_ids=_selection_case_ids(),
         confirmation_case_ids=conf_ids,
@@ -306,7 +308,7 @@ def test_mode_a_record_refused_with_foreign_provenance():
         consumed_at=verdict.provenance.consumed_at,
         candidate_id="variant_A",
         slice_dataset_id=verdict.provenance.slice_dataset_id,
-        slice_ids=tuple(["some-other-slice"]),
+        slice_ids=("some-other-slice",),
         one_shot=True, second_consume_refused=True,
     )
     with pytest.raises(CallerRegistryComplianceError):
@@ -325,7 +327,7 @@ def test_confirmation_evaluation_refuses_unknown_and_foreign_ids():
     suite_cases = _blind_suite_cases()
     conf_ids = [c.case_id for c in suite_cases]
     with pytest.raises(ValueError):
-        evaluate_confirmation_cases("variant_A", conf_ids[:-1] + ["NOT-REGISTERED"], suite_cases)
+        evaluate_confirmation_cases("variant_A", [*conf_ids[:-1], "NOT-REGISTERED"], suite_cases)
     # Frozen-referee guard: the evaluation path re-runs verify_referee() first.
     verdict = evaluate_confirmation_cases("variant_A", conf_ids, suite_cases)
     assert verdict.verdict == "PASSED"

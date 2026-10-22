@@ -141,7 +141,7 @@ def test_s3_lock_contention_and_race_prevention():
     mock_client = MagicMock()
 
     # Simulate active lock held by another process
-    active_token = "rival_token"
+    active_token = "rival_token"  # noqa: S105 — lock-holder token fixture value, not a credential
     recent_time = time.time()
     mock_client.get_object.side_effect = lambda **kwargs: {
         "Body": io.BytesIO(f"{active_token}:{recent_time}".encode())
@@ -161,7 +161,7 @@ def test_s3_release_lock_token_validation():
     }
 
     backend = S3StorageBackend(bucket="my-bucket", prefix="exp", s3_client=mock_client)
-    backend._active_locks["my_token"] = "exp/locks/test.lock"
+    backend._active_locks["my_token"] = "exp/locks/test.lock"  # noqa: S105 — lock token pytest key, not a credential
 
     # Correct token releases
     assert backend.release_lock("test", "my_token")

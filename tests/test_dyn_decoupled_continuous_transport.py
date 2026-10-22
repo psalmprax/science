@@ -123,7 +123,7 @@ class TestDecoupledSpatioTemporalTransport:
         orig_div = bridge.video_optical_flow_divergence(vx, vy)
         orig_div_norm = float(np.linalg.norm(orig_div))
 
-        z_next, diag = solver.transport_step(z, vx, vy)
+        _z_next, diag = solver.transport_step(z, vx, vy)
         # Remaining divergence after Poisson projection must be significantly reduced
         rem_div = diag["rem_divergence"]
         assert rem_div < orig_div_norm or diag["mean_divergence"] < float(np.mean(orig_div))
@@ -183,6 +183,7 @@ class TestDecoupledSpatioTemporalTransport:
     def test_neural_transport_flow_net_training_and_rust_rollout(self) -> None:
         """Verify trainable NeuralTransportFlowNet learns optical flow + source and rolls out with Rust solver."""
         import torch
+
         from apedp_dyn.video.decoupled_transport import (
             NeuralTransportFlowNet,
             train_neural_transport_model,

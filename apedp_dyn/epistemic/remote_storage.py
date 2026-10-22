@@ -19,6 +19,7 @@ from __future__ import annotations
 import abc
 import contextlib
 import datetime
+import logging
 import os
 import threading
 import time
@@ -26,6 +27,8 @@ import uuid
 from collections.abc import Generator
 from pathlib import Path
 from typing import Any
+
+_logger = logging.getLogger(__name__)
 
 
 class StorageLockError(RuntimeError):
@@ -223,7 +226,7 @@ class LocalStorageBackend(BaseStorageBackend):
                 if time.time() >= deadline:
                     raise StorageLockError(
                         f"Timed out after {timeout:.1f}s waiting to acquire lock on '{key}'."
-                    )
+                    ) from None
                 time.sleep(0.05)
 
     def release_lock(self, key: str, lock_token: str) -> bool:
@@ -363,7 +366,8 @@ class S3StorageBackend(BaseStorageBackend):
         try:
             self.client.head_object(Bucket=self.bucket, Key=full_key)
             return True
-        except Exception:
+        except Exception as exc:  # noqa: BLE001 — transport errors are heterogeneous (botocore/KeyError/OSError); bound and logged
+            _logger.debug("exists(%s): head_object failed (%r); reporting absent", full_key, exc)
             return False
 
     def delete(self, key: str) -> bool:
@@ -402,8 +406,10 @@ class S3StorageBackend(BaseStorageBackend):
                 else:
                     # Break expired lock
                     self.client.delete_object(Bucket=self.bucket, Key=lock_key)
-            except Exception:
-                # Lock does not exist
+            except Exception as exc:  # noqa: BLE001 — 404 and transport failures both mean "lock free" down here; bound and logged
+                # Lock does not exist (404) or the probe failed — treated the
+                # same by the legacy protocol; log the distinction at debug.
+                _logger.debug("lock probe on %s failed (%r); treating as free", lock_key, exc)
                 lock_is_active = False
 
             if not lock_is_active:
@@ -437,7 +443,7 @@ class S3StorageBackend(BaseStorageBackend):
             self.client.put_object(
                 Bucket=self.bucket, Key=lock_key, Body=payload, IfNoneMatch="*"
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — botocore ClientError is only nameable by str/type inspection here
             ctype = type(exc).__name__
             is_precondition_failed = (
                 ctype == "ClientError"
@@ -456,7 +462,8 @@ class S3StorageBackend(BaseStorageBackend):
                     return token, False
             try:
                 self.client.put_object(Bucket=self.bucket, Key=lock_key, Body=payload)
-            except Exception:
+            except Exception as exc:  # noqa: BLE001 — racing put failure means "lost the lock slot"; bound and logged
+                _logger.debug("unconditional lock put on %s lost (%r)", lock_key, exc)
                 return token, False
         # Read-back verification (also runs on the success path so a racing
         # write after our put is detected immediately).
@@ -471,7 +478,8 @@ class S3StorageBackend(BaseStorageBackend):
         try:
             resp = self.client.get_object(Bucket=self.bucket, Key=lock_key)
             body = resp["Body"].read().decode("utf-8")
-        except Exception:
+        except Exception as exc:  # noqa: BLE001 — absent/vanished lock object; bound and logged
+            _logger.debug("ownership read-back on %s failed (%r)", lock_key, exc)
             return token, False
         holder = body.split(":", 1)[0].strip()
         if holder == token:
@@ -489,7 +497,8 @@ class S3StorageBackend(BaseStorageBackend):
                 self.client.delete_object(Bucket=self.bucket, Key=lock_key)
                 return True
             return False
-        except Exception:
+        except Exception as exc:  # noqa: BLE001 — release must report not-released on any transport failure; bound and logged
+            _logger.debug("lock release on %s failed (%r); reporting not-released", lock_key, exc)
             return False
 
 
@@ -579,16 +588,16 @@ class GCSStorageBackend(BaseStorageBackend):
                     lock_time = float(parts[1]) if len(parts) > 1 else 0.0
                     if (time.time() - lock_time) > stale_timeout:
                         blob.delete()
-                except Exception:
-                    pass
+                except Exception as exc:  # noqa: BLE001 — GCS stale-probe; bound and logged
+                    _logger.debug("GCS stale-lock probe on %s failed (%r)", lock_key, exc)
 
             try:
                 payload = f"{token}:{time.time()}".encode()
                 blob.upload_from_string(payload, if_generation_match=0)
                 self._active_locks[token] = lock_key
                 return token
-            except Exception:
-                pass
+            except Exception as exc:  # noqa: BLE001 — GCS claim upload lost; bound and logged
+                _logger.debug("GCS lock upload on %s failed (%r)", lock_key, exc)
 
             if time.time() >= deadline:
                 raise StorageLockError(f"Timed out after {timeout:.1f}s acquiring GCS lock on {key}.")
@@ -606,7 +615,8 @@ class GCSStorageBackend(BaseStorageBackend):
                     return True
                 return False
             return True
-        except Exception:
+        except Exception as exc:  # noqa: BLE001 — GCS release must fail-soft; bound and logged
+            _logger.debug("GCS lock release on %s failed (%r)", lock_key, exc)
             return False
 
 

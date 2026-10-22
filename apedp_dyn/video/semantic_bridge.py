@@ -148,7 +148,7 @@ class SemanticVideoConditioner:
         for concept_tag, vocab in cls._SEMANTIC_CONCEPT_GROUPS:
             if token in vocab or any(token.startswith(v) for v in vocab if len(v) >= 4):
                 for slot in range(3):
-                    c_digest = hashlib.md5(f"{concept_tag}:{slot}".encode("utf-8")).hexdigest()  # noqa: S324
+                    c_digest = hashlib.md5(f"{concept_tag}:{slot}".encode()).hexdigest()  # noqa: S324
                     c_idx = int(c_digest[:8], 16) % dim
                     c_sign = 1.0 if int(c_digest[8], 16) < 8 else -1.0
                     vec[c_idx] += 2.5 * c_sign

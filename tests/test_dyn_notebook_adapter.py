@@ -131,7 +131,7 @@ def test_configure_storage_explicit_paths(tmp_path):
     t_dir = tmp_path / "custom_temp"
     p_dir = tmp_path / "custom_persist"
 
-    resolved_t, resolved_p, tier, warnings = configure_storage(
+    resolved_t, resolved_p, _tier, _warnings = configure_storage(
         temp_dir=t_dir,
         persistent_dir=p_dir,
     )
@@ -153,7 +153,7 @@ def test_configure_storage_env_vars(tmp_path):
         "APEDP_TEMP_STORAGE": str(t_dir),
         "APEDP_STORAGE_DIR": str(p_dir),
     }):
-        resolved_t, resolved_p, tier, warnings = configure_storage()
+        resolved_t, resolved_p, _tier, _warnings = configure_storage()
         assert resolved_t == t_dir
         assert resolved_p == p_dir
         assert resolved_t.is_dir()
@@ -167,7 +167,7 @@ def test_configure_storage_colab_epistemic_warning(tmp_path):
             os.environ.pop("APEDP_STORAGE_DIR", None)
             os.environ.pop("APEDP_TEMP_STORAGE", None)
             # Simulate non-existent Google Drive
-            t_dir, p_dir, tier, warnings = configure_storage(
+            _t_dir, _p_dir, tier, warnings = configure_storage(
                 mount_point=str(tmp_path / "non_existent_drive"),
                 allow_drive_mount=False,
             )
@@ -185,7 +185,7 @@ def test_configure_storage_colab_with_mounted_drive(tmp_path):
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("APEDP_STORAGE_DIR", None)
             os.environ.pop("APEDP_TEMP_STORAGE", None)
-            t_dir, p_dir, tier, warnings = configure_storage(
+            _t_dir, p_dir, tier, warnings = configure_storage(
                 mount_point=str(tmp_path / "drive"),
                 allow_drive_mount=False,
             )
@@ -395,7 +395,7 @@ def test_configure_storage_kaggle():
     with patch.dict(os.environ, {"KAGGLE_KERNEL_RUN_TYPE": "Interactive"}, clear=True):
         with patch.dict(sys.modules, {}):
             sys.modules.pop("google.colab", None)
-            t_dir, p_dir, tier, warnings = configure_storage()
+            _t_dir, _p_dir, tier, warnings = configure_storage()
             assert tier == StorageTier.EPHEMERAL
             assert any("Kaggle" in w for w in warnings)
 
@@ -489,9 +489,9 @@ def test_tutorial_notebook_structure_and_execution(tmp_path):
         "APEDP_STORAGE_DIR": str(tmp_path / "storage"),
     }):
         global_ns = {"__name__": "__main__"}
-        for idx, cell in enumerate(nb["cells"]):
+        for cell in nb["cells"]:
             if cell["cell_type"] == "code":
                 code = "".join(cell["source"])
-                exec(code, global_ns)
+                exec(code, global_ns)  # noqa: S102 — executes the repo-owned tutorial notebook fixture under version control
 
 

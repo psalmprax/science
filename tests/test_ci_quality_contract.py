@@ -11,7 +11,9 @@ WORKFLOWS = ROOT / ".github" / "workflows"
 
 
 def _workflow(name: str) -> dict:
-    return yaml.load((WORKFLOWS / name).read_text(), Loader=yaml.BaseLoader)
+    # BaseLoader never instantiates objects (strings only), so the S506
+    # arbitrary-objects-instantiation concern does not apply here.
+    return yaml.load((WORKFLOWS / name).read_text(), Loader=yaml.BaseLoader)  # noqa: S506
 
 
 def test_quality_jobs_block_tests_and_run_parity_commands():

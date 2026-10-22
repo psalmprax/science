@@ -86,7 +86,7 @@ def test_engine_discovers_transport_terms():
     terms = list(result.active_terms)
     assert "u_x" in terms, terms
     assert "u_xx" in terms, terms
-    coefficients = dict(zip(terms, result.coefficients))
+    coefficients = dict(zip(terms, result.coefficients, strict=True))
     assert _relative_error(coefficients["u_x"], -TRUE_VELOCITY) < 1e-3, coefficients
     assert _relative_error(coefficients["u_xx"], TRUE_DIFFUSION) < 1e-3, coefficients
     if "u" in terms:

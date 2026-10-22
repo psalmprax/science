@@ -12,14 +12,18 @@ in-memory limits via:
 """
 from __future__ import annotations
 
+import json
+import logging
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass, field
-import json
 from pathlib import Path
-from typing import Any, Callable, Generic, Iterable, Iterator, Literal, Sequence, TypeVar
+from typing import Any, Generic, Literal, TypeVar
 
 T = TypeVar("T")
 R = TypeVar("R")
+
+_logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -88,7 +92,10 @@ class DistributedChunkedExecutor:
             try:
                 # Attempt json serialization if payload allows; otherwise mark completion marker
                 p.write_text(json.dumps({"chunk_idx": chunk_idx, "results": results}, default=str), encoding="utf-8")
-            except Exception:
+            except Exception as exc:  # noqa: BLE001 — result payload types are user code; marker fallback is the contract
+                _logger.debug(
+                    "chunk %s payload not json-serializable (%r); writing completion marker instead",
+                    chunk_idx, exc)
                 p.write_text(json.dumps({"chunk_idx": chunk_idx, "status": "completed"}), encoding="utf-8")
 
     def _load_chunk_checkpoint(self, chunk_idx: int) -> list[Any] | None:
@@ -98,7 +105,8 @@ class DistributedChunkedExecutor:
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
             return data.get("results")
-        except Exception:
+        except Exception as exc:  # noqa: BLE001 — corrupt checkpoint means recompute; bound and logged
+            _logger.debug("chunk checkpoint %s unreadable (%r); recomputing chunk", chunk_idx, exc)
             return None
 
     def map_stream(
@@ -172,7 +180,7 @@ class DistributedChunkedExecutor:
             try:
                 acc = next(it)
             except StopIteration:
-                raise ValueError("reduce() of empty sequence with no initial value")
+                raise ValueError("reduce() of empty sequence with no initial value") from None
         else:
             acc = initial
 

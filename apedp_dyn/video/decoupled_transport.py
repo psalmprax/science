@@ -126,7 +126,7 @@ class DecoupledSpatioTemporalTransport:
                     )
                     vx_eff = np.asarray(vx_sol, dtype=np.float64).reshape(h, w)
                     vy_eff = np.asarray(vy_sol, dtype=np.float64).reshape(h, w)
-                except Exception:
+                except Exception:  # noqa: BLE001 — optional subproblem solve; verified fallback below is the contract
                     vx_eff, vy_eff = self._fallback_helmholtz_hodge(vx_arr, vy_arr)
             else:
                 vx_eff, vy_eff = self._fallback_helmholtz_hodge(vx_arr, vy_arr)
@@ -170,7 +170,7 @@ class DecoupledSpatioTemporalTransport:
                         1.0,
                     )
                     z_warped = np.asarray(dissipated, dtype=np.float64).reshape(c, h, w)
-                except Exception:
+                except Exception:  # noqa: BLE001 — optional subproblem solve; verified fallback below is the contract
                     z_warped = self._fallback_laplacian_dissipation(z_warped, self.config.nu, step_dt)
             else:
                 z_warped = self._fallback_laplacian_dissipation(z_warped, self.config.nu, step_dt)
@@ -436,7 +436,7 @@ class NeuralTransportFlowNet(nn.Module):
         orig_3d = z_curr.ndim == 3
         if orig_3d:
             z_curr = z_curr.unsqueeze(0)
-        b, _c, h, w = z_curr.shape
+        _b, _c, h, w = z_curr.shape
         device, dtype = z_curr.device, z_curr.dtype
 
         vx, vy, s_source, div_field = self.predict_flow_and_source(z_curr, t=t, prompt_emb=prompt_emb)
