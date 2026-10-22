@@ -205,6 +205,33 @@ ALL CONFIGURED MUTANTS KILLED (MUT-E4 back among them);
 battery all-killed, Rust 193/193); pins 27/27; blind + expanded-proposers
 suites 24 passed.
 
+### Code-only external rating (8.1/10) — blocker-list closure mapping
+
+A subsequent code-only external assessment rated the system 8.1/10 and
+listed "what prevents 9.0+" as four verified code flaws. Same-day closure
+mapping (source-verified, 2026-10-21):
+
+1. "Active Lookahead Leakage in 4 Modules" — RESOLVED above (FLAW-A01):
+   the raw `np.intersect1d(_blocks(len(dates)), tr)` pattern has ZERO hits
+   in the package; all four modules go through
+   `trading_e4t1_v2::_train_blocks_no_leak`, pinned by
+   `test_flaw_a01_corrected_mask_excludes_five_day_boundary_blocks` and
+   `test_flaw_a01_all_four_consumers_use_corrected_mask`.
+2. "Distributed Lag Buffer Keying" — RESOLVED above (FLAW-A09): buffers are
+   snapshotted pre-call and written once per (call, base column); pinned by
+   `test_distributed_lag_multi_lag_same_column_streaming_safe`.
+3. "Benchmark Division-by-Zero Semantics" — RESOLVED above (FLAW-A13):
+   per-domain fpr/fdr/vrr report `None` on zero denominators; pinned by
+   `test_zero_denominator_domains_report_none_not_certified_zero`.
+4. "Governance Manifest Re-Signing" — REMAINS OPEN (trustee-blocked):
+   re-verified live — `tests/test_dyn_governance.py` runs 3 passed / 1
+   failed with `GovernanceTamperingError: Specification SHA-256 mismatch:
+   manifest specifies a6d026…, but actual disk file computes to 5bb42f…`
+   (the disk hash matches `canonical_spec.py`'s import pin, per FLAW-01
+   above). Resolution requires renewed trustee Ed25519 signatures held
+   outside this repository; per AGENTS §1.2/§1.3 the manifest is never
+   re-minted or bypassed locally.
+
 ---
 
 # Previous round (2026-09-18, second pass)
