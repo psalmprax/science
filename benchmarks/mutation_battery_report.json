@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-10-22T07:14:53.838215+00:00",
+  "timestamp_utc": "2026-10-22T13:31:45.576843+00:00",
   "prereg_target": "REG-MUT (docs/SYSTEM_FLAWS_AUDIT.md Outstanding requirements register)",
   "status": "ALL_KILLED",
   "summary": {
@@ -22,8 +22,8 @@
       ],
       "returncode": 0,
       "passed": true,
-      "tail": "collected 47 items / 41 deselected / 6 selected\n\ntests/test_dyn_blind_audit_round2_remediation.py ......                  [100%]\n\n======================= 6 passed, 41 deselected in 8.33s =======================",
-      "duration_s": 10.6
+      "tail": "collected 47 items / 41 deselected / 6 selected\n\ntests/test_dyn_blind_audit_round2_remediation.py ......                  [100%]\n\n======================= 6 passed, 41 deselected in 7.18s =======================",
+      "duration_s": 9.8
     },
     "hawkes": {
       "argv": [
@@ -36,8 +36,8 @@
       ],
       "returncode": 0,
       "passed": true,
-      "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 4.00s ===============================",
-      "duration_s": 5.5
+      "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 4.41s ===============================",
+      "duration_s": 6.9
     },
     "hawkes_sharp": {
       "argv": [
@@ -50,8 +50,8 @@
       ],
       "returncode": 0,
       "passed": true,
-      "tail": "collected 2 items\n\ntests/test_dyn_hawkes_standardization_pins.py ..                         [100%]\n\n============================== 2 passed in 4.74s ===============================",
-      "duration_s": 6.7
+      "tail": "collected 2 items\n\ntests/test_dyn_hawkes_standardization_pins.py ..                         [100%]\n\n============================== 2 passed in 3.98s ===============================",
+      "duration_s": 6.5
     },
     "ehi_pillars": {
       "argv": [
@@ -64,8 +64,8 @@
       ],
       "returncode": 0,
       "passed": true,
-      "tail": "collected 17 items\n\ntests/test_dyn_ehi_phase5_pins.py .................                      [100%]\n\n============================== 17 passed in 6.62s ==============================",
-      "duration_s": 8.4
+      "tail": "collected 17 items\n\ntests/test_dyn_ehi_phase5_pins.py .................                      [100%]\n\n============================== 17 passed in 6.22s ==============================",
+      "duration_s": 8.6
     },
     "dispatch_wiring": {
       "argv": [
@@ -78,8 +78,8 @@
       ],
       "returncode": 0,
       "passed": true,
-      "tail": "collected 9 items\n\ntests/test_dyn_discovery_dispatch_wiring.py .........                    [100%]\n\n========================= 9 passed in 64.80s (0:01:04) =========================",
-      "duration_s": 66.2
+      "tail": "collected 9 items\n\ntests/test_dyn_discovery_dispatch_wiring.py .........                    [100%]\n\n========================= 9 passed in 60.49s (0:01:00) =========================",
+      "duration_s": 62.8
     },
     "de_arm": {
       "argv": [
@@ -92,8 +92,8 @@
       ],
       "returncode": 0,
       "passed": true,
-      "tail": "collected 10 items\n\ntests/test_dyn_de_arm_p1_pins.py ..........                              [100%]\n\n============================== 10 passed in 2.03s ==============================",
-      "duration_s": 3.0
+      "tail": "collected 10 items\n\ntests/test_dyn_de_arm_p1_pins.py ..........                              [100%]\n\n============================== 10 passed in 2.68s ==============================",
+      "duration_s": 4.8
     }
   },
   "mutants": [
@@ -118,13 +118,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 7.2,
+      "duration_s": 8.4,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 7.2,
-          "tail": "E    +  and   <EpistemicStatus.UNIQUE_SUPPORT: 'unique_support'> = EpistemicStatus.UNIQUE_SUPPORT\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchored_pass_skips_bootstrap_confirmation\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 1 passed, 41 deselected in 5.42s =================="
+          "duration_s": 8.4,
+          "tail": "E    +  and   <EpistemicStatus.UNIQUE_SUPPORT: 'unique_support'> = EpistemicStatus.UNIQUE_SUPPORT\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchored_pass_skips_bootstrap_confirmation\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 1 passed, 41 deselected in 5.90s =================="
         }
       ]
     },
@@ -149,13 +149,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 8.7,
+      "duration_s": 8.3,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 8.7,
-          "tail": "E    +  and   <EpistemicStatus.MULTI_HYPOTHESIS: 'multi_hypothesis'> = EpistemicStatus.MULTI_HYPOTHESIS\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchor_requires_gate4_certified_holdout_head\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n======================= 1 failed, 41 deselected in 6.54s ======================="
+          "duration_s": 8.3,
+          "tail": "E    +  and   <EpistemicStatus.MULTI_HYPOTHESIS: 'multi_hypothesis'> = EpistemicStatus.MULTI_HYPOTHESIS\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF14HoldoutAnchoredPair::test_reanchor_requires_gate4_certified_holdout_head\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n======================= 1 failed, 41 deselected in 5.86s ======================="
         }
       ]
     },
@@ -180,13 +180,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 7.7,
+      "duration_s": 8.1,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 7.7,
-          "tail": "E   KeyError: 'u_xxx'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 41 deselected in 5.83s =================="
+          "duration_s": 8.1,
+          "tail": "E   KeyError: 'u_xxx'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 41 deselected in 5.73s =================="
         }
       ]
     },
@@ -211,13 +211,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 7.4,
+      "duration_s": 9.7,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 7.4,
-          "tail": "E     Actual message: 'Frozen scoring library cannot resolve dev-discovered active term(s): (term names redacted) \u2014 the Python mirror and the Rust discovery library have drifted; refuse scoring instead of silently dropping coefficient terms'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 41 deselected in 5.61s =================="
+          "duration_s": 9.7,
+          "tail": "E    Input: 'Frozen scoring library cannot resolve dev-discovered active term(s): (term names redacted) \u2014 the Python mirror and the Rust discovery library have drifted; refuse scoring instead of silently dropping coefficient terms'\n=========================== short test summary info ============================\nFAILED tests/test_dyn_blind_audit_round2_remediation.py::TestF8FrozenLibraryTermAudit::test_unresolvable_active_term_fails_closed\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 2 passed, 41 deselected in 6.47s =================="
         }
       ]
     },
@@ -248,19 +248,19 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 9.5,
+      "duration_s": 15.1,
       "pin_tails": [
         {
           "returncode": 0,
           "passed": true,
-          "duration_s": 4.3,
-          "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 3.13s ==============================="
+          "duration_s": 6.6,
+          "tail": "collected 1 item\n\ntests/test_audit_open_flaws_remediated.py .                              [100%]\n\n============================== 1 passed in 4.19s ==============================="
         },
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 5.2,
-          "tail": "E    +    where <function allclose at 0x7415a3db2af0> = np.allclose\n=========================== short test summary info ============================\nFAILED tests/test_dyn_hawkes_standardization_pins.py::test_score_couples_to_fit_constants_not_eval_frame\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 1 passed in 3.92s =========================="
+          "duration_s": 8.5,
+          "tail": "E    +    where <function allclose at 0x722dc9fb17f0> = np.allclose\n=========================== short test summary info ============================\nFAILED tests/test_dyn_hawkes_standardization_pins.py::test_score_couples_to_fit_constants_not_eval_frame\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 1 passed in 5.74s =========================="
         }
       ]
     },
@@ -283,13 +283,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 3.5,
+      "duration_s": 5.0,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 3.5,
-          "tail": "E   Failed: DID NOT RAISE StorageLockError\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw03_contested_lock_cannot_be_stolen\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 1 passed in 2.36s =========================="
+          "duration_s": 5.0,
+          "tail": "E   Failed: DID NOT RAISE <class 'apedp_dyn.epistemic.remote_storage.StorageLockError'>\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw03_contested_lock_cannot_be_stolen\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 1 passed in 3.01s =========================="
         }
       ]
     },
@@ -312,13 +312,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 5.7,
+      "duration_s": 7.6,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 5.7,
-          "tail": "E   apedp_dyn.epistemic.remote_storage.StorageLockError: Timed out after 2.0s acquiring S3 lock on ledger.\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw03_parameter_rejected_fallback_still_verifies_ownership\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 2 passed in 4.62s =========================="
+          "duration_s": 7.6,
+          "tail": "E   apedp_dyn.epistemic.remote_storage.StorageLockError: Timed out after 2.0s acquiring S3 lock on ledger.\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw03_parameter_rejected_fallback_still_verifies_ownership\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 2 passed in 5.45s =========================="
         }
       ]
     },
@@ -341,13 +341,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 7.7,
+      "duration_s": 9.2,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 7.7,
-          "tail": "E   apedp_dyn.robotics.cbf_certificate.CertificateViolation: CBF-QP failed to certify: max pair deficit 7.904e-04\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw17_cbf_final_projection_prevents_norm_violation\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 13 passed in 6.25s ========================="
+          "duration_s": 9.2,
+          "tail": "E   apedp_dyn.robotics.cbf_certificate.CertificateViolation: CBF-QP failed to certify: max pair deficit 7.904e-04\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw17_cbf_final_projection_prevents_norm_violation\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 13 passed in 6.84s ========================="
         }
       ]
     },
@@ -370,13 +370,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 3.7,
+      "duration_s": 4.6,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 3.7,
-          "tail": "E    +  and   <EpistemicStatus.UNIQUE_SUPPORT: 'unique_support'> = <enum 'EpistemicStatus'>.UNIQUE_SUPPORT\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw08_re_anchor_runs_bootstrap_on_paired_residuals\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 5 passed in 2.61s =========================="
+          "duration_s": 4.6,
+          "tail": "E    +  and   <EpistemicStatus.UNIQUE_SUPPORT: 'unique_support'> = <enum 'EpistemicStatus'>.UNIQUE_SUPPORT\n=========================== short test summary info ============================\nFAILED tests/test_dyn_external_audit_2026_10_21_pins.py::test_flaw08_re_anchor_runs_bootstrap_on_paired_residuals\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 5 passed in 2.91s =========================="
         }
       ]
     },
@@ -399,13 +399,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 3.1,
+      "duration_s": 4.1,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 3.1,
-          "tail": "E     + ODE_PLAUSIBLE\n=========================== short test summary info ============================\nFAILED tests/test_dyn_ehi_phase5_pins.py::test_phase1_fabrication_guard_flat_field_grid\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 3 passed in 2.08s =========================="
+          "duration_s": 4.1,
+          "tail": "E     + ODE_PLAUSIBLE\n=========================== short test summary info ============================\nFAILED tests/test_dyn_ehi_phase5_pins.py::test_phase1_fabrication_guard_flat_field_grid\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 3 passed in 2.38s =========================="
         }
       ]
     },
@@ -428,13 +428,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 60.9,
+      "duration_s": 53.8,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 60.9,
-          "tail": "E     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED tests/test_dyn_discovery_dispatch_wiring.py::test_dispatch_conflict_is_abstention_not_override\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 6 passed in 59.51s ========================="
+          "duration_s": 53.8,
+          "tail": "E     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED tests/test_dyn_discovery_dispatch_wiring.py::test_dispatch_conflict_is_abstention_not_override\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 6 passed in 51.87s ========================="
         }
       ]
     },
@@ -457,13 +457,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 60.7,
+      "duration_s": 52.9,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 60.7,
-          "tail": "E     + ROUTED\n=========================== short test summary info ============================\nFAILED tests/test_dyn_discovery_dispatch_wiring.py::test_dispatch_selector_ambiguity_keeps_admitted_families_live\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 4 passed in 59.35s ========================="
+          "duration_s": 52.9,
+          "tail": "E     + ROUTED\n=========================== short test summary info ============================\nFAILED tests/test_dyn_discovery_dispatch_wiring.py::test_dispatch_selector_ambiguity_keeps_admitted_families_live\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 4 passed in 50.45s ========================="
         }
       ]
     },
@@ -486,13 +486,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 5.6,
+      "duration_s": 6.2,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 5.6,
-          "tail": "E   Failed: DID NOT RAISE RuntimeError\n=========================== short test summary info ============================\nFAILED tests/test_dyn_ehi_phase5_pins.py::test_phase5_governance_state_never_shadow_adjudication\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 15 passed in 4.29s ========================="
+          "duration_s": 6.2,
+          "tail": "E   Failed: DID NOT RAISE <class 'RuntimeError'>\n=========================== short test summary info ============================\nFAILED tests/test_dyn_ehi_phase5_pins.py::test_phase5_governance_state_never_shadow_adjudication\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 15 passed in 4.34s ========================="
         }
       ]
     },
@@ -515,13 +515,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 5.8,
+      "duration_s": 6.1,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 5.8,
-          "tail": "E   assert 4 == 1\n=========================== short test summary info ============================\nFAILED tests/test_dyn_ehi_phase5_pins.py::test_phase5_controller_langmuir_loop_end_to_end\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 12 passed in 4.36s ========================="
+          "duration_s": 6.1,
+          "tail": "E   assert 4 == 1\n=========================== short test summary info ============================\nFAILED tests/test_dyn_ehi_phase5_pins.py::test_phase5_controller_langmuir_loop_end_to_end\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 12 passed in 4.23s ========================="
         }
       ]
     },
@@ -544,13 +544,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 65.2,
+      "duration_s": 57.5,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 65.2,
-          "tail": "E    +      where {} = DispatchOutcome(decision=DispatchDecision(decision=RouteDecision(sieve_modality='static_manifold', sieve_reason='no mo...923, diagnostics={'time_axis': 0.0}, reason='decisive routing (posterior 0.999, bf 1911.33)')), products={}, errors={}).errors\n=========================== short test summary info ============================\nFAILED tests/test_dyn_discovery_dispatch_wiring.py::test_dispatch_records_engine_failure_without_laundering\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n==================== 1 failed, 8 passed in 63.85s (0:01:03) ===================="
+          "duration_s": 57.5,
+          "tail": "E    +      where {} = DispatchOutcome(decision=DispatchDecision(decision=RouteDecision(sieve_modality='static_manifold', sieve_reason='no mo...923, diagnostics={'time_axis': 0.0}, reason='decisive routing (posterior 0.999, bf 1911.33)')), products={}, errors={}).errors\n=========================== short test summary info ============================\nFAILED tests/test_dyn_discovery_dispatch_wiring.py::test_dispatch_records_engine_failure_without_laundering\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 8 passed in 55.66s ========================="
         }
       ]
     },
@@ -573,13 +573,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 3.8,
+      "duration_s": 4.6,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 3.8,
-          "tail": "E   assert False\n=========================== short test summary info ============================\nFAILED tests/test_dyn_de_arm_p1_pins.py::test_screening_escape_hatch_dense_survives_exclusions\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 6 passed in 2.51s =========================="
+          "duration_s": 4.6,
+          "tail": "E   assert False\n=========================== short test summary info ============================\nFAILED tests/test_dyn_de_arm_p1_pins.py::test_screening_escape_hatch_dense_survives_exclusions\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 6 passed in 2.72s =========================="
         }
       ]
     },
@@ -602,13 +602,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 3.0,
+      "duration_s": 4.3,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 3.0,
-          "tail": "E     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED tests/test_dyn_de_arm_p1_pins.py::test_screening_ranks_direct_parent_first_and_records_exclusions\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 5 passed in 2.02s =========================="
+          "duration_s": 4.3,
+          "tail": "E     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED tests/test_dyn_de_arm_p1_pins.py::test_screening_ranks_direct_parent_first_and_records_exclusions\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 5 passed in 2.43s =========================="
         }
       ]
     },
@@ -631,13 +631,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 3.1,
+      "duration_s": 4.3,
       "pin_tails": [
         {
           "returncode": 1,
           "passed": false,
-          "duration_s": 3.1,
-          "tail": "E     Expected: 11.1875 \u00b1 1.0e-09\n=========================== short test summary info ============================\nFAILED tests/test_dyn_de_arm_p1_pins.py::test_ad_service_exact_rules - assert...\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 3 passed in 2.11s =========================="
+          "duration_s": 4.3,
+          "tail": "E     Expected: 11.1875 \u00b1 1.0e-09\n=========================== short test summary info ============================\nFAILED tests/test_dyn_de_arm_p1_pins.py::test_ad_service_exact_rules - assert...\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n========================= 1 failed, 3 passed in 2.48s =========================="
         }
       ]
     },
@@ -659,13 +659,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 11.8,
+      "duration_s": 12.0,
       "pin_tails": [
         {
           "returncode": 101,
           "passed": false,
-          "duration_s": 11.8,
-          "tail": "\nfailures:\n    rime::diff_pade::tests::test_nonuniform_grid_derivatives_use_fornberg_fallback\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.04s"
+          "duration_s": 12.0,
+          "tail": "\nfailures:\n    rime::diff_pade::tests::test_nonuniform_grid_derivatives_use_fornberg_fallback\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.80s"
         }
       ]
     },
@@ -687,13 +687,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 7.9,
+      "duration_s": 6.6,
       "pin_tails": [
         {
           "returncode": 101,
           "passed": false,
-          "duration_s": 7.9,
-          "tail": "\nfailures:\n    rime::diff_pade::tests::test_nonuniform_grid_derivatives_use_fornberg_fallback\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.06s"
+          "duration_s": 6.6,
+          "tail": "\nfailures:\n    rime::diff_pade::tests::test_nonuniform_grid_derivatives_use_fornberg_fallback\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.03s"
         }
       ]
     },
@@ -715,12 +715,12 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 5.5,
+      "duration_s": 5.8,
       "pin_tails": [
         {
           "returncode": 101,
           "passed": false,
-          "duration_s": 5.5,
+          "duration_s": 5.8,
           "tail": "\nfailures:\n    rime::diff_pade::tests::test_pole_masked_second_order_is_not_exact_recovery\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.87s"
         }
       ]
@@ -743,13 +743,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 5.6,
+      "duration_s": 5.2,
       "pin_tails": [
         {
           "returncode": 101,
           "passed": false,
-          "duration_s": 5.6,
-          "tail": "\nfailures:\n    rime::diff_pade::tests::test_pole_masked_first_order_reported\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.77s"
+          "duration_s": 5.2,
+          "tail": "\nfailures:\n    rime::diff_pade::tests::test_pole_masked_first_order_reported\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.61s"
         }
       ]
     },
@@ -771,13 +771,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 5.9,
+      "duration_s": 5.2,
       "pin_tails": [
         {
           "returncode": 101,
           "passed": false,
-          "duration_s": 5.9,
-          "tail": "\nfailures:\n    rime::implicit::tests::test_near_zero_scale_misfit_not_certified\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.81s"
+          "duration_s": 5.2,
+          "tail": "\nfailures:\n    rime::implicit::tests::test_near_zero_scale_misfit_not_certified\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.55s"
         }
       ]
     },
@@ -799,13 +799,13 @@
       "killed": true,
       "all_pins_yield": true,
       "restoration_byte_identical": true,
-      "duration_s": 5.7,
+      "duration_s": 5.1,
       "pin_tails": [
         {
           "returncode": 101,
           "passed": false,
-          "duration_s": 5.7,
-          "tail": "\nfailures:\n    rime::lie_symmetry::tests::test_scale_dominant_ode_keeps_genuine_symmetries\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.70s"
+          "duration_s": 5.1,
+          "tail": "\nfailures:\n    rime::lie_symmetry::tests::test_scale_dominant_ode_keeps_genuine_symmetries\n\ntest result: FAILED. 192 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.54s"
         }
       ]
     }
