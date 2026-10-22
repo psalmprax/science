@@ -93,12 +93,32 @@ print(f"split: train n={len(p_tr)} | " + " | ".join(
 #    Its holdout predictions are computed lazily, inside the gated loop, so no
 #    holdout value is read before the ledger authorises the slice.
 def classical_langmuir(p, q_max, K):
+    """Single-site Langmuir (the textbook incumbent, kept as a reference)."""
     return (q_max * K * p) / (1.0 + K * p)
+
+def dual_site_langmuir(p, q1, K1, q2, K2):
+    """Two-site Langmuir: two independent populations on the same surface.
+
+    Strictly richer than one site (it nests the single-site law when q2 -> 0), so
+    a discovery engine must beat THIS, not the weaker special case.
+    """
+    return q1 * K1 * p / (1.0 + K1 * p) + q2 * K2 * p / (1.0 + K2 * p)
 
 popt, _ = curve_fit(classical_langmuir, p_tr, q_tr,
                     p0=[q_tr.max() * 1.2, 1.0 / np.median(p_tr)],
                     bounds=(0, np.inf), maxfev=200000)
-print(f"baseline params (train-only): q_max={popt[0]:.4f}, K={popt[1]:.5f}")
+popt_dual, _ = curve_fit(dual_site_langmuir, p_tr, q_tr,
+                         p0=[popt[0] * 0.5, popt[1], popt[0] * 0.5, popt[1] * 20.0],
+                         bounds=(0, np.inf), maxfev=400000)
+print(f"incumbent (dual-site Langmuir, train-only): q1={popt_dual[0]:.4g}, K1={popt_dual[1]:.4g}, "
+      f"q2={popt_dual[2]:.4f}, K2={popt_dual[3]:.5f}")
+if popt_dual[1] * p_tr.max() < 0.1:
+    print(f"  identifiability: site-1 sits in the Henry limit (K1*p_max="
+          f"{popt_dual[1] * p_tr.max():.2e}); only q1*K1={popt_dual[0] * popt_dual[1]:.4g} "
+          f"is identified, not q1 and K1 separately")
+print(f"  single-site reference: q_max={popt[0]:.4f}, K={popt[1]:.5f} "
+      f"(train RMSE {np.sqrt(np.mean((q_tr - classical_langmuir(p_tr, *popt)) ** 2)):.4f} vs "
+      f"dual {np.sqrt(np.mean((q_tr - dual_site_langmuir(p_tr, *popt_dual)) ** 2)):.4f})")
 
 # 4. Modality sieve (routing evidence only — no engine output is used below)
 dispatch_res = dispatch_frame(df_clean, time_col='p', value_cols=['q'])
@@ -141,7 +161,7 @@ for cid, proposer_id, _ in contestants:
     if cid not in known:
         ledger.register_candidate(cid, proposer_id, formulas[cid])
 
-print(f"{'candidate':>17} | {'slice':>20} | {'n':>3} | {'baseRMSE':>9} | {'candRMSE':>9} "
+print(f"{'candidate':>17} | {'slice':>20} | {'n':>3} | {'incRMSE':>9} | {'candRMSE':>9} "
       f"| {'dm':>6} | {'p':>8} | verdict")
 print("-" * 118)
 for cid, name, predict in contestants:
@@ -154,7 +174,8 @@ for cid, name, predict in contestants:
 
     # first authorised read of THIS candidate's slice
     p_sl, q_sl = p_all[sl_idx], q_all[sl_idx]
-    pred_base = classical_langmuir(p_sl, *popt)
+    pred_base = dual_site_langmuir(p_sl, *popt_dual)      # incumbent = two-site
+    pred_single = classical_langmuir(p_sl, *popt)         # shown for context only
     pred = predict(p_sl)
     if not np.any(np.isfinite(pred)):
         print(f"{name:>17} | {sid:>20} | {len(q_sl):3d} | no evaluable prediction -> INSUFFICIENT_EVIDENCE")
@@ -165,6 +186,7 @@ for cid, name, predict in contestants:
     promoted = res.verdict == "PREDICTIVELY_INCREMENTAL"
     rmse = float(np.sqrt(np.nanmean((q_sl - pred) ** 2)))
     base_rmse = float(np.sqrt(np.mean((q_sl - pred_base) ** 2)))
+    single_rmse = float(np.sqrt(np.mean((q_sl - pred_single) ** 2)))
 
     try:
         ledger.record_data_exposure(
@@ -182,6 +204,7 @@ for cid, name, predict in contestants:
         metrics={"holdout_rmse": rmse, "gate4": res.verdict,
                  "dm_statistic": res.dm_statistic, "dm_p_value": res.p_value})
 
+    print(f"   (single-site reference RMSE on this slice: {single_rmse:.4f})")
     print(f"{name:>17} | {sid:>20} | {len(q_sl):3d} | {base_rmse:9.4f} | {rmse:9.4f} "
           f"| {res.dm_statistic:6.3f} | {res.p_value:8.4g} | {res.verdict}"
           f"{'' if promoted else '  [slice burned]'}")
@@ -288,18 +311,22 @@ if tolerance is not None:
 #    (repeated testing multiplies the false-positive rate, which is exactly what
 #    the preregistered alpha exists to prevent).
 print("\n===== GATE 4 STABILITY ACROSS INDEPENDENT SPLITS =====")
-print(f"{'seed':>4} | {'candidate':>17} | {'n':>3} | {'baseRMSE':>9} | {'candRMSE':>9} | {'dm':>6} | {'p':>9} | verdict")
+print(f"{'seed':>4} | {'candidate':>17} | {'n':>3} | {'incRMSE':>9} | {'candRMSE':>9} | {'dm':>6} | {'p':>9} | verdict")
 print("-" * 108)
 sweep_hits = {cid: 0 for cid, _, _ in contestants}
 for seed in range(5):
     tr_idx, sl = allocate(seed)
-    popt_s, _ = curve_fit(classical_langmuir, p_all[tr_idx], q_all[tr_idx],
-                          p0=[q_all[tr_idx].max() * 1.2, 1.0 / np.median(p_all[tr_idx])],
+    p_tr_s, q_tr_s = p_all[tr_idx], q_all[tr_idx]
+    popt_s, _ = curve_fit(classical_langmuir, p_tr_s, q_tr_s,
+                          p0=[q_tr_s.max() * 1.2, 1.0 / np.median(p_tr_s)],
                           bounds=(0, np.inf), maxfev=200000)
+    popt_s, _ = curve_fit(dual_site_langmuir, p_tr_s, q_tr_s,
+                          p0=[popt_s[0] * 0.5, popt_s[1], popt_s[0] * 0.5, popt_s[1] * 20.0],
+                          bounds=(0, np.inf), maxfev=400000)
     for cid, name, predict in contestants:
         _, ix = sl[cid]
         p_sl, q_sl = p_all[ix], q_all[ix]
-        pred_base_s = classical_langmuir(p_sl, *popt_s)
+        pred_base_s = dual_site_langmuir(p_sl, *popt_s)
         pred_s = predict(p_sl)
         r = evaluate_predictive_incrementality(q_sl, pred_s, pred_base_s,
                                                alpha=DIEBOLD_MARIANO_P_VALUE_THRESHOLD)
@@ -314,3 +341,78 @@ print("\npasses out of 5 independent draws:",
       {cid: f"{n}/5" for cid, n in sweep_hits.items()})
 print("A candidate that passes only some draws is not promoted on its best draw;"
       " the pre-registered confirmation slice (section 6) remains the verdict.")
+
+# 10. EXTRAPOLATION AUDIT: how the Gate-4 contenders behave OUTSIDE the measured range.
+#     There is no ground truth out here, so this scores no accuracy; it tests
+#     ADMISSIBILITY — the two things a physical isotherm must satisfy and a fitted
+#     curve can silently break: q(0) = 0, and a bounded monolayer uptake.
+p_obs_max = float(p_all.max())
+q_obs_max = float(q_all.max())
+q_asym_single = float(popt[0])                 # classical monolayer capacity (single-site)
+henry_1 = float(popt_dual[0] * popt_dual[1])   # the only identified part of dual-site site 1
+
+def q_single(p):
+    return classical_langmuir(np.asarray(p, float), *popt)
+
+def q_dual(p):
+    return dual_site_langmuir(np.asarray(p, float), *popt_dual)
+
+def q_ga(p):
+    return np.asarray(RustKernelBridge().evaluate_expression(
+        ga_res.best_expression, ['p'], [np.asarray(p, float)]), float)
+
+def first_exceedance(fn, target: float) -> float | None:
+    """Smallest p >= 0 where fn(p) > target, by bisection (None if not within 1e16 bar)."""
+    if float(fn(0.0)) > target:
+        return 0.0
+    lo, hi = 0.0, max(p_obs_max, 1.0)
+    while float(fn(hi)) <= target:
+        hi *= 2.0
+        if hi > 1e16:
+            return None
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        if float(fn(mid)) > target:
+            hi = mid
+        else:
+            lo = mid
+    return 0.5 * (lo + hi)
+
+print(f"\n===== EXTRAPOLATION AUDIT (measured p <= {p_obs_max:.4f} bar, q <= {q_obs_max:.4f}) =====")
+print(f"{'p (bar)':>12} | {'ratio to p_max':>14} | {'single':>11} | {'dual':>11} | {'GA':>11}")
+print("-" * 74)
+for p_t in [0.0, p_obs_max, 2 * p_obs_max, 5 * p_obs_max, 10 * p_obs_max, 1e3, 1e6]:
+    ratio = "in range" if p_t <= p_obs_max else f"x{p_t / p_obs_max:.1f}"
+    print(f"{p_t:12.4g} | {ratio:>14} | {float(q_single(p_t)):11.4f} | "
+          f"{float(q_dual(p_t)):11.4f} | {float(q_ga(p_t)[0]):11.4f}")
+
+print(f"reference lines: single-site asymptote q_max={q_asym_single:.4f} bar-uptake; "
+      f"largest observed uptake {q_obs_max:.4f}")
+print(f"dual-site identifiability: q1*K1={henry_1:.4f} is a pure Henry term (site 1 never "
+      f"saturates in range), so q1 and K1 are NOT separately identified")
+
+q0_ga = float(q_ga(0.0)[0])
+print(f"origin pin q(0): single={float(q_single(0.0)):+.4f}, dual={float(q_dual(0.0)):+.4f}, "
+      f"GA={q0_ga:+.4f}" + ("   <- NEGATIVE adsorption at zero pressure: inadmissible"
+                            if q0_ga < 0 else ""))
+
+def _val(fn, x: float) -> float:
+    """Scalar evaluation of a curve helper (they return arrays for array input)."""
+    return float(np.asarray(fn(x), float).ravel()[0])
+
+p_ga_obs = first_exceedance(lambda x: _val(q_ga, x), q_obs_max)
+p_ga_cap = first_exceedance(lambda x: _val(q_ga, x), q_asym_single)
+p_dual_cap = first_exceedance(lambda x: _val(q_dual, x), q_asym_single)
+print(f"GA exceeds the largest OBSERVED uptake at p={p_ga_obs:.2f} bar "
+      f"({p_ga_obs / p_obs_max:.2f}x p_max)" if p_ga_obs is not None else "GA never exceeds it")
+print(f"GA exceeds the classical monolayer capacity q_max={q_asym_single:.4f} at p={p_ga_cap:.2f} bar "
+      f"({p_ga_cap / p_obs_max:.2f}x p_max)" if p_ga_cap is not None
+      else "GA never exceeds the classical capacity")
+print(f"dual-site reaches the same reference line at p={p_dual_cap:.2f} bar "
+      f"({p_dual_cap / p_obs_max:.2f}x p_max)" if p_dual_cap is not None
+      else "dual-site stays below that line over the tested range")
+print("Reading: only the single-site law saturates by construction; the GA log law has no "
+      f"asymptote and is negative at the origin, so it is an interpolant of the measured window "
+      f"(p <= {p_obs_max:.1f} bar), not a physical isotherm. The two-site fit is the fairer "
+      "INCUMBENT for interpolation, but its Henry-limit site also grows without bound, so the "
+      "richer fit is not evidence about the true capacity either.")
