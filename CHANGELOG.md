@@ -42,6 +42,14 @@ inferred in either case):
   scoring the fallback search as the RIME-AD engine. Pin:
   `tests/test_dyn_native_ga_best.py::test_benchmark_harnesses_refuse_the_python_fallback`
   scans every `SearchConfig(` under `benchmarks/`.
+- **`test_native_ga_discovers_advanced_ops` was a seed lottery, not a red
+  capability.** The fixed exponent set is {2, 3, -1, 0.5}, so `x**2.5` must
+  arrive as a random general-Pow exponent subtree or by multiplicative constant
+  jitter; at the pinned 2 × 30 × 15 budget (~4.5k evaluations) exact recovery
+  was measured on 5/10 seeds, with seed 123 among the misses. The pin now runs
+  4 × 120 × 80 (10/10 seeds, worst best MSE 1.4e-30, ~1 s) and sets
+  `strict_native_ga`, so the assertion tests the general-Pow capability and
+  cannot be satisfied by the Python loop.
 
 ---
 

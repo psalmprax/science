@@ -94,19 +94,27 @@ def test_enumeration_advanced_ops_gated_off_by_default():
 
 def test_native_ga_discovers_advanced_ops():
     x = np.linspace(0.5, 4.0, 100)
+    # x**2.5 is reachable only through the general-Pow arm: the fixed exponent
+    # set is {2, 3, -1, 0.5}, so 2.5 has to arrive as a random exponent subtree
+    # or by multiplicative constant jitter. That is a rare event per node, and
+    # at 2 islands x 30 x 15 generations (~4.5k evaluations) exact recovery was
+    # measured on 5/10 seeds (seed 123 among the misses, hence the old red pin).
+    # The larger budget below recovered x**2.5 on 10/10 seeds with a worst best
+    # MSE of 1.4e-30, in about 1 s, so the assertion tests the general-Pow
+    # capability instead of the luck of one seed at the old budget.
     r_pow = evolve({"x": x}, x ** 2.5, config=SearchConfig(
-        use_native_ga=True, islands=2, island_size=30,
-        generations=15, seed=123))
+        use_native_ga=True, strict_native_ga=True, islands=4, island_size=120,
+        generations=80, seed=123))
     assert r_pow.best_expression is not None
     # Non-integer power is now reached through the general-Pow path (exact
-    # x**2.5, train MSE ~1e-17) rather than the older sqrt(x)*x**2 spelling;
-    # pin the capability numerically instead of the expression spelling.
+    # x**2.5) rather than the older sqrt(x)*x**2 spelling; pin the capability
+    # numerically instead of the expression spelling.
     best_mse = min(p["train_mse"] for p in r_pow.pareto_front)
     assert best_mse < 1e-6, (best_mse, r_pow.best_expression)
 
     y = np.linspace(0, 3, 100)
     r_atan = evolve({"x": y}, np.arctan(y), config=SearchConfig(
-        use_native_ga=True, islands=2, island_size=30,
+        use_native_ga=True, strict_native_ga=True, islands=2, island_size=30,
         generations=15, seed=42))
     assert r_atan.best_expression is not None
     assert "atan" in r_atan.best_expression, r_atan.best_expression
