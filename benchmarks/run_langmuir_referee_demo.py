@@ -15,7 +15,11 @@ mirror (``NIST-ISODB/isodb-library``); no local data fixture is shipped.
   * no dev-MSE ranking: Gate 4 (canonical alpha) decides, and the ledger is
     consulted BEFORE any holdout is touched, so a burned slice stays burned;
   * the coupled-ODE block runs on a real trajectory (Lotka-Volterra RK4) and is
-    adjudicated by OdeReferee, with a noise-tolerance sweep.
+    adjudicated by OdeReferee, with a noise-tolerance sweep;
+  * the typed-grammar block walks the cooperative `hill2_bind` family end to end
+    on a planted cooperative law: IR -> materialize (gates 1-2) -> bounded
+    trajectory fit (gates 3-4) -> verdict on a pre-registered intervention
+    slice, with the n=1 Langmuir law fitted as the control.
 """
 import json
 import sys
@@ -33,6 +37,7 @@ from scipy.optimize import curve_fit
 
 from apedp.evolutionary_search import SearchConfig, evolve
 from apedp.rust_bridge import RustKernelBridge
+from apedp_dyn import fit_candidate
 from apedp_dyn.conf.canonical_spec import DIEBOLD_MARIANO_P_VALUE_THRESHOLD
 from apedp_dyn.epistemic.experiment_ledger import (
     CandidateLifecycleState,
@@ -41,10 +46,21 @@ from apedp_dyn.epistemic.experiment_ledger import (
     HoldoutContaminationError,
 )
 from apedp_dyn.epistemic.novelty_adjudication import evaluate_predictive_incrementality
+from apedp_dyn.fitting.parameter_fit import fit_candidate_multistart
+from apedp_dyn.grammar import (
+    DEFAULT_BOUNDS,
+    CandidateDynamics,
+    Term,
+    materialize,
+    prune_admissible,
+)
+from apedp_dyn.grammar.mechanical_grammar import SATURATION_SCALE_BOUNDS
+from apedp_dyn.model import DynamicalEquation, InputVariable, Parameter, StateVariable
 from apedp_dyn.ode import discover_coupled_ode
 from apedp_dyn.ode.data import OdeTrajectoryData
 from apedp_dyn.ode.referee import OdeReferee
 from apedp_dyn.orchestration import dispatch_frame
+from apedp_dyn.problems.base import DynProblem, finalize, make_signal
 from apedp_dyn.proposers.rime_ad_proposer import RimeAdProposer
 
 # 1. Load a NIST ISODB isotherm: methane on zeolite 4A at 323 K (156 points,
@@ -417,3 +433,128 @@ print("Reading: only the single-site law saturates by construction; the GA log l
       f"(p <= {p_obs_max:.1f} bar), not a physical isotherm. The two-site fit is the fairer "
       "INCUMBENT for interpolation, but its Henry-limit site also grows without bound, so the "
       "richer fit is not evidence about the true capacity either.")
+
+# 11. COOPERATIVE (Hill n=2) BINDING FAMILY, END TO END
+#     The typed grammar carries dimensioned binding laws whose reference level is
+#     a FITTED interior parameter: `langmuir_bind` is X/(L+|X|) (Langmuir /
+#     Michaelis-Menten) and `hill2_bind` is X^2/(L^2+X^2) (cooperative, Hill n=2),
+#     with L ("s1") in the state's units and role="scale" for the fitter. This
+#     block walks the whole chain on a planted cooperative law:
+#
+#         IR (candidate_ir) -> materialize (gate 1 dimension, gate 2 admissibility)
+#            -> bounded trajectory fit on the train regime (gates 3-4)
+#            -> verdict on a pre-registered intervention slice the ledger
+#               authorises BEFORE the holdout is read.
+#
+#     Plant:  xddot = a*x^2/(s^2+x^2) - b*x   (a=3 /s^2, b=1 /s^2, s=0.35 m),
+#     cooperative recruitment into a bistable state. Train starts inside the knee
+#     (x0=0.30 m); the confirmation slice is a real intervention (x0=0.15 m, below
+#     the knee) where the n=1 law has no cooperativity to offer -- the fitted
+#     single-site control is fitted on the same data and judged on the same slice.
+print("\n===== COOPERATIVE (Hill n=2) BINDING FAMILY, END TO END =====")
+
+HILL_A, HILL_B, HILL_S = 3.0, 1.0, 0.35
+
+
+def planted_cooperative_problem() -> DynProblem:
+    """Cooperative recruitment with a below-knee confirmation intervention."""
+    states = (StateVariable("x", "meter", 0.30),
+              StateVariable("v", "meter/second", 0.0))
+    inputs = (InputVariable("u", "kilogram*meter/second**2"),)
+    parameters = (Parameter("a", "1/second**2", HILL_A),
+                  Parameter("b", "1/second**2", HILL_B),
+                  Parameter("s", "meter", HILL_S))
+    truth = (DynamicalEquation("x", "v"),
+             DynamicalEquation("v", "a*x**2/(s**2 + x**2) - b*x"))
+    train = {"t_span": (0.0, 6.0), "u_of_t": make_signal({"kind": "zero"}),
+             "x0": (0.30, 0.0)}
+    holdout = {"t_span": (0.0, 6.0), "u_of_t": make_signal({"kind": "zero"}),
+               "x0": (0.15, 0.0), "tolerance": "auto"}
+    return finalize(DynProblem("PLANT-HILL2", "cooperative binding (Hill n=2)",
+                               states, inputs, parameters, truth, train, holdout))
+
+
+def binding_candidate(law: str) -> CandidateDynamics:
+    """xddot = a1*binding(x; s1) + b0*x with s1 a fitted reference level."""
+    return CandidateDynamics(
+        lhs="xddot",
+        terms=(Term("x", "b0"), Term(law, "a1", scale_parameter="s1")),
+        candidate_id=f"mg1-{law}",
+        parameter_bounds={"b0": DEFAULT_BOUNDS, "a1": DEFAULT_BOUNDS,
+                          "s1": SATURATION_SCALE_BOUNDS})
+
+
+planted = planted_cooperative_problem()
+cooperative = binding_candidate("hill2_bind")
+single_site = binding_candidate("langmuir_bind")
+model = materialize(planted, cooperative)
+print("  materialized: xddot = b0*x + a1*x**2/(s1**2 + x**2)")
+print("  parameters:   " + ", ".join(f"{p.name}[{p.role}, {p.units}]"
+                                    for p in model.parameters))
+for sc in prune_admissible(planted, [cooperative, single_site]):
+    print(f"  gates 1/2 {sc.candidate.candidate_id:>20}: "
+          f"{sc.provenance['gate1_status']['passed']}/"
+          f"{sc.provenance['gate2_status']['passed']} "
+          f"terms={tuple(t.name for t in sc.candidate.terms)}")
+
+PLANTED_DATASET = "PLANT-HILL2"
+PLANTED_SLICE = "prereg_sliceC_hill2_seed0"
+if "hill2_cooperative" not in {n.candidate_id for n in ledger.get_all_candidates()}:
+    ledger.register_candidate(
+        "hill2_cooperative", "mechanical_grammar",
+        "a1*x**2/(s1**2 + x**2) + b0*x")
+
+planted_burned = ledger.get_burned_holdouts().get((PLANTED_DATASET, PLANTED_SLICE))
+if planted_burned is not None:
+    print(f"  slice {PLANTED_SLICE} already burned by '{planted_burned}' in a previous "
+          "run -- planted holdout not re-read")
+else:
+    # Authorised read of the planted intervention slice: these fits are its first
+    # and only consumers. The single start is kept in the table on purpose -- the
+    # warm start seeds the interior scale and can land in a poor basin, which is
+    # search luck rather than a structural failure.
+    single_start = fit_candidate(planted, cooperative)
+    best, ms_info = fit_candidate_multistart(planted, cooperative, n_starts=4)
+    control, _ = fit_candidate_multistart(planted, single_site, n_starts=4)
+
+    def _row(tag: str, sc) -> None:
+        g4 = sc.provenance["gate4_status"]
+        params = ({k: round(v, 4) for k, v in sc.fit.param_values.items()}
+                  if sc.fit is not None else {})
+        loss = f"{sc.train_loss:.2e}" if sc.train_loss is not None else "n/a"
+        print(f"  {tag:>28} | train loss {loss:>9} | gate4 "
+              f"{'PASS' if g4['passed'] else 'REFUSE'} "
+              f"(rmse {g4.get('holdout_rmse', float('nan')):.4f} / tol "
+              f"{g4.get('holdout_tolerance', float('nan')):.4f}) | {params}")
+
+    print(f"{'candidate':>28} | {'train loss':>14} | {'verdict':>26} | fitted")
+    print("-" * 118)
+    _row("Hill n=2, single start", single_start)
+    _row(f"Hill n=2, multistart ({ms_info['n_starts']})", best)
+    _row("Langmuir n=1 control", control)
+    print(f"  truth: a={HILL_A} /s^2, s={HILL_S} m (cooperative), b={HILL_B} /s^2")
+
+    promoted = bool(best.provenance["gate4_status"]["passed"])
+    try:
+        ledger.record_data_exposure(
+            candidate_id="hill2_cooperative", dataset_id=PLANTED_DATASET,
+            slice_identifier=PLANTED_SLICE, role=DatasetRole.CONFIRMATION_HOLDOUT,
+            outcome_status="PASSED" if promoted else "FAILED")
+        ledger.update_lifecycle_state(
+            candidate_id="hill2_cooperative",
+            new_state=(CandidateLifecycleState.CONFIRMED_VALID if promoted
+                       else CandidateLifecycleState.CONFIRMATION_REJECTED),
+            rejection_reason=None if promoted else "gate4=intervention_holdout",
+            metrics={"holdout_rmse": best.holdout_rmse, "gate4": promoted,
+                     "n_starts": ms_info["n_starts"]})
+    except HoldoutContaminationError as exc:
+        print(f"  ledger refused the exposure: {exc}")
+
+    assert best.fit is not None and promoted, (
+        "the planted cooperative law must pass its own intervention slice")
+    recovered = best.fit.param_values
+    assert abs(recovered["s1"] - HILL_S) <= 0.10 * HILL_S, recovered
+    assert abs(recovered["a1"] - HILL_A) <= 0.10 * HILL_A, recovered
+    assert abs(-recovered["b0"] - HILL_B) <= 0.10 * HILL_B, recovered
+    print("  Recovery: multistart identifies (a, b, s) to within 10%; the single "
+          "start does not, and the n=1 control cannot reach the slice at all.")
