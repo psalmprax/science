@@ -40,8 +40,8 @@ def test_native_best_is_minimum_mse_recovery():
 # an exception the caller sees, not a DEBUG log line.
 # ---------------------------------------------------------------------------
 
-_TINY = dict(islands=1, island_size=4, generations=1, seed=0,
-             tune_restarts=0, tune_iters=1)
+_TINY = {"islands": 1, "island_size": 4, "generations": 1, "seed": 0,
+             "tune_restarts": 0, "tune_iters": 1}
 
 
 def _tiny_data(n=10):
@@ -118,7 +118,6 @@ def test_enforcement_refuses_fallback_from_evolve(monkeypatch):
 
 def test_enforcement_refuses_fallback_from_the_bridge(monkeypatch):
     import apedp_kernel
-
     from apedp.rust_bridge import RustKernelBridge, enforce_native_search
 
     def _boom(*args, **kwargs):
@@ -166,6 +165,64 @@ def test_benchmark_harnesses_refuse_the_python_fallback():
     assert not offenders, (
         "benchmark harness builds a SearchConfig without strict_native_ga, so a "
         "missing kernel would be measured as Python: " + ", ".join(offenders))
+
+
+def test_benchmark_entry_points_arm_process_wide_enforcement():
+    """A harness that builds its own engines must arm the switch before running.
+
+    ``run_synthesis_benchmark.run_benchmark`` and
+    ``Synthesis50TournamentRunner.run_all`` construct the synthesis engine and
+    the competitor adapters internally, and those build their own bridges: a
+    ``SearchConfig`` flag cannot reach them, only the process-wide switch can.
+    Source scan on purpose: importing the harnesses would execute their
+    experiments.
+    """
+    import ast
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    entry_points = {
+        "benchmarks/run_synthesis_benchmark.py": "run_benchmark",
+        "benchmarks/run_synthesis_50_tournament.py": "run_all",
+    }
+    search_calls = {
+        "SearchConfig", "evolve", "RustKernelBridge",
+        "AutonomousModelSynthesizer", "_run_competitor",
+    }
+    problems = []
+    for rel, func_name in entry_points.items():
+        tree = ast.parse((root / rel).read_text(encoding="utf-8"))
+        entry = next(
+            (node for node in ast.walk(tree)
+             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+             and node.name == func_name),
+            None,
+        )
+        if entry is None:
+            problems.append(f"{rel}: entry point {func_name}() not found")
+            continue
+        armed_at = []
+        search_at = []
+        for node in ast.walk(entry):
+            if not isinstance(node, ast.Call):
+                continue
+            called = getattr(node.func, "id", None) or getattr(node.func, "attr", "")
+            if called == "enforce_native_search":
+                if (len(node.args) == 1
+                        and isinstance(node.args[0], ast.Constant)
+                        and node.args[0].value is True):
+                    armed_at.append(node.lineno)
+            elif called in search_calls:
+                search_at.append(node.lineno)
+        if not armed_at:
+            problems.append(
+                f"{rel}: {func_name}() never calls enforce_native_search(True)")
+        elif search_at and min(armed_at) > min(search_at):
+            problems.append(
+                f"{rel}: {func_name}() arms enforcement at line {min(armed_at)}, "
+                f"after its first search call at line {min(search_at)}")
+    assert not problems, (
+        "benchmark entry points can run unenforced: " + "; ".join(problems))
 
 
 def test_strict_succeeds_when_the_kernel_is_present():

@@ -72,6 +72,10 @@ Register targets and mutants:
        MUT-H8  birth fitting skipped at the call site (has_pow_const ignored)
        MUT-H9  birth fitting runs with zero polish sweeps (no-op fit)
        MUT-H10 constant polish span shrunk by 1e-9 (exponents cannot move)
+       MUT-H11 constant exponents classified as non-tunable variable exponents
+               (the birth-fit predicate itself, not just its call site)
+       MUT-H12 synthesis benchmark entry point no longer arms the switch
+       MUT-H13 50-problem tournament entry point no longer arms the switch
      Neutralized mutant NOT registered (honesty trail): MUT-E5 candidate,
      the absolute-tolerance gate revert — after the v2 well-scaled
      eigensolve (corr-space congruence + jack-of-all-strata spectral
@@ -89,14 +93,33 @@ passes on the pristine tree (pristine sanity run is checked first). The
 process exits 0 iff every configured mutant is killed AND the pristine sanity
 run passed — a survived mutant is a REG-MUT failure, never a soft warning.
 
+Mutant-result reuse (added 2026-10-23): a rust mutant costs a `cargo test
+--lib` rebuild and the slowest pytest pin (dispatch wiring) costs ~57 s, and
+both cost the same on every run. A killed mutant is therefore recorded in
+benchmarks/mutation_battery_cache.json and reused on a later run ONLY when the
+mutation bytes, the pristine file, the pin argv, the content hash of the pin
+input tree (every .py source, all rust/**/*.rs|*.toml|*.lock, specifications/**
+and the pytest config) and `rustc --version` all match the recorded run. Every
+reuse stays visible in the report (`cached: true`, the recorded verification
+time, the cache key) and in the summary's n_fresh/n_cached; the pristine
+sanity pins still run from scratch on every invocation, and a mutant's source
+anchor must still resolve exactly once before an entry is reused. `--no-cache`
+ignores the cache for a complete re-verification (fresh results still refresh
+it).
+
 Run:
-    .venv/bin/python scripts/run_mutation_battery.py
+    .venv/bin/python scripts/run_mutation_battery.py            # incremental
+    .venv/bin/python scripts/run_mutation_battery.py --no-cache # full re-run
 Report:
     benchmarks/mutation_battery_report.json (machine-readable, committed)
+    benchmarks/mutation_battery_cache.json (reuse ledger, committed)
 """
 from __future__ import annotations
 
+import argparse
+import hashlib
 import json
+import shutil
 import subprocess
 import sys
 import time
@@ -132,6 +155,19 @@ PIN_ENFORCEMENT = ["tests/test_dyn_native_ga_best.py", "-k", "enforcement or str
 # mutated source, so the pins see the mutation without touching the user's
 # installed maturin extension).
 CARGO_LIB_PIN = ["cargo", "test", "--lib", "-q", "--manifest-path", "rust/apedp-kernel/Cargo.toml"]
+
+# Kill results are memoized across runs; the key covers the mutation bytes,
+# the pin argv, the whole pin input tree and the toolchain, so a reused verdict
+# is always pinned to the exact tree it was measured on.
+CACHE_SCHEMA = 1
+CACHE_PATH = "benchmarks/mutation_battery_cache.json"
+_CARGO_SOURCE_SUFFIXES = (".rs", ".toml", ".lock")
+_ROOT_PIN_FILES = ("pyproject.toml", "pytest.ini", "setup.cfg", "tox.ini")
+_EXCLUDED_DIRS = {
+    ".git", ".venv", "target", "node_modules", "__pycache__",
+    ".pytest_cache", ".mypy_cache", ".ruff_cache", "build", "dist",
+    "artifacts",
+}
 
 MUTANTS: list[dict] = [
     {
@@ -493,6 +529,36 @@ MUTANTS: list[dict] = [
         "pins": [CARGO_LIB_PIN],
         "pin_note": "test_polish_refines_pow_exponent_to_the_true_value",
     },
+    {
+        "id": "MUT-H11",
+        "target": "Pow-exponent birth-fit predicate (has_pow_const)",
+        "file": "rust/apedp-kernel/src/genetic.rs",
+        "description": "classify a constant exponent as a non-tunable variable exponent, so the predicate never reports a fittable Pow",
+        "find": "            Some(Node::Pow(_, exp)) if matches!(exp.as_ref(), Node::Const(_))",
+        "replace": "            Some(Node::Pow(_, exp)) if matches!(exp.as_ref(), Node::Var(_))",
+        "pins": [CARGO_LIB_PIN],
+        "pin_note": "test_birth_fit_applies_to_the_initial_population (the predicate itself, not only its call site)",
+    },
+    {
+        "id": "MUT-H12",
+        "target": "synthesis benchmark entry point (process-wide enforcement)",
+        "file": "benchmarks/run_synthesis_benchmark.py",
+        "description": "run_benchmark() no longer arms enforce_native_search(True), so the engine's internal bridges may score a Python fallback under the engine's name",
+        "find": "    # Python fallback instead of scoring it under the engine's name.\n    enforce_native_search(True)",
+        "replace": "    # Python fallback instead of scoring it under the engine's name.\n    # MUTANT: process-wide enforcement not armed.",
+        "pins": [PIN_ENFORCEMENT],
+        "pin_note": "test_benchmark_entry_points_arm_process_wide_enforcement (run_benchmark)",
+    },
+    {
+        "id": "MUT-H13",
+        "target": "50-problem tournament entry point (process-wide enforcement)",
+        "file": "benchmarks/run_synthesis_50_tournament.py",
+        "description": "run_all() no longer arms enforce_native_search(True), so tournament rows may come from the Python loop while reported as native",
+        "find": "        # refusal has to be process-wide rather than per call.\n        enforce_native_search(True)",
+        "replace": "        # refusal has to be process-wide rather than per call.\n        # MUTANT: process-wide enforcement not armed.",
+        "pins": [PIN_ENFORCEMENT],
+        "pin_note": "test_benchmark_entry_points_arm_process_wide_enforcement (run_all)",
+    },
 ]
 
 _FROZEN_SNIPPETS: dict[str, str] = {}
@@ -530,10 +596,106 @@ def _mutated_source(src: str, m: dict) -> tuple[str, int]:
     return src.replace(find, m["replace"], 1), n
 
 
-def main() -> int:
+def _sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _pin_inputs_fingerprint() -> str:
+    """Content hash of the tree every pin can depend on.
+
+    Cargo pins compile `rust/**`; python pins import the packages and tests and
+    read the specification records. Hashing all of it (not only the mutant's own
+    file) keeps a reused verdict pinned to the exact tree it was measured on.
+    """
+    digest = hashlib.sha256()
+    for path in sorted(_REPO.rglob("*")):
+        rel = path.relative_to(_REPO)
+        if any(part in _EXCLUDED_DIRS or part.endswith(".egg-info")
+               for part in rel.parts):
+            continue
+        if not path.is_file():
+            continue
+        keep = (
+            path.suffix == ".py"
+            or rel.as_posix() in _ROOT_PIN_FILES
+            or (path.suffix in _CARGO_SOURCE_SUFFIXES and rel.parts[0] == "rust")
+            or rel.parts[0] == "specifications"
+        )
+        if not keep:
+            continue
+        digest.update(rel.as_posix().encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def _toolchain_fingerprint() -> str:
+    rustc = shutil.which("rustc")
+    if rustc is None:
+        return "rustc-unavailable"
+    try:
+        proc = subprocess.run(  # noqa: S603 - rustc resolved locally, fixed argv
+            [rustc, "--version"], cwd=str(_REPO), capture_output=True,
+            text=True, timeout=60)
+    except (OSError, subprocess.SubprocessError):
+        return "rustc-unavailable"
+    return (proc.stdout or proc.stderr or "").strip() or "rustc-unavailable"
+
+
+def _cache_key(m: dict, pristine: str, mutated: str, pin_argv: list[list[str]],
+               inputs_fp: str, toolchain: str) -> str:
+    payload = {
+        "schema": CACHE_SCHEMA,
+        "id": m["id"],
+        "file": m["file"],
+        "description": m["description"],
+        "pristine_sha256": _sha256_text(pristine),
+        "mutated_sha256": _sha256_text(mutated),
+        "pin_argv": pin_argv,
+        "pin_inputs_sha256": inputs_fp,
+        "toolchain": toolchain,
+    }
+    return _sha256_text(json.dumps(payload, sort_keys=True))
+
+
+def _load_cache() -> dict[str, dict]:
+    path = _REPO / CACHE_PATH
+    if not path.exists():
+        return {}
+    try:
+        raw = json.loads(path.read_text())
+    except (OSError, ValueError):
+        print(f"cache: {CACHE_PATH} unreadable; ignoring", flush=True)
+        return {}
+    if raw.get("schema") != CACHE_SCHEMA or not isinstance(raw.get("entries"), dict):
+        print(f"cache: {CACHE_PATH} schema mismatch; ignoring", flush=True)
+        return {}
+    return raw["entries"]
+
+
+def _write_cache(entries: dict[str, dict]) -> None:
+    (_REPO / CACHE_PATH).write_text(json.dumps(
+        {"schema": CACHE_SCHEMA, "entries": entries}, indent=2, sort_keys=True) + "\n")
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Targeted mutation-testing battery (REG-MUT acceptance artifact).")
+    parser.add_argument(
+        "--no-cache", action="store_true",
+        help="ignore recorded kill results and re-verify every mutant "
+             "(fresh results still refresh the cache)")
+    args = parser.parse_args(argv)
+
     started = datetime.now(timezone.utc).isoformat()
     targets = sorted({m["file"] for m in MUTANTS})
     frozen = {f: Path(_REPO / f).read_text() for f in targets}
+    cache_enabled = not args.no_cache
+    cache = _load_cache() if cache_enabled else {}
+    inputs_fp = _pin_inputs_fingerprint()
+    toolchain = _toolchain_fingerprint()
+    refreshed_cache: dict[str, dict] = {}
     report_entries: list[dict] = []
     try:
         # 0) pristine sanity run per pin group (a pin failing pristine means
@@ -562,7 +724,33 @@ def main() -> int:
         for m in MUTANTS:
             path = Path(_REPO / m["file"])
             src = frozen[m["file"]]
+            # The registration is validated even when its result is reused: an
+            # anchor that no longer applies exactly once must never be skipped.
             mutated, _occ = _mutated_source(src, m)
+            pin_argv = [_pin_cmd(group) for group in m["pins"]]
+            key = _cache_key(m, src, mutated, pin_argv, inputs_fp, toolchain)
+            prior = cache.get(key)
+            if (cache_enabled and prior
+                    and prior.get("killed") is True
+                    and prior.get("restoration_byte_identical") is True):
+                entry = {
+                    "id": m["id"], "target": m["target"], "file": m["file"],
+                    "description": m["description"], "pin_note": m["pin_note"],
+                    "pin_commands": [a[1:] for a in pin_argv],
+                    "killed": True,
+                    "all_pins_yield": True,
+                    "cached": True,
+                    "cache_key": key[:16],
+                    "cached_from_utc": prior.get("verified_at_utc"),
+                    "restoration_byte_identical": True,
+                    "duration_s": 0.0,
+                    "pin_tails": prior.get("pin_tails", []),
+                }
+                report_entries.append(entry)
+                refreshed_cache[key] = prior
+                print(f"{m['id']} [{m['target']}]: killed=True (cached, "
+                      f"verified {prior.get('verified_at_utc')})", flush=True)
+                continue
             path.write_text(mutated)
             results = []
             killed = False
@@ -579,15 +767,26 @@ def main() -> int:
             entry = {
                 "id": m["id"], "target": m["target"], "file": m["file"],
                 "description": m["description"], "pin_note": m["pin_note"],
-                "pin_commands": [r["argv"] for r in results],
+                "pin_commands": [a[1:] for a in pin_argv],
                 "killed": killed,
                 "all_pins_yield": killed,
+                "cached": False,
                 "restoration_byte_identical": restored,
                 "duration_s": sum(r["duration_s"] for r in results),
                 "pin_tails": [{**{k: r[k] for k in ("returncode", "passed", "duration_s")}, "tail": r["tail"]} for r in results],
             }
             report_entries.append(entry)
             print(f"{m['id']} [{m['target']}]: killed={killed} restored={restored}", flush=True)
+            if killed and restored:
+                refreshed_cache[key] = {
+                    "id": m["id"], "file": m["file"],
+                    "killed": True,
+                    "restoration_byte_identical": True,
+                    "verified_at_utc": started,
+                    "toolchain": toolchain,
+                    "pin_inputs_sha256": inputs_fp,
+                    "pin_tails": entry["pin_tails"],
+                }
     finally:
         # hard invariant: never leave a mutant behind
         for f, content in frozen.items():
@@ -595,15 +794,26 @@ def main() -> int:
             if p.exists() and p.read_text() != content:
                 p.write_text(content)
 
+    _write_cache(refreshed_cache)
     all_killed = all(e["killed"] for e in report_entries)
     all_restored = all(e["restoration_byte_identical"] for e in report_entries)
+    n_cached = sum(1 for e in report_entries if e.get("cached"))
     report = {
         "timestamp_utc": started,
         "prereg_target": "REG-MUT (docs/SYSTEM_FLAWS_AUDIT.md Outstanding requirements register)",
         "status": "ALL_KILLED" if (all_killed and all_restored) else "FAILED",
+        "cache": {
+            "enabled": cache_enabled,
+            "path": CACHE_PATH,
+            "pin_inputs_sha256": inputs_fp,
+            "toolchain": toolchain,
+            "n_reused": n_cached,
+        },
         "summary": {
             "n_mutants": len(report_entries),
             "n_killed": sum(1 for e in report_entries if e["killed"]),
+            "n_fresh": len(report_entries) - n_cached,
+            "n_cached": n_cached,
             "all_pinned_mutants_killed": all_killed,
             "all_restorations_byte_identical": all_restored,
         },
@@ -616,7 +826,9 @@ def main() -> int:
     if n_alive:
         print(f"SURVIVED MUTANTS (REG-MUT failure): {n_alive}", flush=True)
     else:
-        print("ALL CONFIGURED MUTANTS KILLED", flush=True)
+        print(f"ALL CONFIGURED MUTANTS KILLED "
+              f"({len(report_entries) - n_cached} verified fresh, "
+              f"{n_cached} result(s) reused from cache)", flush=True)
     return 0 if (all_killed and all_restored) else 1
 
 

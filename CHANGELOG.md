@@ -4,6 +4,44 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Mutation coverage for the birth-fit predicate and the harness entry points; warm-run cache (2026-10-23)
+
+The battery now kills the exponent and enforcement mechanisms at the predicate
+and harness level, and no longer pays the same price on every run:
+
+- **MUT-H11 mutates `has_pow_const` itself.** Birth fitting was pinned at its
+  call site (MUT-H8) and its sweep count (MUT-H9), but not the predicate that
+  decides which candidates get fitted: H11 classifies a constant exponent as a
+  non-tunable variable exponent, so no Pow is ever fitted. The kill lands exactly
+  on `genetic::pow_exponent_tests::test_birth_fit_applies_to_the_initial_population`
+  (195 passed / 1 failed, "no birth-fitted Pow candidate in 800 seeds").
+- **MUT-H12/H13 cover the benchmark entry points that arm the process-wide
+  rule.** `run_synthesis_benchmark.run_benchmark()` and
+  `Synthesis50TournamentRunner.run_all()` build the synthesis engine and the
+  competitor adapters internally, so a `SearchConfig` flag cannot reach them —
+  only `enforce_native_search(True)` can. The new AST pin
+  `test_benchmark_entry_points_arm_process_wide_enforcement` requires the call to
+  be present and to precede the first search/bridge construction in each entry
+  point; deleting the call fails the pin.
+- **Honest cost finding: the cargo mutants were not the expensive part.** The
+  eleven rust mutants account for ~62 s of pin time; the pytest pins dominate
+  (`test_dyn_discovery_dispatch_wiring.py` alone is ~57 s, and three mutants run
+  it). Caching only cargo would have saved ~1 min of a ~7 min run.
+- **Kill-result cache (`benchmarks/mutation_battery_cache.json`).** A killed
+  mutant is reused only when the mutation bytes, the pristine file, the pin argv,
+  the content hash of the pin-input tree (every `.py` source, `rust/**`,
+  `specifications/**`, pytest config) and `rustc --version` all match; the
+  pristine sanity pins still run on every invocation, each reuse is flagged
+  `cached: true` with its recorded verification time, and `--no-cache` forces a
+  full re-verification. Measured: full fresh run 449 s with 37/37 killed, warm run
+  121 s with 37/37 killed (37 reused, 0 re-run).
+
+Report: `benchmarks/mutation_battery_report.json` (ALL_KILLED, 37/37, all
+restorations byte-identical). Target list and method:
+`scripts/run_mutation_battery.py`.
+
+---
+
 ## [Unreleased] — Trig-template birth fitting measured and not shipped; R2 metric corrected (2026-10-23)
 
 Applying the Pow exponent's birth-fit treatment to the seeded trig template was
