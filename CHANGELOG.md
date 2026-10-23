@@ -4,6 +4,40 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Mutation coverage for the exponent and enforcement paths (2026-10-23)
+
+The mutation battery now covers the code added in the two preceding commits, so
+"the pin passes" is backed by "the pin fails when the mechanism is broken":
+
+- **Ten mutants added (MUT-H1..H10), battery reports ALL_KILLED 34/34** with all
+  restorations byte-identical. Enforcement side: the process-wide switch
+  reporting off, the bridge swallowing a native failure under enforcement, the
+  requested-fallback suspension removed, `strict_native_ga` without
+  `use_native_ga` running Python, strict mode falling back on a missing kernel,
+  and fallback candidates tagged `kernel_path="rust"`. Exponent side: the fixed
+  menu reintroduced, the birth fit skipped at the call site, the birth fit run
+  with zero sweeps, and the constant-polish window collapsed by 1e-9.
+- **New pin for the birth fit:**
+  `genetic::pow_exponent_tests::test_birth_fit_applies_to_the_initial_population`
+  runs `population_size: 3`, zero generations and the final polish off, so the
+  returned MSE is the birth stage's own work; it sweeps seeds until an exact
+  `x**2.5` candidate exists. `cargo test --lib` is now **196 passed**.
+- **The battery also sanity-runs the enforcement pin group and `cargo test
+  --lib`** before any mutation, so a misconfigured pin group aborts as
+  CONFIG_ERROR instead of manufacturing kills.
+- **Honesty trail #4: MUT-H7 survived the first run.** Not because the generator
+  was menu-bound, but because the distribution pin sampled trees with the
+  general-Pow arm enabled — a shallow general-Pow exponent is itself a
+  `Const` leaf drawing from the continuous grid, which masked a menu-only
+  constant-exponent arm. The pin was SHARPENED (`allow_advanced=false` sampling
+  plus a minimum-sample guard), never weakened; the re-run kills all 34.
+
+Report: `benchmarks/mutation_battery_report.json`. Target list and method:
+`scripts/run_mutation_battery.py`; register entry in `docs/SYSTEM_FLAWS_AUDIT.md`
+(REG-MUT).
+
+---
+
 ## [Unreleased] — Birth-fitted Pow exponent: measured cost and benefit at benchmark scale (2026-10-23)
 
 The exponent birth fit was added on a small-budget measurement (x**2.5 recovery

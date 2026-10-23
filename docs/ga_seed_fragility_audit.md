@@ -53,7 +53,14 @@ The kernel now draws a constant exponent from the same continuous 0.1 grid as
 every other constant and fits it at population construction, for candidates that
 carry a Pow node. No exponent value is privileged in the generator. Effect at
 the old budget: **5/10 -> 17/20**. The pins for the classic forms (A-F, H-J) are
-unchanged at 10/10, and the 193-test `cargo test --lib` suite still passes.
+unchanged at 10/10, and the 196-test `cargo test --lib` suite still passes.
+
+That path is now mutation-protected as well as test-protected: the battery's
+MUT-H7 (fixed exponent menu), MUT-H8 (birth fit skipped), MUT-H9 (birth fit with
+zero sweeps) and MUT-H10 (polish window collapsed) are each killed. The 196th
+test, `genetic::pow_exponent_tests::test_birth_fit_applies_to_the_initial_population`,
+was added for MUT-H8/H9: with zero generations and the final polish off, only the
+birth stage can fit the exponent, so the pin fails when that stage is disabled.
 
 The test pin keeps the larger 4x120x80 budget (10/10 seeds, ~1 s) rather than the
 old one: reachability improved, but not to the point of a deterministic claim at

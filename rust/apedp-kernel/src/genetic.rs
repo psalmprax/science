@@ -1337,22 +1337,88 @@ mod pow_exponent_tests {
         None
     }
 
+    /// Birth fitting is applied to the initial population, not only to the
+    /// top-k candidates of a finished generation. With zero generations and the
+    /// final polish switched off, the returned MSE is the birth stage's own
+    /// work: a Pow candidate has to be fitted where it is born. Without that
+    /// stage the candidates keep the exponent the generator drew, which cannot
+    /// be exact for `x**2.5`.
+    ///
+    /// The sweep is deliberate: `population_size: 3` (for these seeds the
+    /// first tree of an island is the trig template, so one individual never
+    /// carries a Pow) and a seed cap wide enough that exact candidates are
+    /// found deterministically. Disabling the fit -- at the call site or by making
+    /// `has_pow_const` return false -- leaves zero exact candidates and fails
+    /// this pin.
+    #[test]
+    fn test_birth_fit_applies_to_the_initial_population() {
+        let data = vec![(0..80)
+            .map(|i| 0.2 + 4.0 * (i as f64) / 79.0)
+            .collect::<Vec<f64>>()];
+        let target: Vec<f64> = data[0].iter().map(|v| v.powf(2.5)).collect();
+        let names = vec!["x".to_string()];
+        let mut found = None;
+        for seed in 0..800u64 {
+            let cfg = NativeSearchConfig {
+                population_size: 3,
+                generations: 0,
+                islands: 1,
+                polish_constants: false,
+                polish_top_k: 0,
+                seed,
+                ..Default::default()
+            };
+            let (pareto, _) =
+                run_native_evolutionary_search(&data, &target, &names, &cfg);
+            let best = pareto
+                .iter()
+                .map(|p| p.mse)
+                .fold(f64::INFINITY, f64::min);
+            if best < 1e-8 {
+                found = Some((seed, best));
+                break;
+            }
+        }
+        let (seed, mse) = found.expect(
+            "no birth-fitted Pow candidate in 800 seeds: the initial population \
+             is not being fitted where it is born",
+        );
+        assert!(
+            mse < 1e-8,
+            "birth-fitted candidate is not exact: seed={} mse={}",
+            seed,
+            mse
+        );
+    }
+
     /// The exponent of a generated `Pow` must come from the tunable constant
     /// grid, not a fixed menu. Before this, exponents could only be 2, 3, -1 or
     /// 0.5, so a law like x**2.5 needed the general-Pow subtree or upward
     /// jitter of 2.0 -- measured at 5/10 seeds on the pinned small budget.
+    ///
+    /// `allow_advanced = false` on purpose: with the general-Pow arm enabled, a
+    /// shallow exponent SUBTREE is itself a constant leaf, so its draws would
+    /// mask a fixed menu in the constant-exponent arm under test (measured: a
+    /// menu-only mutant survived the all-flags-on version of this sampling).
+    /// With the general arm off, every Pow-const exponent comes from the arm
+    /// this test pins.
     #[test]
     fn test_pow_exponents_are_not_a_fixed_menu() {
         let mut rng = FastRng::new(2026);
         let mut exponents = std::collections::BTreeSet::new();
         for _ in 0..4000 {
-            let tree = GeneticOps::random_tree(&mut rng, 2, 1, true, true, true, true);
+            let tree = GeneticOps::random_tree(&mut rng, 3, 1, true, true, true, false);
             if let Node::Pow(_, exp) = tree {
                 if let Node::Const(p) = *exp {
                     exponents.insert((p * 10.0).round() as i64);
                 }
             }
         }
+        assert!(
+            exponents.len() >= 5,
+            "too few Pow-const samples to judge the exponent distribution: {:?}",
+            exponents
+        );
         let old_menu = [20_i64, 30, -10, 5];
         let off_menu = exponents.iter().filter(|v| !old_menu.contains(v)).count();
         assert!(

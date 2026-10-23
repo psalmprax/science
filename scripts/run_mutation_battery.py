@@ -58,6 +58,20 @@ Register targets and mutants:
                from the referee-facing artifact instead of ordering it)
        MUT-G2  parent ranking inverted (ascending rather than descending)
        MUT-G3  AD product rule replaced by the naive d(fg) = f'·g' rule
+  8. Pow-exponent reachability and native-search enforcement (2026-10-23;
+     tests/test_dyn_native_ga_best.py -k "enforcement or strict", plus the
+     cargo lib pins):
+       MUT-H1  process-wide enforcement switch reports off (silent downgrade)
+       MUT-H2  bridge kernel-failure re-raise disabled under enforcement
+       MUT-H3  requested-fallback suspension removed (nested evolve re-trips
+               enforcement, so force_fallback=True can no longer run)
+       MUT-H4  strict_native_ga without use_native_ga runs the Python loop
+       MUT-H5  strict mode falls back when the kernel is unavailable
+       MUT-H6  fallback candidates tagged kernel_path="rust"
+       MUT-H7  Pow exponent reverted to the fixed menu {2, 3, -1, 0.5}
+       MUT-H8  birth fitting skipped at the call site (has_pow_const ignored)
+       MUT-H9  birth fitting runs with zero polish sweeps (no-op fit)
+       MUT-H10 constant polish span shrunk by 1e-9 (exponents cannot move)
      Neutralized mutant NOT registered (honesty trail): MUT-E5 candidate,
      the absolute-tolerance gate revert — after the v2 well-scaled
      eigensolve (corr-space congruence + jack-of-all-strata spectral
@@ -110,6 +124,10 @@ PIN_DISPATCH_WIRING = ["tests/test_dyn_discovery_dispatch_wiring.py"]
 # with the mandatory dense escape hatch): each MUT-G* arm mutant below must
 # be killed (pin MUST fail under the mutation) by this suite.
 PIN_DE_ARM = ["tests/test_dyn_de_arm_p1_pins.py"]
+# Native-search enforcement pins: the process-wide switch, strict_native_ga,
+# and the bridge's fallback labelling. Each MUT-H1..H6 mutant must make at
+# least one of these fail.
+PIN_ENFORCEMENT = ["tests/test_dyn_native_ga_best.py", "-k", "enforcement or strict"]
 # Rust-kernel mutants are pinned by cargo lib tests (cargo recompiles from the
 # mutated source, so the pins see the mutation without touching the user's
 # installed maturin extension).
@@ -374,6 +392,107 @@ MUTANTS: list[dict] = [
         "pins": [CARGO_LIB_PIN],
         "pin_note": "test_scale_dominant_ode_keeps_genuine_symmetries",
     },
+    # ── Pow-exponent reachability + native-search enforcement (2026-10-23) ──
+    {
+        "id": "MUT-H1",
+        "target": "process-wide native-search enforcement (rust_bridge)",
+        "file": "apedp/rust_bridge.py",
+        "description": "enforcement switch reports off regardless of enforce_native_search(), so an unrequested downgrade is silent again",
+        "find": 'def native_search_enforced() -> bool:\n    """Whether :func:`enforce_native_search` is currently on."""\n    return _ENFORCE_NATIVE_SEARCH',
+        "replace": 'def native_search_enforced() -> bool:\n    """Whether :func:`enforce_native_search` is currently on."""\n    return False',
+        "pins": [PIN_ENFORCEMENT],
+        "pin_note": "test_enforcement_refuses_fallback_from_evolve/_the_bridge",
+    },
+    {
+        "id": "MUT-H2",
+        "target": "bridge kernel-failure re-raise under enforcement",
+        "file": "apedp/rust_bridge.py",
+        "description": "swallow the native failure even when enforcement is on (a broken kernel is measured as the Python loop)",
+        "find": "            except Exception as e:  # noqa: BLE001 - best-effort probe must not crash\n                if native_search_enforced():",
+        "replace": "            except Exception as e:  # noqa: BLE001 - best-effort probe must not crash\n                if False:",
+        "pins": [PIN_ENFORCEMENT],
+        "pin_note": "test_enforcement_refuses_fallback_from_the_bridge",
+    },
+    {
+        "id": "MUT-H3",
+        "target": "requested-fallback enforcement suspension",
+        "file": "apedp/rust_bridge.py",
+        "description": "do not suspend enforcement for force_fallback=True (the nested evolve re-trips strict mode, so an explicitly requested Python arm cannot run)",
+        "find": "        enforcement_was = _ENFORCE_NATIVE_SEARCH\n        enforce_native_search(False)",
+        "replace": "        enforcement_was = _ENFORCE_NATIVE_SEARCH\n        enforce_native_search(enforcement_was)",
+        "pins": [PIN_ENFORCEMENT],
+        "pin_note": "test_enforcement_refuses_fallback_from_the_bridge (force_fallback arm)",
+    },
+    {
+        "id": "MUT-H4",
+        "target": "strict_native_ga requires use_native_ga (evolutionary_search)",
+        "file": "apedp/evolutionary_search.py",
+        "description": "strict_native_ga alone silently runs the Python loop instead of refusing the contradictory flag",
+        "find": "    if strict_native and not cfg.use_native_ga:",
+        "replace": "    if False:",
+        "pins": [PIN_ENFORCEMENT],
+        "pin_note": "test_strict_requires_use_native_ga",
+    },
+    {
+        "id": "MUT-H5",
+        "target": "strict mode refuses a missing kernel (evolutionary_search)",
+        "file": "apedp/evolutionary_search.py",
+        "description": "strict mode falls back to Python when the kernel is unavailable instead of raising",
+        "find": "    if cfg.use_native_ga and strict_native and not native_available:",
+        "replace": "    if False:",
+        "pins": [PIN_ENFORCEMENT],
+        "pin_note": "test_strict_raises_when_kernel_is_unavailable",
+    },
+    {
+        "id": "MUT-H6",
+        "target": "bridge fallback labelling",
+        "file": "apedp/rust_bridge.py",
+        "description": "fallback candidates claim kernel_path='rust' (the Python loop is reported as the native engine)",
+        "find": '             "complexity": int(entry["complexity"]), "scale": 1.0, "bias": 0.0,\n             "kernel_path": _KERNEL_PATH_FALLBACK}',
+        "replace": '             "complexity": int(entry["complexity"]), "scale": 1.0, "bias": 0.0,\n             "kernel_path": _KERNEL_PATH_RUST}',
+        "pins": [PIN_ENFORCEMENT],
+        "pin_note": "test_enforcement_refuses_fallback_from_the_bridge (kernel_path assert)",
+    },
+    {
+        "id": "MUT-H7",
+        "target": "Pow exponent generator (fixed menu reintroduced)",
+        "file": "rust/apedp-kernel/src/genetic.rs",
+        "description": "draw the exponent from the old fixed menu {2, 3, -1, 0.5} instead of the tunable constant grid",
+        "find": "                            let p = Self::random_const_value(rng, -3.0, 3.0);",
+        "replace": "                            let _menu = [2.0, 3.0, -1.0, 0.5];\n                            let p = _menu[rng.gen_range(0, 4)];",
+        "pins": [CARGO_LIB_PIN],
+        "pin_note": "test_pow_exponents_are_not_a_fixed_menu",
+    },
+    {
+        "id": "MUT-H8",
+        "target": "Pow exponent birth fit (call site)",
+        "file": "rust/apedp-kernel/src/genetic.rs",
+        "description": "skip the birth fit (has_pow_const result ignored): the initial population keeps the drawn exponent",
+        "find": "                let node = if has_pow_const(&node) {",
+        "replace": "                let node = if false && has_pow_const(&node) {",
+        "pins": [CARGO_LIB_PIN],
+        "pin_note": "test_birth_fit_applies_to_the_initial_population",
+    },
+    {
+        "id": "MUT-H9",
+        "target": "Pow exponent birth fit (sweeps)",
+        "file": "rust/apedp-kernel/src/genetic.rs",
+        "description": "run the birth fit with zero polish sweeps (the stage becomes a no-op)",
+        "find": "                        2,\n                        &mut fit_evals,",
+        "replace": "                        0,\n                        &mut fit_evals,",
+        "pins": [CARGO_LIB_PIN],
+        "pin_note": "test_birth_fit_applies_to_the_initial_population",
+    },
+    {
+        "id": "MUT-H10",
+        "target": "constant polish window (exponent tunability)",
+        "file": "rust/apedp-kernel/src/genetic.rs",
+        "description": "shrink the coordinate-descent span by 1e-9 (an exponent seeded at 1.5 can no longer reach 2.5)",
+        "find": "            let span = v.abs().max(0.5) / decay;",
+        "replace": "            let span = (v.abs().max(0.5) / decay) * 1e-9;",
+        "pins": [CARGO_LIB_PIN],
+        "pin_note": "test_polish_refines_pow_exponent_to_the_true_value",
+    },
 ]
 
 _FROZEN_SNIPPETS: dict[str, str] = {}
@@ -424,7 +543,9 @@ def main() -> int:
                                  ("hawkes_sharp", PIN_HAWKES_SHARP),
                                  ("ehi_pillars", PIN_EHI_PILLARS),
                                  ("dispatch_wiring", PIN_DISPATCH_WIRING),
-                                 ("de_arm", PIN_DE_ARM)):
+                                 ("de_arm", PIN_DE_ARM),
+                                 ("enforcement", PIN_ENFORCEMENT),
+                                 ("cargo_lib", CARGO_LIB_PIN)):
             argv = _pin_cmd(group)
             sanity[group_key] = _run_and_capture(argv)
             print(f"pristine sanity [{group_key}]: passed={sanity[group_key]['passed']}", flush=True)
