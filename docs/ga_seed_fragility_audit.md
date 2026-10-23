@@ -58,3 +58,80 @@ unchanged at 10/10, and the 193-test `cargo test --lib` suite still passes.
 The test pin keeps the larger 4x120x80 budget (10/10 seeds, ~1 s) rather than the
 old one: reachability improved, but not to the point of a deterministic claim at
 4.5k evaluations, and a capability pin should not be a coin flip.
+
+## Does birth-fitting the exponent help or cost at benchmark scale?
+
+**Question.** The 5/10 -> 17/20 result above is a small-budget measurement. Does
+the same extra work pay for itself on the larger GA benchmarks?
+
+**Method (`benchmarks/pow_birth_fit_benchmark.py`, protocol fixed before either
+arm ran).** Two kernel builds differing in exactly one function: `on` = the
+shipped `has_pow_const` (birth fit active), `off` = the same tree with
+`has_pow_const` returning false. Continuous exponent grid, polish sweeps, seeds,
+data and budgets identical. Candidate-evaluation counts are deterministic, so an
+arm is reproducible by its counts; the installed `.so` sha256 identifies each
+build (`on` 23a50d2e…, `off` fc1f9603…). Wall time on a shared machine is noisy
+and is read against a control below, not trusted on its own.
+
+**Cell 1 - matched-compute Gate 4** (`run_five_gate_validation` config
+2x30x15, seeds 0-9; the only named benchmark path that runs the native GA):
+
+| Case | Holdout R2 median (on / off) | R2 min (on / off) | Recovered >=0.99 | Evals median (on / off) |
+|---|---|---|---|---|
+| Rabi | 1.000000 / 1.000000 | 0.999892 / 0.999892 | 10/10 / 10/10 | 2301 / 2016 (+14.2%) |
+| Brus | 0.682396 / 0.752243 | 0.605910 / 0.287022 | 0/10 / 0/10 | 2610 / 1984 (+31.5%) |
+
+Neither arm changes a Gate-4 verdict: Rabi is identical, and Brus is the frozen
+GA overfit that fails in both (the birth fit raises the worst seed from 0.287 to
+0.606 but lowers the median). The cost at this budget is a 14-32% evaluation
+increase.
+
+**Cell 2 - External-60 native adapter** (frozen 300x50x4 config, all 60
+problems, seed 42, scored on the PUBLIC validation grid only):
+
+| Metric | on | off | Delta |
+|---|---|---|---|
+| Median evaluations / problem | 62,400 | 56,094 | +11.2% |
+| Total evaluations | 3,774,349 | 3,389,293 | +11.4% |
+| Total wall | 17.7 s | 14.2 s | +23.9% this pair (+9.8% in the repeat pair; not resolved, see control) |
+| Median validation MSE | 0.000634 | 0.001650 | -61.6% (scale-mixed median) |
+| Median validation R2 | 0.99954 | 0.99935 | +0.00019 |
+
+Per-problem paired comparison (same problem, same config): **23 better with the
+birth fit, 32 better without, 5 tied or non-finite**; median paired MSE ratio
+1.02; 10 problems more than 2x better and 12 more than 2x worse. The headline
+median-MSE drop is a scale artefact across problems of different magnitude, not
+a paired improvement - by the paired count the accuracy effect at this budget is
+a wash.
+
+**Cell 3 - call-graph control.** The synthesis engine and the Landauer harness
+were run with the native-GA entry points wrapped by counters:
+
+| Benchmark | Native-GA calls (on / off) | What it actually runs |
+|---|---|---|
+| Synthesis (`AutonomousModelSynthesizer`, SYNTH_01) | 0 / 0 | Stage-2 templates + Stage-D scipy refine; `RustKernelBridge` only for singularity/conditioning probes |
+| Landauer (`run_ga_polynomial`, `run_assisted_rime`) | 0 / 0 | Bespoke numpy polynomial-basis GA + kernel RIME search (`rime_search_json`) |
+
+`benchmarks/matched_compute.py` likewise runs RIME kernels, DLI, OLS and PySR -
+no native GA. So two of the three named benchmarks cannot be affected by this
+change at all: their zero counts are the measurement, not an assumption. The same
+cells also calibrate the wall clock: the synthesis engine makes zero native-GA
+calls, yet its wall moved 19% in one repeat pair (33.8 s vs 28.4 s) and 5.6% in
+the other, in the opposite direction (30.0 s vs 31.7 s). The External-60 wall
+deltas (+9.8% and +23.9% across the two repeat pairs) are therefore inside this
+machine's noise and are not evidence of a wall cost. The deterministic +11%
+evaluation figure is.
+
+**Verdict.** At benchmark scale the birth fit costs about 11% more candidate
+evaluations (14-32% at Gate 4's smaller budget) and buys no measurable accuracy:
+paired External-60 accuracy is a wash, and no benchmark verdict moves. It is
+kept because it is the mechanism that makes `x**2.5` reachable at 4.5k
+evaluations, where the cost is paid once per Pow-bearing birth and the
+alternative is 5/10. A budget-aware switch is *not* introduced here: the
+measurement says the large-budget arm would lose nothing by skipping the fit,
+but it does not say where the crossover is, and an untuned threshold would be a
+new tuning surface with no measurement behind it.
+
+Artifact: `benchmarks/pow_birth_fit_benchmark_results.json`. Reproduce with
+`benchmarks/pow_birth_fit_benchmark.py --label on|off` on each build, then
+`--merge`.

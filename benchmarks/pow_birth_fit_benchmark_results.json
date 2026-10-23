@@ -1,0 +1,2464 @@
+{
+  "arms": {
+    "on": {
+      "label": "on",
+      "kernel_sha256": "23a50d2e2b6c82c083c6e0cf6639f8810902b14140c683e749b11535d2a1fdb7",
+      "ga_cell": {
+        "rabi": {
+          "rows": [
+            {
+              "seed": 0,
+              "formula": "-0.5000 * cos((t + t)) + 0.5000",
+              "holdout_r2": 1.0,
+              "wall_ms": 9.049301035702229,
+              "n_evaluations": 1755
+            },
+            {
+              "seed": 1,
+              "formula": "-346420.8664 * cos((0.0024 * sin(t))) + 346420.8664",
+              "holdout_r2": 0.9999946712928507,
+              "wall_ms": 16.936276981141418,
+              "n_evaluations": 2253
+            },
+            {
+              "seed": 2,
+              "formula": "-0.5000 * cos((t + t)) + 0.5000",
+              "holdout_r2": 1.0,
+              "wall_ms": 9.70478099770844,
+              "n_evaluations": 2349
+            },
+            {
+              "seed": 3,
+              "formula": "-0.5000 * cos((t + t)) + 0.5000",
+              "holdout_r2": 1.0,
+              "wall_ms": 8.31009796820581,
+              "n_evaluations": 1849
+            },
+            {
+              "seed": 4,
+              "formula": "2.3085 * sin((abs(sin(max(sin(t), t))) + -1.6091)) + 2.3153",
+              "holdout_r2": 0.9998924106923825,
+              "wall_ms": 10.384690016508102,
+              "n_evaluations": 2502
+            },
+            {
+              "seed": 5,
+              "formula": "-0.5000 * cos((t + t)) + 0.5000",
+              "holdout_r2": 1.0,
+              "wall_ms": 8.207153005059808,
+              "n_evaluations": 1912
+            },
+            {
+              "seed": 6,
+              "formula": "-0.5000 * (cos((2.0 * t)) + sign(-1.3000))",
+              "holdout_r2": 1.0,
+              "wall_ms": 9.19979700120166,
+              "n_evaluations": 2472
+            },
+            {
+              "seed": 7,
+              "formula": "-0.5000 * cos(((2.0 * t) + (t - t))) + 0.5000",
+              "holdout_r2": 1.0,
+              "wall_ms": 18.902253010310233,
+              "n_evaluations": 2252
+            },
+            {
+              "seed": 8,
+              "formula": "-346428.7259 * cos((sin(t) / -416.1902)) + 346428.7259",
+              "holdout_r2": 0.9999999999999845,
+              "wall_ms": 17.44296500692144,
+              "n_evaluations": 2628
+            },
+            {
+              "seed": 9,
+              "formula": "0.4999 * sin(((1.9984 * t) + -1.5682)) + 0.4999",
+              "holdout_r2": 0.999953601727108,
+              "wall_ms": 26.719430985394865,
+              "n_evaluations": 4803
+            }
+          ],
+          "summary": {
+            "seeds": 10,
+            "r2_median": 1.0,
+            "r2_min": 0.9998924106923825,
+            "r2_at_or_above_0_99": 10,
+            "evals_median": 2301.0,
+            "evals_total": 24775,
+            "wall_ms_median": 10.044735507108271,
+            "wall_ms_total": 134.856746008154
+          }
+        },
+        "brus": {
+          "rows": [
+            {
+              "seed": 0,
+              "formula": "2.2676 * (R**-2.2033) + 1.7178",
+              "holdout_r2": 0.6823928527704217,
+              "wall_ms": 50.995854020584375,
+              "n_evaluations": 4886
+            },
+            {
+              "seed": 1,
+              "formula": "2.2676 * (R**-2.2033) + 1.7178",
+              "holdout_r2": 0.6823928527704217,
+              "wall_ms": 5.466220958624035,
+              "n_evaluations": 1974
+            },
+            {
+              "seed": 2,
+              "formula": "2.2676 * (R**-2.2033) + 1.7178",
+              "holdout_r2": 0.6823928527704217,
+              "wall_ms": 21.478220005519688,
+              "n_evaluations": 2659
+            },
+            {
+              "seed": 3,
+              "formula": "2.2676 * (R**-2.2033) + 1.7178",
+              "holdout_r2": 0.6823928527704217,
+              "wall_ms": 5.833812989294529,
+              "n_evaluations": 1973
+            },
+            {
+              "seed": 4,
+              "formula": "21.9968 * ((cosh(-1.0668)**(cosh((R**-1.1699))**-0.7694))**-1.0660) + -11.3867",
+              "holdout_r2": 0.8481053697646438,
+              "wall_ms": 70.3220089781098,
+              "n_evaluations": 5850
+            },
+            {
+              "seed": 5,
+              "formula": "2.2806 * min(log(R), (R**-2.2108)) + 1.7181",
+              "holdout_r2": 0.6967261607785948,
+              "wall_ms": 13.506760995369405,
+              "n_evaluations": 2408
+            },
+            {
+              "seed": 6,
+              "formula": "4.3116 * cosh((sqrt(R)**-2.1552)) + -2.5955",
+              "holdout_r2": 0.6059100320312942,
+              "wall_ms": 9.804823959711939,
+              "n_evaluations": 2472
+            },
+            {
+              "seed": 7,
+              "formula": "0.8342 * ((R**-2.2033) * e) + 1.7178",
+              "holdout_r2": 0.6823999344656011,
+              "wall_ms": 15.424915007315576,
+              "n_evaluations": 2593
+            },
+            {
+              "seed": 8,
+              "formula": "2.4464 * tanh((R**-2.2947)) + 1.7217",
+              "holdout_r2": 0.8220923366127392,
+              "wall_ms": 15.649792971089482,
+              "n_evaluations": 2628
+            },
+            {
+              "seed": 9,
+              "formula": "-3.4042 * sinh(cos((R**-1.1725))) + 5.7232",
+              "holdout_r2": 0.8521287053943817,
+              "wall_ms": 12.738731980789453,
+              "n_evaluations": 3036
+            }
+          ],
+          "summary": {
+            "seeds": 10,
+            "r2_median": 0.6823963936180114,
+            "r2_min": 0.6059100320312942,
+            "r2_at_or_above_0_99": 0,
+            "evals_median": 2610.5,
+            "evals_total": 30479,
+            "wall_ms_median": 14.46583800134249,
+            "wall_ms_total": 221.2211418664083
+          }
+        }
+      },
+      "external60": {
+        "config": {
+          "population_size": 300,
+          "generations": 50,
+          "islands": 4,
+          "seed": 42
+        },
+        "problems": 60,
+        "rows": [
+          {
+            "problem_id": "P01",
+            "block": "P",
+            "expression": "1.9649 * min(((x / (x**-0.1375)) / (x**-0.0008)), min((((x / ((x**2.1485)**-0.0015)) / ((cos(x)**-0.0154)**-0.1000)) / (x**0.0001)), (x / ((x**-0.0020)**x)))) + 1.0601",
+            "abstained": false,
+            "train_mse": 0.0010503002869630006,
+            "val_mse": 0.002861730548127682,
+            "val_r2": 0.99953231976589,
+            "n_evaluations": 85743,
+            "wall_seconds": 0.6289286613464355
+          },
+          {
+            "problem_id": "P02",
+            "block": "P",
+            "expression": "18.2293 * besselj((-2.6374 * besselj((0.5776 * x)))) + 3.1206",
+            "abstained": false,
+            "train_mse": 0.018382252418599677,
+            "val_mse": 0.007622284128290998,
+            "val_r2": 0.998443088734654,
+            "n_evaluations": 55580,
+            "wall_seconds": 0.2618224620819092
+          },
+          {
+            "problem_id": "P03",
+            "block": "P",
+            "expression": "-0.8050 * ((1.7616 * sin(sin(sin(sin((1.5800 * x)))))) + (sin((sin((1.5481 * x)) * sin((atan(x) * x)))) + cos(0.3350))) + 1.7615",
+            "abstained": false,
+            "train_mse": 0.00038242168495449485,
+            "val_mse": 0.0003000299353550892,
+            "val_r2": 0.9996309564938505,
+            "n_evaluations": 59703,
+            "wall_seconds": 0.1818985939025879
+          },
+          {
+            "problem_id": "P04",
+            "block": "P",
+            "expression": "-0.2642 * (sinh((x * cos(0.2879))) * ((x * -0.8857) / 0.4282)) + 0.9956",
+            "abstained": false,
+            "train_mse": 0.0002431357330267912,
+            "val_mse": 0.00044965638855401296,
+            "val_r2": 0.9995536043194577,
+            "n_evaluations": 54495,
+            "wall_seconds": 0.24701380729675293
+          },
+          {
+            "problem_id": "P05",
+            "block": "P",
+            "expression": "-1254.0903 * ((((cosh(x) + ((cbrt(atan(-7.2548)) + cosh(x))**0.0193))**0.0761) + ((cbrt(atan(cosh(x))) + cosh(x))**0.0553))**-0.0936) + 1171.1490",
+            "abstained": false,
+            "train_mse": 0.08277786774748383,
+            "val_mse": 0.10306542244064529,
+            "val_r2": 0.9963496302077399,
+            "n_evaluations": 67298,
+            "wall_seconds": 0.4001166820526123
+          },
+          {
+            "problem_id": "P06",
+            "block": "P",
+            "expression": "-584.4472 * (x * (min(x, -0.2976) * (0.8094 * cosh(log((0.1000 * (0.5745 * (0.3708 * x)))))))) + -3304.1700",
+            "abstained": false,
+            "train_mse": 9.693925886626458e-25,
+            "val_mse": 0.02060360232308028,
+            "val_r2": 0.9999998806102024,
+            "n_evaluations": 57843,
+            "wall_seconds": 0.20892000198364258
+          },
+          {
+            "problem_id": "P07",
+            "block": "P",
+            "expression": "2.4653 * exp((x**0.2266)) + -3.6935",
+            "abstained": false,
+            "train_mse": 0.0002693827485975678,
+            "val_mse": 0.00042512914343548837,
+            "val_r2": 0.999672210050632,
+            "n_evaluations": 62586,
+            "wall_seconds": 0.3575880527496338
+          },
+          {
+            "problem_id": "P08",
+            "block": "P",
+            "expression": "2.1056 * (((x + sqrt(tanh((((x**1.4461) * x) + ((x**0.9064) * (x**1.5000))))))**0.6720) + ((x**0.8680) * x)) + -2.3975",
+            "abstained": false,
+            "train_mse": 0.16315595953756096,
+            "val_mse": 0.2178435000587763,
+            "val_r2": 0.9969830084305431,
+            "n_evaluations": 68817,
+            "wall_seconds": 0.5292994976043701
+          },
+          {
+            "problem_id": "P09",
+            "block": "P",
+            "expression": "2.0000 * ((-(((-3.0663) - (x**1.3000)) - ((-(((-1.3000) - (x**1.3000)) - (x**1.3000))) - (x**1.3000)))) - (x**1.3000)) + -8.7325",
+            "abstained": false,
+            "train_mse": 4.5372906317188584e-24,
+            "val_mse": 9.99999987063461e-09,
+            "val_r2": 1.0,
+            "n_evaluations": 56572,
+            "wall_seconds": 0.20134592056274414
+          },
+          {
+            "problem_id": "P10",
+            "block": "P",
+            "expression": "0.8208 * max(max(besselj(1.7000), (x**2.5814)), (x**1.7447)) + -0.0527",
+            "abstained": false,
+            "train_mse": 0.009707277947049758,
+            "val_mse": 0.008386141569239895,
+            "val_r2": 0.9998947783655076,
+            "n_evaluations": 62152,
+            "wall_seconds": 0.276334285736084
+          },
+          {
+            "problem_id": "E11",
+            "block": "E",
+            "expression": "4.0268 * acos(cos((exp(x)**-0.4903))) + -0.0295",
+            "abstained": false,
+            "train_mse": 0.0027053907759931367,
+            "val_mse": 0.0021367345431973967,
+            "val_r2": 0.9982692367270888,
+            "n_evaluations": 59610,
+            "wall_seconds": 0.3030712604522705
+          },
+          {
+            "problem_id": "E12",
+            "block": "E",
+            "expression": "2.0000 * ((exp(3.2483) + ((exp(2.9848) + ((exp(2.9848) + 2.5972) + exp(2.9848))) + 2.3504)) + (((exp((-x)) + ((exp(3.2483) + 2.5972) + 2.9848)) + ((exp(2.9848) + exp(2.9848)) + 2.9848)) + 2.9848)) + -333.8142",
+            "abstained": false,
+            "train_mse": 1.0185697016564178e-26,
+            "val_mse": 1.7743830759895737e-05,
+            "val_r2": 1.0,
+            "n_evaluations": 56076,
+            "wall_seconds": 0.10742640495300293
+          },
+          {
+            "problem_id": "E13",
+            "block": "E",
+            "expression": "5.2629 * (((exp(x) + exp(min(-2.3682, x))) + exp(x))**-0.3798) + 0.0216",
+            "abstained": false,
+            "train_mse": 0.00020360613644838314,
+            "val_mse": 0.0002530786247328651,
+            "val_r2": 0.999773596848228,
+            "n_evaluations": 66151,
+            "wall_seconds": 0.33260679244995117
+          },
+          {
+            "problem_id": "E14",
+            "block": "E",
+            "expression": "-2.9936 * (-min((exp(x)**-0.6888), acos((besselj(0.3827) / x)))) + -0.0327",
+            "abstained": false,
+            "train_mse": 0.0012939252132676932,
+            "val_mse": 0.03030320383867859,
+            "val_r2": 0.9642273114710449,
+            "n_evaluations": 67949,
+            "wall_seconds": 0.40593457221984863
+          },
+          {
+            "problem_id": "E15",
+            "block": "E",
+            "expression": "0.1117 * (exp((-1.9981 + x))**-1.3000)",
+            "abstained": false,
+            "train_mse": 1.171874043826625e-17,
+            "val_mse": 2.7551157223920075e-10,
+            "val_r2": 0.9999999840414984,
+            "n_evaluations": 54278,
+            "wall_seconds": 0.10794854164123535
+          },
+          {
+            "problem_id": "E16",
+            "block": "E",
+            "expression": "-35.5801 * ((exp((exp(x)**-0.2338))**-0.2642) + ((exp((exp((exp(x)**-0.2141))**-0.2865))**-0.8287) - -0.1706)) + 57.4752",
+            "abstained": false,
+            "train_mse": 0.00012248084661829487,
+            "val_mse": 0.00019675786254375014,
+            "val_r2": 0.999909982158191,
+            "n_evaluations": 63175,
+            "wall_seconds": 0.2413036823272705
+          },
+          {
+            "problem_id": "E17",
+            "block": "E",
+            "expression": "115.9802 * ((((x + 0.4781)**(abs((((x + 1.4148)**0.2292)**0.0695))**besselj(x)))**0.3615)**0.0695) + -113.8171",
+            "abstained": false,
+            "train_mse": 0.006879205494053619,
+            "val_mse": 0.0078556493135277,
+            "val_r2": 0.9978223934847371,
+            "n_evaluations": 71235,
+            "wall_seconds": 0.7042627334594727
+          },
+          {
+            "problem_id": "E18",
+            "block": "E",
+            "expression": "1282.3997 * ((((((x + 2.0296)**0.0376) + -0.0574)**0.4935) + (((((x + 1.6937)**0.0293) + 1.0877)**0.2325) + (((((x + 1.8911)**0.0006) + -0.4316)**0.5517) + -0.0274)))**0.1577) + -1515.1735",
+            "abstained": false,
+            "train_mse": 2.989031581603407e-08,
+            "val_mse": 0.007594554036316729,
+            "val_r2": 0.9999991193615451,
+            "n_evaluations": 71514,
+            "wall_seconds": 0.18891692161560059
+          },
+          {
+            "problem_id": "E19",
+            "block": "E",
+            "expression": "3243.7892 * (((((x + 0.3413)**0.1149)**0.0521)**0.0519)**((((x + cos(x))**0.0537)**0.0523)**-1.2999)) + -3242.6988",
+            "abstained": false,
+            "train_mse": 7.645863096764579e-05,
+            "val_mse": 5.081839389398207e-05,
+            "val_r2": 0.9998420772236405,
+            "n_evaluations": 69344,
+            "wall_seconds": 0.27255773544311523
+          },
+          {
+            "problem_id": "E20",
+            "block": "E",
+            "expression": "1.0406 * (sin(max(x, x)) - ((x - (sqrt((atan(x) - (sin(x) - x)))**2.7071)) - (sqrt((x - (sin(x) - x)))**2.6681))) + -0.5318",
+            "abstained": false,
+            "train_mse": 0.1475101001888726,
+            "val_mse": 0.1269813556194309,
+            "val_r2": 0.9985850384782662,
+            "n_evaluations": 69251,
+            "wall_seconds": 0.32689738273620605
+          },
+          {
+            "problem_id": "R21",
+            "block": "R",
+            "expression": "2.4940 * sinh(sinh(tanh((0.7938 * atan(x))))) + -0.1716",
+            "abstained": false,
+            "train_mse": 4.833126707691351e-07,
+            "val_mse": 5.202259205514528e-07,
+            "val_r2": 0.9999940071972547,
+            "n_evaluations": 55208,
+            "wall_seconds": 0.10334396362304688
+          },
+          {
+            "problem_id": "R22",
+            "block": "R",
+            "expression": "1228.0809 * cbrt(cbrt(cbrt(cbrt(atan((x - -2.1253)))))) + -1229.9560",
+            "abstained": false,
+            "train_mse": 0.00015422850922187613,
+            "val_mse": 0.0005691237068792111,
+            "val_r2": 0.9995917723425017,
+            "n_evaluations": 59176,
+            "wall_seconds": 0.14043974876403809
+          },
+          {
+            "problem_id": "R23",
+            "block": "R",
+            "expression": "-7.4846 * ((atan(cosh((min(1.9177, x)**atan(cosh(min(1.9177, x)))))) + cosh(x))**-1.2501) + 3.6367",
+            "abstained": false,
+            "train_mse": 0.001963825778170559,
+            "val_mse": 0.0020962955887705685,
+            "val_r2": 0.9975563503773941,
+            "n_evaluations": 55487,
+            "wall_seconds": 0.2638263702392578
+          },
+          {
+            "problem_id": "R24",
+            "block": "R",
+            "expression": "4.0692 * (min(erf(x), erf(2.3462)) / ((min(x, erf(x)) / ((besselj(0.4276)**2.3435) + x)) + (x**0.4055))) + -1.1995",
+            "abstained": false,
+            "train_mse": 1.5256206504371045e-05,
+            "val_mse": 9.0369509576677e-06,
+            "val_r2": 0.9996679100644378,
+            "n_evaluations": 64663,
+            "wall_seconds": 0.30529212951660156
+          },
+          {
+            "problem_id": "R25",
+            "block": "R",
+            "expression": "3.8636 * (min(erf(x), erf((cosh(x) + x))) / (((((cosh(x) + (erf(x) / x)) + (erf(exp(x)) / x)) + (erf(cosh(exp(x))) / x))**0.1853) + (x**0.3591))) + -0.2283",
+            "abstained": false,
+            "train_mse": 7.107113540374166e-06,
+            "val_mse": 7.417958158010448e-06,
+            "val_r2": 0.9994603803442953,
+            "n_evaluations": 64539,
+            "wall_seconds": 0.323392391204834
+          },
+          {
+            "problem_id": "R26",
+            "block": "R",
+            "expression": "-0.4954 * sin(((((x / 0.0002)**0.0142) + cosh((x**0.3659))) / (-min(min(x, ((0.3606**0.0217) + (x**0.4037))), erf(x))))) + 1.2066",
+            "abstained": false,
+            "train_mse": 4.929586915397018e-05,
+            "val_mse": 0.00023955505382963679,
+            "val_r2": 0.9929396730742672,
+            "n_evaluations": 67515,
+            "wall_seconds": 0.3279910087585449
+          },
+          {
+            "problem_id": "R27",
+            "block": "R",
+            "expression": "3.8847 * (min(((((erf(x) / 2.6268) / cosh(x)) + ((x / 0.5924) / cosh(x)))**0.0165), erf(x)) / (((cosh(x) + (((x**-0.2480) / 0.2102) / cosh(x)))**0.1363) + (x**0.3782))) + -0.2915",
+            "abstained": false,
+            "train_mse": 3.3184423625365733e-06,
+            "val_mse": 1.1961865641448726e-05,
+            "val_r2": 0.9997340805879879,
+            "n_evaluations": 70553,
+            "wall_seconds": 0.3620929718017578
+          },
+          {
+            "problem_id": "R28",
+            "block": "R",
+            "expression": "4.1766 * (min(min((atan(x)**erf(((atan(x)**0.3149)**0.3567))), ((cosh(x)**-0.0058)**0.1950)), erf((x**atan((x**0.1851))))) / ((cosh(x)**0.0524) + ((x**atan((x**0.4084)))**0.4007))) + -0.5172",
+            "abstained": false,
+            "train_mse": 3.501708926553352e-05,
+            "val_mse": 5.410134745447824e-05,
+            "val_r2": 0.9973797337026543,
+            "n_evaluations": 69437,
+            "wall_seconds": 0.4164752960205078
+          },
+          {
+            "problem_id": "O29",
+            "block": "O",
+            "expression": "-0.7315 * ((cos((2.8060 * x)) * sqrt(sqrt((x * x)))) - (3.4559 - (-((4.2406 - erf(2.8093)) * cos((2.8060 * x)))))) + -2.5327",
+            "abstained": false,
+            "train_mse": 0.002019272688772583,
+            "val_mse": 0.015145815683838982,
+            "val_r2": 0.9863710757199452,
+            "n_evaluations": 68600,
+            "wall_seconds": 0.4030454158782959
+          },
+          {
+            "problem_id": "O30",
+            "block": "O",
+            "expression": "-1.5746 * atan(((0.3732 * atan((((x**2.6932) * ((sinh(x) * x) * exp(x))) + (abs(tan(x)) * (x * x))))) + abs(tan(x)))) + 1.5542",
+            "abstained": false,
+            "train_mse": 0.01870248658539218,
+            "val_mse": 0.07510567918537428,
+            "val_r2": 0.3752906164247404,
+            "n_evaluations": 55704,
+            "wall_seconds": 0.16674041748046875
+          },
+          {
+            "problem_id": "O31",
+            "block": "O",
+            "expression": "2.3231 * cos(((atan((1.0108 * x)) * x) + ((1.9566 * x) + (1.1104 * tanh(tanh(sinh(sinh(x)))))))) + -0.0021",
+            "abstained": false,
+            "train_mse": 0.09029760495108743,
+            "val_mse": 0.04232012988251876,
+            "val_r2": 0.979983688547809,
+            "n_evaluations": 65252,
+            "wall_seconds": 0.2351698875427246
+          },
+          {
+            "problem_id": "O32",
+            "block": "O",
+            "expression": "1.9142 * (cos((2.7001 * x)) * cos(tanh(x))) + -0.0103",
+            "abstained": false,
+            "train_mse": 0.03444168956359559,
+            "val_mse": 0.025961793371314813,
+            "val_r2": 0.9588296694216346,
+            "n_evaluations": 60199,
+            "wall_seconds": 0.2624075412750244
+          },
+          {
+            "problem_id": "O33",
+            "block": "O",
+            "expression": "1.6623 * erf(erf((max(max((1.5543 - atan(x)), asin(x)), asin(sin(sin(sin(x))))) * cos((1.7148 * x))))) + 0.0473",
+            "abstained": false,
+            "train_mse": 0.0011681709557225348,
+            "val_mse": 0.29137367074845016,
+            "val_r2": 0.8940792435755052,
+            "n_evaluations": 61439,
+            "wall_seconds": 0.24612188339233398
+          },
+          {
+            "problem_id": "O34",
+            "block": "O",
+            "expression": "-5.9888 * cos(cos(sin(min((besselj(x) + atan(x)), min((x + atan(asin(x))), cos(cos((x + x)))))))) + 4.2486",
+            "abstained": false,
+            "train_mse": 0.04512270094906958,
+            "val_mse": 0.06827355336980295,
+            "val_r2": 0.5851948094664992,
+            "n_evaluations": 57130,
+            "wall_seconds": 0.29230475425720215
+          },
+          {
+            "problem_id": "O35",
+            "block": "O",
+            "expression": "13.2156 * ((1.1838 * besselj((besselj(cbrt(x)) * cos(1.4040)))) * (besselj(cos(min(x, x))) * (-1.0820))) + 14.8782",
+            "abstained": false,
+            "train_mse": 0.0046247348621888075,
+            "val_mse": 0.004775741917021002,
+            "val_r2": 0.9972728831948175,
+            "n_evaluations": 54929,
+            "wall_seconds": 0.2976374626159668
+          },
+          {
+            "problem_id": "O36",
+            "block": "O",
+            "expression": "-1.5000 * (-1.0235 + sin((((x * 3.0000) + -0.7708) + -0.8000))) + -1.5352",
+            "abstained": false,
+            "train_mse": 4.800705678609285e-10,
+            "val_mse": 2.384232794460087e-09,
+            "val_r2": 0.9999999999900482,
+            "n_evaluations": 67856,
+            "wall_seconds": 0.26204514503479004
+          },
+          {
+            "problem_id": "C37",
+            "block": "C",
+            "expression": "1.5305 * (min(x, erf(x)) / (cosh(x)**0.3118)) + -0.1450",
+            "abstained": false,
+            "train_mse": 8.82357560946694e-06,
+            "val_mse": 4.7269124418300164e-05,
+            "val_r2": 0.9987404956704959,
+            "n_evaluations": 63702,
+            "wall_seconds": 0.3894839286804199
+          },
+          {
+            "problem_id": "C38",
+            "block": "C",
+            "expression": "-1.3896 * cos((((tan(tan(tan(tan(3.0)))) * x) + erf(x)) + 1.4845)) + 0.1890",
+            "abstained": false,
+            "train_mse": 5.603830156888659e-05,
+            "val_mse": 6.045163299220109e-05,
+            "val_r2": 0.9962731082318336,
+            "n_evaluations": 64880,
+            "wall_seconds": 0.6464884281158447
+          },
+          {
+            "problem_id": "C39",
+            "block": "C",
+            "expression": "0.8687 * min(min((besselj((0.6721 * x)) + atan((atan(x) + atan(atan(x))))), min(min((x + atan(x)), (x + (0.7478 * 0.7478))), min((besselj((0.7691 * x)) + atan(x)), (atan(x) + atan(x))))), min((besselj((0.7676 * x)) + atan(x)), (0.7478 + (0.7676 * x)))) + -0.3158",
+            "abstained": false,
+            "train_mse": 1.104029279088871e-05,
+            "val_mse": 0.0002652159549874094,
+            "val_r2": 0.9927988499089321,
+            "n_evaluations": 60478,
+            "wall_seconds": 0.35370874404907227
+          },
+          {
+            "problem_id": "C40",
+            "block": "C",
+            "expression": "2.1164 * (((((1.6829 / atan(atan(x))) + x) + cosh(x)) + (((2.0885 / x) + x) / x))**-0.5368) + 0.3884",
+            "abstained": false,
+            "train_mse": 4.148771684638716e-06,
+            "val_mse": 2.6699519743769736e-06,
+            "val_r2": 0.9998250167281673,
+            "n_evaluations": 69189,
+            "wall_seconds": 0.4078333377838135
+          },
+          {
+            "problem_id": "C41",
+            "block": "C",
+            "expression": "-8.7992 * ((cbrt(cbrt(min(x, cbrt(min(2.9265, acos(x)))))) + cosh(x))**-0.9352) + 5.1505",
+            "abstained": false,
+            "train_mse": 0.004207771836492739,
+            "val_mse": 0.0037363966172055466,
+            "val_r2": 0.9971773116711509,
+            "n_evaluations": 62214,
+            "wall_seconds": 0.4264540672302246
+          },
+          {
+            "problem_id": "C42",
+            "block": "C",
+            "expression": "3.5038 * (((cosh(x) + (2.3140 / x)) + (cosh(x) + (2.3142 / x)))**-0.8070) + -0.0681",
+            "abstained": false,
+            "train_mse": 1.5170765386535074e-06,
+            "val_mse": 5.93692381447862e-06,
+            "val_r2": 0.9998810350807096,
+            "n_evaluations": 65035,
+            "wall_seconds": 0.21055841445922852
+          },
+          {
+            "problem_id": "C43",
+            "block": "C",
+            "expression": "-2.0413 * (((x**cbrt(((x**1.8004) - (x**1.8004)))) - min(-2.2854, x)) - (((x**cbrt(((x**1.8005) - (x**1.8004)))) - ((x - (x**1.4061)) - (x**1.7996))) - cbrt(((x**1.8002) - (x**1.8004))))) + 5.0085",
+            "abstained": false,
+            "train_mse": 0.01144183806241467,
+            "val_mse": 0.03080157832569056,
+            "val_r2": 0.9996472190959469,
+            "n_evaluations": 68135,
+            "wall_seconds": 0.4530649185180664
+          },
+          {
+            "problem_id": "C44",
+            "block": "C",
+            "expression": "2.2074 * (min(2.4000, erf(x)) / ((x**x) + (atan(x)**besselj(x)))) + -0.0107",
+            "abstained": false,
+            "train_mse": 0.0003969289658639502,
+            "val_mse": 0.0006339413219867907,
+            "val_r2": 0.9961285886170529,
+            "n_evaluations": 61284,
+            "wall_seconds": 0.5000314712524414
+          },
+          {
+            "problem_id": "X45",
+            "block": "X",
+            "expression": "14.0393 * ((cosh((x / (0.1685 * x))) + ((0.1352 * x) * (0.2336 * x))) + ((0.3626 * x) * (0.3058 * x))) + -2656.2668",
+            "abstained": false,
+            "train_mse": 5.895730783641082e-26,
+            "val_mse": 18.383623227857594,
+            "val_r2": 0.9999999963936408,
+            "n_evaluations": 54836,
+            "wall_seconds": 0.1152198314666748
+          },
+          {
+            "problem_id": "X46",
+            "block": "X",
+            "expression": "0.6084 * ((x / atan(((min(x, 0.6554) / 1.5085)**((0.3777 / atan(0.3777))**1.5085))))**1.4977) + 0.0291",
+            "abstained": false,
+            "train_mse": 0.0075107271180702715,
+            "val_mse": 0.0330763974716899,
+            "val_r2": 0.9989951603543754,
+            "n_evaluations": 72103,
+            "wall_seconds": 0.4629077911376953
+          },
+          {
+            "problem_id": "X47",
+            "block": "X",
+            "expression": "4.0068 * (exp(x)**-0.5085) + 0.0277",
+            "abstained": false,
+            "train_mse": 0.0023770401466838027,
+            "val_mse": 0.0020340505214357066,
+            "val_r2": 0.9985203062385074,
+            "n_evaluations": 57688,
+            "wall_seconds": 0.19697070121765137
+          },
+          {
+            "problem_id": "X48",
+            "block": "X",
+            "expression": "-26782.5214 * exp(((((((x + 0.5001)**min(-1.3961, e))**0.0737)**0.0737)**0.0737)**0.0737)) + 72804.5203",
+            "abstained": false,
+            "train_mse": 1.0811237682494497e-10,
+            "val_mse": 4.154735957615984e-06,
+            "val_r2": 0.9999996839440587,
+            "n_evaluations": 67515,
+            "wall_seconds": 0.2542726993560791
+          },
+          {
+            "problem_id": "X49",
+            "block": "X",
+            "expression": "2.0786 * exp((-tanh((-0.7357 * atan(x))))) + -2.1368",
+            "abstained": false,
+            "train_mse": 3.663455944996858e-05,
+            "val_mse": 3.008288821853809e-05,
+            "val_r2": 0.9997140724348956,
+            "n_evaluations": 55859,
+            "wall_seconds": 0.16875815391540527
+          },
+          {
+            "problem_id": "X50",
+            "block": "X",
+            "expression": "-5.1196 * (besselj((besselj((2.4381 * (x - -1.1893))) * (x - -0.1352))) * besselj((2.8195 * (x - -1.3921)))) + -0.0049",
+            "abstained": false,
+            "train_mse": 0.004226326336010233,
+            "val_mse": 0.002999043010781696,
+            "val_r2": 0.9962563551540188,
+            "n_evaluations": 63020,
+            "wall_seconds": 0.42961812019348145
+          },
+          {
+            "problem_id": "X51",
+            "block": "X",
+            "expression": "29682.2287 * ((tanh(0.5458) / (x + ((-1.7027 * x) + (0.5441 * (max(x, x) + (0.5437 * (0.5437 * x)))))))**-1.7000)",
+            "abstained": false,
+            "train_mse": 2.683760391247257e-24,
+            "val_mse": 0.07875923916094288,
+            "val_r2": 0.9997469708105909,
+            "n_evaluations": 61780,
+            "wall_seconds": 0.32173800468444824
+          },
+          {
+            "problem_id": "X52",
+            "block": "X",
+            "expression": "5.9963 * (((x + ((((x * x) + cosh(x)) + ((tan(x) + cosh(x)) + (x + cosh(x))))**-0.7563)) + ((x + cosh(x)) + cosh(x)))**-0.4983) + 0.1503",
+            "abstained": false,
+            "train_mse": 0.0002419967711947466,
+            "val_mse": 0.00021645255441425708,
+            "val_r2": 0.999829120407072,
+            "n_evaluations": 60726,
+            "wall_seconds": 0.23646140098571777
+          },
+          {
+            "problem_id": "A53",
+            "block": "A",
+            "expression": "-25.0055 * cos(sin(cos(sin(sin(cos((0.9820 * (0.8000 * x)))))))) + 19.6648",
+            "abstained": false,
+            "train_mse": 9.703746509380302e-05,
+            "val_mse": 0.00012072598205919963,
+            "val_r2": 0.9998268212870602,
+            "n_evaluations": 65810,
+            "wall_seconds": 0.17205166816711426
+          },
+          {
+            "problem_id": "A54",
+            "block": "A",
+            "expression": "-3.0 + 1.0000",
+            "abstained": false,
+            "train_mse": 0.0,
+            "val_mse": 9.0,
+            "val_r2": NaN,
+            "n_evaluations": 51922,
+            "wall_seconds": 0.0935826301574707
+          },
+          {
+            "problem_id": "A55",
+            "block": "A",
+            "expression": "17.3141 * ((cosh(x) + (((-0.0506 / ((x + (-0.0673 / x))**0.2288)) / cosh(x)) / x))**0.2296) + -16.5057",
+            "abstained": false,
+            "train_mse": 1.267939861101109e-10,
+            "val_mse": NaN,
+            "val_r2": NaN,
+            "n_evaluations": 61408,
+            "wall_seconds": 0.12129688262939453
+          },
+          {
+            "problem_id": "A56",
+            "block": "A",
+            "expression": "17.0906 * (exp(x)**0.2019) + -18.3861",
+            "abstained": false,
+            "train_mse": 1.637677041362779e-06,
+            "val_mse": NaN,
+            "val_r2": NaN,
+            "n_evaluations": 56510,
+            "wall_seconds": 0.05731511116027832
+          },
+          {
+            "problem_id": "A57",
+            "block": "A",
+            "expression": "1.1382 * ((((erf(x) + (x + (x + x)))**erf(x))**0.5722) * x) + 0.1978",
+            "abstained": false,
+            "train_mse": 0.0005427051585251442,
+            "val_mse": NaN,
+            "val_r2": NaN,
+            "n_evaluations": 61129,
+            "wall_seconds": 0.1423780918121338
+          },
+          {
+            "problem_id": "A58",
+            "block": "A",
+            "expression": "0.1207 * (cosh(sqrt(x)) + (min(cosh(sqrt(sqrt(x))), cosh(sqrt(x))) + tan((-(x / -1.4788))))) + 0.7584",
+            "abstained": false,
+            "train_mse": 2.7598499358419692e-08,
+            "val_mse": 1.6268434780798822e-08,
+            "val_r2": 0.9999824972003922,
+            "n_evaluations": 53751,
+            "wall_seconds": 0.17636895179748535
+          },
+          {
+            "problem_id": "A59",
+            "block": "A",
+            "expression": "3.9732 * (min((sqrt((0.3999**0.0574))**0.0574), erf(x)) / ((min(sqrt((0.2237**0.0574)), min(x, erf(x))) / ((0.4190**0.0574) + x)) + (x**0.4053))) + -1.1639",
+            "abstained": false,
+            "train_mse": 4.427347328981536e-05,
+            "val_mse": 5.1250505957440236e-05,
+            "val_r2": 0.9979161433370491,
+            "n_evaluations": 71855,
+            "wall_seconds": 0.36460399627685547
+          },
+          {
+            "problem_id": "A60",
+            "block": "A",
+            "expression": "-5.3030 * sin(cos(((x**cos((besselj(1.7810)**x)))**0.6778))) + 5.4076",
+            "abstained": false,
+            "train_mse": 0.0016500416197077366,
+            "val_mse": 0.002746767348561992,
+            "val_r2": 0.9997295343155719,
+            "n_evaluations": 66461,
+            "wall_seconds": 0.25936460494995117
+          }
+        ],
+        "summary": {
+          "evals_median": 62400.0,
+          "evals_total": 3774349,
+          "wall_seconds_median": 0.2681920528411865,
+          "wall_seconds_total": 17.65305233001709,
+          "train_mse_median": 0.00017891732283512962,
+          "val_mse_median": 0.0006339413219867907,
+          "val_r2_median": 0.9995429620426739,
+          "abstentions": 0
+        }
+      },
+      "call_graph": {
+        "synthesis": {
+          "problem": "SYNTH_01",
+          "wall_seconds": 29.973825179040432,
+          "top_form": "2.44879193409935*x**1.5*exp(-0.302500215445438*x)/(0.843102425381354*x**2 + 1.0)",
+          "top_epistemic_class": "C2",
+          "n_models": 183,
+          "evolve_native_calls": 0,
+          "evolve_calls": 0
+        },
+        "landauer": {
+          "rows": 60,
+          "ga_wall_seconds": 1.353330651007127,
+          "rime_wall_seconds": 0.007754592981655151,
+          "ga_formula_powers": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "rime_formula": "+0.999166 * (Vg) -0.47541",
+          "evolve_native_calls": 0,
+          "evolve_calls": 0
+        }
+      }
+    },
+    "off": {
+      "label": "off",
+      "kernel_sha256": "fc1f9603727ef4687a1590d5010629c6ffb6bc01e01079e9227cd8406bd45f12",
+      "ga_cell": {
+        "rabi": {
+          "rows": [
+            {
+              "seed": 0,
+              "formula": "-0.5000 * cos((t + t)) + 0.5000",
+              "holdout_r2": 1.0,
+              "wall_ms": 18.935668049380183,
+              "n_evaluations": 3798
+            },
+            {
+              "seed": 1,
+              "formula": "-346420.8664 * cos((0.0024 * sin(t))) + 346420.8664",
+              "holdout_r2": 0.9999946712928507,
+              "wall_ms": 6.790335988625884,
+              "n_evaluations": 2310
+            },
+            {
+              "seed": 2,
+              "formula": "-0.5000 * cos((t + t)) + 0.5000",
+              "holdout_r2": 1.0,
+              "wall_ms": 5.616415000986308,
+              "n_evaluations": 1566
+            },
+            {
+              "seed": 3,
+              "formula": "-0.5000 * cos((t + t)) + 0.5000",
+              "holdout_r2": 1.0,
+              "wall_ms": 21.295298996847123,
+              "n_evaluations": 1845
+            },
+            {
+              "seed": 4,
+              "formula": "2.3085 * sin((abs(sin(max(sin(t), t))) + -1.6091)) + 2.3153",
+              "holdout_r2": 0.9998924106923825,
+              "wall_ms": 10.15170302707702,
+              "n_evaluations": 2186
+            },
+            {
+              "seed": 5,
+              "formula": "-0.5000 * cos((t + t)) + 0.5000",
+              "holdout_r2": 1.0,
+              "wall_ms": 11.708463018294424,
+              "n_evaluations": 1752
+            },
+            {
+              "seed": 6,
+              "formula": "-0.5000 * cos((2.0 * t)) + 0.5000",
+              "holdout_r2": 1.0,
+              "wall_ms": 6.738211959600449,
+              "n_evaluations": 1659
+            },
+            {
+              "seed": 7,
+              "formula": "-1.0000 * (abs(cos(t)) * abs(cos(t))) + 1.0000",
+              "holdout_r2": 1.0,
+              "wall_ms": 17.513312050141394,
+              "n_evaluations": 1845
+            },
+            {
+              "seed": 8,
+              "formula": "-0.5000 * cos((t + t)) + 0.5000",
+              "holdout_r2": 1.0,
+              "wall_ms": 11.488477990496904,
+              "n_evaluations": 3519
+            },
+            {
+              "seed": 9,
+              "formula": "0.5000 * sin(((1.9988 * t) + -1.5680)) + 0.4999",
+              "holdout_r2": 0.9999814864075761,
+              "wall_ms": 16.48500602459535,
+              "n_evaluations": 4077
+            }
+          ],
+          "summary": {
+            "seeds": 10,
+            "r2_median": 1.0,
+            "r2_min": 0.9998924106923825,
+            "r2_at_or_above_0_99": 10,
+            "evals_median": 2015.5,
+            "evals_total": 24557,
+            "wall_ms_median": 11.598470504395664,
+            "wall_ms_total": 126.72289210604504
+          }
+        },
+        "brus": {
+          "rows": [
+            {
+              "seed": 0,
+              "formula": "2.2676 * (R**-2.2033) + 1.7178",
+              "holdout_r2": 0.6823928527704217,
+              "wall_ms": 51.20614403858781,
+              "n_evaluations": 4821
+            },
+            {
+              "seed": 1,
+              "formula": "2.4464 * tanh((abs(R)**-2.2947)) + 1.7217",
+              "holdout_r2": 0.8220923366127392,
+              "wall_ms": 4.86126501346007,
+              "n_evaluations": 1845
+            },
+            {
+              "seed": 2,
+              "formula": "2.4464 * tanh((R**-2.2947)) + 1.7217",
+              "holdout_r2": 0.8220923366127392,
+              "wall_ms": 6.11652503721416,
+              "n_evaluations": 1845
+            },
+            {
+              "seed": 3,
+              "formula": "-6.3128 * atan(atan((R * R))) + 8.0469",
+              "holdout_r2": 0.28702182253668007,
+              "wall_ms": 10.40137797826901,
+              "n_evaluations": 1566
+            },
+            {
+              "seed": 4,
+              "formula": "12.8706 * tanh(cosh((-(R**-1.1888)))) + -8.0784",
+              "holdout_r2": 0.884505586633326,
+              "wall_ms": 13.558909005951136,
+              "n_evaluations": 1845
+            },
+            {
+              "seed": 5,
+              "formula": "2.2676 * (R**-2.2033) + 1.7178",
+              "holdout_r2": 0.6823928527704217,
+              "wall_ms": 5.328285973519087,
+              "n_evaluations": 2124
+            },
+            {
+              "seed": 6,
+              "formula": "-1.1315 * erf(log(erf(log(R)))) + 1.7487",
+              "holdout_r2": 0.5754828820297295,
+              "wall_ms": 8.348927018232644,
+              "n_evaluations": 1845
+            },
+            {
+              "seed": 7,
+              "formula": "2.2676 * (R**-2.2033) + 1.7178",
+              "holdout_r2": 0.6823928527704217,
+              "wall_ms": 29.689533985219896,
+              "n_evaluations": 2310
+            },
+            {
+              "seed": 8,
+              "formula": "-11.9740 * cos((((R**-2.3838) * erf((-0.6403 + erf((5.0088 + R))))) + 2.5241)) + -8.0381",
+              "holdout_r2": 0.896173227988248,
+              "wall_ms": 44.798635004553944,
+              "n_evaluations": 5038
+            },
+            {
+              "seed": 9,
+              "formula": "-3.4042 * sinh(cos((R**-1.1725))) + 5.7232",
+              "holdout_r2": 0.8521287053943817,
+              "wall_ms": 8.205143036320806,
+              "n_evaluations": 2124
+            }
+          ],
+          "summary": {
+            "seeds": 10,
+            "r2_median": 0.7522425946915805,
+            "r2_min": 0.28702182253668007,
+            "r2_at_or_above_0_99": 0,
+            "evals_median": 1984.5,
+            "evals_total": 25363,
+            "wall_ms_median": 9.375152498250827,
+            "wall_ms_total": 182.51474609132856
+          }
+        }
+      },
+      "external60": {
+        "config": {
+          "population_size": 300,
+          "generations": 50,
+          "islands": 4,
+          "seed": 42
+        },
+        "problems": 60,
+        "rows": [
+          {
+            "problem_id": "P01",
+            "block": "P",
+            "expression": "0.3677 * (x * (2.8787 + (atan((3.8721 * (0.9891 + x))) + min(min(min((max(1.2985, x) / x), x), x), x)))) + 1.0565",
+            "abstained": false,
+            "train_mse": 0.0010942569814929388,
+            "val_mse": 0.003573923557946524,
+            "val_r2": 0.9994548762460536,
+            "n_evaluations": 56280,
+            "wall_seconds": 0.2333240509033203
+          },
+          {
+            "problem_id": "P02",
+            "block": "P",
+            "expression": "-35.1350 * atan((sin(besselj(((0.7912 * (0.8000 * x)) / sign(((x - 2.4000) * exp(x)))))) + sign(-0.1000))) + -4.4875",
+            "abstained": false,
+            "train_mse": 0.018384271647267993,
+            "val_mse": 0.007569651863677215,
+            "val_r2": 0.9984571442149321,
+            "n_evaluations": 51351,
+            "wall_seconds": 0.2264723777770996
+          },
+          {
+            "problem_id": "P03",
+            "block": "P",
+            "expression": "-0.8050 * ((1.7616 * sin(sin(sin(sin((1.5800 * x)))))) + (sin((sin((1.5481 * x)) * sin((atan(x) * x)))) + cos(0.3350))) + 1.7615",
+            "abstained": false,
+            "train_mse": 0.00038242168495449485,
+            "val_mse": 0.0003000299353550892,
+            "val_r2": 0.9996309564938505,
+            "n_evaluations": 60403,
+            "wall_seconds": 0.1880507469177246
+          },
+          {
+            "problem_id": "P04",
+            "block": "P",
+            "expression": "0.2443 * ((cosh(x) + ((sqrt(sqrt(cosh((x * x)))) + sqrt(cosh((-2.5723 * x)))) + sqrt(sqrt(cosh((x * x)))))) + sqrt(sqrt(cosh((x * x))))) + -0.2216",
+            "abstained": false,
+            "train_mse": 0.00023456471629231066,
+            "val_mse": 0.0003748613442673033,
+            "val_r2": 0.9996413186801512,
+            "n_evaluations": 51258,
+            "wall_seconds": 0.24138307571411133
+          },
+          {
+            "problem_id": "P05",
+            "block": "P",
+            "expression": "6.6603 * (erf(exp(sinh(x))) - (erf((0.5635 * min(pi, x))) - x)) + -6.9539",
+            "abstained": false,
+            "train_mse": 0.08379076543149296,
+            "val_mse": 0.09379011364590203,
+            "val_r2": 0.9962810919749607,
+            "n_evaluations": 62325,
+            "wall_seconds": 0.23860812187194824
+          },
+          {
+            "problem_id": "P06",
+            "block": "P",
+            "expression": "1850.9963 * ((-3.3468 + ((x * x) * -0.7020)) + ((((((x * x) * tanh(1.8006)) * tanh(2.8261)) * tanh(tanh(2.8261))) * tanh(2.8261)) * tanh(2.7743))) + 6195.0066",
+            "abstained": false,
+            "train_mse": 5.158501588875787e-25,
+            "val_mse": 0.08214761933989931,
+            "val_r2": 0.9996777193005022,
+            "n_evaluations": 54110,
+            "wall_seconds": 0.1761472225189209
+          },
+          {
+            "problem_id": "P07",
+            "block": "P",
+            "expression": "3.2949 * sqrt((x + sqrt((x / (x + sqrt(max(x, 1.8462))))))) + -1.2266",
+            "abstained": false,
+            "train_mse": 0.0002508510232048929,
+            "val_mse": 0.0005059126198034161,
+            "val_r2": 0.9996064492093505,
+            "n_evaluations": 50607,
+            "wall_seconds": 0.15778684616088867
+          },
+          {
+            "problem_id": "P08",
+            "block": "P",
+            "expression": "-33.3583 * cos((0.4301 * sinh(sqrt(min(exp(log(x)), x))))) + 32.1494",
+            "abstained": false,
+            "train_mse": 0.16695854343839917,
+            "val_mse": 0.21077388640174072,
+            "val_r2": 0.9970732908498384,
+            "n_evaluations": 51289,
+            "wall_seconds": 0.2161705493927002
+          },
+          {
+            "problem_id": "P09",
+            "block": "P",
+            "expression": "1.6556 * ((1.1565 * x)**1.3000)",
+            "abstained": false,
+            "train_mse": 4.572963216854062e-24,
+            "val_mse": 1.8274499735183374e-08,
+            "val_r2": 0.9999999988464192,
+            "n_evaluations": 52622,
+            "wall_seconds": 0.16491436958312988
+          },
+          {
+            "problem_id": "P10",
+            "block": "P",
+            "expression": "0.8176 * ((max((x**0.7298), max((0.6506**0.8965), x))**0.8968)**2.8813) + -0.0418",
+            "abstained": false,
+            "train_mse": 0.00966917721308147,
+            "val_mse": 0.008198338537661927,
+            "val_r2": 0.9998954325998902,
+            "n_evaluations": 57954,
+            "wall_seconds": 0.2623326778411865
+          },
+          {
+            "problem_id": "E11",
+            "block": "E",
+            "expression": "11.0680 * ((((exp((max(-2.7000, x) / -2.0394)) / -0.8311) / -0.6848) / -1.9560) / -2.4692) + -0.0295",
+            "abstained": false,
+            "train_mse": 0.0027053907759931307,
+            "val_mse": 0.0021271354671764517,
+            "val_r2": 0.9982709140089451,
+            "n_evaluations": 57954,
+            "wall_seconds": 0.36904358863830566
+          },
+          {
+            "problem_id": "E12",
+            "block": "E",
+            "expression": "181362.7478 * exp((-(1.7116 + (1.8237 + (1.8000 + (2.1399 + (2.1399 + (1.8000 + x))))))))",
+            "abstained": false,
+            "train_mse": 1.2494394391630523e-26,
+            "val_mse": 2.142222310131602e-12,
+            "val_r2": 0.9999999999473561,
+            "n_evaluations": 52095,
+            "wall_seconds": 0.13078570365905762
+          },
+          {
+            "problem_id": "E13",
+            "block": "E",
+            "expression": "-34.2315 * sqrt(atan(cosh(atan(cosh(sqrt(x)))))) + 36.9017",
+            "abstained": false,
+            "train_mse": 0.0002993950878865079,
+            "val_mse": 0.0003696642953650769,
+            "val_r2": 0.9996848839557511,
+            "n_evaluations": 54265,
+            "wall_seconds": 0.1643531322479248
+          },
+          {
+            "problem_id": "E14",
+            "block": "E",
+            "expression": "-2.5527 * ((0.4140 * atan(sinh((0.6882 * x)))) + atan(((0.4297 * atan(sinh((0.7044 * x)))) + atan((0.6830 + atan((0.5863 * x))))))) + 4.3354",
+            "abstained": false,
+            "train_mse": 0.0015745691443598483,
+            "val_mse": 0.0018333981230240412,
+            "val_r2": 0.9977044922438736,
+            "n_evaluations": 57799,
+            "wall_seconds": 0.33742547035217285
+          },
+          {
+            "problem_id": "E15",
+            "block": "E",
+            "expression": "-12.8185 * erf(cos(erf(cos(erf(sqrt(x)))))) + 9.8729",
+            "abstained": false,
+            "train_mse": 8.425358330206144e-06,
+            "val_mse": 6.1802751126174306e-06,
+            "val_r2": 0.9994935083857441,
+            "n_evaluations": 49491,
+            "wall_seconds": 0.10368967056274414
+          },
+          {
+            "problem_id": "E16",
+            "block": "E",
+            "expression": "-0.8250 * (((cbrt((x + 2.6812)) - cos(sqrt(x))) - cos(sqrt(x))) - cos(sign(x))) + 4.0408",
+            "abstained": false,
+            "train_mse": 0.00011861772473019932,
+            "val_mse": 0.01651636838485212,
+            "val_r2": 0.9899805846825007,
+            "n_evaluations": 55970,
+            "wall_seconds": 0.19680285453796387
+          },
+          {
+            "problem_id": "E17",
+            "block": "E",
+            "expression": "13.5089 * sin(sin((0.3892 * cbrt((cbrt(max(0.5071, x)) * x))))) + -1.6997",
+            "abstained": false,
+            "train_mse": 0.00686059102227723,
+            "val_mse": 0.008005145698938376,
+            "val_r2": 0.9977609640204841,
+            "n_evaluations": 52095,
+            "wall_seconds": 0.20267724990844727
+          },
+          {
+            "problem_id": "E18",
+            "block": "E",
+            "expression": "-9.7403 * sin((0.4470 * cbrt(((-x) - cosh(cbrt(cbrt(0.3242))))))) + -4.6869",
+            "abstained": false,
+            "train_mse": 1.6154721138699822e-07,
+            "val_mse": 1.2672735881456445e-07,
+            "val_r2": 0.9999996745273617,
+            "n_evaluations": 51816,
+            "wall_seconds": 0.12744927406311035
+          },
+          {
+            "problem_id": "E19",
+            "block": "E",
+            "expression": "0.9998 * log((sin(sin(sin(sin(cos(-1.1988))))) + x)) + 1.0982",
+            "abstained": false,
+            "train_mse": 7.734983687284596e-05,
+            "val_mse": 4.857655174757281e-05,
+            "val_r2": 0.9998568271189693,
+            "n_evaluations": 50266,
+            "wall_seconds": 0.2422468662261963
+          },
+          {
+            "problem_id": "E20",
+            "block": "E",
+            "expression": "1.3456 * ((x * x) - (sin((sin(x) - tanh(x))) - ((sqrt(3.4543) - (sin(sin(x)) - tanh((x * x)))) - (x - x)))) + -2.2206",
+            "abstained": false,
+            "train_mse": 0.14532163784137977,
+            "val_mse": 0.1236045294665196,
+            "val_r2": 0.998615021199394,
+            "n_evaluations": 61209,
+            "wall_seconds": 0.300137996673584
+          },
+          {
+            "problem_id": "R21",
+            "block": "R",
+            "expression": "-1.6606 * cos((atan(x) + tanh(sqrt((atan(atan(x)) + tanh(sqrt(atan(x)))))))) + 1.2981",
+            "abstained": false,
+            "train_mse": 4.687654072699509e-07,
+            "val_mse": 5.394913320018564e-07,
+            "val_r2": 0.9999946030207616,
+            "n_evaluations": 49956,
+            "wall_seconds": 0.1502079963684082
+          },
+          {
+            "problem_id": "R22",
+            "block": "R",
+            "expression": "-1.3559 * (abs((abs((2.4849 + (2.0107 + 1.9794))) + (abs((1.9794 + x)) / abs((2.0132 + x))))) / abs((2.0104 + x))) + 5.0171",
+            "abstained": false,
+            "train_mse": 0.0001443074279001631,
+            "val_mse": 0.00048204754991512005,
+            "val_r2": 0.9996197432604974,
+            "n_evaluations": 60310,
+            "wall_seconds": 0.21567773818969727
+          },
+          {
+            "problem_id": "R23",
+            "block": "R",
+            "expression": "-2.7552 * atan(((-1.3490 * x) + atan(x))) + -0.1109",
+            "abstained": false,
+            "train_mse": 0.0019486364920611595,
+            "val_mse": 0.0016502438757891192,
+            "val_r2": 0.9981210444447225,
+            "n_evaluations": 49770,
+            "wall_seconds": 0.27046942710876465
+          },
+          {
+            "problem_id": "R24",
+            "block": "R",
+            "expression": "11.3127 * ((x + (2.7112 / x))**((((((4.3344 + (-3.0835 / x)) + 3.3541)**((x + (3.6920 / x))**-2.1747)) * x) + (2.7772 / x))**-2.0677)) + -11.1004",
+            "abstained": false,
+            "train_mse": 2.057284344694982e-05,
+            "val_mse": 1.2448627109495409e-05,
+            "val_r2": 0.9995810129638506,
+            "n_evaluations": 67812,
+            "wall_seconds": 0.2876148223876953
+          },
+          {
+            "problem_id": "R25",
+            "block": "R",
+            "expression": "5.4425 * (((1.0360 * x) + (((((0.9175 * x) + (2.7220 / (1.2000 * x))) * (1.6519 * x)) + (2.7033 / (1.5000 * x))) / (1.2000 * x)))**(1.4086 + -2.2000)) + -0.0005",
+            "abstained": false,
+            "train_mse": 3.954723267699099e-06,
+            "val_mse": 8.35862467062855e-06,
+            "val_r2": 0.9994774667780285,
+            "n_evaluations": 65673,
+            "wall_seconds": 0.2919044494628906
+          },
+          {
+            "problem_id": "R26",
+            "block": "R",
+            "expression": "-0.3256 * min(cos((cos((x + cos((x + sin(x))))) + -0.2399)), min(cos(((1.4349 * x) + sin(sin(sin(x))))), cos(((1.4381 * x) + sin(x))))) + 0.9486",
+            "abstained": false,
+            "train_mse": 7.983808401356893e-05,
+            "val_mse": 0.00230477617494898,
+            "val_r2": 0.9408941103709225,
+            "n_evaluations": 59070,
+            "wall_seconds": 0.28597140312194824
+          },
+          {
+            "problem_id": "R27",
+            "block": "R",
+            "expression": "-0.3133 * sin(cos((sin((erf((erf((x * x)) * x)) * (erf((1.4110 * abs(1.0))) * x))) + (1.4616 * x)))) + 1.0202",
+            "abstained": false,
+            "train_mse": 7.169871213881744e-05,
+            "val_mse": 0.0015166804129910245,
+            "val_r2": 0.960794696133633,
+            "n_evaluations": 60620,
+            "wall_seconds": 0.2758920192718506
+          },
+          {
+            "problem_id": "R28",
+            "block": "R",
+            "expression": "34.4443 * (besselj(besselj((besselj((besselj(log(x)) + tanh(atan(x)))) + tanh(-1.1970)))) + (besselj((besselj((sign(sign(-1.5239)) + tanh(atan(x)))) + sign(-1.6358))) + sign(-2.3287))) + -25.7945",
+            "abstained": false,
+            "train_mse": 1.5350001328891323e-05,
+            "val_mse": 1.008850922654892e-05,
+            "val_r2": 0.9996447819188813,
+            "n_evaluations": 55319,
+            "wall_seconds": 0.24781155586242676
+          },
+          {
+            "problem_id": "O29",
+            "block": "O",
+            "expression": "0.3357 * (((((cos((2.3823 * x)) + cos((3.2275 * x))) + 2.0699) + cos((2.7775 * x))) + cos((2.7987 * x))) + cos((2.8074 * x))) + -0.7057",
+            "abstained": false,
+            "train_mse": 0.006898745909983833,
+            "val_mse": 0.014027179660004612,
+            "val_r2": 0.9898027510289207,
+            "n_evaluations": 56187,
+            "wall_seconds": 0.303696870803833
+          },
+          {
+            "problem_id": "O30",
+            "block": "O",
+            "expression": "-2.3830 * erf(erf((tanh(tanh(erf(sinh(sinh(x))))) + sin((sin(x) + -1.5060))))) + -0.3696",
+            "abstained": false,
+            "train_mse": 0.008041182665792068,
+            "val_mse": 0.04099091759916606,
+            "val_r2": 0.7054458071727407,
+            "n_evaluations": 56962,
+            "wall_seconds": 0.2216958999633789
+          },
+          {
+            "problem_id": "O31",
+            "block": "O",
+            "expression": "-2.2185 * min((((3.2573 * x) + sin(((erf(-1.5686) + -0.7000) + ((3.8890 * x) + -0.7302)))) + -0.7058), min((((3.4666 * x) + sin(((-1.2439 + -0.7000) + ((3.4666 * x) + -0.7000)))) + -0.7000), sin((((3.4901 * x) + -0.8371) + -0.7000)))) + -0.0633",
+            "abstained": false,
+            "train_mse": 0.05684850262341072,
+            "val_mse": 0.02751021129127279,
+            "val_r2": 0.9872296731891047,
+            "n_evaluations": 67781,
+            "wall_seconds": 0.39076924324035645
+          },
+          {
+            "problem_id": "O32",
+            "block": "O",
+            "expression": "0.6160 * (3.1075 * (cos(tanh(x)) * cos((2.7001 * x)))) + -0.0103",
+            "abstained": false,
+            "train_mse": 0.03444168956359558,
+            "val_mse": 0.025962212505622518,
+            "val_r2": 0.9588291241025998,
+            "n_evaluations": 54792,
+            "wall_seconds": 0.12160253524780273
+          },
+          {
+            "problem_id": "O33",
+            "block": "O",
+            "expression": "-2.1790 * min((asin(besselj(x)) + 1.6796), cosh((x * erf(min((besselj(x) + tan(x)), (asin(besselj(x)) * tan(x))))))) + 3.1624",
+            "abstained": false,
+            "train_mse": 0.017400121834215347,
+            "val_mse": 0.6916063148616858,
+            "val_r2": 0.8631783673942597,
+            "n_evaluations": 55784,
+            "wall_seconds": 0.18127036094665527
+          },
+          {
+            "problem_id": "O34",
+            "block": "O",
+            "expression": "-1.1151 * abs(sin((((x**1.0900) + -0.0) + x))) + 0.6996",
+            "abstained": false,
+            "train_mse": 0.03849353517959528,
+            "val_mse": 0.03891449949390567,
+            "val_r2": 0.7149653494585311,
+            "n_evaluations": 61333,
+            "wall_seconds": 0.5631115436553955
+          },
+          {
+            "problem_id": "O35",
+            "block": "O",
+            "expression": "-191.2919 * cos((((cbrt(cos(sin(x))) * cbrt(cos(1.5952))) + 3.0483) + 3.1000)) + 176.2693",
+            "abstained": false,
+            "train_mse": 0.005053944155291141,
+            "val_mse": 0.004368316320766161,
+            "val_r2": 0.9975563753939265,
+            "n_evaluations": 54606,
+            "wall_seconds": 0.21398019790649414
+          },
+          {
+            "problem_id": "O36",
+            "block": "O",
+            "expression": "1.5000 * cos((x + (x + x)))",
+            "abstained": false,
+            "train_mse": 3.514202838416981e-25,
+            "val_mse": 1.198770090690925e-24,
+            "val_r2": 1.0,
+            "n_evaluations": 64929,
+            "wall_seconds": 0.32448363304138184
+          },
+          {
+            "problem_id": "C37",
+            "block": "C",
+            "expression": "1.0077 * ((besselj(log(x)) * ((((besselj(log(x))**erf(x))**erf(sqrt(x)))**erf(x))**erf(sqrt(x)))) + sin(erf(x))) + -0.7779",
+            "abstained": false,
+            "train_mse": 7.318023427224896e-06,
+            "val_mse": 2.209019003836857e-05,
+            "val_r2": 0.9994124085228487,
+            "n_evaluations": 59628,
+            "wall_seconds": 0.2890968322753906
+          },
+          {
+            "problem_id": "C38",
+            "block": "C",
+            "expression": "0.9762 * cos(sin((1.0419 * exp(cos((((1.4068 * x) + sin(sin(x))) + 0.1973)))))) + 0.1266",
+            "abstained": false,
+            "train_mse": 6.669332813292797e-05,
+            "val_mse": 7.60257717426399e-05,
+            "val_r2": 0.9955152412448866,
+            "n_evaluations": 57489,
+            "wall_seconds": 0.5448379516601562
+          },
+          {
+            "problem_id": "C39",
+            "block": "C",
+            "expression": "-0.2588 * (max(max((2.2922 / max(0.6828, x)), 1.7713), max((2.1332 / x), max((2.2921 / max(0.7000, x)), x))) - atan(2.2530)) + 1.2968",
+            "abstained": false,
+            "train_mse": 1.9083056817330656e-05,
+            "val_mse": 7.091043929339934e-05,
+            "val_r2": 0.9986478194060304,
+            "n_evaluations": 64712,
+            "wall_seconds": 0.18700003623962402
+          },
+          {
+            "problem_id": "C40",
+            "block": "C",
+            "expression": "0.5955 * tan((sin(((x / (0.8312 * x)) + (besselj(-2.1000) + log(x)))) + -0.8366)) + 0.9956",
+            "abstained": false,
+            "train_mse": 2.2345667238000275e-05,
+            "val_mse": 1.0872367688701623e-05,
+            "val_r2": 0.9992845995994918,
+            "n_evaluations": 52746,
+            "wall_seconds": 0.22285795211791992
+          },
+          {
+            "problem_id": "C41",
+            "block": "C",
+            "expression": "1.9996 * (cbrt(((x + sin(min(x, x))) + ((x + min(x, 0.5860)) + sin(min(acos(x), besselj((-x))))))) - sinh(besselj((-(-x))))) + -0.0145",
+            "abstained": false,
+            "train_mse": 0.004086729124282879,
+            "val_mse": 0.0036972373363469632,
+            "val_r2": 0.9972327209282619,
+            "n_evaluations": 56001,
+            "wall_seconds": 0.38643741607666016
+          },
+          {
+            "problem_id": "C42",
+            "block": "C",
+            "expression": "-0.8087 * sin((((sin((x / (-0.6366 * x))) - sin(((1.5036 * x) / exp(x)))) * x) / cosh(x))) + -0.0630",
+            "abstained": false,
+            "train_mse": 1.6285335142427144e-05,
+            "val_mse": 5.53700163904865e-05,
+            "val_r2": 0.9987228751784047,
+            "n_evaluations": 58388,
+            "wall_seconds": 0.19661688804626465
+          },
+          {
+            "problem_id": "C43",
+            "block": "C",
+            "expression": "0.8001 * ((x + ((x + 0.4979) + ((x + ((x * (x - 0.8935)) * tanh(x))) * tanh(x)))) + ((x + ((x * (x - 0.9000)) * tanh(x))) * tanh(x))) + -0.8883",
+            "abstained": false,
+            "train_mse": 0.012757024830821029,
+            "val_mse": 0.01492071683762207,
+            "val_r2": 0.99980419369438,
+            "n_evaluations": 53025,
+            "wall_seconds": 0.16536355018615723
+          },
+          {
+            "problem_id": "C44",
+            "block": "C",
+            "expression": "1.4439 * ((sin(x) / cosh(max(erf(x), x))) / besselj((((sqrt(x) / x) / -0.9748) / -1.1847))) + 0.0446",
+            "abstained": false,
+            "train_mse": 0.0004076672994194753,
+            "val_mse": 0.0005872724235619309,
+            "val_r2": 0.9964732556542538,
+            "n_evaluations": 54823,
+            "wall_seconds": 0.2709944248199463
+          },
+          {
+            "problem_id": "X45",
+            "block": "X",
+            "expression": "-29440.1302 * (((x - ((1.0153 * x) - ((x - ((0.9811 * x) - x)) - (-0.4164 / (0.9811 * x))))) - x) * (x - (x - ((0.9811 * x) - x)))) + -235.2781",
+            "abstained": false,
+            "train_mse": 7.0879694018596165e-25,
+            "val_mse": 0.01413967843469865,
+            "val_r2": 0.9999975874784192,
+            "n_evaluations": 52467,
+            "wall_seconds": 0.18233942985534668
+          },
+          {
+            "problem_id": "X46",
+            "block": "X",
+            "expression": "-0.5637 * ((((((-5.3616 - (x**1.5001)) - (x**1.5145)) - (x**1.5140)) - (x**1.5140)) - (x**-0.5638)) - x) + -3.8671",
+            "abstained": false,
+            "train_mse": 0.008131388369698598,
+            "val_mse": 0.009430938144242807,
+            "val_r2": 0.9996998178641979,
+            "n_evaluations": 57675,
+            "wall_seconds": 0.21276283264160156
+          },
+          {
+            "problem_id": "X47",
+            "block": "X",
+            "expression": "2.9374 * atan((((-x) / cbrt(1.0066)) / 1.7225)) + 3.9841",
+            "abstained": false,
+            "train_mse": 0.0024232564626523725,
+            "val_mse": 0.0025955234846757875,
+            "val_r2": 0.9980617990812558,
+            "n_evaluations": 50700,
+            "wall_seconds": 0.21391582489013672
+          },
+          {
+            "problem_id": "X48",
+            "block": "X",
+            "expression": "3.0000 * log((((x / x) + x) + x))",
+            "abstained": false,
+            "train_mse": 2.252766653118653e-25,
+            "val_mse": 7.185623545131466e-26,
+            "val_r2": 1.0,
+            "n_evaluations": 55443,
+            "wall_seconds": 0.14545059204101562
+          },
+          {
+            "problem_id": "X49",
+            "block": "X",
+            "expression": "4.4400 * tanh(sqrt(max(max(x, 0.5250), erf(erf(x))))) + -2.0125",
+            "abstained": false,
+            "train_mse": 3.5316788057194e-05,
+            "val_mse": 2.7604751274299382e-05,
+            "val_r2": 0.9997539972360576,
+            "n_evaluations": 50018,
+            "wall_seconds": 0.13001346588134766
+          },
+          {
+            "problem_id": "X50",
+            "block": "X",
+            "expression": "2.2851 * min(atan(atan(min(atan(atan(cos((2.8063 * x)))), (cos((2.9269 * x)) / x)))), (cos((-2.6416 * x)) / x)) + 0.4114",
+            "abstained": false,
+            "train_mse": 0.016555576954548717,
+            "val_mse": 0.03591674075484245,
+            "val_r2": 0.9554355024272679,
+            "n_evaluations": 57117,
+            "wall_seconds": 0.5189118385314941
+          },
+          {
+            "problem_id": "X51",
+            "block": "X",
+            "expression": "0.0743 * ((0.4381 * (2.0452 * (1.6568 * (0.9637 * (1.4637 * (2.1397 * (1.9660 * x)))))))**1.7000)",
+            "abstained": false,
+            "train_mse": 2.9762017270098533e-19,
+            "val_mse": 7.53548935156297e-05,
+            "val_r2": 0.9999997579079252,
+            "n_evaluations": 64247,
+            "wall_seconds": 0.21851110458374023
+          },
+          {
+            "problem_id": "X52",
+            "block": "X",
+            "expression": "880.8133 * atan((atan(atan(atan((atan((x * -0.2660)) - acos(-0.6663))))) - acos(-0.0601))) + 1031.9791",
+            "abstained": false,
+            "train_mse": 0.0002773945344262695,
+            "val_mse": 0.00013066857378309392,
+            "val_r2": 0.9998957110166263,
+            "n_evaluations": 52746,
+            "wall_seconds": 0.18475890159606934
+          },
+          {
+            "problem_id": "A53",
+            "block": "A",
+            "expression": "-2.0194 * sin(((sin(((1.4972 * x) + -1.4159)) + -2.3523) + -1.4000)) + 2.1427",
+            "abstained": false,
+            "train_mse": 0.0033768332248792824,
+            "val_mse": 0.005731726044569086,
+            "val_r2": 0.992570104073411,
+            "n_evaluations": 60372,
+            "wall_seconds": 0.1613447666168213
+          },
+          {
+            "problem_id": "A54",
+            "block": "A",
+            "expression": "-3.0 + 1.0000",
+            "abstained": false,
+            "train_mse": 0.0,
+            "val_mse": 9.0,
+            "val_r2": NaN,
+            "n_evaluations": 49677,
+            "wall_seconds": 0.08626818656921387
+          },
+          {
+            "problem_id": "A55",
+            "block": "A",
+            "expression": "35.3097 * ((0.1439 * (0.1756 * x)) * ((x + erf(x)) + cos(((0.1842 * x) + 0.0256)))) + -0.0327",
+            "abstained": false,
+            "train_mse": 4.805347009169831e-07,
+            "val_mse": NaN,
+            "val_r2": NaN,
+            "n_evaluations": 58357,
+            "wall_seconds": 0.2008810043334961
+          },
+          {
+            "problem_id": "A56",
+            "block": "A",
+            "expression": "4.2710 * (x * cosh(log(((x / atan(cosh(x)))**0.7505)))) + -1.7549",
+            "abstained": false,
+            "train_mse": 6.238997712236249e-09,
+            "val_mse": NaN,
+            "val_r2": NaN,
+            "n_evaluations": 56466,
+            "wall_seconds": 0.1516275405883789
+          },
+          {
+            "problem_id": "A57",
+            "block": "A",
+            "expression": "2.7608 * (((((erf(x) + -0.4324)**0.7155) * ((tanh(0.7275)**-0.1091) * ((tanh(x)**tanh(x)) * x)))**0.5438) * x) + 0.5888",
+            "abstained": false,
+            "train_mse": 0.0008132674179927567,
+            "val_mse": NaN,
+            "val_r2": NaN,
+            "n_evaluations": 59349,
+            "wall_seconds": 0.13942790031433105
+          },
+          {
+            "problem_id": "A58",
+            "block": "A",
+            "expression": "0.2418 * ((--0.4725) * (sin(cosh(min(x, ((atan(x) + x) * (x + x))))) * (erf(x) + x))) + 0.9998",
+            "abstained": false,
+            "train_mse": 2.30359585546872e-08,
+            "val_mse": 1.646830617105673e-08,
+            "val_r2": 0.9999901593775169,
+            "n_evaluations": 51816,
+            "wall_seconds": 0.12926697731018066
+          },
+          {
+            "problem_id": "A59",
+            "block": "A",
+            "expression": "24.3538 * ((x + (3.7079 / atan(x)))**((x + (3.3407 / atan(x)))**-2.3479)) + -24.0630",
+            "abstained": false,
+            "train_mse": 6.373070439552746e-05,
+            "val_mse": 6.116745692602621e-05,
+            "val_r2": 0.9980504620114597,
+            "n_evaluations": 66324,
+            "wall_seconds": 0.33943796157836914
+          },
+          {
+            "problem_id": "A60",
+            "block": "A",
+            "expression": "-5.6230 * atan(cos((cbrt(x) * cbrt(x)))) + 5.4629",
+            "abstained": false,
+            "train_mse": 0.001533984471271397,
+            "val_mse": 0.0018698730871781783,
+            "val_r2": 0.9998128250918903,
+            "n_evaluations": 57644,
+            "wall_seconds": 0.345855712890625
+          }
+        ],
+        "summary": {
+          "evals_median": 56094.0,
+          "evals_total": 3389293,
+          "wall_seconds_median": 0.21592414379119873,
+          "wall_seconds_total": 14.249940633773804,
+          "train_mse_median": 0.00024270786974860177,
+          "val_mse_median": 0.0016502438757891192,
+          "val_r2_median": 0.9993485040611703,
+          "abstentions": 0
+        }
+      },
+      "call_graph": {
+        "synthesis": {
+          "problem": "SYNTH_01",
+          "wall_seconds": 31.651154527964536,
+          "top_form": "2.44879193409935*x**1.5*exp(-0.302500215445438*x)/(0.843102425381354*x**2 + 1.0)",
+          "top_epistemic_class": "C2",
+          "n_models": 183,
+          "evolve_native_calls": 0,
+          "evolve_calls": 0
+        },
+        "landauer": {
+          "rows": 60,
+          "ga_wall_seconds": 1.147599135991186,
+          "rime_wall_seconds": 0.013184381008613855,
+          "ga_formula_powers": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "rime_formula": "+0.999166 * (Vg) -0.47541",
+          "evolve_native_calls": 0,
+          "evolve_calls": 0
+        }
+      }
+    }
+  },
+  "matched_compute_gate4": {
+    "rabi": {
+      "r2_median": {
+        "on": 1.0,
+        "off": 1.0
+      },
+      "r2_min": {
+        "on": 0.9998924106923825,
+        "off": 0.9998924106923825
+      },
+      "recoveries_at_0_99": {
+        "on": 10,
+        "off": 10,
+        "of_seeds": 10
+      },
+      "evals_median": {
+        "on_minus_off": 285.5,
+        "relative": 0.1416521954849913
+      },
+      "evals_total": {
+        "on_minus_off": 218.0,
+        "relative": 0.0088773058598363
+      },
+      "wall_ms_median": {
+        "on_minus_off": -1.5537349972873926,
+        "relative": -0.13396033526132156
+      },
+      "wall_ms_total": {
+        "on_minus_off": 8.133853902108967,
+        "relative": 0.06418614479933385
+      }
+    },
+    "brus": {
+      "r2_median": {
+        "on": 0.6823963936180114,
+        "off": 0.7522425946915805
+      },
+      "r2_min": {
+        "on": 0.6059100320312942,
+        "off": 0.28702182253668007
+      },
+      "recoveries_at_0_99": {
+        "on": 0,
+        "off": 0,
+        "of_seeds": 10
+      },
+      "evals_median": {
+        "on_minus_off": 626.0,
+        "relative": 0.31544469639707734
+      },
+      "evals_total": {
+        "on_minus_off": 5116.0,
+        "relative": 0.2017111540432914
+      },
+      "wall_ms_median": {
+        "on_minus_off": 5.090685503091663,
+        "relative": 0.5429976210031208
+      },
+      "wall_ms_total": {
+        "on_minus_off": 38.70639577507973,
+        "relative": 0.21207270428281685
+      }
+    }
+  },
+  "external60": {
+    "problems": 60,
+    "evals_median": {
+      "on_minus_off": 6306.0,
+      "relative": 0.1124184404749171
+    },
+    "evals_total": {
+      "on_minus_off": 385056.0,
+      "relative": 0.11360953449583733
+    },
+    "wall_seconds_median": {
+      "on_minus_off": 0.05226790904998779,
+      "relative": 0.24206607066846353
+    },
+    "wall_seconds_total": {
+      "on_minus_off": 3.403111696243286,
+      "relative": 0.23881585079572656
+    },
+    "val_mse_median": {
+      "on_minus_off": -0.0010163025538023284,
+      "relative": -0.6158499169199155
+    },
+    "val_r2_median": {
+      "on_minus_off": 0.00019445798150363736,
+      "relative": 0.00019458475267976642
+    },
+    "train_mse_median": {
+      "on_minus_off": -6.379054691347215e-05,
+      "relative": -0.262828506465599
+    },
+    "per_problem_better_on": 23,
+    "per_problem_better_off": 32,
+    "per_problem_tied_or_nonfinite": 5,
+    "paired": [
+      {
+        "problem_id": "P01",
+        "val_mse_on": 0.002861730548127682,
+        "val_mse_off": 0.003573923557946524,
+        "evals_on": 85743,
+        "evals_off": 56280,
+        "wall_on": 0.6289286613464355,
+        "wall_off": 0.2333240509033203
+      },
+      {
+        "problem_id": "P02",
+        "val_mse_on": 0.007622284128290998,
+        "val_mse_off": 0.007569651863677215,
+        "evals_on": 55580,
+        "evals_off": 51351,
+        "wall_on": 0.2618224620819092,
+        "wall_off": 0.2264723777770996
+      },
+      {
+        "problem_id": "P03",
+        "val_mse_on": 0.0003000299353550892,
+        "val_mse_off": 0.0003000299353550892,
+        "evals_on": 59703,
+        "evals_off": 60403,
+        "wall_on": 0.1818985939025879,
+        "wall_off": 0.1880507469177246
+      },
+      {
+        "problem_id": "P04",
+        "val_mse_on": 0.00044965638855401296,
+        "val_mse_off": 0.0003748613442673033,
+        "evals_on": 54495,
+        "evals_off": 51258,
+        "wall_on": 0.24701380729675293,
+        "wall_off": 0.24138307571411133
+      },
+      {
+        "problem_id": "P05",
+        "val_mse_on": 0.10306542244064529,
+        "val_mse_off": 0.09379011364590203,
+        "evals_on": 67298,
+        "evals_off": 62325,
+        "wall_on": 0.4001166820526123,
+        "wall_off": 0.23860812187194824
+      },
+      {
+        "problem_id": "P06",
+        "val_mse_on": 0.02060360232308028,
+        "val_mse_off": 0.08214761933989931,
+        "evals_on": 57843,
+        "evals_off": 54110,
+        "wall_on": 0.20892000198364258,
+        "wall_off": 0.1761472225189209
+      },
+      {
+        "problem_id": "P07",
+        "val_mse_on": 0.00042512914343548837,
+        "val_mse_off": 0.0005059126198034161,
+        "evals_on": 62586,
+        "evals_off": 50607,
+        "wall_on": 0.3575880527496338,
+        "wall_off": 0.15778684616088867
+      },
+      {
+        "problem_id": "P08",
+        "val_mse_on": 0.2178435000587763,
+        "val_mse_off": 0.21077388640174072,
+        "evals_on": 68817,
+        "evals_off": 51289,
+        "wall_on": 0.5292994976043701,
+        "wall_off": 0.2161705493927002
+      },
+      {
+        "problem_id": "P09",
+        "val_mse_on": 9.99999987063461e-09,
+        "val_mse_off": 1.8274499735183374e-08,
+        "evals_on": 56572,
+        "evals_off": 52622,
+        "wall_on": 0.20134592056274414,
+        "wall_off": 0.16491436958312988
+      },
+      {
+        "problem_id": "P10",
+        "val_mse_on": 0.008386141569239895,
+        "val_mse_off": 0.008198338537661927,
+        "evals_on": 62152,
+        "evals_off": 57954,
+        "wall_on": 0.276334285736084,
+        "wall_off": 0.2623326778411865
+      },
+      {
+        "problem_id": "E11",
+        "val_mse_on": 0.0021367345431973967,
+        "val_mse_off": 0.0021271354671764517,
+        "evals_on": 59610,
+        "evals_off": 57954,
+        "wall_on": 0.3030712604522705,
+        "wall_off": 0.36904358863830566
+      },
+      {
+        "problem_id": "E12",
+        "val_mse_on": 1.7743830759895737e-05,
+        "val_mse_off": 2.142222310131602e-12,
+        "evals_on": 56076,
+        "evals_off": 52095,
+        "wall_on": 0.10742640495300293,
+        "wall_off": 0.13078570365905762
+      },
+      {
+        "problem_id": "E13",
+        "val_mse_on": 0.0002530786247328651,
+        "val_mse_off": 0.0003696642953650769,
+        "evals_on": 66151,
+        "evals_off": 54265,
+        "wall_on": 0.33260679244995117,
+        "wall_off": 0.1643531322479248
+      },
+      {
+        "problem_id": "E14",
+        "val_mse_on": 0.03030320383867859,
+        "val_mse_off": 0.0018333981230240412,
+        "evals_on": 67949,
+        "evals_off": 57799,
+        "wall_on": 0.40593457221984863,
+        "wall_off": 0.33742547035217285
+      },
+      {
+        "problem_id": "E15",
+        "val_mse_on": 2.7551157223920075e-10,
+        "val_mse_off": 6.1802751126174306e-06,
+        "evals_on": 54278,
+        "evals_off": 49491,
+        "wall_on": 0.10794854164123535,
+        "wall_off": 0.10368967056274414
+      },
+      {
+        "problem_id": "E16",
+        "val_mse_on": 0.00019675786254375014,
+        "val_mse_off": 0.01651636838485212,
+        "evals_on": 63175,
+        "evals_off": 55970,
+        "wall_on": 0.2413036823272705,
+        "wall_off": 0.19680285453796387
+      },
+      {
+        "problem_id": "E17",
+        "val_mse_on": 0.0078556493135277,
+        "val_mse_off": 0.008005145698938376,
+        "evals_on": 71235,
+        "evals_off": 52095,
+        "wall_on": 0.7042627334594727,
+        "wall_off": 0.20267724990844727
+      },
+      {
+        "problem_id": "E18",
+        "val_mse_on": 0.007594554036316729,
+        "val_mse_off": 1.2672735881456445e-07,
+        "evals_on": 71514,
+        "evals_off": 51816,
+        "wall_on": 0.18891692161560059,
+        "wall_off": 0.12744927406311035
+      },
+      {
+        "problem_id": "E19",
+        "val_mse_on": 5.081839389398207e-05,
+        "val_mse_off": 4.857655174757281e-05,
+        "evals_on": 69344,
+        "evals_off": 50266,
+        "wall_on": 0.27255773544311523,
+        "wall_off": 0.2422468662261963
+      },
+      {
+        "problem_id": "E20",
+        "val_mse_on": 0.1269813556194309,
+        "val_mse_off": 0.1236045294665196,
+        "evals_on": 69251,
+        "evals_off": 61209,
+        "wall_on": 0.32689738273620605,
+        "wall_off": 0.300137996673584
+      },
+      {
+        "problem_id": "R21",
+        "val_mse_on": 5.202259205514528e-07,
+        "val_mse_off": 5.394913320018564e-07,
+        "evals_on": 55208,
+        "evals_off": 49956,
+        "wall_on": 0.10334396362304688,
+        "wall_off": 0.1502079963684082
+      },
+      {
+        "problem_id": "R22",
+        "val_mse_on": 0.0005691237068792111,
+        "val_mse_off": 0.00048204754991512005,
+        "evals_on": 59176,
+        "evals_off": 60310,
+        "wall_on": 0.14043974876403809,
+        "wall_off": 0.21567773818969727
+      },
+      {
+        "problem_id": "R23",
+        "val_mse_on": 0.0020962955887705685,
+        "val_mse_off": 0.0016502438757891192,
+        "evals_on": 55487,
+        "evals_off": 49770,
+        "wall_on": 0.2638263702392578,
+        "wall_off": 0.27046942710876465
+      },
+      {
+        "problem_id": "R24",
+        "val_mse_on": 9.0369509576677e-06,
+        "val_mse_off": 1.2448627109495409e-05,
+        "evals_on": 64663,
+        "evals_off": 67812,
+        "wall_on": 0.30529212951660156,
+        "wall_off": 0.2876148223876953
+      },
+      {
+        "problem_id": "R25",
+        "val_mse_on": 7.417958158010448e-06,
+        "val_mse_off": 8.35862467062855e-06,
+        "evals_on": 64539,
+        "evals_off": 65673,
+        "wall_on": 0.323392391204834,
+        "wall_off": 0.2919044494628906
+      },
+      {
+        "problem_id": "R26",
+        "val_mse_on": 0.00023955505382963679,
+        "val_mse_off": 0.00230477617494898,
+        "evals_on": 67515,
+        "evals_off": 59070,
+        "wall_on": 0.3279910087585449,
+        "wall_off": 0.28597140312194824
+      },
+      {
+        "problem_id": "R27",
+        "val_mse_on": 1.1961865641448726e-05,
+        "val_mse_off": 0.0015166804129910245,
+        "evals_on": 70553,
+        "evals_off": 60620,
+        "wall_on": 0.3620929718017578,
+        "wall_off": 0.2758920192718506
+      },
+      {
+        "problem_id": "R28",
+        "val_mse_on": 5.410134745447824e-05,
+        "val_mse_off": 1.008850922654892e-05,
+        "evals_on": 69437,
+        "evals_off": 55319,
+        "wall_on": 0.4164752960205078,
+        "wall_off": 0.24781155586242676
+      },
+      {
+        "problem_id": "O29",
+        "val_mse_on": 0.015145815683838982,
+        "val_mse_off": 0.014027179660004612,
+        "evals_on": 68600,
+        "evals_off": 56187,
+        "wall_on": 0.4030454158782959,
+        "wall_off": 0.303696870803833
+      },
+      {
+        "problem_id": "O30",
+        "val_mse_on": 0.07510567918537428,
+        "val_mse_off": 0.04099091759916606,
+        "evals_on": 55704,
+        "evals_off": 56962,
+        "wall_on": 0.16674041748046875,
+        "wall_off": 0.2216958999633789
+      },
+      {
+        "problem_id": "O31",
+        "val_mse_on": 0.04232012988251876,
+        "val_mse_off": 0.02751021129127279,
+        "evals_on": 65252,
+        "evals_off": 67781,
+        "wall_on": 0.2351698875427246,
+        "wall_off": 0.39076924324035645
+      },
+      {
+        "problem_id": "O32",
+        "val_mse_on": 0.025961793371314813,
+        "val_mse_off": 0.025962212505622518,
+        "evals_on": 60199,
+        "evals_off": 54792,
+        "wall_on": 0.2624075412750244,
+        "wall_off": 0.12160253524780273
+      },
+      {
+        "problem_id": "O33",
+        "val_mse_on": 0.29137367074845016,
+        "val_mse_off": 0.6916063148616858,
+        "evals_on": 61439,
+        "evals_off": 55784,
+        "wall_on": 0.24612188339233398,
+        "wall_off": 0.18127036094665527
+      },
+      {
+        "problem_id": "O34",
+        "val_mse_on": 0.06827355336980295,
+        "val_mse_off": 0.03891449949390567,
+        "evals_on": 57130,
+        "evals_off": 61333,
+        "wall_on": 0.29230475425720215,
+        "wall_off": 0.5631115436553955
+      },
+      {
+        "problem_id": "O35",
+        "val_mse_on": 0.004775741917021002,
+        "val_mse_off": 0.004368316320766161,
+        "evals_on": 54929,
+        "evals_off": 54606,
+        "wall_on": 0.2976374626159668,
+        "wall_off": 0.21398019790649414
+      },
+      {
+        "problem_id": "O36",
+        "val_mse_on": 2.384232794460087e-09,
+        "val_mse_off": 1.198770090690925e-24,
+        "evals_on": 67856,
+        "evals_off": 64929,
+        "wall_on": 0.26204514503479004,
+        "wall_off": 0.32448363304138184
+      },
+      {
+        "problem_id": "C37",
+        "val_mse_on": 4.7269124418300164e-05,
+        "val_mse_off": 2.209019003836857e-05,
+        "evals_on": 63702,
+        "evals_off": 59628,
+        "wall_on": 0.3894839286804199,
+        "wall_off": 0.2890968322753906
+      },
+      {
+        "problem_id": "C38",
+        "val_mse_on": 6.045163299220109e-05,
+        "val_mse_off": 7.60257717426399e-05,
+        "evals_on": 64880,
+        "evals_off": 57489,
+        "wall_on": 0.6464884281158447,
+        "wall_off": 0.5448379516601562
+      },
+      {
+        "problem_id": "C39",
+        "val_mse_on": 0.0002652159549874094,
+        "val_mse_off": 7.091043929339934e-05,
+        "evals_on": 60478,
+        "evals_off": 64712,
+        "wall_on": 0.35370874404907227,
+        "wall_off": 0.18700003623962402
+      },
+      {
+        "problem_id": "C40",
+        "val_mse_on": 2.6699519743769736e-06,
+        "val_mse_off": 1.0872367688701623e-05,
+        "evals_on": 69189,
+        "evals_off": 52746,
+        "wall_on": 0.4078333377838135,
+        "wall_off": 0.22285795211791992
+      },
+      {
+        "problem_id": "C41",
+        "val_mse_on": 0.0037363966172055466,
+        "val_mse_off": 0.0036972373363469632,
+        "evals_on": 62214,
+        "evals_off": 56001,
+        "wall_on": 0.4264540672302246,
+        "wall_off": 0.38643741607666016
+      },
+      {
+        "problem_id": "C42",
+        "val_mse_on": 5.93692381447862e-06,
+        "val_mse_off": 5.53700163904865e-05,
+        "evals_on": 65035,
+        "evals_off": 58388,
+        "wall_on": 0.21055841445922852,
+        "wall_off": 0.19661688804626465
+      },
+      {
+        "problem_id": "C43",
+        "val_mse_on": 0.03080157832569056,
+        "val_mse_off": 0.01492071683762207,
+        "evals_on": 68135,
+        "evals_off": 53025,
+        "wall_on": 0.4530649185180664,
+        "wall_off": 0.16536355018615723
+      },
+      {
+        "problem_id": "C44",
+        "val_mse_on": 0.0006339413219867907,
+        "val_mse_off": 0.0005872724235619309,
+        "evals_on": 61284,
+        "evals_off": 54823,
+        "wall_on": 0.5000314712524414,
+        "wall_off": 0.2709944248199463
+      },
+      {
+        "problem_id": "X45",
+        "val_mse_on": 18.383623227857594,
+        "val_mse_off": 0.01413967843469865,
+        "evals_on": 54836,
+        "evals_off": 52467,
+        "wall_on": 0.1152198314666748,
+        "wall_off": 0.18233942985534668
+      },
+      {
+        "problem_id": "X46",
+        "val_mse_on": 0.0330763974716899,
+        "val_mse_off": 0.009430938144242807,
+        "evals_on": 72103,
+        "evals_off": 57675,
+        "wall_on": 0.4629077911376953,
+        "wall_off": 0.21276283264160156
+      },
+      {
+        "problem_id": "X47",
+        "val_mse_on": 0.0020340505214357066,
+        "val_mse_off": 0.0025955234846757875,
+        "evals_on": 57688,
+        "evals_off": 50700,
+        "wall_on": 0.19697070121765137,
+        "wall_off": 0.21391582489013672
+      },
+      {
+        "problem_id": "X48",
+        "val_mse_on": 4.154735957615984e-06,
+        "val_mse_off": 7.185623545131466e-26,
+        "evals_on": 67515,
+        "evals_off": 55443,
+        "wall_on": 0.2542726993560791,
+        "wall_off": 0.14545059204101562
+      },
+      {
+        "problem_id": "X49",
+        "val_mse_on": 3.008288821853809e-05,
+        "val_mse_off": 2.7604751274299382e-05,
+        "evals_on": 55859,
+        "evals_off": 50018,
+        "wall_on": 0.16875815391540527,
+        "wall_off": 0.13001346588134766
+      },
+      {
+        "problem_id": "X50",
+        "val_mse_on": 0.002999043010781696,
+        "val_mse_off": 0.03591674075484245,
+        "evals_on": 63020,
+        "evals_off": 57117,
+        "wall_on": 0.42961812019348145,
+        "wall_off": 0.5189118385314941
+      },
+      {
+        "problem_id": "X51",
+        "val_mse_on": 0.07875923916094288,
+        "val_mse_off": 7.53548935156297e-05,
+        "evals_on": 61780,
+        "evals_off": 64247,
+        "wall_on": 0.32173800468444824,
+        "wall_off": 0.21851110458374023
+      },
+      {
+        "problem_id": "X52",
+        "val_mse_on": 0.00021645255441425708,
+        "val_mse_off": 0.00013066857378309392,
+        "evals_on": 60726,
+        "evals_off": 52746,
+        "wall_on": 0.23646140098571777,
+        "wall_off": 0.18475890159606934
+      },
+      {
+        "problem_id": "A53",
+        "val_mse_on": 0.00012072598205919963,
+        "val_mse_off": 0.005731726044569086,
+        "evals_on": 65810,
+        "evals_off": 60372,
+        "wall_on": 0.17205166816711426,
+        "wall_off": 0.1613447666168213
+      },
+      {
+        "problem_id": "A54",
+        "val_mse_on": 9.0,
+        "val_mse_off": 9.0,
+        "evals_on": 51922,
+        "evals_off": 49677,
+        "wall_on": 0.0935826301574707,
+        "wall_off": 0.08626818656921387
+      },
+      {
+        "problem_id": "A55",
+        "val_mse_on": NaN,
+        "val_mse_off": NaN,
+        "evals_on": 61408,
+        "evals_off": 58357,
+        "wall_on": 0.12129688262939453,
+        "wall_off": 0.2008810043334961
+      },
+      {
+        "problem_id": "A56",
+        "val_mse_on": NaN,
+        "val_mse_off": NaN,
+        "evals_on": 56510,
+        "evals_off": 56466,
+        "wall_on": 0.05731511116027832,
+        "wall_off": 0.1516275405883789
+      },
+      {
+        "problem_id": "A57",
+        "val_mse_on": NaN,
+        "val_mse_off": NaN,
+        "evals_on": 61129,
+        "evals_off": 59349,
+        "wall_on": 0.1423780918121338,
+        "wall_off": 0.13942790031433105
+      },
+      {
+        "problem_id": "A58",
+        "val_mse_on": 1.6268434780798822e-08,
+        "val_mse_off": 1.646830617105673e-08,
+        "evals_on": 53751,
+        "evals_off": 51816,
+        "wall_on": 0.17636895179748535,
+        "wall_off": 0.12926697731018066
+      },
+      {
+        "problem_id": "A59",
+        "val_mse_on": 5.1250505957440236e-05,
+        "val_mse_off": 6.116745692602621e-05,
+        "evals_on": 71855,
+        "evals_off": 66324,
+        "wall_on": 0.36460399627685547,
+        "wall_off": 0.33943796157836914
+      },
+      {
+        "problem_id": "A60",
+        "val_mse_on": 0.002746767348561992,
+        "val_mse_off": 0.0018698730871781783,
+        "evals_on": 66461,
+        "evals_off": 57644,
+        "wall_on": 0.25936460494995117,
+        "wall_off": 0.345855712890625
+      }
+    ]
+  },
+  "call_graph": {
+    "synthesis": {
+      "on": {
+        "problem": "SYNTH_01",
+        "wall_seconds": 29.973825179040432,
+        "top_form": "2.44879193409935*x**1.5*exp(-0.302500215445438*x)/(0.843102425381354*x**2 + 1.0)",
+        "top_epistemic_class": "C2",
+        "n_models": 183,
+        "evolve_native_calls": 0,
+        "evolve_calls": 0
+      },
+      "off": {
+        "problem": "SYNTH_01",
+        "wall_seconds": 31.651154527964536,
+        "top_form": "2.44879193409935*x**1.5*exp(-0.302500215445438*x)/(0.843102425381354*x**2 + 1.0)",
+        "top_epistemic_class": "C2",
+        "n_models": 183,
+        "evolve_native_calls": 0,
+        "evolve_calls": 0
+      }
+    },
+    "landauer": {
+      "on": {
+        "rows": 60,
+        "ga_wall_seconds": 1.353330651007127,
+        "rime_wall_seconds": 0.007754592981655151,
+        "ga_formula_powers": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "rime_formula": "+0.999166 * (Vg) -0.47541",
+        "evolve_native_calls": 0,
+        "evolve_calls": 0
+      },
+      "off": {
+        "rows": 60,
+        "ga_wall_seconds": 1.147599135991186,
+        "rime_wall_seconds": 0.013184381008613855,
+        "ga_formula_powers": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "rime_formula": "+0.999166 * (Vg) -0.47541",
+        "evolve_native_calls": 0,
+        "evolve_calls": 0
+      }
+    }
+  }
+}

@@ -4,6 +4,50 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Birth-fitted Pow exponent: measured cost and benefit at benchmark scale (2026-10-23)
+
+The exponent birth fit was added on a small-budget measurement (x**2.5 recovery
+5/10 -> 17/20 at ~4.5k evaluations). A preregistered A/B now measures what it
+costs and whether it still pays at benchmark scale, by compiling two kernels
+differing in exactly one predicate (`has_pow_const` live vs false) with identical
+grid, polish, seeds and budgets:
+
+- **Cost is deterministic: +11% candidate evaluations.** External-60's native
+  adapter at its frozen 300x50x4 config (all 60 problems) used 3,774,349
+  evaluations with the fit vs 3,389,293 without (+11.4%; median per problem
+  62,400 vs 56,094). At Gate 4's 2x30x15 budget the increase is larger because
+  the birth work is a bigger share: +14.2% (Rabi) and +31.5% (Brus) on median
+  evaluations. Wall time is not independently resolved: the synthesis control
+  below, which provably makes zero native-GA calls, moved 19% between arms in
+  one repeat pair (and 5.6% the other way in the other), while External-60 wall
+  moved +9.8% then +23.9% across repeat pairs — all inside this machine's noise.
+- **Benefit at scale is a wash.** External-60 paired on validation MSE: 23
+  problems better with the fit, 32 better without, 5 tied/non-finite (median
+  ratio 1.02; 10 problems >2x better, 12 >2x worse). The scale-mixed median
+  validation MSE falls 61.6% (0.001650 -> 0.000634), which is an artefact of
+  mixing problems of different magnitude, not a paired gain. Gate 4 does not
+  move: Rabi R2 is identical (10/10 seeds >= 0.99) and Brus fails in both arms
+  (the known GA overfit; worst seed improves 0.287 -> 0.606, median falls).
+- **Two of the three named benchmarks cannot be affected, measured not assumed.**
+  Counters wrapped around `RustKernelBridge.evolve_native` and
+  `evolutionary_search.evolve` report **0 calls** for the synthesis engine
+  (Stage-2 templates + Stage-D scipy refine; the bridge is only used for
+  singularity/conditioning probes) and **0 calls** for the Landauer harness (its
+  "GA" is a bespoke numpy polynomial-basis selector; its search side is kernel
+  RIME via `rime_search_json`). `benchmarks/matched_compute.py` likewise runs no
+  native GA.
+- **No code change and no budget-aware switch.** The measurement says a
+  large-budget arm would lose nothing by skipping the fit, but it does not
+  locate the crossover, and an untuned threshold would be a new tuning surface
+  with no measurement behind it. The fit stays unconditional.
+
+Harness: `benchmarks/pow_birth_fit_benchmark.py` (audit-only; `--label on|off`
+per build, `--merge` to consolidate; each arm records its installed `.so`
+sha256). Artifact: `benchmarks/pow_birth_fit_benchmark_results.json`. Full table:
+`docs/ga_seed_fragility_audit.md`.
+
+---
+
 ## [Unreleased] — Silent native-GA fallback made refusable; core-side Gate-4 provenance (2026-10-22)
 
 Two gaps found while auditing the engine-tournament demo (measured, not
