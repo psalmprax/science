@@ -37,3 +37,7 @@ class Parameter:
     units: str
     value: float | None
     bounds: tuple[float, float] | None = None
+    # "rate" multiplies a grammar term; "scale" is an interior reference level
+    # (e.g. a saturation half-saturation constant) that the fitter initializes
+    # from the data scale rather than differentiating the equation for it.
+    role: str = "rate"

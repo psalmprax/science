@@ -1,6 +1,6 @@
 """Blind adversarial benchmark protocol (Stage 4 of the validation ladder).
 
-Method rule: the referee is FROZEN (see APEDPX_FROZEN_v1_8.json). This runner
+Method rule: the referee is FROZEN (see APEDPX_FROZEN_v1_10.json). This runner
 refuses to score if any guard file changed — edit the referee and you must
 mint a new freeze record first.
 
@@ -28,10 +28,10 @@ from typing import Any
 sys.path.insert(0, '.')
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-# v1_9 re-mint (2026-10-21, per freeze protocol): external-audit FLAW-07/08
-# referee remediation; guard-file hashes for adjudicate.py and claim_ladder.py
-# refreshed with recorded rationale, thresholds/blind expectations unchanged.
-FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_9.json"
+# v1_10 re-mint (2026-10-23, per freeze protocol): grammar-space expansion
+# (H-SQRTV + operator declarations in grammar_space.py, saturating-rational
+# term families in candidate_ir.py); thresholds/blind expectations unchanged.
+FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_10.json"
 
 
 def verify_referee() -> dict[str, str]:

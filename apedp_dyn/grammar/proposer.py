@@ -94,7 +94,7 @@ def _library_matrix(problem, term_names: Sequence[str]):
     subs = {X: sp.Symbol(order[0]), V: sp.Symbol(order[1]),
             Gu: (sp.Symbol(inames[0]) if inames else Gu)}
     for name in term_names:
-        built = _TERM_BUILDERS[name](X, V, Gu, XR)
+        built = _TERM_BUILDERS[name](X, V, Gu, XR, sp.Symbol("gL"))
         if XR in built.atoms(sp.Symbol):
             skipped.append(name)
             continue
@@ -135,7 +135,12 @@ class LibraryProposer:
         # passing an explicit vocabulary; they are simply not part of the
         # *default* sparse library, matching DEFAULT_TOPOLOGY, which excludes
         # them for the same reason.
-        _composite = ("u_relax", "sat_x", "sat_v", "sat_u", "inv_x2")
+        # `langmuir_bind`/`hill2_bind` need their reference scale *fitted* per
+        # candidate, which a fixed library column cannot carry; they are
+        # reachable through `saturation_candidate()` / an explicit vocabulary,
+        # not the default sparse library.
+        _composite = ("u_relax", "sat_x", "sat_v", "sat_u", "inv_x2",
+                      "langmuir_bind", "hill2_bind")
         self._vocabulary = tuple(vocabulary) if vocabulary is not None else tuple(
             k for k in _TERM_BUILDERS if k not in _nontrajectory and k not in _composite)
         self._proposer_id = proposer_id

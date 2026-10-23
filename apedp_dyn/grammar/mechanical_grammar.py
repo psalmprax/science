@@ -34,36 +34,45 @@ from apedp_dyn.model import DynamicalEquation, Parameter, PhysicalModel
 # where XR is the remote position (2-DOF coupling). Single-DOF materialize
 # leaves XR unmapped so xr-terms die loudly at gate 1, never silently.
 _TERM_BUILDERS = {
-    "one": lambda X, V, U, XR: sp.Integer(1),
-    "x": lambda X, V, U, XR: X,
-    "x2": lambda X, V, U, XR: X ** 2,
-    "x3": lambda X, V, U, XR: X ** 3,
-    "v": lambda X, V, U, XR: V,
-    "abs_v_v": lambda X, V, U, XR: sp.Abs(V) * V,
-    "v2": lambda X, V, U, XR: V ** 2,
-    "u": lambda X, V, U, XR: U,
-    "x_v": lambda X, V, U, XR: X * V,
-    "sin_x": lambda X, V, U, XR: sp.sin(X),
-    "xr": lambda X, V, U, XR: XR,
-    "dxr": lambda X, V, U, XR: XR - X,  # typed relative displacement Δx
-    "c1": lambda X, V, U, XR: X ** 0,  # constraint term 1 (dimensionless)
-    "c2": lambda X, V, U, XR: X ** 0,  # constraint term 2 (dimensionless)
-    "x_f": lambda X, V, U, XR: X,  # fast-state variable
-    "v_f": lambda X, V, U, XR: V,  # fast velocity
-    "x_s": lambda X, V, U, XR: X,  # slow-state variable
-    "v_s": lambda X, V, U, XR: V,  # slow velocity
-    "grad_x": lambda X, V, U, XR: sp.symbols("grad_x"),  # spatial gradient ∇x
-    "laplacian_x": lambda X, V, U, XR: sp.symbols("laplacian_x"),  # ∇²x
-    "sat_x": lambda X, V, U, XR: X / (1 + sp.Abs(X)),
-    "sat_v": lambda X, V, U, XR: V / (1 + sp.Abs(V)),
-    "sat_u": lambda X, V, U, XR: U / (1 + sp.Abs(U)),
-    "inv_x2": lambda X, V, U, XR: 1 / (1 + X ** 2),
-    "u_relax": lambda X, V, U, XR: U - V,  # relative relaxation impulse
+    "one": lambda X, V, U, XR, SX: sp.Integer(1),
+    "x": lambda X, V, U, XR, SX: X,
+    "x2": lambda X, V, U, XR, SX: X ** 2,
+    "x3": lambda X, V, U, XR, SX: X ** 3,
+    "v": lambda X, V, U, XR, SX: V,
+    "abs_v_v": lambda X, V, U, XR, SX: sp.Abs(V) * V,
+    "v2": lambda X, V, U, XR, SX: V ** 2,
+    "u": lambda X, V, U, XR, SX: U,
+    "x_v": lambda X, V, U, XR, SX: X * V,
+    "sin_x": lambda X, V, U, XR, SX: sp.sin(X),
+    "xr": lambda X, V, U, XR, SX: XR,
+    "dxr": lambda X, V, U, XR, SX: XR - X,  # typed relative displacement Δx
+    "c1": lambda X, V, U, XR, SX: X ** 0,  # constraint term 1 (dimensionless)
+    "c2": lambda X, V, U, XR, SX: X ** 0,  # constraint term 2 (dimensionless)
+    "x_f": lambda X, V, U, XR, SX: X,  # fast-state variable
+    "v_f": lambda X, V, U, XR, SX: V,  # fast velocity
+    "x_s": lambda X, V, U, XR, SX: X,  # slow-state variable
+    "v_s": lambda X, V, U, XR, SX: V,  # slow velocity
+    "grad_x": lambda X, V, U, XR, SX: sp.symbols("grad_x"),  # spatial gradient ∇x
+    "laplacian_x": lambda X, V, U, XR, SX: sp.symbols("laplacian_x"),  # ∇²x
+    "sat_x": lambda X, V, U, XR, SX: X / (1 + sp.Abs(X)),
+    "sat_v": lambda X, V, U, XR, SX: V / (1 + sp.Abs(V)),
+    "sat_u": lambda X, V, U, XR, SX: U / (1 + sp.Abs(U)),
+    "inv_x2": lambda X, V, U, XR, SX: 1 / (1 + X ** 2),
+    "u_relax": lambda X, V, U, XR, SX: U - V,  # relative relaxation impulse
+    # Saturating binding laws need a reference scale with the state's units:
+    # `X/(L+|X|)` is Langmuir/Michaelis-Menten occupancy and `X^2/(L^2+X^2)` its
+    # cooperative (Hill n=2) form. L arrives as the term's `scale_parameter`;
+    # without it an Add of `1` to a dimensional X is a gate-1 violation.
+    "langmuir_bind": lambda X, V, U, XR, SX: X / (SX + sp.Abs(X)),
+    "hill2_bind": lambda X, V, U, XR, SX: X ** 2 / (SX ** 2 + X ** 2),
 }
 
 DEFAULT_TOPOLOGY = ("one", "x", "x3", "v", "abs_v_v", "sin_x", "u")
 
 DEFAULT_BOUNDS = (-1e6, 1e6)
+# A saturation reference scale is positive (it is a half-saturation level).
+SATURATION_SCALE_BOUNDS = (1e-9, 1e9)
+_SCALED_TERMS = frozenset({"langmuir_bind", "hill2_bind"})
 
 
 def validate(candidate: CandidateDynamics) -> None:
@@ -71,9 +80,48 @@ def validate(candidate: CandidateDynamics) -> None:
     unknown = [t.name for t in candidate.terms if t.name not in _TERM_BUILDERS]
     if unknown:
         raise ValueError(f"unknown grammar terms: {unknown}")
+    for t in candidate.terms:
+        if t.name in _SCALED_TERMS and not t.scale_parameter:
+            raise ValueError(f"term {t.name!r} requires a scale_parameter")
+        if t.scale_parameter is not None and t.name not in _SCALED_TERMS:
+            raise ValueError(f"term {t.name!r} does not take a scale_parameter")
     params = candidate.parameter_names()
     if len(set(params)) != len(params):
         raise ValueError(f"duplicate parameter names: {params}")
+
+
+def saturation_candidate(
+    terms: tuple[str, ...] = ("langmuir_bind",),
+    seed: int = 0,
+) -> CandidateDynamics:
+    """Typed saturation hypothesis: xddot = sum_i a_i * binding_i(x; s_i).
+
+    Each term carries its own positive reference scale `s_i` in the state's
+    units, so the candidate is dimensionally well-formed and gate 1 can still
+    reject it on a genuinely inconsistent target.
+    """
+    for name in terms:
+        if name not in _SCALED_TERMS:
+            raise ValueError(f"not a saturation term: {name!r}")
+    sat = tuple(
+        Term(name, f"a{i}", scale_parameter=f"s{i}")
+        for i, name in enumerate(terms)
+    )
+    bounds: dict[str, tuple[float, float]] = {}
+    for i in range(len(terms)):
+        bounds[f"a{i}"] = DEFAULT_BOUNDS
+        bounds[f"s{i}"] = SATURATION_SCALE_BOUNDS
+    candidate = CandidateDynamics(
+        lhs="xddot", terms=sat,
+        metadata={"family": "mechanical_2nd_order", "order": 2,
+                  "state_variables": ["x", "v"], "input_variables": ["u"],
+                  "saturation_law": "langmuir" if terms == ("langmuir_bind",) else "mixed"},
+        candidate_id="mg1-saturation",
+        parameter_bounds=bounds,
+        generation_seed=seed,
+    )
+    validate(candidate)
+    return candidate
 
 
 def full_topology_candidate(seed: int = 0) -> CandidateDynamics:
@@ -129,21 +177,32 @@ def materialize(problem, candidate: CandidateDynamics) -> PhysicalModel:
     X, V = sp.Symbol("gx"), sp.Symbol("gv")
     U = sp.Symbol("gu")
     XR = sp.Symbol("gxr")
+    SX = sp.Symbol("gL")
     real: dict[str, str] = dict(problem_symbol_units(problem))
     target_unit = _ureg.Unit(real[vel.name]) / _ureg.Unit("second")
     parts: list[str] = []
     parameters: list[Parameter] = []
     for t in candidate.terms:
-        built = _TERM_BUILDERS[t.name](X, V, U, XR)
+        built = _TERM_BUILDERS[t.name](X, V, U, XR, SX)
         gu_sym = sp.Symbol(inp.name) if inp is not None else U
         rexpr = built.subs({X: sp.Symbol(pos.name), V: sp.Symbol(vel.name),
                             U: gu_sym, XR: sp.Symbol("gxr_remote")})
+        if t.scale_parameter is not None:
+            # The scale carries the state's unit; register it before the unit
+            # check so a dimensional Add is proven compatible, not assumed.
+            real[t.scale_parameter] = real[pos.name]
+            rexpr = rexpr.subs({SX: sp.Symbol(t.scale_parameter)})
         if inp is None and U in rexpr.atoms(sp.Symbol):
             raise ValueError("candidate uses input but problem has none")
         term_unit = _unit_of(rexpr, real)
         punit = str(target_unit / term_unit)
         bounds = candidate.parameter_bounds.get(t.parameter, DEFAULT_BOUNDS)
         parameters.append(Parameter(t.parameter, punit, None, bounds))
+        if t.scale_parameter is not None:
+            sbounds = candidate.parameter_bounds.get(
+                t.scale_parameter, SATURATION_SCALE_BOUNDS)
+            parameters.append(Parameter(t.scale_parameter, real[pos.name], None,
+                                        sbounds, role="scale"))
         parts.append(f"({t.parameter}*{sp.sstr(rexpr)})")
     accel = " + ".join(parts) if parts else "0"
     equations = (DynamicalEquation(pos.name, vel.name),

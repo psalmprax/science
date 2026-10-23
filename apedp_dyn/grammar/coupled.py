@@ -261,7 +261,7 @@ def _materialize_ode(problem, candidate: SystemCandidate) -> PhysicalModel:
         for t in candidate.equations[i].terms:
             built = _TERM_BUILDERS[t.name](
                 sp.Symbol(pos[i].name), sp.Symbol(vel[i].name),
-                sp.Symbol(inp[i].name), sp.Symbol(remote.name))
+                sp.Symbol(inp[i].name), sp.Symbol(remote.name), sp.Symbol(f"gL{i}"))
             term_unit = _unit_of(built, real)
             punit = str(target_unit / term_unit)
             bounds = candidate.equations[i].parameter_bounds.get(t.parameter, DEFAULT_BOUNDS)
@@ -320,7 +320,7 @@ def _materialize_constrained(problem, candidate: SystemCandidate) -> PhysicalMod
                 # This is a constraint term; build it but track it
                 built = _TERM_BUILDERS[t.name](
                     sp.Symbol(pos[i].name), sp.Symbol(vel[i].name),
-                    sp.Symbol(inp[i].name), sp.Symbol(remote.name))
+                    sp.Symbol(inp[i].name), sp.Symbol(remote.name), sp.Symbol(f"gL{i}"))
                 cunit = _unit_of(built, real)
                 # Constraint terms should be dimensionless or have units
                 # that match the target. We record the unit but don't add
@@ -343,7 +343,7 @@ def _materialize_constrained(problem, candidate: SystemCandidate) -> PhysicalMod
             else:
                 built = _TERM_BUILDERS[t.name](
                     sp.Symbol(pos[i].name), sp.Symbol(vel[i].name),
-                    sp.Symbol(inp[i].name), sp.Symbol(remote.name))
+                    sp.Symbol(inp[i].name), sp.Symbol(remote.name), sp.Symbol(f"gL{i}"))
                 term_unit = _unit_of(built, real)
                 # The emitted term is (q / tau_slow) * built, so q must carry
                 # the extra time factor. Declaring punit as target/term -- as
@@ -425,7 +425,7 @@ def _materialize_multiscale(problem, candidate: SystemCandidate,
                 # Fast variable: include tau_fast scaling
                 built = _TERM_BUILDERS[t.name](
                     sp.Symbol(pos[i].name), sp.Symbol(vel[i].name),
-                    sp.Symbol(inp[i].name), sp.Symbol(remote.name))
+                    sp.Symbol(inp[i].name), sp.Symbol(remote.name), sp.Symbol(f"gL{i}"))
                 # Scale the term by 1/tau_fast to make the fast dynamics
                 # have the correct time constant
                 term_unit = _unit_of(built, real)
@@ -451,7 +451,7 @@ def _materialize_multiscale(problem, candidate: SystemCandidate,
                 # Slow variable: include tau_slow scaling
                 built = _TERM_BUILDERS[t.name](
                     sp.Symbol(pos[i].name), sp.Symbol(vel[i].name),
-                    sp.Symbol(inp[i].name), sp.Symbol(remote.name))
+                    sp.Symbol(inp[i].name), sp.Symbol(remote.name), sp.Symbol(f"gL{i}"))
                 term_unit = _unit_of(built, real)
                 # The emitted term is (q / tau_slow) * built, so q must carry
                 # the extra time factor. Declaring punit as target/term -- as
@@ -475,7 +475,7 @@ def _materialize_multiscale(problem, candidate: SystemCandidate,
                 # Unlabeled variable: default to slow (tau_slow)
                 built = _TERM_BUILDERS[t.name](
                     sp.Symbol(pos[i].name), sp.Symbol(vel[i].name),
-                    sp.Symbol(inp[i].name), sp.Symbol(remote.name))
+                    sp.Symbol(inp[i].name), sp.Symbol(remote.name), sp.Symbol(f"gL{i}"))
                 term_unit = _unit_of(built, real)
                 # The emitted term is (q / tau_slow) * built, so q must carry
                 # the extra time factor. Declaring punit as target/term -- as

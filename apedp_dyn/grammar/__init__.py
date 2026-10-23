@@ -22,6 +22,7 @@ from apedp_dyn.grammar.mechanical_grammar import (
     materialize,
     problem_symbol_units,
     prune_admissible,
+    saturation_candidate,
     select_by_train_loss,
     validate,
 )
@@ -108,6 +109,7 @@ __all__ = [
     "op_temporal_integral",
     "problem_symbol_units",
     "prune_admissible",
+    "saturation_candidate",
     "select_by_train_loss",
     "validate",
 ]

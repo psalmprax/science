@@ -576,6 +576,13 @@ fn subtree_contains(dag: &SharedDag, idx: usize, op: Op, seen: &mut HashMap<usiz
 /// every unique node is still evaluated once; only the top `top_k` pairs
 /// are materialised into formula strings. The cap is an explicit caller
 /// budget, not a validity verdict.
+///
+/// A second family covers saturating rational laws, `y ≈ slope*x/(c+x) +
+/// intercept` with a **fitted** half-saturation `c > 0` (Langmuir
+/// `q_max*K*p/(1+K*p)`, Michaelis–Menten). That interior constant is not a
+/// DAG leaf (`Op::Const` is integer-only), so the existing exp-denominator
+/// shortlist cannot express it; here `c` is searched on a log grid and
+/// refined by golden-section. Both families compete for the same `top_k`.
 pub fn search_rational_pairs(
     vars: &[Vec<f64>],
     target: &[f64],
@@ -706,17 +713,168 @@ pub fn search_rational_pairs(
         }
     }
 
+    // ── Saturating rational family (Langmuir / Michaelis-Menten) ──────────
+    // For a fixed c the readout in (slope, intercept) is linear, so each trial
+    // costs one O(n) pass; the search is 1-D and stays inside the same heap.
+    let mut formula_overrides: HashMap<usize, String> = HashMap::new();
+
+    fn saturating_fit(
+        x: &[f64],
+        y: &[f64],
+        c: f64,
+        mean_y: f64,
+    ) -> Option<(f64, f64, f64)> {
+        if !(c.is_finite() && c > 0.0) {
+            return None;
+        }
+        let n = x.len();
+        let mut mean_b = 0.0f64;
+        for i in 0..n {
+            let den = c + x[i];
+            if !x[i].is_finite() || !y[i].is_finite() || !den.is_finite() || den.abs() <= 1e-12
+            {
+                return None;
+            }
+            let b = x[i] / den;
+            if !b.is_finite() || b.abs() > 1e6 {
+                return None;
+            }
+            mean_b += b;
+        }
+        if n < 6 {
+            return None;
+        }
+        mean_b /= n as f64;
+        let mut cov = 0.0f64;
+        let mut vb = 0.0f64;
+        for i in 0..n {
+            let db = x[i] / (c + x[i]) - mean_b;
+            cov += db * (y[i] - mean_y);
+            vb += db * db;
+        }
+        if vb <= 1e-15 {
+            return None;
+        }
+        let slope = cov / vb;
+        let intercept = mean_y - slope * mean_b;
+        let mut sse = 0.0f64;
+        for i in 0..n {
+            let e = y[i] - (slope * (x[i] / (c + x[i])) + intercept);
+            sse += e * e;
+        }
+        if sse.is_finite() {
+            Some((slope, intercept, sse))
+        } else {
+            None
+        }
+    }
+
+    for (vi, x) in vars.iter().enumerate() {
+        if x.len() != n {
+            continue;
+        }
+        let mut abs: Vec<f64> = x.iter().filter(|v| v.is_finite()).map(|v| v.abs()).collect();
+        if abs.len() < 6 {
+            continue;
+        }
+        abs.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
+        let scale = abs[abs.len() / 2];
+        if !(scale.is_finite() && scale > 0.0) {
+            continue;
+        }
+        let lo = (scale * 1e-3).ln();
+        let hi = (scale * 1e3).ln();
+        let mut best: Option<(f64, f64)> = None; // (sse, c)
+        for k in 0..48 {
+            let c = (lo + (hi - lo) * (k as f64) / 47.0).exp();
+            if let Some((_, _, sse)) = saturating_fit(x, target, c, mean_y) {
+                if best.map(|(s, _)| sse < s).unwrap_or(true) {
+                    best = Some((sse, c));
+                }
+            }
+        }
+        let Some((_, c0)) = best else { continue };
+
+        // Golden-section on log(c): refine inside one grid cell's neighbourhood.
+        let phi = 0.618_033_988_749_894_9_f64;
+        let sse_at = |c: f64| {
+            saturating_fit(x, target, c, mean_y)
+                .map(|t| t.2)
+                .unwrap_or(f64::INFINITY)
+        };
+        let mut a = (c0 / 3.0).ln();
+        let mut b = (c0 * 3.0).ln();
+        let mut x1 = b - phi * (b - a);
+        let mut x2 = a + phi * (b - a);
+        let mut f1 = sse_at(x1.exp());
+        let mut f2 = sse_at(x2.exp());
+        for _ in 0..32 {
+            if f1 < f2 {
+                b = x2;
+                x2 = x1;
+                f2 = f1;
+                x1 = b - phi * (b - a);
+                f1 = sse_at(x1.exp());
+            } else {
+                a = x1;
+                x1 = x2;
+                f1 = f2;
+                x2 = a + phi * (b - a);
+                f2 = sse_at(x2.exp());
+            }
+        }
+        let c_best = (0.5 * (a + b)).exp();
+        let Some((slope, intercept, sse)) = saturating_fit(x, target, c_best, mean_y) else {
+            continue;
+        };
+        let mse = sse / (n as f64);
+        let r2 = if var_y > 1e-15 {
+            1.0 - (mse / var_y)
+        } else {
+            1.0
+        };
+        if !r2.is_finite() {
+            continue;
+        }
+        // The fitted `c` has no DAG leaf (`Op::Const` is integer-only), so the
+        // handle points at the variable and the formula carries the fitted
+        // half-saturation constant.
+        let var_node = dag.intern(DagNode {
+            op: Op::Var(vi),
+            children: vec![],
+        });
+        let name = var_names.get(vi).cloned().unwrap_or_else(|| format!("v{vi}"));
+        formula_overrides.insert(
+            var_node,
+            format!("{slope:.6} * ({name} / ({c_best:.6} + {name})) + {intercept:.6}"),
+        );
+        if heap.len() < keep || r2 > heap.peek().map(|s| s.0.r2).unwrap_or(f64::NEG_INFINITY) {
+            heap.push(std::cmp::Reverse(Scored {
+                r2,
+                mse,
+                slope,
+                intercept,
+                root: var_node,
+            }));
+            if heap.len() > keep {
+                heap.pop();
+            }
+        }
+    }
+
     let mut top: Vec<Scored> = heap.into_iter().map(|s| s.0).collect();
     top.sort_by(|a, b| b.r2.partial_cmp(&a.r2).unwrap_or(Ordering::Equal));
     top.into_iter()
         .map(|s| EnumerationCandidate {
             node_idx: s.root,
-            formula: format!(
-                "{:.4} * ({}) + {:.4}",
-                s.slope,
-                dag.describe_node(s.root, var_names),
-                s.intercept
-            ),
+            formula: formula_overrides.get(&s.root).cloned().unwrap_or_else(|| {
+                format!(
+                    "{:.4} * ({}) + {:.4}",
+                    s.slope,
+                    dag.describe_node(s.root, var_names),
+                    s.intercept
+                )
+            }),
             slope: s.slope,
             intercept: s.intercept,
             r2: s.r2,
@@ -926,6 +1084,50 @@ mod tests {
                 .any(|c| c.r2 > 0.999 && c.formula.contains(token));
             assert!(hit, "token {token} not recovered; best: {}", res[0].formula);
         }
+    }
+
+    #[test]
+    fn test_rational_search_reaches_langmuir_saturating_law() {
+        // Langmuir q = q_max*K*p/(1+K*p) with q_max=40, K=1.6 (c = 1/K = 0.625).
+        // The exp-denominator shortlist cannot express a fitted c; the
+        // saturating family must reach it inside the same top-k budget.
+        let n = 200usize;
+        let x: Vec<f64> = (0..n)
+            .map(|i| 0.1 + 2.4 * (i as f64) / ((n - 1) as f64))
+            .collect();
+        let y: Vec<f64> = x.iter().map(|&p| 40.0 * 1.6 * p / (1.0 + 1.6 * p)).collect();
+        let res = search_rational_pairs(
+            &[x],
+            &y,
+            &["p".to_string()],
+            false,
+            false,
+            false,
+            false,
+            2,
+            8,
+        );
+        let hit = res
+            .iter()
+            .find(|c| c.formula.contains(" / (") && !c.formula.contains("exp(") && c.r2 > 0.9999)
+            .unwrap_or_else(|| {
+                panic!(
+                    "no saturating candidate: {:?}",
+                    res.iter().map(|c| (&c.formula, c.r2)).collect::<Vec<_>>()
+                )
+            });
+        assert!(
+            (hit.slope - 40.0).abs() / 40.0 < 0.01,
+            "recovered q_max={} (formula {})",
+            hit.slope,
+            hit.formula
+        );
+        assert!(
+            hit.intercept.abs() < 0.05,
+            "recovered intercept={} (formula {})",
+            hit.intercept,
+            hit.formula
+        );
     }
 
     #[test]

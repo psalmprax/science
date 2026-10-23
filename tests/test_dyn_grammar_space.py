@@ -19,7 +19,10 @@ def _btc():
 
 def test_registry_and_combos():
     assert set(G.PRIMITIVES) == {"r_t", "V_t"}
-    assert set(G.BINARY_OPS) == {"+", "-", "*", "/"}
+    assert set(G.BINARY_OPS) == {"+", "-", "*", "/", "min", "max"}
+    assert {"sqrt", "tanh"} <= set(G.UNARY_OPS)
+    assert G.check_sqrt(np.array([0.0, 4.0])).ok
+    assert not G.check_sqrt(np.array([0.0, -1.0])).ok
     assert set(G.COMBOS) == {"M_P", "M_RV", "M_A", "M_P+RV", "M_P+A", "M_RV+A", "M_P+RV+A"}
     assert G.COMBOS["M_P+RV+A"] == ("H-P", "H-RV", "H-A")
 

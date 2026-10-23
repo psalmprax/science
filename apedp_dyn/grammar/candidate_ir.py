@@ -20,7 +20,11 @@ TERM_FAMILIES: dict[str, tuple[str, ...]] = {
     "forcing": ("u",),
     "coupling": ("x_v", "xr", "dxr"),
     "constant": ("one",),
-    "saturation": ("sat_x", "sat_v", "sat_u", "inv_x2", "u_relax"),
+    # `langmuir_bind`/`hill2_bind` are dimensionally scaled forms: the reference
+    # level travels in `Term.scale_parameter` (state units), never as a bare
+    # `1 + X` add. `sat_*`/`inv_x2` remain dimensionless-only vocabulary.
+    "saturation": ("sat_x", "sat_v", "sat_u", "inv_x2", "u_relax",
+                   "langmuir_bind", "hill2_bind"),
 }
 
 TERM_FAMILY_OF: dict[str, str] = {
@@ -30,10 +34,17 @@ TERM_FAMILY_OF: dict[str, str] = {
 
 @dataclass(frozen=True)
 class Term:
-    """One candidate term: grammar-vocabulary name + owning parameter name."""
+    """One candidate term: grammar-vocabulary name + owning parameter name.
+
+    `scale_parameter` names a second fitted parameter with the state's units,
+    used only by dimensionally-scaled saturation terms (`langmuir_bind`,
+    `hill2_bind`). It is part of the candidate's parameter set: the fitter
+    estimates it and provenance records it.
+    """
 
     name: str
     parameter: str
+    scale_parameter: str | None = None
 
     @property
     def family(self) -> str:
@@ -57,7 +68,12 @@ class CandidateDynamics:
         return tuple(t.name for t in self.terms)
 
     def parameter_names(self) -> tuple[str, ...]:
-        return tuple(t.parameter for t in self.terms)
+        out: list[str] = []
+        for t in self.terms:
+            out.append(t.parameter)
+            if t.scale_parameter is not None:
+                out.append(t.scale_parameter)
+        return tuple(out)
 
 
 @dataclass(frozen=True)

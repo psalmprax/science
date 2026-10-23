@@ -33,12 +33,14 @@ GRAMMAR_SPACE_PATH = BASE_DIR / "apedp_dyn" / "sandbox" / "grammar_space.py"
 
 # Cryptographic Pinned Registry for All Frozen Records (drift fails loudly)
 PINNED_FROZEN_REGISTRY: dict[str, str] = {
-    # v1_9 re-mint (2026-10-21): FLAW-08 re-anchor bootstrap (adjudicate.py) and
-    # FLAW-07 monotone C6 evidence set (claim_ladder.py) — rationale recorded in
-    # APEDPX_FROZEN_v1_9.json::remint_log.
+    # v1_10 re-mint (2026-10-23): grammar-space expansion — H-SQRTV hypothesis and
+    # sqrt/tanh/min/max operator declarations in grammar_space.py, saturating-
+    # rational term families in candidate_ir.py; rationale recorded in
+    # APEDPX_FROZEN_v1_10.json::remint_log. Referee hashes unchanged from v1_9
+    # (FLAW-08 re-anchor bootstrap, FLAW-07 monotone C6 evidence set).
     "apedp_dyn/epistemic/adjudicate.py": "13691be2e15053658f00f4ba7b925ae5fe29c7f72812b072dcc2964ccce1b931",
     "apedp_dyn/epistemic/claim_ladder.py": "2e4de9284910f48ea40d38b094c61e3e1d18b4a4fed579d614d2ae2aae10543b",
-    "apedp_dyn/sandbox/grammar_space.py": "b9b669521328bdbf5e6cc476634629211f891d8c9909f3037eee02dc09e78632",
+    "apedp_dyn/sandbox/grammar_space.py": "1e348ccfbfb38de76084cc65235ad84d0468c5b0a6dcba971f4c41e8a890c5f0",
     "benchmarks/l2_control_freeze.json": "ec117721d1cd9da0b09950bb9b5894110c2411475dfec073b684477c33e96872",
 }
 

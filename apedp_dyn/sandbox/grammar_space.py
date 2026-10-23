@@ -24,9 +24,9 @@ import pandas as pd
 
 PRIMITIVES = ("r_t", "V_t")
 EXTENDED_PRIMITIVES = ("r_t", "V_t", "OFI_t")
-UNARY_OPS = ("abs", "log", "zscore", "rank")
+UNARY_OPS = ("abs", "log", "zscore", "rank", "sqrt", "tanh")
 ROLLING_OPS = ("RM_w",)
-BINARY_OPS = ("+", "-", "*", "/")
+BINARY_OPS = ("+", "-", "*", "/", "min", "max")
 MIN_HISTORY = 60
 RANK_WINDOW = 40
 
@@ -75,6 +75,13 @@ def check_div(x: np.ndarray, y: np.ndarray) -> DomainCheck:
     if bool(np.all(y[np.isfinite(y)] != 0)):
         return DomainCheck(True)
     return DomainCheck(False, "division requires nonzero divisor (spec §18)")
+
+
+def check_sqrt(x: np.ndarray) -> DomainCheck:
+    x = np.asarray(x, dtype=float)
+    if bool(np.all(x[np.isfinite(x)] >= 0)):
+        return DomainCheck(True)
+    return DomainCheck(False, "sqrt requires x>=0 on finite entries (spec §18)")
 
 
 def check_zscore(x: np.ndarray) -> DomainCheck:
@@ -140,6 +147,11 @@ def _feat_sig(p: pd.DataFrame) -> np.ndarray:
     return np.asarray(np.abs(p["r"].to_numpy(float)))
 
 
+def _feat_sqrtV(p: pd.DataFrame) -> np.ndarray:
+    """Concave level-volume response: diminishing marginal activity."""
+    return np.asarray(np.sqrt(np.maximum(p["V"].to_numpy(float), 0.0)))
+
+
 def _feat_asym(p: pd.DataFrame) -> np.ndarray:
     """Asymmetric volatility: baseline absolute return + downside panic interaction."""
     r = p["r"].to_numpy(float)
@@ -203,6 +215,9 @@ HYPOTHESES: dict[str, HypothesisSpec] = {
                           "composite predictive representation, not automatically a mechanism.", _feat_HA),
     "H-LOG": HypothesisSpec("H-LOG", "y=a+blog(V_t)", ("logV",),
                             "level-volume representation.", _feat_logV),
+    "H-SQRTV": HypothesisSpec("H-SQRTV", "y=a+b*sqrt(V_t)", ("sqrtV",),
+                              "concave level-volume response (diminishing marginal activity).",
+                              _feat_sqrtV),
 
     # ── Advanced Microstructure, Memory & Gated Formulations ──
     "H-OFI": HypothesisSpec("H-OFI", "y=a+b*OFI_t", ("ofi",),
@@ -223,6 +238,7 @@ COMBOS = {
 
 EXTENDED_COMBOS = {
     **COMBOS,
+    "M_P+SQRTV": ("H-P", "H-SQRTV"),
     "M_P+ASYM": ("H-P", "H-ASYM"),
     "M_ASYM+OFI": ("H-ASYM", "H-OFI"),
     "M_SQZ+HURST": ("H-SQZ", "H-HURST"),
@@ -234,7 +250,7 @@ def build_features(panel: pd.DataFrame) -> dict[str, np.ndarray]:
     """Causal feature columns for one asset panel (Level-0 domain-checked)."""
     return {
         "sig": _feat_sig(panel), "rankV": _feat_rankV(panel),
-        "HA": _feat_HA(panel), "logV": _feat_logV(panel),
+        "HA": _feat_HA(panel), "logV": _feat_logV(panel), "sqrtV": _feat_sqrtV(panel),
         "asym": _feat_asym(panel), "ofi": _feat_ofi(panel),
         "hurst": _feat_hurst(panel), "sqz": _feat_sqz(panel),
         "snr": _feat_master_snr(panel),

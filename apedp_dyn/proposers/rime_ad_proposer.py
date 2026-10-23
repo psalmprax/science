@@ -12,6 +12,13 @@ Autonomous selection protocol:
 2. Generates candidate hypotheses across active representations.
 3. Ranks candidates on dev data by Bayesian Information Criterion (BIC / MDL).
 4. Emits standardized `CandidateProposal` objects with out-of-sample `compute_score` callables.
+
+Representation 8 adds the saturating rational family with a *fitted* half-
+saturation constant -- `y = q_max * x / (c + x) + offset` (Langmuir isotherm,
+Michaelis-Menten) and its cooperative Hill n=2 form. The native rational-pair
+search enumerates DAG nodes with integer constants only, so a two-parameter law
+like Langmuir is outside its emit set; here `c` is fitted by a golden-section
+search on log(c) with the affine readout solved exactly at each trial.
 """
 from __future__ import annotations
 
@@ -344,7 +351,152 @@ class RimeAdProposer(ProposerBase):
         except Exception:  # noqa: BLE001, S110 - optional probe may fail silently by design (best-effort stage skip)  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             pass
 
+        # Representation 8: fitted saturating rational (Langmuir / Michaelis-Menten)
+        # and cooperative Hill n=2. The native rational-pair search can only
+        # combine DAG nodes with integer constants, so a two-parameter law whose
+        # half-saturation constant is free is outside its reachable set; this
+        # representation fits that interior constant directly.
+        for hill_n, cid in ((1.0, "saturating_rational"), (2.0, "hill_rational")):
+            cand = self._fit_saturating_rational(x, y, feat_name, hill_n, cid)
+            if cand is not None:
+                candidates.append(cand)
+
         return candidates
+
+    def _fit_saturating_rational(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        feat_name: str,
+        hill_n: float,
+        candidate_id: str,
+    ) -> CandidateProposal | None:
+        """Fit `y = q_max * x^n / (c^n + x^n) + offset` with a free `c`.
+
+        For fixed `c` the readout in `(q_max, offset)` is linear, so the fit is a
+        1-D search over `log(c)` (grid + golden-section refinement) with an exact
+        least-squares solve at each trial -- the separable structure that makes
+        Langmuir (`n=1`, `c = 1/K`) and Michaelis-Menten reachable without
+        handing the proposer the answer. `n=2` is the cooperative Hill form.
+        """
+        x = np.asarray(x, dtype=float)
+        y = np.asarray(y, dtype=float)
+        mask = np.isfinite(x) & np.isfinite(y)
+        if int(mask.sum()) < 6:
+            return None
+        xs, ys = x[mask], y[mask]
+        scale = float(np.median(np.abs(xs)))
+        if not np.isfinite(scale) or scale <= 0.0:
+            return None
+
+        def basis(c: float) -> np.ndarray | None:
+            if not (np.isfinite(c) and c > 0.0):
+                return None
+            with np.errstate(all="ignore"):
+                if hill_n == 1.0:
+                    den = c + xs
+                    if np.any(np.abs(den) <= 1e-12):
+                        return None
+                    b = xs / den
+                else:
+                    xn = xs ** hill_n
+                    b = xn / (c ** hill_n + xn)
+            if not np.all(np.isfinite(b)) or float(np.var(b)) <= 1e-15:
+                return None
+            return b
+
+        def solve(c: float) -> tuple[float, float, float] | None:
+            b = basis(c)
+            if b is None:
+                return None
+            design = np.column_stack([b, np.ones_like(b)])
+            coef, _res, _rank, _sv = np.linalg.lstsq(design, ys, rcond=None)
+            resid = ys - design @ coef
+            sse = float(resid @ resid)
+            if not np.isfinite(sse):
+                return None
+            return sse, float(coef[0]), float(coef[1])
+
+        lo, hi = np.log(scale * 1e-3), np.log(scale * 1e3)
+        grid = np.exp(np.linspace(lo, hi, 48))
+        best: tuple[float, float] | None = None  # (sse, c)
+        for c in grid:
+            out = solve(float(c))
+            if out is not None and (best is None or out[0] < best[0]):
+                best = (out[0], float(c))
+        if best is None:
+            return None
+
+        phi = (np.sqrt(5.0) - 1.0) / 2.0
+        a, b = np.log(best[1] / 3.0), np.log(best[1] * 3.0)
+        x1, x2 = b - phi * (b - a), a + phi * (b - a)
+
+        def sse_at(log_c: float) -> float:
+            out = solve(float(np.exp(log_c)))
+            return out[0] if out is not None else float("inf")
+
+        f1, f2 = sse_at(x1), sse_at(x2)
+        for _ in range(40):
+            if f1 < f2:
+                b, x2, f2 = x2, x1, f1
+                x1 = b - phi * (b - a)
+                f1 = sse_at(x1)
+            else:
+                a, x1, f1 = x1, x2, f2
+                x2 = a + phi * (b - a)
+                f2 = sse_at(x2)
+        c_best = float(np.exp(0.5 * (a + b)))
+        fitted = solve(c_best)
+        if fitted is None:
+            return None
+        sse, q_max, offset = fitted
+        var_y = float(np.var(ys))
+        if var_y <= 1e-15:
+            return None
+        r2 = 1.0 - sse / (var_y * len(ys))
+        # A saturating form with an amplitude at the noise floor carries no law.
+        if not np.isfinite(r2) or r2 <= 0.95:
+            return None
+        if abs(q_max) <= 1e-12 * max(float(np.max(np.abs(ys))), 1e-12):
+            return None
+
+        def _scorer(df: pd.DataFrame) -> np.ndarray:
+            xv = df[feat_name].to_numpy(dtype=float)
+            with np.errstate(all="ignore"):
+                if hill_n == 1.0:
+                    out = q_max * xv / (c_best + xv) + offset
+                else:
+                    xn = xv ** hill_n
+                    out = q_max * xn / (c_best ** hill_n + xn) + offset
+            return np.asarray(out, dtype=float)
+
+        if hill_n == 1.0:
+            formula = (f"{q_max:.6g} * ({feat_name} / ({c_best:.6g} + {feat_name})) "
+                       f"+ {offset:.6g}")
+        else:
+            formula = (f"{q_max:.6g} * ({feat_name}**2 / ({c_best:.6g}**2 + "
+                       f"{feat_name}**2)) + {offset:.6g}")
+        return CandidateProposal(
+            proposer_id=PROPOSER_ID,
+            candidate_id=candidate_id,
+            formula=formula,
+            strategy_archetype=self._strategy_archetype,
+            declared_scale_invariant=False,
+            declared_nominal_dependencies=(feat_name,),
+            compute_score=_scorer,
+            parameters={
+                "q_max": q_max,
+                "half_saturation": c_best,
+                "offset": offset,
+                "hill_n": hill_n,
+            },
+            metadata={
+                "r2": r2,
+                "method": "saturating_rational_golden_section",
+                "interpretation": ("Langmuir / Michaelis-Menten" if hill_n == 1.0
+                                   else "cooperative Hill (n=2)"),
+            },
+        )
 
     def _propose_multivariate(
         self, df: pd.DataFrame, feature_cols: list[str], y: np.ndarray

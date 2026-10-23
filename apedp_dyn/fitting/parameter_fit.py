@@ -112,17 +112,34 @@ def _warm_start(problem, model0):
         target = CubicSpline(t, Y[:, col_of_state[eq.state]]).derivative()(t)
         syms = [sp.Symbol(n) for n in order] + [sp.Symbol(n) for n in inames]
         args = [Y[:, i] for i in range(len(order))] + [U[:, i] for i in range(len(inames))]
+        # Interior reference levels (saturation scales) enter the equation
+        # nonlinearly, so differentiating for them yields an expression that
+        # still contains the parameter symbol and cannot be lambdified. Seed
+        # them from the observed state scale and hold them fixed for the
+        # linear warm start; the trajectory fit then refines them with bounds.
+        expr = eq.sympy_expr
+        scale_params = [p for p in eq_params if p.role == "scale"]
+        for p in scale_params:
+            state_col = Y[:, col_of_state[eq.state]]
+            seed = float(np.median(np.abs(state_col)))
+            if not np.isfinite(seed) or seed <= 0.0:
+                seed = 1.0
+            lo, hi = p.bounds if p.bounds is not None else (1e-9, 1e9)
+            values[p.name] = float(min(max(seed, lo), hi))
+            expr = expr.subs(sp.Symbol(p.name), values[p.name])
+        fit_params = [p for p in eq_params if p.role != "scale"]
         cols = []
-        for p in eq_params:
+        for p in fit_params:
             col = np.asarray(sp.lambdify(
-                syms, sp.diff(eq.sympy_expr, sp.Symbol(p.name)),
+                syms, sp.diff(expr, sp.Symbol(p.name)),
                 modules=["numpy"])(*args), dtype=float).ravel()
             if col.size == 1 and len(t) > 1:
                 col = np.full(len(t), col[0])
             cols.append(col)
-        coef, *_ = np.linalg.lstsq(np.column_stack(cols), target, rcond=None)
-        for p, c in zip(eq_params, coef, strict=True):
-            values[p.name] = float(c)
+        if cols:
+            coef, *_ = np.linalg.lstsq(np.column_stack(cols), target, rcond=None)
+            for p, c in zip(fit_params, coef, strict=True):
+                values[p.name] = float(c)
     missing = [p.name for p in model0.parameters if p.name not in values]
     if missing:
         # A parameter in no equation has no derivative estimate; guessing a

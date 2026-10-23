@@ -4,6 +4,58 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Grammar-space expansion: typed saturation laws, fitted interior scales, affine denominators, re-minted frozen grammar (2026-10-23)
+
+The search spaces were widened along the axis the audits kept naming — saturating
+laws whose reference level is a *fitted* constant, not a DAG leaf — without
+touching a single preregistered threshold:
+
+- **Typed saturation vocabulary (`apedp_dyn/grammar/candidate_ir.py`).** New
+  term families `langmuir_bind` (`X/(L+|X|)`) and `hill2_bind`
+  (`X²/(L²+X²)`) on the existing `saturation` family, plus `Term.scale_parameter`:
+  the reference level travels as a second fitted parameter with the state's
+  units and is included in `parameter_names()`. The dimensionless `sat_*`,
+  `inv_x2` vocabulary is unchanged.
+- **Materialization (`apedp_dyn/grammar/mechanical_grammar.py`, `proposer.py`,
+  `coupled.py`, `__init__.py`).** Term builders take the scale symbol `SX` and
+  emit `X/(SX+|X|)` / `X²/(SX²+X²)`; a candidate that names a scaled term
+  without its scale parameter is rejected at construction rather than fitted as
+  a bare `1 + X` add (a gate-1 dimensional violation).
+- **Fitted interior scales (`apedp_dyn/model/variables.py`,
+  `apedp_dyn/fitting/parameter_fit.py`).** `Parameter.role` distinguishes a
+  `"rate"` (multiplies a term) from a `"scale"` (interior reference level).
+  The linear warm start cannot differentiate the equation for a scale — the
+  derivative still contains the symbol and will not lambdify — so warm start
+  seeds it from the observed state scale (clamped to its bounds) and holds it
+  fixed, and the bounded trajectory fit refines it afterwards.
+- **Native search (`rust/apedp-kernel/src/rime/enumerate.rs`).**
+  `search_rational_pairs` gains the saturating family `slope*x/(c+x)+intercept`
+  with fitted `c > 0`: log-grid shortlist plus golden-section refinement, one
+  O(n) linear readout per trial, competing for the same `top_k` and formula
+  budget as the existing exp-denominator family. Regression test
+  `test_rational_search_reaches_langmuir_saturating_law` pins reachability.
+- **Proposer (`apedp_dyn/proposers/rime_ad_proposer.py`).** `_fit_saturating_rational`
+  adds the Langmuir/Michaelis–Menten/Hill representation to the RIME-AD fan-out,
+  ranked by the same dev-only BIC/MDL rule; the proposer still never promotes
+  and never sees holdout.
+- **Frozen trading grammar expanded and re-minted
+  (`apedp_dyn/sandbox/grammar_space.py`).** New hypothesis `H-SQRTV`
+  (`y=a+b*sqrt(V_t)`, concave level-volume response) with `M_P+SQRTV` in
+  `EXTENDED_COMBOS`; declared operators widened to `abs`/`log`/`zscore`/`rank`/
+  `sqrt`/`tanh` and `+`/`-`/`*`/`/`/`min`/`max`, with `check_sqrt` as the domain
+  guard (sqrt requires `x >= 0` on finite entries). Hypothesis/operator
+  declarations are part of the frozen grammar fingerprint, so this is a mint,
+  not an edit: **`APEDPX_FROZEN_v1_10.json` supersedes v1_9** with a recorded
+  `remint_log` for `grammar_space.py` and `grammar/candidate_ir.py`,
+  `blind_benchmark.FROZEN_RECORD` and the `frozen_spec.py` pinned hash
+  re-pointed. Thresholds, env pins and blind-case expectations are unchanged;
+  no blind case imports the changed grammar files. Verified: 15/15 guard files
+  match, 9/9 registry pins match, and `tests/test_dyn_blind.py` +
+  `tests/test_dyn_grammar_space.py` + the two saturation-grammar suites pass
+  33/33.
+
+---
+
 ## [Unreleased] — Mutation coverage for the birth-fit predicate and the harness entry points; warm-run cache (2026-10-23)
 
 The battery now kills the exponent and enforcement mechanisms at the predicate
