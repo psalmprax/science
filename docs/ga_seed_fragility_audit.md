@@ -86,12 +86,15 @@ and is read against a control below, not trusted on its own.
 | Case | Holdout R2 median (on / off) | R2 min (on / off) | Recovered >=0.99 | Evals median (on / off) |
 |---|---|---|---|---|
 | Rabi | 1.000000 / 1.000000 | 0.999892 / 0.999892 | 10/10 / 10/10 | 2301 / 2016 (+14.2%) |
-| Brus | 0.682396 / 0.752243 | 0.605910 / 0.287022 | 0/10 / 0/10 | 2610 / 1984 (+31.5%) |
+| Brus | -2.747591 / -1.528032 | -4.060335 / -23.386949 | 0/10 / 0/10 | 2610 / 1984 (+31.5%) |
 
 Neither arm changes a Gate-4 verdict: Rabi is identical, and Brus is the frozen
-GA overfit that fails in both (the birth fit raises the worst seed from 0.287 to
-0.606 but lowers the median). The cost at this budget is a 14-32% evaluation
-increase.
+GA overfit that fails in both (the birth fit raises the worst seed from -23.39 to
+-4.06 but lowers the median, -1.53 to -2.75). The cost at this budget is a
+14-32% evaluation increase. These R2 values are the corrected metric
+(1 - SSE/SST); the first artifact used `1 - var(residual)/var(y)`, which credits
+an offset formula with the bias it fails to reproduce and made Brus look as if
+it were near R2 = 0.7. See the metric note below.
 
 **Cell 2 - External-60 native adapter** (frozen 300x50x4 config, all 60
 problems, seed 42, scored on the PUBLIC validation grid only):
@@ -102,7 +105,7 @@ problems, seed 42, scored on the PUBLIC validation grid only):
 | Total evaluations | 3,774,349 | 3,389,293 | +11.4% |
 | Total wall | 17.7 s | 14.2 s | +23.9% this pair (+9.8% in the repeat pair; not resolved, see control) |
 | Median validation MSE | 0.000634 | 0.001650 | -61.6% (scale-mixed median) |
-| Median validation R2 | 0.99954 | 0.99935 | +0.00019 |
+| Median validation R2 | 0.99904 | 0.99861 | +0.00043 |
 
 Per-problem paired comparison (same problem, same config): **23 better with the
 birth fit, 32 better without, 5 tied or non-finite**; median paired MSE ratio
@@ -142,3 +145,71 @@ new tuning surface with no measurement behind it.
 Artifact: `benchmarks/pow_birth_fit_benchmark_results.json`. Reproduce with
 `benchmarks/pow_birth_fit_benchmark.py --label on|off` on each build, then
 `--merge`.
+
+## Birth-fitting trig frequency/phase templates: measured, not shipped
+
+**Question.** The Pow exponent is fitted where the candidate is born. The seeded
+trig template (`sin|cos(f*x + p)`) has the same problem: a candidate scored with
+a random frequency/phase loses the top-k race, so the pair is rarely refined.
+Does applying the same treatment buy anything, and what does it do to the Planck
+must-fail pins?
+
+**Method.** Two variants, each against the shipped kernel (`23a50d2e`):
+`full` fits both the plain `sin|cos(f*x)` and phase-bearing
+`sin|cos(f*x + p)` seeded roots; `phase-only` fits only the phase-bearing form
+(the plain form already recovers 11/11 at its pin). Both are root-only: the
+seeded template is the whole tree, and fitting nested trig calls paid polish
+cost on much of the initial population for no measured gain.
+
+**Planck** (must-fail pin config 2x30x15, seeds 0-9 plus the pinned 42, correct
+R2 = 1 - SSE/SST):
+
+| Metric | shipped | full | phase-only |
+|---|---|---|---|
+| Train MSE median | 0.005049 | 0.008198 | 0.008199 |
+| Holdout R2 median | -31.52 | -76.35 | -44.89 |
+| Holdout R2 max | 0.132 | **0.546** | **-0.598** |
+| Extended (0.05-12) R2 median | -0.525 | -2.025 | -1.204 |
+| Extended R2 max | 0.967 | **0.975** | **0.386** |
+| Seeds with holdout R2 < 0.5 | 11/11 | 10/11 | 11/11 |
+| Seeds with extended R2 < 0.9 | 10/11 | 9/11 | 11/11 |
+| Evals median | 4,578 | 11,948 (+161%) | 11,291 (+147%) |
+
+The full variant makes the two Planck must-fail pins FAIL at the pinned seed 42
+(holdout 0.546 > 0.5, extended 0.975 > 0.9). It is not a Planck recovery -- the
+recovered form is a nested-trigonometric contraption (`nested_trigonometric`
+family, amplitude ~110 against data max ~0.5) -- but the numeric no-transfer
+claim those pins encode is no longer true at that seed. The phase-only variant
+keeps every seed below both ceilings, making the no-transfer margin stronger
+than shipped, at the same ~1.5x evaluation cost.
+
+**Trig capability** (pin config 100x25x2, 11 seeds; small 2x30x15, 5 seeds):
+
+| Target | shipped | full | phase-only |
+|---|---|---|---|
+| `sin(2x)` exact (pin / small) | 11/11, 5/5 | 11/11, 5/5 | 10/11, 4/5 |
+| `2cos(1.3x)` exact (pin / small) | 11/11, 5/5 | 11/11, 5/5 | 8/11, 1/5 |
+| `3sin(1.7x + 0.4)` exact (pin / small) | 1/11, 0/5 | **3/11, 1/5** | **3/11, 1/5** |
+| phase-shifted MSE median | 5.29e-6 | **3.66e-7** | 1.76e-7 |
+| Evaluations (phase cell) | 9,049 | 14,758 (+63%) | 13,850 (+53%) |
+
+**Decision: neither variant shipped.** The full treatment triples the Planck
+evaluation count, worsens both Planck medians, and breaks two must-fail pins for
+no Planck gain; its only capability gain is the phase-shifted cell. The
+phase-only variant protects the pins but costs plain-template recovery (cos
+11/11 -> 8/11 at the pin, 5/5 -> 1/5 at the small budget) -- it is not a free
+narrowing. A 1/11 -> 3/11 gain does not justify either trade. The kernel is
+reverted to `23a50d2e`; `cargo test --lib` is 196 and the Planck/trig pins are
+green on the reverted build.
+
+Artifacts: `benchmarks/trig_birth_fit_planck_results.json` (full) and
+`benchmarks/trig_birth_fit_planck_phase_only_results.json`; harness
+`benchmarks/trig_birth_fit_planck_benchmark.py` (`--label before|after` per
+build, `--merge`, `--recompute`).
+
+**Metric note (both benchmark scripts).** `_r2` was computed as
+`1 - var(residual)/var(y)`, which subtracts the residual mean and credits an
+offset formula with the bias it fails to reproduce. It inflated the Planck
+seed-42 candidate from R2 = 0.55 to 0.96 and the Brus GA rows from negative to
+~0.7. Fixed to `1 - SSE/SST`; both artifacts were recomputed from their recorded
+formulas (`--recompute`), and the pow numbers above are post-fix.

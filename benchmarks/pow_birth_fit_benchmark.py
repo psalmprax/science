@@ -82,6 +82,12 @@ def _kernel_sha256() -> str | None:
 
 
 def _r2(y: np.ndarray, pred: np.ndarray) -> float:
+    """Coefficient of determination: 1 - SSE/SST.
+
+    Not ``1 - var(residual)/var(y)``: subtracting the residual mean would
+    credit an offset formula with the bias it fails to reproduce. Fixed
+    2026-10-23 after that bug inflated Planck candidates by up to 0.4 R2.
+    """
     y = np.asarray(y, dtype=float)
     pred = np.asarray(pred, dtype=float)
     finite = np.isfinite(y) & np.isfinite(pred)
@@ -90,7 +96,8 @@ def _r2(y: np.ndarray, pred: np.ndarray) -> float:
     var = float(np.var(y[finite]))
     if var <= 0.0:
         return float("nan")
-    return float(1.0 - np.var(y[finite] - pred[finite]) / var)
+    sse = float(np.mean((y[finite] - pred[finite]) ** 2))
+    return float(1.0 - sse / var)
 
 
 def _mse(y: np.ndarray, pred: np.ndarray) -> float:
@@ -304,6 +311,61 @@ def _call_graph_cell() -> dict[str, Any]:
     return {"synthesis": synthesis, "landauer": landauer}
 
 
+# ── recompute (metric fix on an existing arm) ────────────────────────────────
+
+def _recompute(artifact: dict[str, Any]) -> dict[str, Any]:
+    """Recompute R2 fields from the recorded formulas with the corrected metric.
+
+    Formulas, data and seeds are deterministic; only the R2 helper was wrong,
+    so stored rows can be corrected without re-running either search.
+    """
+    from apedp.rust_bridge import RustKernelBridge
+    from benchmarks.external_60_adapters import load_public_grids
+
+    bridge = RustKernelBridge()
+    t_ho = np.arange(4.0, 8.0, 0.05)
+    r_ho = np.linspace(8.1, 14.0, 40)
+    holdouts = {
+        "rabi": (["t"], [t_ho], 0.5 - 0.5 * np.cos(2.0 * t_ho)),
+        "brus": (["R"], [r_ho], 1.74 + 2.45 * r_ho**-2 - 0.28 * r_ho**-1),
+    }
+
+    out = dict(artifact)
+    gate4: dict[str, Any] = {}
+    for case, data in artifact["gate4"].items():
+        names, xs, y_ho = holdouts[case]
+        rows = []
+        for row in data["rows"]:
+            pred = bridge.evaluate_expression(row["formula"], names, xs)
+            rows.append({**row, "holdout_r2": _r2(y_ho, pred)})
+        r2s = np.array([r["holdout_r2"] for r in rows], dtype=float)
+        summary = dict(data["summary"])
+        summary.update({
+            "r2_median": float(np.nanmedian(r2s)),
+            "r2_min": float(np.nanmin(r2s)),
+            "r2_at_or_above_0_99": int(np.sum(r2s >= 0.99)),
+        })
+        gate4[case] = {**data, "rows": rows, "summary": summary}
+    out["gate4"] = gate4
+
+    corpus = ROOT / "benchmark_corpus_external_60"
+    ext = artifact["external60"]
+    rows = []
+    for row in ext["rows"]:
+        y_val = load_public_grids(corpus, row["problem_id"])["validation.csv"][:, 1]
+        pred = bridge.evaluate_expression(row["expression"], ["x"],
+                                          [load_public_grids(corpus, row["problem_id"])["validation.csv"][:, 0]])
+        rows.append({**row, "val_mse": _mse(y_val, pred), "val_r2": _r2(y_val, pred)})
+    val_mse = np.array([r["val_mse"] for r in rows], dtype=float)
+    val_r2 = np.array([r["val_r2"] for r in rows], dtype=float)
+    summary = dict(ext["summary"])
+    summary["val_mse_median"] = float(np.nanmedian(val_mse))
+    summary["val_r2_median"] = float(np.nanmedian(val_r2))
+    out["external60"] = {**ext, "rows": rows, "summary": summary}
+    out["r2_metric_recomputed"] = True
+    return out
+
+
 # ── merge ────────────────────────────────────────────────────────────────────
 
 def _merge(on: dict[str, Any], off: dict[str, Any]) -> dict[str, Any]:
@@ -406,10 +468,18 @@ def _merge(on: dict[str, Any], off: dict[str, Any]) -> dict[str, Any]:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--merge", nargs=2, metavar=("ON", "OFF"))
+    ap.add_argument("--recompute", metavar="ARM_JSON",
+                    help="recompute R2 fields from the recorded formulas")
     ap.add_argument("--label", choices=["on", "off"])
     ap.add_argument("--out", required=True)
     ap.add_argument("--skip-external60", action="store_true")
     args = ap.parse_args()
+
+    if args.recompute:
+        arm = json.loads(Path(args.recompute).read_text())
+        Path(args.out).write_text(json.dumps(_recompute(arm), indent=2))
+        print(f"recomputed {args.out}")
+        return
 
     if args.merge:
         on = json.loads(Path(args.merge[0]).read_text())

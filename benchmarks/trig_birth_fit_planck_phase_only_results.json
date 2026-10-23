@@ -1,0 +1,250 @@
+{
+  "arms": {
+    "before": {
+      "label": "before",
+      "kernel_sha256": "23a50d2e2b6c82c083c6e0cf6639f8810902b14140c683e749b11535d2a1fdb7"
+    },
+    "after": {
+      "label": "after",
+      "kernel_sha256": "eb7506127ab67f66acf5916d1da88bd5b9aaf9d6a4899257ef2ef04c02ed0829"
+    }
+  },
+  "planck": {
+    "train_mse_median": {
+      "before": 0.005048513008206712,
+      "after": 0.008199048564463456,
+      "change": 0.0031505355562567432,
+      "relative": 0.624052181530547
+    },
+    "holdout_r2_median": {
+      "before": -31.517408680493993,
+      "after": -44.8885833433409,
+      "change": -13.371174662846904,
+      "relative": 0.42424727230580583
+    },
+    "holdout_r2_max": {
+      "before": 0.13225628465841355,
+      "after": -0.5984601673590431,
+      "change": -0.7307164520174566,
+      "relative": -5.525003623871054
+    },
+    "extended_r2_median": {
+      "before": -0.5245794463066102,
+      "after": -1.2042548818129655,
+      "change": -0.6796754355063552,
+      "relative": 1.2956577698415834
+    },
+    "extended_r2_max": {
+      "before": 0.967088042361445,
+      "after": 0.3860580187934024,
+      "change": -0.5810300235680426,
+      "relative": -0.6008036477726245
+    },
+    "evals_median": {
+      "before": 4578.0,
+      "after": 11291.0,
+      "change": 6713.0,
+      "relative": 1.466360856269113
+    },
+    "wall_seconds_median": {
+      "before": 0.011868570989463478,
+      "after": 0.032046624983195215,
+      "change": 0.020178053993731737,
+      "relative": 1.7001249781161643
+    },
+    "must_fail_counts": {
+      "holdout_lt_0_5": {
+        "before": 11,
+        "after": 11,
+        "of_seeds": 11
+      },
+      "extended_lt_0_9": {
+        "before": 10,
+        "after": 11,
+        "of_seeds": 11
+      }
+    }
+  },
+  "trig": {
+    "sin_2x": {
+      "pin": {
+        "exact_counts": {
+          "before": 11,
+          "after": 10,
+          "of_seeds": 11
+        },
+        "below_1e_5": {
+          "before": 11,
+          "after": 11
+        },
+        "mse_median": {
+          "before": 0.0,
+          "after": 0.0,
+          "change": 0.0,
+          "relative": NaN
+        },
+        "evals_median": {
+          "before": 5269.0,
+          "after": 10845.0,
+          "change": 5576.0,
+          "relative": 1.0582653254887076
+        },
+        "wall_seconds_median": {
+          "before": 0.01321578398346901,
+          "after": 0.023268532007932663,
+          "change": 0.010052748024463654,
+          "relative": 0.7606622533357199
+        }
+      },
+      "small": {
+        "exact_counts": {
+          "before": 5,
+          "after": 4,
+          "of_seeds": 5
+        },
+        "below_1e_5": {
+          "before": 5,
+          "after": 5
+        },
+        "mse_median": {
+          "before": 0.0,
+          "after": 0.0,
+          "change": 0.0,
+          "relative": NaN
+        },
+        "evals_median": {
+          "before": 4050.0,
+          "after": 5553.0,
+          "change": 1503.0,
+          "relative": 0.3711111111111111
+        },
+        "wall_seconds_median": {
+          "before": 0.009346209990326315,
+          "after": 0.009705001022666693,
+          "change": 0.00035879103234037757,
+          "relative": 0.03838893334429036
+        }
+      }
+    },
+    "cos_2_1p3x": {
+      "pin": {
+        "exact_counts": {
+          "before": 11,
+          "after": 8,
+          "of_seeds": 11
+        },
+        "below_1e_5": {
+          "before": 11,
+          "after": 9
+        },
+        "mse_median": {
+          "before": 0.0,
+          "after": 0.0,
+          "change": 0.0,
+          "relative": NaN
+        },
+        "evals_median": {
+          "before": 5890.0,
+          "after": 13317.0,
+          "change": 7427.0,
+          "relative": 1.2609507640067912
+        },
+        "wall_seconds_median": {
+          "before": 0.018069022975396365,
+          "after": 0.027386697009205818,
+          "change": 0.009317674033809453,
+          "relative": 0.5156711597797423
+        }
+      },
+      "small": {
+        "exact_counts": {
+          "before": 5,
+          "after": 1,
+          "of_seeds": 5
+        },
+        "below_1e_5": {
+          "before": 5,
+          "after": 3
+        },
+        "mse_median": {
+          "before": 5.58947434152493e-18,
+          "after": 5.795421689045645e-06,
+          "change": 5.795421689040055e-06,
+          "relative": 1036845566314.7275
+        },
+        "evals_median": {
+          "before": 2471.0,
+          "after": 9149.0,
+          "change": 6678.0,
+          "relative": 2.7025495750708215
+        },
+        "wall_seconds_median": {
+          "before": 0.010441688995342702,
+          "after": 0.018888221005909145,
+          "change": 0.008446532010566443,
+          "relative": 0.8089239216312459
+        }
+      }
+    },
+    "phase_3sin_1p7x_0p4": {
+      "pin": {
+        "exact_counts": {
+          "before": 1,
+          "after": 3,
+          "of_seeds": 11
+        },
+        "below_1e_5": {
+          "before": 6,
+          "after": 11
+        },
+        "mse_median": {
+          "before": 5.291826591609456e-06,
+          "after": 1.7554149771971728e-07,
+          "change": -5.116285093889738e-06,
+          "relative": -0.9668278061117781
+        },
+        "evals_median": {
+          "before": 9049.0,
+          "after": 13850.0,
+          "change": 4801.0,
+          "relative": 0.530555862526246
+        },
+        "wall_seconds_median": {
+          "before": 0.03027558804024011,
+          "after": 0.024818310048431158,
+          "change": -0.005457277991808951,
+          "relative": -0.18025341025764832
+        }
+      },
+      "small": {
+        "exact_counts": {
+          "before": 0,
+          "after": 1,
+          "of_seeds": 5
+        },
+        "below_1e_5": {
+          "before": 2,
+          "after": 4
+        },
+        "mse_median": {
+          "before": 0.0020970478709528948,
+          "after": 2.092175962952653e-06,
+          "change": -0.0020949556949899422,
+          "relative": -0.9990023232221199
+        },
+        "evals_median": {
+          "before": 5507.0,
+          "after": 9149.0,
+          "change": 3642.0,
+          "relative": 0.6613401125839841
+        },
+        "wall_seconds_median": {
+          "before": 0.022842418984510005,
+          "after": 0.018902987998444587,
+          "change": -0.0039394309860654175,
+          "relative": -0.17246119987278233
+        }
+      }
+    }
+  }
+}

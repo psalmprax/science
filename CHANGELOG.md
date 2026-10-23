@@ -4,6 +4,45 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Trig-template birth fitting measured and not shipped; R2 metric corrected (2026-10-23)
+
+Applying the Pow exponent's birth-fit treatment to the seeded trig template was
+measured in two variants against the shipped kernel (`23a50d2e`): `full` fits
+both `sin|cos(f*x)` and `sin|cos(f*x + p)` roots, `phase-only` fits only the
+phase-bearing form.
+
+- **Full variant: capability for cost, and it breaks the Planck pins.** The
+  phase-shifted pin improves (exact 1/11 -> 3/11; median MSE 5.29e-6 -> 3.66e-7)
+  and plain sin/cos stay 11/11, but evaluations rise ~90-115% on those cells and
+  +161% on the Planck pin budget, where both medians get worse (holdout R2
+  -31.5 -> -76.4, extended -0.52 -> -2.03). At the pinned seed 42 the GA's
+  holdout R2 moves to 0.546 and extended to 0.975, so
+  `test_native_ga_hallucinates_on_planck_while_rime_abstains` (< 0.5) and
+  `test_planck_equations_on_fresh_out_of_box_data` (< 0.9) both fail. The form
+  is still a nested-trigonometric fit, not a Planck recovery; the numeric
+  no-transfer claim the pins encode is what stopped being true.
+- **Phase-only variant: pins safe, plain recovery lost.** Every seed stays below
+  both Planck ceilings (holdout max -0.60, extended max 0.39) at ~1.5x
+  evaluations, but `2cos(1.3x)` drops from 11/11 to 8/11 at the pin config and
+  5/5 to 1/5 at the small budget, so the narrowing is not free.
+- **Not shipped.** A 1/11 -> 3/11 gain does not pay for a 2.5x evaluation
+  increase, worse Planck medians, or a plain-template regression. `genetic.rs`
+  is reverted to `23a50d2e`; `cargo test --lib` is 196 and the Planck/trig pins
+  are green on the reverted build. Both experiments remain as artifacts
+  (`benchmarks/trig_birth_fit_planck_results.json`,
+  `..._phase_only_results.json`) with the harness
+  `benchmarks/trig_birth_fit_planck_benchmark.py`.
+- **R2 metric bug fixed in both benchmark scripts.** `_r2` computed
+  `1 - var(residual)/var(y)`, which subtracts the residual mean and credits an
+  offset formula with the bias it fails to reproduce. It inflated a Planck
+  candidate from 0.55 to 0.96 and made the Brus GA rows look like R2 ~ 0.7
+  instead of negative. Corrected to `1 - SSE/SST`; both committed artifacts were
+  recomputed from their recorded formulas (`--recompute`). Corrected Brus
+  numbers: median -2.75 (on) / -1.53 (off), worst seed -4.06 / -23.39; the
+  earlier entry's 0.68 / 0.75 and 0.287 / 0.606 were metric artifacts.
+
+---
+
 ## [Unreleased] — Mutation coverage for the exponent and enforcement paths (2026-10-23)
 
 The mutation battery now covers the code added in the two preceding commits, so
@@ -61,7 +100,9 @@ grid, polish, seeds and budgets:
   validation MSE falls 61.6% (0.001650 -> 0.000634), which is an artefact of
   mixing problems of different magnitude, not a paired gain. Gate 4 does not
   move: Rabi R2 is identical (10/10 seeds >= 0.99) and Brus fails in both arms
-  (the known GA overfit; worst seed improves 0.287 -> 0.606, median falls).
+  (the known GA overfit; corrected metric: worst seed improves -23.39 -> -4.06,
+  median falls -1.53 -> -2.75; the first artifact's 0.287 -> 0.606 came from the
+  `_r2` bug described in the entry above).
 - **Two of the three named benchmarks cannot be affected, measured not assumed.**
   Counters wrapped around `RustKernelBridge.evolve_native` and
   `evolutionary_search.evolve` report **0 calls** for the synthesis engine
