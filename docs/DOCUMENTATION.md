@@ -1,5 +1,10 @@
 # APEDP Documentation
 
+Contributor entrypoints: [five-minute setup and CI matrix](../README.md#getting-started-in-5-minutes),
+[repository structure policy and cleanup guide](../CONTRIBUTING.md#repository-structure-policy),
+[module ownership map](../CONTRIBUTING.md#module-ownership-and-responsibilities),
+and [review owners](../.github/CODEOWNERS).
+
 # Table of Contents
 
 1. [Overview](#1-overview)
