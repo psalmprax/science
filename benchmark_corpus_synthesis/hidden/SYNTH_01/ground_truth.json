@@ -1,0 +1,31 @@
+{
+  "problem_id": "SYNTH_01",
+  "problem_name": "Multi-Regime Rational-Exponential Transition Law",
+  "class_id": 1,
+  "class_name": "Autonomous Model Synthesis",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "(2.45 * x**1.5 / (1.0 + 0.85 * x**2.0)) * exp(-0.3 * x**1.0)",
+  "canonical_structural_family": "rational_exponential_envelope",
+  "true_parameters": {
+    "A": 2.45,
+    "alpha": 1.5,
+    "B": 0.85,
+    "beta": 2.0,
+    "C": 0.3,
+    "gamma": 1.0
+  },
+  "competing_hypotheses": [
+    "2.45 * x**1.5 * exp(-0.3 * x)",
+    "2.45 * x**1.5 / (1.0 + 0.85 * x**2)",
+    "1.85 * x * exp(-0.25 * x)"
+  ],
+  "pathology_details": {
+    "has_sampling_gap": true,
+    "gap_interval": [
+      2.2,
+      3.0
+    ],
+    "risk_type": "AVOIDED_POLE_IN_GAP"
+  }
+}

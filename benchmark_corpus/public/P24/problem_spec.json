@@ -1,0 +1,20 @@
+{
+  "problem_id": "P24",
+  "problem_name": "Multi-Parameter Collinear Singularity Trap",
+  "class_id": 4,
+  "class_name": "Singular & Pathological Regimes",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "variable_units": {
+    "x": "dimensionless",
+    "y": "dimensionless"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

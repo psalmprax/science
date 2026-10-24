@@ -1,0 +1,20 @@
+{
+  "problem_id": "P14",
+  "problem_name": "Yukawa Screened Potential",
+  "class_id": 3,
+  "class_name": "Asymptotic & Extrapolation Regimes",
+  "input_variables": [
+    "r"
+  ],
+  "target_variable": "V",
+  "variable_units": {
+    "r": "meter",
+    "V": "joule"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

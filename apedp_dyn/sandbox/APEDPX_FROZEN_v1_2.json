@@ -1,0 +1,70 @@
+{
+  "benchmark_hash_note": "B_internal = trap suites as present in the sandbox files hashed below; B_blind must live outside these files (see blind_benchmark.py)",
+  "commit": "d881d5cdbc3df4bc1d1d5e7a24e91b4adf3a96f8",
+  "env": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "pytest": "9.1.1",
+    "scipy": "1.18.1",
+    "py": "3.12"
+  },
+  "file_hashes_sha256": {
+    "apedp_dyn/epistemic/adjudicate.py": "da604e6a21f8687e5834362989f370f3b386649e89fbced2ec624030ffd4ff73",
+    "apedp_dyn/epistemic/claim_ladder.py": "aba9fd0045abc137a36dab90e1316b8934597beb02c553cf35d15c3029c0886c",
+    "apedp_dyn/grammar/candidate_ir.py": "3076d6a7c4ceae0952c8bc372f9483097cccae4613dc2f574d5462583fe42a35",
+    "apedp_dyn/sandbox/apedp_x_meta_sandbox.py": "3f6e19e1bdb5d33e74e7abbcc893bd5147ea3a51d4753d6add1c4d8ce6bc3b3d",
+    "apedp_dyn/sandbox/causal_discovery_sandbox.py": "d0715324bfeccb1aa1c49eecbbcb50fff3c66ab62744d95fbe766b0061e5a38b",
+    "apedp_dyn/sandbox/eseds_dynamical.py": "53c4837c13682b3ce2178f5db8a04c280f521fa2af5b403c13d7e8a9760fb4fe",
+    "apedp_dyn/sandbox/eso_packing.py": "6e19088bd2e621af9f7288fb2e8691cc7698bd5a5520b4b7d6456bcb98a661d0",
+    "apedp_dyn/sandbox/grammar_space.py": "aba0f42abb0fcd2a2bb7a698419d21227ca5ce3709d7879c01573deeb39ab930",
+    "apedp_dyn/sandbox/multi_asset_signals_sandbox.py": "b3273a1f188df2cee298a50ce764c5b6b99702231767c28312b4c24fd6bb9331",
+    "apedp_dyn/sandbox/multi_grammar_sandbox.py": "b96b20bc0b2e258032d0dfb5bcbf5e120fbfa17c6723d547252d6a510f7bd4c6",
+    "apedp_dyn/sandbox/pde_verification_sandbox.py": "1ea3a4c89800af9f6570723fbcf6ea09e731cccf24a292cc15489bc56fa636a3",
+    "apedp_dyn/sandbox/sphere_packing_sandbox.py": "6a105810b786cddd1435c13c752cddd4ad73182dd841e6677f8667001ec3fd1c",
+    "apedp_dyn/sandbox/trading_signals_sandbox.py": "192751148d916a233b6c3f007443d64502279f7b09095d8c387b5c00bc565429",
+    "apedp_dyn/ui/dashboard.html": "55b302068c087283fd832f2fdc54c5d540c4d86e0280eca69ec0ac00dc3e1380",
+    "apedp_dyn/ui/server.py": "9a2b57fd153c173dbecd63c9d6b1ef15a3b617afe17a716e5589ff9fc7ba9abe"
+  },
+  "label": "APEDP-X v1.2-FROZEN",
+  "referee_guard_files": [
+    "apedp_dyn/epistemic/adjudicate.py",
+    "apedp_dyn/epistemic/claim_ladder.py",
+    "apedp_dyn/grammar/candidate_ir.py",
+    "apedp_dyn/sandbox/apedp_x_meta_sandbox.py",
+    "apedp_dyn/sandbox/causal_discovery_sandbox.py",
+    "apedp_dyn/sandbox/eseds_dynamical.py",
+    "apedp_dyn/sandbox/eso_packing.py",
+    "apedp_dyn/sandbox/grammar_space.py",
+    "apedp_dyn/sandbox/multi_asset_signals_sandbox.py",
+    "apedp_dyn/sandbox/multi_grammar_sandbox.py",
+    "apedp_dyn/sandbox/pde_verification_sandbox.py",
+    "apedp_dyn/sandbox/sphere_packing_sandbox.py",
+    "apedp_dyn/sandbox/trading_signals_sandbox.py",
+    "apedp_dyn/ui/dashboard.html",
+    "apedp_dyn/ui/server.py"
+  ],
+  "test_outcome": {
+    "command": ".venv/bin/pytest (AGENTS.md 8-file regression suite) + verify_referee() guard check + both mypy CI gates",
+    "note": "Post-mint verification (2026-10-17): verify_referee() 15/15 guard files match; AGENTS.md regression suite 58 passed; `mypy apedp_dyn/` and `mypy apedp/ apedp_dyn/` both exit 0 (Success: no issues found).",
+    "passed": true
+  },
+  "thresholds": {
+    "RESID_RHO_FLAG": 0.5,
+    "SOLE_SURVIVOR_GAMMA": 3.0,
+    "bootstrap_n_boot_eseds": 300,
+    "bootstrap_seed": 42,
+    "eso_tau_default": 0.01,
+    "tau_rule": "holdout-scale from gate4 provenance (obs_rms, noise_sigma, n_samples); explicit override allowed"
+  },
+  "tree_state": "mypy-strict cleanup session: 30+ files type-hardened outside the guard set; guard set re-minted from current working-tree content per the documented mint-first protocol.",
+  "utc_frozen": "2026-10-17",
+  "supersedes": "APEDP-X v1.1-FROZEN (referee change: adjudicate(): rank by _identity() canonical form + parameter-binding signature)",
+  "referee_change": "grammar_space.py type-hardening only: explicit `from typing import Any` import and a value-preserving np.asarray wrap at an ndarray-declared return boundary (mypy strict cleanup). No referee logic, thresholds, or canonicalization changes; all other guard files hash-identical to v1_1.",
+  "concurrent_drift_noted": [
+    [
+      "apedp_dyn/sandbox/grammar_space.py",
+      "6f4da69fb15b",
+      "aba0f42abb0f"
+    ]
+  ]
+}

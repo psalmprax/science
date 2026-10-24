@@ -1,0 +1,22 @@
+{
+  "problem_id": "P08",
+  "problem_name": "Linear Hookean vs Nonlinear Neo-Hookean Elasticity",
+  "class_id": 2,
+  "class_name": "Observationally Equivalent Regimes",
+  "oracle_epistemic_class": "C2",
+  "expected_state": "MULTI_HYPOTHESIS",
+  "ground_truth_formula": "(1+strain) - (1+strain)**(-2)",
+  "canonical_structural_family": "neo_hookean",
+  "true_parameters": {},
+  "competing_hypotheses": [
+    {
+      "id": "hookean_linear",
+      "formula": "3.0*strain"
+    },
+    {
+      "id": "neo_hookean",
+      "formula": "(1+strain) - (1+strain)**(-2)"
+    }
+  ],
+  "pathology_details": {}
+}

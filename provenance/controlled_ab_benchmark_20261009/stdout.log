@@ -1,0 +1,160 @@
+===================================================================================================================
+APEDP-X CONTROLLED A/B EXPERIMENT: BASELINE (ARM A) VS. VALIDATION-PRUNED (ARM B)
+Pre-Registered Seeds: [42, 101, 777, 1337, 2024]
+Target Universes: N in [15, 30, 60, 90]
+===================================================================================================================
+Data Partitions: Sub-Train = 500 bars | Validation = 253 bars | Protected Test = 502 bars
+
+===================================================================================================================
+>>> BENCHMARKING UNIVERSE N = 15 ASSETS <<<
+===================================================================================================================
+Seed 42   :
+  [Arm A Unpruned] ( 5 terms): Val Net=+34.52%, Val SR=+1.13 | Test Net=+26.87%, Test SR=+0.59, TO=1512.0
+                   Eq: S = +1.2576*H-BB +0.1812*H-STOCH -0.0451*H-A +1.1718*NL_SQUEEZE_TREND -0.0491*PRODUCT_H_BB_TAKER
+  [Arm B Pruned]   ( 1 terms): Val Net=+71.89%, Val SR=+2.18 | Test Net=+78.89%, Test SR=+1.02, TO= 536.0
+                   Eq: S = -0.0491*PRODUCT_H_BB_TAKER
+Seed 101  :
+  [Arm A Unpruned] ( 5 terms): Val Net=+22.32%, Val SR=+0.85 | Test Net=+17.35%, Test SR=+0.48, TO=1823.0
+                   Eq: S = +1.1550*H-BB -0.2678*H-RV +0.1600*H-LOG +1.0499*NL_SQUEEZE_TREND +0.4780*NL_MASTER_SNR
+  [Arm B Pruned]   ( 1 terms): Val Net=+92.00%, Val SR=+1.96 | Test Net=+28.33%, Test SR=+0.61, TO=2136.0
+                   Eq: S = +0.1600*H-LOG
+Seed 777  :
+  [Arm A Unpruned] ( 6 terms): Val Net=+20.98%, Val SR=+0.81 | Test Net=+64.46%, Test SR=+0.94, TO=1699.0
+                   Eq: S = +0.2899*H-MACD -0.1340*H-EMA_CROSS +0.8219*H-BB +1.0642*H-STOCH +0.4841*H-OBV_MOM +0.9065*NL_SQUEEZE_TREND
+  [Arm B Pruned]   ( 3 terms): Val Net=+64.75%, Val SR=+1.61 | Test Net= +6.76%, Test SR=+0.38, TO=1078.0
+                   Eq: S = +0.2899*H-MACD +0.4841*H-OBV_MOM +0.9065*NL_SQUEEZE_TREND
+Seed 1337 :
+  [Arm A Unpruned] ( 5 terms): Val Net=+21.55%, Val SR=+0.83 | Test Net=+46.64%, Test SR=+0.83, TO=1606.0
+                   Eq: S = +0.2856*H-MACD +0.9848*H-BB +0.8757*H-STOCH -0.3979*H-RV +1.0221*NL_SQUEEZE_TREND
+  [Arm B Pruned]   ( 1 terms): Val Net=+42.68%, Val SR=+1.24 | Test Net=-21.51%, Test SR=-0.03, TO=1034.0
+                   Eq: S = +1.0221*NL_SQUEEZE_TREND
+Seed 2024 :
+  [Arm A Unpruned] ( 3 terms): Val Net=+34.46%, Val SR=+1.12 | Test Net=+20.87%, Test SR=+0.53, TO=1548.0
+                   Eq: S = +1.1229*H-BB +0.1329*H-LOG +0.8096*NL_SQUEEZE_TREND
+  [Arm B Pruned]   ( 3 terms): Val Net=+34.46%, Val SR=+1.12 | Test Net=+20.87%, Test SR=+0.53, TO=1548.0
+                   Eq: S = +1.1229*H-BB +0.1329*H-LOG +0.8096*NL_SQUEEZE_TREND
+
+--- Universe N = 15 A/B SUMMARY ACROSS 5 SEEDS ---
+  Outcome 1 (Stability): Decision Correlation across seeds: Arm A = +0.918 vs. Arm B = +0.232
+                         Mean Term Count:                 Arm A = 4.8 terms vs. Arm B = 1.8 terms
+  Outcome 2 (Val Incremental): Mean Val Net Return:       Arm A = +26.77% vs. Arm B = +61.16% (SR: +0.95 vs +1.62)
+  Outcome 3 (Test Validity):   Mean Test Net Return:      Arm A = +35.24% vs. Arm B = +22.67%
+                               Mean Test Sharpe:          Arm A = +0.67 vs. Arm B = +0.50
+                               Mean Test Turnover:        Arm A = 1637.6 vs. Arm B = 1266.4
+                               Mean Test Max Drawdown:    Arm A =  36.9% vs. Arm B =  45.7%
+
+===================================================================================================================
+>>> BENCHMARKING UNIVERSE N = 30 ASSETS <<<
+===================================================================================================================
+Seed 42   :
+  [Arm A Unpruned] ( 6 terms): Val Net=-12.71%, Val SR=-0.20 | Test Net=+19.88%, Test SR=+0.54, TO=4827.0
+                   Eq: S = +0.7185*H-NATR +0.4075*H-MACD -0.1408*H-EMA_CROSS +0.6606*H-STOCH -0.3302*NL_HURST_ADAPT +0.5131*NL_MASTER_SNR
+  [Arm B Pruned]   ( 3 terms): Val Net=+57.79%, Val SR=+1.49 | Test Net=-25.37%, Test SR=-0.18, TO=5171.0
+                   Eq: S = +0.4075*H-MACD -0.1408*H-EMA_CROSS +0.5131*NL_MASTER_SNR
+Seed 101  :
+  [Arm A Unpruned] ( 7 terms): Val Net=-24.41%, Val SR=-0.69 | Test Net=+16.19%, Test SR=+0.48, TO=5149.0
+                   Eq: S = -0.3103*H-ASYM +0.7868*H-NATR +0.0967*H-MACD +0.1750*H-BB +0.2803*H-STOCH +0.5977*NL_SQUEEZE_TREND +0.5313*NL_MASTER_SNR
+  [Arm B Pruned]   ( 3 terms): Val Net=+18.30%, Val SR=+0.76 | Test Net= -2.61%, Test SR=+0.13, TO=4621.0
+                   Eq: S = +0.2803*H-STOCH +0.5977*NL_SQUEEZE_TREND +0.5313*NL_MASTER_SNR
+Seed 777  :
+  [Arm A Unpruned] ( 6 terms): Val Net=-37.94%, Val SR=-1.40 | Test Net=+43.25%, Test SR=+0.92, TO=3282.0
+                   Eq: S = +0.9089*H-NATR +0.7037*H-MACD +0.4232*H-STOCH -0.1050*NL_VOL_GATED_MOM +1.1632*NL_SQUEEZE_TREND -0.5540*NL_HURST_ADAPT
+  [Arm B Pruned]   ( 3 terms): Val Net=+80.81%, Val SR=+2.21 | Test Net=+43.83%, Test SR=+0.81, TO=4046.0
+                   Eq: S = +0.7037*H-MACD -0.1050*NL_VOL_GATED_MOM -0.5540*NL_HURST_ADAPT
+Seed 1337 :
+  [Arm A Unpruned] ( 7 terms): Val Net= +7.79%, Val SR=+0.47 | Test Net=+14.97%, Test SR=+0.45, TO=4681.0
+                   Eq: S = +0.2934*H-MACD -0.1366*H-EMA_CROSS +1.0215*H-STOCH -0.2297*H-LOG +0.4096*NL_SQUEEZE_TREND +0.8089*NL_MASTER_SNR +0.1435*PRODUCT_H_BB_TAKER
+  [Arm B Pruned]   ( 3 terms): Val Net=+33.42%, Val SR=+1.13 | Test Net=-23.21%, Test SR=-0.19, TO=6301.0
+                   Eq: S = +0.2934*H-MACD +0.8089*NL_MASTER_SNR +0.1435*PRODUCT_H_BB_TAKER
+Seed 2024 :
+  [Arm A Unpruned] ( 7 terms): Val Net= +9.38%, Val SR=+0.51 | Test Net=+38.31%, Test SR=+0.79, TO=4087.0
+                   Eq: S = -0.2122*H-P +0.4789*H-MACD +0.7679*H-STOCH -0.0844*H-HURST +0.3065*NL_SQUEEZE_TREND -0.1986*NL_OFI_REV +0.0805*NL_HURST_ADAPT
+  [Arm B Pruned]   ( 1 terms): Val Net=+66.38%, Val SR=+2.84 | Test Net=+56.41%, Test SR=+0.80, TO= 102.0
+                   Eq: S = +0.0805*NL_HURST_ADAPT
+
+--- Universe N = 30 A/B SUMMARY ACROSS 5 SEEDS ---
+  Outcome 1 (Stability): Decision Correlation across seeds: Arm A = +0.745 vs. Arm B = +0.359
+                         Mean Term Count:                 Arm A = 6.6 terms vs. Arm B = 2.6 terms
+  Outcome 2 (Val Incremental): Mean Val Net Return:       Arm A = -11.58% vs. Arm B = +51.34% (SR: -0.26 vs +1.69)
+  Outcome 3 (Test Validity):   Mean Test Net Return:      Arm A = +26.52% vs. Arm B =  +9.81%
+                               Mean Test Sharpe:          Arm A = +0.64 vs. Arm B = +0.27
+                               Mean Test Turnover:        Arm A = 4405.2 vs. Arm B = 4048.2
+                               Mean Test Max Drawdown:    Arm A =  31.8% vs. Arm B =  41.2%
+
+===================================================================================================================
+>>> BENCHMARKING UNIVERSE N = 60 ASSETS <<<
+===================================================================================================================
+Seed 42   :
+  [Arm A Unpruned] ( 5 terms): Val Net=-28.35%, Val SR=-1.33 | Test Net= -0.52%, Test SR=+0.11, TO=4691.0
+                   Eq: S = +0.9268*H-NATR +0.5388*H-MACD +0.1854*H-RV +0.0919*NL_RISK_ADJ_MOM -0.1659*NL_HURST_ADAPT
+  [Arm B Pruned]   ( 2 terms): Val Net=+88.43%, Val SR=+2.60 | Test Net=+53.73%, Test SR=+1.50, TO=5223.0
+                   Eq: S = +0.1854*H-RV -0.1659*NL_HURST_ADAPT
+Seed 101  :
+  [Arm A Unpruned] ( 5 terms): Val Net=+27.08%, Val SR=+1.95 | Test Net= +1.72%, Test SR=+0.16, TO=12852.0
+                   Eq: S = +0.8185*H-SQUEEZE +0.1447*H-MACD -0.3015*H-BB -0.6195*NL_OFI_REV -0.4989*NL_HURST_ADAPT
+  [Arm B Pruned]   ( 1 terms): Val Net=+42.61%, Val SR=+2.30 | Test Net=+17.17%, Test SR=+0.70, TO=4510.0
+                   Eq: S = +0.8185*H-SQUEEZE
+Seed 777  :
+  [Arm A Unpruned] ( 6 terms): Val Net= -9.85%, Val SR=-0.40 | Test Net=+21.89%, Test SR=+0.71, TO=7863.0
+                   Eq: S = +0.8758*H-NATR +0.3076*H-MACD +0.3099*H-RSI +0.4478*H-RV -0.0559*NL_VOL_GATED_MOM -0.3906*NL_HURST_ADAPT
+  [Arm B Pruned]   ( 3 terms): Val Net=+94.94%, Val SR=+3.12 | Test Net= +3.08%, Test SR=+0.21, TO=9667.0
+                   Eq: S = +0.4478*H-RV -0.0559*NL_VOL_GATED_MOM -0.3906*NL_HURST_ADAPT
+Seed 1337 :
+  [Arm A Unpruned] ( 5 terms): Val Net=+19.96%, Val SR=+1.36 | Test Net= -1.28%, Test SR=+0.02, TO=10783.0
+                   Eq: S = +0.8204*H-SQUEEZE +0.0127*H-MACD -0.2260*NL_VOL_GATED_MOM -0.9203*NL_HURST_ADAPT -0.3658*PRODUCT_H_BB_TAKER
+  [Arm B Pruned]   ( 1 terms): Val Net=+44.79%, Val SR=+2.35 | Test Net=+15.60%, Test SR=+0.64, TO=4467.0
+                   Eq: S = +0.8204*H-SQUEEZE
+Seed 2024 :
+  [Arm A Unpruned] ( 5 terms): Val Net=+23.18%, Val SR=+1.31 | Test Net= +8.11%, Test SR=+0.38, TO=9469.0
+                   Eq: S = +0.6073*H-SQUEEZE -0.4372*H-RSI +0.6891*H-BB +0.1626*H-MFI -1.0652*NL_HURST_ADAPT
+  [Arm B Pruned]   ( 4 terms): Val Net=+27.56%, Val SR=+1.53 | Test Net= +8.02%, Test SR=+0.37, TO=9791.0
+                   Eq: S = +0.6073*H-SQUEEZE -0.4372*H-RSI +0.6891*H-BB -1.0652*NL_HURST_ADAPT
+
+--- Universe N = 60 A/B SUMMARY ACROSS 5 SEEDS ---
+  Outcome 1 (Stability): Decision Correlation across seeds: Arm A = +0.348 vs. Arm B = +0.290
+                         Mean Term Count:                 Arm A = 5.2 terms vs. Arm B = 2.2 terms
+  Outcome 2 (Val Incremental): Mean Val Net Return:       Arm A =  +6.40% vs. Arm B = +59.67% (SR: +0.58 vs +2.38)
+  Outcome 3 (Test Validity):   Mean Test Net Return:      Arm A =  +5.98% vs. Arm B = +19.52%
+                               Mean Test Sharpe:          Arm A = +0.28 vs. Arm B = +0.68
+                               Mean Test Turnover:        Arm A = 9131.6 vs. Arm B = 6731.6
+                               Mean Test Max Drawdown:    Arm A =  19.3% vs. Arm B =  19.2%
+
+===================================================================================================================
+>>> BENCHMARKING UNIVERSE N = 90 ASSETS <<<
+===================================================================================================================
+Seed 42   :
+  [Arm A Unpruned] ( 6 terms): Val Net= +5.84%, Val SR=+0.57 | Test Net= -0.34%, Test SR=+0.05, TO=11533.0
+                   Eq: S = +0.9916*H-NATR +0.5651*H-MACD +1.0696*H-BB -0.8155*H-MOM +0.5078*H-RV -1.0713*H-OBV_MOM
+  [Arm B Pruned]   ( 5 terms): Val Net=+21.92%, Val SR=+1.84 | Test Net= -7.19%, Test SR=-0.34, TO=11646.0
+                   Eq: S = +0.5651*H-MACD +1.0696*H-BB -0.8155*H-MOM +0.5078*H-RV -1.0713*H-OBV_MOM
+Seed 101  :
+  [Arm A Unpruned] ( 4 terms): Val Net=-10.04%, Val SR=-0.61 | Test Net=-12.61%, Test SR=-0.58, TO=5631.0
+                   Eq: S = +0.3881*H-NATR +0.1206*H-MACD +0.1190*H-BB -0.8073*H-OBV_MOM
+  [Arm B Pruned]   ( 1 terms): Val Net=+18.34%, Val SR=+1.03 | Test Net=-29.61%, Test SR=-1.36, TO=1780.0
+                   Eq: S = -0.8073*H-OBV_MOM
+Seed 777  :
+  [Arm A Unpruned] ( 6 terms): Val Net= -1.29%, Val SR=-0.02 | Test Net= -8.31%, Test SR=-0.38, TO=10145.0
+                   Eq: S = +0.9378*H-NATR +0.5948*H-MACD +0.4989*H-RV -1.3995*H-OBV_MOM -0.1580*NL_VOL_GATED_MOM +0.1765*NL_SQUEEZE_TREND
+  [Arm B Pruned]   ( 4 terms): Val Net=+28.16%, Val SR=+2.27 | Test Net= -7.20%, Test SR=-0.31, TO=9822.0
+                   Eq: S = +0.5948*H-MACD +0.4989*H-RV -0.1580*NL_VOL_GATED_MOM +0.1765*NL_SQUEEZE_TREND
+Seed 1337 :
+  [Arm A Unpruned] ( 4 terms): Val Net=+11.06%, Val SR=+0.90 | Test Net= -3.33%, Test SR=-0.09, TO=7549.0
+                   Eq: S = +0.2689*H-NATR +0.1546*H-SQUEEZE +0.2482*H-BB -1.0774*H-OBV_MOM
+  [Arm B Pruned]   ( 3 terms): Val Net=+24.16%, Val SR=+2.01 | Test Net= +0.02%, Test SR=+0.08, TO=8780.0
+                   Eq: S = +0.1546*H-SQUEEZE +0.2482*H-BB -1.0774*H-OBV_MOM
+Seed 2024 :
+  [Arm A Unpruned] ( 4 terms): Val Net=+13.30%, Val SR=+1.19 | Test Net= +3.54%, Test SR=+0.25, TO=13575.0
+                   Eq: S = +0.6490*H-BB -1.0889*H-OBV_MOM -0.1143*NL_VOL_GATED_MOM -0.4679*NL_HURST_ADAPT
+  [Arm B Pruned]   ( 4 terms): Val Net=+13.30%, Val SR=+1.19 | Test Net= +3.54%, Test SR=+0.25, TO=13575.0
+                   Eq: S = +0.6490*H-BB -1.0889*H-OBV_MOM -0.1143*NL_VOL_GATED_MOM -0.4679*NL_HURST_ADAPT
+
+--- Universe N = 90 A/B SUMMARY ACROSS 5 SEEDS ---
+  Outcome 1 (Stability): Decision Correlation across seeds: Arm A = +0.465 vs. Arm B = +0.311
+                         Mean Term Count:                 Arm A = 4.8 terms vs. Arm B = 3.4 terms
+  Outcome 2 (Val Incremental): Mean Val Net Return:       Arm A =  +3.77% vs. Arm B = +21.18% (SR: +0.41 vs +1.67)
+  Outcome 3 (Test Validity):   Mean Test Net Return:      Arm A =  -4.21% vs. Arm B =  -8.09%
+                               Mean Test Sharpe:          Arm A = -0.15 vs. Arm B = -0.34
+                               Mean Test Turnover:        Arm A = 9686.6 vs. Arm B = 9120.6
+                               Mean Test Max Drawdown:    Arm A =  15.5% vs. Arm B =  21.8%
+
+Controlled A/B benchmark complete. Structured results written to: scratch/controlled_ab_benchmark_results.json

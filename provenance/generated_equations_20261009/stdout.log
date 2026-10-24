@@ -1,0 +1,45 @@
+===================================================================================================================
+APEDP EXPANDED GRAMMAR SPACE: EQUATION GENERATION & SPECIFICATION AUDIT
+===================================================================================================================
+
+--- PART 1: THE REGISTERED CANDIDATE EQUATIONS CATALOG ---
+[A] Four-term magnitude model (Predictor):
+    Formula:  S_t^{(A)} = 0.8111 X^*_{H-BB} - 1.4272 X^*_{H-OBV_MOM} + 0.5984 X^*_{NL-TAKER_MOM} + 0.6740 X^*_{NL-MASTER_SNR}
+    Question: Does the original signal retain predictive value?
+
+[B] Second frozen predictor (Predictor):
+    Formula:  S_t^{(B)} = 0.5447 X^*_{H-BB} - 0.2019 X^*_{H-MOM} - 1.6370 X^*_{H-OBV_MOM} + 0.4171 X^*_{NL-TAKER_MOM}
+    Question: Does the alternative structure generalize?
+
+[H] Hysteresis (Stateful policy):
+    Formula:  p_t^{(H)} = H(S_t, p_{t-1}; theta_in, theta_out)
+    Question: Does position persistence add value?
+
+[C] Deadband (Stateless policy):
+    Formula:  p_t^{(C)} = +1 if S_t >= tau, -1 if S_t <= -tau, 0 otherwise
+    Question: Is weak-signal filtering sufficient?
+
+[D] Turnover penalty (Stateful utility policy):
+    Formula:  p_t^{(D)} = argmax_{p in {-1,0,+1}} (p S_t - lambda |p - p_{t-1}|)
+    Question: Does explicit change-cost penalization improve decisions?
+
+[E] Interaction predictor (Nonlinear predictor):
+    Formula:  S_t^{(E)} = S_t^{(A)} + beta_5 (X^*_{H-BB} * X^*_{NL-TAKER_MOM})
+    Question: Does conditional interaction add genuine predictive value?
+
+--- PART 2: CALIBRATED PARAMETER DISCOVERY ON BLOCK A (2021-2023) ---
+Candidate C (Deadband): Calibrated threshold on train data: tau* = 0.1979
+Candidate D (Turnover Penalty): Calibrated penalty on train data: lambda* = 0.1000 (tested lambda = 0.2000)
+Candidate E (Interaction Predictor): Optimal beta_5 on train Sharpe: beta_5* = 0.0000 (regularizer rejects term)
+
+--- PART 3: AUTONOMOUS EQUATION EVOLVED BY GENETIC ALGORITHM SEARCH ---
+Evolved Equation under expanded 27-signal grammar:
+  S_{i,t} = -0.1792 * X^*_H-ASYM +0.8179 * X^*_H-BB -0.2768 * X^*_NL_OFI_REV
+  Threshold: theta = 0.1572
+  Active terms:
+    • H-ASYM (GJR Panic Leverage)            -> Weight: -0.1792
+    • H-BB (Bollinger Bands %B)              -> Weight: +0.8179
+    • NL_OFI_REV (RSI x OFI Reversal)        -> Weight: -0.2768
+
+Interaction Term PRODUCT_H_BB_TAKER Selected: False (Pruned by sparsity regularization)
+===================================================================================================================

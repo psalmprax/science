@@ -1,0 +1,11 @@
+Test A: observed gross=+4.22301 null mean=+0.01281 sd=3.21722 p=0.089 [NO INFORMATION DEMONSTRATED]
+Test B: fee -> netSharpe / netRet / DD / turnover
+  fee=0bp: sharpe=+0.083 net=+4.2230 dd=0.6839 turn/path=1196
+  fee=1bp: sharpe=+0.013 net=+0.6342 dd=0.7339 turn/path=1196
+  fee=2bp: sharpe=-0.057 net=-2.9546 dd=0.7866 turn/path=1196
+  fee=5bp: sharpe=-0.267 net=-13.7210 dd=0.9794 turn/path=1196
+  break-even cost=1.18bp (actual 2.00bp; obs gross ++4.2230 vs cost drag +7.1776)
+Test C exploratory ST2 paths orig: sharpe=-0.057 net=-2.9546 turn/path=1196
+Test C exploratory ST2 paths hold5: sharpe=+0.023 net=+1.1058 turn/path=704
+Test C confirmatory fresh 40000+ orig: sharpe=-0.133 net=-6.7291 turn/path=1183
+Test C confirmatory fresh 40000+ hold5: sharpe=-0.158 net=-8.1873 turn/path=707

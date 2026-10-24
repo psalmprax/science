@@ -1,0 +1,16 @@
+{
+  "problem_id": "N05",
+  "block": "N",
+  "ground_truth_formula": "2.5*cos(0.9*x)**2",
+  "canonical_structural_family": "harmonic_squared",
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER",
+  "case_seed": 20260933,
+  "noise_sigma": 0.01249999991343117,
+  "meta": {
+    "equivalence": [
+      "cos(z)**2 == (1+cos(2*z))/2"
+    ],
+    "rule": "polynomial surrogate with low val MSE is NOT family recovery"
+  }
+}

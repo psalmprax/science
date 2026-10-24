@@ -1,0 +1,13 @@
+{
+  "problem_id": "S33",
+  "class_id": 4,
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "2.5 * exp(-0.5 * x) * cos(2.0 * x)",
+  "canonical_structural_family": "damped_oscillation",
+  "true_parameters": {
+    "A": 2.5,
+    "beta": 0.5,
+    "omega": 2.0
+  }
+}

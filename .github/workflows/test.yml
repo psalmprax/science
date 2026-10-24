@@ -1,0 +1,341 @@
+name: APEDP CI/CD
+
+on:
+  push:
+    # Every branch is gated, not just the integration branches: work happened
+    # on `stage` for an entire session with no CI coverage because it was
+    # absent from this list, and a broken tree survived as a result.
+    branches: ['**']
+  pull_request:
+    branches: [master, main, develop, stage]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-quality:
+    name: Python quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install quality and test tools
+        run: |
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test,orchestration]"
+          python -m pytest --version
+          ruff --version
+          mypy --version
+      - name: Lint Python
+        run: make lint
+      - name: Strict core type check
+        run: make typecheck
+      - name: CI configuration regression checks
+        run: python -m pytest tests/test_ci_quality_contract.py -q
+
+  rust-quality:
+    name: Rust quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format and Clippy correctness gates
+        run: make lint-rust
+      - name: Rust kernel unit tests
+        run: cargo test --workspace --locked
+
+  test:
+    needs: [python-quality, rust-quality]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      APEDP_REDIS_URL: redis://localhost:6379/0
+      # Avoid component conflicts in the hosted runner's preinstalled toolchains.
+      # All Rust steps share this job-local home, including the default toolchain.
+      RUSTUP_HOME: ${{ runner.temp }}/rustup
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev,test,orchestration]"
+          python -m pip install -e packages/jetflow-video
+          python -m pytest --version
+
+      # The native kernel behind `apedp/rust_bridge.py` lives in
+      # `rust/apedp-kernel/`. Without it, `is_rust_kernel_available()` is False
+      # and the sixteen differential tests in
+      # `tests/test_cross_implementation_conformance.py` skip -- green, and
+      # checking nothing. So the kernel is built here, and the next step asserts
+      # it is actually importable before any test tier runs. A build that stops
+      # building fails loudly instead of turning into sixteen skips.
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+          components: rustfmt, clippy
+
+      - name: Cache cargo build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust/apedp-kernel -> target
+
+      - name: Build and install the native kernel
+        run: |
+          source .venv/bin/activate
+          maturin develop --locked --manifest-path rust/apedp-kernel/Cargo.toml
+
+      # The load-bearing step. If this passes, the conformance suite below runs
+      # against a real Rust engine instead of skipping.
+      - name: The kernel must be importable (a silent skip is a failure here)
+        run: |
+          source .venv/bin/activate
+          python - <<'PY'
+          import apedp_kernel
+          from apedp.rust_bridge import is_rust_kernel_available
+          assert is_rust_kernel_available(), (
+              "apedp_kernel imported but the bridge is not using it; the "
+              "differential conformance tests would skip rather than run"
+          )
+          print("apedp_kernel", apedp_kernel.__version__, "active")
+          PY
+
+      - name: Scientific benchmark drift guardrail
+        id: benchmark_drift
+        run: |
+          source .venv/bin/activate
+          python benchmarks/check_scientific_drift.py
+
+      - name: Scientific regression gate (known-truth recovery)
+        id: scientific_gate
+        run: |
+          source .venv/bin/activate
+          if ! python -m pytest tests/test_scientific_recovery.py tests/test_dyn_rime_known_truth.py -q -m scientific_regression; then
+            echo "::error title=Scientific regression::Known-truth equation recovery missed its preregistered structure or score criteria."
+            exit 1
+          fi
+
+      # Fast tier first: seconds, not minutes. It parses every source file and
+      # imports every apedp_dyn module, so a syntax or import-time break fails
+      # in ~2s instead of after a ten-minute suite run. It also imports every
+      # test module (collection), which the full run only reaches late.
+      - name: Fast smoke tier (syntax + imports)
+        run: |
+          source .venv/bin/activate
+          python -m pytest tests/test_smoke_imports.py -q -x
+
+      - name: Collection smoke (import every test module)
+        run: |
+          source .venv/bin/activate
+          python -m pytest tests/ --collect-only -q
+
+      - name: Run regression tests
+        id: regression_tests
+        run: |
+          source .venv/bin/activate
+          python -m pytest tests/ -v --tb=short -n auto -x -m "not integration and not scientific_regression"
+
+      - name: Run live integration tests
+        id: integration_tests
+        run: |
+          source .venv/bin/activate
+          python -m pytest tests/ -v --tb=short -n auto -x -m integration
+
+      - name: Security scan with bandit
+        run: |
+          source .venv/bin/activate
+          bandit -r apedp/ -ll
+
+      - name: Classify test-job failure
+        if: failure()
+        run: |
+          if [ "${{ steps.benchmark_drift.outcome }}" = "failure" ] || [ "${{ steps.scientific_gate.outcome }}" = "failure" ]; then
+            echo "Failure category: scientific-regression (known-truth recovery or benchmark drift)." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.regression_tests.outcome }}" = "failure" ]; then
+            echo "Failure category: non-scientific regression (general test suite)." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.integration_tests.outcome }}" = "failure" ]; then
+            echo "Failure category: integration/runtime; inspect service and application logs." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Failure category: infrastructure/tooling (setup, build, quality, or security step)." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Deploy to Fly.io
+        uses: superfly/flyctl-actions@1.4
+        with:
+          args: "deploy --image ghcr.io/${{ github.repository }}:${{ github.sha }} --app apedp"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Health check deployment
+        run: |
+          sleep 10
+          curl -f https://apedp.fly.dev/health || exit 1
+
+  # ------------------------------------------------------------------
+  # Wheel artifacts for the native kernel.
+  #
+  # `apedp_kernel` is a separate maturin package, so plain `pip install -e .`
+  # never produces it: the bridge silently answers every call on the Python
+  # reference path and the differential conformance suite skips. This job
+  # builds the manylinux wheel on every push/PR and uploads it as a workflow
+  # artifact, so users can `pip install` it directly. On a tag push it also
+  # publishes to PyPI, but only when a `PYPI_API_TOKEN` secret exists -- until
+  # then the artifact upload is the distribution surface.
+  # ------------------------------------------------------------------
+  build-kernel-wheel:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build manylinux wheel (pyo3/maturin container)
+        uses: PyO3/maturin-action@v1
+        with:
+          working-directory: rust/apedp-kernel
+          rust-toolchain: '1.99.0'
+          maturin-version: '1.14.1'
+          command: build
+          args: --release --locked --out ../../wheelhouse --interpreter python3.12
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apedp_kernel-wheel-${{ github.sha }}
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  publish-kernel-wheel:
+    needs: build-kernel-wheel
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'push' &&
+      startsWith(github.ref, 'refs/tags/')
+    env:
+      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+    permissions:
+      contents: read
+    steps:
+      - name: Download wheel artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: apedp_kernel-wheel-${{ github.sha }}
+          path: wheelhouse
+
+      - name: Publish to PyPI
+        if: env.PYPI_API_TOKEN != ''
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: wheelhouse
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip-existing: true
+
+  # REG-MUT gate (docs/SYSTEM_FLAWS_AUDIT.md, outstanding-requirements register):
+  # targeted mutation testing of the referee and leakage paths. A survived
+  # mutant FAILS CI — this gate is the mechanism by which the register
+  # requirement stays closed-by-evidence rather than closed-by-assertion.
+  mutation-battery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev,test]"
+      - name: Run targeted mutation battery (referee + leakage paths)
+        run: python scripts/run_mutation_battery.py
+      - name: Upload the mutation-battery report (never hidden)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-battery-report
+          path: benchmarks/mutation_battery_report.json
+          if-no-files-found: warn

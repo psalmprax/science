@@ -1,0 +1,82 @@
+{
+  "15": {
+    "N": 15,
+    "score_std_train": 1.5396,
+    "score_std_holdout": 1.4933,
+    "return_std_train": 0.06991,
+    "return_std_holdout": 0.05191,
+    "beta_scale_train": 0.001262,
+    "convention_1_as_is": {
+      "train_rmse": 1.5486,
+      "train_r2_pct": -48970.0,
+      "holdout_rmse": 1.4957,
+      "holdout_r2_pct": -82910.1
+    },
+    "convention_2_train_scaled": {
+      "train_rmse": 0.0699,
+      "train_r2_pct": 0.02,
+      "holdout_rmse": 0.05193,
+      "holdout_r2_pct": -0.06
+    }
+  },
+  "30": {
+    "N": 30,
+    "score_std_train": 0.907,
+    "score_std_holdout": 0.8792,
+    "return_std_train": 0.06863,
+    "return_std_holdout": 0.05404,
+    "beta_scale_train": 0.001226,
+    "convention_1_as_is": {
+      "train_rmse": 0.9135,
+      "train_r2_pct": -17615.9,
+      "holdout_rmse": 0.8816,
+      "holdout_r2_pct": -26518.1
+    },
+    "convention_2_train_scaled": {
+      "train_rmse": 0.06863,
+      "train_r2_pct": 0.01,
+      "holdout_rmse": 0.05404,
+      "holdout_r2_pct": -0.02
+    }
+  },
+  "60": {
+    "N": 60,
+    "score_std_train": 1.3084,
+    "score_std_holdout": 1.7717,
+    "return_std_train": 0.06379,
+    "return_std_holdout": 0.05011,
+    "beta_scale_train": 0.00163,
+    "convention_1_as_is": {
+      "train_rmse": 1.3081,
+      "train_r2_pct": -41948.5,
+      "holdout_rmse": 1.7746,
+      "holdout_r2_pct": -125335.1
+    },
+    "convention_2_train_scaled": {
+      "train_rmse": 0.06376,
+      "train_r2_pct": 0.1,
+      "holdout_rmse": 0.0502,
+      "holdout_r2_pct": -0.37
+    }
+  },
+  "90": {
+    "N": 90,
+    "score_std_train": 1.0964,
+    "score_std_holdout": 1.1003,
+    "return_std_train": 0.05307,
+    "return_std_holdout": 0.04218,
+    "beta_scale_train": 0.002015,
+    "convention_1_as_is": {
+      "train_rmse": 1.1192,
+      "train_r2_pct": -44383.4,
+      "holdout_rmse": 1.1076,
+      "holdout_r2_pct": -68870.9
+    },
+    "convention_2_train_scaled": {
+      "train_rmse": 0.05302,
+      "train_r2_pct": 0.17,
+      "holdout_rmse": 0.04222,
+      "holdout_r2_pct": -0.2
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "problem_id": "P23",
+  "problem_name": "Dimensional Incompatibility Trap",
+  "class_id": 4,
+  "class_name": "Singular & Pathological Regimes",
+  "input_variables": [
+    "T",
+    "x"
+  ],
+  "target_variable": "v",
+  "variable_units": {
+    "T": "second",
+    "x": "meter",
+    "v": "meter_per_second"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

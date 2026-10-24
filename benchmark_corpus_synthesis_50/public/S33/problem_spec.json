@@ -1,0 +1,23 @@
+{
+  "problem_id": "S33",
+  "problem_name": "Damped Ringdown S33",
+  "class_id": 4,
+  "class_name": "Modulated Transport",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "variable_units": {
+    "x": "second",
+    "y": "volt"
+  },
+  "physical_constraints": {
+    "far_field_limit": 0.0
+  },
+  "dataset_sizes": {
+    "train": 80,
+    "validation": 40,
+    "near_ood": 50,
+    "far_ood": 50
+  }
+}

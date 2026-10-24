@@ -1,0 +1,3 @@
+shapes: (1094, 15) (1094, 15) (752, 14) (752, 14) (752, 30) (752, 30) multi30 assets: 30
+CRYPTO discovery: IC=+0.0246 p=0.010 MSEr=1.331 residIC=+0.0089 residP=0.220 [FAIL]
+H-OFD: REJECTED at discovery

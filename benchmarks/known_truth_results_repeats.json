@@ -1,0 +1,678 @@
+{
+  "protocol": {
+    "dev_rows": 600,
+    "holdout_rows": 300,
+    "recovery_r2": 0.99,
+    "coef_tol": 0.05,
+    "n_repeats": 5,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "noise_seed_rule": "phase = 23.0 + 1009.0*seed; same design points, fresh observation-noise draws; structural axes unchanged per world",
+    "adjudicated": true,
+    "scope_refusal": "every emission adjudicated per spec \u00a716d",
+    "blind": "methods never see d, C, grid geometry, offset or the formula; the referee never sees the world flag either"
+  },
+  "per_world": {
+    "ols_monomial|d2_C1000_irregular_1x": {
+      "method": "ols_monomial",
+      "world": "d2_C1000_irregular_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999991,
+        "std": 5e-06,
+        "min": 0.999982,
+        "max": 0.999994
+      },
+      "coef_relerr": {
+        "mean": 0.001017,
+        "std": 0.001344,
+        "min": 0.000124,
+        "max": 0.003664
+      },
+      "structure_counts": {
+        "2": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "ols_monomial|d2_C1000_log_1x": {
+      "method": "ols_monomial",
+      "world": "d2_C1000_log_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999991,
+        "std": 6e-06,
+        "min": 0.99998,
+        "max": 0.999994
+      },
+      "coef_relerr": {
+        "mean": 0.001067,
+        "std": 0.001441,
+        "min": 3e-05,
+        "max": 0.003919
+      },
+      "structure_counts": {
+        "2": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "ols_monomial|d2_C1000_log_3x": {
+      "method": "ols_monomial",
+      "world": "d2_C1000_log_3x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.99992,
+        "std": 4.8e-05,
+        "min": 0.999823,
+        "max": 0.99995
+      },
+      "coef_relerr": {
+        "mean": 0.003202,
+        "std": 0.004323,
+        "min": 9e-05,
+        "max": 0.011757
+      },
+      "structure_counts": {
+        "2": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "ols_monomial|d2_C1000_uniform_1x": {
+      "method": "ols_monomial",
+      "world": "d2_C1000_uniform_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999909,
+        "std": 5e-06,
+        "min": 0.999901,
+        "max": 0.999917
+      },
+      "coef_relerr": {
+        "mean": 0.000804,
+        "std": 0.000939,
+        "min": 1.1e-05,
+        "max": 0.002633
+      },
+      "structure_counts": {
+        "2": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "ols_monomial|d2_C250_log_1x": {
+      "method": "ols_monomial",
+      "world": "d2_C250_log_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999991,
+        "std": 6e-06,
+        "min": 0.99998,
+        "max": 0.999994
+      },
+      "coef_relerr": {
+        "mean": 0.001067,
+        "std": 0.001441,
+        "min": 3e-05,
+        "max": 0.003919
+      },
+      "structure_counts": {
+        "2": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "ols_monomial|d2_offset_log_1x": {
+      "method": "ols_monomial",
+      "world": "d2_offset_log_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999991,
+        "std": 6e-06,
+        "min": 0.99998,
+        "max": 0.999994
+      },
+      "coef_relerr": {
+        "mean": 0.001067,
+        "std": 0.001441,
+        "min": 3e-05,
+        "max": 0.003919
+      },
+      "structure_counts": {
+        "2": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "ols_monomial|d3_C100_irregular_1x": {
+      "method": "ols_monomial",
+      "world": "d3_C100_irregular_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999997,
+        "std": 3e-06,
+        "min": 0.999992,
+        "max": 0.999999
+      },
+      "coef_relerr": {
+        "mean": 0.000844,
+        "std": 0.000987,
+        "min": 0.000143,
+        "max": 0.002768
+      },
+      "structure_counts": {
+        "3": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "ols_monomial|d3_C100_log_1x": {
+      "method": "ols_monomial",
+      "world": "d3_C100_log_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999997,
+        "std": 3e-06,
+        "min": 0.999991,
+        "max": 0.999999
+      },
+      "coef_relerr": {
+        "mean": 0.000872,
+        "std": 0.001033,
+        "min": 7.9e-05,
+        "max": 0.002901
+      },
+      "structure_counts": {
+        "3": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "ols_monomial|d3_C100_uniform_1x": {
+      "method": "ols_monomial",
+      "world": "d3_C100_uniform_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999973,
+        "std": 2e-06,
+        "min": 0.999971,
+        "max": 0.999976
+      },
+      "coef_relerr": {
+        "mean": 0.000718,
+        "std": 0.000789,
+        "min": 5e-06,
+        "max": 0.002238
+      },
+      "structure_counts": {
+        "3": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "ols_monomial|d6_C1e12_irregular_1x": {
+      "method": "ols_monomial",
+      "world": "d6_C1e12_irregular_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999999,
+        "std": 1e-06,
+        "min": 0.999997,
+        "max": 1.0
+      },
+      "coef_relerr": {
+        "mean": 0.000609,
+        "std": 0.000554,
+        "min": 0.000188,
+        "max": 0.001679
+      },
+      "structure_counts": {
+        "6": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "ols_monomial|d6_C1e12_log_1x": {
+      "method": "ols_monomial",
+      "world": "d6_C1e12_log_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999999,
+        "std": 1e-06,
+        "min": 0.999997,
+        "max": 1.0
+      },
+      "coef_relerr": {
+        "mean": 0.000671,
+        "std": 0.000552,
+        "min": 0.000247,
+        "max": 0.001718
+      },
+      "structure_counts": {
+        "6": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "ols_monomial|neg_exp_log_1x": {
+      "method": "ols_monomial",
+      "world": "neg_exp_log_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "failed": 5
+      },
+      "holdout_r2": {
+        "mean": 0.348444,
+        "std": 0.030113,
+        "min": 0.307862,
+        "max": 0.387582
+      },
+      "coef_relerr": null,
+      "structure_counts": {
+        "None": 5
+      },
+      "scope_verdict_counts": {
+        "declined": 5
+      }
+    },
+    "rime_static|d2_C1000_irregular_1x": {
+      "method": "rime_static",
+      "world": "d2_C1000_irregular_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999994,
+        "std": 0.0,
+        "min": 0.999993,
+        "max": 0.999994
+      },
+      "coef_relerr": {
+        "mean": 0.000311,
+        "std": 0.000251,
+        "min": 0.000124,
+        "max": 0.000765
+      },
+      "structure_counts": {
+        "2": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "rime_static|d2_C1000_log_1x": {
+      "method": "rime_static",
+      "world": "d2_C1000_log_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999994,
+        "std": 0.0,
+        "min": 0.999993,
+        "max": 0.999994
+      },
+      "coef_relerr": {
+        "mean": 0.000332,
+        "std": 0.000214,
+        "min": 3e-05,
+        "max": 0.000691
+      },
+      "structure_counts": {
+        "2": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "rime_static|d2_C1000_log_3x": {
+      "method": "rime_static",
+      "world": "d2_C1000_log_3x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999944,
+        "std": 4e-06,
+        "min": 0.999939,
+        "max": 0.99995
+      },
+      "coef_relerr": {
+        "mean": 0.000997,
+        "std": 0.000641,
+        "min": 9e-05,
+        "max": 0.002073
+      },
+      "structure_counts": {
+        "2": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "rime_static|d2_C1000_uniform_1x": {
+      "method": "rime_static",
+      "world": "d2_C1000_uniform_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999909,
+        "std": 5e-06,
+        "min": 0.999901,
+        "max": 0.999917
+      },
+      "coef_relerr": {
+        "mean": 0.000367,
+        "std": 0.000218,
+        "min": 1.1e-05,
+        "max": 0.000681
+      },
+      "structure_counts": {
+        "2": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "rime_static|d2_C250_log_1x": {
+      "method": "rime_static",
+      "world": "d2_C250_log_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999994,
+        "std": 0.0,
+        "min": 0.999993,
+        "max": 0.999994
+      },
+      "coef_relerr": {
+        "mean": 0.000332,
+        "std": 0.000214,
+        "min": 3e-05,
+        "max": 0.000691
+      },
+      "structure_counts": {
+        "2": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "rime_static|d2_offset_log_1x": {
+      "method": "rime_static",
+      "world": "d2_offset_log_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999994,
+        "std": 0.0,
+        "min": 0.999993,
+        "max": 0.999994
+      },
+      "coef_relerr": {
+        "mean": 0.000332,
+        "std": 0.000214,
+        "min": 3e-05,
+        "max": 0.000691
+      },
+      "structure_counts": {
+        "2": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "rime_static|d3_C100_irregular_1x": {
+      "method": "rime_static",
+      "world": "d3_C100_irregular_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999999,
+        "std": 0.0,
+        "min": 0.999998,
+        "max": 0.999999
+      },
+      "coef_relerr": {
+        "mean": 0.00031,
+        "std": 0.000243,
+        "min": 9.7e-05,
+        "max": 0.000738
+      },
+      "structure_counts": {
+        "3": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "rime_static|d3_C100_log_1x": {
+      "method": "rime_static",
+      "world": "d3_C100_log_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999999,
+        "std": 0.0,
+        "min": 0.999999,
+        "max": 0.999999
+      },
+      "coef_relerr": {
+        "mean": 0.000308,
+        "std": 0.000228,
+        "min": 7.8e-05,
+        "max": 0.000695
+      },
+      "structure_counts": {
+        "3": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "rime_static|d3_C100_uniform_1x": {
+      "method": "rime_static",
+      "world": "d3_C100_uniform_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 0.999974,
+        "std": 2e-06,
+        "min": 0.999971,
+        "max": 0.999976
+      },
+      "coef_relerr": {
+        "mean": 0.000326,
+        "std": 0.000212,
+        "min": 5e-06,
+        "max": 0.000671
+      },
+      "structure_counts": {
+        "3": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "rime_static|d6_C1e12_irregular_1x": {
+      "method": "rime_static",
+      "world": "d6_C1e12_irregular_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 1.0,
+        "std": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "coef_relerr": {
+        "mean": 0.000371,
+        "std": 0.000155,
+        "min": 0.000188,
+        "max": 0.000567
+      },
+      "structure_counts": {
+        "6": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "rime_static|d6_C1e12_log_1x": {
+      "method": "rime_static",
+      "world": "d6_C1e12_log_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "recovered_structure": 5
+      },
+      "holdout_r2": {
+        "mean": 1.0,
+        "std": 0.0,
+        "min": 0.999999,
+        "max": 1.0
+      },
+      "coef_relerr": {
+        "mean": 0.000368,
+        "std": 0.000193,
+        "min": 0.000203,
+        "max": 0.000729
+      },
+      "structure_counts": {
+        "6": 5
+      },
+      "scope_verdict_counts": {
+        "promoted": 5
+      }
+    },
+    "rime_static|neg_exp_log_1x": {
+      "method": "rime_static",
+      "world": "neg_exp_log_1x",
+      "repeats": 5,
+      "verdict_counts": {
+        "failed": 5
+      },
+      "holdout_r2": {
+        "mean": 0.07753,
+        "std": 1.6e-05,
+        "min": 0.077502,
+        "max": 0.077546
+      },
+      "coef_relerr": null,
+      "structure_counts": {
+        "None": 5
+      },
+      "scope_verdict_counts": {
+        "declined": 5
+      }
+    }
+  },
+  "rates": {
+    "rime_static": {
+      "recovery_rate_per_seed": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "recovery_rate": {
+        "mean": 1.0,
+        "std": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "correct_recovery_in_repeats": "5/5",
+      "in_grammar_worlds_per_seed": 11,
+      "out_of_grammar_emitted_declined": 5,
+      "out_of_grammar_emitted_promoted": 0,
+      "in_grammar_scope_declined_across_repeats": 0
+    },
+    "ols_monomial": {
+      "recovery_rate_per_seed": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "recovery_rate": {
+        "mean": 1.0,
+        "std": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "correct_recovery_in_repeats": "5/5",
+      "in_grammar_worlds_per_seed": 11,
+      "out_of_grammar_emitted_declined": 5,
+      "out_of_grammar_emitted_promoted": 0,
+      "in_grammar_scope_declined_across_repeats": 0
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "problem_id": "P16",
+  "problem_name": "Planck Blackbody Radiation Spectrum",
+  "class_id": 3,
+  "class_name": "Asymptotic & Extrapolation Regimes",
+  "input_variables": [
+    "nu"
+  ],
+  "target_variable": "u",
+  "variable_units": {
+    "nu": "per_second",
+    "u": "joule_second_per_meter**3"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

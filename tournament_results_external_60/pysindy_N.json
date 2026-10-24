@@ -1,0 +1,106 @@
+{
+  "block": "N",
+  "results": [
+    {
+      "competitor": "pysindy",
+      "problem_id": "N01",
+      "expression": "OUT_OF_SCOPE",
+      "abstained": true,
+      "abstain_reason": "SINDy discovers dynamical systems from trajectories; static-regression blocks are out of method scope",
+      "predictions": {},
+      "wall_seconds": 0.0007197856903076172,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "N02",
+      "expression": "OUT_OF_SCOPE",
+      "abstained": true,
+      "abstain_reason": "SINDy discovers dynamical systems from trajectories; static-regression blocks are out of method scope",
+      "predictions": {},
+      "wall_seconds": 0.0011949539184570312,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "N03",
+      "expression": "OUT_OF_SCOPE",
+      "abstained": true,
+      "abstain_reason": "SINDy discovers dynamical systems from trajectories; static-regression blocks are out of method scope",
+      "predictions": {},
+      "wall_seconds": 0.0008683204650878906,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "N04",
+      "expression": "OUT_OF_SCOPE",
+      "abstained": true,
+      "abstain_reason": "SINDy discovers dynamical systems from trajectories; static-regression blocks are out of method scope",
+      "predictions": {},
+      "wall_seconds": 0.0012581348419189453,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "N05",
+      "expression": "OUT_OF_SCOPE",
+      "abstained": true,
+      "abstain_reason": "SINDy discovers dynamical systems from trajectories; static-regression blocks are out of method scope",
+      "predictions": {},
+      "wall_seconds": 0.0011675357818603516,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "N06",
+      "expression": "OUT_OF_SCOPE",
+      "abstained": true,
+      "abstain_reason": "SINDy discovers dynamical systems from trajectories; static-regression blocks are out of method scope",
+      "predictions": {},
+      "wall_seconds": 0.0011403560638427734,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "N07",
+      "expression": "OUT_OF_SCOPE",
+      "abstained": true,
+      "abstain_reason": "SINDy discovers dynamical systems from trajectories; static-regression blocks are out of method scope",
+      "predictions": {},
+      "wall_seconds": 0.001100301742553711,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "N08",
+      "expression": "OUT_OF_SCOPE",
+      "abstained": true,
+      "abstain_reason": "SINDy discovers dynamical systems from trajectories; static-regression blocks are out of method scope",
+      "predictions": {},
+      "wall_seconds": 0.0010631084442138672,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "N09",
+      "expression": "OUT_OF_SCOPE",
+      "abstained": true,
+      "abstain_reason": "SINDy discovers dynamical systems from trajectories; static-regression blocks are out of method scope",
+      "predictions": {},
+      "wall_seconds": 0.0010190010070800781,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "N10",
+      "expression": "OUT_OF_SCOPE",
+      "abstained": true,
+      "abstain_reason": "SINDy discovers dynamical systems from trajectories; static-regression blocks are out of method scope",
+      "predictions": {},
+      "wall_seconds": 0.0011668205261230469,
+      "metadata": {}
+    }
+  ],
+  "status": "N10 run, PySINDy 2.1.0, contract scope O-only"
+}

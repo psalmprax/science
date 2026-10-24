@@ -1,0 +1,108 @@
+{
+  "1m": {
+    "interval": "1m",
+    "bars": 1000,
+    "term_count": 2,
+    "equation": "S_1m = -0.3867*H-MACD +0.7591*H-EMA_CROSS",
+    "threshold": 0.1241,
+    "fitness_sr": -1.906,
+    "active_terms": [
+      "H-MACD",
+      "H-EMA_CROSS"
+    ],
+    "weights_dict": {
+      "H-MACD": -0.3867,
+      "H-EMA_CROSS": 0.7591
+    },
+    "elapsed_s": 1.36
+  },
+  "5m": {
+    "interval": "5m",
+    "bars": 1000,
+    "term_count": 2,
+    "equation": "S_5m = +0.1326*H-SQUEEZE +0.6550*H-EMA_CROSS",
+    "threshold": 0.1919,
+    "fitness_sr": -0.905,
+    "active_terms": [
+      "H-SQUEEZE",
+      "H-EMA_CROSS"
+    ],
+    "weights_dict": {
+      "H-SQUEEZE": 0.1326,
+      "H-EMA_CROSS": 0.655
+    },
+    "elapsed_s": 1.41
+  },
+  "15m": {
+    "interval": "15m",
+    "bars": 1000,
+    "term_count": 3,
+    "equation": "S_15m = -1.3289*H-EMA_CROSS +0.0480*H-MOM +0.4135*NL_SQUEEZE_TREND",
+    "threshold": 0.1305,
+    "fitness_sr": 0.093,
+    "active_terms": [
+      "H-EMA_CROSS",
+      "H-MOM",
+      "NL_SQUEEZE_TREND"
+    ],
+    "weights_dict": {
+      "H-EMA_CROSS": -1.3289,
+      "H-MOM": 0.048,
+      "NL_SQUEEZE_TREND": 0.4135
+    },
+    "elapsed_s": 1.38
+  },
+  "30m": {
+    "interval": "30m",
+    "bars": 1000,
+    "term_count": 2,
+    "equation": "S_30m = +1.0513*H-NATR +0.3191*H-EMA_CROSS",
+    "threshold": 0.0966,
+    "fitness_sr": 0.274,
+    "active_terms": [
+      "H-NATR",
+      "H-EMA_CROSS"
+    ],
+    "weights_dict": {
+      "H-NATR": 1.0513,
+      "H-EMA_CROSS": 0.3191
+    },
+    "elapsed_s": 1.85
+  },
+  "45m": {
+    "interval": "45m",
+    "bars": 333,
+    "term_count": 2,
+    "equation": "S_45m = -0.6851*H-SQUEEZE -0.7100*H-EMA_CROSS",
+    "threshold": 0.1027,
+    "fitness_sr": 2.526,
+    "active_terms": [
+      "H-SQUEEZE",
+      "H-EMA_CROSS"
+    ],
+    "weights_dict": {
+      "H-SQUEEZE": -0.6851,
+      "H-EMA_CROSS": -0.71
+    },
+    "elapsed_s": 0.89
+  },
+  "60m": {
+    "interval": "60m",
+    "bars": 1000,
+    "term_count": 3,
+    "equation": "S_60m = +0.9483*H-NATR +0.1863*H-SQUEEZE -0.2649*H-RV",
+    "threshold": 0.1751,
+    "fitness_sr": 1.21,
+    "active_terms": [
+      "H-NATR",
+      "H-SQUEEZE",
+      "H-RV"
+    ],
+    "weights_dict": {
+      "H-NATR": 0.9483,
+      "H-SQUEEZE": 0.1863,
+      "H-RV": -0.2649
+    },
+    "elapsed_s": 1.32
+  }
+}

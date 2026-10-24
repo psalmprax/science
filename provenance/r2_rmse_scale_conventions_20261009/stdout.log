@@ -1,0 +1,60 @@
+===================================================================================================================
+APEDP-X R^2 AND RMSE METHODOLOGY RECONCILIATION: AS-IS RAW SCORE VS. TRAIN-SCALED RETURN CONVENTION
+Data: Block A Train (753 bars, 2021-2023) | Block B Holdout (502 bars, 2024-2025)
+===================================================================================================================
+
+Universe N = 15 Assets:
+  Score Std Dev (O(1)):    Train = 1.5396 | Holdout = 1.4933
+  Return Std Dev (sigma):  Train = 0.0699 | Holdout = 0.0519
+  Fitted Train OLS Slope:  beta_scale = 0.001262
+  ---------------------------------------------------------------------------------
+  CONVENTION 1 [As-Is Raw Score (No Scaling)]:
+    Train:   RMSE = 1.5486 | R^2 =  -48,970.0%
+    Holdout: RMSE = 1.4957 | R^2 =  -82,910.1%
+  ---------------------------------------------------------------------------------
+  CONVENTION 2 [Train-Calibrated OLS Scale Factor (beta_scale=0.001262)]:
+    Train:   RMSE = 0.06990 (Null: 0.06991) | R^2 =   +0.02%
+    Holdout: RMSE = 0.05193 (Null: 0.05191) | R^2 =   -0.06%
+
+Universe N = 30 Assets:
+  Score Std Dev (O(1)):    Train = 0.9070 | Holdout = 0.8792
+  Return Std Dev (sigma):  Train = 0.0686 | Holdout = 0.0540
+  Fitted Train OLS Slope:  beta_scale = 0.001226
+  ---------------------------------------------------------------------------------
+  CONVENTION 1 [As-Is Raw Score (No Scaling)]:
+    Train:   RMSE = 0.9135 | R^2 =  -17,615.9%
+    Holdout: RMSE = 0.8816 | R^2 =  -26,518.1%
+  ---------------------------------------------------------------------------------
+  CONVENTION 2 [Train-Calibrated OLS Scale Factor (beta_scale=0.001226)]:
+    Train:   RMSE = 0.06863 (Null: 0.06863) | R^2 =   +0.01%
+    Holdout: RMSE = 0.05404 (Null: 0.05404) | R^2 =   -0.02%
+
+Universe N = 60 Assets:
+  Score Std Dev (O(1)):    Train = 1.3084 | Holdout = 1.7717
+  Return Std Dev (sigma):  Train = 0.0638 | Holdout = 0.0501
+  Fitted Train OLS Slope:  beta_scale = 0.001630
+  ---------------------------------------------------------------------------------
+  CONVENTION 1 [As-Is Raw Score (No Scaling)]:
+    Train:   RMSE = 1.3081 | R^2 =  -41,948.5%
+    Holdout: RMSE = 1.7746 | R^2 = -125,335.1%
+  ---------------------------------------------------------------------------------
+  CONVENTION 2 [Train-Calibrated OLS Scale Factor (beta_scale=0.001630)]:
+    Train:   RMSE = 0.06376 (Null: 0.06379) | R^2 =   +0.10%
+    Holdout: RMSE = 0.05020 (Null: 0.05011) | R^2 =   -0.37%
+
+Universe N = 90 Assets:
+  Score Std Dev (O(1)):    Train = 1.0964 | Holdout = 1.1003
+  Return Std Dev (sigma):  Train = 0.0531 | Holdout = 0.0422
+  Fitted Train OLS Slope:  beta_scale = 0.002015
+  ---------------------------------------------------------------------------------
+  CONVENTION 1 [As-Is Raw Score (No Scaling)]:
+    Train:   RMSE = 1.1192 | R^2 =  -44,383.4%
+    Holdout: RMSE = 1.1076 | R^2 =  -68,870.9%
+  ---------------------------------------------------------------------------------
+  CONVENTION 2 [Train-Calibrated OLS Scale Factor (beta_scale=0.002015)]:
+    Train:   RMSE = 0.05302 (Null: 0.05307) | R^2 =   +0.17%
+    Holdout: RMSE = 0.04222 (Null: 0.04218) | R^2 =   -0.20%
+
+===================================================================================================================
+Reconciliation results saved to scratch/reconcile_r2_rmse_conventions.json
+===================================================================================================================

@@ -1,0 +1,2024 @@
+{
+  "harness": "rime_microsample_adjudication",
+  "status": "audit-only",
+  "monotonicity_engine": "sound_monotonicity_v2 (exact root isolation, NO tolerance filter, UNRESOLVED fallback)",
+  "decision_protocol": "ABSTAIN/REJECT/PROMOTE with empty-packet guard (defect-2 fix)",
+  "langmuir_1918": {
+    "system": "langmuir_1918_table_vii",
+    "n": 11,
+    "scale_multipliers": [
+      0.4,
+      0.5,
+      0.6,
+      0.66,
+      0.7,
+      0.8,
+      1.0,
+      2.0
+    ],
+    "loocv_rmse_8scale": 0.4048098909748366,
+    "loocv_rmse_continuous": 0.4087201137382717,
+    "wilcoxon": {
+      "W": 22.0,
+      "p": 0.365234375
+    },
+    "interpretation_disclosed": "p = 0.3652 does NOT establish statistical equivalence on N = 11; it is absence-of-detection, with a slight observed RMSE edge",
+    "unanimity_certified_by_exact_family_proof": true,
+    "folds": [
+      {
+        "fold": 0,
+        "base_s": 6.52243052856832,
+        "selected_s": 6.52243052856832,
+        "w0": 39.32704834090485,
+        "pred8": 32.99702476257181,
+        "residual8": -0.002975237428188393,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 1,
+        "base_s": 9.034849196306489,
+        "selected_s": 6.324394437414542,
+        "w0": 38.90310918297443,
+        "pred8": 30.735688329881572,
+        "residual8": -0.06431167011842831,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 2,
+        "base_s": 9.72604750142626,
+        "selected_s": 6.419191350941332,
+        "w0": 39.188503129817875,
+        "pred8": 28.582808499453478,
+        "residual8": 0.3828084994534784,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 3,
+        "base_s": 9.902832928006006,
+        "selected_s": 6.535869732483964,
+        "w0": 39.49649324618274,
+        "pred8": 26.282649261661025,
+        "residual8": 0.7826492616610246,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 4,
+        "base_s": 9.893816250567827,
+        "selected_s": 6.529918725374766,
+        "w0": 39.239797116129665,
+        "pred8": 23.25514427051573,
+        "residual8": -0.6448557294842701,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 5,
+        "base_s": 9.822774557119796,
+        "selected_s": 6.483031207699066,
+        "w0": 39.14042570801525,
+        "pred8": 20.86281777416798,
+        "residual8": -0.7371822258320222,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 6,
+        "base_s": 9.753645472334947,
+        "selected_s": 6.437406011741065,
+        "w0": 39.15846787877921,
+        "pred8": 19.052318624511216,
+        "residual8": 0.05231862451121572,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 7,
+        "base_s": 9.679777890013801,
+        "selected_s": 6.388653407409109,
+        "w0": 39.0681971668402,
+        "pred8": 17.152246086189447,
+        "residual8": 0.15224608618944657,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 8,
+        "base_s": 9.60010937437694,
+        "selected_s": 6.336072187088781,
+        "w0": 38.93769387562808,
+        "pred8": 15.068661739521044,
+        "residual8": -0.031338260478955604,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 9,
+        "base_s": 9.546460076908089,
+        "selected_s": 6.300663650759339,
+        "w0": 38.88832727404967,
+        "pred8": 13.630027541612481,
+        "residual8": 0.23002754161248085,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      },
+      {
+        "fold": 10,
+        "base_s": 9.488334943497726,
+        "selected_s": 6.2623010627085,
+        "w0": 38.78554199350943,
+        "pred8": 11.983658105193062,
+        "residual8": -0.016341894806938484,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)"
+      }
+    ]
+  },
+  "fold_level_rime": {
+    "dataset": "langmuir_1918_table_vii (N=11, LOOCV)",
+    "seed": 42,
+    "disclosed_limit": "bank_restricted mode selects WITHIN a Python-predefined saturation bank (structural recovery claim holds unrestrictedly via unrestricted_grammar mode; the two are NOT the same experiment)",
+    "bank_restricted": {
+      "loocv_rmse": 0.4824364906684843,
+      "recovery": {
+        "sat_family_top_rank_folds": 11,
+        "n": 11
+      },
+      "abstentions": 0,
+      "selected_scale_m_counts": {
+        "m=0.8": 1,
+        "m=0.66": 7,
+        "m=0.6": 2,
+        "m=0.7": 1
+      },
+      "folds": [
+        {
+          "fold": 0,
+          "abstained": false,
+          "formula": "+39.6685 * (sat_0.8) -2.11956",
+          "selected_scale_m": 0.8,
+          "family": "sat",
+          "dev_r2": 0.9965746724950375,
+          "readout_scale": 39.66851753919593,
+          "readout_intercept": -2.119563617698674,
+          "held_out_p": 34.0,
+          "held_out_q": 33.0,
+          "predicted": 32.27106078092931,
+          "error": -0.7289392190706891,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 1,
+          "abstained": false,
+          "formula": "+39.1948 * (sat_0.66) -0.663809",
+          "selected_scale_m": 0.66,
+          "family": "sat",
+          "dev_r2": 0.9967849055153968,
+          "readout_scale": 39.19484881562625,
+          "readout_intercept": -0.6638087104354646,
+          "held_out_p": 23.8,
+          "held_out_q": 30.8,
+          "predicted": 30.678374103622186,
+          "error": -0.12162589637781451,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 2,
+          "abstained": false,
+          "formula": "+39.0185 * (sat_0.66) +0.10119",
+          "selected_scale_m": 0.66,
+          "family": "sat",
+          "dev_r2": 0.997291018424382,
+          "readout_scale": 39.01848034795596,
+          "readout_intercept": 0.10118982920500841,
+          "held_out_p": 17.3,
+          "held_out_q": 28.2,
+          "predicted": 28.559989289619537,
+          "error": 0.3599892896195378,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 3,
+          "abstained": false,
+          "formula": "+39.5927 * (sat_0.6) -0.834627",
+          "selected_scale_m": 0.6,
+          "family": "sat",
+          "dev_r2": 0.9984837983462775,
+          "readout_scale": 39.59274094328422,
+          "readout_intercept": -0.8346272503360126,
+          "held_out_p": 13.0,
+          "held_out_q": 25.5,
+          "predicted": 26.338521879420384,
+          "error": 0.8385218794203837,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 4,
+          "abstained": false,
+          "formula": "+38.6651 * (sat_0.66) +0.350417",
+          "selected_scale_m": 0.66,
+          "family": "sat",
+          "dev_r2": 0.9979893317027123,
+          "readout_scale": 38.66510651070928,
+          "readout_intercept": 0.3504172385247166,
+          "held_out_p": 9.5,
+          "held_out_q": 23.9,
+          "predicted": 23.264975830159155,
+          "error": -0.6350241698408432,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 5,
+          "abstained": false,
+          "formula": "+38.5392 * (sat_0.7) +0.837973",
+          "selected_scale_m": 0.7,
+          "family": "sat",
+          "dev_r2": 0.9982183947220993,
+          "readout_scale": 38.539176376318935,
+          "readout_intercept": 0.8379734632515579,
+          "held_out_p": 7.4,
+          "held_out_q": 21.6,
+          "predicted": 20.8149319987696,
+          "error": -0.7850680012303997,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 6,
+          "abstained": false,
+          "formula": "+39.3649 * (sat_0.6) -0.890402",
+          "selected_scale_m": 0.6,
+          "family": "sat",
+          "dev_r2": 0.9973232514403734,
+          "readout_scale": 39.36485545149151,
+          "readout_intercept": -0.8904016646577873,
+          "held_out_p": 6.1,
+          "held_out_q": 19.0,
+          "predicted": 19.200115038304297,
+          "error": 0.2001150383042969,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 7,
+          "abstained": false,
+          "formula": "+38.7873 * (sat_0.66) +0.17563",
+          "selected_scale_m": 0.66,
+          "family": "sat",
+          "dev_r2": 0.9972679803698533,
+          "readout_scale": 38.78734709813642,
+          "readout_intercept": 0.17563016098701567,
+          "held_out_p": 5.0,
+          "held_out_q": 17.0,
+          "predicted": 17.204573667557582,
+          "error": 0.20457366755758244,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 8,
+          "abstained": false,
+          "formula": "+38.9201 * (sat_0.66) +0.0110633",
+          "selected_scale_m": 0.66,
+          "family": "sat",
+          "dev_r2": 0.9970589549310923,
+          "readout_scale": 38.920096750155935,
+          "readout_intercept": 0.0110632787017515,
+          "held_out_p": 4.0,
+          "held_out_q": 15.1,
+          "predicted": 15.072915032706584,
+          "error": -0.027084967293415474,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 9,
+          "abstained": false,
+          "formula": "+38.7738 * (sat_0.66) +0.072186",
+          "selected_scale_m": 0.66,
+          "family": "sat",
+          "dev_r2": 0.996995610834526,
+          "readout_scale": 38.773821103496445,
+          "readout_intercept": 0.07218602372264726,
+          "held_out_p": 3.4,
+          "held_out_q": 13.4,
+          "predicted": 13.662080127675893,
+          "error": 0.26208012767589217,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 10,
+          "abstained": false,
+          "formula": "+39.0514 * (sat_0.66) -0.167952",
+          "selected_scale_m": 0.66,
+          "family": "sat",
+          "dev_r2": 0.996678630890665,
+          "readout_scale": 39.05140357017093,
+          "readout_intercept": -0.16795235956687904,
+          "held_out_p": 2.8,
+          "held_out_q": 12.0,
+          "predicted": 11.897849608371537,
+          "error": -0.10215039162846296,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        }
+      ]
+    },
+    "unrestricted_grammar": {
+      "grammar": [
+        "sq",
+        "cub",
+        "ssqrt",
+        "slog",
+        "sat",
+        "sat_sq",
+        "sat_norm"
+      ],
+      "loocv_rmse": 0.6299967237792721,
+      "recovery": {
+        "sat_family_top_rank_folds": 11,
+        "n": 11
+      },
+      "abstentions": 0,
+      "folds": [
+        {
+          "fold": 0,
+          "abstained": false,
+          "formula": "+38.5728 * (sat_norm(p)) +0.43095",
+          "family": "sat_norm",
+          "dev_r2": 0.9963530990969465,
+          "readout_scale": 38.572784575156476,
+          "readout_intercept": 0.43094961827500455,
+          "held_out_p": 34.0,
+          "held_out_q": 33.0,
+          "predicted": 32.79511579608436,
+          "error": -0.20488420391563977,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 1,
+          "abstained": false,
+          "formula": "+37.8742 * (sat_norm(p)) +3.53896",
+          "family": "sat_norm",
+          "dev_r2": 0.9931580785895489,
+          "readout_scale": 37.87419477929369,
+          "readout_intercept": 3.5389561747490106,
+          "held_out_p": 23.8,
+          "held_out_q": 30.8,
+          "predicted": 30.991673571379742,
+          "error": 0.1916735713797415,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 2,
+          "abstained": false,
+          "formula": "+37.7961 * (sat_norm(p)) +4.17972",
+          "family": "sat_norm",
+          "dev_r2": 0.9923730483140369,
+          "readout_scale": 37.79612755791443,
+          "readout_intercept": 4.179722994612696,
+          "held_out_p": 17.3,
+          "held_out_q": 28.2,
+          "predicted": 28.37390110065697,
+          "error": 0.17390110065696973,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 3,
+          "abstained": false,
+          "formula": "+37.8006 * (sat_norm(p)) +4.33577",
+          "family": "sat_norm",
+          "dev_r2": 0.9925762604768482,
+          "readout_scale": 37.80059933939943,
+          "readout_intercept": 4.335766605948567,
+          "held_out_p": 13.0,
+          "held_out_q": 25.5,
+          "predicted": 25.791967808520766,
+          "error": 0.2919678085207664,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 4,
+          "abstained": false,
+          "formula": "+37.6201 * (sat_norm(p)) +4.27654",
+          "family": "sat_norm",
+          "dev_r2": 0.9951748614549529,
+          "readout_scale": 37.62007656772627,
+          "readout_intercept": 4.27653873674868,
+          "held_out_p": 9.5,
+          "held_out_q": 23.9,
+          "predicted": 22.70461512851792,
+          "error": -1.19538487148208,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 5,
+          "abstained": false,
+          "formula": "+37.8298 * (sat_norm(p)) +4.11761",
+          "family": "sat_norm",
+          "dev_r2": 0.9955039488498802,
+          "readout_scale": 37.82983794708611,
+          "readout_intercept": 4.11760510314765,
+          "held_out_p": 7.4,
+          "held_out_q": 21.6,
+          "predicted": 20.371710960482428,
+          "error": -1.2282890395175734,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 6,
+          "abstained": false,
+          "formula": "+37.778 * (sat_norm(p)) +4.1687",
+          "family": "sat_norm",
+          "dev_r2": 0.9929879867287986,
+          "readout_scale": 37.777951556079046,
+          "readout_intercept": 4.168702003389562,
+          "held_out_p": 6.1,
+          "held_out_q": 19.0,
+          "predicted": 18.70450734192927,
+          "error": -0.29549265807073155,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 7,
+          "abstained": false,
+          "formula": "+37.7068 * (sat_norm(p)) +4.16753",
+          "family": "sat_norm",
+          "dev_r2": 0.9927398374602856,
+          "readout_scale": 37.70683764649536,
+          "readout_intercept": 4.1675293150910555,
+          "held_out_p": 5.0,
+          "held_out_q": 17.0,
+          "predicted": 17.01065198663575,
+          "error": 0.010651986635750177,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 8,
+          "abstained": false,
+          "formula": "+37.6584 * (sat_norm(p)) +4.13151",
+          "family": "sat_norm",
+          "dev_r2": 0.9925547444056627,
+          "readout_scale": 37.65835653068281,
+          "readout_intercept": 4.131514441920654,
+          "held_out_p": 4.0,
+          "held_out_q": 15.1,
+          "predicted": 15.207412581867208,
+          "error": 0.1074125818672087,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 9,
+          "abstained": false,
+          "formula": "+37.3008 * (sat_norm(p)) +4.30804",
+          "family": "sat_norm",
+          "dev_r2": 0.993075799324086,
+          "readout_scale": 37.30075233028754,
+          "readout_intercept": 4.308039298300191,
+          "held_out_p": 3.4,
+          "held_out_q": 13.4,
+          "predicted": 14.103964761290982,
+          "error": 0.7039647612909814,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        },
+        {
+          "fold": 10,
+          "abstained": false,
+          "formula": "+37.165 * (sat_norm(p)) +4.33133",
+          "family": "sat_norm",
+          "dev_r2": 0.9929455527361034,
+          "readout_scale": 37.164951957867046,
+          "readout_intercept": 4.331329046688257,
+          "held_out_p": 2.8,
+          "held_out_q": 12.0,
+          "predicted": 12.799674510944278,
+          "error": 0.7996745109442784,
+          "partial_gate_decision": "PROMOTED",
+          "partial_gate_reason": "all declared gates passed on every proposal"
+        }
+      ]
+    }
+  },
+  "michaelis_menten": {
+    "system": "michaelis_menten",
+    "n": 12,
+    "scale_multipliers": [
+      0.25,
+      0.33,
+      0.5,
+      0.67,
+      1.0,
+      2.0
+    ],
+    "loocv_rmse": 0.174002511167721,
+    "unanimity": true,
+    "per_gate_passes": {
+      "gate_origin": 12,
+      "gate_saturation": 12,
+      "gate_monotonicity": 12
+    },
+    "folds": [
+      {
+        "fold": 0,
+        "selected_s": 2.049545681364531,
+        "w0": 9.526604104365866,
+        "pred": 1.035705028776908,
+        "true": 0.9686966074522569,
+        "residual": 0.06700842132465112,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 1,
+        "selected_s": 2.056340803466196,
+        "w0": 9.542589443326932,
+        "pred": 1.866454862041074,
+        "true": 1.6500749505261245,
+        "residual": 0.2163799115149494,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 2,
+        "selected_s": 2.062786343759334,
+        "w0": 9.550348077721436,
+        "pred": 2.5465002253665423,
+        "true": 2.3854149322643905,
+        "residual": 0.1610852931021518,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 3,
+        "selected_s": 2.068885569576046,
+        "w0": 9.553178680560388,
+        "pred": 3.1129145952092694,
+        "true": 3.03990643991182,
+        "residual": 0.0730081552974493,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 4,
+        "selected_s": 2.0800570905626605,
+        "w0": 9.589200694091641,
+        "pred": 4.017757448353101,
+        "true": 3.7219015950331995,
+        "residual": 0.2958558533199014,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 5,
+        "selected_s": 2.0898773887479623,
+        "w0": 9.603746454704616,
+        "pred": 4.696349323882601,
+        "true": 4.416348009610543,
+        "residual": 0.28000131427205854,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 6,
+        "selected_s": 2.1055373423428048,
+        "w0": 9.589437618584828,
+        "pred": 5.634727733193587,
+        "true": 5.644050992406341,
+        "residual": -0.009323259212753676,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 7,
+        "selected_s": 2.1212938268896178,
+        "w0": 9.606838714956695,
+        "pred": 6.745149791939348,
+        "true": 6.758758834165016,
+        "residual": -0.013609042225668055,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 8,
+        "selected_s": 2.1122588619769123,
+        "w0": 9.608061581869464,
+        "pred": 7.4967250569030774,
+        "true": 7.443663073687806,
+        "residual": 0.05306198321527145,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 9,
+        "selected_s": 2.0708422199675183,
+        "w0": 9.515720059546448,
+        "pred": 7.883227935665995,
+        "true": 8.065107205230316,
+        "residual": -0.18187926956432054,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 10,
+        "selected_s": 2.849487049677712,
+        "w0": 10.45881499166586,
+        "pred": 8.78917273299574,
+        "true": 8.515818448291075,
+        "residual": 0.2733542847046646,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      },
+      {
+        "fold": 11,
+        "selected_s": 2.2703965321553725,
+        "w0": 9.766078834559728,
+        "pred": 8.770457966887891,
+        "true": 8.83300131846046,
+        "residual": -0.06254335157256818,
+        "gate_origin": true,
+        "gate_saturation": true,
+        "gate_monotonicity": true,
+        "cert_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "admissible": true
+      }
+    ]
+  },
+  "negative_controls": {
+    "noise_control": {
+      "n_proposals": 0,
+      "decision": "ABSTAIN_NO_HYPOTHESIS_GENERATED",
+      "rationale": "proposal packet empty; proposer abstained (zero false-discovery path)"
+    },
+    "decay_control": {
+      "n_proposals": 4,
+      "decision": "REJECTED",
+      "rationale": "CandidateProposal(proposer_id='rime_symbolic_mechanism_search', candidate_id='ri: capacity_positive \u2014 scale -3.0353; CandidateProposal(proposer_id='rime_symbolic_mechanism_search', candidate_id='ri: capacity_positive \u2014 scale -3.0353; CandidateProposal(proposer_id='rime_symbolic_mechanism_search', candidate_id='ri: capacity_positive \u2014 scale -69.6523",
+      "proposal_formulas": [
+        "-3.03529 * (t) +29.9478",
+        "-3.03529 * (abs(t)) +29.9478",
+        "-69.6523 * (tanh(t)) +76.9287",
+        "-0.199143 * ((t * t)) +21.3501"
+      ],
+      "all_scales_negative": true
+    },
+    "empty_packet_decision": "ABSTAIN_NO_HYPOTHESIS_GENERATED"
+  },
+  "structure_aware_referee": {
+    "cases": {
+      "discovery_sat_norm_winner": {
+        "verdict": "PROMOTED",
+        "invariant_report": {
+          "idx": 0,
+          "formula": "+37.7146770 * (sat_norm(p)) +3.9700646",
+          "family": "sat_norm",
+          "w": 37.71467702437663,
+          "b": 3.970064638094019,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 9.45417831454991,
+          "q0": 3.970064638094019,
+          "q_inf": 41.68474166247064,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        "rationale": "1/1 entries passed the structure-aware gates; origin invariant q(0) reported with origin_strict_satisfied flag (strict-law promotion is governed by that flag, not by a |b| tolerance)"
+      },
+      "counterfeit_quadratic": {
+        "verdict": "REJECTED",
+        "invariant_report": {
+          "idx": 0,
+          "formula": "+5.0 * (sq(p)) +0.5",
+          "family": "sq",
+          "w": 5.0,
+          "b": 0.5,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "rejected": "non-saturating structure 'sq': no finite positive saturation limit; capacity/monotonicity gates not applicable to this structure"
+        },
+        "rationale": "+5.0 * (sq(p)) +0.5: structure \u2014 non-saturating structure 'sq': no finite positive saturation limit; capacity/monotonicity gates not applicable to this structure"
+      },
+      "negative_scale_saturation": {
+        "verdict": "REJECTED_QUALITATIVE_DYNAMICS_INVERSION",
+        "invariant_report": {
+          "idx": 0,
+          "formula": "-64.15 * (sat_norm(t)) +47.44",
+          "family": "sat_norm",
+          "w": -64.15,
+          "b": 47.44,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 9.45417831454991,
+          "q0": 47.44,
+          "q_inf": -16.710000000000008,
+          "monotonicity": "VIOLATED",
+          "mono_rationale": "exact family certificate fails: requires w > 0; got w = -64.15",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": false,
+            "saturation_finite_positive": false,
+            "exact_monotonicity": false
+          },
+          "rejected": "capacity_positive; saturation_finite_positive; exact_monotonicity"
+        },
+        "rationale": "-64.15 * (sat_norm(t)) +47.44: gates \u2014 capacity_positive; saturation_finite_positive; exact_monotonicity"
+      },
+      "zero_intercept_baseline": {
+        "verdict": "PROMOTED",
+        "invariant_report": {
+          "idx": 0,
+          "formula": "+39.33 * (sat_norm(p)) +0",
+          "family": "sat_norm",
+          "w": 39.33,
+          "b": 0.0,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.52,
+          "q0": 0.0,
+          "q_inf": 39.33,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": true,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        "rationale": "1/1 entries passed the structure-aware gates; origin invariant q(0) reported with origin_strict_satisfied flag (strict-law promotion is governed by that flag, not by a |b| tolerance)"
+      }
+    },
+    "elevenfold": {
+      "verdict": "PROMOTED",
+      "promoted": 11,
+      "total": 11,
+      "origin_strict_satisfied_count": 0,
+      "rationale": "11/11 entries passed the structure-aware gates; origin invariant q(0) reported with origin_strict_satisfied flag (strict-law promotion is governed by that flag, not by a |b| tolerance)",
+      "reports": [
+        {
+          "idx": 0,
+          "formula": "+39.6685 * (sat_0.8) -2.11956",
+          "family": "sat",
+          "w": 39.66851753919593,
+          "b": -2.119563617698674,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 5.217944422854656,
+          "q0": -2.119563617698674,
+          "q_inf": 37.54895392149726,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 1,
+          "formula": "+39.1948 * (sat_0.66) -0.663809",
+          "family": "sat",
+          "w": 39.19484881562625,
+          "b": -0.6638087104354646,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 5.9630004695622825,
+          "q0": -0.6638087104354646,
+          "q_inf": 38.53104010519078,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 2,
+          "formula": "+39.0185 * (sat_0.66) +0.10119",
+          "family": "sat",
+          "w": 39.01848034795596,
+          "b": 0.10118982920500841,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.419191350941332,
+          "q0": 0.10118982920500841,
+          "q_inf": 39.11967017716097,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 3,
+          "formula": "+39.5927 * (sat_0.6) -0.834627",
+          "family": "sat",
+          "w": 39.59274094328422,
+          "b": -0.8346272503360126,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 5.941699756803604,
+          "q0": -0.8346272503360126,
+          "q_inf": 38.75811369294821,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 4,
+          "formula": "+38.6651 * (sat_0.66) +0.350417",
+          "family": "sat",
+          "w": 38.66510651070928,
+          "b": 0.3504172385247166,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.529918725374766,
+          "q0": 0.3504172385247166,
+          "q_inf": 39.01552374923399,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 5,
+          "formula": "+38.5392 * (sat_0.7) +0.837973",
+          "family": "sat",
+          "w": 38.539176376318935,
+          "b": 0.8379734632515579,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.875942189983857,
+          "q0": 0.8379734632515579,
+          "q_inf": 39.37714983957049,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 6,
+          "formula": "+39.3649 * (sat_0.6) -0.890402",
+          "family": "sat",
+          "w": 39.36485545149151,
+          "b": -0.8904016646577873,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 5.852187283400968,
+          "q0": -0.8904016646577873,
+          "q_inf": 38.47445378683372,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 7,
+          "formula": "+38.7873 * (sat_0.66) +0.17563",
+          "family": "sat",
+          "w": 38.78734709813642,
+          "b": 0.17563016098701567,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.388653407409109,
+          "q0": 0.17563016098701567,
+          "q_inf": 38.962977259123434,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 8,
+          "formula": "+38.9201 * (sat_0.66) +0.0110633",
+          "family": "sat",
+          "w": 38.920096750155935,
+          "b": 0.0110632787017515,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.336072187088781,
+          "q0": 0.0110632787017515,
+          "q_inf": 38.93116002885769,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 9,
+          "formula": "+38.7738 * (sat_0.66) +0.072186",
+          "family": "sat",
+          "w": 38.773821103496445,
+          "b": 0.07218602372264726,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.300663650759339,
+          "q0": 0.07218602372264726,
+          "q_inf": 38.846007127219096,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        },
+        {
+          "idx": 10,
+          "formula": "+39.0514 * (sat_0.66) -0.167952",
+          "family": "sat",
+          "w": 39.05140357017093,
+          "b": -0.16795235956687904,
+          "structure_checked_from": "declared_formula_family + declared_scale (not intercept)",
+          "s": 6.2623010627085,
+          "q0": -0.16795235956687904,
+          "q_inf": 38.88345121060405,
+          "monotonicity": "CERTIFIED_MONOTONIC",
+          "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+          "origin_strict_satisfied": false,
+          "gates": {
+            "capacity_positive": true,
+            "saturation_finite_positive": true,
+            "exact_monotonicity": true
+          },
+          "promoted": true
+        }
+      ]
+    }
+  },
+  "graph_validated_fold_referee": {
+    "mode": "bank_restricted_graph_validated",
+    "n_folds": 11,
+    "promoted": 11,
+    "structure_validated_folds": 11,
+    "abstentions": 0,
+    "max_affine_readout_dev": 0.0,
+    "folds": [
+      {
+        "fold": 0,
+        "abstained": false,
+        "formula": "+39.6685 * (sat_0.8) -2.11956",
+        "graph_id": "afee1fc22cb5ee4d04de7fca0e74bad51ec4d82f9a68db8601672cf54ea5bbba",
+        "kernel_equation": "sat_0.8",
+        "inputs_used_names": [
+          "sat_0.8"
+        ],
+        "feature_tok": "sat_0.8",
+        "declared_s_m": 5.217944422854656,
+        "w": 39.66851753919593,
+        "b": -2.119563617698674,
+        "q0": -2.119563617698674,
+        "q_inf": 37.54895392149726,
+        "dev_r2": 0.9965746724950375,
+        "integral_check_error": -0.7289392190706891,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "origin_strict_satisfied": false,
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 1,
+        "abstained": false,
+        "formula": "+39.1948 * (sat_0.66) -0.663809",
+        "graph_id": "e39ebaeee77af2fed234a2deec1249372d5eac2d685ece66f19bf6c6eb0b9cc4",
+        "kernel_equation": "sat_0.66",
+        "inputs_used_names": [
+          "sat_0.66"
+        ],
+        "feature_tok": "sat_0.66",
+        "declared_s_m": 5.9630004695622825,
+        "w": 39.19484881562625,
+        "b": -0.6638087104354646,
+        "q0": -0.6638087104354646,
+        "q_inf": 38.53104010519078,
+        "dev_r2": 0.9967849055153968,
+        "integral_check_error": -0.12162589637781451,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "origin_strict_satisfied": false,
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 2,
+        "abstained": false,
+        "formula": "+39.0185 * (sat_0.66) +0.10119",
+        "graph_id": "e39ebaeee77af2fed234a2deec1249372d5eac2d685ece66f19bf6c6eb0b9cc4",
+        "kernel_equation": "sat_0.66",
+        "inputs_used_names": [
+          "sat_0.66"
+        ],
+        "feature_tok": "sat_0.66",
+        "declared_s_m": 6.419191350941332,
+        "w": 39.01848034795596,
+        "b": 0.10118982920500841,
+        "q0": 0.10118982920500841,
+        "q_inf": 39.11967017716097,
+        "dev_r2": 0.997291018424382,
+        "integral_check_error": 0.3599892896195378,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "origin_strict_satisfied": false,
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 3,
+        "abstained": false,
+        "formula": "+39.5927 * (sat_0.6) -0.834627",
+        "graph_id": "94625eaaaafed4b5e913cd709d64f78a73e525d04fdceaf784656431ad4cafca",
+        "kernel_equation": "sat_0.6",
+        "inputs_used_names": [
+          "sat_0.6"
+        ],
+        "feature_tok": "sat_0.6",
+        "declared_s_m": 5.941699756803604,
+        "w": 39.59274094328422,
+        "b": -0.8346272503360126,
+        "q0": -0.8346272503360126,
+        "q_inf": 38.75811369294821,
+        "dev_r2": 0.9984837983462775,
+        "integral_check_error": 0.8385218794203837,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "origin_strict_satisfied": false,
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 4,
+        "abstained": false,
+        "formula": "+38.6651 * (sat_0.66) +0.350417",
+        "graph_id": "e39ebaeee77af2fed234a2deec1249372d5eac2d685ece66f19bf6c6eb0b9cc4",
+        "kernel_equation": "sat_0.66",
+        "inputs_used_names": [
+          "sat_0.66"
+        ],
+        "feature_tok": "sat_0.66",
+        "declared_s_m": 6.529918725374766,
+        "w": 38.66510651070928,
+        "b": 0.3504172385247166,
+        "q0": 0.3504172385247166,
+        "q_inf": 39.01552374923399,
+        "dev_r2": 0.9979893317027123,
+        "integral_check_error": -0.6350241698408432,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "origin_strict_satisfied": false,
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 5,
+        "abstained": false,
+        "formula": "+38.5392 * (sat_0.7) +0.837973",
+        "graph_id": "0791611a26e1cad2c4f0b5c098c576bee6457f6044017e79f93923ca005325a5",
+        "kernel_equation": "sat_0.7",
+        "inputs_used_names": [
+          "sat_0.7"
+        ],
+        "feature_tok": "sat_0.7",
+        "declared_s_m": 6.875942189983857,
+        "w": 38.539176376318935,
+        "b": 0.8379734632515579,
+        "q0": 0.8379734632515579,
+        "q_inf": 39.37714983957049,
+        "dev_r2": 0.9982183947220993,
+        "integral_check_error": -0.7850680012303997,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "origin_strict_satisfied": false,
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 6,
+        "abstained": false,
+        "formula": "+39.3649 * (sat_0.6) -0.890402",
+        "graph_id": "94625eaaaafed4b5e913cd709d64f78a73e525d04fdceaf784656431ad4cafca",
+        "kernel_equation": "sat_0.6",
+        "inputs_used_names": [
+          "sat_0.6"
+        ],
+        "feature_tok": "sat_0.6",
+        "declared_s_m": 5.852187283400968,
+        "w": 39.36485545149151,
+        "b": -0.8904016646577873,
+        "q0": -0.8904016646577873,
+        "q_inf": 38.47445378683372,
+        "dev_r2": 0.9973232514403734,
+        "integral_check_error": 0.2001150383042969,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "origin_strict_satisfied": false,
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 7,
+        "abstained": false,
+        "formula": "+38.7873 * (sat_0.66) +0.17563",
+        "graph_id": "e39ebaeee77af2fed234a2deec1249372d5eac2d685ece66f19bf6c6eb0b9cc4",
+        "kernel_equation": "sat_0.66",
+        "inputs_used_names": [
+          "sat_0.66"
+        ],
+        "feature_tok": "sat_0.66",
+        "declared_s_m": 6.388653407409109,
+        "w": 38.78734709813642,
+        "b": 0.17563016098701567,
+        "q0": 0.17563016098701567,
+        "q_inf": 38.962977259123434,
+        "dev_r2": 0.9972679803698533,
+        "integral_check_error": 0.20457366755758244,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "origin_strict_satisfied": false,
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 8,
+        "abstained": false,
+        "formula": "+38.9201 * (sat_0.66) +0.0110633",
+        "graph_id": "e39ebaeee77af2fed234a2deec1249372d5eac2d685ece66f19bf6c6eb0b9cc4",
+        "kernel_equation": "sat_0.66",
+        "inputs_used_names": [
+          "sat_0.66"
+        ],
+        "feature_tok": "sat_0.66",
+        "declared_s_m": 6.336072187088781,
+        "w": 38.920096750155935,
+        "b": 0.0110632787017515,
+        "q0": 0.0110632787017515,
+        "q_inf": 38.93116002885769,
+        "dev_r2": 0.9970589549310923,
+        "integral_check_error": -0.027084967293415474,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "origin_strict_satisfied": false,
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 9,
+        "abstained": false,
+        "formula": "+38.7738 * (sat_0.66) +0.072186",
+        "graph_id": "e39ebaeee77af2fed234a2deec1249372d5eac2d685ece66f19bf6c6eb0b9cc4",
+        "kernel_equation": "sat_0.66",
+        "inputs_used_names": [
+          "sat_0.66"
+        ],
+        "feature_tok": "sat_0.66",
+        "declared_s_m": 6.300663650759339,
+        "w": 38.773821103496445,
+        "b": 0.07218602372264726,
+        "q0": 0.07218602372264726,
+        "q_inf": 38.846007127219096,
+        "dev_r2": 0.996995610834526,
+        "integral_check_error": 0.26208012767589217,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "origin_strict_satisfied": false,
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 10,
+        "abstained": false,
+        "formula": "+39.0514 * (sat_0.66) -0.167952",
+        "graph_id": "e39ebaeee77af2fed234a2deec1249372d5eac2d685ece66f19bf6c6eb0b9cc4",
+        "kernel_equation": "sat_0.66",
+        "inputs_used_names": [
+          "sat_0.66"
+        ],
+        "feature_tok": "sat_0.66",
+        "declared_s_m": 6.2623010627085,
+        "w": 39.05140357017093,
+        "b": -0.16795235956687904,
+        "q0": -0.16795235956687904,
+        "q_inf": 38.88345121060405,
+        "dev_r2": 0.996678630890665,
+        "integral_check_error": -0.10215039162846296,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "origin_strict_satisfied": false,
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      }
+    ]
+  },
+  "michaelis_menten_graph_validated": {
+    "system": "michaelis_menten (S: mmol-ish grid, v: rate, true Vmax=10, Km=2.5)",
+    "n_folds": 12,
+    "seed": 42,
+    "scale_multipliers": [
+      0.25,
+      0.33,
+      0.5,
+      0.67,
+      1.0,
+      2.0
+    ],
+    "folds": [
+      {
+        "fold": 0,
+        "abstained": false,
+        "formula": "+10.083 * (sat_0.33) -0.381596",
+        "graph_id": "8ac88ac1bf22ed583ef30c25df4448ac050d5044e3f4a522a2169dc5ef604ec0",
+        "kernel_equation": "sat_0.33",
+        "inputs_used_names": [
+          "sat_0.33"
+        ],
+        "declared_s_m": 2.049545681364531,
+        "w": 10.083033412110138,
+        "b": -0.38159608837862447,
+        "q_inf": 9.701437323731515,
+        "dev_r2": 0.998506479313425,
+        "held_out_S": 0.25,
+        "held_out_v": 0.9686966074522569,
+        "predicted": 0.7146023361431,
+        "integral_check_error": -0.25409427130915696,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "origin_strict_satisfied": false,
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 1,
+        "abstained": false,
+        "formula": "+9.94731 * (sat_0.33) -0.27952",
+        "graph_id": "8ac88ac1bf22ed583ef30c25df4448ac050d5044e3f4a522a2169dc5ef604ec0",
+        "kernel_equation": "sat_0.33",
+        "inputs_used_names": [
+          "sat_0.33"
+        ],
+        "declared_s_m": 2.056340803466196,
+        "w": 9.947313128171645,
+        "b": -0.2795197798931923,
+        "q_inf": 9.667793348278453,
+        "dev_r2": 0.9980534501373621,
+        "held_out_S": 0.5,
+        "held_out_v": 1.6500749505261245,
+        "predicted": 1.6660958271267865,
+        "integral_check_error": 0.016020876600661982,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "origin_strict_satisfied": false,
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 2,
+        "abstained": false,
+        "formula": "+9.95606 * (sat_0.33) -0.281103",
+        "graph_id": "8ac88ac1bf22ed583ef30c25df4448ac050d5044e3f4a522a2169dc5ef604ec0",
+        "kernel_equation": "sat_0.33",
+        "inputs_used_names": [
+          "sat_0.33"
+        ],
+        "declared_s_m": 2.062786343759334,
+        "w": 9.956055774584973,
+        "b": -0.2811030662720766,
+        "q_inf": 9.674952708312897,
+        "dev_r2": 0.9982181396047353,
+        "held_out_S": 0.75,
+        "held_out_v": 2.3854149322643905,
+        "predicted": 2.373574864565325,
+        "integral_check_error": -0.011840067699065315,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "origin_strict_satisfied": false,
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 3,
+        "abstained": false,
+        "formula": "+9.97103 * (sat_0.33) -0.289775",
+        "graph_id": "8ac88ac1bf22ed583ef30c25df4448ac050d5044e3f4a522a2169dc5ef604ec0",
+        "kernel_equation": "sat_0.33",
+        "inputs_used_names": [
+          "sat_0.33"
+        ],
+        "declared_s_m": 2.068885569576046,
+        "w": 9.971034478952426,
+        "b": -0.28977505478481724,
+        "q_inf": 9.681259424167608,
+        "dev_r2": 0.9983975818120453,
+        "held_out_S": 1.0,
+        "held_out_v": 3.03990643991182,
+        "predicted": 2.9592983475609995,
+        "integral_check_error": -0.08060809235082056,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "origin_strict_satisfied": false,
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 4,
+        "abstained": false,
+        "formula": "+9.91953 * (sat_0.33) -0.228603",
+        "graph_id": "8ac88ac1bf22ed583ef30c25df4448ac050d5044e3f4a522a2169dc5ef604ec0",
+        "kernel_equation": "sat_0.33",
+        "inputs_used_names": [
+          "sat_0.33"
+        ],
+        "declared_s_m": 2.0800570905626605,
+        "w": 9.919531510106948,
+        "b": -0.22860287190022888,
+        "q_inf": 9.690928638206719,
+        "dev_r2": 0.9988966800517063,
+        "held_out_S": 1.5,
+        "held_out_v": 3.7219015950331995,
+        "predicted": 3.9275591357905233,
+        "integral_check_error": 0.2056575407573238,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "origin_strict_satisfied": false,
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 5,
+        "abstained": false,
+        "formula": "+9.93377 * (sat_0.33) -0.227368",
+        "graph_id": "8ac88ac1bf22ed583ef30c25df4448ac050d5044e3f4a522a2169dc5ef604ec0",
+        "kernel_equation": "sat_0.33",
+        "inputs_used_names": [
+          "sat_0.33"
+        ],
+        "declared_s_m": 2.0898773887479623,
+        "w": 9.933772535994976,
+        "b": -0.22736833718173344,
+        "q_inf": 9.706404198813242,
+        "dev_r2": 0.9990132399379068,
+        "held_out_S": 2.0,
+        "held_out_v": 4.416348009610543,
+        "predicted": 4.6303677716437734,
+        "integral_check_error": 0.2140197620332307,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "origin_strict_satisfied": false,
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 6,
+        "abstained": false,
+        "formula": "+9.94078 * (sat_0.33) -0.239441",
+        "graph_id": "8ac88ac1bf22ed583ef30c25df4448ac050d5044e3f4a522a2169dc5ef604ec0",
+        "kernel_equation": "sat_0.33",
+        "inputs_used_names": [
+          "sat_0.33"
+        ],
+        "declared_s_m": 2.1055373423428048,
+        "w": 9.940782799562328,
+        "b": -0.23944127200491838,
+        "q_inf": 9.70134152755741,
+        "dev_r2": 0.9986234642877923,
+        "held_out_S": 3.0,
+        "held_out_v": 5.644050992406341,
+        "predicted": 5.601735943829967,
+        "integral_check_error": -0.04231504857637436,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "origin_strict_satisfied": false,
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 7,
+        "abstained": false,
+        "formula": "+9.93959 * (sat_0.33) -0.222411",
+        "graph_id": "8ac88ac1bf22ed583ef30c25df4448ac050d5044e3f4a522a2169dc5ef604ec0",
+        "kernel_equation": "sat_0.33",
+        "inputs_used_names": [
+          "sat_0.33"
+        ],
+        "declared_s_m": 2.1212938268896178,
+        "w": 9.93958920977889,
+        "b": -0.22241138064771615,
+        "q_inf": 9.717177829131174,
+        "dev_r2": 0.9986349447930553,
+        "held_out_S": 5.0,
+        "held_out_v": 6.758758834165016,
+        "predicted": 6.7563690568674035,
+        "integral_check_error": -0.002389777297612916,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "origin_strict_satisfied": false,
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 8,
+        "abstained": false,
+        "formula": "+9.96894 * (sat_0.33) -0.237384",
+        "graph_id": "8ac88ac1bf22ed583ef30c25df4448ac050d5044e3f4a522a2169dc5ef604ec0",
+        "kernel_equation": "sat_0.33",
+        "inputs_used_names": [
+          "sat_0.33"
+        ],
+        "declared_s_m": 2.1122588619769123,
+        "w": 9.968942328866436,
+        "b": -0.23738374123196326,
+        "q_inf": 9.731558587634474,
+        "dev_r2": 0.9986410008093763,
+        "held_out_S": 7.5,
+        "held_out_v": 7.443663073687806,
+        "predicted": 7.540919833409934,
+        "integral_check_error": 0.09725675972212766,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "origin_strict_satisfied": false,
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 9,
+        "abstained": false,
+        "formula": "+9.91344 * (sat_0.33) -0.259522",
+        "graph_id": "8ac88ac1bf22ed583ef30c25df4448ac050d5044e3f4a522a2169dc5ef604ec0",
+        "kernel_equation": "sat_0.33",
+        "inputs_used_names": [
+          "sat_0.33"
+        ],
+        "declared_s_m": 2.0708422199675183,
+        "w": 9.91343807492069,
+        "b": -0.259522423915711,
+        "q_inf": 9.65391565100498,
+        "dev_r2": 0.998371697294556,
+        "held_out_S": 10.0,
+        "held_out_v": 8.065107205230316,
+        "predicted": 7.953192061343599,
+        "integral_check_error": -0.11191514388671653,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "origin_strict_satisfied": false,
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 10,
+        "abstained": false,
+        "formula": "+9.96301 * (sat_0.5) +0.297922",
+        "graph_id": "94625eaaaafed4b5e913cd709d64f78a73e525d04fdceaf784656431ad4cafca",
+        "kernel_equation": "sat_0.5",
+        "inputs_used_names": [
+          "sat_0.5"
+        ],
+        "declared_s_m": 2.849487049677712,
+        "w": 9.963005400881942,
+        "b": 0.29792237168954827,
+        "q_inf": 10.26092777257149,
+        "dev_r2": 0.9976938085465878,
+        "held_out_S": 15.0,
+        "held_out_v": 8.515818448291075,
+        "predicted": 8.670436416339783,
+        "integral_check_error": 0.15461796804870787,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "origin_strict_satisfied": false,
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      },
+      {
+        "fold": 11,
+        "abstained": false,
+        "formula": "+9.90599 * (sat_0.5) -0.0874456",
+        "graph_id": "94625eaaaafed4b5e913cd709d64f78a73e525d04fdceaf784656431ad4cafca",
+        "kernel_equation": "sat_0.5",
+        "inputs_used_names": [
+          "sat_0.5"
+        ],
+        "declared_s_m": 2.2703965321553725,
+        "w": 9.905994660057416,
+        "b": -0.08744564728671911,
+        "q_inf": 9.818549012770697,
+        "dev_r2": 0.9989428987638548,
+        "held_out_S": 20.0,
+        "held_out_v": 8.83300131846046,
+        "predicted": 8.808664168948058,
+        "integral_check_error": -0.024337149512401623,
+        "graph_checks": {
+          "graph_id_present": true,
+          "equation_present": true,
+          "single_declared_input": true,
+          "input_matches_formula_feature": true,
+          "structure_source": "declared_column",
+          "structure_resolution_error": null,
+          "feature_reconstructable": true,
+          "affine_readout_max_abs_dev": 0.0,
+          "affine_readout_verified": true,
+          "validated": true
+        },
+        "gates": {
+          "capacity_positive": true,
+          "saturation_finite_positive": true,
+          "exact_monotonicity": true
+        },
+        "monotonicity": "CERTIFIED_MONOTONIC",
+        "mono_rationale": "exact family certificate: dq/dp = w*s/(s+p)^2 > 0 on (0, oo) because w > 0, s > 0, s + p > 0 (symbolic identity check passed)",
+        "origin_strict_satisfied": false,
+        "verdict": "PROMOTED",
+        "structure_validated": true
+      }
+    ],
+    "abstentions": 0,
+    "promoted": 12,
+    "structure_validated_folds": 12,
+    "loocv_rmse_actual_rime": 0.1316045419587721,
+    "graph_checks_max_affine_dev": 0.0,
+    "tournament": {
+      "n_proposals": 6,
+      "top_rank_family": "sat",
+      "referee_verdict": "PROMOTED",
+      "admissible": 6,
+      "formulas": [
+        "+9.95954 * (sat_0.33) -0.308626",
+        "+9.9172 * (sat_0.5) +0.442733",
+        "+10.1687 * (sat_0.25) -0.915265",
+        "+10.0907 * (sat_0.67) +0.87969",
+        "+10.6422 * (sat_1.0) +1.37677",
+        "+12.7569 * (sat_2.0) +2.01681"
+      ],
+      "rationale": "6/6 entries passed the structure-aware gates; origin invariant q(0) reported with origin_strict_satisfied flag (strict-law promotion is governed by that flag, not by a |b| tolerance)"
+    }
+  },
+  "timing_scopes": {
+    "protocol": "warm, 2000/200/2000 iterations; costs are per-call milliseconds on the archiving host",
+    "dot_product_ms": 0.0029,
+    "curve_fit_ms": 0.2184,
+    "full_fold_ms": 0.161,
+    "ratios_disclosed": {
+      "dot_vs_curve_fit": 76.6,
+      "fold_vs_curve_fit": 1.4,
+      "note": "scope-dependent; the external '10.2x' matches neither scope"
+    }
+  }
+}

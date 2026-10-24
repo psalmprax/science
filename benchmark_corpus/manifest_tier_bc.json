@@ -1,0 +1,10 @@
+{
+  "tier_b": [
+    "TIER_B_01",
+    "TIER_B_02",
+    "TIER_B_03"
+  ],
+  "tier_c": [
+    "TIER_C_01"
+  ]
+}

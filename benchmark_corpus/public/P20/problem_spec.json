@@ -1,0 +1,20 @@
+{
+  "problem_id": "P20",
+  "problem_name": "Critical Opalescence Susceptibility Divergence",
+  "class_id": 4,
+  "class_name": "Singular & Pathological Regimes",
+  "input_variables": [
+    "T"
+  ],
+  "target_variable": "chi",
+  "variable_units": {
+    "T": "kelvin",
+    "chi": "meter**3_per_joule"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

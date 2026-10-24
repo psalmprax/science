@@ -1,0 +1,15 @@
+{
+  "problem_id": "P13",
+  "problem_name": "Relativistic Velocity Addition",
+  "class_id": 3,
+  "class_name": "Asymptotic & Extrapolation Regimes",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "(u + w) / (1.0 + u*w)",
+  "canonical_structural_family": "rational_asymptotic",
+  "true_parameters": {
+    "c": 1.0
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

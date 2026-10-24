@@ -1,0 +1,15 @@
+{
+  "problem_id": "P20",
+  "problem_name": "Critical Opalescence Susceptibility Divergence",
+  "class_id": 4,
+  "class_name": "Singular & Pathological Regimes",
+  "oracle_epistemic_class": "C3",
+  "expected_state": "INSUFFICIENT_EVIDENCE",
+  "ground_truth_formula": "1.5 / ((T - 300.0)**1.2)",
+  "canonical_structural_family": "critical_power_law",
+  "true_parameters": {},
+  "competing_hypotheses": [],
+  "pathology_details": {
+    "critical_temperature": 300.0
+  }
+}

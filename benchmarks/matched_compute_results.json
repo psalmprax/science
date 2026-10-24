@@ -1,0 +1,747 @@
+{
+  "protocol": {
+    "dev_rows": 600,
+    "holdout_rows": 300,
+    "recovery_r2": 0.99,
+    "wall_budget_s": 2.0,
+    "repeats": 5,
+    "seed_note": "all worlds deterministic (hash-noise generators); methods deterministic or seeded (ElasticNetCV random_state=42, PySR deterministic=True)",
+    "holdout_use": "consumed at evaluation time only (forward + reversed diagnostic)",
+    "budget_note": "equal wall ALLOWANCE per method; utilization is recorded per cell \u2014 equal allowance is not equal utilized compute"
+  },
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "pysr_available": true,
+    "pysr": "2.7.0",
+    "julia": "unknown",
+    "pysr_status": "available; wall-budget matched run included"
+  },
+  "families": [
+    "sequential_lag",
+    "sequential_state",
+    "sequential_interaction",
+    "static_scaling",
+    "static_log"
+  ],
+  "cells": [
+    {
+      "method": "rime_temporal",
+      "abstraction": "RIME default grammar (lags/memory, v0.1.2)",
+      "declared_coverage": [
+        "sequential_lag",
+        "sequential_state",
+        "sequential_interaction"
+      ],
+      "runs": [
+        {
+          "world": "lag2_amplitude_offset",
+          "family": "sequential_lag",
+          "law": "y = 3\u00b7x[t-2] + 1",
+          "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
+          "holdout_r2": 1.0,
+          "holdout_r2_reversed": -1.098749,
+          "n_proposals": 5,
+          "candidate_evals": 200,
+          "wall_seconds_median": 0.026394,
+          "wall_seconds_min": 0.021542,
+          "wall_seconds_max": 0.030615,
+          "budget_utilization": 0.013197,
+          "abstained": false,
+          "wall_seconds": 0.0263,
+          "over_budget": false
+        },
+        {
+          "world": "state_decay_080",
+          "family": "sequential_state",
+          "law": "y = 0.8\u00b7y[t-1] + x[t]",
+          "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
+          "holdout_r2": 0.999956,
+          "holdout_r2_reversed": -0.27312,
+          "n_proposals": 5,
+          "candidate_evals": 200,
+          "wall_seconds_median": 0.031492,
+          "wall_seconds_min": 0.022394,
+          "wall_seconds_max": 0.034037,
+          "budget_utilization": 0.015746,
+          "abstained": false,
+          "wall_seconds": 0.034,
+          "over_budget": false
+        },
+        {
+          "world": "lead_lag_interaction",
+          "family": "sequential_interaction",
+          "law": "y = 4\u00b7z[t]\u00b7x[t-1]",
+          "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
+          "holdout_r2": 1.0,
+          "holdout_r2_reversed": -0.868634,
+          "n_proposals": 1,
+          "candidate_evals": 97,
+          "wall_seconds_median": 0.015797,
+          "wall_seconds_min": 0.01029,
+          "wall_seconds_max": 0.019552,
+          "budget_utilization": 0.007898,
+          "abstained": false,
+          "wall_seconds": 0.0196,
+          "over_budget": false
+        },
+        {
+          "world": "static_threshold_law",
+          "family": "static_scaling",
+          "law": "y = 1000\u00b7p\u00b2",
+          "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
+          "holdout_r2": 0.999998,
+          "holdout_r2_reversed": 0.99997,
+          "n_proposals": 5,
+          "candidate_evals": 136,
+          "wall_seconds_median": 0.024437,
+          "wall_seconds_min": 0.017381,
+          "wall_seconds_max": 0.031896,
+          "budget_utilization": 0.012219,
+          "abstained": false,
+          "wall_seconds": 0.0174,
+          "over_budget": false
+        },
+        {
+          "world": "static_log_law",
+          "family": "static_log",
+          "law": "y = 20\u00b7sign(x)\u00b7log1p(|x|)",
+          "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
+          "holdout_r2": 0.0,
+          "holdout_r2_reversed": 0.0,
+          "n_proposals": 5,
+          "candidate_evals": 185,
+          "wall_seconds_median": 0.033185,
+          "wall_seconds_min": 0.023388,
+          "wall_seconds_max": 0.048618,
+          "budget_utilization": 0.016592,
+          "abstained": false,
+          "wall_seconds": 0.0332,
+          "over_budget": false
+        }
+      ],
+      "tally": {
+        "recovered": 4,
+        "failed": 1
+      }
+    },
+    {
+      "method": "rime_static",
+      "abstraction": "RIME static grammar (no temporal primitives; sq/slog transform columns)",
+      "declared_coverage": [
+        "static_scaling",
+        "static_log"
+      ],
+      "runs": [
+        {
+          "world": "lag2_amplitude_offset",
+          "family": "sequential_lag",
+          "law": "y = 3\u00b7x[t-2] + 1",
+          "verdict": "correct_abstention",
+          "verdicts_all_repeats": [
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention"
+          ],
+          "holdout_r2": null,
+          "holdout_r2_reversed": null,
+          "n_proposals": 0,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.005042,
+          "wall_seconds_min": 0.004533,
+          "wall_seconds_max": 0.01233,
+          "budget_utilization": 0.002521,
+          "abstained": true,
+          "wall_seconds": 0.0123,
+          "over_budget": false
+        },
+        {
+          "world": "state_decay_080",
+          "family": "sequential_state",
+          "law": "y = 0.8\u00b7y[t-1] + x[t]",
+          "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
+          "holdout_r2": 0.361859,
+          "holdout_r2_reversed": 0.361859,
+          "n_proposals": 5,
+          "candidate_evals": 60,
+          "wall_seconds_median": 0.009415,
+          "wall_seconds_min": 0.009206,
+          "wall_seconds_max": 0.025309,
+          "budget_utilization": 0.004707,
+          "abstained": false,
+          "wall_seconds": 0.0092,
+          "over_budget": false
+        },
+        {
+          "world": "lead_lag_interaction",
+          "family": "sequential_interaction",
+          "law": "y = 4\u00b7z[t]\u00b7x[t-1]",
+          "verdict": "correct_abstention",
+          "verdicts_all_repeats": [
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention"
+          ],
+          "holdout_r2": null,
+          "holdout_r2_reversed": null,
+          "n_proposals": 0,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.008984,
+          "wall_seconds_min": 0.004045,
+          "wall_seconds_max": 0.009235,
+          "budget_utilization": 0.004492,
+          "abstained": true,
+          "wall_seconds": 0.009,
+          "over_budget": false
+        },
+        {
+          "world": "static_threshold_law",
+          "family": "static_scaling",
+          "law": "y = 1000\u00b7p\u00b2",
+          "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
+          "holdout_r2": 0.999998,
+          "holdout_r2_reversed": 0.999998,
+          "n_proposals": 5,
+          "candidate_evals": 50,
+          "wall_seconds_median": 0.011266,
+          "wall_seconds_min": 0.008521,
+          "wall_seconds_max": 0.016034,
+          "budget_utilization": 0.005633,
+          "abstained": false,
+          "wall_seconds": 0.0113,
+          "over_budget": false
+        },
+        {
+          "world": "static_log_law",
+          "family": "static_log",
+          "law": "y = 20\u00b7sign(x)\u00b7log1p(|x|)",
+          "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
+          "holdout_r2": 1.0,
+          "holdout_r2_reversed": 1.0,
+          "n_proposals": 5,
+          "candidate_evals": 106,
+          "wall_seconds_median": 0.022066,
+          "wall_seconds_min": 0.019987,
+          "wall_seconds_max": 0.023309,
+          "budget_utilization": 0.011033,
+          "abstained": false,
+          "wall_seconds": 0.0232,
+          "over_budget": false
+        }
+      ],
+      "tally": {
+        "correct_abstention": 2,
+        "failed": 1,
+        "recovered": 2
+      }
+    },
+    {
+      "method": "dli_lag_interaction",
+      "abstraction": "DistributedLagInteractionProposer (existing proposer, OLS over lag features). Measured grammar gap: its feature matrix builds only SAME-TIME interactions, so delay-interactions (x[t-1]\u00b7z[t]) are out-of-grammar despite the name \u2014 narrowing the declared coverage to sequential_lag.",
+      "declared_coverage": [
+        "sequential_lag"
+      ],
+      "runs": [
+        {
+          "world": "lag2_amplitude_offset",
+          "family": "sequential_lag",
+          "law": "y = 3\u00b7x[t-2] + 1",
+          "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
+          "holdout_r2": 0.484078,
+          "holdout_r2_reversed": -0.104302,
+          "n_proposals": 1,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.161816,
+          "wall_seconds_min": 0.144991,
+          "wall_seconds_max": 0.16913,
+          "budget_utilization": 0.080908,
+          "abstained": false,
+          "wall_seconds": 0.1633,
+          "over_budget": false
+        },
+        {
+          "world": "state_decay_080",
+          "family": "sequential_state",
+          "law": "y = 0.8\u00b7y[t-1] + x[t]",
+          "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
+          "holdout_r2": 0.37851,
+          "holdout_r2_reversed": 0.145694,
+          "n_proposals": 1,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.15381,
+          "wall_seconds_min": 0.13855,
+          "wall_seconds_max": 0.157083,
+          "budget_utilization": 0.076905,
+          "abstained": false,
+          "wall_seconds": 0.1544,
+          "over_budget": false
+        },
+        {
+          "world": "lead_lag_interaction",
+          "family": "sequential_interaction",
+          "law": "y = 4\u00b7z[t]\u00b7x[t-1]",
+          "verdict": "correct_abstention",
+          "verdicts_all_repeats": [
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention"
+          ],
+          "holdout_r2": null,
+          "holdout_r2_reversed": null,
+          "n_proposals": 0,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.145351,
+          "wall_seconds_min": 0.13795,
+          "wall_seconds_max": 0.15088,
+          "budget_utilization": 0.072676,
+          "abstained": true,
+          "wall_seconds": 0.138,
+          "over_budget": false
+        },
+        {
+          "world": "static_threshold_law",
+          "family": "static_scaling",
+          "law": "y = 1000\u00b7p\u00b2",
+          "verdict": "correct_abstention",
+          "verdicts_all_repeats": [
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention",
+            "correct_abstention"
+          ],
+          "holdout_r2": null,
+          "holdout_r2_reversed": null,
+          "n_proposals": 0,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.159414,
+          "wall_seconds_min": 0.143469,
+          "wall_seconds_max": 0.163059,
+          "budget_utilization": 0.079707,
+          "abstained": true,
+          "wall_seconds": 0.1631,
+          "over_budget": false
+        },
+        {
+          "world": "static_log_law",
+          "family": "static_log",
+          "law": "y = 20\u00b7sign(x)\u00b7log1p(|x|)",
+          "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
+          "holdout_r2": -3364.00325,
+          "holdout_r2_reversed": -2910.094315,
+          "n_proposals": 1,
+          "candidate_evals": null,
+          "wall_seconds_median": 0.156537,
+          "wall_seconds_min": 0.143137,
+          "wall_seconds_max": 0.182802,
+          "budget_utilization": 0.078269,
+          "abstained": false,
+          "wall_seconds": 0.1464,
+          "over_budget": false
+        }
+      ],
+      "tally": {
+        "failed": 3,
+        "correct_abstention": 2
+      }
+    },
+    {
+      "method": "ols_basis_selection",
+      "abstraction": "Algebraic-basis subset selection + OLS (the QEC-table GA control)",
+      "declared_coverage": [
+        "static_scaling",
+        "static_log"
+      ],
+      "runs": [
+        {
+          "world": "lag2_amplitude_offset",
+          "family": "sequential_lag",
+          "law": "y = 3\u00b7x[t-2] + 1",
+          "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
+          "holdout_r2": 0.00417,
+          "holdout_r2_reversed": 0.00417,
+          "n_proposals": 1,
+          "candidate_evals": 30,
+          "wall_seconds_median": 0.003653,
+          "wall_seconds_min": 0.002484,
+          "wall_seconds_max": 0.004924,
+          "budget_utilization": 0.001827,
+          "abstained": false,
+          "wall_seconds": 0.0049,
+          "over_budget": false
+        },
+        {
+          "world": "state_decay_080",
+          "family": "sequential_state",
+          "law": "y = 0.8\u00b7y[t-1] + x[t]",
+          "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
+          "holdout_r2": 0.350359,
+          "holdout_r2_reversed": 0.350359,
+          "n_proposals": 1,
+          "candidate_evals": 30,
+          "wall_seconds_median": 0.003875,
+          "wall_seconds_min": 0.003336,
+          "wall_seconds_max": 0.00437,
+          "budget_utilization": 0.001938,
+          "abstained": false,
+          "wall_seconds": 0.0033,
+          "over_budget": false
+        },
+        {
+          "world": "lead_lag_interaction",
+          "family": "sequential_interaction",
+          "law": "y = 4\u00b7z[t]\u00b7x[t-1]",
+          "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
+          "holdout_r2": -0.013258,
+          "holdout_r2_reversed": -0.013258,
+          "n_proposals": 1,
+          "candidate_evals": 255,
+          "wall_seconds_median": 0.030596,
+          "wall_seconds_min": 0.025463,
+          "wall_seconds_max": 0.036053,
+          "budget_utilization": 0.015298,
+          "abstained": false,
+          "wall_seconds": 0.0306,
+          "over_budget": false
+        },
+        {
+          "world": "static_threshold_law",
+          "family": "static_scaling",
+          "law": "y = 1000\u00b7p\u00b2",
+          "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
+          "holdout_r2": 0.999973,
+          "holdout_r2_reversed": 0.999973,
+          "n_proposals": 1,
+          "candidate_evals": 30,
+          "wall_seconds_median": 0.003806,
+          "wall_seconds_min": 0.002666,
+          "wall_seconds_max": 0.004067,
+          "budget_utilization": 0.001903,
+          "abstained": false,
+          "wall_seconds": 0.0041,
+          "over_budget": false
+        },
+        {
+          "world": "static_log_law",
+          "family": "static_log",
+          "law": "y = 20\u00b7sign(x)\u00b7log1p(|x|)",
+          "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
+          "holdout_r2": 1.0,
+          "holdout_r2_reversed": 1.0,
+          "n_proposals": 1,
+          "candidate_evals": 30,
+          "wall_seconds_median": 0.00396,
+          "wall_seconds_min": 0.002679,
+          "wall_seconds_max": 0.004977,
+          "budget_utilization": 0.00198,
+          "abstained": false,
+          "wall_seconds": 0.004,
+          "over_budget": false
+        }
+      ],
+      "tally": {
+        "failed": 3,
+        "recovered": 2
+      }
+    },
+    {
+      "method": "pysr_serial_deterministic",
+      "abstraction": "PySR 2.7 (SymbolicRegression.jl), matched on the SAME serial-deterministic regime as RIME's single-core claims: parallelism='serial', fixed seed, wall-clock matched via timeout_in_seconds (iterations unbounded so the allowance BINDS). Information parity: lag columns (frozen lag set) are engineered as inputs for sequential worlds (PySR has no time-shift operator); NaN warmup rows skip-and-count, never imputed. Declared coverage EXCLUDES sequential_state: no operator expresses an input-side IIR (memory) \u2014 an abstention there is scope, not compute. Note: this forfeits PySR's default multithreading; it is the deterministic head-to-head.",
+      "declared_coverage": [
+        "sequential_lag",
+        "sequential_interaction",
+        "static_scaling",
+        "static_log"
+      ],
+      "runs": [
+        {
+          "world": "lag2_amplitude_offset",
+          "family": "sequential_lag",
+          "law": "y = 3\u00b7x[t-2] + 1",
+          "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
+          "holdout_r2": 1.0,
+          "holdout_r2_reversed": 1.0,
+          "n_proposals": 5,
+          "candidate_evals": null,
+          "wall_seconds_median": 2.188146,
+          "wall_seconds_min": 2.155898,
+          "wall_seconds_max": 2.229914,
+          "budget_utilization": 1.094073,
+          "abstained": false,
+          "wall_seconds": 2.2056,
+          "over_budget": true
+        },
+        {
+          "world": "state_decay_080",
+          "family": "sequential_state",
+          "law": "y = 0.8\u00b7y[t-1] + x[t]",
+          "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
+          "holdout_r2": 0.688653,
+          "holdout_r2_reversed": 0.688653,
+          "n_proposals": 6,
+          "candidate_evals": null,
+          "wall_seconds_median": 2.187311,
+          "wall_seconds_min": 2.141466,
+          "wall_seconds_max": 2.257267,
+          "budget_utilization": 1.093655,
+          "abstained": false,
+          "wall_seconds": 2.1873,
+          "over_budget": true
+        },
+        {
+          "world": "lead_lag_interaction",
+          "family": "sequential_interaction",
+          "law": "y = 4\u00b7z[t]\u00b7x[t-1]",
+          "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
+          "holdout_r2": 1.0,
+          "holdout_r2_reversed": 1.0,
+          "n_proposals": 3,
+          "candidate_evals": null,
+          "wall_seconds_median": 2.174195,
+          "wall_seconds_min": 2.162627,
+          "wall_seconds_max": 2.200494,
+          "budget_utilization": 1.087098,
+          "abstained": false,
+          "wall_seconds": 2.199,
+          "over_budget": true
+        },
+        {
+          "world": "static_threshold_law",
+          "family": "static_scaling",
+          "law": "y = 1000\u00b7p\u00b2",
+          "verdict": "recovered",
+          "verdicts_all_repeats": [
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered",
+            "recovered"
+          ],
+          "holdout_r2": 0.997396,
+          "holdout_r2_reversed": 0.997396,
+          "n_proposals": 5,
+          "candidate_evals": null,
+          "wall_seconds_median": 2.141987,
+          "wall_seconds_min": 2.115799,
+          "wall_seconds_max": 2.153891,
+          "budget_utilization": 1.070994,
+          "abstained": false,
+          "wall_seconds": 2.1517,
+          "over_budget": true
+        },
+        {
+          "world": "static_log_law",
+          "family": "static_log",
+          "law": "y = 20\u00b7sign(x)\u00b7log1p(|x|)",
+          "verdict": "failed",
+          "verdicts_all_repeats": [
+            "failed",
+            "failed",
+            "failed",
+            "failed",
+            "failed"
+          ],
+          "holdout_r2": -120.822428,
+          "holdout_r2_reversed": -120.822428,
+          "n_proposals": 5,
+          "candidate_evals": null,
+          "wall_seconds_median": 2.127211,
+          "wall_seconds_min": 2.121309,
+          "wall_seconds_max": 2.149441,
+          "budget_utilization": 1.063605,
+          "abstained": false,
+          "wall_seconds": 2.1246,
+          "over_budget": true
+        }
+      ],
+      "tally": {
+        "recovered": 3,
+        "failed": 2
+      }
+    }
+  ],
+  "scores": {
+    "rime_temporal": {
+      "points": 4,
+      "of": 5,
+      "tally": {
+        "recovered": 4,
+        "failed": 1
+      }
+    },
+    "rime_static": {
+      "points": 4,
+      "of": 5,
+      "tally": {
+        "correct_abstention": 2,
+        "failed": 1,
+        "recovered": 2
+      }
+    },
+    "dli_lag_interaction": {
+      "points": 2,
+      "of": 5,
+      "tally": {
+        "failed": 3,
+        "correct_abstention": 2
+      }
+    },
+    "ols_basis_selection": {
+      "points": 2,
+      "of": 5,
+      "tally": {
+        "failed": 3,
+        "recovered": 2
+      }
+    },
+    "pysr_serial_deterministic": {
+      "points": 3,
+      "of": 5,
+      "tally": {
+        "recovered": 3,
+        "failed": 2
+      }
+    }
+  }
+}

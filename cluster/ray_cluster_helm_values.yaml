@@ -1,0 +1,57 @@
+# ==============================================================================
+# KubeRay / Ray Cluster Helm Chart Configuration for APEDP-X / CPMD
+# ==============================================================================
+image:
+  repository: ghcr.io/owner/science
+  tag: latest
+  pullPolicy: IfNotPresent
+
+head:
+  rayStartParams:
+    dashboard-host: "0.0.0.0"
+    num-cpus: "4"
+  resources:
+    limits:
+      cpu: "4"
+      memory: "16Gi"
+    requests:
+      cpu: "2"
+      memory: "8Gi"
+  volumes:
+    - name: shared-storage
+      persistentVolumeClaim:
+        claimName: apedp-holdout-storage-pvc
+  volumeMounts:
+    - mountPath: /mnt/apedp_storage
+      name: shared-storage
+
+worker:
+  replicas: 10
+  minReplicas: 2
+  maxReplicas: 50
+  rayStartParams: {}
+  resources:
+    limits:
+      cpu: "16"
+      memory: "64Gi"
+      nvidia.com/gpu: "1"
+    requests:
+      cpu: "8"
+      memory: "32Gi"
+      nvidia.com/gpu: "1"
+  volumes:
+    - name: shared-storage
+      persistentVolumeClaim:
+        claimName: apedp-holdout-storage-pvc
+    - name: scratch-storage
+      emptyDir: {}
+  volumeMounts:
+    - mountPath: /mnt/apedp_storage
+      name: shared-storage
+    - mountPath: /tmp/scratch
+      name: scratch-storage
+  env:
+    - name: APEDP_STORAGE_DIR
+      value: "/mnt/apedp_storage"
+    - name: APEDP_TEMP_STORAGE
+      value: "/tmp/scratch"

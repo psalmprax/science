@@ -1,0 +1,16 @@
+{
+  "problem_id": "P05",
+  "problem_name": "Relativistic Energy-Momentum Relation",
+  "class_id": 1,
+  "class_name": "Canonical Physical Laws",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "sqrt(p**2 + 1.0)",
+  "canonical_structural_family": "algebraic_root",
+  "true_parameters": {
+    "m0_c2": 1.0,
+    "c": 1.0
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

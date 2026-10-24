@@ -1,0 +1,14 @@
+{
+  "problem_id": "R21",
+  "block": "R",
+  "canonical_structural_family": "rational_transition",
+  "ground_truth_formula": "3.0*x**1.5/(1.0 + 1.2*x**1.5)",
+  "true_parameters": {
+    "A": 3.0,
+    "p": 1.5,
+    "B": 1.2,
+    "q": 1.5
+  },
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER"
+}

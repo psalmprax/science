@@ -1,0 +1,21 @@
+{
+  "problem_id": "PS-VDPOL",
+  "timestamp": "2026-09-30T11:00:15+0200",
+  "name": "van-der-pol",
+  "n_states": 2,
+  "n_inputs": 0,
+  "n_params": 3,
+  "n_candidates": 14,
+  "n_scored": 14,
+  "n_valid": 14,
+  "epistemic_status": "insufficient_evidence",
+  "best_rmse": 6.763568623078921,
+  "second_rmse": null,
+  "delta_rmse": null,
+  "tau_epi": null,
+  "epistemic_margin": null,
+  "adjudication_reason": "rank-1 mg1-0007 fails gate 4: rmse 6.76 > tol 0.17 (margin_ratio 39.8); no promotion of least-bad models",
+  "n_ranking": 14,
+  "termination": "SUCCESS",
+  "wall_seconds": 9.388738632202148
+}

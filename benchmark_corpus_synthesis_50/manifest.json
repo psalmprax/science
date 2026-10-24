@@ -1,0 +1,258 @@
+{
+  "benchmark_name": "APEDP 4.0 50-Problem Autonomous Model Synthesis Tournament",
+  "total_problems": 50,
+  "num_classes": 5,
+  "problems_per_class": 10,
+  "problems": {
+    "S01": {
+      "class_id": 1,
+      "class_name": "Multi-Regime Envelopes",
+      "problem_name": "Rational-Exponential Transition S01"
+    },
+    "S02": {
+      "class_id": 1,
+      "class_name": "Multi-Regime Envelopes",
+      "problem_name": "Rational-Exponential Transition S02"
+    },
+    "S03": {
+      "class_id": 1,
+      "class_name": "Multi-Regime Envelopes",
+      "problem_name": "Rational-Exponential Transition S03"
+    },
+    "S04": {
+      "class_id": 1,
+      "class_name": "Multi-Regime Envelopes",
+      "problem_name": "Rational-Exponential Transition S04"
+    },
+    "S05": {
+      "class_id": 1,
+      "class_name": "Multi-Regime Envelopes",
+      "problem_name": "Rational-Exponential Transition S05"
+    },
+    "S06": {
+      "class_id": 1,
+      "class_name": "Multi-Regime Envelopes",
+      "problem_name": "Rational-Exponential Transition S06"
+    },
+    "S07": {
+      "class_id": 1,
+      "class_name": "Multi-Regime Envelopes",
+      "problem_name": "Rational-Exponential Transition S07"
+    },
+    "S08": {
+      "class_id": 1,
+      "class_name": "Multi-Regime Envelopes",
+      "problem_name": "Rational-Exponential Transition S08"
+    },
+    "S09": {
+      "class_id": 1,
+      "class_name": "Multi-Regime Envelopes",
+      "problem_name": "Rational-Exponential Transition S09"
+    },
+    "S10": {
+      "class_id": 1,
+      "class_name": "Multi-Regime Envelopes",
+      "problem_name": "Rational-Exponential Transition S10"
+    },
+    "S11": {
+      "class_id": 2,
+      "class_name": "Logarithmic & Boundary Layers",
+      "problem_name": "Logarithmic Boundary Layer S11"
+    },
+    "S12": {
+      "class_id": 2,
+      "class_name": "Logarithmic & Boundary Layers",
+      "problem_name": "Logarithmic Boundary Layer S12"
+    },
+    "S13": {
+      "class_id": 2,
+      "class_name": "Logarithmic & Boundary Layers",
+      "problem_name": "Logarithmic Boundary Layer S13"
+    },
+    "S14": {
+      "class_id": 2,
+      "class_name": "Logarithmic & Boundary Layers",
+      "problem_name": "Logarithmic Boundary Layer S14"
+    },
+    "S15": {
+      "class_id": 2,
+      "class_name": "Logarithmic & Boundary Layers",
+      "problem_name": "Logarithmic Boundary Layer S15"
+    },
+    "S16": {
+      "class_id": 2,
+      "class_name": "Logarithmic & Boundary Layers",
+      "problem_name": "Logarithmic Boundary Layer S16"
+    },
+    "S17": {
+      "class_id": 2,
+      "class_name": "Logarithmic & Boundary Layers",
+      "problem_name": "Logarithmic Boundary Layer S17"
+    },
+    "S18": {
+      "class_id": 2,
+      "class_name": "Logarithmic & Boundary Layers",
+      "problem_name": "Logarithmic Boundary Layer S18"
+    },
+    "S19": {
+      "class_id": 2,
+      "class_name": "Logarithmic & Boundary Layers",
+      "problem_name": "Logarithmic Boundary Layer S19"
+    },
+    "S20": {
+      "class_id": 2,
+      "class_name": "Logarithmic & Boundary Layers",
+      "problem_name": "Logarithmic Boundary Layer S20"
+    },
+    "S21": {
+      "class_id": 3,
+      "class_name": "Critical Exponents & Scaling",
+      "problem_name": "Critical Scaling S21"
+    },
+    "S22": {
+      "class_id": 3,
+      "class_name": "Critical Exponents & Scaling",
+      "problem_name": "Critical Scaling S22"
+    },
+    "S23": {
+      "class_id": 3,
+      "class_name": "Critical Exponents & Scaling",
+      "problem_name": "Critical Scaling S23"
+    },
+    "S24": {
+      "class_id": 3,
+      "class_name": "Critical Exponents & Scaling",
+      "problem_name": "Critical Scaling S24"
+    },
+    "S25": {
+      "class_id": 3,
+      "class_name": "Critical Exponents & Scaling",
+      "problem_name": "Critical Scaling S25"
+    },
+    "S26": {
+      "class_id": 3,
+      "class_name": "Critical Exponents & Scaling",
+      "problem_name": "Critical Scaling S26"
+    },
+    "S27": {
+      "class_id": 3,
+      "class_name": "Critical Exponents & Scaling",
+      "problem_name": "Critical Scaling S27"
+    },
+    "S28": {
+      "class_id": 3,
+      "class_name": "Critical Exponents & Scaling",
+      "problem_name": "Critical Scaling S28"
+    },
+    "S29": {
+      "class_id": 3,
+      "class_name": "Critical Exponents & Scaling",
+      "problem_name": "Critical Scaling S29"
+    },
+    "S30": {
+      "class_id": 3,
+      "class_name": "Critical Exponents & Scaling",
+      "problem_name": "Critical Scaling S30"
+    },
+    "S31": {
+      "class_id": 4,
+      "class_name": "Modulated Transport",
+      "problem_name": "Damped Ringdown S31"
+    },
+    "S32": {
+      "class_id": 4,
+      "class_name": "Modulated Transport",
+      "problem_name": "Damped Ringdown S32"
+    },
+    "S33": {
+      "class_id": 4,
+      "class_name": "Modulated Transport",
+      "problem_name": "Damped Ringdown S33"
+    },
+    "S34": {
+      "class_id": 4,
+      "class_name": "Modulated Transport",
+      "problem_name": "Damped Ringdown S34"
+    },
+    "S35": {
+      "class_id": 4,
+      "class_name": "Modulated Transport",
+      "problem_name": "Damped Ringdown S35"
+    },
+    "S36": {
+      "class_id": 4,
+      "class_name": "Modulated Transport",
+      "problem_name": "Damped Ringdown S36"
+    },
+    "S37": {
+      "class_id": 4,
+      "class_name": "Modulated Transport",
+      "problem_name": "Damped Ringdown S37"
+    },
+    "S38": {
+      "class_id": 4,
+      "class_name": "Modulated Transport",
+      "problem_name": "Damped Ringdown S38"
+    },
+    "S39": {
+      "class_id": 4,
+      "class_name": "Modulated Transport",
+      "problem_name": "Damped Ringdown S39"
+    },
+    "S40": {
+      "class_id": 4,
+      "class_name": "Modulated Transport",
+      "problem_name": "Damped Ringdown S40"
+    },
+    "S41": {
+      "class_id": 5,
+      "class_name": "Epistemic Abstention Adversaries",
+      "problem_name": "Discontinuous Shock Front S41"
+    },
+    "S42": {
+      "class_id": 5,
+      "class_name": "Epistemic Abstention Adversaries",
+      "problem_name": "Discontinuous Shock Front S42"
+    },
+    "S43": {
+      "class_id": 5,
+      "class_name": "Epistemic Abstention Adversaries",
+      "problem_name": "Discontinuous Shock Front S43"
+    },
+    "S44": {
+      "class_id": 5,
+      "class_name": "Epistemic Abstention Adversaries",
+      "problem_name": "Bessel Special Function S44"
+    },
+    "S45": {
+      "class_id": 5,
+      "class_name": "Epistemic Abstention Adversaries",
+      "problem_name": "Bessel Special Function S45"
+    },
+    "S46": {
+      "class_id": 5,
+      "class_name": "Epistemic Abstention Adversaries",
+      "problem_name": "Bessel Special Function S46"
+    },
+    "S47": {
+      "class_id": 5,
+      "class_name": "Epistemic Abstention Adversaries",
+      "problem_name": "High-Entropy Chaotic Trajectory S47"
+    },
+    "S48": {
+      "class_id": 5,
+      "class_name": "Epistemic Abstention Adversaries",
+      "problem_name": "High-Entropy Chaotic Trajectory S48"
+    },
+    "S49": {
+      "class_id": 5,
+      "class_name": "Epistemic Abstention Adversaries",
+      "problem_name": "Severely Underspecified Sparse System S49"
+    },
+    "S50": {
+      "class_id": 5,
+      "class_name": "Epistemic Abstention Adversaries",
+      "problem_name": "Severely Underspecified Sparse System S50"
+    }
+  }
+}

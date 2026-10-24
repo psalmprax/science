@@ -1,0 +1,9 @@
+{
+  "problem_id": "REAL-BERTOZZI-1964",
+  "data_origin": "experimental",
+  "status": "unique_support",
+  "promoted": "relativistic",
+  "best_rmse": 0.005519527900915286,
+  "reason": "nearest distinct rival separated by \u0394=5.22 > \u03c4=0.0497 [holdout-scale]",
+  "termination": "SUCCESS"
+}

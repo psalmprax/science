@@ -1,0 +1,13 @@
+{
+  "problem_id": "N02",
+  "block": "N",
+  "ground_truth_formula": "1.8*log(1+2.5*x)",
+  "canonical_structural_family": "logarithmic",
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER",
+  "case_seed": 20260930,
+  "noise_sigma": 0.04316211491037067,
+  "meta": {
+    "physical_domain": "x > -0.4"
+  }
+}

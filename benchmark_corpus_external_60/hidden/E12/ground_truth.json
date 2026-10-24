@@ -1,0 +1,12 @@
+{
+  "problem_id": "E12",
+  "block": "E",
+  "canonical_structural_family": "exponential_decay",
+  "ground_truth_formula": "2.0*exp(-1.0*x)",
+  "true_parameters": {
+    "A": 2.0,
+    "k": 1.0
+  },
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER"
+}
