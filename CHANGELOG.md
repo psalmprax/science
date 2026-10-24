@@ -1,6 +1,35 @@
-# Changelog: APEDP & APEDP-X Discovery Framework
+# Changelog
 
-All notable changes, bug fixes, audit remediations, and architectural milestones are documented in this file.
+All notable changes to APEDP and APEDP-X are documented here. This file follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and released versions
+follow [Semantic Versioning](https://semver.org/). Keep unreleased changes under
+`[Unreleased]`, grouped by change type, then move them into a dated version
+section when releasing. Version numbers apply to individual published artifacts;
+the Python project and native kernel currently have independent versions.
+
+No release tags were present in the repository history available when this
+policy was established. Dated entries below are retained development notes, not
+inferred releases.
+
+## [Unreleased]
+
+### Added
+- Release-governance and changelog conventions.
+- Security reporting policy, dependency-update automation, and CodeQL analysis.
+
+### Changed
+- _Record user-visible changes here._
+
+### Fixed
+- _Record user-visible fixes here._
+
+### Security
+- _Record security-related changes here._
+
+## Historical development notes
+
+The following dated entries preserve the existing rolling development record.
+They were not retrospectively assigned release versions.
 
 ---
 
