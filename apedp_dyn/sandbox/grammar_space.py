@@ -208,7 +208,7 @@ def _feat_frac_diff(p: pd.DataFrame) -> np.ndarray:
     price = pd.Series(p["price"].to_numpy(float) if "price" in p.columns else np.exp(np.cumsum(p["r"].to_numpy(float)))).values
     d = 0.4
     k = np.arange(1, 21)
-    w = -np.cumprod((d - k + 1) / k)
+    w = np.cumprod(-(d - k + 1) / k)
     w = np.concatenate([[1.0], w])
     out = np.full(len(price), np.nan)
     for t in range(len(w)-1, len(price)):
