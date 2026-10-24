@@ -1,0 +1,22 @@
+{
+  "problem_id": "P07",
+  "problem_name": "Isobaric Heat Capacity (Shomate vs Quadratic)",
+  "class_id": 2,
+  "class_name": "Observationally Equivalent Regimes",
+  "oracle_epistemic_class": "C2",
+  "expected_state": "MULTI_HYPOTHESIS",
+  "ground_truth_formula": "30.0 + 15.0*T - 5.0*T**2 + 0.5*T**3",
+  "canonical_structural_family": "shomate_polynomial",
+  "true_parameters": {},
+  "competing_hypotheses": [
+    {
+      "id": "shomate",
+      "formula": "30.0 + 15.0*T - 5.0*T**2 + 0.5*T**3"
+    },
+    {
+      "id": "quadratic",
+      "formula": "30.0 + 14.8*T - 4.5*T**2"
+    }
+  ],
+  "pathology_details": {}
+}

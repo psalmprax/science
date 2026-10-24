@@ -1,0 +1,15 @@
+{
+  "problem_id": "C40",
+  "block": "C",
+  "canonical_structural_family": "rational_exponential_envelope",
+  "ground_truth_formula": "2.0*x**0.75/(1 + 0.6*x**1.25)*exp(-0.15*x)",
+  "true_parameters": {
+    "A": 2.0,
+    "p": 0.75,
+    "B": 0.6,
+    "q": 1.25,
+    "C": 0.15
+  },
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER"
+}

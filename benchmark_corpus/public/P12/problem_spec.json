@@ -1,0 +1,20 @@
+{
+  "problem_id": "P12",
+  "problem_name": "Damped Wave Near-Field Amplitude",
+  "class_id": 2,
+  "class_name": "Observationally Equivalent Regimes",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "variable_units": {
+    "x": "meter",
+    "y": "meter"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "problem_id": "O32",
+  "block": "O",
+  "name": "damped-2.7",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "dataset_sizes": {
+    "train": 60,
+    "validation": 20,
+    "near_ood": 30,
+    "far_ood": 30
+  }
+}

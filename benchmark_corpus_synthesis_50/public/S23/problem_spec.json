@@ -1,0 +1,28 @@
+{
+  "problem_id": "S23",
+  "problem_name": "Critical Scaling S23",
+  "class_id": 3,
+  "class_name": "Critical Exponents & Scaling",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "variable_units": {
+    "x": "kelvin",
+    "y": "joule / kelvin"
+  },
+  "physical_constraints": {
+    "sampling_gaps": [
+      [
+        1.8,
+        2.2
+      ]
+    ]
+  },
+  "dataset_sizes": {
+    "train": 70,
+    "validation": 40,
+    "near_ood": 50,
+    "far_ood": 50
+  }
+}

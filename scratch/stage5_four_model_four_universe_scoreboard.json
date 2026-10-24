@@ -1,0 +1,694 @@
+{
+  "metadata": {
+    "description": "APEDP Stage 5: Full 4-Model x 4-Universe Controlled Scoreboard on Block B (2024-2025)",
+    "evaluation_period": "2024-01-01 to 2025-12-31 (502 bars)",
+    "fee_rate_bps": 5.0,
+    "universes": [
+      15,
+      30,
+      60,
+      90
+    ],
+    "models_tested": [
+      "Benchmark: Equal-Weighted Buy & Hold",
+      "Model 1: Standalone H-BB (S = +1.0 * X^*_{H-BB}, theta = 0.15)",
+      "Model 2a: Window-Specific Evolved Mean (Descriptive average across 5 windows on Block B)",
+      "Model 2b: Strict Walk-Forward OOS (Adaptive forward trading with zero temporal overlap)",
+      "Model 3: Restrained Shared-Feature Model (S = +0.84 * X^*_{H-BB} - 0.25 * X^*_{H-ASYM}, theta = 0.15)",
+      "Model 4a: Unconstrained Win-5 (In-Sample Overlap: trained on [502:1255] containing Block B)",
+      "Model 4b: Canonical Block-A Frozen (Strict OOS: trained on [0:753], zero Block B overlap)"
+    ],
+    "chronological_audit_notes": {
+      "model_4a_contamination_warning": "Model 4a was evolved on Window 5 (2023-01 to 2025-12). Its training set fully overlaps Block B (2024-01 to 2025-12). Its reported return reflects in-sample fit, NOT independent forward alpha.",
+      "model_4b_provenance": "Model 4b was frozen on Block A (2021-01 to 2023-12). It has 0 bars of temporal intersection with Block B, serving as a genuine frozen forward out-of-sample benchmark.",
+      "model_2b_provenance": "Model 2b implements true walk-forward execution where each 6-month slice of Block B is traded exclusively by the model trained prior to that slice, ensuring 0% lookahead or overlap."
+    },
+    "accounting_conventions": {
+      "calendar": "502 daily bars across 2024-01-02 to 2025-12-31 (US equity calendar, NYSE holiday exclusion, weekdays only).",
+      "turnover_accounting": "daily_to = mean daily absolute target position change per asset (mean(|diff(target_pos)|)). Subtracted daily as daily_to * fee_rate.",
+      "fee_rate": "Flat 5.0 bps (0.0005) one-way per unit of turnover.",
+      "sharpe_annualization": "mean(daily_net) / std(daily_net) * sqrt(365).",
+      "max_drawdown": "Peak-to-trough decline of cumulative net arithmetic equity curve: max(peak - cum_net) * 100%."
+    },
+    "execution_time_seconds": 87.84
+  },
+  "scoreboard": {
+    "15": {
+      "universe": "N=15",
+      "buy_and_hold": {
+        "net_return": -25.68,
+        "gross_return": -25.68,
+        "sharpe": -0.24,
+        "max_drawdown": 88.6,
+        "daily_turnover": 0.0,
+        "total_turnover": 0.0,
+        "exposure": 100.0
+      },
+      "model_1_standalone_hbb": {
+        "net_return": 41.3,
+        "gross_return": 48.6,
+        "sharpe": 1.29,
+        "max_drawdown": 24.8,
+        "daily_turnover": 0.2914,
+        "total_turnover": 2190.0,
+        "exposure": 87.3
+      },
+      "model_2_window_specific_mean": {
+        "net_return": 44.72,
+        "gross_return": 54.1,
+        "sharpe": 1.58,
+        "max_drawdown": 22.3,
+        "daily_turnover": 0.3744,
+        "total_turnover": 2813.6,
+        "exposure": 88.7
+      },
+      "model_2b_strict_walk_forward_oos": {
+        "net_return": -3.91,
+        "gross_return": 5.59,
+        "sharpe": -0.12,
+        "max_drawdown": 36.5,
+        "daily_turnover": 0.379,
+        "total_turnover": 2848.0,
+        "exposure": 86.5
+      },
+      "model_3_restrained_shared": {
+        "net_return": 36.01,
+        "gross_return": 45.71,
+        "sharpe": 1.19,
+        "max_drawdown": 20.1,
+        "daily_turnover": 0.3872,
+        "total_turnover": 2910.0,
+        "exposure": 87.2
+      },
+      "model_4a_unconstrained_win5_insample_overlap": {
+        "net_return": 81.99,
+        "gross_return": 92.33,
+        "sharpe": 3.05,
+        "max_drawdown": 9.2,
+        "daily_turnover": 0.4128,
+        "total_turnover": 3102.0,
+        "exposure": 94.1
+      },
+      "model_4b_canonical_block_a_frozen_oos": {
+        "net_return": 28.01,
+        "gross_return": 36.54,
+        "sharpe": 1.08,
+        "max_drawdown": 17.5,
+        "daily_turnover": 0.3408,
+        "total_turnover": 2561.0,
+        "exposure": 84.8
+      }
+    },
+    "30": {
+      "universe": "N=30",
+      "buy_and_hold": {
+        "net_return": -26.09,
+        "gross_return": -26.09,
+        "sharpe": -0.26,
+        "max_drawdown": 89.4,
+        "daily_turnover": 0.0,
+        "total_turnover": 0.0,
+        "exposure": 100.0
+      },
+      "model_1_standalone_hbb": {
+        "net_return": 19.28,
+        "gross_return": 26.13,
+        "sharpe": 0.71,
+        "max_drawdown": 18.9,
+        "daily_turnover": 0.2733,
+        "total_turnover": 4107.0,
+        "exposure": 84.4
+      },
+      "model_2_window_specific_mean": {
+        "net_return": 41.97,
+        "gross_return": 52.56,
+        "sharpe": 1.72,
+        "max_drawdown": 13.0,
+        "daily_turnover": 0.4229,
+        "total_turnover": 6356.0,
+        "exposure": 84.9
+      },
+      "model_2b_strict_walk_forward_oos": {
+        "net_return": 33.86,
+        "gross_return": 43.62,
+        "sharpe": 1.45,
+        "max_drawdown": 14.3,
+        "daily_turnover": 0.3898,
+        "total_turnover": 5859.0,
+        "exposure": 84.9
+      },
+      "model_3_restrained_shared": {
+        "net_return": 23.22,
+        "gross_return": 32.76,
+        "sharpe": 0.88,
+        "max_drawdown": 17.3,
+        "daily_turnover": 0.3809,
+        "total_turnover": 5725.0,
+        "exposure": 84.9
+      },
+      "model_4a_unconstrained_win5_insample_overlap": {
+        "net_return": 48.3,
+        "gross_return": 61.91,
+        "sharpe": 2.04,
+        "max_drawdown": 12.7,
+        "daily_turnover": 0.5434,
+        "total_turnover": 8167.0,
+        "exposure": 84.5
+      },
+      "model_4b_canonical_block_a_frozen_oos": {
+        "net_return": 21.37,
+        "gross_return": 32.89,
+        "sharpe": 0.95,
+        "max_drawdown": 13.4,
+        "daily_turnover": 0.4599,
+        "total_turnover": 6913.0,
+        "exposure": 83.4
+      }
+    },
+    "60": {
+      "universe": "N=60",
+      "buy_and_hold": {
+        "net_return": -35.45,
+        "gross_return": -35.45,
+        "sharpe": -0.42,
+        "max_drawdown": 85.4,
+        "daily_turnover": 0.0,
+        "total_turnover": 0.0,
+        "exposure": 100.0
+      },
+      "model_1_standalone_hbb": {
+        "net_return": 2.16,
+        "gross_return": 8.57,
+        "sharpe": 0.09,
+        "max_drawdown": 21.5,
+        "daily_turnover": 0.2558,
+        "total_turnover": 7689.0,
+        "exposure": 87.7
+      },
+      "model_2_window_specific_mean": {
+        "net_return": 32.16,
+        "gross_return": 41.37,
+        "sharpe": 1.63,
+        "max_drawdown": 11.3,
+        "daily_turnover": 0.3678,
+        "total_turnover": 11055.6,
+        "exposure": 74.9
+      },
+      "model_2b_strict_walk_forward_oos": {
+        "net_return": 20.79,
+        "gross_return": 29.6,
+        "sharpe": 1.03,
+        "max_drawdown": 10.3,
+        "daily_turnover": 0.3519,
+        "total_turnover": 10578.0,
+        "exposure": 73.1
+      },
+      "model_3_restrained_shared": {
+        "net_return": 4.2,
+        "gross_return": 13.19,
+        "sharpe": 0.17,
+        "max_drawdown": 19.1,
+        "daily_turnover": 0.3589,
+        "total_turnover": 10790.0,
+        "exposure": 86.8
+      },
+      "model_4a_unconstrained_win5_insample_overlap": {
+        "net_return": 42.7,
+        "gross_return": 53.78,
+        "sharpe": 2.43,
+        "max_drawdown": 7.7,
+        "daily_turnover": 0.4423,
+        "total_turnover": 13296.0,
+        "exposure": 80.0
+      },
+      "model_4b_canonical_block_a_frozen_oos": {
+        "net_return": 10.63,
+        "gross_return": 18.5,
+        "sharpe": 0.64,
+        "max_drawdown": 11.9,
+        "daily_turnover": 0.3142,
+        "total_turnover": 9445.0,
+        "exposure": 90.2
+      }
+    },
+    "90": {
+      "universe": "N=90",
+      "buy_and_hold": {
+        "net_return": -16.58,
+        "gross_return": -16.58,
+        "sharpe": -0.28,
+        "max_drawdown": 59.2,
+        "daily_turnover": 0.0,
+        "total_turnover": 0.0,
+        "exposure": 100.0
+      },
+      "model_1_standalone_hbb": {
+        "net_return": -7.25,
+        "gross_return": -0.84,
+        "sharpe": -0.46,
+        "max_drawdown": 18.4,
+        "daily_turnover": 0.2559,
+        "total_turnover": 11539.0,
+        "exposure": 89.6
+      },
+      "model_2_window_specific_mean": {
+        "net_return": 10.06,
+        "gross_return": 17.42,
+        "sharpe": 0.8,
+        "max_drawdown": 10.2,
+        "daily_turnover": 0.2939,
+        "total_turnover": 13253.8,
+        "exposure": 82.8
+      },
+      "model_2b_strict_walk_forward_oos": {
+        "net_return": -10.45,
+        "gross_return": -3.2,
+        "sharpe": -0.81,
+        "max_drawdown": 17.0,
+        "daily_turnover": 0.2894,
+        "total_turnover": 13050.0,
+        "exposure": 82.2
+      },
+      "model_3_restrained_shared": {
+        "net_return": -3.02,
+        "gross_return": 5.98,
+        "sharpe": -0.2,
+        "max_drawdown": 13.1,
+        "daily_turnover": 0.3593,
+        "total_turnover": 16199.0,
+        "exposure": 88.7
+      },
+      "model_4a_unconstrained_win5_insample_overlap": {
+        "net_return": 27.53,
+        "gross_return": 36.06,
+        "sharpe": 2.31,
+        "max_drawdown": 4.4,
+        "daily_turnover": 0.3404,
+        "total_turnover": 15350.0,
+        "exposure": 85.1
+      },
+      "model_4b_canonical_block_a_frozen_oos": {
+        "net_return": 6.72,
+        "gross_return": 12.57,
+        "sharpe": 0.52,
+        "max_drawdown": 8.3,
+        "daily_turnover": 0.2338,
+        "total_turnover": 10540.0,
+        "exposure": 88.5
+      }
+    }
+  },
+  "detailed_universe_breakdowns": {
+    "15": {
+      "rolling_windows": [
+        {
+          "window": "Window 1 (Dec 2023)",
+          "equation": "S = +1.2906*H-BB +0.2767*H-LOG -0.1897*H-MFI",
+          "threshold": 0.079,
+          "in_sample_fitness": 4.215,
+          "metrics_on_block_b": {
+            "net_return": 20.89,
+            "gross_return": 28.63,
+            "sharpe": 0.69,
+            "max_drawdown": 26.1,
+            "daily_turnover": 0.309,
+            "total_turnover": 2322.0,
+            "exposure": 92.9
+          }
+        },
+        {
+          "window": "Window 2 (Jul 2024)",
+          "equation": "S = +0.3701*H-BB +0.5167*H-STOCH +0.5690*H-RV",
+          "threshold": 0.1547,
+          "in_sample_fitness": 4.899,
+          "metrics_on_block_b": {
+            "net_return": 43.48,
+            "gross_return": 52.0,
+            "sharpe": 1.37,
+            "max_drawdown": 25.5,
+            "daily_turnover": 0.3403,
+            "total_turnover": 2557.0,
+            "exposure": 88.0
+          }
+        },
+        {
+          "window": "Window 3 (Dec 2024)",
+          "equation": "S = +0.6515*H-BB -1.3052*H-MOM +0.4374*H-STOCH +0.0368*NL_OFI_REV",
+          "threshold": 0.2331,
+          "in_sample_fitness": 4.565,
+          "metrics_on_block_b": {
+            "net_return": 47.0,
+            "gross_return": 56.79,
+            "sharpe": 1.73,
+            "max_drawdown": 16.0,
+            "daily_turnover": 0.3906,
+            "total_turnover": 2935.0,
+            "exposure": 82.0
+          }
+        },
+        {
+          "window": "Window 4 (Jul 2025)",
+          "equation": "S = +0.4325*H-BB -0.5710*NL_RISK_ADJ_MOM",
+          "threshold": 0.1544,
+          "in_sample_fitness": 4.338,
+          "metrics_on_block_b": {
+            "net_return": 30.22,
+            "gross_return": 40.73,
+            "sharpe": 1.05,
+            "max_drawdown": 34.5,
+            "daily_turnover": 0.4194,
+            "total_turnover": 3152.0,
+            "exposure": 86.3
+          }
+        },
+        {
+          "window": "Window 5 (Dec 2025)",
+          "equation": "S = -0.1694*H-ASYM -0.1699*H-NATR +0.5057*H-EMA_CROSS -0.2351*H-MOM +0.2651*H-STOCH -0.5484*NL_VOL_GATED_MOM",
+          "threshold": 0.0698,
+          "in_sample_fitness": 4.073,
+          "metrics_on_block_b": {
+            "net_return": 81.99,
+            "gross_return": 92.33,
+            "sharpe": 3.05,
+            "max_drawdown": 9.2,
+            "daily_turnover": 0.4128,
+            "total_turnover": 3102.0,
+            "exposure": 94.1
+          }
+        }
+      ],
+      "strict_walk_forward_oos": {
+        "net_return": -3.91,
+        "gross_return": 5.59,
+        "sharpe": -0.12,
+        "max_drawdown": 36.5,
+        "daily_turnover": 0.379,
+        "total_turnover": 2848.0,
+        "exposure": 86.5
+      },
+      "canonical_block_a_equation": {
+        "weights": {
+          "H-BB": 1.1948,
+          "H-STOCH": 0.2227,
+          "H-OBV_MOM": 0.4501,
+          "NL_HURST_ADAPT": -0.4839
+        },
+        "threshold": 0.1695
+      }
+    },
+    "30": {
+      "rolling_windows": [
+        {
+          "window": "Window 1 (Dec 2023)",
+          "equation": "S = -0.2589*H-ASYM +0.6083*H-NATR +0.5976*H-STOCH -0.2898*NL_HURST_ADAPT",
+          "threshold": 0.2479,
+          "in_sample_fitness": 3.955,
+          "metrics_on_block_b": {
+            "net_return": 17.86,
+            "gross_return": 27.64,
+            "sharpe": 0.81,
+            "max_drawdown": 12.3,
+            "daily_turnover": 0.3907,
+            "total_turnover": 5872.0,
+            "exposure": 78.6
+          }
+        },
+        {
+          "window": "Window 2 (Jul 2024)",
+          "equation": "S = -0.4444*H-MACD -0.9139*H-MOM +0.7978*H-STOCH +0.6082*H-CROSS_MOM +0.6523*NL_SQUEEZE_TREND",
+          "threshold": 0.1304,
+          "in_sample_fitness": 4.026,
+          "metrics_on_block_b": {
+            "net_return": 45.38,
+            "gross_return": 52.98,
+            "sharpe": 1.61,
+            "max_drawdown": 14.0,
+            "daily_turnover": 0.3034,
+            "total_turnover": 4560.0,
+            "exposure": 88.1
+          }
+        },
+        {
+          "window": "Window 3 (Dec 2024)",
+          "equation": "S = +0.7634*H-STOCH -0.6369*NL_RISK_ADJ_MOM -0.1662*NL_OFI_REV",
+          "threshold": 0.1615,
+          "in_sample_fitness": 3.627,
+          "metrics_on_block_b": {
+            "net_return": 27.57,
+            "gross_return": 39.22,
+            "sharpe": 1.21,
+            "max_drawdown": 18.9,
+            "daily_turnover": 0.4649,
+            "total_turnover": 6987.0,
+            "exposure": 86.0
+          }
+        },
+        {
+          "window": "Window 4 (Jul 2025)",
+          "equation": "S = -0.8289*H-P +0.2269*H-EMA_CROSS +0.9735*H-STOCH +0.9043*NL_SQUEEZE_TREND",
+          "threshold": 0.1237,
+          "in_sample_fitness": 3.443,
+          "metrics_on_block_b": {
+            "net_return": 70.72,
+            "gross_return": 81.04,
+            "sharpe": 2.94,
+            "max_drawdown": 7.1,
+            "daily_turnover": 0.4121,
+            "total_turnover": 6194.0,
+            "exposure": 87.4
+          }
+        },
+        {
+          "window": "Window 5 (Dec 2025)",
+          "equation": "S = +0.8789*H-RV +0.0367*H-HURST",
+          "threshold": 0.2105,
+          "in_sample_fitness": 2.676,
+          "metrics_on_block_b": {
+            "net_return": 48.3,
+            "gross_return": 61.91,
+            "sharpe": 2.04,
+            "max_drawdown": 12.7,
+            "daily_turnover": 0.5434,
+            "total_turnover": 8167.0,
+            "exposure": 84.5
+          }
+        }
+      ],
+      "strict_walk_forward_oos": {
+        "net_return": 33.86,
+        "gross_return": 43.62,
+        "sharpe": 1.45,
+        "max_drawdown": 14.3,
+        "daily_turnover": 0.3898,
+        "total_turnover": 5859.0,
+        "exposure": 84.9
+      },
+      "canonical_block_a_equation": {
+        "weights": {
+          "H-ASYM": -0.1792,
+          "H-BB": 0.8179,
+          "NL_OFI_REV": -0.2768
+        },
+        "threshold": 0.1572
+      }
+    },
+    "60": {
+      "rolling_windows": [
+        {
+          "window": "Window 1 (Dec 2023)",
+          "equation": "S = +0.1267*H-MACD +0.8295*H-BB -0.3728*H-A -0.4276*H-CROSS_MOM -0.6557*NL_SQUEEZE_TREND -1.0782*NL_HURST_ADAPT",
+          "threshold": 0.2535,
+          "in_sample_fitness": 3.1,
+          "metrics_on_block_b": {
+            "net_return": 11.27,
+            "gross_return": 21.32,
+            "sharpe": 0.75,
+            "max_drawdown": 8.2,
+            "daily_turnover": 0.4012,
+            "total_turnover": 12061.0,
+            "exposure": 76.1
+          }
+        },
+        {
+          "window": "Window 2 (Jul 2024)",
+          "equation": "S = -1.2617*H-MACD +0.1567*H-BB +0.3950*H-STOCH +1.2017*H-RV -0.3637*H-OBV_MOM -0.3868*NL_HURST_ADAPT",
+          "threshold": 0.2921,
+          "in_sample_fitness": 3.327,
+          "metrics_on_block_b": {
+            "net_return": 34.43,
+            "gross_return": 42.78,
+            "sharpe": 1.55,
+            "max_drawdown": 12.5,
+            "daily_turnover": 0.3331,
+            "total_turnover": 10013.0,
+            "exposure": 70.2
+          }
+        },
+        {
+          "window": "Window 3 (Dec 2024)",
+          "equation": "S = -0.9564*H-MACD -0.3107*H-EMA_CROSS +0.3035*H-STOCH +0.9692*H-RV -0.6580*NL_HURST_ADAPT",
+          "threshold": 0.2845,
+          "in_sample_fitness": 3.732,
+          "metrics_on_block_b": {
+            "net_return": 38.67,
+            "gross_return": 47.17,
+            "sharpe": 1.75,
+            "max_drawdown": 18.1,
+            "daily_turnover": 0.3396,
+            "total_turnover": 10207.0,
+            "exposure": 67.8
+          }
+        },
+        {
+          "window": "Window 4 (Jul 2025)",
+          "equation": "S = -0.1935*H-P -1.0863*H-MACD +0.1367*H-MOM +1.0797*H-RV -0.1025*H-LOG +0.2161*NL_VOL_GATED_MOM -0.2403*NL_HURST_ADAPT",
+          "threshold": 0.1725,
+          "in_sample_fitness": 3.018,
+          "metrics_on_block_b": {
+            "net_return": 33.73,
+            "gross_return": 41.81,
+            "sharpe": 1.68,
+            "max_drawdown": 10.2,
+            "daily_turnover": 0.3227,
+            "total_turnover": 9701.0,
+            "exposure": 80.2
+          }
+        },
+        {
+          "window": "Window 5 (Dec 2025)",
+          "equation": "S = -0.5505*H-NATR +1.5034*H-RV -0.1987*H-A +0.2739*H-HURST -0.3867*NL_SQUEEZE_TREND -0.2858*NL_HURST_ADAPT",
+          "threshold": 0.2431,
+          "in_sample_fitness": 3.073,
+          "metrics_on_block_b": {
+            "net_return": 42.7,
+            "gross_return": 53.78,
+            "sharpe": 2.43,
+            "max_drawdown": 7.7,
+            "daily_turnover": 0.4423,
+            "total_turnover": 13296.0,
+            "exposure": 80.0
+          }
+        }
+      ],
+      "strict_walk_forward_oos": {
+        "net_return": 20.79,
+        "gross_return": 29.6,
+        "sharpe": 1.03,
+        "max_drawdown": 10.3,
+        "daily_turnover": 0.3519,
+        "total_turnover": 10578.0,
+        "exposure": 73.1
+      },
+      "canonical_block_a_equation": {
+        "weights": {
+          "H-ASYM": -0.0545,
+          "H-EMA_CROSS": -0.0042,
+          "H-BB": 0.4323,
+          "H-OBV_MOM": -0.8522,
+          "H-HURST": 0.5357,
+          "NL_SQUEEZE_TREND": -1.368,
+          "NL_HURST_ADAPT": -0.9019
+        },
+        "threshold": 0.0946
+      }
+    },
+    "90": {
+      "rolling_windows": [
+        {
+          "window": "Window 1 (Dec 2023)",
+          "equation": "S = -0.0385*H-ASYM +0.9275*H-NATR +1.1424*H-SQUEEZE +0.4002*H-BB -0.8720*H-OBV_MOM",
+          "threshold": 0.1459,
+          "in_sample_fitness": 2.076,
+          "metrics_on_block_b": {
+            "net_return": -9.83,
+            "gross_return": -5.93,
+            "sharpe": -0.8,
+            "max_drawdown": 17.0,
+            "daily_turnover": 0.1558,
+            "total_turnover": 7025.0,
+            "exposure": 86.9
+          }
+        },
+        {
+          "window": "Window 2 (Jul 2024)",
+          "equation": "S = +0.6734*H-NATR +0.5113*H-SQUEEZE +1.0638*H-BB -1.3025*H-MOM +0.3152*H-STOCH +0.3804*H-MFI +0.7967*NL_SQUEEZE_TREND",
+          "threshold": 0.1924,
+          "in_sample_fitness": 2.205,
+          "metrics_on_block_b": {
+            "net_return": -2.52,
+            "gross_return": 3.5,
+            "sharpe": -0.2,
+            "max_drawdown": 12.6,
+            "daily_turnover": 0.2405,
+            "total_turnover": 10842.0,
+            "exposure": 83.7
+          }
+        },
+        {
+          "window": "Window 3 (Dec 2024)",
+          "equation": "S = -0.5882*H-MACD -0.2852*H-A +0.3478*H-MFI -0.4946*NL_HURST_ADAPT",
+          "threshold": 0.2241,
+          "in_sample_fitness": 2.33,
+          "metrics_on_block_b": {
+            "net_return": 12.85,
+            "gross_return": 22.76,
+            "sharpe": 1.0,
+            "max_drawdown": 9.4,
+            "daily_turnover": 0.3957,
+            "total_turnover": 17843.0,
+            "exposure": 79.1
+          }
+        },
+        {
+          "window": "Window 4 (Jul 2025)",
+          "equation": "S = -0.9897*H-MACD +1.0394*H-RV -0.1650*H-CROSS_MOM +0.5437*NL_VOL_GATED_MOM -0.4009*NL_HURST_ADAPT",
+          "threshold": 0.195,
+          "in_sample_fitness": 1.992,
+          "metrics_on_block_b": {
+            "net_return": 22.25,
+            "gross_return": 30.7,
+            "sharpe": 1.67,
+            "max_drawdown": 7.4,
+            "daily_turnover": 0.3373,
+            "total_turnover": 15209.0,
+            "exposure": 79.3
+          }
+        },
+        {
+          "window": "Window 5 (Dec 2025)",
+          "equation": "S = -1.0777*H-MACD +1.4213*H-RV -0.2785*H-A +0.6599*H-HURST +0.4359*NL_RISK_ADJ_MOM",
+          "threshold": 0.1828,
+          "in_sample_fitness": 2.853,
+          "metrics_on_block_b": {
+            "net_return": 27.53,
+            "gross_return": 36.06,
+            "sharpe": 2.31,
+            "max_drawdown": 4.4,
+            "daily_turnover": 0.3404,
+            "total_turnover": 15350.0,
+            "exposure": 85.1
+          }
+        }
+      ],
+      "strict_walk_forward_oos": {
+        "net_return": -10.45,
+        "gross_return": -3.2,
+        "sharpe": -0.81,
+        "max_drawdown": 17.0,
+        "daily_turnover": 0.2894,
+        "total_turnover": 13050.0,
+        "exposure": 82.2
+      },
+      "canonical_block_a_equation": {
+        "weights": {
+          "H-NATR": 0.7185,
+          "H-SQUEEZE": -0.0925,
+          "H-BB": 0.7004,
+          "H-STOCH": -0.0685,
+          "H-HURST": 0.77
+        },
+        "threshold": 0.1525
+      }
+    }
+  }
+}

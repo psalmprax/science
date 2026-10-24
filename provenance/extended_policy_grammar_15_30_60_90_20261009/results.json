@@ -1,0 +1,245 @@
+{
+ "rows": [
+  {
+   "N": 15,
+   "candidate": "A: Baseline (Base)",
+   "net": -5.93,
+   "gross": 6.26,
+   "sharpe": 0.09,
+   "dd": 43.4,
+   "exposure": 86.1,
+   "turnover": 3652.0
+  },
+  {
+   "N": 15,
+   "candidate": "H: Hysteresis",
+   "net": -20.79,
+   "gross": -11.82,
+   "sharpe": -0.22,
+   "dd": 50.1,
+   "exposure": 93.0,
+   "turnover": 3213.0
+  },
+  {
+   "N": 15,
+   "candidate": "Control: Exposure-Match",
+   "net": -7.27,
+   "gross": 5.76,
+   "sharpe": 0.09,
+   "dd": 46.2,
+   "exposure": 93.0,
+   "turnover": 3942.0
+  },
+  {
+   "N": 15,
+   "candidate": "C: Deadband (tau=0.20)",
+   "net": -5.93,
+   "gross": 6.26,
+   "sharpe": 0.09,
+   "dd": 43.4,
+   "exposure": 86.1,
+   "turnover": 3652.0
+  },
+  {
+   "N": 15,
+   "candidate": "D: Turnover-Pen (l=0.20)",
+   "net": -17.1,
+   "gross": -9.08,
+   "sharpe": -0.15,
+   "dd": 48.8,
+   "exposure": 100.0,
+   "turnover": 2767.0
+  },
+  {
+   "N": 15,
+   "candidate": "E: Interaction (b=0.10)",
+   "net": -10.28,
+   "gross": 0.88,
+   "sharpe": 0.01,
+   "dd": 45.4,
+   "exposure": 85.8,
+   "turnover": 3515.0
+  },
+  {
+   "N": 30,
+   "candidate": "A: Baseline (Base)",
+   "net": 7.92,
+   "gross": 20.8,
+   "sharpe": 0.34,
+   "dd": 36.6,
+   "exposure": 83.5,
+   "turnover": 6760.0
+  },
+  {
+   "N": 30,
+   "candidate": "H: Hysteresis",
+   "net": -4.7,
+   "gross": 5.06,
+   "sharpe": 0.12,
+   "dd": 41.4,
+   "exposure": 90.5,
+   "turnover": 5847.0
+  },
+  {
+   "N": 30,
+   "candidate": "Control: Exposure-Match",
+   "net": 7.45,
+   "gross": 21.41,
+   "sharpe": 0.34,
+   "dd": 39.2,
+   "exposure": 90.5,
+   "turnover": 7325.1
+  },
+  {
+   "N": 30,
+   "candidate": "C: Deadband (tau=0.20)",
+   "net": 7.92,
+   "gross": 20.8,
+   "sharpe": 0.34,
+   "dd": 36.6,
+   "exposure": 83.5,
+   "turnover": 6760.0
+  },
+  {
+   "N": 30,
+   "candidate": "D: Turnover-Pen (l=0.20)",
+   "net": 1.81,
+   "gross": 10.74,
+   "sharpe": 0.2,
+   "dd": 36.0,
+   "exposure": 100.0,
+   "turnover": 5044.0
+  },
+  {
+   "N": 30,
+   "candidate": "E: Interaction (b=0.10)",
+   "net": -0.14,
+   "gross": 11.39,
+   "sharpe": 0.21,
+   "dd": 37.6,
+   "exposure": 83.5,
+   "turnover": 6555.0
+  },
+  {
+   "N": 60,
+   "candidate": "A: Baseline (Base)",
+   "net": -4.54,
+   "gross": 6.55,
+   "sharpe": -0.01,
+   "dd": 25.4,
+   "exposure": 85.1,
+   "turnover": 13184.0
+  },
+  {
+   "N": 60,
+   "candidate": "H: Hysteresis",
+   "net": -7.17,
+   "gross": 2.08,
+   "sharpe": -0.09,
+   "dd": 26.1,
+   "exposure": 91.9,
+   "turnover": 11387.0
+  },
+  {
+   "N": 60,
+   "candidate": "Control: Exposure-Match",
+   "net": -5.25,
+   "gross": 6.69,
+   "sharpe": -0.01,
+   "dd": 27.3,
+   "exposure": 91.9,
+   "turnover": 14232.8
+  },
+  {
+   "N": 60,
+   "candidate": "C: Deadband (tau=0.20)",
+   "net": -4.54,
+   "gross": 6.55,
+   "sharpe": -0.01,
+   "dd": 25.4,
+   "exposure": 85.1,
+   "turnover": 13184.0
+  },
+  {
+   "N": 60,
+   "candidate": "D: Turnover-Pen (l=0.20)",
+   "net": -7.68,
+   "gross": 0.26,
+   "sharpe": -0.15,
+   "dd": 25.6,
+   "exposure": 100.0,
+   "turnover": 9896.0
+  },
+  {
+   "N": 60,
+   "candidate": "E: Interaction (b=0.10)",
+   "net": -9.0,
+   "gross": 1.24,
+   "sharpe": -0.13,
+   "dd": 28.4,
+   "exposure": 85.0,
+   "turnover": 12795.0
+  },
+  {
+   "N": 90,
+   "candidate": "A: Baseline (Base)",
+   "net": -8.03,
+   "gross": 2.35,
+   "sharpe": -0.36,
+   "dd": 17.5,
+   "exposure": 85.8,
+   "turnover": 19257.0
+  },
+  {
+   "N": 90,
+   "candidate": "H: Hysteresis",
+   "net": -9.21,
+   "gross": -0.42,
+   "sharpe": -0.44,
+   "dd": 17.8,
+   "exposure": 92.5,
+   "turnover": 16634.0
+  },
+  {
+   "N": 90,
+   "candidate": "Control: Exposure-Match",
+   "net": -8.74,
+   "gross": 2.42,
+   "sharpe": -0.36,
+   "dd": 18.8,
+   "exposure": 92.5,
+   "turnover": 20751.4
+  },
+  {
+   "N": 90,
+   "candidate": "C: Deadband (tau=0.20)",
+   "net": -8.03,
+   "gross": 2.35,
+   "sharpe": -0.36,
+   "dd": 17.5,
+   "exposure": 85.8,
+   "turnover": 19257.0
+  },
+  {
+   "N": 90,
+   "candidate": "D: Turnover-Pen (l=0.20)",
+   "net": -9.3,
+   "gross": -1.71,
+   "sharpe": -0.49,
+   "dd": 18.0,
+   "exposure": 100.0,
+   "turnover": 14472.0
+  },
+  {
+   "N": 90,
+   "candidate": "E: Interaction (b=0.10)",
+   "net": -11.09,
+   "gross": -1.34,
+   "sharpe": -0.5,
+   "dd": 20.1,
+   "exposure": 85.7,
+   "turnover": 18722.0
+  }
+ ],
+ "source": "stdout.log (machine-parsed)"
+}

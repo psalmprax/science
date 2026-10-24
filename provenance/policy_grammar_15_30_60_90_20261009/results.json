@@ -1,0 +1,125 @@
+{
+ "rows": [
+  {
+   "N": 15,
+   "strategy": "Baseline",
+   "net": -5.93,
+   "gross": 6.26,
+   "sharpe": 0.09,
+   "dd": 43.4,
+   "exposure": 86.1,
+   "turnover": 3652.0
+  },
+  {
+   "N": 15,
+   "strategy": "Hysteresis",
+   "net": -20.79,
+   "gross": -11.82,
+   "sharpe": -0.22,
+   "dd": 50.1,
+   "exposure": 93.0,
+   "turnover": 3213.0
+  },
+  {
+   "N": 15,
+   "strategy": "Exposure-Match",
+   "net": -7.27,
+   "gross": 5.76,
+   "sharpe": 0.09,
+   "dd": 46.2,
+   "exposure": 93.0,
+   "turnover": 3942.0
+  },
+  {
+   "N": 30,
+   "strategy": "Baseline",
+   "net": 7.92,
+   "gross": 20.8,
+   "sharpe": 0.34,
+   "dd": 36.6,
+   "exposure": 83.5,
+   "turnover": 6760.0
+  },
+  {
+   "N": 30,
+   "strategy": "Hysteresis",
+   "net": -4.7,
+   "gross": 5.06,
+   "sharpe": 0.12,
+   "dd": 41.4,
+   "exposure": 90.5,
+   "turnover": 5847.0
+  },
+  {
+   "N": 30,
+   "strategy": "Exposure-Match",
+   "net": 7.45,
+   "gross": 21.41,
+   "sharpe": 0.34,
+   "dd": 39.2,
+   "exposure": 90.5,
+   "turnover": 7325.1
+  },
+  {
+   "N": 60,
+   "strategy": "Baseline",
+   "net": -4.54,
+   "gross": 6.55,
+   "sharpe": -0.01,
+   "dd": 25.4,
+   "exposure": 85.1,
+   "turnover": 13184.0
+  },
+  {
+   "N": 60,
+   "strategy": "Hysteresis",
+   "net": -7.17,
+   "gross": 2.08,
+   "sharpe": -0.09,
+   "dd": 26.1,
+   "exposure": 91.9,
+   "turnover": 11387.0
+  },
+  {
+   "N": 60,
+   "strategy": "Exposure-Match",
+   "net": -5.25,
+   "gross": 6.69,
+   "sharpe": -0.01,
+   "dd": 27.3,
+   "exposure": 91.9,
+   "turnover": 14232.8
+  },
+  {
+   "N": 90,
+   "strategy": "Baseline",
+   "net": -8.03,
+   "gross": 2.35,
+   "sharpe": -0.36,
+   "dd": 17.5,
+   "exposure": 85.8,
+   "turnover": 19257.0
+  },
+  {
+   "N": 90,
+   "strategy": "Hysteresis",
+   "net": -9.21,
+   "gross": -0.42,
+   "sharpe": -0.44,
+   "dd": 17.8,
+   "exposure": 92.5,
+   "turnover": 16634.0
+  },
+  {
+   "N": 90,
+   "strategy": "Exposure-Match",
+   "net": -8.74,
+   "gross": 2.42,
+   "sharpe": -0.36,
+   "dd": 18.8,
+   "exposure": 92.5,
+   "turnover": 20751.4
+  }
+ ],
+ "source": "stdout.log (machine-parsed)"
+}

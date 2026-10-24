@@ -1,0 +1,15 @@
+{
+  "problem_id": "P17",
+  "problem_name": "Fermi-Dirac Distribution High-Energy Tail",
+  "class_id": 3,
+  "class_name": "Asymptotic & Extrapolation Regimes",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "1.0 / (exp(E - 2.0) + 1.0)",
+  "canonical_structural_family": "fermi_dirac",
+  "true_parameters": {
+    "Ef": 2.0
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

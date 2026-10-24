@@ -1,0 +1,16 @@
+{
+ "utc": "2026-10-09T10:07:04.143377+00:00",
+ "command": [
+  ".venv/bin/python3",
+  "scratch/demonstrate_generated_equations.py"
+ ],
+ "returncode": 0,
+ "commit": "d881d5cdbc3df4bc1d1d5e7a24e91b4adf3a96f8",
+ "script_hashes": {
+  "scratch/demonstrate_generated_equations.py": "e6454978126b745d029a403458e52c181db9640aaf49f648f579db33e69a4b9d"
+ },
+ "dataset_hashes": {
+  "data/market/multi_asset_90_5yr_orderflow.csv": "4729ad81f67cb1f430479fe02f1fc700980baf51e890b42cd0067856d273fa2e"
+ },
+ "note": "Tables must be generated from stdout.log/results artifacts in this directory."
+}

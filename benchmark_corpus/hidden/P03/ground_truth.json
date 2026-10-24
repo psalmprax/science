@@ -1,0 +1,15 @@
+{
+  "problem_id": "P03",
+  "problem_name": "Stefan-Boltzmann Radiation Law",
+  "class_id": 1,
+  "class_name": "Canonical Physical Laws",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "2.5e-4 * T**4",
+  "canonical_structural_family": "power_law",
+  "true_parameters": {
+    "sigma_eff": 0.00025
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

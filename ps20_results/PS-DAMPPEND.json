@@ -1,0 +1,21 @@
+{
+  "problem_id": "PS-DAMPPEND",
+  "timestamp": "2026-09-30T10:59:52+0200",
+  "name": "damped-pendulum",
+  "n_states": 2,
+  "n_inputs": 0,
+  "n_params": 3,
+  "n_candidates": 25,
+  "n_scored": 25,
+  "n_valid": 25,
+  "epistemic_status": "multi_hypothesis",
+  "best_rmse": 0.0016349658485532116,
+  "second_rmse": 6.469123982594016e-06,
+  "delta_rmse": -0.0016284967245706176,
+  "tau_epi": 0.0319684054605471,
+  "epistemic_margin": -0.03359690218511772,
+  "adjudication_reason": "rival mg1-0020 within \u03c4 (\u0394=-0.00163 \u2264 \u03c4=0.032 [holdout-scale]); structures observationally indistinguishable under available interventions",
+  "n_ranking": 25,
+  "termination": "SUCCESS",
+  "wall_seconds": 11.592387914657593
+}

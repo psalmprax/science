@@ -1,0 +1,113 @@
+{
+  "record_kind": "margin_theorem_referee_decision",
+  "decision_format": 1,
+  "adjudicated_at": "2026-10-22T05:54:21.393212+00:00",
+  "decided_by": "frozen referee protocol \u2014 preregistered criteria C1\u2013C5 applied mechanically by benchmarks/run_margin_theorem_referee_decision.py (audit-only deciding layer)",
+  "authority_note": "AGENTS.md \u00a71.1: proposers never decide their own acceptance. This record applies the packet's own preregistered claim boundary as the criterion set; the packet's checks were re-reproduced fresh at this HEAD before adjudication.",
+  "criterion_set": [
+    "C1: the packet's machine checks re-reproduce at the current HEAD with builder_exit_code == 0 (every mandatory check passes)",
+    "C2: the theorem's sharp point holds \u2014 exact saturation of (v_i \u2212 v_j)\u00b7n_ij = \u22122\u00b7v_max = \u2212\u03b3\u00b7h* at h = h* with lapse < 1e-12",
+    "C3: the packet's assumption box is ADMITTED by the certified module's own assumption gate \u2014 A1/A2/A5 as a predicate (|v| \u2264 v_max, \u03b3\u00b7dt \u2264 0.5 enforced at construction), the certified battery running its own parameterization \u2014 nothing outside the certified scope is claimed",
+    "C4: the certified module's fail-closed floor is behaviorally intact \u2014 an unsolved provably-violated nominal reaches the FULL all-pairs re-check and RAISES (never silently released)",
+    "C5: the claim boundary is scope-faithful \u2014 all five boundary items present verbatim; no claim stronger than the certified module's"
+  ],
+  "criteria_verdicts": {
+    "C1": {
+      "passed": true,
+      "evidence": {
+        "builder_exit_code": 0,
+        "mandatory_checks": {
+          "exact_saturation_at_h_star": true,
+          "headroom_above_h_star": true,
+          "box_worst_case_bound_sampled": true,
+          "restricted_solve_all_pairs_recheck_honesty": true,
+          "unsolved_nominal_refused_fail_closed": true
+        },
+        "drift_notes": []
+      }
+    },
+    "C2": {
+      "passed": true,
+      "evidence": {
+        "lapse": 0.0,
+        "h_star": 4.0
+      }
+    },
+    "C3": {
+      "passed": true,
+      "evidence": {
+        "packet_box_admitted_by_certified_gate": true,
+        "a2_gamma_dt": 0.025,
+        "round_trips": true
+      }
+    },
+    "C4": {
+      "passed": true,
+      "evidence": {
+        "fixture": "2-agent near pair closing at top speed",
+        "refused": true,
+        "detail": "CBF-QP(proximity) failed to certify: max all-pairs deficit 2.000e+00 (free-pair worst -inf; margin covers it algebraically)"
+      }
+    },
+    "C5": {
+      "passed": true,
+      "evidence": {
+        "expected_items": 5,
+        "present_items": 5
+      }
+    }
+  },
+  "refusals": [],
+  "verdict": "ACCEPTED_INTO_CERTIFIED_BOUNDARY",
+  "scope_conditions": [
+    "the theorem enters the certified boundary under its OWN claim boundary (A1/A2/A5 box; model-checked-only horizon; no kernel parity claim)",
+    "CHECKLIST ITEM 1 REMAINS OPEN: wiring production N \u2265 256 real-time control is separately gated and NOT granted here",
+    "CHECKLIST ITEM 3 REMAINS OPEN: scipy (cKDTree) runtime dependency acceptance or the Rust-kernel port (rank-4 backlog)",
+    "the FULL all-pairs fail-closed re-check must ship in EVERY release \u2014 revocation trigger: any release that removes it vacates this acceptance automatically"
+  ],
+  "reservations": [
+    "horizon evidence is MODEL-CHECKED (production stepper), never a formal proof",
+    "timing figures are dev-box medians \u2014 decision thresholds, not constants; re-measure on target hardware",
+    "the Rust-side seam of the restricted solver is unverified and unclaimed"
+  ],
+  "supersedes": {
+    "prior_verdict": "ACCEPTED_INTO_CERTIFIED_BOUNDARY",
+    "prior_adjudicated_at": "2026-10-22T05:51:10.660293+00:00",
+    "reason": "builder import-block lint normalization only (no criteria change); re-adjudicating so the record's decision-script SHA matches the shipped builder"
+  },
+  "evidence_fingerprint": {
+    "packet_identity_sha256": "fdfda1611e452495162cfe8be3aa89c809802897a5559f68f20d1ab87c84eab8",
+    "pointer_sha256s": {
+      "pitch_module": {
+        "path": "apedp_dyn/robotics/proximity_margin.py",
+        "sha256": "998874c093c63d50507a43ddf9a1ac1e3df686bd6e2b3410f40f809d9ce6055c"
+      },
+      "certified_module": {
+        "path": "apedp_dyn/robotics/cbf_certificate.py",
+        "sha256": "a5b892707c8e2ba402d25ee2f7e2a1301d37397d1c71b2e0d92b656fca05b004"
+      },
+      "pin_tests": {
+        "path": "tests/test_dyn_proximity_margin_pins.py",
+        "sha256": "23b63fa11a619a572b825411a7fdcbcbf8b72ca93b22cc8a7da89b2a5e9faf8d",
+        "pins_collected": 10
+      },
+      "certificate_battery_artifact": {
+        "path": "benchmarks/cbf_certificate_report.json",
+        "exists": true,
+        "sha256": "7cc658d2cc04430dcd601f9f5f276bd1066b577525c1052f86f6352d841d74a6"
+      }
+    },
+    "decision_script": {
+      "path": "benchmarks/run_margin_theorem_referee_decision.py",
+      "sha256": "48a5792ab4e7dd7a30e25d424da43b58af78218dcac4f637407b2c8179c2b74d"
+    }
+  },
+  "decision_slot": {
+    "status": "ADJUDICATED",
+    "verdict": "ACCEPTED_INTO_CERTIFIED_BOUNDARY",
+    "adjudicated_at": "2026-10-22T05:54:21.393212+00:00",
+    "decided_by_record": "benchmarks/run_margin_theorem_referee_decision.json",
+    "packet_identity_sha256": "fdfda1611e452495162cfe8be3aa89c809802897a5559f68f20d1ab87c84eab8"
+  },
+  "builder_exit_code": 0
+}

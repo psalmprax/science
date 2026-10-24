@@ -1,0 +1,57 @@
+{
+  "spec_id": "canonical_preregistered_spec_v1",
+  "spec_sha256": "a6d026f303a77cbb2f1dd5f8a74c394dd09f8139d811a9bfe4142c82063f6d47",
+  "quorum_threshold": 2,
+  "trustees": [
+    {
+      "trustee_id": "referee_lead_01",
+      "name": "Lead Epistemic Referee",
+      "public_key_hex": "9cb876ccb44b63fc8bad3b580ea86a3e14bb81c90361e801ab0a8675a8bf9dfd",
+      "role": "Chief Referee"
+    },
+    {
+      "trustee_id": "referee_stat_02",
+      "name": "Statistical Verification Officer",
+      "public_key_hex": "05fd93155bdf784c5eac8581866521c027cbb9b366c6c52732d42084adae2680",
+      "role": "Statistical Referee"
+    },
+    {
+      "trustee_id": "auditor_formal_03",
+      "name": "Mathematical Formalization Auditor",
+      "public_key_hex": "27924bd7c02fd38f738d06ced27f4d95825c3dcf803012d628ea106f760b39e6",
+      "role": "Formal Verification Auditor"
+    }
+  ],
+  "signatures": [
+    {
+      "trustee_id": "referee_lead_01",
+      "signature_hex": "5a8a03767b1352c3d749246f8dc40c67986d6f1a5c4fcf3df8bfe6a0af4ad6318cf199cb1dacad0ba4b864a6503435c6dc7857b7a364ba5746ef6b289db4f103",
+      "signed_at": "2026-10-18T16:31:16.664147+00:00"
+    },
+    {
+      "trustee_id": "referee_stat_02",
+      "signature_hex": "c7ef865bd3b1d83006b0755c250e2faf5abfcf0229e55e8e042f252e685da27894cedffc5707355f0d3094bcc2ac0f5bd94d2b471c8d7940b46db92dad3e980b",
+      "signed_at": "2026-10-18T16:31:16.664147+00:00"
+    }
+  ],
+  "transparency_log": [
+    {
+      "index": 0,
+      "timestamp": "2026-10-18T16:31:16.664147+00:00",
+      "action": "PREREGISTRATION_GENESIS",
+      "spec_sha256": "a6d026f303a77cbb2f1dd5f8a74c394dd09f8139d811a9bfe4142c82063f6d47",
+      "trustee_id": "referee_lead_01",
+      "prev_entry_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "entry_hash": "b189bd0720e742fc0ac67d3e9ac01a6ee0369836667442ec9c2b834ab6f94c41"
+    },
+    {
+      "index": 1,
+      "timestamp": "2026-10-18T16:31:16.664147+00:00",
+      "action": "QUORUM_CO_SIGNATURE",
+      "spec_sha256": "a6d026f303a77cbb2f1dd5f8a74c394dd09f8139d811a9bfe4142c82063f6d47",
+      "trustee_id": "referee_stat_02",
+      "prev_entry_hash": "b189bd0720e742fc0ac67d3e9ac01a6ee0369836667442ec9c2b834ab6f94c41",
+      "entry_hash": "12873a9066959ec19bb645e00ec9e91a0fa4b9192f3de17cdb2395762ce9fae9"
+    }
+  ]
+}

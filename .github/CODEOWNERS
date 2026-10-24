@@ -1,0 +1,15 @@
+# Default review owner; later entries make key contributor boundaries explicit.
+* @psalmprax
+
+/packages/ @psalmprax
+/crates/ @psalmprax
+/rust/ @psalmprax
+/apedp* @psalmprax
+/tests/ @psalmprax
+
+/docs/ @psalmprax
+/specifications/ @psalmprax
+/*.md @psalmprax
+
+/.github/workflows/ @psalmprax
+/.github/CODEOWNERS @psalmprax

@@ -1,0 +1,22 @@
+{
+  "problem_id": "P04",
+  "problem_name": "Ideal Gas Law",
+  "class_id": 1,
+  "class_name": "Canonical Physical Laws",
+  "input_variables": [
+    "T",
+    "V"
+  ],
+  "target_variable": "P",
+  "variable_units": {
+    "T": "kelvin",
+    "V": "meter**3",
+    "P": "pascal"
+  },
+  "dataset_sizes": {
+    "train": 36,
+    "validation": 12,
+    "near_ood": 16,
+    "far_ood": 16
+  }
+}

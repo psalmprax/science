@@ -1,0 +1,41 @@
+{
+  "conversion": {
+    "coverage_fraction": 0.10059171597633136,
+    "covered": 17,
+    "paranote": "Sub is mapped as Add∘Neg (IEEE-exact equality incl. NaN); parity gate is exact on the covered set",
+    "unmapped_ops": [
+      "Div(->SafeDiv differs)",
+      "Min/Max(absent)",
+      "Pow(safe-rational differs)",
+      "unbounded transcendentals(exp/ln/log/erf/tan/... ...)"
+    ]
+  },
+  "gates": {
+    "gate_decision": "PARITY-THROUGHPUT: no decisive throughput case from representation alone; the dump should weigh the coverage fraction and structural-sharing upside instead",
+    "parity_mismatches": 0
+  },
+  "purpose": "SRE gate instrumentation for docs/rust_migration_decision_record.md rank 1 (tree-vs-arena)",
+  "recorded_at": "1792679316",
+  "throughput": {
+    "arena_ms": 78.74699100000001,
+    "arena_over_tree_ratio": 0.8539727187798197,
+    "arena_us_per_candidate": 2316.0879705882357,
+    "tree_ms": 67.247782,
+    "tree_us_per_candidate": 1977.8759411764709
+  },
+  "workload": {
+    "builder_flags": {
+      "allow_advanced": false,
+      "allow_exp": false,
+      "allow_misc": false,
+      "allow_trans": false
+    },
+    "loops_per_rep": 2,
+    "max_depth": 4,
+    "n_candidates": 169,
+    "num_vars": 2,
+    "reps": 3,
+    "rng_seed": 20261022,
+    "rows": 60000
+  }
+}

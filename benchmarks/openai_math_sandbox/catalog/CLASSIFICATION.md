@@ -1,0 +1,202 @@
+# Comparator-statement classification (189 statements)
+
+Candidate tiers over the formal STATEMENTS (proofs not checked; no Lean in APEDP-X).
+Counts: {'tier3_uncheckable_proof_level': 126, 'tier1_candidate_explicit_construction': 48, 'tier2_candidate_numeric_or_bound': 15}
+
+## tier1_candidate_explicit_construction (48)
+
+- `AmplitudeDamping`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 10 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `ArnoldCounterexample`: declaration name contains 'counterexample'; existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 4 numeric literals in statement
+- `BinPackingGap`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 9 numeric literals in statement
+- `BinaryMatching`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 4 numeric literals in statement
+- `BoundedTreePotentials`: declaration name contains 'counterexample'; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 6 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `CliqueFreeLog`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 3 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `CommutingDerivations`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 7 numeric literals in statement
+- `DaugavetModuli`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 28 numeric literals in statement
+- `DepthThree`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 5 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `DoublingHilbert`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement
+- `EgyptianFractions`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 31 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...); asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)
+- `EntangledGames`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 9 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `EuclideanFiveColor`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement
+- `FoulkesHowe`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement
+- `FourierLLogL`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 4 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...); asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)
+- `HadwigerCounterexample`: declaration name contains 'counterexample'; existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 13 numeric literals in statement
+- `HarmonicGrowth`: declaration name contains 'counterexample'; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `InfiniteMatroid`: declaration name contains 'counterexample'; existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `IsometricImmersion`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 3 numeric literals in statement
+- `KahlerSplitting`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 3 numeric literals in statement
+- `KaplanskyFinitelyPresented`: declaration name contains 'counterexample'; existential quantifier in statement; 3 numeric literals in statement
+- `KaplanskyQuasitrace`: declaration name contains 'counterexample'; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `LipschitzEquivalence`: declaration name contains 'counterexample'
+- `LittleFinitistic`: declaration name contains 'counterexample'; existential quantifier in statement; 4 numeric literals in statement
+- `LogConcaveQuery`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 5 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `MatrixRemoval`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 6 numeric literals in statement
+- `MemoryPrecision`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 68 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `MetricEntropyDuality`: declaration name contains 'counterexample'; existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 3 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `Nagata`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 29 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `OneTapeSpace`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 9 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `OneWayLiveness`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 9 numeric literals in statement
+- `PeriodicTilingThree`: declaration name contains 'counterexample'; existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 6 numeric literals in statement
+- `PlanarFirstPassage`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 5 numeric literals in statement
+- `ProjectionCounterexample`: declaration name contains 'counterexample'; 2 numeric literals in statement
+- `ProjectionVolume`: declaration name contains 'counterexample'; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 14 numeric literals in statement
+- `QuadricBundles`: declaration name contains 'counterexample'; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `RadialTransition`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 9 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `RegularParity`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 6 numeric literals in statement
+- `RyserCovering`: declaration name contains 'counterexample'; existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 5 numeric literals in statement
+- `RyserOddExtensions`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 4 numeric literals in statement; asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)
+- `SensitivitySeparation`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 7 numeric literals in statement
+- `SingleLatticeCovering`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `SmoothYau`: declaration name contains 'counterexample'; existential quantifier in statement; 6 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `SubpolynomialLp`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 19 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...); asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)
+- `TwoWayComplementation`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 11 numeric literals in statement
+- `TwoWayDeterminization`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 20 numeric literals in statement
+- `UniformSparsestCut`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 4 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...); asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)
+- `YauCounterexample`: declaration name contains 'counterexample'; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+
+## tier2_candidate_numeric_or_bound (15)
+
+- `CoordinateSweeps`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `DiamondDistortion`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 8 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `ForestSpace`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 7 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `FreeIsing`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 4 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `GaussianReplacement`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 15 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `HeckeSevenEighths`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 18 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `IndependentProducts`: 28 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `MatchingEntropy`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 4 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `MidpointLenses`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 8 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `QuasiRiemannHypothesis`: 3 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...) — **probe join:** family 3 (riemann_verifier (wave 1))
+- `SecondKahnKalai`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `SiegelZeros`: existential quantifier in statement; 16 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `StrictMeans`: existential quantifier in statement; 13 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `SymmetricPolar`: 4 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+- `ThorpRouting`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 12 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...)
+
+## tier3_uncheckable_proof_level (126)
+
+- `AbhyankarSathaye`: existential quantifier in statement; 2 numeric literals in statement
+- `ArtinCAT0`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 3 numeric literals in statement
+- `AsymptoticallyMinimalLittlewood`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `AuslanderReiten`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `BackwardIntertwiners`: no finite/numeric features matched
+- `BassTrace`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `BiholderTransport`: no finite/numeric features matched
+- `BinarySweep`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement
+- `BipartiteCrossing`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `BorsukNine`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `BoundedRecovery`: 5 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...); asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)
+- `BoundedTreewidthL1`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `Brennan`: named real constant (pi/log/sqrt/zeta/...)
+- `BrennanSharp`: no finite/numeric features matched
+- `C0Absorption`: no finite/numeric features matched
+- `CHObstruction`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `CartierChartCompactnessSupport`: no finite/numeric features matched
+- `CharacterCriterion`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `CharacterVarietiesAllSeamsSupport`: no finite/numeric features matched
+- `ChoicelessPolynomialTime`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `CirculantHadamard`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 3 numeric literals in statement
+- `ClassicalON`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `CommonBasesFPRAS`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `CompactBanach`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `CompleteCrossing`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `CompleteCrouzeix`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement
+- `ComplexCancellation`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `Conductivity`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `ConjugatePoints`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `ContinuumTransition`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `Cotype`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `CoulombIonization`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `CourtadeKumar`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `CriticalSK`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 30 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...); asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)
+- `CriticalSKMixing`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 7 numeric literals in statement; named real constant (pi/log/sqrt/zeta/...); asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)
+- `CriticalZ3`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `CycleDecomposition`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `DegreeRigidity`: no finite/numeric features matched
+- `DeligneDrinfeld`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `DirectCrouzeix`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement
+- `DirectionalBallisticity`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `DirichletSevenEighths`: 5 numeric literals in statement
+- `DixmierAllDiscrete`: no finite/numeric features matched
+- `EuclideanRamsey`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement
+- `ExactFourier`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `FactorGeneration`: no finite/numeric features matched
+- `FinitisticAsymmetry`: existential quantifier in statement; 2 numeric literals in statement
+- `GaussianMoat`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `GaussianPropeller`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `GotsmanLinial`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `GrahamSpherical`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `GrothendieckElementaryExpansion`: no finite/numeric features matched
+- `GroupRingDeterminant`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `HarmonicArtin`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `HenonEmden`: existential quantifier in statement; 3 numeric literals in statement
+- `HoneycombBridgeMassSupport`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `HyperbolicCones`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 7 numeric literals in statement
+- `HyperbolicObstruction`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `IndependentSets`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 3 numeric literals in statement
+- `Jacobsthal`: no finite/numeric features matched
+- `KMedianRecovery`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `Laughlin`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `LiebThirring`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `LogBrunnMinkowski`: 4 numeric literals in statement
+- `LogspaceEquality`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `MahlerConjecture`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement
+- `MarkovType`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `MatrixFields`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 9 numeric literals in statement
+- `MatrixMultiplication`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 8 numeric literals in statement
+- `MaximalSeshadriConstants`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `OddKaplansky`: no finite/numeric features matched
+- `OptimalMaxCut`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `PartitionPrinciple`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `PerfectCompleteness`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement
+- `PettyProjectionVolume`: no finite/numeric features matched
+- `PinchedKahler`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `PinnedDistances`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement; asymptotic/infinite-set quantifier (sSup/Set.Infinite/Tendsto)
+- `PlanarFalconer`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `PlanarL1`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `PlaneColoring`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `PosteriorReplicas`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `PowerFreeValues`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 3 numeric literals in statement
+- `ProjectionMoments`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `QACParity`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `QuantitativeVanDerWaerden`: existential quantifier in statement; 4 numeric literals in statement
+- `QuinticLienard`: existential quantifier in statement; 4 numeric literals in statement
+- `RandomizedMeanPayoff`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `RationalHitting`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `RecursivePotentials`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `ReflexiveFixedPoints`: existential quantifier in statement
+- `RieszQuantitative`: no finite/numeric features matched
+- `Saxl`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `SelfSimilar`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `SeymourSecondNeighborhood`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `SignedFiniteBand`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `SimpleAmenable`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `SingleFold`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `SingletonLoopMatching`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `StableCoordinateFour`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `SteinitzBergstrom`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `StrongThinTree`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `StructuralCrouzeix`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement
+- `SubsphereCurrent`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `Superstring`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `SurfaceConeCandidateSupport`: existential quantifier in statement
+- `SymmetricDomains`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `SymmetricMahlerEquality`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 2 numeric literals in statement
+- `Tachikawa`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `TalagrandDiscreteConvexity`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 9 numeric literals in statement
+- `TalagrandExpectationThreshold`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 3 numeric literals in statement
+- `TamingCompatibility`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `ThompsonNonamenability`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin))
+- `ThorpWeightedCompatibility`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `TingleySphereIsometry`: existential quantifier in statement; 3 numeric literals in statement
+- `TorsionFreeHyperbolic`: existential quantifier in statement
+- `TorsionFreeZeroDivisors`: no finite/numeric features matched
+- `TraceIdealTransportSupport`: existential quantifier in statement; 5 numeric literals in statement
+- `TriangularHilbert`: no finite/numeric features matched
+- `UniformFourier`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `UniformGamma`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `UniqueGamesTheorem`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 6 numeric literals in statement
+- `UniversalFInfinity`: existential quantifier in statement
+- `VertexCover`: finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); 3 numeric literals in statement
+- `VlasovMaxwell`: existential quantifier in statement; finite witness type (Fin/Finset/SimpleGraph(Fin)/Matrix(Fin)); named real constant (pi/log/sqrt/zeta/...)
+- `WeakHessian`: named real constant (pi/log/sqrt/zeta/...)
+- `WeakMTWGlobalSupport`: no finite/numeric features matched

@@ -1,0 +1,21 @@
+{
+  "problem_id": "S49",
+  "problem_name": "Severely Underspecified Sparse System S49",
+  "class_id": 5,
+  "class_name": "Epistemic Abstention Adversaries",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "variable_units": {
+    "x": "dimensionless",
+    "y": "dimensionless"
+  },
+  "physical_constraints": {},
+  "dataset_sizes": {
+    "train": 6,
+    "validation": 3,
+    "near_ood": 40,
+    "far_ood": 40
+  }
+}

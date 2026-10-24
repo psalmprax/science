@@ -1,0 +1,10 @@
+ols: sharpe=-0.057 net=-0.09849 dd=0.78662
+bh: sharpe=+0.048 net=+0.08186 dd=0.67553
+mom: sharpe=+0.277 net=+0.47373 dd=0.54601
+rev: sharpe=-0.536 net=-0.91557 dd=1.25232
+rnd: sharpe=-0.306 net=-0.51913 dd=0.92232
+ols vs bh: Wilcoxon p=0.3707
+ols vs mom: Wilcoxon p=0.0099
+ols vs rev: Wilcoxon p=0.0001
+ols vs rnd: Wilcoxon p=0.0497
+GATE1 positive sharpe: False | GATE3 dd<2xBH: True

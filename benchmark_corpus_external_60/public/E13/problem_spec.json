@@ -1,0 +1,15 @@
+{
+  "problem_id": "E13",
+  "block": "E",
+  "name": "exp-0.37",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 10,
+    "near_ood": 30,
+    "far_ood": 30
+  }
+}

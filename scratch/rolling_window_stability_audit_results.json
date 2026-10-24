@@ -1,0 +1,363 @@
+{
+  "feature_specifications": {
+    "H-BB": {
+      "name": "Bollinger Bands %B",
+      "formula": "(p_t - Lower_t) / (Upper_t - Lower_t), where Upper/Lower = SMA_20 +/- 2*Std_20",
+      "concept": "Normalized relative price position within dynamic volatility envelope; primary trend/mean-reversion driver.",
+      "normalization": "Causal expanding z-score -> Cross-sectional standard normal across universe at bar t."
+    },
+    "H-P": {
+      "name": "Volatility Persistence (Absolute Return Magnitude)",
+      "formula": "causal_zscore(|r_t|)",
+      "concept": "Instantaneous absolute return shock; measures volatility persistence and market turbulence.",
+      "normalization": "Causal expanding z-score of |r_t|."
+    },
+    "H-ASYM": {
+      "name": "GJR Panic Leverage (Downside Semivariance)",
+      "formula": "causal_zscore(|r_t| * I(r_t < 0))",
+      "concept": "Asymmetric downside volatility shock; isolates panic liquidation and crash risk without penalizing upside rallies.",
+      "normalization": "Causal expanding z-score of negative return magnitudes."
+    },
+    "NL_OFI_REV": {
+      "name": "RSI x OFI Mean-Reversion Interaction",
+      "formula": "causal_zscore(RSI_14 * OFI_t)",
+      "concept": "Order flow imbalance confirmed by oscillator extremes; captures aggressive flow exhausting into support/resistance.",
+      "normalization": "Product of normalized RSI and normalized OFI, followed by causal expanding z-score."
+    },
+    "NL_SQUEEZE_TREND": {
+      "name": "MACD x Squeeze Interaction",
+      "formula": "causal_zscore(MACD_t * (BB_width / Keltner_width))",
+      "concept": "Trend acceleration breaking out of volatility compression (squeeze release).",
+      "normalization": "Product of MACD and Squeeze state, followed by causal expanding z-score."
+    },
+    "H-MOM": {
+      "name": "5-Day Trailing Return Momentum",
+      "formula": "causal_zscore((p_t - p_{t-5}) / p_{t-5})",
+      "concept": "Classical 5-day simple momentum.",
+      "normalization": "Causal expanding z-score."
+    },
+    "NL_HURST_ADAPT": {
+      "name": "Hurst Regime-Switched Momentum",
+      "formula": "causal_zscore(Mom_t * (Hurst_30 - 0.5))",
+      "concept": "Trades momentum when Hurst > 0.5 (persistent trending regime); inverts to mean-reversion when Hurst < 0.5 (anti-persistent regime).",
+      "normalization": "Product of 5-day momentum and centered Hurst exponent, followed by causal expanding z-score."
+    }
+  },
+  "training_correlation_matrix": {
+    "H-BB": {
+      "H-BB": 1.0,
+      "H-P": -0.0743,
+      "H-ASYM": -0.3789,
+      "NL_OFI_REV": -0.0879,
+      "NL_SQUEEZE_TREND": 0.476,
+      "H-MOM": 0.7241,
+      "NL_HURST_ADAPT": -0.1222
+    },
+    "H-P": {
+      "H-BB": -0.0743,
+      "H-P": 1.0,
+      "H-ASYM": 0.5899,
+      "NL_OFI_REV": 0.1735,
+      "NL_SQUEEZE_TREND": -0.0132,
+      "H-MOM": -0.0556,
+      "NL_HURST_ADAPT": 0.0251
+    },
+    "H-ASYM": {
+      "H-BB": -0.3789,
+      "H-P": 0.5899,
+      "H-ASYM": 1.0,
+      "NL_OFI_REV": 0.1953,
+      "NL_SQUEEZE_TREND": -0.1232,
+      "H-MOM": -0.3796,
+      "NL_HURST_ADAPT": 0.1326
+    },
+    "NL_OFI_REV": {
+      "H-BB": -0.0879,
+      "H-P": 0.1735,
+      "H-ASYM": 0.1953,
+      "NL_OFI_REV": 1.0,
+      "NL_SQUEEZE_TREND": -0.0541,
+      "H-MOM": -0.0597,
+      "NL_HURST_ADAPT": 0.0546
+    },
+    "NL_SQUEEZE_TREND": {
+      "H-BB": 0.476,
+      "H-P": -0.0132,
+      "H-ASYM": -0.1232,
+      "NL_OFI_REV": -0.0541,
+      "NL_SQUEEZE_TREND": 1.0,
+      "H-MOM": 0.4353,
+      "NL_HURST_ADAPT": 0.0944
+    },
+    "H-MOM": {
+      "H-BB": 0.7241,
+      "H-P": -0.0556,
+      "H-ASYM": -0.3796,
+      "NL_OFI_REV": -0.0597,
+      "NL_SQUEEZE_TREND": 0.4353,
+      "H-MOM": 1.0,
+      "NL_HURST_ADAPT": 0.0199
+    },
+    "NL_HURST_ADAPT": {
+      "H-BB": -0.1222,
+      "H-P": 0.0251,
+      "H-ASYM": 0.1326,
+      "NL_OFI_REV": 0.0546,
+      "NL_SQUEEZE_TREND": 0.0944,
+      "H-MOM": 0.0199,
+      "NL_HURST_ADAPT": 1.0
+    }
+  },
+  "rolling_window_results": {
+    "window_results": [
+      {
+        "window": "Window 1 (Dec 2023)",
+        "start_date": "2021-01-04",
+        "end_date": "2023-12-29",
+        "bars": 753,
+        "active_terms": [
+          "H-NATR",
+          "H-SQUEEZE",
+          "H-MACD",
+          "H-STOCH",
+          "NL_OFI_REV",
+          "NL_HURST_ADAPT"
+        ],
+        "bb_coefficient": 0.0,
+        "threshold": 0.2111,
+        "fitness": 4.996,
+        "in_sample_sharpe": 3.48,
+        "weights_dict": {
+          "H-NATR": 1.0197,
+          "H-SQUEEZE": 0.3553,
+          "H-MACD": 0.3931,
+          "H-STOCH": 1.0892,
+          "NL_OFI_REV": -0.4484,
+          "NL_HURST_ADAPT": -0.7655
+        },
+        "equation": "S = +1.0197*H-NATR +0.3553*H-SQUEEZE +0.3931*H-MACD +1.0892*H-STOCH -0.4484*NL_OFI_REV -0.7655*NL_HURST_ADAPT"
+      },
+      {
+        "window": "Window 2 (Jul 2024)",
+        "start_date": "2021-07-06",
+        "end_date": "2024-07-02",
+        "bars": 753,
+        "active_terms": [
+          "H-NATR",
+          "H-SQUEEZE",
+          "H-MOM",
+          "H-STOCH",
+          "NL_OFI_REV",
+          "NL_HURST_ADAPT"
+        ],
+        "bb_coefficient": 0.0,
+        "threshold": 0.1323,
+        "fitness": 3.881,
+        "in_sample_sharpe": 2.799,
+        "weights_dict": {
+          "H-NATR": 0.4839,
+          "H-SQUEEZE": 0.089,
+          "H-MOM": -0.2768,
+          "H-STOCH": 0.7911,
+          "NL_OFI_REV": -0.2434,
+          "NL_HURST_ADAPT": -0.0447
+        },
+        "equation": "S = +0.4839*H-NATR +0.0890*H-SQUEEZE -0.2768*H-MOM +0.7911*H-STOCH -0.2434*NL_OFI_REV -0.0447*NL_HURST_ADAPT"
+      },
+      {
+        "window": "Window 3 (Dec 2024)",
+        "start_date": "2021-12-31",
+        "end_date": "2024-12-30",
+        "bars": 753,
+        "active_terms": [
+          "H-NATR",
+          "H-MOM",
+          "H-STOCH",
+          "NL_HURST_ADAPT"
+        ],
+        "bb_coefficient": 0.0,
+        "threshold": 0.2778,
+        "fitness": 4.521,
+        "in_sample_sharpe": 3.039,
+        "weights_dict": {
+          "H-NATR": 0.0821,
+          "H-MOM": -0.6957,
+          "H-STOCH": 0.7074,
+          "NL_HURST_ADAPT": -0.3562
+        },
+        "equation": "S = +0.0821*H-NATR -0.6957*H-MOM +0.7074*H-STOCH -0.3562*NL_HURST_ADAPT"
+      },
+      {
+        "window": "Window 4 (Jul 2025)",
+        "start_date": "2022-07-01",
+        "end_date": "2025-07-02",
+        "bars": 753,
+        "active_terms": [
+          "H-P",
+          "H-STOCH",
+          "NL_SQUEEZE_TREND"
+        ],
+        "bb_coefficient": 0.0,
+        "threshold": 0.1614,
+        "fitness": 3.204,
+        "in_sample_sharpe": 2.312,
+        "weights_dict": {
+          "H-P": -0.3593,
+          "H-STOCH": 0.521,
+          "NL_SQUEEZE_TREND": 0.3927
+        },
+        "equation": "S = -0.3593*H-P +0.5210*H-STOCH +0.3927*NL_SQUEEZE_TREND"
+      },
+      {
+        "window": "Window 5 (Dec 2025)",
+        "start_date": "2022-12-30",
+        "end_date": "2025-12-31",
+        "bars": 753,
+        "active_terms": [
+          "H-P",
+          "H-RV",
+          "NL_SQUEEZE_TREND"
+        ],
+        "bb_coefficient": 0.0,
+        "threshold": 0.1716,
+        "fitness": 3.572,
+        "in_sample_sharpe": 2.658,
+        "weights_dict": {
+          "H-P": -0.326,
+          "H-RV": 1.0241,
+          "NL_SQUEEZE_TREND": 0.757
+        },
+        "equation": "S = -0.3260*H-P +1.0241*H-RV +0.7570*NL_SQUEEZE_TREND"
+      }
+    ],
+    "consecutive_jaccards": [
+      {
+        "consecutive_pair": "Window 1 (Dec 2023) vs Window 2 (Jul 2024)",
+        "shared_terms": [
+          "NL_OFI_REV",
+          "H-STOCH",
+          "NL_HURST_ADAPT",
+          "H-SQUEEZE",
+          "H-NATR"
+        ],
+        "jaccard_similarity": 0.714
+      },
+      {
+        "consecutive_pair": "Window 2 (Jul 2024) vs Window 3 (Dec 2024)",
+        "shared_terms": [
+          "H-STOCH",
+          "H-MOM",
+          "NL_HURST_ADAPT",
+          "H-NATR"
+        ],
+        "jaccard_similarity": 0.667
+      },
+      {
+        "consecutive_pair": "Window 3 (Dec 2024) vs Window 4 (Jul 2025)",
+        "shared_terms": [
+          "H-STOCH"
+        ],
+        "jaccard_similarity": 0.167
+      },
+      {
+        "consecutive_pair": "Window 4 (Jul 2025) vs Window 5 (Dec 2025)",
+        "shared_terms": [
+          "NL_SQUEEZE_TREND",
+          "H-P"
+        ],
+        "jaccard_similarity": 0.5
+      }
+    ],
+    "score_correlation_matrix": [
+      [
+        1.0,
+        0.8583,
+        0.6556,
+        0.4379,
+        0.1413
+      ],
+      [
+        0.8583,
+        1.0,
+        0.6714,
+        0.5603,
+        0.1956
+      ],
+      [
+        0.6556,
+        0.6714,
+        1.0,
+        0.4161,
+        0.0776
+      ],
+      [
+        0.4379,
+        0.5603,
+        0.4161,
+        1.0,
+        0.7314
+      ],
+      [
+        0.1413,
+        0.1956,
+        0.0776,
+        0.7314,
+        1.0
+      ]
+    ],
+    "position_agreement_matrix": [
+      [
+        100.0,
+        73.55,
+        63.21,
+        55.0,
+        43.26
+      ],
+      [
+        73.55,
+        100.0,
+        62.84,
+        60.92,
+        45.87
+      ],
+      [
+        63.21,
+        62.84,
+        100.0,
+        53.68,
+        39.6
+      ],
+      [
+        55.0,
+        60.92,
+        53.68,
+        100.0,
+        62.67
+      ],
+      [
+        43.26,
+        45.87,
+        39.6,
+        62.67,
+        100.0
+      ]
+    ],
+    "common_returns": [
+      19.98666944709282,
+      35.509576194853594,
+      46.93845882298369,
+      68.17480645187945,
+      66.37428121336619
+    ],
+    "common_sharpes": [
+      1.1055981054551796,
+      1.6758324863243244,
+      1.954581997250588,
+      2.605848923604072,
+      2.8389788025260287
+    ],
+    "bb_only_return": 19.282288972159083,
+    "bb_only_sharpe": 0.711523305995687,
+    "buy_hold_return": -26.086910558665526
+  }
+}

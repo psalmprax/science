@@ -1,0 +1,17 @@
+calib in A=2.0: oracleIC=+0.1042 (recorded, unadjusted)
+calib out A=2.0: oracleIC=+0.6359 (recorded, unadjusted)
+== discovery (seeds 91000+) ==
+-- in-grammar truth --
+  Cs: meanIC=+0.3221 median-p=0.0000
+  Q: meanIC=+0.1480 median-p=0.0000
+  Qs: meanIC=+0.3176 median-p=0.0000
+  Ms: meanIC=+0.2733 median-p=0.0000
+  tQ: meanIC=+0.1439 median-p=0.0000
+  pass Bonferroni(0.05/60): ['Cs', 'Q', 'Qs', 'Ms', 'tQ', 'tQs', 'tC', 'tCs', 'QxCs']
+-- out-grammar truth --
+  V: meanIC=+0.1985 median-p=0.0000
+  Vs: meanIC=+0.2374 median-p=0.0000
+  dC: meanIC=+0.2690 median-p=0.0000
+  dCs: meanIC=+0.3126 median-p=0.0000
+  CxM: meanIC=+0.3090 median-p=0.0000
+  pass Bonferroni(0.05/60): ['V', 'Vs', 'dC', 'dCs', 'CxM', 'CxMs', 'QxM', 'QxMs', 'sVDM', 'sVDMs', 'sCxdC', 'sCxdCs']

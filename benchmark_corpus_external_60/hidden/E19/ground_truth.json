@@ -1,0 +1,12 @@
+{
+  "problem_id": "E19",
+  "block": "E",
+  "canonical_structural_family": "logarithmic_boundary_layer",
+  "ground_truth_formula": "1.0*log(1 + 3.0*x)",
+  "true_parameters": {
+    "A": 1.0,
+    "B": 3.0
+  },
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER"
+}

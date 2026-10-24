@@ -1,0 +1,15 @@
+{
+  "problem_id": "P08",
+  "block": "P",
+  "name": "power-1.7",
+  "input_variables": [
+    "x"
+  ],
+  "target_variable": "y",
+  "dataset_sizes": {
+    "train": 60,
+    "validation": 20,
+    "near_ood": 30,
+    "far_ood": 30
+  }
+}

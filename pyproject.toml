@@ -1,0 +1,199 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apedp"
+version = "1.0.0"
+description = "Autonomous Physics & Engineering Discovery Platform"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "sympy>=1.12",
+    "pint>=0.21",
+    "pypdf>=3.0",
+    "python-docx>=0.8",
+    "matplotlib>=3.7",
+    "seaborn>=0.12",
+    "networkx>=3.0",
+    "fastapi>=0.140",
+    "uvicorn>=0.30",
+    "scikit-learn>=1.3",
+    "scipy>=1.10",
+    "cryptography>=41.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff==0.17.1",
+    "mypy==2.4.0",
+    "maturin==1.14.1",
+    "PyYAML==6.0.3",
+    "bandit>=1.7",
+    "pytest-xdist>=3.6",
+]
+test = [
+    "pytest>=8.0",
+    "torch==2.9.1",
+    "jax>=0.4",
+    "flax>=0.8",
+    "optax>=0.2",
+    "httpx>=0.27",
+    "scikit-learn>=1.3",
+    "scipy>=1.10",
+    "cryptography>=41.0",
+    "pytest-xdist>=3.6",
+]
+bayesian = [
+    "jax>=0.4",
+]
+
+neural = [
+    "flax>=0.8",
+    "optax>=0.2",
+    "equinox>=0.11",      # PyTree-based models
+    "blackjax>=1.0",      # MCMC/SVI
+    "jaxopt>=0.8",        # Optimization
+    "optax-contrib>=0.1", # Extra schedulers
+    "opendp>=0.1",        # Differential privacy (optional)
+    "optuna>=3.5",        # Hyperopt
+]
+orchestration = [
+    "redis>=5.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["apedp*"]
+# The native kernel ships exclusively as the `apedp-kernel` wheel built from
+# rust/apedp-kernel. In a dev environment the source tree may contain an
+# apedp_kernel symlink into the venv; excluding it keeps the pure-Python wheel
+# deterministic and prevents shipping a wrapper without its compiled module.
+exclude = ["apedp_kernel*"]
+
+[tool.setuptools.package-data]
+apedp = ["py.typed"]
+
+[tool.coverage.run]
+# Branch data, not just line data. A module can execute every one of its
+# statements and still have most of its *outcomes* untested -- the never-true
+# guard, the except clause nobody triggers -- and those are where silent
+# failures live. tools/coverage_audit.py reports branch coverage separately
+# for exactly this reason, and until this was set it had no branch numbers to
+# report and could only declare their absence.
+branch = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-v", "--tb=short"]
+# A test marked xfail that starts passing is a real signal (the bug it pinned
+# was fixed, or the mark is stale). Without strict, pytest reports XPASS and
+# the suite stays green, so the mark silently rots. `strict` turns that red.
+xfail_strict = true
+markers = [
+    "integration: requires an external service such as Redis",
+    "smoke: fast syntax/import gate (seconds); run alone with `pytest -m smoke`",
+    # Slow tests are excluded from the default run, which matters more than
+    # usual here: the full suite exceeds 600s, and an iteration loop that has
+    # to wait ten minutes to learn you broke something is a loop people stop
+    # running. Mark a test `slow` when it does real synthesis, a real
+    # benchmark round, or otherwise takes more than a couple of seconds.
+    "slow: takes more than a few seconds (real synthesis, full round); run with `-m slow`",
+    # The complement of `slow`: the fast suite, for a tight inner loop. This
+    # is a subset of unmarked tests, not a partition, so a test is either
+    # explicitly slow or implicitly fast. `-m 'not slow'` already gives the
+    # fast set; `fast` exists so intent is legible at the mark site.
+    "fast: runs in the default inner loop (the complement of `slow`)",
+    "scientific_regression: deterministic known-ground-truth discovery checks",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+# Explicit rule set: the default (E4,E7,E9,F) is too thin to act as a CI gate,
+# and an implicit default means a ruff upgrade can silently change what blocks.
+select = ["E", "F", "W", "I", "UP", "B", "C4", "RUF", "BLE", "S"]
+ignore = [
+    # Line length is the formatter's job, not the linter's.
+    "E501",
+    # `assert` is how tests assert; S101 there is pure noise.
+    "S101",
+    # Domain convention, not sloppiness: physics notation is capitalised
+    # (R, A_C, k_B, sigma_1) and every occurrence is deliberate.
+    "N806", "N803", "N816", "N818", "N814", "N802",
+    # Trailing/blank-line whitespace: 131 sites predate this config and the
+    # fix is a repo-wide reformat that would bury every real change in diff.
+    "W291", "W293", "W292",
+    # `random` is deliberate: every stochastic path takes an explicit seed so
+    # runs are reproducible. Bandit cannot see the seeding.
+    "S311",
+    # Greek letters and math symbols in docstrings and messages are the physics
+    # notation itself (gamma, rho, sigma, en-dash as a minus). Ruff's confusable
+    # check reads them as homoglyph attacks; here they are the domain language.
+    "RUF001", "RUF002", "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Pure re-export surface: the unused imports ARE the public API.
+"apedp/__init__.py" = ["F401"]
+"apedp/pde_solvers.py" = ["E731"]
+"apedp/cross_domain_benchmark.py" = ["E731", "E402"]
+"apedp/neural_discovery/symbolic.py" = ["E402", "S105"]
+"apedp/pipeline.py" = ["E402"]
+"tests/*" = ["E731", "E402", "S101", "S603", "S607", "B011", "N802", "B017"]
+"benchmarks/*" = ["E731", "E701", "E402", "E741", "S101", "N802"]
+# Bandit rules on the deliberate best-effort probe paths are handled with a
+# per-call `noqa` and a reason, not a blanket file exemption.
+"apedp/rust_bridge.py" = ["S110"]
+# These two are physics evaluators that must degrade rather than crash: a
+# singular expression, a transcendental that will not simplify, or a domain
+# probe off the support are ordinary scientific outcomes, not bugs. Every
+# handler binds the exception and reports it -- to `logger.debug` or by
+# appending to the report's `violations`/`warnings` list -- so nothing is
+# swallowed. SymPy also raises a wide, version-dependent exception set on
+# these paths, so narrowing the type would be theatre.
+"apedp/physics_constraints.py" = ["BLE001"]
+"apedp/special_functions.py" = ["BLE001"]
+# `apedp/neural_discovery/symbolic.py` also ignores S105: it is a symbolic
+# tokenizer, so `token` is the domain word throughout (token stream, token
+# index, VAR_PREFIX token) and never a credential.
+# Sandbox demo harnesses deliberately bootstrap sys.path before their imports
+# (they are also run standalone from CSV/JSON fixtures); E402 is the expected
+# layout there, not sloppiness.
+"apedp_dyn/sandbox/*" = ["E402"]
+# Freeze-pinned v1.1 modules (frozen_spec.PINNED_FROZEN_REGISTRY /
+# sandbox/APEDPX_FROZEN_v1_1.json): any byte change re-trips the SHA-256
+# freeze guard and fails the blind benchmark loudly, so their pre-frozen
+# findings are knowingly retained in every rule family. Do NOT autofix
+# these files — byte identity outranks lint cosmetics there.
+# Covers every selected rule family (incl. BLE/BLK), for every python file
+# pinned in either freeze record.
+"apedp_dyn/sandbox/grammar_space.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/multi_asset_signals_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/epistemic/adjudicate.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/epistemic/claim_ladder.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/grammar/candidate_ir.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/apedp_x_meta_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/causal_discovery_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/eseds_dynamical.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/eso_packing.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/multi_grammar_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/pde_verification_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/sphere_packing_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/sandbox/trading_signals_sandbox.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+"apedp_dyn/ui/server.py" = ["F", "E", "I", "W", "UP", "B", "C4", "RUF", "S", "BLE"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+files = ["apedp_dyn/conf/paths.py", "apedp_dyn/conf/canonical_spec.py"]
+strict = true
+# Phase 1 checks the path/specification integrity boundary strictly. Keep
+# imported legacy modules opaque until their typing debt is remediated.
+follow_imports = "skip"
+exclude = ["neural_discovery/"]

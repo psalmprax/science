@@ -1,0 +1,797 @@
+//! Sparse Implicit Null-Space Discovery.
+//!
+//! Discovers algebraic and physical relations of the form F(x, y) = 0
+//! by finding sparse null-space vectors of a generalized feature tensor:
+//!     Theta(x, y) * c ~ 0
+//!
+//! Completely symmetric with respect to LHS and RHS, enabling exact recovery
+//! of rational poles, implicit geometric manifolds, and conservation surfaces
+//! without declaring an arbitrary target variable.
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImplicitConfig {
+    pub max_degree: usize,
+    pub include_cross_terms: bool,
+    pub include_rational_products: bool,
+    pub sparsity_threshold: f64,
+    pub rcond_threshold: f64,
+}
+
+impl Default for ImplicitConfig {
+    fn default() -> ImplicitConfig {
+        ImplicitConfig {
+            max_degree: 3,
+            include_cross_terms: true,
+            include_rational_products: true,
+            sparsity_threshold: 1e-3,
+            rcond_threshold: 1e-12,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImplicitResult {
+    pub feature_names: Vec<String>,
+    pub coefficients: Vec<f64>,
+    pub formula: String,
+    pub algebraic_rmse: f64,
+    pub relative_null_error: f64,
+    pub condition_number: f64,
+    pub num_active_terms: usize,
+    pub is_exact_recovery: bool,
+}
+
+/// SVD / Jacobi Eigendecomposition for symmetric K x K matrix.
+pub fn jacobi_eigen(a: &[f64], k: usize, max_rotations: usize, tol: f64) -> (Vec<f64>, Vec<f64>) {
+    // FLAW-15 v2 (exposed by the rime::lie_symmetry scale pin): Gram matrices
+    // entering here can carry extreme scale (O(1e12) for an O(1e6) ODE
+    // amplitude), while the off-diagonal termination test below is ABSOLUTE
+    // (max_off < tol). At extreme scale the test can never fire, the
+    // rotation budget depletes before relative accuracy, and the
+    // tiny-eigenvalue eigenvectors feeding the nullspace gate come out
+    // corrupted (basis residual ~1e5 instead of eps). Normalize to unit
+    // spectral scale first: eigenvectors are scale-free, eigenvalues are
+    // rescaled back afterwards.
+    let mut mat = a.to_vec();
+    let norm = mat.iter().map(|v| v.abs()).fold(0.0f64, f64::max);
+    let scale = if norm > 0.0 && norm.is_finite() { norm } else { 1.0 };
+    for entry in mat.iter_mut() {
+        *entry /= scale;
+    }
+    let mut v = vec![0.0f64; k * k];
+    for i in 0..k {
+        v[i * k + i] = 1.0;
+    }
+
+    for _ in 0..max_rotations {
+        let mut max_off = 0.0f64;
+        let mut p = 0usize;
+        let mut q = 1usize;
+
+        for i in 0..k {
+            for j in (i + 1)..k {
+                let off = mat[i * k + j].abs();
+                if off > max_off {
+                    max_off = off;
+                    p = i;
+                    q = j;
+                }
+            }
+        }
+
+        if max_off < tol {
+            break;
+        }
+
+        let app = mat[p * k + p];
+        let aqq = mat[q * k + q];
+        let apq = mat[p * k + q];
+
+        let theta = 0.5 * (aqq - app) / apq;
+        let t = if theta >= 0.0 {
+            1.0 / (theta + (1.0 + theta * theta).sqrt())
+        } else {
+            -1.0 / (-theta + (1.0 + theta * theta).sqrt())
+        };
+        let c = 1.0 / (1.0 + t * t).sqrt();
+        let s = t * c;
+        let tau = s / (1.0 + c);
+
+        mat[p * k + p] = app - t * apq;
+        mat[q * k + q] = aqq + t * apq;
+        mat[p * k + q] = 0.0;
+        mat[q * k + p] = 0.0;
+
+        for i in 0..k {
+            if i != p && i != q {
+                let a_ip = mat[i * k + p];
+                let a_iq = mat[i * k + q];
+                mat[i * k + p] = a_ip - s * (a_iq + tau * a_ip);
+                mat[p * k + i] = mat[i * k + p];
+                mat[i * k + q] = a_iq + s * (a_ip - tau * a_iq);
+                mat[q * k + i] = mat[i * k + q];
+            }
+        }
+
+        for i in 0..k {
+            let v_ip = v[i * k + p];
+            let v_iq = v[i * k + q];
+            v[i * k + p] = c * v_ip - s * v_iq;
+            v[i * k + q] = s * v_ip + c * v_iq;
+        }
+    }
+
+    let mut eigenvalues = vec![0.0f64; k];
+    for i in 0..k {
+        eigenvalues[i] = mat[i * k + i] * scale;
+    }
+
+    (eigenvalues, v)
+}
+
+/// Construct feature matrix Theta(x, y) up to a specified maximum degree.
+fn build_features_for_degree(
+    x: &[f64],
+    y: &[f64],
+    deg: usize,
+    include_cross_terms: bool,
+    include_rational_products: bool,
+) -> (Vec<Vec<f64>>, Vec<String>) {
+    let n = x.len();
+    let mut cols = Vec::new();
+    let mut names = Vec::new();
+
+    // Constant 1
+    cols.push(vec![1.0f64; n]);
+    names.push("1".to_string());
+
+    // Single variable powers x^p, y^q
+    for p in 1..=deg {
+        let col_x: Vec<f64> = x.iter().map(|&v| v.powi(p as i32)).collect();
+        cols.push(col_x);
+        names.push(if p == 1 {
+            "x".to_string()
+        } else {
+            format!("x^{p}")
+        });
+
+        let col_y: Vec<f64> = y.iter().map(|&v| v.powi(p as i32)).collect();
+        cols.push(col_y);
+        names.push(if p == 1 {
+            "y".to_string()
+        } else {
+            format!("y^{p}")
+        });
+    }
+
+    // Cross terms x^p * y^q with total degree p + q <= deg
+    if include_cross_terms {
+        for p in 1..=deg {
+            for q in 1..=deg {
+                if p + q <= deg {
+                    let col_xy: Vec<f64> = x
+                        .iter()
+                        .zip(y.iter())
+                        .map(|(&xv, &yv)| xv.powi(p as i32) * yv.powi(q as i32))
+                        .collect();
+                    cols.push(col_xy);
+                    let str_x = if p == 1 {
+                        "x".to_string()
+                    } else {
+                        format!("x^{p}")
+                    };
+                    let str_y = if q == 1 {
+                        "y".to_string()
+                    } else {
+                        format!("y^{q}")
+                    };
+                    names.push(format!("{str_x}*{str_y}"));
+                }
+            }
+        }
+    }
+
+    // Rational resonance cross-terms: x^2 * y (total degree 3, essential for Padé saturation & detuned Rabi)
+    if include_rational_products && deg >= 2 && !names.contains(&"x^2*y".to_string()) {
+        let col_x2y: Vec<f64> = x
+            .iter()
+            .zip(y.iter())
+            .map(|(&xv, &yv)| xv * xv * yv)
+            .collect();
+        cols.push(col_x2y);
+        names.push("x^2*y".to_string());
+    }
+
+    (cols, names)
+}
+
+fn solve_implicit_for_features(
+    raw_cols: &[Vec<f64>],
+    names: &[String],
+    n: usize,
+    deg: usize,
+    config: &ImplicitConfig,
+) -> Option<ImplicitResult> {
+    let k = raw_cols.len();
+    if k == 0 {
+        return None;
+    }
+
+    // Column norms for scaling. NOTE: these norms pre-normalize the Gram
+    // below to unit diagonals — the multi-stratum eigen-corruption class
+    // fixed in lie_symmetry (FLAW-15) structurally cannot occur on this
+    // Gram; the scale hazard lived in the SELECTOR scoring instead (see the
+    // FLAW-12 v2 note at the candidate loop).
+    let mut norms = vec![0.0f64; k];
+    for j in 0..k {
+        let sum_sq: f64 = raw_cols[j].iter().map(|v| v * v).sum();
+        norms[j] = sum_sq.sqrt().max(1e-12);
+    }
+    // Scale anchor for the selector score: the largest raw column norm among
+    // the DATA columns — the constant "1" column is excluded, otherwise the
+    // anchor sits in an O(1) stratum while the data lives at O(1e-8) and the
+    // per-term bonus dominates exactly as before (probed: the first draft
+    // anchored on the constant column's sqrt(n) norm and still returned the
+    // degenerate "x = 0").
+    let mut scale_ref = 0.0f64;
+    for (j, name) in names.iter().enumerate() {
+        if name == "1" {
+            continue;
+        }
+        scale_ref = scale_ref.max(norms[j]);
+    }
+    if scale_ref <= 0.0 {
+        scale_ref = norms.iter().cloned().fold(0.0f64, f64::max).max(1e-300);
+    }
+
+    // Gram matrix M = (Theta_norm)^T * Theta_norm
+    let mut gram = vec![0.0f64; k * k];
+    for i in 0..k {
+        for j in i..k {
+            let mut dot = 0.0f64;
+            for row in 0..n {
+                dot += (raw_cols[i][row] / norms[i]) * (raw_cols[j][row] / norms[j]);
+            }
+            gram[i * k + j] = dot;
+            gram[j * k + i] = dot;
+        }
+    }
+
+    // Jacobi Eigendecomposition of Gram matrix with adequate sweep depth
+    let max_rotations = (20 * k * (k - 1) / 2).max(600);
+    let (evals, evecs) = jacobi_eigen(&gram, k, max_rotations, 1e-15);
+
+    // Find smallest non-negative eigenvalue and its eigenvector
+    let mut min_idx = 0usize;
+    let mut min_val = f64::INFINITY;
+    let mut max_val = 0.0f64;
+
+    for (idx, &val) in evals.iter().enumerate() {
+        let abs_val = val.abs();
+        if abs_val < min_val {
+            min_val = abs_val;
+            min_idx = idx;
+        }
+        if abs_val > max_val {
+            max_val = abs_val;
+        }
+    }
+
+    let cond = if min_val > 1e-15 {
+        max_val / min_val
+    } else {
+        f64::INFINITY
+    };
+
+    // Examine candidates in the numerical null space to choose the candidate
+    // maximizing sparsity while maintaining minimal algebraic RMSE.
+    let null_cutoff = (min_val * 50.0)
+        .max(config.rcond_threshold * max_val)
+        .max(1e-7);
+
+    let mut best_c = vec![0.0f64; k];
+    let mut best_sparse_c = vec![0.0f64; k];
+    let mut best_score = f64::INFINITY;
+    let mut best_rmse = f64::INFINITY;
+
+    for (idx, &val) in evals.iter().enumerate() {
+        if val.abs() > null_cutoff && idx != min_idx {
+            continue;
+        }
+        let mut cand_c = vec![0.0f64; k];
+        for j in 0..k {
+            cand_c[j] = evecs[j * k + idx] / norms[j];
+        }
+        // FLAW-STRAITA (2026-10-21, exposed by the 1e6-scale circle probe):
+        // the previous raw-space max-coefficient gauge (c /= max|c|) mixed
+        // term strata: raw coefficients span magnitudes (const ~ O(1) vs
+        // x^2 ~ O(1/norm)) so the gauge annihilated the small-coefficient /
+        // large-stratum terms and the true relation degenerated to the
+        // const-only "-1 = 0" fallback every time max|c| came from the
+        // O(1) stratum. The eigenvector v is already Jacobi-normalized
+        // (||v|| = 1) and c_j = v_j/norm_j is the strata-coherent transform
+        // (term contribution c_j*col_j ~ v_j*norm_j), so no further
+        // normalization is applied here.
+        // FLAW-12 v3 sparsifier (2026-10-21, exposed by rebuilding the
+        // maturin extension): ALL anchored pruning thresholds mix term-unit
+        // strata — a raw-coefficient threshold zeroed the intercept of the
+        // exact near-zero-scale circle (raw coefficient ~ minus-1e-16, yet
+        // that intercept CARRIES the law x^2 + y^2 = 1e-16), and a
+        // contribution-space alternative conversely broke the O(1e5)-scale
+        // intercept. Neither anchored criterion is scale-free. Retention is
+        // therefore a BACKWARD ELIMINATION in rmse-RATIO space: a term is
+        // removed only when dropping it multiplies the candidate's
+        // algebraic rmse by at most (1 + sparsity_threshold) — a comparison
+        // between two rmse values from the SAME column set, invariant under
+        // any data-scale. (Numerical noise coordinates die here too: their
+        // removal barely moves the rmse.)
+        let sup_rmse = |sup: &[bool]| -> f64 {
+            let mut acc = 0.0f64;
+            for row in 0..n {
+                let mut r = 0.0f64;
+                for j in 0..k {
+                    if sup[j] {
+                        r += raw_cols[j][row] * cand_c[j];
+                    }
+                }
+                acc += r * r;
+            }
+            (acc / (n as f64)).sqrt()
+        };
+        let mut support = vec![true; k];
+        let mut cur_rmse = sup_rmse(&support);
+        loop {
+            let mut best_j: Option<usize> = None;
+            let mut best_after = f64::INFINITY;
+            for j in 0..k {
+                if !support[j] {
+                    continue;
+                }
+                support[j] = false;
+                let after = sup_rmse(&support);
+                support[j] = true;
+                if after < best_after {
+                    best_after = after;
+                    best_j = Some(j);
+                }
+            }
+            match best_j {
+                Some(j) if best_after <= cur_rmse * (1.0 + config.sparsity_threshold) => {
+                    support[j] = false;
+                    cur_rmse = best_after;
+                }
+                _ => break,
+            }
+        }
+        let mut cand_sparse = vec![0.0f64; k];
+        let mut active_count = 0usize;
+        for j in 0..k {
+            if support[j] {
+                cand_sparse[j] = cand_c[j];
+                active_count += 1;
+            }
+        }
+        if active_count == 0 {
+            continue;
+        }
+
+        // Compute residual error: ||Theta * c|| / sqrt(N)
+        let mut sum_sq_err = 0.0f64;
+        for row in 0..n {
+            let mut r = 0.0f64;
+            for j in 0..k {
+                r += raw_cols[j][row] * cand_sparse[j];
+            }
+            sum_sq_err += r * r;
+        }
+        let cand_rmse = (sum_sq_err / (n as f64)).sqrt();
+        // FLAW-12 v2 selector score (2026-10-21, exposed by rebuilding the
+        // maturin extension — the stale pre-rebuild wheel had masked this):
+        // with the raw ABSOLUTE rmse the fixed per-term sparsity bonus
+        // (0.005) dominates the rmse difference at extreme data scales: the
+        // exact near-zero-scale circle (2 active terms, rmse ~1e-20) lost to
+        // the degenerate single-term "y = 0" candidate (rmse ~1e-8 —
+        // relative misfit ~1) because 0.005 > 1e-8. The score must compare
+        // candidates on rmse RELATIVE to the column strata (the largest raw
+        // column norm anchors the scale), keeping the sparsity bonus
+        // meaningful at every magnitude.
+        let score = cand_rmse / scale_ref
+            + 0.005 * (active_count as f64)
+            + 0.02 * (deg as f64);
+        if score < best_score {
+            best_score = score;
+            best_rmse = cand_rmse;
+            best_c = cand_c;
+            best_sparse_c = cand_sparse;
+        }
+    }
+
+    if best_score == f64::INFINITY {
+        for j in 0..k {
+            best_c[j] = evecs[j * k + min_idx] / norms[j];
+        }
+        // FLAW-STRAITA: no raw-space max-coefficient gauge (see the
+        // candidate-loop note above).
+        best_sparse_c = best_c.clone();
+        for v in best_sparse_c.iter_mut() {
+            if v.abs() < config.sparsity_threshold {
+                *v = 0.0;
+            }
+        }
+        let mut sum_sq_err = 0.0f64;
+        for row in 0..n {
+            let mut r = 0.0f64;
+            for j in 0..k {
+                r += raw_cols[j][row] * best_sparse_c[j];
+            }
+            sum_sq_err += r * r;
+        }
+        best_rmse = (sum_sq_err / (n as f64)).sqrt();
+    }
+
+    let sparse_c = best_sparse_c;
+    let rmse = best_rmse;
+    let rel_null_err = (min_val / (n as f64).max(1.0)).sqrt();
+
+    // Scale-aware exactness gate (external-review item on F17): an absolute
+    // `rmse < 1e-5` is meaningless when the relation's terms live on a large
+    // scale (e.g. QEC-style slopes ~1e5) and over-permissive for badly
+    // conditioned small-scale data. Exactness is therefore measured RELATIVE
+    // to the RMS magnitude of the residual's own terms (the design columns),
+    // with the same 1e-5 relative tolerance the gate previously held in
+    // absolute units. The all-zero pruned vector still fails on active_count,
+    // independent of scale.
+
+    // Construct human-readable formula
+    let mut terms = Vec::new();
+    let mut active_count = 0usize;        let mut contrib = vec![0.0f64; k];
+        let mut max_contrib = 0.0f64;
+        for j in 0..k {
+            contrib[j] = sparse_c[j].abs() * norms[j];
+            max_contrib = max_contrib.max(contrib[j]);
+        }
+        for j in 0..k {
+            let val = sparse_c[j];
+            // FLAW-STRAITA (2026-10-21): the old raw-coefficient gate
+            // (|c| > 1e-6) belongs to the same strata-mixing defect class
+            // as the removed max_c gauge: raw coefficients span magnitudes
+            // (c_j = v_j/norm_j), so at O(1e5)-scale strata every true term
+            // recounted as inactive. Membership is judged in CONTRIBUTION
+            // space — |c_j|*norm_j relative to the strongest contribution —
+            // a scale-free ratio over the SAME candidate (the same gauge
+            // rule as the backward elimination). Previously two anchored
+            // coefficient-space gauges accidentally compensated for one
+            // another; fixing one alone exposed the other.
+            if contrib[j] > 1e-6 * max_contrib {
+                active_count += 1;
+            let term_str = if names[j] == "1" {
+                format!("{:.4}", val)
+            } else if (val - 1.0).abs() < 1e-4 {
+                names[j].clone()
+            } else if (val + 1.0).abs() < 1e-4 {
+                format!("-{}", names[j])
+            } else {
+                format!("{:.4}*{}", val, names[j])
+            };
+            terms.push(term_str);
+        }
+    }
+
+    let formula = if terms.is_empty() {
+        "0 = 0".to_string()
+    } else {
+        format!("{} = 0", terms.join(" + ").replace("+ -", "- "))
+    };
+
+    // A pruned-away candidate (active_count == 0) is the tautology "0 = 0":
+    // its algebraic residual is identically 0.0, so an rmse-only check would
+    // certify the empty relation as an exact physical recovery and let it
+    // bypass every downstream sanity filter. Exactness also demands that the
+    // discovered relation actually has content (>= 2 active terms; a single
+    // term c*phi = 0 is a degenerate if non-empty edge case and is allowed).
+    let mut sum_sq_scale = 0.0f64;
+    let mut n_scale_entries = 0usize;
+    // External-review round 2 amendment: the polynomial library carries a
+    // constant "1" column whose magnitude is fixed at 1 regardless of the
+    // data scale; including it pins the denominator to O(1) and destroys the
+    // scale-awareness this gate exists for (near-zero-scale data would be
+    // judged against an O(1) ceiling and permissively certified).
+    // FLAW-12: same argument excludes INACTIVE columns — high-order pruned
+    // monomials (e.g. x⁴ ≈ 10⁶) inflated term_scale, relaxing the exact-RMSE
+    // ceiling so low-order noisy fits were certified as exact. The residual
+    // term scale is therefore measured over the ACTIVE, non-constant columns
+    // of the final sparse candidate; when every remaining column is constant
+    // (or all zero), the max(1e-12) floor keeps the ceiling finite.
+    for (j, col) in raw_cols.iter().enumerate() {
+        if names[j] == "1" || sparse_c[j] == 0.0 {
+            continue;
+        }
+        for &v in col.iter() {
+            sum_sq_scale += v * v;
+            n_scale_entries += 1;
+        }
+    }
+    let term_scale = (sum_sq_scale / (n_scale_entries.max(1) as f64)).sqrt();
+    let exact_rmse_ceiling = 1e-5 * term_scale.max(1e-12);
+    let is_exact = rmse < exact_rmse_ceiling && active_count >= 2;
+
+    Some(ImplicitResult {
+        feature_names: names.to_vec(),
+        coefficients: sparse_c,
+        formula,
+        algebraic_rmse: rmse,
+        relative_null_error: rel_null_err,
+        condition_number: cond,
+        num_active_terms: active_count,
+        is_exact_recovery: is_exact,
+    })
+}
+
+/// Discover implicit algebraic relations F(x, y) = 0.
+/// Searches incrementally across degrees 1..=max_degree to ensure minimal relations
+/// (e.g. x^2 + y^2 - 1 = 0) are prioritized over higher-order algebraic multiples.
+pub fn discover_implicit_relation(
+    x: &[f64],
+    y: &[f64],
+    config: &ImplicitConfig,
+) -> Result<ImplicitResult, String> {
+    let n = x.len();
+    if n < 10 {
+        return Err("Implicit discovery requires at least 10 observations".to_string());
+    }
+    if y.len() != n {
+        return Err("x and y lengths do not match".to_string());
+    }
+
+    let max_deg = config.max_degree.max(1);
+    let mut best_result: Option<ImplicitResult> = None;
+    let mut min_score = f64::INFINITY;
+
+    for deg in 1..=max_deg {
+        let (raw_cols, names) = build_features_for_degree(
+            x,
+            y,
+            deg,
+            config.include_cross_terms,
+            config.include_rational_products,
+        );
+
+        if let Some(res) = solve_implicit_for_features(&raw_cols, &names, n, deg, config) {
+            // If an exact minimal relation is recovered at this degree, stop search immediately.
+            if res.is_exact_recovery && res.algebraic_rmse < 1e-6 && res.num_active_terms > 1 {
+                return Ok(res);
+            }
+
+            // FLAW-12 v2 degree score (2026-10-21): ABSOLUTE rmse here let a
+            // degenerate deg-1 candidate ("x = 0", relative misfit ~1,
+            // rmse ~1e-8 on 1e-8-scale data) beat the true deg-2 circle
+            // (rmse ~1e-16) — the fixed per-term penalties outweighed the
+            // all-but-zero rmse difference at extreme scales. Anchor the
+            // score on the data columns' largest raw norm (constant "1"
+            // excluded, same rationale as the selector's scale_ref).
+            let mut data_scale = 0.0f64;
+            for (j, name) in names.iter().enumerate() {
+                if name == "1" {
+                    continue;
+                }
+                let nrm: f64 = raw_cols[j].iter().map(|v| v * v).sum::<f64>().sqrt();
+                data_scale = data_scale.max(nrm);
+            }
+            if data_scale <= 0.0 {
+                data_scale = 1e-300;
+            }
+            let score = res.algebraic_rmse / data_scale
+                + 0.005 * (res.num_active_terms as f64)
+                + 0.02 * (deg as f64);
+            if score < min_score {
+                min_score = score;
+                best_result = Some(res);
+            }
+        }
+    }
+
+    best_result.ok_or_else(|| "Failed to fit implicit relation".to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_implicit_circle_discovery() {
+        // x^2 + y^2 = 1 => 1*x^2 + 1*y^2 - 1 = 0
+        let n = 50;
+        let mut x = Vec::with_capacity(n);
+        let mut y = Vec::with_capacity(n);
+        for i in 0..n {
+            let theta = 2.0 * std::f64::consts::PI * (i as f64) / (n as f64);
+            x.push(theta.cos());
+            y.push(theta.sin());
+        }
+
+        let cfg = ImplicitConfig {
+            max_degree: 2,
+            include_cross_terms: true,
+            include_rational_products: false,
+            sparsity_threshold: 0.05,
+            rcond_threshold: 1e-12,
+        };
+
+        let res = discover_implicit_relation(&x, &y, &cfg).unwrap();
+        assert!(res.algebraic_rmse < 1e-8, "RMSE: {}", res.algebraic_rmse);
+        assert!(res.is_exact_recovery);
+    }
+
+    #[test]
+    fn test_implicit_circle_discovery_max_degree_3() {
+        // Must discover minimal relation x^2 + y^2 - 1 = 0, NOT x*y*(x^2 + y^2 - 1) = 0
+        let n = 50;
+        let mut x = Vec::with_capacity(n);
+        let mut y = Vec::with_capacity(n);
+        for i in 0..n {
+            let theta = 2.0 * std::f64::consts::PI * (i as f64) / (n as f64);
+            x.push(theta.cos());
+            y.push(theta.sin());
+        }
+
+        let cfg = ImplicitConfig {
+            max_degree: 3,
+            include_cross_terms: true,
+            include_rational_products: false,
+            sparsity_threshold: 0.05,
+            rcond_threshold: 1e-12,
+        };
+
+        let res = discover_implicit_relation(&x, &y, &cfg).unwrap();
+        assert!(res.algebraic_rmse < 1e-8, "RMSE: {}", res.algebraic_rmse);
+        assert!(res.is_exact_recovery);
+        assert_eq!(res.num_active_terms, 3);
+        // Formula should not contain x*y or degree 3/4 terms
+        assert!(
+            !res.formula.contains("x*y"),
+            "Formula must be minimal, got: {}",
+            res.formula
+        );
+    }
+
+    #[test]
+    fn test_implicit_lorentzian_pade_resonance() {
+        // Detuned Rabi / Padé: y = 25 / (25 + x^2) => 25*y + x^2*y - 25 = 0
+        let n = 60;
+        let mut x = Vec::with_capacity(n);
+        let mut y = Vec::with_capacity(n);
+        for i in 0..n {
+            let xv = -10.0 + 20.0 * (i as f64) / ((n - 1) as f64);
+            let yv = 25.0 / (25.0 + xv * xv);
+            x.push(xv);
+            y.push(yv);
+        }
+
+        let cfg = ImplicitConfig {
+            max_degree: 2,
+            include_cross_terms: true,
+            include_rational_products: true,
+            sparsity_threshold: 0.02,
+            rcond_threshold: 1e-12,
+        };
+
+        let res = discover_implicit_relation(&x, &y, &cfg).unwrap();
+        assert!(res.algebraic_rmse < 1e-8, "RMSE: {}", res.algebraic_rmse);
+        assert!(res.is_exact_recovery);
+    }
+
+    #[test]
+    fn test_large_scale_exact_relation_certifiable() {
+        // FLAW-12 companion: a truly exact relation on O(1e5)-scale data
+        // (y = x + 10) must still certify — the scale-aware gate is exactly
+        // what makes this possible in both directions.
+        let n = 200usize;
+        let x: Vec<f64> = (0..n).map(|i| ((i as f64 * 7919.0) % 1000.0 - 500.0) * 1e5 / 500.0).collect();
+        let y: Vec<f64> = x.iter().map(|&v| v + 10.0).collect();
+
+        let cfg = ImplicitConfig {
+            max_degree: 2,
+            include_cross_terms: false,
+            include_rational_products: false,
+            sparsity_threshold: 1e-3,
+            rcond_threshold: 1e-8,
+        };
+        let res = discover_implicit_relation(&x, &y, &cfg).unwrap();
+        assert!(res.is_exact_recovery, "rmse: {}", res.algebraic_rmse);
+        assert!(res.algebraic_rmse < 1e-9, "rmse: {}", res.algebraic_rmse);
+    }
+
+    #[test]
+    fn test_near_zero_scale_misfit_not_certified() {
+        // FLAW-12 pin: the residual term scale is measured over the ACTIVE,
+        // non-constant columns only. Data: near-zero-scale circle (state
+        // scale 1e-8) perturbed by a NON-ABSORBABLE misfit: sin(2theta) is
+        // not in the no-cross deg-2 library span {1, cos(theta), sin(theta),
+        // cos(2theta)} (x^2 and y^2 both reduce to const + cos(2theta)), so
+        // its relative misfit (~0.07) is unexplainable by any member of the
+        // family. Two earlier fixture shapes could not discriminate: (a) an
+        // abs-mode 1e-11 sin-3theta amplitude was fully absorbed by the y
+        // column (certified rmse ~1e-23 regardless of the ceiling), and (b)
+        // with cross terms enabled the sin-2theta misfit is itself
+        // representable (2 sin cos = the xy column) and the x^3 family
+        // absorbs the cross-coupling, certifying at rmse ~1e-18. The fixture
+        // therefore pins the config its premise names: no-cross deg-2. The
+        // honest contract is the round-2 conditional (certified => rmse <=
+        // 1e-5 x state scale): the mutant's inflated ceiling (const column
+        // included: max|entry| ~0.45) lets the ~7e-11 relative misfit
+        // through and this pin then rejects it.
+        let n = 200usize;
+        let mut x = Vec::with_capacity(n);
+        let mut y = Vec::with_capacity(n);
+        for i in 0..n {
+            let t = 2.0 * std::f64::consts::PI * (i as f64) / (n as f64);
+            x.push(1e-8 * t.cos());
+            y.push(1e-8 * t.sin() + 3.16e-12 * (2.0 * t).sin());
+        }
+
+        // No-cross deg-2 (see the premise note above: with cross terms the
+        // sin-2theta misfit is representable via xy and cannot discriminate).
+        let cfg = ImplicitConfig {
+            max_degree: 2,
+            include_cross_terms: false,
+            include_rational_products: false,
+            sparsity_threshold: 1e-3,
+            rcond_threshold: 1e-8,
+        };
+        let res = discover_implicit_relation(&x, &y, &cfg).unwrap();
+        // Honesty contract (mirrors the round-2 conditional pin): a
+        // certified relation must EXPLAIN the data — its own rmse sits far
+        // below the state scale (rmse <= 1e-5 x 1e-8). Here sin-2theta is
+        // unexplainable (relative misfit ~7%), so a certified relation can
+        // only mean the ceiling was inflated past the state scale and a
+        // permissive certificate leaked through.
+        if res.is_exact_recovery {
+            assert!(
+                res.algebraic_rmse <= 1e-13,
+                "certified misfit rmse {} exceeds the scale-relative ceiling",
+                res.algebraic_rmse
+            );
+        }
+    }
+
+    #[test]
+    fn test_near_zero_scale_exact_relation_certified() {
+        // FLAW-12 v2 companion (mirrors the pinned Python bridge at
+        // round-2: tests/test_dyn_blind_audit_round2_remediation.py::
+        // TestF17ExtremeScaleRobustness). The EXACT near-zero-scale circle
+        // must still certify: the scale-aware selector score keeps the
+        // genuine 2-term relation ahead of the degenerate single-term
+        // "y = 0" candidate whose ABSOLUTE rmse (~1e-8) is small in raw
+        // units but ~1 in relative terms.
+        let n = 200usize;
+        let mut x = Vec::with_capacity(n);
+        let mut y = Vec::with_capacity(n);
+        for i in 0..n {
+            let t = 2.0 * std::f64::consts::PI * (i as f64) / (n as f64);
+            x.push(1e-8 * t.cos());
+            y.push(1e-8 * t.sin());
+        }
+
+        let cfg = ImplicitConfig {
+            max_degree: 2,
+            include_cross_terms: false,
+            include_rational_products: false,
+            sparsity_threshold: 1e-3,
+            rcond_threshold: 1e-8,
+        };
+        let res = discover_implicit_relation(&x, &y, &cfg).unwrap();
+        assert!(
+            res.is_exact_recovery,
+            "exact near-zero-scale circle refused (formula: {}, rmse {})",
+            res.formula, res.algebraic_rmse
+        );
+        assert!(
+            res.algebraic_rmse <= 1e-13,
+            "rmse {} exceeds the scale-relative ceiling 1e-5 x 1e-8",
+            res.algebraic_rmse
+        );
+    }
+}
+

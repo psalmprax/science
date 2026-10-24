@@ -1,0 +1,12 @@
+{
+  "problem_id": "R22",
+  "block": "R",
+  "canonical_structural_family": "rational_transition",
+  "ground_truth_formula": "5.0*x/(2.0 + x)",
+  "true_parameters": {
+    "Vmax": 5.0,
+    "Km": 2.0
+  },
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER"
+}

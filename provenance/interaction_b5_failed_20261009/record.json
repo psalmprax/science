@@ -1,0 +1,40 @@
+{
+ "label": "INTERACTION-B5-SELECTION-FAILED",
+ "utc": "2026-10-09T09:51:53.943823+00:00",
+ "grid": [
+  0.05,
+  0.1,
+  0.2,
+  0.3,
+  0.5
+ ],
+ "objective": "train-half net % (equal-weighted sign execution)",
+ "rows": [
+  {
+   "beta5": 0.05,
+   "train_net": -71.44,
+   "sign_flip_frac_vs_base": 0.0062
+  },
+  {
+   "beta5": 0.1,
+   "train_net": -59.62,
+   "sign_flip_frac_vs_base": 0.011
+  },
+  {
+   "beta5": 0.2,
+   "train_net": -40.4,
+   "sign_flip_frac_vs_base": 0.0202
+  },
+  {
+   "beta5": 0.3,
+   "train_net": -18.33,
+   "sign_flip_frac_vs_base": 0.0299
+  },
+  {
+   "beta5": 0.5,
+   "train_net": 17.23,
+   "sign_flip_frac_vs_base": 0.043
+  }
+ ],
+ "verdict": "SELECTION FAILED (monotone to boundary); \u03b25=0.50 REJECTED; no holdout run performed"
+}

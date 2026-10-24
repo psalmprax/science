@@ -1,0 +1,199 @@
+{
+  "timestamp_utc": "2026-10-19T22:01:41.859825+00:00",
+  "prereg_doc": "PREREG-JETFLOW-VIDEO-V03-COLLISION-2026-10-19",
+  "confirmation_seeds": [
+    407,
+    508,
+    509
+  ],
+  "exploratory_seed_excluded": 404,
+  "harness_integrity_ok": true,
+  "evaluated_from_committed_artifacts": true,
+  "git_head": "d811cc6",
+  "errata": [
+    {
+      "date": "2026-10-19",
+      "id": "ERR-H4-UNITS",
+      "what": "prereg text mis-stated metric units; harness formula corrected; verdicts recomputed from the SAME committed per-seed artifacts (no benchmark re-run, no threshold moved)"
+    }
+  ],
+  "verdicts": {
+    "H1_collision_domain_scoping": {
+      "criteria": "diffusion SSIM > jet SSIM AND diffusion temporal < jet temporal on >= 2/3 seeds",
+      "confirmed": true,
+      "seeds_passing": [
+        407,
+        508,
+        509
+      ]
+    },
+    "H2_jet_floor": {
+      "criteria": "jet2 PSNR >= 10.0 on every seed",
+      "confirmed": true
+    },
+    "H3_no_training_blowup": {
+      "criteria": "train ratio <= 2.0 on every seed",
+      "confirmed": true
+    },
+    "H4_structural_pass_counts": {
+      "criteria": "jet2 == 8 and jet4 == 16 structural passes on every seed",
+      "confirmed": true
+    }
+  },
+  "honest_labels": {
+    "fvd": "sliced-Wasserstein proxy, NOT I3D-FVD (inherited instrument)",
+    "H1_direction": "confirming H1 is a domain-scoping claim (advantage does NOT transfer), not an advantage claim"
+  },
+  "per_seed": [
+    {
+      "seed": 407,
+      "harness_ok": true,
+      "out": "benchmarks/jetflow_video_v03_confirmation/seed_407_results.json",
+      "jet2": {
+        "latency_ms_per_clip_median": 248.79400549980346,
+        "model_passes_per_clip": 9.0,
+        "nearest_psnr_db_mean": 13.621802293809179,
+        "nearest_ssim_mean": 0.009646301047594863,
+        "temporal_consistency_mean": 0.24399069692361386,
+        "fvd_proxy_swd_vs_holdout": 0.5580384844062501
+      },
+      "jet4": {
+        "latency_ms_per_clip_median": 407.695337489713,
+        "model_passes_per_clip": 16.0,
+        "nearest_psnr_db_mean": 14.731919132775023,
+        "nearest_ssim_mean": 0.013554598521936466,
+        "temporal_consistency_mean": 0.20637380445029052,
+        "fvd_proxy_swd_vs_holdout": 0.46825906309220167
+      },
+      "diff_matched": {
+        "latency_ms_per_clip_median": 234.03305999818258,
+        "model_passes_per_clip": 16.0,
+        "nearest_psnr_db_mean": 20.69577313513944,
+        "nearest_ssim_mean": 0.06388991277000809,
+        "temporal_consistency_mean": 0.08197029509716129,
+        "fvd_proxy_swd_vs_holdout": 0.1591548217970209
+      },
+      "train_s_jet": 32.4692361089983,
+      "train_s_base": 26.313005210016854,
+      "domain_split": {
+        "train": [
+          "collision_clip_0000",
+          "collision_clip_0001",
+          "collision_clip_0002",
+          "collision_clip_0004",
+          "collision_clip_0006",
+          "collision_clip_0007",
+          "collision_clip_0008",
+          "collision_clip_0009"
+        ],
+        "holdout": [
+          "collision_clip_0003",
+          "collision_clip_0005"
+        ]
+      },
+      "params_jet": 216525,
+      "params_base": 216396,
+      "git_head": "d811cc6"
+    },
+    {
+      "seed": 508,
+      "harness_ok": true,
+      "out": "benchmarks/jetflow_video_v03_confirmation/seed_508_results.json",
+      "jet2": {
+        "latency_ms_per_clip_median": 122.05724249361083,
+        "model_passes_per_clip": 9.0,
+        "nearest_psnr_db_mean": 13.264506230181365,
+        "nearest_ssim_mean": 0.006582011556442365,
+        "temporal_consistency_mean": 0.2203925161202599,
+        "fvd_proxy_swd_vs_holdout": 0.6009821911815394
+      },
+      "jet4": {
+        "latency_ms_per_clip_median": 165.10682749503758,
+        "model_passes_per_clip": 16.0,
+        "nearest_psnr_db_mean": 14.562653670186194,
+        "nearest_ssim_mean": 0.012777452072042356,
+        "temporal_consistency_mean": 0.16613088372947538,
+        "fvd_proxy_swd_vs_holdout": 0.5191445381662134
+      },
+      "diff_matched": {
+        "latency_ms_per_clip_median": 58.53282849420793,
+        "model_passes_per_clip": 8.0,
+        "nearest_psnr_db_mean": 20.266521666936008,
+        "nearest_ssim_mean": 0.04795949666163394,
+        "temporal_consistency_mean": 0.09151066906310222,
+        "fvd_proxy_swd_vs_holdout": 0.1796612190846408
+      },
+      "train_s_jet": 26.26899298900389,
+      "train_s_base": 20.15347169499728,
+      "domain_split": {
+        "train": [
+          "collision_clip_0000",
+          "collision_clip_0001",
+          "collision_clip_0002",
+          "collision_clip_0004",
+          "collision_clip_0006",
+          "collision_clip_0007",
+          "collision_clip_0008",
+          "collision_clip_0009"
+        ],
+        "holdout": [
+          "collision_clip_0003",
+          "collision_clip_0005"
+        ]
+      },
+      "params_jet": 216525,
+      "params_base": 216396,
+      "git_head": "d811cc6"
+    },
+    {
+      "seed": 509,
+      "harness_ok": true,
+      "out": "benchmarks/jetflow_video_v03_confirmation/seed_509_results.json",
+      "jet2": {
+        "latency_ms_per_clip_median": 86.2531300081173,
+        "model_passes_per_clip": 9.0,
+        "nearest_psnr_db_mean": 13.856599008773893,
+        "nearest_ssim_mean": 0.018096717058828496,
+        "temporal_consistency_mean": 0.22036503662894533,
+        "fvd_proxy_swd_vs_holdout": 0.4637690573876101
+      },
+      "jet4": {
+        "latency_ms_per_clip_median": 171.5936925029382,
+        "model_passes_per_clip": 16.0,
+        "nearest_psnr_db_mean": 14.404750526777805,
+        "nearest_ssim_mean": 0.018313809561957335,
+        "temporal_consistency_mean": 0.1944619207204038,
+        "fvd_proxy_swd_vs_holdout": 0.4504785027625613
+      },
+      "diff_matched": {
+        "latency_ms_per_clip_median": 70.73924598807935,
+        "model_passes_per_clip": 8.0,
+        "nearest_psnr_db_mean": 20.39017290143732,
+        "nearest_ssim_mean": 0.052544642162578585,
+        "temporal_consistency_mean": 0.08447860748846955,
+        "fvd_proxy_swd_vs_holdout": 0.1843539244997464
+      },
+      "train_s_jet": 15.272041507007089,
+      "train_s_base": 9.931541024008766,
+      "domain_split": {
+        "train": [
+          "collision_clip_0000",
+          "collision_clip_0001",
+          "collision_clip_0002",
+          "collision_clip_0004",
+          "collision_clip_0006",
+          "collision_clip_0007",
+          "collision_clip_0008",
+          "collision_clip_0009"
+        ],
+        "holdout": [
+          "collision_clip_0003",
+          "collision_clip_0005"
+        ]
+      },
+      "params_jet": 216525,
+      "params_base": 216396,
+      "git_head": "d811cc6"
+    }
+  ]
+}
