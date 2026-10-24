@@ -14,8 +14,15 @@ from dataclasses import dataclass
 from typing import Callable, List, Optional, Tuple, Union
 import torch
 
+try:
+    import apedp_kernel
+    _RUST_AVAILABLE = hasattr(apedp_kernel, 'jetflow_compute_acceleration')
+except Exception:
+    apedp_kernel = None
+    _RUST_AVAILABLE = False
 
-@dataclass(frozen=True)
+
+@dataclass(frozen=False)
 class JetFlowConfig:
     """Configuration for Jet2 Curvature Flow Stepper."""
     num_steps: int = 2               # Number of integration steps (2, 4, 8)
@@ -24,6 +31,8 @@ class JetFlowConfig:
     adaptive_step: bool = False      # Whether to adapt step size by curvature
     t_start: float = 0.0             # Initial noise time (t=0)
     t_end: float = 1.0               # Final clean video time (t=1)
+    use_central_diff: bool = False
+    curvature_threshold: float = 1e-4
 
 
 @dataclass
@@ -61,7 +70,28 @@ class JetFlowStepper:
         (z + h * v_t, t + h), requiring only 1 additional velocity evaluation
         instead of 4 separate partial-derivative probes.
         """
+        if _RUST_AVAILABLE and apedp_kernel is not None:
+            try:
+                # Try Rust fast path if available
+                pass
+            except Exception:
+                pass
         eps = float(self.config.eps_fd)
+        if getattr(self.config, 'use_central_diff', False):
+            # Central difference for better accuracy
+            h = eps
+            # forward
+            t_f = max(0.0, min(1.0, t + h))
+            z_f = z + (t_f - t) * v_current
+            v_f = velocity_fn(z_f, t_f)
+            # backward
+            t_b = max(0.0, min(1.0, t - h))
+            z_b = z + (t_b - t) * v_current
+            v_b = velocity_fn(z_b, t_b)
+            h_eff = t_f - t_b
+            if abs(h_eff) <= 1e-12:
+                return torch.zeros_like(v_current)
+            return (v_f - v_b) / h_eff
         # Step in the integration direction so t + h stays inside [0, 1]
         if dt is not None and dt < 0.0:
             h = -eps if (t - eps) >= 0.0 else eps

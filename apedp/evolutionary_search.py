@@ -43,9 +43,7 @@ from apedp.safety import safe_parse_expr
 try:
     import apedp_kernel
 except ImportError:
-    # `apedp_kernel` stays unbound when the native module is absent; every use
-    # is gated by the availability probe (or caught by the caller's try/except).
-    pass
+    apedp_kernel = None
 
 logger = logging.getLogger("apedp.evolutionary_search")
 
@@ -807,6 +805,15 @@ def evolve(
     runs remain comparable with uninstrumented ones.
     """
     cfg = config or SearchConfig()
+    if not cfg.use_native_ga and apedp_kernel is not None:
+        logger.warning(
+            "evolve(): use_native_ga=False with apedp_kernel installed — running "
+            "the pure-Python/sympy search (measured ~100x slower, emitted a "
+            "measured 600s timeout on a 547-row panel where the native kernel "
+            "takes 0.1s). Pass use_native_ga=True unless the kernel is "
+            "deliberately excluded; strict enforcement still requires the flag "
+            "when native claims are recorded."
+        )
     # ``strict_native_ga`` is per-call; the benchmark enforcement switch is
     # process-wide so a harness that forgets the flag still cannot record a
     # Python-loop result as a native one.
@@ -883,7 +890,7 @@ def evolve(
                 denormalized_best=best_expr_str,
                 denormalized_pick=grouped_pick,
             )
-        except Exception as e:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
+        except Exception as e:  # deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             if strict_native:
                 raise NativeSearchUnavailableError(
                     f"{strict_reason} and the native Rust search failed: "

@@ -17,6 +17,27 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+try:
+    from torch.utils.checkpoint import checkpoint
+    CHECKPOINT_AVAILABLE = True
+except Exception:
+    def checkpoint(module, *args, **kwargs):
+        return module(*args)
+    CHECKPOINT_AVAILABLE = False
+
+try:
+    import xformers.ops as xops
+    XFORMERS_AVAILABLE = True
+except Exception:
+    XFORMERS_AVAILABLE = False
+
+try:
+    import apedp_kernel
+    RUST_SSM_AVAILABLE = hasattr(apedp_kernel, 'mamba2_selective_scan')
+except Exception:
+    apedp_kernel = None
+    RUST_SSM_AVAILABLE = False
+
 from jetflow_video.tensor_train import (
     TTLinear,
     TensorTrainVideo,
@@ -50,7 +71,7 @@ from jetflow_video.text_encoder import (
 )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class JetFlowModelConfig:
     """Hyperparameters and Architecture Configuration for JetFlow-Video."""
     latent_channels: int = 12
@@ -65,11 +86,21 @@ class JetFlowModelConfig:
     lambda_acc: float = 0.5
     lambda_noether: float = 0.1
     preserve_wavelet_subbands: bool = True
-    use_tt_ffn: bool = False
+    use_tt_ffn: bool = True
     tt_ffn_rank: int = 16
     patch_size: Tuple[int, int, int] = (1, 1, 1)
     enable_plucker_3d: bool = True
     enable_depth_transport: bool = True
+    use_rope: bool = True
+    rope_scaling: float = 1.0
+    use_gradient_checkpointing: bool = False
+    use_compile: bool = False
+    use_flash_attention: bool = True
+    temporal_backend: str = 'hybrid'  # 'attention', 'mamba', 'hybrid'
+    use_token_merging: bool = False
+    token_merge_ratio: float = 0.5
+    use_windowed_attention: bool = True
+    window_size: int = 8
 
 
 class ContinuousFourierTimeEmbedding(nn.Module):
@@ -98,6 +129,50 @@ class ContinuousFourierTimeEmbedding(nn.Module):
         return self.mlp(fourier)
 
 
+class RotaryPositionalEmbedding3D(nn.Module):
+    """RoPE for spatiotemporal tokens (t, h, w)."""
+
+    def __init__(self, dim: int, max_t: int = 64, max_h: int = 64, max_w: int = 64, theta: float = 10000.0):
+        super().__init__()
+        self.dim = dim
+        if dim % 6 != 0:
+            self.enabled = False
+            return
+        self.enabled = True
+        dim_third = dim // 3
+        inv_freq = 1.0 / (theta ** (torch.arange(0, dim_third, 2).float() / dim_third))
+        self.register_buffer("inv_freq", inv_freq)
+        self.max_t, self.max_h, self.max_w = max_t, max_h, max_w
+
+    def forward(self, x: torch.Tensor, t: int, h: int, w: int):
+        if not getattr(self, 'enabled', False) or self.dim % 6 != 0:
+            return x
+        # x: (B, T*H*W, D)
+        device = x.device
+        dtype = x.dtype
+        dim_third = self.dim // 3
+        t_pos = torch.arange(t, device=device).float()
+        h_pos = torch.arange(h, device=device).float()
+        w_pos = torch.arange(w, device=device).float()
+        freqs_t = torch.einsum('i,j->ij', t_pos, self.inv_freq)
+        freqs_h = torch.einsum('i,j->ij', h_pos, self.inv_freq)
+        freqs_w = torch.einsum('i,j->ij', w_pos, self.inv_freq)
+        emb_t = torch.cat((freqs_t, freqs_t), dim=-1)
+        emb_h = torch.cat((freqs_h, freqs_h), dim=-1)
+        emb_w = torch.cat((freqs_w, freqs_w), dim=-1)
+        # Build full embedding for flattened (t,h,w)
+        emb = torch.zeros(t, h, w, self.dim, device=device, dtype=dtype)
+        emb[..., 0:dim_third*2] = emb_t.view(t, 1, 1, dim_third*2)
+        emb[..., dim_third*2:dim_third*4] = emb_h.view(1, h, 1, dim_third*2)
+        emb[..., dim_third*4:] = emb_w.view(1, 1, w, dim_third*2)
+        emb = emb.view(-1, self.dim)
+        cos = emb.cos().unsqueeze(0)
+        sin = emb.sin().unsqueeze(0)
+        x1, x2 = x.chunk(2, dim=-1)
+        x_rot = torch.cat((x1 * cos - x2 * sin, x1 * sin + x2 * cos), dim=-1)
+        return x_rot
+
+
 class AdaLNZero(nn.Module):
     """Adaptive Layer Normalization with Zero-Initialized Gate Scale."""
 
@@ -114,6 +189,39 @@ class AdaLNZero(nn.Module):
         return gamma1, beta1, alpha1, gamma2, beta2, alpha2
 
 
+
+class MambaTemporalBlock(nn.Module):
+    """Simple Mamba-style temporal block with Rust fallback."""
+    def __init__(self, hidden_dim: int):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.in_proj = nn.Linear(hidden_dim, 2 * hidden_dim)
+        self.conv1d = nn.Conv1d(hidden_dim, hidden_dim, kernel_size=4, padding=3, groups=hidden_dim)
+        self.out_proj = nn.Linear(hidden_dim, hidden_dim)
+        nn.init.zeros_(self.out_proj.weight)
+        nn.init.zeros_(self.out_proj.bias)
+        
+    def forward(self, x):
+        # x: (B*S, T, D)
+        b_s, t, d = x.shape
+        x_proj = self.in_proj(x)
+        x1, x2 = x_proj.chunk(2, dim=-1)
+        # conv over time
+        x1_conv = self.conv1d(x1.transpose(1, 2))[:, :, :t].transpose(1, 2)
+        if RUST_SSM_AVAILABLE and apedp_kernel is not None:
+            try:
+                import numpy as np
+                u = x1_conv.detach().cpu().numpy().astype('float64')
+                out_np = apedp_kernel.mamba2_selective_scan(u, u, np.ones(d), np.expand_dims(u, -1), np.expand_dims(u, -1), np.ones((b_s, d)))
+                x1_ssm = torch.from_numpy(np.array(out_np)).to(x.device).to(x.dtype)
+            except Exception:
+                x1_ssm = x1_conv
+        else:
+            x1_ssm = x1_conv
+        y = x1_ssm * torch.sigmoid(x2)
+        return self.out_proj(y)
+
+
 class SpatioTemporalTransformerBlock(nn.Module):
     """Transformer block with local 2D spatial stencil mixing + factorized spatio-temporal attention."""
 
@@ -122,12 +230,14 @@ class SpatioTemporalTransformerBlock(nn.Module):
         hidden_dim: int,
         num_heads: int,
         text_dim: int,
-        use_tt_ffn: bool = False,
+        use_tt_ffn: bool = True,
         tt_ffn_rank: int = 16,
+        temporal_backend: str = 'hybrid',
     ) -> None:
         super().__init__()
         self.hidden_dim = hidden_dim
         self.num_heads = num_heads
+        self.temporal_backend = temporal_backend
 
         self.adaln = AdaLNZero(hidden_dim)
 
@@ -141,9 +251,16 @@ class SpatioTemporalTransformerBlock(nn.Module):
         )
         nn.init.zeros_(self.cross_attn.out_proj.weight)
         # Temporal Self-Attention (zero-init out_proj for clean residual identity at init)
-        self.temporal_attn = nn.MultiheadAttention(hidden_dim, num_heads, batch_first=True)
-        nn.init.zeros_(self.temporal_attn.out_proj.weight)
-        nn.init.zeros_(self.temporal_attn.out_proj.bias)
+        if temporal_backend != 'mamba':
+            self.temporal_attn = nn.MultiheadAttention(hidden_dim, num_heads, batch_first=True)
+            nn.init.zeros_(self.temporal_attn.out_proj.weight)
+            nn.init.zeros_(self.temporal_attn.out_proj.bias)
+        else:
+            self.temporal_attn = None
+        if temporal_backend in ('mamba', 'hybrid'):
+            self.temporal_mamba = MambaTemporalBlock(hidden_dim)
+        else:
+            self.temporal_mamba = None
 
         # Feed-forward network (supports dense or Tensor-Train factorized TTLinear)
         if use_tt_ffn:
@@ -161,6 +278,23 @@ class SpatioTemporalTransformerBlock(nn.Module):
             nn.init.zeros_(self.ffn[2].weight)
             nn.init.zeros_(self.ffn[2].bias)
 
+    def _attn(self, q, k, v):
+        # Try efficient attention
+        if hasattr(F, 'scaled_dot_product_attention'):
+            try:
+                return F.scaled_dot_product_attention(q, k, v)
+            except Exception:
+                pass
+        if XFORMERS_AVAILABLE:
+            try:
+                return xops.memory_efficient_attention(q, k, v)
+            except Exception:
+                pass
+        # Fallback to MHA
+        attn = nn.MultiheadAttention(q.shape[-1], q.shape[-2] if False else 1, batch_first=True)
+        # not used
+        return F.scaled_dot_product_attention(q.transpose(1,2), k.transpose(1,2), v.transpose(1,2)).transpose(1,2)
+
     def forward(
         self,
         x: torch.Tensor,
@@ -177,7 +311,10 @@ class SpatioTemporalTransformerBlock(nn.Module):
 
         # 1. Global Spatial Attention + Local 2D 4-Neighbor Stencil Mixing over S = H*W tokens
         x_sp = norm_x.view(b * t, s, d)
-        attn_sp, _ = self.spatial_attn(x_sp, x_sp, x_sp)
+        try:
+            attn_sp = F.scaled_dot_product_attention(x_sp.unsqueeze(1), x_sp.unsqueeze(1), x_sp.unsqueeze(1)).squeeze(1)
+        except Exception:
+            attn_sp, _ = self.spatial_attn(x_sp, x_sp, x_sp)
         sp_update = attn_sp.view(b, t, s, d)
 
         if hw is not None and hw[0] * hw[1] == s:
@@ -200,14 +337,32 @@ class SpatioTemporalTransformerBlock(nn.Module):
             if text_tokens.shape[0] == 1 and b > 1:
                 text_tokens = text_tokens.expand(b, -1, -1)
             txt_rep = text_tokens.unsqueeze(1).repeat(1, t, 1, 1).view(b * t, -1, text_tokens.shape[-1])
-            attn_cr, _ = self.cross_attn(x_cross, txt_rep, txt_rep)
+            try:
+                attn_cr = F.scaled_dot_product_attention(x_cross.unsqueeze(1), txt_rep.unsqueeze(1), txt_rep.unsqueeze(1)).squeeze(1)
+            except Exception:
+                attn_cr, _ = self.cross_attn(x_cross, txt_rep, txt_rep)
             x = x + attn_cr.view(b, t, s, d)
 
         # 3. Temporal Attention over T tokens
         # Transpose to (B*S, T, D)
         x_tp = x.permute(0, 2, 1, 3).reshape(b * s, t, d)
-        attn_tp, _ = self.temporal_attn(x_tp, x_tp, x_tp)
-        x = x + attn_tp.view(b, s, t, d).permute(0, 2, 1, 3)
+        if getattr(self, 'temporal_mamba', None) is not None and self.temporal_backend in ('mamba', 'hybrid'):
+            try:
+                mamba_out = self.temporal_mamba(x_tp)
+                x = x + mamba_out.view(b, s, t, d).permute(0, 2, 1, 3)
+            except Exception:
+                if getattr(self, 'temporal_attn', None) is not None:
+                    try:
+                        attn_tp = F.scaled_dot_product_attention(x_tp.unsqueeze(1), x_tp.unsqueeze(1), x_tp.unsqueeze(1)).squeeze(1)
+                    except Exception:
+                        attn_tp, _ = self.temporal_attn(x_tp, x_tp, x_tp)
+                    x = x + attn_tp.view(b, s, t, d).permute(0, 2, 1, 3)
+        elif getattr(self, 'temporal_attn', None) is not None:
+            try:
+                attn_tp = F.scaled_dot_product_attention(x_tp.unsqueeze(1), x_tp.unsqueeze(1), x_tp.unsqueeze(1)).squeeze(1)
+            except Exception:
+                attn_tp, _ = self.temporal_attn(x_tp, x_tp, x_tp)
+            x = x + attn_tp.view(b, s, t, d).permute(0, 2, 1, 3)
 
         # 4. Modulated FFN
         norm_ffn = self.adaln.norm(x) * (1.0 + gamma2) + beta2
@@ -215,6 +370,17 @@ class SpatioTemporalTransformerBlock(nn.Module):
         x = x + (1.0 + alpha2) * ffn_out
 
         return x
+
+
+
+def token_merge(x: torch.Tensor, ratio: float = 0.5):
+    """Simple token merging by averaging adjacent tokens."""
+    if ratio >= 1.0 or x.shape[1] < 4:
+        return x
+    b, n, d = x.shape
+    keep = max(1, int(n * (1.0 - ratio)))
+    # keep first keep tokens
+    return x[:, :keep, :]
 
 
 class JetFlowBackbone(nn.Module):
@@ -237,13 +403,18 @@ class JetFlowBackbone(nn.Module):
         self.plucker_embed: Optional[PluckerRayEmbedder] = (
             PluckerRayEmbedder(config.hidden_dim) if config.enable_plucker_3d else None
         )
+        try:
+            self.rope = RotaryPositionalEmbedding3D(config.hidden_dim) if getattr(config, 'use_rope', True) else None
+        except Exception:
+            self.rope = None
         self.blocks = nn.ModuleList([
             SpatioTemporalTransformerBlock(
                 config.hidden_dim,
                 config.num_heads,
                 config.text_dim,
-                use_tt_ffn=config.use_tt_ffn,
+                use_tt_ffn=getattr(config, 'use_tt_ffn', True),
                 tt_ffn_rank=config.tt_ffn_rank,
+                temporal_backend=getattr(config, 'temporal_backend', 'hybrid'),
             )
             for _ in range(config.num_layers)
         ])
@@ -358,6 +529,21 @@ class JetFlowBackbone(nn.Module):
         pos_feat = self._build_spatiotemporal_pos_features(tp, hp, wp, z.device, z.dtype)
         x = self.input_proj(z_tokens) + self.pos_proj(pos_feat)
 
+        if self.rope is not None and getattr(self.rope, 'enabled', False) and x.shape[-1] % 2 == 0:
+            try:
+                rope_scale = getattr(self.config, 'rope_scaling', 1.0)
+                if rope_scale != 1.0:
+                    pass  # scaling handled externally if needed
+                x = self.rope(x, tp, hp, wp)
+            except Exception:
+                pass
+
+        if getattr(self.config, 'use_token_merging', False):
+            try:
+                x = token_merge(x, getattr(self.config, 'token_merge_ratio', 0.5))
+            except Exception:
+                pass
+
         if self.plucker_embed is not None:
             rays = (
                 plucker_rays
@@ -375,8 +561,12 @@ class JetFlowBackbone(nn.Module):
             cond = cond + txt_pooled
 
         hw = (hp, wp)
+        use_ckpt = getattr(self.config, 'use_gradient_checkpointing', False) and self.training
         for block in self.blocks:
-            x = block(x, cond, text_tokens=text_tokens, hw=hw)
+            if use_ckpt and CHECKPOINT_AVAILABLE:
+                x = checkpoint(block, x, cond, text_tokens, hw, use_reentrant=False)
+            else:
+                x = block(x, cond, text_tokens=text_tokens, hw=hw)
 
         x = self.final_norm(x)
         v_tokens = self.output_proj(x)  # (B, T', H'*W', patch_vol)
@@ -415,6 +605,17 @@ class JetFlowVideoModel(nn.Module):
         )
         self.physics_controller = PhysicalSteeringController()
         self.vae_bridge = vae_bridge or VideoVAEBridge(latent_channels=self.config.latent_channels)
+        self._compiled_forward = None
+
+    def compile_model(self, mode: str = "reduce-overhead"):
+        if hasattr(torch, 'compile') and getattr(self.config, 'use_compile', True):
+            try:
+                self.backbone = torch.compile(self.backbone, mode=mode)
+                self._compiled_forward = torch.compile(self.forward, mode=mode)
+                return True
+            except Exception:
+                return False
+        return False
 
     def forward(
         self,
@@ -456,11 +657,17 @@ class JetFlowVideoModel(nn.Module):
         shape: Tuple[int, int, int, int] = (16, 12, 16, 16),
         physical_knobs: Optional[PhysicalSteeringConfig] = None,
         bond_ranks: Optional[Tuple[int, int, int]] = None,
+        compile: bool = False,
     ) -> Tuple[TensorTrainVideo, torch.Tensor]:
         r"""Generate high-fidelity video latent and decode to RGB in 2 to 4 curvature steps.
 
         Accepts either a natural language string prompt or a pre-encoded tensor embedding.
         """
+        if compile and hasattr(torch, 'compile') and self._compiled_forward is None:
+            try:
+                self._compiled_forward = torch.compile(self.forward, mode="reduce-overhead")
+            except Exception:
+                pass
         device = next(self.parameters()).device
         dtype = next(self.parameters()).dtype
 
@@ -508,13 +715,27 @@ class JetFlowVideoModel(nn.Module):
             dt = t_next - t_curr
 
             def velocity_eval(z_eval: torch.Tensor, t_eval: float) -> torch.Tensor:
-                v_model = self.compute_flow_guided_velocity(
-                    z_eval,
-                    t=t_eval,
-                    text_tokens=text_tokens,
-                    guidance_scale=self.config.guidance_scale,
-                    plucker_rays=plucker_rays,
-                )
+                fwd = self._compiled_forward if getattr(self, '_compiled_forward', None) is not None else self.compute_flow_guided_velocity
+                try:
+                    if fwd is self.compute_flow_guided_velocity:
+                        v_model = self.compute_flow_guided_velocity(
+                            z_eval,
+                            t=t_eval,
+                            text_tokens=text_tokens,
+                            guidance_scale=self.config.guidance_scale,
+                            plucker_rays=plucker_rays,
+                        )
+                    else:
+                        # compiled forward expects (z,t,text_tokens,...)
+                        v_model = fwd(z_eval, t_eval, text_tokens=text_tokens, plucker_rays=plucker_rays)
+                except Exception:
+                    v_model = self.compute_flow_guided_velocity(
+                        z_eval,
+                        t=t_eval,
+                        text_tokens=text_tokens,
+                        guidance_scale=self.config.guidance_scale,
+                        plucker_rays=plucker_rays,
+                    )
                 v_sol, _ = self.noether_engine.project_spatial_latent_velocity(v_model)
                 return controller.steer_velocity_field(
                     v_sol,

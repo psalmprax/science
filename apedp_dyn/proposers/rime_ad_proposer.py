@@ -140,8 +140,8 @@ class RimeAdProposer(ProposerBase):
             # implicit SVD, differential Padé, shared-DAG enumeration) over
             # the measured top features, so the Rust engines engage on
             # multi-feature frames instead of only the OLS baseline firing.
-            # Each representation keeps its own gates; ranking below stays
-            # BIC on dev rows.
+            # Each representation keeps its own gates; ranking below is the
+            # worst-K-fold dev BIC (see the ranking block for rationale).
             for feat in self._screen_features(df, feature_cols, y_dev):
                 try:
                     x_col = df[feat].to_numpy(dtype=float)
@@ -160,24 +160,66 @@ class RimeAdProposer(ProposerBase):
         if not candidates:
             return ()
 
-        # Rank candidates by dev BIC on the training slice
+        # Rank candidates on the development slice. Two proposer-side changes
+        # over the original single-slice dev BIC, both measured, neither
+        # touching any referee gate:
+        # 1. Value-based dedup: the fan-out can emit the same algebraic family
+        #    as several node arrangements (measured: three copies of
+        #    `(ofi^2)^2` reaching the table). Candidates sharing a
+        #    candidate_id whose dev predictions coincide to relative 1e-9 are
+        #    collapsed; the first occurrence wins.
+        # 2. Worst-K-fold ranking: a single dev-slice BIC crowns flexible
+        #    rivals on small n (measured: the textbook Langmuir form ranked
+        #    4th behind a rival that lost out of sample). Folds are strided
+        #    (row index % K), deterministic, and decorrelate regime blocks in
+        #    time-series panels; each candidate is charged its WORST fold
+        #    BIC, so one lucky fold cannot decide. Microscopic samples
+        #    (n < 20) keep the original single-slice BIC.
         n_samples = len(y_dev)
-        ranked = []
+        k_folds = 5 if n_samples >= 40 else (3 if n_samples >= 20 else 1)
+
+        scored: list[tuple[float, CandidateProposal]] = []
+        seen_preds: dict[str, np.ndarray] = {}
         for cand in candidates:
             try:
                 pred = np.asarray(cand.compute_score(df), dtype=float).ravel()
                 mask = np.isfinite(y_dev) & np.isfinite(pred)
-                if np.sum(mask) < 4:
+                if int(np.sum(mask)) < 4:
                     continue
-                sse = float(np.sum((y_dev[mask] - pred[mask]) ** 2))
+                prev = seen_preds.get(cand.candidate_id)
+                if prev is not None and prev.shape == pred.shape:
+                    both = np.isfinite(prev) & np.isfinite(pred)
+                    if int(both.sum()) >= 4:
+                        scale = max(1.0, float(np.max(np.abs(prev[both]))))
+                        if float(np.max(np.abs(prev[both] - pred[both]))) <= 1e-9 * scale:
+                            continue
+                seen_preds[cand.candidate_id] = pred
                 k_params = max(1, len(cand.parameters))
-                bic = n_samples * np.log(max(sse / n_samples, 1e-18)) + k_params * np.log(n_samples)
-                ranked.append((bic, cand))
+                if k_folds == 1:
+                    sse = float(np.sum((y_dev[mask] - pred[mask]) ** 2))
+                    score = n_samples * np.log(max(sse / n_samples, 1e-18)) \
+                        + k_params * np.log(n_samples)
+                else:
+                    fold_ids = np.arange(n_samples) % k_folds
+                    fold_bics: list[float] = []
+                    for f in range(k_folds):
+                        fm = mask & (fold_ids == f)
+                        n_f = int(fm.sum())
+                        if n_f < 3:
+                            continue
+                        sse_f = float(np.sum((y_dev[fm] - pred[fm]) ** 2))
+                        fold_bics.append(
+                            n_f * np.log(max(sse_f / n_f, 1e-18)) + k_params * np.log(n_f)
+                        )
+                    if not fold_bics:
+                        continue
+                    score = max(fold_bics)
+                scored.append((score, cand))
             except Exception:  # noqa: BLE001, S112 - try-continue by design: best-effort path skips this candidate without aborting  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
                 continue
 
-        ranked.sort(key=lambda item: item[0])
-        return [cand for _, cand in ranked]
+        scored.sort(key=lambda item: item[0])
+        return [cand for _, cand in scored]
 
     def _propose_univariate(
         self, x: np.ndarray, y: np.ndarray, feat_name: str

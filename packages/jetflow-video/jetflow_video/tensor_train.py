@@ -16,6 +16,13 @@ import torch
 
 import torch.nn as nn
 
+try:
+    import apedp_kernel
+    _RUST_TT_AVAILABLE = hasattr(apedp_kernel, 'jetflow_tensor_train_compress')
+except Exception:
+    apedp_kernel = None
+    _RUST_TT_AVAILABLE = False
+
 
 @dataclass
 class TensorTrainVideo:

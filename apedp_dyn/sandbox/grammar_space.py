@@ -203,6 +203,42 @@ def _feat_master_snr(p: pd.DataFrame) -> np.ndarray:
     return causal_zscore(snr)
 
 
+def _feat_frac_diff(p: pd.DataFrame) -> np.ndarray:
+    """Fractional differentiation proxy (stationarizing without excessive loss)."""
+    price = pd.Series(p["price"].to_numpy(float) if "price" in p.columns else np.exp(np.cumsum(p["r"].to_numpy(float)))).values
+    d = 0.4
+    k = np.arange(1, 21)
+    w = np.cumprod(-(d - k + 1) / k)
+    w = np.concatenate([[1.0], w])
+    out = np.full(len(price), np.nan)
+    for t in range(len(w)-1, len(price)):
+        out[t] = np.sum(w * price[t - len(w)+1:t+1][::-1])
+    return causal_zscore(out)
+
+
+def _feat_ewm_vol(p: pd.DataFrame) -> np.ndarray:
+    """Exponentially weighted volatility (risk measure)."""
+    r = p["r"].to_numpy(float)
+    vol = pd.Series(r**2).ewm(span=20, adjust=False).mean().apply(np.sqrt).to_numpy()
+    return causal_zscore(vol)
+
+
+def _feat_zscore_mom(p: pd.DataFrame) -> np.ndarray:
+    """Z-scored momentum over multiple horizons."""
+    r = p["r"].to_numpy(float)
+    mom5 = pd.Series(r).rolling(5).sum().to_numpy()
+    mom20 = pd.Series(r).rolling(20).sum().to_numpy()
+    return causal_zscore(mom5 - 0.25*mom20)
+
+
+def _feat_volume_price_div(p: pd.DataFrame) -> np.ndarray:
+    """Volume-price divergence signal."""
+    r = p["r"].to_numpy(float)
+    V = p["V"].to_numpy(float)
+    pv = pd.Series(r).rolling(10).corr(pd.Series(np.log(np.maximum(V,1e-18))).rolling(10).mean()).to_numpy()
+    return causal_zscore(pv)
+
+
 HYPOTHESES: dict[str, HypothesisSpec] = {
     # ── Foundational Volatility Formulations ──
     "H-P": HypothesisSpec("H-P", "y=a+b|r_t|", ("sig",),
@@ -228,6 +264,14 @@ HYPOTHESES: dict[str, HypothesisSpec] = {
                             "volatility compression released trend breakout.", _feat_sqz),
     "H-SNR": HypothesisSpec("H-SNR", "y=a+b*(Drift/sigma_asym^2)", ("snr",),
                             "unified risk-standardized master signal-to-noise ratio.", _feat_master_snr),
+    "H-FRAC": HypothesisSpec("H-FRAC", "y=a+b*FD_t", ("fracdiff",),
+                             "fractionally differentiated price (stationarizing transform).", _feat_frac_diff),
+    "H-EWMA-VOL": HypothesisSpec("H-EWMA-VOL", "y=a+b*sigma_ewm_t", ("ewmvol",),
+                                  "exponentially weighted volatility regime.", _feat_ewm_vol),
+    "H-ZMOM": HypothesisSpec("H-ZMOM", "y=a+b*ZMom_t", ("zmom",),
+                             "multi-horizon z-scored momentum.", _feat_zscore_mom),
+    "H-PVDIV": HypothesisSpec("H-PVDIV", "y=a+b*PVdiv_t", ("pvdiv",),
+                              "volume-price divergence/correlation regime.", _feat_volume_price_div),
 }
 
 COMBOS = {
@@ -243,6 +287,9 @@ EXTENDED_COMBOS = {
     "M_ASYM+OFI": ("H-ASYM", "H-OFI"),
     "M_SQZ+HURST": ("H-SQZ", "H-HURST"),
     "M_COMPLETE": ("H-P", "H-ASYM", "H-OFI", "H-SQZ", "H-HURST", "H-SNR"),
+    "M_FRAC+ZMOM": ("H-FRAC", "H-ZMOM"),
+    "M_ADVANCED": ("H-P", "H-ASYM", "H-FRAC", "H-ZMOM", "H-EWMA-VOL"),
+    "M_MICRO": ("H-OFI", "H-PVDIV", "H-SNR"),
 }
 
 
@@ -253,7 +300,9 @@ def build_features(panel: pd.DataFrame) -> dict[str, np.ndarray]:
         "HA": _feat_HA(panel), "logV": _feat_logV(panel), "sqrtV": _feat_sqrtV(panel),
         "asym": _feat_asym(panel), "ofi": _feat_ofi(panel),
         "hurst": _feat_hurst(panel), "sqz": _feat_sqz(panel),
-        "snr": _feat_master_snr(panel),
+        "snr": _feat_master_snr(panel), "fracdiff": _feat_frac_diff(panel),
+        "ewmvol": _feat_ewm_vol(panel), "zmom": _feat_zscore_mom(panel),
+        "pvdiv": _feat_volume_price_div(panel),
     }
 
 

@@ -4,6 +4,116 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — APEDP-Q: verifier-guided quantum-circuit compilation (Milestone 1, Benchmark I) (2026-10-23)
+
+Adds the first APEDP-Q control-plane layer for the Google Quantum AI
+verifiable-circuit-compilation benchmarks. It is deliberately separate from the
+trading promotion lifecycle: a proposer-side screen never promotes a candidate,
+and only the competition verifier can issue evidence:
+
+- **Hash-pinned contracts (`apedp_dyn/quantum_compilation/contracts.py`).**
+  SHA-256 trees for the verifier and bundled `kickmix`, AST-extracted benchmark
+  constants (no duplicated threshold literals), sample-artifact pin, and
+  `assert_locked()` before every official subprocess. The sample `invsqrt.kmb`
+  is byte-reproduced by the reference precision point.
+- **Candidate/receipt IR (`candidates.py`) and ledger adapter (`ledger.py`).**
+  Candidate ids bind parameters to the contract digest; artifacts are byte
+  hashed; screens can only propose or reject. Development-prefix PASS maps to
+  `DEVELOPMENT_PASSED` and never to `CONFIRMED_VALID`; a salted full-domain
+  slice is one-shot even after a PASS, and a failed final slice burns.
+- **Official referee (`referee.py`).** Runs the verifier in its own CPython
+  3.13 process with `kickmix` on `PYTHONPATH`, parses its JSON summary, redacts
+  the salt from the recorded command, and labels scopes
+  `development-prefix` / `full-domain-reduced-shots` / `full-domain-public` /
+  `full-domain`. Salt + fixed seed is refused because the seed bypasses the
+  hash-derived secret schedule.
+- **Benchmark-I proposer/screen (`invsqrt.py`).** Lazy runtime setup, exact
+  integer Newton-Raphson error model, phase-margin and rotation-synthesis cost
+  estimate, `.kmb` writer, one-coordinate neighbours, and interaction-aware
+  refinement over `(delta_bits, product_bits, result_bits)`.
+- **Search (`search.py`).** Baseline full-domain screen, interaction-aware
+  opening move, coordinate descent, shortlist full-domain re-check, official
+  development-prefix verification, and an opt-in final salted run that requires
+  a measured `--baseline-full-score`. Defaults: 140 screened points, 3 full
+  checks per stage, 512 × 1 development shots.
+- **Experiment 02 — QROM piecewise-linear seed proposer (`invsqrt_qrom_line.py`).**
+  Adapted from `scripts/nr_qrom.py` in the `apedp_q_alternatives` scaffold.
+  Searches fixed-point widths `(index_bits, coef_bits, slope_bits, delta_bits,
+  square_bits, product_bits, result_bits)` with an exact fixed-point screen over
+  the full domain, then compiles and verifies. The official full-domain
+  64-shots/x protocol PASSed candidate `(7,16,12,10,28,27,28)` at
+  **1,309,175.605** in 11m49s at 8 workers — reproducing the reported
+  "Verifier-Guided QROM" result (1,309,175.61) and beating both the reference
+  (2,076,774.23, −37.0%) and the APEDP-Q precision candidate
+  (1,941,280.56, −30.0%). Remains above the best corpus candidates
+  (Quick Wins 1,144,148; QROM+Tower42 182,600.86), which are not present as
+  artifacts in this workspace and therefore could not be reproduced.
+- **Measured full-domain evidence (public salt).** Reference precision
+  `(14,17,28,28,29)` screens at 2,076,774.23; the search's best
+  `(12,17,28,27,28)` screens at 1,941,280.56 (−6.52%, ratio 1.0698) with
+  error ratio 0.9251 and 77,808,879 phase-margin units. The official
+  full-domain 64-shots/x protocol (200,540,928 shots, no secret salt) PASSed
+  both circuits at 8 workers: reference 2,076,774.23 in 11m12s, candidate
+  1,941,280.56 in 11m49s. Candidate worst error/tolerance was 0.9251 at
+  x=1,119,994; reference 0.4769 at x=2,588,411. The measured scores equal the
+  exact-model projections to the last recorded digit. A development-prefix
+  512-shot run also PASSes the candidate at 1,929,748.87, but that score is
+  not comparable to full-domain because prefix min margins differ. A
+  secret-salt full run remains the internal promotion gate; the public full
+  run answers the research question without burning a secret holdout.
+- **Pins (`tests/test_quantum_compilation.py`, 14):** contract/tamper checks,
+  candidate identity, ledger screen/promotion boundaries, one-shot salt
+  burning, scope labels, subset coverage, refinement completeness, and an
+  opt-in CPython 3.13 integration that also pins byte-identical reference
+  artifact reproduction. Full dynamic suite: 132 passed, 1 skipped.
+- **Unrelated pre-existing fix required by the suite:** `apedp/evolutionary_search.py`
+  no longer shadows the module-level `apedp_kernel` with a function-local
+  import inside `evolve()`, which raised `UnboundLocalError` whenever
+  `use_native_ga=True` (6 failing `test_dyn_native_ga_best.py` cases).
+
+---
+
+## [Unreleased] — Noise-vs-rediscovery benchmark harness: planted physics laws measured blind across the noise axis (2026-10-23)
+
+Closes the ASSESSMENT §3 fix-order #1 gap — discovery engines had clean-data
+anecdotes but no measured answer to "how often is the right structure
+recovered as observation noise grows?":
+
+- **Harness (`benchmarks/run_feynman_noise_rediscovery.py`, `audit-only`).**
+  18 frozen static-law worlds: 13 embedded engine-grammar families (monomials,
+  reciprocals, exponentials, saturating Langmuir/Hill, trig, two-variable
+  linear and product interactions) plus the 5 curated Feynman cases imported
+  from `apedp.ingestion.external_benchmarks`. Relative target-noise sweep
+  σ ∈ {0, 0.01, 0.02, 0.05, 0.10} × repeats, additive Gaussian on the target
+  scaled by the clean-target population std (the Feynman-suite convention).
+- **Preregistered harness-local gates (not canonical-spec imports):**
+  predictive = clean-holdout R² ≥ 0.95; structure = R² ≥ 0.90 on a denser
+  probe grid over the declared world ranges — the train-range alias detector
+  that separates a lucky in-window fit from a recovered functional form.
+  Verdicts: recovered_structure / recovered_predictive_only / failed /
+  abstained; abstention never counts toward recovery (known-truth rule).
+- **Fixed-design protocol:** design seed depends on (world, rep) only and the
+  noise seed on (world, σ, rep), so each noise level shares design points with
+  its clean reference and recovery change is attributable to noise, not to
+  reshuffled inputs (the `known_truth_challenge` v0.1.4 noise-phase note).
+  A first-draft confounded seed scheme (design reshuffled per σ) was caught
+  by the regression test math and replaced with this protocol before the
+  recorded run.
+- **Pluggable blind adapters:** `synthesis` (univariate
+  `AutonomousModelSynthesizer` — evaluates the fit by substituting recorded
+  parameters into `SymPyModel.sympy_expr` and lambdifying, the engine's own
+  evaluation route) and `rime_ad` (multivariate `RimeAdProposer`, dev-ranked
+  BIC fan-out through the native kernel; skipped with an explicit reason when
+  the wheel is absent). Adding an engine = adding one adapter function.
+- **Pins:** `tests/test_feynman_noise_rediscovery_harness.py` (15): gate
+  boundary behavior (undefined-R² flat truth never passes; train-range alias
+  scores predictive_only), seed separation invariants, protocol constants,
+  world-table lamda finiteness over probe ranges, exact replay determinism
+  (wall-clock excluded), multivariate `not_applicable` routing, and a
+  kernel-gated RIME-AD recovery integration.
+
+---
+
 ## [Unreleased] — Grammar-space expansion: typed saturation laws, fitted interior scales, affine denominators, re-minted frozen grammar (2026-10-23)
 
 The search spaces were widened along the axis the audits kept naming — saturating
