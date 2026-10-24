@@ -27,11 +27,9 @@ impl LatentSpace {
             embedding[i] = (b as f64) / 255.0;
         }
         // Add structural features
-        embedding[0] += expr.matches('+').count() as f64 * 0.1;
-        embedding[1] += expr.matches('*').count() as f64 * 0.1;
-        embedding[2] += expr.matches("sin").count() as f64 * 0.1;
-        embedding[3] += expr.matches("cos").count() as f64 * 0.1;
-        embedding[4] += expr.matches("exp").count() as f64 * 0.1;
+        for (index, pattern) in ["+", "*", "sin", "cos", "exp"].iter().enumerate().take(self.dim) {
+            embedding[index] += expr.matches(*pattern).count() as f64 * 0.1;
+        }
         embedding
     }
 
