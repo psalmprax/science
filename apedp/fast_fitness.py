@@ -8,14 +8,14 @@ from typing import Any
 
 import numpy as np
 
-from apedp.rust_bridge import RustKernelBridge, get_default_bridge
+from apedp.rust_bridge import RustKernelBridge, default_kernel
 
 
 class FastFitnessEvaluator:
     """Rust-first fitness evaluator with automatic fallback."""
     
     def __init__(self, bridge: RustKernelBridge | None = None):
-        self.bridge = bridge or get_default_bridge()
+        self.bridge = bridge or default_kernel
     
     def evaluate(self, expr_str: str, variable_names: list[str], 
                  X: np.ndarray, y: np.ndarray) -> dict[str, Any]:
