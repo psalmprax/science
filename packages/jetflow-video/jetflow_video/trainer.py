@@ -24,6 +24,12 @@ from tqdm import tqdm
 from jetflow_video.model import JetFlowVideoModel, JetFlowModelConfig
 from jetflow_video.bridge import VideoVAEBridge
 
+try:
+    import lpips
+    LPIPS_AVAILABLE = True
+except Exception:
+    LPIPS_AVAILABLE = False
+
 
 _CONCEPT_GROUPS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     ("concept:vehicle", ("car", "automobile", "vehicle", "sedan", "coupe", "truck", "bus", "train", "bike")),
@@ -376,10 +382,19 @@ class JetFlowTrainer:
         grad_accum_steps: int = 1,
         device: Union[str, torch.device] = "cuda" if torch.cuda.is_available() else "cpu",
         use_amp: bool = torch.cuda.is_available(),
+        use_bf16: bool = torch.cuda.is_available() and torch.cuda.is_bf16_supported(),
+        compile_model: bool = True,
+        use_gradient_checkpointing: bool = True,
+        use_logit_normal_t: bool = True,
+        use_perceptual_loss: bool = False,
+        multi_scale_resolutions: Optional[List[Tuple[int, int]]] = None,
+        use_context_parallel: bool = False,
     ) -> None:
         self.device = torch.device(device)
         self.model = model.to(self.device)
-        self.use_amp = use_amp and (self.device.type == "cuda")
+        self.use_amp = use_amp and (self.device.type == "cuda") and not use_bf16
+        self.use_bf16 = use_bf16 and (self.device.type == "cuda")
+        self.dtype = torch.bfloat16 if self.use_bf16 else (torch.float16 if self.use_amp else torch.float32)
         self.cfg_dropout_prob = float(cfg_dropout_prob)
         self.ema_decay = float(ema_decay)
         self.warmup_steps = max(0, int(warmup_steps))
@@ -387,6 +402,22 @@ class JetFlowTrainer:
         self.grad_accum_steps = max(1, int(grad_accum_steps))
         self.global_step = 0
         self.base_lr = float(learning_rate)
+        self.use_logit_normal_t = use_logit_normal_t
+        self.use_perceptual_loss = use_perceptual_loss and LPIPS_AVAILABLE
+        self.multi_scale_resolutions = multi_scale_resolutions or [(256, 256), (512, 512)]
+        self.use_context_parallel = use_context_parallel
+
+        if use_gradient_checkpointing:
+            try:
+                self.model.config.use_gradient_checkpointing = True
+            except Exception:
+                pass
+
+        if compile_model and hasattr(torch, 'compile'):
+            try:
+                self.model.backbone = torch.compile(self.model.backbone, mode="reduce-overhead")
+            except Exception:
+                pass
 
         self.optimizer = torch.optim.AdamW(
             self.model.parameters(),
@@ -395,6 +426,14 @@ class JetFlowTrainer:
             betas=(0.9, 0.999),
         )
         self.scaler = torch.amp.GradScaler("cuda", enabled=self.use_amp)
+        if self.use_perceptual_loss:
+            try:
+                self.lpips_loss = lpips.LPIPS(net='vgg').to(self.device)
+            except Exception:
+                self.lpips_loss = None
+                self.use_perceptual_loss = False
+        else:
+            self.lpips_loss = None
 
         # Exponential Moving Average (EMA) shadow parameters
         self.ema_state: Dict[str, torch.Tensor] = {
@@ -453,8 +492,14 @@ class JetFlowTrainer:
         # Sample prior noise z_1 ~ N(0, I)
         z_noise = torch.randn_like(z_data)
 
-        # Sample flow time t ~ U(0.05, 0.95)
-        t = torch.rand(b, device=device) * 0.9 + 0.05
+        # Sample flow time t ~ logit-normal (better for flow matching) or uniform
+        if getattr(self, 'use_logit_normal_t', True):
+            # logit-normal: t = sigmoid(N(mu, sigma)); use mu=0, sigma=1 scaled
+            u = torch.randn(b, device=device)
+            t = torch.sigmoid(u)
+            t = t * 0.9 + 0.05
+        else:
+            t = torch.rand(b, device=device) * 0.9 + 0.05
 
         # Geodesic flow interpolation: z_t = (1 - t) * z_data + t * z_noise
         t_bc = t.view(b, 1, 1, 1, 1)

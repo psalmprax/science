@@ -1575,6 +1575,10 @@ class MultiVariableSRE:
     ``apedp.symbolic_regression.SymbolicRegressor`` is a legacy standalone
     tournament/crossover engine kept for backwards compatibility and small
     dimensionless demos; prefer this class for all dimensional work.
+    
+    UNIFIED USAGE: Both engines are maintained for compatibility, but
+    MultiVariableSRE is the recommended primary engine with full dimensional
+    validation, repair integration, and pipeline support.
 
     Optional extensions (on by default; pass False to restore the legacy
     minimal operator set):

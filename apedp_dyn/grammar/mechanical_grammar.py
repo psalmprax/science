@@ -44,6 +44,9 @@ _TERM_BUILDERS = {
     "u": lambda X, V, U, XR, SX: U,
     "x_v": lambda X, V, U, XR, SX: X * V,
     "sin_x": lambda X, V, U, XR, SX: sp.sin(X),
+    "cos_x": lambda X, V, U, XR, SX: sp.cos(X),
+    "tanh_x": lambda X, V, U, XR, SX: sp.tanh(X),
+    "sign_x": lambda X, V, U, XR, SX: sp.sign(X),
     "xr": lambda X, V, U, XR, SX: XR,
     "dxr": lambda X, V, U, XR, SX: XR - X,  # typed relative displacement Δx
     "c1": lambda X, V, U, XR, SX: X ** 0,  # constraint term 1 (dimensionless)
@@ -57,14 +60,32 @@ _TERM_BUILDERS = {
     "sat_x": lambda X, V, U, XR, SX: X / (1 + sp.Abs(X)),
     "sat_v": lambda X, V, U, XR, SX: V / (1 + sp.Abs(V)),
     "sat_u": lambda X, V, U, XR, SX: U / (1 + sp.Abs(U)),
+    "inv_x": lambda X, V, U, XR, SX: 1 / (1 + sp.Abs(X)),
     "inv_x2": lambda X, V, U, XR, SX: 1 / (1 + X ** 2),
     "u_relax": lambda X, V, U, XR, SX: U - V,  # relative relaxation impulse
+    "log_abs_x": lambda X, V, U, XR, SX: sp.log(1 + sp.Abs(X)),
+    "sqrt_abs_x": lambda X, V, U, XR, SX: sp.sqrt(1 + sp.Abs(X)),
+    "abs_x": lambda X, V, U, XR, SX: sp.Abs(X),
+    "abs_u": lambda X, V, U, XR, SX: sp.Abs(U),
+    "x_u": lambda X, V, U, XR, SX: X * U,
+    "v_u": lambda X, V, U, XR, SX: V * U,
+    "abs_x_v": lambda X, V, U, XR, SX: sp.Abs(X) * V,
+    "abs_v_u": lambda X, V, U, XR, SX: sp.Abs(V) * U,
+    # Trading/finance oriented terms
+    "ret_x": lambda X, V, U, XR, SX: X / (1 + X),  # approximate return-like transform
+    "zscore_x": lambda X, V, U, XR, SX: (X - sp.symbols("mu_x")) / (sp.symbols("sigma_x") + 1e-12),
+    "ma_x": lambda X, V, U, XR, SX: (X + sp.symbols("x_lag1")) / 2,  # moving average placeholder
+    "mom_x": lambda X, V, U, XR, SX: X - sp.symbols("x_lag1"),  # momentum
+    "rsi_like": lambda X, V, U, XR, SX: sp.tanh(X - sp.symbols("x_ma")),  # RSI-like bounded momentum
+    "bollinger": lambda X, V, U, XR, SX: (X - sp.symbols("x_ma")) / (sp.symbols("x_std") + 1e-12),
+    "macd_like": lambda X, V, U, XR, SX: (sp.symbols("x_ema_fast") - sp.symbols("x_ema_slow")),
     # Saturating binding laws need a reference scale with the state's units:
     # `X/(L+|X|)` is Langmuir/Michaelis-Menten occupancy and `X^2/(L^2+X^2)` its
     # cooperative (Hill n=2) form. L arrives as the term's `scale_parameter`;
     # without it an Add of `1` to a dimensional X is a gate-1 violation.
     "langmuir_bind": lambda X, V, U, XR, SX: X / (SX + sp.Abs(X)),
     "hill2_bind": lambda X, V, U, XR, SX: X ** 2 / (SX ** 2 + X ** 2),
+    "hill3_bind": lambda X, V, U, XR, SX: X ** 3 / (SX ** 3 + X ** 3),
 }
 
 DEFAULT_TOPOLOGY = ("one", "x", "x3", "v", "abs_v_v", "sin_x", "u")

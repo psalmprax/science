@@ -138,6 +138,8 @@ _SAFE_FUNCS = {
     "bessely": sp.bessely,
     "besseli": sp.besseli,
     "besselk": sp.besselk,
+    "Piecewise": sp.Piecewise,
+    "piecewise": sp.Piecewise,
     "pi": sp.pi,
     "E": sp.E,
     "EulerGamma": sp.EulerGamma,

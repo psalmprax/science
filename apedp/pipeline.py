@@ -9,6 +9,7 @@ import logging
 import os
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any
 
@@ -29,6 +30,19 @@ from apedp.scientific_layers import interior_pole_scan
 from apedp.source_audit import SourceMetadata, audit_dataset
 
 logger = logging.getLogger(__name__)
+
+# Add rotating file handler for logs
+try:
+    log_dir = Path("logs")
+    log_dir.mkdir(exist_ok=True)
+    log_file = log_dir / "apedp_pipeline.log"
+    if not any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
+        handler = RotatingFileHandler(log_file, maxBytes=10*1024*1024, backupCount=5)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+except Exception:
+    pass  # Don't fail if logging setup fails
 
 
 def _sha256_file(path: str) -> str:
@@ -115,6 +129,7 @@ class DiscoveryPipeline:
         self.experiment = ExperimentLog(str(self.output_dir / "experiments.jsonl"))
         self.propagator = AnalyticalUncertaintyPropagator()
         self._results: list[dict] = []
+        self._expr_cache: dict = {}
 
     def ingest_csv(self, filepath: str, target_column: str) -> dict:
         """Load data from a CSV file.

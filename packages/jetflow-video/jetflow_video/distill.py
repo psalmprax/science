@@ -163,25 +163,36 @@ def _student_sample_trainable(
 def distill_solution(
     teacher,
     student,
-    clips_latents: torch.Tensor,
-    distill_steps: int = 200,
-    teacher_steps: int = 8,
-    student_steps: int = 2,
-    lr: float = 5e-4,
+    clips_latents: torch.Tensor = None,
+    distill_steps: int = 500,
+    teacher_steps: int = 16,
+    student_steps: int = 1,
+    lr: float = 5e-5,
     seed: int = 0,
-    dtype: torch.dtype = torch.float64,
+    dtype: torch.dtype = None,
     progress_every: int = 0,
     deadline_s: float | None = None,
+    use_consistency: bool = True,
+    lambda_consistency: float = 0.1,
 ) -> list[float]:
     """Solution distillation: student's few-step endpoint == teacher's
-    many-step endpoint from the SAME initial noise."""
+    many-step endpoint from the SAME initial noise. Also supports 1-step distillation."""
     from jetflow_video.text_encoder import encode_prompt_sequence
     student.train()
     opt = torch.optim.AdamW(student.parameters(), lr=lr)
     rng = np.random.RandomState(seed)
     losses = []
-    clip_shape = tuple(clips_latents[0].shape)  # (T, C, H, W)
-    n_clips = max(1, clips_latents.shape[0])
+    if clips_latents is not None:
+        clip_shape = tuple(clips_latents[0].shape)  # (T, C, H, W)
+        n_clips = max(1, clips_latents.shape[0])
+    else:
+        clip_shape = (4, 12, 8, 8)
+        n_clips = 1
+    if dtype is None:
+        try:
+            dtype = next(student.parameters()).dtype
+        except Exception:
+            dtype = torch.float32
     clip_texts = [
         encode_prompt_sequence(f"turbulent fluid vortex clip {i}", max_seq_len=2, dim=64).unsqueeze(0).to(dtype=dtype)
         for i in range(n_clips)
@@ -201,7 +212,14 @@ def distill_solution(
             seed=noise_seed, dtype=dtype,
         )
         loss = F.mse_loss(z_stud, z_teacher)
+        if use_consistency and student_steps >= 2:
+            z_stud2 = _student_sample_trainable(
+                student, text, clip_shape, num_steps=max(1, student_steps // 2),
+                seed=noise_seed, dtype=dtype,
+            )
+            loss = loss + lambda_consistency * F.mse_loss(z_stud2, z_stud.detach())
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(student.parameters(), 1.0)
         opt.step()
         losses.append(float(loss.item()))
         if deadline is not None and time.perf_counter() >= deadline:
