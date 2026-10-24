@@ -193,6 +193,10 @@ class VerifierContract:
 
     def assert_locked(self) -> None:
         """Recompute the pin and raise if any bound artifact changed."""
+        fields = self.to_dict()
+        fields.pop("contract_sha256")
+        if _contract_digest(fields) != self.contract_sha256:
+            raise ContractIntegrityError("Contract metadata changed since creation")
         current_verifier = sha256_tree(self.verifier_root)
         if current_verifier != self.verifier_sha256:
             raise ContractIntegrityError(
