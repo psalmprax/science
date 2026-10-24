@@ -29,7 +29,7 @@ dev = [
     "pytest>=8.0",
     "ruff==0.17.1",
     "mypy==2.4.0",
-    "maturin==1.14.1",
+    "maturin==1.15.0",
     "PyYAML==6.0.3",
     "bandit>=1.7",
     "pytest-xdist>=3.6",
