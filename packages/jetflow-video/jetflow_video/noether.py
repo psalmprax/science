@@ -8,10 +8,25 @@ Guarantees physical conservation laws on generative video flows:
 """
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Dict, Optional, Tuple
+
+import numpy as np
 import torch
-import torch.nn.functional as F
+
+logger = logging.getLogger(__name__)
+
+try:
+    import apedp_kernel
+except (ImportError, OSError):
+    apedp_kernel = None
+    logger.debug("Rust Noether kernel unavailable; using PyTorch", exc_info=True)
+except Exception:  # noqa: BLE001 -- optional native module initialization must not prevent fallback
+    apedp_kernel = None
+    logger.debug("Rust Noether kernel initialization failed; using PyTorch", exc_info=True)
+
+_RUST_NOETHER_AVAILABLE = callable(getattr(apedp_kernel, "jetflow_noether_project", None))
 
 
 @dataclass(frozen=True)
@@ -134,6 +149,48 @@ class NoetherConservationEngine:
 
         if self.config.preserve_wavelet_subbands:
             return self.project_wavelet_temporal_conservation(velocity_field)
+
+        # The optional FFI bridge is inference-only and assumes the default grid.
+        defaults = NoetherConfig()
+        if (
+            _RUST_NOETHER_AVAILABLE
+            and apedp_kernel is not None
+            and velocity_field.layout == torch.strided
+            and velocity_field.dtype in (torch.float16, torch.bfloat16, torch.float32, torch.float64)
+            and all(size > 0 for size in velocity_field.shape)
+            and not (torch.is_grad_enabled() and velocity_field.requires_grad)
+            and self.config.dx == defaults.dx
+            and self.config.dy == defaults.dy
+        ):
+            try:
+                # Isolate caller storage even if the native implementation mutates its input.
+                v_cpu = velocity_field.detach().to(
+                    device="cpu", dtype=torch.float64, copy=True,
+                    memory_format=torch.contiguous_format,
+                ).resolve_neg().numpy()
+                v_out, div_r = apedp_kernel.jetflow_noether_project(v_cpu)
+                v_array = np.asarray(v_out)
+                residual = np.asarray(div_r)
+                if (
+                    v_array.shape != tuple(velocity_field.shape)
+                    or v_array.dtype.kind != "f"
+                    or not np.isfinite(v_array).all()
+                    or residual.ndim != 0
+                    or residual.dtype.kind not in "fiu"
+                    or not np.isfinite(residual)
+                    or residual < 0
+                ):
+                    raise ValueError("Invalid Rust Noether output shape, dtype, or residual")
+                v_out_t = torch.from_numpy(
+                    np.require(v_array, dtype=np.float64, requirements=["C", "W"])
+                ).to(device=velocity_field.device, dtype=velocity_field.dtype)
+                if not torch.isfinite(v_out_t).all():
+                    raise ValueError("Rust Noether output overflowed the original dtype")
+                return v_out_t, float(residual)
+            except (TypeError, ValueError, RuntimeError, OverflowError):
+                logger.debug("Rust Noether projection failed; using PyTorch", exc_info=True)
+            except Exception:  # noqa: BLE001 -- optional native/array adapters may raise arbitrary errors
+                logger.debug("Unexpected Rust Noether failure; using PyTorch", exc_info=True)
 
         t, c, h, w = velocity_field.shape
         projected = velocity_field.clone()
