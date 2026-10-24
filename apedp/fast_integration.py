@@ -50,7 +50,8 @@ class FastODEIntegrator:
             
             # Build RHS
             syms = {name: sp.Symbol(name) for name in state_names + param_names}
-            eqs = [sp.sympify(eq, locals=syms) for eq in equations]
+            from apedp.safety import safe_parse_expr
+            eqs = [safe_parse_expr(eq, extra_symbols=syms) for eq in equations]
             funcs = [sp.lambdify([sp.Symbol(s) for s in state_names] + [sp.Symbol(p) for p in param_names], eq, 'numpy') for eq in eqs]
             
             def rhs(t, y):
