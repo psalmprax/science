@@ -57,7 +57,10 @@ areas, as recorded in [.github/CODEOWNERS](.github/CODEOWNERS).
 | `apedp_kernel`, `apedp_persistence/` | The former is a development symlink to the installed native package, not a place to edit source; the latter stores persisted JSON state, not Python implementation. Preserve these compatibility paths. |
 
 For deeper boundaries see [ARCHITECTURE.md](ARCHITECTURE.md); for module status
-and references see [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md).
+and references see [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md). Record
+significant architecture or process choices in [docs/adr/README.md](docs/adr/README.md).
+Release changes use [RELEASING.md](RELEASING.md) and the
+[changelog](CHANGELOG.md); versions follow SemVer per published artifact.
 
 ## Local setup
 
@@ -200,3 +203,11 @@ against the built kernel, not silently skip.
 CI exits on the first test failure with short tracebacks, gates quality before
 the expensive regression matrix, and has bounded job timeouts. Reproduce the
 failing command locally before retrying a run.
+
+## Support and triage
+
+Issue and pull-request triage is best effort; no response-time SLA is promised.
+Include reproducible steps, relevant workflow links, and environment details
+when reporting a bug. The current review owner is listed in
+[CODEOWNERS](.github/CODEOWNERS). Report security vulnerabilities privately
+using the process in [SECURITY.md](SECURITY.md), not in a public issue.

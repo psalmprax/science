@@ -1,5 +1,7 @@
 # APEDP-X — Autonomous Physics, Engineering & Market Discovery Platform
 
+[![APEDP CI/CD](https://github.com/psalmprax/science/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/psalmprax/science/actions/workflows/test.yml)
+
 A scientific discovery and epistemic referee platform combining formal mathematical verification (Lean 4), multi-proposer candidate generation, dimensional analysis, rigorous multiple-testing control (Deflated Sharpe Ratio), anti-snooping holdout guards, and scoped non-fungible promotion state machines.
 
 ---
@@ -136,7 +138,7 @@ The authoritative source of truth for preregistered thresholds is frozen at [`sp
 
 ---
 
-## CI status matrix
+## Required checks and CI status matrix
 
 Expected checks, not a live pass/fail report. Commands run from the repository
 root unless noted; see [CONTRIBUTING.md](CONTRIBUTING.md#checks-matching-ci) for
@@ -150,14 +152,37 @@ environment setup and scope limitations.
 | Native build and smoke | `maturin develop --locked --manifest-path rust/apedp-kernel/Cargo.toml`, bridge availability assertion, `python -m pytest tests/test_smoke_imports.py -q -x`, then test collection | [APEDP CI/CD](.github/workflows/test.yml), `test` (Python 3.10/3.11/3.12) |
 | Scientific evidence | `python benchmarks/check_scientific_drift.py`; `python -m pytest tests/test_scientific_recovery.py tests/test_dyn_rime_known_truth.py -q -m scientific_regression` | [APEDP CI/CD](.github/workflows/test.yml), `test` |
 | Regression/integration | `python -m pytest tests/ -v --tb=short -n auto -x -m "not integration and not scientific_regression"`; separate `-m integration` run with Redis | [APEDP CI/CD](.github/workflows/test.yml), `test` |
-| Security | `bandit -r apedp/ -ll` | [APEDP CI/CD](.github/workflows/test.yml), `test` |
+| Security | `bandit -r apedp/ -ll`; CodeQL over detected repository languages | [APEDP CI/CD](.github/workflows/test.yml), `test`; [CodeQL](.github/workflows/codeql.yml), `Analyze` |
 | Distribution builds | Locked maturin builds for Linux/macOS/Windows; `python -m build` from each `packages/<package>/` | [Cross-Platform Native Wheels](.github/workflows/wheels.yml), `linux-wheels`, `macos-wheels`, `windows-wheels`, `sdist`, `python-packages` |
 
-Both quality jobs gate the Python test matrix. The wheel workflow has PR path
-filters (Rust, Cargo manifests/lockfile, packages, or its own workflow), so it is
-not expected on a documentation-only PR; it also runs on master/main pushes,
-version tags, or manual dispatch. Workflow dependencies do not configure branch
-protection; maintainers must select required checks in repository settings.
+For pull requests, configure branch protection to require `Python quality`,
+`Rust quality`, every Python-version leg of `test`, and `mutation-battery` from
+the **APEDP CI/CD** workflow, plus `Analyze` from **CodeQL** after its first
+successful run. The `test` matrix depends on both quality jobs.
+`build` and `deploy` are main-branch jobs, not pull-request checks. The
+**Cross-Platform Native Wheels** workflow has PR path filters (Rust, Cargo
+manifests/lockfile, packages, or its own workflow), so it is not expected on a
+documentation-only PR; it also runs on master/main pushes, version tags, or
+manual dispatch. Workflow files do not configure branch protection: repository
+administrators select required checks in GitHub settings.
+
+### Coverage policy
+
+There is no repository-wide numeric coverage target or coverage gate in CI today.
+Branch coverage is enabled for ad hoc Python coverage reports, and
+`tools/coverage_audit.py` is an advisory report rather than a pass/fail gate.
+Keep or add focused tests for changed behavior; coverage improvements should be
+reviewed alongside test quality rather than represented as an enforced
+percentage.
+
+### Flaky-test handling
+
+CI does not automatically retry failing tests. Capture the workflow run URL,
+failing step, and relevant environment details before rerunning a suspected
+transient failure. Reproduce it locally when possible; file an issue with the
+evidence if it recurs, and route it to the current review owner in
+[CODEOWNERS](.github/CODEOWNERS). Do not treat a rerun as a fix or suppress a
+deterministic regression.
 
 ## Repository layout and module ownership
 
@@ -171,8 +196,18 @@ Existing imports, persisted evidence, and directory paths are unchanged.
 ## Key Documentation
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md): Component boundaries, evidence flow, and holdout firewalls.
-- [`CHANGELOG.md`](CHANGELOG.md): User-visible improvements, bug fixes, and audit remediations.
+- [`CHANGELOG.md`](CHANGELOG.md): Keep a Changelog history and unreleased changes.
+- [`RELEASING.md`](RELEASING.md): Release checklist, SemVer, tagging, and rollback guidance.
+- [`SECURITY.md`](SECURITY.md): Vulnerability reporting and supported-version policy.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md): Setup, checks, repository structure policy, cleanup guide, and module ownership.
+- [`docs/adr/README.md`](docs/adr/README.md): Architecture decision records and review process.
 - [`AGENTS.md`](AGENTS.md): Repository guidelines and integrity rules for AI coding assistants.
 - [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md): Complete module-by-module reference and status index.
 - [`docs/apedp_discovery_engine_ledger_and_benchmarks_audit.md`](docs/apedp_discovery_engine_ledger_and_benchmarks_audit.md): Engineering audit mapping guarantees to tests.
+
+## Releases and versioning
+
+Published artifacts follow Semantic Versioning independently; the current
+metadata versions are not a promise that all packages share a release number.
+See [RELEASING.md](RELEASING.md) for preflight checks, changelog updates, and
+tagging policy.
