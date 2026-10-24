@@ -1,0 +1,21 @@
+{
+  "evaluation_period": "2026-01-01 to 2026-10-09",
+  "eval_bars": 282,
+  "model_4b_results": {
+    "net_return": 6.51,
+    "gross_return": 14.58,
+    "sharpe_252": 0.43,
+    "sharpe_365": 0.52,
+    "max_drawdown": 14.0,
+    "mean_daily_turnover": 0.5195,
+    "total_turnover": 146.0
+  },
+  "buy_and_hold_results": {
+    "net_return": -2.58,
+    "sharpe_252": 0.18,
+    "sharpe_365": 0.22,
+    "max_drawdown": 48.1
+  },
+  "verdict": "INSUFFICIENT EVIDENCE",
+  "verdict_detail": "Model 4b failed to achieve pre-registered PASS thresholds, but did not breach hard failure bounds."
+}

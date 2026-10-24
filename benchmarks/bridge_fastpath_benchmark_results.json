@@ -1,0 +1,33 @@
+{
+  "description": "Before/after latency of the apedp_kernel boundary per candidate-evaluation call. Both stacks run the identical driver benchmarks/run_bridge_fastpath_benchmark.py; the 'before' stack is the git HEAD kernel (owned Vec<Vec<f64>> per-call column copies, bare kernel.compile at every FFI crossing) plus the HEAD bridge (no compile/lambdify cache), built from a clean wheel (maturin build --release from git archive HEAD) into an isolated venv. The 'after' stack is the zero-copy DataCol kernel plus the cached/counted bridge. Min over identical fresh-process runs is reported per metric (standard low-noise latency estimator; run-to-run machine-load drift observed in sequential single runs was excluded by interleaving).",
+  "dataset": "600 rows x 4 float64 columns; batch = 15 candidates",
+  "python": "3.12.3",
+  "protocol": "min-of-3",
+  "raw_runs": {
+    "before_us": [
+      {"evaluate_expression_us_per_call": 110.84, "evaluate_expression_unique_us_per_call": 32.06, "score_candidates_batch_us_per_round": 1568.83, "score_candidates_batch_us_per_candidate": 104.59, "compute_metrics_us_per_call": 12.32, "fallback_eval_us_per_call": 2678.92},
+      {"evaluate_expression_us_per_call": 127.46, "evaluate_expression_unique_us_per_call": 24.89, "score_candidates_batch_us_per_round": 1960.14, "score_candidates_batch_us_per_candidate": 130.68, "compute_metrics_us_per_call": 15.02, "fallback_eval_us_per_call": 2910.18},
+      {"evaluate_expression_us_per_call": 114.57, "evaluate_expression_unique_us_per_call": 36.54, "score_candidates_batch_us_per_round": 1087.63, "score_candidates_batch_us_per_candidate": 72.51, "compute_metrics_us_per_call": 11.14, "fallback_eval_us_per_call": 2689.45}
+    ],
+    "after_us": [
+      {"evaluate_expression_us_per_call": 96.01, "evaluate_expression_unique_us_per_call": 20.69, "score_candidates_batch_us_per_round": 1140.67, "score_candidates_batch_us_per_candidate": 76.04, "compute_metrics_us_per_call": 7.58, "fallback_eval_us_per_call": 40.2},
+      {"evaluate_expression_us_per_call": 95.64, "evaluate_expression_unique_us_per_call": 27.49, "score_candidates_batch_us_per_round": 888.14, "score_candidates_batch_us_per_candidate": 59.21, "compute_metrics_us_per_call": 9.03, "fallback_eval_us_per_call": 40.31},
+      {"evaluate_expression_us_per_call": 95.56, "evaluate_expression_unique_us_per_call": 26.83, "score_candidates_batch_us_per_round": 1068.85, "score_candidates_batch_us_per_candidate": 71.26, "compute_metrics_us_per_call": 9.21, "fallback_eval_us_per_call": 34.46}
+    ]
+  },
+  "minima": {
+    "before_us": {"evaluate_expression_us_per_call": 110.84, "evaluate_expression_unique_us_per_call": 24.89, "score_candidates_batch_us_per_round": 1087.63, "score_candidates_batch_us_per_candidate": 72.51, "compute_metrics_us_per_call": 11.14, "fallback_eval_us_per_call": 2678.92},
+    "after_us": {"evaluate_expression_us_per_call": 95.56, "evaluate_expression_unique_us_per_call": 20.69, "score_candidates_batch_us_per_round": 888.14, "score_candidates_batch_us_per_candidate": 59.21, "compute_metrics_us_per_call": 7.58, "fallback_eval_us_per_call": 34.46}
+  },
+  "speedup": {
+    "evaluate_expression_us_per_call": {"ratio": "110.84 -> 95.56 us (-13.8%)"},
+    "evaluate_expression_unique_us_per_call": {"ratio": "24.89 -> 20.69 us (-16.9%)"},
+    "score_candidates_batch_us_per_round": {"ratio": "1087.63 -> 888.14 us (-18.3%)"},
+    "score_candidates_batch_us_per_candidate": {"ratio": "72.51 -> 59.21 us (-18.3%)"},
+    "compute_metrics_us_per_call": {"ratio": "11.14 -> 7.58 us (-31.9%)"},
+    "fallback_eval_us_per_call": {"ratio": "2678.92 -> 34.46 us (77.7x)"}
+  },
+  "kernel_level_check": {
+    "note": "kernel-level score_candidates_parallel (15 compiled candidates, no bridge): before 817.7 us vs after 785.2 us — no kernel-path regression; per-call evaluate_batch core is Rayon-dispatch dominated (~85 us at this size), so the zero-copy win scales with dataset size (only a ~19 KB per-call re-copy here)."
+  }
+}

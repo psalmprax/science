@@ -1,0 +1,13 @@
+{
+  "problem_id": "O32",
+  "block": "O",
+  "canonical_structural_family": "damped_oscillation",
+  "ground_truth_formula": "2.0*exp(-0.2*x)*cos(2.7*x)",
+  "true_parameters": {
+    "A": 2.0,
+    "k": 0.2,
+    "w": 2.7
+  },
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER"
+}

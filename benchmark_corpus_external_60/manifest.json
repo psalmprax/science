@@ -1,0 +1,309 @@
+{
+  "prereg_id": "PREREG-APEDP-EXTBENCH-60-2026-09-26",
+  "generation_seed": 20260926,
+  "revisions": [
+    "r2: formula strings fixed (data-identical regen)"
+  ],
+  "problems": [
+    {
+      "problem_id": "P01",
+      "block": "P",
+      "name": "poly-deg1"
+    },
+    {
+      "problem_id": "P02",
+      "block": "P",
+      "name": "poly-deg2"
+    },
+    {
+      "problem_id": "P03",
+      "block": "P",
+      "name": "poly-deg3"
+    },
+    {
+      "problem_id": "P04",
+      "block": "P",
+      "name": "poly-deg4"
+    },
+    {
+      "problem_id": "P05",
+      "block": "P",
+      "name": "power-1.5"
+    },
+    {
+      "problem_id": "P06",
+      "block": "P",
+      "name": "power-2.0"
+    },
+    {
+      "problem_id": "P07",
+      "block": "P",
+      "name": "power-0.5"
+    },
+    {
+      "problem_id": "P08",
+      "block": "P",
+      "name": "power-1.7"
+    },
+    {
+      "problem_id": "P09",
+      "block": "P",
+      "name": "power-1.3"
+    },
+    {
+      "problem_id": "P10",
+      "block": "P",
+      "name": "power-2.6"
+    },
+    {
+      "problem_id": "E11",
+      "block": "E",
+      "name": "exp-0.5"
+    },
+    {
+      "problem_id": "E12",
+      "block": "E",
+      "name": "exp-1.0"
+    },
+    {
+      "problem_id": "E13",
+      "block": "E",
+      "name": "exp-0.37"
+    },
+    {
+      "problem_id": "E14",
+      "block": "E",
+      "name": "exp-0.73"
+    },
+    {
+      "problem_id": "E15",
+      "block": "E",
+      "name": "exp-1.3"
+    },
+    {
+      "problem_id": "E16",
+      "block": "E",
+      "name": "exp-0.2"
+    },
+    {
+      "problem_id": "E17",
+      "block": "E",
+      "name": "log-1"
+    },
+    {
+      "problem_id": "E18",
+      "block": "E",
+      "name": "log-2"
+    },
+    {
+      "problem_id": "E19",
+      "block": "E",
+      "name": "log-3"
+    },
+    {
+      "problem_id": "E20",
+      "block": "E",
+      "name": "log-pow"
+    },
+    {
+      "problem_id": "R21",
+      "block": "R",
+      "name": "sat-1"
+    },
+    {
+      "problem_id": "R22",
+      "block": "R",
+      "name": "sat-2"
+    },
+    {
+      "problem_id": "R23",
+      "block": "R",
+      "name": "sat-3"
+    },
+    {
+      "problem_id": "R24",
+      "block": "R",
+      "name": "rational-808-seed0"
+    },
+    {
+      "problem_id": "R25",
+      "block": "R",
+      "name": "rational-808-seed1"
+    },
+    {
+      "problem_id": "R26",
+      "block": "R",
+      "name": "rational-808-seed2"
+    },
+    {
+      "problem_id": "R27",
+      "block": "R",
+      "name": "rational-808-seed3"
+    },
+    {
+      "problem_id": "R28",
+      "block": "R",
+      "name": "rational-808-seed4"
+    },
+    {
+      "problem_id": "O29",
+      "block": "O",
+      "name": "damped-2.8"
+    },
+    {
+      "problem_id": "O30",
+      "block": "O",
+      "name": "damped-2.0"
+    },
+    {
+      "problem_id": "O31",
+      "block": "O",
+      "name": "damped-3.5"
+    },
+    {
+      "problem_id": "O32",
+      "block": "O",
+      "name": "damped-2.7"
+    },
+    {
+      "problem_id": "O33",
+      "block": "O",
+      "name": "damped-1.7"
+    },
+    {
+      "problem_id": "O34",
+      "block": "O",
+      "name": "damped-4.2"
+    },
+    {
+      "problem_id": "O35",
+      "block": "O",
+      "name": "undamped-2.0"
+    },
+    {
+      "problem_id": "O36",
+      "block": "O",
+      "name": "undamped-3.0"
+    },
+    {
+      "problem_id": "C37",
+      "block": "C",
+      "name": "env-1"
+    },
+    {
+      "problem_id": "C38",
+      "block": "C",
+      "name": "env-2"
+    },
+    {
+      "problem_id": "C39",
+      "block": "C",
+      "name": "env-3"
+    },
+    {
+      "problem_id": "C40",
+      "block": "C",
+      "name": "env-4"
+    },
+    {
+      "problem_id": "C41",
+      "block": "C",
+      "name": "expenv-1"
+    },
+    {
+      "problem_id": "C42",
+      "block": "C",
+      "name": "expenv-2"
+    },
+    {
+      "problem_id": "C43",
+      "block": "C",
+      "name": "expenv-3"
+    },
+    {
+      "problem_id": "C44",
+      "block": "C",
+      "name": "expenv-4"
+    },
+    {
+      "problem_id": "X45",
+      "block": "X",
+      "name": "x-poly2"
+    },
+    {
+      "problem_id": "X46",
+      "block": "X",
+      "name": "x-pow15"
+    },
+    {
+      "problem_id": "X47",
+      "block": "X",
+      "name": "x-exp05"
+    },
+    {
+      "problem_id": "X48",
+      "block": "X",
+      "name": "x-log1"
+    },
+    {
+      "problem_id": "X49",
+      "block": "X",
+      "name": "x-sat1"
+    },
+    {
+      "problem_id": "X50",
+      "block": "X",
+      "name": "x-damp28"
+    },
+    {
+      "problem_id": "X51",
+      "block": "X",
+      "name": "x-pow17"
+    },
+    {
+      "problem_id": "X52",
+      "block": "X",
+      "name": "x-exp037"
+    },
+    {
+      "problem_id": "A53",
+      "block": "A",
+      "name": "adv-gaussian"
+    },
+    {
+      "problem_id": "A54",
+      "block": "A",
+      "name": "adv-trig-identity"
+    },
+    {
+      "problem_id": "A55",
+      "block": "A",
+      "name": "adv-sparse-5"
+    },
+    {
+      "problem_id": "A56",
+      "block": "A",
+      "name": "adv-sparse-6"
+    },
+    {
+      "problem_id": "A57",
+      "block": "A",
+      "name": "adv-sparse-8"
+    },
+    {
+      "problem_id": "A58",
+      "block": "A",
+      "name": "adv-narrow-exp"
+    },
+    {
+      "problem_id": "A59",
+      "block": "A",
+      "name": "adv-noisy-rational"
+    },
+    {
+      "problem_id": "A60",
+      "block": "A",
+      "name": "adv-logistic"
+    }
+  ]
+}

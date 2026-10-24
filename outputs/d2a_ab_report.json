@@ -1,0 +1,792 @@
+{
+  "noise_levels": [
+    0.0,
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    5.0
+  ],
+  "seed": 11,
+  "support_threshold": 0.01,
+  "problems": {
+    "D1-MSD": {
+      "levels": {
+        "0.0": {
+          "spline": {
+            "param_max_rel_error": 5.361487107058416e-07,
+            "estimator_seconds": 0.049,
+            "support": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms": [],
+            "missed_terms": [],
+            "support_norm": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms_norm": [],
+            "missed_terms_norm": [],
+            "support_seconds": 0.007,
+            "refined": {
+              "train_loss": 6.75580391178403e-07,
+              "holdout_rmse": 0.0028034314383648703,
+              "gates_pass": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "fit_seconds": 27.3
+            }
+          },
+          "weak": {
+            "param_max_rel_error": 1.889816805822342e-07,
+            "estimator_seconds": 0.009,
+            "support": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms": [],
+            "missed_terms": [],
+            "support_norm": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms_norm": [],
+            "missed_terms_norm": [],
+            "support_seconds": 0.011,
+            "refined": {
+              "train_loss": 7.624012977906529e-07,
+              "holdout_rmse": 0.0023833397645569502,
+              "gates_pass": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "fit_seconds": 21.5
+            }
+          }
+        },
+        "0.25": {
+          "spline": {
+            "param_max_rel_error": 0.002734597603278599,
+            "estimator_seconds": 0.004,
+            "support": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms": [],
+            "missed_terms": [],
+            "support_norm": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms_norm": [],
+            "missed_terms_norm": [],
+            "support_seconds": 0.007
+          },
+          "weak": {
+            "param_max_rel_error": 0.0008845499040729954,
+            "estimator_seconds": 0.006,
+            "support": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms": [],
+            "missed_terms": [],
+            "support_norm": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms_norm": [],
+            "missed_terms_norm": [],
+            "support_seconds": 0.014
+          }
+        },
+        "0.5": {
+          "spline": {
+            "param_max_rel_error": 0.005443051974870217,
+            "estimator_seconds": 0.004,
+            "support": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms": [],
+            "missed_terms": [],
+            "support_norm": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms_norm": [],
+            "missed_terms_norm": [],
+            "support_seconds": 0.007
+          },
+          "weak": {
+            "param_max_rel_error": 0.0017697309707451203,
+            "estimator_seconds": 0.006,
+            "support": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms": [],
+            "missed_terms": [],
+            "support_norm": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms_norm": [],
+            "missed_terms_norm": [],
+            "support_seconds": 0.012
+          }
+        },
+        "1.0": {
+          "spline": {
+            "param_max_rel_error": 0.010782052526577546,
+            "estimator_seconds": 0.006,
+            "support": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms": [],
+            "missed_terms": [],
+            "support_norm": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms_norm": [],
+            "missed_terms_norm": [],
+            "support_seconds": 0.006,
+            "refined": {
+              "train_loss": 2.6966335109808285e-06,
+              "holdout_rmse": 0.004905944572143363,
+              "gates_pass": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "fit_seconds": 16.4
+            }
+          },
+          "weak": {
+            "param_max_rel_error": 0.003541418703737198,
+            "estimator_seconds": 0.008,
+            "support": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms": [],
+            "missed_terms": [],
+            "support_norm": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms_norm": [],
+            "missed_terms_norm": [],
+            "support_seconds": 0.01,
+            "refined": {
+              "train_loss": 7.304725588356812e-07,
+              "holdout_rmse": 0.001926034792488896,
+              "gates_pass": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "fit_seconds": 26.3
+            }
+          }
+        },
+        "2.0": {
+          "spline": {
+            "param_max_rel_error": 0.02114111127568291,
+            "estimator_seconds": 0.005,
+            "support": [
+              "u",
+              "v",
+              "x",
+              "x3"
+            ],
+            "false_terms": [
+              "x3"
+            ],
+            "missed_terms": [],
+            "support_norm": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms_norm": [],
+            "missed_terms_norm": [],
+            "support_seconds": 0.006
+          },
+          "weak": {
+            "param_max_rel_error": 0.00709008991490595,
+            "estimator_seconds": 0.009,
+            "support": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms": [],
+            "missed_terms": [],
+            "support_norm": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms_norm": [],
+            "missed_terms_norm": [],
+            "support_seconds": 0.011
+          }
+        },
+        "5.0": {
+          "spline": {
+            "param_max_rel_error": 0.04953163063238314,
+            "estimator_seconds": 0.003,
+            "support": [
+              "u",
+              "v",
+              "x",
+              "x3"
+            ],
+            "false_terms": [
+              "x3"
+            ],
+            "missed_terms": [],
+            "support_norm": [
+              "u",
+              "v",
+              "x",
+              "x3"
+            ],
+            "false_terms_norm": [
+              "x3"
+            ],
+            "missed_terms_norm": [],
+            "support_seconds": 0.008,
+            "refined": {
+              "train_loss": 7.043810489663308e-07,
+              "holdout_rmse": 0.002205315417411753,
+              "gates_pass": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "fit_seconds": 32.4
+            }
+          },
+          "weak": {
+            "param_max_rel_error": 0.01777833008987567,
+            "estimator_seconds": 0.007,
+            "support": [
+              "u",
+              "v",
+              "x",
+              "x3"
+            ],
+            "false_terms": [
+              "x3"
+            ],
+            "missed_terms": [],
+            "support_norm": [
+              "u",
+              "v",
+              "x"
+            ],
+            "false_terms_norm": [],
+            "missed_terms_norm": [],
+            "support_seconds": 0.011,
+            "refined": {
+              "train_loss": 7.040190612939969e-07,
+              "holdout_rmse": 0.0022562956867459125,
+              "gates_pass": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "fit_seconds": 19.8
+            }
+          }
+        }
+      },
+      "sensitivity_radius_param_err": {
+        "1.0": [
+          0.0,
+          0.00088,
+          0.00177,
+          0.00354,
+          0.00709,
+          0.01778
+        ]
+      }
+    },
+    "D1-PEND": {
+      "levels": {
+        "0.0": {
+          "spline": {
+            "param_max_rel_error": 5.994216142890529e-07,
+            "estimator_seconds": 0.005,
+            "support": [
+              "sin_x",
+              "u",
+              "v"
+            ],
+            "false_terms": [],
+            "missed_terms": [],
+            "support_norm": [
+              "sin_x",
+              "u",
+              "v"
+            ],
+            "false_terms_norm": [],
+            "missed_terms_norm": [],
+            "support_seconds": 0.007,
+            "refined": {
+              "train_loss": 3.889041239188485e-05,
+              "holdout_rmse": 0.006171975852851428,
+              "gates_pass": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "fit_seconds": 16.0
+            }
+          },
+          "weak": {
+            "param_max_rel_error": 9.38210466538969e-07,
+            "estimator_seconds": 0.008,
+            "support": [
+              "sin_x",
+              "u",
+              "v"
+            ],
+            "false_terms": [],
+            "missed_terms": [],
+            "support_norm": [
+              "sin_x",
+              "u",
+              "v"
+            ],
+            "false_terms_norm": [],
+            "missed_terms_norm": [],
+            "support_seconds": 0.01,
+            "refined": {
+              "train_loss": 3.7457061046977976e-05,
+              "holdout_rmse": 0.003329079928483634,
+              "gates_pass": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "fit_seconds": 22.4
+            }
+          }
+        },
+        "0.25": {
+          "spline": {
+            "param_max_rel_error": 0.0011388371173703948,
+            "estimator_seconds": 0.008,
+            "support": [
+              "sin_x",
+              "x",
+              "x3"
+            ],
+            "false_terms": [
+              "x",
+              "x3"
+            ],
+            "missed_terms": [
+              "u",
+              "v"
+            ],
+            "support_norm": [
+              "sin_x",
+              "x",
+              "x3"
+            ],
+            "false_terms_norm": [
+              "x",
+              "x3"
+            ],
+            "missed_terms_norm": [
+              "u",
+              "v"
+            ],
+            "support_seconds": 0.007
+          },
+          "weak": {
+            "param_max_rel_error": 0.005040176854717582,
+            "estimator_seconds": 0.008,
+            "support": [
+              "sin_x",
+              "u",
+              "x",
+              "x3"
+            ],
+            "false_terms": [
+              "x",
+              "x3"
+            ],
+            "missed_terms": [
+              "v"
+            ],
+            "support_norm": [
+              "sin_x",
+              "u",
+              "v",
+              "x",
+              "x3"
+            ],
+            "false_terms_norm": [
+              "x",
+              "x3"
+            ],
+            "missed_terms_norm": [],
+            "support_seconds": 0.011
+          }
+        },
+        "0.5": {
+          "spline": {
+            "param_max_rel_error": 0.0022605169362932553,
+            "estimator_seconds": 0.006,
+            "support": [
+              "sin_x",
+              "x",
+              "x3"
+            ],
+            "false_terms": [
+              "x",
+              "x3"
+            ],
+            "missed_terms": [
+              "u",
+              "v"
+            ],
+            "support_norm": [
+              "sin_x",
+              "x",
+              "x3"
+            ],
+            "false_terms_norm": [
+              "x",
+              "x3"
+            ],
+            "missed_terms_norm": [
+              "u",
+              "v"
+            ],
+            "support_seconds": 0.008
+          },
+          "weak": {
+            "param_max_rel_error": 0.010083398290892664,
+            "estimator_seconds": 0.006,
+            "support": [
+              "sin_x",
+              "u",
+              "x",
+              "x3"
+            ],
+            "false_terms": [
+              "x",
+              "x3"
+            ],
+            "missed_terms": [
+              "v"
+            ],
+            "support_norm": [
+              "sin_x",
+              "u",
+              "v",
+              "x",
+              "x3"
+            ],
+            "false_terms_norm": [
+              "x",
+              "x3"
+            ],
+            "missed_terms_norm": [],
+            "support_seconds": 0.012
+          }
+        },
+        "1.0": {
+          "spline": {
+            "param_max_rel_error": 0.004453247219487144,
+            "estimator_seconds": 0.004,
+            "support": [
+              "sin_x",
+              "x",
+              "x3"
+            ],
+            "false_terms": [
+              "x",
+              "x3"
+            ],
+            "missed_terms": [
+              "u",
+              "v"
+            ],
+            "support_norm": [
+              "sin_x",
+              "x",
+              "x3"
+            ],
+            "false_terms_norm": [
+              "x",
+              "x3"
+            ],
+            "missed_terms_norm": [
+              "u",
+              "v"
+            ],
+            "support_seconds": 0.01,
+            "refined": {
+              "train_loss": 0.0003344408412493973,
+              "holdout_rmse": 0.01475499706965954,
+              "gates_pass": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "fit_seconds": 23.0
+            }
+          },
+          "weak": {
+            "param_max_rel_error": 0.020176101508087713,
+            "estimator_seconds": 0.006,
+            "support": [
+              "sin_x",
+              "u",
+              "x",
+              "x3"
+            ],
+            "false_terms": [
+              "x",
+              "x3"
+            ],
+            "missed_terms": [
+              "v"
+            ],
+            "support_norm": [
+              "sin_x",
+              "u",
+              "x",
+              "x3"
+            ],
+            "false_terms_norm": [
+              "x",
+              "x3"
+            ],
+            "missed_terms_norm": [
+              "v"
+            ],
+            "support_seconds": 0.013,
+            "refined": {
+              "train_loss": 0.00021335972372989203,
+              "holdout_rmse": 0.007967831716579001,
+              "gates_pass": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "fit_seconds": 20.9
+            }
+          }
+        },
+        "2.0": {
+          "spline": {
+            "param_max_rel_error": 0.008634563720759214,
+            "estimator_seconds": 0.005,
+            "support": [
+              "sin_x",
+              "x",
+              "x3"
+            ],
+            "false_terms": [
+              "x",
+              "x3"
+            ],
+            "missed_terms": [
+              "u",
+              "v"
+            ],
+            "support_norm": [
+              "sin_x",
+              "x",
+              "x3"
+            ],
+            "false_terms_norm": [
+              "x",
+              "x3"
+            ],
+            "missed_terms_norm": [
+              "u",
+              "v"
+            ],
+            "support_seconds": 0.006
+          },
+          "weak": {
+            "param_max_rel_error": 0.04038613880109093,
+            "estimator_seconds": 0.007,
+            "support": [
+              "sin_x",
+              "u",
+              "x",
+              "x3"
+            ],
+            "false_terms": [
+              "x",
+              "x3"
+            ],
+            "missed_terms": [
+              "v"
+            ],
+            "support_norm": [
+              "sin_x",
+              "u",
+              "x",
+              "x3"
+            ],
+            "false_terms_norm": [
+              "x",
+              "x3"
+            ],
+            "missed_terms_norm": [
+              "v"
+            ],
+            "support_seconds": 0.009
+          }
+        },
+        "5.0": {
+          "spline": {
+            "param_max_rel_error": 0.01951483114010233,
+            "estimator_seconds": 0.005,
+            "support": [
+              "sin_x",
+              "x",
+              "x3"
+            ],
+            "false_terms": [
+              "x",
+              "x3"
+            ],
+            "missed_terms": [
+              "u",
+              "v"
+            ],
+            "support_norm": [
+              "sin_x",
+              "x",
+              "x3"
+            ],
+            "false_terms_norm": [
+              "x",
+              "x3"
+            ],
+            "missed_terms_norm": [
+              "u",
+              "v"
+            ],
+            "support_seconds": 0.009,
+            "refined": {
+              "train_loss": 0.003327302385655876,
+              "holdout_rmse": 0.0474658808438177,
+              "gates_pass": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "fit_seconds": 16.8
+            }
+          },
+          "weak": {
+            "param_max_rel_error": 0.10120489495894794,
+            "estimator_seconds": 0.006,
+            "support": [
+              "sin_x",
+              "x",
+              "x3"
+            ],
+            "false_terms": [
+              "x",
+              "x3"
+            ],
+            "missed_terms": [
+              "u",
+              "v"
+            ],
+            "support_norm": [
+              "sin_x",
+              "x",
+              "x3"
+            ],
+            "false_terms_norm": [
+              "x",
+              "x3"
+            ],
+            "missed_terms_norm": [
+              "u",
+              "v"
+            ],
+            "support_seconds": 0.011,
+            "refined": {
+              "train_loss": 0.0022710330164907085,
+              "holdout_rmse": 0.03718422357391832,
+              "gates_pass": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "fit_seconds": 26.3
+            }
+          }
+        }
+      },
+      "sensitivity_radius_param_err": {
+        "1.0": [
+          0.0,
+          0.00504,
+          0.01008,
+          0.02018,
+          0.04039,
+          0.1012
+        ],
+        "0.5": [
+          7e-05,
+          0.00133,
+          0.00267,
+          0.00536,
+          0.01074,
+          0.02695
+        ]
+      }
+    }
+  }
+}

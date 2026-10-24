@@ -1,0 +1,13 @@
+{
+  "problem_id": "S32",
+  "class_id": 4,
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "1.5 * exp(-0.3 * x) * cos(3.0 * x)",
+  "canonical_structural_family": "damped_oscillation",
+  "true_parameters": {
+    "A": 1.5,
+    "beta": 0.3,
+    "omega": 3.0
+  }
+}

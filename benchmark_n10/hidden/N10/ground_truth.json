@@ -1,0 +1,13 @@
+{
+  "problem_id": "N10",
+  "block": "N",
+  "ground_truth_formula": "1.5*x**0.6*exp(-0.15*x)",
+  "canonical_structural_family": "power_exponential",
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER",
+  "case_seed": 20260938,
+  "noise_sigma": 0.018912388232597215,
+  "meta": {
+    "asymptote": 0.0
+  }
+}

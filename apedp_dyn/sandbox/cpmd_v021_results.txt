@@ -1,0 +1,10 @@
+== Gate A: pre-qualification (MED band [0.10,0.20)) ==
+  rho=0.9: oracleIC=+0.1467 [QUALIFIED]
+  rho=0.5: oracleIC=+0.1467 [QUALIFIED]
+  rho=0.1: oracleIC=+0.1467 [QUALIFIED]
+== Gates B+C: discovery + referee ==
+  rho=0.1: top[f1:+0.148/0.000, f1+f2:+0.106/0.000, f1-f2:+0.103/0.000] -> UNIQUE_IDENTIFICATION survivors=['f1', 'f1+f2', 'f1-f2', 'tanhf1', 'signf1', 'sigf1'] [2/2]
+  rho=0.5: top[f1:+0.148/0.000, f2:+0.068/0.000, f1+f2:+0.125/0.000] -> MULTI_HYPOTHESIS survivors=['f1', 'f2', 'f1+f2', 'f1-f2', 'tanhf1', 'tanhf2', 'signf1', 'sigf1', 'sigf2'] [1/2]
+  rho=0.9: top[f1:+0.148/0.000, f2:+0.130/0.000, f1+f2:+0.143/0.000] -> MULTI_HYPOTHESIS survivors=['f1', 'f2', 'f1+f2', 'tanhf1', 'tanhf2', 'signf1', 'signf2', 'sigf1', 'sigf2'] [2/2]
+  null: promotions=none -> NO_RECOVERY [2/2]
+FINAL referee score: 7/6 [VALIDATED]

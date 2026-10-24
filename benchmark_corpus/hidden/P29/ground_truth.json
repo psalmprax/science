@@ -1,0 +1,16 @@
+{
+  "problem_id": "P29",
+  "problem_name": "Plasma Hall-MHD Coupled Drift Wave Velocity",
+  "class_id": 5,
+  "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "2.0 * k_par / (1.0 + 0.8 * k_perp**2)",
+  "canonical_structural_family": "drift_wave_dispersion",
+  "true_parameters": {
+    "v_alfven": 2.0,
+    "rho_s2": 0.8
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

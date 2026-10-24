@@ -1,0 +1,85 @@
+{
+  "block": "O",
+  "results": [
+    {
+      "competitor": "pysindy",
+      "problem_id": "O29",
+      "expression": "-0.776 x0 + -0.704 x0^2",
+      "abstained": false,
+      "abstain_reason": "",
+      "predictions": {},
+      "wall_seconds": 0.6470291614532471,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "O30",
+      "expression": "-0.150 1 + -0.399 x0 + -0.320 x0^2",
+      "abstained": false,
+      "abstain_reason": "",
+      "predictions": {},
+      "wall_seconds": 0.3647003173828125,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "O31",
+      "expression": "-0.899 1 + -0.259 x0",
+      "abstained": false,
+      "abstain_reason": "",
+      "predictions": {},
+      "wall_seconds": 0.2229900360107422,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "O32",
+      "expression": "-0.489 1 + -0.460 x0",
+      "abstained": false,
+      "abstain_reason": "",
+      "predictions": {},
+      "wall_seconds": 0.2420656681060791,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "O33",
+      "expression": "-1.215 x0 + -1.391 x0^2",
+      "abstained": false,
+      "abstain_reason": "",
+      "predictions": {},
+      "wall_seconds": 0.5003280639648438,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "O34",
+      "expression": "-0.438 x0 + -0.899 x0^2",
+      "abstained": false,
+      "abstain_reason": "",
+      "predictions": {},
+      "wall_seconds": 0.4474937915802002,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "O35",
+      "expression": " 0.000",
+      "abstained": false,
+      "abstain_reason": "",
+      "predictions": {},
+      "wall_seconds": 0.022921085357666016,
+      "metadata": {}
+    },
+    {
+      "competitor": "pysindy",
+      "problem_id": "O36",
+      "expression": "-0.958 1 +  0.953 x0^2",
+      "abstained": false,
+      "abstain_reason": "",
+      "predictions": {},
+      "wall_seconds": 96.89032864570618,
+      "metadata": {}
+    }
+  ]
+}

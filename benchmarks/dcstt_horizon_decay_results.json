@@ -1,0 +1,153 @@
+{
+  "benchmark": "dcstt_horizon_decay",
+  "timestamp_utc": "2026-10-17T09:38:05.429271+00:00",
+  "substeps_reference": 10,
+  "coarse_dt": 0.5,
+  "scenes": {
+    "vehicle_translation": {
+      "initial_details_energy": 0.006772801713277903,
+      "rows": {
+        "16": {
+          "horizon": 16,
+          "coarse_time_s": 0.03412585495971143,
+          "energy_ratio": 0.9767058586032595,
+          "details_ratio": 0.9826880115144905,
+          "flicker_accel": 8.05926872698998e-05,
+          "vs_fine_ref_psnr_db": 18.538692301907457,
+          "vs_fine_ref_mse": 0.01400008813824792
+        },
+        "32": {
+          "horizon": 32,
+          "coarse_time_s": 0.05491576693020761,
+          "energy_ratio": 0.9051758207151815,
+          "details_ratio": 0.8391200348763411,
+          "flicker_accel": 3.787530955280927e-05,
+          "vs_fine_ref_psnr_db": 17.724084626006167,
+          "vs_fine_ref_mse": 0.01688851785744161
+        },
+        "64": {
+          "horizon": 64,
+          "coarse_time_s": 0.11346255405806005,
+          "energy_ratio": 0.5635584949733681,
+          "details_ratio": 0.5490070766106249,
+          "flicker_accel": 1.7607947648123587e-05,
+          "vs_fine_ref_psnr_db": 38.17414426672886,
+          "vs_fine_ref_mse": 0.00015225991160530117
+        },
+        "128": {
+          "horizon": 128,
+          "coarse_time_s": 0.2260007249424234,
+          "energy_ratio": 0.5730497849493535,
+          "details_ratio": 0.5725541489342242,
+          "flicker_accel": 8.253772099106745e-06,
+          "vs_fine_ref_psnr_db": 43.46925740820775,
+          "vs_fine_ref_mse": 4.498567684621589e-05
+        },
+        "256": {
+          "horizon": 256,
+          "coarse_time_s": 0.4140564000699669,
+          "energy_ratio": 0.57055719824524,
+          "details_ratio": 0.6357093130901648,
+          "flicker_accel": 4.007540687596851e-06
+        }
+      }
+    },
+    "fluid_vortex": {
+      "initial_details_energy": 0.038065060048405375,
+      "rows": {
+        "16": {
+          "horizon": 16,
+          "coarse_time_s": 0.025962787098251283,
+          "energy_ratio": 0.8762694251361096,
+          "details_ratio": 0.6710962388366611,
+          "flicker_accel": 6.628445551938654e-05,
+          "vs_fine_ref_psnr_db": 19.1171822778242,
+          "vs_fine_ref_mse": 0.01225410993580668
+        },
+        "32": {
+          "horizon": 32,
+          "coarse_time_s": 0.048214809969067574,
+          "energy_ratio": 0.8286349486982795,
+          "details_ratio": 0.41775879186484444,
+          "flicker_accel": 3.5333385672573266e-05,
+          "vs_fine_ref_psnr_db": 22.81057348563258,
+          "vs_fine_ref_mse": 0.005235312997407811
+        },
+        "64": {
+          "horizon": 64,
+          "coarse_time_s": 0.0937085299519822,
+          "energy_ratio": 0.8028581350547733,
+          "details_ratio": 0.21903378930577397,
+          "flicker_accel": 1.769941378558509e-05,
+          "vs_fine_ref_psnr_db": 27.598426939450334,
+          "vs_fine_ref_mse": 0.0017384303926010827
+        },
+        "128": {
+          "horizon": 128,
+          "coarse_time_s": 0.20064607297535986,
+          "energy_ratio": 0.7891550540635155,
+          "details_ratio": 0.11324000925350179,
+          "flicker_accel": 8.794554163366341e-06,
+          "vs_fine_ref_psnr_db": 32.76264819783575,
+          "vs_fine_ref_mse": 0.0005293405694175324
+        },
+        "256": {
+          "horizon": 256,
+          "coarse_time_s": 0.40720056695863605,
+          "energy_ratio": 0.7749299729105993,
+          "details_ratio": 0.05967550015181532,
+          "flicker_accel": 4.380397991186098e-06
+        }
+      }
+    },
+    "camera_zoom": {
+      "initial_details_energy": 0.033105526161081714,
+      "rows": {
+        "16": {
+          "horizon": 16,
+          "coarse_time_s": 0.025875921011902392,
+          "energy_ratio": 0.9872753731328885,
+          "details_ratio": 0.8093803464683414,
+          "flicker_accel": 2.6229795518094615e-07,
+          "vs_fine_ref_psnr_db": 38.325800887753665,
+          "vs_fine_ref_mse": 0.00014703472418725052
+        },
+        "32": {
+          "horizon": 32,
+          "coarse_time_s": 0.05093432602006942,
+          "energy_ratio": 0.9855388242031012,
+          "details_ratio": 0.6950968491310419,
+          "flicker_accel": 1.2721522164444077e-07,
+          "vs_fine_ref_psnr_db": 35.64508677979878,
+          "vs_fine_ref_mse": 0.00027257832723633226
+        },
+        "64": {
+          "horizon": 64,
+          "coarse_time_s": 0.09785869508050382,
+          "energy_ratio": 0.9860734218310574,
+          "details_ratio": 0.5355161283817079,
+          "flicker_accel": 6.26553311608701e-08,
+          "vs_fine_ref_psnr_db": 34.16913586060073,
+          "vs_fine_ref_mse": 0.00038290092362111176
+        },
+        "128": {
+          "horizon": 128,
+          "coarse_time_s": 0.21381343994289637,
+          "energy_ratio": 0.9926312149330373,
+          "details_ratio": 0.3697718802557625,
+          "flicker_accel": 3.109190976180892e-08,
+          "vs_fine_ref_psnr_db": 33.315190857687476,
+          "vs_fine_ref_mse": 0.0004661019439530189
+        },
+        "256": {
+          "horizon": 256,
+          "coarse_time_s": 0.4202538949903101,
+          "energy_ratio": 1.0078781281970244,
+          "details_ratio": 0.24967970780179494,
+          "flicker_accel": 1.5486586578705048e-08
+        }
+      }
+    }
+  },
+  "honest_scope": "these are RECONSTRUCTION/transport claims about an untrained\nmathematical operator given ideal analytic flow. They are a prerequisite for\n(higher) serving-quality claims, not a substitute for them: nothing here\ncompares DC-STT to learned generation models (Sora etc.) \u2014 generation\ncompetence would require a learned prior, which this repo tracks separately\n(learned-flow-head benchmark)."
+}

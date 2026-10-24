@@ -1,0 +1,14 @@
+{
+  "problem_id": "C44",
+  "block": "C",
+  "canonical_structural_family": "exponential_envelope",
+  "ground_truth_formula": "1.5*x**0.5*exp(-0.4*x**2.0)",
+  "true_parameters": {
+    "A": 1.5,
+    "p": 0.5,
+    "C": 0.4,
+    "r": 2.0
+  },
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER"
+}

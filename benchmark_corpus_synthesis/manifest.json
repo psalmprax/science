@@ -1,0 +1,11 @@
+{
+  "benchmark_name": "APEDP 4.0 Autonomous Model Synthesis Benchmark",
+  "total_problems": 1,
+  "num_classes": 1,
+  "problems": {
+    "SYNTH_01": {
+      "class_id": 1,
+      "problem_name": "Multi-Regime Rational-Exponential Transition Law"
+    }
+  }
+}

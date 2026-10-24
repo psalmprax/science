@@ -1,0 +1,9 @@
+{
+  "problem_id": "TIER_B_03",
+  "formula": "10.0 * exp(-2.5 / x)",
+  "canonical_family": "arrhenius_kinetics",
+  "parameters": {
+    "A": 10.0,
+    "Ea_over_R": 2.5
+  }
+}

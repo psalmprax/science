@@ -1,0 +1,12 @@
+{
+  "problem_id": "P02",
+  "block": "P",
+  "canonical_structural_family": "polynomial",
+  "ground_truth_formula": "2.0*x**2 + 1.0",
+  "true_parameters": {
+    "a": 2.0,
+    "b": 1.0
+  },
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER"
+}

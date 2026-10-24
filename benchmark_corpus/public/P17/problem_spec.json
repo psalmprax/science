@@ -1,0 +1,20 @@
+{
+  "problem_id": "P17",
+  "problem_name": "Fermi-Dirac Distribution High-Energy Tail",
+  "class_id": 3,
+  "class_name": "Asymptotic & Extrapolation Regimes",
+  "input_variables": [
+    "E"
+  ],
+  "target_variable": "f",
+  "variable_units": {
+    "E": "electron_volt",
+    "f": "dimensionless"
+  },
+  "dataset_sizes": {
+    "train": 30,
+    "validation": 15,
+    "near_ood": 15,
+    "far_ood": 15
+  }
+}

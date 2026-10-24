@@ -1,0 +1,11 @@
+{
+  "problem_id": "A58",
+  "block": "A",
+  "canonical_structural_family": "exponential_decay",
+  "ground_truth_formula": "exp(0.2*x)",
+  "true_parameters": {
+    "k": -0.2
+  },
+  "oracle_epistemic_class": "C2",
+  "expected_outcome": "AMBIGUOUS"
+}

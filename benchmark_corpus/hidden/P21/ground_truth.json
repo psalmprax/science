@@ -1,0 +1,15 @@
+{
+  "problem_id": "P21",
+  "problem_name": "Viscous Boundary Layer Leading Edge Singularity",
+  "class_id": 4,
+  "class_name": "Singular & Pathological Regimes",
+  "oracle_epistemic_class": "C3",
+  "expected_state": "INSUFFICIENT_EVIDENCE",
+  "ground_truth_formula": "1.0 / sqrt(x)",
+  "canonical_structural_family": "inverse_root",
+  "true_parameters": {},
+  "competing_hypotheses": [],
+  "pathology_details": {
+    "singularity_at": 0.0
+  }
+}

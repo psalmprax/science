@@ -1,0 +1,14 @@
+{
+  "problem_id": "N06",
+  "block": "N",
+  "ground_truth_formula": "5/(1+0.6*x**2)**1.5",
+  "canonical_structural_family": "inverse_fractional_power",
+  "oracle_epistemic_class": "C1",
+  "expected_outcome": "RECOVER",
+  "case_seed": 20260934,
+  "noise_sigma": 0.049971533626331686,
+  "meta": {
+    "asymptote": 0.0,
+    "rule": "polynomial-divergent candidates fail OOD even at small val MSE"
+  }
+}

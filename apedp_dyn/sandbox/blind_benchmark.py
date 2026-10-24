@@ -1,0 +1,357 @@
+"""Blind adversarial benchmark protocol (Stage 4 of the validation ladder).
+
+Method rule: the referee is FROZEN (see APEDPX_FROZEN_v1_10.json). This runner
+refuses to score if any guard file changed — edit the referee and you must
+mint a new freeze record first.
+
+Blind cases live OUTSIDE the frozen trap files and register here with hidden
+ground truth (claim warranted or not). Scoring reports blind-only metrics:
+
+  FPR_blind = promoted-but-unwarranted / unwarranted cases (want -> 0)
+  FDR_blind = promoted-but-unwarranted / all promoted      (want -> 0)
+  CAR_blind = correct abstentions / unwarranted cases     (want -> 1)
+  VRR_blind = warranted retained / all warranted          (want -> 1)
+
+Each case supplies its own adapter to (promoted: bool, abstained: bool),
+so heterogeneous domains share one scoreboard without forcing verdict enums.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import sys
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+sys.path.insert(0, '.')
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+# v1_10 re-mint (2026-10-23, per freeze protocol): grammar-space expansion
+# (H-SQRTV + operator declarations in grammar_space.py, saturating-rational
+# term families in candidate_ir.py); thresholds/blind expectations unchanged.
+FROZEN_RECORD = Path(__file__).resolve().parent / "APEDPX_FROZEN_v1_10.json"
+
+
+def verify_referee() -> dict[str, str]:
+    """Abort scoring if any frozen referee file or registered benchmark asset changed.
+
+    Extended beyond the original 3 referee files to verify every file in the frozen
+    specification record, ensuring silent drift fails loudly across the entire suite.
+    Returns file->sha256.
+    """
+    rec = json.loads(FROZEN_RECORD.read_text())
+    checked: dict[str, str] = {}
+    # Check all files with a frozen record across file_hashes_sha256 and referee_guard_files
+    guard_files = sorted(set(list(rec.get("file_hashes_sha256", {}).keys()) + list(rec.get("referee_guard_files", []))))
+    for rel in guard_files:
+        cur = hashlib.sha256((REPO_ROOT / rel).read_bytes()).hexdigest()
+        exp = rec["file_hashes_sha256"][rel]
+        if cur != exp:
+            raise RuntimeError(
+                f"REFEREE OR FROZEN RECORD CHANGED since {rec['label']}: {rel}. "
+                "Mint a new freeze record before scoring blind cases.")
+        checked[rel] = cur
+    return checked
+
+
+@dataclass
+class BlindCase:
+    """One adversarial case. `warranted` is hidden ground truth: True iff
+    the evidence actually entitles promotion. `blind=True` cases count
+    toward FPR/CAR/VRR; `blind=False` are worked examples (excluded).
+
+    `population` must be one of "valid" (evidence supports the claim,
+    expect PROMOTE), "unsafe" (convincing but unwarranted, expect REJECT),
+    "ambiguous" (expect ABSTAIN). `requested_claim_level` records the
+    claim tier under test (e.g. C2 vs C4) for claim-target-mismatch cases.
+    """
+
+    case_id: str
+    domain: str
+    warranted: bool
+    run: Callable[[], dict[str, Any]]
+    blind: bool = True
+    notes: str = ""
+    scientific_claim: str = ""
+    candidate_model: str = ""
+    evidence_bundle: str = ""
+    proposer_id: str = ""
+    difficulty: str = ""
+    requested_claim_level: str = ""
+    population: str = ""  # "valid" | "unsafe" | "ambiguous" (blind cases should set this)
+
+
+@dataclass
+class BlindReport:
+    n_blind: int = 0
+    n_promoted: int = 0
+    # False-positive rate: false promotions / unwarranted (negative) blind cases.
+    fpr_blind: float | None = None
+    # False-discovery rate: false promotions / all promotions.
+    fdr_blind: float | None = None
+    car_blind: float | None = None
+    vrr_blind: float | None = None
+    # False-rejection rate: warranted cases not promoted / all warranted.
+    frr_blind: float | None = None
+    # Coverage: blind cases reaching a decisive outcome
+    # (promoted or explicitly rejected) vs abstained.
+    coverage_blind: float | None = None
+    # Per-domain breakdown: domain -> {n, fpr, fdr, vrr, coverage}.
+    # FLAW-A13 (2026-10-21 external audit): fpr/fdr/vrr are None when the
+    # domain's denominator is zero — a None must never be masked as a
+    # certified 0.0 (a domain with no negative controls has NO measured
+    # false-positive rate; reporting 0.0 certifies a false 0% error rate).
+    by_domain: dict[str, dict[str, float | None]] = field(default_factory=dict)
+    # One-sided 95% upper bound when zero false promotions observed:
+    # 1 - 0.05**(1/n) with n = number of unwarranted blind cases.
+    # An observed 0/n is reported WITH this bound, never as "probability zero".
+    fpr_upper95: float | None = None
+    populations: dict[str, int] = field(default_factory=dict)
+    rows: list[dict[str, Any]] = field(default_factory=list)
+
+
+def ci_upper95_zero_failures(n: int) -> float | None:
+    """One-sided 95% upper bound given zero failures in n cases."""
+    if n <= 0:
+        return None
+    return float(1.0 - 0.05 ** (1.0 / n))
+
+
+def wilson_upper_zero(n: int, z: float = 1.96) -> float | None:
+    """Two-sided 95% Wilson upper bound given zero successes in n trials."""
+    if n <= 0:
+        return None
+    q = (z * z) / n
+    return q / (1.0 + q)
+
+
+def ledger_row(n: int) -> dict[str, float | None]:
+    """Machine-generated ledger row: all three zero-failure bounds at once.
+
+    Use this instead of hand-copying numbers into reports. Keys:
+    wilson (two-sided 95%), exact (one-sided 95%), rule3 (3/n).
+    """
+    return {
+        "n": float(n),
+        "wilson": wilson_upper_zero(n),
+        "exact": ci_upper95_zero_failures(n),
+        "rule3": 3.0 / n,
+    }
+
+
+def score_blind(cases: list[BlindCase]) -> BlindReport:
+    """Score registered cases. Referee runs BEFORE truth is consulted."""
+    rep = BlindReport()
+    blind = [c for c in cases if c.blind]
+    rep.n_blind = len(blind)
+    for c in cases:
+        out = c.run()
+        promoted = bool(out.get("promoted", False))
+        abstained = bool(out.get("abstained", not promoted))
+        rejected = bool(out.get("rejected", False))
+        row = {"case_id": c.case_id, "domain": c.domain, "blind": c.blind,
+               "warranted": c.warranted if not c.blind else "hidden",
+               "promoted": promoted, "abstained": abstained,
+               "rejected": rejected}
+        rep.rows.append(row)
+        if not c.blind:
+            continue
+        if promoted:
+            rep.n_promoted += 1
+    if blind:
+        prom = [r for r in rep.rows if r["blind"] and r["promoted"]]
+        unw = [c for c in blind if not c.warranted]
+        war = [c for c in blind if c.warranted]
+        # Re-resolve warranted flags from registry (kept out of rows).
+        by_id = {c.case_id: c.warranted for c in blind}
+        fp = sum(1 for r in prom if not by_id[r["case_id"]])
+        # FPR denominator is the negative-class population; FDR denominator is
+        # the set of promotions. Conflating them understates the error bound.
+        rep.fpr_blind = (fp / len(unw)) if unw else None
+        rep.fdr_blind = (fp / len(prom)) if prom else None
+        if fp == 0 and unw:
+            rep.fpr_upper95 = ci_upper95_zero_failures(len(unw))
+        for c in blind:
+            if c.population:
+                rep.populations[c.population] = rep.populations.get(c.population, 0) + 1
+        rep.car_blind = (sum(1 for c in unw
+                             for r in rep.rows
+                             if r["case_id"] == c.case_id and r["abstained"])
+                         / len(unw)) if unw else None
+        rep.vrr_blind = (sum(1 for c in war
+                             for r in rep.rows
+                             if r["case_id"] == c.case_id and r["promoted"])
+                         / len(war)) if war else None
+        rep.frr_blind = (1.0 - rep.vrr_blind) if rep.vrr_blind is not None else None
+        decisive = sum(1 for r in rep.rows
+                       if r["blind"] and (r["promoted"] or r["rejected"]))
+        rep.coverage_blind = (decisive / len(blind)) if blind else None
+        by_id_row = {r["case_id"]: r for r in rep.rows if r["blind"]}
+        domains: dict[str, list[str]] = {}
+        for c in blind:
+            domains.setdefault(c.domain, []).append(c.case_id)
+        for dom, ids in domains.items():
+            pr = sum(1 for i in ids if by_id_row[i]["promoted"])
+            fp = sum(1 for i in ids if by_id_row[i]["promoted"] and not by_id[i])
+            uw = sum(1 for i in ids if not by_id[i])
+            vp = sum(1 for i in ids if by_id[i] and by_id_row[i]["promoted"])
+            vw = sum(1 for i in ids if by_id[i])
+            dc = sum(1 for i in ids if by_id_row[i]["promoted"] or by_id_row[i]["rejected"])
+            # FLAW-A13: zero-denominator metrics report None, mirroring the
+            # headline metrics (fpr_blind etc. already report None when the
+            # unwarranted population is empty). A missing negative-control
+            # class is an UNMEASURED rate, never a certified 0% rate.
+            rep.by_domain[dom] = {
+                "n": float(len(ids)),
+                "fpr": (fp / uw) if uw else None,
+                "fdr": (fp / pr) if pr else None,
+                "vrr": (vp / vw) if vw else None,
+                "coverage": dc / len(ids),
+            }
+    return rep
+
+
+def example_case_short_window() -> BlindCase:
+    """WORKED EXAMPLE (blind=False): ESEDS trap-25 through the frozen path."""
+    from apedp_dyn.sandbox.eseds_dynamical import run_eseds_trap
+
+    def run() -> dict[str, Any]:
+        r = run_eseds_trap(train_end=25, bootstrap_n_boot=100)
+        return {"promoted": r["promoted"] is not None,
+                "abstained": r["status"] in ("multi_hypothesis", "insufficient_evidence")}
+    return BlindCase(case_id="EXAMPLE-eseds-trap25", domain="dynamics",
+                     warranted=False, run=run, blind=False,
+                     notes="worked example only; excluded from blind metrics")
+
+
+if __name__ == "__main__":
+    checked = verify_referee()
+    print(f"referee frozen OK ({len(checked)} guard files match {json.loads(FROZEN_RECORD.read_text())['label']})")
+    rep = score_blind([example_case_short_window()])
+    print(f"blind cases: {rep.n_blind} (example excluded by design)")
+    for r in rep.rows:
+        print(f"  {r['case_id']}: promoted={r['promoted']} abstained={r['abstained']}")
+
+
+# --------------------------------------------------------------------------
+# REG-F14b per-caller wiring (docs/SYSTEM_FLAWS_AUDIT.md register): this
+# production caller publishes a LEDGER-DERIVED DSR-adjusted multiplicity
+# record (mode b, never hand-written), validated at publish time. See
+# apedp_dyn/epistemic/caller_registry.py for the census and discipline.
+# --------------------------------------------------------------------------
+def publish_caller_compliance_record(
+    ledger=None,
+    candidate_id: str = "",
+    dataset_id: str | None = None,
+    nominal_variants: int | None = None,
+):
+    """Publish this caller's REG-F14b mode-(b) compliance record."""
+    from apedp_dyn.epistemic.caller_registry import publish_compliance_record
+
+    return publish_compliance_record(
+        ledger=ledger,
+        caller_id="blind_benchmark",
+        candidate_id=candidate_id,
+        dataset_id=dataset_id,
+        nominal_variants=nominal_variants,
+    )
+
+
+# --------------------------------------------------------------------------
+# REG-F14 mode (a) operational wiring — this caller's own real split.
+#
+# The blind suite's slice boundary is the suite's OWN data axis: the worked
+# examples / registered selection cases (blind=False cases searched and
+# tuned against) form the SELECTION family; the registered BLIND case ids
+# (hidden ground truth, consulted only here at scoring time) form the
+# SEALED confirmation family — the FPR/FDR/CAR/VRR dataset is consumable.
+# Scoring the blind cases for one archived head spends them; a second
+# head is refused (`ConfirmationAlreadyConsumedError`), so a suite can
+# never be re-watched into a pass. Issuance is census-checked by the
+# registry (`issue_sealed_confirmation_lead`); publication is refused
+# until the sealed slice has actually been consumed exactly once.
+# --------------------------------------------------------------------------
+def open_sealed_confirmation_lead(
+    ledger=None,
+    selection_case_ids: list[str] | None = None,
+    confirmation_case_ids: list[str] | None = None,
+    protocol=None,
+):
+    """Issue this suite's real SELECTION/CONFIRMATION lead (mode (a)).
+
+    Case ids are the ``BlindCase.case_id`` axis of THIS suite; overlap and
+    empty-confirmation leads are refused by the protocol. Returns the
+    owning protocol together with the split and the sealed slice.
+    """
+    from apedp_dyn.epistemic.caller_registry import issue_sealed_confirmation_lead
+
+    return issue_sealed_confirmation_lead(
+        ledger=ledger,
+        caller_id="blind_benchmark",
+        selection_ids=list(selection_case_ids or []),
+        confirmation_ids=list(confirmation_case_ids or []),
+        protocol=protocol,
+    )
+
+
+def evaluate_confirmation_cases(candidate_id, confirmation_ids, cases):
+    """Sealed-slice evaluation: run EXACTLY the confirmation blind ids, frozen-referee-checked.
+
+    Referee runs BEFORE truth is consulted (this runner's method rule); unknown
+    ids are refused (the confirmation family is closed); only the passed ids are
+    scored. The verdict is computed from the blind metrics only (no false
+    promotion of a hidden-unwarranted case ⇒ PASSED).
+    """
+    from apedp_dyn.epistemic.caller_data_protocol import ConfirmationVerdict
+
+    verify_referee()
+    by_id = {c.case_id: c for c in cases}
+    unknown = [cid for cid in confirmation_ids if cid not in by_id]
+    if unknown:
+        raise ValueError(
+            f"confirmation ids are not registered blind cases of this suite: {unknown[:3]}"
+        )
+    report = score_blind([by_id[cid] for cid in confirmation_ids])
+    metrics: dict[str, Any] = {
+        "n_blind": report.n_blind,
+        "n_promoted": report.n_promoted,
+        "fpr_blind": report.fpr_blind,
+        "fdr_blind": report.fdr_blind,
+        "car_blind": report.car_blind,
+        "vrr_blind": report.vrr_blind,
+        "fpr_upper95": report.fpr_upper95,
+    }
+    no_false_promotion = not report.fpr_blind  # None or 0
+    return ConfirmationVerdict(
+        caller_id="blind_benchmark",
+        candidate_id=candidate_id,
+        verdict="PASSED" if no_false_promotion else "FAILED",
+        metrics=metrics,
+    )
+
+
+def publish_sealed_compliance_record(
+    ledger,
+    candidate_id: str,
+    protocol,
+    sealed,
+    confirmation_verdict,
+    selection_verdict=None,
+):
+    """Publish this caller's REG-F14b mode-(a) sealed record (validated;
+    refused unless the sealed slice was spent exactly once)."""
+    from apedp_dyn.epistemic.caller_registry import (
+        publish_sealed_compliance_record as _registry_publish,
+    )
+
+    return _registry_publish(
+        ledger=ledger,
+        caller_id="blind_benchmark",
+        candidate_id=candidate_id,
+        protocol=protocol,
+        sealed=sealed,
+        confirmation_verdict=confirmation_verdict,
+        selection_verdict=selection_verdict,
+    )

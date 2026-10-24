@@ -1,0 +1,18 @@
+{
+  "problem_id": "P30",
+  "problem_name": "Carreau-Yasuda Non-Newtonian Shear-Thinning Viscosity",
+  "class_id": 5,
+  "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "0.05 + 0.95 / (1.0 + 0.25*gamma_dot**2)**0.3",
+  "canonical_structural_family": "carreau_yasuda",
+  "true_parameters": {
+    "eta_inf": 0.05,
+    "eta_0": 1.0,
+    "lambda": 0.5,
+    "n": 0.4
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}

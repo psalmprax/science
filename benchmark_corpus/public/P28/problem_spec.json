@@ -1,0 +1,22 @@
+{
+  "problem_id": "P28",
+  "problem_name": "Non-Hermitian Quantum Damped Wavepacket Dispersion",
+  "class_id": 5,
+  "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+  "input_variables": [
+    "x",
+    "t"
+  ],
+  "target_variable": "psi",
+  "variable_units": {
+    "x": "meter",
+    "t": "second",
+    "psi": "dimensionless"
+  },
+  "dataset_sizes": {
+    "train": 35,
+    "validation": 14,
+    "near_ood": 16,
+    "far_ood": 16
+  }
+}

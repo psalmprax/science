@@ -1,0 +1,215 @@
+{
+  "provenance": "Mirror of OpenAI 'Sharing AI progress in mathematics' (2026-10-06): ~4000 problems attempted, 722 manuscripts published, 3 later retracted (repo now lists 719 across 372 result families). Pipeline modeled: attempt -> machine-checkable certificate -> independent verification -> retraction accounting. APEDP-X variant reports verified/failed/unavailable/unsupported; it never marks a task verified without a checker certificate.",
+  "counts": {
+    "verified": 6,
+    "failed": 0,
+    "unavailable": 0,
+    "unsupported": 8
+  },
+  "results": [
+    {
+      "id": "NT-1",
+      "category": "Number theory",
+      "name": "Goldbach conjecture over even integers in [4, 2000000]",
+      "registry_status": "supported",
+      "status": "verified",
+      "duration_ms": 34.7,
+      "certificate": {
+        "evens_tested": 999999,
+        "expected_evens": 999999,
+        "violations": 0,
+        "total_time_ms": 23.77,
+        "claim_ceiling": "C2_PREDICTIVE; universal claim abstains (finite range only)"
+      },
+      "reason": null,
+      "claim_ceiling": "C2_PREDICTIVE (finite range only; universal claim abstains)"
+    },
+    {
+      "id": "NT-2",
+      "category": "Number theory / analysis",
+      "name": "Riemann zeta zero discovery + calibration gate (T = 60)",
+      "registry_status": "supported",
+      "status": "verified",
+      "duration_ms": 10.67,
+      "certificate": {
+        "roots_discovered_from_scratch": 13,
+        "reference_calibration": "PASS",
+        "max_reference_delta": 1.15e-09,
+        "tally_status": "APPROXIMATE_TALLY_MATCH",
+        "explicit_formula_r2": 0.99894,
+        "claim_ceiling": "finite-range numerics; certified zero count deliberately unresolved (S(T) remainder)"
+      },
+      "reason": null,
+      "claim_ceiling": "finite-range numerics only; certified zero count deliberately unresolved (S(T) remainder)"
+    },
+    {
+      "id": "LAW-1",
+      "category": "Mathematical physics",
+      "name": "Planck spectral density: exact Riccati ODE recovery",
+      "registry_status": "supported",
+      "status": "verified",
+      "duration_ms": 0.51,
+      "certificate": {
+        "is_exact_recovery": true,
+        "jet_rmse": 8.596757530643429e-07,
+        "integrated_trajectory_r2": 0.9999999997591806,
+        "claim_ceiling": "exact recovery of a rational ODE on the fitted family"
+      },
+      "reason": null,
+      "claim_ceiling": "exact recovery of a rational ODE on the fitted family"
+    },
+    {
+      "id": "LAW-2",
+      "category": "Dynamical systems",
+      "name": "Harmonic oscillator: exact 2nd-order ODE recovery (y'' = -4y)",
+      "registry_status": "supported",
+      "status": "verified",
+      "duration_ms": 0.25,
+      "certificate": {
+        "is_exact_recovery": true,
+        "jet_rmse": 6.112742886210968e-14,
+        "integrated_trajectory_r2": 0.9999948646015818,
+        "claim_ceiling": "exact recovery of y'' = -4y on the fitted family"
+      },
+      "reason": null,
+      "claim_ceiling": "exact recovery of a linear constant-coefficient ODE"
+    },
+    {
+      "id": "GA-1",
+      "category": "Analysis",
+      "name": "Trigonometric family exact recovery: sin(2x) and 2cos(1.3x)",
+      "registry_status": "supported",
+      "status": "verified",
+      "duration_ms": 43.04,
+      "certificate": {
+        "targets": {
+          "sin(2x)": {
+            "mse": 0.0,
+            "expression": "-1.0000 * sin((-2.0 * x))"
+          },
+          "2cos(1.3x)": {
+            "mse": 0.0,
+            "expression": "2.0000 * cos((1.3000 * x))"
+          }
+        },
+        "claim_ceiling": "exact recovery within the seeded trig grammar"
+      },
+      "reason": null,
+      "claim_ceiling": "exact recovery within the seeded trig grammar"
+    },
+    {
+      "id": "PDE-1",
+      "category": "Partial differential equations",
+      "name": "Burgers equation: frozen-coefficient transfer to holdout window",
+      "registry_status": "conditional",
+      "status": "verified",
+      "duration_ms": 1358.82,
+      "certificate": {
+        "active_terms": [
+          "u",
+          "u*u_x",
+          "u_xx"
+        ],
+        "coefficients": [
+          0.012745599746130903,
+          -0.996212120997525,
+          0.11117993470098139
+        ],
+        "frozen_holdout_r2": 0.9997716728747799,
+        "holdout_samples": 672,
+        "claim_ceiling": "frozen-coefficient transfer; re-fit metric intentionally not reported"
+      },
+      "reason": null,
+      "claim_ceiling": "frozen-coefficient transfer; re-fit metric intentionally not reported"
+    },
+    {
+      "id": "LEAN-1",
+      "category": "Formalization",
+      "name": "Lean formalization of a discovered law",
+      "registry_status": "unsupported",
+      "status": "unsupported",
+      "duration_ms": 0.0,
+      "certificate": null,
+      "reason": "Per-result templated Lean files exist in-tree (14+ under apedp_dyn/lean_formal/), but there is no automated at-scale formalization pipeline and no Lean toolchain wired into this sandbox.",
+      "claim_ceiling": null
+    },
+    {
+      "id": "OPEN-RH",
+      "category": "Number theory",
+      "name": "Quasi-Riemann hypothesis variant (OpenAI headline, Oct 2026)",
+      "registry_status": "unsupported",
+      "status": "unsupported",
+      "duration_ms": 0.0,
+      "certificate": null,
+      "reason": "Requires proof construction and literature novelty. APEDP-X can numerically certify zero locations on a finite range (NT-2) but has no proof-search engine and no originality adjudication.",
+      "claim_ceiling": null
+    },
+    {
+      "id": "OPEN-BSD",
+      "category": "Algebraic geometry / number theory",
+      "name": "Partial results on the Birch and Swinnerton-Dyer conjecture",
+      "registry_status": "unsupported",
+      "status": "unsupported",
+      "duration_ms": 0.0,
+      "certificate": null,
+      "reason": "No algebraic-geometry engine, no elliptic-curve machinery, no proof-level output path.",
+      "claim_ceiling": null
+    },
+    {
+      "id": "OPEN-HODGE",
+      "category": "Algebraic geometry",
+      "name": "Partial results on the Hodge conjecture",
+      "registry_status": "unsupported",
+      "status": "unsupported",
+      "duration_ms": 0.0,
+      "certificate": null,
+      "reason": "No algebraic-geometry engine, no cohomology constructions, no proof-level output path.",
+      "claim_ceiling": null
+    },
+    {
+      "id": "OPEN-KAKEYA",
+      "category": "Geometric measure theory",
+      "name": "Kakeya conjecture extension to R^4",
+      "registry_status": "unsupported",
+      "status": "unsupported",
+      "duration_ms": 0.0,
+      "certificate": null,
+      "reason": "Proof-level combinatorial/geometric argument required; outside the ODE/PDE-law and finite-certificate engines.",
+      "claim_ceiling": null
+    },
+    {
+      "id": "OPEN-ALGO",
+      "category": "Complexity theory",
+      "name": "Asymptotic algorithmic advances (multiplication exponent, Fourier transform)",
+      "registry_status": "unsupported",
+      "status": "unsupported",
+      "duration_ms": 0.0,
+      "certificate": null,
+      "reason": "No asymptotic lower-bound or complexity-analysis machinery; the GA recovers closed-form laws, it does not construct asymptotically improved algorithms.",
+      "claim_ceiling": null
+    },
+    {
+      "id": "OPEN-NS",
+      "category": "Partial differential equations",
+      "name": "Navier-Stokes global regularity discussion",
+      "registry_status": "unsupported",
+      "status": "unsupported",
+      "duration_ms": 0.0,
+      "certificate": null,
+      "reason": "APEDP-X discovers and transfers PDE coefficient laws (PDE-1) on finite grids; global regularity is a proof obligation it cannot state.",
+      "claim_ceiling": null
+    },
+    {
+      "id": "OPEN-SCALE",
+      "category": "Metascience",
+      "name": "Autonomous 719-manuscript throughput with retraction accounting",
+      "registry_status": "unsupported",
+      "status": "unsupported",
+      "duration_ms": 0.0,
+      "certificate": null,
+      "reason": "APEDP-X is single-problem and human-in-the-loop: one registry entry per engine invocation, scarce holdout budget, no autonomous multi-thousand-problem pipeline. This sandbox runs ~6 checks per invocation, not ~4000.",
+      "claim_ceiling": null
+    }
+  ],
+  "honesty_note": "verified = checker produced a certificate in this run; failed = checker ran and missed threshold (would-be retraction); unavailable = engine present in registry but not runnable here; unsupported = no engine path (gap)."
+}

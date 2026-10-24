@@ -1,0 +1,17 @@
+{
+  "problem_id": "P23",
+  "problem_name": "Dimensional Incompatibility Trap",
+  "class_id": 4,
+  "class_name": "Singular & Pathological Regimes",
+  "oracle_epistemic_class": "C3",
+  "expected_state": "INSUFFICIENT_EVIDENCE",
+  "ground_truth_formula": "2.0",
+  "canonical_structural_family": "constant_ratio",
+  "true_parameters": {},
+  "competing_hypotheses": [],
+  "pathology_details": {
+    "trap_candidate": "T + x",
+    "incompatibility": "[second] + [meter]",
+    "expected_stage_a": "INVALID"
+  }
+}

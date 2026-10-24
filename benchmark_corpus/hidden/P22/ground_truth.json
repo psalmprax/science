@@ -1,0 +1,15 @@
+{
+  "problem_id": "P22",
+  "problem_name": "Runge Polynomial Boundary Oscillation",
+  "class_id": 4,
+  "class_name": "Singular & Pathological Regimes",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "1.0 / (1.0 + 25.0 * x**2)",
+  "canonical_structural_family": "rational_cauchy",
+  "true_parameters": {},
+  "competing_hypotheses": [],
+  "pathology_details": {
+    "runge_susceptible": true
+  }
+}

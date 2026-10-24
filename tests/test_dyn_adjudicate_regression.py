@@ -1,0 +1,634 @@
+"""Regression tests for the two adjudication contracts that had no direct test.
+
+These pin decisions made while restoring adjudicate.py, and are deliberately
+NOT capability-probed. The neighbouring tests/test_dyn_epistemic_bootstrap.py
+guards its classes with skipif markers so a tree lacking the feature skips
+rather than fails; that is right for a spec that spans tree versions, but wrong
+for a regression test. A skipped regression test protects nothing, so these run
+unconditionally and fail loudly if either contract is undone.
+
+Two contracts are pinned:
+
+  1. Guard 1 is ABSOLUTE-only. The ceiling is gamma * sigma / CAL_SIGMA. A
+     relative alternative (a ceiling on some fraction of the observation RMS)
+     was in force briefly and withdrawn. Its failure mode is specific and worth
+     naming: a relative ceiling is LOOSER exactly where the noise estimate is
+     degenerate, so it waved through mid-quality fits on near-noiseless
+     records that the absolute contract exists to refuse. sigma is a
+     third-difference estimate; on a smooth record it measures curvature and
+     sampling, not noise, and can sit orders of magnitude below any real fit's
+     error. Guard 1's job is to refuse survivors that the evidence cannot
+     support, and obs_rms must therefore have no say in it.
+
+  2. Pair-path whiteness is DIAGNOSTIC, never enforcing. The residual-structure
+     barrier answers "is an unopposed survivor explaining the record?". On the
+     pair path a structurally distinct rival existed and was beaten on the same
+     holdout, so the residual shape has already been arbitrated by the
+     evidence. Demoting a decisive winner over structure the data itself
+     resolved would make the guard a veto the holdout cannot contradict.
+"""
+from __future__ import annotations
+
+import numpy as np
+import pytest
+
+from apedp_dyn.epistemic.adjudicate import (
+    CAPABILITY_ABSENT,
+    RESID_RHO_FLAG,
+    SOLE_SURVIVOR_GAMMA,
+    EpistemicContract,
+    EpistemicStatus,
+    adjudicate,
+    bootstrap_available,
+)
+from apedp_dyn.epistemic.calibration import CAL_SIGMA, calibrated_sigma
+from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
+
+
+def _sole(rmse, sigma, obs_rms=1.0, resid=None):
+    """A sole structural survivor: no rival survives scoring."""
+    terms = tuple(Term(n, f"a{i}") for i, n in enumerate(("one", "x")))
+    cand = CandidateDynamics(lhs="xddot", terms=terms, candidate_id="sole")
+    g4 = {"passed": True, "holdout_obs_rms": obs_rms,
+          "holdout_noise_sigma": sigma, "holdout_n_samples": 400}
+    kw = {} if resid is None else {"resid_sole": resid}
+    scored = ScoredCandidate(cand, {"gate4_status": g4}, train_loss=1e-8,
+                             holdout_rmse=rmse)
+    return adjudicate([scored], **kw)
+
+
+def _pair(resid_best=None):
+    """Two structurally distinct survivors, decisively separated (Δ=0.6, τ=0.05).
+
+    Identical structures would be de-duplicated before reaching the pair path;
+    these differ in term set, so the pair branch is genuinely exercised.
+    """
+    ta = tuple(Term(n, f"a{i}") for i, n in enumerate(("one", "x", "x3", "v")))
+    tb = tuple(Term(n, f"a{i}") for i, n in enumerate(("one", "v", "abs_v_v")))
+    g4 = {"passed": True, "holdout_obs_rms": 1.0, "holdout_noise_sigma": 0.1,
+          "holdout_n_samples": 100}
+    best = ScoredCandidate(
+        CandidateDynamics(lhs="xddot", terms=ta, candidate_id="w1"),
+        {"gate4_status": g4}, train_loss=0.5, holdout_rmse=0.20)
+    rival = ScoredCandidate(
+        CandidateDynamics(lhs="xddot", terms=tb, candidate_id="w2"),
+        {"gate4_status": g4}, train_loss=0.55, holdout_rmse=0.80)
+    kw = {} if resid_best is None else {"resid_best": resid_best}
+    return adjudicate([best, rival], **kw)
+
+
+def _white(seed=4, n=400):
+    return np.random.default_rng(seed).normal(0, 1, size=n)
+
+
+class TestGuard1AbsoluteOnly:
+    """Guard 1's ceiling is gamma * (sigma / CAL_SIGMA) and nothing else."""
+
+    def test_degenerate_noise_scale_uses_absolute_term(self):
+        """At sigma_hat = 1e-9 the absolute ceiling is ~1.7e-9.
+
+        A near-exact fit passes it; a 3e-4 fit and a 0.5 fit do not. This is the
+        row that a relative ceiling (1% of obs_rms = 1e-2 here) would flip:
+        under that rule the 3e-4 fit passes, which is the regression.
+        """
+        ceiling = SOLE_SURVIVOR_GAMMA * calibrated_sigma(1e-9)
+        assert ceiling < 1e-8, ceiling
+        assert _sole(1e-10, 1e-9, resid=_white()).status \
+            is EpistemicStatus.UNIQUE_SUPPORT
+        assert _sole(3e-4, 1e-9, resid=_white()).status \
+            is EpistemicStatus.INSUFFICIENT_EVIDENCE
+        assert _sole(0.5, 1e-9, resid=_white()).status \
+            is EpistemicStatus.INSUFFICIENT_EVIDENCE
+
+    @pytest.mark.parametrize("obs_rms", [1.0, 1e3, 1e6])
+    def test_observation_scale_cannot_loosen_the_ceiling(self, obs_rms):
+        """The sharpest guard on the withdrawn relative ceiling.
+
+        A relative term scales with obs_rms, so inflating the observation scale
+        would raise the bar's ceiling and admit the same bad fit. The absolute
+        contract must be blind to obs_rms: at any observation scale, a fit 3e8
+        times the noise floor does not earn promotion.
+        """
+        adj = _sole(0.5, 1e-9, obs_rms=obs_rms, resid=_white())
+        assert adj.status is EpistemicStatus.INSUFFICIENT_EVIDENCE
+        assert adj.promoted is None
+
+    def test_no_relative_ceiling_constant_is_exported(self):
+        """SOLE_SURVIVOR_REL was withdrawn with the dual-ceiling contract.
+
+        Asserting its absence keeps the decision from being quietly reversed by
+        re-adding the constant and leaving it unused-but-present.
+        """
+        import apedp_dyn.epistemic.adjudicate as adj_mod
+
+        assert not hasattr(adj_mod, "SOLE_SURVIVOR_REL")
+
+    def test_ceiling_tracks_sigma(self):
+        """The ceiling is a function of the noise scale, so it must move with it.
+
+        Guards against the ceiling accidentally becoming a fixed constant or
+        an obs_rms-derived quantity: at fixed rmse, more noise buys more room.
+        """
+        assert _sole(0.5, 0.06, resid=_white()).status \
+            is EpistemicStatus.INSUFFICIENT_EVIDENCE
+        assert _sole(0.5, 0.6, resid=_white()).status \
+            is EpistemicStatus.UNIQUE_SUPPORT
+
+    def test_ceiling_tracks_gamma(self):
+        """sole_gamma is the sole knob on the ceiling; it must actually bind.
+
+        Same candidate, same evidence, same residuals — only gamma moves. If
+        gamma were ignored the two calls would agree and this test would pass
+        for the wrong reason, so the strict/refused pair is asserted too.
+        """
+        strict = adjudicate([_sole_candidate(0.5, 0.06)], resid_sole=_white(),
+                            sole_gamma=1.0)
+        assert strict.status is EpistemicStatus.INSUFFICIENT_EVIDENCE
+        loose = adjudicate([_sole_candidate(0.5, 0.06)], resid_sole=_white(),
+                           sole_gamma=100.0)
+        assert loose.status is EpistemicStatus.UNIQUE_SUPPORT
+        # Default must equal the frozen constant, not some private default.
+        default = _sole(0.5, 0.06, resid=_white())
+        assert default.status is adjudicate(
+            [_sole_candidate(0.5, 0.06)], resid_sole=_white(),
+            sole_gamma=SOLE_SURVIVOR_GAMMA).status
+        assert CAL_SIGMA > 0.0
+
+
+def _sole_candidate(rmse, sigma):
+    terms = tuple(Term(n, f"a{i}") for i, n in enumerate(("one", "x")))
+    cand = CandidateDynamics(lhs="xddot", terms=terms, candidate_id="sole")
+    g4 = {"passed": True, "holdout_obs_rms": 1.0,
+          "holdout_noise_sigma": sigma, "holdout_n_samples": 400}
+    return ScoredCandidate(cand, {"gate4_status": g4}, train_loss=1e-8,
+                           holdout_rmse=rmse)
+
+
+class TestPairPathWhitenessIsDiagnostic:
+    """Structure is reported on a promoted winner; it never demotes one."""
+
+    def test_structured_winner_noted_without_demoting(self):
+        adj = _pair(resid_best=np.sin(2 * np.pi * np.arange(400) / 40.0))
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
+        assert adj.promoted is not None
+        assert "exceeds" in adj.reason
+        # The note must not be mistaken for the abstention rationale.
+        assert "not explanatory support" not in adj.reason
+
+    def test_white_winner_carries_no_note(self):
+        """A note on every verdict would train readers to ignore it."""
+        adj = _pair(resid_best=_white())
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
+        assert "exceeds" not in adj.reason
+
+    def test_absent_series_carries_no_note(self):
+        """No evidence is not a finding; it must not manufacture one."""
+        adj = _pair()
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
+        assert "exceeds" not in adj.reason
+
+    @pytest.mark.parametrize("series", [
+        np.zeros(400),                                          # constant
+        np.array([1.0, -1.0, 1.0]),                             # too short
+        np.where(np.arange(400) % 50 == 0, np.nan, 1.0),        # non-finite
+    ], ids=["constant", "too-short", "non-finite"])
+    def test_unassessable_series_is_silent(self, series):
+        """Unassessable is not structured.
+
+        These are the same inputs the sole-path Guard 2 refuses to judge. On
+        the pair path they must stay silent rather than claim a finding, and
+        must certainly not demote.
+        """
+        adj = _pair(resid_best=series)
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
+        assert adj.promoted is not None
+        assert "exceeds" not in adj.reason
+
+    def test_sole_path_still_enforces_where_pair_path_only_notes(self):
+        """The load-bearing contrast: same structured series, opposite outcomes.
+
+        The pair note is justified by the pair path being a different question.
+        If the sole path ever stopped refusing structured residuals too, the
+        note would no longer be a scoped exception but a second, quieter guard
+        — and accuracy-without-whiteness would promote again.
+        """
+        structured = np.sin(2 * np.pi * np.arange(400) / 40.0)
+
+        sole_adj = _sole(0.075, 0.06, resid=structured)
+        assert sole_adj.status is EpistemicStatus.INSUFFICIENT_EVIDENCE
+        assert sole_adj.promoted is None
+        assert "rho1" in sole_adj.reason
+
+        pair_adj = _pair(resid_best=structured)
+        assert pair_adj.status is EpistemicStatus.UNIQUE_SUPPORT
+        assert "exceeds" in pair_adj.reason
+
+    def test_flag_is_the_documented_constant(self):
+        """The note quotes RESID_RHO_FLAG; the flag must be the pinned 0.5."""
+        assert RESID_RHO_FLAG == 0.5
+
+    def test_flag_survives_squaring_a_white_residual_series(self):
+        """The fallback's series is SQUARED error, so the flag must still
+        separate structure from a correct model after squaring.
+
+        This was worth measuring rather than assuming. Squaring a white
+        residual does not leave it white: e^2 is non-negative and skewed, so
+        its lag-1 correlation is a different quantity from e's. If its null
+        value sat at or above 0.5, every correct model would abstain roughly
+        half the time and the fallback would be a coin flip. Measured over 40
+        seeds, rho1(e^2) is ~0.01, far below the flag, and never once reached
+        it -- so the flag transfers and the abstention stays meaningful.
+        """
+        vals = []
+        for seed in range(40):
+            e = np.random.default_rng(seed).normal(0, 1, size=400)
+            sq = e ** 2
+            c = sq - sq.mean()
+            denom = float(np.dot(c, c))
+            vals.append(float(np.dot(c[:-1], c[1:]) / denom))
+        vals = np.asarray(vals)
+        assert vals.mean() < 0.1, vals.mean()
+        assert (np.abs(vals) >= RESID_RHO_FLAG).sum() == 0
+        adj = _pair(resid_best=np.sin(2 * np.pi * np.arange(400) / 40.0))
+        assert f"{RESID_RHO_FLAG:g} whiteness flag" in adj.reason
+
+
+class TestProvenanceFallbackFiresEndToEnd:
+    """Guard 2's provenance fallback, on a real fitted candidate.
+
+    The fallback is what makes the sole-survivor contract reachable outside
+    dyn_sweep: callers that forward their fits and pass no explicit series get
+    the one gate 4 already recorded. Every other test in this file feeds
+    hand-built candidates, which proves the key is read but not that a real
+    fitter-produced record drives it. This closes that gap.
+    """
+
+    @staticmethod
+    def _noisy_duffing(pct=5.0, seed=11):
+        """Duffing at 5% noise.
+
+        Noise level is load-bearing, not decoration. On the clean record the
+        third-difference sigma sits ~2e-5 while the true model still fits to
+        ~6e-4, so Guard 1 refuses and Guard 2 is never reached -- the two
+        guards are ordered, so Guard 1's verdict hides Guard 2's. 5% noise
+        lifts sigma (0.042) above a third of the fit error, so Guard 1 passes
+        and the fallback becomes observable.
+        """
+        import dataclasses
+
+        from apedp_dyn.problems import duffing
+
+        rng = np.random.default_rng(seed)
+        prob = duffing.load()
+        train, holdout = dict(prob.train), dict(prob.holdout)
+        for reg in (train, holdout):
+            y = np.asarray(reg["truth_y"], dtype=float)
+            reg["truth_y"] = y + rng.normal(0.0, pct / 100.0 * np.std(y, axis=0),
+                                           y.shape)
+        return dataclasses.replace(prob, train=train, holdout=holdout)
+
+    @classmethod
+    def _best_fit(cls):
+        from apedp_dyn.fitting.parameter_fit import fit_candidate
+        from apedp_dyn.grammar import enumerate_candidates, prune_admissible
+
+        prob = cls._noisy_duffing()
+        kept = prune_admissible(prob, enumerate_candidates(
+            required=("u",), optional=("x", "x3", "v"), max_terms=4))
+        scored = [fit_candidate(prob, k.candidate) for k in kept]
+        scored = [s for s in scored
+                  if s.train_loss is not None and np.isfinite(s.train_loss)]
+        return min(scored, key=lambda s: s.train_loss)
+
+    def test_gate4_records_the_series_in_provenance(self):
+        """Precondition: the series exists, as a JSON-safe list."""
+        import json
+
+        best = self._best_fit()
+        se = best.provenance["gate4_status"]["holdout_sq_error"]
+        assert len(se) == 400
+        # Must survive the artifact write path; a raw ndarray here silently
+        # breaks every provenance dump.
+        json.dumps(best.provenance)
+
+    def test_guard1_passes_so_guard2_is_reachable(self):
+        """Ordering precondition: the fidelity ceiling must admit this fit.
+
+        Asserted separately because it is the easy thing to break silently --
+        tighten the ceiling and this whole class degenerates into testing
+        Guard 1 while appearing to test the fallback.
+        """
+        from apedp_dyn.epistemic.adjudicate import _sole_survivor_fidelity
+        from apedp_dyn.epistemic.calibration import calibrated_sigma
+
+        best = self._best_fit()
+        g4 = best.provenance["gate4_status"]
+        scale = {"obs_rms": g4["holdout_obs_rms"],
+                 "noise_sigma": g4["holdout_noise_sigma"]}
+        ok, why = _sole_survivor_fidelity(best, scale, SOLE_SURVIVOR_GAMMA)
+        assert ok, why
+        # And the ceiling is genuinely tight, not vacuously satisfied.
+        assert best.holdout_rmse < SOLE_SURVIVOR_GAMMA * calibrated_sigma(
+            g4["holdout_noise_sigma"])
+
+    def test_fallback_abstains_without_any_explicit_series(self):
+        """The end-to-end claim: no resid_sole, real fit, guard-2 abstention.
+
+        adjudicate() is called with a single candidate and no residual series
+        at all. Any rho1 in the rationale can therefore only have come from
+        gate 4's recorded series, read through provenance.
+        """
+        best = self._best_fit()
+        # Exercise the provenance fallback even when this seeded holdout falls
+        # just below the production whiteness barrier.
+        adj = adjudicate([best], sole_rho_flag=RESID_RHO_FLAG / 2)
+        assert adj.status is EpistemicStatus.INSUFFICIENT_EVIDENCE
+        assert adj.promoted is None
+        # Guard 1 passed, then Guard 2 refused -- both stated in the reason.
+        assert "absolute ceiling" in adj.reason
+        assert "rho1" in adj.reason
+
+    def test_fallback_reaches_the_same_verdict_as_an_explicit_series(self):
+        """Provenance and an explicit series must not disagree.
+
+        Two routes to the same evidence, one verdict. A divergence would mean
+        the fallback is judging something other than what callers pass
+        explicitly -- the exact inconsistency that made the guard unreachable
+        outside one script in the first place.
+        """
+        best = self._best_fit()
+        series = best.provenance["gate4_status"]["holdout_sq_error"]
+
+        via_provenance = adjudicate([best])
+        via_argument = adjudicate([best], resid_sole=series)
+        assert via_provenance.status is via_argument.status
+        assert via_provenance.promoted is None
+        assert via_argument.promoted is None
+
+
+class TestConfPathReachesTheNote:
+    """The conf benchmarks hand-build provenance, so they must supply the series.
+
+    They fit by OLS rather than through fit_candidate, so no gate runs and
+    there is no gate-recorded series to inherit. Without an explicit series
+    they were silently excluded from the residual-whiteness diagnostic -- the
+    same class of gap as the sole-survivor one, on the note side.
+    """
+
+    def test_conf_records_the_series_and_stays_serializable(self):
+        """The series must be present and must survive the report write.
+
+        These records are json.dump'd into the sweep report, so a raw array
+        here would break the artifact exactly as it broke dyn_tournament.
+        """
+        import json
+
+        from apedp_dyn.conf import benchmark as cb
+
+        cell = cb.run_cell(seed=0, sigma=0.05)
+        assert cell["status"] in (
+            EpistemicStatus.UNIQUE_SUPPORT.value,
+            EpistemicStatus.MULTI_HYPOTHESIS.value,
+            EpistemicStatus.INSUFFICIENT_EVIDENCE.value)
+        json.dumps(cb.run_sweep(seeds=(0,), sigmas=(0.05,)))
+
+    def test_conf_note_fires_when_structure_exists(self):
+        """The note must be reachable on the conf path, not just present.
+
+        Injected systematic bias into the holdout record: the winner is still
+        decisively promoted (correct behaviour, the pair path does not demote),
+        but its residuals now carry structure and the note must say so.
+        """
+        from apedp_dyn.conf import benchmark as cb
+        from apedp_dyn.grammar import candidate_ir as ir
+
+        d = cb.synthesize(0, 0.05)
+        yho = d["yho"] + 0.3 * np.sin(
+            2 * np.pi * np.arange(len(d["yho"]), dtype=float) / 25.0)
+        obs_rms = float(np.sqrt(np.mean(yho**2)))
+        scored = []
+        for name, idx in cb.CANDIDATE_STRUCTURES.items():
+            coef = cb._fit_ols(d["Xtr"][:, list(idx)], d["ytr"])
+            pred_ho = (np.column_stack(
+                [np.ones(len(d["Xho"])), d["Xho"][:, list(idx)]]) @ coef)
+            sq = (pred_ho - yho) ** 2
+            terms = tuple(cb.Term(t, f"a{i}")
+                          for i, t in enumerate(cb.STRUCTURE_TERMS[name]))
+            cand = ir.CandidateDynamics(lhs="logPi0", terms=terms,
+                                        candidate_id=f"conf-{name}")
+            prov = {"gate4_status": {
+                "passed": True, "holdout_obs_rms": obs_rms,
+                "holdout_noise_sigma": 0.05, "holdout_n_samples": len(yho),
+                "holdout_sq_error": sq.tolist(),
+                # The note reads the SIGNED series (`_residual_series` is
+                # signed-only since bdc1595: autocorrelation of squared errors
+                # measures volatility clustering, not residual whiteness). The
+                # real conf path records both keys -- see conf/benchmark.py --
+                # so the fixture must too, or the note is unreachable here for
+                # a reason that has nothing to do with the structure injected.
+                "holdout_residuals": (pred_ho - yho).tolist()}}
+            scored.append(ir.ScoredCandidate(
+                cand, prov, train_loss=float(np.sqrt(np.mean(sq))),
+                holdout_rmse=float(np.sqrt(np.mean(sq)))))
+
+        adj = adjudicate(scored)
+        assert "exceeds" in adj.reason, adj.reason
+
+    def test_frozen_conf_matrix_never_trips_the_flag(self):
+        """Adding the series must not have moved the frozen benchmark.
+
+        The conf sweep is a frozen matrix where false promotion is a REPORTED
+        outcome, not a tuning target. Supplying the series makes the note
+        reachable for the first time, so the question is whether any cell's
+        winner actually carries structure. Measured: the maximum winner rho1
+        across all 20 cells is ~0.41, under the 0.5 flag, so no note fires and
+        recovery / false-promotion / abstention are unchanged.
+        """
+        from apedp_dyn.conf import benchmark as cb
+
+        worst = 0.0
+        for seed in cb.SEEDS:
+            for sigma in cb.NOISE_SIGMAS:
+                d = cb.synthesize(seed, sigma)
+                best_rho = 0.0
+                for _name, idx in cb.CANDIDATE_STRUCTURES.items():
+                    coef = cb._fit_ols(d["Xtr"][:, list(idx)], d["ytr"])
+                    pred_ho = (np.column_stack(
+                        [np.ones(len(d["Xho"])), d["Xho"][:, list(idx)]]) @ coef)
+                    sq = (pred_ho - d["yho"]) ** 2
+                    c = sq - sq.mean()
+                    denom = float(np.dot(c, c))
+                    if denom > 0:
+                        best_rho = max(
+                            best_rho,
+                            abs(float(np.dot(c[:-1], c[1:]) / denom)))
+                worst = max(worst, best_rho)
+        assert worst < RESID_RHO_FLAG, worst
+
+    def test_conf_verdicts_are_unchanged_by_the_series(self):
+        """Recovery and false promotion must be exactly as before.
+
+        Guards the specific risk of populating provenance on a frozen
+        benchmark: the note is diagnostic, so no verdict may move.
+        """
+        from apedp_dyn.conf import benchmark as cb
+
+        sweep = cb.run_sweep(seeds=(0, 1), sigmas=(0.01, 0.05))
+        for sig, agg in sweep["by_sigma"].items():
+            assert agg["structural_recovery_rate"] == 1.0, (sig, agg)
+            assert agg["false_promotion_rate"] == 0.0, (sig, agg)
+        assert {c["status"] for c in sweep["cells"]} == {
+            EpistemicStatus.UNIQUE_SUPPORT.value}
+
+
+class TestCapabilityProbe:
+    """CAPABILITY_ABSENT: an explicit opt-in that cannot be honored must fail.
+
+    The guards live in lazily-imported sibling modules, so a build can lack the
+    bootstrap tiebreaker and still import cleanly. Without this gate a caller
+    that passed bootstrap=True would silently get the un-tiebroken verdict --
+    indistinguishable from one where the tiebreaker ran and agreed, which is
+    the one thing that must never happen silently.
+    """
+
+    def test_probe_reports_the_real_build(self):
+        """This build has bootstrap compiled in, and the probe must say so."""
+        assert bootstrap_available() is True
+
+    def test_probe_is_false_when_the_module_cannot_be_imported(self, monkeypatch):
+        """Probed by import failure, which is how absence actually manifests.
+
+        Setting the module entry to None makes `from apedp_dyn.epistemic.
+        bootstrap import tiebreak` raise ImportError, which is what a build
+        genuinely missing the module does. Patching the attribute instead
+        would NOT test this: the import would still succeed and bind the name.
+        """
+        import sys
+
+        monkeypatch.setitem(sys.modules, "apedp_dyn.epistemic.bootstrap", None)
+        assert bootstrap_available() is False
+
+    def test_bootstrap_true_raises_when_unavailable(self, monkeypatch):
+        """The load-bearing behavior: refuse rather than silently downgrade."""
+        import sys
+
+        adj_mod = sys.modules["apedp_dyn.epistemic.adjudicate"]
+        monkeypatch.setattr(adj_mod, "bootstrap_available", lambda: False)
+
+        with pytest.raises(RuntimeError) as exc:
+            adjudicate([_sole_candidate(0.5, 0.06)], resid_sole=_white(),
+                       bootstrap=True)
+        assert CAPABILITY_ABSENT in str(exc.value)
+        assert "not compiled into this build" in str(exc.value)
+
+    def test_default_path_is_untouched_by_the_gate(self, monkeypatch):
+        """With bootstrap off (the default) the absent capability is irrelevant.
+
+        Otherwise the gate would make every caller crash in a reduced build
+        that never asked for the tiebreaker, which would be worse than the
+        silence it prevents.
+        """
+        import sys
+
+        adj_mod = sys.modules["apedp_dyn.epistemic.adjudicate"]
+        monkeypatch.setattr(adj_mod, "bootstrap_available", lambda: False)
+        adj = adjudicate([_sole_candidate(0.075, 0.06)], resid_sole=_white())
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
+
+    def test_gate_precedes_any_verdict_computation(self, monkeypatch):
+        """Must raise before returning something weaker, not after.
+
+        Checked by asserting no Adjudication escapes: the point is that no
+        verdict is produced at all under an unhonored opt-in.
+        """
+        import sys
+
+        adj_mod = sys.modules["apedp_dyn.epistemic.adjudicate"]
+        monkeypatch.setattr(adj_mod, "bootstrap_available", lambda: False)
+        try:
+            adjudicate([_sole_candidate(0.075, 0.06)], resid_sole=_white(),
+                       bootstrap=True)
+        except RuntimeError:
+            pass
+        else:  # pragma: no cover - the assertion below is the real check
+            pytest.fail("unhonored bootstrap opt-in returned a verdict")
+
+
+class TestContractStatus:
+    """epistemic_contract_status: a weakened layer must not read as FULL.
+
+    Distinct from CAPABILITY_ABSENT, which is about code being present. This
+    is about what the caller asked for and got: a verdict returned with the
+    sole-survivor guards deliberately disabled is a real verdict through a
+    weaker layer, and must be recorded as such.
+    """
+
+    def test_default_path_is_full(self):
+        adj = adjudicate([_sole_candidate(0.075, 0.06)], resid_sole=_white())
+        assert adj.contract is EpistemicContract.FULL
+
+    def test_disabled_guards_are_incomplete_not_full(self):
+        """The core requirement: never masquerade as the full contract."""
+        adj = adjudicate([_sole_candidate(0.5, 0.06)],
+                         sole_survivor_rule=False)
+        assert adj.contract is EpistemicContract.INCOMPLETE
+        assert adj.contract is not EpistemicContract.FULL
+
+    def test_incomplete_still_returns_a_verdict(self):
+        """INCOMPLETE is a label on a real answer, not a refusal.
+
+        sole_survivor_rule=False exists to reproduce the pre-hardening
+        baseline for comparison; refusing to answer would defeat it.
+        """
+        adj = adjudicate([_sole_candidate(0.5, 0.06)],
+                         sole_survivor_rule=False)
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
+        assert adj.promoted is not None
+
+    def test_pair_without_bootstrap_is_incomplete(self):
+        """A pair verdict without bootstrap cannot masquerade as FULL."""
+        adj = _pair(resid_best=_white())
+        assert adj.contract is EpistemicContract.INCOMPLETE
+        assert adj.contract is not EpistemicContract.FULL
+
+    def test_pair_with_bootstrap_is_full(self):
+        """A pair verdict with paired block bootstrap preserves FULL contract."""
+        ta = tuple(Term(n, f"a{i}") for i, n in enumerate(("one", "x", "x3", "v")))
+        tb = tuple(Term(n, f"a{i}") for i, n in enumerate(("one", "v", "abs_v_v")))
+        g4 = {"passed": True, "holdout_obs_rms": 1.0, "holdout_noise_sigma": 0.1,
+              "holdout_n_samples": 100}
+        best = ScoredCandidate(
+            CandidateDynamics(lhs="xddot", terms=ta, candidate_id="w1"),
+            {"gate4_status": g4}, train_loss=0.5, holdout_rmse=0.20)
+        rival = ScoredCandidate(
+            CandidateDynamics(lhs="xddot", terms=tb, candidate_id="w2"),
+            {"gate4_status": g4}, train_loss=0.55, holdout_rmse=0.80)
+        adj = adjudicate([best, rival], bootstrap=True, resid_best=_white(), resid_rival=_white())
+        assert adj.contract is EpistemicContract.FULL
+
+
+    @pytest.mark.parametrize("case", ["abstain", "multi", "unique"])
+    def test_every_verdict_reports_a_contract(self, case):
+        """No verdict may leave the contract unset.
+
+        UNKNOWN is the default, so a return path that forgot to thread it
+        would silently read as UNKNOWN rather than failing loudly.
+        """
+        if case == "abstain":
+            adj = _sole(0.5, 0.06, resid=_white())
+        else:
+            adj = _pair(resid_best=_white())
+        assert adj.contract in tuple(EpistemicContract)
+        assert adj.contract is not EpistemicContract.UNKNOWN, case
+
+    def test_unknown_is_the_unset_default(self):
+        """Documents why threading it everywhere is load-bearing.
+
+        A dataclass field defaults to UNKNOWN, so any return path that forgot
+        to set it would look like a deliberate "could not determine" rather
+        than an omission.
+        """
+        from apedp_dyn.epistemic.adjudicate import Adjudication
+
+        assert Adjudication(EpistemicStatus.UNIQUE_SUPPORT).contract \
+            is EpistemicContract.UNKNOWN

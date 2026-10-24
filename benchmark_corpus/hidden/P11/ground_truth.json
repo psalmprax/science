@@ -1,0 +1,22 @@
+{
+  "problem_id": "P11",
+  "problem_name": "Atmospheric Barometric Density",
+  "class_id": 2,
+  "class_name": "Observationally Equivalent Regimes",
+  "oracle_epistemic_class": "C2",
+  "expected_state": "MULTI_HYPOTHESIS",
+  "ground_truth_formula": "1.225 * exp(-z / 8000.0)",
+  "canonical_structural_family": "exponential_decay",
+  "true_parameters": {},
+  "competing_hypotheses": [
+    {
+      "id": "barometric_exponential",
+      "formula": "1.225 * exp(-z / 8000.0)"
+    },
+    {
+      "id": "linear_truncation",
+      "formula": "1.225 - 0.000153125 * z"
+    }
+  ],
+  "pathology_details": {}
+}

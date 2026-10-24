@@ -1,0 +1,26 @@
+{
+ "label": "BLOCKB-EXPOSURE provenance recovery (failure recorded, not resolved)",
+ "utc": "2026-10-09",
+ "commit": "d881d5cdbc3df4bc1d1d5e7a24e91b4adf3a96f8",
+ "command": "PYTHONPATH=. .venv/bin/python scratch/test_defense_vs_exposure_control.py",
+ "file_hashes": {
+  "scratch/test_defense_vs_exposure_control.py": "29824f52f2f4085072a13bbefb9eebb1a348b75cbb74ab4a1e4460511c274abc",
+  "apedp_dyn/sandbox/multi_asset_signals_sandbox.py": "c1ec018821983f90775904f8c083d83d4a7856dd104a70a03dbeed8dbca39753",
+  "apedp_dyn/sandbox/grammar_space.py": "2a1fe0b7d50f77b94f5dcc1e82c3472d49cff34a80804529107031c4890994d1",
+  "apedp_dyn/epistemic/adjudicate.py": "da604e6a21f8687e5834362989f370f3b386649e89fbced2ec624030ffd4ff73",
+  "data/market/multi_asset_30_orderflow.csv": "42d7fd65cf2c1ccb8229e08bf525fde35f27d4cebc80c12b75b49b619748afea",
+  "data/market/multi_asset_60_orderflow.csv": "dcd6e61b21954b3141fe5a5fcb0a23466a272a7a5bcd25de570b40d4cd9a8a44",
+  "data/market/multi_asset_90_5yr_orderflow.csv": "4729ad81f67cb1f430479fe02f1fc700980baf51e890b42cd0067856d273fa2e"
+ },
+ "env": {
+  "numpy": "2.5.3",
+  "pandas": "2.3.3",
+  "scipy": "1.17.1"
+ },
+ "config_assertions": {
+  "weights": "PINNED_30 0.8111/-1.4272/0.5984/0.6740 thr 0.02 (per script import)",
+  "fee_bps": 5,
+  "window": "per-script trailing windows (UNPINNED - under investigation)"
+ },
+ "verdict": "PROVENANCE FAILURE: claimed table does not match this execution; neither output authoritative until generating config identified"
+}

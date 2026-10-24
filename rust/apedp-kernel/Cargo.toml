@@ -1,0 +1,26 @@
+[package]
+name = "apedp-kernel"
+version = "0.1.0"
+edition = "2021"
+description = "Native numerical and dimensional-analysis kernel for APEDP"
+license = "MIT"
+
+[lib]
+name = "apedp_kernel"
+# cdylib is what maturin links into the Python extension module. rlib is kept
+# so `cargo test` can exercise the pure-Rust internals (parser, SVD, units)
+# without building a Python interpreter.
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.29.0", features = ["extension-module"] }
+numpy = "0.29.0"
+ndarray = { version = "0.16.1", features = ["rayon", "matrixmultiply-threading"] }
+rayon = "1.12.0"
+sha2 = "0.11.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+
+# [profile.release] intentionally not here: cargo honours profiles only at
+# the workspace root, so these settings would be ignored (with a warning)
+# for a member crate. They are in the root Cargo.toml.

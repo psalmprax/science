@@ -1,0 +1,70 @@
+{
+  "benchmark_hash_note": "B_internal = trap suites as present in the sandbox files hashed below; B_blind must live outside these files (see blind_benchmark.py)",
+  "commit": "6f08d7a51cbb385a34b3acf290a8b95e6ceb187f",
+  "env": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "pytest": "9.1.1",
+    "scipy": "1.18.1",
+    "py": "3.12"
+  },
+  "file_hashes_sha256": {
+    "apedp_dyn/epistemic/adjudicate.py": "da604e6a21f8687e5834362989f370f3b386649e89fbced2ec624030ffd4ff73",
+    "apedp_dyn/epistemic/claim_ladder.py": "aba9fd0045abc137a36dab90e1316b8934597beb02c553cf35d15c3029c0886c",
+    "apedp_dyn/grammar/candidate_ir.py": "3076d6a7c4ceae0952c8bc372f9483097cccae4613dc2f574d5462583fe42a35",
+    "apedp_dyn/sandbox/apedp_x_meta_sandbox.py": "3f6e19e1bdb5d33e74e7abbcc893bd5147ea3a51d4753d6add1c4d8ce6bc3b3d",
+    "apedp_dyn/sandbox/causal_discovery_sandbox.py": "d0715324bfeccb1aa1c49eecbbcb50fff3c66ab62744d95fbe766b0061e5a38b",
+    "apedp_dyn/sandbox/eseds_dynamical.py": "53c4837c13682b3ce2178f5db8a04c280f521fa2af5b403c13d7e8a9760fb4fe",
+    "apedp_dyn/sandbox/eso_packing.py": "6e19088bd2e621af9f7288fb2e8691cc7698bd5a5520b4b7d6456bcb98a661d0",
+    "apedp_dyn/sandbox/grammar_space.py": "aba0f42abb0fcd2a2bb7a698419d21227ca5ce3709d7879c01573deeb39ab930",
+    "apedp_dyn/sandbox/multi_asset_signals_sandbox.py": "1280b031d0dd0387d0f7f7a0596f8422f54dc77aa20db99a5ce1b0dfd40e13a2",
+    "apedp_dyn/sandbox/multi_grammar_sandbox.py": "b96b20bc0b2e258032d0dfb5bcbf5e120fbfa17c6723d547252d6a510f7bd4c6",
+    "apedp_dyn/sandbox/pde_verification_sandbox.py": "1ea3a4c89800af9f6570723fbcf6ea09e731cccf24a292cc15489bc56fa636a3",
+    "apedp_dyn/sandbox/sphere_packing_sandbox.py": "6a105810b786cddd1435c13c752cddd4ad73182dd841e6677f8667001ec3fd1c",
+    "apedp_dyn/sandbox/trading_signals_sandbox.py": "deb15047e90b58f8c119bf5cb901d5ef144a5b0c804b7eb7a522aed3dda06705",
+    "apedp_dyn/ui/dashboard.html": "55b302068c087283fd832f2fdc54c5d540c4d86e0280eca69ec0ac00dc3e1380",
+    "apedp_dyn/ui/server.py": "148e6c14e8f7f77198b2a2a871275e24f20324d8a69be3839c58193e30b4e606"
+  },
+  "label": "APEDP-X v1.5-FROZEN",
+  "referee_guard_files": [
+    "apedp_dyn/epistemic/adjudicate.py",
+    "apedp_dyn/epistemic/claim_ladder.py",
+    "apedp_dyn/grammar/candidate_ir.py",
+    "apedp_dyn/sandbox/apedp_x_meta_sandbox.py",
+    "apedp_dyn/sandbox/causal_discovery_sandbox.py",
+    "apedp_dyn/sandbox/eseds_dynamical.py",
+    "apedp_dyn/sandbox/eso_packing.py",
+    "apedp_dyn/sandbox/grammar_space.py",
+    "apedp_dyn/sandbox/multi_asset_signals_sandbox.py",
+    "apedp_dyn/sandbox/multi_grammar_sandbox.py",
+    "apedp_dyn/sandbox/pde_verification_sandbox.py",
+    "apedp_dyn/sandbox/sphere_packing_sandbox.py",
+    "apedp_dyn/sandbox/trading_signals_sandbox.py",
+    "apedp_dyn/ui/dashboard.html",
+    "apedp_dyn/ui/server.py"
+  ],
+  "test_outcome": {
+    "command": "pytest tests/test_dyn_blind.py -v",
+    "result": "9 passed",
+    "note": "Post-mint verification complete: all guard-file hashes match the working tree; blind suite passes with FPR over unwarranted negatives and FDR over promoted candidates (disclosed separately). Blind outcomes are identical to v1_4 (no blind case imports the modified referee file)."
+  },
+  "thresholds": {
+    "RESID_RHO_FLAG": 0.5,
+    "SOLE_SURVIVOR_GAMMA": 3.0,
+    "bootstrap_n_boot_eseds": 300,
+    "bootstrap_seed": 42,
+    "eso_tau_default": 0.01,
+    "tau_rule": "holdout-scale from gate4 provenance (obs_rms, noise_sigma, n_samples); explicit override allowed"
+  },
+  "tree_state": "audit-remediation session (uncommitted working tree at mint time): lookahead remediation completed in the multi-asset panel plus the trial-ledger wiring in the market sweep; guard set re-minted from current working-tree content per the documented mint-first protocol.",
+  "utc_frozen": "2026-10-19",
+  "supersedes": "APEDP-X v1.4-FROZEN (guard re-mint after the causal-volatility warm-up remediation in multi_asset_signals_sandbox.py)",
+  "referee_change": "apedp_dyn/sandbox/multi_asset_signals_sandbox.py only: the 20-day rolling volatility is now computed causally (ffill) and the leading rows where it is undefined are EXCLUDED from every aligned array instead of being back-filled from the future (bfill). The CAN-G gate consequently detects the cross-asset ranking trap that the fabricated volatility used to mask, and the multi-asset test pin was re-pinned to that honest reading. No blind-benchmark logic, thresholds, or scoring path changed; no blind case imports this file.",
+  "concurrent_drift_noted": [],
+  "remint_log": [
+    {
+      "remint_of": "apedp_dyn/sandbox/multi_asset_signals_sandbox.py",
+      "reason": "Forensic audit remediation 4.1: purge .bfill() lookahead from the sandbox discovery fit path (causal forward-fill warmup masking). Referee logic untouched."
+    }
+  ]
+}

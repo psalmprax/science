@@ -1,0 +1,83 @@
+{
+  "status": "FROZEN_L2_CONTROL_GROUP",
+  "timestamp_utc": "2026-09-30T18:20:09.495643+00:00",
+  "git_head": "5a246e07b436b67a89c3118ac42c5ac6eec09ed7",
+  "core_modules": {
+    "apedp_dyn/discovery_l2/ast_generator.py": {
+      "sha256": "0308fa81b01fd0bbdecff92712075a2567a763af0ec010983fa49d4f312fe5db",
+      "byte_count": 14463,
+      "line_count": 396
+    },
+    "apedp_dyn/discovery_l2/dimensional_types.py": {
+      "sha256": "7d67f295d944e848f67092f3f7a030f5f99f1e3dfdd6bd03338cdb35643d974c",
+      "byte_count": 8851,
+      "line_count": 276
+    },
+    "apedp_dyn/discovery_l2/pruning.py": {
+      "sha256": "7638e5aedbdcc91ae8af863d919151715a17905c07517226ed91b94fc37bf306",
+      "byte_count": 11109,
+      "line_count": 303
+    },
+    "apedp_dyn/discovery_l2/l2_engine.py": {
+      "sha256": "97b603106c1816bda87a282c9c409a61760b8c9f5cb3fc32c26a9d3a9cfbc421",
+      "byte_count": 7717,
+      "line_count": 213
+    },
+    "apedp_dyn/discovery_l2/ode_engine.py": {
+      "sha256": "4e1ccfeb769ff392cfdd601cdb64b003f1ff08a5450a71437709618d549b21b0",
+      "byte_count": 5047,
+      "line_count": 136
+    },
+    "apedp_dyn/discovery_l2/active_intervention.py": {
+      "sha256": "f95e6393c217e5d19bfe86887f60452643be8a865b80533e98591afc01bd363a",
+      "byte_count": 3728,
+      "line_count": 100
+    },
+    "apedp_dyn/epistemic/adjudicate.py": {
+      "sha256": "86f1cc97cd4892a65df5322d4aee2a6844a145ce4c43c297e71758c766532546",
+      "byte_count": 35226,
+      "line_count": 725
+    },
+    "apedp_dyn/epistemic/calibration.py": {
+      "sha256": "0675b90ae40b74367c4a7f6a4290003c4a41bfe3b12aeaac37e7015e82bad014",
+      "byte_count": 1201,
+      "line_count": 27
+    },
+    "apedp_dyn/epistemic/bootstrap.py": {
+      "sha256": "a2a74be77d124b34aed8b23ab781bd0bd79e8f0fb02950b8d05317d50e9086e0",
+      "byte_count": 9886,
+      "line_count": 239
+    },
+    "apedp_dyn/estimation/weak_form.py": {
+      "sha256": "b1c40471fc5b2a3110ebc6e8b80763cce4e511b5f7e0d7e604fc9d09f7160bbc",
+      "byte_count": 4747,
+      "line_count": 120
+    }
+  },
+  "frozen_grammar_scope": {
+    "operators": [
+      "+",
+      "-",
+      "*",
+      "/",
+      "pow"
+    ],
+    "max_depth": 2,
+    "max_complexity": 5,
+    "physical_typing": "SI_dimension_calculus",
+    "differentiation": [
+      "spline",
+      "central_diff",
+      "weak_form"
+    ],
+    "adjudication_gates": [
+      "gate_a_algebraic",
+      "gate_b_dimensional",
+      "gate_c_evidential",
+      "guard1_ceiling",
+      "guard2_whiteness",
+      "tau_epi_margin",
+      "block_bootstrap"
+    ]
+  }
+}

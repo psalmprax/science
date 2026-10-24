@@ -1,0 +1,17 @@
+{
+  "problem_id": "P24",
+  "problem_name": "Multi-Parameter Collinear Singularity Trap",
+  "class_id": 4,
+  "class_name": "Singular & Pathological Regimes",
+  "oracle_epistemic_class": "C3",
+  "expected_state": "INSUFFICIENT_EVIDENCE",
+  "ground_truth_formula": "exp(x)",
+  "canonical_structural_family": "exponential",
+  "true_parameters": {},
+  "competing_hypotheses": [],
+  "pathology_details": {
+    "collinear_candidate": "c1*exp(x) + c2*exp(x + 1e-5)",
+    "expected_cond_number": 100000000.0,
+    "expected_stage_b": "REJECT_UNIDENTIFIABLE"
+  }
+}

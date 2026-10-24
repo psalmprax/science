@@ -1,0 +1,49 @@
+{
+  "benchmark_hash_note": "B_internal = trap suites as present in the sandbox files hashed below; B_blind must live outside these files (see blind_benchmark.py)",
+  "commit": "d881d5cdbc3df4bc1d1d5e7a24e91b4adf3a96f8",
+  "env": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "py": "3.12.3",
+    "pytest": "9.1.1",
+    "scipy": "1.18.1"
+  },
+  "file_hashes_sha256": {
+    "apedp_dyn/epistemic/adjudicate.py": "1223db54ba79069cfa29503692c4f3455c1b0902384f38bedfb43c3dfd4755a7",
+    "apedp_dyn/epistemic/claim_ladder.py": "aba9fd0045abc137a36dab90e1316b8934597beb02c553cf35d15c3029c0886c",
+    "apedp_dyn/grammar/candidate_ir.py": "3076d6a7c4ceae0952c8bc372f9483097cccae4613dc2f574d5462583fe42a35",
+    "apedp_dyn/sandbox/apedp_x_meta_sandbox.py": "3f6e19e1bdb5d33e74e7abbcc893bd5147ea3a51d4753d6add1c4d8ce6bc3b3d",
+    "apedp_dyn/sandbox/causal_discovery_sandbox.py": "d0715324bfeccb1aa1c49eecbbcb50fff3c66ab62744d95fbe766b0061e5a38b",
+    "apedp_dyn/sandbox/eseds_dynamical.py": "44d48f697e171e5ea4b9cb6efa3ff03318e960bda04eed66119df3d4559461f4",
+    "apedp_dyn/sandbox/eso_packing.py": "6e19088bd2e621af9f7288fb2e8691cc7698bd5a5520b4b7d6456bcb98a661d0",
+    "apedp_dyn/sandbox/grammar_space.py": "95a1bb943447f7ca01baa73f730fd6b9698e74953a73e113e4847dcf6fd0afb8",
+    "apedp_dyn/sandbox/multi_asset_signals_sandbox.py": "224005c1896cad5db1ae0da02982202742ada5137194b7f702bb4e2fc34dd671",
+    "apedp_dyn/sandbox/multi_grammar_sandbox.py": "46f401314647405009bbbd551a7fa3a2898a7af9065468ddf483e5f595cccdaa",
+    "apedp_dyn/sandbox/pde_verification_sandbox.py": "1ea3a4c89800af9f6570723fbcf6ea09e731cccf24a292cc15489bc56fa636a3",
+    "apedp_dyn/sandbox/sphere_packing_sandbox.py": "6d05cc24e2cd88d973540696fb12c60022555ed19c4a22b2c0a8f041a3ba20f3",
+    "apedp_dyn/sandbox/trading_signals_sandbox.py": "2336ae073e0895c0e7aaf869e71c831beee029e11fb26d2c5d170362c88de696",
+    "apedp_dyn/ui/dashboard.html": "9fec5e229bfa14534edc716160279440448b608c2c9d1f5fbc327e2ffbc1a420",
+    "apedp_dyn/ui/server.py": "997e12ded7cd7751e24463e65218ac7047e7ab2459e58bd79e9f407a0a79c916"
+  },
+  "label": "APEDP-X v1.0-FROZEN",
+  "referee_guard_files": [
+    "apedp_dyn/epistemic/adjudicate.py",
+    "apedp_dyn/grammar/candidate_ir.py",
+    "apedp_dyn/epistemic/claim_ladder.py"
+  ],
+  "test_outcome": {
+    "command": ".venv/bin/python -m pytest tests/test_dyn_crossref.py tests/test_dyn_eseds.py tests/test_dyn_eso.py tests/test_dyn_grammar_space.py tests/test_dyn_causal.py tests/test_dyn_pde.py tests/test_dyn_meta_sandbox.py tests/test_dyn_sphere_packing.py -q",
+    "duration_s": 54.67,
+    "passed": 48
+  },
+  "thresholds": {
+    "RESID_RHO_FLAG": 0.5,
+    "SOLE_SURVIVOR_GAMMA": 3.0,
+    "bootstrap_n_boot_eseds": 300,
+    "bootstrap_seed": 42,
+    "eso_tau_default": 0.01,
+    "tau_rule": "holdout-scale from gate4 provenance (obs_rms, noise_sigma, n_samples); explicit override allowed"
+  },
+  "tree_state": "dirty: 5 modified + 12 untracked files at freeze time; hashes above are working-tree content. Uncommitted by policy (no commit requested).",
+  "utc_frozen": "2026-10-07"
+}

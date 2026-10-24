@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Pre-commit gate: run the tests this change actually affects.
+#
+# Install with:
+#     git config core.hooksPath tools/hooks
+#
+# Why this exists
+# ----------------
+# The convention in this repo has been to verify a change by hand-writing a
+# pytest command naming the files that look relevant. That is a manual step and
+# manual steps get done wrong. A test was once committed permanently red because
+# two consecutive verification runs each named every changed file except the one
+# carrying the failing assertion; both runs were green and the tree was not.
+#
+# This hook removes the manual step. It derives the run set from the staged diff
+# via tools/affected_tests.py and runs that. A test file that you modified is
+# always in the set, whatever the import graph thinks about it.
+#
+# Escape hatches, in order of preference:
+#     git commit --no-verify            # git's own bypass
+#     APEDP_SKIP_GATE=1 git commit ...  # same, but prints why
+# Neither is free: both leave a commit whose tests were not run, which is the
+# state this hook exists to prevent. Prefer running `make test` when the derived
+# set is not the whole story.
+set -uo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT" || exit 1
+
+if [ "${APEDP_SKIP_GATE:-0}" = "1" ]; then
+  echo "pre-commit: APEDP_SKIP_GATE=1 -- tests were NOT run for this commit." >&2
+  exit 0
+fi
+
+PY="${PYTHON:-python3}"
+
+echo "pre-commit: deriving affected tests from the staged diff..."
+"$PY" tools/affected_tests.py --staged --run
+status=$?
+
+if [ "$status" -eq 1 ]; then
+  # Two causes, and they must not be confused: pytest failed, or the run set
+  # could not be determined. The tool prints which. Either way this blocks,
+  # because an undetermined run set is exactly the silent pass being guarded
+  # against.
+  echo >&2
+  echo "pre-commit: BLOCKED. See above for whether tests failed or the run set" >&2
+  echo "            could not be determined. Do not bypass this without running" >&2
+  echo "            the full suite (make test)." >&2
+fi
+
+exit "$status"

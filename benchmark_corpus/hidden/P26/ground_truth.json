@@ -1,0 +1,15 @@
+{
+  "problem_id": "P26",
+  "problem_name": "Turbulent Kinetic Energy Dissipation Rate",
+  "class_id": 5,
+  "class_name": "Multivariable Non-Separable & Hybrid Regimes",
+  "oracle_epistemic_class": "C1",
+  "expected_state": "UNIQUE_SUPPORT",
+  "ground_truth_formula": "0.09 * (k**1.5) / L",
+  "canonical_structural_family": "turbulence_closure",
+  "true_parameters": {
+    "Cmu": 0.09
+  },
+  "competing_hypotheses": [],
+  "pathology_details": {}
+}
