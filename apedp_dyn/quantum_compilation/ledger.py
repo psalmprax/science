@@ -64,6 +64,8 @@ class QuantumCandidateLedger:
             for name, value in candidate.parameters.items()
             if isinstance(value, (int, float)) and not isinstance(value, bool)
         }
+        if any(node.candidate_id == candidate.candidate_id for node in self._ledger.get_all_candidates()):
+            raise ValueError(f"Candidate {candidate.candidate_id!r} is already registered")
         self._ledger.register_candidate(
             candidate_id=candidate.candidate_id,
             proposer_id=candidate.generator_id,
