@@ -3,6 +3,62 @@
 Keep changes focused and preserve scientific test intent. Read [AGENTS.md](AGENTS.md)
 before changing proposers, referees, holdouts, or frozen specifications.
 
+## Repository structure policy
+
+Keep reusable runtime code separate from research inputs and generated evidence.
+Use these existing zones for new files; this policy does not rename directories.
+
+| Zone | Canonical locations | What belongs here |
+| --- | --- | --- |
+| Code/runtime | `apedp/`, `apedp_dyn/`, `packages/`, `rust/`, `crates/` | Importable implementations and package manifests; see the module map below before choosing a native path. |
+| Tests/tooling | `tests/`, `scripts/`, `tools/`, `.github/workflows/` | Regression contracts, maintained entrypoints, developer utilities, and automation. |
+| Docs/specs | `docs/`, `specifications/`; root README, architecture and contributor guides | Contributor documentation and reviewed scientific contracts, not per-run reports. Update [the documentation index](docs/DOCUMENTATION.md) for new modules, proposers, or gates. |
+| Data/benchmarks | `data/`, `benchmarks/` | Reviewed input fixtures, benchmark protocols, manifests, and intentionally retained baselines. Preserve dataset provenance and train/holdout boundaries. |
+| Generated outputs | `outputs/<run-id>/` | New per-run reports, plots, logs, and result/provenance bundles. `outputs/` is ignored; so are existing `artifacts/`, `checkpoints/`, `logs/`, `build/`, `dist/`, and Cargo `target/` paths. |
+| Experiments/scratch | `notebooks/`, `scratch/`, `apedp_dyn/experiments/` | Exploratory notebooks and disposable investigations; importable experimental harnesses stay with their package. These directories are not blanket-ignored: keep local results under `outputs/`. |
+
+Do not add a new top-level result directory for each experiment. Promote a
+reusable experiment into the appropriate runtime module only with tests and a
+documented boundary; an exploratory result is not a production capability.
+Use the [standard module status tags](AGENTS.md#3-module-status-labels) when
+indexing modules.
+
+### Cleanup and migration guide
+
+- **Move now:** redirect new, unreferenced local output to `outputs/<run-id>/`;
+  remove only reproducible, untracked build/cache files. Check references before
+  deleting or relocating anything tracked.
+- **Keep for compatibility:** existing `benchmark_corpus*`, `benchmark_n10/`,
+  `*_results/`, `tournament_results*`, `provenance/`, `apedp_persistence/`,
+  root reports, and research documents can be fixtures, persisted state, or
+  published evidence. Their current paths remain valid; do not bulk-move them.
+- **Migrate separately:** inventory readers, imports, scripts, links, checksums,
+  and published references first. Propose one bounded move with updated readers,
+  tests, and documented compatibility aliases where needed. Preserve original
+  evidence and provenance; never reset ledgers or rename burned holdout slices.
+- **Retain deliberately:** copy only reviewed, reproducibility-critical output
+  into `data/` or `benchmarks/`, with its command, seed/configuration, dataset hash,
+  and provenance sidecar. Do not force-add ignored output trees or model blobs.
+  Frozen records and preregistered specifications still follow [AGENTS.md](AGENTS.md);
+  this policy is not permission to regenerate or change them.
+
+## Module ownership and responsibilities
+
+[@psalmprax](https://github.com/psalmprax) is the current review owner for all
+areas, as recorded in [.github/CODEOWNERS](.github/CODEOWNERS).
+
+| Area | Responsibility and contributor boundary |
+| --- | --- |
+| `packages/` | Separately packaged domain APIs (continuum, quantum, robotics, molecular, audio, distributed) depend on the `apedp` core and expose domain functionality. Change their public API, dependencies, and packaging here; shared implementations belong in core. `jetflow-video` is standalone and must not acquire an `apedp` dependency. |
+| `crates/` | Contains the separate `apedp_kernel` Rust source tree, **not** a member of the active root Cargo workspace. Do not assume changes here affect the installed Python kernel or migrate it implicitly. |
+| `rust/apedp-kernel/` | Active PyO3 numerical kernel selected by root `Cargo.toml`, maturin, and CI. Native contributors must preserve Python fallback semantics and run conformance tests against a built extension. |
+| `apedp/` | Core scientific APIs, ingestion, equation models, pipeline/API services, and Python/native bridge. Shared runtime behavior belongs here rather than in result scripts. |
+| `apedp_dyn/` | Dynamic discovery, domain adapters, proposers, epistemic referees, and experiment orchestration. Proposers emit `CandidateProposal`; only referees adjudicate, and confirmation holdouts remain isolated. Import admission thresholds from `apedp_dyn.conf.canonical_spec`. |
+| `apedp_kernel`, `apedp_persistence/` | The former is a development symlink to the installed native package, not a place to edit source; the latter stores persisted JSON state, not Python implementation. Preserve these compatibility paths. |
+
+For deeper boundaries see [ARCHITECTURE.md](ARCHITECTURE.md); for module status
+and references see [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md).
+
 ## Local setup
 
 CI tests Python 3.10, 3.11, and 3.12; quality and packaging jobs use 3.12.

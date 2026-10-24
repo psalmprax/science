@@ -61,6 +61,31 @@ To maintain scientific integrity, the platform explicitly acknowledges its empir
 
 ---
 
+## Getting Started in 5 minutes
+
+Prerequisites: Git, Python 3.12 with `venv` and pip, and network access for
+dependencies. Python 3.10–3.12 is tested in CI. From the repository root, use
+this lightweight setup and verification path (POSIX shell):
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
+python -m pytest tests/test_smoke_imports.py::test_every_source_file_parses tests/test_ci_quality_contract.py -q
+```
+
+On Windows, activate with `.venv\Scripts\activate` instead. This verifies source
+syntax and CI configuration contracts without Rust, Redis, GPU, or Lean setup;
+it does **not** certify native or scientific behavior. First-time dependency
+downloads may take longer than five minutes. Do not install `requirements.lock`
+(a historical workstation snapshot).
+
+For the full test environment, pinned Rust toolchain, native build/import check,
+and Redis integration setup, follow [Contributing: local setup](CONTRIBUTING.md#local-setup).
+The existing [Makefile](Makefile) provides `make lint`, `make typecheck`,
+`make lint-rust`, `make kernel`, and `make test` once their prerequisites are installed.
+
 ## Quick Start
 
 ### 1. Running the Automated Test Suite
@@ -111,10 +136,43 @@ The authoritative source of truth for preregistered thresholds is frozen at [`sp
 
 ---
 
+## CI status matrix
+
+Expected checks, not a live pass/fail report. Commands run from the repository
+root unless noted; see [CONTRIBUTING.md](CONTRIBUTING.md#checks-matching-ci) for
+environment setup and scope limitations.
+
+| Check | Command / scope | Actual workflow and job |
+| --- | --- | --- |
+| Python lint | `make lint`: Ruff `E9,F` on `apedp/`, `apedp_dyn/`, `tests/`; configured rules on `apedp_dyn/conf/` | [APEDP CI/CD](.github/workflows/test.yml), `python-quality` (Python 3.12) |
+| Type checks | `make typecheck`: strict mypy on `apedp_dyn/conf/paths.py` and `canonical_spec.py`, not the entire repository | [APEDP CI/CD](.github/workflows/test.yml), `python-quality` |
+| Rust quality/unit tests | `make lint-rust`; `cargo test --workspace --locked` | [APEDP CI/CD](.github/workflows/test.yml), `rust-quality` |
+| Native build and smoke | `maturin develop --locked --manifest-path rust/apedp-kernel/Cargo.toml`, bridge availability assertion, `python -m pytest tests/test_smoke_imports.py -q -x`, then test collection | [APEDP CI/CD](.github/workflows/test.yml), `test` (Python 3.10/3.11/3.12) |
+| Scientific evidence | `python benchmarks/check_scientific_drift.py`; `python -m pytest tests/test_scientific_recovery.py tests/test_dyn_rime_known_truth.py -q -m scientific_regression` | [APEDP CI/CD](.github/workflows/test.yml), `test` |
+| Regression/integration | `python -m pytest tests/ -v --tb=short -n auto -x -m "not integration and not scientific_regression"`; separate `-m integration` run with Redis | [APEDP CI/CD](.github/workflows/test.yml), `test` |
+| Security | `bandit -r apedp/ -ll` | [APEDP CI/CD](.github/workflows/test.yml), `test` |
+| Distribution builds | Locked maturin builds for Linux/macOS/Windows; `python -m build` from each `packages/<package>/` | [Cross-Platform Native Wheels](.github/workflows/wheels.yml), `linux-wheels`, `macos-wheels`, `windows-wheels`, `sdist`, `python-packages` |
+
+Both quality jobs gate the Python test matrix. The wheel workflow has PR path
+filters (Rust, Cargo manifests/lockfile, packages, or its own workflow), so it is
+not expected on a documentation-only PR; it also runs on master/main pushes,
+version tags, or manual dispatch. Workflow dependencies do not configure branch
+protection; maintainers must select required checks in repository settings.
+
+## Repository layout and module ownership
+
+See the [repository structure policy and cleanup guide](CONTRIBUTING.md#repository-structure-policy)
+for canonical code, docs/specs, data/benchmarks, outputs, and experiment zones.
+The [module ownership/responsibility map](CONTRIBUTING.md#module-ownership-and-responsibilities)
+explains `packages/`, `crates/`, the active `rust/` kernel, and `apedp*` boundaries.
+Reviews route to `@psalmprax` via [CODEOWNERS](.github/CODEOWNERS).
+Existing imports, persisted evidence, and directory paths are unchanged.
+
 ## Key Documentation
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md): Component boundaries, evidence flow, and holdout firewalls.
 - [`CHANGELOG.md`](CHANGELOG.md): User-visible improvements, bug fixes, and audit remediations.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md): Setup, checks, repository structure policy, cleanup guide, and module ownership.
 - [`AGENTS.md`](AGENTS.md): Repository guidelines and integrity rules for AI coding assistants.
 - [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md): Complete module-by-module reference and status index.
 - [`docs/apedp_discovery_engine_ledger_and_benchmarks_audit.md`](docs/apedp_discovery_engine_ledger_and_benchmarks_audit.md): Engineering audit mapping guarantees to tests.
