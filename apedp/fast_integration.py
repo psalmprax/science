@@ -5,14 +5,14 @@ from typing import Any
 
 import numpy as np
 
-from apedp.rust_bridge import RustKernelBridge, get_default_bridge
+from apedp.rust_bridge import RustKernelBridge, default_kernel
 
 
 class FastODEIntegrator:
     """Rust-first ODE integrator with fallback."""
     
     def __init__(self, bridge: RustKernelBridge | None = None):
-        self.bridge = bridge or get_default_bridge()
+        self.bridge = bridge or default_kernel
     
     def integrate(self, equations: list[str], state_names: list[str], 
                   param_names: list[str], param_values: list[float],
