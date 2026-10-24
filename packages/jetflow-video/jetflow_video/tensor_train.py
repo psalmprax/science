@@ -88,11 +88,6 @@ def compress_video_latent_torch(
     tolerance: float = 1e-4,
 ) -> TensorTrainVideo:
     """Compress a 4D video latent tensor (T, C, H, W) into a 4-core Tensor-Train via TT-SVD."""
-    if _RUST_TT_AVAILABLE and apedp_kernel is not None:
-        try:
-            _ = apedp_kernel.jetflow_tensor_train_compress(latent.detach().cpu().numpy().astype('float64'))
-        except Exception:
-            pass
     if latent.ndim != 4:
         raise ValueError(f"Expected 4D tensor (T, C, H, W), got {latent.ndim}D with shape {latent.shape}")
 
