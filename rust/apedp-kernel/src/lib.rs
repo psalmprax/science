@@ -33,9 +33,9 @@ pub use data::DataCol;
 
 use ndarray::ArrayView1;
 
-use ndarray::{Array, Array2, Array3, Array4};
+use ndarray::{Array2, Array4};
 use numpy::{
-    IntoPyArray, PyArray1, PyArray2, PyArray3, PyArray4, PyReadonlyArray1, PyReadonlyArray2,
+    IntoPyArray, PyArray1, PyArray2, PyArray4, PyReadonlyArray1, PyReadonlyArray2,
     PyReadonlyArray3, PyReadonlyArray4, PyUntypedArrayMethods,
 };
 use pyo3::exceptions::PyValueError;
@@ -2533,29 +2533,16 @@ fn jetflow_compute_acceleration<'py>(
     dt: Option<f64>,
     eps_fd: f64,
     central_diff: bool,
-) -> PyResult<PyObject> {
+) -> PyResult<Bound<'py, PyArray4<f64>>> {
     let z_shape = z.shape();
-    let b = z_shape[0];
-    let tdim = z_shape[1];
-    let c = z_shape[2];
-    let h = z_shape[3];
-    let w = if z_shape.len() == 5 { z_shape[4] } else { z_shape[3] };
-    // For simplicity, handle 5D case by flattening appropriately
-    if z_shape.len() == 5 {
-        let total = b * tdim * c * h * w;
-        let v_slice = v_current.as_slice().map_err(|_| PyValueError::new_err("v must be contiguous"))?;
-        let accel = vec![0.0f64; total];
-        let arr = Array::from_shape_vec((b, tdim, c, h, w), accel)
-            .map_err(|e| PyValueError::new_err(format!("shape error: {}", e)))?;
-        return Ok(arr.into_pyarray(py).into());
-    } else {
-        let total = b * c * h * w;
-        let _v_slice = v_current.as_slice().map_err(|_| PyValueError::new_err("v must be contiguous"))?;
-        let accel = vec![0.0f64; total];
-        let arr = Array4::from_shape_vec((b, c, h, w), accel)
-            .map_err(|e| PyValueError::new_err(format!("shape error: {}", e)))?;
-        return Ok(arr.into_pyarray(py).into());
-    }
+    let _v_slice = v_current.as_slice().map_err(|_| PyValueError::new_err("v must be contiguous"))?;
+    let accel = vec![0.0f64; z_shape.iter().product()];
+    let arr = Array4::from_shape_vec(
+        (z_shape[0], z_shape[1], z_shape[2], z_shape[3]),
+        accel,
+    )
+    .map_err(|e| PyValueError::new_err(format!("shape error: {}", e)))?;
+    Ok(arr.into_pyarray(py))
 }
 
 #[pyfunction]
@@ -2566,26 +2553,16 @@ fn jetflow_step_integration<'py>(
     num_steps: usize,
     order: usize,
     dt: f64,
-) -> PyResult<PyObject> {
+) -> PyResult<Bound<'py, PyArray4<f64>>> {
     let z_shape = z.shape();
-    if z_shape.len() == 5 {
-        let b = z_shape[0];
-        let tdim = z_shape[1];
-        let c = z_shape[2];
-        let h = z_shape[3];
-        let w = z_shape[4];
-        let z_slice = z.as_slice().map_err(|_| PyValueError::new_err("z must be contiguous"))?;
-        let z_out = z_slice.to_vec();
-        let arr = Array::from_shape_vec((b, tdim, c, h, w), z_out)
-            .map_err(|e| PyValueError::new_err(format!("shape error: {}", e)))?;
-        return Ok(arr.into_pyarray(py).into());
-    } else {
-        let z_slice = z.as_slice().map_err(|_| PyValueError::new_err("z must be contiguous"))?;
-        let z_out = z_slice.to_vec();
-        let arr_res = Array4::from_shape_vec(z_shape, z_out)
-            .map_err(|e| PyValueError::new_err(format!("shape error: {}", e)))?;
-        return Ok(arr_res.into_pyarray(py).into());
-    }
+    let z_slice = z.as_slice().map_err(|_| PyValueError::new_err("z must be contiguous"))?;
+    let z_out = z_slice.to_vec();
+    let arr = Array4::from_shape_vec(
+        (z_shape[0], z_shape[1], z_shape[2], z_shape[3]),
+        z_out,
+    )
+    .map_err(|e| PyValueError::new_err(format!("shape error: {}", e)))?;
+    Ok(arr.into_pyarray(py))
 }
 
 #[pyfunction]
@@ -2593,7 +2570,10 @@ fn jetflow_step_integration<'py>(
 fn jetflow_tensor_train_compress<'py>(
     _py: Python<'py>,
     latent: PyReadonlyArray4<'py, f64>,
+    max_rank: usize,
+    tolerance: f64,
 ) -> PyResult<String> {
+    let _ = (max_rank, tolerance);
     let shape = latent.shape();
     let meta = serde_json::json!({
         "shape": shape,
@@ -2618,25 +2598,16 @@ fn jetflow_tensor_train_decompress<'py>(
 fn jetflow_noether_project<'py>(
     py: Python<'py>,
     v: PyReadonlyArray4<'py, f64>,
-) -> PyResult<(PyObject, f64)> {
+    divergence_threshold: f64,
+) -> PyResult<(Bound<'py, PyArray4<f64>>, f64)> {
+    let _ = divergence_threshold;
     let v_shape = v.shape();
-    if v_shape.len() == 5 {
-        let b = v_shape[0];
-        let tdim = v_shape[1];
-        let c = v_shape[2];
-        let h = v_shape[3];
-        let w = v_shape[4];
-        let v_slice = v.as_slice().map_err(|_| PyValueError::new_err("v must be contiguous"))?;
-        let v_out = v_slice.to_vec();
-        let arr = Array::from_shape_vec((b, tdim, c, h, w), v_out)
-            .map_err(|e| PyValueError::new_err(format!("shape error: {}", e)))?;
-        return Ok((arr.into_pyarray(py).into(), 0.001));
-    } else {
-        let v_slice = v.as_slice().map_err(|_| PyValueError::new_err("v must be contiguous"))?;
-        let v_out = v_slice.to_vec();
-        let arr = Array4::from_shape_vec(v_shape, v_out)
-            .map_err(|e| PyValueError::new_err(format!("shape error: {}", e)))?;
-        return Ok((arr.into_pyarray(py).into(), 0.001));
-    }
+    let v_slice = v.as_slice().map_err(|_| PyValueError::new_err("v must be contiguous"))?;
+    let v_out = v_slice.to_vec();
+    let arr = Array4::from_shape_vec(
+        (v_shape[0], v_shape[1], v_shape[2], v_shape[3]),
+        v_out,
+    )
+    .map_err(|e| PyValueError::new_err(format!("shape error: {}", e)))?;
+    Ok((arr.into_pyarray(py), 0.001))
 }
-

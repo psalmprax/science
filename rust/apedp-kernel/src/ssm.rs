@@ -1,12 +1,14 @@
 //! SSM/Mamba operations for efficient temporal modeling
 use pyo3::prelude::*;
-use ndarray::{Array1, Array2, Array3};
-use numpy::{IntoPyArray, PyArray1, PyArray2, PyArray3, PyReadonlyArray2, PyReadonlyArray3};
-use rayon::prelude::*;
+use ndarray::Array3;
+use numpy::{
+    IntoPyArray, PyArray3, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArray3,
+    PyUntypedArrayMethods,
+};
 
 #[pyfunction]
 #[pyo3(signature = (x, a_log, dt, b, c, d))]
-fn ssm_scan<'py>(
+pub fn ssm_scan<'py>(
     py: Python<'py>,
     x: PyReadonlyArray3<'py, f64>,
     a_log: PyReadonlyArray2<'py, f64>,
@@ -33,7 +35,7 @@ fn ssm_scan<'py>(
 }
 
 #[pyfunction]
-fn mamba2_selective_scan<'py>(
+pub fn mamba2_selective_scan<'py>(
     py: Python<'py>,
     u: PyReadonlyArray3<'py, f64>,
     delta: PyReadonlyArray3<'py, f64>,
