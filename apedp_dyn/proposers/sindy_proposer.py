@@ -153,9 +153,6 @@ class SINDyProposer(ProposerBase):
 
 # Adapter for CandidateProposer interface
 try:
-    from apedp_dyn.grammar.proposer import CandidateProposer, CandidateIR
-    from apedp_dyn.grammar.candidate_ir import CandidateDynamics, Term
-    import sympy as sp
 
     class SINDyGrammarAdapter:
         """Adapter to make SINDyProposer compatible with grammar CandidateProposer interface."""

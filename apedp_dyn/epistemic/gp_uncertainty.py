@@ -6,7 +6,6 @@ estimates to distinguish interpolative fits from extrapolative predictions.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable
 
 import numpy as np
 

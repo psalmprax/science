@@ -17,7 +17,6 @@ from collections.abc import Sequence
 from typing import Any
 
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, SystemCandidate, Term
-from apedp_dyn.grammar.proposer import CandidateProposer
 
 PROPOSER_VERSION = "1.1.0-llm"
 

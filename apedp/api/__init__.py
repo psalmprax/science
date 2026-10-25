@@ -200,4 +200,10 @@ def create_app() -> FastAPI:
     app.include_router(metrology.router, tags=["metrology"])
     app.include_router(repair.router, tags=["repair"])
     app.include_router(epistemic.router, tags=["epistemic"])
+    try:
+        from apedp.api.routes import visualization
+        app.include_router(visualization.router, tags=["visualization"])
+    except Exception:
+        pass
+
     return app

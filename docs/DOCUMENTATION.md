@@ -250,6 +250,14 @@ separate post-freeze step.
 | Epistemic Tracking | `epistemic` | Adversarial deliberation tournaments, requirements traceability |
 | Quantum Error Correction | `qec` | Knill-Laflamme conditions, surface code thresholds |
 | Applied Defect Auditing | `applied_defects` | Physics, chemistry, materials science, nanotechnology |
+| Applied Biopharma/Drug Discovery | `applied_biopharma` | Biomarkers, targets, repurposing, combination trials, ADMET (experimental) |
+| Applied Fusion Energy | `applied_fusion` | Plasma, reactors, fuel cycle, materials (experimental) |
+| Experimental Physics (Tesla) | `experimental_physics` | Unconventional EM concepts, validation (experimental) |
+| Applied Materials Science | `applied_materials` | Superconductors, catalysts, energy storage, metamaterials (experimental) |
+| Applied Synthetic Biology/Genomics | `applied_synthetic_bio` | CRISPR, protein engineering, pathways, circuits (experimental) |
+| Applied Climate/Carbon Capture | `applied_climate` | DAC, CCUS, modeling, renewables, adaptation (experimental) |
+| Applied Neuromorphic Computing | `applied_neuromorphic` | SNNs, memristors, BCI, architectures (experimental) |
+| Applied Electrical/Electronics | `applied_electrical` | Power systems, PE, RF, embedded, semis, control (experimental) |
 | Metrology | `metrology` | GUM uncertainty propagation, calibration traceability |
 | REST API | `api` | FastAPI server for all modules |
 | End-to-End Pipeline | `pipeline` | Ingest → Discover → Validate → Repair → Persist |
@@ -630,9 +638,237 @@ the implementation module (e.g. `apedp.falsification.falsifier`).
 | `apedp/gated_assurance/` | `checks` (constraint/asymptote/stability/generality probes), `contracts` (verdicts, metrics, benchmark contracts), `mechanistic`, `operational`, `engine`, `benchmark_contracts`, `feasibility` (classification + three-gate validator) |
 | `apedp/benchmarks/` | `types` (trust weights, enums, metric helpers), `results`, `cases` (the 25- and 100-case tables, data only), `pathological` (suite selection), `harness` |
 
+### 5.12 `apedp/applied_biopharma.py` — Applied Biopharma & Drug Discovery
+
+Comprehensive drug discovery across therapeutic areas (oncology, cardiovascular, neurodegenerative, infectious disease, immunology, diabetes, etc.), including biomarker analysis, target identification/prioritization, drug repurposing, combination therapy discovery/trial simulation, ADMET prediction, lead optimization, and clinical trial design.
+
+**Status:** `experimental`  
+**Tests:** Package import validated.
+
+**Exports:** `BiomarkerAnalyzer`, `DrugTargetDiscovery`, `DrugRepurposingEngine`, `CombinationTherapyDiscovery`, `ClinicalTrialSimulator`, `ADMETPredictor`, `LeadOptimizer`.
+
+### 5.13 `apedp/applied_fusion.py` — Applied Fusion Energy
+
+Plasma physics analysis, confinement assessment, reactor design evaluation, fuel cycle analysis, and fusion materials screening.
+
+**Status:** `experimental`  
+**Tests:** Package import validated.
+
+**Exports:** `PlasmaAnalyzer`, `FusionReactorDesigner`, `FusionFuelCycle`, `FusionMaterialsDatabase`.
+
+### 5.14 `apedp/experimental_physics.py` — Experimental Physics (Tesla/Inventions)
+
+Controlled exploration of unconventional electromagnetic concepts and Tesla-inspired inventions with physics validation and violation flagging.
+
+**Status:** `experimental`  
+**Tests:** Package import validated.
+
+**Exports:** `TeslaInventorAnalyzer`, `WirelessPowerExplorer`, `ResonanceSystemDesigner`, `ExperimentalPhysicsValidator`.
+
+### 5.15 `apedp/applied_materials.py` — Applied Materials Science
+
+Superconductor discovery, catalyst design, energy storage materials, metamaterials, and materials property prediction.
+
+**Status:** `experimental`  
+**Tests:** Package import validated.
+
+**Exports:** `SuperconductorDiscoverer`, `CatalystDesigner`, `EnergyStorageMaterials`, `MetamaterialDesigner`.
+
+### 5.16 `apedp/applied_synthetic_bio.py` — Applied Synthetic Biology & Genomics
+
+CRISPR design/optimization, protein engineering, metabolic pathway engineering, synthetic circuit design, and genome assembly/annotation.
+
+**Status:** `experimental`  
+**Tests:** Package import validated.
+
+**Exports:** `CRISPRDesigner`, `ProteinEngineer`, `MetabolicPathwayEngineer`, `SyntheticCircuitDesigner`, `GenomeAssembler`.
+
+### 5.17 `apedp/applied_climate.py` — Applied Climate Science & Carbon Capture
+
+Direct air capture, carbon utilization/storage, climate modeling/attribution, renewable energy optimization, and climate adaptation strategies.
+
+**Status:** `experimental`  
+**Tests:** Package import validated.
+
+**Exports:** `DirectAirCapture`, `CarbonUtilization`, `ClimateModeler`, `RenewableOptimizer`, `ClimateAdaptation`.
+
+### 5.18 `apedp/applied_neuromorphic.py` — Applied Neuromorphic Computing
+
+Neuromorphic architectures, spiking neural networks, memristive devices, brain-computer interfaces, and neuromorphic algorithms.
+
+**Status:** `experimental`  
+**Tests:** Package import validated.
+
+**Exports:** `NeuromorphicArchitect`, `SpikingNeuralNetworkDesigner`, `MemristorDesigner`, `BrainComputerInterface`, `NeuromorphicAlgorithms`.
+
+### 5.19 `apedp/applied_electrical.py` — Applied Electrical/Electronics Engineering
+
+Power systems/grid, power electronics/converters, analog/RF/microwave, embedded systems/IoT, semiconductors/devices, and control systems.
+
+**Status:** `experimental`  
+**Tests:** Package import validated.
+
+**Exports:** `PowerSystemDesigner`, `PowerElectronicsDesigner`, `RFAnalogDesigner`, `EmbeddedSystemsDesigner`, `SemiconductorDesigner`, `ControlSystemsDesigner`.
+
+### 5.20 Core Search & Optimization
+
+- `apedp/adaptive_search.py` — Adaptive search strategies with dynamic exploration/exploitation.
+- `apedp/advanced_search.py` — Advanced search algorithms (beam search, evolutionary, ensemble).
+- `apedp/optimizer.py` — General optimization utilities.
+- `apedp/bayesian_refinement.py` — Bayesian optimization and refinement.
+- `apedp/hyperopt.py` — Hyperparameter optimization.
+
+**Status:** `production`  
+**Tests:** Used by discovery/search pipelines.
+
+### 5.21 Calibration, Uncertainty & Conformal Prediction
+
+- `apedp/calibration.py` — Model calibration utilities.
+- `apedp/conformal.py` — Conformal prediction for uncertainty quantification.
+- `apedp/bootstrap_stability.py` — Bootstrap-based stability analysis.
+- `apedp/uncertainty.py` — Uncertainty quantification framework.
+- `apedp/ablation.py` — Ablation studies and feature importance.
+
+**Status:** `production`  
+**Tests:** Used in validation pipelines.
+
+### 5.22 Adversarial, Robustness & Benchmarking
+
+- `apedp/adversarial_benchmarks.py` — Adversarial robustness benchmarks.
+- `apedp/robustness.py` — Robustness testing utilities.
+- `apedp/cross_domain_benchmark.py` — Cross-domain generalization benchmarks.
+- `apedp/decision_benchmark.py` — Decision-theoretic benchmarks.
+- `apedp/red_team.py` — Red teaming and stress testing.
+
+**Status:** `production`  
+**Tests:** Integrated in evaluation suites.
+
+### 5.23 Data Quality, Ontology & Governance
+
+- `apedp/data_quality.py` — Data quality assessment.
+- `apedp/classification_ontology.py` — Domain classification ontology.
+- `apedp/constitution.py` — System constitution and constraints.
+- `apedp/config_presets.py` — Configuration presets.
+- `apedp/feature_store.py` — Feature storage and management.
+
+**Status:** `production`  
+**Tests:** Used across pipeline.
+
+### 5.24 Additional Core Components
+
+- `apedp/canonical_compiler.py` — Canonical equation compiler.
+- `apedp/closed_loop.py` — Closed-loop discovery.
+- `apedp/composer.py` — Model composition.
+- `apedp/decay_models.py` — Decay/time-dependent models.
+- `apedp/delay.py` — Delay/dynamical systems modeling.
+- `apedp/dimensional_invariant_engine.py` — Dimensional invariants enforcement.
+- `apedp/dimensional_layer.py` — Dimensional analysis layer.
+- `apedp/dp_regression.py` — Differential/privacy-aware regression.
+- `apedp/equation_bank.py` — Equation repository/bank.
+- `apedp/evolutionary.py` — Evolutionary algorithms.
+- `apedp/exceptions.py` — Exception definitions.
+- `apedp/field_theory.py` — Field theory modeling.
+- `apedp/formal_verification.py` — Formal verification utilities.
+- `apedp/graph_reasoning.py` — Graph-based reasoning.
+- `apedp/hallucination_detector.py` — Hallucination detection.
+- `apedp/information_theory.py` — Information theory metrics.
+- `apedp/interpretability.py` — Model interpretability.
+- `apedp/knowledge_graph.py` — Knowledge graph construction.
+- `apedp/llm_bridge.py` — LLM integration bridge.
+- `apedp/memory.py` — Memory/state management.
+- `apedp/metrics.py` — Evaluation metrics.
+- `apedp/monte_carlo.py` — Monte Carlo methods.
+- `apedp/multi_objective.py` — Multi-objective optimization.
+- `apedp/neural_symbolic.py` — Neural-symbolic integration.
+- `apedp/online_learning.py` — Online learning.
+- `apedp/operator_theory.py` — Operator theory.
+- `apedp/physics_constraints.py` — Physics constraint enforcement.
+- `apedp/provenance.py` — Provenance tracking.
+- `apedp/regularization.py` — Regularization techniques.
+- `apedp/representation.py` — Representation learning.
+- `apedp/rule_engine.py` — Rule engine.
+- `apedp/safety.py` — Safety checks.
+- `apedp/simulation.py` — Simulation framework.
+- `apedp/statistical_testing.py` — Statistical testing.
+- `apedp/stochastic.py` — Stochastic processes.
+- `apedp/symbolic_bridge.py` — Symbolic computation bridge.
+- `apedp/symmetry.py` — Symmetry detection.
+- `apedp/thermodynamics.py` — Thermodynamics modeling.
+- `apedp/topology.py` — Topological analysis.
+- `apedp/transfer_learning.py` — Transfer learning.
+- `apedp/trust.py` — Trust/scoring.
+- `apedp/types.py` — Core type definitions.
+- `apedp/utils.py` — Utilities.
+- `apedp/validation_framework.py` — Validation framework.
+
+**Status:** `production`/`mixed` — Core infrastructure components integrated throughout the system.
+
 ---
 
-## 6. API Server
+## 7. APEDP-DYN (Dynamic Discovery & Epistemic Referee System)
+
+The `apedp_dyn/` subsystem provides the dynamic discovery engine, competing proposers, epistemic referees, and rigorous adjudication framework.
+
+### 7.1 Core Architecture
+
+- `apedp_dyn/__init__.py` — Package initialization and exports.
+- `apedp_dyn/experiments/` — Experiment infrastructure and execution.
+- `apedp_dyn/harness/` — Test harnesses and benchmarks.
+- `apedp_dyn/epistemic/` — Epistemic tracking, referee logic, validation.
+- `apedp_dyn/proposers/` — Competing hypothesis proposers.
+- `apedp_dyn/gates/` — Promotion gates and validation gates.
+- `apedp_dyn/conf/` — Configuration (including canonical spec).
+- `apedp_dyn/lean_formal/` — Lean 4 formal verification integration.
+
+### 7.2 Proposers (`apedp_dyn/proposers/`)
+
+Independent proposers generating candidate hypotheses with strict separation from adjudication:
+
+- `basis_regression_proposer.py` — Basis function regression proposer.
+- `reservoir_proposer.py` — Reservoir computing proposer.
+- `sindy_proposer.py` — SINDy (Sparse Identification of Nonlinear Dynamics) proposer.
+- Additional proposers for microstructure, order book, genetic AST, etc.
+
+**Status:** `production`/`experimental`  
+**Rule:** Proposers never decide acceptance or inspect confirmation holdout data.
+
+### 7.3 Epistemic & Referee System (`apedp_dyn/epistemic/`)
+
+- Epistemic tracking and claim validation.
+- Bayesian active learning, GP uncertainty quantification.
+- Referee logic with FPR/CAR/VRR controls.
+- Anti-snooping holdout enforcement.
+
+**Status:** `production`
+
+### 7.4 Quantum Compilation (`apedp_dyn/quantum_compilation/`)
+
+DQI builders, inverse square root circuits, QROM implementations, multi-structure search, experiments, ledgers, and referees for quantum circuit compilation research.
+
+**Status:** `experimental`
+
+### 7.5 Other Components
+
+- `apedp_dyn/audio/`, `apedp_dyn/molecular/`, `apedp_dyn/ode/`, `apedp_dyn/market/`, `apedp_dyn/model/`, `apedp_dyn/estimation/`, `apedp_dyn/fitting/` — Domain-specific modules.
+- `apedp_dyn/operational/` — Operational utilities including lifecycle pruning.
+- `apedp_dyn/distributed/` — Distributed computing support.
+- `apedp_dyn/de_arm/`, `apedp_dyn/grammar/`, `apedp_dyn/kernel_shim.py`, `apedp_dyn/notebook_adapter.py`, `apedp_dyn/env.py`, `apedp_dyn/dyn_sweep.py`, `apedp_dyn/dyn_tournament.py` — Supporting infrastructure.
+
+**Status:** `mixed` (production/experimental/audit-only as appropriate)
+
+### 7.6 Additional Packages in `apedp/`
+
+- `apedp/api/` — FastAPI REST server (documented in Section 8).
+- `apedp/visualization/` — Plotting utilities (`plots.py`).
+- `apedp/persistence/` — Model storage, experiment logging, serialization.
+- `apedp/notebooks/` — Example notebooks and tutorials.
+- `apedp/scenarios_data/` — Scenario datasets.
+
+**Status:** `production`
+
+---
+
+## 8. API Server
 
 ### Starting the Server
 
@@ -756,6 +992,18 @@ Bar chart showing dimensional structure of variables.
 
 #### `plot_epistemic_graph(nodes, edges, output_path)`
 Network graph of epistemic knowledge graph.
+
+### HTTP Visualization Routes
+
+The `apedp/api/routes/visualization.py` router is mounted under `/visualize`
+(only when `create_app()` can import it). Each POST route writes a figure to the
+`output_path` in the request body and returns `{"status": "success", "output_path": ...}`.
+
+- `POST /visualize/regression`, `/uncertainty`, `/calibration`, `/heatmap`, `/pareto`, `/violin`
+- `POST /visualize/search/progress` (PNG) and `/visualize/search/dashboard` (HTML)
+- `GET /visualize/download/{filename}` serves a file from the server's working directory
+
+Covered by `tests/test_visualization_routes.py`.
 
 #### `plot_scenario_results(scenario_names, pass_fail, output_path)`
 Bar chart showing scenario pass/fail results.
@@ -1212,6 +1460,14 @@ science/
 │   ├── metrology.py         Uncertainty propagation
 │   ├── epistemic.py         Knowledge graph & traceability
 │   ├── applied_defects.py   Domain-specific defect auditors
+│   ├── applied_biopharma.py  Drug discovery & biopharma (experimental)
+│   ├── applied_fusion.py     Fusion energy research (experimental)
+│   ├── applied_materials.py  Materials science discovery (experimental)
+│   ├── applied_synthetic_bio.py Synthetic biology & genomics (experimental)
+│   ├── applied_climate.py    Climate science & carbon capture (experimental)
+│   ├── applied_neuromorphic.py Neuromorphic computing (experimental)
+│   ├── applied_electrical.py Electrical/electronics engineering (experimental)
+│   ├── experimental_physics.py Tesla/inventions exploration (experimental)
 │   ├── qec.py               Quantum error correction
 │   ├── scenarios.py         22 test scenarios
 │   ├── pipeline.py          End-to-end discovery pipeline
@@ -1369,6 +1625,8 @@ Status tags follow AGENTS.md §3 (`production`, `experimental`, `audit-only`, `d
 | [`apedp_dyn/quantum_compilation/search.py`](../apedp_dyn/quantum_compilation/search.py) | Budgeted APEDP-Q precision search: coordinate descent over fixed-point widths, full-domain model re-check before short-listing, official development-prefix verification, and an opt-in salted full-domain promotion run. | `experimental` |
 | [`apedp_dyn/quantum_compilation/experiment.py`](../apedp_dyn/quantum_compilation/experiment.py) | Experiment 00 harness: `generate -> screen -> compile/measure -> verify` pipeline backed by `QuantumCandidateLedger` with separate estimated and measured cost fields, plus `DqiProposer` (Benchmark II), `DfthcsosProposer` (Benchmark III), and `run_reference_control`. | `experimental` |
 | [`apedp_dyn/quantum_compilation/experiment_01.py`](../apedp_dyn/quantum_compilation/experiment_01.py) | Experiment 01 runner: reproduces the reference artifact and the APEDP-Q precision candidate through the ExperimentRunner, running both under the official full-domain verifier. | `audit-only` |
+| [`apedp_dyn/quantum_compilation/dqi_builder.py`](../apedp_dyn/quantum_compilation/dqi_builder.py) | Benchmark-II DQI circuit builder used by the proposer and verifier-sweep scripts. | `experimental` |
+| [`apedp_dyn/quantum_compilation/dfthcsos_adapter.py`](../apedp_dyn/quantum_compilation/dfthcsos_adapter.py) | Benchmark-III DFT-HC-SOS adapter bridging the proposer to the official verifier scoring infrastructure. | `experimental` |
 | [`apedp_dyn/quantum_compilation/invsqrt_qrom_line.py`](../apedp_dyn/quantum_compilation/invsqrt_qrom_line.py) | Experiment 02 proposer: QROM piecewise-linear seed search over fixed-point widths; exact 130-bit integer fixed-point screen over the full domain, self-contained `kickmix` circuit compilation without volatile global caches, `statistics.num_t_like` resource accounting, and official verification. Exact-model screen estimate for `(7,16,12,10,28,27,28)` is 1,309,175.61 (unverified on full-domain holdout; the only on-disk verified full-domain PASS in `artifacts/quantum_compilation/invsqrt/full-verification/ledger.jsonl` is NR candidate `1b64c7145d13fc09d368` at 1,941,280.56). | `experimental` |
 | [`apedp_dyn/quantum_compilation/invsqrt_direct_poly.py`](../apedp_dyn/quantum_compilation/invsqrt_direct_poly.py) | Experiment 03 proposer: direct degree-2 quadratic polynomial phase compiler over power-of-two intervals (`PolyPrecision(index_bits, coef_bits, delta_bits)`) with Horner evaluation, synchronized model/circuit bit-slicing, and `statistics.num_t_like` resource accounting. | `experimental` |
 | [`apedp_dyn/quantum_compilation/qrom_invsqrt.py`](../apedp_dyn/quantum_compilation/qrom_invsqrt.py) | Compatibility wrapper delegating QROM piecewise-linear `invsqrt` candidate generation, screening, compilation, and resource measurement to `invsqrt_qrom_line.py`. | `experimental` |
@@ -1383,6 +1641,10 @@ Status tags follow AGENTS.md §3 (`production`, `experimental`, `audit-only`, `d
 | [`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dfthcsos/scoreinfra/costs_prepare.py`](../apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dfthcsos/scoreinfra/costs_prepare.py) | Benchmark-III cost/resource preparation module shipped with the competition bundle. | `audit-only` |
 | [`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dfthcsos/scoreinfra/dfthc_math.py`](../apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dfthcsos/scoreinfra/dfthc_math.py) | Benchmark-III double-factorized THC mathematics shipped with the competition bundle. | `audit-only` |
 | [`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dfthcsos/scoreinfra/reference.py`](../apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dfthcsos/scoreinfra/reference.py) | Benchmark-III reference state/energy construction shipped with the competition bundle. | `audit-only` |
+| [`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/dqi_iteration_sweep_patch/apedp_dyn/quantum_compilation/dqi_builder.py`](../apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/dqi_iteration_sweep_patch/apedp_dyn/quantum_compilation/dqi_builder.py) | Patched DQI builder snapshot from the iteration-sweep bundle; the live builder is `apedp_dyn/quantum_compilation/dqi_builder.py`. | `audit-only` |
+| [`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/dqi_iteration_sweep_patch/scripts/audit_dqi_sweep.py`](../apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/dqi_iteration_sweep_patch/scripts/audit_dqi_sweep.py) | DQI iteration-sweep audit script. | `audit-only` |
+| [`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/dqi_iteration_sweep_patch/scripts/sweep_dqi_eea_bound.py`](../apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/dqi_iteration_sweep_patch/scripts/sweep_dqi_eea_bound.py) | DQI EEA-bound sweep script. | `audit-only` |
+| [`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/stage_storage/dfthcsos_rm_block2_j4.py`](../apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/stage_storage/dfthcsos_rm_block2_j4.py) | Staged DFT-HC-SOS Reed-Muller block-2 experiment script. | `experimental` |
 | [`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dfthcsos/example_submission/angle_k_reference_circuit.py`](../apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dfthcsos/example_submission/angle_k_reference_circuit.py) | Benchmark-III example/reference angle-K circuit shipped with the competition bundle. | `audit-only` |
 | [`apedp_dyn/epistemic/market_extrapolation.py`](../apedp_dyn/epistemic/market_extrapolation.py) | Out-of-distribution regime transfer gate evaluating volatility and liquidity shocks. | `production` |
 | [`apedp_dyn/epistemic/frozen_spec.py`](../apedp_dyn/epistemic/frozen_spec.py) | Cryptographic hash verification of referee source files to prevent silent code drift. | `production` |

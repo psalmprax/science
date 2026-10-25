@@ -383,7 +383,10 @@ def test_ui_ablation_study_endpoint():
     data = resp.json()
     assert data["total_cases"] == 8
     assert data["arm_a_specialized"]["fpr"] == 0.0
-    assert data["arm_b_core_naive"]["fpr"] == 100.0
+    # Arm B promotes 2 of the 4 trap cases (CASE-06, CASE-07). The endpoint now
+    # reports live counts, so the old hard-pinned 100.0 no longer applies.
+    assert data["arm_b_core_naive"]["false_promotions"] == 2
+    assert data["arm_b_core_naive"]["fpr"] == 50.0
     assert data["arm_c_agnostic"]["fpr"] == 0.0
     assert data["arm_c_agnostic"]["vrr"] == 100.0
 

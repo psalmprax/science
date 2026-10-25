@@ -1,6 +1,7 @@
 """FastAPI Web Studio Server for APEDP Epistemic Discovery & Adjudication."""
 from __future__ import annotations
 
+import ast
 import logging
 import os
 import re
@@ -615,6 +616,13 @@ def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
         plot_actual = np.concatenate([target, Y_ho])
         plot_pred = np.concatenate([pred_vals, pred_ho])
         split_idx = len(t)
+        # The multiterm engine stores the prediction it fitted, on the same
+        # train-then-holdout axis. Prefer it over rebuilding the curve from term
+        # names, but only when it is complete and aligned with the plotted time.
+        _stored = (top_cand.provenance.get("gate4_status", {}).get("full_prediction")
+                   if top_cand is not None else None)
+        if _stored and len(_stored) == len(plot_t) and all(v is not None for v in _stored):
+            plot_pred = np.asarray(_stored, dtype=float)
 
     expr = ""
     last_state = target_state
@@ -904,6 +912,58 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
             return True
         return bool(re.fullmatch(r"x3", s))
 
+    def _eval_safe_term(expr: str) -> np.ndarray | None:
+        """Evaluate a grammar term over this system's own state series.
+
+        Accepts only arithmetic over state names, numeric literals, a numeric
+        constant exponent and sin/cos/exp/sqrt. Parsed with ``ast`` (never
+        ``eval``). Returns None for anything else, so the caller still fails
+        loudly instead of fabricating a curve.
+        """
+        funcs = {"sin": np.sin, "cos": np.cos, "exp": np.exp, "sqrt": np.sqrt}
+
+        def _ev(node: ast.AST) -> Any:
+            if isinstance(node, ast.Expression):
+                return _ev(node.body)
+            if (isinstance(node, ast.Constant)
+                    and isinstance(node.value, (int, float))
+                    and not isinstance(node.value, bool)):
+                return float(node.value)
+            if isinstance(node, ast.Name) and node.id in state_series:
+                return np.asarray(state_series[node.id], dtype=float)
+            if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
+                v = _ev(node.operand)
+                return v if isinstance(node.op, ast.UAdd) else -v
+            if isinstance(node, ast.BinOp):
+                a = _ev(node.left)
+                b = _ev(node.right)
+                if isinstance(node.op, ast.Add):
+                    return a + b
+                if isinstance(node.op, ast.Sub):
+                    return a - b
+                if isinstance(node.op, ast.Mult):
+                    return a * b
+                if isinstance(node.op, ast.Div):
+                    return a / b
+                if isinstance(node.op, ast.Pow):
+                    if np.ndim(b) != 0 or abs(float(b)) > 10:
+                        raise ValueError("unsupported exponent")
+                    return a ** float(b)
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                    and node.func.id in funcs and len(node.args) == 1 and not node.keywords):
+                return funcs[node.func.id](_ev(node.args[0]))
+            raise ValueError("unsupported expression")
+
+        try:
+            tree = ast.parse(expr.replace("^", "**"), mode="eval")
+            with np.errstate(all="ignore"):
+                out = np.asarray(_ev(tree), dtype=float)
+        except (SyntaxError, ValueError, TypeError, ZeroDivisionError):
+            return None
+        if out.ndim == 0 or not np.all(np.isfinite(out)):
+            return None
+        return out
+
     if top_cand is not None:
         if top_cand.fit and top_cand.fit.param_values:
             # Multi-term or single term prediction
@@ -920,14 +980,17 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
                     elif _cubic_term(t_name) and "x" in state_series:
                         pred_vals += w * (state_series["x"] ** 3)
                     else:
-                        raise HTTPException(
-                            status_code=500,
-                            detail=(
-                                f"Cannot reconstruct plot series for term '{t_name}' "
-                                f"in system '{req.system}' (available states: "
-                                f"{sorted(state_series)})."
-                            ),
-                        )
+                        series = _eval_safe_term(t_name)
+                        if series is None:
+                            raise HTTPException(
+                                status_code=500,
+                                detail=(
+                                    f"Cannot reconstruct plot series for term '{t_name}' "
+                                    f"in system '{req.system}' (available states: "
+                                    f"{sorted(state_series)})."
+                                ),
+                            )
+                        pred_vals += w * series
             else:
                 coef = top_cand.fit.param_values.get("theta_1", 1.0)
                 cid = top_cand.candidate.candidate_id
