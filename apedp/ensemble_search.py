@@ -5,8 +5,6 @@ chances of getting stuck in local optima.
 """
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any
 
 from apedp.proposer_router import auto_select_proposer
@@ -15,7 +13,7 @@ from apedp.proposer_router import auto_select_proposer
 class EnsembleSearcher:
     """Run multiple proposers and select best overall result."""
     
-    def __init__(self, proposers: list[str] = None):
+    def __init__(self, proposers: list[str] | None = None):
         self.proposers = proposers or ["rime_ad", "grammar", "library"]
     
     def search_ensemble(self, problem: Any, budget_total: int = 300) -> dict[str, Any]:
@@ -30,7 +28,7 @@ class EnsembleSearcher:
                     "budget": budget_per,
                     "note": f"Ensemble member: {proposer}"
                 }
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 results[proposer] = {"status": "error", "error": str(e)}
         
         # Recommend best based on auto-selection

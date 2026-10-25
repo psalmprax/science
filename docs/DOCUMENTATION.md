@@ -1363,18 +1363,17 @@ Status tags follow AGENTS.md §3 (`production`, `experimental`, `audit-only`, `d
 | [`apedp_dyn/epistemic/cross_asset_gate.py`](../apedp_dyn/epistemic/cross_asset_gate.py) | Multi-asset cross-sectional transfer gate enforcing zero contamination across symbols. | `production` |
 | [`apedp_dyn/quantum_compilation/contracts.py`](../apedp_dyn/quantum_compilation/contracts.py) | APEDP-Q verifier contracts: byte-pinned SHA-256 trees for the competition verifier and `kickmix` extension, AST-extracted benchmark constants, and `assert_locked()` re-check before every official run. | `experimental` |
 | [`apedp_dyn/quantum_compilation/candidates.py`](../apedp_dyn/quantum_compilation/candidates.py) | Quantum `CircuitCandidate` and `VerifierReceipt` records: deterministic ids bind parameters to the contract digest; artifacts are byte-hashed; proposer estimates are kept separate from official receipts. | `experimental` |
-| [`apedp_dyn/quantum_compilation/ledger.py`](../apedp_dyn/quantum_compilation/ledger.py) | Adapter from quantum candidates to `FullLineageExperimentLedger`: proposer screens can only reject/propose, development-prefix passes never promote, and a salted full-domain slice is one-shot even after a pass. | `experimental` |
-| [`apedp_dyn/quantum_compilation/referee.py`](../apedp_dyn/quantum_compilation/referee.py) | Official-verifier subprocess adapter for Benchmark I: builds the exact command, pins the contract, parses verifier JSON, redacts the salt id, and labels `development-prefix` versus `full-domain` scope. | `experimental` |
-| [`apedp_dyn/quantum_compilation/invsqrt.py`](../apedp_dyn/quantum_compilation/invsqrt.py) | Benchmark-I proposer/screen: lazy `kickmix` runtime setup, exact integer Newton-Raphson error model, phase-margin and rotation-synthesis cost estimate, `.kmb` writer, and single-coordinate precision neighbours. | `experimental` |
+| [`apedp_dyn/quantum_compilation/ledger.py`](../apedp_dyn/quantum_compilation/ledger.py) | Adapter from quantum candidates to `FullLineageExperimentLedger` plus 3-benchmark portfolio scoring (`invsqrt_cost`, `dqi_cost`, `chemistry_cost`, `aggregate_score`, `score_verified_portfolio`, `score_ledger_portfolio`): proposer screens can only reject/propose, development-prefix passes never promote, and a salted full-domain slice is one-shot even after a pass. | `experimental` |
+| [`apedp_dyn/quantum_compilation/referee.py`](../apedp_dyn/quantum_compilation/referee.py) | Official-verifier subprocess adapter for Benchmarks I (`invsqrt`), II (`dqi`), and III (`dfthcsos`): builds exact commands, pins contracts, parses verifier JSON, redacts the salt id, and labels `development-prefix`, `full-domain-reduced-shots`, `full-domain-public`, or `full-domain` scope. | `experimental` |
+| [`apedp_dyn/quantum_compilation/invsqrt.py`](../apedp_dyn/quantum_compilation/invsqrt.py) | Benchmark-I proposer/screen: lazy `kickmix` runtime setup, exact integer Newton-Raphson error model, phase-margin and rotation-synthesis cost estimate, `.kmb` writer, single-coordinate precision neighbours, bounded phase-angle calibration (`calibrate_phase_angles`), and self-inverse Toffoli-pair rewriting (`rewrite_self_inverse_toffoli_pairs`). | `experimental` |
 | [`apedp_dyn/quantum_compilation/search.py`](../apedp_dyn/quantum_compilation/search.py) | Budgeted APEDP-Q precision search: coordinate descent over fixed-point widths, full-domain model re-check before short-listing, official development-prefix verification, and an opt-in salted full-domain promotion run. | `experimental` |
-| [`apedp_dyn/quantum_compilation/search.py`](../apedp_dyn/quantum_compilation/search.py) | Budgeted APEDP-Q precision search: coordinate descent over fixed-point widths, full-domain model re-check before short-listing, official development-prefix verification, and an opt-in salted full-domain promotion run. | `experimental` |
-| [`apedp_dyn/quantum_compilation/experiment.py`](../apedp_dyn/quantum_compilation/experiment.py) | Experiment 00 harness: generate → screen → compile/measure → verify pipeline with separate estimated and measured cost fields; the unit every APEDP-Q experiment runs through. | `experimental` |
+| [`apedp_dyn/quantum_compilation/experiment.py`](../apedp_dyn/quantum_compilation/experiment.py) | Experiment 00 harness: `generate -> screen -> compile/measure -> verify` pipeline backed by `QuantumCandidateLedger` with separate estimated and measured cost fields, plus `DqiProposer` (Benchmark II), `DfthcsosProposer` (Benchmark III), and `run_reference_control`. | `experimental` |
 | [`apedp_dyn/quantum_compilation/experiment_01.py`](../apedp_dyn/quantum_compilation/experiment_01.py) | Experiment 01 runner: reproduces the reference artifact and the APEDP-Q precision candidate through the ExperimentRunner, running both under the official full-domain verifier. | `audit-only` |
-| [`apedp_dyn/quantum_compilation/invsqrt_qrom_line.py`](../apedp_dyn/quantum_compilation/invsqrt_qrom_line.py) | Experiment 02 proposer: QROM piecewise-linear seed search over fixed-point widths; exact fixed-point screen over the full domain, Kickmix circuit compilation, and official verification. Verified PASS at 1,309,175.605. | `experimental` |
-| [`apedp_dyn/quantum_compilation/invsqrt_direct_poly.py`](../apedp_dyn/quantum_compilation/invsqrt_direct_poly.py) | Experiment 03 proposer: direct polynomial phase compiler with interval-based coefficients and Horner evaluation; avoids Newton-Raphson stages for potentially different cost profile. | `experimental` |
-| [`apedp_dyn/quantum_compilation/qrom_invsqrt.py`](../apedp_dyn/quantum_compilation/qrom_invsqrt.py) | QROM-based alternative circuit structure for invsqrt with expanded search space over additional parameters. | `experimental` |
-| [`apedp_dyn/quantum_compilation/multi_structure_search.py`](../apedp_dyn/quantum_compilation/multi_structure_search.py) | Multi-structure search orchestrator running NR, QROM, and Direct Poly proposers in parallel to find best solution across circuit topologies. | `experimental` |
-| [`tests/test_quantum_compilation.py`](../tests/test_quantum_compilation.py) | Audit pins for APEDP-Q: contract/tamper checks, candidate identity, ledger screens, development-versus-final scope, one-shot salt burning, subset coverage, neighbour determinism, and an opt-in CPython 3.13 `kickmix` integration screen. | `audit-only` |
+| [`apedp_dyn/quantum_compilation/invsqrt_qrom_line.py`](../apedp_dyn/quantum_compilation/invsqrt_qrom_line.py) | Experiment 02 proposer: QROM piecewise-linear seed search over fixed-point widths; exact 130-bit integer fixed-point screen over the full domain, self-contained `kickmix` circuit compilation without volatile global caches, `statistics.num_t_like` resource accounting, and official verification. Exact-model screen estimate for `(7,16,12,10,28,27,28)` is 1,309,175.61 (unverified on full-domain holdout; the only on-disk verified full-domain PASS in `artifacts/quantum_compilation/invsqrt/full-verification/ledger.jsonl` is NR candidate `1b64c7145d13fc09d368` at 1,941,280.56). | `experimental` |
+| [`apedp_dyn/quantum_compilation/invsqrt_direct_poly.py`](../apedp_dyn/quantum_compilation/invsqrt_direct_poly.py) | Experiment 03 proposer: direct degree-2 quadratic polynomial phase compiler over power-of-two intervals (`PolyPrecision(index_bits, coef_bits, delta_bits)`) with Horner evaluation, synchronized model/circuit bit-slicing, and `statistics.num_t_like` resource accounting. | `experimental` |
+| [`apedp_dyn/quantum_compilation/qrom_invsqrt.py`](../apedp_dyn/quantum_compilation/qrom_invsqrt.py) | Compatibility wrapper delegating QROM piecewise-linear `invsqrt` candidate generation, screening, compilation, and resource measurement to `invsqrt_qrom_line.py`. | `experimental` |
+| [`apedp_dyn/quantum_compilation/multi_structure_search.py`](../apedp_dyn/quantum_compilation/multi_structure_search.py) | Multi-structure search orchestrator running NR, QROM, and Direct Poly proposers across circuit topologies with `QuantumCandidateLedger` tracking. | `experimental` |
+| [`tests/test_quantum_compilation.py`](../tests/test_quantum_compilation.py) | Audit pins for APEDP-Q: contract/tamper checks, candidate identity, ledger screens, development-versus-final scope, one-shot salt burning, subset coverage, neighbour determinism, QROM/Direct-Poly model & resource accounting, multi-benchmark referee dispatch (`invsqrt`, `dqi`, `dfthcsos`), ledger-backed `ExperimentRunner`, phase calibration/rewrites, and 3-benchmark portfolio scoring. | `audit-only` |
 | [`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/invsqrt/verify_submission_invsqrt.py`](../apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/invsqrt/verify_submission_invsqrt.py) | Benchmark-I authoritative verifier: exact phase reference, full-domain shot sweep, Toffoli-equivalent score, and salted/seed handling. Pinned by `contracts.py`; never edited by APEDP-Q. | `audit-only` |
 | [`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/invsqrt/nr_reference_circuit.py`](../apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/invsqrt/nr_reference_circuit.py) | Benchmark-I reference Newton-Raphson fixed-point model and circuit builder used by the proposer screen; authoritative interpretation remains the verifier. | `audit-only` |
 | [`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dqi/verify_submission_dqi.py`](../apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dqi/verify_submission_dqi.py) | Benchmark-II (quantum-data-integration) authoritative verifier shipped with the competition bundle. | `audit-only` |
@@ -1415,6 +1414,11 @@ Status tags follow AGENTS.md §3 (`production`, `experimental`, `audit-only`, `d
 | [`apedp_dyn/proposers/regime_switching_proposer.py`](../apedp_dyn/proposers/regime_switching_proposer.py) | Piecewise linear threshold models adaptive to market volatility states. | `production` |
 | [`apedp_dyn/proposers/hawkes_orderflow_proposer.py`](../apedp_dyn/proposers/hawkes_orderflow_proposer.py) | Self-exciting point process modeling order arrival clustering and quote replenishment. | `production` |
 | [`apedp_dyn/proposers/ncm_structural_proposer.py`](../apedp_dyn/proposers/ncm_structural_proposer.py) | Two-tier Next-Concept Modeling (NCM) structural proposer: decomposes scientific discovery into qualitative macro-concept archetypes (conserved oscillator, continuum transport, rational saturation, cyclic regimes) before micro-parameter estimation and sparsity pruning. | `experimental` |
+| [`apedp_dyn/proposers/sindy_proposer.py`](../apedp_dyn/proposers/sindy_proposer.py) | SINDy-style sparse identification proposer: builds polynomial/trig library over state variables, applies sequential thresholded least squares for parsimonious ODE/PDE discovery with optional Rust acceleration. | `experimental` |
+| [`apedp_dyn/proposers/reservoir_proposer.py`](../apedp_dyn/proposers/reservoir_proposer.py) | Echo State Network (reservoir computing) proposer: fixed random recurrent dynamics with ridge regression readout for chaotic/time-series systems where exact symbolic forms are hard to find. | `experimental` |
+| [`apedp_dyn/proposers/basis_regression_proposer.py`](../apedp_dyn/proposers/basis_regression_proposer.py) | Basis function regression proposer (RBF/polynomials): fast screening step for guiding symbolic search with ridge regression over basis expansions. | `experimental` |
+| [`apedp_dyn/epistemic/gp_uncertainty.py`](../apedp_dyn/epistemic/gp_uncertainty.py) | Gaussian Process uncertainty quantification: RBF kernel GP regressor with Cholesky, Bayesian optimization with expected improvement for distinguishing interpolative fits from extrapolative predictions. | `experimental` |
+| [`apedp_dyn/epistemic/bayesian_active_learning.py`](../apedp_dyn/epistemic/bayesian_active_learning.py) | Bayesian active learning loop: uses GP uncertainty and acquisition functions to prioritize experiments/candidates for efficient discovery. | `experimental` |
 | [`apedp_dyn/proposers/rime_proposer.py`](../apedp_dyn/proposers/rime_proposer.py) | RIME symbolic-mechanism proposer: emits closed-form equations from typed mechanism graphs, adjudicated by the same frozen referee. | `experimental` |
 | [`apedp_dyn/proposers/stem_proposers.py`](../apedp_dyn/proposers/stem_proposers.py) | Modular multi-engine STEM proposers (Option 2): Hamiltonian energy-conserving mechanical systems, solenoidal divergence-free fluid velocity fields, and compartmental epidemiological dynamics. | `experimental` |
 | [`apedp_dyn/proposers/invariant_transfer_proposer.py`](../apedp_dyn/proposers/invariant_transfer_proposer.py) | Active cross-regime invariant transfer proposer: IRM-penalized representations with worst-regime retention gating, Cross-Regime Generalization Index (CGI) ranking, and active extrapolation-barrier checks. | `production` |
@@ -1467,6 +1471,7 @@ Status tags follow AGENTS.md §3 (`production`, `experimental`, `audit-only`, `d
 | [`benchmarks/run_rime_oof_multivariate_probe.py`](../benchmarks/run_rime_oof_multivariate_probe.py) | RIME-OOF-MV registered replication (PREREG-RIME-OOF-MV-2026-10-17): multivariate out-of-family surrogate probe, `RimeProposer` vs `RimeAdProposer` (fresh seeds 600/601/603). Recorded outcome: no proposer-layer abstention on any out-of-family law (confident surrogates, test R² in [0.62, 0.94], wide-range collapse down to 0.057); `RimeAdProposer` NO_SIGNAL multivariately (56–77 s per fit). Artifacts: `benchmarks/rime_oof_multivariate_results.json`, `docs/RIME_OOF_MV_REPORT.md`. | `audit-only` |
 | [`benchmarks/run_scope_refusal_mv_validation.py`](../benchmarks/run_scope_refusal_mv_validation.py) | Spec §16e two-sided validation harness (PREREG-RIME-SCOPE-MV-2026-10-17): 27 cells over fresh seeds 700/701/702 — three aligned out-of-family worlds (sin-interaction, max-switch, amplitude-modulation), the exact in-family control, four §16c monomial guards, null world. Recorded outcome: **FAIL (negative result)** — all 9 out-of-family emissions declined, but the exact control is wrongfully refused by the periodic-quadratic and amplitude-modulated probes (c→0.1 refinement-floor linearization, Δ within τ) and all 12 guard cells are undefined (frozen variance guard vs §16c 1e-4-scale axes); the frozen family-set rule admits no retention assignment covering W1/W3. Determinism verified; void first run disclosed. Artifacts: `benchmarks/scope_refusal_mv_validation_results.json` (+ `..._void1_harnessbug.json`), `docs/RIME_SCOPE_MV_REPORT.md`, `tests/test_dyn_rime_scope_refusal_mv.py`. | `audit-only` |
 | [`specifications/canonical_preregistered_spec_v1.json`](../specifications/canonical_preregistered_spec_v1.json) | Canonical frozen specification containing all preregistered thresholds. | `production` |
+| [`apedp_dyn/operational/lifecycle_pruner.py`](../apedp_dyn/operational/lifecycle_pruner.py) | Operational storage footprint audit and automated lifecycle pruner: monitors filesystem headroom, detects and prunes Cargo build targets, auxiliary Lean 4 (elan) toolchains, package manager caches (uv, bun, npm/npx, pip), and IDE/browser caches with dry-run support and automated pre-flight self-healing guards. | `production` |
 | [`apedp_dyn/conf/benchmark.py`](../apedp_dyn/conf/benchmark.py) | Legacy benchmark configuration and baseline threshold profiles. | `deprecated` |
 | [`apedp_dyn/epistemic/transfer_scope.py`](../apedp_dyn/epistemic/transfer_scope.py) | Out-of-distribution transfer scope classifier evaluating empirical domain boundaries. | `production` |
 | [`apedp_dyn/epistemic/diagnosis.py`](../apedp_dyn/epistemic/diagnosis.py) | Diagnostic failure attribution determining why candidates were refused at gates. | `production` |
@@ -1800,6 +1805,53 @@ from apedp_dyn.env import temporary_storage_scope
 with temporary_storage_scope() as temp_dir:
     # Any heavy scratch files written here are automatically purged on context exit
     scratch_csv = temp_dir / "simulated_data.csv"
+```
+
+---
+
+## 19. Operational Footprint & Automated Lifecycle Pruning
+
+### 19.1 Background & Threat Model
+As an autonomous scientific discovery platform performing extensive symbolic search, Rust kernel compilation, theorem-prover verification, and neural simulations, APEDP-X accumulates massive local build and toolchain bloat:
+- **Cargo Build Targets**: Incremental compilation artifacts and build caches exceeding 4.7 GB in `target/`.
+- **Compiler Toolchains**: Auxiliary Lean 4 (elan) toolchains provisioned for independent reproduction (e.g. `v4.34.1` alongside `v4.35.0`), consuming ~3 GB each.
+- **Package Manager Caches**: Multi-gigabyte caches across `uv`, `bun`, `npm`/`_npx`, and `pip`.
+
+Without automated lifecycle pruning, host filesystems reach 100% saturation, blocking experiment execution, CI gates, and model checkpointing.
+
+### 19.2 Architecture (`apedp_dyn/operational/lifecycle_pruner.py`)
+The `lifecycle_pruner` module provides a production-grade operational storage guard:
+1. **Deterministic Storage Audit (`StorageFootprint`)**: Scans root filesystem capacity, Cargo targets, active vs. auxiliary Lean toolchains, and package caches without side effects.
+2. **Lifecycle Policies (`LifecyclePolicy`)**:
+   - `max_disk_usage_percent`: Warning/pruning trigger (default: 85.0%).
+   - `min_disk_free_gb`: Minimum free headroom floor (default: 10.0 GB).
+   - `max_cargo_target_gb`: Target directory ceiling (default: 2.0 GB).
+3. **Safe Pruning (`prune_lifecycle`)**:
+   - Idempotent cleanup of build targets, auxiliary toolchains, and package caches.
+   - Preserves active toolchains, user source code, database volumes, and persistent ledgers.
+   - Full dry-run preview mode (`--dry-run`).
+4. **Pre-flight Automated Guard (`auto_guard_storage`)**:
+   - Integrated into `scripts/check.sh` and CI pipelines to self-heal storage before heavy regression suites run.
+
+### 19.3 CLI Usage
+
+```bash
+# 1. Audit storage footprint and check headroom
+bash scripts/lifecycle_prune.sh --status
+# Or via python:
+python -m apedp_dyn.operational.lifecycle_pruner --status
+
+# 2. Dry-run simulation (zero mutations)
+python -m apedp_dyn.operational.lifecycle_pruner --dry-run
+
+# 3. Execute lifecycle pruning
+bash scripts/lifecycle_prune.sh --prune
+
+# 4. Automated pre-flight guard check (auto-prunes only if threshold breached)
+bash scripts/lifecycle_prune.sh --guard --max-usage 90 --min-free 10
+
+# 5. Machine-readable JSON output for telemetry
+python -m apedp_dyn.operational.lifecycle_pruner --status --json
 ```
 
 ---

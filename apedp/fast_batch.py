@@ -16,7 +16,7 @@ class FastBatchProcessor:
                 kernel = bridge.kernel
                 if hasattr(kernel, 'batch_normalize'):
                     return kernel.batch_normalize(X)
-        except Exception:
+        except Exception:  # noqa: BLE001,S110
             pass
         
         mean = X.mean(axis=0)

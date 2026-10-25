@@ -1,8 +1,6 @@
 """Fast Pareto optimization with Rust-first backend and Python fallback."""
 from __future__ import annotations
 
-from typing import Any
-
 import numpy as np
 
 
@@ -19,7 +17,7 @@ class FastPareto:
                 kernel = bridge.kernel
                 if hasattr(kernel, 'pareto_sort'):
                     return kernel.pareto_sort(objectives.tolist())
-        except Exception:
+        except Exception:  # noqa: BLE001,S110
             pass
         
         return self._python_nondominated_sort(objectives)
@@ -33,7 +31,7 @@ class FastPareto:
         # objectives: (n, m) where higher is better or lower is better
         # Assume minimize all objectives
         fronts = []
-        remaining = set(range(n))
+        set(range(n))
         domination_count = np.zeros(n, dtype=int)
         dominated_sets = [[] for _ in range(n)]
         

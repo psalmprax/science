@@ -7,7 +7,6 @@ the smallest cells that still exercise every adapter path.
 """
 from __future__ import annotations
 
-import os
 import sys
 from pathlib import Path
 
@@ -16,15 +15,14 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from benchmarks.run_feynman_noise_rediscovery import (  # noqa: E402
+from benchmarks.run_feynman_noise_rediscovery import (
     ALLOWED_VERDICTS,
     DEFAULT_SIGMAS,
     PREDICTIVE_R2_MIN,
     STRUCTURE_R2_MIN,
     _design_seed,
-    _noise_seed,
     _feynman_worlds,
-    adapter_synthesis,
+    _noise_seed,
     all_worlds,
     build_design,
     probe_design,
@@ -140,7 +138,7 @@ def test_build_design_is_reproducible_and_noisy_only_in_target():
 def test_val_design_has_no_noise_draw():
     world = all_worlds()[0]
     d = build_design(world, 0.10, 80, 25, rep=0)
-    clean = build_design(world, 0.0, 80, 25, rep=0)
+    build_design(world, 0.0, 80, 25, rep=0)
     # Validation design points are seed-separated from train; the scored
     # quantity y_val_clean must be identical between noisy and clean runs
     # (noise only enters the training target).

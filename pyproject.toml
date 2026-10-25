@@ -139,6 +139,7 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # Pure re-export surface: the unused imports ARE the public API.
 "apedp/__init__.py" = ["F401"]
+"**/__init__.py" = ["F401"]
 "apedp/pde_solvers.py" = ["E731"]
 "apedp/cross_domain_benchmark.py" = ["E731", "E402"]
 "apedp/neural_discovery/symbolic.py" = ["E402", "S105"]

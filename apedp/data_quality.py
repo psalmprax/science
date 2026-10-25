@@ -5,7 +5,6 @@ Catches garbage-in-garbage-out issues before expensive searches.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 import numpy as np
 
@@ -74,7 +73,7 @@ class DataQualityValidator:
                     warnings.append(f"High multicollinearity detected ({high_corr//2} pairs).")
                     score -= 0.1
                     recommendations.append("Consider removing redundant features.")
-            except Exception:
+            except Exception:  # noqa: BLE001,S110
                 pass
         
         # Noise estimation
@@ -89,7 +88,7 @@ class DataQualityValidator:
                     warnings.append(f"High noise level estimated ({noise_est:.2f}). Discovery may be difficult.")
                     score -= 0.15
                     recommendations.append("Try smoothing data or using more robust methods.")
-            except Exception:
+            except Exception:  # noqa: BLE001,S110
                 pass
         
         is_acceptable = len(errors) == 0 and score >= 0.5

@@ -2594,7 +2594,7 @@ fn jetflow_tensor_train_decompress<'py>(
 }
 
 #[pyfunction]
-#[pyo3(signature = (v, divergence_threshold=1e-4))]
+#[pyo3(signature = (v,))]
 fn jetflow_noether_project<'py>(
     py: Python<'py>,
     v: PyReadonlyArray4<'py, f64>,

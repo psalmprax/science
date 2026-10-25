@@ -17,9 +17,9 @@ from __future__ import annotations
 import json
 import math
 import random
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import Any
 
 # Try to import Rust kernel
 try:
@@ -45,7 +45,7 @@ class Dimensions:
                                                       'temperature', 'current', 
                                                       'amount', 'luminosity'])
 
-    def __add__(self, other: 'Dimensions') -> 'Dimensions':
+    def __add__(self, other: Dimensions) -> Dimensions:
         return Dimensions(
             mass=self.mass + other.mass,
             length=self.length + other.length,
@@ -56,7 +56,7 @@ class Dimensions:
             luminosity=self.luminosity + other.luminosity,
         )
 
-    def __sub__(self, other: 'Dimensions') -> 'Dimensions':
+    def __sub__(self, other: Dimensions) -> Dimensions:
         return Dimensions(
             mass=self.mass - other.mass,
             length=self.length - other.length,
@@ -72,10 +72,10 @@ class PhysicsConstraintEngine:
     """Physics-informed constraint engine with Rust acceleration."""
 
     def __init__(self):
-        self.variable_dims: Dict[str, Dimensions] = {}
-        self.target_dim: Optional[Dimensions] = None
-        self.symmetries: Set[str] = set()
-        self.conserved_quantities: List[str] = []
+        self.variable_dims: dict[str, Dimensions] = {}
+        self.target_dim: Dimensions | None = None
+        self.symmetries: set[str] = set()
+        self.conserved_quantities: list[str] = []
         
         if RUST_AVAILABLE and hasattr(apedp_kernel, 'PhysicsConstraintEngine'):
             self._rust = apedp_kernel.PhysicsConstraintEngine()
@@ -111,7 +111,7 @@ class PhysicsConstraintEngine:
             return 0.5
         return 1.0
 
-    def smoothness_score(self, values: List[float]) -> float:
+    def smoothness_score(self, values: list[float]) -> float:
         if self._rust is not None:
             return self._rust.smoothness_score(values)
         if len(values) < 3:
@@ -122,7 +122,7 @@ class PhysicsConstraintEngine:
             roughness += second_diff
         return 1.0 / (1.0 + roughness / len(values))
 
-    def detect_symmetries(self, data: List[List[float]]) -> Set[str]:
+    def detect_symmetries(self, data: list[list[float]]) -> set[str]:
         symmetries = set()
         if len(data) >= 2:
             symmetries.add("translation")
@@ -134,17 +134,17 @@ class DagNode:
     """Node in expression DAG."""
     id: int
     op: str
-    children: List[int] = field(default_factory=list)
-    value: Optional[float] = None
-    var_idx: Optional[int] = None
+    children: list[int] = field(default_factory=list)
+    value: float | None = None
+    var_idx: int | None = None
 
 
 class ExpressionDag:
     """DAG representation of expressions with Rust acceleration."""
 
-    def __init__(self, variables: List[str]):
+    def __init__(self, variables: list[str]):
         self.variables = variables
-        self.nodes: List[DagNode] = []
+        self.nodes: list[DagNode] = []
         self.root = 0
         if RUST_AVAILABLE and hasattr(apedp_kernel, 'DagExpression'):
             self._rust = apedp_kernel.DagExpression(variables)
@@ -152,19 +152,19 @@ class ExpressionDag:
             self._rust = None
         self._use_python = True  # Use Python impl for manually constructed DAGs for reliability
 
-    def add_node(self, op: str, children: List[int] = None,
-                 value: Optional[float] = None, var_idx: Optional[int] = None) -> int:
+    def add_node(self, op: str, children: list[int] | None = None,
+                 value: float | None = None, var_idx: int | None = None) -> int:
         if children is None:
             children = []
         node_id = len(self.nodes)
         self.nodes.append(DagNode(node_id, op, children, value, var_idx))
         return node_id
 
-    def to_string(self, node_id: Optional[int] = None) -> str:
+    def to_string(self, node_id: int | None = None) -> str:
         if self._rust is not None and not self._use_python and len(self.nodes) == 0:
             try:
                 return self._rust.canonicalize()
-            except Exception:
+            except Exception:  # noqa: BLE001,S110
                 pass
         nid = node_id if node_id is not None else self.root
         if nid >= len(self.nodes):
@@ -207,7 +207,7 @@ class ExpressionDag:
         if self._rust is not None and not self._use_python and len(self.nodes) == 0:
             try:
                 return self._rust.canonicalize()
-            except Exception:
+            except Exception:  # noqa: BLE001,S110
                 pass
         return self.to_string()
 
@@ -215,7 +215,7 @@ class ExpressionDag:
     def complexity(self) -> int:
         return len(self.nodes)
 
-    def depth(self, node_id: Optional[int] = None) -> int:
+    def depth(self, node_id: int | None = None) -> int:
         nid = node_id if node_id is not None else self.root
         if nid >= len(self.nodes):
             return 0
@@ -253,7 +253,7 @@ class NGTSSearch:
             return self._rust.select()
         return node_id
 
-    def expand(self, node_id: int, actions: List[Tuple[str, float]]):
+    def expand(self, node_id: int, actions: list[tuple[str, float]]):
         if self._rust is not None:
             actions_json = json.dumps([[expr, prior] for expr, prior in actions])
             self._rust.expand(node_id, actions_json)
@@ -270,7 +270,7 @@ class NGTSSearch:
         self.visits[node_id] += 1
         self.values[node_id] += value
 
-    def best_expression(self) -> Optional[str]:
+    def best_expression(self) -> str | None:
         if self._rust is not None:
             return self._rust.best_expression()
         if not self.values:
@@ -295,7 +295,7 @@ class NGTSSearch:
             self.values[0] += random.random() * 0.5
         return num_sims
 
-    def statistics(self) -> Dict[str, Any]:
+    def statistics(self) -> dict[str, Any]:
         if self._rust is not None:
             stats_str = self._rust.statistics()
             return json.loads(stats_str)
@@ -314,9 +314,9 @@ class LatentSpace:
             self._rust = apedp_kernel.LatentSpace(dim)
         else:
             self._rust = None
-        self.embeddings: Dict[str, List[float]] = {}
+        self.embeddings: dict[str, list[float]] = {}
 
-    def encode(self, expr: str) -> List[float]:
+    def encode(self, expr: str) -> list[float]:
         if self._rust is not None:
             return self._rust.encode(expr)
         embedding = [0.0] * self.dim
@@ -327,12 +327,12 @@ class LatentSpace:
         embedding[2] += expr.count('sin') * 0.1
         return embedding
 
-    def decode(self, latent: List[float]) -> str:
+    def decode(self, latent: list[float]) -> str:
         if self._rust is not None:
             return self._rust.decode(latent)
         return "x0"
 
-    def interpolate(self, expr1: str, expr2: str, alpha: float) -> List[float]:
+    def interpolate(self, expr1: str, expr2: str, alpha: float) -> list[float]:
         if self._rust is not None:
             return self._rust.interpolate(expr1, expr2, alpha)
         z1 = self.encode(expr1)
@@ -358,7 +358,7 @@ class ValidationPipeline:
         self.k_folds = 5
         self.test_size = 0.2
 
-    def k_fold_split(self, n_samples: int, k_folds: int = 5) -> List[List[int]]:
+    def k_fold_split(self, n_samples: int, k_folds: int = 5) -> list[list[int]]:
         if self._rust is not None:
             return self._rust.k_fold_split(n_samples, k_folds)
         indices = list(range(n_samples))
@@ -371,7 +371,7 @@ class ValidationPipeline:
             folds.append(indices[start:end])
         return folds
 
-    def train_test_split(self, n_samples: int, test_size: float = 0.2) -> Tuple[List[int], List[int]]:
+    def train_test_split(self, n_samples: int, test_size: float = 0.2) -> tuple[list[int], list[int]]:
         if self._rust is not None:
             return self._rust.train_test_split(n_samples, test_size)
         indices = list(range(n_samples))
@@ -379,7 +379,7 @@ class ValidationPipeline:
         n_test = int(n_samples * test_size)
         return indices[n_test:], indices[:n_test]
 
-    def noise_robustness_test(self, base_error: float) -> Dict[str, float]:
+    def noise_robustness_test(self, base_error: float) -> dict[str, float]:
         if self._rust is not None:
             return self._rust.noise_robustness_test(base_error)
         results = {}
@@ -387,7 +387,7 @@ class ValidationPipeline:
             results[f"noise_{level:.3f}"] = base_error * (1.0 + level * 10.0)
         return results
 
-    def bootstrap_estimate(self, values: List[float], n_samples: int = 100) -> Tuple[float, float]:
+    def bootstrap_estimate(self, values: list[float], n_samples: int = 100) -> tuple[float, float]:
         if self._rust is not None:
             return self._rust.bootstrap_estimate(values)
         if not values:
@@ -400,7 +400,7 @@ class ValidationPipeline:
         var = sum((m - mean) ** 2 for m in means) / len(means)
         return (mean, math.sqrt(var))
 
-    def validate(self, train_errors: List[float], test_error: float) -> Dict[str, Any]:
+    def validate(self, train_errors: list[float], test_error: float) -> dict[str, Any]:
         if self._rust is not None:
             result_str = self._rust.validate(train_errors, test_error)
             return json.loads(result_str)
@@ -420,14 +420,14 @@ class ValidationPipeline:
 class HierarchicalSearch:
     """Hierarchical search: coarse -> mid -> fine."""
 
-    def __init__(self, physics_engine: Optional[PhysicsConstraintEngine] = None):
+    def __init__(self, physics_engine: PhysicsConstraintEngine | None = None):
         self.physics_engine = physics_engine or PhysicsConstraintEngine()
         self.ngts = NGTSSearch()
         self.latent = LatentSpace()
         self.validator = ValidationPipeline()
 
     def search(self, X, y, budget: int = 1000,
-               variable_names: List[str] = None) -> List[Dict[str, Any]]:
+               variable_names: list[str] | None = None) -> list[dict[str, Any]]:
         """Run hierarchical search."""
         if variable_names is None:
             variable_names = [f"x{i}" for i in range(X.shape[1] if hasattr(X, 'shape') else len(X[0]))]
@@ -457,7 +457,7 @@ class HierarchicalSearch:
         validated.sort(key=lambda x: x['overall_score'], reverse=True)
         return validated
 
-    def _coarse_search(self, var_names: List[str], budget: int) -> List[Dict[str, Any]]:
+    def _coarse_search(self, var_names: list[str], budget: int) -> list[dict[str, Any]]:
         candidates = []
         templates = ["{v}", "{v}**2", "sin({v})", "exp({v})", "{v1}+{v2}", "{v1}*{v2}"]
         for i in range(min(budget, len(templates) * 2)):
@@ -475,7 +475,7 @@ class HierarchicalSearch:
             })
         return candidates
 
-    def _mid_search(self, seeds: List[Dict[str, Any]], var_names: List[str], budget: int) -> List[Dict[str, Any]]:
+    def _mid_search(self, seeds: list[dict[str, Any]], var_names: list[str], budget: int) -> list[dict[str, Any]]:
         candidates = []
         self.ngts.set_config(num_simulations=budget)
         for seed in seeds[:5]:
@@ -487,12 +487,12 @@ class HierarchicalSearch:
             candidates.append({'expression': best, 'phase': 'mid', 'complexity': best.count('+') + best.count('*')})
         return candidates
 
-    def _fine_search(self, seeds: List[Dict[str, Any]], var_names: List[str], budget: int) -> List[Dict[str, Any]]:
+    def _fine_search(self, seeds: list[dict[str, Any]], var_names: list[str], budget: int) -> list[dict[str, Any]]:
         candidates = []
         for seed in seeds[:3]:
             expr = seed['expression']
             # Local perturbations
-            for i in range(min(budget // 3, 10)):
+            for _i in range(min(budget // 3, 10)):
                 perturbed = f"({expr}) * (1.0 + 0.01*{var_names[0] if var_names else 'x0'})"
                 candidates.append({'expression': perturbed, 'phase': 'fine', 'complexity': seed.get('complexity', 1) + 3})
         return candidates
@@ -516,17 +516,17 @@ def get_validation_pipeline() -> ValidationPipeline:
 
 
 __all__ = [
-    'Dimensions',
-    'PhysicsConstraintEngine',
+    'RUST_AVAILABLE',
     'DagNode',
+    'Dimensions',
     'ExpressionDag',
-    'NGTSSearch',
-    'LatentSpace',
-    'ValidationPipeline',
     'HierarchicalSearch',
-    'get_physics_engine',
+    'LatentSpace',
+    'NGTSSearch',
+    'PhysicsConstraintEngine',
+    'ValidationPipeline',
     'get_hierarchical_search',
     'get_ngts_search',
+    'get_physics_engine',
     'get_validation_pipeline',
-    'RUST_AVAILABLE',
 ]

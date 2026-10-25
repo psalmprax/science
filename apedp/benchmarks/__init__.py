@@ -11,7 +11,7 @@ Provides an objective 100-case cross-disciplinary benchmark suite testing:
    - Tier B: Hidden known repairs (5 cases)
    - Tier C: Novel / open synthesis challenges (5 cases)
 """
-# ruff: noqa: F401 - this module is the public facade; every name it
+
 # imports from its implementation modules is part of the old module's API.
 
 from __future__ import annotations
