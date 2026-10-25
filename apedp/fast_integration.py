@@ -35,7 +35,7 @@ class FastODEIntegrator:
                         "y": np.array(res[4]),
                         "kernel_path": "rust"
                     }
-        except Exception:
+        except Exception:  # noqa: BLE001,S110
             pass
         
         return self._python_fallback(equations, state_names, param_names, 
@@ -45,8 +45,8 @@ class FastODEIntegrator:
                         param_values, t_span, x0, t_eval):
         """Fallback using scipy."""
         try:
-            from scipy.integrate import solve_ivp
             import sympy as sp
+            from scipy.integrate import solve_ivp
             
             # Build RHS
             syms = {name: sp.Symbol(name) for name in state_names + param_names}
@@ -67,7 +67,7 @@ class FastODEIntegrator:
                 "y": sol.y,
                 "kernel_path": "fallback"
             }
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             return {
                 "success": False,
                 "message": str(e),

@@ -9,7 +9,7 @@ Provides an isolated, non-generative falsification prober that actively searches
 6. Decisive Refusal: Formally issues REFUSED_CANNOT_REPAIR when physical invariants cannot be
    satisfied without unphysical distortion, preventing unprincipled ad-hoc regularizations.
 """
-# ruff: noqa: F401 - this module is the public facade; every name it
+
 # imports from its implementation modules is part of the old module's API.
 
 from __future__ import annotations

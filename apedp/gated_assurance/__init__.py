@@ -5,7 +5,7 @@ gated scientific assurance control plane. Enforces strict isolation between deve
 and locked challenge partitions, evaluates multidimensional scientific improvement metrics,
 benchmarks diagnostic reasoning, and classifies failure severity to govern lifecycle decisions.
 """
-# ruff: noqa: F401 - this module is the public facade; every name it
+
 # imports from its implementation modules is part of the old module's API.
 
 from __future__ import annotations

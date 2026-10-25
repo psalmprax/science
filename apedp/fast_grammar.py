@@ -16,7 +16,7 @@ class FastGrammar:
                 kernel = bridge.kernel
                 if hasattr(kernel, 'grammar_enumerate'):
                     return kernel.grammar_enumerate(variables, max_terms)
-        except Exception:
+        except Exception:  # noqa: BLE001,S110
             pass
         
         return self._python_enumerate(variables, max_terms)
@@ -29,7 +29,7 @@ class FastGrammar:
                                         optional=tuple(v for v in variables if v not in ("u",)),
                                         max_terms=max_terms)
             return [{"expression": str(c)} for c in cands[:100]]
-        except Exception:
+        except Exception:  # noqa: BLE001
             return []
 
 

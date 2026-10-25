@@ -84,7 +84,7 @@ def build_toolchain_shim(toolchain: str, tmp: Path) -> Path:
 
 
 def pinned_version(shim_dir: Path) -> str:
-    res = subprocess.run(
+    res = subprocess.run(  # noqa: S603
         [str(shim_dir / "lean"), "--version"], capture_output=True, text=True, timeout=120,
     )
     if res.returncode != 0:
@@ -132,8 +132,9 @@ def committed_bytes(relpath: str) -> bytes:
     state takes precedence over sweep regeneration — the generator must NOT
     silently overwrite honest disclosures like the u15 'remains unverified'
     comment, which a bare regeneration corrupts back into a vacuous theorem)."""
-    res = subprocess.run(
-        ["git", "-C", str(REPO_ROOT), "show", f"HEAD:{relpath}"],
+    git_bin = shutil.which("git") or "git"
+    res = subprocess.run(  # noqa: S603
+        [git_bin, "-C", str(REPO_ROOT), "show", f"HEAD:{relpath}"],
         capture_output=True,
     )
     if res.returncode != 0:
@@ -145,6 +146,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--toolchain", default=DEFAULT_TOOLCHAIN,
                         help="elan toolchain to pin (must DIFFER from the reference's for independence)")
+    parser.add_argument("--cleanup-toolchain", action="store_true",
+                        help="Uninstall auxiliary toolchain after run to prevent disk bloat")
     args = parser.parse_args()
 
     if not REFERENCE_ARTIFACT.is_file():
@@ -206,7 +209,7 @@ def main() -> int:
             print(run.stdout[-4000:], file=sys.stderr)
             print(run.stderr[-4000:], file=sys.stderr)
             return 1
-        sweep_line = next(l for l in run.stdout.splitlines() if l.startswith("SWEEP_JSON::"))
+        sweep_line = next(line for line in run.stdout.splitlines() if line.startswith("SWEEP_JSON::"))
         fresh = json.loads(sweep_line[len("SWEEP_JSON::"):])
 
         # Byte-identical restoration of the reference evidence, INSIDE the
@@ -260,6 +263,19 @@ def main() -> int:
         print("REPRODUCTION FAILED: record divergence (see mismatches above)")
         return 1
     print(f"report written: {REPORT_PATH}")
+    if args.cleanup_toolchain:
+        elan_bin = shutil.which("elan")
+        if elan_bin:
+            try:
+                res = subprocess.run(  # noqa: S603
+                    [elan_bin, "toolchain", "uninstall", args.toolchain],
+                    capture_output=True,
+                    timeout=30,
+                )
+                if res.returncode == 0:
+                    print(f"Cleaned up auxiliary Lean toolchain {args.toolchain} to prevent disk bloat.")
+            except (OSError, subprocess.SubprocessError) as e:
+                print(f"Warning: could not uninstall toolchain {args.toolchain}: {e}", file=sys.stderr)
     return 0
 
 

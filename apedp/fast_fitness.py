@@ -27,7 +27,7 @@ class FastFitnessEvaluator:
                                                        [X[:, i] for i in range(X.shape[1])])
                 metrics = self.bridge.compute_metrics(y, y_pred)
                 return metrics
-        except Exception:
+        except Exception:  # noqa: BLE001,S110
             pass
         
         # Fallback to Python
@@ -40,7 +40,7 @@ class FastFitnessEvaluator:
             if hasattr(self.bridge, 'score_candidates_batch'):
                 data = [X[:, i] for i in range(X.shape[1])]
                 return self.bridge.score_candidates_batch(expressions, variable_names, data, y)
-        except Exception:
+        except Exception:  # noqa: BLE001,S110
             pass
         
         # Fallback
@@ -53,6 +53,7 @@ class FastFitnessEvaluator:
                         X: np.ndarray, y: np.ndarray) -> dict[str, Any]:
         """Pure Python fallback."""
         import sympy as sp
+
         from apedp.safety import safe_parse_expr
         
         try:
@@ -77,7 +78,7 @@ class FastFitnessEvaluator:
                 "has_nan_or_inf": bool(np.any(~np.isfinite(residuals))),
                 "kernel_path": "fallback"
             }
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             return {
                 "mse": float('nan'),
                 "mae": float('nan'),

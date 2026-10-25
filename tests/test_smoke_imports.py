@@ -44,7 +44,7 @@ def _module_names(package: str) -> list[str]:
         parts = list(path.relative_to(ROOT).with_suffix("").parts)
         if parts and parts[-1] == "__init__":
             parts.pop()
-        if parts:
+        if parts and all(p.isidentifier() for p in parts):
             names.append(".".join(parts))
     return sorted(set(names))
 

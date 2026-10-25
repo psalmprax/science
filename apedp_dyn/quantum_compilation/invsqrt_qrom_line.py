@@ -8,9 +8,10 @@ APEDP-Q :class:`~apedp_dyn.quantum_compilation.experiment.Proposer`.
 The proposer varies the piecewise-linear QROM seed precision
 ``(index_bits, coef_bits, slope_bits, delta_bits, square_bits, product_bits,
 result_bits)``, screens each point with the exact fixed-point model over the
-full inverse-square-root domain, compiles the exact ``.kmb`` circuit, and lets
-the :class:`~apedp_dyn.quantum_compilation.experiment.ExperimentRunner` verify
-it with the official competition verifier.
+full inverse-square-root domain in 64-bit phase units (2^-64 turns, matching the
+official verifier), compiles the exact ``.kmb`` circuit, and lets the
+:class:`~apedp_dyn.quantum_compilation.experiment.ExperimentRunner` verify it
+with the official competition verifier.
 
 Estimated cost (from circuit statistics + rotation synthesis) and verified
 measured cost (from the official verifier) are kept as separate fields and
@@ -41,11 +42,14 @@ __all__ = [
     "QPrecision",
     "QromLineProposer",
     "build_qrom_line_circuit",
+    "evaluate_qrom_line_model",
     "fixed_point_model",
     "line_table",
+    "reference_phase_values",
 ]
 
 TOLERANCE_EXPONENT = 24  # relative phase tolerance 2^-24, matching the reference.
+_MASK64 = (1 << 64) - 1
 
 # Precision configurations from scripts/run_invsqrt_qrom_sweep.py and expanded search
 # (index_bits, coef_bits, slope_bits, delta_bits, square_bits, product_bits, result_bits).
@@ -65,8 +69,7 @@ QROM_LINE_CONFIGS: list[tuple[int, int, int, int, int, int, int]] = [
     (7, 17, 12, 11, 28, 27, 28),
     (8, 18, 13, 12, 29, 28, 29),
     (8, 18, 13, 12, 30, 29, 30),
-    # Expanded configurations
-    (7, 16, 12, 10, 28, 27, 28),
+    # Expanded configurations (deduplicated)
     (7, 17, 13, 12, 28, 27, 28),
     (7, 16, 13, 12, 29, 28, 28),
     (8, 17, 12, 11, 28, 27, 29),
@@ -75,10 +78,6 @@ QROM_LINE_CONFIGS: list[tuple[int, int, int, int, int, int, int]] = [
     (8, 16, 12, 10, 29, 28, 29),
     (7, 15, 11, 10, 27, 26, 27),
 ]
-
-# candidate_id -> phase margin units (2^-64 turns), populated by screen() and
-# consumed by compile() so rotation-synthesis cost uses the screened margin.
-_SCREEN_MARGIN_CACHE: dict[str, float] = {}
 
 
 @dataclasses.dataclass(frozen=True)
@@ -97,6 +96,61 @@ class QPrecision:
 
 def _contract_n_p(contract: VerifierContract) -> int:
     return int(contract.constants["N_P"])
+
+
+def _max_x(n_p: int) -> int:
+    return int(3 * (2**n_p - 2) ** 2)
+
+
+def _rotation_t_count(eps: float) -> float:
+    return 0.56 * math.log2(1.0 / eps) + 5.3
+
+
+@functools.cache
+def _full_domain_reference_values(
+    n_p: int, precision_bits: int = TOLERANCE_EXPONENT
+) -> tuple[np.ndarray, np.ndarray]:
+    """Exact 64-bit phase target and tolerance in units of 2^-64 turns for 1..max_x.
+
+    Matches ``verify_submission_invsqrt.reference_values`` for ``beta = 1`` using
+    exact 130-bit integer square roots without requiring the ``kickmix`` extension.
+    """
+    max_x = _max_x(n_p)
+    num = 1 << 130
+    shift = precision_bits + 1
+    cap = 1 << 63
+    rs = [math.isqrt(num // x) for x in range(1, max_x + 1)]
+    target = np.array([((r + 1) >> 1) & _MASK64 for r in rs], dtype=np.uint64)
+    tol = np.array(
+        [min(r >> shift, cap) if shift >= 0 else min(r << -shift, cap) for r in rs],
+        dtype=np.uint64,
+    )
+    return target, tol
+
+
+def reference_phase_values(
+    n_p: int,
+    xs: np.ndarray | None = None,
+    *,
+    precision_bits: int = TOLERANCE_EXPONENT,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return ``(target, tol)`` in 2^-64-turn uint64 units for ``xs``."""
+    max_x = _max_x(n_p)
+    if xs is None:
+        return _full_domain_reference_values(n_p, precision_bits)
+    xs_arr = np.asarray(xs, dtype=np.int64)
+    if xs_arr.size == max_x and int(xs_arr[0]) == 1 and int(xs_arr[-1]) == max_x:
+        return _full_domain_reference_values(n_p, precision_bits)
+    num = 1 << 130
+    shift = precision_bits + 1
+    cap = 1 << 63
+    rs = [math.isqrt(num // int(x)) for x in xs_arr.tolist()]
+    target = np.array([((r + 1) >> 1) & _MASK64 for r in rs], dtype=np.uint64)
+    tol = np.array(
+        [min(r >> shift, cap) if shift >= 0 else min(r << -shift, cap) for r in rs],
+        dtype=np.uint64,
+    )
+    return target, tol
 
 
 def ensure_runtime(contract: VerifierContract) -> tuple[Any, Any]:
@@ -213,6 +267,92 @@ def fixed_point_model(n_p: int, prec: QPrecision, xs: np.ndarray) -> np.ndarray:
     correction: np.ndarray = (3 << wz) - z
     p: np.ndarray = product([(y[k], -k) for k in range(1, wc + 1)], correction, wp, wz, wp + 1)
     return np.asarray(p << s, dtype=np.int64)  # type: ignore[no-any-return]
+
+
+@functools.cache
+def _evaluate_qrom_line_full_domain(
+    n_p: int,
+    prec: QPrecision,
+    precision_bits: int = TOLERANCE_EXPONENT,
+) -> tuple[bool, str | None, dict[str, Any]]:
+    return _evaluate_qrom_line_array(n_p, prec, precision_bits, xs=None)
+
+
+def _evaluate_qrom_line_array(
+    n_p: int,
+    prec: QPrecision,
+    precision_bits: int = TOLERANCE_EXPONENT,
+    *,
+    xs: np.ndarray | None = None,
+) -> tuple[bool, str | None, dict[str, Any]]:
+    max_x = _max_x(n_p)
+    if xs is None:
+        xs_arr = np.arange(1, max_x + 1, dtype=np.int64)
+        domain_kind = "full-domain"
+    else:
+        xs_arr = np.asarray(xs, dtype=np.int64)
+        domain_kind = "full-domain" if xs_arr.size >= max_x else "subset"
+    output_bits = prec.output_bits(n_p)
+    if output_bits > 64:
+        return (
+            False,
+            "model screen rejected: output_bits exceeds 64-bit phase accumulator",
+            {"error": "output_bits exceeds 64-bit phase accumulator"},
+        )
+    try:
+        y1 = fixed_point_model(n_p, prec, xs_arr)
+        phase = y1.astype(np.uint64) << np.uint64(64 - output_bits)
+        if xs is None:
+            target, tol = _full_domain_reference_values(n_p, precision_bits)
+        else:
+            target, tol = reference_phase_values(n_p, xs_arr, precision_bits=precision_bits)
+        error = (phase - target).view(np.int64)
+        if (error == np.iinfo(np.int64).min).any():
+            raise OverflowError("phase difference saturates signed 64-bit accumulator")
+        used = np.abs(error).view(np.uint64)
+        ratio = np.divide(
+            used, tol, out=np.zeros(xs_arr.size, dtype=np.float64), where=tol > 0
+        )
+        worst = float(ratio.max())
+        worst_x = int(xs_arr[int(np.argmax(ratio))])
+        min_margin_units = int((tol.astype(np.int64) - used.astype(np.int64)).min())
+    except (OverflowError, ValueError, IndexError, FloatingPointError) as exc:
+        return (
+            False,
+            f"model screen rejected: {exc}",
+            {"error": str(exc)},
+        )
+
+    metrics = {
+        "worst_error_over_tolerance": worst,
+        "error_tolerance_ratio": worst,
+        "worst_x": worst_x,
+        "min_phase_margin_units": min_margin_units,
+        "margin_units": min_margin_units,
+        "domain_size": int(xs_arr.size),
+        "domain_kind": domain_kind,
+        "precision": dataclasses.asdict(prec),
+    }
+    if not math.isfinite(worst) or worst >= 1.0 or min_margin_units <= 0:
+        return (
+            False,
+            f"worst error/tolerance {worst:.6f} >= 1.0",
+            metrics,
+        )
+    return True, None, metrics
+
+
+def evaluate_qrom_line_model(
+    n_p: int,
+    prec: QPrecision,
+    precision_bits: int = TOLERANCE_EXPONENT,
+    *,
+    xs: np.ndarray | None = None,
+) -> tuple[bool, str | None, dict[str, Any]]:
+    """Evaluate ``prec`` over the full domain (cached) or an explicit ``xs`` subset."""
+    if xs is None:
+        return _evaluate_qrom_line_full_domain(n_p, prec, precision_bits)
+    return _evaluate_qrom_line_array(n_p, prec, precision_bits, xs=xs)
 
 
 def build_qrom_line_circuit(n_p: int, prec: QPrecision) -> Any:
@@ -340,6 +480,7 @@ class QromLineProposer(Proposer):
         budget: int,
     ) -> list[Candidate]:
         candidates: list[Candidate] = []
+        seen_ids: set[str] = set()
         for config in self.configs:
             if len(candidates) >= budget:
                 break
@@ -359,6 +500,9 @@ class QromLineProposer(Proposer):
                 parameters,
                 contract_sha256=contract.contract_sha256,
             )
+            if candidate_id in seen_ids:
+                continue
+            seen_ids.add(candidate_id)
             candidates.append(
                 Candidate(
                     candidate_id=candidate_id,
@@ -370,42 +514,27 @@ class QromLineProposer(Proposer):
         return candidates
 
     def screen(self, candidate: Candidate, contract: VerifierContract) -> CandidateScreen:
-        prec = QPrecision(**candidate.parameters)
-        n_p = _contract_n_p(contract)
-        max_x = 3 * (2**n_p - 2) ** 2
-        xs = np.arange(1, max_x + 1, dtype=np.int64)
-        exact = 1.0 / np.sqrt(xs.astype(np.float64))
-        tolerance = (2.0 ** -TOLERANCE_EXPONENT) * exact
         try:
-            approx = fixed_point_model(n_p, prec, xs) / 2.0 ** prec.output_bits(n_p)
-            worst = float((np.abs(approx - exact) / tolerance).max())
-            margin = float((tolerance - np.abs(approx - exact)).min())
-        except (OverflowError, ValueError, IndexError, FloatingPointError) as exc:
+            prec = QPrecision(**candidate.parameters)
+        except TypeError as exc:
             return CandidateScreen(
                 valid=False,
-                reason=f"model screen rejected: {exc}",
+                reason=f"invalid precision fields: {exc}",
                 metrics={"error": str(exc)},
             )
-        if not math.isfinite(worst) or worst >= 1.0:
-            return CandidateScreen(
-                valid=False,
-                reason=f"worst error/tolerance {worst:.6f} >= 1.0",
-                metrics={"worst_error_over_tolerance": worst, "margin_units": margin},
-            )
-        _SCREEN_MARGIN_CACHE[candidate.candidate_id] = margin
+        n_p = _contract_n_p(contract)
+        valid, reason, metrics = evaluate_qrom_line_model(n_p, prec)
         return CandidateScreen(
-            valid=True,
-            reason=None,
-            metrics={
-                "worst_error_over_tolerance": worst,
-                "margin_units": margin,
-                "precision": dataclasses.asdict(prec),
-            },
+            valid=valid,
+            reason=reason,
+            metrics=dict(metrics),
         )
 
     def compile(self, candidate: Candidate, contract: VerifierContract) -> CandidateArtifact:
         prec = QPrecision(**candidate.parameters)
         n_p = _contract_n_p(contract)
+        _valid, _reason, screen_metrics = evaluate_qrom_line_model(n_p, prec)
+        margin_units = int(screen_metrics.get("min_phase_margin_units", 0))
         ensure_runtime(contract)
         circuit = build_qrom_line_circuit(n_p, prec)
         artifact_dir = Path("artifacts/quantum_compilation/invsqrt_qrom_line")
@@ -415,15 +544,17 @@ class QromLineProposer(Proposer):
         digest = sha256_file(artifact_path)
         statistics = circuit.operation_statistics()
         rotations = int(statistics.num_z_pow(min_clifford_hierarchy_level=4))
-        margin = _SCREEN_MARGIN_CACHE.pop(candidate.candidate_id, 0.0)
+        t_like = int(statistics.num_t_like)
         return CandidateArtifact(
             path=artifact_path.resolve(),
             sha256=digest,
             metadata={
                 "num_qubits": int(circuit.num_qubits),
                 "toffoli_like": int(statistics.num_toffoli_like),
+                "t_like": t_like,
                 "rotations": rotations,
-                "margin_units": margin,
+                "min_phase_margin_units": margin_units,
+                "margin_units": margin_units,
                 "precision": dataclasses.asdict(prec),
             },
         )
@@ -431,15 +562,35 @@ class QromLineProposer(Proposer):
     def measure_resources(
         self, artifact: CandidateArtifact, contract: VerifierContract
     ) -> float:
-        meta = artifact.metadata
+        meta = dict(artifact.metadata)
+        n_p = _contract_n_p(contract)
+        if not meta and artifact.path.is_file():
+            ensure_runtime(contract)
+            import kickmix as km
+
+            circuit = km.Circuit.from_file(artifact.path)
+            stats = circuit.operation_statistics()
+            meta = {
+                "num_qubits": int(circuit.num_qubits),
+                "toffoli_like": int(stats.num_toffoli_like),
+                "t_like": int(stats.num_t_like),
+                "rotations": int(stats.num_z_pow(min_clifford_hierarchy_level=4)),
+            }
+
         num_qubits = int(meta["num_qubits"])
         toffoli_like = float(meta["toffoli_like"])
         rotations = int(meta["rotations"])
-        margin = float(meta["margin_units"])
-        _nr, verifier = ensure_runtime(contract)
-        if rotations > 0 and margin > 0:
-            eps = math.pi * margin / 2.0**64 / rotations
-            t_count = 1.0 + rotations * verifier.rotation_t_count(eps)
+        t_base = float(meta.get("t_like", 1.0))
+        margin_units = int(meta.get("min_phase_margin_units", meta.get("margin_units", 0)))
+        if margin_units <= 0 and "precision" in meta:
+            prec = QPrecision(**meta["precision"])
+            _, _, screen_metrics = evaluate_qrom_line_model(n_p, prec)
+            margin_units = int(screen_metrics.get("min_phase_margin_units", 0))
+
+        t_per_toffoli = float(contract.constants.get("T_PER_TOFFOLI", 4.0))
+        if rotations > 0 and margin_units > 0:
+            eps = math.pi * float(margin_units) / (2.0**64) / rotations
+            t_count = t_base + rotations * _rotation_t_count(eps)
         else:
-            t_count = 1.0
-        return float(num_qubits * (toffoli_like + t_count / 4.0))
+            t_count = t_base
+        return float(num_qubits * (toffoli_like + t_count / t_per_toffoli))

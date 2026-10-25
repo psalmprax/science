@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from apedp.rust_bridge import RustKernelBridge
 from apedp_dyn.proposers.rime_ad_proposer import RimeAdProposer

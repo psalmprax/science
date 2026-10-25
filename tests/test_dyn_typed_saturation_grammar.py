@@ -10,8 +10,6 @@ from __future__ import annotations
 
 import pytest
 
-import numpy as np
-
 from apedp_dyn import fit_candidate
 from apedp_dyn.grammar import (
     CandidateDynamics,

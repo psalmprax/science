@@ -4,6 +4,33 @@ All notable changes, bug fixes, audit remediations, and architectural milestones
 
 ---
 
+## [Unreleased] — Operational Footprint & Automated Lifecycle Pruning (2026-10-24)
+
+Remediates the operational audit defect (-0.8: Local Operational Footprint & Cache Inflation)
+where massive Cargo target caches, auxiliary Lean 4 toolchains, and unbounded package caches
+(uv, bun, npx, pip) inflated host storage to 100% saturation:
+
+- **Storage footprint auditor (`apedp_dyn/operational/lifecycle_pruner.py`).**
+  Performs deterministic, non-destructive measurement of root/home storage headroom,
+  Cargo build target sizes (`target/`), Lean 4 (`elan`) active vs. auxiliary toolchain
+  allocations, and multi-gigabyte package manager caches.
+- **Lifecycle policy & pruner (`prune_lifecycle()`, `scripts/lifecycle_prune.sh`).**
+  Configurable storage budgets (`max_disk_usage_percent=85.0%`, `min_disk_free_gb=10.0 GB`,
+  `max_cargo_target_gb=2.0 GB`). Performs safe, idempotent cleaning of intermediate build
+  caches, prunes auxiliary compiler toolchains (preserving active toolchains), cleans ephemeral
+  `_npx` and package caches, and supports full dry-run simulation (`--dry-run`).
+- **Automated pre-flight storage guard (`auto_guard_storage()`).**
+  Zero-configuration self-healing guard integrated into `scripts/check.sh` and CI gates;
+  auto-triggers targeted lifecycle pruning when filesystem headroom is breached.
+- **Reproduction toolchain cleanup (`scripts/run_lean_pinned_reproduction.py`).**
+  Added `--cleanup-toolchain` option to automatically uninstall auxiliary pinned toolchains
+  (e.g. `v4.34.1`) upon reproduction completion, preventing multi-gigabyte residual bloat.
+- **Unit & integration test battery (`tests/test_operational_lifecycle_pruner.py`).**
+  8 regression tests verifying footprint measurement, policy enforcement, dry-run guarantees,
+  active toolchain preservation, self-healing guard logic, and CLI JSON schema.
+
+---
+
 ## [Unreleased] — APEDP-Q: verifier-guided quantum-circuit compilation (Milestone 1, Benchmark I) (2026-10-23)
 
 Adds the first APEDP-Q control-plane layer for the Google Quantum AI
@@ -39,15 +66,19 @@ and only the competition verifier can issue evidence:
 - **Experiment 02 — QROM piecewise-linear seed proposer (`invsqrt_qrom_line.py`).**
   Adapted from `scripts/nr_qrom.py` in the `apedp_q_alternatives` scaffold.
   Searches fixed-point widths `(index_bits, coef_bits, slope_bits, delta_bits,
-  square_bits, product_bits, result_bits)` with an exact fixed-point screen over
-  the full domain, then compiles and verifies. The official full-domain
-  64-shots/x protocol PASSed candidate `(7,16,12,10,28,27,28)` at
-  **1,309,175.605** in 11m49s at 8 workers — reproducing the reported
-  "Verifier-Guided QROM" result (1,309,175.61) and beating both the reference
-  (2,076,774.23, −37.0%) and the APEDP-Q precision candidate
-  (1,941,280.56, −30.0%). Remains above the best corpus candidates
-  (Quick Wins 1,144,148; QROM+Tower42 182,600.86), which are not present as
-  artifacts in this workspace and therefore could not be reproduced.
+  square_bits, product_bits, result_bits)` with an exact 130-bit integer
+  fixed-point screen over the full domain, self-contained compilation, and
+  `statistics.num_t_like` resource accounting. Candidate
+  `(7,16,12,10,28,27,28)` has an exact-model screen estimate of
+  **1,309,175.605** (matching the reported "Verifier-Guided QROM" estimate of
+  1,309,175.61), which remains a proposer-side screen estimate pending an
+  on-disk official full-domain verifier receipt. The only candidate with an
+  on-disk official full-domain 64-shots/x verification receipt in
+  `artifacts/quantum_compilation/invsqrt/full-verification/ledger.jsonl` is the
+  Newton-Raphson candidate `invsqrt-invsqrt-nr-precision-v1-1b64c7145d13fc09d368`
+  at **1,941,280.56** (PASS). Corpus candidates (Quick Wins 1,144,148;
+  QROM+Tower42 182,600.86) are not present as artifacts in this workspace and
+  therefore remain external reported baselines.
 - **Measured full-domain evidence (public salt).** Reference precision
   `(14,17,28,28,29)` screens at 2,076,774.23; the search's best
   `(12,17,28,27,28)` screens at 1,941,280.56 (−6.52%, ratio 1.0698) with
