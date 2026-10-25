@@ -11,13 +11,20 @@ Comprehensive drug discovery platform supporting:
 
 from __future__ import annotations
 
-from typing import Any
+import hashlib
+from typing import Any, ClassVar
+
+
+def _stable_unit(*parts: str) -> float:
+    """Deterministic value in [-1, 1) derived from the inputs (not Python's salted hash)."""
+    digest = hashlib.sha256("|".join(parts).encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big") / 2**63 - 1.0
 
 
 class DiseaseBiomarkerAnalyzer:
     """Analyze biomarkers across multiple disease areas."""
     
-    DISEASE_BIOMARKERS = {
+    DISEASE_BIOMARKERS: ClassVar[dict[str, dict[str, Any]]] = {
         'diabetes_type1': {'markers': ['GAD65', 'IA-2', 'ZnT8', 'C-peptide'], 'normal_ranges': {'C-peptide': (0.8, 3.1)}},
         'diabetes_type2': {'markers': ['HbA1c', 'Fasting glucose', 'Insulin', 'HOMA-IR'], 'normal_ranges': {'HbA1c': (4.0, 5.6)}},
         'diabetes_type3': {'markers': ['Tau', 'Abeta42', 'Insulin (CSF)', 'p-Tau'], 'normal_ranges': {}},
@@ -31,7 +38,7 @@ class DiseaseBiomarkerAnalyzer:
     @classmethod
     def analyze_biomarkers(cls, disease_area: str, values: dict[str, float]) -> dict[str, Any]:
         config = cls.DISEASE_BIOMARKERS.get(disease_area, {'markers': [], 'normal_ranges': {}})
-        results = {
+        results: dict[str, Any] = {
             'disease_area': disease_area,
             'analyzed_markers': list(values.keys()),
             'abnormal': [],
@@ -50,7 +57,7 @@ class DiseaseBiomarkerAnalyzer:
 
 
 class UniversalDrugTargetDiscovery:
-    THERAPEUTIC_TARGETS = {
+    THERAPEUTIC_TARGETS: ClassVar[dict[str, list[dict[str, Any]]]] = {
         'diabetes': [
             {'target': 'GLP-1R', 'mechanism': 'Incretin signaling', 'modality': 'agonist', 'tractability': 0.9},
             {'target': 'SGLT2', 'mechanism': 'Glucose reabsorption', 'modality': 'inhibitor', 'tractability': 0.95},
@@ -108,10 +115,15 @@ class LeadOptimizer:
 
 
 class ADMETPredictor:
+    """Rule-based drug-likeness screen (Lipinski Ro5 and Veber rules).
+
+    This is a screening heuristic, not a predictive ADMET model.
+    """
+
     @staticmethod
     def predict_properties(molecular_weight: float, logp: float, h_bond_donors: int = 0,
                           h_bond_acceptors: int = 0, rotatable_bonds: int = 0, tpsa: float = 70) -> dict[str, Any]:
-        properties = {
+        properties: dict[str, Any] = {
             'molecular_weight': molecular_weight, 'logp': logp,
             'h_bond_donors': h_bond_donors, 'h_bond_acceptors': h_bond_acceptors,
             'rotatable_bonds': rotatable_bonds, 'tpsa': tpsa
@@ -119,8 +131,16 @@ class ADMETPredictor:
         lipinski_violations = sum([
             molecular_weight > 500, logp > 5, h_bond_donors > 5, h_bond_acceptors > 10
         ])
+        veber_violations = sum([rotatable_bonds > 10, tpsa > 140])
         properties['lipinski_violations'] = lipinski_violations
-        properties['drug_likeness'] = 'good' if lipinski_violations <= 1 else 'moderate' if lipinski_violations == 2 else 'poor'
+        properties['veber_violations'] = veber_violations
+        if lipinski_violations <= 1 and veber_violations == 0:
+            verdict = 'good'
+        elif lipinski_violations <= 2 and veber_violations <= 1:
+            verdict = 'moderate'
+        else:
+            verdict = 'poor'
+        properties['drug_likeness'] = verdict
         return properties
 
 
@@ -139,14 +159,16 @@ class ClinicalTrialDesigner:
 
 
 class DrugRepurposingEngine:
-    DRUG_DATABASE = {
+    # Disease keys follow DiseaseBiomarkerAnalyzer naming. Repurposing candidates are
+    # those whose listed indications do not already include the requested disease.
+    DRUG_DATABASE: ClassVar[dict[str, dict[str, list[str]]]] = {
         'Metformin': {'targets': ['AMPK'], 'indications': ['diabetes_type2'], 'mechanisms': ['glucose_reduction']},
         'Sildenafil': {'targets': ['PDE5'], 'indications': ['erectile_dysfunction'], 'mechanisms': ['vasodilation']},
         'Aspirin': {'targets': ['COX1/COX2'], 'indications': ['cardiovascular'], 'mechanisms': ['anti-inflammatory']},
     }
     
     @classmethod
-    def discover_repuposing_candidates(cls, disease: str) -> list[dict[str, Any]]:
+    def discover_repurposing_candidates(cls, disease: str) -> list[dict[str, Any]]:
         candidates = []
         for drug, info in cls.DRUG_DATABASE.items():
             if disease.lower() not in str(info['indications']).lower():
@@ -156,10 +178,13 @@ class DrugRepurposingEngine:
                     'rationale': f'Shared mechanisms with {disease}'
                 })
         return sorted(candidates, key=lambda x: x['repurposing_score'], reverse=True)
+
+    # Backward-compatible alias for the original misspelled name.
+    discover_repuposing_candidates = discover_repurposing_candidates
     
     @classmethod
-    def find_combination_therapy(cls, disease: str, primary_drug: str = None) -> list[dict[str, Any]]:
-        combinations = [
+    def find_combination_therapy(cls, disease: str, primary_drug: str | None = None) -> list[dict[str, Any]]:
+        combinations: list[dict[str, Any]] = [
             {'combination': ['Metformin', 'GLP-1 agonist'], 'disease': 'diabetes_type2', 'synergy_score': 0.85,
              'rationale': 'Complementary mechanisms', 'clinical_evidence': 'Phase III trials', 'safety_profile': 'acceptable'},
             {'combination': ['SGLT2 inhibitor', 'GLP-1 agonist'], 'disease': 'diabetes_type2', 'synergy_score': 0.88,
@@ -181,42 +206,49 @@ class DrugRepurposingEngine:
 
 
 class CombinationTrialSimulator:
+    """Toy trial simulator. Outcomes are a deterministic function of the inputs.
+
+    Response rates are assumed constants plus a reproducible, input-dependent
+    offset. This is a planning sketch, not a statistical trial simulation, and
+    no p-value is computed here.
+    """
+
+    CONTROL_RESPONSE_RATE = 0.3
+    MONOTHERAPY_RESPONSE_RATE = 0.45
+
     @staticmethod
     def simulate_combination_trial(combination: list[str], disease: str,
                                    n_patients: int = 1000, duration_months: int = 12) -> dict[str, Any]:
-        import random
-        random.seed(hash(str(tuple(sorted(combination))) + str(disease)) % (2**32))
-        control_response_rate = 0.3
-        monotherapy_rate = 0.45
-        combo_rate = min(0.95, monotherapy_rate + 0.25 + random.gauss(0, 0.05))
-        effect_size = combo_rate - control_response_rate
-        p_value = 0.001 if effect_size > 0.15 else (0.01 if effect_size > 0.1 else 0.05)
+        key = "+".join(sorted(combination))
+        offset = 0.05 * _stable_unit(key, disease)
+        control = CombinationTrialSimulator.CONTROL_RESPONSE_RATE
+        combo_rate = min(0.95, CombinationTrialSimulator.MONOTHERAPY_RESPONSE_RATE + 0.25 + offset)
+        effect_size = combo_rate - control
         return {
-            'trial_design': {'combination': combination, 'disease': disease, 'n_patients': n_patients},
+            'trial_design': {'combination': combination, 'disease': disease,
+                             'n_patients': n_patients, 'duration_months': duration_months},
             'results': {
-                'control_response_rate': round(control_response_rate, 3),
+                'control_response_rate': round(control, 3),
                 'combination_response_rate': round(combo_rate, 3),
                 'absolute_risk_reduction': round(effect_size, 3),
-                'p_value': p_value,
-                'statistically_significant': p_value < 0.05,
             },
-            'conclusion': 'Positive' if p_value < 0.05 and effect_size > 0.1 else 'Inconclusive',
-            'recommendation': 'Proceed to Phase III' if p_value < 0.01 else 'Consider optimization'
+            'conclusion': 'Candidate for confirmatory trial' if effect_size > 0.1 else 'Inconclusive',
+            'note': 'Planning estimate only; requires a powered statistical analysis.',
         }
-    
+
     @staticmethod
     def simulate_repuposing_efficacy(drug: str, disease: str, mechanism_match: float = 0.7) -> dict[str, Any]:
-        import random
-        random.seed(hash(drug + disease) % (2**32))
-        base_efficacy = max(0, min(1, mechanism_match * 0.6 + random.gauss(0, 0.1)))
+        if not 0.0 <= mechanism_match <= 1.0:
+            raise ValueError("mechanism_match must be in [0, 1]")
+        base_efficacy = max(0.0, min(1.0, mechanism_match * 0.6 + 0.02 * _stable_unit(drug, disease)))
         return {
             'drug': drug, 'target_disease': disease,
             'mechanism_match_score': mechanism_match,
             'predicted_efficacy': round(base_efficacy, 3),
             'predicted_response_rate': round(base_efficacy * 0.8, 3),
-            'confidence_interval': [round(max(0, base_efficacy-0.15), 3), round(min(1, base_efficacy+0.15), 3)],
+            'confidence_interval': [round(max(0.0, base_efficacy - 0.15), 3), round(min(1.0, base_efficacy + 0.15), 3)],
             'translational_probability': round(mechanism_match * 0.7, 3),
-            'recommendation': 'Promising for repurposing' if base_efficacy > 0.5 else 'Low priority'
+            'recommendation': 'Promising for repurposing' if base_efficacy > 0.5 else 'Low priority',
         }
 
 

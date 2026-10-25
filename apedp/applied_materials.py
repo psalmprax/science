@@ -1,111 +1,110 @@
-"""APEDP Applied Materials Science Discovery Module.
+"""APEDP Applied Materials Science Module.
 
-Discovery and optimization of novel materials:
-1. Superconductors and quantum materials
-2. Catalysts and photocatalysts
-3. Energy storage materials
-4. Metamaterials and smart materials
-5. Structural materials
+Computed screening helpers and literature reference data. Nothing here performs
+materials discovery or first-principles prediction.
 """
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, ClassVar
+
+ROOM_TEMP_K = 293.0
 
 
 class SuperconductorDiscovery:
-    """Discover and analyze superconducting materials."""
-    
+    """Classify a superconductor by critical temperature and reference data."""
+
+    REFERENCE_CANDIDATES: ClassVar[list[dict[str, Any]]] = [
+        {'material': 'LaH10', 'Tc_K': 250, 'pressure_GPa': 170, 'type': 'hydride'},
+        {'material': 'YBCO', 'Tc_K': 93, 'pressure_GPa': 0, 'type': 'cuprate'},
+        {'material': 'MgB2', 'Tc_K': 39, 'pressure_GPa': 0, 'type': 'conventional'},
+        {'material': 'H3S', 'Tc_K': 203, 'pressure_GPa': 150, 'type': 'hydride'},
+    ]
+
     @staticmethod
-    def analyze_superconductor(critical_temp_K: float, 
-                               critical_field_T: float = 0,
+    def analyze_superconductor(critical_temp_K: float, critical_field_T: float = 0,
                                type_sc: str = 'conventional') -> dict[str, Any]:
-        is_high_tc = critical_temp_K > 77
-        is_room_temp = critical_temp_K > 293
+        """Classifies by temperature only. Does not predict Tc or assess feasibility."""
+        if critical_temp_K < 0:
+            raise ValueError("critical_temp_K must be non-negative")
         return {
             'critical_temperature_K': critical_temp_K,
             'critical_field_T': critical_field_T,
             'type': type_sc,
-            'above_liquid_nitrogen': is_high_tc,
-            'room_temperature_candidate': is_room_temp,
-            'cooper_pair_mechanism': 'BCS' if type_sc == 'conventional' else 'unconventional',
-            'applications': ['MRI', 'Maglev', 'Power transmission'] if critical_temp_K > 10 else ['Research'],
-            'feasibility_rating': 'excellent' if is_high_tc else 'moderate',
-            'discovery_potential': 'breakthrough' if is_room_temp else 'significant' if is_high_tc else 'incremental'
+            'above_liquid_nitrogen_77K': critical_temp_K > 77,
+            'above_room_temperature_reference': critical_temp_K > ROOM_TEMP_K,
+            'cooper_pair_mechanism_reference': 'BCS' if type_sc == 'conventional' else 'unconventional',
         }
-    
+
     @classmethod
     def search_candidates(cls) -> list[dict[str, Any]]:
-        return [
-            {'material': 'LaH10', 'Tc_K': 250, 'pressure_GPa': 170, 'type': 'hydride', 'status': 'theoretical/experimental'},
-            {'material': 'YBCO', 'Tc_K': 93, 'pressure_GPa': 0, 'type': 'cuprate', 'status': 'commercial'},
-            {'material': 'MgB2', 'Tc_K': 39, 'pressure_GPa': 0, 'type': 'conventional', 'status': 'commercial'},
-            {'material': 'H3S', 'Tc_K': 203, 'pressure_GPa': 150, 'type': 'hydride', 'status': 'experimental'},
-        ]
+        """Returns a fixed list of literature reference materials. Not a search."""
+        return [dict(c) for c in cls.REFERENCE_CANDIDATES]
 
 
 class CatalystDiscovery:
-    """Discover catalysts for energy and chemical applications."""
-    
+    """Literature-typical catalyst materials per reaction (reference data only)."""
+
+    REFERENCE: ClassVar[dict[str, list[str]]] = {
+        'water_splitting': ['Pt', 'IrO2', 'NiFe-LDH'],
+        'co2_reduction': ['Cu', 'Ag', 'Au'],
+        'ammonia_synthesis': ['Fe', 'Ru'],
+        'oxygen_reduction': ['Pt/C', 'Fe-N-C'],
+    }
+
     @staticmethod
     def design_catalyst(reaction: str, target_activity: float = 0.9) -> dict[str, Any]:
-        catalysts = {
-            'water_splitting': {'materials': ['Pt', 'IrO2', 'NiFe-LDH'], 'efficiency': 0.8},
-            'co2_reduction': {'materials': ['Cu', 'Ag', 'Au'], 'efficiency': 0.6},
-            'ammonia_synthesis': {'materials': ['Fe', 'Ru'], 'efficiency': 0.7},
-            'oxygen_reduction': {'materials': ['Pt/C', 'Fe-N-C'], 'efficiency': 0.85},
-        }
-        info = catalysts.get(reaction, {'materials': ['TBD'], 'efficiency': 0.5})
+        """Returns reference materials for a reaction. No activity is predicted."""
+        if reaction not in CatalystDiscovery.REFERENCE:
+            raise ValueError(f"no reference catalysts for reaction: {reaction}")
+        materials = CatalystDiscovery.REFERENCE[reaction]
         return {
             'reaction': reaction,
-            'recommended_catalysts': info['materials'],
-            'predicted_efficiency': info['efficiency'],
-            'stability_hours': 10000,
-            'selectivity': 0.95,
-            'cost_assessment': 'high' if 'Pt' in str(info['materials']) else 'moderate',
-            'sustainability': 'good' if 'Fe' in str(info['materials']) or 'Ni' in str(info['materials']) else 'moderate'
+            'reference_catalysts': list(materials),
+            'target_activity': target_activity,
+            'cost_flag_precious_metal': any(m.startswith(('Pt', 'Ir', 'Ru', 'Au', 'Ag')) for m in materials),
+            'source': 'literature reference list, not computed',
         }
 
 
 class EnergyStorageMaterials:
-    """Discover advanced energy storage materials."""
-    
+    """Reference energy density from specific capacity and voltage, computed."""
+
     @staticmethod
-    def analyze_battery_material(cathode: str = 'NMC811', 
-                                anode: str = 'graphite') -> dict[str, Any]:
-        chemistries = {
-            'NMC811|graphite': {'energy_wh_kg': 250, 'cycles': 2000, 'power': 'high'},
-            'LFP|graphite': {'energy_wh_kg': 160, 'cycles': 5000, 'power': 'moderate'},
-            'LiNiO2|silicon': {'energy_wh_kg': 400, 'cycles': 1000, 'power': 'high'},
-            'solid_state': {'energy_wh_kg': 500, 'cycles': 3000, 'power': 'high'},
-        }
-        key = f'{cathode}|{anode}'
-        perf = chemistries.get(key, {'energy_wh_kg': 200, 'cycles': 1500, 'power': 'moderate'})
+    def analyze_battery_material(cathode_capacity_mAh_g: float = 200.0, anode_capacity_mAh_g: float = 372.0,
+                                 mean_voltage_V: float = 3.7, cycle_life: int = 1000) -> dict[str, Any]:
+        """Theoretical gravimetric energy from the cathode capacity and mean voltage.
+
+        Energy (Wh/kg) = capacity (mAh/g) * voltage (V) / 1000. Anode capacity is
+        used only as a reported input; it does not limit the cathode-based value.
+        """
+        if cathode_capacity_mAh_g <= 0 or mean_voltage_V <= 0:
+            raise ValueError("capacity and voltage must be positive")
+        energy_wh_kg = cathode_capacity_mAh_g * mean_voltage_V / 1000.0
         return {
-            'chemistry': key,
-            'energy_density_Wh_kg': perf['energy_wh_kg'],
-            'cycle_life': perf['cycles'],
-            'power_capability': perf['power'],
-            'safety_rating': 'good' if cathode == 'LFP' else 'moderate',
-            'cost': 'high' if cathode == 'NMC811' else 'moderate',
-            'commercial_readiness': 'commercial' if key == 'NMC811|graphite' else 'development'
+            'cathode_capacity_mAh_g': cathode_capacity_mAh_g,
+            'anode_capacity_mAh_g': anode_capacity_mAh_g,
+            'mean_voltage_V': mean_voltage_V,
+            'cathode_energy_Wh_kg': round(energy_wh_kg, 3),
+            'cycle_life_input': cycle_life,
+            'note': 'Active-material energy only; excludes packaging and electrolyte.',
         }
 
 
 class MetamaterialDesigner:
-    """Design electromagnetic and acoustic metamaterials."""
-    
+    """Transformation-optics cloak sizing from wavelength (closed form)."""
+
     @staticmethod
     def design_cloak(frequency_hz: float = 1e9, diameter_m: float = 0.1) -> dict[str, Any]:
+        """Reports the wavelength and size ratio d / lambda. No cloaking efficiency is claimed."""
+        if frequency_hz <= 0 or diameter_m <= 0:
+            raise ValueError("frequency and diameter must be positive")
+        c = 299_792_458.0
+        wavelength = c / frequency_hz
         return {
-            'type': 'transformation_optics_cloak',
             'operating_frequency_Hz': frequency_hz,
             'target_size_m': diameter_m,
-            'bandwidth': 'narrow',
-            'effectiveness': 0.8,
-            'fabrication_difficulty': 'high',
-            'materials': ['Split ring resonators', 'Wire arrays'],
-            'applications': ['Stealth', 'Sensing', 'Imaging'],
-            'theoretical_feasibility': 'demonstrated at microwave',
-            'optical_feasibility': 'challenging'
+            'wavelength_m': wavelength,
+            'diameter_over_wavelength': diameter_m / wavelength,
+            'note': 'Geometric ratio only; cloaking performance is not modelled.',
         }
