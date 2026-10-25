@@ -28,7 +28,12 @@ from apedp_dyn.epistemic.claim_ladder import (
     adjudicate_scientific_claim,
 )
 from apedp_dyn.harness import AEH
-from apedp_dyn.market.assets import AVAILABLE_ASSETS, load_series_with_dates
+from apedp_dyn.orchestration.competition import competition_records
+from apedp_dyn.market.assets import (
+    AVAILABLE_ASSETS,
+    compute_strictly_causal_features,
+    load_series_with_dates,
+)
 from apedp_dyn.market.regimes import REGIME_METADATA, MarketRegime
 from apedp_dyn.market.sweep import (
     execute_window_discovery,
@@ -1133,6 +1138,13 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
         "rival_a": rival_a,
         "rival_b": rival_b,
         "pareto_candidates": formatted_pareto,
+        "competition": competition_records(
+            {k: np.asarray(v, dtype=float) for k, v in state_series.items()},
+            np.asarray(y_obs, dtype=float),
+            not_applicable={"ode": "physics route runs a fixed generated system",
+                            "pde": "physics route has no spatial grid",
+                            "hawkes": "physics route has no event times"},
+        ),
         "epistemic_framework": {
             "version": "APEDP-X v1.0-FROZEN",
             "autonomy_level": "LEVEL_1_SELF_CORRECTING_REFEREE",
@@ -1281,6 +1293,19 @@ def market_sweep(req: MarketSweepRequest) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Market sweep failed: {e}") from e
 
 
+def _market_competition(asset: str, window: Any) -> list[dict[str, Any]]:
+    """Engine competition on the window's TRAIN slice (holdout never enters)."""
+    dates, prices = load_series_with_dates(asset)
+    date_to_idx = {d: i for i, d in enumerate(dates)}
+    causal = compute_strictly_causal_features(prices)
+    i0 = date_to_idx[window.train_start]
+    i1 = date_to_idx[window.train_end]
+    sl = slice(i0, i1 + 1)
+    X = {"r_lag": causal["r_lag"][sl], "vol": causal["vol"][sl],
+         "ma_dev": causal["ma_dev"][sl]}
+    return competition_records(X, causal["returns"][sl], train_ratio=0.6)
+
+
 @app.post("/api/discover/market", dependencies=[Depends(_require_api_key)])
 def discover_market(req: MarketRequest) -> dict[str, Any]:
     """Execute rolling-window L2 open discovery on genuine market records."""
@@ -1329,6 +1354,7 @@ def discover_market(req: MarketRequest) -> dict[str, Any]:
             "prices": ho_prices,
             "returns": ho_returns,
         },
+        "competition": _market_competition(req.asset, window),
     })
     _audit("discover/market", {"window_id": record.window_id,
                                "asset": record.asset,
@@ -1875,6 +1901,16 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
             series=series_info,
             extra=extra,
         )
+        # Every applicable engine on the same data, side by side. Each record
+        # is its own verdict; promotion is still decided only by the referee.
+        from apedp_dyn.orchestration.competition import competition_for_upload
+        try:
+            resp["competition"] = competition_for_upload(
+                csv_data, target_col=req.target_column
+            )
+        except Exception as exc:  # noqa: BLE001 - competition is additive
+            resp["competition"] = [{"engine": "competition", "status": "FAILED",
+                                    "reason": f"{type(exc).__name__}: {exc}"}]
     elif req.sandbox_id == "volume_market":
         from apedp_dyn.sandbox.volume_sandbox import run_volume_adjudication
         requested_sym = (req.asset or "BTC").upper()

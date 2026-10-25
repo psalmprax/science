@@ -266,10 +266,63 @@ def _invariant_transfer(X, Y, train_ratio):
                            InvariantTransferProposer, X, Y, train_ratio)
 
 
-def _not_applicable_columns(engine: str, needs: tuple[str, ...]) -> EngineResult:
-    return EngineResult(
-        engine=engine, status=NOT_APPLICABLE,
-        reason=f"needs named columns {list(needs)} that an array dataset does not have")
+def _named(
+    engine: str,
+    X: Mapping[str, np.ndarray],
+    Y: np.ndarray,
+    train_ratio: float,
+    run: Callable[[pd.DataFrame], Any],
+) -> EngineResult:
+    """Run a named-column proposer when X carries every column it needs."""
+    needs = _NAMED_COLUMN_PROPOSERS[engine]
+    missing = [c for c in needs if c not in X]
+    if missing:
+        return EngineResult(
+            engine=engine, status=NOT_APPLICABLE,
+            reason=f"needs named columns {list(needs)}; missing {missing}")
+    names, M, y = _train_matrix(X, Y, train_ratio)
+    df = pd.DataFrame(M, columns=names)
+    df["target"] = y
+    return _proposer_result(engine, run(df))
+
+
+def _sparse_microstructure(X, Y, train_ratio) -> EngineResult:
+    from apedp_dyn.proposers.sparse_microstructure_proposer import (
+        SparseMicrostructureProposer,
+    )
+    return _named("sparse_microstructure", X, Y, train_ratio,
+                  lambda df: SparseMicrostructureProposer().fit_and_propose(
+                      {"train": df}, target_col="price"))
+
+
+def _order_book(X, Y, train_ratio) -> EngineResult:
+    from apedp_dyn.proposers.resiliency_proposer import (
+        OrderBookResiliencyProposer,
+    )
+    return _named("order_book_resiliency", X, Y, train_ratio,
+                  lambda df: OrderBookResiliencyProposer().fit_and_propose(
+                      {"train": df}, target_col="price"))
+
+
+def _hamiltonian(X, Y, train_ratio) -> EngineResult:
+    from apedp_dyn.proposers.stem_proposers import HamiltonianProposer
+    return _named("hamiltonian", X, Y, train_ratio,
+                  lambda df: HamiltonianProposer().fit_and_propose(
+                      df, q_col="q", p_col="p"))
+
+
+def _solenoidal(X, Y, train_ratio) -> EngineResult:
+    from apedp_dyn.proposers.stem_proposers import SolenoidalFluidProposer
+    return _named("solenoidal_fluid", X, Y, train_ratio,
+                  lambda df: SolenoidalFluidProposer().fit_and_propose(
+                      df, x_col="x", y_col="y", u_col="u", v_col="v"))
+
+
+def _sir(X, Y, train_ratio) -> EngineResult:
+    from apedp_dyn.proposers.stem_proposers import CompartmentalSirProposer
+    return _named("compartmental_sir", X, Y, train_ratio,
+                  lambda df: CompartmentalSirProposer().fit_and_propose(
+                      df, s_col="S", i_col="I", r_col="R"))
 
 
 _RUNNERS: dict[str, Callable[..., EngineResult]] = {
@@ -283,17 +336,22 @@ _RUNNERS: dict[str, Callable[..., EngineResult]] = {
     "ncm_structural": _ncm,
     "rime_ad": _rime_ad,
     "invariant_transfer": _invariant_transfer,
+    "sparse_microstructure": _sparse_microstructure,
+    "order_book_resiliency": _order_book,
+    "hamiltonian": _hamiltonian,
+    "solenoidal_fluid": _solenoidal,
+    "compartmental_sir": _sir,
 }
 
 # Proposers whose input is fixed-named event, price or state columns. They
 # cannot run on a generic (X, Y) array; the frame path or a named-column
 # upload must supply those columns.
 _NAMED_COLUMN_PROPOSERS: dict[str, tuple[str, ...]] = {
-    "sparse_microstructure": ("price", "V", "taker_buy"),
+    "sparse_microstructure": ("price", "V"),
     "order_book_resiliency": ("price",),
-    "hamiltonian": ("q", "p", "p_dot"),
+    "hamiltonian": ("q", "p"),
     "solenoidal_fluid": ("x", "y", "u", "v"),
-    "compartmental_sir": ("S", "I", "R", "dI"),
+    "compartmental_sir": ("S", "I", "R"),
 }
 
 
@@ -336,14 +394,21 @@ def competition_for_upload(
             feats = [parsed["time_col"]]
         else:
             feats = []
-    frame = pd.DataFrame({c: cols[c] for c in [*feats, target]})
+    frame_cols = [*feats, target]
+    if parsed["time_col"] and parsed["time_col"] not in frame_cols:
+        frame_cols.append(parsed["time_col"])
+    frame = pd.DataFrame({c: cols[c] for c in frame_cols})
     dyn = dynamic_results(frame, value_cols=None,
                           time_col=parsed["time_col"])
     skip = {"l2_single_term": "no regressor column: a 1D series has no feature axis",
             "l2_multiterm": "no regressor column: a 1D series has no feature axis"}
+    # Named-column proposers need their own columns (q/p, price/V, S/I/R, ...),
+    # which may not be features, so they receive every numeric column.
+    named = {c: cols[c] for c in cols if c != target}
     l2 = run_competition({c: cols[c] for c in feats}, cols[target],
                          train_ratio=train_ratio,
-                         not_applicable=skip if not feats else None)
+                         not_applicable=skip if not feats else None,
+                         named_columns=named)
     dyn_ids = {r.engine for r in dyn}
     merged = [r for r in l2 if r.engine not in dyn_ids] + dyn
     order = {e: i for i, e in enumerate(ENGINE_IDS)}
@@ -414,23 +479,23 @@ def run_competition(
     *,
     train_ratio: float = 0.6,
     not_applicable: Mapping[str, str] | None = None,
+    named_columns: Mapping[str, np.ndarray] | None = None,
 ) -> list[EngineResult]:
     """Run every engine on the same data and return each result, unranked.
 
     ``not_applicable`` maps an engine id to the reason it cannot run on this
     data. Those engines are recorded as ``NOT_APPLICABLE`` and not executed.
-    Per-engine exceptions are recorded as ``FAILED`` and never abort the others.
+    ``named_columns`` are extra columns (e.g. q/p, price/V, S/I/R) visible only
+    to the named-column proposers. Per-engine exceptions are recorded as
+    ``FAILED`` and never abort the others.
     """
     skips = dict(not_applicable or {})
+    named = dict(named_columns or {})
     results: list[EngineResult] = []
     for engine in ENGINE_IDS:
         if engine in skips:
             results.append(EngineResult(engine=engine, status=NOT_APPLICABLE,
                                         reason=skips[engine]))
-            continue
-        if engine in _NAMED_COLUMN_PROPOSERS:
-            results.append(_not_applicable_columns(
-                engine, _NAMED_COLUMN_PROPOSERS[engine]))
             continue
         if engine in DYNAMIC_IDS:
             # Placeholder: upload path replaces it with the sieve-routed result.
@@ -439,7 +504,8 @@ def run_competition(
                 reason="dynamic family: routed by dynamic_results(frame)"))
             continue
         try:
-            results.append(_RUNNERS[engine](X, Y, train_ratio))
+            data = {**named, **X} if engine in _NAMED_COLUMN_PROPOSERS else X
+            results.append(_RUNNERS[engine](data, Y, train_ratio))
         except Exception as exc:  # noqa: BLE001 - per-engine isolation by design
             results.append(EngineResult(
                 engine=engine, status=FAILED,
