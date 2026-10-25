@@ -643,18 +643,18 @@ the implementation module (e.g. `apedp.falsification.falsifier`).
 Comprehensive drug discovery across therapeutic areas (oncology, cardiovascular, neurodegenerative, infectious disease, immunology, diabetes, etc.), including biomarker analysis, target identification/prioritization, drug repurposing, combination therapy discovery/trial simulation, ADMET prediction, lead optimization, and clinical trial design.
 
 **Status:** `experimental`  
-**Tests:** Package import validated.
+**Tests:** `tests/test_applied_engineering_pharma.py`.
 
-**Exports:** `BiomarkerAnalyzer`, `DrugTargetDiscovery`, `DrugRepurposingEngine`, `CombinationTherapyDiscovery`, `ClinicalTrialSimulator`, `ADMETPredictor`, `LeadOptimizer`.
+**Exports:** `DiseaseBiomarkerAnalyzer`, `UniversalDrugTargetDiscovery`, `LeadOptimizer`, `ADMETPredictor` (rule-based Lipinski/Veber screen, not a predictive ADMET model), `ClinicalTrialDesigner`, `DrugRepurposingEngine`, `CombinationTrialSimulator` (planning sketch; computes no p-value). Trial and efficacy outputs are deterministic (SHA-256 of inputs, not Python's salted `hash()`).
 
 ### 5.13 `apedp/applied_fusion.py` — Applied Fusion Energy
 
 Plasma physics analysis, confinement assessment, reactor design evaluation, fuel cycle analysis, and fusion materials screening.
 
 **Status:** `experimental`  
-**Tests:** Package import validated.
+**Tests:** `tests/test_applied_engineering_pharma.py`.
 
-**Exports:** `PlasmaAnalyzer`, `FusionReactorDesigner`, `FusionFuelCycle`, `FusionMaterialsDatabase`.
+**Exports:** `PlasmaPhysicsAnalyzer` (Lawson triple product in m^-3·keV·s, beta, Debye length), `FusionReactorDesigner` (fusion gain Q = P_fus / P_heat, computed from inputs; `optimize_confinement` raises `NotImplementedError`), `FusionFuelCycle`, `FusionMaterialsDatabase`.
 
 ### 5.14 `apedp/experimental_physics.py` — Experimental Physics (Tesla/Inventions)
 
@@ -670,9 +670,9 @@ Controlled exploration of unconventional electromagnetic concepts and Tesla-insp
 Superconductor discovery, catalyst design, energy storage materials, metamaterials, and materials property prediction.
 
 **Status:** `experimental`  
-**Tests:** Package import validated.
+**Tests:** `tests/test_applied_engineering_pharma.py`.
 
-**Exports:** `SuperconductorDiscoverer`, `CatalystDesigner`, `EnergyStorageMaterials`, `MetamaterialDesigner`.
+**Exports:** `SuperconductorDiscovery` (classifies by Tc only), `CatalystDiscovery` and `SuperconductorDiscovery.search_candidates` (literature reference data, not a search), `EnergyStorageMaterials` (cathode energy from capacity × voltage), `MetamaterialDesigner` (cloak wavelength from frequency).
 
 ### 5.16 `apedp/applied_synthetic_bio.py` — Applied Synthetic Biology & Genomics
 
@@ -706,9 +706,9 @@ Neuromorphic architectures, spiking neural networks, memristive devices, brain-c
 Power systems/grid, power electronics/converters, analog/RF/microwave, embedded systems/IoT, semiconductors/devices, and control systems.
 
 **Status:** `experimental`  
-**Tests:** Package import validated.
+**Tests:** `tests/test_applied_engineering_pharma.py`.
 
-**Exports:** `PowerSystemDesigner`, `PowerElectronicsDesigner`, `RFAnalogDesigner`, `EmbeddedSystemsDesigner`, `SemiconductorDesigner`, `ControlSystemsDesigner`.
+**Exports:** `PowerSystems` (fault MVA and voltage drop from source impedance and power factor), `PowerElectronics` (converter duty cycle), `AnalogRF`, `EmbeddedSystems` (clock period from clock rate), `Semiconductors` (figure of merit Rds(on) × Qg), `ControlSystems` (Ziegler–Nichols PID gains). Outputs are computed from inputs, not fixed values.
 
 ### 5.20 Core Search & Optimization
 

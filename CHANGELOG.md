@@ -21,6 +21,7 @@ inferred releases.
 - _Record user-visible changes here._
 
 ### Fixed
+- Applied biopharma, electrical, fusion and materials modules no longer return fixed results or random numbers. Trial and efficacy simulations seeded from Python's salted `hash()`, so results changed between processes; they now use SHA-256 of the inputs. Electrical, fusion and materials outputs are computed from inputs (for example fusion gain Q, PID gains, battery energy). The biopharma trial simulator no longer reports a p-value, and `ADMETPredictor` now applies Veber rules as well as Lipinski. The misspelled `discover_repuposing_candidates` is now `discover_repurposing_candidates`; the old name remains as an alias. `FusionReactorDesigner.optimize_confinement` raises `NotImplementedError` instead of returning fake results. Added `tests/test_applied_engineering_pharma.py`.
 - _Record user-visible fixes here._
 
 ### Security
