@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "repo_root": "/home/psalmprax/ALL_PROJECTS/science",
+  "competition_root": "/home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation",
+  "output_root": "artifacts/quantum_compilation/official_receipt_runs/track2_candidates",
+  "stop_on_first_failure": true,
+  "protected_files": [
+    {
+      "root": "competition",
+      "path": "sample_submission/dfthcsos/submission.npz",
+      "sha256": "14d5cc25eb3bf82a9ccb87c811db28d127bef6d28697dd190dc1e875de3bfe69"
+    }
+  ],
+  "source_files": [
+    {
+      "root": "repo",
+      "path": "scripts/prepare_track2_artifacts.py"
+    },
+    {
+      "root": "repo",
+      "path": "scripts/official_verifier_wrapper.py"
+    },
+    {
+      "root": "competition",
+      "path": "verifiers/invsqrt/verify_submission_invsqrt.py",
+      "sha256": "ddef520dec6b68d1cf0a6f328ddd36d79eb84570b9192cf3f7acaf073f06733a"
+    },
+    {
+      "root": "competition",
+      "path": "verifiers/dqi/verify_submission_dqi.py",
+      "sha256": "f14274bc0943fb9769ddb01131be6063191a15009fe1caf1d4bdd9fd25194e65"
+    },
+    {
+      "root": "competition",
+      "path": "verifiers/dfthcsos/verify.py",
+      "sha256": "0775be7a528922367caebe9e4d051d6199811f1aefeaa4b793eaaa4621b8ec9d"
+    },
+    {
+      "root": "competition",
+      "path": "verifiers/dfthcsos/scoreinfra/costs_prepare.py",
+      "sha256": "7f1e190c42fc5325f3e6689fbbef51f95b0cb12f1c828cda92b6c088e72206da"
+    },
+    {
+      "root": "competition",
+      "path": "verifiers/dfthcsos/scoreinfra/circuits.py",
+      "sha256": "fc027b52fdcebe14404f403a089122485d097ed65d03e6d989623d620b1ab68c"
+    },
+    {
+      "root": "repo",
+      "path": "scripts/run_official_receipts.py",
+      "sha256": "5d050791556f64ab94875598771eeab73a624a49dc2431b93840dab306f2131c"
+    }
+  ],
+  "components": [
+    {
+      "name": "invsqrt",
+      "candidate_builder_command": [
+        "/dev/shm/qvcc-venv313/bin/python",
+        "{repo_root}/scripts/prepare_track2_artifacts.py",
+        "--benchmark",
+        "invsqrt",
+        "--output-dir",
+        "{component_dir}/artifacts"
+      ],
+      "artifact_paths": [
+        "{component_dir}/artifacts/invsqrt.kmb"
+      ],
+      "official_verifier_command": [
+        "/dev/shm/qvcc-venv313/bin/python",
+        "{repo_root}/scripts/official_verifier_wrapper.py",
+        "--benchmark",
+        "invsqrt",
+        "--verifier-script",
+        "{competition_root}/verifiers/invsqrt/verify_submission_invsqrt.py",
+        "--candidate",
+        "{component_dir}/artifacts/invsqrt.kmb",
+        "--receipt",
+        "{receipt_path}"
+      ],
+      "receipt_status_field": "status",
+      "receipt_score_field": "score",
+      "receipt_checks": [
+        {
+          "field": "verified_shots",
+          "op": "ge",
+          "value": 200540928
+        }
+      ]
+    },
+    {
+      "name": "dqi",
+      "candidate_builder_command": [
+        "/dev/shm/qvcc-venv313/bin/python",
+        "{repo_root}/scripts/prepare_track2_artifacts.py",
+        "--benchmark",
+        "dqi",
+        "--output-dir",
+        "{component_dir}/artifacts"
+      ],
+      "artifact_paths": [
+        "{component_dir}/artifacts/dqi.kmb"
+      ],
+      "official_verifier_command": [
+        "/dev/shm/qvcc-venv313/bin/python",
+        "{repo_root}/scripts/official_verifier_wrapper.py",
+        "--benchmark",
+        "dqi",
+        "--verifier-script",
+        "{competition_root}/verifiers/dqi/verify_submission_dqi.py",
+        "--candidate",
+        "{component_dir}/artifacts/dqi.kmb",
+        "--receipt",
+        "{receipt_path}"
+      ],
+      "receipt_status_field": "status",
+      "receipt_score_field": "score",
+      "receipt_checks": [
+        {
+          "field": "verified_shots",
+          "op": "ge",
+          "value": 102400
+        },
+        {
+          "field": "value_errors",
+          "op": "eq",
+          "value": 0
+        },
+        {
+          "field": "phase_errors",
+          "op": "eq",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "dfthcsos",
+      "candidate_builder_command": [
+        "/dev/shm/qvcc-venv313/bin/python",
+        "{repo_root}/scripts/prepare_track2_artifacts.py",
+        "--benchmark",
+        "dfthcsos",
+        "--output-dir",
+        "{component_dir}/artifacts"
+      ],
+      "artifact_paths": [
+        "{component_dir}/artifacts/dfthcsos/submission.npz",
+        "{component_dir}/artifacts/dfthcsos/angle_k_0.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_1.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_2.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_3.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_4.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_5.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_6.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_7.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_8.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_9.kmb"
+      ],
+      "official_verifier_command": [
+        "/dev/shm/qvcc-venv313/bin/python",
+        "{repo_root}/scripts/official_verifier_wrapper.py",
+        "--benchmark",
+        "dfthcsos",
+        "--verifier-script",
+        "{competition_root}/verifiers/dfthcsos/verify.py",
+        "--candidate",
+        "{component_dir}/artifacts/dfthcsos",
+        "--receipt",
+        "{receipt_path}"
+      ],
+      "receipt_status_field": "status",
+      "receipt_score_field": "score",
+      "receipt_checks": [
+        {
+          "field": "verified_shots",
+          "op": "ge",
+          "value": 254464
+        },
+        {
+          "field": "resources.angles_within_cap",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "num_circuits",
+          "op": "eq",
+          "value": 10
+        }
+      ]
+    }
+  ]
+}

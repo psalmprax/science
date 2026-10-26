@@ -204,6 +204,6 @@ def create_app() -> FastAPI:
         from apedp.api.routes import visualization
         app.include_router(visualization.router, tags=["visualization"])
     except Exception:
-        pass
+        logging.getLogger(__name__).warning("visualization router failed to load; /visualization routes are disabled", exc_info=True)
 
     return app

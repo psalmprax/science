@@ -6,8 +6,14 @@ with Python fallbacks.
 """
 from __future__ import annotations
 
-from typing import Any, Sequence
+import logging
+import zlib
+from collections.abc import Sequence
+from typing import Any
+
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 try:
     import apedp_kernel
@@ -82,8 +88,8 @@ class SINDyProposer(ProposerBase):
                 else:
                     active_list = list(active)
                 return Xi, active_list
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning("SINDy Rust sparse regression failed; falling back to NumPy: %s", exc)
         Xi = np.linalg.lstsq(Theta, dX, rcond=None)[0]
         for _ in range(self.max_iter):
             small = np.abs(Xi) < self.threshold
@@ -132,14 +138,13 @@ class SINDyProposer(ProposerBase):
                 def score(df):
                     # simple evaluation
                     try:
-                        env = {n: df[n].values for n in variable_names if n in df.columns}
                         return np.ones(len(df))
                     except Exception:
                         return np.zeros(len(df))
                 return score
             proposals.append(CandidateProposal(
                 proposer_id=self.proposer_id,
-                candidate_id=f"sindy_{hash(formula) % 10**8}",
+                candidate_id=f"sindy_{zlib.crc32(formula.encode()) % 10**8}",
                 formula=formula,
                 strategy_archetype=StrategyArchetype.DYNAMICAL_SYSTEM,
                 declared_scale_invariant=False,

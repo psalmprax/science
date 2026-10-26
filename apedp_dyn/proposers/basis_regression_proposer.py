@@ -4,7 +4,10 @@ Fast screening step - can guide symbolic search.
 """
 from __future__ import annotations
 
-from typing import Any, Sequence
+import zlib
+from collections.abc import Sequence
+from typing import Any
+
 import numpy as np
 
 from apedp_dyn.grammar.proposer_interface import (
@@ -76,7 +79,7 @@ class BasisRegressionProposer(ProposerBase):
             return score
         proposals = [CandidateProposal(
             proposer_id=self.proposer_id,
-            candidate_id=f"basis_{self.basis}_{hash(formula) % 10**8}",
+            candidate_id=f"basis_{self.basis}_{zlib.crc32(formula.encode()) % 10**8}",
             formula=formula,
             strategy_archetype=StrategyArchetype.DYNAMICAL_SYSTEM,
             declared_scale_invariant=False,

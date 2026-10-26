@@ -40,7 +40,7 @@ PINNED_FROZEN_REGISTRY: dict[str, str] = {
     # (FLAW-08 re-anchor bootstrap, FLAW-07 monotone C6 evidence set).
     "apedp_dyn/epistemic/adjudicate.py": "13691be2e15053658f00f4ba7b925ae5fe29c7f72812b072dcc2964ccce1b931",
     "apedp_dyn/epistemic/claim_ladder.py": "2e4de9284910f48ea40d38b094c61e3e1d18b4a4fed579d614d2ae2aae10543b",
-    "apedp_dyn/sandbox/grammar_space.py": "1e348ccfbfb38de76084cc65235ad84d0468c5b0a6dcba971f4c41e8a890c5f0",
+    "apedp_dyn/sandbox/grammar_space.py": "4ff35436beb9b390661db80bbec70fe2c4aa4f2e8110e9e9ef89ab9cb4d90d87",
     "benchmarks/l2_control_freeze.json": "ec117721d1cd9da0b09950bb9b5894110c2411475dfec073b684477c33e96872",
 }
 

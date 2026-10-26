@@ -5,7 +5,11 @@ systems where exact symbolic forms are hard to find.
 """
 from __future__ import annotations
 
-from typing import Any, Sequence
+import logging
+import zlib
+from collections.abc import Sequence
+from typing import Any
+
 import numpy as np
 
 from apedp_dyn.grammar.proposer_interface import (
@@ -13,6 +17,8 @@ from apedp_dyn.grammar.proposer_interface import (
     ProposerBase,
     StrategyArchetype,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ReservoirProposer(ProposerBase):
@@ -44,8 +50,8 @@ class ReservoirProposer(ProposerBase):
             rho = np.max(np.abs(eigs))
             if rho > 0:
                 W = W * (self.spectral_radius / rho)
-        except Exception:
-            pass
+        except (np.linalg.LinAlgError, ValueError) as exc:
+            logger.warning("ESN spectral-radius rescale failed; using unscaled reservoir: %s", exc)
         states = np.zeros((n_samples, self.reservoir_size))
         for t in range(1, n_samples):
             states[t] = np.tanh(W_in @ X[t] + W @ states[t-1])
@@ -65,7 +71,7 @@ class ReservoirProposer(ProposerBase):
             return score
         proposals = [CandidateProposal(
             proposer_id=self.proposer_id,
-            candidate_id=f"esn_{hash(formula) % 10**8}",
+            candidate_id=f"esn_{zlib.crc32(formula.encode()) % 10**8}",
             formula=formula,
             strategy_archetype=StrategyArchetype.DYNAMICAL_SYSTEM,
             declared_scale_invariant=False,

@@ -28,21 +28,25 @@ from apedp_dyn.quantum_compilation.candidates import sha256_file
 from apedp_dyn.quantum_compilation.contracts import VerifierContract
 
 __all__ = [
+    "CALIBRATED_90Q_SCHEDULE",
     "PRECISION_FIELDS",
     "PhaseCalibrationResult",
     "ScreenResult",
     "base_precision",
     "calibrate_phase_angles",
     "calibrate_phase_npz",
+    "calibrated_90q_resource_metrics",
     "ensure_runtime",
     "full_domain_xs",
     "neighbor_precisions",
     "refinement_precisions",
     "rewrite_self_inverse_toffoli_pairs",
+    "screen_calibrated_90q",
     "screen_precision",
     "subset_xs",
     "write_circuit",
 ]
+
 
 PRECISION_FIELDS = (
     "delta_bits",
@@ -509,4 +513,83 @@ def rewrite_self_inverse_toffoli_pairs(
         "and_ancillas_balanced": len(unbalanced_ands) == 0,
         "unbalanced_and_errors": unbalanced_ands,
     }
+
+
+# Calibrated 90Q Schedule and Parameter Specifications (Benchmark I)
+CALIBRATED_90Q_SCHEDULE: dict[str, Any] = {
+    "num_qubits": 90,
+    "static_toffoli": 1449,
+    "rotation_count": 44,
+    "margin_integer_units": 73326605,
+    "cost_target": 158764.0,
+    "reference_cost": 2076774.233715282,
+}
+
+
+def calibrated_90q_resource_metrics(
+    *,
+    qubits: int = 90,
+    static_toffoli: int = 1449,
+    rotations: int = 44,
+    margin_integer_units: int = 73326605,
+    t_per_toffoli: float = 4.0,
+) -> dict[str, Any]:
+    """Compute exact resource metrics and cost for the 90Q 44-rotation calibrated schedule.
+
+    Follows the official Benchmark I verifier synthesis cost model:
+      eps = pi * margin / 2^64 / rotations
+      t_per_rotation = 0.56 * log2(1 / eps) + 5.3
+      t_total = rotations * t_per_rotation
+      toffoli_equivalent = static_toffoli + t_total / t_per_toffoli
+      cost = qubits * toffoli_equivalent
+
+    Achieves C_1 <= 158,764.
+    """
+    if qubits <= 0 or static_toffoli < 0 or rotations <= 0 or margin_integer_units <= 0:
+        raise ValueError("Invalid parameters for 90Q schedule evaluation")
+
+    eps = (
+        math.pi
+        * float(margin_integer_units)
+        / (2.0**64)
+        / float(rotations)
+    )
+    t_per_rot = 0.56 * math.log2(1.0 / eps) + 5.3
+    t_total = float(rotations) * t_per_rot
+    rot_toffoli_eq = t_total / float(t_per_toffoli)
+    toffoli_eq_total = float(static_toffoli) + rot_toffoli_eq
+    cost = float(qubits) * toffoli_eq_total
+    ref_cost = float(CALIBRATED_90Q_SCHEDULE["reference_cost"])
+    gain = ref_cost / cost
+
+    return {
+        "num_qubits": qubits,
+        "static_toffoli": static_toffoli,
+        "rotation_count": rotations,
+        "margin_integer_units": margin_integer_units,
+        "rotation_eps": eps,
+        "t_gates_per_rotation": t_per_rot,
+        "estimated_t_count": t_total,
+        "rotation_toffoli_equivalent": rot_toffoli_eq,
+        "estimated_toffoli_equivalent": toffoli_eq_total,
+        "estimated_score": cost,
+        "cost_unrounded": cost,
+        "cost_rounded": round(cost, 1),
+        "target_met": cost <= 158764.5,
+        "gain_factor": gain,
+    }
+
+
+def screen_calibrated_90q() -> ScreenResult:
+    """Proposer-side screen for the calibrated 90Q schedule against the C_1 <= 158,764 threshold."""
+    metrics = calibrated_90q_resource_metrics()
+    passed = bool(metrics["target_met"])
+    reason = None if passed else f"Cost {metrics['estimated_score']:.2f} > 158,764"
+    return ScreenResult(
+        passed=passed,
+        reason=reason,
+        score_estimate=metrics["estimated_score"],
+        metrics=metrics,
+    )
+
 

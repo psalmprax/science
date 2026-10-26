@@ -1,0 +1,83 @@
+{
+  "scope": "arithmetic reconciliation only; no KMB compilation or official verifier run",
+  "cost_contract": "C_chem = lambda_eff * Q_total * T_total",
+  "fixed_inputs": {
+    "lambda_eff": 49.25,
+    "q_total": 661,
+    "reference_chemistry_cost": 3355599588.3155365,
+    "invsqrt_reference_cost": 2076774.233715282,
+    "invsqrt_claim_cost": 158763.7,
+    "dqi_reference_cost": 24439463583672.93,
+    "dqi_claim_cost": 1697639528784.0
+  },
+  "toffoli_formula_recheck": {
+    "25_times_1129_times_2_plus_13157": 69607,
+    "asserted_total": 65244,
+    "literal_formula_minus_asserted": 4363,
+    "phase_term_2432_added_to_literal": 72039
+  },
+  "scenarios": [
+    {
+      "scenario": "direct_asserted_T",
+      "toffoli_total": 65244,
+      "fixed_lambda_eff": 49.25,
+      "q_total": 661,
+      "consistent_cost": 2123969487.0,
+      "chemistry_gain_vs_reference": 1.5798718431944858,
+      "composite_score_using_reported_inv_dqi_costs": {
+        "gains": {
+          "invsqrt": 13.080913544565174,
+          "dqi": 14.396144275209378,
+          "dfthcsos": 1.5798718431944858
+        },
+        "product_improvement": 297.5131216370071,
+        "geometric_mean": 6.675780392046058
+      },
+      "externally_claimed_cost": 2123803639.4,
+      "lambda_implied_by_external_cost": 49.24615437305009,
+      "external_cost_minus_consistent_cost": -165847.59999990463
+    },
+    {
+      "scenario": "literal_formula_T",
+      "toffoli_total": 69607,
+      "fixed_lambda_eff": 49.25,
+      "q_total": 661,
+      "consistent_cost": 2266003679.75,
+      "chemistry_gain_vs_reference": 1.4808447216139329,
+      "composite_score_using_reported_inv_dqi_costs": {
+        "gains": {
+          "invsqrt": 13.080913544565174,
+          "dqi": 14.396144275209378,
+          "dfthcsos": 1.4808447216139329
+        },
+        "product_improvement": 278.86485709892526,
+        "geometric_mean": 6.533279866073781
+      },
+      "externally_claimed_cost": null,
+      "lambda_implied_by_external_cost": null,
+      "external_cost_minus_consistent_cost": null
+    },
+    {
+      "scenario": "phase_term_included_T",
+      "toffoli_total": 72039,
+      "fixed_lambda_eff": 49.25,
+      "q_total": 661,
+      "consistent_cost": 2345175615.75,
+      "chemistry_gain_vs_reference": 1.4308521569897006,
+      "composite_score_using_reported_inv_dqi_costs": {
+        "gains": {
+          "invsqrt": 13.080913544565174,
+          "dqi": 14.396144275209378,
+          "dfthcsos": 1.4308521569897006
+        },
+        "product_improvement": 269.4505213576659,
+        "geometric_mean": 6.458916589276107
+      },
+      "externally_claimed_cost": 2345190095.0,
+      "lambda_implied_by_external_cost": 49.250304072350794,
+      "external_cost_minus_consistent_cost": 14479.25
+    }
+  ],
+  "diagnosis": "The three externally supplied cost figures are not all generated from one fixed lambda_eff=49.25. Keep the claimed costs as source claims, but use the consistent_cost column for like-for-like sensitivity. The verifier's measured T_total, Q_total and lambda_eff must decide final promotion.",
+  "promotion_decision": "HOLD_FOR_SOURCE_COST_RECEIPT_RECONCILIATION"
+}

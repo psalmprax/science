@@ -17,6 +17,7 @@ from typing import Any
 
 from apedp_dyn.quantum_compilation.contracts import load_contract
 from apedp_dyn.quantum_compilation.experiment import ExperimentRunner
+from apedp_dyn.quantum_compilation.faros_isq import run_faros_isq_search
 from apedp_dyn.quantum_compilation.invsqrt_direct_poly import DirectPolyProposer
 from apedp_dyn.quantum_compilation.invsqrt_qrom_line import QromLineProposer
 from apedp_dyn.quantum_compilation.ledger import QuantumCandidateLedger
@@ -136,6 +137,20 @@ def run_multi_structure_search(
         }
     except (RuntimeError, ValueError, OSError, ImportError) as exc:
         results["direct_poly"] = {"error": str(exc)}
+
+    # 4. FAROS-ISQ representation portfolio & Pareto tournament (R1-R5)
+    try:
+        faros_outcome = run_faros_isq_search(
+            competition_root=competition_root,
+            output_dir=output_dir / "faros_isq",
+            budget=budget_per_structure,
+            python_executable=executable,
+            dev_max_x=dev_max_x or 4096,
+            ledger=shared_ledger,
+        )
+        results["faros_isq"] = faros_outcome
+    except (RuntimeError, ValueError, OSError, ImportError) as exc:
+        results["faros_isq"] = {"error": str(exc)}
 
     results["ledger_summary"] = shared_ledger.summary()
     report_path = output_dir / "multi_structure_report.json"

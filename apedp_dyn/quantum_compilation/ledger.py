@@ -50,6 +50,7 @@ __all__ = [
     "aggregate_score",
     "chemistry_cost",
     "dqi_cost",
+    "early_exit_resource_gate",
     "invsqrt_cost",
     "relative_reduction",
     "score_ledger_portfolio",
@@ -120,6 +121,32 @@ def relative_reduction(reference: float, candidate: float) -> float:
     if reference <= 0 or candidate <= 0:
         raise ValueError("Costs must be positive")
     return float(1.0 - candidate / reference)
+
+
+def early_exit_resource_gate(
+    estimated_min_cost: float,
+    champion_cost: float,
+    noise_margin: float = 50.0,
+) -> bool:
+    """Conservative early-exit resource gate for candidate synthesis.
+
+    Returns True if the candidate's optimistic lower bound cost is strictly
+    lower than (champion_cost - noise_margin), justifying synthesis and official
+    verification. Returns False if even the optimistic bound cannot beat the
+    champion outside a conservative empirical buffer (noise_margin=50.0).
+
+    Note on statistical calibration:
+    For N = 200,540,928 shots on Benchmark I (Q = 90, T_max = 1448), the
+    per-shot independent sampling standard error of cost is bounded by
+    SE(C) <= 90 * (1448 / (2 * sqrt(N))) ≈ 4.60 cost units.
+    The 50.0 margin is an empirical operational buffer against run-to-run
+    variation across environments and seeds, not the per-shot standard error.
+    """
+    if not math.isfinite(estimated_min_cost) or estimated_min_cost <= 0:
+        raise ValueError(f"Invalid estimated_min_cost: {estimated_min_cost}")
+    if not math.isfinite(champion_cost) or champion_cost <= 0:
+        raise ValueError(f"Invalid champion_cost: {champion_cost}")
+    return float(estimated_min_cost) < float(champion_cost - noise_margin)
 
 
 def _normalize_cost_vector(

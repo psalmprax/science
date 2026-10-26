@@ -12,11 +12,14 @@ and custom endpoints configured by the user.
 from __future__ import annotations
 
 import json
+import logging
 import os
 from collections.abc import Sequence
 from typing import Any
 
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, SystemCandidate, Term
+
+logger = logging.getLogger(__name__)
 
 PROPOSER_VERSION = "1.1.0-llm"
 
@@ -241,8 +244,8 @@ Return as JSON: [{{"terms": ["x", "v"], "rationale": "...", "confidence": 0.8}},
                         parameter_bounds={f"a{j}": (-1e6, 1e6) for j in range(len(valid_terms))},
                     )
                     candidates.append(cand)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("LLM proposer candidate construction failed; returning partial results: %s", exc)
         return candidates
 
 

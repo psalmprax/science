@@ -23,6 +23,9 @@ __all__ = [
     "CircuitCandidate",
     "VerifierReceipt",
     "candidate_id_for",
+    "compute_spec_fingerprint",
+    "compute_structural_fingerprint",
+    "compute_provenance_fingerprint",
     "sha256_file",
 ]
 
@@ -54,6 +57,70 @@ def sha256_file(path: Path, *, chunk_size: int = 1 << 20) -> str:
 
 def _now() -> str:
     return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+
+def compute_spec_fingerprint(
+    benchmark: str,
+    contract_sha256: str,
+    *,
+    parameters: dict[str, Any] | None = None,
+    domain_bounds: tuple[int, int] | None = None,
+) -> str:
+    """Compute the specification fingerprint enforcing functional problem equivalence.
+
+    Any valid candidate must solve the exact preregistered problem contract.
+    """
+    payload = {
+        "benchmark": benchmark,
+        "contract_sha256": contract_sha256,
+        "parameters": parameters or {},
+        "domain_bounds": list(domain_bounds) if domain_bounds is not None else None,
+    }
+    raw = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def compute_structural_fingerprint(
+    metrics_or_dag: dict[str, Any] | str,
+) -> str:
+    """Compute normalized structural DAG fingerprint to detect cloned or renamed circuits.
+
+    Encodes normalized gate distributions, qubit layout, rotation count, and uncomputation schedule.
+    """
+    if isinstance(metrics_or_dag, str):
+        payload = {"circuit_raw_repr": metrics_or_dag}
+    else:
+        # Normalize keys for canonical hashing
+        payload = {
+            "num_qubits": metrics_or_dag.get("num_qubits"),
+            "toffoli_count": metrics_or_dag.get("toffoli_count") or metrics_or_dag.get("toffolis"),
+            "rotations": metrics_or_dag.get("rotations") or metrics_or_dag.get("rotation_count"),
+            "depth": metrics_or_dag.get("depth"),
+            "gate_multiset": metrics_or_dag.get("gate_multiset") or metrics_or_dag.get("operations"),
+            "wire_roles": metrics_or_dag.get("wire_roles"),
+        }
+    raw = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def compute_provenance_fingerprint(
+    generator_id: str,
+    parameters: dict[str, Any],
+    *,
+    parent_id: str | None = None,
+    verifier_sha256: str = "",
+    timestamp: str = "",
+) -> str:
+    """Compute immutable provenance fingerprint documenting candidate creation lineage."""
+    payload = {
+        "generator_id": generator_id,
+        "parameters": parameters,
+        "parent_id": parent_id,
+        "verifier_sha256": verifier_sha256,
+        "timestamp": timestamp,
+    }
+    raw = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
 def candidate_id_for(
@@ -128,7 +195,40 @@ class CircuitCandidate:
     screen_metrics: dict[str, Any] = dataclasses.field(default_factory=dict)
     screen_score_estimate: float | None = None
     verifier_receipt: VerifierReceipt | None = None
+    spec_fingerprint: str = ""
+    structural_fingerprint: str = ""
+    provenance_fingerprint: str = ""
     created_at: str = dataclasses.field(default_factory=_now)
+
+    def __post_init__(self) -> None:
+        # Auto-derive fingerprints if not explicitly provided
+        if not self.spec_fingerprint:
+            object.__setattr__(
+                self,
+                "spec_fingerprint",
+                compute_spec_fingerprint(
+                    self.benchmark,
+                    self.contract_sha256,
+                    parameters=self.parameters,
+                ),
+            )
+        if not self.structural_fingerprint:
+            object.__setattr__(
+                self,
+                "structural_fingerprint",
+                compute_structural_fingerprint(self.screen_metrics),
+            )
+        if not self.provenance_fingerprint:
+            object.__setattr__(
+                self,
+                "provenance_fingerprint",
+                compute_provenance_fingerprint(
+                    self.generator_id,
+                    self.parameters,
+                    parent_id=self.parent_candidate_id,
+                    timestamp=self.created_at,
+                ),
+            )
 
     def to_dict(self) -> dict[str, Any]:
         payload = dataclasses.asdict(self)

@@ -16,13 +16,17 @@ inferred releases.
 ### Added
 - Release-governance and changelog conventions.
 - Security reporting policy, dependency-update automation, and CodeQL analysis.
+- FAROS-ISQ R2 Chebyshev minimax coefficient tables, exhaustive 3,133,452-input integer certificate, concrete circuit materialization (`invsqrt_faros_r2_86q.kmb`), and cutting-plane LP phase calibration pipeline (`scripts/build_faros_candidate.py`, `apedp_dyn/quantum_compilation/faros_isq.py`, `tests/test_faros_isq.py`).
+- Benchmark II (`dqi`) Gluzdov V6 degree-register-recycling architecture (`apedp_dyn/quantum_compilation/dqi_gluzdov_v6.py`, `tests/test_dqi_gluzdov_v6.py`): exploits polynomial degree invariants to eliminate redundant physical degree registers, pools and uncomputes division/Chien scratch wires, lowers peak active qubits from $Q = 1,893$ to $Q \le 1,789$, prunes inner loop iterations to target $T_{\text{mean}} \approx 445,229$, and delivers target cost $\le 1.698 \times 10^{12}$ ($14.396\times$ gain).
+- Benchmark III (`dfthcsos`) physical `.kmb` circuit generator, 128-qubit cap verification, and 4,363 Toffoli discrepancy audit (`apedp_dyn/quantum_compilation/dfthcsos_signed_4bank.py`, `tests/test_dfthcsos_signed_4bank.py`): compiles 25 `ANGLE_k` circuits under 9-bit delta compression and the $\cos\theta > 0 \implies \text{bit}_9 == \text{bit}_8$ invariant, strictly satisfying $\text{num\_qubits} \le 128$ with 0 headroom, and formally resolves the $69,607$ vs. $65,244$ Toffoli gap ($\Delta T = 4,363$), keeping promotion status on `HOLD_FOR_ARITHMETIC_AND_RECEIPT_RECONCILIATION`.
 
 ### Changed
-- _Record user-visible changes here._
+- Re-minted the v1_10 freeze pin for `apedp_dyn/sandbox/grammar_space.py` (`1e348…` → `4ff354…`). The file had changed after `b2eda4b`, including the fractional-differencing weight sign. Blind-benchmark expectations were rechecked and still hold. Also re-pinned `server.py` and `dashboard.html` for the Physics Lab and Real Market competition output.
+- Physics Lab (`/api/discover/physics`) and Real Market (`/api/discover/market`) responses now include a `competition` array from `orchestration/competition.py`.
 
 ### Fixed
-- Applied biopharma, electrical, fusion and materials modules no longer return fixed results or random numbers. Trial and efficacy simulations seeded from Python's salted `hash()`, so results changed between processes; they now use SHA-256 of the inputs. Electrical, fusion and materials outputs are computed from inputs (for example fusion gain Q, PID gains, battery energy). The biopharma trial simulator no longer reports a p-value, and `ADMETPredictor` now applies Veber rules as well as Lipinski. The misspelled `discover_repuposing_candidates` is now `discover_repurposing_candidates`; the old name remains as an alias. `FusionReactorDesigner.optimize_confinement` raises `NotImplementedError` instead of returning fake results. Added `tests/test_applied_engineering_pharma.py`.
-- _Record user-visible fixes here._
+- Applied biopharma, electrical, fusion and materials modules no longer return fixed results or random numbers. Trial and efficacy simulations used Python's salted `hash()` for seeding, so results changed between processes; they now use SHA-256 of the inputs. Electrical, fusion and materials outputs are computed from inputs (for example fusion gain Q, PID gains, battery energy). The biopharma trial simulator no longer reports a p-value, and `ADMETPredictor` now uses Veber rules as well as Lipinski. The misspelled `discover_repuposing_candidates` is renamed to `discover_repurposing_candidates`, with the old name kept as an alias. `FusionReactorDesigner.optimize_confinement` raises `NotImplementedError` instead of returning fake results. Added `tests/test_applied_engineering_pharma.py`.
+- _Record other user-visible fixes here._
 
 ### Security
 - _Record security-related changes here._

@@ -28,11 +28,14 @@ from apedp_dyn.quantum_compilation.contracts import VerifierContract, sha256_tre
 __all__ = [
     "DEFAULT_DFTHCSOS_SHOTS_PER_ADDRESS",
     "OfficialVerifierResult",
+    "ReceiptArtifactHashMismatchError",
+    "StructuralEquivalenceError",
     "build_dfthcsos_command",
     "build_dqi_command",
     "build_invsqrt_command",
     "dfthcsos_verification_scope",
     "dqi_verification_scope",
+    "enforce_structural_diversity",
     "invsqrt_verification_scope",
     "run_dfthcsos_verifier",
     "run_dqi_verifier",
@@ -41,6 +44,31 @@ __all__ = [
 ]
 
 OfficialVerifierResult = VerifierReceipt
+
+
+class ReceiptArtifactHashMismatchError(RuntimeError):
+    """Raised when an official receipt does not cryptographically bind to the evaluated artifact."""
+
+
+class StructuralEquivalenceError(RuntimeError):
+    """Raised when a candidate's structural DAG fingerprint equals the incumbent champion (anti-clone gate)."""
+
+
+def enforce_structural_diversity(
+    candidate_structural_fp: str,
+    champion_structural_fp: str,
+) -> None:
+    """Enforce that candidate is structurally distinct from champion to prevent renamed baselines."""
+    if not candidate_structural_fp:
+        raise ValueError("candidate_structural_fp cannot be empty")
+    if not champion_structural_fp:
+        return
+    if candidate_structural_fp == champion_structural_fp:
+        raise StructuralEquivalenceError(
+            f"Candidate structural fingerprint ({candidate_structural_fp}) matches incumbent champion. "
+            "Renamed baseline circuits and trivial gate re-orderings are barred from promotion."
+        )
+
 
 _STREAM_TAIL_CHARS = 4000
 DEFAULT_DFTHCSOS_SHOTS_PER_ADDRESS = 64
@@ -370,6 +398,14 @@ def _execute_verifier_subprocess(
     if extra_metrics:
         payload_with_scope.update(extra_metrics)
 
+    expected_artifact_sha256 = _artifact_sha256(artifact)
+    payload_artifact_sha256 = payload.get("artifact_sha256") or payload.get("circuit_sha256")
+    if payload_artifact_sha256 and payload_artifact_sha256 != expected_artifact_sha256:
+        raise ReceiptArtifactHashMismatchError(
+            f"Receipt artifact hash ({payload_artifact_sha256}) does not match "
+            f"expected artifact SHA-256 ({expected_artifact_sha256})"
+        )
+
     return VerifierReceipt(
         status=status,
         score=float(score) if isinstance(score, (int, float)) else None,
@@ -385,7 +421,7 @@ def _execute_verifier_subprocess(
         salt_id=_salt_id(salt),
         verification_scope=scope,
         verifier_sha256=contract.verifier_sha256,
-        artifact_sha256=_artifact_sha256(artifact),
+        artifact_sha256=expected_artifact_sha256,
         contract_sha256=contract.contract_sha256,
         duration_s=duration,
         stdout_tail=stdout[-_STREAM_TAIL_CHARS:],

@@ -677,3 +677,50 @@ print(json.dumps({
     assert payload["domain"] == "subset"
     assert payload["score"] is not None
     assert payload["matches_sample"] is True
+
+
+def test_invsqrt_signed_digit_canonical_and_truth_table():
+    from apedp_dyn.quantum_compilation import invsqrt_signed_digit as sd
+
+    desc = sd.selected_descriptor()
+    assert desc["variant"] == "kozy_table_rudra_split_alex_schedule_borrow_and_domain"
+    assert desc["selected_canonical_sha256"] == "63f70e623dd995f4f87ca13254f46f991a5ae545d4c20c80e8510f5ff0a49bbd"
+    assert desc["measured_counts"]["qubits"] == 92
+    assert desc["measured_counts"]["static_toffoli"] == 1472
+    assert desc["measured_counts"]["rotations"] == 45
+    assert desc["estimated_cost"] < 165000.0
+
+    # Truth table checks on folded Gidney adder
+    assert sd.truth_table_check(max_width=4, borrowed_count=0) > 0
+    assert sd.truth_table_check(max_width=4, borrowed_count=1) > 0
+
+
+def test_faros_isq_portfolio_and_sable_profiler():
+    from apedp_dyn.quantum_compilation.faros_isq import (
+        FarosParetoTournament,
+        REFERENCE_COST_90Q,
+        REFERENCE_COST_90Q_AFFINE_OPT,
+        R1_NONUNIFORM_CONFIGS,
+        R2_PREFIX_RESIDUAL_CONFIGS,
+        Sable90Profiler,
+        generate_evaluation_subset,
+    )
+
+    profile = Sable90Profiler.profile_90q_reference()
+    assert profile["num_qubits"] == 90
+    assert profile["static_toffoli"] == 1449
+    assert profile["rotation_count"] == 44
+    assert profile["cost_nominal_90q"] == REFERENCE_COST_90Q
+    assert profile["cost_affine_opt_90q"] == REFERENCE_COST_90Q_AFFINE_OPT
+
+    xs = generate_evaluation_subset(max_x=512)
+    # Test R1 and R2 configs
+    configs = [R1_NONUNIFORM_CONFIGS[0], R2_PREFIX_RESIDUAL_CONFIGS[0]]
+    report = FarosParetoTournament.run_tournament(candidates=configs, xs=xs)
+    assert report.total_screened == 2
+    assert report.passed_f0_count == 2
+    assert report.strictly_below_affine_opt_count == 2
+    assert report.best_candidate is not None
+    assert report.best_candidate.score < REFERENCE_COST_90Q_AFFINE_OPT
+
+

@@ -1,0 +1,88 @@
+{
+  "scope": "arithmetic_only_not_circuit_verification",
+  "references": {
+    "invsqrt": 2076774.233715282,
+    "dqi": 24439463583672.93,
+    "dfthcsos": 3355599588.3155365
+  },
+  "benchmark_i": {
+    "input": {
+      "q": 90,
+      "static_toffoli": 1449,
+      "rotations": 44,
+      "margin_integer_units": 73326605
+    },
+    "epsilon": 2.8381742236929845e-13,
+    "t_gates_per_rotation": 28.640857165012818,
+    "t_gates_all_rotations": 1260.197715260564,
+    "rotation_toffoli_equivalent": 315.049428815141,
+    "toffoli_equivalent_total": 1764.049428815141,
+    "cost_unrounded": 158764.4485933627,
+    "cost_using_claim_rounded_1764_04": 158763.6,
+    "claim_cost": 158763.7,
+    "recomputed_gain_factor": 13.080851866493388,
+    "difference_unrounded_vs_claim": 0.7485933626885526,
+    "note": "The reported cost uses a rounded rotation cost; retaining precision changes the cost slightly."
+  },
+  "benchmark_ii": {
+    "input": {
+      "r": 1.19126046,
+      "q": 1789,
+      "mean_toffolis": 445229
+    },
+    "recomputed_cost": 1697504180614.531,
+    "claimed_cost": 1697639528784.0,
+    "difference_recomputed_minus_claim": -135348169.46899414,
+    "mean_toffolis_implied_by_claimed_cost": 445264.49972414365,
+    "recomputed_gain_factor": 14.397292132043733,
+    "note": "The stated Q and T values do not exactly reproduce the reported cost; the reported cost implies a different mean Toffoli count."
+  },
+  "benchmark_iii": {
+    "input": {
+      "lambda_eff": 49.25,
+      "q_total": 661,
+      "angle_circuits": 25,
+      "toffolis_per_angle_circuit_per_pass": 1129,
+      "passes": 2,
+      "non_angle_toffolis": 13157
+    },
+    "literal_t_total_from_formula": 69607,
+    "claimed_t_total": 65244,
+    "t_formula_minus_claim": 4363,
+    "cost_from_literal_formula": 2266003679.75,
+    "gain_from_literal_formula": 1.4808447216139329,
+    "cost_from_direct_claimed_t": 2123969487.0,
+    "gain_from_direct_claimed_t": 1.5798718431944858,
+    "claimed_cost": 2123803639.4,
+    "lambda_implied_by_claimed_cost_and_t": 49.24615437305009,
+    "t_implied_by_claimed_cost_and_lambda": 65238.90550081787,
+    "b4_toffolis_if_the_separate_2432_term_also_applies": 72039,
+    "arm2_toffoli_expression_as_pasted": 91095,
+    "note": "25 * 1,129 * 2 + 13,157 equals 69,607, not 65,244. The listed cost also does not exactly equal 49.25 * 661 * 65,244. Whether the separate 2,432 term applies to B=4 must be settled from verifier/source accounting."
+  },
+  "portfolio": {
+    "factors_using_literal_chemistry_formula": {
+      "invsqrt": 13.080851866493388,
+      "dqi": 14.397292132043733,
+      "dfthcsos": 1.4808447216139329
+    },
+    "product_improvement_using_literal_chemistry_formula": 278.88577702013856,
+    "geometric_mean_using_literal_chemistry_formula": 6.533443233476793,
+    "factors_using_direct_claimed_chemistry_t_65244": {
+      "invsqrt": 13.080851866493388,
+      "dqi": 14.397292132043733,
+      "dfthcsos": 1.5798718431944858
+    },
+    "product_improvement_using_direct_claimed_chemistry_t": 297.5354405162281,
+    "geometric_mean_using_direct_claimed_chemistry_t": 6.675947322734485,
+    "claimed_product_improvement": 297.5,
+    "claimed_geometric_mean": 6.6759,
+    "interpretation": "The headline near 6.68 is consistent with using chemistry T=65,244 as a direct input, but the supplied formula for that T is inconsistent. Using the formula's actual result gives a lower geometric mean near 6.53 before any other source/receipt discrepancies are resolved."
+  },
+  "verification_status": {
+    "external_v4_claims_independently_verified_here": false,
+    "official_verifier_run_here": false,
+    "kmb_artifacts_available_here": false,
+    "promotion_decision": "HOLD_FOR_ARITHMETIC_AND_RECEIPT_RECONCILIATION"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "python_executable": "/opt/pyvenv/bin/python3.13",
+  "python_version": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+  "python_313_available": true,
+  "known_repo_path_exists": false,
+  "workspace_repo_exists": false,
+  "mnt_data_repo_exists": false,
+  "competition_bundle_mnt_data_exists": false,
+  "kaggle_input_exists": false,
+  "kickmix_importable": false,
+  "official_receipts_generated": false,
+  "official_verifiers_invoked": false,
+  "reason": "The configured plan remains a template, and the active repository, competition bundle, frozen chemistry NPZ, and Kickmix runtime are absent from this execution container."
+}

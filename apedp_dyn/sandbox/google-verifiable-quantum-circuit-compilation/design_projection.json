@@ -1,0 +1,72 @@
+{
+  "candidate": "rm_block2_j4",
+  "arm": "arm2_reed_muller_angle_buffering_only",
+  "status": "ANALYTICAL_PROJECTION_ONLY",
+  "compiled_kmb": false,
+  "official_verifier_run": false,
+  "input_submission_sha256_expected": "276d464ff14da828b6b33e8487d99975494cbdf0c3cb2bd37dd3c3ddc4002695",
+  "angle_batch_size_J": 4,
+  "angle_batch_count": 19,
+  "reason_for_19_circuits": "ceil(75 logical angles / 4 per batch) = 19; final batch is padded according to the official table semantics",
+  "address_count": 3976,
+  "address_block_size": 2,
+  "high_address_rows": 1988,
+  "selection_qubits": 12,
+  "word_register_qubits": 48,
+  "baseline_angle_ancilla_qubits": 11,
+  "angle_base_width_before_buffer": 71,
+  "buffer_payload_bits_for_four_word_delta": 48,
+  "peak_angle_qubits_before_phase_fixup": 119,
+  "qubit_cap": 128,
+  "extra_phase_fixup_qubits_allowed": 9,
+  "projected_Q_total_formula": "634 + 12*J",
+  "projected_Q_total": 682,
+  "baseline_Q_total": 730,
+  "projected_Q_saving": 48,
+  "structural_QROM_Toffolis_per_candidate_batch": 1987,
+  "projected_candidate_QROM_Toffolis_all_19_batches": 37753,
+  "phase_fixup_Toffolis_per_batch_design_note_range": [
+    64,
+    95
+  ],
+  "projected_phase_fixup_Toffolis_all_19_batches": [
+    1216,
+    1805
+  ],
+  "baseline_T_ANGLES_forward_reverse": 79480,
+  "projected_T_ANGLES": [
+    38969,
+    39558
+  ],
+  "baseline_non_angle_T_assumed_unchanged": 13757,
+  "projected_T_total": [
+    52726,
+    53315
+  ],
+  "baseline_lambda_eff_assumed_unchanged": 49.30136925057438,
+  "projected_chemistry_cost": [
+    1772834444.6621451,
+    1792638706.0873623
+  ],
+  "projected_gain_vs_frozen_baseline": [
+    1.8718772371257753,
+    1.8927879015544646
+  ],
+  "assumptions": [
+    "one high-address QROM loads 48-bit base plus 48-bit XOR delta for each pair",
+    "structural QROM Toffoli cost is approximated as high_address_rows - 1 per batch",
+    "phase-fixup costs 64-95 Toffolis per batch based on prior design notes, not this run",
+    "HMR cleanup adds no Toffolis as planned but remains unimplemented and unverified",
+    "lambda_eff and all non-ANGLE costs remain unchanged",
+    "Q_total = 634 + 12*J is the existing analytical score-model formula"
+  ],
+  "promotion_gate": {
+    "input_npz_sha256_must_equal": "276d464ff14da828b6b33e8487d99975494cbdf0c3cb2bd37dd3c3ddc4002695",
+    "all_19_angle_circuits_within_128_qubits": true,
+    "exact_peak_qubits_and_Toffoli_counts_measured": false,
+    "lookup_semantics_pass": false,
+    "phase_semantics_pass": false,
+    "official_verifier_status": "NOT_RUN",
+    "strict_official_cost_improvement": false
+  }
+}

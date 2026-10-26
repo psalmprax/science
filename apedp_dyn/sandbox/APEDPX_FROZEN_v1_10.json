@@ -17,14 +17,14 @@
     "apedp_dyn/sandbox/causal_discovery_sandbox.py": "d0715324bfeccb1aa1c49eecbbcb50fff3c66ab62744d95fbe766b0061e5a38b",
     "apedp_dyn/sandbox/eseds_dynamical.py": "53c4837c13682b3ce2178f5db8a04c280f521fa2af5b403c13d7e8a9760fb4fe",
     "apedp_dyn/sandbox/eso_packing.py": "6e19088bd2e621af9f7288fb2e8691cc7698bd5a5520b4b7d6456bcb98a661d0",
-    "apedp_dyn/sandbox/grammar_space.py": "1e348ccfbfb38de76084cc65235ad84d0468c5b0a6dcba971f4c41e8a890c5f0",
+    "apedp_dyn/sandbox/grammar_space.py": "4ff35436beb9b390661db80bbec70fe2c4aa4f2e8110e9e9ef89ab9cb4d90d87",
     "apedp_dyn/sandbox/multi_asset_signals_sandbox.py": "128069663afde2dbdd0f3988fcda62077c9d97e46cb43b14e4935a4e0ec495aa",
     "apedp_dyn/sandbox/multi_grammar_sandbox.py": "a7526e22d3451a2f899c152102d4f2d45cb046370d3a8bffe61164f13b39fa6d",
     "apedp_dyn/sandbox/pde_verification_sandbox.py": "1ea3a4c89800af9f6570723fbcf6ea09e731cccf24a292cc15489bc56fa636a3",
     "apedp_dyn/sandbox/sphere_packing_sandbox.py": "6a105810b786cddd1435c13c752cddd4ad73182dd841e6677f8667001ec3fd1c",
     "apedp_dyn/sandbox/trading_signals_sandbox.py": "391f80a189b85283eaa153d8f53bc2be7bdf19eff3e2878198be2a8d254e08a6",
-    "apedp_dyn/ui/dashboard.html": "55b302068c087283fd832f2fdc54c5d540c4d86e0280eca69ec0ac00dc3e1380",
-    "apedp_dyn/ui/server.py": "01f06734c932d87fe5c435b1d41402c9e655b734223a186b7f7e589cfb8fef86"
+    "apedp_dyn/ui/dashboard.html": "d4b68024609e50789b3794e04705055ad80560f74d50a53813d6524a708595d0",
+    "apedp_dyn/ui/server.py": "063cc54734397f7fdb78b042712a9236c71f62fe8d375e32c897de60131ef13d"
   },
   "label": "APEDP-X v1.10-FROZEN",
   "referee_change": "Grammar-space expansion (scope-widening, not threshold change): apedp_dyn/sandbox/grammar_space.py adds the concave level-volume hypothesis H-SQRTV (y=a+b*sqrt(V_t)) with M_P+SQRTV in EXTENDED_COMBOS, and declares the sqrt/tanh unary and min/max binary operators with an explicit sqrt domain check; apedp_dyn/grammar/candidate_ir.py adds saturating-rational term families. Thresholds, env pins and blind-case expectations are unchanged.",
@@ -48,9 +48,21 @@
   "remint_log": [
     {
       "file": "apedp_dyn/sandbox/grammar_space.py",
-      "new_sha256": "1e348ccfbfb38de76084cc65235ad84d0468c5b0a6dcba971f4c41e8a890c5f0",
-      "old_sha256": "b9b669521328bdbf5e6cc476634629211f891d8c9909f3037eee02dc09e78632",
+      "new_sha256": "4ff35436beb9b390661db80bbec70fe2c4aa4f2e8110e9e9ef89ab9cb4d90d87",
+      "old_sha256": "1e348ccfbfb38de76084cc65235ad84d0468c5b0a6dcba971f4c41e8a890c5f0",
       "rationale": "Expanded hypothesis/operator space: H-SQRTV (sqrt(V_t)) + M_P+SQRTV combo, sqrt/tanh unary ops and min/max binary ops declared, check_sqrt domain guard. Cohort definitions and gate thresholds untouched; grammar fingerprint changes by construction (it hashes the declared space)."
+    },
+    {
+      "file": "apedp_dyn/ui/server.py",
+      "new_sha256": "063cc54734397f7fdb78b042712a9236c71f62fe8d375e32c897de60131ef13d",
+      "old_sha256": "01f06734c932d87fe5c435b1d41402c9e655b734223a186b7f7e589cfb8fef86",
+      "rationale": "Physics Lab and Real Market routes return a 'competition' array (every applicable engine on the same data) via orchestration/competition.py. Adds no thresholds; the referee verdict fields are unchanged."
+    },
+    {
+      "file": "apedp_dyn/ui/dashboard.html",
+      "new_sha256": "d4b68024609e50789b3794e04705055ad80560f74d50a53813d6524a708595d0",
+      "old_sha256": "55b302068c087283fd832f2fdc54c5d540c4d86e0280eca69ec0ac00dc3e1380",
+      "rationale": "Renders the 'competition' table in the sandbox results panel. Display only."
     },
     {
       "file": "apedp_dyn/grammar/candidate_ir.py",
