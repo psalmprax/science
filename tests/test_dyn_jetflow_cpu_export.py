@@ -33,6 +33,7 @@ from jetflow_video.model import JetFlowModelConfig, JetFlowVideoModel
 from benchmarks.run_jetflow_cpu_export_benchmark import (
     export_backbone_to_onnx,
     quantize_onnx,
+    randomize_weights,
 )
 
 
@@ -40,6 +41,7 @@ from benchmarks.run_jetflow_cpu_export_benchmark import (
 def exported(tmp_path_factory):
     torch.manual_seed(0)
     model = JetFlowVideoModel(JetFlowModelConfig(latent_channels=12, hidden_dim=32, num_layers=1)).eval()
+    randomize_weights(model, seed=0)
     td = tmp_path_factory.mktemp("onnx")
     fp32 = export_backbone_to_onnx(model, str(td / "fp32.onnx"), frames=6, latent_channels=12, lat=16)
     int8 = quantize_onnx(fp32, str(td / "int8.onnx"))
@@ -81,8 +83,9 @@ def test_int8_smaller_and_within_tolerance(exported):
     with torch.no_grad():
         v_t = model.backbone(z, 0.5, text_tokens=txt).numpy()
     v = sess.run(None, feeds)[0]
-    # Tiny model: dynamic weight-int8 quantization error stays well under 1e-2
-    assert np.abs(v - v_t).max() < 1e-2, np.abs(v - v_t).max()
+    # Relative gate: error scaled by the reference output magnitude.
+    rel = np.abs(v - v_t).max() / (np.abs(v_t).max() + 1e-12)
+    assert rel < 5e-2, rel
 
 
 def test_latency_benchmark_artifact(tmp_path):
