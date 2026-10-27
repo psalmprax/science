@@ -69,9 +69,21 @@ def export_backbone_to_onnx(model: JetFlowVideoModel, out_path: str, *,
 
 
 def quantize_onnx(in_path: str, out_path: str) -> str:
+    """Dynamic int8 weight quantization. Per-channel with reduce_range: static
+    QDQ calibration measured worse than dynamic here (see CHANGELOG)."""
     from onnxruntime.quantization import QuantType, quantize_dynamic
-    quantize_dynamic(in_path, out_path, weight_type=QuantType.QInt8)
+    quantize_dynamic(in_path, out_path, weight_type=QuantType.QInt8,
+                     per_channel=True, reduce_range=True)
     return out_path
+
+
+def randomize_weights(model: torch.nn.Module, seed: int = 0, std: float = 0.2) -> None:
+    """Re-draw every parameter from a seeded normal so the exported graph carries
+    non-trivial weights (default init leaves many layers near-zero)."""
+    g = torch.Generator().manual_seed(seed)
+    with torch.no_grad():
+        for p in model.parameters():
+            p.copy_(torch.randn(p.shape, generator=g) * std)
 
 
 def _bench(fn, n: int) -> float:
@@ -88,6 +100,7 @@ def run_benchmark(hidden: int = 32, layers: int = 1, frames: int = 6, lat: int =
     torch.manual_seed(seed)
     model = JetFlowVideoModel(JetFlowModelConfig(
         latent_channels=12, hidden_dim=hidden, num_layers=layers)).eval()
+    randomize_weights(model, seed=seed)
     n_params = sum(p.numel() for p in model.parameters())
 
     tmp_dir = tempfile.gettempdir()

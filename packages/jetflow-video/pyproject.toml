@@ -37,6 +37,11 @@ diffusers = [
     "transformers>=4.25.0",
     "accelerate>=0.20.0",
 ]
+onnx = [
+    "onnx>=1.17.0",
+    "onnxruntime>=1.24.1",
+    "onnxscript>=0.7.2",
+]
 dev = [
     "pytest>=7.0.0",
     "black>=22.0.0",
