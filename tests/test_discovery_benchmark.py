@@ -1,9 +1,12 @@
 # Databricks notebook source
 """Fast discovery-benchmark tiers (no evolution): A1, C, withheld, calibration."""
+import numpy as np
 import pytest
 
 from apedp.discovery_benchmark import (
     calibrate_from_measured,
+    ensemble_recover,
+    fixed_basis_recover,
     run_tier_a1,
     run_tier_c,
     run_withheld,
@@ -13,6 +16,14 @@ from apedp.discovery_benchmark import (
 def test_tier_a1_recognizes_known_laws():
     out = run_tier_a1()
     assert out["recovery_rate"] == 1.0, out
+
+
+def test_fixed_basis_baseline_recovers_laws_search_misses():
+    # STEFAN_BOLTZMANN and GRATING had 0/5 recovery under the evolutionary
+    # search; the fixed-basis baseline must recover them on every seed.
+    for law_id in ("STEFAN_BOLTZMANN", "GRATING"):
+        out = fixed_basis_recover(law_id, seeds=(7, 42, 123))
+        assert out["recovery_rate"] == 1.0, out
 
 
 def test_tier_c_rejects_deception():
@@ -345,6 +356,23 @@ def test_engine_implicit_fitness_orders_true_above_wrong():
         data, fv)
     assert good < bad, (good, bad)
     assert good < 1e-20, good
+
+
+@pytest.mark.parametrize("law_id", [
+    "OHMIC_PRODUCT", "KINETIC_ENERGY", "STEFAN_BOLTZMANN",
+    "EINSTEIN_MASS_ENERGY", "GRATING",
+])
+def test_ensemble_recovery_winner_contract(law_id):
+    out = ensemble_recover(law_id, seeds=(7,), generations=15, pop_size=40)
+    rw = out["recovery_winner"]
+    assert rw is not None
+    # Recovery-aware pick must be a recovered seed whenever one exists.
+    if any(r["recovered"] for r in out["results"]):
+        assert rw["recovered"], out
+    assert out["winner"] is not None
+    assert np.isfinite(rw["test_mse"]), out
+    if law_id == "OHMIC_PRODUCT":
+        assert out["recovery_rate"] == 1.0, out
 
 
 def test_calibration_reports_measured_scope():

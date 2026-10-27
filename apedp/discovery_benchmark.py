@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import logging
+import warnings
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +169,7 @@ def make_synthetic(law_id: str, seed: int = 42, n: int = 30,
 
 def ensemble_recover(law_id: str, seeds=(7, 42, 123), generations: int = 15,
                      pop_size: int = 40, extra_terminals: dict | None = None,
-                     **sre_kwargs) -> dict:
+                     prefer_recovery: bool = False, **sre_kwargs) -> dict:
     """Multi-seed ensemble: run discovery per seed, select by held-out MSE.
 
     extra_terminals maps new variable names to functions of the base data,
@@ -205,8 +206,11 @@ def ensemble_recover(law_id: str, seeds=(7, 42, 123), generations: int = 15,
                                target_unit_str="dimensionless",
                                template_priors=priors, seed=seed,
                                **sre_kwargs)
-        best, _, _ = sre.run_discovery(x_tr, y_tr, generations=generations,
-                                       pop_size=pop_size, seed=seed)
+        # Candidate expressions legitimately hit numpy domain errors (e.g. sqrt
+        # of a negative); these are scored as inf, not reported as warnings.
+        with np.errstate(invalid="ignore", divide="ignore", over="ignore"):
+            best, _, _ = sre.run_discovery(x_tr, y_tr, generations=generations,
+                                           pop_size=pop_size, seed=seed)
         recovered = False
         test_mse = None
         if best is not None:
@@ -216,12 +220,25 @@ def ensemble_recover(law_id: str, seeds=(7, 42, 123), generations: int = 15,
                                         key=str), best, "numpy")
                 cols = [np.asarray(x_te[str(s)])
                         for s in sorted(best.free_symbols, key=str)]
-                pred = np.asarray(fn(*cols), dtype=float)
+                # Domain errors (e.g. sqrt of a negative) are expected for
+                # some candidates; they are scored as inf below, not warned.
+                with np.errstate(invalid="ignore", divide="ignore",
+                                 over="ignore"):
+                    pred = np.asarray(fn(*cols), dtype=float)
                 test_mse = float(np.mean((pred - y_te) ** 2))
-                recovered = bool(same_relationship(str(best), law["expr"]))
-                if not recovered:
-                    res = PriorArtAuditor.audit_novelty(best)
-                    recovered = res.closest_reference_id == law_id
+                if not np.isfinite(test_mse):
+                    # Non-finite predictions (domain errors such as sqrt of a
+                    # negative) are unusable, so they score as worst-possible.
+                    test_mse = float("inf")
+                # Complex values from candidates such as sqrt(negative) are
+                # not a real relationship; the comparison treats them as such.
+                with np.errstate(invalid="ignore", divide="ignore",
+                                 over="ignore"), warnings.catch_warnings():
+                    warnings.simplefilter("ignore", np.exceptions.ComplexWarning)
+                    recovered = bool(same_relationship(str(best), law["expr"]))
+                    if not recovered:
+                        res = PriorArtAuditor.audit_novelty(best)
+                        recovered = res.closest_reference_id == law_id
             except (TypeError, ValueError, ArithmeticError, KeyError) as exc:
                 # Conservative direction: an unevaluable comparison counts as
                 # "not recovered", so the benchmark can only under-claim.
@@ -233,11 +250,92 @@ def ensemble_recover(law_id: str, seeds=(7, 42, 123), generations: int = 15,
     rec = sum(1 for r in results if r["recovered"])
     scored = [r for r in results if r["test_mse"] is not None]
     winner = min(scored, key=lambda r: r["test_mse"]) if scored else None
+    # Recovery-aware pick: a recovered seed beats any unrecovered one, then
+    # lowest held-out MSE breaks ties. Reported alongside the MSE-only winner.
+    recovery_winner = (min(scored, key=lambda r: (not r["recovered"], r["test_mse"]))
+                       if scored else None)
     forms = {r["best"] for r in results}
+    if prefer_recovery:
+        winner = recovery_winner
     return {"law": law_id, "seeds": list(seeds), "results": results,
             "recovery_rate": rec / len(results),
             "winner": winner,
+            "recovery_winner": recovery_winner,
             "distinct_forms": len(forms)}
+
+
+def fixed_basis_recover(law_id: str, seeds=(7, 42, 123)) -> dict:
+    """Search-free baseline: sparse least squares over a fixed basis.
+
+    The basis is fixed and identical for every law: monomials with each input
+    raised to a power 0 to 4, each optionally multiplied by sin or cos of one
+    input. There is no intercept, because every recovery law is a pure product
+    or sine form. Each seed fits every subset of up to two terms and keeps the
+    one with the lowest penalised training MSE (a small per-term penalty stops
+    a second term from being added for float noise). No evolution is involved,
+    so this isolates what a fixed library can express.
+    """
+    import itertools
+
+    import numpy as np
+    import sympy as sp
+
+    from apedp.physics_validity_engine import same_relationship
+
+    law = next(law for law in RECOVERY_LAWS if law["id"] == law_id)
+    results = []
+    for seed in seeds:
+        x_tr, y_tr, x_te, y_te, variables, _ = make_synthetic(law_id, seed=seed)
+        names = list(variables)
+        syms = {v: sp.Symbol(v) for v in names}
+        monos = []
+        for exps in itertools.product(range(5), repeat=len(names)):
+            if sum(exps) > 0:
+                monos.append(sp.Mul(*[syms[v] ** e for v, e in
+                                      zip(names, exps)]))
+        terms = {}
+        for m in monos:
+            terms[str(m)] = m
+            for v in names:
+                terms[f"sin({v})*{m}"] = sp.sin(syms[v]) * m
+                terms[f"cos({v})*{m}"] = sp.cos(syms[v]) * m
+        keys = list(terms)
+        fns = {k: sp.lambdify(tuple(syms[v] for v in names), terms[k], "numpy")
+               for k in keys}
+
+        def design(data, cols):
+            args = [np.asarray(data[v], dtype=float) for v in names]
+            return np.column_stack(
+                [np.asarray(fns[c](*args), dtype=float)
+                 * np.ones_like(args[0]) for c in cols])
+
+        best_cols, best_mse, best_score = None, float("inf"), float("inf")
+        penalty = 1e-6 * max(float(np.var(y_tr)), 1e-12)
+        with np.errstate(invalid="ignore", divide="ignore", over="ignore"):
+            for size in (1, 2):
+                for cols in itertools.combinations(keys, size):
+                    A = design(x_tr, cols)
+                    if not np.all(np.isfinite(A)):
+                        continue
+                    coef, *_ = np.linalg.lstsq(A, y_tr, rcond=None)
+                    mse = float(np.mean((A @ coef - y_tr) ** 2))
+                    score = mse + penalty * size
+                    if np.isfinite(score) and score < best_score:
+                        best_cols, best_mse, best_score = cols, mse, score
+        recovered = False
+        expr = None
+        if best_cols is not None:
+            A_tr = design(x_tr, best_cols)
+            coef, *_ = np.linalg.lstsq(A_tr, y_tr, rcond=None)
+            expr = " + ".join(f"{c:.6g}*({t})" for c, t in
+                              zip(coef, best_cols))
+            with np.errstate(invalid="ignore", divide="ignore", over="ignore"):
+                recovered = bool(same_relationship(expr, law["expr"]))
+        results.append({"seed": seed, "best": expr,
+                        "train_mse": best_mse, "recovered": recovered})
+    rec = sum(1 for r in results if r["recovered"])
+    return {"law": law_id, "seeds": list(seeds), "results": results,
+            "recovery_rate": rec / len(results)}
 
 
 def detect_separable(x: dict, y, tol: float = 1e-6) -> dict:
