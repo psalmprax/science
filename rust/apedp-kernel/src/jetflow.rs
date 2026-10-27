@@ -132,10 +132,11 @@ fn budget_rank(s: &[f64], delta2: f64, max_rank: usize) -> usize {
     let mut tail = 0.0;
     let mut r = s.len();
     for k in (0..s.len()).rev() {
-        if tail > delta2 {
+        let next_tail = tail + s[k] * s[k];
+        if next_tail > delta2 {
             break;
         }
-        tail += s[k] * s[k];
+        tail = next_tail;
         r = k;
     }
     r.min(max_rank).min(s.len()).max(1)
