@@ -337,9 +337,11 @@ class SpatioTemporalTransformerBlock(nn.Module):
             if text_tokens.shape[0] == 1 and b > 1:
                 text_tokens = text_tokens.expand(b, -1, -1)
             txt_rep = text_tokens.unsqueeze(1).repeat(1, t, 1, 1).view(b * t, -1, text_tokens.shape[-1])
-            try:
+            # SDPA only when the text dim matches the query dim. A failing SDPA
+            # inside try/except segfaults torch.jit.trace, so decide statically.
+            if txt_rep.shape[-1] == d:
                 attn_cr = F.scaled_dot_product_attention(x_cross.unsqueeze(1), txt_rep.unsqueeze(1), txt_rep.unsqueeze(1)).squeeze(1)
-            except Exception:
+            else:
                 attn_cr, _ = self.cross_attn(x_cross, txt_rep, txt_rep)
             x = x + attn_cr.view(b, t, s, d)
 
