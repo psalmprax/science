@@ -1,0 +1,25 @@
+{
+  "n_rows_under_noise": 18,
+  "n_exact_under_noise": 0,
+  "exact_rate_under_noise": 0.0,
+  "by_case": {
+    "heat": {
+      "n": 6,
+      "exact": 0,
+      "mean_holdout_r2": 0.006806040096461852,
+      "mean_spurious_count": 7.0
+    },
+    "burgers": {
+      "n": 6,
+      "exact": 0,
+      "mean_holdout_r2": 0.007488796582212687,
+      "mean_spurious_count": 6.0
+    },
+    "allen_cahn": {
+      "n": 6,
+      "exact": 0,
+      "mean_holdout_r2": -0.010713211763945463,
+      "mean_spurious_count": 7.0
+    }
+  }
+}
