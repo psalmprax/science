@@ -111,3 +111,10 @@ at order `[7,4,3,2,1,0,6,5]`, polarity 32. Test 2's parameters are what
 - The reported optimum is never re-validated by building the resulting DAG; the
   cross-check is the Python builder's independent count, which is what the
   36-node agreement above relies on.
+
+**Related:** [`docs/PHOTONIC_ACCELERATOR_BOUNDARY.md`](PHOTONIC_ACCELERATOR_BOUNDARY.md)
+states what an external photonic accelerator may propose versus what only the
+exact verifier may accept, with the measured pipeline cost (4.44 s end to end),
+the precision wall (3.97e-12 turns of unused margin against ~1e-5 analog
+conversion), and the measured ceiling on Boolean node sharing (36 nodes minimal
+over all 10,320,960 order/polarity pairs; 1 qubit costs 9.95 nodes).

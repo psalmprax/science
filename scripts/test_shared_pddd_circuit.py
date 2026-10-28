@@ -8,6 +8,7 @@ import json
 import math
 from pathlib import Path
 import sys
+import time
 import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -300,6 +301,11 @@ def build_candidate(cfg, tables, *, coarse_choice=None, shared_curve_plan=None):
 
 
 def main():
+    # Wall-clock per stage. This is the baseline any accelerator claim has to beat,
+    # so it is measured here rather than quoted from elsewhere.
+    timings: list[tuple[str, float]] = []
+    t_start = time.perf_counter()
+
     print("1. Loading integer triples and computing curve tables...")
     cfg, tables, _ = core.load_or_build_tables()
     cv_curve = np.array([tables[(i // 128, i % 128)][0] for i in range(256)], dtype=np.int64)
@@ -342,19 +348,25 @@ def main():
 
     choices_old = json.loads(open(REPO_ROOT / "src/boolean_choices90.json").read())
     c6_choice = choices_old["coarse6"] # keep coarse6 unchanged
+    timings.append(("load tables + PDDD search results", time.perf_counter() - t_start))
 
     print("\n2. Building raw circuit with shared curve restoration...")
+    t_start = time.perf_counter()
     raw, meta = build_candidate(cfg, tables, coarse_choice=c6_choice, shared_curve_plan=shared_plan)
     print(f"Raw circuit stats: Q={raw.num_qubits}, Static Toffolis={meta['static_toffoli']}, reload={meta['extra_reload']}")
+    timings.append(("build raw circuit", time.perf_counter() - t_start))
 
     print("\n3. Running exact domain compiler...")
+    t_start = time.perf_counter()
     opt, comp = domain_compiler.optimize_circuit(raw, linear=True)
     st = opt.operation_statistics()
     print(f"Post-compilation stats: Q={opt.num_qubits}, Static Toffolis={st.num_toffoli_like}, Replacements={len(comp.replacements)}")
     for r in comp.replacements:
         print(f"  Line {r['line']}: {r['reason']}")
+    timings.append(("exact domain compile", time.perf_counter() - t_start))
 
     print("\n4. Calibrating rotations...")
+    t_start = time.perf_counter()
     fixed_deltas = json.loads(open(REPO_ROOT / "src/invsqrt_calibration.json").read())
     t = cal._serialize(opt, "kmx").decode()
     lines, rots = cal.parse_kmx(t)
@@ -368,15 +380,34 @@ def main():
 
     out_path = Path("/tmp/invsqrt_89q_shared_pddd.kmb")
     cand.to_file(str(out_path), format="kmb")
+    timings.append(("rotation calibration + write .kmb", time.perf_counter() - t_start))
 
     print("\n5. Running official verifier (25,600 shots)...")
+    t_start = time.perf_counter()
     spec = ProblemSpecInvSqrt.for_n_p(10, shots_per_x=1)
     spec = ProblemSpecInvSqrt(
         width=spec.width, max_x=25600, beta=spec.beta,
         precision_bits=spec.precision_bits, shots_per_x=1, system_qubits=spec.system_qubits
     )
     receipt = verify(cand, spec)
+    timings.append(("official verification (25,600 shots)", time.perf_counter() - t_start))
     print(json.dumps(receipt, indent=2))
+
+    total = sum(t for _, t in timings)
+    print(f"\n{'=' * 68}")
+    print("STAGE WALL-CLOCK (the baseline any accelerator claim must beat)")
+    print(f"{'=' * 68}")
+    print(f"  {'stage':<38s} {'seconds':>9s} {'share':>7s}")
+    print("  " + "-" * 56)
+    for label, seconds in sorted(timings, key=lambda kv: -kv[1]):
+        print(f"  {label:<38s} {seconds:9.3f} {100 * seconds / total:6.1f}%")
+    print("  " + "-" * 56)
+    print(f"  {'total':<38s} {total:9.3f} {100.0:6.1f}%")
+    shots = float(receipt.get("verified_shots", 0))
+    if shots:
+        verify_seconds = max(t for l, t in timings if l.startswith("official"))
+        print(f"  Stage 5 throughput: {shots / verify_seconds:,.0f} verified shots/second")
+    print(f"{'=' * 68}")
 
 
 if __name__ == "__main__":
