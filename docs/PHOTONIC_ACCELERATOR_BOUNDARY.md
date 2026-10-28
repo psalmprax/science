@@ -334,6 +334,19 @@ uses it fails on 35 of 64 shots. Adding Z-basis measure-and-reset (`MR`) is what
 make both levers real; as shipped, the reference circuit is already at its instruction
 set's reachable optimum for this decoder.
 
+The correctness gap in that paragraph is now closed on the mechanism, even though the
+receipt still is not. `apedp_dyn/quantum_compilation/local_mr_sim.py` implements the
+instruction locally (plus the decoder's builder subset, pinned against `kickmix`), and
+reproduces `kickmix` shot for shot on the reference decoder — syndromes restored, every
+other qubit `|0>`, identical tracked phase. On it, all four levers read their predicate
+with a real `mr` (`cx(control, ancilla); mr(ancilla, bit)`) instead of an oracle register
+and each arm reproduces the reference's values **and** phase; the same arms built with
+`r` fail on the phase, which is what makes the test worth something
+(`scripts/run_mr_gated_arms.py`, record `benchmarks/quantum_compilation/local_mr_arms.json`).
+So the 4.142× no longer rests on a hypothesis about what an `mr` would do — it rests on
+measured phases. What remains unverified is the **cost**, because gate counts and the
+receipt can only come from `kickmix` and the official verifiers.
+
 **The qubit target.** `Q` = 1,887 measured = 1,752 persistent registers
 (`2 × 73 × 12`, both factors frozen by the instance) + 135 transient
 scratch/controls/counters. The −104 the V6 row claims is **77% of every transient

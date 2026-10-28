@@ -126,4 +126,15 @@ changes which numbers we *can measure*, not which numbers *count*; the 4.142× s
 oracle bound until the opcode exists upstream.
 
 If the goal is instead to make the arms executable for correctness testing (not scoring),
-a local simulator with `MR` is the cheaper route — say so and it can be scoped separately.
+a local simulator with `MR` was the cheaper route, and it now exists:
+[`apedp_dyn/quantum_compilation/local_mr_sim.py`](../apedp_dyn/quantum_compilation/local_mr_sim.py).
+It reproduces `kickmix` shot for shot on the reference decoder, and
+`scripts/run_mr_gated_arms.py` runs all four levers with the predicate read by a real
+`mr` rather than an oracle. Each arm reproduces the reference's values **and** phase,
+while the same arms read with `r` fail on the phase — see
+`benchmarks/quantum_compilation/local_mr_arms.json`.
+
+What that does and does not change: the levers' **correctness** is no longer untested,
+but their **cost** still cannot be scored here, because only the official `kickmix`
+build plus the official verifiers produce a receipt. The 4.142× is a Toffoli bound
+until `MR` exists upstream; this section's request stands unchanged.

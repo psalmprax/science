@@ -1,3 +1,32 @@
+## 2026-10-28 — MR arm correctness tested locally: all four levers, and `r` fails as it should
+
+- **BUILT:** `apedp_dyn/quantum_compilation/local_mr_sim.py`, a Z-basis (value + sign)
+simulator for the DQI decoder with `mr` (Z measure-and-reset, phase-preserving), `r`
+(clears, randomizes the phase, as `kickmix` does) and `hmr` (X basis). It implements the
+builder subset the decoder uses (`unary_iteration`, `init_and`, `iadd`/`isub`,
+`flip_if_*`, rotations, GF(2^b) arithmetic, `gf2_phase_by_product`) with semantics
+pinned against `kickmix`, including its primitive polynomials.
+- **VALIDATED:** `scripts/verify_local_mr_sim.py` builds the reference decoder with both
+engines and feeds both the same shots. At m=15/n=6/GF(2⁴): syndromes identical, phase
+identical, syndromes restored, every other qubit `|0>`, 0 phase errors — the local engine
+reproduces `kickmix` exactly (qubit *ids* differ because freed ids are not reused here).
+- **MEASURED:** `scripts/run_mr_gated_arms.py` runs the four gated levers with their
+predicates read by a real `mr` through `cx(control, ancilla); mr(ancilla, bit)`, not the
+oracle registers the probe used. Every arm reproduces the reference's values AND phase
+at 32 shots: `swap` (c3), `sweep` (c0 ∨ c3), `forney` (the `sigma == 0` zero-test),
+`clear` (measured clear of the EEA instead of its adjoint, with the syndromes re-prepared
+from a saved readout), and all four together. Record:
+`benchmarks/quantum_compilation/local_mr_arms.json`.
+- **FALSIFIED, by construction:** the same swap arm read with `r` instead of `mr` fails on
+phase and leaves junk behind while its syndromes still match — so the pass is about the
+measurement, not the circuit. This is the mechanism-level version of the 11/16 phase
+defect the probe recorded.
+- **STILL UNSCORED:** the arms' cost. `local_mr_sim` computes values and phases, not gate
+counts, and `contracts.py` pins the official `kickmix` build and verifiers, so the 4.142×
+stays a Toffoli bound until `MR` exists upstream.
+- **Verified:** `tests/test_local_mr_sim.py` 21 passed (pinned primitives, the MR/R/HMR
+contract, and the arm record).
+
 ## 2026-10-28 — Search engines score on data, and NGTS runs UCT or nothing
 
 - **MEASURED, not defaulted:** `ValidationPipeline.validate` now reports

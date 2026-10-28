@@ -1,0 +1,154 @@
+{
+ "runner": "scripts/run_mr_gated_arms.py",
+ "simulator": "apedp_dyn/quantum_compilation/local_mr_sim.py",
+ "interpreter": "CPython 3.13 (kickmix.so build; the simulator itself is pure Python)",
+ "criterion": "arm must reproduce the reference: same syndromes, same tracked phase, all other qubits |0>",
+ "instance": {
+  "m": 15,
+  "n": 6,
+  "degree": 4,
+  "shots": 32
+ },
+ "results": {
+  "none_mr": {
+   "arm": "none",
+   "clear_with": "mr",
+   "instance": {
+    "m": 15,
+    "n": 6,
+    "degree": 4,
+    "shots": 32
+   },
+   "syndromes_match_reference": true,
+   "phase_matches_reference": true,
+   "syndromes_restored": true,
+   "junk_clean": true,
+   "reference_junk_clean": true,
+   "reference_qubits": 2797,
+   "arm_qubits": 2797,
+   "reference_phase_ones": 14,
+   "arm_phase_ones": 14,
+   "verdict": "PASS"
+  },
+  "swap_mr": {
+   "arm": "swap",
+   "clear_with": "mr",
+   "instance": {
+    "m": 15,
+    "n": 6,
+    "degree": 4,
+    "shots": 32
+   },
+   "syndromes_match_reference": true,
+   "phase_matches_reference": true,
+   "syndromes_restored": true,
+   "junk_clean": true,
+   "reference_junk_clean": true,
+   "reference_qubits": 2797,
+   "arm_qubits": 2857,
+   "reference_phase_ones": 14,
+   "arm_phase_ones": 14,
+   "verdict": "PASS"
+  },
+  "sweep_mr": {
+   "arm": "sweep",
+   "clear_with": "mr",
+   "instance": {
+    "m": 15,
+    "n": 6,
+    "degree": 4,
+    "shots": 32
+   },
+   "syndromes_match_reference": true,
+   "phase_matches_reference": true,
+   "syndromes_restored": true,
+   "junk_clean": true,
+   "reference_junk_clean": true,
+   "reference_qubits": 2797,
+   "arm_qubits": 2917,
+   "reference_phase_ones": 14,
+   "arm_phase_ones": 14,
+   "verdict": "PASS"
+  },
+  "clear_mr": {
+   "arm": "clear",
+   "clear_with": "mr",
+   "instance": {
+    "m": 15,
+    "n": 6,
+    "degree": 4,
+    "shots": 32
+   },
+   "syndromes_match_reference": true,
+   "phase_matches_reference": true,
+   "syndromes_restored": true,
+   "junk_clean": true,
+   "reference_junk_clean": true,
+   "reference_qubits": 2797,
+   "arm_qubits": 1502,
+   "reference_phase_ones": 14,
+   "arm_phase_ones": 14,
+   "verdict": "PASS"
+  },
+  "forney_mr": {
+   "arm": "forney",
+   "clear_with": "mr",
+   "instance": {
+    "m": 15,
+    "n": 6,
+    "degree": 4,
+    "shots": 32
+   },
+   "syndromes_match_reference": true,
+   "phase_matches_reference": true,
+   "syndromes_restored": true,
+   "junk_clean": true,
+   "reference_junk_clean": true,
+   "reference_qubits": 2797,
+   "arm_qubits": 2812,
+   "reference_phase_ones": 14,
+   "arm_phase_ones": 14,
+   "verdict": "PASS"
+  },
+  "all_mr": {
+   "arm": "all",
+   "clear_with": "mr",
+   "instance": {
+    "m": 15,
+    "n": 6,
+    "degree": 4,
+    "shots": 32
+   },
+   "syndromes_match_reference": true,
+   "phase_matches_reference": true,
+   "syndromes_restored": true,
+   "junk_clean": true,
+   "reference_junk_clean": true,
+   "reference_qubits": 2797,
+   "arm_qubits": 1607,
+   "reference_phase_ones": 14,
+   "arm_phase_ones": 14,
+   "verdict": "PASS"
+  },
+  "swap_r": {
+   "arm": "swap",
+   "clear_with": "r",
+   "instance": {
+    "m": 15,
+    "n": 6,
+    "degree": 4,
+    "shots": 32
+   },
+   "syndromes_match_reference": true,
+   "phase_matches_reference": false,
+   "syndromes_restored": true,
+   "junk_clean": false,
+   "reference_junk_clean": true,
+   "reference_qubits": 2797,
+   "arm_qubits": 2857,
+   "reference_phase_ones": 14,
+   "arm_phase_ones": 10,
+   "verdict": "FAIL"
+  }
+ }
+}
