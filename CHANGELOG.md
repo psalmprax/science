@@ -1,3 +1,28 @@
+## 2026-10-28 — Gluzdov V6 stops claiming a result it never had
+
+- **FABRICATION REMOVED:** `dqi_gluzdov_v6.build_syndrome_decoding_mbuc` emitted a
+  hand-wired scaffold (eight `CX` gates on scratch wires) under the stage names
+  `v6_forward_eea_recycled` / `v6_chien_forney_mbuc` / `v6_reverse_eea_uncompute`.
+  It was not a decoder: no EEA, no Chien search, no Forney evaluation. The module
+  docstring nevertheless announced a 14.396× gain and `design_projection_dqi_gluzdov_v6()`
+  returned `status: ANALYTICAL_AND_TABLE_VERIFIED` with
+  `acceptance_gate: {passes_official_verifier_constraint: true, status: PASS}` — a
+  verifier pass that no compiled circuit ever earned.
+- **Now:** the circuit builder delegates to the real
+  `ProosAndZalkaDecoder.build_syndrome_decoding_mbuc` pass set (initial shift,
+  synchronized EEA, Chien/Forney kickback, adjoint uncompute, inverse shift).
+  `CIRCUIT_MODE = "reference_equivalent"`, `RECYCLING_APPLIED_IN_CIRCUIT = False`,
+  and the 1,789-qubit cap is enforced only when recycling is genuinely in the
+  circuit. The projection reports `status: ANALYTICAL_PROJECTION_ONLY`,
+  `compiled_kmb: false`, `official_verifier_run: false`, and
+  `acceptance_gate.status: HOLD_FOR_COMPILED_AND_VERIFIED_RECEIPT` with the four
+  pieces of evidence required to close it. The 14.396× factor is a target.
+- **NEW:** `dqi_builder.build_candidate(n_iters, architecture=...)` with
+  `AVAILABLE_ARCHITECTURES = ("proos_zalka", "gluzdov_v6")` and the receipted
+  reference as the default; unknown names and non-positive/bool `n_iters` raise.
+- **Verified:** `tests/test_dqi_gluzdov_v6.py` 10 passed / 1 skipped (the skipped
+  one needs the kickmix extension).
+
 ## 2026-10-28 — Restore the deleted module registry in `docs/DOCUMENTATION.md`
 
 - **INTEGRITY REPAIR:** commit `c08acbe` ("Document stability selection") replaced

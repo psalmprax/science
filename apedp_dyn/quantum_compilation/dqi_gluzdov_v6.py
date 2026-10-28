@@ -26,11 +26,15 @@ Decoded Quantum Interferometry (DQI) Reed-Solomon MBUC syndrome decoder:
    error states (mean error weight ~15-20, well below l = 35), mean Toffolis
    per shot drop from 5,725,108 to T_mean ≈ 445,229.
 
-4. 14.396x Portfolio Gain Delivery:
+4. 14.396x Portfolio Target (NOT DELIVERED):
    Score = R(eps_plus) * Q^2 * T_mean
          = 1.19126046 * (1,789)^2 * 445,229
          ≈ 1.697504 x 10^12 <= 1.698 x 10^12
-   delivering the 14.396x cost reduction target over the 24.439 trillion baseline.
+   This is the arithmetic of the *target*, not a measured result. No compiled
+   .kmb circuit exists for this architecture and the official verifier has not
+   adjudicated it, so the 14.396x factor remains pending a receipt. The
+   circuit builder below is a structural scaffold: it emits register
+   allocation/recycling and uncompute bookkeeping, not a working decoder.
 """
 
 from __future__ import annotations
@@ -65,6 +69,22 @@ EPS_PLUS: float = 0.0008660587301657926
 BASELINE_DQI_COST: float = 24439463583672.93
 TARGET_DQI_COST: float = 1697504180614.53
 TARGET_GAIN_FACTOR: float = BASELINE_DQI_COST / TARGET_DQI_COST  # 14.397x (~14.396x)
+
+#: What the circuit builder currently emits.
+#: ``reference_equivalent`` means the compiled circuit is the official
+#: Proos-Zalka pass set (initial shift, synchronized EEA, Chien/Forney, reverse
+#: EEA, uncompute) driven through this adapter. Degree-register recycling is
+#: implemented in the *simulation* model below, not yet in the circuit: any
+#: circuit-level recycling edit has to preserve the EEA's causal schedule
+#: gate-for-gate, and an unproven edit must not be shipped in place of a known
+#: good decoder.
+CIRCUIT_MODE: str = "reference_equivalent"
+
+#: True only when the compiled circuit actually drops the n_a/n_b degree
+#: registers. Kept false until the recycled pass bodies are implemented and
+#: adjudicated by the official verifier; the Q <= 1,789 cap is enforced only
+#: when this is true.
+RECYCLING_APPLIED_IN_CIRCUIT: bool = False
 
 
 @dataclasses.dataclass(frozen=True)
@@ -351,71 +371,59 @@ class GluzdovV6Decoder:
         error_mbuc: Sequence[Any],
         n_iters: int = DEFAULT_N_ITERS,
     ) -> None:
-        """Append the Gluzdov V6 degree-register-recycling MBUC decoder to builder.
+        """Append a complete DQI syndrome-decoding MBUC pass set to ``builder``.
 
-        Reuses scratch wires and uncomputes intermediate degree registers,
-        enforcing peak active qubits Q <= 1,789.
+        The compiled circuit runs the full pipeline: initial shift,
+        ``n_iters`` synchronized EEA steps, the Chien-search/Forney phase
+        kickback, the adjoint EEA (uncompute), and the inverse initial shift —
+        the same pass structure the official verifier exercises.
+
+        What is *not* yet in the circuit: the n_a/n_b degree-register recycling.
+        Those two registers are read as unary loop controls inside
+        ``_update_flag``, ``_multiply_and_add_or_sub``, ``_shift_b_array_right``,
+        ``_update_metadata`` and ``_swap_a_and_b``; deriving them from the
+        invariants deg(A) + deg(a) = n and deg(B) + deg(b) = n + 1 changes gate
+        order inside the EEA, so it needs a gate-for-gate equivalence argument
+        before it can replace a known-good decoder. Until that exists,
+        ``RECYCLING_APPLIED_IN_CIRCUIT`` stays false and the compiled circuit is
+        reference-equivalent. The recycling gain (Q <= 1,789, T_mean ~ 445,229)
+        therefore remains a target, not a property of this circuit.
         """
         if km is None:
             raise RuntimeError("Kickmix is required to build physical circuits")
 
-        n = self.config.n
-        degree = self.config.degree
-        m = n + 3
+        reference = _load_reference_decoder()
+        decoder = reference.ProosAndZalkaDecoder(len(syndromes), km.GF2Field(self.config.degree))
+        decoder.build_syndrome_decoding_mbuc(
+            builder,
+            syndromes=syndromes,
+            error_mbuc=error_mbuc,
+            n_iters=n_iters,
+        )
 
-        # reg_a shares existing syndrome registers for i >= 3
-        reg_a = [
-            builder.alloc_qubits(degree) if i < 3 else syndromes[i - 3]
-            for i in range(m)
-        ]
-        reg_b = [builder.alloc_qubits(degree) for _ in range(m)]
 
-        logm = m.bit_length() + 1
-        # In Gluzdov V6: n_A and n_B are persistent, but n_a and n_b are NOT
-        # separately allocated; they are dynamically recycled from n_A and n_B.
-        n_A = builder.alloc_qubits(logm)
-        n_B = builder.alloc_qubits(logm)
-        n_q = builder.alloc_qubits(logm)
-        flag = builder.alloc_qubits(1)[0]
-        counter = builder.alloc_qubits(2)
-        halting_counter = builder.alloc_qubits(n_iters.bit_length())
+def _load_reference_decoder() -> Any:
+    """Import the official Proos-Zalka pass implementations.
 
-        # Shared scratch wire pool for quotient division scaffolds and Chien search
-        scratch_pool = builder.alloc_qubits(logm * 2)
-
-        init_ones = km.array([reg_a[0][0], reg_b[m - 1][0], flag])
-        builder.x(init_ones)
-        builder.gf2_iadd(n, target=n_A)
-        builder.gf2_iadd(n + 1, target=n_B)
-
-        # Build stages with recycling
-        with builder.mark("v6_forward_eea_recycled"):
-            builder.cx(n_A[0], scratch_pool[0])
-            builder.cx(n_B[0], scratch_pool[1])
-
-        with builder.mark("v6_chien_forney_mbuc"):
-            # Execute Chien search and phase kickback
-            builder.cx(scratch_pool[0], reg_b[0][0])
-            builder.cx(scratch_pool[1], reg_b[0][1])
-
-        with builder.mark("v6_reverse_eea_uncompute"):
-            # Adjoint uncomputes scratch and restores syndromes
-            builder.cx(scratch_pool[1], reg_b[0][1])
-            builder.cx(scratch_pool[0], reg_b[0][0])
-            builder.cx(n_B[0], scratch_pool[1])
-            builder.cx(n_A[0], scratch_pool[0])
-
-        builder.gf2_iadd(n + 1, target=n_B)
-        builder.gf2_iadd(n, target=n_A)
-        builder.x(init_ones)
-
-        # Free all allocated registers
-        for reg in (halting_counter, counter, flag, n_q, n_B, n_A, scratch_pool, *reg_a[:3], *reg_b):
-            builder.free(reg)
+    The sweep runner puts the competition bundle's ``verifiers/`` directory on
+    ``sys.path``; a plain science checkout does not. Both import shapes are
+    accepted so the adapter works in either environment.
+    """
+    try:
+        from apedp_dyn.quantum_compilation import dqi_reference_circuit as DR
+    except (ImportError, ModuleNotFoundError):
+        from dqi import dqi_reference_circuit as DR
+    return DR
 
 
 def build_candidate(*, n_iters: int = DEFAULT_N_ITERS) -> Any:
-    """Repository adapter building the Gluzdov V6 degree-register-recycling DQI decoder."""
+    """Build a complete DQI decoder circuit for the official verifier.
+
+    Returns the reference-equivalent pass set (see
+    ``build_syndrome_decoding_mbuc``). Quotable metrics are whatever the
+    verifier reports for this circuit; the V6 target row is separate and
+    unverified.
+    """
     if km is None:
         raise RuntimeError("Kickmix is required to build physical circuits")
 
@@ -441,19 +449,32 @@ def build_candidate(*, n_iters: int = DEFAULT_N_ITERS) -> Any:
         n_iters=n_iters,
     )
     circuit = builder.finish_circuit()
-    if circuit.num_qubits > QUBIT_CAP_V6:
+
+    # The 1,789 cap is a property of the *recycled* architecture. Enforcing it
+    # on a reference-equivalent build would reject a valid circuit for not yet
+    # being the thing it is not yet claiming to be.
+    if RECYCLING_APPLIED_IN_CIRCUIT and circuit.num_qubits > QUBIT_CAP_V6:
         raise ValueError(
-            f"Gluzdov V6 circuit uses {circuit.num_qubits} qubits, exceeding cap {QUBIT_CAP_V6}"
+            f"Recycled circuit uses {circuit.num_qubits} qubits, exceeding cap {QUBIT_CAP_V6}"
         )
     return circuit
 
 
 def design_projection_dqi_gluzdov_v6() -> dict[str, Any]:
-    """Return the architecture specification and resource breakdown for Gluzdov V6."""
+    """Return the architecture specification and resource breakdown for Gluzdov V6.
+
+    The returned dict is an analytical projection. ``status`` deliberately says
+    so: the Q and T_mean figures are targets, and no official verifier receipt
+    exists for this architecture.
+    """
     config = GluzdovV6Config()
     score = config.r_overhead * (config.peak_qubits ** 2) * config.t_mean_target
     return {
-        "status": "ANALYTICAL_AND_TABLE_VERIFIED",
+        "status": "ANALYTICAL_PROJECTION_ONLY",
+        "compiled_kmb": False,
+        "official_verifier_run": False,
+        "circuit_mode": CIRCUIT_MODE,
+        "recycling_applied_in_circuit": RECYCLING_APPLIED_IN_CIRCUIT,
         "architecture": "gluzdov_v6_degree_register_recycling",
         "parameters": {
             "m": config.m,
@@ -486,7 +507,14 @@ def design_projection_dqi_gluzdov_v6() -> dict[str, Any]:
             "target_gain_factor": config.target_gain,
         },
         "acceptance_gate": {
-            "passes_official_verifier_constraint": score <= 1.698e12,
-            "status": "PASS",
+            "arithmetic_within_target": score <= 1.698e12,
+            "passes_official_verifier_constraint": False,
+            "status": "HOLD_FOR_COMPILED_AND_VERIFIED_RECEIPT",
+            "required_evidence": [
+                "compiled .kmb circuit for the recycled architecture",
+                "official verify_submission_dqi.py PASS at log2_delta=-128",
+                "measured mean Toffoli count consistent with T_mean <= 445,229",
+                "measured peak qubit count consistent with Q <= 1,789",
+            ],
         },
     }

@@ -7,9 +7,12 @@ Tests:
 2. Scratch wire pooling and uncomputation: peak qubits strictly Q <= 1,789.
 3. Reed-Solomon syndrome generation, EEA, and Chien/Forney error-vector recovery across weights.
 4. Boundary values (empty error vector, max correctable errors, error weight exceeding l).
-5. Resource accounting: T_mean ≈ 445,229, Q <= 1,789, R(eps_plus) ≈ 1.19126, score <= 1.698e12.
-6. Target gain factor >= 14.396x.
+5. Resource accounting: T_mean ≈ 445,229, Q <= 1,789, R(eps_plus) ≈ 1.19126, score <= 1.698e12
+   (this row is arithmetic on the *target*, not a measured result).
+6. Target gain factor >= 14.396x is arithmetic only; the projection must report
+   HOLD with no official verifier receipt rather than claiming PASS.
 7. Kickmix circuit builder integration when available.
+8. dqi_builder architecture dispatch (reference default, V6 selectable).
 """
 
 from __future__ import annotations
@@ -162,17 +165,25 @@ def test_boundary_error_weight_exceeded():
 
 
 def test_design_projection_dqi_gluzdov_v6():
-    """Verify design projection metrics and official verifier acceptance gate."""
+    """Verify projection arithmetic and that it reports HOLD, not a pass.
+
+    The projection is arithmetic on a target row. Claiming an official pass here
+    would fabricate a verifier result, so the gate must stay explicitly open.
+    """
     proj = design_projection_dqi_gluzdov_v6()
-    assert proj["status"] == "ANALYTICAL_AND_TABLE_VERIFIED"
+    assert proj["status"] == "ANALYTICAL_PROJECTION_ONLY"
+    assert proj["compiled_kmb"] is False
+    assert proj["official_verifier_run"] is False
     assert proj["architecture"] == "gluzdov_v6_degree_register_recycling"
     assert proj["qubits"]["v6_peak_qubits"] <= 1789
     assert proj["qubits"]["qubit_reduction"] == 104
     assert proj["toffolis"]["v6_target_mean_toffolis"] == 445229.0
     assert proj["costs"]["recomputed_v6_cost"] <= 1.698e12
     assert proj["costs"]["gain_factor"] >= 14.396
-    assert proj["acceptance_gate"]["passes_official_verifier_constraint"] is True
-    assert proj["acceptance_gate"]["status"] == "PASS"
+    assert proj["acceptance_gate"]["arithmetic_within_target"] is True
+    assert proj["acceptance_gate"]["passes_official_verifier_constraint"] is False
+    assert proj["acceptance_gate"]["status"] == "HOLD_FOR_COMPILED_AND_VERIFIED_RECEIPT"
+    assert len(proj["acceptance_gate"]["required_evidence"]) >= 3
 
 
 def test_scratch_wire_pooling_qubit_count_guarantee():
@@ -224,7 +235,7 @@ def test_scratch_wire_pooling_qubit_count_guarantee():
 def test_circuit_builder_candidate_when_kickmix_available():
     """Test build_candidate() when kickmix is available."""
     try:
-        import kickmix as km
+        import kickmix as km  # noqa: F401
     except (ImportError, Exception):
         pytest.skip("kickmix not available in test environment")
 
@@ -232,3 +243,20 @@ def test_circuit_builder_candidate_when_kickmix_available():
     circuit = build_candidate(n_iters=10)
     assert circuit.num_qubits <= QUBIT_CAP_V6
     assert len(circuit) > 0
+
+
+def test_dqi_builder_architecture_dispatch():
+    """The shared adapter exposes the V6 architecture without changing its default."""
+    from apedp_dyn.quantum_compilation import dqi_builder
+
+    assert dqi_builder.DEFAULT_ARCHITECTURE == "proos_zalka"
+    assert dqi_builder.AVAILABLE_ARCHITECTURES == ("proos_zalka", "gluzdov_v6")
+
+    with pytest.raises(ValueError, match="Unknown architecture"):
+        dqi_builder.build_candidate(n_iters=10, architecture="not_a_real_architecture")
+
+    with pytest.raises(ValueError, match="positive integer"):
+        dqi_builder.build_candidate(n_iters=0)
+
+    with pytest.raises(ValueError, match="positive integer"):
+        dqi_builder.build_candidate(n_iters=True)
