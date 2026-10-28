@@ -2357,6 +2357,13 @@ over all 10,320,960 order/polarity pairs; 1 qubit costs 9.95 nodes).
 | [`scripts/instrument_invsqrt_trace.py`](../scripts/instrument_invsqrt_trace.py) | Traces per-shot Toffoli/phase statistics behind the invsqrt margin numbers | `audit-only` |
 | [`scripts/instrument_calibrated_trace.py`](../scripts/instrument_calibrated_trace.py) | Calibrated-variant trace instrument used for the same margin accounting | `audit-only` |
 
+**Interpreter requirement:** all seven import `kickmix`, a compiled extension.
+They only run under the Python that extension was built against; a mismatched
+interpreter fails at import with
+`undefined symbol: PyObject_ClearManagedDict` (observed: 3.12 interpreter against a
+3.13 build). The shebangs say `env python3`, so invoke them explicitly with the
+right interpreter rather than relying on the shebang.
+
 **Measured verdict (2026-10-28):** halting-counter recycling is a constant −240
 Toffoli at every instance measured (−0.722 % at m=15, −0.0118 % at m=4095), and
 the shipped flag+counter prototype is a net **regression** (+480 at full scale).
