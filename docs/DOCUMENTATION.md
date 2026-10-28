@@ -2267,6 +2267,15 @@ literal; `scripts/build_mixed_polarity_candidate.py` shows the saving does not r
 the static gate count (1466 either way) and that the residual score difference
 shrinks with the shot budget. See §5.1 of the boundary doc.
 
+**Proposed IR instruction:** [`docs/MR_INSTRUCTION_SPEC.md`](MR_INSTRUCTION_SPEC.md)
+specifies the Z-basis measure-and-reset opcode that the measured DQI optimisations
+(4.142× on `T_mean`, `scripts/probe_dqi_predicate_gating.py`) require, with the patch
+points and the four acceptance tests for a rebuild; [`docs/MR_PATCH_REQUEST.md`](MR_PATCH_REQUEST.md)
+is the change request itself — PR description, diff summary by component, test plan and
+rollback. Nothing in the repository is
+built on it: `kickmix.so` has no `MR`, and the measured results are oracle upper
+bounds, not receipts.
+
 **Module:** `scripts/test_shared_pddd_circuit`
 **Status:** `audit-only`
 **Basis:** The champion row in

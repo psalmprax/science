@@ -1,3 +1,128 @@
+## 2026-10-28 — Post-`_update_flag` probe collected: 4.142× measured
+
+- **MEASURED:** the shift gate the previous entry had to abandon is now correct. The
+  wrong arm read `flag` at the top of the round; `_update_flag` toggles it first, so the
+  probe now carries six bits per round and the liveness is
+  `c1 ∨ c2 ∨ (¬flag ∧ (c0 ∨ c3))` with the post-update flag. Official instance:
+  `T_mean` 1,457,103.45 → **1,382,207.08, a 4.142× over the reference**, `Q` unchanged at
+  1,893, **0 value / 0 phase errors on 64 shots**, 1,332 round bits (6 × 222).
+  Scaled: 3.709× at m=255 (512 shots), 2.998× at m=15.
+- **Corrected prediction:** the prize was bounded at ~5% from the failed arm's cost and
+  measures at 5.15% (1,457,103 → 1,382,207). Dead shifts are 31.59% of rounds, not the
+  35–40% guessed before the fix.
+- **Running total:** Forney gating 1.332×, MR clear 2.652×, sweep 3.599×, swap 3.929×,
+  shift 4.142×. Receipt arithmetic 24.439T → 5.900T, portfolio 2.361982 → 3.79; still
+  3.10× short of the 12.86× target.
+- **Verified:** `tests/test_dqi_predicate_gating.py` 12 passed / 1 skipped.
+
+## 2026-10-28 — Dead register swaps gated: 3.929× measured, and the shift gate falsified
+
+- **MEASURED:** `_swap_a_and_b` exchanges `reg_a`/`reg_b` wholesale — 2 × 73 × 12 = 1,752
+  qubits — every round, but its control is `swap_ctrl = c3_hc ∧ flag`, so it is dead in
+  any round without `c3` (**67.57%** of rounds). Gating it on `c3` alone: official
+  `T_mean` 1,590,938.28 → **1,457,103.45, a 3.929× over the reference**, `Q` unchanged at
+  1,893, **0 value / 0 phase errors on 64 shots**, for 1,110 round bits (5 × 222).
+  Scaled: 3.507× at m=255 (70.4% dead), 2.813× at m=15. Receipt arithmetic 24.439T →
+  6.22T, portfolio 2.361982 → 3.7271; still 3.27× short of 12.86×.
+- **FALSIFIED (mine, one hour old):** gating `_shift_b_array_right` on the complementary
+  pair `c1 ∨ c2 ∨ ¬flag`. It looked right and fails on **every shot** (512/512 value
+  errors at m=255). Cause: `flag` is toggled by `_update_flag`, which runs *before* the
+  shift in the same round, so a flag read at the top of the round is stale. The arm's
+  cost (62,434 at m=255 against 65,698) bounds the remaining prize at ~5%, and collecting
+  it needs a second probe point after `_update_flag`. Not taken; pinned as a negative in
+  `tests/test_dqi_predicate_gating.py`.
+- **Cost of the whole design so far:** 1,803 classical bits for the clear, 1,110 for the
+  round predicates, zero extra qubits, zero extra Toffolis.
+
+## 2026-10-28 — Dead multiply sweeps gated: 3.599× measured
+
+- **MEASURED:** the synchronized EEA emits all five steps every round, but
+  `_multiply_and_add_or_sub` touches `ctrl` only through `c0_hc` and `c3_hc`. In a round
+  where both are zero — the two shift rounds of each four-round counter cycle — its
+  4,536-Toffoli sweep is emitted and does nothing. Reading `(c0_hc, c3_hc)` per round
+  and gating the sweep on `c0 ∨ c3` removes **35.14%** of the forward EEA at the official
+  instance: `T_mean` 2,158,651.45 → **1,590,938.28, a 3.599× over the reference**, with
+  `Q` unchanged at 1,893 and **0 value / 0 phase errors**. Scaled: 3.205× at m=255
+  (40.79% dead), 2.586× at m=15 (46.98% dead).
+- **Cost:** one classical bit per EEA round — 222 bits at the official instance, 54 at
+  m=255, 30 at m=15 — no qubits, no Toffolis. Still an upper bound: the round bits are
+  read from the same circuit in a probe pass.
+- **Not taken:** `_shift_b_array_right` is live in the `c1`/`c2` rounds *and* in the
+  `c0`/`c3` rounds when `flag` is clear (`ctrl_nB = c0_nf ⊕ c1_hc`), so it cannot be
+  gated on the complementary pair without also reading `flag`; left alone.
+- **Verified:** `tests/test_dqi_predicate_gating.py` 9 passed / 1 skipped.
+- With the Forney gating and the MR clear this is 3.599× of the 12.86× the target needs:
+  `T_mean` 1.591M against 445,229 leaves a 3.57× gap, and the receipt moves 24.439T →
+  6.791T (portfolio 2.361982 → 3.6198), arithmetic on `R·Q²·T`, not a receipt.
+
+## 2026-10-28 — MR clear halves the EEA: 2.652× measured, and `R` is not a substitute
+
+- **MEASURED (the better design):** the reversible EEA is run twice — forward, then
+  its adjoint to uncompute — so half of Benchmark II's 75% EEA share is uncomputation.
+  Clearing the EEA scratch and the syndromes and re-preparing the syndromes from a
+  classical readout replaces that half. `scripts/probe_dqi_predicate_gating.py`
+  measures it with both oracle registers (syndrome readout + root bits): official
+  instance `T_mean` **5,725,071.61 → 2,158,651.45, a 2.652×**, `Q` unchanged at 1,893,
+  **0 value and 0 phase errors** on 64 shots, needing 1,803 classical bits and 1,803
+  classically controlled X's. Scaled: 2.351× at m=255 (512 shots), 2.012× at m=15.
+  Because `Q` does not move, the score falls by the same 2.652×: 24.439T → **9.215T**,
+  i.e. the portfolio score 2.361982 → **3.2695** (arithmetic on `R·Q²·T`, not a receipt).
+  Still 4.85× short of the 12.86× target.
+- **FALSIFIED (mine, from four hours earlier):** "`R` can stand in for uncomputation."
+  A reset clear costs exactly what the reference spends (2,158,651.45 either way — CX
+  is not Toffoli-like) but it is **wrong**: 35/64 shots at the official instance and
+  254/512 at m=255 have a flipped phase. Cause, measured: a circuit with **no phase in
+  it at all** — `x(q); reset(q)` — reports a random `phase_flipped` (11/16 shots), while
+  the same circuit without the reset reports 0/16. `R` randomizes the tracked phase, so
+  it can only be used where the answer does not depend on it. Measure-then-X on the
+  measured value (i.e. `MR`) gives 0/0.
+- **BOUND (corrected):** with MR, both levers together are worth 2.652×, not the 1.332×
+  the Forney-gating entry below states: that entry bounded *one* phase of the decoder and
+  its "even granted MR, T lands at 4.30M" bullet is superseded here. `T_mean` 2.159M is
+  still 4.85× above the 445,229 target, so the §5.5 conclusion stands — the target needs
+  a decoder, not an optimisation.
+- **Still blocked in the IR:** `MR` does not exist. `push_condition` takes a classical
+  bit; `hmr` is X-basis; `push_condition(qubit)`/`bit_store(control=qubit)` are rejected;
+  `R` is phase-unsafe. The instruction that would make 2.652× real is Z-basis
+  measure-and-reset, and this design needs it twice.
+- **Verified:** `tests/test_dqi_predicate_gating.py` 7 passed / 1 skipped;
+  the skipped re-measurement was run by hand under the kickmix interpreter and reproduces
+  the record exactly. Record: `benchmarks/quantum_compilation/dqi_predicate_gating.json`.
+
+## 2026-10-28 — Predicate-gated Forney body: 1.332× measured, and inexpressible in this IR
+
+- **MEASURED:** `scripts/probe_dqi_predicate_gating.py` gates the Forney body on the
+  truth table of `sigma(alpha^j) == 0` (supplied as an oracle classical register, so
+  this is an upper bound, not a submission). At the official instance `T_mean` falls
+  **5,725,082.58 → 4,298,955.87 (1.332×)** with `Q` = 1,893 and the static count
+  unchanged, and with **0 value and 0 phase errors** on 128 shots: the body is a
+  no-op wherever `located = is_sigma_zero & omega` is zero, so skipping it is free
+  in correctness. This is the 1.335× "if the phase were free" row of
+  `docs/PHOTONIC_ACCELERATOR_BOUNDARY.md` §5.5, measured instead of estimated.
+  Scaled checks: 1.185× at `m=255, GF(2^8)` and 1.011× at `m=15, GF(2^4)`, where the
+  root density (2.03%, 12.7%) is much higher.
+- **CORRECTED (null optimisation):** the committed `is_error` gate at
+  `dqi_reference_circuit.py:573`/`:596` buys **0.006%** — 353 of 5,725,461 Toffoli per
+  shot — because `P(M_j = 0) = 2^-12`. The gap between `toffoli_count` and
+  `max_toffoli_count` in the receipt is that gate firing about once per shot, not a
+  conditional-execution saving worth pursuing.
+- **BLOCKED (IR):** the predicate cannot reach the condition stack. `push_condition`
+  requires a `km.b`; the only readout is `hmr`, which is **X-basis** (on `|1>` it
+  returned 31/64 ones); `push_condition(qubit)` and `bit_store(control=qubit)` are
+  both rejected by the binding; and the instruction set `{NEG, BIT_INVERT,
+  BIT_STORE0/1, X, Z, R, HMR, CX, CZ, SWAP, CSWAP, CCX, CCZ, Z_POW, INFO_TAG,
+  DEBUG_PRINT, PUSH/POP_CONDITION}` is closed under the Z-diagonal group, so no
+  Hadamard can be synthesized to conjugate the predicate into the X basis. One
+  instruction — Z-basis measure-and-reset (`MR`) — is the entire difference.
+- **BOUND (superseded):** 1.332× leaves `T_mean` at 4.30M against the 445,229 target
+  (9.7× short) and the receipt at 18.35T — arithmetic on `R·Q²·T`, not a receipt. The
+  Forney body is 24.9% of `T`; the other 75% is EEA iterations, which never skip. See
+  the entry above: clearing instead of uncomputing that EEA reaches 2.652×, so this
+  1.332× prices only the Forney phase.
+- **Verified:** `tests/test_dqi_predicate_gating.py` 4 passed / 1 skipped; the skipped
+  re-measurement was run by hand under the kickmix interpreter and reproduces the
+  record exactly. Record: `benchmarks/quantum_compilation/dqi_predicate_gating.json`.
+
 ## 2026-10-28 — Benchmark II cost structure measured; two of my own optimisations falsified
 
 - **MEASURED:** `scripts/measure_dqi_primitive_costs.py` recovers the DQI Toffoli

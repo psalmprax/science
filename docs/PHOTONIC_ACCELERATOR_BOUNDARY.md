@@ -279,6 +279,61 @@ B=4: 193,489 Toffolis saved against 290,338 qubit-equivalents spent, and because
 point: an inversion is 5 multiplications, so a scheme needing 3 multiplications
 per element can save at most 2/5 of it, and one qubit costs ~96 multiplications.
 
+**Gated execution, measured against that ceiling.** `scripts/probe_dqi_predicate_gating.py`
+skips the Forney body wherever `sigma(alpha^j) != 0`, supplying the truth table as an
+oracle classical register (an upper bound, not a submission). The official instance
+falls **5,725,082.58 → 4,298,955.87 executed Toffoli per shot, 1.332×**, with `Q`
+unchanged at 1,893, the static count unchanged, and 0 value and 0 phase errors: at a
+non-root `located = is_sigma_zero & omega` is zero, so the body is a no-op and skipping
+it cannot change the answer. That lands on the 1.335× "free phase" row above, so the
+ceiling there is now measured rather than extrapolated — and it also confirms the body
+is 24.9% of `T`, the other 75% being EEA iterations that never skip either.
+
+The same script measures a second lever that is larger. The EEA runs twice — forward,
+then its adjoint to uncompute — so half of the 75% EEA share is uncomputation. Clearing
+the EEA scratch and the syndromes, then re-preparing the syndromes from a classical
+readout, replaces that half: `T_mean` **2,158,651.45, a 2.652×**, `Q` unchanged at
+1,893, 0 value and 0 phase errors, at the cost of 1,803 classical bits and 1,803
+classically controlled X's — CX is not Toffoli-like, so both clears price identically
+and only correctness separates them. With `Q` fixed the score falls by the same 2.652×:
+24.439T → 9.215T.
+
+A third lever follows from the same readout. The EEA loop emits all five steps every
+round, but `_multiply_and_add_or_sub` touches `ctrl` only through `c0_hc` and `c3_hc`,
+which are both zero in the two shift rounds of each four-round counter cycle — the sweep
+is emitted and does nothing. Reading that pair per round and gating the sweep removes
+**35.14%** of the forward EEA: `T_mean` **1,590,938.28, a 3.599×** over the reference,
+`Q` still 1,893, 0/0 errors, for one classical bit per round. Scaled: 3.205× at m=255
+(40.79% dead), 2.586× at m=15 (46.98%).
+
+The same probe also carries `c3`, which is the entire control of `_swap_a_and_b` — the
+wholesale exchange of `reg_a` and `reg_b`, 2 × 73 × 12 = 1,752 qubits, run every round
+although it is dead in any round without `c3`. Gating it removes another **67.57%** of
+those swaps: `T_mean` **1,457,103.45, a 3.929×**, `Q` still 1,893, 0/0 errors on 64
+shots, 1,110 round bits total. Scaled: 3.507× at m=255 (70.4% dead), 2.813× at m=15.
+
+A third gate was tried, falsified, then fixed. Gating `_shift_b_array_right` on
+`c1 ∨ c2 ∨ ¬flag` fails on every shot, because `flag` is toggled by `_update_flag`
+*before* the shift reads it: a probe taken at the top of the round is stale. Reading the
+post-update flag and using `c1 ∨ c2 ∨ (¬flag ∧ (c0 ∨ c3))` — 31.59% dead — gives
+`T_mean` **1,382,207.08, a 4.142×**, `Q` still 1,893, 0/0 on 64 shots, 1,332 round bits
+(6 × 222). Scaled: 3.709× at m=255, 2.998× at m=15. What is left is one
+multiply-accumulate sweep per live round and 1,752 frozen registers: 1.382M against
+445,229 is a 3.10× gap.
+
+Neither can be submitted. `push_condition` takes a classical bit, and the only readout in
+the IR is `hmr`, which measures in the **X** basis — on `|1>` it returns a random bit —
+so a computational-basis predicate is unreadable: `push_condition(qubit)` and
+`bit_store(control=qubit)` are both rejected, and `{X, Z, R, CX, CZ, SWAP, CSWAP, CCX,
+CCZ}` is closed under the Z-diagonal group, so no Hadamard exists to conjugate the
+predicate into the X basis. The obvious substitute for the missing readout, clearing
+scratch with `R`, is also unusable: a circuit with no phase in it at all — `x(q);
+reset(q)` — reports a random `phase_flipped` (11/16 shots), while the same circuit
+without the reset reports 0/16, so `R` randomizes the tracked phase and the arm that
+uses it fails on 35 of 64 shots. Adding Z-basis measure-and-reset (`MR`) is what would
+make both levers real; as shipped, the reference circuit is already at its instruction
+set's reachable optimum for this decoder.
+
 **The qubit target.** `Q` = 1,887 measured = 1,752 persistent registers
 (`2 × 73 × 12`, both factors frozen by the instance) + 135 transient
 scratch/controls/counters. The −104 the V6 row claims is **77% of every transient
@@ -289,9 +344,11 @@ names frees 16.
 
 **Conclusion.** The 12.86× target is not held back by a missing receipt. One phase
 of the reference decoder, doing what the algorithm requires at the frozen instance,
-already costs 2.90× the whole target. Any T_mean claim below ~1.29M needs a
-decoder that does not invert at every position — a different algorithm against a
-different instance, not an optimisation of this one.
+already costs 2.90× the whole target. All four measured optimisations together — gating
+the Forney bodies, clearing the EEA instead of uncomputing it, and gating the dead
+multiply sweeps, register swaps and shifted-round gates — reach 4.142×, leaving
+`T_mean` at 1.382M, still 3.10× above the target. Any T_mean claim near 445,229 needs a decoder that does not do the work it does —
+a different algorithm against a different instance, not an optimisation of this one.
 
 ## 6. The contract
 
