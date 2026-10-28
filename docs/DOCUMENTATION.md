@@ -2345,4 +2345,31 @@ the precision wall (3.97e-12 turns of unused margin against ~1e-5 analog
 conversion), and the measured ceiling on Boolean node sharing (36 nodes minimal
 over all 10,320,960 order/polarity pairs; 1 qubit costs 9.95 nodes).
 
+### DQI degree-register / halting-counter recycling audit chain
+
+| Module | Purpose | Status |
+|---|---|---|
+| [`scripts/test_recycled_flags_small.py`](../scripts/test_recycled_flags_small.py) | Prototype `ProosAndZalkaDecoder` subclass that recycles the flag and halting-counter comparisons; imported by `scripts/run_halt_recycling_scale.py` | `audit-only` |
+| [`scripts/test_recycled_degrees_small.py`](../scripts/test_recycled_degrees_small.py) | Degree-register recycling at m=15/n=6/GF(2⁴); verifier `PASS`, 140 qubits, T_mean 33,229 | `audit-only` |
+| [`scripts/test_itoh_tsujii_scaffold.py`](../scripts/test_itoh_tsujii_scaffold.py) | Itoh–Tsujii inversion scaffold and archive-chain schedule used by the dual-scaffold pricing | `audit-only` |
+| [`scripts/test_dual_scaffold_dqi.py`](../scripts/test_dual_scaffold_dqi.py) | Prices the dual-scaffold option against the incumbent decoder (see `PHOTONIC_ACCELERATOR_BOUNDARY.md` §5.2) | `audit-only` |
+| [`scripts/test_viable_optimization_path.py`](../scripts/test_viable_optimization_path.py) | Verifies the 36-node shared-plan parameters that `scripts/search_claims_pddd.c` reports | `audit-only` |
+| [`scripts/instrument_invsqrt_trace.py`](../scripts/instrument_invsqrt_trace.py) | Traces per-shot Toffoli/phase statistics behind the invsqrt margin numbers | `audit-only` |
+| [`scripts/instrument_calibrated_trace.py`](../scripts/instrument_calibrated_trace.py) | Calibrated-variant trace instrument used for the same margin accounting | `audit-only` |
+
+**Measured verdict (2026-10-28):** halting-counter recycling is a constant −240
+Toffoli at every instance measured (−0.722 % at m=15, −0.0118 % at m=4095), and
+the shipped flag+counter prototype is a net **regression** (+480 at full scale).
+`RecycledFlagDecoder` itself fails verification on the toy instance (effective
+error rate 0.9155 ≥ 1/16) — importing it is safe, running it is not. The chain
+is kept because it is the evidence for that negative result, not because it is
+viable.
+
+### PDE/ODE discovery honest limits
+
+| Document | Purpose | Status |
+|---|---|---|
+| [`docs/pde_discovery_honest_limits.md`](pde_discovery_honest_limits.md) | States what the discovery layer may and may not claim, including the default-config noise fragility | `experimental` |
+| [`tests/test_dyn_pde_discovery_noise_robustness.py`](../tests/test_dyn_pde_discovery_noise_robustness.py) | The first fixed-config multi-seed noise sweep backing that note | `experimental` |
+
 *Documentation generated for APEDP-X v2.0.0 — Autonomous Physics, Engineering & Market Discovery Platform*

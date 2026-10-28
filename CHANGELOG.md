@@ -1,3 +1,29 @@
+## 2026-10-28 — Audit artifacts for the negative results, and the PDE honesty note
+
+- **COMMITTED:** the seven `scripts/` audit instruments that back numbers already
+  recorded in `CHANGELOG.md` and `docs/PHOTONIC_ACCELERATOR_BOUNDARY.md` had been
+  left untracked, so the claims cited them from outside the repository. Two were
+  load-bearing: the committed `run_halt_recycling_scale.py` imports
+  `RecycledFlagDecoder` from `scripts/test_recycled_flags_small.py`, and the
+  restored documentation cites `scripts/test_viable_optimization_path.py`.
+  Verified by running the committed driver end to end (−240 counter-only at
+  m=15/1023, +600/+360 flag, +240/+480 combined).
+- **DISCLOSED:** importing `RecycledFlagDecoder` is safe; running it is not. Its
+  toy circuit fails the official verifier (effective error rate 0.9155 ≥ 1/16,
+  198/256 value errors). The flags prototype is a broken circuit, not merely a
+  slower one.
+- **NEW:** `docs/pde_discovery_honest_limits.md` plus
+  `tests/test_dyn_pde_discovery_noise_robustness.py` — states that the default PDE
+  discovery config is brittle to small additive noise and that the clean pinned
+  demos are not evidence of general noise robustness, with the first fixed-config
+  multi-seed sweep as the backing test (2 passed).
+- **NEW:** `tests/test_dyn_dqi_photonic_resource.py` (14 passed) pins the shipped
+  `dqi_photonic_resource` mapper: platform invariance of `R·Q²·T`, the fault-tolerance
+  verdict, and the caller-supplied superconducting baseline having no defaults.
+- **NEW:** `tests/test_dyn_rime_ad_input_contract.py` pins the `RimeAdProposer`
+  input contract (`DataFrame | dict[str, DataFrame]`, unsupported shapes fail
+  loudly rather than returning a candidate).
+
 ## 2026-10-28 — Portfolio synthesis names the real Benchmark I incumbent
 
 - **CORRECTED:** `docs/invsqrt_frontier_and_portfolio_synthesis.md` still named the
