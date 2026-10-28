@@ -100,3 +100,30 @@ The repository ships `kickmix.so` and `LICENSE.txt`, not the sources, so the dif
 against the observable API. Point me at the source tree (path or clone URL) and I will
 turn the table into a real patch with the tests wired in; until then the numbers here are
 oracle upper bounds, not receipts.
+
+## What is actually missing (two things, neither of them analysis)
+
+1. **The source tree.** `apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/`
+   contains `kickmix.so` and `LICENSE.txt` and nothing else. A compiled extension cannot be
+   patched: the opcode table, the `.kmb` parser, the builder bindings and the simulator
+   branch all live inside the binary. The licence is Apache-2.0, so a patch is permissible
+   — it is not available to write. Everything in this request is therefore written against
+   the API surface observable from the extension.
+2. **A channel.** There is no upstream remote, issue tracker or maintainer contact in this
+   repository, so nothing has been filed. This document is the request; filing it is a
+   delivery step, not an analysis step.
+
+## Why a replacement circuit designer does not close this gap
+
+Building our own builder/simulator that has `MR` would let the gated arms run instead of
+being supplied an oracle truth table, which is real work, but it cannot produce a score.
+The contract in §6 of [`PHOTONIC_ACCELERATOR_BOUNDARY.md`](PHOTONIC_ACCELERATOR_BOUNDARY.md)
+accepts only the official `kickmix` compilation plus `verify_submission_dqi` /
+`verify_submission_invsqrt`, and `apedp_dyn/quantum_compilation/contracts.py` pins both by
+SHA-256 before an official run. A local designer's T count is a surrogate, and a surrogate
+may rank candidates but must never be written into a receipt. So a replacement engine
+changes which numbers we *can measure*, not which numbers *count*; the 4.142× stays an
+oracle bound until the opcode exists upstream.
+
+If the goal is instead to make the arms executable for correctness testing (not scoring),
+a local simulator with `MR` is the cheaper route — say so and it can be scoped separately.
