@@ -222,14 +222,19 @@ def test_hmr_is_random_on_one_and_deterministic_on_zero():
 
 # -- recorded arm results ---------------------------------------------------
 
-def _arms() -> dict:
+def _arms(instance: str = "m15") -> dict:
     assert ARMS.is_file(), f"missing arms record: {ARMS}"
-    return json.loads(ARMS.read_text(encoding="utf-8"))
+    record = json.loads(ARMS.read_text(encoding="utf-8"))
+    prefix = f"{instance}_"
+    return {key[len(prefix):]: value for key, value in record["results"].items()
+            if key.startswith(prefix)}
 
 
-@pytest.mark.parametrize("arm", ["none", "swap", "sweep", "clear", "forney", "all"])
-def test_every_mr_gated_arm_reproduces_the_reference(arm: str):
-    result = _arms()["results"][f"{arm}_mr"]
+@pytest.mark.parametrize("instance", ["m15", "m255"])
+@pytest.mark.parametrize(
+    "arm", ["none", "swap", "sweep", "clear", "forney", "shift", "all"])
+def test_every_mr_gated_arm_reproduces_the_reference(instance: str, arm: str):
+    result = _arms(instance)[arm]
     assert result["verdict"] == "PASS", result
     assert result["syndromes_match_reference"] is True
     assert result["phase_matches_reference"] is True
@@ -243,18 +248,25 @@ def test_the_clear_arm_removes_the_reverse_eea_allocations():
     These are local id counts, not ``Q``: freed ids are never reused here, so they
     bound allocation rather than the competition's register count.
     """
-    results = _arms()["results"]
-    reference = results["none_mr"]["reference_qubits"]
-    assert results["none_mr"]["arm_qubits"] == reference
-    assert results["clear_mr"]["arm_qubits"] < reference
-    assert results["all_mr"]["arm_qubits"] < reference
-    for arm in ("swap", "sweep", "forney"):
-        assert results[f"{arm}_mr"]["arm_qubits"] > reference, arm
+    results = _arms()
+    reference = results["none"]["reference_qubits"]
+    assert results["none"]["arm_qubits"] == reference
+    assert results["clear"]["arm_qubits"] < reference
+    assert results["all"]["arm_qubits"] < reference
+    for arm in ("swap", "sweep", "forney", "shift"):
+        assert results[arm]["arm_qubits"] > reference, arm
 
 
 def test_reading_with_r_fails_the_same_arm():
     """The falsifier: same circuit, r instead of mr, and the phase no longer matches."""
-    result = _arms()["results"]["swap_r"]
+    result = _arms()["swap_r-readout"]
     assert result["verdict"] == "FAIL"
     assert result["phase_matches_reference"] is False
     assert result["syndromes_match_reference"] is True, "value correctness is not what fails"
+
+
+def test_the_under_gated_shift_arm_fails():
+    """Drop ``¬flag ∧ (c0 ∨ c3)`` and the gate skips shifts the decoder needs."""
+    result = _arms()["shift_under-gated"]
+    assert result["verdict"] == "FAIL"
+    assert result["syndromes_match_reference"] is False

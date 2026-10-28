@@ -1,3 +1,21 @@
+## 2026-10-28 — Fifth MR lever verified at both instances, with a falsifier that fails
+
+- **ADDED:** the shift gate to `scripts/run_mr_gated_arms.py` (`--arm shift`, included in
+  `all`). It reads `c1 ∨ c2 ∨ (¬flag ∧ (c0 ∨ c3))` with a real `mr`, using the flag *after*
+  `_update_flag`; the probe's earlier attempt with a round-top flag fails because that flag
+  is stale. At m=15/GF(2⁴), 32 shots, the predicate is false in 26.7% of round-shots, and
+  the arm reproduces the reference's syndromes, phase and `|0>` junk.
+- **MEASURED, scaled:** all five arms plus `all` pass at m=255/GF(2⁸), n=14, 16 shots
+  (reference 9,751 qubit ids; syndromes, phase and junk all match). The falsifiers fail at
+  both instances: `--clear-with r` loses the phase and leaves junk, and `--shift-under`
+  (dropping `¬flag ∧ (c0 ∨ c3)`) skips shifts the decoder needs and breaks the syndromes.
+  Record: `benchmarks/quantum_compilation/local_mr_arms.json`.
+- **REJECTED as a falsifier:** inverting the shift gate also passes, because one skipped
+  shift is repaired by later rounds; only under-gating breaks the decoder, so the inverted
+  knob was removed rather than shipped as a test that cannot fail.
+- **Verified:** `tests/test_local_mr_sim.py` 21 passed over both recorded instances,
+  including the under-gated shift arm and the `r` readout.
+
 ## 2026-10-28 — Three metric placeholders now measure or refuse
 
 - **FIXED, `EnsembleSearcher.get_diversity_score`:** returned a constant 0.8 with a

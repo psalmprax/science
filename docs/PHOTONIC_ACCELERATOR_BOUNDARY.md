@@ -338,11 +338,14 @@ The correctness gap in that paragraph is now closed on the mechanism, even thoug
 receipt still is not. `apedp_dyn/quantum_compilation/local_mr_sim.py` implements the
 instruction locally (plus the decoder's builder subset, pinned against `kickmix`), and
 reproduces `kickmix` shot for shot on the reference decoder — syndromes restored, every
-other qubit `|0>`, identical tracked phase. On it, all four levers read their predicate
-with a real `mr` (`cx(control, ancilla); mr(ancilla, bit)`) instead of an oracle register
-and each arm reproduces the reference's values **and** phase; the same arms built with
-`r` fail on the phase, which is what makes the test worth something
-(`scripts/run_mr_gated_arms.py`, record `benchmarks/quantum_compilation/local_mr_arms.json`).
+other qubit `|0>`, identical tracked phase. On it, all five levers — including the shift
+gate, whose predicate needs the flag *after* `_update_flag` — read their predicate with a
+real `mr` (`cx(control, ancilla); mr(ancilla, bit)`) instead of an oracle register, and
+each arm reproduces the reference's values **and** phase at m=15/GF(2⁴) and at
+m=255/GF(2⁸). The same arms built with `r` fail on the phase, and the shift arm fails
+when its gate omits the `¬flag ∧ (c0 ∨ c3)` branch and so skips shifts the decoder needs;
+that is what makes the test worth something (`scripts/run_mr_gated_arms.py`, record
+`benchmarks/quantum_compilation/local_mr_arms.json`).
 So the 4.142× no longer rests on a hypothesis about what an `mr` would do — it rests on
 measured phases. What remains unverified is the **cost**, because gate counts and the
 receipt can only come from `kickmix` and the official verifiers.

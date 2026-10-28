@@ -10,7 +10,10 @@ This script closes that gap on ``apedp_dyn/quantum_compilation/local_mr_sim.py``
 Each arm re-reads a control the reference circuit already carries, through a
 copy-and-measure gadget — ``cx(control, ancilla); mr(ancilla, bit)`` — because ``mr``
 clears its target and the reference still needs the control for uncomputation. The
-bit then gates the dead work with ``push_condition``.
+bit then gates the dead work with ``push_condition``. Five levers are available:
+``swap``, ``sweep``, ``forney``, ``clear`` and ``shift``, where ``shift`` gates
+``_shift_b_array_right`` on ``c1 ∨ c2 ∨ (¬flag ∧ (c0 ∨ c3))`` using the flag *after*
+``_update_flag`` — a flag read at the top of the round is stale and fails.
 
 Correctness criterion: the arm must compute exactly the reference's function on the
 same shots — same syndromes restored, every other qubit ``|0>``, same tracked phase.
@@ -18,10 +21,16 @@ Nothing here is a score: T counts still come from ``kickmix``.
 
 ``--clear-with r`` is the falsifier: ``r`` clears the ancilla like ``mr`` but
 randomizes the tracked phase, so that arm must fail once any gating is applied.
+``--shift-under`` is the shift arm's falsifier: it drops the ``¬flag ∧ (c0 ∨ c3)``
+branch, skipping shifts the decoder needs, and must fail.
 
-Run under the interpreter ``kickmix`` was built for (CPython 3.13):
+Run under the interpreter ``kickmix`` was built for (CPython 3.13), with numpy:
 
-    python3.13 scripts/run_mr_gated_arms.py --arm swap --shots 16
+    .venv-kickmix/bin/python scripts/run_mr_gated_arms.py --arm shift --shots 32
+
+(``uv venv .venv-kickmix --python python3.13 && uv pip install --python
+.venv-kickmix/bin/python numpy``; the project ``.venv`` is 3.12 and cannot load
+``kickmix.so``.)
 """
 from __future__ import annotations
 
@@ -86,12 +95,15 @@ class MRGatedDecoder(DR.ProosAndZalkaDecoder):
 
     def __init__(self, n_syndromes, field, *, gate_swap: bool = False,
                  gate_sweep: bool = False, clear_eea: bool = False,
-                 gate_forney: bool = False, clear_with: str = "mr"):
+                 gate_forney: bool = False, gate_shift: bool = False,
+                 shift_under: bool = False, clear_with: str = "mr"):
         super().__init__(n_syndromes, field)
         self.gate_swap = gate_swap
         self.gate_sweep = gate_sweep
         self.clear_eea = clear_eea
         self.gate_forney = gate_forney
+        self.gate_shift = gate_shift
+        self.shift_under = shift_under
         self.clear_with = clear_with
 
     # -- lever: skip the Forney body where sigma(alpha^j) != 0 --------------
@@ -371,7 +383,106 @@ class MRGatedDecoder(DR.ProosAndZalkaDecoder):
             builder.free(q_i)
 
 
-def build(arm: str, clear_with: str, n: int, degree: int, m: int):
+    # -- lever: skip the B-array shift where the post-update state cannot use it --
+    def _shift_b_array_right(self, builder, reg_b, n_B, n_b, flag, ctrl, it, *,
+                             is_adjoint):
+        """Reference shift, gated on the predicate that makes its body live.
+
+        The probe measured the body live on ``c1 ∨ c2 ∨ (¬flag ∧ (c0 ∨ c3))`` with
+        the post-update flag; gating on ``c1 ∨ c2 ∨ ¬flag`` fails on every shot
+        because the flag read at the top of the round is stale. ``_update_flag`` has
+        already run when the shift is called, so ``flag`` is the post-update value.
+        """
+        if not self.gate_shift:
+            return super()._shift_b_array_right(
+                builder, reg_b, n_B, n_b, flag, ctrl, it, is_adjoint=is_adjoint)
+        with builder.mark("shift_b_array_right"):
+            c0_hc, c1_hc, c2_hc, c3_hc = ctrl
+            flag_bit = self._read_bit(builder, flag)
+            c0_bit = self._read_bit(builder, c0_hc)
+            c1_bit = self._read_bit(builder, c1_hc)
+            c2_bit = self._read_bit(builder, c2_hc)
+            c3_bit = self._read_bit(builder, c3_hc)
+
+            live = builder.alloc_bits(1)
+            builder.bit_store(live[0], False)
+            builder.bit_store(live[0], True, control=c1_bit[0])
+            builder.bit_store(live[0], True, control=c2_bit[0])
+            if not self.shift_under:
+                # ¬flag ∧ (c0 ∨ c3): the branch that needs the flag to be clear.
+                flag_clear = builder.alloc_bits(1)
+                builder.bit_store(flag_clear[0], True)
+                builder.bit_store(flag_clear[0], True, control=flag_bit[0])
+                with _conditional(builder, flag_clear[0]):
+                    builder.bit_store(live[0], True, control=c0_bit[0])
+                    builder.bit_store(live[0], True, control=c3_bit[0])
+
+            with _conditional(builder, live[0]):
+                self._shift_body(builder, reg_b, n_B, n_b, flag, ctrl, it,
+                                 is_adjoint=is_adjoint)
+
+    @staticmethod
+    def _shift_body(builder, reg_b, n_B, n_b, flag, ctrl, it, *, is_adjoint):
+        """The reference shift body, verbatim, so only the gate can differ."""
+        c0_hc, c1_hc, c2_hc, c3_hc = ctrl
+        m = len(reg_b)
+        lim_B = m - 2
+        lim_b = min(m - 2, it // 2 + 1)
+
+        builder.x(flag)
+        nf = builder.alloc_qubits(2)
+        builder.init_and(DR.km.array([c0_hc, c3_hc]), flag, nf)
+        builder.x(flag)
+        c0_nf, c3_nf = nf
+
+        ctrl_nB = builder.alloc_qubits(1)[0]
+        builder.cx(DR.km.array([c0_nf, c1_hc]), ctrl_nB)
+
+        order = range(1, m) if is_adjoint else range(m - 1, 0, -1)
+        with (
+            builder.unary_iteration(n_B, control=ctrl_nB) as cur_B_ge,
+            builder.unary_iteration(n_b, control=c2_hc) as cur_b_ge,
+            builder.unary_iteration(n_B, control=c3_nf) as cur_B_lt,
+        ):
+            do_shift = builder.alloc_qubits(1)[0]
+
+            def endpoint(i: int) -> None:
+                DR._xor_threshold(builder, cur_B_ge, lim_B, do_shift, ctrl_nB, m - i + 1,
+                                  at_least=True)
+                DR._xor_threshold(builder, cur_b_ge, lim_b, do_shift, c2_hc, i,
+                                  at_least=True)
+                DR._xor_threshold(builder, cur_B_lt, lim_B, do_shift, c3_nf, m - i,
+                                  at_least=False)
+
+            prev = None
+            for i in order:
+                if prev is None:
+                    endpoint(i)
+                else:
+                    builder.cx(
+                        DR.km.array([
+                            DR._active(cur_B_ge, m - max(prev, i) + 1, lim_B),
+                            DR._active(cur_b_ge, min(prev, i), lim_b),
+                            DR._active(cur_B_lt, m - max(prev, i), lim_B),
+                        ]),
+                        do_shift,
+                    )
+                prev = i
+                builder.cswap(do_shift, reg_b[i - 1], reg_b[i])
+
+            endpoint(prev)
+            builder.free(do_shift)
+
+        builder.cx(DR.km.array([c0_nf, c1_hc]), ctrl_nB)
+        builder.free(ctrl_nB)
+        builder.x(flag)
+        builder.del_and(DR.km.array([c0_hc, c3_hc]), flag, nf)
+        builder.x(flag)
+        builder.free(nf)
+
+
+def build(arm: str, clear_with: str, n: int, degree: int, m: int,
+          shift_under: bool = False):
     original_km = DR.km
     DR.km = _LocalKmShim
     try:
@@ -382,6 +493,8 @@ def build(arm: str, clear_with: str, n: int, degree: int, m: int):
             gate_sweep=arm in ("sweep", "all"),
             clear_eea=arm in ("clear", "all"),
             gate_forney=arm in ("forney", "all"),
+            gate_shift=arm in ("shift", "all"),
+            shift_under=shift_under,
             clear_with=clear_with,
         )
         syndromes = [builder.create_quantum_register(degree, name=f"S{i}") for i in range(n)]
@@ -421,9 +534,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--arm",
-                        choices=("none", "swap", "sweep", "clear", "forney", "all"),
+                        choices=("none", "swap", "sweep", "clear", "forney", "shift", "all"),
                         default="swap")
     parser.add_argument("--clear-with", choices=("mr", "r"), default="mr")
+    parser.add_argument("--shift-under", action="store_true",
+                        help="falsifier: drop the ¬flag∧(c0∨c3) branch from the gate")
     parser.add_argument("--m", type=int, default=15, help="number of MBUC positions")
     parser.add_argument("--n", type=int, default=6)
     parser.add_argument("--degree", type=int, default=4)
@@ -439,7 +554,8 @@ def main() -> int:
     syndromes_in, mbuc_in, _phase = V.sample_shots(spec, tables, rng, args.shots, weights)
 
     ref_circuit, ref_syn, ref_mbuc = build("none", "mr", args.n, args.degree, args.m)
-    arm_circuit, arm_syn, arm_mbuc = build(args.arm, args.clear_with, args.n, args.degree, args.m)
+    arm_circuit, arm_syn, arm_mbuc = build(args.arm, args.clear_with, args.n, args.degree,
+                                          args.m, shift_under=args.shift_under)
 
     reference = simulate(ref_circuit, ref_syn, ref_mbuc, syndromes_in, mbuc_in,
                          args.degree, args.shots)
