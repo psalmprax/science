@@ -109,12 +109,37 @@ impl PhysicsConstraintEngine {
         }
     }
 
-    pub fn dimensional_analysis_pass(&self) -> f64 {
-        // Score based on dimensional consistency
-        if self.target_dim.is_none() {
-            return 0.5;
+    /// Fraction of the candidate's terms whose dimensions equal the target.
+    ///
+    /// Dimensional analysis is a judgement about a candidate, so it needs the
+    /// candidate's terms; a call with no terms, or with no target to judge them
+    /// against, has nothing to measure and is an error rather than a constant.
+    pub fn dimensional_analysis_score(&self, term_dims: &[Dimensions]) -> Result<f64, String> {
+        if term_dims.is_empty() {
+            return Err(
+                "dimensional_analysis_score needs the dimensions of the terms to score"
+                    .to_string(),
+            );
         }
-        1.0
+        let Some(target) = self.target_dim.as_ref() else {
+            return Err(
+                "dimensional_analysis_score needs a target dimension to score the terms against"
+                    .to_string(),
+            );
+        };
+        let matching = term_dims
+            .iter()
+            .filter(|dims| {
+                dims.mass == target.mass
+                    && dims.length == target.length
+                    && dims.time == target.time
+                    && dims.temperature == target.temperature
+                    && dims.current == target.current
+                    && dims.amount == target.amount
+                    && dims.luminosity == target.luminosity
+            })
+            .count();
+        Ok(matching as f64 / term_dims.len() as f64)
     }
 
     pub fn detect_symmetries(&self, data: &Vec<Vec<f64>>) -> HashSet<String> {
@@ -187,8 +212,16 @@ impl PyPhysicsConstraintEngine {
         }
     }
 
-    fn dimensional_analysis_score(&self) -> f64 {
-        self.engine.dimensional_analysis_pass()
+    /// `term_dims_json` is a JSON list of `Dimensions` objects, one per term.
+    fn dimensional_analysis_score(&self, term_dims_json: &str) -> PyResult<f64> {
+        let term_dims: Vec<Dimensions> = serde_json::from_str(term_dims_json).map_err(|err| {
+            pyo3::exceptions::PyValueError::new_err(format!(
+                "term dimensions must be a JSON list of Dimensions objects: {err}"
+            ))
+        })?;
+        self.engine
+            .dimensional_analysis_score(&term_dims)
+            .map_err(pyo3::exceptions::PyValueError::new_err)
     }
 
     fn smoothness_score(&self, values: Vec<f64>) -> f64 {

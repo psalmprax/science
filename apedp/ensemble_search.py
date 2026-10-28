@@ -11,8 +11,22 @@ from apedp.proposer_router import ProposerRouter, auto_select_proposer
 
 #: Proposer names the router actually knows how to drive.
 KNOWN_PROPOSERS = frozenset(
-    name for names in ProposerRouter().proposer_map.values() for name in names
-)
+    name for names in ProposerRouter().proposer_map.values() for name in names)
+
+#: Keys under which a member's result may carry the solutions it found.
+SOLUTION_KEYS = ("best", "expression", "expressions", "equations", "solutions")
+
+
+def _solutions_in(value: Any) -> list[str]:
+    """Collect the expression strings one result entry carries, depth-first."""
+    if isinstance(value, str):
+        return [value.strip()] if value.strip() else []
+    if isinstance(value, dict):
+        return [solution for key in SOLUTION_KEYS if key in value
+                for solution in _solutions_in(value[key])]
+    if isinstance(value, (list, tuple)):
+        return [solution for item in value for solution in _solutions_in(item)]
+    return []
 
 
 class EnsembleSearcher:
@@ -65,9 +79,24 @@ class EnsembleSearcher:
         }
     
     def get_diversity_score(self, results: dict) -> float:
-        """Measure diversity of solutions found."""
-        # Placeholder - would analyze equation structures
-        return 0.8
+        """How far the reported solutions are from all being the same.
+
+        Diversity is a property of what was found, so this needs the solutions:
+        each member's entry is searched for ``best`` / ``expression`` /
+        ``expressions`` / ``equations`` / ``solutions``. The score is where the
+        distinct count sits in its possible range, ``(distinct - 1) / (total - 1)``:
+        0.0 when every member returned the same solution, 1.0 when no two agree.
+        A plan with fewer than two solutions in it — including this class's own
+        ``search_ensemble`` output before anything has run — has no diversity to
+        measure, and this raises rather than reporting a constant.
+        """
+        solutions = [solution for entry in results.values()
+                     for solution in _solutions_in(entry)]
+        if len(solutions) < 2:
+            raise ValueError(
+                "get_diversity_score needs at least two reported solutions to "
+                f"measure; results carries {len(solutions)}")
+        return (len(set(solutions)) - 1) / (len(solutions) - 1)
 
 
 def ensemble_search(problem: Any, budget: int = 300, **kwargs) -> dict[str, Any]:

@@ -349,7 +349,9 @@ class DeepEnsemble:
         std = jnp.std(preds, axis=0)
         epistemic = std  # Epistemic uncertainty = ensemble disagreement
 
-        # Aleatoric would need separate modeling
+        # Aleatoric is the noise in p(y|x), which a deterministically trained
+        # regressor does not estimate. Reporting zeros would present an unmodelled
+        # quantity as a measured zero, so report None.
         lower = mean - 1.96 * std  # 95% CI
         upper = mean + 1.96 * std
 
@@ -359,7 +361,7 @@ class DeepEnsemble:
             lower=lower,
             upper=upper,
             epistemic=epistemic,
-            aleatoric=jnp.zeros_like(std),  # Placeholder
+            aleatoric=None,
         )
 
     def pairwise_disagreement(self, x: Array) -> float:
@@ -609,24 +611,3 @@ __all__ = [
     "UncertaintyWrapper",
     "predict_with_uncertainty",
 ]
-
-# COMMAND ----------
-
-# Aleatoric uncertainty is not modeled by the current deterministic regressors.
-# Do not expose a fabricated zero-valued estimate as measured data uncertainty.
-_original_deep_ensemble_predict = DeepEnsemble.predict
-
-
-def _deep_ensemble_predict_without_fake_aleatoric(self, x):
-    output = _original_deep_ensemble_predict(self, x)
-    return UncertaintyOutput(
-        mean=output.mean,
-        std=output.std,
-        lower=output.lower,
-        upper=output.upper,
-        epistemic=output.epistemic,
-        aleatoric=None,
-    )
-
-
-DeepEnsemble.predict = _deep_ensemble_predict_without_fake_aleatoric

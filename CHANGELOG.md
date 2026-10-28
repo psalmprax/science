@@ -1,4 +1,27 @@
-## 2026-10-28 — MR arm correctness tested locally: all four levers, and `r` fails as it should
+## 2026-10-28 — Three metric placeholders now measure or refuse
+
+- **FIXED, `EnsembleSearcher.get_diversity_score`:** returned a constant 0.8 with a
+  "would analyze equation structures" comment. It now reads the solutions out of the
+  results (`best` / `expression` / `expressions` / `equations` / `solutions`) and scores
+  `(distinct - 1) / (total - 1)`: 0.0 when every member agrees, 1.0 when no two do. Fewer
+  than two reported solutions — including its own `search_ensemble` plan — raises, because
+  a plan has no diversity to measure.
+- **FIXED, `DeepEnsemble.predict`:** reported `aleatoric=jnp.zeros_like(std)`, presenting an
+  unmodelled quantity as a measured zero. These regressors train deterministically, so the
+  field is `None`; the monkeypatch that previously masked the same placeholder after import
+  was removed with it.
+- **FIXED, `PhysicsConstraintEngine.dimensional_analysis_score`:** returned 0.5 with no
+  target and 1.0 with one, regardless of any candidate. It now takes the dimensions of the
+  candidate's terms and returns the fraction that match the target, raising when there are
+  no terms or no target. The Rust kernel had the identical placeholder and now implements
+  the same measurement over a JSON term list (rebuilt extension); the Python fallback and
+  the kernel agree, and both `check_dimensional_consistency` paths now compare all seven
+  exponents instead of mass/length/time only.
+- **Verified:** `tests/test_placeholder_metrics_are_measured_or_refused.py` 9 passed (both
+  implementations of the dimensional score, the diversity endpoints, the refusals, and
+  `aleatoric is None`); `tests/test_search_engines_real.py` 13 passed.
+
+## 2026-10-28 — MR arm correctness tested locally: four levers, and `r` fails as it should
 
 - **BUILT:** `apedp_dyn/quantum_compilation/local_mr_sim.py`, a Z-basis (value + sign)
 simulator for the DQI decoder with `mr` (Z measure-and-reset, phase-preserving), `r`

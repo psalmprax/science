@@ -18,6 +18,7 @@ import json
 import math
 import random
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -96,22 +97,41 @@ class PhysicsConstraintEngine:
             self._rust.set_target_dimensions(dims.mass, dims.length, dims.time,
                                              dims.temperature, dims.current, dims.amount, dims.luminosity)
 
+    @staticmethod
+    def dimensions_match(lhs: Dimensions, rhs: Dimensions) -> bool:
+        """All seven exponents agree — the same comparison the Rust kernel makes."""
+        return all(getattr(lhs, name) == getattr(rhs, name)
+                   for name in Dimensions.__dataclass_fields__)
+
     def check_dimensional_consistency(self, expr_dims: Dimensions) -> bool:
         if self.target_dim is None:
             return True
         if self._rust is not None:
-            import json
             return self._rust.check_dimensional_consistency(json.dumps(expr_dims.__dict__))
-        return (expr_dims.mass == self.target_dim.mass and
-                expr_dims.length == self.target_dim.length and
-                expr_dims.time == self.target_dim.time)
+        return self.dimensions_match(expr_dims, self.target_dim)
 
-    def dimensional_analysis_score(self) -> float:
-        if self._rust is not None:
-            return self._rust.dimensional_analysis_score()
+    def dimensional_analysis_score(self, term_dims: Sequence[Dimensions] | None = None) -> float:
+        """Fraction of `term_dims` whose dimensions equal the target.
+
+        Dimensional analysis is a judgement about a candidate, so it needs the
+        candidate: one `Dimensions` per term of the expression. Without terms, or
+        without a target to judge them against, there is nothing to score, and
+        this raises instead of returning a constant that looks measured.
+        """
+        if not term_dims:
+            raise ValueError(
+                "dimensional_analysis_score needs the dimensions of the terms to "
+                "score; no terms were supplied")
         if self.target_dim is None:
-            return 0.5
-        return 1.0
+            raise ValueError(
+                "dimensional_analysis_score needs a target dimension to score the "
+                "terms against")
+        if self._rust is not None:
+            return self._rust.dimensional_analysis_score(
+                json.dumps([dims.__dict__ for dims in term_dims]))
+        matches = sum(1 for dims in term_dims
+                      if self.dimensions_match(dims, self.target_dim))
+        return matches / len(term_dims)
 
     def smoothness_score(self, values: list[float]) -> float:
         if self._rust is not None:
