@@ -40,6 +40,15 @@
 |---|---|---|
 | [`scripts/test_shared_pddd_circuit.py`](../scripts/test_shared_pddd_circuit.py) | Rebuilds the 89-qubit shared-PDDD invsqrt circuit and runs the official verifier on it | `audit-only` |
 | [`scripts/search_claims_pddd.c`](../scripts/search_claims_pddd.c) | Exhaustive search for the shared multi-output PDDD parameters that script consumes | `audit-only` |
+| [`scripts/search_mixed_polarity_pddd.py`](../scripts/search_mixed_polarity_pddd.py) | Mixed-polarity search for the four-output restoration: 26 nodes vs 28 | `audit-only` |
+| [`scripts/build_mixed_polarity_candidate.py`](../scripts/build_mixed_polarity_candidate.py) | Builds and verifies that plan as a circuit; finds no static gate saving | `audit-only` |
+| [`tests/test_dyn_invsqrt_champion_rebuild.py`](../tests/test_dyn_invsqrt_champion_rebuild.py) | Pins the champion rebuild circuit hash and stage timings | `audit-only` |
+
+**Mixed polarity:** `scripts/search_mixed_polarity_pddd.py` finds a 26-node curve
+restoration plan (28 in the incumbent) by letting each AND node choose its control
+literal; `scripts/build_mixed_polarity_candidate.py` shows the saving does not reach
+the static gate count (1466 either way) and that the residual score difference
+shrinks with the shot budget. See §5.1 of the boundary doc.
 
 **Module:** `scripts/test_shared_pddd_circuit`
 **Status:** `audit-only`

@@ -409,6 +409,18 @@ def main():
         print(f"  Stage 5 throughput: {shots / verify_seconds:,.0f} verified shots/second")
     print(f"{'=' * 68}")
 
+    if "--json" in sys.argv:
+        # Machine-readable tail, consumed by tests/test_dyn_invsqrt_champion_rebuild.py.
+        print(
+            json.dumps(
+                {
+                    "receipt": receipt,
+                    "timings": {label: round(seconds, 3) for label, seconds in timings},
+                    "total_seconds": round(total, 3),
+                }
+            )
+        )
+
 
 if __name__ == "__main__":
     main()

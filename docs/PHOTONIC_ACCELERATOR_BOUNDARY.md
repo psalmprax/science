@@ -108,11 +108,69 @@ So one additional qubit costs as much as saving ten nodes — 9.95× the entire
 monolithic joint restore costs +22 qubits (+38,291.57), and holding even one
 shared node live across `outer` costs +1,590.80.
 
-**Untested axis, disclosed:** a decomposition outside the Davio/butterfly
-family (e.g. free per-node mixed polarity, or non-uniform variable orders inside
-one shared plan) is not covered by the search above and is not attempted here.
-The 4.4048% ceiling applies to it too: even a perfect restoration only buys
-4.40%, while the qubit exchange rate is unforgiving.
+### 5.1 Mixed polarity, tested
+
+`scripts/search_mixed_polarity_pddd.py` generalises the recursion so each AND
+node picks its own control literal (`x_v` or `NOT x_v`) instead of forcing the
+positive literal, and searches orders and polarity patterns. It reproduces the
+incumbent 36-node plan before searching, and validates every plan it scores on
+256/256 wire assignments. Result: the generalisation **does** reduce the node
+count — 26 nodes for `curve4..6` against 28, and 35 for the joint four-output
+set against 36 — and it does not produce a better circuit.
+
+| Plan | Nodes | Static Toffolis after compilation | Verified score |
+|---|---|---|---|
+| Incumbent curves (positive Davio) | 28 | 1466 | 157,605.52 at 25,600 shots |
+| Mixed-polarity curves | 26 | 1466 | 157,597.45 at 25,600 shots |
+| Same two, 204,800 shots | 26 / 28 | 1466 / 1466 | candidate −0.56 units |
+
+Two reasons, both measured by `scripts/build_mixed_polarity_candidate.py`:
+
+- The exact-domain compiler's linear pass removes **two more** Toffolis from the
+  28-node plan than from the 26-node one, so both compile to 1466 static
+  Toffolis. The node count was not the binding constraint; the compiler already
+  had that slack and spent it.
+- The apparent score gain shrinks 14× (8.07 → 0.56 units) when the sample grows
+  8× (25,600 → 204,800 shots). That is sampling noise in the shot-mean Toffoli
+  count, not a per-shot saving.
+
+The 35-node joint plan needs a single monolithic restore (all four outputs at
+once), which costs +22 qubits and +38,291.57 units, so it is not schedulable at
+all. `scripts/test_dyn_invsqrt_champion_rebuild.py` pins the circuit hash so none
+of this can drift silently.
+
+### 5.2 The same exchange rate on the DQI decoder
+
+DQI scores `C = R(ε₊) · Q² · T_mean`, so the marginal prices are
+`∂C/∂Q = 2RQT` and `∂C/∂T = RQ²`:
+
+| Quantity | Reference (Q=1893, T=5,725,108) | V6 target (Q=1789, T=445,229) |
+|---|---|---|
+| 1 qubit | 6,048.7 Toffolis | **497.7 Toffolis** |
+| 1 Toffoli | 4,268,821 units | 3,812,654 units |
+
+Break-even rule: an option that saves `dQ` qubits may add up to `dQ · 2T/Q`
+Toffolis. At the V6 target that is 498 / 1,493 / 5,973 Toffolis for 1 / 3 / 12
+qubits (0.11% / 0.34% / 1.34% of `T_mean`). Applied to the open options:
+
+| Option | ΔQ | ΔT_mean/shot | Cost change | Pays for itself? |
+|---|---|---|---|---|
+| Halting-counter recycling (measured on m=15, n=6, GF(2⁴)) | 0 | −3,223 (−0.72%) | **−0.724%** | yes, if it holds at full scale |
+| Itoh–Tsujii 48q scaffold, pooled architecture | 0 | +3,161 (+0.71%) | +0.710% | no — `Q` is bounded by the persistent registers |
+| Itoh–Tsujii 48q scaffold, unpooled architecture | +12 | +3,161 (+0.71%) | **−0.637%** | only when the scaffold is not pooled |
+| Dual-scaffold 48q division | +12 | +606,974 (+136%) | +133.2% | no, by two orders of magnitude |
+| Mixed-polarity PDDD | 0 | −4 | −0.001% | immaterial |
+| `n_iters` 222 → 216 | 0 | re-verified worse | −4.11% (worse) | no |
+
+`scripts/test_dual_scaffold_dqi.py` prices the dual-scaffold option against the
+*reference* baseline, where the same +606,974 Toffolis is +10.6% of `T_mean` and
+the gate returns HALT. At the V6 target scale the identical overhead is +136%,
+so the HALT is not close — the script's baseline choice understates it.
+
+**Untested axis, disclosed:** decompositions outside the Davio/butterfly family
+that are neither per-node polarity nor a variable-order change — for example a
+non-uniform order inside one shared plan, or a non-uniform split tree — are not
+covered. The 4.4048% ceiling above applies to them too.
 
 ## 6. The contract
 
