@@ -28,10 +28,33 @@ technology can improve the number by being faster.
 |---|---|---|
 | invsqrt (Benchmark I) | `Q × toffoli_equivalent` = 89 × 1770.798661 = **157,601.08** | Depends only on qubit count and gate count. |
 | DQI (Benchmark II) | `R(ε₊) · Q² · T_mean` = **24.439 T** (reference) | Depends only on qubit count, gate count, failure probability. |
+| DFTHC-SOS (Benchmark III) | `λ_eff · T_total · Q_total` = 49.301369 × 93,237 × 730 = **3.3556 G** | `λ_eff` is derived from the DF-HC *mathematical* metrics (`error_1`, `Λ`, `E_SOS`), not from hardware. |
 
 A co-processor that made the whole pipeline run a thousand times faster would
 change the score by exactly zero. `apedp_dyn/quantum/dqi_photonic_resource.py`
 already establishes the same invariance for code distance L = 8, 16, 24.
+
+### 2.1 The non-submission artifact
+
+`python3 scripts/report_photonic_non_submission.py` writes
+`artifacts/quantum_compilation/photonic_non_submission.json`: the logical
+footprint of each champion, its sFFCC resource bill, its wall-clock time, and an
+explicit `submission_status: "NON_SUBMISSION"` with the reasons. The point of
+writing it down is that the resource bill is large and the score change is zero.
+
+| Benchmark | Q | T | score | wall clock/shot | QD emitters | fusions/shot |
+|---|---|---|---|---|---|---|
+| I - invsqrt | 89 | 1,770.8 | 157,601.1 | 4.69 ms | 136,704 | 1.16e10 |
+| II - DQI | 1,893 | 5,725,108.4 | `R·Q²·T` | 15.17 s | 2,907,648 | 1.36e12 |
+| III - DFTHC-SOS | 730 | 93,237 | 3.3556 G | 247 ms | 1,121,280 | 5.03e10 |
+
+(sFFCC at L = 16, 2.6496 µs per logical cycle, fusion success `η² = 0.8649`,
+retries modelled as `1/η²`. Emitters are 1,536 per logical qubit.)
+
+Every row is priced on the *same* logical circuit, so `score_delta` is 0.0 by
+construction rather than by measurement. The artifact is a cost statement, not a
+result: the verifiers take a compiled `.kmb`/`.kmx` artifact, and a resource
+estimate is not one. That is the whole reason it is labelled NON-SUBMISSION.
 
 ## 3. There is nothing here worth accelerating, measured
 
@@ -155,7 +178,8 @@ qubits (0.11% / 0.34% / 1.34% of `T_mean`). Applied to the open options:
 
 | Option | ΔQ | ΔT_mean/shot | Cost change | Pays for itself? |
 |---|---|---|---|---|
-| Halting-counter recycling (measured on m=15, n=6, GF(2⁴)) | 0 | −3,223 (−0.72%) | **−0.724%** | yes, if it holds at full scale |
+| Halting-counter recycling, counter only (measured up the ladder, §5.3) | 0 | −240 (−0.72% toy → −0.0118% full) | **−0.012%** | no — the saving is a constant 240 Toffolis while the circuit grows |
+| Halting-counter recycling as shipped (flag + counter) | 0 | +480 at full scale | **+0.024%** | no — it is a regression at every size |
 | Itoh–Tsujii 48q scaffold, pooled architecture | 0 | +3,161 (+0.71%) | +0.710% | no — `Q` is bounded by the persistent registers |
 | Itoh–Tsujii 48q scaffold, unpooled architecture | +12 | +3,161 (+0.71%) | **−0.637%** | only when the scaffold is not pooled |
 | Dual-scaffold 48q division | +12 | +606,974 (+136%) | +133.2% | no, by two orders of magnitude |
@@ -167,10 +191,54 @@ qubits (0.11% / 0.34% / 1.34% of `T_mean`). Applied to the open options:
 the gate returns HALT. At the V6 target scale the identical overhead is +136%,
 so the HALT is not close — the script's baseline choice understates it.
 
+### 5.3 The halting-counter saving does not survive the ladder
+
+`scripts/run_halt_recycling_scale.py` builds each variant and reads its Toffoli
+count, which is an exact property of the emitted circuit and needs no shots:
+
+| Instance | Reference | Counter only | Flag only | Both (as shipped) |
+|---|---|---|---|---|
+| m=15, n=6, GF(2⁴) | 33,258 | 33,018 (−240, −0.722%) | 33,618 (+360) | 33,378 (+120) |
+| m=63, n=10, GF(2⁶) | 68,051 | 67,811 (−240, −0.353%) | 68,411 (+360) | 68,171 (+120) |
+| m=255, n=14, GF(2⁸) | 131,576 | 131,336 (−240, −0.182%) | 132,056 (+480) | 131,816 (+240) |
+| m=1023, n=30, GF(2¹⁰) | 478,774 | 478,534 (−240, −0.050%) | 479,374 (+600) | 479,134 (+360) |
+| **m=4095, n=70, GF(2¹²)** | **2,033,345** | **2,033,105 (−240, −0.0118%)** | 2,034,065 (+720) | 2,033,825 (+480) |
+
+The −0.72% was real but it is a toy-instance number for the counter *alone*: the
+replacement removes exactly one fixed-width comparison per call site, so the
+saving is a constant 240 Toffolis at every instance while the reference grows to
+2,033,345. At the benchmark instance the option is worth −0.012%, which is 40×
+below the 0.498% a single qubit is worth. Recycling the flag on top of it *costs*
+Toffolis at every size measured (+360 to +720), so the shipped prototype is a
+regression. The toy score does move the right way and verifies
+(`scripts/run_halt_recycling_scale.py`: reference 2,374,832,368.039 → counter
+2,357,638,161.127, both PASS); the percentage is what does not scale.
+
 **Untested axis, disclosed:** decompositions outside the Davio/butterfly family
 that are neither per-node polarity nor a variable-order change — for example a
 non-uniform order inside one shared plan, or a non-uniform split tree — are not
 covered. The 4.4048% ceiling above applies to them too.
+
+### 5.4 The rotation overhead is irreducible, not untried
+
+The 44 priced rotations in the 89Q champion cost 315.299429 of the 1770.798661
+Toffoli-equivalent — 17.81% of the score, and by far the largest single term
+left. `scripts/search_rotation_merges.py` tests both ways to reduce it:
+
+- **Merge.** All 44 rotations sit on distinct qubits in one end-of-compute pass.
+  Seven qubits (73–76, 83–85) do carry a second rotation later, but between them
+  lie 3,130–3,148 circuit ops containing 75–192 gates that do not commute with a
+  Z rotation on that qubit (CSWAP writing data in, HMR measuring it out). Exact
+  mergeable pairs: **0**. Exact merges would have been free — a dyadic sum is
+  the same unitary, so the verified margin cannot move — but there are none.
+- **Truncate.** The smallest priced rotation is 2⁻³⁵ turns = 2.998e−11; the
+  entire remaining phase slack is 3.975e−12 turns. The smallest rotation is 7.5×
+  larger than all the slack that exists. Affordable drops: **0**.
+
+The design already runs its phase precision ~2 bits coarser than the tolerance
+would permit, so 315.299429 is a floor for this architecture, not a target that
+was never attacked. Removing even one rotation would have been worth 637.8 units
+(0.40%); there is no such rotation.
 
 ## 6. The contract
 

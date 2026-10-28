@@ -118,3 +118,83 @@ pytest tests/test_dyn_sparrow_deterministic_photonics.py -v
 * `test_passive_fusion_engine_and_ebf_timing`: **PASSED** (Eq. 7 timing inequality verified; passive $Z$-measurement conversion validated).
 * `test_sffcc_lattice_hardware_scaling`: **PASSED** (1,536 emitters, 2,241 saved elements, $2.65\ \mu\text{s}$ cycle time, $P_L < 10^{-6}$ verified).
 * `test_sparrow_fault_tolerance_referee`: **PASSED** (compliant hardware approved; 12% loss rejected with root-cause diagnostic).
+
+---
+
+## 7. DQI Workload Mapping (Benchmark II)
+
+**Module:** [`apedp_dyn/quantum/dqi_photonic_resource.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/quantum/dqi_photonic_resource.py)  
+**Tests:** [`tests/test_dyn_dqi_photonic_resource.py`](file:///home/psalmprax/ALL_PROJECTS/science/tests/test_dyn_dqi_photonic_resource.py)  
+**Status:** `experimental` (analytical projection only)
+
+This section prices the existing DQI decoder — synchronized Extended Euclidean
+Algorithm over $GF(2^{12})$, Chien search, Forney evaluation and their uncompute
+passes — against the sFFCC resource formulas in §4. It does **not** propose a new
+photonic decoder, and it does not touch the competition submission: the DQI
+candidate is a Kickmix circuit artifact adjudicated by the official verifier.
+
+### 7.1 Reference row
+
+| Quantity | Value |
+|---|---|
+| Logical qubits $Q$ | 1,893 |
+| Mean Toffoli-like operations $T_{\text{mean}}$ | 5,725,108.38 |
+| EEA iterations | 222 |
+| Per-patch emitters / detectors / active elements | 1,536 / 4,608 / 6,144 |
+| Encoded fusions per cycle (per patch) | 73,728 |
+| Total emitters / detectors / active elements | 2,907,648 / 8,722,944 / 11,630,592 |
+| Fusion success ($\eta^2$) | 0.8649, i.e. 1.156 retries per fusion |
+| Logical cycle / wall clock per shot at $L=16$ | 2.65 µs / ≈15.17 s |
+
+### 7.2 Why the mapping cannot improve the score
+
+The Benchmark II score is
+$$C = R(\epsilon_+) \cdot Q^2 \cdot T_{\text{mean}},$$
+which contains no timing term. The mapper verifies that the recomputed score is
+bit-identical at $L = 8, 16, 24$ while wall-clock scales linearly in $L$ and
+emitter count quadratically. A photonic platform therefore changes *how* the
+computation runs, not *what the competition measures*, unless it changes $Q$ or
+$T_{\text{mean}}$.
+
+### 7.3 Fault-tolerance caveat
+
+With the shipped default `SparrowHardwareSpec`, all eight Table 2 channels pass
+individually, but the consolidated normalized noise-budget load sums to ≈4.97.
+The referee therefore withholds `is_fault_tolerant`, and the mapper reports both
+the per-channel verdicts and the aggregate load instead of only the former.
+
+### 7.4 What would be needed to change the score
+
+Only a compiled DQI circuit with lower $Q$ or lower $T_{\text{mean}}$ can move
+the score — for example the Gluzdov V6 degree-register-recycling row, which is
+carried in this module strictly as an *unverified target*.
+
+### 7.5 Wall-clock and hardware composition vs. a stated superconducting baseline
+
+`DQIPhotonicResourceMapper.compare_platforms()` prices the same workload on both
+platforms. The superconducting side is a **caller-supplied assumption**
+(`SuperconductingBaseline(logical_cycle_seconds, physical_qubits_per_logical)`);
+the dataclass has no defaults because this repository does not model a
+superconducting machine, and a default would turn an assumption into a baseline.
+
+Reference workload, $L=16$, 1 µs logical cycle, 1,000 physical qubits per logical:
+
+| Quantity | sFFCC photonic | Superconducting (stated) |
+|---|---|---|
+| Logical cycle | 2.6496 µs | 1.0 µs |
+| Logical cycles per shot | 5,725,109 | 5,725,109 |
+| Wall clock per shot | ≈15.17 s | ≈5.73 s |
+| Physical devices / qubits | 23,261,184 | 1,893,000 |
+| Devices per logical qubit | ≈12,288 | 1,000 |
+| Official score ($R\,Q^2T$) | unchanged | unchanged |
+
+Two conclusions:
+
+1. At this operating point the photonic bill is **slower**, not faster, because
+   the sFFCC logical cycle is 2.65× the stated superconducting cycle. Any
+   "photonic speedup" claim for DQI would have to come from a shorter logical
+   cycle or fewer cycles, and would have to be measured, not assumed.
+2. Neither platform changes the score. The comparison is therefore about
+   wall-clock and hardware, not about winning the benchmark.
+
+Values are reproduced in `tests/test_dyn_dqi_photonic_resource.py`.

@@ -1,3 +1,32 @@
+## 2026-10-28 — Rotation overhead closed, halting-counter saving falsified, photonic artifact
+
+- **MEASURED (negative):** the 44 priced rotations in the 89Q invsqrt champion
+  cost 315.299429 of the 1770.798661 Toffoli-equivalent (17.81 % of the score)
+  and cannot be reduced. `scripts/search_rotation_merges.py`: 0 exact mergeable
+  pairs (all 44 sit on distinct qubits; the 7 qubits carrying a second rotation
+  have 75–192 non-commuting gates between the two), and 0 affordable drops (the
+  smallest rotation, 2⁻³⁵ = 2.998e-11 turns, is 7.5× the entire 3.975e-12-turn
+  phase slack). Recorded in `docs/PHOTONIC_ACCELERATOR_BOUNDARY.md` §5.4.
+- **FALSIFIED:** halting-counter recycling does not hold at scale.
+  `scripts/run_halt_recycling_scale.py` measures −240 Toffolis at every instance
+  (constant, because one fixed-width comparison per call site is removed):
+  −0.722 % on the toy m=15/n=6/GF(2⁴), −0.0118 % at the benchmark instance
+  m=4095/n=70/GF(2¹²) (2,033,345 → 2,033,105). The shipped prototype (flag +
+  counter) is a **regression** at every size measured (+480 at full scale). The
+  sFFCC table in `PHOTONIC_ACCELERATOR_BOUNDARY.md` §5.2 is corrected accordingly.
+- **NEW (non-submission):** `scripts/report_photonic_non_submission.py` prices all
+  three champions on the sFFCC lattice at L=16 and writes
+  `artifacts/quantum_compilation/photonic_non_submission.json` with
+  `submission_status: NON_SUBMISSION`, `score_delta: 0.0`, and the reasons: the
+  verifiers consume a compiled `.kmb`/`.kmx` artifact, and none of the three
+  score formulas contains a time, photon, fusion or detector term.
+- **NEW:** `docs/BENCHMARK_BREAKING_LITERATURE.md` — published techniques priced
+  against each benchmark's measured exchange rate (I: 89.0 units/Toffoli vs
+  1770.8/qubit; II: `R·Q²` vs `2RQT`; III: 35,990.0/Toffoli vs 4,596,711.8/qubit),
+  including the two techniques that provably cannot help (better Clifford+T
+  synthesis cannot move Benchmark I, whose rotation cost is the benchmark's own
+  formula of ε alone).
+
 ## 2026-10-27 — Stability selection utility + blind-benchmark PDE work
 
 - **NEW:** `apedp/stability_selection.py` — general stability-selection helper
