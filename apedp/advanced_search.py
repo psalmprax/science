@@ -21,6 +21,8 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any
 
+import numpy as np
+
 # Try to import Rust kernel
 try:
     import apedp_kernel
@@ -226,7 +228,13 @@ class ExpressionDag:
 
 
 class NGTSSearch:
-    """Neural Guided Tree Search with Rust acceleration."""
+    """Neural Guided Tree Search with Rust acceleration.
+
+    A simulation selects a leaf by UCT, asks the reward function what that leaf is
+    worth, and backpropagates.  There is no default value: with no reward function
+    the search cannot score a node, so :meth:`run_simulations` runs nothing and
+    returns 0 rather than recording a fabricated score.
+    """
 
     def __init__(self, root_expr: str = "x0"):
         self.root_expr = root_expr
@@ -234,10 +242,15 @@ class NGTSSearch:
             self._rust = apedp_kernel.NGTSSearch(root_expr)
         else:
             self._rust = None
-        self.nodes = {}
+        self.nodes = {0: {'expr': root_expr, 'parent': None, 'prior': 1.0,
+                          'children': [], 'depth': 0}}
         self.visits = defaultdict(int)
         self.values = defaultdict(float)
-        self.node_counter = 0
+        self.node_counter = 1
+        self.reward_fn = None
+        self.exploration_constant = 1.414
+        self.num_simulations = 1000
+        self.max_depth = 10
 
     def set_config(self, exploration_constant: float = 1.414,
                    num_simulations: int = 1000,
@@ -248,51 +261,93 @@ class NGTSSearch:
         self.num_simulations = num_simulations
         self.max_depth = max_depth
 
+    def _uct(self, child_id: int, parent_visits: int) -> float:
+        visits = self.visits[child_id]
+        if visits == 0:
+            return math.inf
+        exploitation = self.values[child_id] / visits
+        exploration = self.exploration_constant * math.sqrt(parent_visits) / (1.0 + visits)
+        return exploitation + exploration
+
     def select(self, node_id: int = 0) -> int:
         if self._rust is not None:
             return self._rust.select()
-        return node_id
+        node = self.nodes.get(node_id)
+        if not node or not node['children'] or self.visits[node_id] == 0:
+            return node_id
+        best_child = max(node['children'], key=lambda c: self._uct(c, self.visits[node_id]))
+        child = self.nodes[best_child]
+        if child['children'] and self.visits[best_child] > 0 and child['depth'] < self.max_depth:
+            return self.select(best_child)
+        return best_child
 
     def expand(self, node_id: int, actions: list[tuple[str, float]]):
         if self._rust is not None:
             actions_json = json.dumps([[expr, prior] for expr, prior in actions])
             self._rust.expand(node_id, actions_json)
             return
+        parent = self.nodes.get(node_id)
+        if parent is None or parent['depth'] >= self.max_depth:
+            return
         for expr, prior in actions:
             child_id = self.node_counter
             self.node_counter += 1
-            self.nodes[child_id] = {'expr': expr, 'parent': node_id, 'prior': prior}
+            self.nodes[child_id] = {'expr': expr, 'parent': node_id, 'prior': prior,
+                                    'children': [], 'depth': parent['depth'] + 1}
+            parent['children'].append(child_id)
 
     def backpropagate(self, node_id: int, value: float):
         if self._rust is not None:
             self._rust.backpropagate(node_id, value)
             return
-        self.visits[node_id] += 1
-        self.values[node_id] += value
+        node_id: int | None = node_id
+        while node_id is not None:
+            self.visits[node_id] += 1
+            self.values[node_id] += value
+            node_id = self.nodes.get(node_id, {}).get('parent')
+
+    def _best_child(self) -> int | None:
+        """Root child with the highest mean value, or None when nothing was scored."""
+        children = self.nodes.get(0, {}).get('children', [])
+        scored = [c for c in children if self.visits[c] > 0]
+        if not scored:
+            return None
+        return max(scored, key=lambda c: self.values[c] / self.visits[c])
 
     def best_expression(self) -> str | None:
         if self._rust is not None:
             return self._rust.best_expression()
-        if not self.values:
+        best_id = self._best_child()
+        if best_id is None:
             return self.root_expr
-        best_id = max(self.values.keys(), key=lambda k: self.values[k] / max(1, self.visits[k]))
-        return self.nodes.get(best_id, {}).get('expr', self.root_expr)
+        return self.nodes[best_id]['expr']
 
     def best_score(self) -> float:
         if self._rust is not None:
             return self._rust.best_score()
-        if not self.values:
+        best_id = self._best_child()
+        if best_id is None:
             return 0.0
-        best_id = max(self.values.keys(), key=lambda k: self.values[k] / max(1, self.visits[k]))
         return self.values[best_id] / self.visits[best_id]
 
-    def run_simulations(self, num_sims: int = 100) -> int:
+    def run_simulations(self, num_sims: int = 100, reward_fn=None) -> int:
+        """Run UCT simulations; returns how many actually ran.
+
+        ``reward_fn(expression) -> float`` is required, either here or as
+        ``self.reward_fn``.  Without one, no simulation can produce a value, so
+        none is run and 0 is returned.
+        """
+        fn = reward_fn if reward_fn is not None else self.reward_fn
         if self._rust is not None:
-            return self._rust.run_simulations(num_sims)
+            if fn is None:
+                return 0
+            return self._rust.run_simulations(num_sims, fn)
+        if fn is None:
+            return 0
         for _ in range(num_sims):
-            # Simple simulation
-            self.visits[0] += 1
-            self.values[0] += random.random() * 0.5
+            leaf = self.select(0)
+            value = float(fn(self.nodes[leaf]['expr']))
+            self.backpropagate(leaf, value)
         return num_sims
 
     def statistics(self) -> dict[str, Any]:
@@ -300,7 +355,7 @@ class NGTSSearch:
             stats_str = self._rust.statistics()
             return json.loads(stats_str)
         return {
-            "total_nodes": len(self.nodes) + 1,
+            "total_nodes": len(self.nodes),
             "root_visits": self.visits.get(0, 0),
         }
 
@@ -401,24 +456,82 @@ class ValidationPipeline:
         return (mean, math.sqrt(var))
 
     def validate(self, train_errors: list[float], test_error: float) -> dict[str, Any]:
+        """Score a candidate from its cross-validation and held-out errors.
+
+        ``generalization_gap`` is the measured difference between held-out and
+        cross-validation error, and ``generalization_score`` is its reciprocal
+        map: 1.0 when the held-out error matches cross-validation, falling as the
+        gap widens.  Neither is a lookup on a threshold.
+        """
         if self._rust is not None:
-            result_str = self._rust.validate(train_errors, test_error)
-            return json.loads(result_str)
+            result = json.loads(self._rust.validate(train_errors, test_error))
+            gap = test_error - result.get("cv_mean", 0.0)
+            result.setdefault("generalization_gap", gap)
+            result.setdefault("generalization_score", 1.0 / (1.0 + max(0.0, gap)))
+            return result
         cv_mean = sum(train_errors) / len(train_errors) if train_errors else 0.0
         cv_var = sum((e - cv_mean) ** 2 for e in train_errors) / len(train_errors) if train_errors else 0.0
         cv_std = math.sqrt(cv_var)
+        gap = test_error - cv_mean
         return {
             "cv_mean": cv_mean,
             "cv_std": cv_std,
+            "generalization_gap": gap,
             "ood_score": 1.0 / (1.0 + abs(test_error)),
             "stability_score": 1.0 / (1.0 + cv_std),
-            "generalization_score": 0.9 if test_error < cv_mean * 1.1 else 0.7,
+            "generalization_score": 1.0 / (1.0 + max(0.0, gap)),
             "overall": 0.4 * max(0, cv_mean - cv_std) + 0.2 / (1.0 + abs(test_error)) + 0.2 / (1.0 + cv_std) + 0.2 * 0.8,
         }
 
 
+_EXPR_FUNCS = {
+    "sin": np.sin, "cos": np.cos, "tan": np.tan, "exp": np.exp,
+    "log": np.log, "sqrt": np.sqrt, "tanh": np.tanh, "abs": np.abs,
+}
+
+
+def _evaluate_expression(expr: str, var_names: list[str], data: list[Any]):
+    """Evaluate an expression over the data columns, or return None.
+
+    Restricted to the variable names and the math functions in ``_EXPR_FUNCS``;
+    no builtins are reachable from the expression.
+    """
+    scope = dict(_EXPR_FUNCS)
+    for name, column in zip(var_names, data, strict=False):
+        scope[name] = np.asarray(column, float)
+    try:
+        with np.errstate(all="ignore"):
+            value = eval(expr, {"__builtins__": {}}, scope)  # noqa: S307 - closed namespace
+    except (SyntaxError, NameError, TypeError, ValueError, ZeroDivisionError, KeyError):
+        return None
+    try:
+        return np.asarray(value, float)
+    except (TypeError, ValueError):
+        return None
+
+
+def _r2_of(expr: str, var_names: list[str], data: list[Any], target: Any) -> float | None:
+    """Coefficient of determination of ``expr`` against ``target``, or None if unscorable."""
+    y = np.asarray(target, float).ravel()
+    pred = _evaluate_expression(expr, var_names, data)
+    if pred is None:
+        return None
+    pred = np.broadcast_to(pred, y.shape).ravel() if pred.ndim == 0 else pred.ravel()
+    if pred.size != y.size or not np.all(np.isfinite(pred)):
+        return None
+    sst = float(np.sum((y - y.mean()) ** 2))
+    if sst <= 0.0:
+        return None
+    return 1.0 - float(np.sum((y - pred) ** 2)) / sst
+
+
 class HierarchicalSearch:
-    """Hierarchical search: coarse -> mid -> fine."""
+    """Hierarchical search: coarse -> mid -> fine.
+
+    Candidates are scored on the data they were proposed for.  A candidate that
+    cannot be evaluated on that data is dropped rather than carried with a
+    default error, so nothing downstream validates an unmeasured expression.
+    """
 
     def __init__(self, physics_engine: PhysicsConstraintEngine | None = None):
         self.physics_engine = physics_engine or PhysicsConstraintEngine()
@@ -428,33 +541,48 @@ class HierarchicalSearch:
 
     def search(self, X, y, budget: int = 1000,
                variable_names: list[str] | None = None) -> list[dict[str, Any]]:
-        """Run hierarchical search."""
+        """Run hierarchical search, scoring every candidate on ``(X, y)``."""
+        array = np.asarray(X, float)
+        if array.ndim == 1:
+            array = array.reshape(-1, 1)
         if variable_names is None:
-            variable_names = [f"x{i}" for i in range(X.shape[1] if hasattr(X, 'shape') else len(X[0]))]
+            variable_names = [f"x{i}" for i in range(array.shape[1])]
+        data = [array[:, i] for i in range(array.shape[1])]
+        target = np.asarray(y, float)
 
         results = []
         # Phase 1: Coarse search (Bayesian optimization over templates)
-        coarse_candidates = self._coarse_search(variable_names, int(budget * 0.2))
-        results.extend(coarse_candidates)
-
+        results.extend(self._coarse_search(variable_names, int(budget * 0.2)))
         # Phase 2: Mid search (transformer-guided beam search)
-        mid_candidates = self._mid_search(coarse_candidates, variable_names, int(budget * 0.3))
-        results.extend(mid_candidates)
-
+        results.extend(self._mid_search(self._coarse_search(variable_names, int(budget * 0.2)),
+                                        variable_names, int(budget * 0.3),
+                                        data=data, target=target))
         # Phase 3: Fine search (local search around best)
-        fine_candidates = self._fine_search(mid_candidates, variable_names, int(budget * 0.5))
-        results.extend(fine_candidates)
+        results.extend(self._fine_search(results[-3:] if results else [], variable_names,
+                                         int(budget * 0.5), data=data, target=target))
 
-        # Validate all
         validated = []
+        seen = set()
         for cand in results:
-            validation = self.validator.validate([cand.get('train_error', 0.1)] * 5, 
-                                                 cand.get('test_error', 0.15))
-            cand['validation'] = validation
-            cand['overall_score'] = validation['overall']
+            expr = cand["expression"]
+            if expr in seen:
+                continue
+            r2 = _r2_of(expr, variable_names, data, target)
+            if r2 is None:  # unscorable on this data: not evidence, so not a result
+                continue
+            seen.add(expr)
+            held_out_error = max(0.0, 1.0 - r2)
+            validation = self.validator.validate([held_out_error] * self.validator.k_folds,
+                                                 held_out_error)
+            cand = dict(cand)
+            cand["r2"] = r2
+            cand["train_error"] = held_out_error
+            cand["test_error"] = held_out_error
+            cand["validation"] = validation
+            cand["overall_score"] = validation["overall"]
             validated.append(cand)
 
-        validated.sort(key=lambda x: x['overall_score'], reverse=True)
+        validated.sort(key=lambda x: x["overall_score"], reverse=True)
         return validated
 
     def _coarse_search(self, var_names: list[str], budget: int) -> list[dict[str, Any]]:
@@ -475,27 +603,48 @@ class HierarchicalSearch:
             })
         return candidates
 
-    def _mid_search(self, seeds: list[dict[str, Any]], var_names: list[str], budget: int) -> list[dict[str, Any]]:
-        candidates = []
-        self.ngts.set_config(num_simulations=budget)
+    def _mid_search(self, seeds: list[dict[str, Any]], var_names: list[str], budget: int,
+                    data: list[Any] | None = None,
+                    target: Any = None) -> list[dict[str, Any]]:
+        """Expand seeds and keep the expansions that actually fit the data."""
+        if data is None or target is None or budget <= 0:
+            return []
+        scored: list[dict[str, Any]] = []
+        seen: set[str] = set()
         for seed in seeds[:5]:
             expr = seed['expression']
-            self.ngts.expand(0, [(f"{expr} + x0*0.1", 0.2), (f"sin({expr})", 0.15), (f"{expr}**2", 0.15)])
-        self.ngts.run_simulations(budget)
-        best = self.ngts.best_expression()
-        if best:
-            candidates.append({'expression': best, 'phase': 'mid', 'complexity': best.count('+') + best.count('*')})
-        return candidates
+            for expanded in (f"{expr}**2", f"{expr}*2", f"2*{expr}",
+                             f"sin({expr})", f"{expr}+1"):
+                if expanded in seen:
+                    continue
+                seen.add(expanded)
+                r2 = _r2_of(expanded, var_names, data, target)
+                if r2 is None or not math.isfinite(r2):
+                    continue
+                scored.append({'expression': expanded, 'phase': 'mid', 'r2': r2,
+                               'complexity': expanded.count('+') + expanded.count('*') + expanded.count('(')})
+        scored.sort(key=lambda c: c['r2'], reverse=True)
+        return scored[:budget]
 
-    def _fine_search(self, seeds: list[dict[str, Any]], var_names: list[str], budget: int) -> list[dict[str, Any]]:
-        candidates = []
+    def _fine_search(self, seeds: list[dict[str, Any]], var_names: list[str], budget: int,
+                     data: list[Any] | None = None,
+                     target: Any = None) -> list[dict[str, Any]]:
+        """Local perturbations around the seeds, scored on the data."""
+        if data is None or target is None or budget <= 0:
+            return []
+        scored: list[dict[str, Any]] = []
+        var = var_names[0] if var_names else 'x0'
         for seed in seeds[:3]:
             expr = seed['expression']
-            # Local perturbations
-            for _i in range(min(budget // 3, 10)):
-                perturbed = f"({expr}) * (1.0 + 0.01*{var_names[0] if var_names else 'x0'})"
-                candidates.append({'expression': perturbed, 'phase': 'fine', 'complexity': seed.get('complexity', 1) + 3})
-        return candidates
+            for variant in (expr, f"({expr})*(1.0+0.01*{var})",
+                            f"({expr})+0.01*{var}", f"({expr})*1.0"):
+                r2 = _r2_of(variant, var_names, data, target)
+                if r2 is None or not math.isfinite(r2):
+                    continue
+                scored.append({'expression': variant, 'phase': 'fine', 'r2': r2,
+                               'complexity': seed.get('complexity', 1) + 2})
+        scored.sort(key=lambda c: c['r2'], reverse=True)
+        return scored[:budget]
 
 
 # Convenience functions

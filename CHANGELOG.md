@@ -1,3 +1,30 @@
+## 2026-10-28 — Search engines score on data, and NGTS runs UCT or nothing
+
+- **MEASURED, not defaulted:** `ValidationPipeline.validate` now reports
+  `generalization_gap` (held-out minus cross-validation error) and derives
+  `generalization_score` from it as `1/(1+gap)`. The old score was a lookup — 0.9 below
+  a threshold, 0.7 above — so it reported a number the data could not move.
+- **No fabricated evidence:** `NGTSSearch.run_simulations` runs UCT and calls a reward
+  function for each selected leaf. With no reward function it runs **zero** simulations
+  and returns 0; it previously returned `num_sims` and backpropagated
+  `random.random()*0.5`, i.e. reported search work it had not done. The Rust kernel had
+  the same defect in `ngts.rs` (`rand_simple` values) and now takes the reward callable
+  in `run_simulations(num_sims, reward=None)`.
+- **Hierarchical phases score what they propose:** `_mid_search` / `_fine_search` take
+  `data`/`target`, evaluate each expansion on the data, and return nothing when there is
+  no data. `HierarchicalSearch.search` attaches a measured `r2` to every candidate and
+  **drops** candidates it cannot evaluate; it used to validate every candidate against
+  default `train_error=0.1 / test_error=0.15`, so an unmeasured expression carried a
+  validation score.
+- **Ensemble reports what it cannot run:** a proposer outside `ProposerRouter`'s map is
+  `status: error` instead of a planned member, and `best` is present and `None` until a
+  member returns a scored candidate.
+- **Determinism:** `beam_search_expressions` no longer consumes `seed` for sampling; two
+  seeds return the same list, and level 1 pairs atoms with each other so multi-variable
+  forms appear immediately.
+- **Verified:** `tests/test_search_engines_real.py` 13 passed (was 12 of 13 failing);
+  related suites 58 passed / 2 skipped / 1 xfailed.
+
 ## 2026-10-28 — Scratch pool measured dead: 25-qubit ceiling, and the allocator claim withdrawn
 
 - **MEASURED** on the pinned Benchmark II instance (`scripts/measure_dqi_scratch_pool.py`,
