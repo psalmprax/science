@@ -1,0 +1,115 @@
+{
+  "source": "measured from the reference Proos-Zalka decoder via kickmix",
+  "instance": {
+    "n_syndromes": 70,
+    "degree": 12,
+    "positions": 4095
+  },
+  "primitives_per_call": {
+    "multiply_by_constant": 0.0,
+    "divide_by_constant": 0.0,
+    "quantum_multiply": 63.0,
+    "inverse_scaffold_pair": 315.0,
+    "divide_scaffold_pair": 378.0
+  },
+  "slopes": {
+    "toffoli_iter2_err255": 192697,
+    "toffoli_iter4_err255": 227113,
+    "toffoli_iter2_err511": 282553,
+    "per_iteration": 17208.0,
+    "per_position": 351.0,
+    "qubits_at_benchmark_widths": 1887
+  },
+  "derived": {
+    "forney_inversion_total": {
+      "toffoli": 1289925.0,
+      "share_of_T_mean_percent": 22.53,
+      "multiple_of_entire_target_T": 2.9
+    },
+    "ceilings_if_phase_became": {
+      "one_multiply_per_position": 1.2594,
+      "free": 1.3352
+    },
+    "target_factor_required": 12.8588,
+    "batch_inversion": [
+      {
+        "block": 2,
+        "toffoli_per_position": 346.5,
+        "toffoli_saved": -128992.5,
+        "qubits_added": 24,
+        "qubit_cost": 145169.2,
+        "net_toffoli_equivalents": -274161.7,
+        "score_ratio": 1.04862,
+        "pays": false
+      },
+      {
+        "block": 4,
+        "toffoli_per_position": 267.8,
+        "toffoli_saved": 193488.8,
+        "qubits_added": 48,
+        "qubit_cost": 290338.3,
+        "net_toffoli_equivalents": -96849.6,
+        "score_ratio": 1.01582,
+        "pays": false
+      },
+      {
+        "block": 8,
+        "toffoli_per_position": 228.4,
+        "toffoli_saved": 354729.4,
+        "qubits_added": 96,
+        "qubit_cost": 580676.6,
+        "net_toffoli_equivalents": -225947.2,
+        "score_ratio": 1.03559,
+        "pays": false
+      },
+      {
+        "block": 16,
+        "toffoli_per_position": 208.7,
+        "toffoli_saved": 435349.7,
+        "qubits_added": 192,
+        "qubit_cost": 1161353.2,
+        "net_toffoli_equivalents": -726003.5,
+        "score_ratio": 1.12089,
+        "pays": false
+      },
+      {
+        "block": 32,
+        "toffoli_per_position": 198.8,
+        "toffoli_saved": 475659.8,
+        "qubits_added": 384,
+        "qubit_cost": 2322706.4,
+        "net_toffoli_equivalents": -1847046.6,
+        "score_ratio": 1.32665,
+        "pays": false
+      },
+      {
+        "block": 64,
+        "toffoli_per_position": 193.9,
+        "toffoli_saved": 495814.9,
+        "qubits_added": 768,
+        "qubit_cost": 4645412.8,
+        "net_toffoli_equivalents": -4149597.9,
+        "score_ratio": 1.80488,
+        "pays": false
+      },
+      {
+        "block": 128,
+        "toffoli_per_position": 191.5,
+        "toffoli_saved": 505892.5,
+        "qubits_added": 1536,
+        "qubit_cost": 9290825.6,
+        "net_toffoli_equivalents": -8784933.2,
+        "score_ratio": 2.99127,
+        "pays": false
+      }
+    ],
+    "batch_inversion_ever_pays": false,
+    "qubit_price_toffoli_equivalents": 6048.71,
+    "qubit_floor": {
+      "persistent_registers": 1752,
+      "measured": 1887,
+      "transient_headroom": 135,
+      "target_reduction": 104
+    }
+  }
+}

@@ -2356,6 +2356,7 @@ over all 10,320,960 order/polarity pairs; 1 qubit costs 9.95 nodes).
 | [`scripts/test_viable_optimization_path.py`](../scripts/test_viable_optimization_path.py) | Verifies the 36-node shared-plan parameters that `scripts/search_claims_pddd.c` reports | `audit-only` |
 | [`scripts/instrument_invsqrt_trace.py`](../scripts/instrument_invsqrt_trace.py) | Traces per-shot Toffoli/phase statistics behind the invsqrt margin numbers | `audit-only` |
 | [`scripts/instrument_calibrated_trace.py`](../scripts/instrument_calibrated_trace.py) | Calibrated-variant trace instrument used for the same margin accounting | `audit-only` |
+| [`scripts/measure_dqi_primitive_costs.py`](../scripts/measure_dqi_primitive_costs.py) | Recovers the Benchmark II cost structure by measurement (per-call primitive costs, per-iteration and per-position slopes) and derives the optimisation ceilings; record in `benchmarks/quantum_compilation/dqi_primitive_costs.json` | `audit-only` |
 
 **Interpreter requirement:** all seven import `kickmix`, a compiled extension.
 They only run under the Python that extension was built against; a mismatched

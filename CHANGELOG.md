@@ -1,3 +1,33 @@
+## 2026-10-28 — Benchmark II cost structure measured; two of my own optimisations falsified
+
+- **MEASURED:** `scripts/measure_dqi_primitive_costs.py` recovers the DQI Toffoli
+  breakdown, since `kickmix` exposes none. Per-call at GF(2¹²): `gf2_imul` and
+  `gf2_idiv` **0** (CNOT-only linear maps), `ixor_gf2_mul` 63, Itoh–Tsujii
+  inversion 315 = 5 × 63, scaffold division 378. Slopes at the benchmark widths:
+  17,208 Toffoli per EEA iteration, 351 per Chien/Forney position.
+- **FALSIFIED (mine):** "composite-field/Karatsuba cuts constant-multiplier cost
+  30–50%" — there is nothing to cut. Multiply and divide by a constant are already
+  0 Toffoli. The only multiplier that costs anything is quantum × quantum, and 63
+  at degree 12 is already better than a naive schoolbook count.
+- **FALSIFIED (mine):** Montgomery batch inversion of the Forney denominators. It
+  needs 3 multiplications per element, so it can recover at most 2/5 of an
+  inversion; at this repo's marginal qubit price 2T/Q = 6,048.7 Toffoli-equivalents
+  per qubit, and 12 qubits per batched element, **every block size loses** (best
+  B=4: 193,489 saved vs 290,338 spent, score ratio 1.021 — worse).
+- **BOUND (new):** the Forney step inverts once per position
+  (`dqi_reference_circuit.py:579`), so 4,095 × 315 = **1,289,925 Toffolis = 22.5%
+  of `T_mean`, and 2.90× the entire 445,229 target** before any EEA iteration runs.
+  Ceilings with `Q` unchanged: 1.259× if a position cost one multiply, 1.335× if
+  the phase were free — against 12.86× required. The target is unreachable for this
+  architecture, not merely unreceipted.
+- **Q floor:** 1,887 measured = 1,752 persistent (`2 × 73 × 12`, both frozen) + 135
+  transient. The claimed −104 is 77% of all transient qubits, and the live peak is
+  EEA round scratch inside `_multiply_and_add_or_sub`; the `n_a`/`n_b` recycling
+  the V6 row names frees 16.
+- **Verified:** `tests/test_dqi_primitive_costs.py` 7 passed / 1 skipped; the
+  skipped re-measurement was run by hand under the kickmix interpreter and
+  reproduces the record exactly. Recorded in `docs/PHOTONIC_ACCELERATOR_BOUNDARY.md` §5.5.
+
 ## 2026-10-28 — Riemann off-line scan scoping fixed; August batch screened for Benchmark II
 
 - **FIXED (integrity):** `rust/riemann_verifier` built its off-line critical-strip grid

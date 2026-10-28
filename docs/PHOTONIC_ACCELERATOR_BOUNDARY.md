@@ -240,6 +240,59 @@ would permit, so 315.299429 is a floor for this architecture, not a target that
 was never attacked. Removing even one rotation would have been worth 637.8 units
 (0.40%); there is no such rotation.
 
+### 5.5 Where the DQI Toffolis are, and the ceiling that puts on the target
+
+Benchmark II's `T_mean` has no published cost breakdown, and `kickmix` exposes no
+per-stage accounting, so `scripts/measure_dqi_primitive_costs.py` recovers one by
+measurement: per-call primitive costs by differencing 1 vs 4 calls, then the EEA
+(per iteration) and Chien/Forney (per position) slopes at the benchmark widths.
+Record: `benchmarks/quantum_compilation/dqi_primitive_costs.json`.
+
+| Primitive at GF(2¹²) | Toffoli per call |
+|---|---|
+| `gf2_imul` / `gf2_idiv` (multiply or divide *by a constant*) | **0** — CNOT-only linear maps |
+| `ixor_gf2_mul` (quantum × quantum) | 63 |
+| `init+del gf2_inverse_with_scaffold` (Itoh–Tsujii) | 315 = 5 × 63 |
+| `init+del gf2_div_with_scaffold` | 378 |
+
+**The 22.5% in a single primitive.** The Forney step inverts `sigma_prime` once
+per position — `dqi_reference_circuit.py:579`, inside `for j in range(num_positions)`.
+At 4,095 positions that is 4,095 × 315 = **1,289,925 Toffolis, 22.5% of `T_mean`**.
+The 69 constant multiplications per position cost nothing, and the inversion is
+already the optimal Itoh–Tsujii (5 multiplications). So the phase is 1,289,925 —
+**2.90× the entire 445,229 target** — before a single EEA iteration runs.
+
+Ceilings, if that phase were optimised to its limit with `Q` unchanged:
+
+| If the Forney phase became | `T_mean` | Score factor |
+|---|---|---|
+| one multiply per position | 4,545,748 | 1.259× |
+| free | 4,435,183 | 1.335× |
+| *(needed)* | *445,229* | ***12.86×*** |
+
+**Batch (Montgomery) inversion, tested and rejected.** It replaces B inversions
+with 1 inversion + 3B multiplications: 3×63 + 315/B per element instead of 315.
+At this repository's own marginal qubit price `2T/Q` = 6,048.7 Toffoli-equivalents
+per qubit, and 12 qubits per batched element, every block size loses — best case
+B=4: 193,489 Toffolis saved against 290,338 qubit-equivalents spent, and because
+`Q` enters squared the score gets **worse** (ratio 1.021). The economics are the
+point: an inversion is 5 multiplications, so a scheme needing 3 multiplications
+per element can save at most 2/5 of it, and one qubit costs ~96 multiplications.
+
+**The qubit target.** `Q` = 1,887 measured = 1,752 persistent registers
+(`2 × 73 × 12`, both factors frozen by the instance) + 135 transient
+scratch/controls/counters. The −104 the V6 row claims is **77% of every transient
+qubit in the circuit**, and the live peak sits inside `_multiply_and_add_or_sub`
+(reached from `_synchronized_eea`), i.e. EEA round scratch. A shared scratch pool
+is the only mechanism that could move it; the `n_a`/`n_b` recycling the projection
+names frees 16.
+
+**Conclusion.** The 12.86× target is not held back by a missing receipt. One phase
+of the reference decoder, doing what the algorithm requires at the frozen instance,
+already costs 2.90× the whole target. Any T_mean claim below ~1.29M needs a
+decoder that does not invert at every position — a different algorithm against a
+different instance, not an optimisation of this one.
+
 ## 6. The contract
 
 **An external accelerator may propose.** Candidate Boolean orderings, candidate
