@@ -24,14 +24,37 @@ The Track 3 candidate portfolio remains sealed and immutable at geometric mean s
 
 | Candidate | Configuration | Official Verifier Evidence | Cost ($C_1 = Q \cdot C$) | Decision |
 |---|---|---|---|---|
-| **90Q Affine-Optimized** | Chebyshev minimax + affine LP calibration | Compiled `.kmb`, official `PASS`, 200,540,928 shots | **$157,752.01$** | **Retain as Champion** |
-| **SABLE-90 (89Q/88Q)** | Reduced qubit variants | Compiled `.kmb`, higher Toffoli count | $> 158,000.00$ | Reject |
+| **SABLE-89 shared-PDDD** | 11-node coarse6 + 28-node curve4..6 shared multi-output PDDD | Compiled `.kmb` (`ce04c9d5…`), official `PASS`, 200,540,928 shots, $T_{\text{mean}} = 1455.499$, max $1466$, worst error/tolerance $0.999623$ | **$157,601.08$** | **Champion (pinned)** |
 | **FAROS-R1** | Nonuniform segmentation ($h(M) \sim M^{7/6}$, 96 intervals) | Mathematical error ratio 0.88412 < 1.0; 7-stage comparator tree ($T \ge 1770, Q \ge 96$) | **$\ge 199,177.92$** | Reject (Resources) |
 | **FAROS-R2 (11-bit)** | Truncated 11-bit residual | Mathematical failure on $x=3133452$, error ratio 40.218 | N/A (Invalid) | Reject (Math Error) |
 | **FAROS-R2 (15-bit)** | Exact 15-bit residual | Mathematical error ratio 0.9628 < 1.0; Horner adders $+80$ Toffolis, QROM $-64$ Toffolis | **$159,191.95$** | Reject (Resources) |
 | **FAROS-R3** | Direct phase decomposition (unstructured Walsh basis) | Compiled 74Q proxy fails on shot 1 ($x=1$, phase error $0.125$ turns vs tol $5.96 \times 10^{-8}$) | $> 6.4 \times 10^8$ (est.) | Reject (Proxy Failure) |
 
+**Champion provenance.** The pinned row is
+`artifacts/quantum_compilation/invsqrt/invsqrt_89q_shared_pddd_full_receipt.json`
+(`status: PASS`, `score: 157601.08082916017`, `num_qubits: 89`,
+`toffoli_count: 1455.4992321866587`, `toffoli_equivalent: 1770.7986610017997`,
+`verified_shots: 200540928`, `worst_error_over_tolerance: 0.9996227434818049`,
+`circuit_sha256: ce04c9d54…`). The arithmetic closes exactly:
+$89 \times (1455.499232 + 315.299429) = 157{,}601.0808$.
+
+#### Retired rows (retained for audit, not deleted)
+
+| Row | Recorded result | Why retired |
+|---|---|---|
+| 90Q Affine-Optimized | `PASS`, $C_1 = 157,752.008809$ | Same verifier status, $+150.93$ cost units above the 89Q champion. |
+| SABLE-90 (89Q/88Q) | $> 158,000.00$ | Applied to the SABLE-90 *variant* builds, not to the shared-PDDD synthesis; superseded by the 89Q row above. |
+
+These rows stay on the record so the champion's margin remains checkable. Removing
+rejected rows would destroy the evidence for why they were rejected.
+
 ### 1.2 Reconciliation of FAROS-R2 Cost Arithmetic
+
+> **Basis update (2026-10-28).** The reconciliation below was computed against the
+> then-champion 90Q row ($157,752.008809$). The pinned incumbent is now the 89Q
+> shared-PDDD circuit at $157,601.080829$. The rejection *conclusions* are
+> unchanged and every margin grows: FAROS-R2 15-bit now exceeds the champion by
+> $+1,590.87$ ($+1.01\%$) instead of $+1,439.94$.
 
 In earlier drafts, the FAROS-R2 15-bit residual cost was presented as:
 $$C_1 = 90 \times (1453.50 + 316.04) = 159,190.00$$
@@ -49,7 +72,7 @@ To reconcile this from the ground-truth scoring function in `verify_submission_i
     $$C_{1,\text{exact}} = 90 \times (1,453.500669 + 315.299429) = 90 \times 1,768.800098 = \mathbf{159,192.01}$$
   - Using standard two-decimal reporting ($1,453.50$ Toffolis):
     $$C_1 = 90 \times (1,453.50 + 315.2994) = \mathbf{159,191.95}$$
-Both figures strictly exceed the 90Q champion ($157,752.01$) by $+1,439.94$ to $+1,440.00$ cost units ($+0.91\%$), confirming resource rejection. The previous $316.04$ figure was a display typo; $315.2994$ is the exact reproducible non-Toffoli component.
+Both figures strictly exceed the former 90Q champion ($157,752.01$) by $+1,439.94$ to $+1,440.00$ cost units ($+0.91\%$), and the pinned 89Q champion ($157,601.08$) by $+1,590.87$ ($+1.01\%$), confirming resource rejection. The previous $316.04$ figure was a display typo; $315.2994$ is the exact reproducible non-Toffoli component.
 
 ### 1.3 Reconciliation of FAROS-R1 Cost Lower Bound
 
@@ -62,17 +85,20 @@ Recomputing the rigorous lower bound from the official scoring formula:
 - Reconciled lower cost bounds:
   $$\text{Executed Mean Bound: } C_1 \ge 96 \times (1,759.47 + 315.30) = \mathbf{199,177.92}$$
   $$\text{Static Upper Bound: } C_1 \ge 96 \times (1,770.00 + 315.30) = \mathbf{200,188.80}$$
-This corrects the erroneous $174,050.00$ figure. The rejection margin over 90Q widens from $+16,298$ to $+41,425.91$ cost units ($+26.3\%$).
+This corrects the erroneous $174,050.00$ figure. The rejection margin over the
+former 90Q champion widens from $+16,298$ to $+41,425.91$ cost units ($+26.3\%$);
+against the pinned 89Q incumbent ($157,601.080829$) the margin is
+$+41,576.84$ cost units ($+26.4\%$).
 
-### 1.4 Epistemic Scoping of R3 Rejection and 90Q Champion Status
+### 1.4 Epistemic Scoping of R3 Rejection and Champion Status
 
 1. **Scope of FAROS-R3 Rejection:**  
    The rejection of FAROS-R3 is strictly scoped to the **unstructured Walsh–Hadamard basis expansion** and the concrete compiled 74-qubit proxy circuit (`invsqrt_faros_r3_74q.kmb`).  
    - Analysis proves that decomposing the nonlinear $1/\sqrt{x}$ singularity across $\{0, 1\}^{22}$ in an unstructured Walsh basis has full spectral rank $2^{22} = 4,194,304$ non-zero terms, requiring $> 2.9 \times 10^7$ Toffoli equivalents.
    - The tested proxy circuit with 48 single-qubit phase rotations fails on $x=1$ with phase error $0.125$ turns (exceeding tolerance $5.96 \times 10^{-8}$ by $> 2,000,000\times$).
    - **Epistemic Qualification:** This establishes that the tested proxy is invalid and that an unstructured expansion is unmaterializable. It does **not** prove that every possible structured direct-phase synthesis method is mathematically impossible.
-2. **Scope of 90Q Champion Status:**  
-   The 90Q affine-optimized circuit is the **best-known verified result among configurations tested to date** within the APEDP-Q / SABLE search space. It is **not** an analytical global mathematical optimum across all possible quantum circuits for 22-bit reversible inverse square root synthesis.
+2. **Scope of Champion Status:**  
+   The 89Q shared-PDDD circuit is the **best-known verified result among configurations tested to date** within the APEDP-Q / SABLE search space. It is **not** an analytical global mathematical optimum across all possible quantum circuits for 22-bit reversible inverse square root synthesis. Its worst error-to-tolerance ratio is $0.999623$, so any further approximation change has essentially no headroom: a candidate must reduce executed Toffolis without moving that ratio across $1.0$.
 
 ---
 
@@ -116,7 +142,16 @@ Reaching the $1.698 \times 10^{12}$ target requires structural architectural cha
 - **Resource Scaling Analysis:**
   $$\left(\frac{1,789}{1,893}\right)^2 \times \left(\frac{445,229}{5,725,108}\right) \approx 0.8931 \times 0.07776 \approx 0.06945 = \frac{1}{14.398} \approx 14.396\times$$
 - **Current Repository Status:**  
-  `apedp_dyn/quantum_compilation/dqi_builder.py` is currently a wrapper around `dqi_reference_circuit.ProosAndZalkaDecoder`. The Gluzdov V6 decoder architecture is **not yet implemented**. Implementing it is the immediate engineering priority for Benchmark II.
+  `apedp_dyn/quantum_compilation/dqi_builder.py` defaults to the reference
+  `dqi_reference_circuit.ProosAndZalkaDecoder` and now also dispatches to
+  `architecture="gluzdov_v6"`, which reaches the scaffold in
+  `apedp_dyn/quantum_compilation/dqi_gluzdov_v6.py`. That scaffold emits register
+  recycling and uncompute bookkeeping but does **not** implement the EEA,
+  Chien search, or Forney evaluation, so it is not yet a decoder. The
+  mathematical decoder (`GluzdovV6Decoder`) is simulation-only. The $14.396\times$
+  factor therefore remains a **target pending a compiled `.kmb` and an official
+  verifier receipt**; nothing in the repository has produced it. Implementing
+  the EEA pass-by-pass is the immediate engineering priority for Benchmark II.
 
 ---
 
@@ -190,11 +225,15 @@ An audit of the external chemistry architecture claim reveals an arithmetic disc
 
 | Benchmark | Current Verified Track 3 Baseline | Current Verified Factor | Target Research Factor | Target Cost | Implementation Status |
 |---|---|---|---|---|---|
-| **I: `invsqrt`** | $157,752.01$ | **$13.164804\times$** | $13.164804\times$ | $157,752.01$ | **COMPLETED & VERIFIED** (90Q Affine Champion) |
+| **I: `invsqrt`** | $157,601.08$ | **$13.177411\times$** | $13.177411\times$ | $157,601.08$ | **COMPLETED & VERIFIED** (89Q shared-PDDD champion) |
 | **II: `dqi`** | $24.439 \times 10^{12}$ | **$1.000\times$** | $14.396\times$ | $1.698 \times 10^{12}$ | **PENDING** (Gluzdov V6 architecture needed; sweep alone fails) |
 | **III: `dfthcsos`** | $3.356 \times 10^9$ | **$1.000\times$** | $1.580\times$ | $2.124 \times 10^9$ | **PENDING** (Signed 4-bank tables verified; `.kmb` compiler needed; 4,363 discrepancy audit) |
 | **Portfolio $S$** | **$2.3612$** | — | **$6.690$** | — | Track 3 Sealed; awaiting independent II & III receipts |
 
 ### Conclusion & Operational Rules
-1. The 90Q affine-optimized circuit remains the verified champion for Benchmark I. FAROS-R1, FAROS-R2, and SABLE-90 (89Q/88Q) are formally terminated as active contenders.
+1. The 89Q shared-PDDD circuit is the verified champion for Benchmark I at
+   $C_1 = 157{,}601.080829$ (official `PASS`, 200,540,928 shots, circuit SHA-256
+   `ce04c9d5…`). The 90Q affine build and the SABLE-90 variant builds are
+   retired; FAROS-R1, FAROS-R2, and FAROS-R3 remain terminated as active
+   contenders.
 2. In accordance with the Three-Role Protocol and Anti-Snooping Holdout Discipline, the portfolio score $S = 2.3612$ will remain unmodified until physical `.kmb` binaries for Benchmarks II and III pass official verifiers under fresh seeds.

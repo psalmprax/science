@@ -1,3 +1,19 @@
+## 2026-10-28 — Portfolio synthesis names the real Benchmark I incumbent
+
+- **CORRECTED:** `docs/invsqrt_frontier_and_portfolio_synthesis.md` still named the
+  retired 90Q affine build ($157,752.008809$) as champion and carried a Benchmark I
+  factor of 13.164804×. The pinned incumbent is the 89Q shared-PDDD circuit
+  (`PASS`, 200,540,928 shots, `ce04c9d5…`) at $C_1 = 157,601.080829$, i.e.
+  **13.177411×**. The retired rows (90Q affine, SABLE-90) are kept on the record
+  with the reason each was retired rather than deleted, so the champion's margin
+  stays checkable.
+- **Recorded:** the FAROS-R1/R2/R3 rejection margins are re-stated against the
+  89Q basis (R2 15-bit now +1,590.87 / +1.01 %, R1 +41,576.84 / +26.4 %); every
+  rejection conclusion is unchanged and every margin grows.
+- **Disclosed:** Benchmark I's worst error/tolerance is 0.999623, so 0.0377 % of
+  the phase budget is unused — less than a single rotation is worth (see the
+  rotation ledger in `PHOTONIC_ACCELERATOR_BOUNDARY.md` §5.4).
+
 ## 2026-10-28 — Gluzdov V6 stops claiming a result it never had
 
 - **FABRICATION REMOVED:** `dqi_gluzdov_v6.build_syndrome_decoding_mbuc` emitted a
