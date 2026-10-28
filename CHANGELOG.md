@@ -1,3 +1,24 @@
+## 2026-10-28 — Restore the deleted module registry in `docs/DOCUMENTATION.md`
+
+- **INTEGRITY REPAIR:** commit `c08acbe` ("Document stability selection") replaced
+  the 2,134-line `docs/DOCUMENTATION.md` with a 35-line stub, deleting the module
+  registry (310 of 312 `apedp_dyn` modules lost their index entry, 429 module
+  links, and the `[5 %, 90 %]` tactical-bound discussion). Nothing flagged it
+  because the four firewalls in `tests/test_documentation_and_spec_integrity.py`
+  were left failing and reported as pre-existing. They were not pre-existing —
+  they were the regression being detected.
+- **Restored** the registry from `444c1fa` (2,347 lines, 523 repository-relative
+  links, 312/312 modules indexed) and re-applied the additions made since
+  (stability selection, DQI photonic resource mapping, 89Q champion
+  reproduction, mixed polarity, photonic boundary) as §23. The restored text
+  carries the numbering defect it had at `444c1fa` (two `## 18` and two `## 19`
+  headings, sections 16/17/20/21/22 headingless); it is left as-is rather than
+  renumbered, because renumbering breaks every `#N-...` anchor the TOC uses.
+- **Added** the one genuinely unindexed module, `apedp_dyn/video/collision_domain.py`.
+- **Verified:** `tests/test_documentation_and_spec_integrity.py` 6/6 pass (link
+  coverage ≥ 200, zero orphan modules, zero pinned debt, registry status tags
+  agree with code `Status:` lines).
+
 ## 2026-10-28 — Rotation overhead closed, halting-counter saving falsified, photonic artifact
 
 - **MEASURED (negative):** the 44 priced rotations in the 89Q invsqrt champion
