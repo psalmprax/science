@@ -1,3 +1,38 @@
+## 2026-10-28 — Riemann off-line scan scoping fixed; August batch screened for Benchmark II
+
+- **FIXED (integrity):** `rust/riemann_verifier` built its off-line critical-strip grid
+  as `(100..400) * 0.1` — `t in [10, 40]` — **regardless of `max_t`**, then printed
+  `OFF_LINE_GRID_SCAN_PASS`. A run asked about `T=300` certified a window 260 units
+  shorter than the question; the same defect class as the `PASS` removed from the DQI
+  Gluzdov V6 projection the same day. The window is now `[10, max_t]` and is never
+  truncated to fit the sample budget: the budget (20,000 samples) degrades resolution
+  instead, and a coarsened scan reports `OFF_LINE_GRID_SCAN_PASS_COARSENED` rather than
+  a bare PASS. JSON gains `grid_scan_window`, `grid_scan_step`, `grid_scan_samples`,
+  `grid_scan_coarsened`, `grid_scan_covers_requested_height`.
+- **Verified:** `T=60 → [10,60] step 0.1 / 501 samples`; `T=300 → [10,300] step 0.1 /
+  2,901 samples`; `T=5000 → [10,5000] step 0.2495 / 20,000 samples / PASS_COARSENED`.
+  `tests/test_riemann_verifier_grid_scan.py` 3/3, including a source-level revert pin.
+  `probe_wave1.json` / `PROBE_WAVE1.md` regenerated against the fixed binary; verdicts
+  unchanged (2 consistent_finite_range, 1 no_refutation, 1 not_probeable).
+- **RECORDED (unfixed, separate):** root discovery at a fixed 0.05 step still misses
+  zeros with height — 0 % at T≤100, 14.5 % at T=300, 84 % at T=5000 (721/4520). That is
+  a discovery-budget problem, not the scan window, and it is now stated as such.
+- **NEW:** `catalog/august_ten_advances_screen.json` +
+  `catalog/AUGUST_TEN_ADVANCES_BENCHMARK_II.md` — the August 1 *Ten advances* batch is
+  the only OpenAI release whose disciplines intersect Benchmark II (coding theory,
+  arithmetic circuit complexity, quantum complexity, lattice cryptography), so it is
+  screened against the DQI cost model. **0 of 10 rows admits a cost path**: three are
+  lower bounds or hardness results (a barrier is not a tool), six have no circuit content,
+  and the single coding-theory row is blocked by the frozen instance
+  `(m=4095, n=70, degree=12, r=2016)` that `ProblemSpecDQI` fixes. Its only use is to put
+  a floor under `R(eps_plus)`, not to lower the score.
+- **Disclosed:** recomputing the target gain from the two workload rows gives 14.3973×,
+  against the quoted 14.396× — a +0.009 (0.06 %) rounding difference recorded rather than
+  absorbed. `T_mean` must fall to 7.78 % of reference (12.86×); `Q` only to 94.5 % (1.058×).
+- **Verified:** `tests/test_august_ten_advances_benchmark_ii.py` 7/7, which cross-checks
+  the frozen instance against the verifier's own `DEFAULT_M/N/DEGREE/R` and the cost model
+  against the pinned workloads in `apedp_dyn.quantum.dqi_photonic_resource`.
+
 ## 2026-10-28 — Audit artifacts for the negative results, and the PDE honesty note
 
 - **COMMITTED:** the seven `scripts/` audit instruments that back numbers already

@@ -47,7 +47,9 @@ def probe_family_3(max_t: float = 300.0) -> dict:
         ).stdout
         roots = re.search(r"Dynamically isolated (\d+) roots", out)
         gate = re.search(r"Numerical Accuracy Gate: (PASS|FAIL).*max discrepancy: ([0-9.eE+-]+)", out)
-        scan = re.search(r"Off-line grid scan status: (\w+)", out)
+        scan = re.search(
+            r"Off-line grid scan status: (\w+) \(t in \[([\d.]+), ([\d.]+)\], step ([\d.]+)", out
+        )
         tally = re.search(r"Critical-line zeros recovered:\s+(\d+) zeros", out)
         n_approx = re.search(r"N_approx\(T\).*: (\d+) zeros", out)
         return {
@@ -58,6 +60,8 @@ def probe_family_3(max_t: float = 300.0) -> dict:
             "calibration_gate": gate.group(1) if gate else None,
             "max_reference_delta": float(gate.group(2)) if gate else None,
             "off_line_grid_scan": scan.group(1) if scan else None,
+            "off_line_grid_window": [float(scan.group(2)), float(scan.group(3))] if scan else None,
+            "off_line_grid_step": float(scan.group(4)) if scan else None,
         }
 
     primary = run(60.0)
@@ -70,7 +74,7 @@ def probe_family_3(max_t: float = 300.0) -> dict:
     return {
         "verdict": "consistent_finite_range",
         "engine": "rust/riemann_verifier (Euler-Maclaurin, from scratch)",
-        "domain": "zeta zeros on the critical line; off-line grid scan t in [10, 40], sigma in {0.2..0.8} (hardcoded window)",
+        "domain": "zeta zeros on the critical line; off-line grid scan t in [10, max_t] (window follows the requested height), sigma in {0.2..0.8}",
         "observed": {"primary_T60": primary, "coverage_sweep": coverage},
         "engine_limitations_found": [
             "Root-discovery completeness degrades with height at fixed cost: the "
@@ -78,12 +82,14 @@ def probe_family_3(max_t: float = 300.0) -> dict:
             "(T<=100) to 14.5% (T=300, 118/138 isolated). The CLI sample-count "
             "argument does not affect discovery, so the deficit is inherent to "
             "the engine, not to the invocation.",
-            "The OFF_LINE_GRID_SCAN_PASS verdict is scoped to a hardcoded window "
-            "t in [10, 40] regardless of the requested height; it does not scan "
-            "the requested range.",
+            "The off-line grid window was hardcoded to t in [10, 40] regardless of the "
+            "requested height, so a request at T=300 scanned 260 units fewer than asked and "
+            "still reported OFF_LINE_GRID_SCAN_PASS. FIXED 2026-10-28: the window now follows "
+            "max_t, and a scan whose resolution had to be coarsened to fit the sample budget "
+            "reports OFF_LINE_GRID_SCAN_PASS_COARSENED instead of a bare PASS.",
         ],
         "can_say": "at T=60 all 13 roots are isolated on the critical line, calibrated to 1.15e-9, and no off-line zero appears in the scanned window",
-        "cannot_say": "quasi-RH is about every Dirichlet L-function and all heights; the engine checks zeta(s) only, discovery misses zeros at higher T, and the off-line window is [10, 40] only",
+        "cannot_say": "quasi-RH is about every Dirichlet L-function and all heights; the engine checks zeta(s) only, discovery misses zeros at higher T (the off-line window now follows max_t, but the in-window scan is a 0.1 grid, not an interval enclosure)",
     }
 
 

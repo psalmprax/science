@@ -1,0 +1,153 @@
+{
+  "source": {
+    "title": "Ten advances in mathematics and theoretical computer science",
+    "publisher": "OpenAI",
+    "published": "2026-08-01",
+    "url": "https://openai.com/index/ten-advances-in-mathematics/",
+    "retrieved": "2026-10-28",
+    "model": "internal version of Astra",
+    "cost_disclosure": "tokens for all ten solutions would cost roughly $2,000 at Sol API rates",
+    "formalization": "each argument formalized in Lean; a narration of the model's thinking released per solution",
+    "why_screened": "This batch is the only OpenAI release whose disciplines intersect Benchmark II: it names coding theory, arithmetic circuit complexity and quantum complexity, none of which appear among the 17 disciplines of the October 6 catalog already ingested in catalog/manuscripts_manifest.json."
+  },
+  "benchmark_ii_cost_model": {
+    "score": "R(eps_plus) * Q^2 * T_mean",
+    "reference": {
+      "label": "proos_zalka_reference_n_iters_222",
+      "qubits": 1893,
+      "mean_toffoli_like": 5725108.38,
+      "eea_iterations": 222
+    },
+    "target": {
+      "label": "gluzdov_v6_degree_register_recycling_target",
+      "qubits": 1789,
+      "mean_toffoli_like": 445229.0,
+      "eea_iterations": 222
+    },
+    "derived": {
+      "qubit_reduction": 104,
+      "qubit_reduction_percent": 5.4939,
+      "toffoli_ratio": 0.07776779,
+      "target_gain": 14.3973,
+      "quoted_target_gain": 14.396,
+      "gain_rounding_note": "The projection quotes 14.396x. Recomputed from the two workload rows as 1 / ((1789/1893)^2 * (445229/5725108.38)) it is 14.3973x - a +0.009 (0.06%) discrepancy from rounding in the original projection, recorded rather than absorbed into the quoted figure.",
+      "toffoli_reduction_factor": 12.8588,
+      "qubit_reduction_factor": 1.0581
+    },
+    "only_levers": [
+      "Q",
+      "T_mean"
+    ],
+    "note": "R(eps_plus) is measured by the verifier from the submission's own shot failures, so a candidate can only move the score by moving Q or T_mean. Both are properties of the compiled decoder circuit."
+  },
+  "fixed_instance": {
+    "m": 4095,
+    "n": 70,
+    "degree": 12,
+    "r": 2016,
+    "max_errors": 35,
+    "source": "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dqi/verify_submission_dqi.py",
+    "consequence": "The problem instance is frozen by ProblemSpecDQI, not chosen by the submitter. Any result that would improve the underlying code changes the problem, so it is out of scope rather than an optimisation: the verifier scores this (m, n, degree, r) only."
+  },
+  "results": [
+    {
+      "id": "high_dimensional_sphere_packing",
+      "title": "New upper bounds on sphere-packing density down to the Cohn-Elkies threshold",
+      "field": "high-dimensional geometry",
+      "result_kind": "upper_bound",
+      "verdict": "cannot_reduce_cost",
+      "reason": "An upper bound on achievable packing density constrains the optimum of a geometric problem. The Benchmark II score has no packing, volume or coding-rate term, and Q is the count of held logical qubits in a circuit the verifier fixes."
+    },
+    {
+      "id": "binary_and_spherical_codes",
+      "title": "Exponentially improved bounds on the maximum size of binary codes at prescribed minimum distance",
+      "field": "coding theory",
+      "result_kind": "existence_bound",
+      "verdict": "analyzable_not_cost_reducing",
+      "reason": "The only result in the batch that names the object DQI consumes: a Reed-Solomon code over GF(2^12). It bounds how large a code can be at a fixed minimum distance, so it could bound the achievable failure rate for the frozen parameters - but it cannot reduce Q or T_mean, because the instance (m=4095, n=70, degree=12, r=2016) is fixed by the verifier and the decoder's pass set is unchanged.",
+      "use": "Bound R(eps_plus) from below for the frozen instance, i.e. establish whether the benchmark's l = 35 correctable errors sit inside the true correction radius. That sets a floor on the score, it does not lower it.",
+      "evidence_needed": [
+        "the actual bound and the code family it applies to, read from the manuscript not a summary",
+        "a demonstration that the bound applies to RS codes over GF(2^12) at these dimensions",
+        "an independent re-derivation, since a coding-theory bound quoted out of context is exactly the class of claim this repository refuses to accept on trust"
+      ]
+    },
+    {
+      "id": "non_sofic_groups",
+      "title": "A construction establishing the existence of non-sofic groups",
+      "field": "group theory",
+      "result_kind": "construction",
+      "verdict": "cannot_reduce_cost",
+      "reason": "A group-theoretic existence construction has no representation as gates. Benchmark II costs are Toffoli counts and qubit counts of a compiled circuit."
+    },
+    {
+      "id": "connes_rigidity",
+      "title": "Disproof of Connes's rigidity conjecture",
+      "field": "operator algebras",
+      "result_kind": "disproof",
+      "verdict": "cannot_reduce_cost",
+      "reason": "A counterexample in operator algebras carries no algorithmic content. It also cannot change what the verifier scores."
+    },
+    {
+      "id": "arithmetic_circuit_complexity",
+      "title": "Lower bounds for the permanent, including an arithmetic-formula lower bound of order n^4/log n",
+      "field": "arithmetic circuit complexity",
+      "result_kind": "lower_bound",
+      "verdict": "opposite_direction",
+      "reason": "This is the field closest to the question actually being asked - how few arithmetic gates a computation needs - but the result points the other way. A lower bound says a class of computations cannot be done more cheaply. No lower bound on any circuit family can reduce the Toffoli count of a specific compiled decoder."
+    },
+    {
+      "id": "quantum_parallel_repetition",
+      "title": "An exponential parallel repetition theorem for general two-player quantum games",
+      "field": "quantum complexity",
+      "result_kind": "theorem",
+      "verdict": "cannot_reduce_cost",
+      "reason": "DQI's eps_plus is a Clopper-Pearson bound on the submission's own observed shot failures at log2_delta = -128. A parallel repetition theorem bounds how far a repeated game's success probability decays; it does not touch per-shot Toffoli cost or the qubit count, and the verifier already draws independent shots."
+    },
+    {
+      "id": "closest_vector_problem",
+      "title": "Polynomial-factor hardness of approximation for the closest vector problem",
+      "field": "lattice cryptography",
+      "result_kind": "hardness",
+      "verdict": "opposite_direction",
+      "reason": "Hardness of approximation is a barrier, not a tool. If anything it makes the QROM-era security story for the decoder's tables harder to argue, not the circuit smaller."
+    },
+    {
+      "id": "ehrhart_volume_conjecture",
+      "title": "Maximum volume of a convex body whose centroid is its only interior lattice point, in every dimension",
+      "field": "convex geometry",
+      "result_kind": "exact_determination",
+      "verdict": "cannot_reduce_cost",
+      "reason": "An exact geometric extremal answer with no circuit or code content. Nothing in the Benchmark II cost model is a lattice-point volume."
+    },
+    {
+      "id": "multicolor_ramsey",
+      "title": "A superexponential lower bound for multicolor triangle Ramsey numbers (Erdos problem 183)",
+      "field": "extremal combinatorics",
+      "result_kind": "lower_bound",
+      "verdict": "opposite_direction",
+      "reason": "A lower bound on a Ramsey number enlarges a construction space. It has no bearing on the pass count or register width of the Proos-Zalka decoder."
+    },
+    {
+      "id": "extremal_number_conjectures",
+      "title": "Compactness and degeneracy conjectures in extremal graph theory (Erdos problems 146 and 180)",
+      "field": "extremal combinatorics",
+      "result_kind": "conjecture_resolution",
+      "verdict": "cannot_reduce_cost",
+      "reason": "Structural graph-extremal results with no algorithmic consequence for a Reed-Solomon syndrome decoder."
+    }
+  ],
+  "summary": {
+    "results_screened": 10,
+    "cost_reducing": 0,
+    "analyzable_not_cost_reducing": 1,
+    "cannot_reduce_cost": 6,
+    "opposite_direction": 3,
+    "verdict": "Zero of the ten admits a path to a lower Benchmark II score. Six of the ten are upper bounds, lower bounds, hardness results or disproofs, and a bound on how good something can be never makes a compiled circuit cheaper. The one result that names DQI's own object (a code-size bound) is blocked by the frozen instance, and its only legitimate use is to put a floor under R(eps_plus).",
+    "what_would_actually_move_benchmark_ii": [
+      "a decoder circuit performing the same EEA pass set with fewer Toffolis per shot: T_mean must fall to 7.78% of its reference value (a 12.86x reduction), against 94.5% for Q (a 1.058x reduction) - the cost is almost entirely in the arithmetic, not the registers",
+      "a register-recycling scheme that survives a gate-for-gate equivalence argument, to take Q from 1,893 to 1,789",
+      "neither is a claim type either OpenAI release contains: there is no gate-synthesis family in the October catalog and none among these ten"
+    ]
+  }
+}

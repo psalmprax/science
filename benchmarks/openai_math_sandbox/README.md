@@ -45,6 +45,49 @@ Accounting found by the ingestion (all discrepancies recorded, not hidden):
   where finite numerical illustration is possible and 35 with explicit
   constructions — illustration, never verification.
 
+## The August 1 batch (`catalog/august_ten_advances_screen.json`)
+
+The October catalog has no coding-theory, arithmetic-complexity or gate-synthesis
+family, so it cannot touch Benchmark II. OpenAI's earlier *Ten advances in
+mathematics and theoretical computer science* (2026-08-01) explicitly spans
+coding theory, arithmetic circuit complexity, quantum complexity and lattice
+cryptography — so it is screened separately, against the DQI cost model:
+[`catalog/AUGUST_TEN_ADVANCES_BENCHMARK_II.md`](catalog/AUGUST_TEN_ADVANCES_BENCHMARK_II.md).
+
+**Result: 0 of 10 rows admits a path to a lower Benchmark II score.** Six are upper
+bounds, lower bounds, hardness results or disproofs, and a bound on how good
+something can be never makes a compiled circuit cheaper. The one result that
+names DQI's own object (a binary/RS code-size bound at fixed minimum distance) is
+`analyzable_not_cost_reducing`: the instance `(m=4095, n=70, degree=12, r=2016)`
+is frozen by `ProblemSpecDQI`, so a better code changes the problem rather than
+optimising it. Its only legitimate use is to put a floor under `R(eps_plus)`.
+
+The screen is pinned by `tests/test_august_ten_advances_benchmark_ii.py` (7/7),
+which cross-checks the frozen instance against the verifier's own
+`DEFAULT_M/N/DEGREE/R` and the cost model against the pinned reference and target
+workloads in `apedp_dyn.quantum.dqi_photonic_resource`.
+
+## Riemann verifier: the off-line scan now follows the requested height
+
+Probe wave 1 found that the engine's off-line grid was built as `(100..400) * 0.1`
+— `t in [10, 40]` — regardless of `max_t`, and then printed
+`OFF_LINE_GRID_SCAN_PASS`. A request at `T=300` certified a window 260 units
+shorter than the question. Fixed 2026-10-28:
+
+- the window is `[10, max_t]`; it is never truncated to fit the sample budget;
+- the sample budget (`20,000`) degrades the **resolution**, not the window, and a
+  coarsened scan reports `OFF_LINE_GRID_SCAN_PASS_COARSENED` instead of a bare PASS;
+- JSON now carries `grid_scan_window`, `grid_scan_step`, `grid_scan_samples`,
+  `grid_scan_coarsened` and `grid_scan_covers_requested_height`.
+
+Pinned by `tests/test_riemann_verifier_grid_scan.py` (3/3), which also fails on a
+source-level revert to a hardcoded range.
+
+The remaining, *unfixed* limitation is separate: root discovery at a fixed step of
+0.05 still misses zeros as the height grows (0 % at T ≤ 100, 14.5 % at T = 300,
+84 % at T = 5000 — 721 of 4520 expected). `turing_count_match` reports false
+there; it is a discovery-budget problem, not a scan-window problem.
+
 ## Run
 
 ```bash

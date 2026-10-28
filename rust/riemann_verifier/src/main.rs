@@ -241,7 +241,31 @@ fn main() {
     // =========================================================================
     let t_part1 = Instant::now();
     let sigmas_to_test = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8];
-    let t_sample_grid: Vec<f64> = (100..400).map(|i| (i as f64) * 0.1).collect(); // t in [10.0, 40.0]
+
+    // The off-line scan must cover the height this run was asked about. A window
+    // pinned to a constant range certifies a region the caller never requested:
+    // asking for T=300 and scanning t in [10, 40] still reported PASS.
+    const GRID_SCAN_T_LO: f64 = 10.0;
+    const GRID_SCAN_STEP_TARGET: f64 = 0.1;
+    const GRID_SCAN_MAX_SAMPLES: usize = 20_000;
+
+    let grid_t_lo = GRID_SCAN_T_LO;
+    let grid_t_hi = max_t.max(GRID_SCAN_T_LO + GRID_SCAN_STEP_TARGET);
+    let grid_span = grid_t_hi - grid_t_lo;
+    let grid_requested_samples = (grid_span / GRID_SCAN_STEP_TARGET).ceil() as usize + 1;
+    let (grid_step, grid_samples, grid_coarsened) =
+        if grid_requested_samples <= GRID_SCAN_MAX_SAMPLES {
+            (GRID_SCAN_STEP_TARGET, grid_requested_samples, false)
+        } else {
+            // The window is never truncated to fit a sample budget; the resolution
+            // degrades instead, and the fact that it did is reported.
+            let n = GRID_SCAN_MAX_SAMPLES;
+            (grid_span / (n as f64 - 1.0), n, true)
+        };
+    let t_sample_grid: Vec<f64> = (0..grid_samples)
+        .map(|i| grid_t_lo + (i as f64) * grid_step)
+        .collect();
+    let grid_covers_requested_height = grid_t_hi >= max_t - 1e-9;
 
     let mut min_modulus_by_sigma: Vec<(f64, f64)> = Vec::new();
 
@@ -272,6 +296,19 @@ fn main() {
         .unwrap_or(0.0);
 
     let off_line_zeros_sampled = if min_off_critical_line < 1e-4 { 1 } else { 0 };
+
+    // A PASS is only honest when the scan covered the requested height at full
+    // resolution. Coarsening preserves the window but weakens the claim, and a
+    // sampled off-line zero is a finding, not a pass.
+    let grid_scan_status = if off_line_zeros_sampled > 0 {
+        "OFF_LINE_ZERO_SAMPLED"
+    } else if grid_coarsened {
+        "OFF_LINE_GRID_SCAN_PASS_COARSENED"
+    } else if !grid_covers_requested_height {
+        "OFF_LINE_GRID_SCAN_INCOMPLETE"
+    } else {
+        "OFF_LINE_GRID_SCAN_PASS"
+    };
 
     // =========================================================================
     // LAYER 2: AUTONOMOUS DYNAMIC ZERO DISCOVERY (ZERO HARDCODED CONSTANTS)
@@ -402,7 +439,12 @@ fn main() {
             \"off_line_zeros_sampled\":{},\
             \"min_modulus_critical_line\":{:.2e},\
             \"min_modulus_off_line\":{:.4},\
-            \"grid_scan_status\":\"OFF_LINE_GRID_SCAN_PASS\",\
+            \"grid_scan_status\":\"{}\",\
+            \"grid_scan_window\":[{:.1},{:.1}],\
+            \"grid_scan_step\":{:.4},\
+            \"grid_scan_samples\":{},\
+            \"grid_scan_coarsened\":{},\
+            \"grid_scan_covers_requested_height\":{},\
             \"numerical_accuracy_gate_pass\":{},\
             \"max_reference_discrepancy\":{:.2e},\
             \"turing_expected_zeros\":{},\
@@ -425,6 +467,13 @@ fn main() {
             off_line_zeros_sampled,
             min_on_critical_line,
             min_off_critical_line,
+            grid_scan_status,
+            grid_t_lo,
+            grid_t_hi,
+            grid_step,
+            grid_samples,
+            grid_coarsened,
+            grid_covers_requested_height,
             numerical_accuracy_gate_pass,
             max_ref_discrepancy,
             expected_n_t,
@@ -448,7 +497,15 @@ fn main() {
         for (sig, min_val) in &min_modulus_by_sigma {
             println!("   sigma = {:.1}: min |zeta(s)| = {:.4} {}", sig, min_val, if (*sig - 0.5).abs() < 1e-4 { "<-- Critical line minimum" } else { "" });
         }
-        println!("   Off-line grid scan status: OFF_LINE_GRID_SCAN_PASS (0 sampled off-line zeros)");
+        println!(
+            "   Off-line grid scan status: {} (t in [{:.1}, {:.1}], step {:.4}, {} samples{})",
+            grid_scan_status,
+            grid_t_lo,
+            grid_t_hi,
+            grid_step,
+            grid_samples,
+            if grid_coarsened { ", resolution coarsened to fit the sample budget" } else { "" }
+        );
         println!("   Continuous region exclusion: UNRESOLVED (requires interval enclosure)");
         println!("\n2. DYNAMIC ZERO DISCOVERY (Euler-Maclaurin z_em bisection, {:.2}ms):", part2_time_ms);
         println!("   Dynamically isolated {} roots on critical line from scratch.", actual_detected_zeros);
