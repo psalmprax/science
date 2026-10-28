@@ -44,8 +44,7 @@ def main() -> int:
     if any(n <= 0 for n in a.iterations):
         p.error('iteration caps must be positive')
     root = a.competition_root.resolve()
-    science_root = Path(os.environ.get('SCIENCE_ROOT', str(Path(__file__).resolve().parent.parent)))
-    sys.path[:0] = [str(root / 'kickmix'), str(root / 'verifiers'), str(science_root)]
+    sys.path[:0] = [str(root / 'kickmix'), str(root / 'verifiers')]
     import kickmix as km
     from dqi import verify_submission_dqi as dv
     builder = load_callable(a.builder)
@@ -62,7 +61,7 @@ def main() -> int:
             row.update({'artifact': str(path), 'artifact_sha256': sha256(path),
                         'num_qubits': int(circuit.num_qubits),
                         'toffoli_like': int(circuit.operation_statistics().num_toffoli_like)})
-            report = dv.verify(circuit, spec, max_workers=a.workers, log2_delta=a.log2_delta)
+            report = dv.verify(circuit, spec, max_workers=a.workers)
             row['verification'] = dict(report)
             row['status'] = 'VERIFIED' if report.get('status') == 'PASS' else 'REJECTED'
             row['measured_cost'] = report.get('score')
