@@ -2366,13 +2366,22 @@ over all 10,320,960 order/polarity pairs; 1 qubit costs 9.95 nodes).
 | [`scripts/instrument_invsqrt_trace.py`](../scripts/instrument_invsqrt_trace.py) | Traces per-shot Toffoli/phase statistics behind the invsqrt margin numbers | `audit-only` |
 | [`scripts/instrument_calibrated_trace.py`](../scripts/instrument_calibrated_trace.py) | Calibrated-variant trace instrument used for the same margin accounting | `audit-only` |
 | [`scripts/measure_dqi_primitive_costs.py`](../scripts/measure_dqi_primitive_costs.py) | Recovers the Benchmark II cost structure by measurement (per-call primitive costs, per-iteration and per-position slopes) and derives the optimisation ceilings; record in `benchmarks/quantum_compilation/dqi_primitive_costs.json` | `audit-only` |
+| [`scripts/measure_dqi_scratch_pool.py`](../scripts/measure_dqi_scratch_pool.py) | Measures whether the transient DQI qubits are collectable by a shared scratch pool: peak concurrent liveness by frame, the innermost-frame ceiling on pooling, and an alloc/free trace replay; record in `benchmarks/quantum_compilation/dqi_scratch_pool.json`, pinned by `tests/test_dqi_scratch_pool.py` | `audit-only` |
 
-**Interpreter requirement:** all seven import `kickmix`, a compiled extension.
+**Interpreter requirement:** all eight import `kickmix`, a compiled extension.
 They only run under the Python that extension was built against; a mismatched
 interpreter fails at import with
 `undefined symbol: PyObject_ClearManagedDict` (observed: 3.12 interpreter against a
 3.13 build). The shebangs say `env python3`, so invoke them explicitly with the
 right interpreter rather than relying on the shebang.
+
+**Measured verdict — scratch pool (2026-10-28):** `Q`'s 1,893 ids are never 1,893
+qubits at once. The concurrent peak is **1,828**, reached inside
+`_chien_search_and_forney_mbuc`, and the innermost frame there holds **25** — so a
+shared scratch pool can redistribute at most 25 qubits, not the 104 the V6 row claims
+(77% of every transient). The allocator question is left open rather than answered: the
+trace replay returns 1,821 ids against 1,893 shipped, the proxy sees only 1,873, and a
+lowest-hole free list replays identically to the shipped LIFO stack.
 
 **Measured verdict (2026-10-28):** halting-counter recycling is a constant −240
 Toffoli at every instance measured (−0.722 % at m=15, −0.0118 % at m=4095), and

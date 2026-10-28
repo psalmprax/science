@@ -1,3 +1,24 @@
+## 2026-10-28 — Scratch pool measured dead: 25-qubit ceiling, and the allocator claim withdrawn
+
+- **MEASURED** on the pinned Benchmark II instance (`scripts/measure_dqi_scratch_pool.py`,
+  record `benchmarks/quantum_compilation/dqi_scratch_pool.json`): the circuit holds
+  **1,828 qubits concurrently live against 1,893 distinct ids**; the peak is reached
+  inside `_chien_search_and_forney_mbuc` and the innermost frame there holds **25**
+  qubits. A shared scratch pool can therefore redistribute at most 25 — the −104 the V6
+  row claims is 4× that ceiling and is not reachable by pooling.
+- **CORRECTED, committed claim:** §5.5 of the boundary doc said the live peak was EEA
+  round scratch in `_multiply_and_add_or_sub` and that a shared pool was "the only
+  mechanism that could move" the transients. Both are withdrawn on measurement: the peak
+  is in Chien/Forney, and the pool is dead.
+- **Left OPEN, not answered:** the probe's trace replay returns 1,821 ids against 1,893
+  shipped and observes only 1,873 ids, so allocations made inside the extension are
+  missing; a lowest-hole free list replays identically to the shipped LIFO stack. An
+  earlier draft of the script asserted the 65 stranded ids were `alloc_qubit` LIFO
+  stranding and named a free list as the fix. That verdict was not supported by the
+  replay and has been removed rather than shipped.
+- **Verified:** `tests/test_dqi_scratch_pool.py` pins the artifact; the probe runs under
+  CPython 3.13 only, since `kickmix.so` is a 3.13 build.
+
 ## 2026-10-28 — Post-`_update_flag` probe collected: 4.142× measured
 
 - **MEASURED:** the shift gate the previous entry had to abandon is now correct. The

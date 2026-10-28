@@ -337,10 +337,27 @@ set's reachable optimum for this decoder.
 **The qubit target.** `Q` = 1,887 measured = 1,752 persistent registers
 (`2 × 73 × 12`, both factors frozen by the instance) + 135 transient
 scratch/controls/counters. The −104 the V6 row claims is **77% of every transient
-qubit in the circuit**, and the live peak sits inside `_multiply_and_add_or_sub`
-(reached from `_synchronized_eea`), i.e. EEA round scratch. A shared scratch pool
-is the only mechanism that could move it; the `n_a`/`n_b` recycling the projection
-names frees 16.
+qubit in the circuit**. Whether a shared scratch pool could collect them was an
+open question here; `scripts/measure_dqi_scratch_pool.py` measures it (record:
+`benchmarks/quantum_compilation/dqi_scratch_pool.json`) and the answer is no.
+
+The circuit holds **1,828 qubits concurrently live against 1,893 distinct ids**, and
+the peak is reached inside `_chien_search_and_forney_mbuc` — not in
+`_multiply_and_add_or_sub`, as an earlier version of this paragraph claimed. At that
+instant the innermost frame holds **25 qubits**, and that is the entire ceiling on
+what a pool could redistribute: every other live qubit is held by
+`build_syndrome_decoding_mbuc` because the decoder needs it then. So pooling is worth
+at most 25 qubits, not 65 and not 104, and the claim that a shared pool was "the only
+mechanism that could move" the transients is withdrawn. The `n_a`/`n_b` recycling the
+projection names frees 16.
+
+The probe also cannot settle whether the shipped id allocator strands holes, and does
+not claim to. Replaying the recorded alloc/free trace returns 1,821 ids against 1,893
+shipped, and the proxy observes only 1,873 ids: allocations made inside the extension
+are invisible to it. A lowest-hole free list replays to exactly the same 1,821 as the
+shipped LIFO stack, which is the shape of a trace with no reusable hole above the peak
+and equally the shape of a trace that cannot see the allocator. That question remains
+open, and no free-list saving should be quoted from these numbers.
 
 **Conclusion.** The 12.86× target is not held back by a missing receipt. One phase
 of the reference decoder, doing what the algorithm requires at the frozen instance,
