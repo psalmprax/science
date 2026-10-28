@@ -1,4 +1,4 @@
-#!/dev/shm/qvcc-venv313/bin/python
+#!/usr/bin/env python3
 """Prototype Recycled-Degree DQI Decoder on small instance (m=15, n=6, degree=4)."""
 from __future__ import annotations
 

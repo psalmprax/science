@@ -1,4 +1,4 @@
-#!/dev/shm/qvcc-venv313/bin/python
+#!/usr/bin/env python3
 """Dual-Scaffold Co-Optimization DQI Decoder and Pre-Registered Cost Gate Evaluation.
 
 Status: audit-only

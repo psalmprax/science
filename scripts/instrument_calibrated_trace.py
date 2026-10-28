@@ -1,4 +1,4 @@
-#!/dev/shm/qvcc-venv313/bin/python
+#!/usr/bin/env python3
 """Calibrated Production Stage-Level Diagnostic Tracer for Benchmark I (Invsqrt).
 
 Directly instruments the frozen calibrated production candidate

@@ -1,4 +1,4 @@
-#!/dev/shm/qvcc-venv313/bin/python
+#!/usr/bin/env python3
 """Controlled Small-Instance Experiment: Itoh-Tsujii Scaffold Optimization for DQI GF(2^12).
 
 Status: audit-only

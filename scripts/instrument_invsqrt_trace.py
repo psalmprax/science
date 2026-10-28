@@ -1,4 +1,4 @@
-#!/dev/shm/qvcc-venv313/bin/python
+#!/usr/bin/env python3
 """Diagnostic Stage-Level Instrumentation Harness for Benchmark I (InvSqrt).
 
 Traces intermediate register states at every algorithmic boundary for x=32
