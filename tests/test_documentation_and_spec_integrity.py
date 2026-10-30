@@ -157,14 +157,25 @@ def test_orphan_module_detection():
     2026-10-19 (125 -> 67 -> 0): every ``apedp_dyn`` module is now indexed.
     Adding a module without indexing it fails this test; there is no pin left
     to mask a regression.
+
+    Third-party checkouts vendored inside the sandbox for a build are not APEDP
+    modules: ``kickmix/_qualtran_src`` is an upstream git repository (759 files),
+    indexed in DOCUMENTATION.md as a tree rather than file by file. Any nested
+    repository (a ``.git`` below the scan root) is therefore skipped, which is
+    what keeps the scan on code this repository actually authors.
     """
     doc_path = REPO_ROOT / "docs" / "DOCUMENTATION.md"
     doc_text = doc_path.read_text(encoding="utf-8")
 
+    vendored_roots = {marker.parent for marker in (REPO_ROOT / "apedp_dyn").rglob(".git")}
+
+    def authored(py_file: Path) -> bool:
+        return ("__pycache__" not in py_file.parts
+                and not py_file.name.startswith("__")
+                and not any(root in py_file.parents for root in vendored_roots))
+
     all_modules = sorted(
-        py_file
-        for py_file in (REPO_ROOT / "apedp_dyn").rglob("*.py")
-        if "__pycache__" not in py_file.parts and not py_file.name.startswith("__")
+        py_file for py_file in (REPO_ROOT / "apedp_dyn").rglob("*.py") if authored(py_file)
     )
     unindexed = {
         str(py_file.relative_to(REPO_ROOT))

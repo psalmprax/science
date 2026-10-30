@@ -134,13 +134,18 @@ class SINDyProposer(ProposerBase):
                 else:
                     formula_parts.append(f"{c:.6g}*{t}")
             formula = " + ".join(formula_parts) if formula_parts else "0"
-            def make_score(f=formula):
+            _lib_names = names
+            _lib_matrix = Theta
+            def make_score(f=formula, terms=terms, coeffs=coeffs):
                 def score(df):
-                    # simple evaluation
-                    try:
-                        return np.ones(len(df))
-                    except Exception:
-                        return np.zeros(len(df))
+                    cols = [np.asarray(df[n], dtype=float).ravel() for n in _lib_names]
+                    X_eval = np.column_stack(cols)
+                    idx = [i for i, nm in enumerate(_lib_names) if nm in terms]
+                    if not idx:
+                        return np.full(len(df), float(coeffs[0])) if coeffs else np.zeros(len(df))
+                    selected = X_eval[:, idx]
+                    pred = selected @ np.asarray([coeffs[i] for i in idx], dtype=float)
+                    return pred.ravel()
                 return score
             proposals.append(CandidateProposal(
                 proposer_id=self.proposer_id,
@@ -149,7 +154,7 @@ class SINDyProposer(ProposerBase):
                 strategy_archetype=StrategyArchetype.DYNAMICAL_SYSTEM,
                 declared_scale_invariant=False,
                 declared_nominal_dependencies=tuple(variable_names),
-                compute_score=make_score(formula),
+                compute_score=make_score(formula, terms, coeffs),
                 parameters={"coefficients": coeffs, "terms": terms},
                 metadata={"method": "sindy", "active_terms": len(terms)},
             ))

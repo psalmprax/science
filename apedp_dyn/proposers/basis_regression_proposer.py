@@ -70,12 +70,12 @@ class BasisRegressionProposer(ProposerBase):
         except Exception:
             coef = np.linalg.lstsq(Phi, y, rcond=None)[0]
         formula = f"BasisRegression({self.basis}, n_basis={self.n_basis}, degree={self.degree})"
-        def make_score(f=formula):
+        _basis_builder = self.build_basis
+        _coef = coef.ravel()
+        def make_score(basis_builder=_basis_builder, coef=_coef):
             def score(df):
-                try:
-                    return np.ones(len(df))
-                except Exception:
-                    return np.zeros(len(df))
+                Phi_eval, _meta = basis_builder(np.asarray(df.to_numpy(dtype=float)))
+                return (Phi_eval @ coef).ravel()
             return score
         proposals = [CandidateProposal(
             proposer_id=self.proposer_id,
@@ -84,7 +84,7 @@ class BasisRegressionProposer(ProposerBase):
             strategy_archetype=StrategyArchetype.DYNAMICAL_SYSTEM,
             declared_scale_invariant=False,
             declared_nominal_dependencies=tuple(variable_names),
-            compute_score=make_score(formula),
+            compute_score=make_score(),
             parameters={"coef_shape": coef.shape, "basis_meta": meta},
             metadata={"method": "basis_regression", "basis": self.basis},
         )]

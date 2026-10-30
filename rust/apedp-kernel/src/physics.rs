@@ -144,9 +144,55 @@ impl PhysicsConstraintEngine {
 
     pub fn detect_symmetries(&self, data: &Vec<Vec<f64>>) -> HashSet<String> {
         let mut symmetries = HashSet::new();
-        // Basic symmetry detection - translational invariance checks etc
-        if data.len() >= 2 && data[0].len() > 1 {
-            // Check for simple patterns
+        let n = data.len();
+        if n < 2 {
+            return symmetries;
+        }
+        let dim = data[0].len();
+        if dim == 0 {
+            return symmetries;
+        }
+        // Symmetry detection is a numerical probe, not a label: a translation
+        // claim is only reported if a small uniform shift of all coordinates
+        // leaves the pairwise distance matrix unchanged within tolerance.
+        let shift: Vec<f64> = vec![1e-3; dim];
+        let orig_dists: Vec<Vec<f64>> = (0..n)
+            .map(|i| {
+                (0..n)
+                    .map(|j| {
+                        data[i]
+                            .iter()
+                            .zip(data[j].iter())
+                            .map(|(a, b)| (a - b).powi(2))
+                            .sum::<f64>()
+                            .sqrt()
+                    })
+                    .collect()
+            })
+            .collect();
+        let shifted: Vec<Vec<f64>> = data
+            .iter()
+            .map(|row| row.iter().zip(shift.iter()).map(|(a, s)| a + s).collect())
+            .collect();
+        let shifted_dists: Vec<Vec<f64>> = (0..n)
+            .map(|i| {
+                (0..n)
+                    .map(|j| {
+                        shifted[i]
+                            .iter()
+                            .zip(shifted[j].iter())
+                            .map(|(a, b)| (a - b).powi(2))
+                            .sum::<f64>()
+                            .sqrt()
+                    })
+                    .collect()
+            })
+            .collect();
+        let translation = orig_dists
+            .iter()
+            .zip(shifted_dists.iter())
+            .all(|(o, s)| o.iter().zip(s.iter()).all(|(a, b)| (a - b).abs() < 1e-6));
+        if translation {
             symmetries.insert("translation".to_string());
         }
         symmetries

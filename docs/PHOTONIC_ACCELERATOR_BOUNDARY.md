@@ -255,6 +255,18 @@ Record: `benchmarks/quantum_compilation/dqi_primitive_costs.json`.
 | `init+del gf2_inverse_with_scaffold` (Itoh–Tsujii) | 315 = 5 × 63 |
 | `init+del gf2_div_with_scaffold` | 378 |
 
+These are the built-in costs. The 63 is not the floor: the base cases `mu(2)=3`,
+`mu(3)=6` composed by Karatsuba give a 54-AND multiply, emitted as gates in
+`scripts/gf54_mul.py` and measured in `docs/CIRCUIT_OPTIMISATION_RULES.md` §6. It saves
+7.14% of the six-lever DQI arm (4.320× → 4.652×). Emitted as an opcode instead
+(`builder.gf_product = 'and54'`, `scripts/measure_gf54_native_opcode.py`) it moves this
+table's third row and the inversion rows built on it: **315 → 270** per inversion and
+**378 → 324** per division, so the reference decoder itself drops **9.15%**
+(5,725,071.6 → 5,201,222.5 per shot). The phase arithmetic below survives it: the
+inversion block executes 20,469.5 products per shot across 4,093.9 positions and saves
+**184,225.1 Toffolis — 35.2% of the reference's whole saving** — leaving the Forney phase
+at roughly 1.11M executed, still **2.48×** the 445,229 target on its own.
+
 **The 22.5% in a single primitive.** The Forney step inverts `sigma_prime` once
 per position — `dqi_reference_circuit.py:579`, inside `for j in range(num_positions)`.
 At 4,095 positions that is 4,095 × 315 = **1,289,925 Toffolis, 22.5% of `T_mean`**.
@@ -338,17 +350,45 @@ The correctness gap in that paragraph is now closed on the mechanism, even thoug
 receipt still is not. `apedp_dyn/quantum_compilation/local_mr_sim.py` implements the
 instruction locally (plus the decoder's builder subset, pinned against `kickmix`), and
 reproduces `kickmix` shot for shot on the reference decoder — syndromes restored, every
-other qubit `|0>`, identical tracked phase. On it, all five levers — including the shift
+other qubit `|0>`, identical tracked phase. On it, all six levers — including the shift
 gate, whose predicate needs the flag *after* `_update_flag` — read their predicate with a
 real `mr` (`cx(control, ancilla); mr(ancilla, bit)`) instead of an oracle register, and
-each arm reproduces the reference's values **and** phase at m=15/GF(2⁴) and at
-m=255/GF(2⁸). The same arms built with `r` fail on the phase, and the shift arm fails
+each arm reproduces the reference's values **and** phase at m=15/GF(2⁴), at
+m=255/GF(2⁸) and at the official m=4095/GF(2¹²). The same arms built with `r` fail on
+the phase, and the shift arm fails
 when its gate omits the `¬flag ∧ (c0 ∨ c3)` branch and so skips shifts the decoder needs;
 that is what makes the test worth something (`scripts/run_mr_gated_arms.py`, record
 `benchmarks/quantum_compilation/local_mr_arms.json`).
 So the 4.142× no longer rests on a hypothesis about what an `mr` would do — it rests on
-measured phases. What remains unverified is the **cost**, because gate counts and the
-receipt can only come from `kickmix` and the official verifiers.
+measured phases. What remained unverified was the **cost**, because gate counts and the
+receipt can only come from `kickmix` and the official verifiers. That measurement is now
+in. With `MR` added to the vendored sources (`scripts/kickmix_mr_opcode.patch`, rebuilt
+by `scripts/build_kickmix_mr.py`), `scripts/measure_mr_arm_costs_kickmix.py` prices the
+gated circuits at the official instance over 64 shots: the reference reproduces the
+pinned 5,725,071.61 to within 0.01 Toffoli per shot, and the full stack executes
+**1,381,390.0 Toffoli per shot, 4.144×** against the projected 1,382,207.08 / 4.142×.
+The stacked stages land at 4,298,268.3 (Forney gate), 2,157,906.3 (+clear), 1,590,308.3
+(+sweep), 1,456,286.3 (+swap), 1,381,390.0 (+shift), every one of them within 0.06% of
+its projected count, so the projection is reproduced by the circuits rather than
+bounding them from above. The first pass at this measurement returned 3.556×, and the
+gap was three defects in the gates rather than in the lever accounting: a shift gate
+whose `¬flag` was written as a second store of 1 (constant, so it skipped only rounds
+with all four controls clear), a sweep gate wrapped around the position sweep only, and
+a Forney predicate computed as an 11-Toffoli equality circuit twice per position instead
+of read out of `sigma`. `docs/MR_INSTRUCTION_SPEC.md` §6a has the table and the fixes.
+
+Two further measurements, §6b. A sixth lever gates each of the sweep's two polynomial
+divisions on its own counter bit: the counter decode is one-hot, so in every live round
+exactly one division is computed under a false add and read by nothing. Skipping it is
+worth **4.07%** of the five-lever count — **1,325,230.0 per shot, 4.320×**. And the
+qubit side of that trade is now settled against the earlier claim that the reads buy `T`
+with qubits: they did only because the reads leaked. One shared read ancilla (the `mr`
+clears it, so reuse is free) and freeing the sweep's `q_i` in the round that allocates
+it take the arm from 4,503 allocated ids to **1,894**, against the reference's 1,893 —
+the gated row now pays one qubit for six gates. What this does not change is §5's other
+bound: 1.325M per shot is still not the 445,229 Benchmark II needs. Record:
+`benchmarks/quantum_compilation/kickmix_mr_arm_costs.json`; correctness in
+`docs/MR_INSTRUCTION_SPEC.md` §6.
 
 **The qubit target.** `Q` = 1,887 measured = 1,752 persistent registers
 (`2 × 73 × 12`, both factors frozen by the instance) + 135 transient
@@ -382,6 +422,15 @@ the Forney bodies, clearing the EEA instead of uncomputing it, and gating the de
 multiply sweeps, register swaps and shifted-round gates — reach 4.142×, leaving
 `T_mean` at 1.382M, still 3.10× above the target. Any T_mean claim near 445,229 needs a decoder that does not do the work it does —
 a different algorithm against a different instance, not an optimisation of this one.
+
+**Measured later, 2026-10-30:** optimisations of this one did get much further than the 4.142×
+above — reading the movement and product predicates per position
+([`EEA_SCHEDULE_CAMPAIGN.md`](EEA_SCHEDULE_CAMPAIGN.md)) took the six-lever arm from
+1,221,466.8 to **686,014.8 per shot, 1.541×** the target at `Q` = 1,913 (688,966.8, 1.547×,
+with the three schedule gates alone). The conclusion above survives only as "it did not
+reach 445,229": the arm is still 240,785.8 above it, and what is left is the swap's 64,224,
+the shift's 96,584.6, `shift_step`'s 30,912, `update_flag`'s 30,240 and the rest of the
+multiply window.
 
 ## 6. The contract
 

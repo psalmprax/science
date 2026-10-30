@@ -956,8 +956,12 @@ def compute_recommended_first_stage_features(
     else:
         out["BTC_RETURN"] = np.zeros(T)
         out["BTC_REALIZED_VOL"] = np.zeros(T)
-        out["ROLLING_BETA_TO_BTC"] = np.ones(T)
-        out["CORRELATION_TO_BTC"] = np.ones(T)
+        # No BTC frame available: these cross-asset relationship features cannot be
+        # measured, so they are set to NaN rather than a fabricated constant. A
+        # perfect beta of 1.0 / correlation of 1.0 would assert a relationship that
+        # does not exist in this dataset.
+        out["ROLLING_BETA_TO_BTC"] = np.full(T, np.nan)
+        out["CORRELATION_TO_BTC"] = np.full(T, np.nan)
 
     if cs_matrix_close is not None:
         # Cross sectional return rank

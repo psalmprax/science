@@ -583,6 +583,7 @@ def beam_search_expressions(
     depth: int = 2,
     width: int = 8,
     seed: int | None = 42,
+    include_functions: bool = False,
 ) -> list[str]:
     """Breadth-capped construction search over basic algebraic operations.
 
@@ -594,10 +595,22 @@ def beam_search_expressions(
 
     Level 1 pairs the atoms with each other, so multi-variable forms appear
     immediately rather than only after a second round of composition.
+
+    ``include_functions`` adds the unary structural atoms the default set cannot
+    express at any depth: a negative exponent (``exp(-x)``, ``1/x``), a square
+    root, a logarithm, and the power atoms above the square. Without them a decay
+    or a sub-linear law is unreachable, not merely unlikely, which is what
+    ``scripts/measure_search_engine_gaps.py`` measures. The default stays the
+    original atom set so existing counts and orderings do not move.
     """
     del seed  # determinism is the contract; see the docstring
     ops = ["+", "-", "*", "/"]
     atoms = [*list(variables), "1", "2"]
+    if include_functions:
+        for variable in variables:
+            atoms.extend([f"sin({variable})", f"exp(-{variable})", f"sqrt({variable})",
+                          f"log({variable})", f"1/{variable}", f"{variable}**2",
+                          f"{variable}**3"])
     level = list(atoms)
     seen = set(atoms)
     out = list(atoms)

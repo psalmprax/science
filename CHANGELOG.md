@@ -1,3 +1,625 @@
+## 2026-10-30 — The schedule campaign: read the predicate, then move; 1,221,466.8 → 686,014.8
+
+- **MEASURED — the shift/sweep/swap priority is discharged, and it was worth 43.6% of the
+  arm.** `scripts/measure_dqi_schedule_campaign.py` (`docs/EEA_SCHEDULE_CAMPAIGN.md`) applies
+  the read-then-gate gadget at per-position grain: every predicate register is a basis state,
+  so `cx` + `MR` through the shared ancilla yields a deterministic classical bit at zero
+  Toffoli and no phase, and a gate conditioned on a zero bit costs nothing on that shot. At
+  the pinned instance, 64 shots, `Q` 1,913 and 222 rounds in every arm: the sweep's one-hot
+  quotient selection **−103,968.0** (chain 105,696.0 → 1,728.0), the shift's `do_shift` mask
+  **−65,895.0** (chain 131,220.0 → 65,325.0), the product's `mul` control **−362,637.0**
+  (product stream 693,660.0 → 331,023.0); all three in one arm **1,221,466.8 → 688,966.8**
+  (−532,500.0, exactly additive), **1.547×** the 445,229 target instead of 2.744×, `Q²T`
+  4.4700e12 → 2.5213e12. Record: `benchmarks/quantum_compilation/dqi_schedule_campaign.json`.
+- **STACKED WITH THE PRIOR COMBINED ARM.** The same record now re-measures the
+  flag/metadata gate the previous session promoted (2,952.0 → 1,218,514.8, zero reads) and
+  puts all five gates in one circuit: **1,221,466.8 → 686,014.8 per shot (−535,452.0,
+  −43.84%)**,  exactly `532,500.0 + 2,952.0`, so the two sessions' gates do not interact,
+  **1.541×** the target, `Q²T` 4.4700e12 → 2.5105e12. The cross-report inference "the two
+  gates compose" is now a measurement in one record — and a declared one: `prediction.S5_stack`
+  records the arithmetic (`532,500 + 2,952 → T = 686,014.8`) written after the schedule arms
+  and **before** the five-gate arm was built, and the measurement matched it to **0.0**
+  Toffoli (`observation.stacked_error_per_shot`).
+- **NOT RELOCATED — REMOVED.** Counting the whole stream on the same runs: executed
+  instructions fall 37,808,019.7 → 32,451,795.1 per shot (−5,356,224.6, −14.17%) while the
+  Toffolis fall 535,452, i.e. 10.12 instructions per removed Toffoli — the expansion the
+  removed `CCX`es had. The added cost is 30,253 mid-circuit reads per shot at 2 instructions
+  each (60,506, 1.1% of what was removed), reported for every arm. The honest claim is: the
+  nonlinear work falls 43.84%, the stream falls with it, and the price is measurement depth.
+- **DECLARED BEFORE MEASURED.** The predictions are computed from the control arm's own chain
+  costs and printed before any variant exists (`prediction.written_before_variants`): S1 ≥
+  100,368 from a burn of `12 × 2 × 222`, S2 **no saving** (`do_shift` is the XOR of three
+  threshold intervals, not a one-hot), S3 and S3b exactly 0.0, S4 no saving. S1 came out at
+  103,968.0 (the bound assumed two selections in all 222 rounds; 144 occur); S2 at 65,895.0,
+  which **closes** the shift half rather than promoting it — half the chain is movement the
+  data path needs; S3/S3b at 0.0 with the arm still correct, which is the measured form of
+  "the shift and the swap cannot be fused for gain".
+- **FALSIFIED THREE WAYS.** Every variant was rebuilt with its condition made wrong and all
+  three are incorrect: the stale selection (skips 104,768.1 of its chain and *costs* 217,720.1
+  more than the control, because a wrong state changes the control flow), the inverted mask
+  (skips 69,311.6 and saves 79,854.5 — more than the honest gate's 65,895.0, which is what
+  makes it wrong), and the previous slot's mask (70,351.1 skipped, 80,612.0 saved, wrong).
+  The record measures skipped work on the chain the condition gates, never on the arm total,
+  and a falsifier that skips nothing is recorded as vacuous instead of as a pass.
+- **CORRECTED — what the arithmetic of the reachability note covers.** §3 of
+  `docs/EEA_AND_PREDICATE_PLAN.md` counted the *static* residual, so its "`C` alone is 1.062×
+  the target" was read as "control-logic work cannot help". The executed residual is not
+  `C`: 532,500 of it was quantum-controlled work whose control was zero. The target is still
+  out of reach — 686,014.8 is 240,785.8 above it, and the largest remaining items are the
+  swap's 64,224, the shift's 96,584.6, `_update_flag`'s 30,240 and `shift_step`'s 30,912 — but
+  it is now 1.541× away, not 2.737×.
+- **STATED COST MODEL.** An executed count that depends on classical conditions is a count
+  under adaptive execution. The benchmark permits it (the reference's own `error_mbuc` is
+  classical feed-forward, and the six levers were promoted on the same mechanism), but this
+  campaign applies it at per-position grain — thousands of mid-circuit measurements and
+  classical decisions per shot. A submission that forbids mid-circuit classical control could
+  not claim these counts, and none is claimed. No receipt exists either: the arm still needs
+  `MR`, which the pinned competition binary does not have.
+
+## 2026-10-29 — The two gates stack to 2,952; the GA leak and the search ranker are fixed
+
+- **MEASURED — the two promoted gates compose, and their savings do not add.**
+  `scripts/measure_dqi_combined_arm.py` runs the predicate-reuse arm and the halting-round
+  gate in one circuit. The prediction is written before the combined arm is built, from that
+  run's own control and halt-gated arms: the reuse saves 8 Toffolis only in rounds where
+  `_update_flag` executes, and the halt gate removes it from six dead rounds, so
+  `8 × 216 + 1,224 = 2,952`, not the naive `1,776 + 1,224 = 3,000`. Observed: **2,952**
+  (1,221,466.8 → **1,218,514.8** per shot, `Q` = 1,913, correct, 222 iterations in all three
+  arms, region rows partition each total). The 48-Toffoli difference is the interaction, and
+  the record names which model matched. Record:
+  `benchmarks/quantum_compilation/dqi_combined_arm.json`.
+- **FIXED — the evolutionary search no longer selects on the confirmation rows.**
+  `evolve()` picked `grouped_pick` by minimising error on the supplied `x_test`/`y_test`,
+  which turned the confirmation split into a second training set. Selection is now a
+  deterministic 5-fold inner cross-validation over the training rows
+  (`SearchConfig.selection_folds`), with coefficients refitted inside each fold; the test
+  rows are read only after the pick is fixed, to report the new
+  `SearchResult.confirmation_mse`. `selection_method`/`selection_folds` record which path
+  was taken, and the fallback when no candidate survives the folds is the lowest training
+  error — never the test rows. Both the native and Python paths were changed. Pinned by
+  `tests/test_evolutionary_search.py::test_grouped_pick_is_selected_without_reading_the_confirmation_rows`
+  (inverting the confirmation targets must leave the pick identical and only worsen the
+  confirmed error).
+- **FIXED — the search ranker preferred the worse candidate.** `ValidationPipeline`'s
+  `overall` was `0.4 * max(0, cv_mean - cv_std) + ...` with `cv_mean` an *error*: a perfect
+  fit scored 0.56 and a poor one 0.83, so `HierarchicalSearch.search` sorted its worst
+  candidate first. `overall` is now `0.4 * max(0, 1 - (cv_mean + cv_std)) + ...`, recomputed
+  in Python from the returned components on the Rust path too (the kernel carried the same
+  sign and is corrected in `validation.rs`). Measured effect in
+  `benchmarks/search_engine_gaps.json`: classic templates recovered 0/12 planted laws with
+  the inverted score and 2/12 with the fix.
+- **MEASURED — what the search templates cannot reach, and closed most of it.**
+  `scripts/measure_search_engine_gaps.py` plants 12 law families, searches on 200 rows and
+  scores the returned candidate on 100 untouched rows (coefficients refitted on train).
+  Classic `HierarchicalSearch` recovered **2/12**, `beam_search_expressions` **1/12**.
+  The extended template set (reciprocal, square root, cubic, `exp(±x)`, log, cosine,
+  rational saturation, ratios, a variable in an exponent, plus an exact least-squares scale
+  and offset fitted to every candidate) recovers **11/12**, and `beam_search_expressions(
+  include_functions=True)` **9/12**. Genuinely still unreachable, and reported as such: a
+  sinusoid of non-unit frequency (the engine fits affine coefficients, not a frequency).
+  Records: `benchmarks/search_engine_gaps.json`.
+- **ADDED — patent prior-art search with a provenance gate.** `apedp/patent_prior_art.py`
+  indexes patent records whose claims carry a normalised formula and audits a candidate
+  against them: rename-insensitive algebraic equivalence first, structural signature second,
+  otherwise `NOT_FOUND_IN_PATENT_CORPUS`. A record that claims a real patent without an
+  http(s) source and a retrieval date is refused at load (`PatentProvenanceError`), and
+  claims with no formula are counted and reported (`NO_SEARCHABLE_CLAIMS`) rather than
+  silently skipped. No patent corpus is bundled; the loader and the documented source
+  options are. Pinned by `tests/test_dyn_patent_prior_art.py` (9).
+
+## 2026-10-29 — The 80% is split: per-instruction counts, and two gates that pass
+
+- **INSTRUMENTED:** the local `MR` build now counts executed shots **per instruction**
+  (`sim.counting_op_executions` / `sim.operation_execution_counts()`), and the circuit
+  exposes its `builder.mark(...)` boundaries and Toffoli-like mask (`circuit.info_tags()`,
+  `circuit.op_toffoli_like`). The simulator applies the same per-shot condition mask as
+  `operation_statistics()` and masks off the SIMD lanes beyond `batch_size`, so a region's
+  sum reconciles with `num_toffoli_like` exactly rather than by construction.
+- **MEASURED — the named 80% bucket is gone.** `scripts/measure_dqi_region_ledger.py`
+  partitions the six-lever arm's 1,221,466.8 Toffolis/shot into regions that sum to the
+  472,768.2 non-product residual: `shift_b_array_right` 162,479.6, `sweep_positions`
+  143,038.0, `swap_a_and_b` 64,224.0, `_update_flag` 32,856, `_initial_shift_loop` 30,912,
+  `_update_metadata` 12,432, `_update_halting_counter` 10,656, counter decode 4,662, the
+  alignment pair 7,392, multiply-and-add control 2,016, quotient control 1,728, Forney
+  control 372.6. It also records what each lever removed per region, and checks each
+  lever's arm-level delta against the sum of its region deltas. Record:
+  `benchmarks/quantum_compilation/dqi_region_ledger.json`.
+- **PROMOTED — predicate reuse in `_update_flag`.** `scripts/measure_flag_predicate_reuse.py`
+  shares the `(n_A == n_B)` comparison between the `c0` and `c1` sub-steps and clears the
+  scratch with `MR` instead of uncomputing it: 8 Toffolis per iteration × 222 = **1,776
+  per shot**, exactly the prediction computed from unit costs before the arms were built
+  (the first prediction used the 12-bit field degree instead of the 8-bit register width
+  and over-predicted by 4 per iteration; the mistake and the corrected run are in the
+  record). `_update_flag` 32,856 → 31,080, `Q` unchanged at 1,913, `Q²T` −0.145%, all eight
+  promotion gates pass, 222 iterations in both arms. Record:
+  `benchmarks/quantum_compilation/dqi_flag_predicate_reuse.json`.
+- **PROMOTED — the halting-round gate.** `scripts/measure_eea_oracle_ledger.py` gates
+  `_update_flag` and `_update_metadata` on a classical read of `is_hc_zero`: both regions
+  are controlled on the one-hot `c0..c3`, so in a round with a non-zero halting counter
+  their net effect is the identity and skipping them is exact. It removes **1,224 per shot**
+  (888 + 336), correct, `Q` unchanged. The predicate is already computed by the arm, so this
+  is a real gate, not an oracle upper bound. Record:
+  `benchmarks/quantum_compilation/dqi_eea_oracle_ledger.json`.
+- **NARROWED:** together the two gates are 3,000 Toffolis/shot, 0.25% of the arm and 0.6% of
+  the non-product residual. Most of the residual is not predicates — it is the sweep, the
+  shift and the swap, which the six levers already gate to 64.8%, 68.4% and 32.4% of their
+  static counts. No predicate edit closes the 2.744×; §3 of `EEA_AND_PREDICATE_PLAN.md`
+  still stands.
+- **PINNED:** `tests/test_dyn_mr_gated_arms_kickmix.py` pins both records: the region rows
+  sum to 472,768.2 with products separated, each lever's delta equals its region deltas,
+  the flag-reuse observation matches its prediction, and all eight gates pass.
+
+## 2026-10-29 — Ratio baselines labelled: 4.687× and 4.258× are different questions
+
+- **CORRECTED:** the update quoted "4.687× against 4.320×" without saying which baseline
+  each ratio used, which reads as a regression once a controlled comparison is made. The
+  measure now records five comparisons, each with its baseline
+  (`gf54_native_opcode.json:comparisons`): the multiply saves **9.15%** on the reference and
+  **7.83%** on the gated arm; the arm is **4.687×** faster than the *unchanged* reference
+  (the scored comparator) and **4.258×** faster than a reference given the same opcode; its
+  `Q²T` falls **5.97%** from the built-in arm to the final one.
+- **EXPLAINED:** 4.258× is below the built-in arm's 4.320× because the policy helps the
+  reference more than the arm — the arm's Forney body is gated, so fewer of its inversion
+  products execute. Both ratios are correct; only a reader told which baseline each uses
+  can tell that they are not the same claim.
+- **PINNED:** `tests/test_dyn_mr_gated_arms_kickmix.py` recomputes all five from the
+  recorded means and requires the same-policy ratio to sit below the built-in one, so a
+  future edit cannot quietly swap the baselines.
+- **NOTATION:** every figure in this work is GF(2^12) with 12-bit field elements
+  (`DEFAULT_DEGREE = 12`); the two new notes spell it in ASCII so the superscript cannot be
+  misread as 2^25.
+
+## 2026-10-29 — Reconciled: the official 5,725,108.38 and our 5,725,071.6 are one metric
+
+- **RECONCILED:** `scripts/reconcile_dqi_resource_baseline.py` (record:
+  `benchmarks/quantum_compilation/dqi_resource_reconciliation.json`,
+  note: [`docs/DQI_RESOURCE_RECONCILIATION.md`](docs/DQI_RESOURCE_RECONCILIATION.md)). The
+  locked official reference row is 1,893 qubits / 5,725,108.382109375 Toffolis, and its
+  fractional part is a multiple of 1/102,400 but **not** of 1/64 — so it is the verifier's
+  default-shot mean, while this project's 5,725,071.609375 is a 64-shot mean. Same decoder,
+  same metric (`num_toffoli_like`, which the verifier itself averages), same instance.
+- **MEASURED:** the reference decoder was built and simulated on the **pinned competition
+  binary** and on the local `MR` rebuild over the same 64 sampled syndromes. The per-shot
+  Toffoli arrays are identical element by element and both means are 5,725,071.609375 at
+  1,893 qubits, so the `MR` patch is count-neutral for a circuit that emits no `MR`. The
+  36.77 gap to the official row is 0.78 standard errors of a 64-shot mean: a sample, not a
+  discrepancy.
+- **ESTABLISHED — no receipt for the arm.** Building the six-lever arm on the pinned binary
+  fails with `AttributeError: 'Builder' object has no attribute 'mr'`: its clears need an
+  opcode the competition build does not have, and `apedp_dyn/quantum_compilation/contracts.py`
+  pins receipts to that build's hash. The arm's 1,221,466.8 at `Q` 1,913 is a local
+  measurement, not an official result; `verify_submission_dqi.py` has no Toffoli threshold
+  either — it returns `PASS` on correctness and reports `R(eps_plus) · Q² · T`.
+- **DOCUMENTED:** what 445,229 is — a *derived target* (`Q = 1,789`, `T = 445,229`, chosen so
+  the product reaches a 14.397× portfolio gain), not a measurement, a competitor's figure or
+  an acceptance threshold. `docs/BENCHMARK2_TARGET_REACHABILITY.md` now says so before it
+  compares anything to it.
+
+## 2026-10-29 — Product window removed: 19 workspace qubits, `Q` 1,935 → 1,912, same T
+
+- **MEASURED:** `gen_gf54_mul` no longer materialises the 2m-1-bit product window. Reduction
+  is GF(2)-linear, so each Karatsuba sub-product is added to the target through a
+  `x^d mod p` table as soon as it is computed; the peak scratch is one sub-product window at a
+  time — **19 qubits at GF(2^12) instead of 42**, 12 + 19 when controlled instead of 54. The
+  AND count is untouched, so `T_mean` is too: the two records differ only in `Q`.
+  Correctness is unchanged and re-checked: multiply, inversion and division all 0 bad on 32
+  random basis states, operands restored, workspace `|0>`, phase untouched.
+- **MEASURED:** with the opcode emit at the pinned instance over 64 shots the reference stays
+  **5,725,071.6 → 5,201,222.5 per shot (9.15%)** but `Q` goes **1,893 → 1,912** (was 1,935),
+  and the six-lever arm **1,913** (was 1,936) at 1,221,466.8 per shot. The cost is 22 more
+  CNOTs per controlled multiply (600 against 578): the reduction is applied per sub-product
+  rather than once per window bit. Since the score charges `Q` squared, 23 fewer qubits at
+  equal `T` is a 2.4% improvement in `Q^2 T` over the 42-qubit emit.
+- **NEW:** [`docs/BENCHMARK2_TARGET_REACHABILITY.md`](docs/BENCHMARK2_TARGET_REACHABILITY.md)
+  lists every opcode class against the 445,229 target with the measured arithmetic. (The
+  two-term form first recorded here — `527,806.8 + 10,510 × (ands + 12)`, giving 2.012× at
+  the 23-AND bound and 1.186× free — was superseded the same day by the three-term
+  decomposition below: same totals, but it folded the 1,019.23 inversion/division products
+  into its constant at 54 ANDs each, so "free multiply" meant "free `ixor` only". The
+  correct figures are 1.941× and 1.062×.) It also records why no Fast-Fourier/cyclotomic
+  selector was added: the Chien search's 69 constant multiplies per position are CNOT-only
+  (0 Toffoli in `dqi_primitive_costs.json`), so a transform can only trade CNOTs for CNOTs
+  and would pay qubits, which the score squares.
+
+## 2026-10-29 — The reconciled non-multiply ledger, and the first experiment's gates
+
+- **MEASURED — ledger.** `scripts/attribute_dqi_nonmultiply_tcount.py` (record:
+  `dqi_nonmultiply_ledger.json`, note: [`docs/NONMULTIPLY_LEDGER.md`](docs/NONMULTIPLY_LEDGER.md))
+  assigns every executed Toffoli of the six-lever arm to exactly one category and checks
+  that they sum to the simulator's total: **693,660.0** (10,510 controlled multiplies),
+  **8,382.7** (155.23 inversion products), **46,656.0** (864 division products) and
+  **472,768.2** (non-product residual, 38.7%) = **1,221,466.8**. The static ledger reconciles
+  too: 3,486,597 = 94,470 + 3,392,127.
+- **BOUNDED, NOT GUESSED.** The residual's six unconditional regions are exactly 94,470
+  (20.0%). The other **378,298.2 (80.0%) is one named unattributed bucket**: the simulator
+  reports per-shot counts by operation type, not per operation, so the conditional EEA body
+  cannot be split by region; the ledger records the gap, how to close it (per-op execution
+  counts, or per-region oracle gating that measures the removable part) and refuses to
+  estimate it into the table.
+- **CORRECTED INVARIANT.** The review's accounting invariant of 527,806.8 is superseded by
+  472,768.2 for the reason in the previous entry: 55,038.4 of the old constant was the
+  1,019.23 inversion/division products, which are field arithmetic, not decoder logic.
+- **NEW — first experiment protocol.** `_update_flag` plus the counter/halting predicates
+  (43,734 Toffolis, 9.3% of the residual) against the unchanged 222-iteration arm, with a
+  prediction written before the edit and eight promotion gates (exact output equivalence,
+  measured phase, clean workspace, fixed iteration behaviour, both T-counts, `Q`, `Q²T`
+  from the same run, frozen source and record). Pinned in
+  `tests/test_dyn_mr_gated_arms_kickmix.py`.
+
+## 2026-10-29 — Three-term decomposition, and the measured EEA/predicate plan
+
+- **CORRECTED — same totals, honest labels.** The arm's Toffolis are
+  `T = 472,768.2 + 10,510 × (ands + 12) + 1,019.23 × ands`, not
+  `527,806.8 + 10,510 × (ands + 12)`. The 1,019.23 are the products inside the arm's
+  inversion (155.23) and division (864), each 54 ANDs with **no** controlled add, so the
+  old constant silently contained 55,038.4 of field arithmetic. Consequences: freeing
+  every field product gives **1.345×** the target (not 1.469×), freeing the adds too gives
+  **1.062×** (not 1.186×), and the 23-AND bound lands at **1.941×** (not 2.012×).
+- **MEASURED:** the decomposition, by scoping `gf_product` to one entry point at a time on
+  both the reference and the arm — the reference runs **888** divisions per shot (47,952
+  Toffolis saved) and the arm **144** (7,776), and the arm's gated Forney block runs
+  **31.05** inversions (1,397.11). `gf54_native_opcode.json:isolated_blocks` records all of
+  it, and its `check_terms_sum_to_arm` is exact.
+- **NEW:** [`docs/EEA_AND_PREDICATE_PLAN.md`](docs/EEA_AND_PREDICATE_PLAN.md) is the measured
+  plan the next layer was promised: the residual `472,768.2` (38.7% of the arm, 1.062× the
+  target on its own), the exact 94,470-Toffoli ledger over the six unconditional regions
+  (20% of it), the EEA slopes (17,208/iteration, 351/position), the five levers ranked with
+  ceilings, the correctness obligations (systolic schedule gate-for-gate; early halting and
+  asynchronous pointers closed until proved; no deletion-differencing), and the arithmetic
+  showing no control-logic edit reaches 445,229: `C ≤ 445,229 − P` needs either zero-cost
+  arithmetic (impossible at the 23-AND bound) or a 5.8% cut in `C` *with* the arithmetic
+  free.
+- **PINNED:** three new kicks in `tests/test_dyn_mr_gated_arms_kickmix.py` — the three-term
+  sum, the 472,768.2 residual with `C > target`, and the 94,470 region ledger at 20.0% of it.
+
+## 2026-10-29 — The 54-AND multiply as an opcode: 4.687×, and 35% of it is Forney
+
+- **NEW:** `gen_gf54_mul` in `scripts/kickmix_mr_opcode.patch` emits the proved 54-AND
+  GF(2¹²) product natively, and a `GFProduct` policy (`builder.gf_product = 'and54'`) routes
+  `gen_gf_mul` through it. The earlier `Gf54MulMixin` could only replace `ixor_gf2_mul`; the
+  five Itoh–Tsujii products inside Chien search and the quotient sweep's are emitted by
+  native generators, so the mixin left them on the built-in 63-AND recursion.
+- **MEASURED:** `scripts/measure_gf54_native_opcode.py` (record:
+  `benchmarks/quantum_compilation/gf54_native_opcode.json`). Unit costs: controlled multiply
+  **75 → 66**, plain multiply **63 → 54**, inversion **315 → 270**, division **378 → 324**
+  Toffolis, at **42** workspace qubits against 12, all four correct on random basis states
+  (values, restored operands, clean workspace, untouched phase). At the pinned instance over
+  64 shots the **reference** decoder goes **5,725,071.6 → 5,201,222.5 per shot (9.15%)**, `Q`
+  1,893 → 1,935, and the six-lever arm **1,325,230.0 → 1,221,466.8 (4.687× against 4.320×)**
+  — better than the mixin's 4.652×, because the opcode reaches the inversion too.
+- **MEASURED — the Forney inversion's share, isolated.** The reference runs an inversion of
+  five products at every one of its 4,095 positions: 20,475 product sites, 184,275 static
+  Toffolis. Pricing it alone (the same reference with only
+  `init_gf2_inverse_with_scaffold`/`gf2_phase_by_product` switched) executes **20,469.5
+  products per shot across 4,093.9 positions, saving 184,225.1 Toffolis — 3.22% of the
+  reference and 35.2% of its 523,849.1 saved per shot**. The remaining 339,624.0 (64.8%) is
+  the change-of-basis division and the quotient sweep. Static and measured differ only by the
+  1.1 positions per shot whose error bit is clear.
+- **PINNED:** `tests/test_dyn_mr_gated_arms_kickmix.py` gains the builder-policy surface
+  (66 CCX, 42 extra workspace bits, invalid names rejected), an end-to-end scaled run, and a
+  pin on the recorded split so the Forney share cannot drift back to an assertion.
+
+## 2026-10-29 — The 54-AND multiply, executed: 4.652×, and the share it corrects
+
+- **NEW:** `scripts/gf54_mul.py` turns the proved 54-AND GF(2¹²) algorithm into gates: the
+  pinned `mu(2)=3`/`mu(3)=6` base cases, their Karatsuba composition, a classical evaluator,
+  and `Gf54MulMixin`, which reimplements `ixor_gf2_mul` as **54 ANDs plus the 12-Toffoli
+  controlled add — 66 Toffolis per controlled call against the built-in 75** — clearing its
+  product window and scratch with `mr`. 42 workspace qubits against the built-in 12, and a
+  longer CNOT ladder (566 vs 481).
+- **MEASURED:** `scripts/measure_gf54_mul_kickmix.py` (record:
+  `benchmarks/quantum_compilation/gf54_mul_kickmix.json`). The emitted multiply is correct on
+  random basis states with random controls (values equal `field.mul`, operands restored,
+  workspace `|0>`, phase untouched), and swapped into the six-lever arm at the official
+  instance over 64 shots it takes **1,325,230.0 → 1,230,640.0 Toffoli per shot: 4.652×
+  against 4.320×**, a **7.14%** saving, `Q` 1,894 → 1,897, with the arm still passing the
+  six-lever verification shot for shot against the reference.
+- **CORRECTED:** the projected 4.928× does not reproduce, and the reason is the model, not
+  the circuit: a controlled multiply pays its ANDs **plus 12**, and the 12 do not shrink, so
+  the call scales by 66/75. The same measurement corrects a larger error in the record — the
+  multiply is **59.48%** of the arm (788,250.0 per shot over 10,510 executed calls), not the
+  **86.33%** an earlier ablation reported. That ablation deleted `ixor_gf2_mul` and
+  differenced executed counts, so the registers held garbage, the gating predicates read it
+  and far less other work ran. The new measurement differences two arms that differ only in
+  the multiply, and it reconstructs the measured arm exactly
+  (536,980.0 + 10,510 × 66 = 1,230,640.0).
+- **REVISED:** the multiply-cost ladder is now `t(ands) = 536,980 + 10,510 × (ands + 12)`: 54
+  ANDs 4.652× (measured), 45 ANDs 5.039×, the 23-AND `2n-1` bound 6.327× (2.03× the target),
+  and **0 ANDs 8.634× — still 1.49× above 445,229**. The conclusion survives with a narrower
+  margin: no multiply, however cheap, delivers Benchmark II on this decoder, so the target
+  needs a change to the 536,980 that is not the multiply. `docs/CIRCUIT_OPTIMISATION_RULES.md`
+  §5–§6 and §8 carry it, and `benchmarks/quantum_compilation/{designer_directions,
+  gf_mul_and_static_headroom}.json` were regenerated rather than left asserting the old share.
+- **PINNED:** `tests/test_dyn_mr_gated_arms_kickmix.py` gains pins for the base algorithms,
+  the emitted circuit (values, restored operands, clean workspace, phase), the 66/75 unit
+  costs, both arms' correctness on a scaled run, and the recorded decomposition.
+
+## 2026-10-29 — Three designer directions priced; the multiply gains 14.3%
+
+- **MEASURED, then designed:** `scripts/study_circuit_designer_directions.py` (record:
+  `benchmarks/quantum_compilation/designer_directions.json`) prices the three ways left to
+  improve the decoder. **A** (predicate discovery over the regions no lever touches) is
+  bounded at **2.71%** of the emitted stream at the pinned instance — 94,470 of 3,486,597
+  Toffolis — so it does not pay here. **B** (an exact bilinear search) proves `mu(2)=3` and
+  `mu(3)=6` by exhausting every choice of five rank-1 matrices, then composes by Karatsuba
+  to **54 ANDs at GF(2¹²)** against the built-in 63 (14.3% fewer), verified against
+  `GF(2¹²)` multiplication on 200 sampled inputs with 0 mismatches and priced at
+  **4.928×**. **C** (a different decoder) is refuted as a multiply-only fix: even the
+  23-AND `2n-1` dimension bound leaves 598,835.7 per shot, still 1.35× above the 445,229
+  target, and only the inadmissible measured-operand route clears it.
+- **DOCUMENTED:** `docs/CIRCUIT_OPTIMISATION_RULES.md` §6 carries the comparison and the
+  ladder, and §8 records the 54-AND multiply as *pending*: a verified algorithm, not yet a
+  measured circuit, because `ixor_gf2_mul` is the 63-AND Karatsuba and emitting the new one
+  needs a second `kickmix` op.
+
+## 2026-10-29 — Rules for a better circuit, and the measured ceiling
+
+- **NEW:** `docs/CIRCUIT_OPTIMISATION_RULES.md` fixes what a "better circuit" claim has to
+  carry: the metric by name (**executed** 1,325,230.0 = 4.320× versus **static** 3,486,597 =
+  1.642×, which rank the levers differently), unitary preservation on every input (dead-work
+  gating and measured uncomputation are admissible; measuring an operand that is not
+  determined by the state is not), a falsifier per measurement, and the instance discipline.
+- **MEASURED:** `scripts/measure_gf_mul_and_static_headroom.py` (record:
+  `benchmarks/quantum_compilation/gf_mul_and_static_headroom.json`). `ixor_gf2_mul` is the
+  Karatsuba recursion to the gate — 3/7/9/21/27/63 static Toffolis at GF(2²/2³/2⁴/2⁶/2⁸/2¹²),
+  matching `K(m)` exactly at every degree. No split of the recursion beats 63 at m=12 (k=8
+  ties, the rest are worse; schoolbook 144). The multiply is **86.33%** of the six-lever
+  arm's executed count, so a 45-AND multiply would give 5.734× and a free one 31.598× (the
+  latter only by the inadmissible measured-operand route). A full-recording peephole removes
+  **0** Toffolis at both instances, and the sixth lever changes the static count by exactly 0:
+  the emitted stream has no headroom left.
+- **PINNED:** `tests/test_dyn_mr_gated_arms_kickmix.py` gains a record pin for those
+  invariants (Karatsuba exactness, the 63 floor, static five == six, zero peephole
+  removals, the multiply share), so a later "optimisation" that changes any of them fails
+  without the extension being rebuilt.
+
+## 2026-10-29 — DQI MR-gated arms: a sixth lever and qubit parity
+
+- **MEASURED:** `scripts/measure_mr_arm_costs_kickmix.py` prices the gated Benchmark II
+  circuits on the rebuilt, MR-capable `kickmix` (official instance, m=4095, n=70,
+  GF(2¹²), 64 shots, seed 20261028). The five oracle-gated levers reproduce the
+  projection stage for stage: 5,725,071.6 → 1,381,390.0 Toffoli per shot (4.144×)
+  against the projected 1,382,207.08 (4.142×), every stacked stage within 0.06% of its
+  projected count.
+- **NEW LEVER:** each of the sweep's two polynomial divisions is consumed by an add
+  controlled on its own counter bit, and the four counter bits are a one-hot decode, so
+  in every live round exactly one division is computed under a false add and read by
+  nothing. Gating each division on that bit (`gate_quotient`, arm `quotient`) removes
+  4.07% of the five-lever count: **1,325,230.0 per shot, 4.320×**. It carries no projected
+  row, because the oracle build priced both divisions as live.
+- **FIXED (qubits the reads were leaking):** every read allocated a fresh copy qubit and
+  the sweep's `q_i` was never freed, so the gated arm's id count grew by roughly a
+  register per round — 4,503 ids against the reference's 1,893. One shared read ancilla
+  (`mr` clears its target, so reuse is free) and freeing `q_i` in the round that
+  allocates it bring both stacks to **1,894** ids: the gated rows now pay one qubit, not
+  2,610.
+- **PINNED:** `tests/test_dyn_mr_gated_arms_kickmix.py` gains
+  `test_small_instance_cost_pin_catches_gate_regressions`, which re-prices the whole
+  stack at m=15/n=6/GF(2⁴) in about a second (33,235.5 → 10,409.5, 3.193×) and fails if
+  any gate stops firing, changes its saving by more than 1%, or costs qubits — the
+  64-shot official run is not needed to catch a regression. `docs/MR_INSTRUCTION_SPEC.md`
+  §6b records the new lever and the qubit fix.
+
+## 2026-10-29 — Temporal-rate detector audit hardening
+
+- **RE-PINNED:** `specifications/canonical_preregistered_spec_v1.json` and
+  `apedp_dyn/conf/canonical_spec.py` to
+  `dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343`.
+  The only spec change is the new `temporal_rate_min_compositions=2`; the
+  two-distinct-composition requirement for a common-mode claim is now
+  canonical rather than a hardcoded literal. No previously pinned FPR, power,
+  alpha, SNR, amplitude, harmonic, or sample threshold changed. FLAW-01
+  remains OPEN; the governance manifest and its expected failing test were not
+  touched.
+- **FIXED:** `_drive_phasor()` used a raw windowed DFT of the drive. For a
+  non-integer number of drive cycles, constant/trend leakage rotated and
+  rescaled the estimated phasor; that bias transferred incorrectly between
+  calibration and confirmation frequencies and inflated the null statistic.
+  The phasor is now fit jointly with a constant and linear trend over
+  cosine/sine columns and returns the analytic conjugate. Added
+  `test_calibration_transfer_has_no_drive_phasor_bias`, which recovers the
+  known susceptibility from a noiseless non-integer-cycle calibration to
+  1e-10 relative accuracy.
+- **MEASURED (before/after):** before the phasor fix, 512 null trials at 128
+  surrogates gave FPR 14/512 = 2.73% (95% upper 4.24%) and 128 trials at 512
+  surrogates gave 4/128 = 3.13% (95% upper 7.01%). After the fix: 512 trials
+  at 128 surrogates gave FPR 5/512 = 0.98% (95% upper 2.04%), artifact rate
+  0/512, power 512/512 (95% lower 99.42%), median null p 0.516; a second
+  512-trial seed 7 audit also gave 5/512; 128 trials at 512 surrogates gave
+  FPR 1/128 = 0.78% (95% upper 3.65%), artifact rate 0/128, power 128/128
+  (95% lower 97.69%), median null p 0.496. Both audits pass the preregistered
+  point-estimate gate. Exact Clopper-Pearson bounds are reported
+  as diagnostics; the 128/512 upper bound is now below 5% as well.
+- **HARDENED:** `ClockDataset` rejects non-uniform sampling; calibration and
+  confirmation must use disjoint drive-harmonic sets at the Rayleigh
+  resolution; calibration reports per-harmonic SNRs while the insufficiency
+  gate remains fundamental-only; `TemporalRateAdjudication` records both
+  dataset ids, the frozen analysis parameters, calibration SNRs, and the
+  canonical spec hash.
+- **FROZEN:** the preregistration schema is now `temporal-rate-v2` and freezes
+  `harmonics`, `n_surrogates`, `seed`, `familywise_alpha`,
+  `heterogeneity_alpha`, `min_fractional_amplitude`, and
+  `canonical_spec_sha256` in addition to dataset fingerprints/ids, drive
+  frequencies, and the clock-composition map.
+  `adjudicate_preregistered_temporal_rate()` takes exactly three arguments and
+  cannot be parameter-overridden after registration. Verification rejects a
+  changed spec hash, changed canonical alpha, or fewer than two distinct clock
+  compositions. The artifact remains a fingerprint commitment, not a
+  signature.
+- **CALIBRATION:** `run_detector_calibration()` now refits a fresh calibration
+  for every null/injection pair, so the FPR is unconditional on one lucky
+  calibration realization. It reports false-candidate, oscillator-specific
+  artifact, and any-false-claim rates, plus exact one-sided 95% bounds and
+  `n_calibration_draws`; the preregistered pass gate is the point-estimate
+  FPR/power floor, with bounds retained as diagnostics.
+- **ADDED:** 9 pins, bringing the temporal suite to 44 (18 detector + 26 IO):
+  uniform-sampling rejection, harmonic-overlap rejection, per-harmonic SNR
+  reporting, phasor-transfer regression, frozen analysis parameters, no
+  parameter overrides, tampered spec hash, tampered canonical alpha, and
+  distinct-composition enforcement. `AGENTS.md`'s standard suite now includes
+  both temporal test files.
+- **Verified:** 44/44 temporal pins pass; Ruff is clean on the changed files;
+  repo-scope mypy (`python3 -m mypy`) is clean. The expanded dynamic suite is
+  162 passed with one pre-existing unrelated failure:
+  `test_orphan_module_detection` scans the untracked vendored
+  `kickmix/_qualtran_src/`.
+- **LIMITS:** common-mode calibration/clock systematics are still unmodeled,
+  `systematic_susceptibility_sigma` still defaults to zero, the pure-sinusoid
+  drive assumption is documented but not validated against non-sinusoidal
+  drives, and colored/non-Gaussian residual noise is not covered by the
+  shared-phase surrogate. No real two-composition clock data exists in the
+  repo, so these are detector-calibration results, not a measurement of nature.
+
+## 2026-10-29 — `MR` implemented, and the gated arms run on a real `kickmix`
+
+- **ADDED:** `scripts/kickmix_mr_opcode.patch` — the `MR`/`MR_IF` opcodes
+  (`docs/MR_INSTRUCTION_SPEC.md`) applied to the vendored `kickmix` sources:
+  opcode values 0x54/0xD4 with names, `OP_TYPE_TABLE` and `.kmx` parse/print, a
+  `mr`/`mr_if`/`broadcast_mr` builder path with Python bindings, a Z-basis
+  simulator branch that writes the outcome and clears the qubit without touching
+  the tracked phase, its own statistics group, and a reaction-depth case.
+- **ADDED:** `scripts/build_kickmix_mr.py` exports the vendored sources at their
+  recorded commit, applies the patch, and compiles `build/kickmix_mr/lib`
+  (`build/` is gitignored). The pinned competition binary that
+  `apedp_dyn/quantum_compilation/contracts.py` hashes is never modified.
+- **ADDED:** `scripts/run_mr_gated_arms_kickmix.py` runs the five gated DQI levers
+  on that extension with a real `kickmix.CircuitBuilder` and a real
+  `kickmix.Simulator`, so the arms are no longer measured only on the local model.
+- **MEASURED:** at m=15/n=6/GF(2⁴) with 8 shots, `none`, `swap`, `sweep`,
+  `forney`, `clear`, `shift` and `all` match the reference's syndromes and tracked
+  phase, restore the syndromes and leave every non-syndrome qubit `|0>`; `all`
+  also passes at m=255/n=14/GF(2⁸) with 16 shots and at the official
+  m=4095/n=70/GF(2¹²) with 4 shots (reference 1,893 qubits, arm 4,503 allocated
+  ids, phase identical). The falsifiers still fail:
+  `--clear-with r` (phase 6 ones vs 3, dirty junk) and `--shift-under`
+  (syndromes not restored).
+- **RECORDED:** `x(q); mr(q, b)` gives `b = 1` and 0 phase flips on 64/64 shots,
+  against 37/64 phase flips for the same circuit with `reset` — the semantic
+  difference the instruction exists for.
+- **ADDED:** `scripts/measure_mr_arm_costs_kickmix.py` prices the reference, the
+  cumulative lever chain and each lever alone with `kickmix`'s conditional-aware
+  per-shot Toffoli counting. Record:
+  `benchmarks/quantum_compilation/kickmix_mr_arm_costs.json`.
+- **ADDED:** `tests/test_dyn_mr_gated_arms_kickmix.py` pins the real-kickmix arm
+  runs and both falsifiers, plus the cost record's arithmetic; the extension-backed
+  pins skip when the MR build is absent (10 passed under CPython 3.13 with the
+  build, 1 passed and 9 skipped under the project's 3.12).
+- **MEASURED (cost):** at the official instance over 64 shots the rebuilt builder
+  reproduces the pinned reference exactly (5,725,071.6 vs 5,725,071.61) and the
+  full gate executes **1,381,390.0 Toffoli per shot, 4.144×** against the
+  projected 1,382,207.08 / 4.142×. Every stacked stage is within 0.06% of its
+  projection — 4,298,268.3 (Forney), 2,157,906.3 (+clear), 1,590,308.3 (+sweep),
+  1,456,286.3 (+swap), 1,381,390.0 (+shift) — so the oracle-gated projection is
+  reproduced by the circuits rather than bounding them from above. Per lever
+  alone: `swap` 1.049×, `sweep` 1.247×, `forney` 1.332×, `clear` 1.597×, `shift`
+  1.027×; the shift lever inside the chain is worth the 5.14% the oracle
+  accounting gave it.
+- **FIXED:** three gate defects in `scripts/run_mr_gated_arms.py` that a first
+  costing pass (3.556×) exposed. The shift gate's `¬flag` was written as a second
+  `bit_store(…, True)`, leaving the bit constant, so it skipped only rounds with
+  every control clear (1.002× alone). The sweep gate wrapped only the position
+  sweep, leaving the quotient divisions and the `n_a` add/undo inside dead rounds.
+  The Forney predicate was an 11-Toffoli equality circuit run twice per position,
+  with a copy qubit allocated per position; it is now `mr`-read out of `sigma`,
+  restored with classically controlled `x`, and assembled from two classical
+  stores. Net: 1,609,925.7 → 1,381,390.0 per shot and 8,587 → 4,503 qubit ids.
+- **UNCHANGED:** a receipt still requires an upstream `kickmix` rebuild plus the
+  official verifier; the local extension is not the pinned binary.
+
+## 2026-10-28 — Preregistration gate for the temporal-rate null test
+
+- **ADDED:** `TemporalRatePreregistration` plus `preregister_datasets()`,
+  `save_preregistration()`, `load_preregistration()`,
+  `verify_preregistration()`, and `adjudicate_preregistered_temporal_rate()`
+  in `apedp_dyn/epistemic/temporal_rate_io.py`. The artifact freezes the
+  calibration/confirmation SHA-256 fingerprints, dataset ids, drive
+  frequencies, and clock-composition map before adjudication. Verification
+  recomputes every field and fails closed on any mismatch, including a swapped
+  confirmation file that keeps the same dataset id.
+- **EXTENDED:** `scripts/run_temporal_rate_null_test.py` gains
+  `--write-preregistration`, `--preregistration`, and
+  `--preregistration-notes`. `--write-preregistration` freezes the fingerprints
+  without running the test; `--preregistration` verifies before adjudicating.
+  Protocol errors now exit 1 with a one-line message instead of a traceback.
+- **ADDED:** eight preregistration pins in
+  `tests/test_dyn_temporal_rate_io.py`: round trip, swapped confirmation,
+  tampered calibration, changed metadata, unknown keys, unsupported protocol
+  version, duplicate dataset ids, and end-to-end preregistered adjudication.
+  The temporal suite is now 35 pins (14 detector + 21 IO).
+- **Verified:** 35/35 temporal pins pass; Ruff is clean. The full dynamic suite
+  with both new files included is at 152 passed with the same two pre-existing
+  unrelated failures (host-path literal in untracked
+  `scripts/inspect_patch_1994.py`; orphan scan over untracked vendored
+  `kickmix/_qualtran_src/`).
+
+## 2026-10-28 — Clock-dataset ingestion for the temporal-rate null test
+
+- **ADDED:** `apedp_dyn/epistemic/temporal_rate_io.py` — strict CSV +
+  sidecar-JSON and compressed NPZ ingestion for `ClockDataset`. The CSV format
+  names `time_s`, `drive`, and one fractional-frequency column per clock; the
+  sidecar carries the dataset id, drive frequency, and each clock's id,
+  composition, column, and systematic-uncertainty budget. NPZ embeds the same
+  metadata and is read with `allow_pickle=False`, so a dataset file cannot
+  execute code. Both paths delegate finite/monotonic/length checks to
+  `ClockDataset` and expose `dataset_sha256()` for calibration/confirmation
+  provenance.
+- **ADDED:** `tests/test_dyn_temporal_rate_io.py` — 13 pins covering CSV and
+  NPZ round trips, cross-format fingerprint equality, fingerprint sensitivity,
+  missing sidecar, missing/unknown metadata keys, duplicate clock ids, empty
+  and non-finite cells, unknown NPZ keys, object-array rejection, NPZ
+  `metadata_path` rejection, single-clock support, and unsupported formats.
+- **EXTENDED:** `scripts/run_temporal_rate_null_test.py` now adjudicates
+  supplied files via `--calibration` / `--confirmation` (with optional
+  `--calibration-metadata` / `--confirmation-metadata`), reports both dataset
+  fingerprints, and preserves the claim boundary. The synthetic demo remains
+  the default when no files are supplied.
+- **Verified:** the 13 IO pins and the 14 detector pins pass; Ruff is clean on
+  the new module, tests, and script. The full dynamic suite, with the two new
+  files included, is at 144 passed with the two pre-existing unrelated
+  failures (host-path literal in untracked `scripts/inspect_patch_1994.py`;
+  orphan scan over untracked vendored `kickmix/_qualtran_src/`).
+
+## 2026-10-28 — Option B: a temporal-rate null test, not a time-travel claim
+
+- **ADDED:** `apedp_dyn/epistemic/temporal_rate_modulation.py` — Hypothesis B
+  harness. It subtracts each clock's calibration-measured ordinary response to
+  a periodic drive and tests whether the residual phase-locked
+  fractional-frequency modulation is common to clocks of at least two distinct
+  compositions. The null is a shared-phase Fourier surrogate of the post-fit
+  residuals with the fitted harmonic variance restored and calibration
+  uncertainty injected; a heterogeneity guard rejects oscillator-specific
+  artifacts. Calibration/confirmation dataset-id reuse, identical series, and
+  same-frequency calibration raise `TemporalRateProtocolError`. The only
+  positive verdict is `COMMON_MODE_ANOMALY_CANDIDATE`, explicitly not evidence
+  of backward time travel.
+- **PREREGISTERED:** canonical spec gains the `temporal_rate_*` block
+  (minimum clocks/cycles/samples-per-cycle, harmonics, surrogate draws,
+  familywise and heterogeneity alphas, amplitude floor, calibration-SNR floor,
+  and detector FPR/power/injection thresholds). The spec is re-pinned to
+  `a5e13979…`; no existing threshold changed. Ed25519 re-signing remains
+  trustee-blocked (FLAW-01 still OPEN).
+- **MEASURED, synthetic detector calibration:** 20 null and 20 injected
+  common-mode trials at 128 surrogates (seed 6) give FPR 0.00 against the 0.05
+  ceiling and power 1.00 against the 0.80 floor, with zero insufficient
+  verdicts. This measures the analysis, not nature.
+- **Verified:** `tests/test_dyn_temporal_rate_modulation.py` 12 passed,
+  including null-consistency, common-mode recovery at an arbitrary phase,
+  oscillator-specific rejection, protocol reuse/frequency refusals,
+  single-composition and single-clock refusals, weak-calibration refusal,
+  deterministic replay, and the FPR/power floors.
+
+## 2026-10-28 — The MR arms hold at the official instance
+
+- **MEASURED:** all five arms and `all` reproduce the reference at Benchmark II's own
+  instance — m=4095, n=70, GF(2¹²), 4 shots: syndromes, tracked phase and `|0>` junk all
+  match. Reference: 107,911 qubit ids, 4m54s. Arm ids: swap 108,355, sweep 108,799,
+  forney 112,006, shift 110,131, `all` 84,103, clear 78,232. These are local allocation
+  counts, not `Q`.
+- **FALSIFIED at the same scale:** the under-gated shift arm fails on syndromes, phase and
+  junk, and the `r` readout fails on all three (at this scale its readout also corrupts
+  values, not only the phase). Record: `benchmarks/quantum_compilation/local_mr_arms.json`.
+- **Verified:** `tests/test_local_mr_sim.py` now pins all three instances.
+
 ## 2026-10-28 — Fifth MR lever verified at both instances, with a falsifier that fails
 
 - **ADDED:** the shift gate to `scripts/run_mr_gated_arms.py` (`--arm shift`, included in

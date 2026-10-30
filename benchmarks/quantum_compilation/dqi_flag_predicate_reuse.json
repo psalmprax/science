@@ -1,0 +1,402 @@
+{
+  "experiment": "share the (n_A == n_B) comparison in _update_flag",
+  "engine": "kickmix",
+  "kickmix": "/home/psalmprax/ALL_PROJECTS/science/build/kickmix_mr/lib/kickmix.cpython-313-x86_64-linux-gnu.so",
+  "instance": {
+    "m": 4095,
+    "n": 70,
+    "degree": 12,
+    "shots": 64,
+    "seed": 20261028,
+    "sim_seed": 99
+  },
+  "policy": "and54",
+  "levers": {
+    "gate_forney": true,
+    "clear_eea": true,
+    "gate_sweep": true,
+    "gate_swap": true,
+    "gate_shift": true,
+    "gate_quotient": true
+  },
+  "prediction": {
+    "written_before_measurement": true,
+    "register_width": 8,
+    "hypothesis": "compute (n_A == n_B) once for the c0 and c1 sub-steps, drive flag with two CCX, clear the scratch with MR; leaves function, Q and the 222-iteration schedule unchanged",
+    "unit_costs": {
+      "width": 8,
+      "equality_flip_uncontrolled": 8,
+      "equality_flip_controlled": 9,
+      "ccx": 1,
+      "mr": 0
+    },
+    "toffoli_per_iteration_saved": 8,
+    "iterations": 222,
+    "predicted_delta_toffoli_per_shot": 1776.0
+  },
+  "control": {
+    "qubits": 1913,
+    "mean_toffoli_like": 1221466.84375,
+    "multiply_toffoli_per_shot": 748698.65625,
+    "non_product_toffoli_per_shot": 472768.1875,
+    "update_flag_toffoli_per_shot": 32856.0,
+    "q2t": 4470042195915.344,
+    "regions": [
+      {
+        "region": "sweep_positions",
+        "instructions": 19266692,
+        "executed_toffoli_per_shot": 836698.0,
+        "static_toffoli": 1291118,
+        "executed_fraction_of_static": 0.648041464839,
+        "product_toffoli_per_shot": 693660.0
+      },
+      {
+        "region": "shift_b_array_right",
+        "instructions": 649642,
+        "executed_toffoli_per_shot": 162479.625,
+        "static_toffoli": 237376,
+        "executed_fraction_of_static": 0.6844821085535184,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "swap_a_and_b",
+        "instructions": 199356,
+        "executed_toffoli_per_shot": 64224.0,
+        "static_toffoli": 198024,
+        "executed_fraction_of_static": 0.32432432432432434,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "quotient_div",
+        "instructions": 3469859,
+        "executed_toffoli_per_shot": 48384.0,
+        "static_toffoli": 149184,
+        "executed_fraction_of_static": 0.32432432432432434,
+        "product_toffoli_per_shot": 46656.0
+      },
+      {
+        "region": "update_flag",
+        "instructions": 238428,
+        "executed_toffoli_per_shot": 32856.0,
+        "static_toffoli": 32856,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "shift_step",
+        "instructions": 46127,
+        "executed_toffoli_per_shot": 30912.0,
+        "static_toffoli": 30912,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "update_metadata",
+        "instructions": 96570,
+        "executed_toffoli_per_shot": 12432.0,
+        "static_toffoli": 12432,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "update_halting_counter",
+        "instructions": 87912,
+        "executed_toffoli_per_shot": 10656.0,
+        "static_toffoli": 10656,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "forney_step",
+        "instructions": 52043456,
+        "executed_toffoli_per_shot": 8755.21875,
+        "static_toffoli": 1154790,
+        "executed_fraction_of_static": 0.007581654456654457,
+        "product_toffoli_per_shot": 8382.65625
+      },
+      {
+        "region": "eea_step",
+        "instructions": 29082,
+        "executed_toffoli_per_shot": 4662.0,
+        "static_toffoli": 4662,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "pre_align_reg_b",
+        "instructions": 4080,
+        "executed_toffoli_per_shot": 3696.0,
+        "static_toffoli": 3696,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "unalign_reg_b",
+        "instructions": 4080,
+        "executed_toffoli_per_shot": 3696.0,
+        "static_toffoli": 3696,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "multiply_and_add_or_sub",
+        "instructions": 35076,
+        "executed_toffoli_per_shot": 2016.0,
+        "static_toffoli": 3108,
+        "executed_fraction_of_static": 0.6486486486486487,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "unmarked",
+        "instructions": 1695,
+        "executed_toffoli_per_shot": 0.0,
+        "static_toffoli": 0,
+        "executed_fraction_of_static": null,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "chien_forney_mbuc",
+        "instructions": 4132,
+        "executed_toffoli_per_shot": 0.0,
+        "static_toffoli": 0,
+        "executed_fraction_of_static": null,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "measured_clear",
+        "instructions": 4323,
+        "executed_toffoli_per_shot": 0.0,
+        "static_toffoli": 0,
+        "executed_fraction_of_static": null,
+        "product_toffoli_per_shot": 0.0
+      }
+    ]
+  },
+  "variant": {
+    "qubits": 1913,
+    "mean_toffoli_like": 1219690.84375,
+    "multiply_toffoli_per_shot": 748698.65625,
+    "non_product_toffoli_per_shot": 470992.1875,
+    "update_flag_toffoli_per_shot": 31080.0,
+    "q2t": 4463542801371.344,
+    "regions": [
+      {
+        "region": "sweep_positions",
+        "instructions": 19266692,
+        "executed_toffoli_per_shot": 836698.0,
+        "static_toffoli": 1291118,
+        "executed_fraction_of_static": 0.648041464839,
+        "product_toffoli_per_shot": 693660.0
+      },
+      {
+        "region": "shift_b_array_right",
+        "instructions": 649642,
+        "executed_toffoli_per_shot": 162479.625,
+        "static_toffoli": 237376,
+        "executed_fraction_of_static": 0.6844821085535184,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "swap_a_and_b",
+        "instructions": 199356,
+        "executed_toffoli_per_shot": 64224.0,
+        "static_toffoli": 198024,
+        "executed_fraction_of_static": 0.32432432432432434,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "quotient_div",
+        "instructions": 3469859,
+        "executed_toffoli_per_shot": 48384.0,
+        "static_toffoli": 149184,
+        "executed_fraction_of_static": 0.32432432432432434,
+        "product_toffoli_per_shot": 46656.0
+      },
+      {
+        "region": "update_flag",
+        "instructions": 224664,
+        "executed_toffoli_per_shot": 31080.0,
+        "static_toffoli": 31080,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "shift_step",
+        "instructions": 46127,
+        "executed_toffoli_per_shot": 30912.0,
+        "static_toffoli": 30912,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "update_metadata",
+        "instructions": 96570,
+        "executed_toffoli_per_shot": 12432.0,
+        "static_toffoli": 12432,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "update_halting_counter",
+        "instructions": 87912,
+        "executed_toffoli_per_shot": 10656.0,
+        "static_toffoli": 10656,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "forney_step",
+        "instructions": 52043456,
+        "executed_toffoli_per_shot": 8755.21875,
+        "static_toffoli": 1154790,
+        "executed_fraction_of_static": 0.007581654456654457,
+        "product_toffoli_per_shot": 8382.65625
+      },
+      {
+        "region": "eea_step",
+        "instructions": 29082,
+        "executed_toffoli_per_shot": 4662.0,
+        "static_toffoli": 4662,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "pre_align_reg_b",
+        "instructions": 4080,
+        "executed_toffoli_per_shot": 3696.0,
+        "static_toffoli": 3696,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "unalign_reg_b",
+        "instructions": 4080,
+        "executed_toffoli_per_shot": 3696.0,
+        "static_toffoli": 3696,
+        "executed_fraction_of_static": 1.0,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "multiply_and_add_or_sub",
+        "instructions": 35076,
+        "executed_toffoli_per_shot": 2016.0,
+        "static_toffoli": 3108,
+        "executed_fraction_of_static": 0.6486486486486487,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "unmarked",
+        "instructions": 1695,
+        "executed_toffoli_per_shot": 0.0,
+        "static_toffoli": 0,
+        "executed_fraction_of_static": null,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "chien_forney_mbuc",
+        "instructions": 4132,
+        "executed_toffoli_per_shot": 0.0,
+        "static_toffoli": 0,
+        "executed_fraction_of_static": null,
+        "product_toffoli_per_shot": 0.0
+      },
+      {
+        "region": "measured_clear",
+        "instructions": 4323,
+        "executed_toffoli_per_shot": 0.0,
+        "static_toffoli": 0,
+        "executed_fraction_of_static": null,
+        "product_toffoli_per_shot": 0.0
+      }
+    ]
+  },
+  "observation": {
+    "delta_update_flag_per_shot": 1776.0,
+    "delta_total_per_shot": 1776.0,
+    "predicted_delta_per_shot": 1776.0,
+    "within_prediction": true,
+    "delta_percent_of_arm": 0.14539895283178864,
+    "delta_percent_of_region": 5.405405405405405
+  },
+  "promotion_gates": [
+    {
+      "gate": "mean non-product T-count reconciles with the instrumented total",
+      "requirement": "472768.2 per shot",
+      "measured": 472768.1875,
+      "passed": true
+    },
+    {
+      "gate": "mean multiply T-count reported separately",
+      "requirement": "748698.7 per shot",
+      "measured": 748698.65625,
+      "passed": true
+    },
+    {
+      "gate": "total T-count: components sum to it",
+      "requirement": "1221466.8 +- 0.1",
+      "measured": 1221466.84375,
+      "passed": true
+    },
+    {
+      "gate": "peak qubits Q measured, including added ancillas",
+      "requirement": "measured",
+      "measured": {
+        "control": 1913,
+        "reused": 1913
+      },
+      "passed": true
+    },
+    {
+      "gate": "Q^2 T recomputed from the same run",
+      "requirement": "recomputed",
+      "measured": {
+        "control": 4470042195915.344,
+        "reused": 4463542801371.344,
+        "percent_change": -0.14539895283178783
+      },
+      "passed": true
+    },
+    {
+      "gate": "correctness and cleanup",
+      "requirement": "syndromes restored, phase matched, no junk",
+      "measured": {
+        "syndromes_restored": true,
+        "junk_clean": true,
+        "phase_matches_reference": true
+      },
+      "passed": true
+    },
+    {
+      "gate": "iteration behaviour fixed at 222",
+      "requirement": "222 forward EEA rounds, unchanged",
+      "measured": {
+        "control": 222,
+        "reused": 222,
+        "expected": 222
+      },
+      "passed": true
+    },
+    {
+      "gate": "reproducibility: frozen hashes and record path",
+      "requirement": "extension, patch, script and record pinned",
+      "measured": {
+        "kickmix_sha256": "e57dcc471213e43f79c767e585514aaa8315168235d4c5fd5539f59d2217c378",
+        "patch_sha256": "9d96fd3a7099791d0896fe984299aa0e32f4c96a6a8977d02609078470264b0f",
+        "script_sha256": "838f7d80770f3a2917c53977bf7433ccf9eb1275e73fb2e1c080d22b5756e9cd",
+        "record": "/home/psalmprax/ALL_PROJECTS/science/benchmarks/quantum_compilation/dqi_flag_predicate_reuse.json",
+        "git_rev": "a97aec3bfd4e8f20afa363470bbdaffb59f6f45c"
+      },
+      "passed": true
+    }
+  ],
+  "all_gates_passed": true,
+  "prediction_matched": true,
+  "verdict": "PROMOTE",
+  "reconciliation": {
+    "ledger_total": 1221466.8,
+    "ledger_product": 748698.7,
+    "ledger_residual": 472768.2,
+    "ledger_update_flag_static": 32856,
+    "control_matches_ledger_total": true
+  }
+}

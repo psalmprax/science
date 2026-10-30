@@ -62,12 +62,23 @@ class ReservoirProposer(ProposerBase):
         except Exception:
             W_out = np.linalg.lstsq(S, dX, rcond=None)[0]
         formula = f"ESN(reservoir={self.reservoir_size}, spectral_radius={self.spectral_radius})"
-        def make_score(f=formula):
+        _n_vars = n_vars
+        _reservoir_size = self.reservoir_size
+        _W_in = W_in
+        _W = W
+        _W_out = W_out.ravel()
+        def make_score(n_vars=_n_vars, reservoir_size=_reservoir_size, W_in=_W_in, W=_W, W_out=_W_out):
             def score(df):
-                try:
-                    return np.ones(len(df))
-                except Exception:
-                    return np.zeros(len(df))
+                X_eval = np.asarray(df.to_numpy(dtype=float))
+                n_samples_eval = X_eval.shape[0]
+                if W_out.size == 0:
+                    return np.zeros(n_samples_eval)
+                states_eval = np.zeros((n_samples_eval, reservoir_size))
+                for t in range(1, n_samples_eval):
+                    states_eval[t] = np.tanh(W_in @ X_eval[t] + W @ states_eval[t-1])
+                S_eval = np.hstack([np.ones((n_samples_eval, 1)), X_eval, states_eval])
+                pred = S_eval @ W_out
+                return pred.ravel()
             return score
         proposals = [CandidateProposal(
             proposer_id=self.proposer_id,
@@ -76,7 +87,7 @@ class ReservoirProposer(ProposerBase):
             strategy_archetype=StrategyArchetype.DYNAMICAL_SYSTEM,
             declared_scale_invariant=False,
             declared_nominal_dependencies=tuple(variable_names),
-            compute_score=make_score(formula),
+            compute_score=make_score(),
             parameters={"W_out_shape": W_out.shape},
             metadata={"method": "reservoir_computing", "reservoir_size": self.reservoir_size},
         )]

@@ -115,6 +115,21 @@ size_t kickmix::compute_reaction_depth(size_t num_qubits, size_t num_bits, std::
                     z_bump(op.q_target.qubit(), cond_depth);
                 }
                 break;
+            case OpType::MR:
+            case OpType::MR_IF:
+                if (condition_depth_stack.size() == 1 && !op.c_condition.is_bit()) {
+                    // The outcome is the qubit's Z value, which a bit flip would corrupt;
+                    // the reset leaves a known state behind.
+                    c_depth[op.c_target.untagged_id()] = x_depth[op.q_target.untagged_id()] + 1;
+                    x_depth[op.q_target.untagged_id()] = 0;
+                    z_depth[op.q_target.untagged_id()] = 0;
+                } else {
+                    c_bump(op.c_target.bit(), cond_depth);
+                    c_bump(op.c_target.bit(), x_depth[op.q_target.untagged_id()] + 1);
+                    x_bump(op.q_target.qubit(), cond_depth);
+                    z_bump(op.q_target.qubit(), cond_depth);
+                }
+                break;
             case OpType::CCX:
             case OpType::CCX_IF:
                 x_bump(op.q_target.qubit(), cond_depth + 1);

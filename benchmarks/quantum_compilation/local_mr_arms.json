@@ -1,382 +1,688 @@
 {
- "runner": "scripts/run_mr_gated_arms.py",
- "simulator": "apedp_dyn/quantum_compilation/local_mr_sim.py",
- "interpreter": "CPython 3.13 (kickmix.so build; the simulator itself is pure Python)",
- "criterion": "arm must reproduce the reference: same syndromes, same tracked phase, all other qubits |0>; falsifiers (r readout, under-gated shift) must fail",
- "instances": {
-  "m15": {
-   "m": 15,
-   "n": 6,
-   "degree": 4,
-   "shots": 32
+  "runner": "scripts/run_mr_gated_arms.py",
+  "simulator": "apedp_dyn/quantum_compilation/local_mr_sim.py",
+  "interpreter": "CPython 3.13 (kickmix.so build; the simulator itself is pure Python)",
+  "criterion": "arm must reproduce the reference: same syndromes, same tracked phase, all other qubits |0>; falsifiers (r readout, under-gated shift) must fail",
+  "instances": {
+    "m15": {
+      "m": 15,
+      "n": 6,
+      "degree": 4,
+      "shots": 32
+    },
+    "m255": {
+      "m": 255,
+      "n": 14,
+      "degree": 8,
+      "shots": 16
+    },
+    "m4095": {
+      "m": 4095,
+      "n": 70,
+      "degree": 12,
+      "shots": 4
+    }
   },
-  "m255": {
-   "m": 255,
-   "n": 14,
-   "degree": 8,
-   "shots": 16
+  "results": {
+    "m15_none": {
+      "arm": "none",
+      "clear_with": "mr",
+      "instance": {
+        "m": 15,
+        "n": 6,
+        "degree": 4,
+        "shots": 32
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 2797,
+      "arm_qubits": 2797,
+      "reference_phase_ones": 14,
+      "arm_phase_ones": 14,
+      "verdict": "PASS"
+    },
+    "m15_swap": {
+      "arm": "swap",
+      "clear_with": "mr",
+      "instance": {
+        "m": 15,
+        "n": 6,
+        "degree": 4,
+        "shots": 32
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 2797,
+      "arm_qubits": 2798,
+      "reference_phase_ones": 14,
+      "arm_phase_ones": 14,
+      "verdict": "PASS"
+    },
+    "m15_sweep": {
+      "arm": "sweep",
+      "clear_with": "mr",
+      "instance": {
+        "m": 15,
+        "n": 6,
+        "degree": 4,
+        "shots": 32
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 2797,
+      "arm_qubits": 2798,
+      "reference_phase_ones": 14,
+      "arm_phase_ones": 14,
+      "verdict": "PASS"
+    },
+    "m15_clear": {
+      "arm": "clear",
+      "clear_with": "mr",
+      "instance": {
+        "m": 15,
+        "n": 6,
+        "degree": 4,
+        "shots": 32
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 2797,
+      "arm_qubits": 1479,
+      "reference_phase_ones": 14,
+      "arm_phase_ones": 14,
+      "verdict": "PASS"
+    },
+    "m15_forney": {
+      "arm": "forney",
+      "clear_with": "mr",
+      "instance": {
+        "m": 15,
+        "n": 6,
+        "degree": 4,
+        "shots": 32
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 2797,
+      "arm_qubits": 2797,
+      "reference_phase_ones": 14,
+      "arm_phase_ones": 14,
+      "verdict": "PASS"
+    },
+    "m15_shift": {
+      "arm": "shift",
+      "clear_with": "mr",
+      "instance": {
+        "m": 15,
+        "n": 6,
+        "degree": 4,
+        "shots": 32
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 2797,
+      "arm_qubits": 2798,
+      "reference_phase_ones": 14,
+      "arm_phase_ones": 14,
+      "verdict": "PASS"
+    },
+    "m15_quotient": {
+      "arm": "quotient",
+      "clear_with": "mr",
+      "instance": {
+        "m": 15,
+        "n": 6,
+        "degree": 4,
+        "shots": 32
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 2797,
+      "arm_qubits": 2798,
+      "reference_phase_ones": 14,
+      "arm_phase_ones": 14,
+      "verdict": "PASS"
+    },
+    "m15_all": {
+      "arm": "all",
+      "clear_with": "mr",
+      "instance": {
+        "m": 15,
+        "n": 6,
+        "degree": 4,
+        "shots": 32
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 2797,
+      "arm_qubits": 1479,
+      "reference_phase_ones": 14,
+      "arm_phase_ones": 14,
+      "verdict": "PASS"
+    },
+    "m15_full": {
+      "arm": "full",
+      "clear_with": "mr",
+      "instance": {
+        "m": 15,
+        "n": 6,
+        "degree": 4,
+        "shots": 32
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 2797,
+      "arm_qubits": 1479,
+      "reference_phase_ones": 14,
+      "arm_phase_ones": 14,
+      "verdict": "PASS"
+    },
+    "m15_swap_r-readout": {
+      "arm": "swap",
+      "clear_with": "r",
+      "instance": {
+        "m": 15,
+        "n": 6,
+        "degree": 4,
+        "shots": 32
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": false,
+      "syndromes_restored": true,
+      "junk_clean": false,
+      "reference_junk_clean": true,
+      "reference_qubits": 2797,
+      "arm_qubits": 2798,
+      "reference_phase_ones": 14,
+      "arm_phase_ones": 10,
+      "verdict": "FAIL"
+    },
+    "m15_shift_under-gated": {
+      "arm": "shift",
+      "clear_with": "mr",
+      "instance": {
+        "m": 15,
+        "n": 6,
+        "degree": 4,
+        "shots": 32
+      },
+      "syndromes_match_reference": false,
+      "phase_matches_reference": false,
+      "syndromes_restored": false,
+      "junk_clean": false,
+      "reference_junk_clean": true,
+      "reference_qubits": 2797,
+      "arm_qubits": 2798,
+      "reference_phase_ones": 14,
+      "arm_phase_ones": 10,
+      "verdict": "FAIL"
+    },
+    "m255_none": {
+      "arm": "none",
+      "clear_with": "mr",
+      "instance": {
+        "m": 255,
+        "n": 14,
+        "degree": 8,
+        "shots": 16
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 9751,
+      "arm_qubits": 9751,
+      "reference_phase_ones": 7,
+      "arm_phase_ones": 7,
+      "verdict": "PASS"
+    },
+    "m255_swap": {
+      "arm": "swap",
+      "clear_with": "mr",
+      "instance": {
+        "m": 255,
+        "n": 14,
+        "degree": 8,
+        "shots": 16
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 9751,
+      "arm_qubits": 9752,
+      "reference_phase_ones": 7,
+      "arm_phase_ones": 7,
+      "verdict": "PASS"
+    },
+    "m255_sweep": {
+      "arm": "sweep",
+      "clear_with": "mr",
+      "instance": {
+        "m": 255,
+        "n": 14,
+        "degree": 8,
+        "shots": 16
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 9751,
+      "arm_qubits": 9752,
+      "reference_phase_ones": 7,
+      "arm_phase_ones": 7,
+      "verdict": "PASS"
+    },
+    "m255_clear": {
+      "arm": "clear",
+      "clear_with": "mr",
+      "instance": {
+        "m": 255,
+        "n": 14,
+        "degree": 8,
+        "shots": 16
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 9751,
+      "arm_qubits": 5933,
+      "reference_phase_ones": 7,
+      "arm_phase_ones": 7,
+      "verdict": "PASS"
+    },
+    "m255_forney": {
+      "arm": "forney",
+      "clear_with": "mr",
+      "instance": {
+        "m": 255,
+        "n": 14,
+        "degree": 8,
+        "shots": 16
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 9751,
+      "arm_qubits": 9751,
+      "reference_phase_ones": 7,
+      "arm_phase_ones": 7,
+      "verdict": "PASS"
+    },
+    "m255_shift": {
+      "arm": "shift",
+      "clear_with": "mr",
+      "instance": {
+        "m": 255,
+        "n": 14,
+        "degree": 8,
+        "shots": 16
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 9751,
+      "arm_qubits": 9752,
+      "reference_phase_ones": 7,
+      "arm_phase_ones": 7,
+      "verdict": "PASS"
+    },
+    "m255_quotient": {
+      "arm": "quotient",
+      "clear_with": "mr",
+      "instance": {
+        "m": 255,
+        "n": 14,
+        "degree": 8,
+        "shots": 16
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 9751,
+      "arm_qubits": 9752,
+      "reference_phase_ones": 7,
+      "arm_phase_ones": 7,
+      "verdict": "PASS"
+    },
+    "m255_all": {
+      "arm": "all",
+      "clear_with": "mr",
+      "instance": {
+        "m": 255,
+        "n": 14,
+        "degree": 8,
+        "shots": 16
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 9751,
+      "arm_qubits": 5933,
+      "reference_phase_ones": 7,
+      "arm_phase_ones": 7,
+      "verdict": "PASS"
+    },
+    "m255_full": {
+      "arm": "full",
+      "clear_with": "mr",
+      "instance": {
+        "m": 255,
+        "n": 14,
+        "degree": 8,
+        "shots": 16
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 9751,
+      "arm_qubits": 5933,
+      "reference_phase_ones": 7,
+      "arm_phase_ones": 7,
+      "verdict": "PASS"
+    },
+    "m255_swap_r-readout": {
+      "arm": "swap",
+      "clear_with": "r",
+      "instance": {
+        "m": 255,
+        "n": 14,
+        "degree": 8,
+        "shots": 16
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": false,
+      "syndromes_restored": true,
+      "junk_clean": false,
+      "reference_junk_clean": true,
+      "reference_qubits": 9751,
+      "arm_qubits": 9752,
+      "reference_phase_ones": 7,
+      "arm_phase_ones": 5,
+      "verdict": "FAIL"
+    },
+    "m255_shift_under-gated": {
+      "arm": "shift",
+      "clear_with": "mr",
+      "instance": {
+        "m": 255,
+        "n": 14,
+        "degree": 8,
+        "shots": 16
+      },
+      "syndromes_match_reference": false,
+      "phase_matches_reference": false,
+      "syndromes_restored": false,
+      "junk_clean": false,
+      "reference_junk_clean": true,
+      "reference_qubits": 9751,
+      "arm_qubits": 9752,
+      "reference_phase_ones": 7,
+      "arm_phase_ones": 7,
+      "verdict": "FAIL"
+    },
+    "m4095_none": {
+      "arm": "none",
+      "clear_with": "mr",
+      "instance": {
+        "m": 4095,
+        "n": 70,
+        "degree": 12,
+        "shots": 4
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 107911,
+      "arm_qubits": 107911,
+      "reference_phase_ones": 1,
+      "arm_phase_ones": 1,
+      "verdict": "PASS"
+    },
+    "m4095_swap": {
+      "arm": "swap",
+      "clear_with": "mr",
+      "instance": {
+        "m": 4095,
+        "n": 70,
+        "degree": 12,
+        "shots": 4
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 107911,
+      "arm_qubits": 107912,
+      "reference_phase_ones": 1,
+      "arm_phase_ones": 1,
+      "verdict": "PASS"
+    },
+    "m4095_sweep": {
+      "arm": "sweep",
+      "clear_with": "mr",
+      "instance": {
+        "m": 4095,
+        "n": 70,
+        "degree": 12,
+        "shots": 4
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 107911,
+      "arm_qubits": 107912,
+      "reference_phase_ones": 1,
+      "arm_phase_ones": 1,
+      "verdict": "PASS"
+    },
+    "m4095_clear": {
+      "arm": "clear",
+      "clear_with": "mr",
+      "instance": {
+        "m": 4095,
+        "n": 70,
+        "degree": 12,
+        "shots": 4
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 107911,
+      "arm_qubits": 77393,
+      "reference_phase_ones": 1,
+      "arm_phase_ones": 1,
+      "verdict": "PASS"
+    },
+    "m4095_forney": {
+      "arm": "forney",
+      "clear_with": "mr",
+      "instance": {
+        "m": 4095,
+        "n": 70,
+        "degree": 12,
+        "shots": 4
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 107911,
+      "arm_qubits": 107911,
+      "reference_phase_ones": 1,
+      "arm_phase_ones": 1,
+      "verdict": "PASS"
+    },
+    "m4095_shift": {
+      "arm": "shift",
+      "clear_with": "mr",
+      "instance": {
+        "m": 4095,
+        "n": 70,
+        "degree": 12,
+        "shots": 4
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 107911,
+      "arm_qubits": 107912,
+      "reference_phase_ones": 1,
+      "arm_phase_ones": 1,
+      "verdict": "PASS"
+    },
+    "m4095_quotient": {
+      "arm": "quotient",
+      "clear_with": "mr",
+      "instance": {
+        "m": 4095,
+        "n": 70,
+        "degree": 12,
+        "shots": 4
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 107911,
+      "arm_qubits": 107912,
+      "reference_phase_ones": 1,
+      "arm_phase_ones": 1,
+      "verdict": "PASS"
+    },
+    "m4095_all": {
+      "arm": "all",
+      "clear_with": "mr",
+      "instance": {
+        "m": 4095,
+        "n": 70,
+        "degree": 12,
+        "shots": 4
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 107911,
+      "arm_qubits": 77393,
+      "reference_phase_ones": 1,
+      "arm_phase_ones": 1,
+      "verdict": "PASS"
+    },
+    "m4095_full": {
+      "arm": "full",
+      "clear_with": "mr",
+      "instance": {
+        "m": 4095,
+        "n": 70,
+        "degree": 12,
+        "shots": 4
+      },
+      "syndromes_match_reference": true,
+      "phase_matches_reference": true,
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "reference_junk_clean": true,
+      "reference_qubits": 107911,
+      "arm_qubits": 77393,
+      "reference_phase_ones": 1,
+      "arm_phase_ones": 1,
+      "verdict": "PASS"
+    },
+    "m4095_swap_r-readout": {
+      "arm": "swap",
+      "clear_with": "r",
+      "instance": {
+        "m": 4095,
+        "n": 70,
+        "degree": 12,
+        "shots": 4
+      },
+      "syndromes_match_reference": false,
+      "phase_matches_reference": false,
+      "syndromes_restored": false,
+      "junk_clean": false,
+      "reference_junk_clean": true,
+      "reference_qubits": 107911,
+      "arm_qubits": 107912,
+      "reference_phase_ones": 1,
+      "arm_phase_ones": 2,
+      "verdict": "FAIL"
+    },
+    "m4095_shift_under-gated": {
+      "arm": "shift",
+      "clear_with": "mr",
+      "instance": {
+        "m": 4095,
+        "n": 70,
+        "degree": 12,
+        "shots": 4
+      },
+      "syndromes_match_reference": false,
+      "phase_matches_reference": false,
+      "syndromes_restored": false,
+      "junk_clean": false,
+      "reference_junk_clean": true,
+      "reference_qubits": 107911,
+      "arm_qubits": 107912,
+      "reference_phase_ones": 1,
+      "arm_phase_ones": 0,
+      "verdict": "FAIL"
+    }
   }
- },
- "results": {
-  "m15_all": {
-   "arm": "all",
-   "clear_with": "mr",
-   "instance": {
-    "m": 15,
-    "n": 6,
-    "degree": 4,
-    "shots": 32
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 2797,
-   "arm_qubits": 1757,
-   "reference_phase_ones": 14,
-   "arm_phase_ones": 14,
-   "verdict": "PASS"
-  },
-  "m15_clear": {
-   "arm": "clear",
-   "clear_with": "mr",
-   "instance": {
-    "m": 15,
-    "n": 6,
-    "degree": 4,
-    "shots": 32
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 2797,
-   "arm_qubits": 1502,
-   "reference_phase_ones": 14,
-   "arm_phase_ones": 14,
-   "verdict": "PASS"
-  },
-  "m15_forney": {
-   "arm": "forney",
-   "clear_with": "mr",
-   "instance": {
-    "m": 15,
-    "n": 6,
-    "degree": 4,
-    "shots": 32
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 2797,
-   "arm_qubits": 2812,
-   "reference_phase_ones": 14,
-   "arm_phase_ones": 14,
-   "verdict": "PASS"
-  },
-  "m15_none": {
-   "arm": "none",
-   "clear_with": "mr",
-   "instance": {
-    "m": 15,
-    "n": 6,
-    "degree": 4,
-    "shots": 32
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 2797,
-   "arm_qubits": 2797,
-   "reference_phase_ones": 14,
-   "arm_phase_ones": 14,
-   "verdict": "PASS"
-  },
-  "m15_shift": {
-   "arm": "shift",
-   "clear_with": "mr",
-   "instance": {
-    "m": 15,
-    "n": 6,
-    "degree": 4,
-    "shots": 32
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 2797,
-   "arm_qubits": 3097,
-   "reference_phase_ones": 14,
-   "arm_phase_ones": 14,
-   "verdict": "PASS"
-  },
-  "m15_shift_under-gated": {
-   "arm": "shift",
-   "clear_with": "mr",
-   "instance": {
-    "m": 15,
-    "n": 6,
-    "degree": 4,
-    "shots": 32
-   },
-   "syndromes_match_reference": false,
-   "phase_matches_reference": false,
-   "syndromes_restored": false,
-   "junk_clean": false,
-   "reference_junk_clean": true,
-   "reference_qubits": 2797,
-   "arm_qubits": 3097,
-   "reference_phase_ones": 14,
-   "arm_phase_ones": 10,
-   "verdict": "FAIL"
-  },
-  "m15_swap": {
-   "arm": "swap",
-   "clear_with": "mr",
-   "instance": {
-    "m": 15,
-    "n": 6,
-    "degree": 4,
-    "shots": 32
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 2797,
-   "arm_qubits": 2857,
-   "reference_phase_ones": 14,
-   "arm_phase_ones": 14,
-   "verdict": "PASS"
-  },
-  "m15_swap_r-readout": {
-   "arm": "swap",
-   "clear_with": "r",
-   "instance": {
-    "m": 15,
-    "n": 6,
-    "degree": 4,
-    "shots": 32
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": false,
-   "syndromes_restored": true,
-   "junk_clean": false,
-   "reference_junk_clean": true,
-   "reference_qubits": 2797,
-   "arm_qubits": 2857,
-   "reference_phase_ones": 14,
-   "arm_phase_ones": 10,
-   "verdict": "FAIL"
-  },
-  "m15_sweep": {
-   "arm": "sweep",
-   "clear_with": "mr",
-   "instance": {
-    "m": 15,
-    "n": 6,
-    "degree": 4,
-    "shots": 32
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 2797,
-   "arm_qubits": 2917,
-   "reference_phase_ones": 14,
-   "arm_phase_ones": 14,
-   "verdict": "PASS"
-  },
-  "m255_all": {
-   "arm": "all",
-   "clear_with": "mr",
-   "instance": {
-    "m": 255,
-    "n": 14,
-    "degree": 8,
-    "shots": 16
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 9751,
-   "arm_qubits": 6731,
-   "reference_phase_ones": 7,
-   "arm_phase_ones": 7,
-   "verdict": "PASS"
-  },
-  "m255_clear": {
-   "arm": "clear",
-   "clear_with": "mr",
-   "instance": {
-    "m": 255,
-    "n": 14,
-    "degree": 8,
-    "shots": 16
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 9751,
-   "arm_qubits": 6044,
-   "reference_phase_ones": 7,
-   "arm_phase_ones": 7,
-   "verdict": "PASS"
-  },
-  "m255_forney": {
-   "arm": "forney",
-   "clear_with": "mr",
-   "instance": {
-    "m": 255,
-    "n": 14,
-    "degree": 8,
-    "shots": 16
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 9751,
-   "arm_qubits": 10006,
-   "reference_phase_ones": 7,
-   "arm_phase_ones": 7,
-   "verdict": "PASS"
-  },
-  "m255_none": {
-   "arm": "none",
-   "clear_with": "mr",
-   "instance": {
-    "m": 255,
-    "n": 14,
-    "degree": 8,
-    "shots": 16
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 9751,
-   "arm_qubits": 9751,
-   "reference_phase_ones": 7,
-   "arm_phase_ones": 7,
-   "verdict": "PASS"
-  },
-  "m255_shift": {
-   "arm": "shift",
-   "clear_with": "mr",
-   "instance": {
-    "m": 255,
-    "n": 14,
-    "degree": 8,
-    "shots": 16
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 9751,
-   "arm_qubits": 10291,
-   "reference_phase_ones": 7,
-   "arm_phase_ones": 7,
-   "verdict": "PASS"
-  },
-  "m255_shift_under-gated": {
-   "arm": "shift",
-   "clear_with": "mr",
-   "instance": {
-    "m": 255,
-    "n": 14,
-    "degree": 8,
-    "shots": 16
-   },
-   "syndromes_match_reference": false,
-   "phase_matches_reference": false,
-   "syndromes_restored": false,
-   "junk_clean": false,
-   "reference_junk_clean": true,
-   "reference_qubits": 9751,
-   "arm_qubits": 10291,
-   "reference_phase_ones": 7,
-   "arm_phase_ones": 7,
-   "verdict": "FAIL"
-  },
-  "m255_swap": {
-   "arm": "swap",
-   "clear_with": "mr",
-   "instance": {
-    "m": 255,
-    "n": 14,
-    "degree": 8,
-    "shots": 16
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 9751,
-   "arm_qubits": 9859,
-   "reference_phase_ones": 7,
-   "arm_phase_ones": 7,
-   "verdict": "PASS"
-  },
-  "m255_swap_r-readout": {
-   "arm": "swap",
-   "clear_with": "r",
-   "instance": {
-    "m": 255,
-    "n": 14,
-    "degree": 8,
-    "shots": 16
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": false,
-   "syndromes_restored": true,
-   "junk_clean": false,
-   "reference_junk_clean": true,
-   "reference_qubits": 9751,
-   "arm_qubits": 9859,
-   "reference_phase_ones": 7,
-   "arm_phase_ones": 5,
-   "verdict": "FAIL"
-  },
-  "m255_sweep": {
-   "arm": "sweep",
-   "clear_with": "mr",
-   "instance": {
-    "m": 255,
-    "n": 14,
-    "degree": 8,
-    "shots": 16
-   },
-   "syndromes_match_reference": true,
-   "phase_matches_reference": true,
-   "syndromes_restored": true,
-   "junk_clean": true,
-   "reference_junk_clean": true,
-   "reference_qubits": 9751,
-   "arm_qubits": 9967,
-   "reference_phase_ones": 7,
-   "arm_phase_ones": 7,
-   "verdict": "PASS"
-  }
- }
 }

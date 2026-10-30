@@ -39,7 +39,11 @@ pub struct ValidationResult {
 
 impl ValidationResult {
     pub fn compute_overall(&self) -> f64 {
-        let cv_component = if self.cv_std < 1e-6 { self.cv_mean } else { self.cv_mean - self.cv_std };
+        // `cv_mean` is an error, so it enters negated: the previous form
+        // (0.4 * (cv_mean - cv_std)) rewarded a larger error, which made the
+        // search rank its worst candidate first. Python recomputes this score
+        // from the returned components, so both paths now agree.
+        let cv_component = (1.0 - (self.cv_mean + self.cv_std)).max(0.0);
         0.4 * cv_component + 0.2 * self.ood_score + 0.2 * self.stability_score + 0.2 * self.generalization_score
     }
 }

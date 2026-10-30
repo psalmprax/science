@@ -122,14 +122,14 @@ accepts only the official `kickmix` compilation plus `verify_submission_dqi` /
 `verify_submission_invsqrt`, and `apedp_dyn/quantum_compilation/contracts.py` pins both by
 SHA-256 before an official run. A local designer's T count is a surrogate, and a surrogate
 may rank candidates but must never be written into a receipt. So a replacement engine
-changes which numbers we *can measure*, not which numbers *count*; the 4.142× stays an
-oracle bound until the opcode exists upstream.
+changes which numbers we *can measure*, not which numbers *count*; until the opcode
+exists upstream, 4.142× can only be measured on a local rebuild, which is a surrogate.
 
 If the goal is instead to make the arms executable for correctness testing (not scoring),
 a local simulator with `MR` was the cheaper route, and it now exists:
 [`apedp_dyn/quantum_compilation/local_mr_sim.py`](../apedp_dyn/quantum_compilation/local_mr_sim.py).
 It reproduces `kickmix` shot for shot on the reference decoder, and
-`scripts/run_mr_gated_arms.py` runs all five levers with the predicate read by a real
+`scripts/run_mr_gated_arms.py` runs all six levers with the predicate read by a real
 `mr` rather than an oracle. Each arm reproduces the reference's values **and** phase at
 m=15/GF(2⁴) and at m=255/GF(2⁸), while the same arms read with `r` fail on the phase;
 the shift arm additionally fails when its gate drops the `¬flag ∧ (c0 ∨ c3)` branch —
@@ -137,5 +137,8 @@ see `benchmarks/quantum_compilation/local_mr_arms.json`.
 
 What that does and does not change: the levers' **correctness** is no longer untested,
 but their **cost** still cannot be scored here, because only the official `kickmix`
-build plus the official verifiers produce a receipt. The 4.142× is a Toffoli bound
-until `MR` exists upstream; this section's request stands unchanged.
+build plus the official verifiers produce a receipt. The 4.142× is now a measured
+Toffoli count on a local rebuild — 4.144× for the five oracle-gated levers and **4.320×**
+with the quotient gate, at `Q` = 1,894 against the reference's 1,893
+(`docs/MR_INSTRUCTION_SPEC.md` §6a–§6b) — a surrogate, not a receipt, until `MR` exists
+upstream; this section's request stands unchanged.

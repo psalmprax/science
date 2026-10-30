@@ -7,13 +7,19 @@ because ``kickmix`` has no Z-basis measurement. That measures what a skip is *wo
 and says nothing about whether reading the predicate for real leaves the state alone.
 This script closes that gap on ``apedp_dyn/quantum_compilation/local_mr_sim.py``.
 
-Each arm re-reads a control the reference circuit already carries, through a
-copy-and-measure gadget — ``cx(control, ancilla); mr(ancilla, bit)`` — because ``mr``
-clears its target and the reference still needs the control for uncomputation. The
-bit then gates the dead work with ``push_condition``. Five levers are available:
-``swap``, ``sweep``, ``forney``, ``clear`` and ``shift``, where ``shift`` gates
-``_shift_b_array_right`` on ``c1 ∨ c2 ∨ (¬flag ∧ (c0 ∨ c3))`` using the flag *after*
-``_update_flag`` — a flag read at the top of the round is stale and fails.
+Each arm re-reads a value the reference circuit already carries: a single control
+through a copy-and-measure gadget — ``cx(control, ancilla); mr(ancilla, bit)`` because
+``mr`` clears its target and the reference still needs the control — or, for the Forney
+block, the ``sigma`` register itself with ``mr`` followed by a classically controlled
+``x`` that puts the value back. The bit then gates the dead work with
+``push_condition``. Six levers are available:
+``swap``, ``sweep``, ``forney``, ``clear``, ``shift`` and ``quotient``, where ``shift``
+gates ``_shift_b_array_right`` on ``c1 ∨ c2 ∨ (¬flag ∧ (c0 ∨ c3))`` using the flag *after*
+``_update_flag`` — a flag read at the top of the round is stale and fails — and
+``quotient`` gates each of the sweep's two polynomial divisions on its own counter bit
+(``c0`` for the leading one, ``c3`` for the trailing one). The four counter bits are a
+one-hot decode, so exactly one of them is set: the sweep gate says the round is live,
+and the quotient gate says which of its two divisions is.
 
 Correctness criterion: the arm must compute exactly the reference's function on the
 same shots — same syndromes restored, every other qubit ``|0>``, same tracked phase.
@@ -38,6 +44,7 @@ import argparse
 import importlib.util
 import json
 import sys
+from contextlib import nullcontext
 from pathlib import Path
 
 import numpy as np
@@ -96,6 +103,7 @@ class MRGatedDecoder(DR.ProosAndZalkaDecoder):
     def __init__(self, n_syndromes, field, *, gate_swap: bool = False,
                  gate_sweep: bool = False, clear_eea: bool = False,
                  gate_forney: bool = False, gate_shift: bool = False,
+                 gate_quotient: bool = False,
                  shift_under: bool = False, clear_with: str = "mr"):
         super().__init__(n_syndromes, field)
         self.gate_swap = gate_swap
@@ -103,17 +111,29 @@ class MRGatedDecoder(DR.ProosAndZalkaDecoder):
         self.clear_eea = clear_eea
         self.gate_forney = gate_forney
         self.gate_shift = gate_shift
+        self.gate_quotient = gate_quotient
         self.shift_under = shift_under
         self.clear_with = clear_with
+        # One shared readout ancilla: `mr` clears its target, so every read in the
+        # circuit can copy into the same qubit instead of allocating one per read.
+        self._read_ancilla = None
+
+    def _ancilla(self, builder):
+        """The shared readout ancilla, allocated on first use."""
+        if self._read_ancilla is None:
+            self._read_ancilla = builder.alloc_qubits(1)[0]
+        return self._read_ancilla
 
     # -- lever: skip the Forney body where sigma(alpha^j) != 0 --------------
     def _chien_search_and_forney_mbuc(self, builder, reg_b, error_mbuc, n_b, n_B):
         """Reference Forney phase, with the body gated on a measured zero-test.
 
-        The body is dead whenever the evaluated locator is nonzero. The predicate is
-        available inside the round: after the fold, ``sigma`` holds the evaluation, so
-        a copy of ``sigma == 0`` can be measured and the inverse/Forney work gated on
-        it. The fold and its inverse still run — they are what produces the predicate.
+        The body is dead whenever the evaluated locator is nonzero. After the fold,
+        ``sigma`` holds ``sigma(alpha^j)`` in the computational basis, so the register is
+        measured and put back with classically controlled ``x``: the zero test then costs
+        two classical stores instead of a ``degree - 1``-Toffoli equality circuit at every
+        position. The fold and its reverse still run — they are what moves the evaluation
+        from position to position.
         """
         if not self.gate_forney:
             return super()._chien_search_and_forney_mbuc(builder, reg_b, error_mbuc, n_b, n_B)
@@ -134,6 +154,11 @@ class MRGatedDecoder(DR.ProosAndZalkaDecoder):
         located = builder.alloc_qubits(degree)
         is_sigma_zero = builder.alloc_qubits(1)[0]
         is_error = builder.alloc_bits(1)
+        # Loop-invariant scratch for reading `sigma` back: `mr` clears its target, so the
+        # bits and the two predicate slots are all the state the read leaves behind.
+        sigma_read = builder.alloc_bits(degree)
+        sigma_nonzero = builder.alloc_bits(1)[0]
+        sigma_is_zero = builder.alloc_bits(1)[0]
 
         omega_indices = range(m // 2 + 1, m // 2 + t + 1)
         step_multipliers = (
@@ -160,11 +185,16 @@ class MRGatedDecoder(DR.ProosAndZalkaDecoder):
                 builder.push_condition(is_error[0])
 
                 builder.cx(fwd_src, fwd_dst)
-                builder.flip_if_equal(sigma, 0, target=is_sigma_zero)
 
-                # Read the predicate for real: a copy, because the round uncomputes it.
-                zero_bit = self._read_bit(builder, is_sigma_zero)
-                with _conditional(builder, zero_bit[0]):
+                # Read sigma(alpha^j) out and put it straight back. The register holds a
+                # computational-basis value, so `mr` is deterministic, `x` undoes it, and
+                # the tracked phase is untouched: the predicate costs no Toffoli.
+                sigma_zero = self._read_all_zero(
+                    builder, sigma, sigma_read, sigma_nonzero, sigma_is_zero)
+
+                with _conditional(builder, sigma_zero):
+                    # Write the predicate into the qubit the AND needs, use it, uncompute.
+                    builder.x(is_sigma_zero)
                     _, inverse_chain = builder.init_gf2_inverse_with_scaffold(
                         sigma_prime, target=sigma_prime_inv, field=gf)
                     builder.init_and(is_sigma_zero, omega, located)
@@ -174,8 +204,7 @@ class MRGatedDecoder(DR.ProosAndZalkaDecoder):
                     builder.del_gf2_inverse_with_scaffold(
                         sigma_prime, target=sigma_prime_inv, scaffold=inverse_chain, field=gf)
                     builder.free(inverse_chain)
-
-                builder.flip_if_equal(sigma, 0, target=is_sigma_zero)
+                    builder.x(is_sigma_zero)
                 builder.cx(rev_src, rev_dst)
 
                 builder.pop_condition()
@@ -191,6 +220,7 @@ class MRGatedDecoder(DR.ProosAndZalkaDecoder):
 
         builder.free(is_error)
         builder.free(located + sigma_prime_inv + DR.km.array([is_sigma_zero]))
+        builder.free(sigma_read + DR.km.array([sigma_nonzero, sigma_is_zero]))
 
         with builder.mark("unalign_reg_b"):
             self._pre_align_reg_b(builder, reg_b, n_b, n_B, is_adjoint=True)
@@ -212,14 +242,14 @@ class MRGatedDecoder(DR.ProosAndZalkaDecoder):
         degree = gf.degree
         m = n + 3
 
-        # Save the syndrome values before anything moves them.
+        # Save the syndrome values before anything moves them, through the shared
+        # ancilla rather than one fresh qubit per bit.
         saved = []
         for register in syndromes:
             bits = builder.alloc_bits(degree)
             for index, qubit in enumerate(register):
-                ancilla = builder.alloc_qubits(1)[0]
-                builder.cx(qubit, ancilla)
-                builder.mr(ancilla, bits[index])
+                builder.cx(qubit, self._ancilla(builder))
+                builder.mr(self._ancilla(builder), bits[index])
             saved.append(bits)
 
         reg_a = [builder.alloc_qubits(degree) if i < 3 else syndromes[i - 3] for i in range(m)]
@@ -261,14 +291,41 @@ class MRGatedDecoder(DR.ProosAndZalkaDecoder):
 
         for reg in (halting_counter, counter, flag, n_q, n_b, n_a, n_B, n_A, *reg_a[:3], *reg_b):
             builder.free(reg)
+        if self._read_ancilla is not None:
+            builder.free(self._read_ancilla)
+            self._read_ancilla = None
 
     def _read_bit(self, builder, qubit):
-        """Copy `qubit` into an ancilla and measure it in Z, leaving `qubit` intact."""
-        ancilla = builder.alloc_qubits(1)[0]
+        """Copy `qubit` into the shared ancilla and measure it, leaving `qubit` intact.
+
+        The ancilla is loop-invariant: it is cleared by the measurement, so the reads of
+        one round reuse it instead of allocating a fresh qubit for every control.
+        """
+        ancilla = self._ancilla(builder)
         bit = builder.alloc_bits(1)
         builder.cx(qubit, ancilla)
         getattr(builder, self.clear_with)(ancilla, bit)
         return bit
+
+    def _read_all_zero(self, builder, register, bits, nonzero, is_zero):
+        """Measure a basis-state register, restore it, and return whether it was all zero.
+
+        `mr` leaves its target at |0> and reports the value, and a classically controlled
+        `x` puts the value back, so `register` and the tracked phase are unchanged. The
+        predicate is then assembled from classical stores, which is `degree - 1` Toffolis
+        cheaper than testing equality on the qubits (`degree` here).
+        """
+        for index, qubit in enumerate(register):
+            getattr(builder, self.clear_with)(qubit, bits[index])
+        for index, qubit in enumerate(register):
+            with _conditional(builder, bits[index]):
+                builder.x(qubit)
+        builder.bit_store(nonzero, False)
+        for bit in bits:
+            builder.bit_store(nonzero, True, control=bit)
+        builder.bit_store(is_zero, True)
+        builder.bit_store(is_zero, False, control=nonzero)
+        return is_zero
 
     # -- lever: skip the wholesale A/B exchange in rounds without c3 ----------
     def _swap_a_and_b(self, builder, reg_a, reg_b, n_A, n_B, n_a, n_b, flag, ctrl):
@@ -303,8 +360,10 @@ class MRGatedDecoder(DR.ProosAndZalkaDecoder):
         builder.bit_store(live[0], True, control=c0_bit[0])
         builder.bit_store(live[0], True, control=c3_bit[0])
 
-        def accumulate_quotient(index: int, control) -> None:
-            with builder.mark("quotient_div"):
+        def accumulate_quotient(index: int, control, live_bit) -> None:
+            # `live_bit=True` (the ungated arm) means there is no condition to push.
+            gate = _conditional(builder, live_bit) if live_bit is not True else nullcontext()
+            with builder.mark("quotient_div"), gate:
                 ratio, scaffold = builder.init_gf2_div_with_scaffold(
                     reg_b[index], reg_a[index], field=gf)
                 builder.gf2_iadd(ratio, target=q_i, field=gf, control=control)
@@ -371,15 +430,27 @@ class MRGatedDecoder(DR.ProosAndZalkaDecoder):
                     endpoint(prev)
                     builder.free(mul)
 
-        with builder.mark("multiply_and_add_or_sub"):
+        # The whole step is dead when c0 = c3 = 0: the sweep is controlled on those two
+        # bits, and the quotient divisions, the `n_a` add and its inverse all cancel.
+        with builder.mark("multiply_and_add_or_sub"), _conditional(builder, live[0]):
             q_i = builder.alloc_qubits(gf.degree)
             leading, trailing = (0, m - 1) if is_adjoint else (m - 1, 0)
-            accumulate_quotient(leading, c3_hc if is_adjoint else c0_hc)
+            # Each division is dead when its own counter bit is clear: the `gf2_iadd`
+            # that consumes the quotient is already controlled on that bit, so the
+            # division feeds nothing. Gate the division itself, not just the add.
+            leading_bit = c3_bit[0] if is_adjoint else c0_bit[0]
+            trailing_bit = c0_bit[0] if is_adjoint else c3_bit[0]
+            if self.gate_quotient:
+                accumulate_quotient(leading, c3_hc if is_adjoint else c0_hc, leading_bit)
+            else:
+                accumulate_quotient(leading, c3_hc if is_adjoint else c0_hc, True)
             builder.iadd(n_a, target=n_q)
-            with _conditional(builder, live[0]):
-                sweep_positions()
+            sweep_positions()
             builder.isub(n_a, target=n_q)
-            accumulate_quotient(trailing, c0_hc if is_adjoint else c3_hc)
+            if self.gate_quotient:
+                accumulate_quotient(trailing, c0_hc if is_adjoint else c3_hc, trailing_bit)
+            else:
+                accumulate_quotient(trailing, c0_hc if is_adjoint else c3_hc, True)
             builder.free(q_i)
 
 
@@ -409,10 +480,12 @@ class MRGatedDecoder(DR.ProosAndZalkaDecoder):
             builder.bit_store(live[0], True, control=c1_bit[0])
             builder.bit_store(live[0], True, control=c2_bit[0])
             if not self.shift_under:
-                # ¬flag ∧ (c0 ∨ c3): the branch that needs the flag to be clear.
+                # ¬flag ∧ (c0 ∨ c3): the branch that needs the flag to be clear. The
+                # negation is a store of 0 under the flag, not a second store of 1 --
+                # storing 1 twice leaves the bit constant and gates on c0 ∨ c3 alone.
                 flag_clear = builder.alloc_bits(1)
                 builder.bit_store(flag_clear[0], True)
-                builder.bit_store(flag_clear[0], True, control=flag_bit[0])
+                builder.bit_store(flag_clear[0], False, control=flag_bit[0])
                 with _conditional(builder, flag_clear[0]):
                     builder.bit_store(live[0], True, control=c0_bit[0])
                     builder.bit_store(live[0], True, control=c3_bit[0])
@@ -489,11 +562,14 @@ def build(arm: str, clear_with: str, n: int, degree: int, m: int,
         builder = L.Builder()
         decoder = MRGatedDecoder(
             n, km.GF2Field(degree),
-            gate_swap=arm in ("swap", "all"),
-            gate_sweep=arm in ("sweep", "all"),
-            clear_eea=arm in ("clear", "all"),
-            gate_forney=arm in ("forney", "all"),
-            gate_shift=arm in ("shift", "all"),
+            gate_swap=arm in ("swap", "all", "full"),
+            # The quotient gate refines the sweep gate: the divisions sit inside the
+            # gated step, so the arm that reads them implies it.
+            gate_sweep=arm in ("sweep", "all", "full", "quotient"),
+            clear_eea=arm in ("clear", "all", "full"),
+            gate_forney=arm in ("forney", "all", "full"),
+            gate_shift=arm in ("shift", "all", "full"),
+            gate_quotient=arm in ("quotient", "full"),
             shift_under=shift_under,
             clear_with=clear_with,
         )
@@ -534,7 +610,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--arm",
-                        choices=("none", "swap", "sweep", "clear", "forney", "shift", "all"),
+                        choices=("none", "swap", "sweep", "clear", "forney", "shift",
+                                 "quotient", "all", "full"),
                         default="swap")
     parser.add_argument("--clear-with", choices=("mr", "r"), default="mr")
     parser.add_argument("--shift-under", action="store_true",

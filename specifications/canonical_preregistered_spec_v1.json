@@ -22,7 +22,21 @@
     "pruning_holdout_f_test_significance_level": 0.05,
     "pruning_holdout_f_test_predictor_dof": 1,
     "ode_referee_min_mean_r2": 0.95,
-    "ode_referee_min_worst_r2": 0.85
+    "ode_referee_min_worst_r2": 0.85,
+    "temporal_rate_min_clocks": 2,
+    "temporal_rate_min_compositions": 2,
+    "temporal_rate_min_drive_cycles": 20,
+    "temporal_rate_min_samples_per_cycle": 8,
+    "temporal_rate_harmonics": 3,
+    "temporal_rate_surrogate_draws": 512,
+    "temporal_rate_familywise_alpha": 0.01,
+    "temporal_rate_heterogeneity_alpha": 0.01,
+    "temporal_rate_min_fractional_amplitude": 1e-18,
+    "temporal_rate_min_calibration_snr": 10.0,
+    "temporal_rate_calibration_trials": 128,
+    "temporal_rate_calibration_fpr_max": 0.05,
+    "temporal_rate_calibration_power_min": 0.8,
+    "temporal_rate_injection_fractional_amplitude": 1e-15
   },
   "notes": {
     "tactical_active_fraction_max": "Harmonized and pinned to 0.90 after resolving historical documentation drift from 0.95 in audit."

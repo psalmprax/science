@@ -124,6 +124,65 @@ def test_hierarchical_mid_phase_without_data_returns_nothing():
     assert hs._mid_search([{"expression": "x0"}], ["x0"], budget=20) == []
 
 
+def test_validator_overall_prefers_the_smaller_error():
+    """`overall` is a score: a candidate that fits better must not rank lower.
+
+    The inverted form (0.4 * (cv_mean - cv_std)) made a perfect fit score 0.56 and
+    a poor one 0.83, so `search()` sorted its worst candidate first.
+    """
+    from apedp.advanced_search import ValidationPipeline
+
+    v = ValidationPipeline()
+    v._rust = None
+    good = v.validate([0.0] * 5, 0.0)
+    bad = v.validate([0.9] * 5, 0.9)
+    assert good["overall"] > bad["overall"]
+
+
+def test_search_ranks_the_best_candidate_first():
+    rng = np.random.default_rng(5)
+    x = rng.uniform(0.5, 3.0, 120)
+    y = 3.0 * x + 1.0
+    hs = HierarchicalSearch()
+    out = hs.search(x.reshape(-1, 1), y, budget=60, variable_names=["x0"])
+    assert out
+    assert out[0]["r2"] > 0.99
+    assert out[0]["r2"] == max(c["r2"] for c in out)
+
+
+def test_extended_search_reaches_a_decay_the_classic_set_cannot():
+    rng = np.random.default_rng(6)
+    x = rng.uniform(0.5, 3.0, 150)
+    y = 2.0 * np.exp(-0.7 * x)
+    classic = HierarchicalSearch(template_set="classic").search(
+        x.reshape(-1, 1), y, budget=80, variable_names=["x0"])
+    extended = HierarchicalSearch(template_set="extended").search(
+        x.reshape(-1, 1), y, budget=80, variable_names=["x0"])
+    assert extended and extended[0]["r2"] > 0.99
+    assert not classic or classic[0]["r2"] < 0.99
+
+
+def test_extended_search_fits_coefficients_it_was_not_given():
+    """A law found up to a constant is a found law: `3*x` must not need `3`."""
+    rng = np.random.default_rng(7)
+    x = rng.uniform(0.5, 3.0, 120)
+    out = HierarchicalSearch().search(x.reshape(-1, 1), 7.5 * x ** 2,
+                                      budget=60, variable_names=["x0"])
+    assert out
+    assert out[0]["expression"] == "x0**2"
+    assert abs(out[0]["fitted_scale"] - 7.5) < 1e-6
+
+
+def test_beam_functions_reach_the_forms_the_plain_atoms_cannot():
+    plain = beam_search_expressions(["x"], depth=1, width=8)
+    extended = beam_search_expressions(["x"], depth=1, width=8, include_functions=True)
+    assert not any("exp(-x)" in e or "sqrt(x)" in e or "1/x" in e for e in plain)
+    assert "exp(-x)" in extended
+    assert "sqrt(x)" in extended
+    assert "1/x" in extended
+    assert plain == beam_search_expressions(["x"], depth=1, width=8)
+
+
 def test_ngts_uct_prefers_rewarded_child():
     s = _python_ngts()
     s.reward_fn = lambda expr: 1.0 if expr == "good" else 0.0

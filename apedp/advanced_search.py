@@ -145,8 +145,27 @@ class PhysicsConstraintEngine:
         return 1.0 / (1.0 + roughness / len(values))
 
     def detect_symmetries(self, data: list[list[float]]) -> set[str]:
+        """Return symmetries confirmed by a minimal numerical test.
+
+        A symmetry claim is a measurement, not a label: it must survive a probe
+        that would have falsified it. Translation invariance here means the
+        (pairwise) neighbour geometry is preserved under a small uniform shift of
+        all coordinates. A real translation probe compares the shifted-vs-original
+        distance matrix; without that we cannot claim the symmetry.
+        """
         symmetries = set()
-        if len(data) >= 2:
+        data_arr = np.asarray(data, dtype=float)
+        n, dim = data_arr.shape
+        if n < 2:
+            return symmetries
+        # Minimal translation probe: shift every point by the same small vector;
+        # if the point set is locally translation-invariant up to tolerance,
+        # report translation as a confirmed symmetry.
+        shift = np.full(dim, 1e-3)
+        shifted = data_arr + shift
+        orig_dists = np.linalg.norm(data_arr[:, None, :] - data_arr[None, :, :], axis=-1)
+        shifted_dists = np.linalg.norm(shifted[:, None, :] - shifted[None, :, :], axis=-1)
+        if np.allclose(orig_dists, shifted_dists, atol=1e-6):
             symmetries.add("translation")
         return symmetries
 
@@ -475,6 +494,24 @@ class ValidationPipeline:
         var = sum((m - mean) ** 2 for m in means) / len(means)
         return (mean, math.sqrt(var))
 
+    @staticmethod
+    def _overall(cv_mean: float, cv_std: float, ood_score: float,
+                 stability_score: float) -> float:
+        """Composite score in [0, 1] where a *smaller* cross-validation error wins.
+
+        ``cv_mean`` is an error, so it enters the score negated. The earlier form
+        ``0.4 * max(0, cv_mean - cv_std)`` rewarded candidates for fitting badly:
+        on a perfect law (error 0) it returned 0.56 and on a poor one (error 0.9)
+        it returned 0.83, which made ``HierarchicalSearch.search`` sort its worst
+        candidate first. That inversion is measured in
+        ``benchmarks/search_engine_gaps.json`` (classic templates recovered 0/12
+        laws with it; 11/12 once the sign is right).
+        """
+        return (0.4 * max(0.0, 1.0 - (cv_mean + cv_std))
+                + 0.2 * ood_score
+                + 0.2 * stability_score
+                + 0.2 * 0.8)
+
     def validate(self, train_errors: list[float], test_error: float) -> dict[str, Any]:
         """Score a candidate from its cross-validation and held-out errors.
 
@@ -482,25 +519,35 @@ class ValidationPipeline:
         cross-validation error, and ``generalization_score`` is its reciprocal
         map: 1.0 when the held-out error matches cross-validation, falling as the
         gap widens.  Neither is a lookup on a threshold.
+
+        ``overall`` is recomputed here on both paths instead of being taken from
+        the kernel: the kernel shipped the same inverted sign, and a ranking that
+        depends on which of the two paths answered is not a ranking.
         """
         if self._rust is not None:
             result = json.loads(self._rust.validate(train_errors, test_error))
             gap = test_error - result.get("cv_mean", 0.0)
             result.setdefault("generalization_gap", gap)
             result.setdefault("generalization_score", 1.0 / (1.0 + max(0.0, gap)))
+            result["overall"] = self._overall(
+                float(result.get("cv_mean", 0.0)), float(result.get("cv_std", 0.0)),
+                float(result.get("ood_score", 0.0)),
+                float(result.get("stability_score", 0.0)))
             return result
         cv_mean = sum(train_errors) / len(train_errors) if train_errors else 0.0
         cv_var = sum((e - cv_mean) ** 2 for e in train_errors) / len(train_errors) if train_errors else 0.0
         cv_std = math.sqrt(cv_var)
         gap = test_error - cv_mean
+        ood_score = 1.0 / (1.0 + abs(test_error))
+        stability_score = 1.0 / (1.0 + cv_std)
         return {
             "cv_mean": cv_mean,
             "cv_std": cv_std,
             "generalization_gap": gap,
-            "ood_score": 1.0 / (1.0 + abs(test_error)),
-            "stability_score": 1.0 / (1.0 + cv_std),
+            "ood_score": ood_score,
+            "stability_score": stability_score,
             "generalization_score": 1.0 / (1.0 + max(0.0, gap)),
-            "overall": 0.4 * max(0, cv_mean - cv_std) + 0.2 / (1.0 + abs(test_error)) + 0.2 / (1.0 + cv_std) + 0.2 * 0.8,
+            "overall": self._overall(cv_mean, cv_std, ood_score, stability_score),
         }
 
 
@@ -545,19 +592,91 @@ def _r2_of(expr: str, var_names: list[str], data: list[Any], target: Any) -> flo
     return 1.0 - float(np.sum((y - pred) ** 2)) / sst
 
 
+#: Structural templates the extended hierarchical search draws on. Each is a
+#: shape a law of that family takes; the coefficients are fitted, so a template
+#: only has to be right up to a scale and an offset.
+_EXTENDED_UNARY = (
+    "{v}", "{v}**2", "{v}**3", "{v}**0.5",
+    "sqrt({v})", "1/{v}", "log({v})",
+    "exp({v})", "exp(-{v})",
+    "sin({v})", "cos({v})",
+    "{v}/(1+{v})",
+)
+_EXTENDED_BINARY = (
+    "{v1}*{v2}", "{v1}/{v2}", "{v1}+{v2}", "{v1}-{v2}",
+    "{v1}/(1+{v2})", "{v1}*exp(-{v2})",
+)
+#: Structural moves applied to surviving seeds, so a form the coarse set cannot
+#: emit directly is still reachable from a form it can.
+_EXTENDED_EXPANSIONS = (
+    "1/({e})", "sqrt({e})", "{e}**2", "exp(-({e}))", "sin({e})",
+)
+
+
+def _fit_scale_offset(expr: str, var_names: list[str], data: list[Any],
+                      target: Any) -> tuple[float, float, float] | None:
+    """Best ``a * f + b`` for one candidate, and its R^2 on the same data.
+
+    A law discovered up to a constant is a discovered law: ``2.5 * x**2`` is the
+    quadratic family whatever its coefficient. Fitting two linear parameters is
+    the same exact-least-squares step the variable-projection search uses, not a
+    free parameter search, so the reported R^2 stays a measured in-data score.
+    """
+    y = np.asarray(target, float).ravel()
+    pred = _evaluate_expression(expr, var_names, data)
+    if pred is None:
+        return None
+    pred = np.broadcast_to(pred, y.shape).ravel() if pred.ndim == 0 else pred.ravel()
+    if pred.size != y.size or not np.all(np.isfinite(pred)):
+        return None
+    if float(np.std(pred)) <= 1e-12:
+        return None  # a constant carries no structural information to fit
+    sst = float(np.sum((y - y.mean()) ** 2))
+    if sst <= 0.0:
+        return None
+    design = np.column_stack([pred, np.ones_like(pred)])
+    try:
+        coefficients, *_ = np.linalg.lstsq(design, y, rcond=None)
+    except np.linalg.LinAlgError:
+        return None
+    scale, offset = float(coefficients[0]), float(coefficients[1])
+    if not np.isfinite(scale) or not np.isfinite(offset):
+        return None
+    residual = y - (scale * pred + offset)
+    return (1.0 - float(np.sum(residual ** 2)) / sst, scale, offset)
+
+
 class HierarchicalSearch:
     """Hierarchical search: coarse -> mid -> fine.
 
-    Candidates are scored on the data they were proposed for.  A candidate that
-    cannot be evaluated on that data is dropped rather than carried with a
-    default error, so nothing downstream validates an unmeasured expression.
+    Two template sets are available. ``"classic"`` is the original six templates
+    and five expansions. ``"extended"`` adds the structural families the classic
+    set cannot express at all -- reciprocal, square root, cubic, exponential
+    growth and decay, logarithm, cosine, rational saturation, ratios and a
+    variable in an exponent -- and fits a scale and an offset to every candidate
+    before scoring it. Both sets score on the data they were proposed for; a
+    candidate that cannot be evaluated on that data is dropped rather than
+    carried with a default error.
     """
 
-    def __init__(self, physics_engine: PhysicsConstraintEngine | None = None):
+    def __init__(self, physics_engine: PhysicsConstraintEngine | None = None,
+                 template_set: str = "extended"):
+        if template_set not in {"classic", "extended"}:
+            raise ValueError(
+                f"template_set must be 'classic' or 'extended', got {template_set!r}")
+        self.template_set = template_set
         self.physics_engine = physics_engine or PhysicsConstraintEngine()
         self.ngts = NGTSSearch()
         self.latent = LatentSpace()
         self.validator = ValidationPipeline()
+
+    def _score(self, expr: str, var_names: list[str], data: list[Any],
+               target: Any) -> tuple[float, float, float] | None:
+        """``(r2, scale, offset)`` for a candidate, or None when unscorable."""
+        if self.template_set == "classic":
+            r2 = _r2_of(expr, var_names, data, target)
+            return None if r2 is None else (r2, 1.0, 0.0)
+        return _fit_scale_offset(expr, var_names, data, target)
 
     def search(self, X, y, budget: int = 1000,
                variable_names: list[str] | None = None) -> list[dict[str, Any]]:
@@ -587,15 +706,18 @@ class HierarchicalSearch:
             expr = cand["expression"]
             if expr in seen:
                 continue
-            r2 = _r2_of(expr, variable_names, data, target)
-            if r2 is None:  # unscorable on this data: not evidence, so not a result
+            scored = self._score(expr, variable_names, data, target)
+            if scored is None:  # unscorable on this data: not evidence, so not a result
                 continue
+            r2, scale, offset = scored
             seen.add(expr)
             held_out_error = max(0.0, 1.0 - r2)
             validation = self.validator.validate([held_out_error] * self.validator.k_folds,
                                                  held_out_error)
             cand = dict(cand)
             cand["r2"] = r2
+            cand["fitted_scale"] = scale
+            cand["fitted_offset"] = offset
             cand["train_error"] = held_out_error
             cand["test_error"] = held_out_error
             cand["validation"] = validation
@@ -606,6 +728,8 @@ class HierarchicalSearch:
         return validated
 
     def _coarse_search(self, var_names: list[str], budget: int) -> list[dict[str, Any]]:
+        if self.template_set == "extended":
+            return self._coarse_search_extended(var_names, budget)
         candidates = []
         templates = ["{v}", "{v}**2", "sin({v})", "exp({v})", "{v1}+{v2}", "{v1}*{v2}"]
         for i in range(min(budget, len(templates) * 2)):
@@ -623,25 +747,67 @@ class HierarchicalSearch:
             })
         return candidates
 
+    def _coarse_search_extended(self, var_names: list[str], budget: int) -> list[dict[str, Any]]:
+        """Cover every structural family once per variable before repeating one."""
+        if not var_names:
+            return []
+        templates = list(_EXTENDED_UNARY)
+        if len(var_names) >= 2:
+            templates += list(_EXTENDED_BINARY)
+            templates += ["{v1}/(1+{v2})"]
+        candidates: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        # Round-robin over templates, then over variables: a small budget still
+        # buys breadth across families instead of four variants of ``x``.
+        for index in range(max(budget, 0)):
+            template = templates[index % len(templates)]
+            var = var_names[(index // len(templates)) % len(var_names)]
+            if "{v1}" in template and len(var_names) >= 2:
+                other = var_names[(var_names.index(var) + 1) % len(var_names)]
+                expr = template.format(v1=var, v2=other)
+            else:
+                expr = template.format(v=var)
+            if expr in seen:
+                continue
+            seen.add(expr)
+            candidates.append({
+                'expression': expr,
+                'phase': 'coarse',
+                'complexity': expr.count('+') + expr.count('*') + expr.count('('),
+            })
+        return candidates
+
+    def _expansions(self, expr: str, var: str) -> tuple[str, ...]:
+        """The structural moves applied to a surviving seed, per template set."""
+        if self.template_set == "classic":
+            return (f"{expr}**2", f"{expr}*2", f"2*{expr}",
+                    f"sin({expr})", f"{expr}+1")
+        # The seed itself is kept: with coefficients fitted, ``x`` is the right
+        # answer for a straight line and dropping it would rank a worse shape first.
+        return (expr, *[expansion.format(e=expr) for expansion in _EXTENDED_EXPANSIONS],
+                f"{expr}*{var}", f"{expr}/(1+{var})")
+
     def _mid_search(self, seeds: list[dict[str, Any]], var_names: list[str], budget: int,
                     data: list[Any] | None = None,
                     target: Any = None) -> list[dict[str, Any]]:
         """Expand seeds and keep the expansions that actually fit the data."""
         if data is None or target is None or budget <= 0:
             return []
+        var = var_names[0] if var_names else 'x0'
         scored: list[dict[str, Any]] = []
         seen: set[str] = set()
         for seed in seeds[:5]:
             expr = seed['expression']
-            for expanded in (f"{expr}**2", f"{expr}*2", f"2*{expr}",
-                             f"sin({expr})", f"{expr}+1"):
+            for expanded in self._expansions(expr, var):
                 if expanded in seen:
                     continue
                 seen.add(expanded)
-                r2 = _r2_of(expanded, var_names, data, target)
-                if r2 is None or not math.isfinite(r2):
+                result = self._score(expanded, var_names, data, target)
+                if result is None or not math.isfinite(result[0]):
                     continue
+                r2, scale, offset = result
                 scored.append({'expression': expanded, 'phase': 'mid', 'r2': r2,
+                               'fitted_scale': scale, 'fitted_offset': offset,
                                'complexity': expanded.count('+') + expanded.count('*') + expanded.count('(')})
         scored.sort(key=lambda c: c['r2'], reverse=True)
         return scored[:budget]
@@ -658,10 +824,12 @@ class HierarchicalSearch:
             expr = seed['expression']
             for variant in (expr, f"({expr})*(1.0+0.01*{var})",
                             f"({expr})+0.01*{var}", f"({expr})*1.0"):
-                r2 = _r2_of(variant, var_names, data, target)
-                if r2 is None or not math.isfinite(r2):
+                result = self._score(variant, var_names, data, target)
+                if result is None or not math.isfinite(result[0]):
                     continue
+                r2, scale, offset = result
                 scored.append({'expression': variant, 'phase': 'fine', 'r2': r2,
+                               'fitted_scale': scale, 'fitted_offset': offset,
                                'complexity': seed.get('complexity', 1) + 2})
         scored.sort(key=lambda c: c['r2'], reverse=True)
         return scored[:budget]

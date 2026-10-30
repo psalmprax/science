@@ -230,9 +230,10 @@ def _arms(instance: str = "m15") -> dict:
             if key.startswith(prefix)}
 
 
-@pytest.mark.parametrize("instance", ["m15", "m255"])
+@pytest.mark.parametrize("instance", ["m15", "m255", "m4095"])
 @pytest.mark.parametrize(
-    "arm", ["none", "swap", "sweep", "clear", "forney", "shift", "all"])
+    "arm", ["none", "swap", "sweep", "clear", "forney", "shift", "quotient", "all",
+            "full"])
 def test_every_mr_gated_arm_reproduces_the_reference(instance: str, arm: str):
     result = _arms(instance)[arm]
     assert result["verdict"] == "PASS", result
@@ -243,18 +244,24 @@ def test_every_mr_gated_arm_reproduces_the_reference(instance: str, arm: str):
 
 
 def test_the_clear_arm_removes_the_reverse_eea_allocations():
-    """Only the clear arm shrinks the circuit; gating arms pay ancillas for readouts.
+    """Only the clear arm shrinks the circuit; the reads cost one shared ancilla.
 
-    These are local id counts, not ``Q``: freed ids are never reused here, so they
-    bound allocation rather than the competition's register count.
+    The Forney block reads ``sigma`` with ``mr`` and restores it in place, so it adds no
+    qubit ids at all; the arms that read a control (``swap``, ``sweep``, ``shift``,
+    ``quotient``) share one readout ancilla across every read in the circuit, so each of
+    them allocates exactly one id more than the reference — not one per read. These are
+    local id counts, not ``Q``: freed ids are never reused here, so they bound
+    allocation rather than the register count.
     """
     results = _arms()
     reference = results["none"]["reference_qubits"]
     assert results["none"]["arm_qubits"] == reference
     assert results["clear"]["arm_qubits"] < reference
     assert results["all"]["arm_qubits"] < reference
-    for arm in ("swap", "sweep", "forney", "shift"):
-        assert results[arm]["arm_qubits"] > reference, arm
+    assert results["full"]["arm_qubits"] < reference
+    assert results["forney"]["arm_qubits"] == reference
+    for arm in ("swap", "sweep", "shift"):
+        assert results[arm]["arm_qubits"] == reference + 1, arm
 
 
 def test_reading_with_r_fails_the_same_arm():
