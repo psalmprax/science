@@ -126,17 +126,27 @@ Measured, at a small instance (m=15, n=6, GF(2^4)), emitted instruction streams:
 | `composed` | 149,337 | 16,610 |
 | `drop_shift_c3` | 149,337 | 16,610 |
 
-The two are the control circuit, instruction for instruction. Their 0.0 is
+The two are the control circuit, instruction for instruction. Their 0.0 was
 therefore **vacuous**, not evidence that the composed condition is unsatisfiable.
 
-What survives: the *argument* in the campaign's §2 table that the exchange's
-`c3 ∧ flag` and the shift's `c1 ∨ c2 ∨ (¬flag ∧ (c0 ∨ c3))` cannot overlap is
-an argument about the predicates, and it is untouched — `ctrl` is one-hot and the
-flag is one value, so a round cannot be both. What does not survive is the claim
-that the two arms *measured* it. The campaign's §3 table should be read with
-`composed` and `drop_shift_c3` struck from the evidence column, and this
-experiment's audit row is the replacement for the measurement they were meant to
-provide.
+**They have since been rebuilt and measured.** `_shift_a_and_b` is now named
+`_shift_b_array_right` — the method the decoder actually calls — so the gates
+inside it are live, and the two arms were re-measured at the pinned instance over
+64 shots against the same decoder without the gate (`campaign_none`):
+
+| arm | `T`/shot | vs control | executed shift region | emitted ops | correct |
+|---|---|---|---|---|---|
+| `campaign_none` | 1,218,514.8 | — | 162,479.6 | 76,930,062 | yes |
+| `campaign_composed` | **1,218,514.8** | **0.0** | 162,479.6 | 76,931,838 | **yes** |
+| `campaign_drop_c3` | 1,173,137.1 | −45,377.7 | 121,258.5 | 76,930,728 | **no** (junk, phase) |
+
+So the campaign's S3 conclusion is now *measured*: with a gate that really is in
+the stream, skipping the shift exactly where the exchange fires changes nothing,
+because there is nothing to skip. And S3b's premise is *falsified*: dropping the
+shift from every `c3` round finds 45,377.7 of executed work, and the decoder needs
+it. The argument in the campaign's §2 table survives — `ctrl` is one-hot and the
+flag is one value, so a round cannot be both — and §7 below says why the flag is
+the operand that decides which of the two a round is.
 
 ## 6. The shift half
 
@@ -152,23 +162,36 @@ statement is stronger than the campaign's: the decoder's data movement is a
 permutation *parameterised by the data*, and no build-time assignment of register
 names can express it.
 
-## 7. What this does not settle
+## 7. C3: the mechanism, measured
 
-**C3 falsified, and the reason is not established.** The arm that exchanges on
-`c3` alone is incorrect — that is measured, and it is the useful outcome, because
-it says the exchange's control has an operand that matters. But the probe also
-measures `c3` firing 72 times per shot while the incumbent's exchange costs
-exactly 72 firings, which on its face is consistent with `flag` being set in every
-`c3` round. The arm's own exchange count (190,888, i.e. 214 firings) is measured
-on a trajectory that has already diverged, so it is not evidence either way
-(campaign §6 rule 4). **The mechanism is an open question**, recorded as such:
-either the `flag` operand is clear in some `c3` rounds, or the arm differs from
-the incumbent in a way this experiment has not isolated. An exploratory probe
-outside this record (m=15, n=6, GF(2^4), the same 8 sampled shots, logging `c3`
-and the post-update `flag` at the exchange) points at the first: `c3 ∧ flag`
-fires 1-3 times where `c3` fires 7-8 on every shot. That is a hint, not a
-measurement this record pins, and nothing in the conclusion depends on which
-explanation holds.
+**C3 falsified, and now explained.** The arm that exchanges on `c3` alone is
+incorrect (852,267.4, its exchange row 190,888.0 — three times the incumbent's
+64,224). The probe reads *both* of the exchange's operands where the exchange
+reads them, `c3` and the post-update `flag`, one qubit per round, at the pinned
+instance over 64 shots (222 rounds, 14,208 round-shots):
+
+| | total | per shot |
+|---|---|---|
+| rounds where `c3` fires | 4,608 | **72.0 exactly, on every shot** |
+| rounds where the exchange fires (`c3 ∧ flag`) | 2,052 | 27-33 |
+| `c3` rounds where the flag is **clear** | **2,556 (55.5%)** | 39-45 |
+| distinct `c3` sets / distinct exchange sets | 10 / 10 | — |
+
+So the flag is **not** redundant in a `c3` round: it is clear in 2,556 of them, and
+in those rounds the shift's `¬flag ∧ (c0 ∨ c3)` term runs while the exchange does
+not. Exchanging on `c3` alone therefore performs 72 permutations where the decoder
+asks for 27-33, on state the EEA has not finished with: the arm is wrong, and the
+cost it shows is inflated by the divergence it causes (§6 rule 4), which is why the
+73.0 saving C3 predicted never appeared. This also settles what §5 left open about
+the campaign's S3b arm: the `¬flag ∧ c3` branch is live, so an arm that drops the
+shift in every `c3` round removes work the decoder needs — measured at 45,377.7 and
+incorrect.
+
+The invariant and the variance sit in the same table and mean different things:
+`c3` is a *count* (the counter advances once per live round, so 72 rounds complete
+on every shot) while `c3 ∧ flag` is a *condition* (the flag is data). A build-time
+schedule needs the second to be the first, and 10 distinct exchange sets say it is
+not.
 
 **No target arithmetic moves.** The arm stays at 686,014.8, 1.541× the 445,229
 target. This experiment removes an option rather than a Toffoli.
@@ -183,9 +206,11 @@ that *are* measured still need `mr` (Experiment D).
 `Q` = 1,913 and its 64,224 exchange row, the pre-declared C1 saving, the rebased
 arm's zeroed region and its 198,024 static fall together with its incorrectness,
 the probe's 10 distinct patterns at an invariant 72 firings, the falsified C3
-prediction, and the audit showing the campaign's two zero-saving arms are copies
-of its control.
+prediction, the exchange predicate (`c3` 4,608 firings, `c3 ∧ flag` 2,052, flag
+clear in 2,556 `c3` rounds), the two rebuilt campaign arms (0.0 and correct;
+−45,377.7 and incorrect), and the audit showing what the campaign's two
+zero-saving arms *were*.
 
 A future edit that quotes the rebased arm's total as a saving, promotes a
-build-time schedule on fewer than 64 distinct patterns, or restores the two
-vacuous arms as evidence fails there.
+build-time schedule on fewer than 64 distinct patterns, restores the two vacuous
+arms as evidence, or says the exchange runs in every `c3` round fails there.

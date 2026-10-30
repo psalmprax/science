@@ -115,6 +115,19 @@ def make_movement_decoder(arms, campaign, halt, reuse, *, mode: str):
             self._roles = {}
             self._rounds = None
             self.c3_probe = None
+            self.flag_probe = None
+
+        # -- the exchange's predicate, measured ---------------------------------
+        def _probe(self, builder, c3_qubit, flag, it):
+            """Record `c3` and the post-update flag for this round, one qubit each."""
+            if not probe:
+                return
+            fired = self._read_bit(builder, c3_qubit)
+            with campaign.conditional(builder, fired[0]):
+                builder.x(self.c3_probe[it])
+            flagged = self._read_bit(builder, flag)
+            with campaign.conditional(builder, flagged[0]):
+                builder.x(self.flag_probe[it])
 
         # -- the exchange ------------------------------------------------------
         def _exchange(self, builder, reg_a, reg_b, n_A, n_B, n_a, n_b, flag, ctrl):
@@ -159,6 +172,7 @@ def make_movement_decoder(arms, campaign, halt, reuse, *, mode: str):
             self._rounds = n_iters
             if probe:
                 self.c3_probe = builder.alloc_qubits(n_iters)
+                self.flag_probe = builder.alloc_qubits(n_iters)
             eea_step = builder.mark("eea_step")
             for it in (range(n_iters - 1, -1, -1) if is_adjoint
                        else range(n_iters)):
@@ -183,11 +197,6 @@ def make_movement_decoder(arms, campaign, halt, reuse, *, mode: str):
                     builder.flip_if_equal(halting_counter, 0, target=is_hc_zero)
                     ctrl = self._counter_controls(builder, counter, is_c3, is_hc_zero)
 
-                    if probe:
-                        fired = self._read_bit(builder, ctrl[3])
-                        with campaign.conditional(builder, fired[0]):
-                            builder.x(self.c3_probe[it])
-
                     live = self._read_bit(builder, is_hc_zero)
                     steps = [
                         lambda: self._gated(builder, live[0], lambda: self._update_flag(
@@ -199,6 +208,11 @@ def make_movement_decoder(arms, campaign, halt, reuse, *, mode: str):
                                                           it, is_adjoint=is_adjoint),
                         lambda: self._gated(builder, live[0], lambda: self._update_metadata(
                             builder, B, bb, n_q, flag, ctrl, is_adjoint=is_adjoint)),
+                        # The exchange's own two operands, read where the exchange reads
+                        # them: `c3` and the *post-update* flag. Nothing between the
+                        # flag update and here writes `flag`, so this is the value the
+                        # exchange's control AND consumes.
+                        lambda: self._probe(builder, ctrl[3], flag, it),
                         lambda: self._exchange(builder, a, b, A, B, aa, bb, flag, ctrl),
                     ]
                     for step in (reversed(steps) if is_adjoint else steps):
@@ -355,12 +369,14 @@ def main() -> int:
 
             def capture(decoder):
                 holder["c3"] = getattr(decoder, "c3_probe", None)
+                holder["flag"] = getattr(decoder, "flag_probe", None)
                 return holder
 
             circuit, syn, mbuc, registers = build(
                 decoder_type, capture if probe_registers else None)
-            out, probe_values = simulate(circuit, syn, mbuc,
-                                         registers.get("c3") if probe_registers else None)
+            probe_registers_values = ((registers.get("c3"), registers.get("flag"))
+                                      if probe_registers else None)
+            out, probe_values = simulate(circuit, syn, mbuc, probe_registers_values)
             costs, instructions, _rounds = campaign.region_costs(circuit, out, args.shots)
             row = {
                 "qubits": circuit.num_qubits,
@@ -373,6 +389,7 @@ def main() -> int:
                 "mid_circuit_reads_per_shot":
                     instructions.get("predicate_read", 0.0) / 2.0,
                 "static_toffoli": int(out["toffoli_mask"].sum()),
+                "static_instructions": len(circuit),
                 "syndromes": bool(np.array_equal(out["syndromes"], reference_inputs)),
                 "junk": bool(not out["junk"].any()),
                 "phase": bool(np.array_equal(out["phase"], reference["phase"])),
@@ -380,7 +397,11 @@ def main() -> int:
                                  if text == "@enter:eea_step"),
             }
             if probe_values is not None:
-                row["c3_pattern"] = pattern_rows(probe_values, args.shots)
+                c3_values, flag_values = probe_values
+                row["c3_pattern"] = pattern_rows(c3_values, args.shots)
+                row["flag_pattern"] = pattern_rows(flag_values, args.shots)
+                row["exchange_predicate"] = exchange_predicate_rows(
+                    c3_values, flag_values, args.shots)
             del circuit, out
             gc.collect()
             return row
@@ -428,11 +449,12 @@ def main() -> int:
                 "drop_shift_c3_is_a_copy": rows["drop_shift_c3"] == rows["none"],
                 "why": "the campaign's `_shift_a_and_b` is never called: the reference "
                        "and `MRGatedDecoder` call `_shift_b_array_right`, so both arms "
-                       "emit the control's instruction stream",
+                       "emit the control's instruction stream -- until it is renamed, "
+                       "which is what `campaign_composed` / `campaign_drop_c3` measure",
             }
 
-        def simulate(circuit, syn, mbuc, probe_register):
-            """`ledger.simulate`, plus an optional read of a per-round probe."""
+        def simulate(circuit, syn, mbuc, probe_registers_read):
+            """`ledger.simulate`, plus optional reads of per-round probes."""
             sim = km.Simulator(batch_size=args.shots, seed=99, counting_operations=True)
             sim.counting_op_executions = True
             sim.use_same_registers_as(circuit)
@@ -446,8 +468,9 @@ def main() -> int:
             per_shot = np.array([int(sim.operation_statistics(i).num_toffoli_like)
                                  for i in range(args.shots)])
             syndrome_ids = {q.id for r in syn for q in r}
-            if probe_register is not None:
-                syndrome_ids |= {q.id for q in probe_register}
+            if probe_registers_read is not None:
+                for register in probe_registers_read:
+                    syndrome_ids |= {q.id for q in register}
             junk_ids = [i for i in range(circuit.num_qubits) if i not in syndrome_ids]
             out = {
                 "counts": counts,
@@ -458,8 +481,9 @@ def main() -> int:
                 "junk": sim.read_across_shots([km.q(i) for i in junk_ids]),
                 "phase": sim.read_phase_flipped_across_shots(),
             }
-            probe = (np.asarray(sim.read_across_shots(probe_register))
-                     if probe_register is not None else None)
+            probe = (tuple(np.asarray(sim.read_across_shots(register))
+                           for register in probe_registers_read)
+                     if probe_registers_read is not None else None)
             return out, probe
 
         control = measure(lambda *a, **k: campaign.make_decoder(arms, "stacked", mixins)(
@@ -484,6 +508,25 @@ def main() -> int:
                   f"({control['mean'] - row['mean']:+.1f}) "
                   f"swap={region_nonproduct(row, 'swap_a_and_b'):.1f} "
                   f"correct={correct(row)}{extra}")
+
+        # The campaign's two shift/swap arms, re-measured against the same control.
+        # Both were reported as saving exactly 0.0, which the campaign explained as the
+        # extra condition being unsatisfiable; the audit below showed the condition was
+        # never emitted, because the method carrying it was not the one the decoder
+        # calls. With that fixed they are arms, and these are their numbers.
+        # Their own control is `campaign_none`: the same six-lever decoder without the
+        # campaign's per-position chains, so the *only* difference is the gate under
+        # test. The stacked arm above differs from both by three other gates.
+        campaign_arms = {}
+        for label, campaign_mode in (("campaign_none", "none"),
+                                     ("campaign_composed", "composed"),
+                                     ("campaign_drop_c3", "drop_shift_c3")):
+            row = measure(campaign.make_decoder(arms, campaign_mode, mixins))
+            campaign_arms[label] = row
+            measured[label] = row
+            print(f"  {label:16s} Q={row['qubits']} T={row['mean']:.1f}/shot "
+                  f"shift={region_nonproduct(row, 'shift_b_array_right'):.1f} "
+                  f"correct={correct(row)}")
     finally:
         arms.DR.km = original
 
@@ -513,6 +556,46 @@ def main() -> int:
                      "drop_shift_c3_is_a_copy": audit["drop_shift_c3_is_a_copy"]},
         "passed": True,
     })
+
+    if "campaign_none" in measured:
+        base_row = measured["campaign_none"]
+        base_mean = base_row["mean"]
+        base_shift = region_nonproduct(base_row, "shift_b_array_right")
+        observation["campaign_none_total"] = base_mean
+        observation["campaign_none_shift_region"] = base_shift
+        for label, campaign_mode in (("campaign_composed", "composed"),
+                                     ("campaign_drop_c3", "drop_shift_c3")):
+            if label not in measured:
+                continue
+            row = measured[label]
+            saving = base_mean - row["mean"]
+            shift_region = region_nonproduct(row, "shift_b_array_right")
+            observation[f"{label}_saving"] = saving
+            observation[f"{label}_correct"] = correct(row)
+            observation[f"{label}_shift_region"] = shift_region
+            observation[f"{label}_instructions"] = row["instructions_per_shot"]
+            observation[f"{label}_instructions_base"] = base_row["instructions_per_shot"]
+            checks.append({
+                "check": f"the campaign's `{campaign_mode}` arm is an arm now",
+                "requirement": "its instruction stream differs from the same decoder "
+                               "without the gate (the campaign could not show that: the "
+                               "method carrying the gate was never called)",
+                "measured": {"static_instructions": row["static_instructions"],
+                             "base_static_instructions":
+                                 base_row["static_instructions"],
+                             "instructions_per_shot": row["instructions_per_shot"],
+                             "base_instructions_per_shot":
+                                 base_row["instructions_per_shot"],
+                             "saving_vs_same_decoder": saving,
+                             "correct": correct(row),
+                             "shift_region": shift_region,
+                             "base_shift_region": base_shift},
+                # What makes it an arm is that its *emitted* stream differs from the
+                # same decoder without the gate -- which is exactly the thing that was
+                # broken before (the stream was byte for byte the control's). The
+                # executed count is the measurement, not the test.
+                "passed": row["static_instructions"] != base_row["static_instructions"],
+            })
 
     if "rebased" in measured:
         row = measured["rebased"]
@@ -567,6 +650,21 @@ def main() -> int:
             "requirement": "an arm that exchanges on c3 alone, correct or not",
             "measured": {"saving": saving, "correct": correct(row)},
             "passed": row["qubits"] == control["qubits"],
+        })
+
+    if "probe" in measured and "exchange_predicate" in measured["probe"]:
+        predicate = measured["probe"]["exchange_predicate"]
+        observation["exchange_predicate"] = predicate
+        checks.append({
+            "check": "C3: the exchange's two operands are read where it reads them",
+            "requirement": "`c3` and the post-update `flag` per round per shot, so that "
+                           "`c3 and flag` can be compared with `c3` alone",
+            "measured": {key: predicate[key] for key in
+                         ("c3_rounds_total", "exchanges_total",
+                          "c3_rounds_with_flag_clear_total",
+                          "flag_is_redundant_in_c3_rounds",
+                          "distinct_c3_sets", "distinct_exchange_sets")},
+            "passed": predicate["c3_rounds_total"] > 0,
         })
 
     if "probe" in measured and "c3_pattern" in measured["probe"]:
@@ -630,6 +728,37 @@ def main() -> int:
     print(f"failed checks: {payload['failed_checks'] or 'none'}")
     print(f"wrote {args.record}")
     return 0 if not failed else 1
+
+
+def exchange_predicate_rows(c3_values, flag_values, shots) -> dict:
+    """The exchange's predicate, round by round and shot by shot.
+
+    `c3 and flag` is the control the exchange's `cswap` sits under. Reading both
+    operands where the exchange reads them separates two questions the campaign
+    conflated: how many rounds `c3` fires in, and how many of those the *flag* leaves
+    live. If those two counts differ, exchanging on `c3` alone is a different schedule
+    -- which is why the C3 arm is wrong rather than 73 Toffolis cheaper.
+    """
+    c3 = np.asarray(c3_values).reshape(-1, shots) > 0
+    flag = np.asarray(flag_values).reshape(-1, shots) > 0
+    rounds = c3.shape[0]
+    both = c3 & flag
+    c3_without_flag = c3 & ~flag
+    return {
+        "rounds": rounds,
+        "shots": shots,
+        "c3_firings_per_shot": c3.sum(axis=0).tolist(),
+        "exchanges_per_shot": both.sum(axis=0).tolist(),
+        "c3_rounds_with_flag_clear_per_shot": c3_without_flag.sum(axis=0).tolist(),
+        "c3_rounds_total": int(c3.sum()),
+        "exchanges_total": int(both.sum()),
+        "c3_rounds_with_flag_clear_total": int(c3_without_flag.sum()),
+        "flag_is_redundant_in_c3_rounds": bool(not c3_without_flag.any()),
+        "distinct_exchange_sets": len({tuple(np.flatnonzero(row).tolist())
+                                       for row in both.T}),
+        "distinct_c3_sets": len({tuple(np.flatnonzero(row).tolist())
+                                 for row in c3.T}),
+    }
 
 
 def pattern_rows(values, shots) -> dict:

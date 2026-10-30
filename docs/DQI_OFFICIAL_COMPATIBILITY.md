@@ -19,13 +19,21 @@ both:
    have: `mr` (for the reads every lever is gated on) and `gf_product` (for the
    54-AND product policy all the published arm figures are measured with). The
    second was not recorded before this run.
-2. it is not true that nothing can be compiled. One candidate can, and this
+2. it is not true that nothing can be built. One candidate can, and this
    experiment builds, executes and costs it: the reference algorithm with the
    54-AND multiply emitted as *gates* and cleared with `hmr` instead of `mr`.
 
 What no candidate can have is the levers. That distinction is the whole result:
 the arm's −43.84% is a *read-dependent* saving, and the pinned binary has no
 Z-basis measurement.
+
+**Amended by Experiment D2 (§3, §5).** The candidate *builds* and *executes*, and
+it is not a valid submission: `hmr` is not phase-safe, so it returns the wrong
+phase on 37 of 64 shots and the verifier charges each one. The corrected result
+is narrower than the one above: **no correct circuit cheaper than the shipped
+reference can be compiled by the pinned binary**, and the cheapest correct
+circuit it can compile is the reference itself. Experiment D's `0.952` score
+ratio is withdrawn; its Toffoli count stands.
 
 ## 1. The two surfaces, measured
 
@@ -73,8 +81,30 @@ amplitude level). It therefore cannot supply a *read*.
 
 It can supply a **clear**, and the pinned binary already knows that: `del_and`
 costs **0 Toffolis** on both builds, because an AND's target is a basis-state
-qubit that can be measured away instead of uncomputed. That is the crack the
-candidate in §5 walks through.
+qubit that can be measured away instead of uncomputed.
+
+**Correction (Experiment D2).** This section originally concluded that `hmr` could
+supply a clear, and §5 built a candidate on that. It cannot: `hmr` is not
+*phase-safe*, and this circuit is scored on phase. Measured one qubit at a time
+(`scripts/measure_dqi_official_candidate.py`, `clear_phase_safety`), 200 shots
+each:
+
+| clear | on `|0>` | on `|1>` | measured ones on `|1>` |
+|---|---|---|---|
+| `hmr` | 0 phase flips | **97 phase flips** | 97 |
+| `del_and` | 0 phase flips | **0 phase flips** | — |
+
+The 97 flips *are* the 97 measurement outcomes: an X-basis measurement of `|1>`
+puts a factor of −1 on the branch that measures 1, and kickmix tracks that factor
+as a phase flip. `del_and` measures the same way and then applies a classically
+conditioned `CZ(control1, control2)` — the phase fixup — which is why the
+reference's own measurement-based uncomputation is phase-correct. The fixup needs
+the value to be a *known* AND, so `del_and` clears an AND and nothing else.
+
+`mr` is therefore load-bearing for the same reason it was: it is the only clear
+whose outcome is the state's own value. A clear of a window holding a *sum* of
+products, or of a scratch lane holding a syndrome, has no fixup to apply.
+That is the crack §5 walked through, and it is not load-bearing.
 
 ## 4. The identical-circuit check
 
@@ -90,29 +120,47 @@ Per-shot arrays are identical element for element. The pinned row also
 reproduces the recorded reference constant exactly, so the comparison in §5 is
 against a floor that is not in dispute.
 
-## 5. The one candidate the pinned binary can compile
+## 5. The candidate the pinned binary can compile — and its phase
 
 `Gf54MulMixin` (`scripts/gf54_mul.py`) replaces `ixor_gf2_mul` with the 54-AND
-circuit and clears its workspace with `mr`. Its clears are *clears*, not reads, so
-substituting `hmr` for `mr` there is sound (§3) — and that substitution needs no
-builder change at all, because the emitter calls the builder's `mr` method.
+circuit and clears its workspace with `mr`. Substituting `hmr` for `mr` there
+needs no builder change at all, because the emitter calls the builder's `mr`
+method — and it produces a circuit the pinned binary *executes*.
 
-| | `Q` | `T_mean`/shot | score ratio to the shipped reference | correct |
-|---|---|---|---|---|
-| reference (built-in multiply) | 1,893 | 5,725,071.609375 | 1.000 | yes |
-| **candidate: reference + gate-stream 54-AND + `hmr` clears** | **1,896** | **5,433,399.609375** | **0.952** | yes |
-| reference + 54-AND as a *policy* | 1,912 | 5,201,222.531250 | 0.925 | yes — **local only** |
-| the arm + policy + five gates | 1,913 | 686,014.800 | — | **not compilable** |
+Whether the pinned binary can compile a **valid submission** is a different
+question, and it is the one the score asks. Every arm below was run on the pinned
+extension at the pinned instance, 64 shots, and scored with the verifier's own
+rule (`phase_err = (phase_flipped ^ phases) & ~val_err`):
 
-The candidate is **−5.09% `T`** and **+3 qubits**, so its score is **4.79% better**
-than the shipped reference: `(T/T₀)·(Q/Q₀)² = 0.949054 × 1.003172 = 0.952064`.
-It restores the syndromes on all 64 shots, it uses no instruction the pinned
-binary lacks, and it is the first candidate in this repository that the
-competition build can construct at all.
+| | `Q` | `T_mean`/shot | score ratio to the shipped reference | value errors | **phase errors** |
+|---|---|---|---|---|---|
+| reference (built-in multiply) | 1,893 | 5,725,071.609375 | 1.000 | 0/64 | **0/64** |
+| reference + 54-AND gate stream, `hmr` clears | 1,896 | 5,433,399.609375 | 0.952 | 0/64 | **37/64** |
+| forward EEA on a CNOT copy, scratch cleared by `hmr` | 2,736 | 3,438,873.609375 | 1.255 | 0/64 | **35/64** |
+| reference + 54-AND as a *policy* | 1,912 | 5,201,222.531250 | 0.925 | — | — **local only** |
+| the arm + policy + five gates | 1,913 | 686,014.800 | — | — | **not compilable** |
 
-It is also 7.92× worse than the arm. The candidate is the *floor*, not a
-contender: it proves the route exists (a clear can be a measurement where a read
-cannot) while leaving the 43.84% where it is, behind a read.
+So the 54-AND candidate's `T` is real and its **score ratio 0.952 is withdrawn**:
+37 of 64 shots return the wrong phase, which is the coin flip §3 measures, and the
+verifier charges each one as a failing shot. It is compilable and it is *not* a
+submission. The second row tests the largest lever the first row leaves alone —
+run the EEA on a CNOT copy of the syndromes, so nothing has to be restored and no
+qubit's value is read, which is exactly what the `clear_eea` lever needs — and it
+fails the same way, at 35/64, for the same reason: its clears are `hmr`.
+
+(It also costs 843 more qubits, because the whole scratch stays live until the
+single clear at the end, so `(Q/Q₀)²` alone puts it at 1.255: worse than the
+reference even if its phase were right.)
+
+**The cheapest correct circuit the pinned binary can compile is the shipped
+reference, 5,725,071.609375 at `Q` = 1,893.** That is the measured floor, not a
+conjecture: every cheaper construction in this repository needs a clear whose
+value is a function of the data, and the only phase-safe clear the binary has
+(`del_and`) needs the value to be a *known AND*. A 54-AND multiply whose windows
+were cleared with `del_and` instead would have to keep all 54 ANDs live — 54
+scratch qubits against the 19-qubit rolling window — and `+54` on `Q` costs 5.8%
+in `(Q/Q₀)²` against the 5.1% its `T` saves, so that route is at best a wash and
+is not claimed here as a measurement.
 
 ## 6. What is still out of reach, and why that is structural
 
@@ -125,10 +173,12 @@ which is what a 5,725,071.6 static-equals-executed figure means.
 So the receipt question has a precise answer:
 
 - **no lever** can be compiled by the pinned binary;
-- **one candidate** can, at 5,433,399.6 per shot and `Q` = 1,896 — a 4.79% score
-  improvement, not the 14.4× the portfolio target asks for;
-- the gap between the two is `mr`, and `mr` is not an optimisation detail: it is
-  the instruction that makes an executed count depend on the data.
+- **no correct candidate cheaper than the reference** can be compiled either: the
+  two that build execute, and both fail on phase (37/64 and 35/64);
+- the gap between the reference and the arm is `mr`, and `mr` is not an
+  optimisation detail: it is the instruction that makes an executed count depend
+  on the data, and its phase behaviour is what makes a measurement usable as a
+  clear rather than as a randomiser.
 
 `apedp_dyn/quantum_compilation/contracts.py` remains the rule: only the pinned
 extension may produce a receipt, and the pinned extension cannot build the arm.
@@ -140,8 +190,14 @@ This experiment does not change that, and it does not claim a submission.
 1,893/5,725,071.609375 and the identical per-shot arrays on both builds; the
 surface inventory (`mr` no, `h` no, `hmr` yes, `gf_product` no, classical
 controls yes); the arm's failure on one build and success on the other; `del_and`
-costing 0; the candidate's `Q` = 1,896 and `T` = 5,433,399.609375 with its
-syndromes restored; and the record's own statement that no submission is claimed.
+costing 0; the candidate's `Q` = 1,896 and `T` = 5,433,399.609375; and the
+record's own statement that no submission is claimed.
+
+`tests/test_dqi_official_candidate.py` pins Experiment D2: `hmr` flips the tracked
+phase on |1> and `del_and` does not; the reference's 0/64 phase errors; the
+54-AND candidate's 37/64 and the copy-EEA candidate's 35/64 at `Q` = 2,736; and
+that no record quotes a score ratio for a candidate with phase errors.
 
 A future edit that calls the missing `MR` the only blocker, quotes the arm as a
-submission, or reports a candidate without its score ratio fails there.
+submission, quotes 0.952 as an attainable score, or reports a candidate without
+its phase errors fails there.

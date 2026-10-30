@@ -1,3 +1,54 @@
+## 2026-10-30 (later) — Experiment D2 and the campaign fix: `hmr` is not a clear, the compile-able candidate is not a submission, and the fused-shift arms finally measure something
+
+- **EXPERIMENT D2 — D's CANDIDATE IS COMPILABLE AND WRONG, AND THE 0.952 IS WITHDRAWN.**
+  `scripts/measure_dqi_official_candidate.py`
+  (`docs/DQI_OFFICIAL_COMPATIBILITY.md` §3 and §5) checks the one thing Experiment D did not:
+  the **phase**. The DQI submission is scored on phase as well as value (the verifier's
+  `phase_err = (phase_flipped ^ phases) & ~val_err`), and a clear implemented as `hmr` is not
+  phase-safe. Measured one qubit at a time over 200 shots: `hmr` on `|1>` flips the tracked
+  phase on **97** of them — the same 97 as its measured ones, because an X-basis measurement of
+  `|1>` puts a −1 on the branch that measures 1 — while `del_and`, which is the same
+  measurement followed by a classically conditioned `CZ` (the phase fixup), flips **0**, and
+  neither flips anything on `|0>`. So a clear whose value is not a *known AND* has no fixup to
+  apply, and substituting `hmr` for `mr` there is a randomisation, not a clear. At the pinned
+  instance over 64 shots on the pinned extension: reference **1,893 / 5,725,071.609375, 0 value
+  errors, 0 phase errors**; Experiment D's 54-AND candidate **1,896 / 5,433,399.609375, 0 value,
+  37 phase errors**; and a third arm that removes the reverse EEA outright — the forward EEA on a
+  **CNOT copy** of the syndromes, so the input is never written, nothing is restored and no
+  qubit's value is read, which is exactly what the `clear_eea` lever needs — at **2,736 /
+  3,438,873.609375, 35 phase errors**, twice over: its clears are `hmr` too, and holding the
+  whole scratch live costs more `Q` than the pass it deletes. D's candidate builds, executes, and
+  is **not** a submission; its **0.952 score ratio is withdrawn** and its Toffoli count stands.
+  The measured floor is now the shipped reference: **the cheapest *correct* circuit the pinned
+  binary can compile is the one it ships.**
+- **EXPERIMENT C, C3 — THE MECHANISM IS MEASURED, AND IT IS THE FLAG.** The probe now reads both
+  of the exchange's operands where the exchange reads them — `c3` and the *post-update* `flag`,
+  one qubit per round — at the pinned instance over 64 shots and 222 rounds: `c3` fires **4,608**
+  times (**72.0 on every shot**, invariant), the exchange fires **2,052** (27–33 per shot), and
+  the flag is **clear in 2,556 of the 4,608** `c3` rounds (55.5%). So the flag is not redundant in
+  a `c3` round; exchanging on `c3` alone performs ~72 permutations where the decoder asks for
+  27–33, which is why C3's 73.0 never appeared and its arm (852,267.4, exchange row 190,888.0)
+  is wrong. The same table is why the campaign's S3 arm has nothing to skip: in the 2,052 rounds
+  where the flag *is* set, `ctrl`'s one-hotness zeroes the shift's other two terms.
+- **THE CAMPAIGN'S DEAD `_shift_a_and_b` IS FIXED AND ITS TWO ARMS RE-MEASURED.** The method is
+  now named `_shift_b_array_right`, the one the reference and `MRGatedDecoder` call, so the gates
+  inside it are emitted. `dqi_schedule_campaign.json` was re-run with everything else reproducing
+  to the Toffoli (control **1,221,466.8**, `everything` **688,966.8**, `stacked` **686,014.8**):
+  **S3 `composed` saves exactly 0.0 and is correct** — the campaign's conclusion, now measured
+  rather than assumed — and **S3b `drop_shift_c3` saves 45,396.1 and is incorrect**, which
+  falsifies S3b's premise (the `¬flag ∧ c3` branch is live). `drop_shift_c3` is recorded as a
+  *predictive* arm: its correctness is reported, not required, so a falsification is the result
+  rather than an invalid run, and the S3b check now carries the declared 0.0 beside the measured
+  45,396.1. The movement script's independent re-measurement against a base carrying the two
+  promoted gates (`campaign_none` = 1,218,514.8) agrees: 0.0/correct and 45,377.7/incorrect.
+- **Pins.** `tests/test_dqi_official_candidate.py` (8 tests) pins the phase mechanism, the three
+  arms' `Q`/`T`/error counts, that no ratio is quoted for a phase-broken candidate, and that the
+  cheapest correct circuit is the reference; `tests/test_dqi_movement_schedule.py` and
+  `tests/test_dqi_schedule_campaign.py` were updated to pin the rebuilt arms and the exchange
+  predicate rather than the vacuous 0.0s. `docs/DOCUMENTATION.md` indexes the new script;
+  `docs/EEA_SCHEDULE_CAMPAIGN.md` §3.3 and `docs/DQI_MOVEMENT_SCHEDULE.md` §5–§7 carry the
+  corrections.
+
 ## 2026-10-30 — Experiments C and D, and the amplitude tier: the exchange stays, one candidate compiles, and the licence is exactly the basis
 
 - **EXPERIMENT C — MEASURED, NEGATIVE, WITH A CORRECTION.**

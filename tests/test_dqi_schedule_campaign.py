@@ -223,11 +223,24 @@ def test_the_reads_cost_no_qubit_and_no_iteration(record):
 
 
 def test_the_composition_is_worth_nothing_and_says_so(record):
-    """The two zero-saving arms, and why the round table is not the evidence."""
+    """S3 as a *measurement*, and S3b as a falsified prediction.
+
+    These two arms were the control circuit when this record was first written -- the
+    method implementing both was called `_shift_a_and_b` and nothing calls that -- so
+    their 0.0 was vacuous. Renamed to `_shift_b_array_right`, the gate is in the
+    stream, and the re-measured arms are what these assertions pin: composing the
+    shift with the exchange still saves exactly 0.0 and stays correct, while dropping
+    the shift from every `c3` round finds real work and breaks the decoder.
+    """
     arms = record["arms"]
-    for name in ("composed", "drop_shift_c3"):
-        assert arms[name]["correct"] is True, name
-        assert arms[name]["saving_per_shot"] == pytest.approx(0.0, abs=0.05), name
+    assert arms["composed"]["correct"] is True
+    assert arms["composed"]["saving_per_shot"] == pytest.approx(0.0, abs=0.05)
+    assert arms["drop_shift_c3"]["correct"] is False
+    assert arms["drop_shift_c3"]["saving_per_shot"] > 40_000.0
+    s3b = next(entry for entry in record["promotion_checks"]
+               if entry["check"].startswith("S3b"))
+    assert s3b["measured"]["outcome"].startswith("falsified")
+    assert s3b["measured"]["declared_saving"] == 0.0
     # The per-round table is an aggregate over the shot batch, and the record says so
     # rather than letting it read as per-shot evidence.
     assert "aggregate" not in record["round_overlap"]["note"].lower()

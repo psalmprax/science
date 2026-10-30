@@ -73,11 +73,39 @@ def test_the_flag_operand_of_the_exchange_cannot_be_dropped(record):
     assert observation["c3_only_correct"] is False
 
 
-def test_the_campaigns_zero_saving_arms_are_audited(record):
-    audit = record["observation"]["campaign_arm_audit"]
-    assert audit["composed_is_a_copy"] is True
-    assert audit["drop_shift_c3_is_a_copy"] is True
-    assert audit["arms"]["composed"] == audit["arms"]["none"]
+def test_the_exchange_predicate_explains_the_falsification(record):
+    # `c3` is a count and `c3 and flag` is a condition: the post-update flag is clear
+    # in more than half the c3 rounds, so exchanging on `c3` alone over-swaps.
+    predicate = record["observation"]["exchange_predicate"]
+    assert predicate["rounds"] == 222
+    assert predicate["c3_rounds_total"] == 72 * 64
+    assert predicate["exchanges_total"] < predicate["c3_rounds_total"]
+    assert predicate["c3_rounds_with_flag_clear_total"] > 0
+    assert predicate["flag_is_redundant_in_c3_rounds"] is False
+    assert predicate["c3_rounds_total"] - (predicate["exchanges_total"]
+                                          + predicate["c3_rounds_with_flag_clear_total"]) == 0
+    assert predicate["distinct_exchange_sets"] > 1
+    assert set(predicate["c3_firings_per_shot"]) == {72}
+    assert max(predicate["exchanges_per_shot"]) < 72
+
+
+def test_the_campaigns_zero_saving_arms_were_copies_and_now_are_not(record):
+    observation = record["observation"]
+    audit = observation["campaign_arm_audit"]
+    # What the campaign's run measured: with the gate in a method nothing called, the
+    # two arms *were* the control circuit. That is the finding, kept.
+    assert "never called" in audit["why"]
+    # Now that the method is named for what it overrides, the gate is in the stream:
+    # the composed arm saves exactly 0.0 and stays correct, the c3-dropping arm finds
+    # 45,377.7 of work the decoder needs and is wrong.
+    assert observation["campaign_composed_saving"] == 0.0
+    assert observation["campaign_composed_correct"] is True
+    assert observation["campaign_composed_shift_region"] == \
+        observation["campaign_none_shift_region"]
+    assert observation["campaign_drop_c3_saving"] > 40_000.0
+    assert observation["campaign_drop_c3_correct"] is False
+    assert observation["campaign_drop_c3_shift_region"] < \
+        observation["campaign_none_shift_region"]
 
 
 def test_every_arm_keeps_the_rounds_and_the_qubit_count(record):
@@ -86,7 +114,8 @@ def test_every_arm_keeps_the_rounds_and_the_qubit_count(record):
         # at the incumbent's qubit count, because a read costs no qubit.
         expected = record["control"]["qubits"] if name == "probe" else 1913
         if name == "probe":
-            expected = 1913 + 222
+            # Two probes of one qubit per round: the exchange's `c3` and its flag.
+            expected = 1913 + 2 * 222
         assert arm["qubits"] == expected, name
         assert arm["eea_steps"] == 222, name
 
