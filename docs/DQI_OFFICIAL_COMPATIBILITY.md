@@ -29,11 +29,18 @@ Z-basis measurement.
 
 **Amended by Experiment D2 (§3, §5).** The candidate *builds* and *executes*, and
 it is not a valid submission: `hmr` is not phase-safe, so it returns the wrong
-phase on 37 of 64 shots and the verifier charges each one. The corrected result
-is narrower than the one above: **no correct circuit cheaper than the shipped
-reference can be compiled by the pinned binary**, and the cheapest correct
-circuit it can compile is the reference itself. Experiment D's `0.952` score
-ratio is withdrawn; its Toffoli count stands.
+phase on 37 of 64 shots and the verifier charges each one. Experiment D's `0.952`
+score ratio is withdrawn; its Toffoli count stands.
+
+What replaces it is better, not narrower. There is a **second phase-safe clear** in
+the pinned binary — `del_gf2_mul` (`gen_gf_unmul`), whose fixups are computed from
+the two factors instead of from an AND — so the 54-AND multiply can be emitted with
+no `mr`, no `hmr` and no extra qubits, provided its window is the thing that
+primitive knows how to clear: a **reduced-product** register. Accumulating the
+field product already reduced (`scripts/gf54_mul_reduced.py`) does exactly that.
+Measured at the pinned instance: **`Q` 1,893, 5,433,399.609375 per shot, 0 value
+errors, 0 phase errors, junk clean — a 5.09% score improvement**, the first correct
+candidate cheaper than the shipped reference that the competition build can compile.
 
 ## 1. The two surfaces, measured
 
@@ -79,9 +86,12 @@ structure. It needs an `H` gate, and the builder has none — measured here as
 so on a basis-state qubit it returns a *random* outcome (also measured at
 amplitude level). It therefore cannot supply a *read*.
 
-It can supply a **clear**, and the pinned binary already knows that: `del_and`
-costs **0 Toffolis** on both builds, because an AND's target is a basis-state
-qubit that can be measured away instead of uncomputed.
+It can supply a **clear**, and the pinned binary already knows that: `del_and` and
+`del_gf2_mul` both cost **0 Toffolis** on both builds, because a basis-state
+register can be measured away instead of uncomputed — **as long as the value is
+known**: `del_and`'s fixup is `CZ(control1, control2)`, and `del_gf2_mul`'s is the
+masked parity of `lhs * rhs` (§5). A sum of products that is neither is the case
+`hmr` tempts you into, and §3's table is why that temptation is a dephasing.
 
 **Correction (Experiment D2).** This section originally concluded that `hmr` could
 supply a clear, and §5 built a candidate on that. It cannot: `hmr` is not
@@ -135,6 +145,7 @@ rule (`phase_err = (phase_flipped ^ phases) & ~val_err`):
 | | `Q` | `T_mean`/shot | score ratio to the shipped reference | value errors | **phase errors** |
 |---|---|---|---|---|---|
 | reference (built-in multiply) | 1,893 | 5,725,071.609375 | 1.000 | 0/64 | **0/64** |
+| **reference + reduced-window 54-AND (`del_and` + `del_gf2_mul`)** | **1,893** | **5,433,399.609375** | **0.9491** | **0/64** | **0/64** |
 | reference + 54-AND gate stream, `hmr` clears | 1,896 | 5,433,399.609375 | 0.952 | 0/64 | **37/64** |
 | forward EEA on a CNOT copy, scratch cleared by `hmr` | 2,736 | 3,438,873.609375 | 1.255 | 0/64 | **35/64** |
 | reference + 54-AND as a *policy* | 1,912 | 5,201,222.531250 | 0.925 | — | — **local only** |
@@ -152,15 +163,23 @@ fails the same way, at 35/64, for the same reason: its clears are `hmr`.
 single clear at the end, so `(Q/Q₀)²` alone puts it at 1.255: worse than the
 reference even if its phase were right.)
 
-**The cheapest correct circuit the pinned binary can compile is the shipped
-reference, 5,725,071.609375 at `Q` = 1,893.** That is the measured floor, not a
-conjecture: every cheaper construction in this repository needs a clear whose
-value is a function of the data, and the only phase-safe clear the binary has
-(`del_and`) needs the value to be a *known AND*. A 54-AND multiply whose windows
-were cleared with `del_and` instead would have to keep all 54 ANDs live — 54
-scratch qubits against the 19-qubit rolling window — and `+54` on `Q` costs 5.8%
-in `(Q/Q₀)²` against the 5.1% its `T` saves, so that route is at best a wash and
-is not claimed here as a measurement.
+The first row is the one that stands. `scripts/gf54_mul_reduced.py` accumulates the
+field product **already reduced** — CNOTs, so free — into a 12-qubit window instead
+of an unreduced `2n-1`-bit polynomial window, which makes the one register that has
+to be cleared hold exactly `lhs * rhs`. That is `del_gf2_mul`'s precondition, and its
+measurement is followed by classically conditioned `CZ` fixups whose parity is
+computed from the factors, so the tracked phase is restored rather than left to the
+measurement outcome. Every AND target is cleared by `del_and` on the same footing.
+The result costs **66 Toffolis per controlled call** against the built-in 75, and
+**no extra qubits at all**: the 12-qubit window fits under the reference's peak, so
+`Q` stays at 1,893 and the whole 5.09% `T` saving reaches the score. (The earlier
+estimate that this route needed 54 live AND targets, `+54` on `Q`, was for a
+different design — keeping the ANDs to clear an unreduced window — and is not what
+this one does.)
+
+What remains true is the boundary: **no lever can be compiled**, because a lever's
+condition is a *read*, and no phase-safe clear supplies one. The saving this
+candidate carries is the multiply's, not the schedule's.
 
 ## 6. What is still out of reach, and why that is structural
 
@@ -173,12 +192,15 @@ which is what a 5,725,071.6 static-equals-executed figure means.
 So the receipt question has a precise answer:
 
 - **no lever** can be compiled by the pinned binary;
-- **no correct candidate cheaper than the reference** can be compiled either: the
-  two that build execute, and both fail on phase (37/64 and 35/64);
-- the gap between the reference and the arm is `mr`, and `mr` is not an
-  optimisation detail: it is the instruction that makes an executed count depend
-  on the data, and its phase behaviour is what makes a measurement usable as a
-  clear rather than as a randomiser.
+- **one correct candidate cheaper than the reference** can be, at 5,433,399.609375
+  per shot and `Q` = 1,893 — a 5.09% score improvement, not the 14.4× the portfolio
+  target asks for, and not a submission until it is run through the verifier's
+  shot sample end to end;
+- the gap between that candidate and the arm is `mr`: not an optimisation detail but
+  the instruction that makes an executed count depend on the data. Its phase
+  behaviour is separately load-bearing — it is what makes a measurement usable as a
+  clear rather than as a randomiser, which is why the fixup primitives are the only
+  clears this candidate uses.
 
 `apedp_dyn/quantum_compilation/contracts.py` remains the rule: only the pinned
 extension may produce a receipt, and the pinned extension cannot build the arm.
@@ -195,9 +217,17 @@ record's own statement that no submission is claimed.
 
 `tests/test_dqi_official_candidate.py` pins Experiment D2: `hmr` flips the tracked
 phase on |1> and `del_and` does not; the reference's 0/64 phase errors; the
-54-AND candidate's 37/64 and the copy-EEA candidate's 35/64 at `Q` = 2,736; and
-that no record quotes a score ratio for a candidate with phase errors.
+54-AND candidate's 37/64 and the copy-EEA candidate's 35/64 at `Q` = 2,736; the
+reduced-window candidate at `Q` = 1,893 and 5,433,399.609375 with **0/64 value and
+0/64 phase errors** (score ratio 0.949054), as the only correct arm cheaper than the
+reference; and that no record quotes a score ratio for a candidate with phase
+errors.
+
+`tests/test_gf54_mul_reduced.py` pins the emitter itself on the pinned extension:
+the product correct on both paths, junk clean, the tracked phase untouched, 54 and
+66 Toffolis, no `MR ` or standalone `H` in the stream, and every `HMR` accompanied
+by a classically conditioned `CZ`.
 
 A future edit that calls the missing `MR` the only blocker, quotes the arm as a
-submission, quotes 0.952 as an attainable score, or reports a candidate without
-its phase errors fails there.
+submission, quotes 0.952 as an attainable score, reports a candidate without its
+phase errors, or claims the `hmr` clears are safe fails there.

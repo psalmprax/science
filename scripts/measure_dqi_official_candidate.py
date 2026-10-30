@@ -215,6 +215,8 @@ def measure(build_dir: Path, m: int, n: int, degree: int, shots: int, seed: int)
     ledger = load_module("region_ledger",
                          ROOT / "scripts" / "measure_dqi_region_ledger.py")
     gf54 = load_module("gf54_mul", ROOT / "scripts" / "gf54_mul.py")
+    gf54_reduced = load_module("gf54_mul_reduced",
+                               ROOT / "scripts" / "gf54_mul_reduced.py")
     arms = ledger.load_arms(km, runner)
     sys.path.insert(0, str(BUNDLE / "verifiers" / "dqi"))
     import verify_submission_dqi as V  # noqa: PLC0415
@@ -238,6 +240,12 @@ def measure(build_dir: Path, m: int, n: int, degree: int, shots: int, seed: int)
     candidate_builder = type("Candidate", (gf54.Gf54MulMixin, ClearWithHmr),
                              {"__doc__": "54-AND gate-stream multiply, HMR clears"})
     candidate_shim = runner.shim_for(km, candidate_builder)
+    # The same 54 ANDs, with both clears phase-safe: every AND target by `del_and` and
+    # the one reduced-product window by `del_gf2_mul`, whose measurement is followed by
+    # classically conditioned CZ fixups computed from the two factors. No `mr`, no `hmr`.
+    phase_safe_builder = type("PhaseSafe", (gf54_reduced.Gf54MulReducedMixin, base_builder),
+                              {"__doc__": "reduced-window 54-AND multiply, fixup clears"})
+    phase_safe_shim = runner.shim_for(km, phase_safe_builder)
 
     iterations = arms.DR.default_n_iters(n)
     spec = V.ProblemSpecDQI.benchmark_instance(m=m, n=n, degree=degree, num_shots=shots)
@@ -301,6 +309,16 @@ def measure(build_dir: Path, m: int, n: int, degree: int, shots: int, seed: int)
         out["arms"]["copied_eea"]["call"] = (
             "forward EEA on a CNOT copy + HMR clear of the scratch + 54-AND gate stream")
         del circuit
+
+        # Candidate 3: the same 54 ANDs with *phase-safe* clears throughout, built only
+        # from primitives the pinned binary has (`del_and`, `del_gf2_mul`).
+        arms.DR.km = phase_safe_shim
+        circuit, syn, mbuc = ledger.build_reference(km, arms, phase_safe_shim, n, degree, m)
+        result = simulate(km, circuit, syn, mbuc, syndromes_in, mbuc_in, degree, shots)
+        out["arms"]["phase_safe_multiply"] = score(circuit, result)
+        out["arms"]["phase_safe_multiply"]["call"] = (
+            "reference algorithm + reduced-window 54-AND multiply (del_and + del_gf2_mul)")
+        del circuit
     finally:
         arms.DR.km = original
     return out
@@ -357,6 +375,19 @@ def main() -> int:
                      "qubits": rows["hmr_candidate"]["qubits"]},
         "passed": (abs(rows["hmr_candidate"]["mean_toffoli_like"] - GATE_STREAM_TOTAL) < 1e-6
                    and rows["hmr_candidate"]["qubits"] == GATE_STREAM_QUBITS),
+    }, {
+        "check": "the phase-safe multiply is correct *and* cheaper",
+        "requirement": "no value errors, no phase errors, junk clean, fewer Toffolis per "
+                       "shot than the reference, and no more qubits than it needs",
+        "measured": {key: rows["phase_safe_multiply"][key] for key in
+                     ("qubits", "mean_toffoli_like", "value_errors", "phase_errors",
+                      "junk_clean", "syndromes_restored")},
+        "passed": (rows["phase_safe_multiply"]["value_errors"] == 0
+                   and rows["phase_safe_multiply"]["phase_errors"] == 0
+                   and rows["phase_safe_multiply"]["junk_clean"]
+                   and rows["phase_safe_multiply"]["syndromes_restored"]
+                   and rows["phase_safe_multiply"]["mean_toffoli_like"]
+                   < reference["mean_toffoli_like"]),
     }]
 
     failed = [entry for entry in checks if not entry["passed"]]
@@ -391,10 +422,16 @@ def main() -> int:
             f"a valid submission, and the 0.952 score ratio D recorded is not "
             f"attainable. The copied-EEA candidate, which removes the reverse EEA "
             f"outright, scores {copied_phase}/{args.shots} phase errors for the same "
-            f"reason. The cheapest *correct* circuit the pinned binary can compile is "
-            f"the reference, because every cheaper one needs a clear whose value is a "
-            f"function of the data, and the only phase-safe clear the binary has "
-            f"(`del_and`) requires the value to be a known AND."
+            f"reason. There is a second phase-safe clear, `del_gf2_mul`, whose fixups "
+            f"are computed from the two factors and which clears a *product* window; "
+            f"accumulating the field product already reduced lets the 54-AND multiply "
+            f"use it, and that arm scores "
+            f"{rows['phase_safe_multiply']['value_errors']} value and "
+            f"{rows['phase_safe_multiply']['phase_errors']} phase errors at "
+            f"Q={rows['phase_safe_multiply']['qubits']} and "
+            f"{rows['phase_safe_multiply']['mean_toffoli_like']:.6f} per shot -- the "
+            f"first correct candidate cheaper than the shipped reference that the "
+            f"pinned binary can compile."
         ),
         "reproducibility": {
             "script_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
@@ -404,7 +441,7 @@ def main() -> int:
                                       text=True).stdout.strip(),
         },
         "scope": {
-            "measured": "three circuits built and executed on the pinned competition "
+            "measured": "four circuits built and executed on the pinned competition "
                         "binary with Q, per-shot Toffoli counts, and the verifier's own "
                         "value/phase error counts; and the phase behaviour of `hmr` and "
                         "`del_and` on a single qubit",

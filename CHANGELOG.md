@@ -1,3 +1,47 @@
+## 2026-10-30 (final) — the first *correct* compilable candidate: 5,433,399.6 at `Q` = 1,893, a 5.09% score improvement
+
+- **A PHASE-SAFE 54-AND MULTIPLY THE PINNED BINARY CAN ACTUALLY EMIT.**
+  `scripts/gf54_mul_reduced.py`. Experiment D2 closed the `hmr` route and left the
+  question open: a clear needs the value to be *known*, and `del_and` knows only an AND.
+  The pinned binary has a **second** fixup primitive — `del_gf2_mul` (`gen_gf_unmul`) —
+  whose classically conditioned `CZ` parity is computed from the two factors, so it can
+  clear a **product** register for 0 Toffolis. Its precondition is that the register
+  really holds `lhs * rhs`, which the old emitter never met: it accumulated an unreduced
+  `2n-1`-bit polynomial window and folded afterwards. Here the field product is
+  accumulated **already reduced** — each base-case product bit lands at a polynomial
+  index that maps to a known set of field bits, and CNOTs are free — so the only window
+  is 12 qubits and holds exactly the reduced product. Every AND target is cleared by
+  `del_and` on the same footing. Measured at the pinned instance on the pinned
+  extension over 64 shots: **`Q` 1,893 (the reference's peak — the window fits under
+  it), 5,433,399.609375 Toffolis per shot, 0 value errors, 0 phase errors, junk clean,
+  syndromes restored, score ratio 0.949054 = a 5.09% improvement.** That is the first
+  correct candidate cheaper than the shipped reference the competition build can
+  compile, and it beats Experiment D's withdrawn 0.952 because it does not pay for the
+  multiply in qubits. Cost: 66 Toffolis per controlled call against the built-in 75
+  (54 ANDs + the 12-Toffoli add); `mr` and `hmr` appear nowhere in the stream, and every
+  measured clear is paired with a fixup.
+- **THE ARITHMETIC THE REVIEW ASKED ABOUT, STATED.** `T` falls by **5.0946%**
+  (`5,433,399.609375 / 5,725,071.609375 = 0.949054`) and the *score* ratio is
+  `(T/T₀)·(Q/Q₀)²`: at `Q` 1,896 that was `0.949054 × 1.003172 = 0.952064`, a 4.79%
+  improvement, the `Q` term costing 0.317%; at the reduced window's `Q` 1,893 the term
+  is exactly 1 and the score ratio equals the `T` ratio. The record now says which
+  quantity each figure is.
+- **EVERY RECORD AUDITED FOR UNCHECKED CORRECTNESS.**
+  `scripts/audit_record_correctness_checks.py` walks all 21 records and classifies every
+  candidate row by which of the three checks — value, junk, phase — the record actually
+  stores. Result: **13 rows claim correctness on partial evidence** (7 missing junk and
+  phase, 6 missing phase), 12 fully checked, 51 bare booleans, 5 resources-only; and the
+  historical defect is named mechanically — `dqi_official_compatibility.json`
+  `builds.pinned.candidate`, the 5,433,399.6 row that was called correct on its
+  syndromes alone. Record: `benchmarks/quantum_compilation/correctness_audit.json`;
+  pinned by `tests/test_record_correctness_audit.py`.
+- **Pins.** `tests/test_gf54_mul_reduced.py` (4 tests, on the pinned extension) pins the
+  emitter's function on both paths, the junk and the tracked phase, 54/66 Toffolis, no
+  Z-basis read, and a fixup for every `HMR`. `tests/test_dqi_official_candidate.py` gains
+  the 0.949054 row and the claim that it is the only correct arm cheaper than the
+  reference. `docs/DQI_OFFICIAL_COMPATIBILITY.md` §3/§5/§7 and `docs/DOCUMENTATION.md`
+  carry the revision.
+
 ## 2026-10-30 (later) — Experiment D2 and the campaign fix: `hmr` is not a clear, the compile-able candidate is not a submission, and the fused-shift arms finally measure something
 
 - **EXPERIMENT D2 — D's CANDIDATE IS COMPILABLE AND WRONG, AND THE 0.952 IS WITHDRAWN.**

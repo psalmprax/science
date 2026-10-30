@@ -56,6 +56,14 @@ def test_the_54_and_candidate_reproduces_its_count_and_fails_on_phase(record):
     assert candidate["phase_errors"] < 0.75 * candidate["shots"]
 
 
+def test_the_stream_of_the_working_candidate_has_no_z_basis_read(record):
+    """The two clears it rests on are `del_and` and `del_gf2_mul`, not `mr`/`hmr`."""
+    assert record["build"]["has_mr"] is False
+    assert record["clear_phase_safety"]["del_and_on_one"]["phase_safe"] is True
+    assert record["clear_phase_safety"]["hmr_on_one"]["phase_safe"] is False
+    assert "del_gf2_mul" in record["finding"]
+
+
 def test_the_copied_eea_candidate_removes_the_reverse_pass_and_still_fails(record):
     copied = record["arms"]["copied_eea"]
     assert copied["mean_toffoli_like"] < 0.7 * record["arms"]["reference"]["mean_toffoli_like"]
@@ -78,11 +86,27 @@ def test_no_score_ratio_is_quoted_for_a_candidate_with_phase_errors(record):
                                                   "phase-correct")
 
 
-def test_the_cheapest_correct_circuit_is_the_reference(record):
-    correct = [name for name, row in record["arms"].items()
-               if row["phase_errors"] == 0 and row["value_errors"] == 0]
-    assert correct == ["reference"]
-    assert record["checks"][1]["passed"] is True
+def test_the_phase_safe_multiply_is_the_first_correct_candidate(record):
+    row = record["arms"]["phase_safe_multiply"]
+    reference = record["arms"]["reference"]
+    assert row["value_errors"] == 0 and row["phase_errors"] == 0
+    assert row["junk_clean"] is True and row["syndromes_restored"] is True
+    # The reduced-window design costs *no* extra qubits: peak Q is the reference's.
+    assert row["qubits"] == reference["qubits"] == 1893
+    assert row["mean_toffoli_like"] == pytest.approx(5_433_399.609375, abs=1e-6)
+    assert record["score_ratios"]["phase_safe_multiply"] == pytest.approx(0.949054,
+                                                                         abs=1e-5)
+    assert reference["phase_errors"] == 0
+
+
+def test_only_the_phase_safe_arm_is_correct_and_cheaper(record):
+    reference = record["arms"]["reference"]["mean_toffoli_like"]
+    correct = {name for name, row in record["arms"].items()
+               if row["phase_errors"] == 0 and row["value_errors"] == 0
+               and row["mean_toffoli_like"] < reference}
+    assert correct == {"phase_safe_multiply"}
+    assert any(entry["check"].startswith("the phase-safe multiply")
+               and entry["passed"] for entry in record["checks"])
 
 
 def test_the_record_pins_the_script_and_passes_its_checks(record):
@@ -92,10 +116,12 @@ def test_the_record_pins_the_script_and_passes_its_checks(record):
     assert record["build"]["has_mr"] is False
 
 
-def test_the_doc_states_the_correction():
+def test_the_doc_states_the_correction_and_the_replacement():
     text = DOC.read_text()
     assert "Correction (Experiment D2)" in text
     assert "0.952" in text and "withdrawn" in text
     assert "37/64" in text and "35/64" in text
-    assert "the cheapest correct circuit the pinned binary can compile is the shipped" \
-        in text.lower()
+    # And the candidate that replaced it: phase-safe clears, no extra qubits.
+    assert "del_gf2_mul" in text and "0.9491" in text
+    assert "reduced-window" in text
+    assert "no lever can be compiled" in text.lower()

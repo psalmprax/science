@@ -272,12 +272,89 @@
       "phase_errors": 35,
       "shots": 64,
       "call": "forward EEA on a CNOT copy + HMR clear of the scratch + 54-AND gate stream"
+    },
+    "phase_safe_multiply": {
+      "qubits": 1893,
+      "mean_toffoli_like": 5433399.609375,
+      "toffoli_per_shot": [
+        5433789,
+        5433789,
+        5433789,
+        5432385,
+        5433789,
+        5433087,
+        5432736,
+        5433789,
+        5433789,
+        5433438,
+        5433438,
+        5433438,
+        5432736,
+        5433438,
+        5433789,
+        5433789,
+        5433438,
+        5433087,
+        5433789,
+        5433438,
+        5432385,
+        5433087,
+        5433789,
+        5433789,
+        5433438,
+        5432736,
+        5432736,
+        5433438,
+        5433087,
+        5433438,
+        5433087,
+        5433789,
+        5433087,
+        5433087,
+        5433438,
+        5433087,
+        5433789,
+        5433789,
+        5433438,
+        5433087,
+        5433087,
+        5433438,
+        5433438,
+        5433789,
+        5433087,
+        5433438,
+        5433087,
+        5433438,
+        5433438,
+        5433789,
+        5433789,
+        5433438,
+        5432736,
+        5433789,
+        5433438,
+        5433789,
+        5433789,
+        5433438,
+        5433789,
+        5433438,
+        5433789,
+        5433087,
+        5433438,
+        5433438
+      ],
+      "syndromes_restored": true,
+      "junk_clean": true,
+      "value_errors": 0,
+      "phase_errors": 0,
+      "shots": 64,
+      "call": "reference algorithm + reduced-window 54-AND multiply (del_and + del_gf2_mul)"
     }
   },
   "score_ratios": {
     "reference": 1.0,
     "hmr_candidate": 0.9520640403063637,
-    "copied_eea": 1.2547761324405875
+    "copied_eea": 1.2547761324405875,
+    "phase_safe_multiply": 0.9490535630117923
   },
   "arm": {
     "qubits": 1913,
@@ -346,17 +423,30 @@
         "qubits": 1896
       },
       "passed": true
+    },
+    {
+      "check": "the phase-safe multiply is correct *and* cheaper",
+      "requirement": "no value errors, no phase errors, junk clean, fewer Toffolis per shot than the reference, and no more qubits than it needs",
+      "measured": {
+        "qubits": 1893,
+        "mean_toffoli_like": 5433399.609375,
+        "value_errors": 0,
+        "phase_errors": 0,
+        "junk_clean": true,
+        "syndromes_restored": true
+      },
+      "passed": true
     }
   ],
   "failed_checks": [],
-  "finding": "an `hmr` clear is not phase-safe: on |1> it flipped the tracked phase on 97/200 shots, the same count as its measured ones (97), while `del_and` -- the same measurement plus a classically conditioned phase fixup -- flipped none. Experiment D's candidate therefore scores 37/64 phase errors where the reference scores 0/64: it is compilable and it is not a valid submission, and the 0.952 score ratio D recorded is not attainable. The copied-EEA candidate, which removes the reverse EEA outright, scores 35/64 phase errors for the same reason. The cheapest *correct* circuit the pinned binary can compile is the reference, because every cheaper one needs a clear whose value is a function of the data, and the only phase-safe clear the binary has (`del_and`) requires the value to be a known AND.",
+  "finding": "an `hmr` clear is not phase-safe: on |1> it flipped the tracked phase on 97/200 shots, the same count as its measured ones (97), while `del_and` -- the same measurement plus a classically conditioned phase fixup -- flipped none. Experiment D's candidate therefore scores 37/64 phase errors where the reference scores 0/64: it is compilable and it is not a valid submission, and the 0.952 score ratio D recorded is not attainable. The copied-EEA candidate, which removes the reverse EEA outright, scores 35/64 phase errors for the same reason. There is a second phase-safe clear, `del_gf2_mul`, whose fixups are computed from the two factors and which clears a *product* window; accumulating the field product already reduced lets the 54-AND multiply use it, and that arm scores 0 value and 0 phase errors at Q=1893 and 5433399.609375 per shot -- the first correct candidate cheaper than the shipped reference that the pinned binary can compile.",
   "reproducibility": {
-    "script_sha256": "6561402fed1c84650bcc88e8d75d2a683764a425ecf88f0a78325b73e382ba28",
+    "script_sha256": "99a4dd243fac70e5351836f64f696657e281f513a9991d0d399f28b8c42648b6",
     "kickmix_sha256": "c66b3216c4029e0cdfd09054306aa0feadf53ab2f50c1164e37f752874e5005e",
-    "git_rev": "b5a097a1c2fc0105dac2b88a4cfda7f1691e3c02"
+    "git_rev": "1ab1d7386da4afca8cd5bc59b8be91f24bdf746b"
   },
   "scope": {
-    "measured": "three circuits built and executed on the pinned competition binary with Q, per-shot Toffoli counts, and the verifier's own value/phase error counts; and the phase behaviour of `hmr` and `del_and` on a single qubit",
+    "measured": "four circuits built and executed on the pinned competition binary with Q, per-shot Toffoli counts, and the verifier's own value/phase error counts; and the phase behaviour of `hmr` and `del_and` on a single qubit",
     "not_measured": "no submission: R(eps_plus) and the full score are not computed here",
     "corrects": "the D record's candidate is not phase-correct, so its 0.952 score ratio is withdrawn; only its Toffoli count stands"
   }
