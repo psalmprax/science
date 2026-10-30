@@ -105,6 +105,13 @@ FEATURES = {
     "control_gates": (),
     "composed": (),
     "drop_shift_c3": (),
+    #: Experiment B: the surviving product stream, gated one level deeper on whether
+    #: the multiplier lane (`q_i`, the round's quotient) is zero. A product by zero is
+    #: the identity, so the gate is admissible on the same argument as S1-S4; what is
+    #: not obvious is whether the quotient is ever zero in a live round, which is why
+    #: S6 predicts no saving and lets the measurement decide.
+    "zero_q": ("zero_q",),
+    "falsify_zero_q": ("zero_q",),
     "falsify_sweep_stale": ("sweep",),
     "falsify_shift_complement": ("shift",),
     "falsify_shift_stale": ("shift",),
@@ -112,6 +119,10 @@ FEATURES = {
 #: The product stream is the largest set of quantum-controlled gates in the arm; a
 #: control that is one-hot at the multiply position would not touch the window.
 PRODUCT_PROMOTION_THRESHOLD = 50_000.0
+
+#: One executed `ixor_gf2_mul` inside the multiply window: 54 ANDs plus the 12-bit add.
+#: Used by S6's break-even arithmetic, which is declared before the arm runs.
+PRODUCT_ARM_UNIT_COST = 66.0
 
 #: What the two already-promoted flag/metadata gates saved, as published in
 #: `benchmarks/quantum_compilation/dqi_combined_arm.json` before this campaign ran.
@@ -346,6 +357,8 @@ def make_decoder(arms, mode: str, mixins: tuple = ()):
             measuring = "sweep" in FEATURES[mode]
             stale = mode == "falsify_sweep_stale"
             products = "products" in FEATURES[mode]
+            zero_q = "zero_q" in FEATURES[mode]
+            zero_q_inverted = mode == "falsify_zero_q"
             bit = builder.alloc_bits(1) if measuring else None
             previous = builder.alloc_bits(1) if stale else None
             product_bit = builder.alloc_bits(1) if products else None
@@ -354,6 +367,31 @@ def make_decoder(arms, mode: str, mixins: tuple = ()):
 
             def product(control, target) -> None:
                 """`ixor_gf2_mul` on its own mask, read classically."""
+                if zero_q:
+                    # Experiment B: the multiplier is `q_i`, so a zero multiplier makes
+                    # the product the identity. It must be read **per position**: the
+                    # sweep's selection chain cswaps `q_i` into the a-lanes, so the
+                    # multiplier is not a round-level quantity (a round-level read is
+                    # wrong, and the first version of this arm measured that).
+                    with conditional(builder, product_predicate()):
+                        emit(control, target)
+                    return
+                emit(control, target)
+
+            def product_predicate():
+                """`q_i != 0` as a classical bit, read where the product is emitted."""
+                with builder.mark("predicate_read"):
+                    ancilla = self._ancilla(builder)
+                    builder.flip_if_equal(q_i, 0, target=ancilla)
+                    zero_bit = builder.alloc_bits(1)
+                    getattr(builder, self.clear_with)(ancilla, zero_bit[0])
+                nonzero = builder.alloc_bits(1)
+                builder.bit_store(nonzero[0], not zero_q_inverted)
+                builder.bit_store(nonzero[0], bool(zero_q_inverted), control=zero_bit[0])
+                return nonzero[0]
+
+
+            def emit(control, target) -> None:
                 if not products:
                     builder.ixor_gf2_mul(q_i, reg_a[current[0]], target=target,
                                          field=gf, control=control)
@@ -408,8 +446,14 @@ def make_decoder(arms, mode: str, mixins: tuple = ()):
 
                             current[0] = j
                             if is_adjoint and multiplies:
-                                builder.ixor_gf2_mul(q_i, reg_a[j], target=reg_b[j],
-                                                     field=gf, control=mul)
+                                # The adjoint keeps its quantum control by default; the
+                                # Experiment B arm gates it on the predicate read from
+                                # its own position, which is the value its product
+                                # multiplies by here.
+                                with (conditional(builder, product_predicate())
+                                      if zero_q else nullcontext()):
+                                    builder.ixor_gf2_mul(q_i, reg_a[j], target=reg_b[j],
+                                                         field=gf, control=mul)
 
                             selector = None
                             both = None
@@ -561,13 +605,14 @@ def main() -> int:
     parser.add_argument("--variants", nargs="*",
                         default=["sweep", "shift", "products", "both", "everything",
                                  "control_gates", "stacked", "composed",
-                                 "drop_shift_c3"])
+                                 "drop_shift_c3", "zero_q"])
     parser.add_argument("--skip-falsifiers", action="store_true")
     args = parser.parse_args()
 
     pinned = (args.m, args.n, args.degree) == PINNED_INSTANCE
     falsifiers = [] if args.skip_falsifiers else [
-        "falsify_sweep_stale", "falsify_shift_complement", "falsify_shift_stale"]
+        "falsify_sweep_stale", "falsify_shift_complement", "falsify_shift_stale",
+        "falsify_zero_q"]
 
     runner = load_module("mr_gated_arms_kickmix",
                          ROOT / "scripts" / "run_mr_gated_arms_kickmix.py")
@@ -755,11 +800,13 @@ def main() -> int:
         #: The five-gate arm is built last, so S5 can be written from the schedule arms
         #: that exist by then and before the stack it predicts exists at all.
         stacked_arms = [name for name in args.variants
-                        if name in ("stacked", "control_gates")]
+                        if name in ("stacked", "control_gates", "zero_q",
+                                    "falsify_zero_q")]
 
         def run(name) -> dict:
             row = measure(make_decoder(arms, name,
-                                       mixins if name in ("stacked", "control_gates")
+                                       mixins if name in ("stacked", "control_gates",
+                                                          "zero_q", "falsify_zero_q")
                                        else ()))
             measured[name] = row
             print(f"  {name:26s} Q={row['qubits']} T={row['mean']:.1f}/shot "
@@ -799,6 +846,37 @@ def main() -> int:
             print(f"prediction S5: stack {schedule_saving:.1f} + "
                   f"{PRIOR_COMBINED_ARM_SAVING:.1f} = {predicted_saving:.1f} => T = "
                   f"{control['mean'] - predicted_saving:.1f}/shot")
+
+        # ---- S6: Experiment B, the product stream's own operand predicate -------
+        if "zero_q" in args.variants:
+            products_after = (product_region(measured["products"])
+                             if "products" in measured else None)
+            call_cost = PRODUCT_ARM_UNIT_COST
+            prediction["S6_zero_q"] = {
+                "declared_by": "Experiment B of the reviewer's plan, 2026-10-30",
+                "written_before_the_arm": True,
+                "hypothesis": "every product in the sweep is `ixor_gf2_mul(q_i, a_j)`, "
+                              "so a round whose quotient lane `q_i` is zero emits "
+                              "products that are all the identity; reading `q_i == 0` "
+                              "once per round and gating the products on it would make "
+                              "that round free",
+                "declared_saving_per_shot": 0.0,
+                "why_zero": "a live round computes a quotient whose leading term is "
+                            "nonzero, so the predicate is expected to be zero in no "
+                            "round (or too few to pay for the read); the measurement "
+                            "decides, and a positive figure would be the surprise",
+                "read_cost": "one 12-bit equality test plus one `mr` per multiply "
+                             "round; it is charged inside the arm, so any positive "
+                             "net saving already includes it",
+                "break_even": f"{call_cost:.0f} Toffolis per product call skipped, so "
+                              f"the arm must find more than (read cost / {call_cost:.0f}) "
+                              f"skipped calls per shot",
+                "product_stream_after_the_window": products_after,
+                "promotion_rule": "the arm must be correct and save more than it "
+                                  "costs to read",
+            }
+            print("prediction S6: zero-quotient product gate saves 0.0 predicted; "
+                  "promotes only if it beats its own read cost")
 
         for name in stacked_arms:
             run(name)
@@ -1009,12 +1087,19 @@ def main() -> int:
         # movement it conditions. The arm's total is not that measure: an arm that
         # computes the wrong state runs a different control flow, so it can cost more
         # while skipping most of its chain (the sweep falsifier does exactly that).
-        chain_key = "selection_chain_per_shot" if name == "falsify_sweep_stale" \
-            else "shift_chain_per_shot"
-        before = chain["sweep"] if chain_key.startswith("selection") else chain["shift"]
-        skipped = max(0.0, before - row["costs"].get(
-            "selection_chain" if chain_key.startswith("selection") else "shift_chain",
-            0.0))
+        if name == "falsify_zero_q":
+            # Experiment B's falsifier skips *products*, so that is what is measured.
+            reference_stream = (product_region(measured["products"])
+                                if "products" in measured else product_region(control))
+            chain_key = "product_stream_per_shot"
+            skipped = max(0.0, reference_stream - product_region(row))
+        else:
+            chain_key = "selection_chain_per_shot" if name == "falsify_sweep_stale" \
+                else "shift_chain_per_shot"
+            before = chain["sweep"] if chain_key.startswith("selection") else chain["shift"]
+            skipped = max(0.0, before - row["costs"].get(
+                "selection_chain" if chain_key.startswith("selection") else "shift_chain",
+                0.0))
         informative = skipped > 0.5
         falsifier_rows[name] = {"informative": informative, "skipped_per_shot": skipped,
                                 "chain": chain_key, "correct": correct(row),
@@ -1029,6 +1114,27 @@ def main() -> int:
                          "informative": informative},
             "passed": (not correct(row)) if informative else True,
         })
+    if "zero_q" in measured and "stacked" in measured:
+        row = measured["zero_q"]
+        delta = measured["stacked"]["mean"] - row["mean"]
+        read_cost = row["read_instructions_per_shot"] - measured["stacked"][
+            "read_instructions_per_shot"]
+        checks.append({
+            "check": "S6 (Experiment B): the product stream gated on a zero quotient",
+            "requirement": ("correct, and a net saving over the incumbent after paying "
+                            "for its own reads; a zero result closes the lever with "
+                            "evidence rather than as a pass"),
+            "measured": {"stacked_incumbent": measured["stacked"]["mean"],
+                         "zero_q_arm": row["mean"],
+                         "net_saving_over_incumbent": delta,
+                         "extra_read_instructions": read_cost,
+                         "product_stream_before": product_region(measured["products"])
+                         if "products" in measured else None,
+                         "product_stream_after": product_region(row),
+                         "declared_saving": prediction.get("S6_zero_q", {})
+                         .get("declared_saving_per_shot")},
+            "passed": correct(row),
+        })
     for name in ("falsify_sweep_stale", "falsify_shift_complement",
                  "falsify_shift_stale"):
         if name in falsifier_rows:
@@ -1040,9 +1146,15 @@ def main() -> int:
             })
 
     failing = [check["check"] for check in checks if not check["passed"]]
+    zero_q_delta = (measured["stacked"]["mean"] - measured["zero_q"]["mean"]
+                    if "zero_q" in measured and "stacked" in measured else None)
     promoted = [name for name in args.variants
                 if name not in ("control_gates",) and name in measured
                 and correct(measured[name]) and saving(measured[name]) > 0]
+    if "zero_q" in measured:
+        # Experiment B is promoted only if it beats the incumbent it was built on.
+        if zero_q_delta is not None and zero_q_delta <= 0:
+            promoted = [name for name in promoted if name != "zero_q"]
     all_passed = not failing
 
     record = {

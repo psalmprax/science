@@ -239,7 +239,7 @@ def test_every_falsifier_breaks_the_arm_and_was_informative(record):
     """A wrong condition must fail, and it must have skipped work to count at all."""
     falsifiers = record["falsifiers"]
     assert set(falsifiers) == {"falsify_sweep_stale", "falsify_shift_complement",
-                               "falsify_shift_stale"}
+                               "falsify_shift_stale", "falsify_zero_q"}
     for name, row in falsifiers.items():
         assert row["correct"] is False, name
         assert row["informative"] is True, name
@@ -255,6 +255,36 @@ def test_every_falsifier_breaks_the_arm_and_was_informative(record):
         assert falsifiers[name]["arm_total_change"] > honest_shift, name
 
 
+def test_experiment_b_is_measured_and_closed(record):
+    """The product stream's own operand predicate: sound, correct, and a measured loss.
+
+    This is the one arm in the campaign whose prediction is that nothing is gained. It has
+    to stay recorded as a negative result: a correct arm that costs more, with the reason
+    (the read price) in the record rather than in a conversation.
+    """
+    declared = record["prediction"]["S6_zero_q"]
+    assert declared["written_before_the_arm"] is True
+    assert declared["declared_saving_per_shot"] == 0.0
+    arms = record["arms"]
+    arm = arms["zero_q"]
+    assert arm["correct"] is True  # the predicate is admissible, not wrong
+    assert arm["mean_toffoli_like"] == pytest.approx(997_795.6, abs=0.1)
+    # It loses against the incumbent it was built on, not just against the control.
+    assert arm["mean_toffoli_like"] - arms["stacked"]["mean_toffoli_like"] == pytest.approx(
+        311_780.7, abs=0.1)
+    assert arm["mid_circuit_reads_per_shot"] - arms["stacked"][
+        "mid_circuit_reads_per_shot"] == pytest.approx(327_094.0, abs=1.0)
+    # It is not promoted, and the verdict still names only the six that earned it.
+    assert "zero_q" not in record["observation"]["promoted_arms"]
+    assert record["verdict"] == ("PROMOTE sweep, shift, products, both, everything, "
+                                 "stacked")
+    # Its falsifier is wrong and informative: the wrong condition skips real products.
+    falsifier = record["falsifiers"]["falsify_zero_q"]
+    assert falsifier["correct"] is False
+    assert falsifier["informative"] is True
+    assert falsifier["skipped_per_shot"] > 100_000
+
+
 def test_the_campaign_and_the_plan_agree_about_what_it_changed():
     """Docs: the campaign note exists, and both other notes carry its numbers."""
     text = CAMPAIGN_DOC.read_text(encoding="utf-8")
@@ -268,6 +298,9 @@ def test_the_campaign_and_the_plan_agree_about_what_it_changed():
     assert "30,253 reads" in text
     assert "P1" in text and "P3" in text
     assert "5,356,224.6 instructions" in text
+    # Experiment B's negative result is documented, with its price.
+    assert "Experiment B" in text
+    assert "311,780.7" in text and "327,094" in text
 
     plan = PLAN_DOC.read_text(encoding="utf-8")
     assert "EEA_SCHEDULE_CAMPAIGN.md" in plan

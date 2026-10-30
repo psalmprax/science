@@ -1,5 +1,21 @@
 ## 2026-10-30 — The schedule campaign: read the predicate, then move; 1,221,466.8 → 686,014.8
 
+- **EXPERIMENT B — MEASURED AND CLOSED, NEGATIVE.** The product stream's own operand
+  predicate: every surviving product is `ixor_gf2_mul(q_i, a_j)`, so a zero multiplier makes
+  it the identity, and the argument that licenses S1–S4 licenses gating on it (`S6_zero_q`,
+  declared **0.0 saving** before the arm was built). The arm is **correct** — the predicate is
+  admissible — and **loses**: 997,795.6 Toffolis per shot, **+311,780.7 over the five-gate
+  incumbent**, adding 327,094 mid-circuit reads (357,347 in total against 30,253) and 956,116
+  instructions. Two structural reasons, both measured: (a) the sweep's selection chain
+  `cswap`s `q_i` into the a-lanes, so the multiplier is **not** a round-level quantity — the
+  first version of this arm read it once per round and was *incorrect*, and only a
+  per-position read is sound; (b) a per-position read measures at 0.95 Toffolis against a
+  66-Toffoli product that is skipped only inside the `mul` window, so the gate needs the
+  multiplier to be zero in ~3% of live positions, and the loss is almost exactly the read
+  cost — the multiplier is essentially never zero where the product executes. Its falsifier
+  (the inverted condition) is wrong and informative (316,701 product Toffolis skipped). The
+  331,023 surviving products are work the data path asks for; removing them needs a cheaper
+  multiply, not another classical read.
 - **MEASURED — the shift/sweep/swap priority is discharged, and it was worth 43.6% of the
   arm.** `scripts/measure_dqi_schedule_campaign.py` (`docs/EEA_SCHEDULE_CAMPAIGN.md`) applies
   the read-then-gate gadget at per-position grain: every predicate register is a basis state,

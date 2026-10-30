@@ -53,6 +53,7 @@ variant exists; `prediction.written_before_variants` records that ordering.
 | **S3b** | the shift's `c3` branch | dropping the shift in every `c3` round saves **0.0** and stays correct | the flag is set in those rounds, so the branch is the identity |
 | **S4** | the product's `mul` control | **no saving predicted** (lower bound 0); ≥ 50,000 promotes | `mul` is the multiply window, not a one-hot, so the saving is whatever the window excludes |
 | **S5** | all five gates in one circuit (S1–S4 plus the two already-promoted flag/metadata gates) | saving = `532,500 + 2,952` = **535,452**, i.e. `T` = **686,014.8** | the three schedule gates remove movement and product no-ops; the two flag/metadata gates remove update work in dead rounds; the work sets are disjoint, so the savings add |
+| **S6** | the multiplier of every surviving product (`q_i != 0`) — Experiment B | **no saving declared (0.0)**; it promotes only if it beats its own read cost | a live round's quotient has a nonzero leading term, so the predicate should be zero in too few positions to pay for a read at every one (see §2.2) |
 
 S5 is a *second* prediction and is written at a different point in the run: after the
 schedule arms are measured and before the five-gate arm exists, because its first input is
@@ -80,6 +81,43 @@ decoder needs is cheaper *and* wrong, which is exactly what the three falsifiers
 demonstrate. The invariants are stated for the schedule as it stands; a variant that reads a
 register which is *not* a basis state (for example one entangled by a superposition of
 syndromes) would void P1 and with it every number here.
+
+### 2.2 Experiment B: the product stream's own operand, measured and closed
+
+The next lever the review proposed was *inside* the multiplication: the surviving products are
+`ixor_gf2_mul(q_i, a_j)`, so a zero multiplier makes the product the identity, and the
+argument that licenses S1–S4 licenses gating on it. What the review could not know, and what
+this campaign measures, is whether that predicate is cheap enough to be worth reading.
+
+| # | predicate read | declared prediction | why |
+|---|---|---|---|
+| **S6** | `q_i != 0`, the multiplier of every surviving product | **no saving declared (0.0)**; the arm promotes only if it beats its own read cost | a live round's quotient has a nonzero leading term, so the predicate is expected to be zero in too few positions to pay for a read at every position |
+
+It is built and measured, and it is **correct and loses**: the arm computes the reference's
+function, so the predicate is *sound* — reading the multiplier and skipping the product when
+it is zero is a legitimate schedule change — but it costs **+311,780.7 Toffolis per shot** over
+the five-gate incumbent (1,221,466.8 → 997,795.6, still far above 686,014.8) and adds
+327,094 mid-circuit reads per shot (357,347 in total, against the incumbent's 30,253) plus
+956,116 instructions. Two facts make that structural rather than unlucky:
+
+1. **The multiplier is not a round-level quantity.** The sweep's selection chain `cswap`s
+   `q_i` into the a-lanes as the quotient is distributed, so `q_i` changes inside the loop.
+   The first version of this arm read it once per round and was **incorrect** — the read is
+   only valid at the position that emits the product, which is where the arm now reads it.
+   (Both versions are in the record's history: the incorrect one is the reason the arm reads
+   per position, and the correct one is what the numbers above are from.)
+2. **A read costs more than a product is worth skipping.** The 12-bit equality test plus its
+   `mr` measures at **0.95 Toffolis** per site (311,780.7 ÷ 327,094), while one skipped
+   product is worth 66 and only about half the positions are inside the `mul` window. The
+   gate therefore needs the multiplier to be zero in more than ~3% of live positions to break
+   even. The loss is almost exactly the read cost, which means the skipped-product saving is
+   indistinguishable from zero: **the multiplier is essentially never zero where the product
+   executes.**
+
+So the remaining product window is **not** a predicate problem: the 331,023 Toffolis that
+survive the `mul` gate are products the data path asks for, and removing them needs a
+cheaper multiply (a smaller base case, or an opcode that skips zero lanes natively), not
+another classical read. Experiment B is closed on a measurement rather than on an argument.
 
 ## 3. What was measured
 
@@ -216,6 +254,11 @@ target". That is still arithmetically true of the *static* residual — but the 
 residual is not `C`: control-logic work measured here removed 43.8% of the arm, because most
 of `C` was quantum-controlled work whose control was zero. The remaining gap is no longer a
 control-logic question; it is 240,785.8 Toffolis of products and unconditional work.
+
+**It does not say the remaining product stream is a predicate away.** Experiment B (§2.2)
+measured the one predicate left inside the multiply — the multiplier's zero-ness — and it is
+sound but unaffordable at per-position grain (`+311,780.7` Toffolis per shot for 163,547
+reads). The 331,023 surviving products are work the data path asks for.
 
 **It does not produce a receipt.** The arm still needs `MR`, which the pinned competition
 binary does not have (`docs/DQI_RESOURCE_RECONCILIATION.md` §2). Every figure here is a

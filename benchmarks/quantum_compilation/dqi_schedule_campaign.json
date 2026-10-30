@@ -86,6 +86,17 @@
       "predicted_total_per_shot": 686014.84375,
       "tolerance": 1.0,
       "falsifier": "an increment over `everything` that differs from the prior arm's saving by more than one Toffoli means the two gates interact, and the sum is wrong"
+    },
+    "S6_zero_q": {
+      "declared_by": "Experiment B of the reviewer's plan, 2026-10-30",
+      "written_before_the_arm": true,
+      "hypothesis": "every product in the sweep is `ixor_gf2_mul(q_i, a_j)`, so a round whose quotient lane `q_i` is zero emits products that are all the identity; reading `q_i == 0` once per round and gating the products on it would make that round free",
+      "declared_saving_per_shot": 0.0,
+      "why_zero": "a live round computes a quotient whose leading term is nonzero, so the predicate is expected to be zero in no round (or too few to pay for the read); the measurement decides, and a positive figure would be the surprise",
+      "read_cost": "one 12-bit equality test plus one `mr` per multiply round; it is charged inside the arm, so any positive net saving already includes it",
+      "break_even": "66 Toffolis per product call skipped, so the arm must find more than (read cost / 66) skipped calls per shot",
+      "product_stream_after_the_window": 331023.0,
+      "promotion_rule": "the arm must be correct and save more than it costs to read"
     }
   },
   "control": {
@@ -1664,6 +1675,148 @@
       ],
       "correct": false
     },
+    "falsify_zero_q": {
+      "qubits": 1913,
+      "mean_toffoli_like": 168134.21875,
+      "saving_per_shot": 1053332.625,
+      "saving_percent_of_arm": 86.23505667711662,
+      "selection_chain_per_shot": 1812.0,
+      "shift_chain_per_shot": 63072.0,
+      "product_toffoli_per_shot": 14322.0,
+      "instructions_per_shot": 25756281.078125,
+      "mid_circuit_reads_per_shot": 9860.9296875,
+      "regions": [
+        {
+          "region": "shift_b_array_right",
+          "instructions": 681610,
+          "executed_toffoli_per_shot": 75972.0,
+          "static_toffoli": 237376,
+          "executed_fraction_of_static": 0.3200492046373686,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "shift_step",
+          "instructions": 46127,
+          "executed_toffoli_per_shot": 30912.0,
+          "static_toffoli": 30912,
+          "executed_fraction_of_static": 1.0,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "sweep_positions",
+          "instructions": 20590312,
+          "executed_toffoli_per_shot": 20361.0,
+          "static_toffoli": 1485566,
+          "executed_fraction_of_static": 0.01370588718374007,
+          "product_toffoli_per_shot": 14322.0
+        },
+        {
+          "region": "update_halting_counter",
+          "instructions": 87912,
+          "executed_toffoli_per_shot": 10656.0,
+          "static_toffoli": 10656,
+          "executed_fraction_of_static": 1.0,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "update_flag",
+          "instructions": 224664,
+          "executed_toffoli_per_shot": 10500.0,
+          "static_toffoli": 31080,
+          "executed_fraction_of_static": 0.33783783783783783,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "eea_step",
+          "instructions": 30414,
+          "executed_toffoli_per_shot": 4662.0,
+          "static_toffoli": 4662,
+          "executed_fraction_of_static": 1.0,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "update_metadata",
+          "instructions": 96570,
+          "executed_toffoli_per_shot": 4200.0,
+          "static_toffoli": 12432,
+          "executed_fraction_of_static": 0.33783783783783783,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "pre_align_reg_b",
+          "instructions": 4080,
+          "executed_toffoli_per_shot": 3696.0,
+          "static_toffoli": 3696,
+          "executed_fraction_of_static": 1.0,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "unalign_reg_b",
+          "instructions": 4080,
+          "executed_toffoli_per_shot": 3696.0,
+          "static_toffoli": 3696,
+          "executed_fraction_of_static": 1.0,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "swap_a_and_b",
+          "instructions": 199356,
+          "executed_toffoli_per_shot": 1784.0,
+          "static_toffoli": 198024,
+          "executed_fraction_of_static": 0.009009009009009009,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "quotient_div",
+          "instructions": 3469859,
+          "executed_toffoli_per_shot": 1344.0,
+          "static_toffoli": 149184,
+          "executed_fraction_of_static": 0.009009009009009009,
+          "product_toffoli_per_shot": 1296.0
+        },
+        {
+          "region": "forney_step",
+          "instructions": 52043456,
+          "executed_toffoli_per_shot": 295.21875,
+          "static_toffoli": 1154790,
+          "executed_fraction_of_static": 0.00025564713064713066,
+          "product_toffoli_per_shot": 282.65625
+        },
+        {
+          "region": "multiply_and_add_or_sub",
+          "instructions": 35076,
+          "executed_toffoli_per_shot": 56.0,
+          "static_toffoli": 3108,
+          "executed_fraction_of_static": 0.018018018018018018,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "unmarked",
+          "instructions": 1695,
+          "executed_toffoli_per_shot": 0.0,
+          "static_toffoli": 0,
+          "executed_fraction_of_static": null,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "chien_forney_mbuc",
+          "instructions": 4132,
+          "executed_toffoli_per_shot": 0.0,
+          "static_toffoli": 0,
+          "executed_fraction_of_static": null,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "measured_clear",
+          "instructions": 4323,
+          "executed_toffoli_per_shot": 0.0,
+          "static_toffoli": 0,
+          "executed_fraction_of_static": null,
+          "product_toffoli_per_shot": 0.0
+        }
+      ],
+      "correct": false
+    },
     "control_gates": {
       "qubits": 1913,
       "mean_toffoli_like": 1218514.84375,
@@ -1947,6 +2100,148 @@
         }
       ],
       "correct": true
+    },
+    "zero_q": {
+      "qubits": 1913,
+      "mean_toffoli_like": 997795.5625,
+      "saving_per_shot": 223671.28125,
+      "saving_percent_of_arm": 18.31169486052617,
+      "selection_chain_per_shot": 105696.0,
+      "shift_chain_per_shot": 131220.0,
+      "product_toffoli_per_shot": 346820.71875,
+      "instructions_per_shot": 33407911.46875,
+      "mid_circuit_reads_per_shot": 357347.46875,
+      "regions": [
+        {
+          "region": "sweep_positions",
+          "instructions": 20590312,
+          "executed_toffoli_per_shot": 615978.71875,
+          "static_toffoli": 1485566,
+          "executed_fraction_of_static": 0.4146424452027039,
+          "product_toffoli_per_shot": 346820.71875
+        },
+        {
+          "region": "shift_b_array_right",
+          "instructions": 681610,
+          "executed_toffoli_per_shot": 162479.625,
+          "static_toffoli": 237376,
+          "executed_fraction_of_static": 0.6844821085535184,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "swap_a_and_b",
+          "instructions": 199356,
+          "executed_toffoli_per_shot": 64224.0,
+          "static_toffoli": 198024,
+          "executed_fraction_of_static": 0.32432432432432434,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "quotient_div",
+          "instructions": 3469859,
+          "executed_toffoli_per_shot": 48384.0,
+          "static_toffoli": 149184,
+          "executed_fraction_of_static": 0.32432432432432434,
+          "product_toffoli_per_shot": 46656.0
+        },
+        {
+          "region": "shift_step",
+          "instructions": 46127,
+          "executed_toffoli_per_shot": 30912.0,
+          "static_toffoli": 30912,
+          "executed_fraction_of_static": 1.0,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "update_flag",
+          "instructions": 224664,
+          "executed_toffoli_per_shot": 30240.0,
+          "static_toffoli": 31080,
+          "executed_fraction_of_static": 0.972972972972973,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "update_metadata",
+          "instructions": 96570,
+          "executed_toffoli_per_shot": 12096.0,
+          "static_toffoli": 12432,
+          "executed_fraction_of_static": 0.972972972972973,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "update_halting_counter",
+          "instructions": 87912,
+          "executed_toffoli_per_shot": 10656.0,
+          "static_toffoli": 10656,
+          "executed_fraction_of_static": 1.0,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "forney_step",
+          "instructions": 52043456,
+          "executed_toffoli_per_shot": 8755.21875,
+          "static_toffoli": 1154790,
+          "executed_fraction_of_static": 0.007581654456654457,
+          "product_toffoli_per_shot": 8382.65625
+        },
+        {
+          "region": "eea_step",
+          "instructions": 30414,
+          "executed_toffoli_per_shot": 4662.0,
+          "static_toffoli": 4662,
+          "executed_fraction_of_static": 1.0,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "pre_align_reg_b",
+          "instructions": 4080,
+          "executed_toffoli_per_shot": 3696.0,
+          "static_toffoli": 3696,
+          "executed_fraction_of_static": 1.0,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "unalign_reg_b",
+          "instructions": 4080,
+          "executed_toffoli_per_shot": 3696.0,
+          "static_toffoli": 3696,
+          "executed_fraction_of_static": 1.0,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "multiply_and_add_or_sub",
+          "instructions": 35076,
+          "executed_toffoli_per_shot": 2016.0,
+          "static_toffoli": 3108,
+          "executed_fraction_of_static": 0.6486486486486487,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "unmarked",
+          "instructions": 1695,
+          "executed_toffoli_per_shot": 0.0,
+          "static_toffoli": 0,
+          "executed_fraction_of_static": null,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "chien_forney_mbuc",
+          "instructions": 4132,
+          "executed_toffoli_per_shot": 0.0,
+          "static_toffoli": 0,
+          "executed_fraction_of_static": null,
+          "product_toffoli_per_shot": 0.0
+        },
+        {
+          "region": "measured_clear",
+          "instructions": 4323,
+          "executed_toffoli_per_shot": 0.0,
+          "static_toffoli": 0,
+          "executed_fraction_of_static": null,
+          "product_toffoli_per_shot": 0.0
+        }
+      ],
+      "correct": true
     }
   },
   "observation": {
@@ -1999,6 +2294,13 @@
       "chain": "shift_chain_per_shot",
       "correct": false,
       "arm_total_change": 80611.96875
+    },
+    "falsify_zero_q": {
+      "informative": true,
+      "skipped_per_shot": 316701.0,
+      "chain": "product_stream_per_shot",
+      "correct": false,
+      "arm_total_change": 1053332.625
     }
   },
   "promotion_checks": [
@@ -2326,6 +2628,43 @@
       "passed": true
     },
     {
+      "check": "zero_q: the gating's reads are the gadget it claims",
+      "requirement": "mid-circuit reads present and reported",
+      "measured": {
+        "mid_circuit_reads_per_shot": 357347.46875,
+        "read_instructions_per_shot": 714694.9375,
+        "instructions_per_shot": 33407911.46875
+      },
+      "passed": true
+    },
+    {
+      "check": "zero_q: the arm still computes the reference's function",
+      "requirement": "syndromes restored, phase matched, no junk",
+      "measured": {
+        "syndromes_restored": true,
+        "phase_matches_reference": true,
+        "junk_clean": true
+      },
+      "passed": true
+    },
+    {
+      "check": "zero_q: the read costs no qubit and no iteration",
+      "requirement": "peak qubits and EEA rounds identical to the control",
+      "measured": {
+        "qubits": 1913,
+        "eea_steps": 222,
+        "control_qubits": 1913,
+        "control_eea_steps": 222
+      },
+      "passed": true
+    },
+    {
+      "check": "zero_q: every region row partitions the measured total",
+      "requirement": "reconciles",
+      "measured": true,
+      "passed": true
+    },
+    {
       "check": "S1: the quotient selection is one-hot, so its chain collapses",
       "requirement": "chain saving >= 90% of the 100368.0 headroom (burn 5328), and the chain left is at most the burn",
       "measured": {
@@ -2463,6 +2802,32 @@
       "passed": true
     },
     {
+      "check": "falsifier falsify_zero_q: a wrong condition must break the arm",
+      "requirement": "not correct when it skipped work; vacuous otherwise",
+      "measured": {
+        "syndromes_restored": true,
+        "phase_matches_reference": false,
+        "junk_clean": true,
+        "skipped_per_shot": 316701.0,
+        "informative": true
+      },
+      "passed": true
+    },
+    {
+      "check": "S6 (Experiment B): the product stream gated on a zero quotient",
+      "requirement": "correct, and a net saving over the incumbent after paying for its own reads; a zero result closes the lever with evidence rather than as a pass",
+      "measured": {
+        "stacked_incumbent": 686014.84375,
+        "zero_q_arm": 997795.5625,
+        "net_saving_over_incumbent": -311780.71875,
+        "extra_read_instructions": 654188.9375,
+        "product_stream_before": 331023.0,
+        "product_stream_after": 346820.71875,
+        "declared_saving": 0.0
+      },
+      "passed": true
+    },
+    {
       "check": "falsifier falsify_sweep_stale is informative on this instance",
       "requirement": "the wrong condition must have skipped work",
       "measured": {
@@ -2507,9 +2872,9 @@
     "reason": "MR-gated arms cannot be compiled by the pinned competition binary; this is a measured local figure, not a receipt"
   },
   "reproducibility": {
-    "script_sha256": "9d8764aa1872fd1a5680e2b3d1c93942fcc67d1da785a35052f35ab7f35c0790",
+    "script_sha256": "90a6d50574a35562a1c8642be4c0c813ffd6c0258663d33e2d727e76837aa627",
     "patch_sha256": "9d96fd3a7099791d0896fe984299aa0e32f4c96a6a8977d02609078470264b0f",
     "kickmix_sha256": "e57dcc471213e43f79c767e585514aaa8315168235d4c5fd5539f59d2217c378",
-    "git_rev": "a97aec3bfd4e8f20afa363470bbdaffb59f6f45c"
+    "git_rev": "903ab14bcb9d0bdd9fbb2032063915859be3d8e6"
   }
 }
