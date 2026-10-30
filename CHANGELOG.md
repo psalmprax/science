@@ -1,3 +1,65 @@
+## 2026-10-30 — Experiments C and D, and the amplitude tier: the exchange stays, one candidate compiles, and the licence is exactly the basis
+
+- **EXPERIMENT C — MEASURED, NEGATIVE, WITH A CORRECTION.**
+  `scripts/measure_dqi_movement_schedule.py` (`docs/DQI_MOVEMENT_SCHEDULE.md`) asks the only
+  question left open by the schedule campaign: can the decoder's A/B exchange — 64,224
+  executed Toffolis per shot, 72 controlled 892-qubit permutations — be resolved at **build
+  time** by reassigning which physical register plays the `A` role? That is the only kind of
+  saving the pinned competition binary could compile, because it is in the emitted circuit
+  rather than in an executed count. The prediction was declared before any arm existed: the
+  rebased arm must save exactly the region (64,224.0 executed, **198,024 static**), and is
+  correct *if and only if* the exchanging-round set is the same for every shot. At the pinned
+  instance over 64 shots: control **686,014.8** at `Q` 1,913 with its 64,224.0 row; a harness
+  arm that re-emits the incumbent's exchange from the new script reproduces it to **±0.0**, so
+  the comparison is licensed; the rebased arm zeroes the region and drops 198,024 static
+  Toffolis and is **incorrect** (syndromes restored, junk and phase not); and the probe reads
+  `c3` once per round to find **10 distinct patterns across 64 shots** while every shot
+  exchanges exactly **72** times. The schedule is therefore *cardinality-stable and
+  order-unstable* — that is why the incumbent's row is exactly `72 × 892` on every shot and
+  why no build-time period reproduces it. The arm stays at 686,014.8, 1.541× the target.
+- **CORRECTED — two of the campaign's arms measured nothing.** `composed` (S3) and
+  `drop_shift_c3` (S3b) both reported 0.0, which the campaign read as the extra condition
+  being unsatisfiable. It is not: the code implementing both lives in a method named
+  `_shift_a_and_b`, and nothing calls it (the reference and `MRGatedDecoder` call
+  `_shift_b_array_right`). Measured at m=15/n=6/GF(2^4): `none`, `composed` and `drop_shift_c3`
+  emit **149,337 instructions and 16,610 static Toffolis each** — the two “arms” are the control
+  circuit, and their 0.0 is vacuous. The predicate argument (a one-hot `ctrl` and one flag value
+  cannot be both) survives; the measurement that was supposed to support it does not, and
+  `docs/EEA_SCHEDULE_CAMPAIGN.md` §3 now says so.
+- **EXPERIMENT D — THE MISSING `MR` WAS NOT THE ONLY BLOCKER, AND ONE CANDIDATE COMPILES.**
+  `scripts/measure_dqi_official_compatibility.py` (`docs/DQI_OFFICIAL_COMPATIBILITY.md`) mines
+  the whole surface of both builds. The pinned competition binary has **no `mr`, no `h`, no
+  `gf_product`, no per-instruction counts**, but it *has* `hmr`, `bit_store`,
+  `push_condition` and `init_and`/`del_and`/`cswap` — and `del_and` already costs **0**
+  Toffolis there, because an AND clear can be a measurement where a read cannot. So the arm
+  needs **two** surfaces it does not have, not one: the 54-AND product policy is worth
+  **523,849.1** per shot on the reference and was never recorded as a blocker. Both builds
+  count the same reference identically (1,893 / 5,725,071.609375, per-shot arrays equal), and
+  the pinned row reproduces the recorded constant exactly. The positive result: a candidate the
+  pinned binary **can** build — the reference algorithm with the 54-AND multiply emitted as
+  gates and its workspace cleared with `hmr` instead of `mr` — at `Q` 1,896 and
+  **5,433,399.609375** per shot, syndromes restored on all 64 shots, a **0.952** score ratio to
+  the shipped reference (**4.79% better**) and still **7.92×** worse than the arm. It is the
+  first candidate in this repository the competition build can construct at all, and it is a
+  floor rather than a contender: the arm's −43.84% is a read-dependent saving, and a quantum
+  control cannot express it (the reference's every gate is quantum-controlled and every one
+  executes).
+- **THE AMPLITUDE TIER, AND THE LICENCE IT PINS.**
+  `apedp_dyn/quantum_compilation/statevector_sim.py` plus
+  `scripts/measure_vqc_licence_boundary.py` (`docs/VQC_AMPLITUDE_TIER.md`) compare the
+  controlled gate the decoder emits with the read-then-gate map the arms substitute, at
+  amplitude level, because every count in this repository is a basis-state count and the
+  campaign's licence (P1) is a statement about the *inputs*. Result: on **all eight basis
+  inputs** the two maps are the same state up to global phase, the classical bit equals the
+  control, and the ancilla returns to `|0>`; on a **superposed control** the gated map branches
+  **twice at 0.500** with a fidelity of **0.500** against the coherent reference, and the
+  control's off-diagonal goes **0.500 → 0.000** — a complete dephasing, not a perturbation. The
+  same tier settles the substitution Experiment D needed: `hmr` alone returns a random outcome
+  on `|0>` (it measures in the X basis), while `h; hmr` is `mr` branch for branch on basis *and*
+  superposed inputs — so the blocker is the missing Hadamard, not the measurement instruction.
+  The tier is cross-checked against `kickmix` on the gadget's eight basis inputs (identical),
+  and the arm's 1,913 qubits are reported as 10^575.87 amplitudes rather than pretended.
+
 ## 2026-10-30 — The schedule campaign: read the predicate, then move; 1,221,466.8 → 686,014.8
 
 - **EXPERIMENT B — MEASURED AND CLOSED, NEGATIVE.** The product stream's own operand

@@ -135,8 +135,8 @@ partitioning its own total.
 | **everything (S1+S2+S4)** | **688,966.8** | **532,500.0** | 43.60% | exactly `103,968 + 65,895 + 362,637` |
 | `control_gates` (the prior session's arm) | 1,218,514.8 | 2,952.0 | 0.24% | reproduced inside this record: flag/metadata gating, zero reads |
 | **stacked (all five)** | **686,014.8** | **535,452.0** | **43.84%** | exactly `532,500.0 + 2,952.0` |
-| S3 composed | 1,221,466.8 | 0.0 | — | correct: the extra condition is unsatisfiable |
-| S3b shift's `c3` branch dropped | 1,221,466.8 | 0.0 | — | correct: the branch is the identity on this sample |
+| S3 composed | 1,221,466.8 | 0.0 | — | **vacuous: the arm is the control circuit** (§3.3) |
+| S3b shift's `c3` branch dropped | 1,221,466.8 | 0.0 | — | **vacuous: the arm is the control circuit** (§3.3) |
 
 `Q²T` falls from 4.4700e12 to **2.5105e12** (−43.84%). The saving is not a projection: each
 row is a simulated, correct arm, and the region rows say which chain moved. The `stacked`
@@ -179,10 +179,12 @@ the instruction stream falls with it, and the price is measurement depth.*
   is **promoted for the half the mask zeros and closed for the half it does not**: 96,584.6
   of the region survives, of which 65,325 is movement the data path asks for, and nothing
   short of a different schedule of movement can remove it.
-- **S3/S3b: 0.0 both, and correct.** The swap's `c3 ∧ flag` cannot overlap the shift's
+- **S3/S3b: 0.0 both.** The swap's `c3 ∧ flag` cannot overlap the shift's
   `c1 ∨ c2 ∨ (¬flag ∧ (c0 ∨ c3))` because `ctrl` is one-hot and the flag is one value, so a
-  schedule that fuses the two has nothing to fuse: the composed arm and the arm that drops
-  the shift from every `c3` round are *identical* to the control. The per-round table in the
+  schedule that fuses the two has nothing to fuse. The composed arm and the arm that drops
+  the shift from every `c3` round are *identical* to the control — and §3.3 shows they are
+  identical **by construction**, because the method that would have changed them is never
+  called, so neither arm tests the predicate argument at all. The per-round table in the
   record (164 rounds with shift executions, 92 with swap executions, 66 where the batch shows
   both) is an aggregate over 64 shots and is **not** per-shot evidence; the composed and
   `c3`-dropped arms are.
@@ -217,6 +219,22 @@ Two things are worth stating about that table, because both are traps.
    skips 69,311.6 against the honest gate's 65,895.0: the honest gate skips exactly the
    mask's zeros, and any gate that skips more is skipping movement the decoder needs. That
    is the shape a real gate has.
+
+### 3.3 Correction: the two zero-saving arms measured nothing
+
+`composed` (S3) and `drop_shift_c3` (S3b) both measured exactly 0.0, and the text
+above reads that as the extra condition being unsatisfiable. That is not the
+mechanism. The code implementing both sits in a method named `_shift_a_and_b`, and
+nothing calls it: the reference and `MRGatedDecoder` call `_shift_b_array_right`.
+`scripts/measure_dqi_movement_schedule.py` compares the three emitted streams at
+m=15, n=6, GF(2^4) and finds `none`, `composed` and `drop_shift_c3` identical --
+149,337 instructions and 16,610 static Toffolis each -- so both arms are the
+control circuit. Their 0.0 is **vacuous**: strike them from the evidence column.
+
+What survives is the argument, not the measurement: the exchange's `c3 ∧ flag`
+and the shift's `c1 ∨ c2 ∨ (¬flag ∧ (c0 ∨ c3))` cannot overlap because `ctrl` is
+one-hot and the flag is one value. See
+[`DQI_MOVEMENT_SCHEDULE.md`](DQI_MOVEMENT_SCHEDULE.md) §5.
 
 ## 4. Where the arm now stands
 
