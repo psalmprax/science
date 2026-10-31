@@ -1,0 +1,6205 @@
+{
+  "annualisation": {
+    "15m": 35040.0,
+    "1d": 365.0,
+    "1h": 8760.0
+  },
+  "assets": [
+    {
+      "annualization": 365.0,
+      "asset": "GOOGL",
+      "bars": 753,
+      "dataset_id": "GOOGL@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "META",
+      "bars": 753,
+      "dataset_id": "META@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "TSLA",
+      "bars": 753,
+      "dataset_id": "TSLA@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "DOGE",
+      "bars": 753,
+      "dataset_id": "DOGE@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "ADA",
+      "bars": 753,
+      "dataset_id": "ADA@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "LINK",
+      "bars": 753,
+      "dataset_id": "LINK@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 8760.0,
+      "asset": "ADA",
+      "bars": 1000,
+      "dataset_id": "ADA@1h",
+      "holdout_window": [
+        700,
+        999
+      ],
+      "panel": "data/market/intraday/intraday_crypto_bars.csv",
+      "resolution": "1h",
+      "taker_buy_denomination_ratio": 1.000054908636927,
+      "train_window": [
+        30,
+        700
+      ]
+    },
+    {
+      "annualization": 8760.0,
+      "asset": "AVAX",
+      "bars": 1000,
+      "dataset_id": "AVAX@1h",
+      "holdout_window": [
+        700,
+        999
+      ],
+      "panel": "data/market/intraday/intraday_crypto_bars.csv",
+      "resolution": "1h",
+      "taker_buy_denomination_ratio": 1.0000286934854443,
+      "train_window": [
+        30,
+        700
+      ]
+    },
+    {
+      "annualization": 8760.0,
+      "asset": "LINK",
+      "bars": 1000,
+      "dataset_id": "LINK@1h",
+      "holdout_window": [
+        700,
+        999
+      ],
+      "panel": "data/market/intraday/intraday_crypto_bars.csv",
+      "resolution": "1h",
+      "taker_buy_denomination_ratio": 1.0000375922111688,
+      "train_window": [
+        30,
+        700
+      ]
+    },
+    {
+      "annualization": 8760.0,
+      "asset": "DOT",
+      "bars": 1000,
+      "dataset_id": "DOT@1h",
+      "holdout_window": [
+        700,
+        999
+      ],
+      "panel": "data/market/intraday/intraday_crypto_bars.csv",
+      "resolution": "1h",
+      "taker_buy_denomination_ratio": 1.000174792331229,
+      "train_window": [
+        30,
+        700
+      ]
+    }
+  ],
+  "baselines": [
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "GOOGL",
+      "circuit_sha256": null,
+      "dataset_id": "GOOGL@1d",
+      "dsr": {
+        "dsr": 2.667643860693865e-05,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.999973323561393,
+        "se_sharpe": 0.7130712063524274
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1535,
+      "gross": -0.3542369693010645,
+      "kind": "baseline",
+      "kurtosis": 5.805732667474232,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.5077369693010646,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.6882838975329723,
+      "skewness": 0.07894529026606727,
+      "threshold": 0.0,
+      "turnover": 307.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "META",
+      "circuit_sha256": null,
+      "dataset_id": "META@1d",
+      "dsr": {
+        "dsr": 0.001284520744576728,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9987154792554233,
+        "se_sharpe": 0.7117029328075218
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1395,
+      "gross": 0.1932493355295941,
+      "kind": "baseline",
+      "kurtosis": 31.25111881951393,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": 0.053749335529594024,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.046984245200947114,
+      "skewness": -0.20608937423686066,
+      "threshold": 0.0,
+      "turnover": 279.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "TSLA",
+      "circuit_sha256": null,
+      "dataset_id": "TSLA@1d",
+      "dsr": {
+        "dsr": 0.031132963153726927,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9688670368462731,
+        "se_sharpe": 0.7062769242619853
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1315,
+      "gross": 1.306618384026141,
+      "kind": "baseline",
+      "kurtosis": 4.305129020099615,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": 1.1751183840261408,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.876050867081236,
+      "skewness": 0.3572822986817923,
+      "threshold": 0.0,
+      "turnover": 263.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "DOGE",
+      "circuit_sha256": null,
+      "dataset_id": "DOGE@1d",
+      "dsr": {
+        "dsr": 0.0042399674454174216,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9957600325545826,
+        "se_sharpe": 0.7013397521092363
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.0825,
+      "gross": 1.071708328364518,
+      "kind": "baseline",
+      "kurtosis": 20.439360088784106,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": 0.9892083283645179,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.34666811202691955,
+      "skewness": 1.651860084606251,
+      "threshold": 0.0,
+      "turnover": 165.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "ADA",
+      "circuit_sha256": null,
+      "dataset_id": "ADA@1d",
+      "dsr": {
+        "dsr": 0.0008173625868208301,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9991826374131791,
+        "se_sharpe": 0.711286709240512
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.14350000000000002,
+      "gross": 0.04427358544805789,
+      "kind": "baseline",
+      "kurtosis": 7.816454322360963,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.09922641455194223,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.04746442696473759,
+      "skewness": -0.2527405417702626,
+      "threshold": 0.0,
+      "turnover": 287.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "LINK",
+      "circuit_sha256": null,
+      "dataset_id": "LINK@1d",
+      "dsr": {
+        "dsr": 0.02698514713296172,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9730148528670383,
+        "se_sharpe": 0.6994939748678477
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.14350000000000002,
+      "gross": 2.169444391775699,
+      "kind": "baseline",
+      "kurtosis": 9.999270481940403,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": 2.025944391775699,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.8448543922292966,
+      "skewness": 0.8566097326143014,
+      "threshold": 0.0,
+      "turnover": 287.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.9700722394220846,
+      "annualization": 8760.0,
+      "asset": "ADA",
+      "circuit_sha256": null,
+      "dataset_id": "ADA@1h",
+      "dsr": {
+        "dsr": 7.327280671166894e-05,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999267271932883,
+        "se_sharpe": 3.020606595694001
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1915,
+      "gross": 0.1170563276859038,
+      "kind": "baseline",
+      "kurtosis": 8.444426205273286,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.07444367231409627,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -0.8155143079033421,
+      "skewness": 0.928315128100387,
+      "threshold": 0.0,
+      "turnover": 383.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.9700722394220846,
+      "annualization": 8760.0,
+      "asset": "AVAX",
+      "circuit_sha256": null,
+      "dataset_id": "AVAX@1h",
+      "dsr": {
+        "dsr": 2.6075289722774218e-05,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999739247102772,
+        "se_sharpe": 3.0278988744851105
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1995,
+      "gross": 0.04213304807541318,
+      "kind": "baseline",
+      "kurtosis": 10.266700898400655,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.15736695192458688,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -1.5969139539176558,
+      "skewness": 0.728490008074819,
+      "threshold": 0.0,
+      "turnover": 399.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.9700722394220846,
+      "annualization": 8760.0,
+      "asset": "LINK",
+      "circuit_sha256": null,
+      "dataset_id": "LINK@1h",
+      "dsr": {
+        "dsr": 3.96065636375425e-05,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999603934363624,
+        "se_sharpe": 3.0387597472651104
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.2115,
+      "gross": 0.1014550519327142,
+      "kind": "baseline",
+      "kurtosis": 12.369628683675089,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.11004494806728583,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -1.3400009395481638,
+      "skewness": 1.3831197029462026,
+      "threshold": 0.0,
+      "turnover": 423.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.9700722394220846,
+      "annualization": 8760.0,
+      "asset": "DOT",
+      "circuit_sha256": null,
+      "dataset_id": "DOT@1h",
+      "dsr": {
+        "dsr": 0.002939597989849625,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9970604020101503,
+        "se_sharpe": 2.9738676256048286
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1845,
+      "gross": 0.46055501233201585,
+      "kind": "baseline",
+      "kurtosis": 7.672438341490186,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": 0.27605501233201574,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": 2.461928199551709,
+      "skewness": 0.9080064494919399,
+      "threshold": 0.0,
+      "turnover": 369.0,
+      "var_trials": 13.441136078269087
+    }
+  ],
+  "burned_holdouts": [
+    [
+      "AAPL@1d",
+      "tail30:7cfca638:527-752"
+    ],
+    [
+      "ADA@1d",
+      "tail30:11eec030:527-752"
+    ],
+    [
+      "ADA@1h",
+      "tail30:2a0a9ec2:700-999"
+    ],
+    [
+      "AVAX@1h",
+      "tail30:84a62510:700-999"
+    ],
+    [
+      "BNB@15m",
+      "tail30:1a93d695:700-999"
+    ],
+    [
+      "BTC@15m",
+      "tail30:2f3edbd1:700-999"
+    ],
+    [
+      "BTC@1d",
+      "tail30:3ef62bce:766-1094"
+    ],
+    [
+      "DOGE@1d",
+      "tail30:a95932fa:527-752"
+    ],
+    [
+      "DOT@1h",
+      "tail30:f53575e1:700-999"
+    ],
+    [
+      "ETH@15m",
+      "tail30:74372651:700-999"
+    ],
+    [
+      "ETH@1d",
+      "tail30:e5f17967:527-752"
+    ],
+    [
+      "GOOGL@1d",
+      "tail30:0ff4f770:527-752"
+    ],
+    [
+      "LINK@1d",
+      "tail30:a546dbf9:527-752"
+    ],
+    [
+      "LINK@1h",
+      "tail30:101c926b:700-999"
+    ],
+    [
+      "META@1d",
+      "tail30:000a29b9:527-752"
+    ],
+    [
+      "MSFT@1d",
+      "tail30:4327b360:527-752"
+    ],
+    [
+      "SOL@15m",
+      "tail30:867bf750:700-999"
+    ],
+    [
+      "TSLA@1d",
+      "tail30:460dba0a:527-752"
+    ]
+  ],
+  "causality": {
+    "ADA@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "ADA@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "ADA@1h:H-MOM+CVD": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "ADA@1h:H-MOM+CVD+H-BB": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "AVAX@1h:H-MOM+CVD": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "AVAX@1h:H-MOM+CVD+H-BB": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "DOGE@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "DOGE@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "DOT@1h:H-MOM+CVD": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "DOT@1h:H-MOM+CVD+H-BB": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "GOOGL@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "GOOGL@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "LINK@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "LINK@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "LINK@1h:H-MOM+CVD": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "LINK@1h:H-MOM+CVD+H-BB": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "META@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "META@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "TSLA@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "TSLA@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    }
+  },
+  "checks": {
+    "a_burned_slice_is_refused_on_reuse": true,
+    "a_failed_candidate_burns_its_holdout_slice": true,
+    "deleting_the_future_does_not_change_a_past_score": true,
+    "every_trial_pays_the_declared_fee": true,
+    "significance_is_reported_as_the_floor_decides": true,
+    "the_accounting_identity_holds_in_every_row": true,
+    "the_executor_reproduces_the_canonical_ledger": true,
+    "the_fit_used_only_training_bars": true,
+    "the_fitted_map_matches_its_reference_on_every_bar": true,
+    "the_holdout_covers_the_tail_and_only_once": true,
+    "the_intraday_taker_column_is_quote_denominated": true,
+    "the_signal_is_the_closed_form_on_every_bar": true,
+    "the_signal_varies_with_the_features": true,
+    "the_trial_count_is_disclosed_and_matches": true
+  },
+  "cost_sensitivity": {
+    "rates": [
+      0.0005,
+      0.001,
+      0.002
+    ],
+    "sharpe_recomputed": false,
+    "sweep": {
+      "10bps": {
+        "fee_per_unit_turnover": 0.001,
+        "fee_share_of_gross_by_resolution": {
+          "1d": null,
+          "1h": 23.42060663970571
+        },
+        "fees": 38.791000000000004,
+        "fees_by_resolution": {
+          "1d": 20.627,
+          "1h": 18.164
+        },
+        "fees_over_absolute_gross_by_resolution": {
+          "1d": 1.858102102597395,
+          "1h": 23.42060663970571
+        },
+        "gross": -10.325555901611555,
+        "gross_by_resolution": {
+          "1d": -11.101112243060285,
+          "1h": 0.7755563414487303
+        },
+        "net": -49.11655590161156,
+        "net_by_resolution": {
+          "1d": -31.728112243060284,
+          "1h": -17.38844365855127
+        },
+        "rows": 70,
+        "rows_net_positive": 8,
+        "turnover": 38791.0
+      },
+      "20bps": {
+        "fee_per_unit_turnover": 0.002,
+        "fee_share_of_gross_by_resolution": {
+          "1d": null,
+          "1h": 46.84121327941142
+        },
+        "fees": 77.58200000000001,
+        "fees_by_resolution": {
+          "1d": 41.254,
+          "1h": 36.328
+        },
+        "fees_over_absolute_gross_by_resolution": {
+          "1d": 3.71620420519479,
+          "1h": 46.84121327941142
+        },
+        "gross": -10.325555901611555,
+        "gross_by_resolution": {
+          "1d": -11.101112243060285,
+          "1h": 0.7755563414487303
+        },
+        "net": -87.90755590161156,
+        "net_by_resolution": {
+          "1d": -52.35511224306028,
+          "1h": -35.552443658551276
+        },
+        "rows": 70,
+        "rows_net_positive": 3,
+        "turnover": 38791.0
+      },
+      "5bps": {
+        "fee_per_unit_turnover": 0.0005,
+        "fee_share_of_gross_by_resolution": {
+          "1d": null,
+          "1h": 11.710303319852855
+        },
+        "fees": 19.395500000000002,
+        "fees_by_resolution": {
+          "1d": 10.3135,
+          "1h": 9.082
+        },
+        "fees_over_absolute_gross_by_resolution": {
+          "1d": 0.9290510512986975,
+          "1h": 11.710303319852855
+        },
+        "gross": -10.325555901611555,
+        "gross_by_resolution": {
+          "1d": -11.101112243060285,
+          "1h": 0.7755563414487303
+        },
+        "net": -29.721055901611557,
+        "net_by_resolution": {
+          "1d": -21.414612243060283,
+          "1h": -8.30644365855127
+        },
+        "rows": 70,
+        "rows_net_positive": 13,
+        "turnover": 38791.0
+      }
+    },
+    "why": "Sharpe and DSR are not re-priced: they require the per-bar net series, which the record stores only as aggregates. Net, fees, turnover and the net-positive count are exact because fees are linear in turnover."
+  },
+  "depth_comparison": {
+    "charge_per_family": 24,
+    "datasets_compared": 10,
+    "depth1_clears_hurdle": 0,
+    "depth2_beats_depth1_holdout": 1,
+    "depth2_clears_hurdle": 0,
+    "depths": [
+      1,
+      2
+    ],
+    "mean_holdout_delta": -0.31344731268647247,
+    "note": "both families' best candidate is read once on the same holdout window, each charged its own grid; the burn is decided by the map the training slice actually selected",
+    "rows": [
+      {
+        "dataset_id": "GOOGL@1d",
+        "delta": -0.3943599083163155,
+        "depth1_net": 0.26063337902837436,
+        "depth1_passed": false,
+        "depth2_net": -0.13372652928794113,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "META@1d",
+        "delta": -0.14635442651238428,
+        "depth1_net": -0.5062025584431007,
+        "depth1_passed": false,
+        "depth2_net": -0.652556984955485,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "TSLA@1d",
+        "delta": 0.26642093184678717,
+        "depth1_net": -0.6126684785374203,
+        "depth1_passed": false,
+        "depth2_net": -0.3462475466906332,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "DOGE@1d",
+        "delta": -0.41659509155842667,
+        "depth1_net": 0.04179095195397178,
+        "depth1_passed": false,
+        "depth2_net": -0.3748041396044549,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "ADA@1d",
+        "delta": -1.1765828605039854,
+        "depth1_net": 0.5649351731252943,
+        "depth1_passed": false,
+        "depth2_net": -0.6116476873786911,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "LINK@1d",
+        "delta": -0.8420546558662911,
+        "depth1_net": 0.27096026191324984,
+        "depth1_passed": false,
+        "depth2_net": -0.5710943939530413,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "ADA@1h",
+        "delta": -0.15852099875955203,
+        "depth1_net": 0.015832107851462617,
+        "depth1_passed": false,
+        "depth2_net": -0.14268889090808942,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "AVAX@1h",
+        "delta": -0.06180867329875839,
+        "depth1_net": -0.08748662927270967,
+        "depth1_passed": false,
+        "depth2_net": -0.14929530257146806,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "LINK@1h",
+        "delta": -0.1370838637374356,
+        "depth1_net": -0.05846251587509554,
+        "depth1_passed": false,
+        "depth2_net": -0.19554637961253116,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "DOT@1h",
+        "delta": -0.06753358015836361,
+        "depth1_net": -0.22150352548942012,
+        "depth1_passed": false,
+        "depth2_net": -0.28903710564778373,
+        "depth2_passed": false
+      }
+    ]
+  },
+  "dispersion_method": "within resolution: a daily Sharpe and a 15-minute Sharpe estimate different quantities, so the hurdle is built from the dispersion at the row's own resolution while the trial count stays the whole disclosed family",
+  "executor_equivalence": {
+    "ADA@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "ADA@1h": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 969
+    },
+    "AVAX@1h": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 969
+    },
+    "DOGE@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "DOT@1h": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 969
+    },
+    "GOOGL@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "LINK@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "LINK@1h": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 969
+    },
+    "META@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "TSLA@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    }
+  },
+  "fee_per_unit_turnover": 0.0005,
+  "generated_utc": "2026-10-31T13:13:26Z",
+  "holdout": {
+    "ADA@1d": {
+      "asset": "ADA",
+      "burned": true,
+      "candidate_id": "ADA@1d:2026-10-31T13:13:26Z",
+      "dataset_id": "ADA@1d",
+      "decision_reason": "holdout Sharpe +1.167 below the 1.494 hurdle of a 24-trial search",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 2.0,
+          "beta": 0.5,
+          "holdout_net": 0.5649351731252943,
+          "holdout_sharpe": 1.166537579854722,
+          "hurdle": 1.494016425484068,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 1.0165833212310678
+        },
+        "depth2": {
+          "alpha": 1.5,
+          "beta": -0.5,
+          "holdout_net": -0.6116476873786911,
+          "holdout_sharpe": -1.2599187887077932,
+          "hurdle": 1.494016425484068,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 0.9800602257056552
+        }
+      },
+      "fees": 0.108,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "hurdle": 1.494016425484068,
+      "net": 0.5649351731252943,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 24,
+      "sharpe": 1.166537579854722,
+      "slice_id": "tail30:11eec030:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 216.0
+    },
+    "ADA@1h": {
+      "asset": "ADA",
+      "burned": true,
+      "candidate_id": "ADA@1h:2026-10-31T13:13:26Z",
+      "dataset_id": "ADA@1h",
+      "decision_reason": "holdout net -0.1427 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 0.5,
+          "beta": 0.5,
+          "holdout_net": 0.015832107851462617,
+          "holdout_sharpe": 0.5287020376444194,
+          "hurdle": 7.258274873796147,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 3.2936307252056736
+        },
+        "depth2": {
+          "alpha": 0.5,
+          "beta": 0.5,
+          "holdout_net": -0.14268889090808942,
+          "holdout_sharpe": -4.771655328674447,
+          "hurdle": 7.258274873796147,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 4.014984367722953
+        }
+      },
+      "fees": 0.042,
+      "fitted_on": "training bars only",
+      "holdout_bars": 299,
+      "holdout_window": [
+        700,
+        999
+      ],
+      "hurdle": 7.258274873796147,
+      "net": -0.14268889090808942,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 24,
+      "sharpe": -4.771655328674447,
+      "slice_id": "tail30:2a0a9ec2:700-999",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 670,
+      "train_window": [
+        30,
+        700
+      ],
+      "turnover": 84.0
+    },
+    "AVAX@1h": {
+      "asset": "AVAX",
+      "burned": true,
+      "candidate_id": "AVAX@1h:2026-10-31T13:13:26Z",
+      "dataset_id": "AVAX@1h",
+      "decision_reason": "holdout net -0.1493 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 0.5,
+          "beta": 0.0,
+          "holdout_net": -0.08748662927270967,
+          "holdout_sharpe": -3.1896832260410553,
+          "hurdle": 7.258274873796147,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 0.4212914327959306
+        },
+        "depth2": {
+          "alpha": 0.5,
+          "beta": 0.5,
+          "holdout_net": -0.14929530257146806,
+          "holdout_sharpe": -5.451471815185623,
+          "hurdle": 7.258274873796147,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 5.515511909266037
+        }
+      },
+      "fees": 0.03,
+      "fitted_on": "training bars only",
+      "holdout_bars": 299,
+      "holdout_window": [
+        700,
+        999
+      ],
+      "hurdle": 7.258274873796147,
+      "net": -0.14929530257146806,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 24,
+      "sharpe": -5.451471815185623,
+      "slice_id": "tail30:84a62510:700-999",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 670,
+      "train_window": [
+        30,
+        700
+      ],
+      "turnover": 60.0
+    },
+    "DOGE@1d": {
+      "asset": "DOGE",
+      "burned": true,
+      "candidate_id": "DOGE@1d:2026-10-31T13:13:26Z",
+      "dataset_id": "DOGE@1d",
+      "decision_reason": "holdout net -0.3748 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 2.0,
+          "beta": 0.0,
+          "holdout_net": 0.04179095195397178,
+          "holdout_sharpe": 0.08902416318735078,
+          "hurdle": 1.494016425484068,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 0.6848272486954035
+        },
+        "depth2": {
+          "alpha": 0.5,
+          "beta": -0.5,
+          "holdout_net": -0.3748041396044549,
+          "holdout_sharpe": -0.7985536504024315,
+          "hurdle": 1.494016425484068,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 0.7359482967411456
+        }
+      },
+      "fees": 0.069,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "hurdle": 1.494016425484068,
+      "net": -0.3748041396044549,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 24,
+      "sharpe": -0.7985536504024315,
+      "slice_id": "tail30:a95932fa:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 138.0
+    },
+    "DOT@1h": {
+      "asset": "DOT",
+      "burned": true,
+      "candidate_id": "DOT@1h:2026-10-31T13:13:26Z",
+      "dataset_id": "DOT@1h",
+      "decision_reason": "holdout net -0.2890 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 0.5,
+          "beta": -0.5,
+          "holdout_net": -0.22150352548942012,
+          "holdout_sharpe": -6.571484237564776,
+          "hurdle": 7.258274873796147,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 4.3339232318268435
+        },
+        "depth2": {
+          "alpha": 2.0,
+          "beta": 0.5,
+          "holdout_net": -0.28903710564778373,
+          "holdout_sharpe": -8.574300282250665,
+          "hurdle": 7.258274873796147,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 4.9531504660738515
+        }
+      },
+      "fees": 0.13,
+      "fitted_on": "training bars only",
+      "holdout_bars": 299,
+      "holdout_window": [
+        700,
+        999
+      ],
+      "hurdle": 7.258274873796147,
+      "net": -0.28903710564778373,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 24,
+      "sharpe": -8.574300282250665,
+      "slice_id": "tail30:f53575e1:700-999",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 670,
+      "train_window": [
+        30,
+        700
+      ],
+      "turnover": 260.0
+    },
+    "GOOGL@1d": {
+      "asset": "GOOGL",
+      "burned": true,
+      "candidate_id": "GOOGL@1d:2026-10-31T13:13:26Z",
+      "dataset_id": "GOOGL@1d",
+      "decision_reason": "holdout net -0.1337 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 0.5,
+          "beta": 0.0,
+          "holdout_net": 0.26063337902837436,
+          "holdout_sharpe": 1.214671546852378,
+          "hurdle": 1.494016425484068,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 0.29617391687224903
+        },
+        "depth2": {
+          "alpha": 2.0,
+          "beta": -0.5,
+          "holdout_net": -0.13372652928794113,
+          "holdout_sharpe": -0.6226660738889662,
+          "hurdle": 1.494016425484068,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 0.7613477559848771
+        }
+      },
+      "fees": 0.079,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "hurdle": 1.494016425484068,
+      "net": -0.13372652928794113,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 24,
+      "sharpe": -0.6226660738889662,
+      "slice_id": "tail30:0ff4f770:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 158.0
+    },
+    "LINK@1d": {
+      "asset": "LINK",
+      "burned": true,
+      "candidate_id": "LINK@1d:2026-10-31T13:13:26Z",
+      "dataset_id": "LINK@1d",
+      "decision_reason": "holdout net -0.5711 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 1.5,
+          "beta": -0.5,
+          "holdout_net": 0.27096026191324984,
+          "holdout_sharpe": 0.46262630847443514,
+          "hurdle": 1.494016425484068,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 1.0951373330529162
+        },
+        "depth2": {
+          "alpha": 1.5,
+          "beta": -0.5,
+          "holdout_net": -0.5710943939530413,
+          "holdout_sharpe": -0.9758124612434159,
+          "hurdle": 1.494016425484068,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 1.1291871065353731
+        }
+      },
+      "fees": 0.08,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "hurdle": 1.494016425484068,
+      "net": -0.5710943939530413,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 24,
+      "sharpe": -0.9758124612434159,
+      "slice_id": "tail30:a546dbf9:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 160.0
+    },
+    "LINK@1h": {
+      "asset": "LINK",
+      "burned": true,
+      "candidate_id": "LINK@1h:2026-10-31T13:13:26Z",
+      "dataset_id": "LINK@1h",
+      "decision_reason": "holdout net -0.0585 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 0.5,
+          "beta": 0.5,
+          "holdout_net": -0.05846251587509554,
+          "holdout_sharpe": -2.746108166229601,
+          "hurdle": 7.258274873796147,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 5.299921532535687
+        },
+        "depth2": {
+          "alpha": 0.5,
+          "beta": 0.0,
+          "holdout_net": -0.19554637961253116,
+          "holdout_sharpe": -9.255819159285792,
+          "hurdle": 7.258274873796147,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 2.3644760140138357
+        }
+      },
+      "fees": 0.008,
+      "fitted_on": "training bars only",
+      "holdout_bars": 299,
+      "holdout_window": [
+        700,
+        999
+      ],
+      "hurdle": 7.258274873796147,
+      "net": -0.05846251587509554,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 24,
+      "sharpe": -2.746108166229601,
+      "slice_id": "tail30:101c926b:700-999",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 670,
+      "train_window": [
+        30,
+        700
+      ],
+      "turnover": 16.0
+    },
+    "META@1d": {
+      "asset": "META",
+      "burned": true,
+      "candidate_id": "META@1d:2026-10-31T13:13:26Z",
+      "dataset_id": "META@1d",
+      "decision_reason": "holdout net -0.5062 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 2.0,
+          "beta": -0.5,
+          "holdout_net": -0.5062025584431007,
+          "holdout_sharpe": -2.1236401287740034,
+          "hurdle": 1.494016425484068,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 1.3172964894356713
+        },
+        "depth2": {
+          "alpha": 2.0,
+          "beta": 0.0,
+          "holdout_net": -0.652556984955485,
+          "holdout_sharpe": -2.748196122025714,
+          "hurdle": 1.494016425484068,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 1.0141883643947291
+        }
+      },
+      "fees": 0.10400000000000001,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "hurdle": 1.494016425484068,
+      "net": -0.5062025584431007,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 24,
+      "sharpe": -2.1236401287740034,
+      "slice_id": "tail30:000a29b9:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 208.0
+    },
+    "TSLA@1d": {
+      "asset": "TSLA",
+      "burned": true,
+      "candidate_id": "TSLA@1d:2026-10-31T13:13:26Z",
+      "dataset_id": "TSLA@1d",
+      "decision_reason": "holdout net -0.3462 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 2.0,
+          "beta": 0.0,
+          "holdout_net": -0.6126684785374203,
+          "holdout_sharpe": -1.6741910395134152,
+          "hurdle": 1.494016425484068,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 1.017011300778639
+        },
+        "depth2": {
+          "alpha": 2.0,
+          "beta": 0.5,
+          "holdout_net": -0.3462475466906332,
+          "holdout_sharpe": -0.9433943852235943,
+          "hurdle": 1.494016425484068,
+          "passed": false,
+          "searched_trials": 24,
+          "train_sharpe": 1.4529882918723724
+        }
+      },
+      "fees": 0.088,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "hurdle": 1.494016425484068,
+      "net": -0.3462475466906332,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 24,
+      "sharpe": -0.9433943852235943,
+      "slice_id": "tail30:460dba0a:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 176.0
+    }
+  },
+  "holdout_ledger": "benchmarks/quantum_compilation/quantum_signal_holdouts.jsonl",
+  "holdout_reuse_refusals": [
+    {
+      "dataset_id": "AAPL@1d",
+      "error": "DATA SNOOPING VIOLATION: Dataset slice 'AAPL@1d:tail30:7cfca638:527-752' was previously burned by failing candidate 'AAPL@1d:2026-10-31T12:47:51Z'. Confirmation holdouts may not be reused for replacement hypotheses.",
+      "refused": true,
+      "slice_id": "tail30:7cfca638:527-752"
+    },
+    {
+      "dataset_id": "ADA@1d",
+      "error": "DATA SNOOPING VIOLATION: Dataset slice 'ADA@1d:tail30:11eec030:527-752' was previously burned by failing candidate 'ADA@1d:2026-10-31T13:13:26Z'. Confirmation holdouts may not be reused for replacement hypotheses.",
+      "refused": true,
+      "slice_id": "tail30:11eec030:527-752"
+    }
+  ],
+  "limitations": [
+    "the fixed maps have no trainable parameters; the parameterised map is fitted on 12 grid points per dataset and that search is charged to the deflation, so the fit is not quoted as a lone hypothesis",
+    "the closed form prod_i cos(alpha_i x_i + beta_i) means every map here is classically computable in O(n) floating-point operations; the statevector simulation is the definition of the circuit, not the cheapest evaluation, so no advantage is claimed",
+    "ten datasets across two resolutions (six daily panels, four 15-minute snapshots), no slippage beyond the declared fee, and no live feed",
+    "the holdout is temporal and consumed once: a slice whose candidate loses money after fees is burned in the durable ledger and cannot be re-entered, so this record is not regenerable from the same slices by design",
+    "the holding period is one bar, so the 15-minute rows annualise a Sharpe estimated from roughly ten days of bars and should be read as a resolution comparison, not a ten-day backtest of a trading business"
+  ],
+  "maps": [
+    {
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "closed_form": "prod_i cos(pi * x_i)",
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "gates": [
+        "ry(pi*H-MOM) q0",
+        "ry(pi*CVD) q1",
+        "cx q1->q0"
+      ],
+      "layers": 1,
+      "qubits": 2
+    },
+    {
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "closed_form": "prod_i cos(pi * x_i)",
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "gates": [
+        "ry(pi*H-MOM) q0",
+        "ry(pi*CVD) q1",
+        "ry(pi*H-BB) q2",
+        "cx q1->q0",
+        "cx q2->q0"
+      ],
+      "layers": 1,
+      "qubits": 3
+    }
+  ],
+  "n_trials": 310,
+  "parameterised": {
+    "ansatz_depths": [
+      1,
+      2
+    ],
+    "closed_form": "prod_i cos(alpha_i * x_i + beta_i) at depth 1; dense unitary marginal above it (no product form exists)",
+    "features": [
+      "H-MOM",
+      "CVD",
+      "H-BB"
+    ],
+    "fit_slice": "training bars only",
+    "fits": [
+      {
+        "alphas": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "annualization": 365.0,
+        "asset": "GOOGL",
+        "betas": [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.32049208576547517
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.29617391687224903
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": 0.019554644639008988
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.7373095786188926
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.19845194481891187
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.8350988583700133
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.7617599772803272
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.244233714256123
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.20817686287041012
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.8837240208014419
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.9665480902968353
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.9757312288776503
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.24954591498655423
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -1.5185036000288548
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 0.6071037783528906
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.248425670998586
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.010026164178203723
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.4431749721441798
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.5889675497051549
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.3191674557025166
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -1.3911073628987147
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.7613477559848771
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.28890099736978114
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 0.42391005983206964
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "c07e32a676052d2eb0ca0a7931f900f00aa0ae99569345fb2d44c2301105b899",
+        "closed_form": null,
+        "dataset_id": "GOOGL@1d",
+        "effective_trial_count": 24,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(2.0*H-MOM-0.5) q0",
+          "ry(2.0*CVD-0.5) q1",
+          "ry(2.0*H-BB-0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0",
+          "# layer 2",
+          "ry(2.0*H-MOM-0.5) q0",
+          "ry(2.0*CVD-0.5) q1",
+          "ry(2.0*H-BB-0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 24,
+        "in_sample_sharpe": 0.7613477559848771,
+        "layers": 2,
+        "n_trials": 310,
+        "reference": "dense unitary marginal (exact_marginal)",
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.04871039315908497,
+            "expected_max_sr": 2.192831685249591,
+            "is_significant": false,
+            "p_value": 0.951289606840915,
+            "se_sharpe": 0.863646460278742
+          },
+          "fees": 0.17200000000000001,
+          "gross": 0.5785793296651862,
+          "kurtosis": 4.815199080048252,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 0.4065793296651861,
+          "sharpe": 0.7613477559848771,
+          "skewness": -0.3029242239533512,
+          "turnover": 344.0
+        },
+        "trial_count": 24,
+        "var_trials": 0.5694818670262045
+      },
+      {
+        "alphas": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "annualization": 365.0,
+        "asset": "META",
+        "betas": [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.23558703030323572
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.05071087092048808
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": 0.6497561217359457
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": 0.5074732932584377
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.5231637050035052
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.5426442985269031
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": 0.10642093127654544
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.3354426989654213
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -1.0749826849723236
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": 1.3172964894356713
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.30784244777104586
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.2493564587149631
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.12253582692705457
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.002568363757031117
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.41258896547758095
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 1.0050678620329292
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.33601218277716915
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -1.0331475999514395
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.20108181661792515
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.31477399244183196
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 0.729644227923418
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.7431993370896219
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 1.0141883643947291
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 0.8480044791248502
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "8a213bd2d0df522c430fd772a4721f3c8386cacedcf7bb1aa5e2d342159f8c9d",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "META@1d",
+        "effective_trial_count": 24,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(2.0*H-MOM-0.5) q0",
+          "ry(2.0*CVD-0.5) q1",
+          "ry(2.0*H-BB-0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 24,
+        "in_sample_sharpe": 1.3172964894356713,
+        "layers": 1,
+        "n_trials": 310,
+        "reference": "product closed form",
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.12921438047731326,
+            "expected_max_sr": 2.192831685249591,
+            "is_significant": false,
+            "p_value": 0.8707856195226867,
+            "se_sharpe": 0.7747326759717659
+          },
+          "fees": 0.258,
+          "gross": 1.4274792577863558,
+          "kurtosis": 26.596231598519026,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 1.1694792577863555,
+          "sharpe": 1.3172964894356713,
+          "skewness": 3.1151843424467636,
+          "turnover": 516.0
+        },
+        "trial_count": 24,
+        "var_trials": 0.5694818670262045
+      },
+      {
+        "alphas": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "annualization": 365.0,
+        "asset": "TSLA",
+        "betas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.5600824853263999
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.15702468661756327
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -1.385534292659547
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -1.0001280651415378
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.2473470125993322
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -1.039789086535117
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.0052446183935181585
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.5724508298601153
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.7214585616899414
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -1.0755516738613993
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 1.017011300778639
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.05736913187169985
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.30288447656757567
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.7362574718380496
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -2.2249033010314916
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 1.291666655999623
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.9643124357796633
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -2.5746469349779963
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.31165927535847443
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.3218126566437128
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.5302509860013626
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.38376460539014867
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.7483891915260098
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 1.4529882918723724
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "92c25eb279f494f47122a24158022c5cf440915e6e86aa795a2ebbba842e593a",
+        "closed_form": null,
+        "dataset_id": "TSLA@1d",
+        "effective_trial_count": 24,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(2.0*H-MOM+0.5) q0",
+          "ry(2.0*CVD+0.5) q1",
+          "ry(2.0*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0",
+          "# layer 2",
+          "ry(2.0*H-MOM+0.5) q0",
+          "ry(2.0*CVD+0.5) q1",
+          "ry(2.0*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 24,
+        "in_sample_sharpe": 1.4529882918723724,
+        "layers": 2,
+        "n_trials": 310,
+        "reference": "dense unitary marginal (exact_marginal)",
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.19167961702861525,
+            "expected_max_sr": 2.192831685249591,
+            "is_significant": false,
+            "p_value": 0.8083203829713848,
+            "se_sharpe": 0.8487133694785932
+          },
+          "fees": 0.159,
+          "gross": 1.6481034676415218,
+          "kurtosis": 4.403360286792679,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 1.4891034676415218,
+          "sharpe": 1.4529882918723724,
+          "skewness": 0.34296027760991427,
+          "turnover": 318.0
+        },
+        "trial_count": 24,
+        "var_trials": 0.5694818670262045
+      },
+      {
+        "alphas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "annualization": 365.0,
+        "asset": "DOGE",
+        "betas": [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": 0.6121078475914855
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.2738864732602047
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.9884598774104816
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -1.385131651579364
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.787957209395512
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.7300739973048449
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.32475388764808943
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.1200028922450638
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.1793705010966903
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": 0.045148156956872416
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.6848272486954035
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.9379856738018418
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.7359482967411456
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.13325091564357341
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 0.4216691790454658
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.11557030722044753
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.939655415874279
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.9647758527825673
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.05440046162314285
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -1.0803660485671829
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.12919690772900413
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.1203123978083802
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.31509614906645833
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -1.5292690615824795
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "592434a7e3e2cb0745eb0c8155e76f28784f7d817fa9a02cb35d23034f26ba7e",
+        "closed_form": null,
+        "dataset_id": "DOGE@1d",
+        "effective_trial_count": 24,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(0.5*H-MOM-0.5) q0",
+          "ry(0.5*CVD-0.5) q1",
+          "ry(0.5*H-BB-0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0",
+          "# layer 2",
+          "ry(0.5*H-MOM-0.5) q0",
+          "ry(0.5*CVD-0.5) q1",
+          "ry(0.5*H-BB-0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 24,
+        "in_sample_sharpe": 0.7359482967411456,
+        "layers": 2,
+        "n_trials": 310,
+        "reference": "dense unitary marginal (exact_marginal)",
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.04009292843045434,
+            "expected_max_sr": 2.192831685249591,
+            "is_significant": false,
+            "p_value": 0.9599070715695457,
+            "se_sharpe": 0.832690981433277
+          },
+          "fees": 0.131,
+          "gross": 1.8332394968640244,
+          "kurtosis": 15.320733347735564,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 1.7022394968640244,
+          "sharpe": 0.7359482967411456,
+          "skewness": 1.6376254713921172,
+          "turnover": 262.0
+        },
+        "trial_count": 24,
+        "var_trials": 0.5694818670262045
+      },
+      {
+        "alphas": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "annualization": 365.0,
+        "asset": "ADA",
+        "betas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.4536923685716823
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.41816511376858995
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.3970900484751864
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.40225899773246315
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.982160370759302
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": 0.6138489827718663
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -1.1835535451734507
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.6710576798844918
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.21479928130402137
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": 0.5023383152308961
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.20137487232461293
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": 1.0165833212310678
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.0473918912572397
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.8400901664611712
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.6535790000167249
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.18557280916680163
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.751477970818671
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.8639968837813607
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.9800602257056552
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.07767469712824093
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.9791440409897244
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.6408617835813819
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.16899391824180837
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 0.7274412262641403
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "b4c566c0e5367d3a0d2abeb27900c695b58e24a7ea79018da291c74a823191a5",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "ADA@1d",
+        "effective_trial_count": 24,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(2.0*H-MOM+0.5) q0",
+          "ry(2.0*CVD+0.5) q1",
+          "ry(2.0*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 24,
+        "in_sample_sharpe": 1.0165833212310678,
+        "layers": 1,
+        "n_trials": 310,
+        "reference": "product closed form",
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.08278142053048954,
+            "expected_max_sr": 2.192831685249591,
+            "is_significant": false,
+            "p_value": 0.9172185794695105,
+            "se_sharpe": 0.8482949558932025
+          },
+          "fees": 0.241,
+          "gross": 1.929096870830321,
+          "kurtosis": 6.202146935441555,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 1.6880968708303208,
+          "sharpe": 1.0165833212310678,
+          "skewness": 0.4850364782930839,
+          "turnover": 482.0
+        },
+        "trial_count": 24,
+        "var_trials": 0.5694818670262045
+      },
+      {
+        "alphas": [
+          1.5,
+          1.5,
+          1.5
+        ],
+        "annualization": 365.0,
+        "asset": "LINK",
+        "betas": [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.9115046216655622
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.7890346791350941
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.8883615138209833
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.05496697272320067
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.7414343912882352
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.6223935801569003
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": 1.0951373330529162
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.5291810076464794
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.525311891186804
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.024833238299852286
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.9523438595698318
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.08557172940546914
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.8719870657352231
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -1.3831481863318864
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -1.2376265803666284
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.24551674120791367
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.11568339052235953
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -1.2627763658210218
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 1.1291871065353731
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 1.0934150192659389
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.2533484387027575
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.8314719943393135
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 1.1254698084976213
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 0.4112365962613302
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "7c02d02a46491f7b45dd1805d503c3c13094f2d20ebbddf24e2666b5c735665e",
+        "closed_form": null,
+        "dataset_id": "LINK@1d",
+        "effective_trial_count": 24,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(1.5*H-MOM-0.5) q0",
+          "ry(1.5*CVD-0.5) q1",
+          "ry(1.5*H-BB-0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0",
+          "# layer 2",
+          "ry(1.5*H-MOM-0.5) q0",
+          "ry(1.5*CVD-0.5) q1",
+          "ry(1.5*H-BB-0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 24,
+        "in_sample_sharpe": 1.1291871065353731,
+        "layers": 2,
+        "n_trials": 310,
+        "reference": "dense unitary marginal (exact_marginal)",
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.10289400026324941,
+            "expected_max_sr": 2.192831685249591,
+            "is_significant": false,
+            "p_value": 0.8971059997367505,
+            "se_sharpe": 0.8406712528690531
+          },
+          "fees": 0.156,
+          "gross": 2.2386963451236928,
+          "kurtosis": 8.128183180801823,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 2.0826963451236926,
+          "sharpe": 1.1291871065353731,
+          "skewness": 0.7757375967019132,
+          "turnover": 312.0
+        },
+        "trial_count": 24,
+        "var_trials": 0.5694818670262045
+      },
+      {
+        "alphas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "annualization": 8760.0,
+        "asset": "ADA",
+        "betas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.6531889958846946
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 1.6034536591266337
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": 3.2936307252056736
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -6.798942121935816
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -2.8417398187716114
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -2.034199245899499
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -4.007188158147476
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -4.013249415549764
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -5.459610817563053
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -3.3473956205229665
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -4.441059234389922
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -6.904433215987277
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -4.668589392291692
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -1.1381788248670266
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 4.014984367722953
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -6.258725367171341
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -4.09944007178175
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -8.084797323886914
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -1.5543861259247984
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -1.2003096286382644
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -8.3217481800551
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -3.7012529243011207
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -4.487987289555792
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -1.584506051819276
+          }
+        ],
+        "causality": {
+          "bars_compared": 950,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "7fd793012ecca8ea1893232d9f1c334992e5b396ca168217e97b8073b09ef40a",
+        "closed_form": null,
+        "dataset_id": "ADA@1h",
+        "effective_trial_count": 24,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          700
+        ],
+        "gates": [
+          "ry(0.5*H-MOM+0.5) q0",
+          "ry(0.5*CVD+0.5) q1",
+          "ry(0.5*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0",
+          "# layer 2",
+          "ry(0.5*H-MOM+0.5) q0",
+          "ry(0.5*CVD+0.5) q1",
+          "ry(0.5*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 24,
+        "in_sample_sharpe": 4.014984367722953,
+        "layers": 2,
+        "n_trials": 310,
+        "reference": "dense unitary marginal (exact_marginal)",
+        "resolution": "1h",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.03344258386181729,
+            "expected_max_sr": 10.653279878334843,
+            "is_significant": false,
+            "p_value": 0.9665574161381827,
+            "se_sharpe": 3.6226440460650333
+          },
+          "fees": 0.068,
+          "gross": 0.32312334729202785,
+          "kurtosis": 4.980964429067175,
+          "n_invalid": 0.0,
+          "n_obs": 670.0,
+          "net": 0.25512334729202785,
+          "sharpe": 4.014984367722953,
+          "skewness": -0.009610592281080455,
+          "turnover": 136.0
+        },
+        "trial_count": 24,
+        "var_trials": 13.441136078269087
+      },
+      {
+        "alphas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "annualization": 8760.0,
+        "asset": "AVAX",
+        "betas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -1.9021914169382586
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.4212914327959306
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -1.3599999235351963
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -5.136901576366658
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -7.962672243851034
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -1.5978460542367838
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -1.4190492600877127
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -5.918064177569106
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -6.31008423231317
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -9.758314091559924
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -4.454297475583576
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -7.140489627479328
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -7.090697579469215
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 1.3774815880828082
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 5.515511909266037
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -8.454654868290461
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -6.570270147250863
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -1.96729858375447
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.03977381707363934
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -4.186783589911473
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -1.8967053868749708
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -4.305077101400191
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -12.316700216172134
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -9.03297860209941
+          }
+        ],
+        "causality": {
+          "bars_compared": 950,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "7fd793012ecca8ea1893232d9f1c334992e5b396ca168217e97b8073b09ef40a",
+        "closed_form": null,
+        "dataset_id": "AVAX@1h",
+        "effective_trial_count": 24,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          700
+        ],
+        "gates": [
+          "ry(0.5*H-MOM+0.5) q0",
+          "ry(0.5*CVD+0.5) q1",
+          "ry(0.5*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0",
+          "# layer 2",
+          "ry(0.5*H-MOM+0.5) q0",
+          "ry(0.5*CVD+0.5) q1",
+          "ry(0.5*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 24,
+        "in_sample_sharpe": 5.515511909266037,
+        "layers": 2,
+        "n_trials": 310,
+        "reference": "dense unitary marginal (exact_marginal)",
+        "resolution": "1h",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.07323949860373333,
+            "expected_max_sr": 10.653279878334843,
+            "is_significant": false,
+            "p_value": 0.9267605013962666,
+            "se_sharpe": 3.538209549673056
+          },
+          "fees": 0.10200000000000001,
+          "gross": 0.49593539560787225,
+          "kurtosis": 9.24318823417909,
+          "n_invalid": 0.0,
+          "n_obs": 670.0,
+          "net": 0.3939353956078722,
+          "sharpe": 5.515511909266037,
+          "skewness": 0.8669289365182276,
+          "turnover": 204.0
+        },
+        "trial_count": 24,
+        "var_trials": 13.441136078269087
+      },
+      {
+        "alphas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "annualization": 8760.0,
+        "asset": "LINK",
+        "betas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -1.2244855508800736
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 1.7749234330555343
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": 5.299921532535687
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.7215334203995287
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.7846362789608639
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": 2.163426039436154
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.7417061952459476
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 1.9637017724921075
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -8.630227903534962
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -3.5501658125358575
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -5.814583298346919
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -1.9892760730695338
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -3.407594258916322
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 2.3644760140138357
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -1.1957153466933166
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.3237451515313508
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 1.509294932204017
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -2.7012589628471595
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -3.2380304523396553
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -3.99972935315415
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -4.80367707762911
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -5.898394526897377
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -7.681323738047889
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -8.943985007564354
+          }
+        ],
+        "causality": {
+          "bars_compared": 950,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "bd776c2ad48fe8f668c546d86591a7701d23988204e44adb6b7a7298205ac20e",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "LINK@1h",
+        "effective_trial_count": 24,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          700
+        ],
+        "gates": [
+          "ry(0.5*H-MOM+0.5) q0",
+          "ry(0.5*CVD+0.5) q1",
+          "ry(0.5*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 24,
+        "in_sample_sharpe": 5.299921532535687,
+        "layers": 1,
+        "n_trials": 310,
+        "reference": "product closed form",
+        "resolution": "1h",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.06503128585667195,
+            "expected_max_sr": 10.653279878334843,
+            "is_significant": false,
+            "p_value": 0.934968714143328,
+            "se_sharpe": 3.536242031001189
+          },
+          "fees": 0.042,
+          "gross": 0.371043861612383,
+          "kurtosis": 10.680937044884129,
+          "n_invalid": 0.0,
+          "n_obs": 670.0,
+          "net": 0.32904386161238297,
+          "sharpe": 5.299921532535687,
+          "skewness": 0.9316327586282662,
+          "turnover": 84.0
+        },
+        "trial_count": 24,
+        "var_trials": 13.441136078269087
+      },
+      {
+        "alphas": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "annualization": 8760.0,
+        "asset": "DOT",
+        "betas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": 4.3339232318268435
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 2.139266981176932
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": 3.8886540861729233
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": 0.5352695252329887
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 3.6061456100495146
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.9778674129783322
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.7162436847127147
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 2.2624987667866714
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -6.288622113894806
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -4.4961486500446
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -6.203287010211696
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -4.878417666796046
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -3.5458561259612815
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 3.6881510279626304
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 1.068798203367595
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.16341398099535648
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -3.744064192705531
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -3.2818440865536127
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -4.833590388953757
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 3.4229320224035087
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -2.4536001734108095
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -2.449673352850424
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -2.510591496180663
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 4.9531504660738515
+          }
+        ],
+        "causality": {
+          "bars_compared": 950,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "92c25eb279f494f47122a24158022c5cf440915e6e86aa795a2ebbba842e593a",
+        "closed_form": null,
+        "dataset_id": "DOT@1h",
+        "effective_trial_count": 24,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          700
+        ],
+        "gates": [
+          "ry(2.0*H-MOM+0.5) q0",
+          "ry(2.0*CVD+0.5) q1",
+          "ry(2.0*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0",
+          "# layer 2",
+          "ry(2.0*H-MOM+0.5) q0",
+          "ry(2.0*CVD+0.5) q1",
+          "ry(2.0*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 24,
+        "in_sample_sharpe": 4.9531504660738515,
+        "layers": 2,
+        "n_trials": 310,
+        "reference": "dense unitary marginal (exact_marginal)",
+        "resolution": "1h",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.05576346510569594,
+            "expected_max_sr": 10.653279878334843,
+            "is_significant": false,
+            "p_value": 0.944236534894304,
+            "se_sharpe": 3.5819067493397947
+          },
+          "fees": 0.273,
+          "gross": 0.6665349911650467,
+          "kurtosis": 6.2822442290394696,
+          "n_invalid": 0.0,
+          "n_obs": 670.0,
+          "net": 0.3935349911650466,
+          "sharpe": 4.9531504660738515,
+          "skewness": 0.45102578545001054,
+          "turnover": 546.0
+        },
+        "trial_count": 24,
+        "var_trials": 13.441136078269087
+      }
+    ],
+    "grid": [
+      [
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        1
+      ],
+      [
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        1
+      ],
+      [
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        1
+      ],
+      [
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        1
+      ],
+      [
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        1
+      ],
+      [
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        1
+      ],
+      [
+        [
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        1
+      ],
+      [
+        [
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        1
+      ],
+      [
+        [
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        1
+      ],
+      [
+        [
+          2.0,
+          2.0,
+          2.0
+        ],
+        [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        1
+      ],
+      [
+        [
+          2.0,
+          2.0,
+          2.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        1
+      ],
+      [
+        [
+          2.0,
+          2.0,
+          2.0
+        ],
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        1
+      ],
+      [
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        2
+      ],
+      [
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        2
+      ],
+      [
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        2
+      ],
+      [
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        2
+      ],
+      [
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        2
+      ],
+      [
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        2
+      ],
+      [
+        [
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        2
+      ],
+      [
+        [
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        2
+      ],
+      [
+        [
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        2
+      ],
+      [
+        [
+          2.0,
+          2.0,
+          2.0
+        ],
+        [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        2
+      ],
+      [
+        [
+          2.0,
+          2.0,
+          2.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        2
+      ],
+      [
+        [
+          2.0,
+          2.0,
+          2.0
+        ],
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        2
+      ]
+    ],
+    "grid_size": 24,
+    "trial_ledger": {
+      "effective_trial_count": 240,
+      "hidden_trials": 0,
+      "mean_sharpe": -1.1345930096748051,
+      "naive_trial_count": 240,
+      "note": "every grid point is one recorded trial, so the fit is charged at the size of its search exactly as the threshold sweep is",
+      "records": 240,
+      "search_groups": [
+        "ADA@1d",
+        "ADA@1h",
+        "AVAX@1h",
+        "DOGE@1d",
+        "DOT@1h",
+        "GOOGL@1d",
+        "LINK@1d",
+        "LINK@1h",
+        "META@1d",
+        "TSLA@1d"
+      ],
+      "var_sharpe": 7.573871298414696
+    }
+  },
+  "rows": [
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "GOOGL",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "GOOGL@1d",
+      "dsr": {
+        "dsr": 6.408018779040321e-07,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999993591981221,
+        "se_sharpe": 0.7095240114956618
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.305,
+      "gross": -0.6267405211502926,
+      "kind": "quantum",
+      "kurtosis": 5.459336118047437,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.9317405211502927,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.243099096509508,
+      "skewness": -0.15805936245925575,
+      "threshold": 0.0,
+      "turnover": 610.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.8698060941828255,
+      "annualization": 365.0,
+      "asset": "GOOGL",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "GOOGL@1d",
+      "dsr": {
+        "dsr": 1.9893863058496928e-06,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999980106136942,
+        "se_sharpe": 0.7096987275794547
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.291,
+      "gross": -0.484252592563684,
+      "kind": "quantum",
+      "kurtosis": 6.316878281376666,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.7752525925636842,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.0806452759342295,
+      "skewness": -0.16490302449606994,
+      "threshold": 0.2,
+      "turnover": 582.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.6842105263157895,
+      "annualization": 365.0,
+      "asset": "GOOGL",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "GOOGL@1d",
+      "dsr": {
+        "dsr": 4.779242270737535e-05,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999522075772926,
+        "se_sharpe": 0.7102853231960335
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.273,
+      "gross": -0.0967460889186551,
+      "kind": "quantum",
+      "kurtosis": 8.79782817208951,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.36974608891865524,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.5783709898687344,
+      "skewness": -0.17229695937720194,
+      "threshold": 0.5,
+      "turnover": 546.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "GOOGL",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "GOOGL@1d",
+      "dsr": {
+        "dsr": 8.025389700581362e-08,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.999999919746103,
+        "se_sharpe": 0.6987184633920465
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.316,
+      "gross": -0.7861918048729404,
+      "kind": "quantum",
+      "kurtosis": 5.414224414398263,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -1.1021918048729407,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.4685083219194426,
+      "skewness": -0.5482727084184615,
+      "threshold": 0.0,
+      "turnover": 632.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.6745152354570637,
+      "annualization": 365.0,
+      "asset": "GOOGL",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "GOOGL@1d",
+      "dsr": {
+        "dsr": 4.424929858116522e-07,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999995575070142,
+        "se_sharpe": 0.7002281628654875
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.269,
+      "gross": -0.5058639224265749,
+      "kind": "quantum",
+      "kurtosis": 7.519477066644685,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.774863922426575,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.249229025450506,
+      "skewness": -0.5875680441109036,
+      "threshold": 0.2,
+      "turnover": 538.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.3698060941828255,
+      "annualization": 365.0,
+      "asset": "GOOGL",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "GOOGL@1d",
+      "dsr": {
+        "dsr": 3.0509699053209764e-09,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999999969490301,
+        "se_sharpe": 0.6996422731841693
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.177,
+      "gross": -0.6988705693166706,
+      "kind": "quantum",
+      "kurtosis": 11.746528622966794,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.8758705693166706,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.8748463105940252,
+      "skewness": -0.6006506884095069,
+      "threshold": 0.5,
+      "turnover": 354.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "META",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "META@1d",
+      "dsr": {
+        "dsr": 4.205706360147284e-05,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999579429363985,
+        "se_sharpe": 0.7494934987395403
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.265,
+      "gross": -0.6074857361376402,
+      "kind": "quantum",
+      "kurtosis": 30.20465102849258,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.8724857361376404,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.7544505136358826,
+      "skewness": 2.4878395507208872,
+      "threshold": 0.0,
+      "turnover": 530.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.8808864265927978,
+      "annualization": 365.0,
+      "asset": "META",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "META@1d",
+      "dsr": {
+        "dsr": 3.3485641917632915e-05,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999665143580824,
+        "se_sharpe": 0.7570807346848007
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.26,
+      "gross": -0.667597893751716,
+      "kind": "quantum",
+      "kurtosis": 33.89267256348083,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.9275978937517161,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.8254955040292293,
+      "skewness": 2.704499169096657,
+      "threshold": 0.2,
+      "turnover": 520.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.6703601108033241,
+      "annualization": 365.0,
+      "asset": "META",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "META@1d",
+      "dsr": {
+        "dsr": 0.0006891708544179603,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.999310829145582,
+        "se_sharpe": 0.7185536082456879
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.247,
+      "gross": 0.1368391220952816,
+      "kind": "quantum",
+      "kurtosis": 44.525985805049515,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.11016087790471853,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.10592798346643441,
+      "skewness": 3.530131512067138,
+      "threshold": 0.5,
+      "turnover": 494.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "META",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "META@1d",
+      "dsr": {
+        "dsr": 0.0008706377475770937,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9991293622524229,
+        "se_sharpe": 0.7115368849373738
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.294,
+      "gross": 0.2533931223878412,
+      "kind": "quantum",
+      "kurtosis": 29.94934710360012,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.04060687761215902,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.03509181190572547,
+      "skewness": 0.03338797563542249,
+      "threshold": 0.0,
+      "turnover": 588.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.685595567867036,
+      "annualization": 365.0,
+      "asset": "META",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "META@1d",
+      "dsr": {
+        "dsr": 0.0010243542722191635,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9989756457277809,
+        "se_sharpe": 0.7115586476706541
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.259,
+      "gross": 0.25812130996428895,
+      "kind": "quantum",
+      "kurtosis": 41.200734904466294,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.0008786900357111854,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.0009597416554199581,
+      "skewness": 2.9241632714595887,
+      "threshold": 0.2,
+      "turnover": 518.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.4168975069252078,
+      "annualization": 365.0,
+      "asset": "META",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "META@1d",
+      "dsr": {
+        "dsr": 0.0018630374717335987,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9981369625282664,
+        "se_sharpe": 0.6954064695340535
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.197,
+      "gross": 0.3264757864761103,
+      "kind": "quantum",
+      "kurtosis": 88.27264461025032,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": 0.12947578647611022,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.17582841706254698,
+      "skewness": 5.062524601528911,
+      "threshold": 0.5,
+      "turnover": 394.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "TSLA",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "TSLA@1d",
+      "dsr": {
+        "dsr": 0.00010330386764575865,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9998966961323542,
+        "se_sharpe": 0.7134109964789986
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.293,
+      "gross": -0.34514728263067784,
+      "kind": "quantum",
+      "kurtosis": 4.598396818448993,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.6381472826306781,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.4544917033685206,
+      "skewness": 0.20395035849707951,
+      "threshold": 0.0,
+      "turnover": 586.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.8642659279778393,
+      "annualization": 365.0,
+      "asset": "TSLA",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "TSLA@1d",
+      "dsr": {
+        "dsr": 0.000245909506281512,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9997540904937184,
+        "se_sharpe": 0.7128088864604116
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.28800000000000003,
+      "gross": -0.09595444805768327,
+      "kind": "quantum",
+      "kurtosis": 5.323132599467771,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.3839544480576835,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.2914305754366118,
+      "skewness": 0.22375010670140894,
+      "threshold": 0.2,
+      "turnover": 576.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.685595567867036,
+      "annualization": 365.0,
+      "asset": "TSLA",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "TSLA@1d",
+      "dsr": {
+        "dsr": 0.0005491929602998626,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9994508070397001,
+        "se_sharpe": 0.7122040427254454
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.266,
+      "gross": 0.11074198170523264,
+      "kind": "quantum",
+      "kurtosis": 7.343067511619567,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.1552580182947675,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.13182540745463395,
+      "skewness": 0.27340974175251415,
+      "threshold": 0.5,
+      "turnover": 532.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "TSLA",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "TSLA@1d",
+      "dsr": {
+        "dsr": 0.005878993683124277,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9941210063168757,
+        "se_sharpe": 0.7114713134385574
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.278,
+      "gross": 0.839389328785054,
+      "kind": "quantum",
+      "kurtosis": 4.5853569439504955,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": 0.5613893287850538,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.40040379564904716,
+      "skewness": 0.023488890621918217,
+      "threshold": 0.0,
+      "turnover": 556.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.6689750692520776,
+      "annualization": 365.0,
+      "asset": "TSLA",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "TSLA@1d",
+      "dsr": {
+        "dsr": 0.0006327552812104277,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9993672447187896,
+        "se_sharpe": 0.7116106433052549
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.265,
+      "gross": 0.14928261821544275,
+      "kind": "quantum",
+      "kurtosis": 7.030167283713971,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.11571738178455739,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.10117923578060153,
+      "skewness": 0.04735897754440601,
+      "threshold": 0.2,
+      "turnover": 530.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.3961218836565097,
+      "annualization": 365.0,
+      "asset": "TSLA",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "TSLA@1d",
+      "dsr": {
+        "dsr": 0.001796109067460382,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9982038909325396,
+        "se_sharpe": 0.7106284776204008
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1815,
+      "gross": 0.29590107811725286,
+      "kind": "quantum",
+      "kurtosis": 11.912008282082253,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": 0.11440107811725278,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.12354285220850124,
+      "skewness": 0.39902179407574484,
+      "threshold": 0.5,
+      "turnover": 363.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "DOGE",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "DOGE@1d",
+      "dsr": {
+        "dsr": 1.538325248730446e-12,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999999999984617,
+        "se_sharpe": 0.6368027241906217
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.352,
+      "gross": -6.158458297140504,
+      "kind": "quantum",
+      "kurtosis": 18.55298725812769,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -6.510458297140504,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -2.2483436591054864,
+      "skewness": -2.2070897122773125,
+      "threshold": 0.0,
+      "turnover": 704.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.7382271468144044,
+      "annualization": 365.0,
+      "asset": "DOGE",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "DOGE@1d",
+      "dsr": {
+        "dsr": 3.608676629943185e-08,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999999639132336,
+        "se_sharpe": 0.690425732430062
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.3115,
+      "gross": -2.762020137208276,
+      "kind": "quantum",
+      "kurtosis": 14.747977431061134,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -3.073520137208276,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.5255764749348821,
+      "skewness": -1.0055335254614162,
+      "threshold": 0.2,
+      "turnover": 623.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.4404432132963989,
+      "annualization": 365.0,
+      "asset": "DOGE",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "DOGE@1d",
+      "dsr": {
+        "dsr": 1.0850255579097161e-05,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999891497444209,
+        "se_sharpe": 0.7061375714239102
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2235,
+      "gross": -1.0196084315118066,
+      "kind": "quantum",
+      "kurtosis": 22.607562035593887,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -1.2431084315118066,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.8058767935981554,
+      "skewness": -0.5842827058632016,
+      "threshold": 0.5,
+      "turnover": 447.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "DOGE",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "DOGE@1d",
+      "dsr": {
+        "dsr": 0.0009306014770735954,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9990693985229264,
+        "se_sharpe": 0.7111984132516204
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.338,
+      "gross": 0.27947846733397297,
+      "kind": "quantum",
+      "kurtosis": 19.146365894544118,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.058521532666027276,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.020083813947365737,
+      "skewness": -0.8280800742561576,
+      "threshold": 0.0,
+      "turnover": 676.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.5221606648199446,
+      "annualization": 365.0,
+      "asset": "DOGE",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "DOGE@1d",
+      "dsr": {
+        "dsr": 0.0007876462864367388,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9992123537135632,
+        "se_sharpe": 0.7111589742963806
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.2575,
+      "gross": 0.16506661732368733,
+      "kind": "quantum",
+      "kurtosis": 24.42378279964856,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.0924333826763128,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.0547459366752524,
+      "skewness": -0.35748580733182006,
+      "threshold": 0.2,
+      "turnover": 515.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.23268698060941828,
+      "annualization": 365.0,
+      "asset": "DOGE",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "DOGE@1d",
+      "dsr": {
+        "dsr": 0.004054178882873471,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9959458211171265,
+        "se_sharpe": 0.7097039968974609
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1245,
+      "gross": 0.48459420743183756,
+      "kind": "quantum",
+      "kurtosis": 32.885740293603426,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": 0.3600942074318375,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.3138732424352444,
+      "skewness": 0.4389544574788643,
+      "threshold": 0.5,
+      "turnover": 249.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "ADA",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "ADA@1d",
+      "dsr": {
+        "dsr": 0.0022626198648502548,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9977373801351498,
+        "se_sharpe": 0.7132227416949933
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.35000000000000003,
+      "gross": 0.7173055387302957,
+      "kind": "quantum",
+      "kurtosis": 7.079451010934373,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": 0.3673055387302954,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.16797844329816228,
+      "skewness": -0.5360206522447771,
+      "threshold": 0.0,
+      "turnover": 700.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.6897506925207756,
+      "annualization": 365.0,
+      "asset": "ADA",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "ADA@1d",
+      "dsr": {
+        "dsr": 7.70449525074935e-05,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999229550474925,
+        "se_sharpe": 0.704380548160049
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.3,
+      "gross": -0.5513548315212297,
+      "kind": "quantum",
+      "kurtosis": 11.270750129656019,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.8513548315212298,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.47281462132657565,
+      "skewness": -0.8688541004183811,
+      "threshold": 0.2,
+      "turnover": 600.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.3864265927977839,
+      "annualization": 365.0,
+      "asset": "ADA",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "ADA@1d",
+      "dsr": {
+        "dsr": 0.00014823339292047998,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9998517666070795,
+        "se_sharpe": 0.7039012972793719
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.202,
+      "gross": -0.253397863660343,
+      "kind": "quantum",
+      "kurtosis": 21.28201109622129,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.45539786366034307,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.3541421566809313,
+      "skewness": -1.2410782990083928,
+      "threshold": 0.5,
+      "turnover": 404.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "ADA",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "ADA@1d",
+      "dsr": {
+        "dsr": 0.0020088997513843174,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9979911002486157,
+        "se_sharpe": 0.709530605209172
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.353,
+      "gross": 0.6844339416427841,
+      "kind": "quantum",
+      "kurtosis": 7.01859736894874,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": 0.33143394164278384,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.15168180903065476,
+      "skewness": 0.7104977257469428,
+      "threshold": 0.0,
+      "turnover": 706.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.4903047091412742,
+      "annualization": 365.0,
+      "asset": "ADA",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "ADA@1d",
+      "dsr": {
+        "dsr": 0.0007807347971051952,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9992192652028948,
+        "se_sharpe": 0.7132267784165528
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.234,
+      "gross": 0.13702219358993592,
+      "kind": "quantum",
+      "kurtosis": 16.839273632013448,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.0969778064100642,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.06311175839200314,
+      "skewness": 1.4526040411524634,
+      "threshold": 0.2,
+      "turnover": 468.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.20498614958448755,
+      "annualization": 365.0,
+      "asset": "ADA",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "ADA@1d",
+      "dsr": {
+        "dsr": 5.0655598462784865e-05,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999493444015373,
+        "se_sharpe": 0.7235750251423985
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1105,
+      "gross": -0.49311832764917934,
+      "kind": "quantum",
+      "kurtosis": 24.778085897648744,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.6036183276491794,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.6200155637428918,
+      "skewness": 0.861277533530399,
+      "threshold": 0.5,
+      "turnover": 221.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "LINK",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "LINK@1d",
+      "dsr": {
+        "dsr": 4.924347244401513e-06,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999950756527556,
+        "se_sharpe": 0.720258351271798
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.361,
+      "gross": -2.077071342421348,
+      "kind": "quantum",
+      "kurtosis": 9.437019094585585,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -2.438071342421348,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.9910479800649561,
+      "skewness": 0.3677532123265799,
+      "threshold": 0.0,
+      "turnover": 722.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.7049861495844876,
+      "annualization": 365.0,
+      "asset": "LINK",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "LINK@1d",
+      "dsr": {
+        "dsr": 5.582981300432205e-05,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999441701869957,
+        "se_sharpe": 0.7170228266529722
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.322,
+      "gross": -0.9530368086824021,
+      "kind": "quantum",
+      "kurtosis": 13.614880079336194,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -1.2750368086824024,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.5775650667267759,
+      "skewness": 0.4195753691155436,
+      "threshold": 0.2,
+      "turnover": 644.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.42105263157894735,
+      "annualization": 365.0,
+      "asset": "LINK",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "LINK@1d",
+      "dsr": {
+        "dsr": 0.0006575576526168533,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9993424423473831,
+        "se_sharpe": 0.7132862329719121
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.227,
+      "gross": 0.046770019943327634,
+      "kind": "quantum",
+      "kurtosis": 25.774266622875732,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.18022998005667248,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.09871499850720464,
+      "skewness": 0.9374827805890934,
+      "threshold": 0.5,
+      "turnover": 454.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "LINK",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "LINK@1d",
+      "dsr": {
+        "dsr": 5.218366032463676e-05,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9999478163396753,
+        "se_sharpe": 0.7160356372772289
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.35000000000000003,
+      "gross": -1.0914719996259268,
+      "kind": "quantum",
+      "kurtosis": 9.345500851473536,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -1.441471999625927,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.5855352780908432,
+      "skewness": 0.352782953117676,
+      "threshold": 0.0,
+      "turnover": 700.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.5041551246537396,
+      "annualization": 365.0,
+      "asset": "LINK",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "LINK@1d",
+      "dsr": {
+        "dsr": 0.00018394920918529746,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9998160507908147,
+        "se_sharpe": 0.7187788953083432
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.258,
+      "gross": -0.4382707837216966,
+      "kind": "quantum",
+      "kurtosis": 20.25657736866377,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": -0.6962707837216967,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.3675315257819592,
+      "skewness": 0.97546222072463,
+      "threshold": 0.2,
+      "turnover": 516.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 0.22437673130193905,
+      "annualization": 365.0,
+      "asset": "LINK",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "LINK@1d",
+      "dsr": {
+        "dsr": 0.001709707076562543,
+        "expected_max_sr": 2.192831685249591,
+        "is_significant": false,
+        "p_value": 0.9982902929234374,
+        "se_sharpe": 0.7045525046356943
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1205,
+      "gross": 0.29567505032367025,
+      "kind": "quantum",
+      "kurtosis": 57.23400532587817,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 310,
+      "net": 0.1751750503236702,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.13040957091048974,
+      "skewness": 2.945587541085948,
+      "threshold": 0.5,
+      "turnover": 241.0,
+      "var_trials": 0.5694818670262045
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 8760.0,
+      "asset": "ADA",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "ADA@1h",
+      "dsr": {
+        "dsr": 2.898643154680605e-06,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999971013568453,
+        "se_sharpe": 3.0295598339733876
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.46,
+      "gross": 0.17105669868131956,
+      "kind": "quantum",
+      "kurtosis": 7.841696735717722,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.28894330131868057,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -3.081686260750188,
+      "skewness": 0.37543177718431586,
+      "threshold": 0.0,
+      "turnover": 920.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.6904024767801857,
+      "annualization": 8760.0,
+      "asset": "ADA",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "ADA@1h",
+      "dsr": {
+        "dsr": 9.234876456036259e-07,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999990765123544,
+        "se_sharpe": 3.0193118488297794
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.41150000000000003,
+      "gross": 0.12599879565615701,
+      "kind": "quantum",
+      "kurtosis": 7.60128052105833,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.28550120434384313,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -3.7472825821663935,
+      "skewness": 0.11789880353581961,
+      "threshold": 0.2,
+      "turnover": 823.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.40454076367389064,
+      "annualization": 8760.0,
+      "asset": "ADA",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "ADA@1h",
+      "dsr": {
+        "dsr": 7.579055791142132e-07,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999992420944209,
+        "se_sharpe": 3.0144743206263955
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2785,
+      "gross": 0.03662097691404953,
+      "kind": "quantum",
+      "kurtosis": 12.912278348399944,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.24187902308595055,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -3.843748773806932,
+      "skewness": -0.02148558165691829,
+      "threshold": 0.5,
+      "turnover": 557.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 8760.0,
+      "asset": "ADA",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "ADA@1h",
+      "dsr": {
+        "dsr": 8.698735420787619e-06,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999913012645792,
+        "se_sharpe": 2.9981399862218003
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.45,
+      "gross": 0.24155068620683595,
+      "kind": "quantum",
+      "kurtosis": 7.971323797133404,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.20844931379316417,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -2.226472868915463,
+      "skewness": -0.32362537375248546,
+      "threshold": 0.0,
+      "turnover": 900.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.48813209494324045,
+      "annualization": 8760.0,
+      "asset": "ADA",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "ADA@1h",
+      "dsr": {
+        "dsr": 6.4919578874854685e-06,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999935080421125,
+        "se_sharpe": 3.01141728104997
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.3335,
+      "gross": 0.16904147407321957,
+      "kind": "quantum",
+      "kurtosis": 10.571025232485598,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.16445852592678054,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -2.4776316875297923,
+      "skewness": 0.016168779430940722,
+      "threshold": 0.2,
+      "turnover": 667.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.19401444788441694,
+      "annualization": 8760.0,
+      "asset": "ADA",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "ADA@1h",
+      "dsr": {
+        "dsr": 9.062826135543481e-05,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999093717386446,
+        "se_sharpe": 3.0073597947733623
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1365,
+      "gross": 0.10836237547628902,
+      "kind": "quantum",
+      "kurtosis": 24.17161800716775,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.028137624523711022,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -0.6056796735463231,
+      "skewness": -0.1292500578764709,
+      "threshold": 0.5,
+      "turnover": 273.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 8760.0,
+      "asset": "AVAX",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "AVAX@1h",
+      "dsr": {
+        "dsr": 1.3745705435793531e-07,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999998625429456,
+        "se_sharpe": 2.9627825296413577
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.463,
+      "gross": 0.00879064543361685,
+      "kind": "quantum",
+      "kurtosis": 10.130242224825551,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.4542093545663833,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -4.575066535157338,
+      "skewness": -0.725345761771015,
+      "threshold": 0.0,
+      "turnover": 926.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.6934984520123839,
+      "annualization": 8760.0,
+      "asset": "AVAX",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "AVAX@1h",
+      "dsr": {
+        "dsr": 1.1203644242045557e-07,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999998879635575,
+        "se_sharpe": 2.9460289622394873
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.41400000000000003,
+      "gross": 0.03883895382376146,
+      "kind": "quantum",
+      "kurtosis": 16.185259261420434,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.37516104617623863,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -4.601759204751563,
+      "skewness": -1.0193511005777927,
+      "threshold": 0.2,
+      "turnover": 828.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.38080495356037153,
+      "annualization": 8760.0,
+      "asset": "AVAX",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "AVAX@1h",
+      "dsr": {
+        "dsr": 0.00036460125376355253,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9996353987462364,
+        "se_sharpe": 3.017722063884964
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2685,
+      "gross": 0.2953456836894104,
+      "kind": "quantum",
+      "kurtosis": 25.122574890922635,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": 0.02684568368941032,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": 0.4583363248437866,
+      "skewness": -1.25803036230318,
+      "threshold": 0.5,
+      "turnover": 537.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 8760.0,
+      "asset": "AVAX",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "AVAX@1h",
+      "dsr": {
+        "dsr": 5.305940246902341e-11,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999999999469406,
+        "se_sharpe": 3.064914321224672
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.463,
+      "gross": -0.44668445684726765,
+      "kind": "quantum",
+      "kurtosis": 10.108764760903759,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.9096844568472677,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -9.139835966840623,
+      "skewness": 0.16701614798582742,
+      "threshold": 0.0,
+      "turnover": 926.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.48606811145510836,
+      "annualization": 8760.0,
+      "asset": "AVAX",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "AVAX@1h",
+      "dsr": {
+        "dsr": 6.014380794782784e-11,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999999999398562,
+        "se_sharpe": 3.002772181078281
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.336,
+      "gross": -0.2642049459619853,
+      "kind": "quantum",
+      "kurtosis": 23.16536150039642,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.6002049459619854,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -8.681477665877017,
+      "skewness": -0.5532414247585941,
+      "threshold": 0.2,
+      "turnover": 672.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.18885448916408668,
+      "annualization": 8760.0,
+      "asset": "AVAX",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "AVAX@1h",
+      "dsr": {
+        "dsr": 6.467531409424919e-06,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999935324685906,
+        "se_sharpe": 3.1210385008416064
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1375,
+      "gross": 0.01593414223795131,
+      "kind": "quantum",
+      "kurtosis": 71.27017944384613,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.12156585776204873,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -2.9581955170328853,
+      "skewness": 1.8616583110459262,
+      "threshold": 0.5,
+      "turnover": 275.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 8760.0,
+      "asset": "LINK",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "LINK@1h",
+      "dsr": {
+        "dsr": 8.121983047104464e-07,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999991878016953,
+        "se_sharpe": 3.0014899992710697
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.455,
+      "gross": 0.1389651757908732,
+      "kind": "quantum",
+      "kurtosis": 11.781510679393591,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.3160348242091269,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -3.7397351010772786,
+      "skewness": -0.22010300389362789,
+      "threshold": 0.0,
+      "turnover": 910.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.6976264189886481,
+      "annualization": 8760.0,
+      "asset": "LINK",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "LINK@1h",
+      "dsr": {
+        "dsr": 9.561043013549015e-06,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999904389569865,
+        "se_sharpe": 3.0168136257640996
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.41400000000000003,
+      "gross": 0.25579460222067096,
+      "kind": "quantum",
+      "kurtosis": 17.421818213365462,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.15820539777932913,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -2.2433045752476284,
+      "skewness": 0.13939124542430636,
+      "threshold": 0.2,
+      "turnover": 828.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.3890608875128999,
+      "annualization": 8760.0,
+      "asset": "LINK",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "LINK@1h",
+      "dsr": {
+        "dsr": 0.00010908164870585476,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9998909183512942,
+        "se_sharpe": 3.010753842500206
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2545,
+      "gross": 0.22841858897113587,
+      "kind": "quantum",
+      "kurtosis": 36.31824501295605,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.026081411028864188,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -0.47747373023914774,
+      "skewness": 0.28099223723736094,
+      "threshold": 0.5,
+      "turnover": 509.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 8760.0,
+      "asset": "LINK",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "LINK@1h",
+      "dsr": {
+        "dsr": 1.2892437922238506e-06,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999987107562078,
+        "se_sharpe": 3.0343602880623646
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.427,
+      "gross": 0.1228842999653752,
+      "kind": "quantum",
+      "kurtosis": 11.734935533909933,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.3041157000346249,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -3.613745634329799,
+      "skewness": 0.3478720814224601,
+      "threshold": 0.0,
+      "turnover": 854.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.49432404540763675,
+      "annualization": 8760.0,
+      "asset": "LINK",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "LINK@1h",
+      "dsr": {
+        "dsr": 1.6945376423458732e-06,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999983054623577,
+        "se_sharpe": 3.0428037162537143
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.326,
+      "gross": 0.12604491136317764,
+      "kind": "quantum",
+      "kurtosis": 26.268771968677832,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.19995508863682243,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -3.482706162652366,
+      "skewness": 0.38579403435407317,
+      "threshold": 0.2,
+      "turnover": 652.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.20949432404540763,
+      "annualization": 8760.0,
+      "asset": "LINK",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "LINK@1h",
+      "dsr": {
+        "dsr": 1.704983641769325e-05,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999829501635823,
+        "se_sharpe": 3.0463333464142224
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1485,
+      "gross": 0.0673706431364911,
+      "kind": "quantum",
+      "kurtosis": 77.16355666432406,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.08112935686350893,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -1.9713456572837207,
+      "skewness": 0.8085584929178753,
+      "threshold": 0.5,
+      "turnover": 297.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 8760.0,
+      "asset": "DOT",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "DOT@1h",
+      "dsr": {
+        "dsr": 2.8546051662653875e-08,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999999714539484,
+        "se_sharpe": 2.98799218494663
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.47200000000000003,
+      "gross": -0.15957520676666234,
+      "kind": "quantum",
+      "kurtosis": 7.7139728802261045,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.6315752067666625,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -5.564577843432288,
+      "skewness": -0.32559595080526,
+      "threshold": 0.0,
+      "turnover": 944.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.6666666666666666,
+      "annualization": 8760.0,
+      "asset": "DOT",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "DOT@1h",
+      "dsr": {
+        "dsr": 2.0969544268004203e-09,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999999979030456,
+        "se_sharpe": 3.0211257698721177
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.4045,
+      "gross": -0.21943269153257652,
+      "kind": "quantum",
+      "kurtosis": 8.856523719635211,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.6239326915325767,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -7.099936645790128,
+      "skewness": -0.03593521532080395,
+      "threshold": 0.2,
+      "turnover": 809.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.37770897832817335,
+      "annualization": 8760.0,
+      "asset": "DOT",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "DOT@1h",
+      "dsr": {
+        "dsr": 1.2235773085106912e-10,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999999998776423,
+        "se_sharpe": 2.9410918932822216
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2745,
+      "gross": -0.23584532708245637,
+      "kind": "quantum",
+      "kurtosis": 15.167855267162144,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.5103453270824565,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -7.964657624528969,
+      "skewness": -0.8202635467654885,
+      "threshold": 0.5,
+      "turnover": 549.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 8760.0,
+      "asset": "DOT",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "DOT@1h",
+      "dsr": {
+        "dsr": 2.533415998723435e-10,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999999997466584,
+        "se_sharpe": 2.9601210973063092
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.484,
+      "gross": -0.39608067587866214,
+      "kind": "quantum",
+      "kurtosis": 7.63504816201095,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.8800806758786622,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -7.749854022936822,
+      "skewness": -0.5207205440458883,
+      "threshold": 0.0,
+      "turnover": 968.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.48194014447884415,
+      "annualization": 8760.0,
+      "asset": "DOT",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "DOT@1h",
+      "dsr": {
+        "dsr": 7.406021376109414e-09,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999999925939786,
+        "se_sharpe": 3.013902474653307
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.3305,
+      "gross": -0.1397774207691214,
+      "kind": "quantum",
+      "kurtosis": 12.838702011252273,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.4702774207691215,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -6.416639443689109,
+      "skewness": -0.14807205690060318,
+      "threshold": 0.2,
+      "turnover": 661.0,
+      "var_trials": 13.441136078269087
+    },
+    {
+      "active_fraction": 0.19917440660474717,
+      "annualization": 8760.0,
+      "asset": "DOT",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "DOT@1h",
+      "dsr": {
+        "dsr": 6.653580935461967e-10,
+        "expected_max_sr": 10.653279878334843,
+        "is_significant": false,
+        "p_value": 0.9999999993346419,
+        "se_sharpe": 3.0170137537686412
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1525,
+      "gross": -0.23506102737891965,
+      "kind": "quantum",
+      "kurtosis": 30.75287351236772,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 310,
+      "net": -0.38756102737891973,
+      "resolution": "1h",
+      "rule": "symmetric",
+      "sharpe": -7.640817138942378,
+      "skewness": -0.5357858967037146,
+      "threshold": 0.5,
+      "turnover": 305.0,
+      "var_trials": 13.441136078269087
+    }
+  ],
+  "rule": "symmetric",
+  "rules_available": [
+    "symmetric",
+    "long_only",
+    "short_below_zero"
+  ],
+  "schema": "apedp.quantum_signal_ledger.v2",
+  "significance_report": {
+    "1d": {
+      "best": {
+        "dataset_id": "TSLA@1d",
+        "dsr": 0.031132963153726927,
+        "features": [
+          "H-MOM"
+        ],
+        "sharpe": 0.876050867081236,
+        "threshold": 0.0
+      },
+      "floor": 0.95,
+      "hurdle": 2.192831685249591,
+      "n_trials_charged": 310,
+      "rows": 42,
+      "rows_clearing_floor": 0,
+      "var_trials": 0.5694818670262045,
+      "verdict": "no row clears the floor"
+    },
+    "1h": {
+      "best": {
+        "dataset_id": "DOT@1h",
+        "dsr": 0.002939597989849625,
+        "features": [
+          "H-MOM"
+        ],
+        "sharpe": 2.461928199551709,
+        "threshold": 0.0
+      },
+      "floor": 0.95,
+      "hurdle": 10.653279878334843,
+      "n_trials_charged": 310,
+      "rows": 28,
+      "rows_clearing_floor": 0,
+      "var_trials": 13.441136078269087,
+      "verdict": "no row clears the floor"
+    }
+  },
+  "significant_rows": [],
+  "thresholds": [
+    0.0,
+    0.2,
+    0.5
+  ],
+  "train_fraction": 0.7,
+  "trial_components": {
+    "baselines": 10,
+    "parameter_fits": 240,
+    "threshold_grid": 60
+  },
+  "trials_by_resolution": {
+    "1d": 186,
+    "1h": 124
+  },
+  "var_trials": {
+    "by_resolution": {
+      "1d": 0.5694818670262045,
+      "1h": 13.441136078269087
+    },
+    "pooled": 7.31901760733912
+  },
+  "warmup_bars": 30
+}

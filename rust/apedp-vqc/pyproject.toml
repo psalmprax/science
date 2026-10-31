@@ -1,0 +1,17 @@
+[build-system]
+requires = ["maturin>=1.9.4,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "apedp-vqc"
+version = "0.1.0"
+description = "Native Clifford / stabilizer execution core for APEDP-VQC"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+[tool.maturin]
+# The import name is `apedp_vqc`, which is what `apedp_dyn/vqc/native.py`
+# imports. Like the numerical kernel, this crate is not built by the root
+# setuptools package: it is absent unless `make build-vqc-native` ran, and every
+# caller checks rather than assumes.
+module-name = "apedp_vqc"

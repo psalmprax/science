@@ -1,0 +1,458 @@
+{
+  "schema": "apedp.vqc.stabilizer_scaling.v1",
+  "generated_utc": "2026-10-31T03:06:14Z",
+  "command": {
+    "sizes": [
+      100,
+      200,
+      500,
+      1000
+    ],
+    "shots": 8,
+    "seed": 20261030
+  },
+  "sizes": [
+    100,
+    200,
+    500,
+    1000
+  ],
+  "rows": [
+    {
+      "family": "ghz_chain",
+      "qubits": 100,
+      "gates": 100,
+      "generators": 100,
+      "tableau_label_bytes": 10000,
+      "dense_amplitudes_log10": 30.103,
+      "build_seconds": 0.0074667129665613174,
+      "validate_seconds": 0.007291334914043546,
+      "sample_seconds_per_shot": 0.006939141894690692,
+      "shots": 8,
+      "checks": {
+        "generators match the closed form": true,
+        "every sample is 0...0 or 1...1": true,
+        "every sample has even weight": true,
+        "tableau validates": true
+      },
+      "peak_rss_kib": 168692
+    },
+    {
+      "family": "ghz_star",
+      "qubits": 100,
+      "gates": 100,
+      "generators": 100,
+      "tableau_label_bytes": 10000,
+      "dense_amplitudes_log10": 30.103,
+      "build_seconds": 0.0039083820302039385,
+      "validate_seconds": 0.0068071039859205484,
+      "sample_seconds_per_shot": 0.008126755972625688,
+      "shots": 8,
+      "checks": {
+        "generators match the closed form": true,
+        "every sample is 0...0 or 1...1": true,
+        "every sample has even weight": true,
+        "tableau validates": true
+      },
+      "peak_rss_kib": 168692
+    },
+    {
+      "family": "ring_graph_state",
+      "qubits": 100,
+      "gates": 200,
+      "generators": 100,
+      "tableau_label_bytes": 10000,
+      "dense_amplitudes_log10": 30.103,
+      "build_seconds": 0.007880586897954345,
+      "validate_seconds": 0.004702216014266014,
+      "sample_seconds_per_shot": 0.0022166014823596925,
+      "shots": 8,
+      "checks": {
+        "every X_q Z_(q-1) Z_(q+1) generator stabilises the state": true,
+        "tableau validates": true,
+        "samples are distinct states of the support": true
+      },
+      "stabilised_generators": 100,
+      "peak_rss_kib": 168692
+    },
+    {
+      "family": "random_clifford_layers",
+      "qubits": 100,
+      "gates": 750,
+      "generators": 100,
+      "tableau_label_bytes": 10000,
+      "dense_amplitudes_log10": 30.103,
+      "build_seconds": 0.03887550602667034,
+      "validate_seconds": 0.007455076090991497,
+      "sample_seconds_per_shot": 0.12217444938141853,
+      "shots": 8,
+      "checks": {
+        "tableau validates": true,
+        "every generator is an exact eigenstate": true,
+        "samples were produced": true
+      },
+      "peak_rss_kib": 168820
+    },
+    {
+      "family": "ghz_chain",
+      "qubits": 200,
+      "gates": 200,
+      "generators": 200,
+      "tableau_label_bytes": 40000,
+      "dense_amplitudes_log10": 60.206,
+      "build_seconds": 0.01648018811829388,
+      "validate_seconds": 0.015637406148016453,
+      "sample_seconds_per_shot": 0.022288123378530145,
+      "shots": 8,
+      "checks": {
+        "generators match the closed form": true,
+        "every sample is 0...0 or 1...1": true,
+        "every sample has even weight": true,
+        "tableau validates": true
+      },
+      "peak_rss_kib": 169332
+    },
+    {
+      "family": "ghz_star",
+      "qubits": 200,
+      "gates": 200,
+      "generators": 200,
+      "tableau_label_bytes": 40000,
+      "dense_amplitudes_log10": 60.206,
+      "build_seconds": 0.015258549014106393,
+      "validate_seconds": 0.02979717100970447,
+      "sample_seconds_per_shot": 0.02169117660378106,
+      "shots": 8,
+      "checks": {
+        "generators match the closed form": true,
+        "every sample is 0...0 or 1...1": true,
+        "every sample has even weight": true,
+        "tableau validates": true
+      },
+      "peak_rss_kib": 169332
+    },
+    {
+      "family": "ring_graph_state",
+      "qubits": 200,
+      "gates": 400,
+      "generators": 200,
+      "tableau_label_bytes": 40000,
+      "dense_amplitudes_log10": 60.206,
+      "build_seconds": 0.02486104890704155,
+      "validate_seconds": 0.014235551934689283,
+      "sample_seconds_per_shot": 0.007531585259130225,
+      "shots": 8,
+      "checks": {
+        "every X_q Z_(q-1) Z_(q+1) generator stabilises the state": true,
+        "tableau validates": true,
+        "samples are distinct states of the support": true
+      },
+      "stabilised_generators": 200,
+      "peak_rss_kib": 169332
+    },
+    {
+      "family": "random_clifford_layers",
+      "qubits": 200,
+      "gates": 1500,
+      "generators": 200,
+      "tableau_label_bytes": 40000,
+      "dense_amplitudes_log10": 60.206,
+      "build_seconds": 0.178587696980685,
+      "validate_seconds": 0.024387813871726394,
+      "sample_seconds_per_shot": 0.9350282812374644,
+      "shots": 8,
+      "checks": {
+        "tableau validates": true,
+        "every generator is an exact eigenstate": true,
+        "samples were produced": true
+      },
+      "peak_rss_kib": 169460
+    },
+    {
+      "family": "ghz_chain",
+      "qubits": 500,
+      "gates": 500,
+      "generators": 500,
+      "tableau_label_bytes": 250000,
+      "dense_amplitudes_log10": 150.515,
+      "build_seconds": 0.09847252420149744,
+      "validate_seconds": 0.10208646301180124,
+      "sample_seconds_per_shot": 0.13649486494250596,
+      "shots": 1,
+      "checks": {
+        "generators match the closed form": true,
+        "every sample is 0...0 or 1...1": true,
+        "every sample has even weight": true,
+        "tableau validates": true
+      },
+      "peak_rss_kib": 172916
+    },
+    {
+      "family": "ghz_star",
+      "qubits": 500,
+      "gates": 500,
+      "generators": 500,
+      "tableau_label_bytes": 250000,
+      "dense_amplitudes_log10": 150.515,
+      "build_seconds": 0.09932730300351977,
+      "validate_seconds": 0.18976742611266673,
+      "sample_seconds_per_shot": 0.13544400106184185,
+      "shots": 1,
+      "checks": {
+        "generators match the closed form": true,
+        "every sample is 0...0 or 1...1": true,
+        "every sample has even weight": true,
+        "tableau validates": true
+      },
+      "peak_rss_kib": 172928
+    },
+    {
+      "family": "ring_graph_state",
+      "qubits": 500,
+      "gates": 1000,
+      "generators": 500,
+      "tableau_label_bytes": 250000,
+      "dense_amplitudes_log10": 150.515,
+      "build_seconds": 0.16059616580605507,
+      "validate_seconds": 0.10334279504604638,
+      "sample_seconds_per_shot": 0.04710596916265786,
+      "shots": 1,
+      "checks": {
+        "every X_q Z_(q-1) Z_(q+1) generator stabilises the state": true,
+        "tableau validates": true,
+        "samples are distinct states of the support": true
+      },
+      "stabilised_generators": 500,
+      "peak_rss_kib": 172932
+    },
+    {
+      "family": "random_clifford_layers",
+      "qubits": 500,
+      "gates": 3750,
+      "generators": 500,
+      "tableau_label_bytes": 250000,
+      "dense_amplitudes_log10": 150.515,
+      "build_seconds": 1.7148456359282136,
+      "validate_seconds": 0.15417615720070899,
+      "sample_seconds_per_shot": 15.517570446943864,
+      "shots": 1,
+      "checks": {
+        "tableau validates": true,
+        "every generator is an exact eigenstate": true,
+        "samples were produced": true
+      },
+      "peak_rss_kib": 173416
+    },
+    {
+      "family": "ghz_chain",
+      "qubits": 1000,
+      "gates": 1000,
+      "generators": 1000,
+      "tableau_label_bytes": 1000000,
+      "dense_amplitudes_log10": 301.03,
+      "build_seconds": 0.4273361589293927,
+      "validate_seconds": 0.4045926248654723,
+      "sample_seconds_per_shot": 0.6319064700510353,
+      "shots": 1,
+      "checks": {
+        "generators match the closed form": true,
+        "every sample is 0...0 or 1...1": true,
+        "every sample has even weight": true,
+        "tableau validates": true
+      },
+      "peak_rss_kib": 185604
+    },
+    {
+      "family": "ghz_star",
+      "qubits": 1000,
+      "gates": 1000,
+      "generators": 1000,
+      "tableau_label_bytes": 1000000,
+      "dense_amplitudes_log10": 301.03,
+      "build_seconds": 0.43889038101769984,
+      "validate_seconds": 0.8479954639915377,
+      "sample_seconds_per_shot": 0.6235619329381734,
+      "shots": 1,
+      "checks": {
+        "generators match the closed form": true,
+        "every sample is 0...0 or 1...1": true,
+        "every sample has even weight": true,
+        "tableau validates": true
+      },
+      "peak_rss_kib": 185620
+    },
+    {
+      "family": "ring_graph_state",
+      "qubits": 1000,
+      "gates": 2000,
+      "generators": 1000,
+      "tableau_label_bytes": 1000000,
+      "dense_amplitudes_log10": 301.03,
+      "build_seconds": 0.7287911658640951,
+      "validate_seconds": 0.43269464396871626,
+      "sample_seconds_per_shot": 0.2658501418773085,
+      "shots": 1,
+      "checks": {
+        "every X_q Z_(q-1) Z_(q+1) generator stabilises the state": true,
+        "tableau validates": true,
+        "samples are distinct states of the support": true
+      },
+      "stabilised_generators": 1000,
+      "peak_rss_kib": 185628
+    },
+    {
+      "family": "random_clifford_layers",
+      "qubits": 1000,
+      "gates": 7500,
+      "generators": 1000,
+      "tableau_label_bytes": 1000000,
+      "dense_amplitudes_log10": 301.03,
+      "build_seconds": 11.519803358940408,
+      "validate_seconds": 0.7288627868983895,
+      "sample_seconds_per_shot": 133.65884102298878,
+      "shots": 1,
+      "checks": {
+        "tableau validates": true,
+        "every generator is an exact eigenstate": true,
+        "samples were produced": true
+      },
+      "peak_rss_kib": 186808
+    }
+  ],
+  "equivalence_at_scale": [
+    {
+      "qubits": 100,
+      "compared_images": 200,
+      "rewritten": {
+        "gates": 822,
+        "verdict": "VALID",
+        "mismatched": 0,
+        "seconds": 0.02978130802512169
+      },
+      "mutated": {
+        "gates": 750,
+        "verdict": "INVALID",
+        "mismatched": 1,
+        "first_mismatch": {
+          "basis": "Z_0",
+          "reference": "+IIYYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYIZXYZX",
+          "candidate": "-IIYYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYIZXYZX"
+        },
+        "seconds": 0.02537040109746158
+      }
+    },
+    {
+      "qubits": 1000,
+      "compared_images": 2000,
+      "rewritten": {
+        "gates": 8190,
+        "verdict": "VALID",
+        "mismatched": 0,
+        "seconds": 1.468610516982153
+      },
+      "mutated": {
+        "gates": 7500,
+        "verdict": "INVALID",
+        "mismatched": 1,
+        "first_mismatch": {
+          "basis": "Z_0",
+          "reference": "+IIYYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYIZXYZX",
+          "candidate": "-IIYYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYZZYIZXYZX"
+        },
+        "seconds": 1.6135544311255217
+      }
+    }
+  ],
+  "state_scope_at_scale": [
+    {
+      "qubits": 100,
+      "state_scope": {
+        "verdict": "VALID",
+        "mismatched": 0
+      },
+      "unitary_scope": {
+        "verdict": "INVALID",
+        "mismatched": 196
+      },
+      "seconds": 0.025171750923618674
+    },
+    {
+      "qubits": 1000,
+      "state_scope": {
+        "verdict": "VALID",
+        "mismatched": 0
+      },
+      "unitary_scope": {
+        "verdict": "INVALID",
+        "mismatched": 1996
+      },
+      "seconds": 2.5030974401161075
+    }
+  ],
+  "checks": [
+    {
+      "check": "every circuit family passes its own correctness checks at every size",
+      "requirement": "closed-form GHZ generators, the defined graph-state generators, a valid pure tableau, and exact eigenstates",
+      "measured": {
+        "rows": 16,
+        "failed": []
+      },
+      "passed": true
+    },
+    {
+      "check": "an equivalent rewriting is VALID and a mutated gate is INVALID",
+      "requirement": "decided from 2n Pauli images, with no dense matrix at any size",
+      "measured": {
+        "sizes": [
+          100,
+          1000
+        ],
+        "rewritten": [
+          "VALID",
+          "VALID"
+        ],
+        "mutated": [
+          "INVALID",
+          "INVALID"
+        ]
+      },
+      "passed": true
+    },
+    {
+      "check": "chain versus star is the same prepared state and a different unitary",
+      "requirement": "state scope VALID, unitary scope INVALID, at every size",
+      "measured": {
+        "sizes": [
+          100,
+          1000
+        ],
+        "state_scope": [
+          "VALID",
+          "VALID"
+        ],
+        "unitary_scope": [
+          "INVALID",
+          "INVALID"
+        ]
+      },
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "Clifford gates only (h, x, y, z, s, sdg, cx, cz, swap); a non-Clifford gate or any noise operation is refused rather than approximated",
+    "pure stabilizer states only: every Noise operation is refused, so sampled Pauli trajectories are not measured here",
+    "the dense comparison stops where the dense tier stops (about ten qubits for a matrix); at 1,000 qubits the only checks available are the closed form, the stabilizer definitions, and the equivalence referee",
+    "wall clock is one host and one process: the record measures this implementation, not an asymptotic scaling law",
+    "the GHZ chain is a Clifford circuit with a closed form; reaching 1,000 qubits with it is a reach-and-agreement result, not a claim about arbitrary 1,000-qubit circuits",
+    "sampling is Z-basis only, at most 8 shots per row and one shot above 200 qubits where a shot costs seconds; the samples establish support and parity, not a distribution over 2**999 strings"
+  ],
+  "reproducibility": {
+    "script_sha256": "7f8a30141670da1e8003ec6b4fb750ddff8a33b37be6c380775cd993cc86e5b0",
+    "module_sha256": "ba5d7235c965d824d024ce302429de79aad6111ba9a092478e6554315085d78c",
+    "equivalence_sha256": "6008e76dc4eabd853adedde51cc7356bd15193beecd781cb2fc7109a7538801b",
+    "python": "3.12.3",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "command": "python scripts/measure_vqc_stabilizer_scaling.py --sizes 100 200 500 1000 --shots 8 --seed 20261030"
+  },
+  "verdict": "the stabilizer tier builds, validates, samples and adjudicates Clifford circuits at every size measured, and the two circuits of each pair are decided from 2n images with no matrix"
+}

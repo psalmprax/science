@@ -1,0 +1,98 @@
+{
+  "experiment": "external optimizer comparison",
+  "question": "does a general-purpose Clifford+T optimizer beat the 54-AND multiply's emitter on the same netlist?",
+  "instance": {
+    "degree": 12,
+    "field": "GF(2^12), the pinned DQI field",
+    "multiply": "uncontrolled `target ^= lhs * rhs`"
+  },
+  "ours": {
+    "ands": 54,
+    "cnots": 1004,
+    "measured_clears": 54,
+    "clear_cost_toffoli": 0,
+    "controlled_call_toffoli_like": 66,
+    "why_clears_are_free": "`del_and` and `del_gf2_mul` are measurements with classically conditioned fixups; a unitary optimizer has no such option and must uncompute instead"
+  },
+  "pyzx": {
+    "pyzx_version": "0.10.7",
+    "pipeline": "pyzx.basic_optimization (Clifford simplification)",
+    "toffoli_decomposition": "standard 7-T block, verified on all 8 basis states",
+    "before": {
+      "t": 378,
+      "counts": {
+        "HAD": 108,
+        "CNOT": 1328,
+        "Tdg": 162,
+        "T": 216
+      },
+      "cnot": 1328
+    },
+    "after": {
+      "t": 378,
+      "counts": {
+        "ZPhase": 378,
+        "CZ": 54,
+        "HAD": 108,
+        "CNOT": 824
+      },
+      "cnot": 824
+    },
+    "t_reduction": 0,
+    "t_ratio": 1.0
+  },
+  "pyzx_full_optimize": {
+    "completed": false,
+    "timeout_s": 90.0,
+    "pipeline": "pyzx.full_optimize (basic + phase-polynomial extract)",
+    "note": "did not return within the budget; the Clifford-only pass is what the comparison uses"
+  },
+  "unitary_accounting": {
+    "note": "a Clifford+T optimizer must also uncompute, so the honest unitary figure is the forward netlist plus its adjoint",
+    "ands_forward": 54,
+    "ands_with_adjoint": 108,
+    "t_forward_before_optimization": 378,
+    "t_with_adjoint_before_optimization": 756,
+    "t_with_adjoint_after_optimization": 756
+  },
+  "decomposition_check": {
+    "basis_states_checked": 8,
+    "max_abs_error": 3.1401849173675503e-16,
+    "exact": true
+  },
+  "decoder_not_compared": {
+    "operation_types_with_nonzero_delta": [
+      "BIT_INVERT",
+      "BIT_STORE0",
+      "BIT_STORE1",
+      "CCX",
+      "CX",
+      "CZ",
+      "HMR",
+      "INFO_TAG",
+      "NEG",
+      "R",
+      "SWAP",
+      "X",
+      "Z"
+    ],
+    "non_unitary_or_non_gate_ops": {
+      "HMR": -179203335012,
+      "INFO_TAG": 59734425600
+    },
+    "expressible_as_clifford_t": false,
+    "num_qubits": 1893,
+    "toffoli_count": 5725108.382109375
+  },
+  "verdict": "pyzx 0.10.7's Clifford pass leaves the multiply's forward netlist at 378 T against 378 before -- all it removes is Clifford work (1328 -> 824 CNOTs), and its T-reducing phase-polynomial pipeline did not return within 90s at this size (99 qubits, 378 T). So it does not beat the AND count: the 54 Toffolis are the function, not slack in a Clifford skeleton. Our controlled call is 66 Toffoli-like gates because 54 of them are ANDs and the clearing costs nothing; a unitary optimizer must compute *and* uncompute, which is 108 ANDs = 756 T before it optimizes anything. The decoder itself is not expressible at all: its stream carries ['HMR', 'INFO_TAG'].",
+  "reproducibility": {
+    "script_sha256": "350e3e60a05ff6fd1c70358b7d55179aaedb3a0f5f52c5b13073784136ac2740",
+    "python": "3.13.14",
+    "pyzx_python": "/tmp/pyzx-venv/bin/python",
+    "git_rev": "75ef0cc7df415e6bae73c23fadd380348929d3a1"
+  },
+  "scope": {
+    "measured": "the multiply's forward netlist recorded from the emitter, its 7-T expansion verified on all basis states, and pyzx 0.10.7's full_optimize T/CNOT counts before and after",
+    "not_measured": "the decoder, the score, or any claim that this comparison ranks the two tools on the benchmark: the decoder has mid-circuit measurement and classical control, which Clifford+T optimizers do not model"
+  }
+}

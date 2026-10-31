@@ -1,0 +1,345 @@
+{
+  "cases": [
+    {
+      "agrees": true,
+      "case": "images_100q",
+      "images_compared": 200,
+      "python": {
+        "best_seconds": 0.0177349210716784,
+        "iqr_seconds": 0.0006709680892527103,
+        "median_seconds": 0.018434169935062528,
+        "samples_seconds": [
+          0.018036549910902977,
+          0.0177349210716784,
+          0.018707518000155687,
+          0.020143242087215185,
+          0.018434169935062528
+        ]
+      },
+      "rust": {
+        "best_seconds": 0.0033517819829285145,
+        "iqr_seconds": 0.000230130972340703,
+        "median_seconds": 0.003544864011928439,
+        "samples_seconds": [
+          0.0043363189324736595,
+          0.003707305993884802,
+          0.003477175021544099,
+          0.0033517819829285145,
+          0.003544864011928439
+        ]
+      },
+      "speedup_median": 5.2002474207844624,
+      "workload": {
+        "circuit": "GHZ ladder (H, CX ladder), no measurement",
+        "circuit_sha256": "e1eab8aeb57e041f562a1e25ab35cdd295fb7c139d431a41c20615d27a3bf10b",
+        "images": 200,
+        "operations": 100,
+        "qubits": 100
+      }
+    },
+    {
+      "agrees": true,
+      "case": "images_400q",
+      "images_compared": 800,
+      "python": {
+        "best_seconds": 0.37115396303124726,
+        "iqr_seconds": 0.019761806121096015,
+        "median_seconds": 0.38332210504449904,
+        "samples_seconds": [
+          0.39125313400290906,
+          0.37115396303124726,
+          0.38332210504449904,
+          0.37149132788181305,
+          0.4091129971202463
+        ]
+      },
+      "rust": {
+        "best_seconds": 0.04936387995257974,
+        "iqr_seconds": 0.0005320820491760969,
+        "median_seconds": 0.04968810314312577,
+        "samples_seconds": [
+          0.05181770585477352,
+          0.0493666660040617,
+          0.049898748053237796,
+          0.04936387995257974,
+          0.04968810314312577
+        ]
+      },
+      "speedup_median": 7.7145650728575,
+      "workload": {
+        "circuit": "GHZ ladder (H, CX ladder), no measurement",
+        "circuit_sha256": "c58d8f4e69b7f041d827d9ec7c208c5820554118a34f069364bac9efb20dce4c",
+        "images": 800,
+        "operations": 400,
+        "qubits": 400
+      }
+    },
+    {
+      "agrees": true,
+      "case": "sample_100q_256shots",
+      "outcomes_seen": [
+        "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+      ],
+      "python": {
+        "best_seconds": 2.4413729088846594,
+        "iqr_seconds": 0.10960853402502835,
+        "median_seconds": 2.4650772500317544,
+        "samples_seconds": [
+          2.6222946289926767,
+          2.5571084120310843,
+          2.4650772500317544,
+          2.4413729088846594,
+          2.447499878006056
+        ]
+      },
+      "rust": {
+        "best_seconds": 0.5848941949661821,
+        "iqr_seconds": 0.005736461142078042,
+        "median_seconds": 0.5946930090431124,
+        "samples_seconds": [
+          0.5946930090431124,
+          0.5913082628976554,
+          0.5848941949661821,
+          0.6001579309813678,
+          0.5970447240397334
+        ]
+      },
+      "speedup_median": 4.145125657350796,
+      "workload": {
+        "circuit": "GHZ ladder with a measurement on every qubit",
+        "circuit_sha256": "fa55622634ced72698260c4cf9034db6e1fc003736ad99b097d2d49a72a5c7a6",
+        "operations": 200,
+        "qubits": 100,
+        "seed": 20261030,
+        "shots": 256
+      }
+    },
+    {
+      "agrees": true,
+      "case": "distribution_10q",
+      "outcomes_nonzero": 2,
+      "python": {
+        "best_seconds": 0.04332053498364985,
+        "iqr_seconds": 0.0036894180811941624,
+        "median_seconds": 0.04692023899406195,
+        "samples_seconds": [
+          0.04332053498364985,
+          0.04692023899406195,
+          0.04820059286430478,
+          0.04733986919745803,
+          0.043650451116263866
+        ]
+      },
+      "rust": {
+        "best_seconds": 0.002459865063428879,
+        "iqr_seconds": 9.825313463807106e-05,
+        "median_seconds": 0.002589232986792922,
+        "samples_seconds": [
+          0.0026777880266308784,
+          0.002589232986792922,
+          0.002459865063428879,
+          0.0025795348919928074,
+          0.00292238499969244
+        ]
+      },
+      "speedup_median": 18.12128890423968,
+      "workload": {
+        "circuit": "GHZ ladder, no measurement",
+        "circuit_sha256": "11a4fad5f3120e790230d7fc20c936caf24ef901e08c1c3c033ddde90b40aa09",
+        "operations": 10,
+        "outcomes": 1024,
+        "qubits": 10
+      }
+    },
+    {
+      "agrees": true,
+      "case": "adjudication_100q",
+      "image_engine": "rust",
+      "image_verified_by": "suite",
+      "python": {
+        "best_seconds": 0.03576113888993859,
+        "iqr_seconds": 0.001572069013491273,
+        "median_seconds": 0.03764690784737468,
+        "samples_seconds": [
+          0.03576113888993859,
+          0.03764690784737468,
+          0.03846752201206982,
+          0.03932422702200711,
+          0.03689545299857855
+        ]
+      },
+      "python_image_engine": "python",
+      "rust": {
+        "best_seconds": 0.010419213911518455,
+        "iqr_seconds": 0.0003905820194631815,
+        "median_seconds": 0.010785104939714074,
+        "samples_seconds": [
+          0.01125378580763936,
+          0.01048269891180098,
+          0.010873280931264162,
+          0.010419213911518455,
+          0.010785104939714074
+        ]
+      },
+      "speedup_median": 3.49063899311236,
+      "verdict": "VALID",
+      "workload": {
+        "candidate": "the same ladder with a cancelling Z Z appended",
+        "candidate_sha256": "ef3c2868b707f64df4d1eb31525121dcd0161482ef5a57574fd532517caa8b82",
+        "qubits": 100,
+        "reference": "GHZ ladder",
+        "reference_sha256": "e1eab8aeb57e041f562a1e25ab35cdd295fb7c139d431a41c20615d27a3bf10b"
+      }
+    }
+  ],
+  "command": {
+    "repeats": 5,
+    "seed": 20261030,
+    "shots": 256
+  },
+  "engines": {
+    "python": {
+      "engine": "python",
+      "module": "apedp_dyn.vqc.stabilizer + apedp_dyn.vqc.equivalence",
+      "role": "reference implementation and referee"
+    },
+    "rust": {
+      "available": true,
+      "engine": "apedp_vqc",
+      "parity_limit_qubits": 24,
+      "reason": "available",
+      "version": "0.1.0"
+    }
+  },
+  "generated_utc": "2026-10-31T03:02:52Z",
+  "hardware": {
+    "build": "maturin develop --release; the release profile (opt-level, lto) lives in the workspace root Cargo.toml, and its compilation time is excluded from every timing here",
+    "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+    "cpu_count": 8,
+    "machine": "x86_64",
+    "numpy": "2.5.3",
+    "peak_rss_kib": 177244,
+    "peak_rss_note": "process-wide peak resident set size at the end of the run, not per case: peak memory cannot be attributed to one case from inside the process that ran all of them",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python": "3.12.3",
+    "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)"
+  },
+  "limitations": [
+    "The ratio is one machine's ratio. The hardware block pins the interpreter, the platform, the compiler and the build; a different machine will differ, and the claim being made is exact agreement plus a measured improvement here, not a portable constant.",
+    "The IQR is over five repeats in one process on one host. It says how stable these timings were, not what the spread would be across hosts, and it is not a confidence interval.",
+    "Above PARITY_LIMIT qubits the referee compares the native table without re-deriving it in Python. There the correctness argument is the conformance corpus (tests/test_vqc_native_parity.py), not a per-call check, and the report says image_verified_by='suite'.",
+    "Only the stabilizer tier and the Clifford image table are native. The dense statevector tier, the decoders, the noise engine and the discovery loop are still Python; this record measures what exists."
+  ],
+  "method": {
+    "compile_time": "excluded: the extension is built once by `make vqc-native` before this script runs, so every number is execution time of a loaded module",
+    "identical_inputs": "both engines receive the same Circuit object; its SHA-256 is recorded per case",
+    "memory": "process-wide peak RSS is recorded once under `hardware`; per-case peak memory is not measured, because a peak reached inside one process cannot be attributed to one case",
+    "reference_timings_do_not_touch_the_fast_path": "the tallies are asserted zero for 'rust' around the Python timings",
+    "repeats": 5,
+    "statistic": "median of the timed repeats, with the best, the interquartile range and every raw sample recorded",
+    "warmup": "one untimed call per side before the timed repeats"
+  },
+  "parity_corpus": {
+    "circuits_compared": 7,
+    "images_per_circuit": [
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16
+    ],
+    "rows": [
+      {
+        "circuit_sha256": "626a808ee74ea8bf49e9f7f4705c6907519d1e69b81780ac09e184a7d8c19592",
+        "distribution_compared": 2,
+        "engine": "apedp_vqc",
+        "generators_compared": 2,
+        "images_compared": 4,
+        "qubits": 2,
+        "version": "0.1.0"
+      },
+      {
+        "circuit_sha256": "a6408c5f0d9517e091f0c44046b2606b094911065c870ad02d8aaf2c5146ab0d",
+        "distribution_compared": 2,
+        "engine": "apedp_vqc",
+        "generators_compared": 3,
+        "images_compared": 6,
+        "qubits": 3,
+        "version": "0.1.0"
+      },
+      {
+        "circuit_sha256": "ec98b7c1242198f2758bae6fe29eb0b33f01aeac51690404abefad3f521323cb",
+        "distribution_compared": 2,
+        "engine": "apedp_vqc",
+        "generators_compared": 4,
+        "images_compared": 8,
+        "qubits": 4,
+        "version": "0.1.0"
+      },
+      {
+        "circuit_sha256": "cd7cc65a4d7c6ad3421195c49671c7ff9950fa0906c42c517e859e65cd8b66f2",
+        "distribution_compared": 2,
+        "engine": "apedp_vqc",
+        "generators_compared": 5,
+        "images_compared": 10,
+        "qubits": 5,
+        "version": "0.1.0"
+      },
+      {
+        "circuit_sha256": "b1081758f1ccdf0cfaacaf64e0cf4efc9f2ba54831991ec0b0b9c1702af1c560",
+        "distribution_compared": 2,
+        "engine": "apedp_vqc",
+        "generators_compared": 6,
+        "images_compared": 12,
+        "qubits": 6,
+        "version": "0.1.0"
+      },
+      {
+        "circuit_sha256": "cac0d21f215e1266614d68bd4a02b6fa24ee8db09c19157953849de547d07c43",
+        "distribution_compared": 2,
+        "engine": "apedp_vqc",
+        "generators_compared": 7,
+        "images_compared": 14,
+        "qubits": 7,
+        "version": "0.1.0"
+      },
+      {
+        "circuit_sha256": "39863993c99f6a6fd3c959c8deb1479731285c64de650bc11024ea3dae774968",
+        "distribution_compared": 2,
+        "engine": "apedp_vqc",
+        "generators_compared": 8,
+        "images_compared": 16,
+        "qubits": 8,
+        "version": "0.1.0"
+      }
+    ]
+  },
+  "reproducibility": {
+    "command": "python scripts/measure_vqc_rust_parity.py --shots 256 --seed 20261030",
+    "equivalence_sha256": "6008e76dc4eabd853adedde51cc7356bd15193beecd781cb2fc7109a7538801b",
+    "native_bridge_sha256": "dbc1e89ad3b4aff8e7dbb6c3fe716548f92e465f0c92e32c7b291c4e5f082212",
+    "native_module": "rust/apedp-vqc (crate apedp-vqc, module apedp_vqc)",
+    "native_source_sha256": {
+      "bits.rs": "9e61ef518421847ecb0f6070f8d612082fc3899313d82b80322139ab912e0503",
+      "equivalence.rs": "481aa8c4fd694e8a10cb8503693c915595b3c899cd0b75153e53d75a83c89c9c",
+      "ir.rs": "5b7d9f6582e3d3757effbe321fccf3edcb3d4966c580b4a31c1d5f076f6eb045",
+      "lib.rs": "46bb222dcedcad1f5a0b2eadf7679b46a8dc0869da710bbbafa7a9a043cf28b2",
+      "pauli.rs": "18b90fa698f17c53857a4dbcde3ed39749ed73b550caecab71d89307840c14be",
+      "runtime.rs": "50198bc8cb70b1f592ef31d39a3ab2a15945e6cf422b1e6515485b2076155d49",
+      "stabilizer.rs": "8094c171f3611f9c3f41d60f1d3616a6524c59e0c843bec5a9fc9f8dc7d0e769"
+    },
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "script_sha256": "b18f45daa31c2b9cb4706fe8ee02b5919a38a5bf8fe57ee108e4957c84730859",
+    "stabilizer_sha256": "ba5d7235c965d824d024ce302429de79aad6111ba9a092478e6554315085d78c"
+  },
+  "schema": "apedp.vqc.native_parity.v1",
+  "verdict": {
+    "agreement": "every case agrees exactly (images) or in outcome (sampling) between the engines",
+    "rust_first": "StabilizerBackend and adjudicate_clifford_equivalence use the native engine by default and fall back to Python"
+  }
+}

@@ -1,0 +1,4745 @@
+{
+  "annualisation": {
+    "15m": 35040.0,
+    "1d": 365.0
+  },
+  "assets": [
+    {
+      "annualization": 365.0,
+      "asset": "AAPL",
+      "bars": 753,
+      "dataset_id": "AAPL@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/equity_top15.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "BTC",
+      "bars": 1095,
+      "dataset_id": "BTC@1d",
+      "holdout_window": [
+        766,
+        1094
+      ],
+      "panel": "data/market/crypto_top15_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        766
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "MSFT",
+      "bars": 753,
+      "dataset_id": "MSFT@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "NVDA",
+      "bars": 753,
+      "dataset_id": "NVDA@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "ETH",
+      "bars": 753,
+      "dataset_id": "ETH@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "SOL",
+      "bars": 753,
+      "dataset_id": "SOL@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 35040.0,
+      "asset": "BTC",
+      "bars": 1000,
+      "dataset_id": "BTC@15m",
+      "holdout_window": [
+        700,
+        999
+      ],
+      "panel": "data/market/intraday/intraday_crypto_bars.csv",
+      "resolution": "15m",
+      "taker_buy_denomination_ratio": 0.9999945534081747,
+      "train_window": [
+        30,
+        700
+      ]
+    },
+    {
+      "annualization": 35040.0,
+      "asset": "ETH",
+      "bars": 1000,
+      "dataset_id": "ETH@15m",
+      "holdout_window": [
+        700,
+        999
+      ],
+      "panel": "data/market/intraday/intraday_crypto_bars.csv",
+      "resolution": "15m",
+      "taker_buy_denomination_ratio": 1.0000110388415262,
+      "train_window": [
+        30,
+        700
+      ]
+    },
+    {
+      "annualization": 35040.0,
+      "asset": "SOL",
+      "bars": 1000,
+      "dataset_id": "SOL@15m",
+      "holdout_window": [
+        700,
+        999
+      ],
+      "panel": "data/market/intraday/intraday_crypto_bars.csv",
+      "resolution": "15m",
+      "taker_buy_denomination_ratio": 1.000027511505419,
+      "train_window": [
+        30,
+        700
+      ]
+    },
+    {
+      "annualization": 35040.0,
+      "asset": "BNB",
+      "bars": 1000,
+      "dataset_id": "BNB@15m",
+      "holdout_window": [
+        700,
+        999
+      ],
+      "panel": "data/market/intraday/intraday_crypto_bars.csv",
+      "resolution": "15m",
+      "taker_buy_denomination_ratio": 1.0000157362531588,
+      "train_window": [
+        30,
+        700
+      ]
+    }
+  ],
+  "baselines": [
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "AAPL",
+      "circuit_sha256": null,
+      "dataset_id": "AAPL@1d",
+      "dsr": {
+        "dsr": 0.0034214316403068166,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9965785683596932,
+        "se_sharpe": 0.7116032179242124
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1265,
+      "gross": 0.16743532205414624,
+      "kind": "baseline",
+      "kurtosis": 5.025161707730911,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": 0.040935322054146184,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.06424628638970044,
+      "skewness": -0.07756590238502732,
+      "threshold": 0.0,
+      "turnover": 253.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.9727443609022557,
+      "annualization": 365.0,
+      "asset": "BTC",
+      "circuit_sha256": null,
+      "dataset_id": "BTC@1d",
+      "dsr": {
+        "dsr": 5.8095535910060115e-06,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.999994190446409,
+        "se_sharpe": 0.590331106978742
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.23450000000000001,
+      "gross": -0.8312176682301935,
+      "kind": "baseline",
+      "kurtosis": 6.678538735754873,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 1064.0,
+      "n_trials": 190,
+      "net": -1.0657176682301936,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.5996712784230914,
+      "skewness": 0.43077212771434603,
+      "threshold": 0.0,
+      "turnover": 469.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "MSFT",
+      "circuit_sha256": null,
+      "dataset_id": "MSFT@1d",
+      "dsr": {
+        "dsr": 5.3247227505707795e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999467527724943,
+        "se_sharpe": 0.7095066419086741
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1315,
+      "gross": -0.36638409878399525,
+      "kind": "baseline",
+      "kurtosis": 4.892422392284728,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.4978840987839953,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.7608460379231429,
+      "skewness": -0.1797029779303873,
+      "threshold": 0.0,
+      "turnover": 263.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "NVDA",
+      "circuit_sha256": null,
+      "dataset_id": "NVDA@1d",
+      "dsr": {
+        "dsr": 0.15825496916501985,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.8417450308349801,
+        "se_sharpe": 0.7034176850160637
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1335,
+      "gross": 1.7081902977660781,
+      "kind": "baseline",
+      "kurtosis": 6.381328402122534,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": 1.574690297766078,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 1.284121075831911,
+      "skewness": 0.4267775274531314,
+      "threshold": 0.0,
+      "turnover": 267.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "ETH",
+      "circuit_sha256": null,
+      "dataset_id": "ETH@1d",
+      "dsr": {
+        "dsr": 0.0025030519848602724,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9974969480151398,
+        "se_sharpe": 0.7116847929980918
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1465,
+      "gross": 0.12999925492439957,
+      "kind": "baseline",
+      "kurtosis": 9.828401834759003,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.016500745075600544,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.008740162140010612,
+      "skewness": 1.0953534992293161,
+      "threshold": 0.0,
+      "turnover": 293.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "SOL",
+      "circuit_sha256": null,
+      "dataset_id": "SOL@1d",
+      "dsr": {
+        "dsr": 0.23404926968309525,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.7659507303169047,
+        "se_sharpe": 0.7043842386743282
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1085,
+      "gross": 4.266576955698371,
+      "kind": "baseline",
+      "kurtosis": 10.667471809665177,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": 4.1580769556983705,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 1.4776188402968502,
+      "skewness": 0.44447877787026846,
+      "threshold": 0.0,
+      "turnover": 217.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.9700722394220846,
+      "annualization": 35040.0,
+      "asset": "BTC",
+      "circuit_sha256": null,
+      "dataset_id": "BTC@15m",
+      "dsr": {
+        "dsr": 1.617953616767591e-30,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.143381756849861
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1895,
+      "gross": -0.01437520800845249,
+      "kind": "baseline",
+      "kurtosis": 9.391587646277095,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.2038752080084525,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -25.975695855778856,
+      "skewness": 0.016019869067661254,
+      "threshold": 0.0,
+      "turnover": 379.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.9700722394220846,
+      "annualization": 35040.0,
+      "asset": "ETH",
+      "circuit_sha256": null,
+      "dataset_id": "ETH@15m",
+      "dsr": {
+        "dsr": 5.177139301706978e-21,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.533456304383661
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.2085,
+      "gross": 0.0357032162100106,
+      "kind": "baseline",
+      "kurtosis": 16.980856539188707,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.17279678378998942,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -16.77674677272436,
+      "skewness": 1.6416859018819714,
+      "threshold": 0.0,
+      "turnover": 417.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.9700722394220846,
+      "annualization": 35040.0,
+      "asset": "SOL",
+      "circuit_sha256": null,
+      "dataset_id": "SOL@15m",
+      "dsr": {
+        "dsr": 3.7111472074553096e-19,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.144934057500933
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1935,
+      "gross": 0.05848465665821401,
+      "kind": "baseline",
+      "kurtosis": 9.987042369223708,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.135015343341786,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -10.299765445219597,
+      "skewness": 0.660546071974768,
+      "threshold": 0.0,
+      "turnover": 387.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.9700722394220846,
+      "annualization": 35040.0,
+      "asset": "BNB",
+      "circuit_sha256": null,
+      "dataset_id": "BNB@15m",
+      "dsr": {
+        "dsr": 7.984088682638842e-23,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.749473206861014
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.20750000000000002,
+      "gross": 0.016201480581173655,
+      "kind": "baseline",
+      "kurtosis": 25.074201691763864,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.19129851941882636,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -21.71036392040838,
+      "skewness": 1.530732850794237,
+      "threshold": 0.0,
+      "turnover": 415.0,
+      "var_trials": 258.525162574258
+    }
+  ],
+  "burned_holdouts": [
+    [
+      "AAPL@1d",
+      "tail30:7cfca638:527-752"
+    ],
+    [
+      "BNB@15m",
+      "tail30:1a93d695:700-999"
+    ],
+    [
+      "BTC@15m",
+      "tail30:2f3edbd1:700-999"
+    ],
+    [
+      "BTC@1d",
+      "tail30:3ef62bce:766-1094"
+    ],
+    [
+      "ETH@15m",
+      "tail30:74372651:700-999"
+    ],
+    [
+      "ETH@1d",
+      "tail30:e5f17967:527-752"
+    ],
+    [
+      "MSFT@1d",
+      "tail30:4327b360:527-752"
+    ],
+    [
+      "SOL@15m",
+      "tail30:867bf750:700-999"
+    ]
+  ],
+  "causality": {
+    "AAPL@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "AAPL@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "BNB@15m:H-MOM+CVD": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "BNB@15m:H-MOM+CVD+H-BB": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "BTC@15m:H-MOM+CVD": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "BTC@15m:H-MOM+CVD+H-BB": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "BTC@1d:H-MOM+CVD": {
+      "bars_compared": 1045,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "BTC@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 1045,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "ETH@15m:H-MOM+CVD": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "ETH@15m:H-MOM+CVD+H-BB": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "ETH@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "ETH@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "MSFT@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "MSFT@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "NVDA@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "NVDA@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "SOL@15m:H-MOM+CVD": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "SOL@15m:H-MOM+CVD+H-BB": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "SOL@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "SOL@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    }
+  },
+  "checks": {
+    "a_burned_slice_is_refused_on_reuse": true,
+    "a_failed_candidate_burns_its_holdout_slice": true,
+    "deleting_the_future_does_not_change_a_past_score": true,
+    "every_trial_pays_the_declared_fee": true,
+    "significance_is_reported_as_the_floor_decides": true,
+    "the_accounting_identity_holds_in_every_row": true,
+    "the_executor_reproduces_the_canonical_ledger": true,
+    "the_fit_used_only_training_bars": true,
+    "the_fitted_map_matches_its_reference_on_every_bar": true,
+    "the_holdout_covers_the_tail_and_only_once": true,
+    "the_intraday_taker_column_is_quote_denominated": true,
+    "the_signal_is_the_closed_form_on_every_bar": true,
+    "the_signal_varies_with_the_features": true,
+    "the_trial_count_is_disclosed_and_matches": true
+  },
+  "cost_sensitivity": {
+    "rates": [
+      0.0005,
+      0.001,
+      0.002
+    ],
+    "sharpe_recomputed": false,
+    "sweep": {
+      "10bps": {
+        "fee_per_unit_turnover": 0.001,
+        "fee_share_of_gross_by_resolution": {
+          "15m": null,
+          "1d": 2.387248058986196
+        },
+        "fees": 40.713,
+        "fees_by_resolution": {
+          "15m": 18.283,
+          "1d": 22.43
+        },
+        "fees_over_absolute_gross_by_resolution": {
+          "15m": 79.04433732209374,
+          "1d": 2.387248058986196
+        },
+        "gross": 9.164455318861247,
+        "gross_by_resolution": {
+          "15m": -0.23130056648459885,
+          "1d": 9.395755885345846
+        },
+        "net": -31.548544681138754,
+        "net_by_resolution": {
+          "15m": -18.5143005664846,
+          "1d": -13.034244114654154
+        },
+        "rows": 70,
+        "rows_net_positive": 11,
+        "turnover": 40713.0
+      },
+      "20bps": {
+        "fee_per_unit_turnover": 0.002,
+        "fee_share_of_gross_by_resolution": {
+          "15m": null,
+          "1d": 4.774496117972392
+        },
+        "fees": 81.426,
+        "fees_by_resolution": {
+          "15m": 36.566,
+          "1d": 44.86
+        },
+        "fees_over_absolute_gross_by_resolution": {
+          "15m": 158.08867464418748,
+          "1d": 4.774496117972392
+        },
+        "gross": 9.164455318861247,
+        "gross_by_resolution": {
+          "15m": -0.23130056648459885,
+          "1d": 9.395755885345846
+        },
+        "net": -72.26154468113876,
+        "net_by_resolution": {
+          "15m": -36.7973005664846,
+          "1d": -35.46424411465415
+        },
+        "rows": 70,
+        "rows_net_positive": 8,
+        "turnover": 40713.0
+      },
+      "5bps": {
+        "fee_per_unit_turnover": 0.0005,
+        "fee_share_of_gross_by_resolution": {
+          "15m": null,
+          "1d": 1.193624029493098
+        },
+        "fees": 20.3565,
+        "fees_by_resolution": {
+          "15m": 9.1415,
+          "1d": 11.215
+        },
+        "fees_over_absolute_gross_by_resolution": {
+          "15m": 39.52216866104687,
+          "1d": 1.193624029493098
+        },
+        "gross": 9.164455318861247,
+        "gross_by_resolution": {
+          "15m": -0.23130056648459885,
+          "1d": 9.395755885345846
+        },
+        "net": -11.192044681138754,
+        "net_by_resolution": {
+          "15m": -9.3728005664846,
+          "1d": -1.819244114654154
+        },
+        "rows": 70,
+        "rows_net_positive": 13,
+        "turnover": 40713.0
+      }
+    },
+    "why": "Sharpe and DSR are not re-priced: they require the per-bar net series, which the record stores only as aggregates. Net, fees, turnover and the net-positive count are exact because fees are linear in turnover."
+  },
+  "dispersion_method": "within resolution: a daily Sharpe and a 15-minute Sharpe estimate different quantities, so the hurdle is built from the dispersion at the row's own resolution while the trial count stays the whole disclosed family",
+  "executor_equivalence": {
+    "AAPL@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "BNB@15m": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 969
+    },
+    "BTC@15m": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 969
+    },
+    "BTC@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 1064
+    },
+    "ETH@15m": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 969
+    },
+    "ETH@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "MSFT@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "NVDA@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "SOL@15m": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 969
+    },
+    "SOL@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    }
+  },
+  "fee_per_unit_turnover": 0.0005,
+  "generated_utc": "2026-10-31T12:47:51Z",
+  "holdout": {
+    "AAPL@1d": {
+      "asset": "AAPL",
+      "burned": true,
+      "candidate_id": "AAPL@1d:2026-10-31T12:47:51Z",
+      "dataset_id": "AAPL@1d",
+      "fees": 0.0,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "net": 0.2190875197364779,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "sharpe": 1.541063926019472,
+      "slice_id": "tail30:7cfca638:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 0.0
+    },
+    "BNB@15m": {
+      "asset": "BNB",
+      "burned": true,
+      "candidate_id": "BNB@15m:2026-10-31T12:47:51Z",
+      "dataset_id": "BNB@15m",
+      "fees": 0.01,
+      "fitted_on": "training bars only",
+      "holdout_bars": 299,
+      "holdout_window": [
+        700,
+        999
+      ],
+      "net": -0.040942506629767055,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "sharpe": -17.52550514466392,
+      "slice_id": "tail30:1a93d695:700-999",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 670,
+      "train_window": [
+        30,
+        700
+      ],
+      "turnover": 20.0
+    },
+    "BTC@15m": {
+      "asset": "BTC",
+      "burned": true,
+      "candidate_id": "BTC@15m:2026-10-31T12:47:51Z",
+      "dataset_id": "BTC@15m",
+      "fees": 0.004,
+      "fitted_on": "training bars only",
+      "holdout_bars": 299,
+      "holdout_window": [
+        700,
+        999
+      ],
+      "net": -0.016287696773022105,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "sharpe": -7.204214941042595,
+      "slice_id": "tail30:2f3edbd1:700-999",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 670,
+      "train_window": [
+        30,
+        700
+      ],
+      "turnover": 8.0
+    },
+    "BTC@1d": {
+      "asset": "BTC",
+      "burned": true,
+      "candidate_id": "BTC@1d:2026-10-31T12:47:51Z",
+      "dataset_id": "BTC@1d",
+      "fees": 0.155,
+      "fitted_on": "training bars only",
+      "holdout_bars": 328,
+      "holdout_window": [
+        766,
+        1094
+      ],
+      "net": -0.7678113266103217,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "sharpe": -1.9621028324856071,
+      "slice_id": "tail30:3ef62bce:766-1094",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 736,
+      "train_window": [
+        30,
+        766
+      ],
+      "turnover": 310.0
+    },
+    "ETH@15m": {
+      "asset": "ETH",
+      "burned": true,
+      "candidate_id": "ETH@15m:2026-10-31T12:47:51Z",
+      "dataset_id": "ETH@15m",
+      "fees": 0.028,
+      "fitted_on": "training bars only",
+      "holdout_bars": 299,
+      "holdout_window": [
+        700,
+        999
+      ],
+      "net": -0.028091916584914032,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "sharpe": -8.885066300000105,
+      "slice_id": "tail30:74372651:700-999",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 670,
+      "train_window": [
+        30,
+        700
+      ],
+      "turnover": 56.0
+    },
+    "ETH@1d": {
+      "asset": "ETH",
+      "burned": true,
+      "candidate_id": "ETH@1d:2026-10-31T12:47:51Z",
+      "dataset_id": "ETH@1d",
+      "fees": 0.12,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "net": -0.4314365172111038,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "sharpe": -1.1918058546432575,
+      "slice_id": "tail30:e5f17967:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 240.0
+    },
+    "MSFT@1d": {
+      "asset": "MSFT",
+      "burned": true,
+      "candidate_id": "MSFT@1d:2026-10-31T12:47:51Z",
+      "dataset_id": "MSFT@1d",
+      "fees": 0.123,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "net": -0.3361953649717247,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "sharpe": -1.924992017936975,
+      "slice_id": "tail30:4327b360:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 246.0
+    },
+    "NVDA@1d": {
+      "asset": "NVDA",
+      "burned": false,
+      "candidate_id": "NVDA@1d:2026-10-31T12:47:51Z",
+      "dataset_id": "NVDA@1d",
+      "fees": 0.026000000000000002,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "net": 0.45894466629016706,
+      "passed": true,
+      "role": "confirmation_holdout",
+      "sharpe": 1.3584263538490189,
+      "slice_id": "tail30:02040fe7:527-752",
+      "status": "CONFIRMED_VALID",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 52.0
+    },
+    "SOL@15m": {
+      "asset": "SOL",
+      "burned": true,
+      "candidate_id": "SOL@15m:2026-10-31T12:47:51Z",
+      "dataset_id": "SOL@15m",
+      "fees": 0.028,
+      "fitted_on": "training bars only",
+      "holdout_bars": 299,
+      "holdout_window": [
+        700,
+        999
+      ],
+      "net": -0.07161517273174264,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "sharpe": -16.815105451005866,
+      "slice_id": "tail30:867bf750:700-999",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 670,
+      "train_window": [
+        30,
+        700
+      ],
+      "turnover": 56.0
+    },
+    "SOL@1d": {
+      "asset": "SOL",
+      "burned": false,
+      "candidate_id": "SOL@1d:2026-10-31T12:47:51Z",
+      "dataset_id": "SOL@1d",
+      "fees": 0.09,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "net": 1.4285493859714011,
+      "passed": true,
+      "role": "confirmation_holdout",
+      "sharpe": 2.2053530346455563,
+      "slice_id": "tail30:101de0ff:527-752",
+      "status": "CONFIRMED_VALID",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 180.0
+    }
+  },
+  "holdout_ledger": "benchmarks/quantum_compilation/quantum_signal_holdouts.jsonl",
+  "holdout_reuse_refusals": [
+    {
+      "dataset_id": "AAPL@1d",
+      "error": "DATA SNOOPING VIOLATION: Dataset slice 'AAPL@1d:tail30:7cfca638:527-752' was previously burned by failing candidate 'AAPL@1d:2026-10-31T12:47:51Z'. Confirmation holdouts may not be reused for replacement hypotheses.",
+      "refused": true,
+      "slice_id": "tail30:7cfca638:527-752"
+    },
+    {
+      "dataset_id": "BNB@15m",
+      "error": "DATA SNOOPING VIOLATION: Dataset slice 'BNB@15m:tail30:1a93d695:700-999' was previously burned by failing candidate 'BNB@15m:2026-10-31T12:47:51Z'. Confirmation holdouts may not be reused for replacement hypotheses.",
+      "refused": true,
+      "slice_id": "tail30:1a93d695:700-999"
+    }
+  ],
+  "limitations": [
+    "the fixed maps have no trainable parameters; the parameterised map is fitted on 12 grid points per dataset and that search is charged to the deflation, so the fit is not quoted as a lone hypothesis",
+    "the closed form prod_i cos(alpha_i x_i + beta_i) means every map here is classically computable in O(n) floating-point operations; the statevector simulation is the definition of the circuit, not the cheapest evaluation, so no advantage is claimed",
+    "ten datasets across two resolutions (six daily panels, four 15-minute snapshots), no slippage beyond the declared fee, and no live feed",
+    "the holdout is temporal and consumed once: a slice whose candidate loses money after fees is burned in the durable ledger and cannot be re-entered, so this record is not regenerable from the same slices by design",
+    "the holding period is one bar, so the 15-minute rows annualise a Sharpe estimated from roughly ten days of bars and should be read as a resolution comparison, not a ten-day backtest of a trading business"
+  ],
+  "maps": [
+    {
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "closed_form": "prod_i cos(pi * x_i)",
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "gates": [
+        "ry(pi*H-MOM) q0",
+        "ry(pi*CVD) q1",
+        "cx q1->q0"
+      ],
+      "layers": 1,
+      "qubits": 2
+    },
+    {
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "closed_form": "prod_i cos(pi * x_i)",
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "gates": [
+        "ry(pi*H-MOM) q0",
+        "ry(pi*CVD) q1",
+        "ry(pi*H-BB) q2",
+        "cx q1->q0",
+        "cx q2->q0"
+      ],
+      "layers": 1,
+      "qubits": 3
+    }
+  ],
+  "n_trials": 190,
+  "parameterised": {
+    "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+    "features": [
+      "H-MOM",
+      "CVD",
+      "H-BB"
+    ],
+    "fit_slice": "training bars only",
+    "fits": [
+      {
+        "alphas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "annualization": 365.0,
+        "asset": "AAPL",
+        "betas": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "sharpe": 0.11434259098631683
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "sharpe": 0.43751232710303756
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "sharpe": 0.06486506067594755
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "sharpe": -0.039891415125203306
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "sharpe": -0.5455671269420216
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "sharpe": -1.1707748090583578
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "sharpe": -0.9142030048040272
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "sharpe": 0.12708584232806705
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "sharpe": -0.46019242438811486
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "sharpe": -1.4725354260623305
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "sharpe": -1.1057421501369373
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "sharpe": 0.037424667791590205
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "a68f8c27eaadff00db909cbc95133021a7e619fa9af8be8fde289f2a8c4e827f",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "AAPL@1d",
+        "effective_trial_count": 12,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(0.5*H-MOM+0.0) q0",
+          "ry(0.5*CVD+0.0) q1",
+          "ry(0.5*H-BB+0.0) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 12,
+        "in_sample_sharpe": 0.43751232710303756,
+        "n_trials": 190,
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.03524767046877787,
+            "expected_max_sr": 1.9887033672871632,
+            "is_significant": false,
+            "p_value": 0.9647523295312221,
+            "se_sharpe": 0.8576206386461407
+          },
+          "fees": 0.002,
+          "gross": 0.22171424870365186,
+          "kurtosis": 4.1728172365522775,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 0.21971424870365186,
+          "sharpe": 0.43751232710303756,
+          "skewness": 0.040354014895327375,
+          "turnover": 4.0
+        },
+        "trial_count": 12,
+        "var_trials": 0.523456877581439
+      },
+      {
+        "alphas": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "annualization": 365.0,
+        "asset": "BTC",
+        "betas": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "sharpe": 0.2954799251473618
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "sharpe": -0.008442121483264793
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "sharpe": -0.5405217436869135
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "sharpe": 0.48568724149554926
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "sharpe": -0.23960432015154892
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "sharpe": 0.18006077263963488
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "sharpe": -0.2797525630372828
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "sharpe": 0.9361495863509551
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "sharpe": 0.8715082274719256
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "sharpe": 0.584028143461999
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "sharpe": 0.9904462890151049
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "sharpe": 0.4074815869247731
+          }
+        ],
+        "causality": {
+          "bars_compared": 1045,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "ba5892d0a58b7678efbe8fe104e95789beb8294209202f5ea77bf2cf2f5aab52",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "BTC@1d",
+        "effective_trial_count": 12,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          766
+        ],
+        "gates": [
+          "ry(2.0*H-MOM+0.0) q0",
+          "ry(2.0*CVD+0.0) q1",
+          "ry(2.0*H-BB+0.0) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 12,
+        "in_sample_sharpe": 0.9904462890151049,
+        "n_trials": 190,
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.07715162495228496,
+            "expected_max_sr": 1.9887033672871632,
+            "is_significant": false,
+            "p_value": 0.922848375047715,
+            "se_sharpe": 0.7007796608676388
+          },
+          "fees": 0.31,
+          "gross": 1.7131558576765809,
+          "kurtosis": 5.890759426059999,
+          "n_invalid": 0.0,
+          "n_obs": 736.0,
+          "net": 1.4031558576765806,
+          "sharpe": 0.9904462890151049,
+          "skewness": 0.2772749430873824,
+          "turnover": 620.0
+        },
+        "trial_count": 12,
+        "var_trials": 0.523456877581439
+      },
+      {
+        "alphas": [
+          1.5,
+          1.5,
+          1.5
+        ],
+        "annualization": 365.0,
+        "asset": "MSFT",
+        "betas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "sharpe": -0.6209952102504135
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "sharpe": 0.23495789213752602
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "sharpe": 0.10741309055935862
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "sharpe": 0.35046080131338214
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "sharpe": -0.23482166085264922
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "sharpe": -0.3616430822168578
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "sharpe": -0.6708159432451842
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "sharpe": 0.050314307404648706
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "sharpe": 1.111843255459015
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "sharpe": -0.23386337020847733
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "sharpe": -1.3074441369844174
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "sharpe": -0.6955145623888845
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "24854fc9f4086a999c4bb9072b76b20892b6c3018fc32d7a500c1dcb13d1689d",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "MSFT@1d",
+        "effective_trial_count": 12,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(1.5*H-MOM+0.5) q0",
+          "ry(1.5*CVD+0.5) q1",
+          "ry(1.5*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 12,
+        "in_sample_sharpe": 1.111843255459015,
+        "n_trials": 190,
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.15087769766340792,
+            "expected_max_sr": 1.9887033672871632,
+            "is_significant": false,
+            "p_value": 0.8491223023365921,
+            "se_sharpe": 0.8491141788682445
+          },
+          "fees": 0.23600000000000002,
+          "gross": 0.7769112332080574,
+          "kurtosis": 4.307118726906866,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 0.5409112332080573,
+          "sharpe": 1.111843255459015,
+          "skewness": 0.3958526086355181,
+          "turnover": 472.0
+        },
+        "trial_count": 12,
+        "var_trials": 0.523456877581439
+      },
+      {
+        "alphas": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "annualization": 365.0,
+        "asset": "NVDA",
+        "betas": [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "sharpe": 0.16685720114460445
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "sharpe": 0.44983782577304005
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "sharpe": 0.4507842671002975
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "sharpe": 0.9182345824836141
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "sharpe": -0.25505768694348113
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "sharpe": -1.2718743083567683
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "sharpe": -0.09662526838789513
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "sharpe": -0.16997625378181513
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "sharpe": -0.7149292321331342
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "sharpe": -0.33785563889274667
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "sharpe": -2.108167043842252
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "sharpe": 0.2847183983838763
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "eaae65789f6f4e133534ca62d7a9af5f570c085828d4c37382d8958800c93cd8",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "NVDA@1d",
+        "effective_trial_count": 12,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(1.0*H-MOM-0.5) q0",
+          "ry(1.0*CVD-0.5) q1",
+          "ry(1.0*H-BB-0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 12,
+        "in_sample_sharpe": 0.9182345824836141,
+        "n_trials": 190,
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.10583758883853722,
+            "expected_max_sr": 1.9887033672871632,
+            "is_significant": false,
+            "p_value": 0.8941624111614628,
+            "se_sharpe": 0.857079632396939
+          },
+          "fees": 0.136,
+          "gross": 0.9739212809006625,
+          "kurtosis": 3.4187584714457873,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 0.8379212809006624,
+          "sharpe": 0.9182345824836141,
+          "skewness": 0.0658639255376515,
+          "turnover": 272.0
+        },
+        "trial_count": 12,
+        "var_trials": 0.523456877581439
+      },
+      {
+        "alphas": [
+          1.5,
+          1.5,
+          1.5
+        ],
+        "annualization": 365.0,
+        "asset": "ETH",
+        "betas": [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "sharpe": -0.27945560064574176
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "sharpe": -0.04596423177907117
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "sharpe": 0.019486007012710315
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "sharpe": -0.08572381879598302
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "sharpe": 0.4878560271084825
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "sharpe": -0.764736154752712
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "sharpe": 0.9948416843583756
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "sharpe": -0.9012436944517964
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "sharpe": -0.4617651413550595
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "sharpe": 0.6667855323589922
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "sharpe": 0.8646745346043004
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "sharpe": 0.3486185220261661
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "57b34e05ccde6ac970243e8c866007d364b5ae1811ef98f9a2dd8d70b811a87d",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "ETH@1d",
+        "effective_trial_count": 12,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(1.5*H-MOM-0.5) q0",
+          "ry(1.5*CVD-0.5) q1",
+          "ry(1.5*H-BB-0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 12,
+        "in_sample_sharpe": 0.9948416843583756,
+        "n_trials": 190,
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.1230297214054264,
+            "expected_max_sr": 1.9887033672871632,
+            "is_significant": false,
+            "p_value": 0.8769702785945737,
+            "se_sharpe": 0.8567966091534979
+          },
+          "fees": 0.224,
+          "gross": 1.7312687772525628,
+          "kurtosis": 7.713983094784901,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 1.5072687772525626,
+          "sharpe": 0.9948416843583756,
+          "skewness": 0.13402894958242811,
+          "turnover": 448.0
+        },
+        "trial_count": 12,
+        "var_trials": 0.523456877581439
+      },
+      {
+        "alphas": [
+          1.5,
+          1.5,
+          1.5
+        ],
+        "annualization": 365.0,
+        "asset": "SOL",
+        "betas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "sharpe": 0.5999339445273693
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "sharpe": 0.4967757688922488
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "sharpe": 0.5390110427997615
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "sharpe": 0.5618303471937874
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "sharpe": 0.7679445589856854
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "sharpe": 0.28894216536336226
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "sharpe": 0.6778899598832662
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "sharpe": -0.5300278995524443
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "sharpe": 1.2949644341379056
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "sharpe": 0.6196372235488208
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "sharpe": 0.4466217945231619
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "sharpe": -0.6923869342044063
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "24854fc9f4086a999c4bb9072b76b20892b6c3018fc32d7a500c1dcb13d1689d",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "SOL@1d",
+        "effective_trial_count": 12,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(1.5*H-MOM+0.5) q0",
+          "ry(1.5*CVD+0.5) q1",
+          "ry(1.5*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 12,
+        "in_sample_sharpe": 1.2949644341379056,
+        "n_trials": 190,
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.2075853163485027,
+            "expected_max_sr": 1.9887033672871632,
+            "is_significant": false,
+            "p_value": 0.7924146836514974,
+            "se_sharpe": 0.8513928428065206
+          },
+          "fees": 0.184,
+          "gross": 3.072719433624697,
+          "kurtosis": 8.966336567201278,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 2.8887194336246966,
+          "sharpe": 1.2949644341379056,
+          "skewness": 0.35587117377941757,
+          "turnover": 368.0
+        },
+        "trial_count": 12,
+        "var_trials": 0.523456877581439
+      },
+      {
+        "alphas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "annualization": 35040.0,
+        "asset": "BTC",
+        "betas": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "sharpe": -18.13138831997825
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "sharpe": -4.170873367704672
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "sharpe": -7.735463951440994
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "sharpe": -28.248045448143955
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "sharpe": -24.594555720588257
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "sharpe": -32.34168899105459
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "sharpe": -49.663933670757764
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "sharpe": -27.711608075394732
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "sharpe": -39.25858865835116
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "sharpe": -53.4128687250012
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "sharpe": -59.01715114389483
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "sharpe": -47.87982244120877
+          }
+        ],
+        "causality": {
+          "bars_compared": 950,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "a68f8c27eaadff00db909cbc95133021a7e619fa9af8be8fde289f2a8c4e827f",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "BTC@15m",
+        "effective_trial_count": 12,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          700
+        ],
+        "gates": [
+          "ry(0.5*H-MOM+0.0) q0",
+          "ry(0.5*CVD+0.0) q1",
+          "ry(0.5*H-BB+0.0) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 12,
+        "in_sample_sharpe": -4.170873367704672,
+        "n_trials": 190,
+        "resolution": "15m",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 1.052143387185211e-11,
+            "expected_max_sr": 44.195796368794035,
+            "is_significant": false,
+            "p_value": 0.9999999999894785,
+            "se_sharpe": 7.220416899477027
+          },
+          "fees": 0.036000000000000004,
+          "gross": 0.013365396024575205,
+          "kurtosis": 10.613720318349655,
+          "n_invalid": 0.0,
+          "n_obs": 670.0,
+          "net": -0.022634603975424796,
+          "sharpe": -4.170873367704672,
+          "skewness": -0.2611396455365308,
+          "turnover": 72.0
+        },
+        "trial_count": 12,
+        "var_trials": 258.525162574258
+      },
+      {
+        "alphas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "annualization": 35040.0,
+        "asset": "ETH",
+        "betas": [
+          -0.5,
+          -0.5,
+          -0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "sharpe": -1.830556952655364
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "sharpe": -4.01020234541343
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "sharpe": -7.169586049809577
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "sharpe": -19.50156972415389
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "sharpe": -22.973567821048864
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "sharpe": -32.92691972789983
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "sharpe": -31.077412231045532
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "sharpe": -37.3525598724418
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "sharpe": -28.938834088304915
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "sharpe": -32.866303977189126
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "sharpe": -38.289171436608854
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "sharpe": -40.95990801774482
+          }
+        ],
+        "causality": {
+          "bars_compared": 950,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "28752cc7a58f5f9e642a2dbcc4c87a2022e603db63a3e2d4c50401cca8b7a359",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "ETH@15m",
+        "effective_trial_count": 12,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          700
+        ],
+        "gates": [
+          "ry(0.5*H-MOM-0.5) q0",
+          "ry(0.5*CVD-0.5) q1",
+          "ry(0.5*H-BB-0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 12,
+        "in_sample_sharpe": -1.830556952655364,
+        "n_trials": 190,
+        "resolution": "15m",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 1.306582107733315e-10,
+            "expected_max_sr": 44.195796368794035,
+            "is_significant": false,
+            "p_value": 0.9999999998693417,
+            "se_sharpe": 7.282482693739566
+          },
+          "fees": 0.06,
+          "gross": 0.047080552057883196,
+          "kurtosis": 20.954806026238806,
+          "n_invalid": 0.0,
+          "n_obs": 670.0,
+          "net": -0.012919447942116809,
+          "sharpe": -1.830556952655364,
+          "skewness": 1.2356215492070066,
+          "turnover": 120.0
+        },
+        "trial_count": 12,
+        "var_trials": 258.525162574258
+      },
+      {
+        "alphas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "annualization": 35040.0,
+        "asset": "SOL",
+        "betas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "sharpe": -19.525748050869097
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "sharpe": -11.384726138182891
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "sharpe": -10.15270540114042
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "sharpe": -29.526493399184893
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "sharpe": -19.197982732649265
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "sharpe": -24.711651090311538
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "sharpe": -22.35646004494982
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "sharpe": -33.61752093277882
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "sharpe": -25.056291040859865
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "sharpe": -32.44867093733074
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "sharpe": -21.808477426062808
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "sharpe": -25.994897175441196
+          }
+        ],
+        "causality": {
+          "bars_compared": 950,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "c6b2dad4387963bab0a69a35e63fb40e3ba96f95627776783a0d8bc7c93b224a",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "SOL@15m",
+        "effective_trial_count": 12,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          700
+        ],
+        "gates": [
+          "ry(0.5*H-MOM+0.5) q0",
+          "ry(0.5*CVD+0.5) q1",
+          "ry(0.5*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 12,
+        "in_sample_sharpe": -10.15270540114042,
+        "n_trials": 190,
+        "resolution": "15m",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 6.049085782272357e-14,
+            "expected_max_sr": 44.195796368794035,
+            "is_significant": false,
+            "p_value": 0.9999999999999395,
+            "se_sharpe": 7.328840539814009
+          },
+          "fees": 0.068,
+          "gross": -0.020011410815317987,
+          "kurtosis": 11.922655908948165,
+          "n_invalid": 0.0,
+          "n_obs": 670.0,
+          "net": -0.08801141081531799,
+          "sharpe": -10.15270540114042,
+          "skewness": 0.32191498167191257,
+          "turnover": 136.0
+        },
+        "trial_count": 12,
+        "var_trials": 258.525162574258
+      },
+      {
+        "alphas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "annualization": 35040.0,
+        "asset": "BNB",
+        "betas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "sharpe": -8.452749654352917
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "sharpe": 0.22421804959779182
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "sharpe": 3.4030696409400107
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "sharpe": -18.898146870806787
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "sharpe": -26.566206578420985
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "sharpe": -24.48393684110214
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "sharpe": -43.67718934527498
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "sharpe": -41.1694556338337
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "sharpe": -45.24615573880823
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "sharpe": -39.909866117646736
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "sharpe": -48.06144123312202
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "sharpe": -45.00694179054585
+          }
+        ],
+        "causality": {
+          "bars_compared": 950,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "c6b2dad4387963bab0a69a35e63fb40e3ba96f95627776783a0d8bc7c93b224a",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "BNB@15m",
+        "effective_trial_count": 12,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          700
+        ],
+        "gates": [
+          "ry(0.5*H-MOM+0.5) q0",
+          "ry(0.5*CVD+0.5) q1",
+          "ry(0.5*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 12,
+        "in_sample_sharpe": 3.4030696409400107,
+        "n_trials": 190,
+        "resolution": "15m",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 4.997685778325979e-09,
+            "expected_max_sr": 44.195796368794035,
+            "is_significant": false,
+            "p_value": 0.9999999950023142,
+            "se_sharpe": 7.118146530585544
+          },
+          "fees": 0.032,
+          "gross": 0.05337116620060112,
+          "kurtosis": 28.561929860380552,
+          "n_invalid": 0.0,
+          "n_obs": 670.0,
+          "net": 0.021371166200601116,
+          "sharpe": 3.4030696409400107,
+          "skewness": 1.9197194340494854,
+          "turnover": 64.0
+        },
+        "trial_count": 12,
+        "var_trials": 258.525162574258
+      }
+    ],
+    "grid": [
+      [
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        [
+          -0.5,
+          -0.5,
+          -0.5
+        ]
+      ],
+      [
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      [
+        [
+          0.5,
+          0.5,
+          0.5
+        ],
+        [
+          0.5,
+          0.5,
+          0.5
+        ]
+      ],
+      [
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          -0.5,
+          -0.5,
+          -0.5
+        ]
+      ],
+      [
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      [
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.5,
+          0.5,
+          0.5
+        ]
+      ],
+      [
+        [
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          -0.5,
+          -0.5,
+          -0.5
+        ]
+      ],
+      [
+        [
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      [
+        [
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          0.5,
+          0.5,
+          0.5
+        ]
+      ],
+      [
+        [
+          2.0,
+          2.0,
+          2.0
+        ],
+        [
+          -0.5,
+          -0.5,
+          -0.5
+        ]
+      ],
+      [
+        [
+          2.0,
+          2.0,
+          2.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      [
+        [
+          2.0,
+          2.0,
+          2.0
+        ],
+        [
+          0.5,
+          0.5,
+          0.5
+        ]
+      ]
+    ],
+    "grid_size": 12,
+    "trial_ledger": {
+      "effective_trial_count": 120,
+      "hidden_trials": 0,
+      "mean_sharpe": -10.866448448244961,
+      "naive_trial_count": 120,
+      "note": "every grid point is one recorded trial, so the fit is charged at the size of its search exactly as the threshold sweep is",
+      "records": 120,
+      "search_groups": [
+        "AAPL@1d",
+        "BNB@15m",
+        "BTC@15m",
+        "BTC@1d",
+        "ETH@15m",
+        "ETH@1d",
+        "MSFT@1d",
+        "NVDA@1d",
+        "SOL@15m",
+        "SOL@1d"
+      ],
+      "var_sharpe": 267.71622084117337
+    }
+  },
+  "rows": [
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "AAPL",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "AAPL@1d",
+      "dsr": {
+        "dsr": 0.004473708714010999,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.995526291285989,
+        "se_sharpe": 0.7119830825653175
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.289,
+      "gross": 0.3727604914275471,
+      "kind": "quantum",
+      "kurtosis": 4.759772769503096,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": 0.08376049142754693,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.12753918656813315,
+      "skewness": -0.1945166604987138,
+      "threshold": 0.0,
+      "turnover": 578.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.8614958448753463,
+      "annualization": 365.0,
+      "asset": "AAPL",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "AAPL@1d",
+      "dsr": {
+        "dsr": 0.0001732561924533554,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9998267438075467,
+        "se_sharpe": 0.7085965227600686
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.274,
+      "gross": -0.053626803473685314,
+      "kind": "quantum",
+      "kurtosis": 5.873443203252735,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.32762680347368545,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.5465058034978616,
+      "skewness": -0.32020695346242484,
+      "threshold": 0.2,
+      "turnover": 548.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.6578947368421053,
+      "annualization": 365.0,
+      "asset": "AAPL",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "AAPL@1d",
+      "dsr": {
+        "dsr": 1.1631405025591807e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999883685949744,
+        "se_sharpe": 0.7020763041976178
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.25,
+      "gross": -0.2725594681722381,
+      "kind": "quantum",
+      "kurtosis": 8.21406024988843,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.5225594681722382,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.9817995107298018,
+      "skewness": -0.6050743608773782,
+      "threshold": 0.5,
+      "turnover": 500.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "AAPL",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "AAPL@1d",
+      "dsr": {
+        "dsr": 1.7319726742809386e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999826802732572,
+        "se_sharpe": 0.7131631805747307
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.317,
+      "gross": -0.3168316922672325,
+      "kind": "quantum",
+      "kurtosis": 4.707737805957274,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.6338316922672327,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.9642219963172561,
+      "skewness": 0.045601679616328016,
+      "threshold": 0.0,
+      "turnover": 634.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.6897506925207756,
+      "annualization": 365.0,
+      "asset": "AAPL",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "AAPL@1d",
+      "dsr": {
+        "dsr": 1.5832837270218936e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999841671627298,
+        "se_sharpe": 0.7135159994387368
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.277,
+      "gross": -0.2637849455498822,
+      "kind": "quantum",
+      "kurtosis": 7.474303738865223,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.5407849455498823,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.980339752776451,
+      "skewness": 0.027187541520316754,
+      "threshold": 0.2,
+      "turnover": 554.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.39335180055401664,
+      "annualization": 365.0,
+      "asset": "AAPL",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "AAPL@1d",
+      "dsr": {
+        "dsr": 9.251121047554962e-06,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999907488789525,
+        "se_sharpe": 0.7197624572770319
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1905,
+      "gross": -0.29249412550059706,
+      "kind": "quantum",
+      "kurtosis": 14.862832218478461,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.4829941255005971,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.093491215740816,
+      "skewness": 0.20945680690718085,
+      "threshold": 0.5,
+      "turnover": 381.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "BTC",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "BTC@1d",
+      "dsr": {
+        "dsr": 8.08459171206048e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999191540828793,
+        "se_sharpe": 0.5876131693854427
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.483,
+      "gross": 0.061909750140415554,
+      "kind": "quantum",
+      "kurtosis": 6.695046932914717,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 1064.0,
+      "n_trials": 190,
+      "net": -0.42109024985958476,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.22800215417622238,
+      "skewness": 0.45189527248450684,
+      "threshold": 0.0,
+      "turnover": 966.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.6879699248120301,
+      "annualization": 365.0,
+      "asset": "BTC",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "BTC@1d",
+      "dsr": {
+        "dsr": 1.2263216768312366e-07,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999998773678324,
+        "se_sharpe": 0.5920728043593331
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.4205,
+      "gross": -1.183666016992321,
+      "kind": "quantum",
+      "kurtosis": 9.313646459864996,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 1064.0,
+      "n_trials": 190,
+      "net": -1.6041660169923213,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.0671513648501807,
+      "skewness": 0.25838604869667897,
+      "threshold": 0.2,
+      "turnover": 841.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.4201127819548872,
+      "annualization": 365.0,
+      "asset": "BTC",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "BTC@1d",
+      "dsr": {
+        "dsr": 4.941720644631977e-06,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999950582793554,
+        "se_sharpe": 0.5928210531096832
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.3155,
+      "gross": -0.4719219416022895,
+      "kind": "quantum",
+      "kurtosis": 16.28015175012283,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 1064.0,
+      "n_trials": 190,
+      "net": -0.7874219416022896,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.6313925074932808,
+      "skewness": 0.584812267159851,
+      "threshold": 0.5,
+      "turnover": 631.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "BTC",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "BTC@1d",
+      "dsr": {
+        "dsr": 0.0064582787541029784,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.993541721245897,
+        "se_sharpe": 0.5838732670238997
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.495,
+      "gross": 1.4863378704948538,
+      "kind": "quantum",
+      "kurtosis": 6.694928942899679,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 1064.0,
+      "n_trials": 190,
+      "net": 0.9913378704948534,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.5371584100438481,
+      "skewness": 0.29482459681017903,
+      "threshold": 0.0,
+      "turnover": 990.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.48214285714285715,
+      "annualization": 365.0,
+      "asset": "BTC",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "BTC@1d",
+      "dsr": {
+        "dsr": 0.021883387896628664,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9781166121033713,
+        "se_sharpe": 0.5749606829771746
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.3605,
+      "gross": 1.4103000347540942,
+      "kind": "quantum",
+      "kurtosis": 13.350819701729034,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 1064.0,
+      "n_trials": 190,
+      "net": 1.049800034754094,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.8294000235229484,
+      "skewness": 0.9919263125696586,
+      "threshold": 0.2,
+      "turnover": 721.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.21052631578947367,
+      "annualization": 365.0,
+      "asset": "BTC",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "BTC@1d",
+      "dsr": {
+        "dsr": 0.003129988978440571,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9968700110215595,
+        "se_sharpe": 0.5783017472238862
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1715,
+      "gross": 0.5342152504380078,
+      "kind": "quantum",
+      "kurtosis": 31.944086219080496,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 1064.0,
+      "n_trials": 190,
+      "net": 0.36271525043800773,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.4077168624059402,
+      "skewness": 1.38441611100249,
+      "threshold": 0.5,
+      "turnover": 343.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "MSFT",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "MSFT@1d",
+      "dsr": {
+        "dsr": 1.4910518335958603e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999850894816641,
+        "se_sharpe": 0.7137158819112495
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.311,
+      "gross": -0.34878839177536314,
+      "kind": "quantum",
+      "kurtosis": 4.624979291108432,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.6597883917753633,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.9909381762779311,
+      "skewness": 0.07292235287992758,
+      "threshold": 0.0,
+      "turnover": 622.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.8587257617728532,
+      "annualization": 365.0,
+      "asset": "MSFT",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "MSFT@1d",
+      "dsr": {
+        "dsr": 1.8183596413035768e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.999981816403587,
+        "se_sharpe": 0.7109043169007618
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.312,
+      "gross": -0.265898145033141,
+      "kind": "quantum",
+      "kurtosis": 5.195676508986557,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.5778981450331412,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.946922547921224,
+      "skewness": -0.08611933741846238,
+      "threshold": 0.2,
+      "turnover": 624.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.628808864265928,
+      "annualization": 365.0,
+      "asset": "MSFT",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "MSFT@1d",
+      "dsr": {
+        "dsr": 0.0002130043419063616,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9997869956580936,
+        "se_sharpe": 0.7123257558427204
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.264,
+      "gross": -0.006478692747363013,
+      "kind": "quantum",
+      "kurtosis": 6.667698318874624,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.27047869274736314,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.5211225491750564,
+      "skewness": 0.045837833802964134,
+      "threshold": 0.5,
+      "turnover": 528.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "MSFT",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "MSFT@1d",
+      "dsr": {
+        "dsr": 2.7004621268297052e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999729953787317,
+        "se_sharpe": 0.707544779491778
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.312,
+      "gross": -0.2653649031238885,
+      "kind": "quantum",
+      "kurtosis": 4.585253228748547,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.5773649031238887,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.868053564320205,
+      "skewness": -0.2851305454261888,
+      "threshold": 0.0,
+      "turnover": 624.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.667590027700831,
+      "annualization": 365.0,
+      "asset": "MSFT",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "MSFT@1d",
+      "dsr": {
+        "dsr": 4.6092150509606194e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999539078494903,
+        "se_sharpe": 0.7105477013230925
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.2745,
+      "gross": -0.1565314113399321,
+      "kind": "quantum",
+      "kurtosis": 6.89616105844455,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.4310314113399322,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.7897462057319213,
+      "skewness": -0.12607924136647447,
+      "threshold": 0.2,
+      "turnover": 549.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.40304709141274236,
+      "annualization": 365.0,
+      "asset": "MSFT",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "MSFT@1d",
+      "dsr": {
+        "dsr": 2.9841814833767433e-06,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999970158185166,
+        "se_sharpe": 0.6955493606433445
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1925,
+      "gross": -0.2734774222554952,
+      "kind": "quantum",
+      "kurtosis": 9.243992349839447,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.46597742225549527,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.160401219491649,
+      "skewness": -0.8553845493363553,
+      "threshold": 0.5,
+      "turnover": 385.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "NVDA",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "NVDA@1d",
+      "dsr": {
+        "dsr": 1.5508235029717505e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999844917649703,
+        "se_sharpe": 0.7087780678433039
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.315,
+      "gross": -0.8956537902926285,
+      "kind": "quantum",
+      "kurtosis": 6.083123500998329,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -1.2106537902926287,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.9639753408039632,
+      "skewness": -0.21582195730472914,
+      "threshold": 0.0,
+      "turnover": 630.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.8753462603878116,
+      "annualization": 365.0,
+      "asset": "NVDA",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "NVDA@1d",
+      "dsr": {
+        "dsr": 4.257213213418824e-06,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999957427867866,
+        "se_sharpe": 0.704343246105159
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.301,
+      "gross": -1.028904174465377,
+      "kind": "quantum",
+      "kurtosis": 7.226744093137933,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -1.3299041744653772,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.1469082256085361,
+      "skewness": -0.4271695029512866,
+      "threshold": 0.2,
+      "turnover": 602.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.6689750692520776,
+      "annualization": 365.0,
+      "asset": "NVDA",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "NVDA@1d",
+      "dsr": {
+        "dsr": 6.45323446742324e-07,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999993546765532,
+        "se_sharpe": 0.6939325453780096
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.274,
+      "gross": -1.1281180357152931,
+      "kind": "quantum",
+      "kurtosis": 10.014984945583508,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -1.4021180357152934,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.3707550837580302,
+      "skewness": -0.8417009692003413,
+      "threshold": 0.5,
+      "turnover": 548.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "NVDA",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "NVDA@1d",
+      "dsr": {
+        "dsr": 7.174161141154599e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999282583885885,
+        "se_sharpe": 0.7162258437453267
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.324,
+      "gross": -0.5989662101518367,
+      "kind": "quantum",
+      "kurtosis": 6.077664117837002,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.9229662101518369,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.7344484879739217,
+      "skewness": 0.29743172922055117,
+      "threshold": 0.0,
+      "turnover": 648.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.6759002770083102,
+      "annualization": 365.0,
+      "asset": "NVDA",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "NVDA@1d",
+      "dsr": {
+        "dsr": 0.0005744753104437021,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9994255246895563,
+        "se_sharpe": 0.71518346383338
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.273,
+      "gross": -0.07553012529704306,
+      "kind": "quantum",
+      "kurtosis": 9.932968036614104,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.3485301252970432,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.33654344075745546,
+      "skewness": 0.5489356032881635,
+      "threshold": 0.2,
+      "turnover": 546.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.38227146814404434,
+      "annualization": 365.0,
+      "asset": "NVDA",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "NVDA@1d",
+      "dsr": {
+        "dsr": 2.1731333451624405e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999782686665484,
+        "se_sharpe": 0.7035327709286914
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1785,
+      "gross": -0.4946191197298919,
+      "kind": "quantum",
+      "kurtosis": 8.94596938683419,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.673119119729892,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.8875193441834333,
+      "skewness": -0.5720538392726142,
+      "threshold": 0.5,
+      "turnover": 357.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "ETH",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "ETH@1d",
+      "dsr": {
+        "dsr": 3.747414175731311e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999625258582426,
+        "se_sharpe": 0.7047634581241878
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.364,
+      "gross": -1.1932559395415678,
+      "kind": "quantum",
+      "kurtosis": 9.04783517349743,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -1.5572559395415682,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.8021632500073687,
+      "skewness": -0.5337597563734487,
+      "threshold": 0.0,
+      "turnover": 728.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.7063711911357341,
+      "annualization": 365.0,
+      "asset": "ETH",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "ETH@1d",
+      "dsr": {
+        "dsr": 0.0014774336644507544,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9985225663355493,
+        "se_sharpe": 0.7104705761486179
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.3165,
+      "gross": 0.119549244150984,
+      "kind": "quantum",
+      "kurtosis": 12.250458312253851,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.19695075584901617,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.12309547211147759,
+      "skewness": -0.4696842423351564,
+      "threshold": 0.2,
+      "turnover": 633.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.4279778393351801,
+      "annualization": 365.0,
+      "asset": "ETH",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "ETH@1d",
+      "dsr": {
+        "dsr": 9.737416426987213e-05,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9999026258357301,
+        "se_sharpe": 0.7021853363129865
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2205,
+      "gross": -0.6222508493374104,
+      "kind": "quantum",
+      "kurtosis": 21.996992072357045,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.8427508493374105,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.6274518356402208,
+      "skewness": -0.9649495687771236,
+      "threshold": 0.5,
+      "turnover": 441.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "ETH",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "ETH@1d",
+      "dsr": {
+        "dsr": 0.00036558152524760254,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9996344184747524,
+        "se_sharpe": 0.7104863224907442
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.403,
+      "gross": -0.39544856853776356,
+      "kind": "quantum",
+      "kurtosis": 9.125137745299561,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.7984485685377638,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.41104874563626276,
+      "skewness": -0.17687730383406217,
+      "threshold": 0.0,
+      "turnover": 806.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.5083102493074793,
+      "annualization": 365.0,
+      "asset": "ETH",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "ETH@1d",
+      "dsr": {
+        "dsr": 0.0001418102240385063,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9998581897759615,
+        "se_sharpe": 0.7039423456790462
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.2655,
+      "gross": -0.5265348879221072,
+      "kind": "quantum",
+      "kurtosis": 18.63837808191113,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.7920348879221074,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.5664796646642357,
+      "skewness": -0.8440156450951235,
+      "threshold": 0.2,
+      "turnover": 531.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.2077562326869806,
+      "annualization": 365.0,
+      "asset": "ETH",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "ETH@1d",
+      "dsr": {
+        "dsr": 0.0001512193540119681,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.999848780645988,
+        "se_sharpe": 0.6892804618793287
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.10350000000000001,
+      "gross": -0.42677844058467773,
+      "kind": "quantum",
+      "kurtosis": 47.71606728818515,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": -0.5302784405846778,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.5018062919459098,
+      "skewness": -2.6482061167351203,
+      "threshold": 0.5,
+      "turnover": 207.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "SOL",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "SOL@1d",
+      "dsr": {
+        "dsr": 0.018227221556093475,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9817727784439065,
+        "se_sharpe": 0.7125667245733299
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.326,
+      "gross": 1.788982954388489,
+      "kind": "quantum",
+      "kurtosis": 9.657227471706557,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": 1.4629829543884887,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.4981406284533944,
+      "skewness": -0.057965338931244184,
+      "threshold": 0.0,
+      "turnover": 652.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.6952908587257618,
+      "annualization": 365.0,
+      "asset": "SOL",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "SOL@1d",
+      "dsr": {
+        "dsr": 0.02809286345556509,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.971907136544435,
+        "se_sharpe": 0.7030036205060424
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.292,
+      "gross": 1.8276718749945235,
+      "kind": "quantum",
+      "kurtosis": 10.834019401127412,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": 1.5356718749945233,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.6462530645236401,
+      "skewness": 0.7855102543637087,
+      "threshold": 0.2,
+      "turnover": 584.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.37257617728531855,
+      "annualization": 365.0,
+      "asset": "SOL",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "SOL@1d",
+      "dsr": {
+        "dsr": 0.013543972100467856,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9864560278995321,
+        "se_sharpe": 0.7001957468034559
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.1805,
+      "gross": 0.9940858835309476,
+      "kind": "quantum",
+      "kurtosis": 23.67583008779228,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": 0.8135858835309475,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.4410970058311528,
+      "skewness": 1.4969925130313406,
+      "threshold": 0.5,
+      "turnover": 361.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "SOL",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "SOL@1d",
+      "dsr": {
+        "dsr": 0.07896327307236278,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9210367269276372,
+        "se_sharpe": 0.7235706570327711
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.341,
+      "gross": 3.17688521698716,
+      "kind": "quantum",
+      "kurtosis": 9.80909202536798,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": 2.83588521698716,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.9669640560747419,
+      "skewness": -0.5642374945903507,
+      "threshold": 0.0,
+      "turnover": 682.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.48753462603878117,
+      "annualization": 365.0,
+      "asset": "SOL",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "SOL@1d",
+      "dsr": {
+        "dsr": 0.20724925146768913,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.7927507485323109,
+        "se_sharpe": 0.706761820033956
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.24,
+      "gross": 2.995978424462781,
+      "kind": "quantum",
+      "kurtosis": 11.467637471940785,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": 2.7559784244627807,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 1.4119837044732098,
+      "skewness": 0.3732582060066796,
+      "threshold": 0.2,
+      "turnover": 480.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 0.2077562326869806,
+      "annualization": 365.0,
+      "asset": "SOL",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "SOL@1d",
+      "dsr": {
+        "dsr": 0.03205123450101574,
+        "expected_max_sr": 1.9887033672871632,
+        "is_significant": false,
+        "p_value": 0.9679487654989842,
+        "se_sharpe": 0.7069162257277355
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1065,
+      "gross": 1.1099629275562628,
+      "kind": "quantum",
+      "kurtosis": 25.959337747841346,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 190,
+      "net": 1.0034629275562628,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.6798716528642332,
+      "skewness": 0.583457133025912,
+      "threshold": 0.5,
+      "turnover": 213.0,
+      "var_trials": 0.523456877581439
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 35040.0,
+      "asset": "BTC",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "BTC@15m",
+      "dsr": {
+        "dsr": 1.5334976095010015e-63,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.139020456725002
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.431,
+      "gross": -0.041856574681212066,
+      "kind": "quantum",
+      "kurtosis": 8.650256455977107,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.47285657468121206,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -58.85650144421454,
+      "skewness": -0.4705058743459893,
+      "threshold": 0.0,
+      "turnover": 862.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.7048503611971104,
+      "annualization": 35040.0,
+      "asset": "BTC",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "BTC@15m",
+      "dsr": {
+        "dsr": 3.905070147722257e-69,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.268496366964956
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.387,
+      "gross": -0.03839332797729078,
+      "kind": "quantum",
+      "kurtosis": 11.337960843651624,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.4253933279772908,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -65.71930113326079,
+      "skewness": -0.6637830007789309,
+      "threshold": 0.2,
+      "turnover": 774.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.4148606811145511,
+      "annualization": 35040.0,
+      "asset": "BTC",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "BTC@15m",
+      "dsr": {
+        "dsr": 3.6697712968473734e-61,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.172638224894659
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2675,
+      "gross": -0.0006472208113095235,
+      "kind": "quantum",
+      "kurtosis": 25.62164277216556,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.26814722081130954,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -57.3939583834017,
+      "skewness": -1.7158293410802574,
+      "threshold": 0.5,
+      "turnover": 535.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 35040.0,
+      "asset": "BTC",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "BTC@15m",
+      "dsr": {
+        "dsr": 1.3441155536497793e-57,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.291234554620393
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.466,
+      "gross": 0.01909485594662641,
+      "kind": "quantum",
+      "kurtosis": 8.659357988628878,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.4469051440533736,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -56.17220954799487,
+      "skewness": -0.2633265185080632,
+      "threshold": 0.0,
+      "turnover": 932.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.5056759545923633,
+      "annualization": 35040.0,
+      "asset": "BTC",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "BTC@15m",
+      "dsr": {
+        "dsr": 2.9967263920039976e-43,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 7.620967639124776
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.3375,
+      "gross": 0.02639321967829389,
+      "kind": "quantum",
+      "kurtosis": 17.38320684360179,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.31110678032170613,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -60.50270273645998,
+      "skewness": 0.5463445597157092,
+      "threshold": 0.2,
+      "turnover": 675.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.21362229102167182,
+      "annualization": 35040.0,
+      "asset": "BTC",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "BTC@15m",
+      "dsr": {
+        "dsr": 2.5285091786689416e-21,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 8.6426351167153
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1515,
+      "gross": 0.023754534797305382,
+      "kind": "quantum",
+      "kurtosis": 54.00836511913003,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.1277454652026946,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -37.114051836722226,
+      "skewness": 2.7363976372374026,
+      "threshold": 0.5,
+      "turnover": 303.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 35040.0,
+      "asset": "ETH",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "ETH@15m",
+      "dsr": {
+        "dsr": 8.09396152829558e-50,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.537190824300953
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.458,
+      "gross": -0.0848278186677991,
+      "kind": "quantum",
+      "kurtosis": 16.197761596524614,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.5428278186677991,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -52.51067140700897,
+      "skewness": -0.4221104157269841,
+      "threshold": 0.0,
+      "turnover": 916.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.7069143446852425,
+      "annualization": 35040.0,
+      "asset": "ETH",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "ETH@15m",
+      "dsr": {
+        "dsr": 9.730531464859617e-43,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.864191322997126
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.404,
+      "gross": -0.03495157907891677,
+      "kind": "quantum",
+      "kurtosis": 27.745015076562453,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.4389515790789168,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -49.51875406392993,
+      "skewness": -0.6285232378641159,
+      "threshold": 0.2,
+      "turnover": 808.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.40454076367389064,
+      "annualization": 35040.0,
+      "asset": "ETH",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "ETH@15m",
+      "dsr": {
+        "dsr": 7.425371524440048e-37,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.938134062970404
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.28350000000000003,
+      "gross": -0.03896168159932234,
+      "kind": "quantum",
+      "kurtosis": 53.49650768320128,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.32246168159932237,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -43.41706202484078,
+      "skewness": -1.6219825597444906,
+      "threshold": 0.5,
+      "turnover": 567.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 35040.0,
+      "asset": "ETH",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "ETH@15m",
+      "dsr": {
+        "dsr": 3.0896626145414905e-52,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 5.887028657455462
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.47900000000000004,
+      "gross": 0.009518108010768245,
+      "kind": "quantum",
+      "kurtosis": 15.821950910473,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.4694818919892318,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -45.07153034090867,
+      "skewness": -1.0690392667740118,
+      "threshold": 0.0,
+      "turnover": 958.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.4953560371517028,
+      "annualization": 35040.0,
+      "asset": "ETH",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "ETH@15m",
+      "dsr": {
+        "dsr": 1.1724210164939307e-38,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.361402820485312
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.325,
+      "gross": 0.051288785695978945,
+      "kind": "quantum",
+      "kurtosis": 35.622427709840466,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.27371121430402107,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -38.18534772873826,
+      "skewness": -1.187541277499462,
+      "threshold": 0.2,
+      "turnover": 650.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.20743034055727555,
+      "annualization": 35040.0,
+      "asset": "ETH",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "ETH@15m",
+      "dsr": {
+        "dsr": 1.0820783990754906e-36,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 5.65275706122844
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1535,
+      "gross": 0.018178484676960593,
+      "kind": "quantum",
+      "kurtosis": 125.31653041379334,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.1353215153230394,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -27.01794771608823,
+      "skewness": -5.29822349463014,
+      "threshold": 0.5,
+      "turnover": 307.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 35040.0,
+      "asset": "SOL",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "SOL@15m",
+      "dsr": {
+        "dsr": 1.3252228774714157e-37,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.269793848203304
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.47100000000000003,
+      "gross": -0.004209391129714746,
+      "kind": "quantum",
+      "kurtosis": 10.369962411591409,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.4752093911297148,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -35.82335928088279,
+      "skewness": 0.0009299482400730726,
+      "threshold": 0.0,
+      "turnover": 942.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.6914344685242518,
+      "annualization": 35040.0,
+      "asset": "SOL",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "SOL@15m",
+      "dsr": {
+        "dsr": 5.090312271405409e-34,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.9360835896211475
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.40900000000000003,
+      "gross": -0.016312132358485165,
+      "kind": "quantum",
+      "kurtosis": 12.4603167601278,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.4253121323584852,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -39.751705068474855,
+      "skewness": 0.9410377533684985,
+      "threshold": 0.2,
+      "turnover": 818.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.3890608875128999,
+      "annualization": 35040.0,
+      "asset": "SOL",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "SOL@15m",
+      "dsr": {
+        "dsr": 5.006503911926628e-28,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 7.172910627455491
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.28700000000000003,
+      "gross": 0.0021780526665997613,
+      "kind": "quantum",
+      "kurtosis": 20.811128796087942,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.28482194733340027,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -34.08070374512963,
+      "skewness": 1.412573924120799,
+      "threshold": 0.5,
+      "turnover": 574.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 35040.0,
+      "asset": "SOL",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "SOL@15m",
+      "dsr": {
+        "dsr": 1.2343008820834024e-36,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.553740659584701
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.47100000000000003,
+      "gross": -0.033115148305221,
+      "kind": "quantum",
+      "kurtosis": 10.343576370655063,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.504115148305221,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -38.30051267363537,
+      "skewness": 0.43385071144253406,
+      "threshold": 0.0,
+      "turnover": 942.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.49122807017543857,
+      "annualization": 35040.0,
+      "asset": "SOL",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "SOL@15m",
+      "dsr": {
+        "dsr": 6.090037956067271e-53,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 5.9609678390007765
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.338,
+      "gross": -0.07981311155712323,
+      "kind": "quantum",
+      "kurtosis": 17.04241301811548,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.41781311155712325,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -46.826174135151135,
+      "skewness": -1.0767286002887522,
+      "threshold": 0.2,
+      "turnover": 676.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.21052631578947367,
+      "annualization": 35040.0,
+      "asset": "SOL",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "SOL@15m",
+      "dsr": {
+        "dsr": 1.9004251543002906e-50,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 5.088953574904237
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.161,
+      "gross": -0.04580866444849363,
+      "kind": "quantum",
+      "kurtosis": 44.154247854328126,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.20680866444849363,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -31.581117012363666,
+      "skewness": -3.5068696205407868,
+      "threshold": 0.5,
+      "turnover": 322.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 35040.0,
+      "asset": "BNB",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "BNB@15m",
+      "dsr": {
+        "dsr": 1.756054568916799e-58,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 5.978551583401783
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.451,
+      "gross": -0.01913170830978661,
+      "kind": "quantum",
+      "kurtosis": 23.43373533609888,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.4701317083097866,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -51.94054283390826,
+      "skewness": -1.6015289310655518,
+      "threshold": 0.0,
+      "turnover": 902.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.7213622291021672,
+      "annualization": 35040.0,
+      "asset": "BNB",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "BNB@15m",
+      "dsr": {
+        "dsr": 7.221234611078398e-55,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.269432698189664
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.4045,
+      "gross": -0.018420957800495685,
+      "kind": "quantum",
+      "kurtosis": 40.69789067820395,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.4229209578004957,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -53.332747226605015,
+      "skewness": -2.526306952970491,
+      "threshold": 0.2,
+      "turnover": 809.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.39628482972136225,
+      "annualization": 35040.0,
+      "asset": "BNB",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "BNB@15m",
+      "dsr": {
+        "dsr": 2.817298680041744e-44,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.746404872100858
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2665,
+      "gross": -0.047013035327856834,
+      "kind": "quantum",
+      "kurtosis": 94.05920636763966,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.31351303532785685,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -49.6357247638708,
+      "skewness": -5.198420892855723,
+      "threshold": 0.5,
+      "turnover": 533.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 35040.0,
+      "asset": "BNB",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "BNB@15m",
+      "dsr": {
+        "dsr": 3.291020529289453e-55,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 5.865978568222798
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.446,
+      "gross": 0.020508395826001724,
+      "kind": "quantum",
+      "kurtosis": 27.732817428208012,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.4254916041739983,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -47.351175465962385,
+      "skewness": -1.8859088775956845,
+      "threshold": 0.0,
+      "turnover": 892.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.5180598555211559,
+      "annualization": 35040.0,
+      "asset": "BNB",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "BNB@15m",
+      "dsr": {
+        "dsr": 1.3859953300121992e-54,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 6.124998782662045
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.35050000000000003,
+      "gross": 0.005265578187372277,
+      "kind": "quantum",
+      "kurtosis": 72.63096753294373,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.34523442181262776,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -50.82990571575668,
+      "skewness": -4.728693902246695,
+      "threshold": 0.2,
+      "turnover": 701.0,
+      "var_trials": 258.525162574258
+    },
+    {
+      "active_fraction": 0.20639834881320948,
+      "annualization": 35040.0,
+      "asset": "BNB",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "BNB@15m",
+      "dsr": {
+        "dsr": 5.161389521196149e-43,
+        "expected_max_sr": 44.195796368794035,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 5.885991057662176
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.14350000000000002,
+      "gross": -3.237535842437467e-05,
+      "kind": "quantum",
+      "kurtosis": 40.91081881733106,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 190,
+      "net": -0.1435323753584244,
+      "resolution": "15m",
+      "rule": "symmetric",
+      "sharpe": -36.435169207633734,
+      "skewness": -2.1625713717005337,
+      "threshold": 0.5,
+      "turnover": 287.0,
+      "var_trials": 258.525162574258
+    }
+  ],
+  "rule": "symmetric",
+  "rules_available": [
+    "symmetric",
+    "long_only",
+    "short_below_zero"
+  ],
+  "schema": "apedp.quantum_signal_ledger.v2",
+  "significance_report": {
+    "15m": {
+      "best": {
+        "dataset_id": "SOL@15m",
+        "dsr": 3.7111472074553096e-19,
+        "features": [
+          "H-MOM"
+        ],
+        "sharpe": -10.299765445219597,
+        "threshold": 0.0
+      },
+      "floor": 0.95,
+      "hurdle": 44.195796368794035,
+      "n_trials_charged": 190,
+      "rows": 28,
+      "rows_clearing_floor": 0,
+      "var_trials": 258.525162574258,
+      "verdict": "no row clears the floor"
+    },
+    "1d": {
+      "best": {
+        "dataset_id": "SOL@1d",
+        "dsr": 0.23404926968309525,
+        "features": [
+          "H-MOM"
+        ],
+        "sharpe": 1.4776188402968502,
+        "threshold": 0.0
+      },
+      "floor": 0.95,
+      "hurdle": 1.9887033672871632,
+      "n_trials_charged": 190,
+      "rows": 42,
+      "rows_clearing_floor": 0,
+      "var_trials": 0.523456877581439,
+      "verdict": "no row clears the floor"
+    }
+  },
+  "significant_rows": [],
+  "thresholds": [
+    0.0,
+    0.2,
+    0.5
+  ],
+  "train_fraction": 0.7,
+  "trial_components": {
+    "baselines": 10,
+    "parameter_fits": 120,
+    "threshold_grid": 60
+  },
+  "trials_by_resolution": {
+    "15m": 76,
+    "1d": 114
+  },
+  "var_trials": {
+    "by_resolution": {
+      "15m": 258.525162574258,
+      "1d": 0.523456877581439
+    },
+    "pooled": 358.7599718927883
+  },
+  "warmup_bars": 30
+}

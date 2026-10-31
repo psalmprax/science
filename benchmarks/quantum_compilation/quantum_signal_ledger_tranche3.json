@@ -1,0 +1,6516 @@
+{
+  "annualisation": {
+    "15m": 35040.0,
+    "1d": 365.0,
+    "1h": 8760.0,
+    "30m": 17520.0
+  },
+  "assets": [
+    {
+      "annualization": 365.0,
+      "asset": "AMZN",
+      "bars": 753,
+      "dataset_id": "AMZN@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "JPM",
+      "bars": 753,
+      "dataset_id": "JPM@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "XOM",
+      "bars": 753,
+      "dataset_id": "XOM@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "WMT",
+      "bars": 753,
+      "dataset_id": "WMT@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "XRP",
+      "bars": 753,
+      "dataset_id": "XRP@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 365.0,
+      "asset": "DOT",
+      "bars": 753,
+      "dataset_id": "DOT@1d",
+      "holdout_window": [
+        527,
+        752
+      ],
+      "panel": "data/market/multi_asset_60_orderflow.csv",
+      "resolution": "1d",
+      "taker_buy_denomination_ratio": null,
+      "train_window": [
+        30,
+        527
+      ]
+    },
+    {
+      "annualization": 17520.0,
+      "asset": "XRP",
+      "bars": 1000,
+      "dataset_id": "XRP@30m",
+      "holdout_window": [
+        700,
+        999
+      ],
+      "panel": "data/market/intraday/intraday_crypto_bars.csv",
+      "resolution": "30m",
+      "taker_buy_denomination_ratio": 1.0000536680045695,
+      "train_window": [
+        30,
+        700
+      ]
+    },
+    {
+      "annualization": 17520.0,
+      "asset": "TRX",
+      "bars": 1000,
+      "dataset_id": "TRX@30m",
+      "holdout_window": [
+        700,
+        999
+      ],
+      "panel": "data/market/intraday/intraday_crypto_bars.csv",
+      "resolution": "30m",
+      "taker_buy_denomination_ratio": 1.0000058847647753,
+      "train_window": [
+        30,
+        700
+      ]
+    },
+    {
+      "annualization": 17520.0,
+      "asset": "LTC",
+      "bars": 1000,
+      "dataset_id": "LTC@30m",
+      "holdout_window": [
+        700,
+        999
+      ],
+      "panel": "data/market/intraday/intraday_crypto_bars.csv",
+      "resolution": "30m",
+      "taker_buy_denomination_ratio": 0.9999422184270643,
+      "train_window": [
+        30,
+        700
+      ]
+    },
+    {
+      "annualization": 17520.0,
+      "asset": "BCH",
+      "bars": 1000,
+      "dataset_id": "BCH@30m",
+      "holdout_window": [
+        700,
+        999
+      ],
+      "panel": "data/market/intraday/intraday_crypto_bars.csv",
+      "resolution": "30m",
+      "taker_buy_denomination_ratio": 0.9999725055123084,
+      "train_window": [
+        30,
+        700
+      ]
+    }
+  ],
+  "baselines": [
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "AMZN",
+      "circuit_sha256": null,
+      "dataset_id": "AMZN@1d",
+      "dsr": {
+        "dsr": 0.002217890335127785,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9977821096648722,
+        "se_sharpe": 0.7116469503511098
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1475,
+      "gross": 0.35500677459519103,
+      "kind": "baseline",
+      "kurtosis": 8.033720701698382,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 0.20750677459519096,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.2329536095076384,
+      "skewness": -0.010967347727438988,
+      "threshold": 0.0,
+      "turnover": 295.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "JPM",
+      "circuit_sha256": null,
+      "dataset_id": "JPM@1d",
+      "dsr": {
+        "dsr": 0.00047349112712888184,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9995265088728711,
+        "se_sharpe": 0.7118926088439285
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1325,
+      "gross": 0.0782044652993159,
+      "kind": "baseline",
+      "kurtosis": 5.096753910314993,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.054295534700684156,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.09552725141260095,
+      "skewness": 0.2120644022280394,
+      "threshold": 0.0,
+      "turnover": 265.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "XOM",
+      "circuit_sha256": null,
+      "dataset_id": "XOM@1d",
+      "dsr": {
+        "dsr": 7.705843064119503e-05,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999229415693588,
+        "se_sharpe": 0.7122537505261308
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1475,
+      "gross": -0.15490368205998273,
+      "kind": "baseline",
+      "kurtosis": 3.9710114765492577,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.3024036820599828,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.4375475401682379,
+      "skewness": 0.074766561997632,
+      "threshold": 0.0,
+      "turnover": 295.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "WMT",
+      "circuit_sha256": null,
+      "dataset_id": "WMT@1d",
+      "dsr": {
+        "dsr": 0.0009206637834790699,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9990793362165209,
+        "se_sharpe": 0.7110903960762823
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1305,
+      "gross": 0.15096883805497763,
+      "kind": "baseline",
+      "kurtosis": 21.055445489104272,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 0.020468838054977578,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.0430305113392423,
+      "skewness": 0.5302991760455397,
+      "threshold": 0.0,
+      "turnover": 261.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "XRP",
+      "circuit_sha256": null,
+      "dataset_id": "XRP@1d",
+      "dsr": {
+        "dsr": 0.009971107728899017,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.990028892271101,
+        "se_sharpe": 0.705605392253353
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1275,
+      "gross": 1.5871508115232063,
+      "kind": "baseline",
+      "kurtosis": 20.165928248028983,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 1.4596508115232063,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.6156135142617671,
+      "skewness": 0.6670310559717466,
+      "threshold": 0.0,
+      "turnover": 255.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.9598337950138505,
+      "annualization": 365.0,
+      "asset": "DOT",
+      "circuit_sha256": null,
+      "dataset_id": "DOT@1d",
+      "dsr": {
+        "dsr": 0.0029141734536128937,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9970858265463871,
+        "se_sharpe": 0.7066274066953625
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1315,
+      "gross": 0.8502610465364504,
+      "kind": "baseline",
+      "kurtosis": 10.563404334037386,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 0.7187610465364503,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.309489615277908,
+      "skewness": 0.8824314233658419,
+      "threshold": 0.0,
+      "turnover": 263.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.9700722394220846,
+      "annualization": 17520.0,
+      "asset": "XRP",
+      "circuit_sha256": null,
+      "dataset_id": "XRP@30m",
+      "dsr": {
+        "dsr": 9.662785237413338e-18,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.233524184350372
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1805,
+      "gross": 0.08523725059456944,
+      "kind": "baseline",
+      "kurtosis": 13.022540622765229,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.09526274940543057,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -3.079413398738664,
+      "skewness": -0.4889637958962636,
+      "threshold": 0.0,
+      "turnover": 361.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.9700722394220846,
+      "annualization": 17520.0,
+      "asset": "TRX",
+      "circuit_sha256": null,
+      "dataset_id": "TRX@30m",
+      "dsr": {
+        "dsr": 7.963396637595333e-26,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.506148789274769
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1835,
+      "gross": 0.07524794480448538,
+      "kind": "baseline",
+      "kurtosis": 10.964157446740753,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.10825205519551463,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -14.157471869764374,
+      "skewness": 0.8732013064289763,
+      "threshold": 0.0,
+      "turnover": 367.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.9700722394220846,
+      "annualization": 17520.0,
+      "asset": "LTC",
+      "circuit_sha256": null,
+      "dataset_id": "LTC@30m",
+      "dsr": {
+        "dsr": 2.2493263638280925e-23,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.202481923602159
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1995,
+      "gross": -0.12537361157878202,
+      "kind": "baseline",
+      "kurtosis": 15.92840592898724,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.32487361157878203,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -8.675811721253265,
+      "skewness": -0.6141006767193048,
+      "threshold": 0.0,
+      "turnover": 399.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.9700722394220846,
+      "annualization": 17520.0,
+      "asset": "BCH",
+      "circuit_sha256": null,
+      "dataset_id": "BCH@30m",
+      "dsr": {
+        "dsr": 1.1195670427964207e-18,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.208191014060685
+      },
+      "features": [
+        "H-MOM"
+      ],
+      "fees": 0.1795,
+      "gross": 0.0294428504705202,
+      "kind": "baseline",
+      "kurtosis": 20.542116091232714,
+      "layers": 0,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.15005714952947982,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -3.902589869017693,
+      "skewness": -0.8754466964079066,
+      "threshold": 0.0,
+      "turnover": 359.0,
+      "var_trials": 120.8542315942691
+    }
+  ],
+  "burned_holdouts": [
+    [
+      "AAPL@1d",
+      "tail30:7cfca638:527-752"
+    ],
+    [
+      "ADA@1d",
+      "tail30:11eec030:527-752"
+    ],
+    [
+      "ADA@1h",
+      "tail30:2a0a9ec2:700-999"
+    ],
+    [
+      "AMZN@1d",
+      "tail30:8818760c:527-752"
+    ],
+    [
+      "AVAX@1h",
+      "tail30:84a62510:700-999"
+    ],
+    [
+      "BCH@30m",
+      "tail30:fff90498:700-999"
+    ],
+    [
+      "BNB@15m",
+      "tail30:1a93d695:700-999"
+    ],
+    [
+      "BTC@15m",
+      "tail30:2f3edbd1:700-999"
+    ],
+    [
+      "BTC@1d",
+      "tail30:3ef62bce:766-1094"
+    ],
+    [
+      "DOGE@1d",
+      "tail30:a95932fa:527-752"
+    ],
+    [
+      "DOT@1d",
+      "tail30:0fc1e8bf:527-752"
+    ],
+    [
+      "DOT@1h",
+      "tail30:f53575e1:700-999"
+    ],
+    [
+      "ETH@15m",
+      "tail30:74372651:700-999"
+    ],
+    [
+      "ETH@1d",
+      "tail30:e5f17967:527-752"
+    ],
+    [
+      "GOOGL@1d",
+      "tail30:0ff4f770:527-752"
+    ],
+    [
+      "JPM@1d",
+      "tail30:f9171a12:527-752"
+    ],
+    [
+      "LINK@1d",
+      "tail30:a546dbf9:527-752"
+    ],
+    [
+      "LINK@1h",
+      "tail30:101c926b:700-999"
+    ],
+    [
+      "LTC@30m",
+      "tail30:4b250cad:700-999"
+    ],
+    [
+      "META@1d",
+      "tail30:000a29b9:527-752"
+    ],
+    [
+      "MSFT@1d",
+      "tail30:4327b360:527-752"
+    ],
+    [
+      "SOL@15m",
+      "tail30:867bf750:700-999"
+    ],
+    [
+      "TRX@30m",
+      "tail30:d1f3944a:700-999"
+    ],
+    [
+      "TSLA@1d",
+      "tail30:460dba0a:527-752"
+    ],
+    [
+      "WMT@1d",
+      "tail30:0a2745e3:527-752"
+    ],
+    [
+      "XOM@1d",
+      "tail30:83bbe302:527-752"
+    ],
+    [
+      "XRP@1d",
+      "tail30:8b303769:527-752"
+    ],
+    [
+      "XRP@30m",
+      "tail30:4a4e0747:700-999"
+    ]
+  ],
+  "causality": {
+    "AMZN@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "AMZN@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "BCH@30m:H-MOM+CVD": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "BCH@30m:H-MOM+CVD+H-BB": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "DOT@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "DOT@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "JPM@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "JPM@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "LTC@30m:H-MOM+CVD": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "LTC@30m:H-MOM+CVD+H-BB": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "TRX@30m:H-MOM+CVD": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "TRX@30m:H-MOM+CVD+H-BB": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "WMT@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "WMT@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "XOM@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "XOM@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "XRP@1d:H-MOM+CVD": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "XRP@1d:H-MOM+CVD+H-BB": {
+      "bars_compared": 703,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "XRP@30m:H-MOM+CVD": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    },
+    "XRP@30m:H-MOM+CVD+H-BB": {
+      "bars_compared": 950,
+      "max_absolute_deviation": 0.0,
+      "unchanged": true
+    }
+  },
+  "checks": {
+    "a_burned_slice_is_refused_on_reuse": true,
+    "a_failed_candidate_burns_its_holdout_slice": true,
+    "deleting_the_future_does_not_change_a_past_score": true,
+    "every_trial_pays_the_declared_fee": true,
+    "significance_is_reported_as_the_floor_decides": true,
+    "the_accounting_identity_holds_in_every_row": true,
+    "the_executor_reproduces_the_canonical_ledger": true,
+    "the_fit_used_only_training_bars": true,
+    "the_fitted_map_matches_its_reference_on_every_bar": true,
+    "the_holdout_covers_the_tail_and_only_once": true,
+    "the_intraday_taker_column_is_quote_denominated": true,
+    "the_signal_is_the_closed_form_on_every_bar": true,
+    "the_signal_varies_with_the_features": true,
+    "the_trial_count_is_disclosed_and_matches": true
+  },
+  "cost_sensitivity": {
+    "rates": [
+      0.0005,
+      0.001,
+      0.002
+    ],
+    "sharpe_recomputed": false,
+    "sweep": {
+      "10bps": {
+        "fee_per_unit_turnover": 0.001,
+        "fee_share_of_gross_by_resolution": {
+          "1d": null,
+          "30m": 23.311399031658567
+        },
+        "fees": 37.424,
+        "fees_by_resolution": {
+          "1d": 20.264,
+          "30m": 17.16
+        },
+        "fees_over_absolute_gross_by_resolution": {
+          "1d": 4.360815931218677,
+          "30m": 23.311399031658567
+        },
+        "gross": -3.910716256804983,
+        "gross_by_resolution": {
+          "1d": -4.6468368121047945,
+          "30m": 0.7361205552998118
+        },
+        "net": -41.33471625680498,
+        "net_by_resolution": {
+          "1d": -24.910836812104794,
+          "30m": -16.423879444700187
+        },
+        "rows": 70,
+        "rows_net_positive": 6,
+        "turnover": 37424.0
+      },
+      "20bps": {
+        "fee_per_unit_turnover": 0.002,
+        "fee_share_of_gross_by_resolution": {
+          "1d": null,
+          "30m": 46.622798063317134
+        },
+        "fees": 74.848,
+        "fees_by_resolution": {
+          "1d": 40.528,
+          "30m": 34.32
+        },
+        "fees_over_absolute_gross_by_resolution": {
+          "1d": 8.721631862437354,
+          "30m": 46.622798063317134
+        },
+        "gross": -3.910716256804983,
+        "gross_by_resolution": {
+          "1d": -4.6468368121047945,
+          "30m": 0.7361205552998118
+        },
+        "net": -78.75871625680499,
+        "net_by_resolution": {
+          "1d": -45.17483681210479,
+          "30m": -33.58387944470019
+        },
+        "rows": 70,
+        "rows_net_positive": 4,
+        "turnover": 37424.0
+      },
+      "5bps": {
+        "fee_per_unit_turnover": 0.0005,
+        "fee_share_of_gross_by_resolution": {
+          "1d": null,
+          "30m": 11.655699515829284
+        },
+        "fees": 18.712,
+        "fees_by_resolution": {
+          "1d": 10.132,
+          "30m": 8.58
+        },
+        "fees_over_absolute_gross_by_resolution": {
+          "1d": 2.1804079656093385,
+          "30m": 11.655699515829284
+        },
+        "gross": -3.910716256804983,
+        "gross_by_resolution": {
+          "1d": -4.6468368121047945,
+          "30m": 0.7361205552998118
+        },
+        "net": -22.62271625680498,
+        "net_by_resolution": {
+          "1d": -14.778836812104794,
+          "30m": -7.843879444700188
+        },
+        "rows": 70,
+        "rows_net_positive": 16,
+        "turnover": 37424.0
+      }
+    },
+    "why": "Sharpe and DSR are not re-priced: they require the per-bar net series, which the record stores only as aggregates. Net, fees, turnover and the net-positive count are exact because fees are linear in turnover."
+  },
+  "depth_comparison": {
+    "charge_per_family": 34,
+    "datasets_compared": 10,
+    "depth1_clears_hurdle": 1,
+    "depth2_beats_depth1_holdout": 6,
+    "depth2_clears_hurdle": 0,
+    "depths": [
+      1,
+      2
+    ],
+    "mean_holdout_delta": -0.024417320381539164,
+    "note": "both families' best candidate is read once on the same holdout window, each charged its own grid; the burn is decided by the map the training slice actually selected",
+    "rows": [
+      {
+        "dataset_id": "AMZN@1d",
+        "delta": 0.7870927269174653,
+        "depth1_net": -0.6166857788419672,
+        "depth1_passed": false,
+        "depth2_net": 0.1704069480754982,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "JPM@1d",
+        "delta": -0.14724217595376102,
+        "depth1_net": 0.11476565948602205,
+        "depth1_passed": false,
+        "depth2_net": -0.03247651646773896,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "XOM@1d",
+        "delta": -0.053156806566446724,
+        "depth1_net": -0.017841849787027853,
+        "depth1_passed": false,
+        "depth2_net": -0.07099865635347458,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "WMT@1d",
+        "delta": -0.11176930512994149,
+        "depth1_net": -0.1982438729276002,
+        "depth1_passed": false,
+        "depth2_net": -0.3100131780575417,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "XRP@1d",
+        "delta": 0.28803272052226436,
+        "depth1_net": -0.7132675977068778,
+        "depth1_passed": false,
+        "depth2_net": -0.4252348771846134,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "DOT@1d",
+        "delta": -1.4988324542963267,
+        "depth1_net": 1.0015018832814109,
+        "depth1_passed": true,
+        "depth2_net": -0.49733057101491585,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "XRP@30m",
+        "delta": 0.1486184650946921,
+        "depth1_net": -0.17188399143199642,
+        "depth1_passed": false,
+        "depth2_net": -0.023265526337304332,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "TRX@30m",
+        "delta": 0.0013956791010072411,
+        "depth1_net": -0.01888707799911682,
+        "depth1_passed": false,
+        "depth2_net": -0.017491398898109578,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "LTC@30m",
+        "delta": 0.0901455771533287,
+        "depth1_net": -0.14618747620433195,
+        "depth1_passed": false,
+        "depth2_net": -0.05604189905100325,
+        "depth2_passed": false
+      },
+      {
+        "dataset_id": "BCH@30m",
+        "delta": 0.25154236934232654,
+        "depth1_net": -0.2104986690850246,
+        "depth1_passed": false,
+        "depth2_net": 0.04104370025730197,
+        "depth2_passed": false
+      }
+    ]
+  },
+  "dispersion_method": "within resolution: a daily Sharpe and a 15-minute Sharpe estimate different quantities, so the hurdle is built from the dispersion at the row's own resolution while the trial count stays the whole disclosed family",
+  "executor_equivalence": {
+    "AMZN@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "BCH@30m": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 969
+    },
+    "DOT@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "JPM@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "LTC@30m": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 969
+    },
+    "TRX@30m": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 969
+    },
+    "WMT@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "XOM@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "XRP@1d": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 722
+    },
+    "XRP@30m": {
+      "identical": true,
+      "ledger_status": "GATE_BINDING",
+      "max_fee_difference": 0.0,
+      "max_net_difference": 0.0,
+      "max_position_difference": 0.0,
+      "note": "the canonical ledger's own score under its base rule, re-priced by the executor; exact agreement is what licenses using the executor for a signal the ledger cannot take as input",
+      "rows_compared": 969
+    }
+  },
+  "fee_per_unit_turnover": 0.0005,
+  "generated_utc": "2026-10-31T13:23:51Z",
+  "holdout": {
+    "AMZN@1d": {
+      "asset": "AMZN",
+      "burned": true,
+      "candidate_id": "AMZN@1d:2026-10-31T13:23:51Z",
+      "dataset_id": "AMZN@1d",
+      "decision_reason": "holdout Sharpe +0.755 below the 1.603 hurdle of a 34-trial search",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 1.75,
+          "beta": -0.5,
+          "holdout_net": -0.6166857788419672,
+          "holdout_sharpe": -2.7348281223364665,
+          "hurdle": 1.6030293922195837,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 0.2724893307453866
+        },
+        "depth2": {
+          "alpha": 1.0,
+          "beta": 0.0,
+          "holdout_net": 0.1704069480754982,
+          "holdout_sharpe": 0.754523071330084,
+          "hurdle": 1.6030293922195837,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 0.8124040509639248
+        }
+      },
+      "fees": 0.062,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "hurdle": 1.6030293922195837,
+      "net": 0.1704069480754982,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 34,
+      "sharpe": 0.754523071330084,
+      "slice_id": "tail30:8818760c:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 124.0
+    },
+    "BCH@30m": {
+      "asset": "BCH",
+      "burned": true,
+      "candidate_id": "BCH@30m:2026-10-31T13:23:51Z",
+      "dataset_id": "BCH@30m",
+      "decision_reason": "holdout net -0.2105 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 1.5,
+          "beta": 0.5,
+          "holdout_net": -0.2104986690850246,
+          "holdout_sharpe": -16.647273686056565,
+          "hurdle": 23.355476356407614,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": -2.0124194292446296
+        },
+        "depth2": {
+          "alpha": 1.5,
+          "beta": 1.0,
+          "holdout_net": 0.04104370025730197,
+          "holdout_sharpe": 3.249200698449564,
+          "hurdle": 23.355476356407614,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": -2.4494592017401424
+        }
+      },
+      "fees": 0.105,
+      "fitted_on": "training bars only",
+      "holdout_bars": 299,
+      "holdout_window": [
+        700,
+        999
+      ],
+      "hurdle": 23.355476356407614,
+      "net": -0.2104986690850246,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 34,
+      "sharpe": -16.647273686056565,
+      "slice_id": "tail30:fff90498:700-999",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 670,
+      "train_window": [
+        30,
+        700
+      ],
+      "turnover": 210.0
+    },
+    "DOT@1d": {
+      "asset": "DOT",
+      "burned": true,
+      "candidate_id": "DOT@1d:2026-10-31T13:23:51Z",
+      "dataset_id": "DOT@1d",
+      "decision_reason": "holdout net -0.4973 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 1.5,
+          "beta": 0.0,
+          "holdout_net": 1.0015018832814109,
+          "holdout_sharpe": 2.1811554303620535,
+          "hurdle": 1.6030293922195837,
+          "passed": true,
+          "searched_trials": 34,
+          "train_sharpe": 0.28080695776863573
+        },
+        "depth2": {
+          "alpha": 2.0,
+          "beta": -0.75,
+          "holdout_net": -0.49733057101491585,
+          "holdout_sharpe": -1.0771147302484148,
+          "hurdle": 1.6030293922195837,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 1.099648181639348
+        }
+      },
+      "fees": 0.054,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "hurdle": 1.6030293922195837,
+      "net": -0.49733057101491585,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 34,
+      "sharpe": -1.0771147302484148,
+      "slice_id": "tail30:0fc1e8bf:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 108.0
+    },
+    "JPM@1d": {
+      "asset": "JPM",
+      "burned": true,
+      "candidate_id": "JPM@1d:2026-10-31T13:23:51Z",
+      "dataset_id": "JPM@1d",
+      "decision_reason": "holdout net -0.0325 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 1.5,
+          "beta": 0.0,
+          "holdout_net": 0.11476565948602205,
+          "holdout_sharpe": 0.7376817167192801,
+          "hurdle": 1.6030293922195837,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 0.09616133833498697
+        },
+        "depth2": {
+          "alpha": 0.5,
+          "beta": 0.5,
+          "holdout_net": -0.03247651646773896,
+          "holdout_sharpe": -0.20853039972394607,
+          "hurdle": 1.6030293922195837,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 0.3957755697864727
+        }
+      },
+      "fees": 0.018000000000000002,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "hurdle": 1.6030293922195837,
+      "net": -0.03247651646773896,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 34,
+      "sharpe": -0.20853039972394607,
+      "slice_id": "tail30:f9171a12:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 36.0
+    },
+    "LTC@30m": {
+      "asset": "LTC",
+      "burned": true,
+      "candidate_id": "LTC@30m:2026-10-31T13:23:51Z",
+      "dataset_id": "LTC@30m",
+      "decision_reason": "holdout net -0.1462 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 1.75,
+          "beta": 0.0,
+          "holdout_net": -0.14618747620433195,
+          "holdout_sharpe": -16.420807284392303,
+          "hurdle": 23.355476356407614,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 2.5862405459931357
+        },
+        "depth2": {
+          "alpha": 1.5,
+          "beta": 0.0,
+          "holdout_net": -0.05604189905100325,
+          "holdout_sharpe": -6.268274421074013,
+          "hurdle": 23.355476356407614,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 1.180569948919172
+        }
+      },
+      "fees": 0.08600000000000001,
+      "fitted_on": "training bars only",
+      "holdout_bars": 299,
+      "holdout_window": [
+        700,
+        999
+      ],
+      "hurdle": 23.355476356407614,
+      "net": -0.14618747620433195,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 34,
+      "sharpe": -16.420807284392303,
+      "slice_id": "tail30:4b250cad:700-999",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 670,
+      "train_window": [
+        30,
+        700
+      ],
+      "turnover": 172.0
+    },
+    "TRX@30m": {
+      "asset": "TRX",
+      "burned": true,
+      "candidate_id": "TRX@30m:2026-10-31T13:23:51Z",
+      "dataset_id": "TRX@30m",
+      "decision_reason": "holdout recorded no position change: a carried position is not holdout evidence",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 0.5,
+          "beta": -0.5,
+          "holdout_net": -0.01888707799911682,
+          "holdout_sharpe": -10.289329463529668,
+          "hurdle": 23.355476356407614,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": -2.63663436580789
+        },
+        "depth2": {
+          "alpha": 0.25,
+          "beta": 0.5,
+          "holdout_net": -0.017491398898109578,
+          "holdout_sharpe": -9.529409607979048,
+          "hurdle": 23.355476356407614,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": -2.1701491166528686
+        }
+      },
+      "fees": 0.0,
+      "fitted_on": "training bars only",
+      "holdout_bars": 299,
+      "holdout_window": [
+        700,
+        999
+      ],
+      "hurdle": 23.355476356407614,
+      "net": -0.017491398898109578,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 34,
+      "sharpe": -9.529409607979048,
+      "slice_id": "tail30:d1f3944a:700-999",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 670,
+      "train_window": [
+        30,
+        700
+      ],
+      "turnover": 0.0
+    },
+    "WMT@1d": {
+      "asset": "WMT",
+      "burned": true,
+      "candidate_id": "WMT@1d:2026-10-31T13:23:51Z",
+      "dataset_id": "WMT@1d",
+      "decision_reason": "holdout net -0.3100 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 1.5,
+          "beta": -1.0,
+          "holdout_net": -0.1982438729276002,
+          "holdout_sharpe": -1.6968585971593761,
+          "hurdle": 1.6030293922195837,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 0.3120672583207556
+        },
+        "depth2": {
+          "alpha": 0.5,
+          "beta": -1.0,
+          "holdout_net": -0.3100131780575417,
+          "holdout_sharpe": -2.6666032171461187,
+          "hurdle": 1.6030293922195837,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 0.9866533323309735
+        }
+      },
+      "fees": 0.032,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "hurdle": 1.6030293922195837,
+      "net": -0.3100131780575417,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 34,
+      "sharpe": -2.6666032171461187,
+      "slice_id": "tail30:0a2745e3:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 64.0
+    },
+    "XOM@1d": {
+      "asset": "XOM",
+      "burned": true,
+      "candidate_id": "XOM@1d:2026-10-31T13:23:51Z",
+      "dataset_id": "XOM@1d",
+      "decision_reason": "holdout net -0.0178 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 0.75,
+          "beta": 0.0,
+          "holdout_net": -0.017841849787027853,
+          "holdout_sharpe": -0.0976454283610838,
+          "hurdle": 1.6030293922195837,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 1.6487851394931805
+        },
+        "depth2": {
+          "alpha": 0.5,
+          "beta": 0.5,
+          "holdout_net": -0.07099865635347458,
+          "holdout_sharpe": -0.38822092947260955,
+          "hurdle": 1.6030293922195837,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 1.645349412498934
+        }
+      },
+      "fees": 0.006,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "hurdle": 1.6030293922195837,
+      "net": -0.017841849787027853,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 34,
+      "sharpe": -0.0976454283610838,
+      "slice_id": "tail30:83bbe302:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 12.0
+    },
+    "XRP@1d": {
+      "asset": "XRP",
+      "burned": true,
+      "candidate_id": "XRP@1d:2026-10-31T13:23:51Z",
+      "dataset_id": "XRP@1d",
+      "decision_reason": "holdout net -0.7133 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 1.5,
+          "beta": 0.75,
+          "holdout_net": -0.7132675977068778,
+          "holdout_sharpe": -1.1420191096077152,
+          "hurdle": 1.6030293922195837,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 0.34388129430840125
+        },
+        "depth2": {
+          "alpha": 1.0,
+          "beta": 0.75,
+          "holdout_net": -0.4252348771846134,
+          "holdout_sharpe": -0.6797375682843235,
+          "hurdle": 1.6030293922195837,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 0.33579716536144616
+        }
+      },
+      "fees": 0.11,
+      "fitted_on": "training bars only",
+      "holdout_bars": 225,
+      "holdout_window": [
+        527,
+        752
+      ],
+      "hurdle": 1.6030293922195837,
+      "net": -0.7132675977068778,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 34,
+      "sharpe": -1.1420191096077152,
+      "slice_id": "tail30:8b303769:527-752",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 497,
+      "train_window": [
+        30,
+        527
+      ],
+      "turnover": 220.0
+    },
+    "XRP@30m": {
+      "asset": "XRP",
+      "burned": true,
+      "candidate_id": "XRP@30m:2026-10-31T13:23:51Z",
+      "dataset_id": "XRP@30m",
+      "decision_reason": "holdout net -0.0233 after fees",
+      "depth_comparison": {
+        "depth1": {
+          "alpha": 1.5,
+          "beta": 0.0,
+          "holdout_net": -0.17188399143199642,
+          "holdout_sharpe": -17.843211028011893,
+          "hurdle": 23.355476356407614,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": -2.5928848119433003
+        },
+        "depth2": {
+          "alpha": 1.25,
+          "beta": 0.0,
+          "holdout_net": -0.023265526337304332,
+          "holdout_sharpe": -2.415100086736221,
+          "hurdle": 23.355476356407614,
+          "passed": false,
+          "searched_trials": 34,
+          "train_sharpe": 0.24326007511622658
+        }
+      },
+      "fees": 0.065,
+      "fitted_on": "training bars only",
+      "holdout_bars": 299,
+      "holdout_window": [
+        700,
+        999
+      ],
+      "hurdle": 23.355476356407614,
+      "net": -0.023265526337304332,
+      "passed": false,
+      "role": "confirmation_holdout",
+      "searched_trials": 34,
+      "sharpe": -2.415100086736221,
+      "slice_id": "tail30:4a4e0747:700-999",
+      "status": "CONFIRMATION_REJECTED",
+      "train_bars": 670,
+      "train_window": [
+        30,
+        700
+      ],
+      "turnover": 130.0
+    }
+  },
+  "holdout_ledger": "benchmarks/quantum_compilation/quantum_signal_holdouts.jsonl",
+  "holdout_reuse_refusals": [
+    {
+      "dataset_id": "AAPL@1d",
+      "error": "DATA SNOOPING VIOLATION: Dataset slice 'AAPL@1d:tail30:7cfca638:527-752' was previously burned by failing candidate 'AAPL@1d:2026-10-31T12:47:51Z'. Confirmation holdouts may not be reused for replacement hypotheses.",
+      "refused": true,
+      "slice_id": "tail30:7cfca638:527-752"
+    },
+    {
+      "dataset_id": "ADA@1d",
+      "error": "DATA SNOOPING VIOLATION: Dataset slice 'ADA@1d:tail30:11eec030:527-752' was previously burned by failing candidate 'ADA@1d:2026-10-31T13:13:26Z'. Confirmation holdouts may not be reused for replacement hypotheses.",
+      "refused": true,
+      "slice_id": "tail30:11eec030:527-752"
+    }
+  ],
+  "limitations": [
+    "the fixed maps have no trainable parameters; the parameterised map is fitted on 12 grid points per dataset and that search is charged to the deflation, so the fit is not quoted as a lone hypothesis",
+    "the closed form prod_i cos(alpha_i x_i + beta_i) means every map here is classically computable in O(n) floating-point operations; the statevector simulation is the definition of the circuit, not the cheapest evaluation, so no advantage is claimed",
+    "ten datasets across two resolutions (six daily panels, four 15-minute snapshots), no slippage beyond the declared fee, and no live feed",
+    "the holdout is temporal and consumed once: a slice whose candidate loses money after fees is burned in the durable ledger and cannot be re-entered, so this record is not regenerable from the same slices by design",
+    "the holding period is one bar, so the 15-minute rows annualise a Sharpe estimated from roughly ten days of bars and should be read as a resolution comparison, not a ten-day backtest of a trading business"
+  ],
+  "maps": [
+    {
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "closed_form": "prod_i cos(pi * x_i)",
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "gates": [
+        "ry(pi*H-MOM) q0",
+        "ry(pi*CVD) q1",
+        "cx q1->q0"
+      ],
+      "layers": 1,
+      "qubits": 2
+    },
+    {
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "closed_form": "prod_i cos(pi * x_i)",
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "gates": [
+        "ry(pi*H-MOM) q0",
+        "ry(pi*CVD) q1",
+        "ry(pi*H-BB) q2",
+        "cx q1->q0",
+        "cx q2->q0"
+      ],
+      "layers": 1,
+      "qubits": 3
+    }
+  ],
+  "n_trials": 410,
+  "parameterised": {
+    "ansatz_depths": [
+      1,
+      2
+    ],
+    "closed_form": "prod_i cos(alpha_i * x_i + beta_i) at depth 1; dense unitary marginal above it (no product form exists)",
+    "evaluations_per_depth": 17,
+    "features": [
+      "H-MOM",
+      "CVD",
+      "H-BB"
+    ],
+    "fit_slice": "training bars only",
+    "fits": [
+      {
+        "alphas": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "annualization": 365.0,
+        "asset": "AMZN",
+        "betas": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "candidates": [
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.0120368763509093
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.09048170353366061
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.0120368763509093
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -1.630052381481877
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.6316208480985526
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.21194161263641081
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.0120368763509093
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -1.630052381481877
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.6316208480985526
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.019934021266667296
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.09048170353366061
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.25,
+            "layers": 1,
+            "sharpe": -0.5013341603203298
+          },
+          {
+            "alpha": 1.75,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": 0.16679877351305186
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": -0.4502331182743763
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": -0.2431522297218044
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.019934021266667296
+          },
+          {
+            "alpha": 1.75,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": 0.2724893307453866
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.8124040509639248
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.5972632074559998
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.018066015507984142
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -1.2324952095902055
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.2761732457711367
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.5972632074559998
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.018066015507984142
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -1.2324952095902055
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.2761732457711367
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.08852561775293748
+          },
+          {
+            "alpha": 0.75,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.6404088002986351
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.25,
+            "layers": 2,
+            "sharpe": -1.4542195549326882
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.25,
+            "layers": 2,
+            "sharpe": 0.4257692580822618
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.08852561775293748
+          },
+          {
+            "alpha": 0.75,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.6404088002986351
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.25,
+            "layers": 2,
+            "sharpe": -1.4542195549326882
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.25,
+            "layers": 2,
+            "sharpe": 0.4257692580822618
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "2382510bb0b9156f38580c07a95a64cd640c6458db4dd51dced23a4f1272f941",
+        "closed_form": null,
+        "dataset_id": "AMZN@1d",
+        "effective_trial_count": 34,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(1.0*H-MOM+0.0) q0",
+          "ry(1.0*CVD+0.0) q1",
+          "ry(1.0*H-BB+0.0) q2",
+          "cx q1->q0",
+          "cx q2->q0",
+          "# layer 2",
+          "ry(1.0*H-MOM+0.0) q0",
+          "ry(1.0*CVD+0.0) q1",
+          "ry(1.0*H-BB+0.0) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 34,
+        "in_sample_sharpe": 0.8124040509639248,
+        "layers": 2,
+        "n_trials": 410,
+        "optimiser": "continuous",
+        "reference": "dense unitary marginal (exact_marginal)",
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.043855920324823536,
+            "expected_max_sr": 2.257862996683092,
+            "is_significant": false,
+            "p_value": 0.9561440796751765,
+            "se_sharpe": 0.84648902237126
+          },
+          "fees": 0.138,
+          "gross": 0.6791041752840439,
+          "kurtosis": 7.6248881716597525,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 0.5411041752840438,
+          "sharpe": 0.8124040509639248,
+          "skewness": 0.6885818228677436,
+          "turnover": 276.0
+        },
+        "trial_count": 34,
+        "var_trials": 0.5693343315865286
+      },
+      {
+        "alphas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "annualization": 365.0,
+        "asset": "JPM",
+        "betas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.002340763137587627
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.09616133833498697
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.002340763137587627
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.19531190364947235
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.8396001372855925
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.0901707698562069
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.002340763137587627
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.19531190364947235
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.8396001372855925
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.0318379049892452
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.09591288097864058
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.25,
+            "layers": 1,
+            "sharpe": -0.1062259619225033
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": -0.8461092115538535
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.0318379049892452
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.09591288097864058
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.25,
+            "layers": 1,
+            "sharpe": -0.1062259619225033
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": -0.8461092115538535
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.13820046826652652
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -1.142300545589772
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.016847282221243688
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 0.3957755697864727
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.016847282221243688
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.02816540242716689
+          },
+          {
+            "alpha": 0.5,
+            "beta": 1.0,
+            "layers": 2,
+            "sharpe": 0.04249412830885412
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.016847282221243688
+          },
+          {
+            "alpha": 0.75,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.43183328172223706
+          },
+          {
+            "alpha": 0.25,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.013343973615142847
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.75,
+            "layers": 2,
+            "sharpe": 0.0011857518706814907
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.25,
+            "layers": 2,
+            "sharpe": 0.166962140336223
+          },
+          {
+            "alpha": 0.75,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.43183328172223706
+          },
+          {
+            "alpha": 0.25,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.013343973615142847
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.75,
+            "layers": 2,
+            "sharpe": 0.0011857518706814907
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.25,
+            "layers": 2,
+            "sharpe": 0.166962140336223
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "7fd793012ecca8ea1893232d9f1c334992e5b396ca168217e97b8073b09ef40a",
+        "closed_form": null,
+        "dataset_id": "JPM@1d",
+        "effective_trial_count": 34,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(0.5*H-MOM+0.5) q0",
+          "ry(0.5*CVD+0.5) q1",
+          "ry(0.5*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0",
+          "# layer 2",
+          "ry(0.5*H-MOM+0.5) q0",
+          "ry(0.5*CVD+0.5) q1",
+          "ry(0.5*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 33,
+        "in_sample_sharpe": 0.3957755697864727,
+        "layers": 2,
+        "n_trials": 410,
+        "optimiser": "continuous",
+        "reference": "dense unitary marginal (exact_marginal)",
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.014906474348361436,
+            "expected_max_sr": 2.257862996683092,
+            "is_significant": false,
+            "p_value": 0.9850935256516385,
+            "se_sharpe": 0.8570910505076725
+          },
+          "fees": 0.062,
+          "gross": 0.22819910031463486,
+          "kurtosis": 3.8890262071403843,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 0.16619910031463483,
+          "sharpe": 0.3957755697864727,
+          "skewness": 0.09905977850879984,
+          "turnover": 124.0
+        },
+        "trial_count": 33,
+        "var_trials": 0.5693343315865286
+      },
+      {
+        "alphas": [
+          0.75,
+          0.75,
+          0.75
+        ],
+        "annualization": 365.0,
+        "asset": "XOM",
+        "betas": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "candidates": [
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 1.6314219112211379
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.07951400186092754
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 1.2510406734780348
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": 1.5210467601923636
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": 0.2000778732022172
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.07951400186092754
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 1.2510406734780348
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": 1.5210467601923636
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": 0.2000778732022172
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 1.0532610586650808
+          },
+          {
+            "alpha": 0.75,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 1.6487851394931805
+          },
+          {
+            "alpha": 0.75,
+            "beta": 0.25,
+            "layers": 1,
+            "sharpe": 1.319436650044857
+          },
+          {
+            "alpha": 0.75,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": 1.5291330694215373
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 1.6314219112211379
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 1.2510406734780348
+          },
+          {
+            "alpha": 0.75,
+            "beta": 0.25,
+            "layers": 1,
+            "sharpe": 1.319436650044857
+          },
+          {
+            "alpha": 0.75,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": 1.5291330694215373
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.6144594221539076
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.32035361989644273
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.632326242039577
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 1.645349412498934
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.632326242039577
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 0.10260866387583556
+          },
+          {
+            "alpha": 0.5,
+            "beta": 1.0,
+            "layers": 2,
+            "sharpe": -0.2317474646551604
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.632326242039577
+          },
+          {
+            "alpha": 0.75,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 0.530495317090571
+          },
+          {
+            "alpha": 0.25,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 1.487922157406788
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.75,
+            "layers": 2,
+            "sharpe": 0.27589760148415776
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.25,
+            "layers": 2,
+            "sharpe": 1.11472915472057
+          },
+          {
+            "alpha": 0.75,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 0.530495317090571
+          },
+          {
+            "alpha": 0.25,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 1.487922157406788
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.75,
+            "layers": 2,
+            "sharpe": 0.27589760148415776
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.25,
+            "layers": 2,
+            "sharpe": 1.11472915472057
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "1cffab0d43b7c01621decc6235e3f6bd6da805204677a1f8c59297c847a64aa4",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "XOM@1d",
+        "effective_trial_count": 34,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(0.75*H-MOM+0.0) q0",
+          "ry(0.75*CVD+0.0) q1",
+          "ry(0.75*H-BB+0.0) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 33,
+        "in_sample_sharpe": 1.6487851394931805,
+        "layers": 1,
+        "n_trials": 410,
+        "optimiser": "continuous",
+        "reference": "product closed form",
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.24105537846625813,
+            "expected_max_sr": 2.257862996683092,
+            "is_significant": false,
+            "p_value": 0.7589446215337419,
+            "se_sharpe": 0.8665068828597278
+          },
+          "fees": 0.03,
+          "gross": 0.8894328573730959,
+          "kurtosis": 3.54265905956095,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 0.8594328573730958,
+          "sharpe": 1.6487851394931805,
+          "skewness": -0.18049851432703318,
+          "turnover": 60.0
+        },
+        "trial_count": 33,
+        "var_trials": 0.5693343315865286
+      },
+      {
+        "alphas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "annualization": 365.0,
+        "asset": "WMT",
+        "betas": [
+          -1.0,
+          -1.0,
+          -1.0
+        ],
+        "candidates": [
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.7677173435885437
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.38188218398885526
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.7677173435885437
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -1.453636916884078
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": 0.23476450584144803
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -1.4231069715123754
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -0.44573562982650805
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.38188218398885526
+          },
+          {
+            "alpha": 1.5,
+            "beta": -1.0,
+            "layers": 1,
+            "sharpe": 0.3120672583207556
+          },
+          {
+            "alpha": 1.75,
+            "beta": -1.0,
+            "layers": 1,
+            "sharpe": 0.14646689411054914
+          },
+          {
+            "alpha": 1.25,
+            "beta": -1.0,
+            "layers": 1,
+            "sharpe": -0.5077587096018318
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.75,
+            "layers": 1,
+            "sharpe": -0.08256432829582848
+          },
+          {
+            "alpha": 1.5,
+            "beta": -1.25,
+            "layers": 1,
+            "sharpe": -0.13009461761358002
+          },
+          {
+            "alpha": 1.75,
+            "beta": -1.0,
+            "layers": 1,
+            "sharpe": 0.14646689411054914
+          },
+          {
+            "alpha": 1.25,
+            "beta": -1.0,
+            "layers": 1,
+            "sharpe": -0.5077587096018318
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.75,
+            "layers": 1,
+            "sharpe": -0.08256432829582848
+          },
+          {
+            "alpha": 1.5,
+            "beta": -1.25,
+            "layers": 1,
+            "sharpe": -0.13009461761358002
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -1.0620558929383273
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -1.2596747668312303
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.08455599611230703
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.9854824767508318
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.052506970471434676
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -1.1699502298380158
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.08455599611230703
+          },
+          {
+            "alpha": 0.5,
+            "beta": -1.0,
+            "layers": 2,
+            "sharpe": 0.9866533323309735
+          },
+          {
+            "alpha": 0.75,
+            "beta": -1.0,
+            "layers": 2,
+            "sharpe": 0.5358872979166049
+          },
+          {
+            "alpha": 0.25,
+            "beta": -1.0,
+            "layers": 2,
+            "sharpe": -0.056230863556435716
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.75,
+            "layers": 2,
+            "sharpe": 0.5378984102972411
+          },
+          {
+            "alpha": 0.5,
+            "beta": -1.25,
+            "layers": 2,
+            "sharpe": -0.04306125616922926
+          },
+          {
+            "alpha": 0.75,
+            "beta": -1.0,
+            "layers": 2,
+            "sharpe": 0.5358872979166049
+          },
+          {
+            "alpha": 0.25,
+            "beta": -1.0,
+            "layers": 2,
+            "sharpe": -0.056230863556435716
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.75,
+            "layers": 2,
+            "sharpe": 0.5378984102972411
+          },
+          {
+            "alpha": 0.5,
+            "beta": -1.25,
+            "layers": 2,
+            "sharpe": -0.04306125616922926
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "182785e961d0a1a14d416471d9f6d5a779f61b175e3d827f45eb69a9f3bb1060",
+        "closed_form": null,
+        "dataset_id": "WMT@1d",
+        "effective_trial_count": 34,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(0.5*H-MOM-1.0) q0",
+          "ry(0.5*CVD-1.0) q1",
+          "ry(0.5*H-BB-1.0) q2",
+          "cx q1->q0",
+          "cx q2->q0",
+          "# layer 2",
+          "ry(0.5*H-MOM-1.0) q0",
+          "ry(0.5*CVD-1.0) q1",
+          "ry(0.5*H-BB-1.0) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 33,
+        "in_sample_sharpe": 0.9866533323309735,
+        "layers": 2,
+        "n_trials": 410,
+        "optimiser": "continuous",
+        "reference": "dense unitary marginal (exact_marginal)",
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.06089889075222257,
+            "expected_max_sr": 2.257862996683092,
+            "is_significant": false,
+            "p_value": 0.9391011092477775,
+            "se_sharpe": 0.8215814947227357
+          },
+          "fees": 0.088,
+          "gross": 0.4518687869070779,
+          "kurtosis": 16.92848835681263,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 0.36386878690707786,
+          "sharpe": 0.9866533323309735,
+          "skewness": 1.807876392750205,
+          "turnover": 176.0
+        },
+        "trial_count": 33,
+        "var_trials": 0.5693343315865286
+      },
+      {
+        "alphas": [
+          1.5,
+          1.5,
+          1.5
+        ],
+        "annualization": 365.0,
+        "asset": "XRP",
+        "betas": [
+          0.75,
+          0.75,
+          0.75
+        ],
+        "candidates": [
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.667369889336359
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.89435563864366
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.667369889336359
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.16012875202517327
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.89435563864366
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.5660885454187015
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.3507781813098394
+          },
+          {
+            "alpha": 1.5,
+            "beta": 1.0,
+            "layers": 1,
+            "sharpe": -0.9967047573838914
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.89435563864366
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.181374689408142
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.30458327917936273
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.75,
+            "layers": 1,
+            "sharpe": 0.34388129430840125
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.16012875202517327
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.75,
+            "layers": 1,
+            "sharpe": -1.4245217974372686
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.75,
+            "layers": 1,
+            "sharpe": -0.0651081554096779
+          },
+          {
+            "alpha": 1.5,
+            "beta": 1.0,
+            "layers": 1,
+            "sharpe": -0.9967047573838914
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.16012875202517327
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.8634348571026206
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.3971375581872268
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.8634348571026206
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.09036219725361994
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.3971375581872268
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.5630736650470074
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.6027690660346277
+          },
+          {
+            "alpha": 1.5,
+            "beta": 1.0,
+            "layers": 2,
+            "sharpe": -0.6927670730601416
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.3971375581872268
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.287112303536201
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 0.04944058030750354
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.75,
+            "layers": 2,
+            "sharpe": 0.10335489476409879
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": 0.04944058030750354
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.75,
+            "layers": 2,
+            "sharpe": -0.19188124685792463
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.75,
+            "layers": 2,
+            "sharpe": 0.33579716536144616
+          },
+          {
+            "alpha": 1.0,
+            "beta": 1.0,
+            "layers": 2,
+            "sharpe": -0.6953751927313827
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.6027690660346277
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "fbb96a4f9b928f7907b9805efe04b9b770ca4e6bfce6850ef1bfa51b8c49cd90",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "XRP@1d",
+        "effective_trial_count": 34,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(1.5*H-MOM+0.75) q0",
+          "ry(1.5*CVD+0.75) q1",
+          "ry(1.5*H-BB+0.75) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 34,
+        "in_sample_sharpe": 0.34388129430840125,
+        "layers": 1,
+        "n_trials": 410,
+        "optimiser": "continuous",
+        "reference": "product closed form",
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.012770264251085444,
+            "expected_max_sr": 2.257862996683092,
+            "is_significant": false,
+            "p_value": 0.9872297357489146,
+            "se_sharpe": 0.8570856720870277
+          },
+          "fees": 0.22,
+          "gross": 0.8318600545403207,
+          "kurtosis": 12.242367789477537,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 0.6118600545403206,
+          "sharpe": 0.34388129430840125,
+          "skewness": 0.14807408209312647,
+          "turnover": 440.0
+        },
+        "trial_count": 34,
+        "var_trials": 0.5693343315865286
+      },
+      {
+        "alphas": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "annualization": 365.0,
+        "asset": "DOT",
+        "betas": [
+          -0.75,
+          -0.75,
+          -0.75
+        ],
+        "candidates": [
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.6085469937308026
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 0.28080695776863573
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.6085469937308026
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.3532634504852222
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -1.2269365565151578
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.4988208687451926
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.6085469937308026
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -0.3532634504852222
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -1.2269365565151578
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.1534316751446136
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.25359359433103196
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.25,
+            "layers": 1,
+            "sharpe": -0.6888526636063891
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": -0.9371191862249643
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.1534316751446136
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.25359359433103196
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.25,
+            "layers": 1,
+            "sharpe": -0.6888526636063891
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": -0.9371191862249643
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -1.1451572548826698
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.7282772942224941
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -1.1451572548826698
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.7284242744460138
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.028984827092438412
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.6665097892257248
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.028984827092438412
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.0773510368591951
+          },
+          {
+            "alpha": 2.0,
+            "beta": -1.0,
+            "layers": 2,
+            "sharpe": 1.0112578378493684
+          },
+          {
+            "alpha": 2.25,
+            "beta": -1.0,
+            "layers": 2,
+            "sharpe": 0.4732022673106791
+          },
+          {
+            "alpha": 1.75,
+            "beta": -1.0,
+            "layers": 2,
+            "sharpe": 1.015888182385639
+          },
+          {
+            "alpha": 1.75,
+            "beta": -0.75,
+            "layers": 2,
+            "sharpe": 1.0315728014045384
+          },
+          {
+            "alpha": 1.75,
+            "beta": -1.0,
+            "layers": 2,
+            "sharpe": 1.015888182385639
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.75,
+            "layers": 2,
+            "sharpe": 1.099648181639348
+          },
+          {
+            "alpha": 1.75,
+            "beta": -0.75,
+            "layers": 2,
+            "sharpe": 1.0315728014045384
+          },
+          {
+            "alpha": 2.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": 0.6665097892257248
+          },
+          {
+            "alpha": 2.0,
+            "beta": -1.0,
+            "layers": 2,
+            "sharpe": 1.0112578378493684
+          }
+        ],
+        "causality": {
+          "bars_compared": 703,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "4369954648d823e76b9630663fb3df534e560ec0b7f7f6f2619f7e4af0c041c6",
+        "closed_form": null,
+        "dataset_id": "DOT@1d",
+        "effective_trial_count": 34,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          527
+        ],
+        "gates": [
+          "ry(2.0*H-MOM-0.75) q0",
+          "ry(2.0*CVD-0.75) q1",
+          "ry(2.0*H-BB-0.75) q2",
+          "cx q1->q0",
+          "cx q2->q0",
+          "# layer 2",
+          "ry(2.0*H-MOM-0.75) q0",
+          "ry(2.0*CVD-0.75) q1",
+          "ry(2.0*H-BB-0.75) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 34,
+        "in_sample_sharpe": 1.099648181639348,
+        "layers": 2,
+        "n_trials": 410,
+        "optimiser": "continuous",
+        "reference": "dense unitary marginal (exact_marginal)",
+        "resolution": "1d",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 0.0836972247801489,
+            "expected_max_sr": 2.257862996683092,
+            "is_significant": false,
+            "p_value": 0.9163027752198512,
+            "se_sharpe": 0.8389064688000679
+          },
+          "fees": 0.11900000000000001,
+          "gross": 2.1402907483912452,
+          "kurtosis": 8.40321267918147,
+          "n_invalid": 0.0,
+          "n_obs": 497.0,
+          "net": 2.021290748391245,
+          "sharpe": 1.099648181639348,
+          "skewness": 0.8649284204573287,
+          "turnover": 238.0
+        },
+        "trial_count": 34,
+        "var_trials": 0.5693343315865286
+      },
+      {
+        "alphas": [
+          1.25,
+          1.25,
+          1.25
+        ],
+        "annualization": 17520.0,
+        "asset": "XRP",
+        "betas": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "candidates": [
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -3.5570824845646762
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -2.5928848119433003
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -3.5570824845646762
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -8.534318206508932
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -8.490469293897757
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -7.957791376845047
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -3.5570824845646762
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -8.534318206508932
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -8.490469293897757
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -12.053772314840485
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -3.9205413217764824
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.25,
+            "layers": 1,
+            "sharpe": -13.534655336857927
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": -3.417191470172779
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -12.053772314840485
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -3.9205413217764824
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.25,
+            "layers": 1,
+            "sharpe": -13.534655336857927
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": -3.417191470172779
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.5437304724989971
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -7.377622875193061
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -2.4892818468649294
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -10.302279729615101
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -6.580384472339175
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -7.377622875193061
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -2.4892818468649294
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -10.302279729615101
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -6.580384472339175
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 0.24326007511622658
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.5437304724989971
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.25,
+            "layers": 2,
+            "sharpe": -3.835811542485418
+          },
+          {
+            "alpha": 1.25,
+            "beta": -0.25,
+            "layers": 2,
+            "sharpe": -4.929433367779215
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -7.377622875193061
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -0.5437304724989971
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.25,
+            "layers": 2,
+            "sharpe": -3.835811542485418
+          },
+          {
+            "alpha": 1.25,
+            "beta": -0.25,
+            "layers": 2,
+            "sharpe": -4.929433367779215
+          }
+        ],
+        "causality": {
+          "bars_compared": 950,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "e8846480c0bce1612911e4d2671756e73b44c5a34cca96b637a137ee46d12154",
+        "closed_form": null,
+        "dataset_id": "XRP@30m",
+        "effective_trial_count": 34,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          700
+        ],
+        "gates": [
+          "ry(1.25*H-MOM+0.0) q0",
+          "ry(1.25*CVD+0.0) q1",
+          "ry(1.25*H-BB+0.0) q2",
+          "cx q1->q0",
+          "cx q2->q0",
+          "# layer 2",
+          "ry(1.25*H-MOM+0.0) q0",
+          "ry(1.25*CVD+0.0) q1",
+          "ry(1.25*H-BB+0.0) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 34,
+        "in_sample_sharpe": 0.24326007511622658,
+        "layers": 2,
+        "n_trials": 410,
+        "optimiser": "continuous",
+        "reference": "dense unitary marginal (exact_marginal)",
+        "resolution": "30m",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 8.683630321425683e-11,
+            "expected_max_sr": 32.896131593709505,
+            "is_significant": false,
+            "p_value": 0.9999999999131637,
+            "se_sharpe": 5.11561410912477
+          },
+          "fees": 0.169,
+          "gross": 0.17428287194257608,
+          "kurtosis": 7.564128155595076,
+          "n_invalid": 0.0,
+          "n_obs": 670.0,
+          "net": 0.005282871942576059,
+          "sharpe": 0.24326007511622658,
+          "skewness": 0.3943159717880253,
+          "turnover": 338.0
+        },
+        "trial_count": 34,
+        "var_trials": 120.8542315942691
+      },
+      {
+        "alphas": [
+          0.25,
+          0.25,
+          0.25
+        ],
+        "annualization": 17520.0,
+        "asset": "TRX",
+        "betas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -14.27903458432435
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -27.88988305125786
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -3.6498111253714427
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -7.581020759805357
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -2.63663436580789
+          },
+          {
+            "alpha": 1.0,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -25.803943732208232
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -3.6498111253714427
+          },
+          {
+            "alpha": 0.5,
+            "beta": -1.0,
+            "layers": 1,
+            "sharpe": -16.88391350528011
+          },
+          {
+            "alpha": 0.75,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -12.169393734152376
+          },
+          {
+            "alpha": 0.25,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -3.2301879662726414
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": -3.773087651012133
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.75,
+            "layers": 1,
+            "sharpe": -5.871110091966975
+          },
+          {
+            "alpha": 0.75,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -12.169393734152376
+          },
+          {
+            "alpha": 0.25,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -3.2301879662726414
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": -3.773087651012133
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.75,
+            "layers": 1,
+            "sharpe": -5.871110091966975
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -20.519174624717042
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -35.09229462454415
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -5.528255528348751
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -10.868584085405345
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -16.20624517247419
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -20.519174624717042
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -10.868584085405345
+          },
+          {
+            "alpha": 0.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -16.20624517247419
+          },
+          {
+            "alpha": 0.75,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -12.376665645371498
+          },
+          {
+            "alpha": 0.25,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -2.726929607102648
+          },
+          {
+            "alpha": 0.25,
+            "beta": 0.25,
+            "layers": 2,
+            "sharpe": -2.1710201324407605
+          },
+          {
+            "alpha": 0.25,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -2.726929607102648
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.25,
+            "layers": 2,
+            "sharpe": -7.982807893967027
+          },
+          {
+            "alpha": 0.25,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -2.1701491166528686
+          },
+          {
+            "alpha": 0.25,
+            "beta": 0.25,
+            "layers": 2,
+            "sharpe": -2.1710201324407605
+          }
+        ],
+        "causality": {
+          "bars_compared": 950,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "403bbdb0d999000417a7a006e00ca8e89abfb115a4be461bcb6d047a7e1be203",
+        "closed_form": null,
+        "dataset_id": "TRX@30m",
+        "effective_trial_count": 34,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          700
+        ],
+        "gates": [
+          "ry(0.25*H-MOM+0.5) q0",
+          "ry(0.25*CVD+0.5) q1",
+          "ry(0.25*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0",
+          "# layer 2",
+          "ry(0.25*H-MOM+0.5) q0",
+          "ry(0.25*CVD+0.5) q1",
+          "ry(0.25*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 31,
+        "in_sample_sharpe": -2.1701491166528686,
+        "layers": 2,
+        "n_trials": 410,
+        "optimiser": "continuous",
+        "reference": "dense unitary marginal (exact_marginal)",
+        "resolution": "30m",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 2.6153468069290197e-12,
+            "expected_max_sr": 32.896131593709505,
+            "is_significant": false,
+            "p_value": 0.9999999999973846,
+            "se_sharpe": 5.082680442857652
+          },
+          "fees": 0.004,
+          "gross": -0.0076144359661263206,
+          "kurtosis": 12.35788313229266,
+          "n_invalid": 0.0,
+          "n_obs": 670.0,
+          "net": -0.01161443596612632,
+          "sharpe": -2.1701491166528686,
+          "skewness": -0.8726513696765126,
+          "turnover": 8.0
+        },
+        "trial_count": 31,
+        "var_trials": 120.8542315942691
+      },
+      {
+        "alphas": [
+          1.75,
+          1.75,
+          1.75
+        ],
+        "annualization": 17520.0,
+        "asset": "LTC",
+        "betas": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "candidates": [
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.47914673092705
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.4029971454364407
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.47914673092705
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -9.801832276509831
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -5.383009817836044
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -4.073295602821756
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -1.47914673092705
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -9.801832276509831
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 1,
+            "sharpe": -5.383009817836044
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": 2.5862405459931357
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.4029971454364407
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.25,
+            "layers": 1,
+            "sharpe": -5.929897860479243
+          },
+          {
+            "alpha": 1.75,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": -0.33754242008717694
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -4.073295602821756
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -0.4029971454364407
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.25,
+            "layers": 1,
+            "sharpe": -5.929897860479243
+          },
+          {
+            "alpha": 1.75,
+            "beta": -0.25,
+            "layers": 1,
+            "sharpe": -0.33754242008717694
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -3.386172020299102
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": 1.180569948919172
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -3.386172020299102
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.49484724466263386
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.08644520929581055
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -12.843503197189357
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -3.386172020299102
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -0.49484724466263386
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.5,
+            "layers": 2,
+            "sharpe": -0.08644520929581055
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -9.853076551901358
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -3.2337663008983997
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.25,
+            "layers": 2,
+            "sharpe": 0.0981623789265464
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.25,
+            "layers": 2,
+            "sharpe": -3.69793263791666
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -9.853076551901358
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -3.2337663008983997
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.25,
+            "layers": 2,
+            "sharpe": 0.0981623789265464
+          },
+          {
+            "alpha": 1.5,
+            "beta": -0.25,
+            "layers": 2,
+            "sharpe": -3.69793263791666
+          }
+        ],
+        "causality": {
+          "bars_compared": 950,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "f50194be86ae6c7c4c0a03f6f1950c1a79b3ecaa315365ed92eebc18c5f50260",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "LTC@30m",
+        "effective_trial_count": 34,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          700
+        ],
+        "gates": [
+          "ry(1.75*H-MOM+0.0) q0",
+          "ry(1.75*CVD+0.0) q1",
+          "ry(1.75*H-BB+0.0) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 34,
+        "in_sample_sharpe": 2.5862405459931357,
+        "layers": 1,
+        "n_trials": 410,
+        "optimiser": "continuous",
+        "reference": "product closed form",
+        "resolution": "30m",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 1.6673635621824359e-09,
+            "expected_max_sr": 32.896131593709505,
+            "is_significant": false,
+            "p_value": 0.9999999983326364,
+            "se_sharpe": 5.124926630120826
+          },
+          "fees": 0.20700000000000002,
+          "gross": 0.285905511873759,
+          "kurtosis": 15.563782610078858,
+          "n_invalid": 0.0,
+          "n_obs": 670.0,
+          "net": 0.078905511873759,
+          "sharpe": 2.5862405459931357,
+          "skewness": -0.07842606144444321,
+          "turnover": 414.0
+        },
+        "trial_count": 34,
+        "var_trials": 120.8542315942691
+      },
+      {
+        "alphas": [
+          1.5,
+          1.5,
+          1.5
+        ],
+        "annualization": 17520.0,
+        "asset": "BCH",
+        "betas": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "candidates": [
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -3.9341968926744193
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -6.140921701768386
+          },
+          {
+            "alpha": 0.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -4.740915282421632
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -2.775528277756242
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -3.9341968926744193
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -2.0124194292446296
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -2.775528277756242
+          },
+          {
+            "alpha": 1.5,
+            "beta": 1.0,
+            "layers": 1,
+            "sharpe": -6.814734422368877
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 1,
+            "sharpe": -6.140921701768386
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -9.745578343326173
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -8.099551408958707
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.75,
+            "layers": 1,
+            "sharpe": -3.318579747764398
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.25,
+            "layers": 1,
+            "sharpe": -3.8611715229855603
+          },
+          {
+            "alpha": 1.75,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -9.745578343326173
+          },
+          {
+            "alpha": 1.25,
+            "beta": 0.5,
+            "layers": 1,
+            "sharpe": -8.099551408958707
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.75,
+            "layers": 1,
+            "sharpe": -3.318579747764398
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.25,
+            "layers": 1,
+            "sharpe": -3.8611715229855603
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -8.021453667234098
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -5.045827493137537
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -8.021453667234098
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -3.4423824185232337
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.0,
+            "layers": 2,
+            "sharpe": -5.045827493137537
+          },
+          {
+            "alpha": 2.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -5.066643182621717
+          },
+          {
+            "alpha": 1.0,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -11.439070437202815
+          },
+          {
+            "alpha": 1.5,
+            "beta": 1.0,
+            "layers": 2,
+            "sharpe": -2.4494592017401424
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.5,
+            "layers": 2,
+            "sharpe": -3.4423824185232337
+          },
+          {
+            "alpha": 1.75,
+            "beta": 1.0,
+            "layers": 2,
+            "sharpe": -7.984191012159216
+          },
+          {
+            "alpha": 1.25,
+            "beta": 1.0,
+            "layers": 2,
+            "sharpe": -3.3053784783769475
+          },
+          {
+            "alpha": 1.5,
+            "beta": 1.25,
+            "layers": 2,
+            "sharpe": -7.71967455440193
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.75,
+            "layers": 2,
+            "sharpe": -2.9312491790277226
+          },
+          {
+            "alpha": 1.75,
+            "beta": 1.0,
+            "layers": 2,
+            "sharpe": -7.984191012159216
+          },
+          {
+            "alpha": 1.25,
+            "beta": 1.0,
+            "layers": 2,
+            "sharpe": -3.3053784783769475
+          },
+          {
+            "alpha": 1.5,
+            "beta": 1.25,
+            "layers": 2,
+            "sharpe": -7.71967455440193
+          },
+          {
+            "alpha": 1.5,
+            "beta": 0.75,
+            "layers": 2,
+            "sharpe": -2.9312491790277226
+          }
+        ],
+        "causality": {
+          "bars_compared": 950,
+          "max_absolute_deviation": 0.0,
+          "unchanged": true
+        },
+        "circuit_sha256": "937deb4e2b08adf94e31de3d5b6c771a12d245484cebe8eb20f61d732fd5a337",
+        "closed_form": "prod_i cos(alpha_i * x_i + beta_i)",
+        "dataset_id": "BCH@30m",
+        "effective_trial_count": 34,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "fit_window": [
+          30,
+          700
+        ],
+        "gates": [
+          "ry(1.5*H-MOM+0.5) q0",
+          "ry(1.5*CVD+0.5) q1",
+          "ry(1.5*H-BB+0.5) q2",
+          "cx q1->q0",
+          "cx q2->q0"
+        ],
+        "grid_size": 34,
+        "in_sample_sharpe": -2.0124194292446296,
+        "layers": 1,
+        "n_trials": 410,
+        "optimiser": "continuous",
+        "reference": "product closed form",
+        "resolution": "30m",
+        "train_summary": {
+          "active_fraction": 1.0,
+          "dsr": {
+            "dsr": 5.7919321886317176e-12,
+            "expected_max_sr": 32.896131593709505,
+            "is_significant": false,
+            "p_value": 0.9999999999942081,
+            "se_sharpe": 5.1447256363281575
+          },
+          "fees": 0.22,
+          "gross": 0.16597674652776284,
+          "kurtosis": 12.230399120116408,
+          "n_invalid": 0.0,
+          "n_obs": 670.0,
+          "net": -0.05402325347223718,
+          "sharpe": -2.0124194292446296,
+          "skewness": 0.6601968984835321,
+          "turnover": 440.0
+        },
+        "trial_count": 34,
+        "var_trials": 120.8542315942691
+      }
+    ],
+    "grid": null,
+    "grid_size": null,
+    "optimiser": "continuous",
+    "trial_ledger": {
+      "effective_trial_count": 340,
+      "hidden_trials": 6,
+      "mean_sharpe": -2.5208385938806734,
+      "naive_trial_count": 334,
+      "note": "every grid point is one recorded trial, so the fit is charged at the size of its search exactly as the threshold sweep is",
+      "records": 334,
+      "search_groups": [
+        "AMZN@1d:depth1",
+        "AMZN@1d:depth2",
+        "BCH@30m:depth1",
+        "BCH@30m:depth2",
+        "DOT@1d:depth1",
+        "DOT@1d:depth2",
+        "JPM@1d:depth1",
+        "JPM@1d:depth2",
+        "LTC@30m:depth1",
+        "LTC@30m:depth2",
+        "TRX@30m:depth1",
+        "TRX@30m:depth2",
+        "WMT@1d:depth1",
+        "WMT@1d:depth2",
+        "XOM@1d:depth1",
+        "XOM@1d:depth2",
+        "XRP@1d:depth1",
+        "XRP@1d:depth2",
+        "XRP@30m:depth1",
+        "XRP@30m:depth2"
+      ],
+      "var_sharpe": 21.74283968180938
+    }
+  },
+  "rows": [
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "AMZN",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "AMZN@1d",
+      "dsr": {
+        "dsr": 5.714559794256155e-06,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999942854402057,
+        "se_sharpe": 0.7058016839126537
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.273,
+      "gross": -0.48298177495325945,
+      "kind": "quantum",
+      "kurtosis": 7.686536870185677,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.7559817749532596,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.83933790640545,
+      "skewness": -0.43697707370141237,
+      "threshold": 0.0,
+      "turnover": 546.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.8753462603878116,
+      "annualization": 365.0,
+      "asset": "AMZN",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "AMZN@1d",
+      "dsr": {
+        "dsr": 3.8205956541462636e-07,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999996179404346,
+        "se_sharpe": 0.6978710981332498
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.278,
+      "gross": -0.7062902840850205,
+      "kind": "quantum",
+      "kurtosis": 9.640307869809694,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.9842902840850206,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.1926318119631496,
+      "skewness": -0.7429417682547274,
+      "threshold": 0.2,
+      "turnover": 556.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.682825484764543,
+      "annualization": 365.0,
+      "asset": "AMZN",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "AMZN@1d",
+      "dsr": {
+        "dsr": 1.3307970733032284e-05,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999866920292669,
+        "se_sharpe": 0.708897345860733
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.264,
+      "gross": -0.24229797598561031,
+      "kind": "quantum",
+      "kurtosis": 10.569933621948444,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.5062979759856104,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.7199608210010723,
+      "skewness": -0.2844143141414738,
+      "threshold": 0.5,
+      "turnover": 528.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "AMZN",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "AMZN@1d",
+      "dsr": {
+        "dsr": 0.00522018152879858,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9947798184712014,
+        "se_sharpe": 0.7066137169413106
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.28800000000000003,
+      "gross": 0.6909079177825284,
+      "kind": "quantum",
+      "kurtosis": 7.595762449315031,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 0.40290791778252816,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.44830116875344916,
+      "skewness": 0.6227795275739445,
+      "threshold": 0.0,
+      "turnover": 576.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.7063711911357341,
+      "annualization": 365.0,
+      "asset": "AMZN",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "AMZN@1d",
+      "dsr": {
+        "dsr": 0.000877484976373767,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9991225150236263,
+        "se_sharpe": 0.7112635935314001
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.252,
+      "gross": 0.2753202414293723,
+      "kind": "quantum",
+      "kurtosis": 9.812412268148103,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 0.023320241429372158,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.03243200591903907,
+      "skewness": 0.40569506219636103,
+      "threshold": 0.2,
+      "turnover": 504.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.40166204986149584,
+      "annualization": 365.0,
+      "asset": "AMZN",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "AMZN@1d",
+      "dsr": {
+        "dsr": 0.00037995727185930037,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9996200427281406,
+        "se_sharpe": 0.7133677987824785
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.178,
+      "gross": 0.09722559193584956,
+      "kind": "quantum",
+      "kurtosis": 20.870216462937208,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.08077440806415051,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.14404439871415176,
+      "skewness": 0.6574309853951484,
+      "threshold": 0.5,
+      "turnover": 356.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "JPM",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "JPM@1d",
+      "dsr": {
+        "dsr": 0.003258307089892558,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9967416929101074,
+        "se_sharpe": 0.7131810315420419
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.278,
+      "gross": 0.46168379576522245,
+      "kind": "quantum",
+      "kurtosis": 4.800534401814066,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 0.1836837957652223,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.31759202726476704,
+      "skewness": -0.26771177817197683,
+      "threshold": 0.0,
+      "turnover": 556.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.8573407202216067,
+      "annualization": 365.0,
+      "asset": "JPM",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "JPM@1d",
+      "dsr": {
+        "dsr": 0.006261632194850101,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9937383678051499,
+        "se_sharpe": 0.7143734563544696
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2715,
+      "gross": 0.5275836085965668,
+      "kind": "quantum",
+      "kurtosis": 5.396015973448337,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 0.2560836085965667,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.47403948071990193,
+      "skewness": -0.2981900662109951,
+      "threshold": 0.2,
+      "turnover": 543.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.6592797783933518,
+      "annualization": 365.0,
+      "asset": "JPM",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "JPM@1d",
+      "dsr": {
+        "dsr": 0.0020584888624406435,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9979415111375594,
+        "se_sharpe": 0.7130582603365074
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2475,
+      "gross": 0.34700727330072745,
+      "kind": "quantum",
+      "kurtosis": 6.4478143003458905,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 0.09950727330072734,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.21205829883308935,
+      "skewness": -0.37831819412836337,
+      "threshold": 0.5,
+      "turnover": 495.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "JPM",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "JPM@1d",
+      "dsr": {
+        "dsr": 7.193310189614754e-06,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999928066898104,
+        "se_sharpe": 0.7101055546420267
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.303,
+      "gross": -0.17260007538035804,
+      "kind": "quantum",
+      "kurtosis": 4.807858394648912,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.4756000753803582,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.8224869278079335,
+      "skewness": -0.13235756130084744,
+      "threshold": 0.0,
+      "turnover": 606.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.6592797783933518,
+      "annualization": 365.0,
+      "asset": "JPM",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "JPM@1d",
+      "dsr": {
+        "dsr": 2.098028453276654e-09,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999999979019716,
+        "se_sharpe": 0.7049617972231993
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.2635,
+      "gross": -0.6538320179874431,
+      "kind": "quantum",
+      "kurtosis": 6.761093416274076,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.9173320179874431,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.8846850993928268,
+      "skewness": -0.32770748171822284,
+      "threshold": 0.2,
+      "turnover": 527.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.37534626038781166,
+      "annualization": 365.0,
+      "asset": "JPM",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "JPM@1d",
+      "dsr": {
+        "dsr": 0.0006036571875201881,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9993963428124798,
+        "se_sharpe": 0.7116026240960112
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.17250000000000001,
+      "gross": 0.157255287214924,
+      "kind": "quantum",
+      "kurtosis": 8.278030965975654,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.015244712785076078,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.04569890938653742,
+      "skewness": 0.1087540274581399,
+      "threshold": 0.5,
+      "turnover": 345.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "XOM",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "XOM@1d",
+      "dsr": {
+        "dsr": 3.095868564915419e-05,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999690413143508,
+        "se_sharpe": 0.7116315438600076
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.277,
+      "gross": -0.14424839414201474,
+      "kind": "quantum",
+      "kurtosis": 3.7347018871389044,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.42124839414201487,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.5924930874979832,
+      "skewness": -0.009856956652281043,
+      "threshold": 0.0,
+      "turnover": 554.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.8781163434903048,
+      "annualization": 365.0,
+      "asset": "XOM",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "XOM@1d",
+      "dsr": {
+        "dsr": 1.5898958519745078e-05,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999841010414803,
+        "se_sharpe": 0.7133947453824824
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.279,
+      "gross": -0.1931297151223652,
+      "kind": "quantum",
+      "kurtosis": 3.948973293532696,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.47212971512236535,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.7099966269617328,
+      "skewness": 0.11562389169670446,
+      "threshold": 0.2,
+      "turnover": 558.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.6842105263157895,
+      "annualization": 365.0,
+      "asset": "XOM",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "XOM@1d",
+      "dsr": {
+        "dsr": 1.9922527952524623e-06,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999980077472047,
+        "se_sharpe": 0.714149536113338
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2655,
+      "gross": -0.3357855481791723,
+      "kind": "quantum",
+      "kurtosis": 4.919678208869688,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.6012855481791723,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.0359295941421185,
+      "skewness": 0.08414216898264673,
+      "threshold": 0.5,
+      "turnover": 531.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "XOM",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "XOM@1d",
+      "dsr": {
+        "dsr": 0.002742681392192982,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.997257318607807,
+        "se_sharpe": 0.7103698493425868
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.307,
+      "gross": 0.5096923247493668,
+      "kind": "quantum",
+      "kurtosis": 3.6924831301665333,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 0.2026923247493666,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.28512572616712656,
+      "skewness": 0.22393853341033912,
+      "threshold": 0.0,
+      "turnover": 614.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.6814404432132964,
+      "annualization": 365.0,
+      "asset": "XOM",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "XOM@1d",
+      "dsr": {
+        "dsr": 0.000836958956105242,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9991630410438948,
+        "se_sharpe": 0.7114195391930759
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.2755,
+      "gross": 0.28841606136817477,
+      "kind": "quantum",
+      "kurtosis": 4.914124878645074,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 0.012916061368174643,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.02207794486966513,
+      "skewness": 0.21235605132048885,
+      "threshold": 0.2,
+      "turnover": 551.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.3878116343490305,
+      "annualization": 365.0,
+      "asset": "XOM",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "XOM@1d",
+      "dsr": {
+        "dsr": 0.0009495019675908632,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9990504980324091,
+        "se_sharpe": 0.7115210990877099
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1825,
+      "gross": 0.20381540839164325,
+      "kind": "quantum",
+      "kurtosis": 7.63344070680583,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 0.02131540839164317,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.04817082084889421,
+      "skewness": -0.012226169215938304,
+      "threshold": 0.5,
+      "turnover": 365.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "WMT",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "WMT@1d",
+      "dsr": {
+        "dsr": 2.0752823511204763e-06,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999979247176489,
+        "se_sharpe": 0.682608151625262
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.26,
+      "gross": -0.17543033851584466,
+      "kind": "quantum",
+      "kurtosis": 19.382045248468437,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.4354303385158448,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.8846580136821345,
+      "skewness": -1.9314285775911975,
+      "threshold": 0.0,
+      "turnover": 520.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.8808864265927978,
+      "annualization": 365.0,
+      "asset": "WMT",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "WMT@1d",
+      "dsr": {
+        "dsr": 1.4471944414296189e-06,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999985528055586,
+        "se_sharpe": 0.6783222029817455
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.257,
+      "gross": -0.17853431398504815,
+      "kind": "quantum",
+      "kurtosis": 22.08828370388433,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.43553431398504827,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.9154472583592678,
+      "skewness": -2.153907857017672,
+      "threshold": 0.2,
+      "turnover": 514.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.6759002770083102,
+      "annualization": 365.0,
+      "asset": "WMT",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "WMT@1d",
+      "dsr": {
+        "dsr": 4.2806340929144455e-06,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.999995719365907,
+        "se_sharpe": 0.6783283553490792
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.241,
+      "gross": -0.08605583133119321,
+      "kind": "quantum",
+      "kurtosis": 30.46224922980234,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.3270558313311933,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.7611358478600386,
+      "skewness": -2.5797792305933283,
+      "threshold": 0.5,
+      "turnover": 482.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "WMT",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "WMT@1d",
+      "dsr": {
+        "dsr": 9.76972632747005e-05,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999023027367253,
+        "se_sharpe": 0.7172531442272038
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.301,
+      "gross": 0.09736200324284416,
+      "kind": "quantum",
+      "kurtosis": 19.14070157853268,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.20363799675715596,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.4138315139330885,
+      "skewness": 0.6505325182582461,
+      "threshold": 0.0,
+      "turnover": 602.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.6966759002770083,
+      "annualization": 365.0,
+      "asset": "WMT",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "WMT@1d",
+      "dsr": {
+        "dsr": 0.00018712427192616121,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9998128757280739,
+        "se_sharpe": 0.725381184106333
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.271,
+      "gross": 0.1400952864238807,
+      "kind": "quantum",
+      "kurtosis": 32.3427536593498,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.1309047135761194,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.32275824696978156,
+      "skewness": 2.1987252589274,
+      "threshold": 0.2,
+      "turnover": 542.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.389196675900277,
+      "annualization": 365.0,
+      "asset": "WMT",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "WMT@1d",
+      "dsr": {
+        "dsr": 0.00017168211817615155,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9998283178818238,
+        "se_sharpe": 0.7356994090521078
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.189,
+      "gross": 0.05949042698980689,
+      "kind": "quantum",
+      "kurtosis": 58.15956753186808,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.12950957301019317,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.3760695986987862,
+      "skewness": 3.232221626709492,
+      "threshold": 0.5,
+      "turnover": 378.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "XRP",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "XRP@1d",
+      "dsr": {
+        "dsr": 9.534376645325698e-05,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999046562335467,
+        "se_sharpe": 0.7116888055908664
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.362,
+      "gross": -0.5996781789155958,
+      "kind": "quantum",
+      "kurtosis": 18.848328868695564,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.961678178915596,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.39747960818644823,
+      "skewness": -0.06818361357829512,
+      "threshold": 0.0,
+      "turnover": 724.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.6759002770083102,
+      "annualization": 365.0,
+      "asset": "XRP",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "XRP@1d",
+      "dsr": {
+        "dsr": 7.084836277871601e-05,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999291516372213,
+        "se_sharpe": 0.7101146867318523
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.307,
+      "gross": -0.6075135761138959,
+      "kind": "quantum",
+      "kurtosis": 30.803428544573112,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.914513576113896,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.4442566385200505,
+      "skewness": -0.3413253388385249,
+      "threshold": 0.2,
+      "turnover": 614.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.3864265927977839,
+      "annualization": 365.0,
+      "asset": "XRP",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "XRP@1d",
+      "dsr": {
+        "dsr": 1.9355009811866445e-05,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999806449901881,
+        "se_sharpe": 0.6990401106147399
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2015,
+      "gross": -0.850394716780347,
+      "kind": "quantum",
+      "kurtosis": 53.456855618852885,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -1.051894716780347,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.6187200524136631,
+      "skewness": -1.4972602391496475,
+      "threshold": 0.5,
+      "turnover": 403.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "XRP",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "XRP@1d",
+      "dsr": {
+        "dsr": 0.0001479211114662632,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9998520788885338,
+        "se_sharpe": 0.701653484247281
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.325,
+      "gross": -0.35550749813056337,
+      "kind": "quantum",
+      "kurtosis": 18.778413418754745,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -0.6805074981305637,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.2813604376869473,
+      "skewness": -1.9330439933641275,
+      "threshold": 0.0,
+      "turnover": 650.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.481994459833795,
+      "annualization": 365.0,
+      "asset": "XRP",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "XRP@1d",
+      "dsr": {
+        "dsr": 1.0232749792643452e-06,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999989767250207,
+        "se_sharpe": 0.6801315778873391
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.23450000000000001,
+      "gross": -1.3471609351396217,
+      "kind": "quantum",
+      "kurtosis": 28.192844568492998,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -1.5816609351396216,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -0.9719271388267606,
+      "skewness": -2.0412072092707207,
+      "threshold": 0.2,
+      "turnover": 469.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.20083102493074792,
+      "annualization": 365.0,
+      "asset": "XRP",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "XRP@1d",
+      "dsr": {
+        "dsr": 8.083558016329699e-11,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999999999191644,
+        "se_sharpe": 0.6008295029371287
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1045,
+      "gross": -1.8416699892877415,
+      "kind": "quantum",
+      "kurtosis": 74.96884452716944,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -1.9461699892877415,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.583801232332835,
+      "skewness": -4.993911367081988,
+      "threshold": 0.5,
+      "turnover": 209.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "DOT",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "DOT@1d",
+      "dsr": {
+        "dsr": 1.05034062593233e-07,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999998949659374,
+        "se_sharpe": 0.6990231172063939
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.364,
+      "gross": -2.874446700420985,
+      "kind": "quantum",
+      "kurtosis": 9.812858041448093,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -3.2384467004209854,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.370206908003925,
+      "skewness": -0.6429822839788345,
+      "threshold": 0.0,
+      "turnover": 728.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.6980609418282548,
+      "annualization": 365.0,
+      "asset": "DOT",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "DOT@1d",
+      "dsr": {
+        "dsr": 5.232867893697787e-07,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999994767132107,
+        "se_sharpe": 0.6968373141799181
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.3225,
+      "gross": -1.961918539155235,
+      "kind": "quantum",
+      "kurtosis": 16.583625868986434,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -2.284418539155235,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.1445657304964867,
+      "skewness": -0.9145769424032346,
+      "threshold": 0.2,
+      "turnover": 645.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.40304709141274236,
+      "annualization": 365.0,
+      "asset": "DOT",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "DOT@1d",
+      "dsr": {
+        "dsr": 3.881012083504597e-08,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9999999611898792,
+        "se_sharpe": 0.7218564848695188
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2245,
+      "gross": -1.960310843916507,
+      "kind": "quantum",
+      "kurtosis": 9.745812777263788,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": -2.184810843916507,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": -1.620364916452385,
+      "skewness": 0.16008153623536203,
+      "threshold": 0.5,
+      "turnover": 449.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 365.0,
+      "asset": "DOT",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "DOT@1d",
+      "dsr": {
+        "dsr": 0.06227384653501396,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.937726153464986,
+        "se_sharpe": 0.7004291725650511
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.341,
+      "gross": 3.1349199953494007,
+      "kind": "quantum",
+      "kurtosis": 9.796696055623928,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 2.7939199953494005,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 1.1820303827977632,
+      "skewness": 0.6354139838377797,
+      "threshold": 0.0,
+      "turnover": 682.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.47506925207756234,
+      "annualization": 365.0,
+      "asset": "DOT",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "DOT@1d",
+      "dsr": {
+        "dsr": 0.001348553633229475,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9986514463667705,
+        "se_sharpe": 0.7121663624195593
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.2425,
+      "gross": 0.4309162411186154,
+      "kind": "quantum",
+      "kurtosis": 14.402496372007192,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 0.18841624111861524,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.12114777584653166,
+      "skewness": -0.2714477180116921,
+      "threshold": 0.2,
+      "turnover": 485.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 0.2077562326869806,
+      "annualization": 365.0,
+      "asset": "DOT",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "DOT@1d",
+      "dsr": {
+        "dsr": 0.01979216093865667,
+        "expected_max_sr": 2.257862996683092,
+        "is_significant": false,
+        "p_value": 0.9802078390613433,
+        "se_sharpe": 0.7049647691465665
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1115,
+      "gross": 0.8345707178149449,
+      "kind": "quantum",
+      "kurtosis": 15.750329882886415,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 722.0,
+      "n_trials": 410,
+      "net": 0.7230707178149448,
+      "resolution": "1d",
+      "rule": "symmetric",
+      "sharpe": 0.8070028200525884,
+      "skewness": 0.589082789287014,
+      "threshold": 0.5,
+      "turnover": 223.0,
+      "var_trials": 0.5693343315865286
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 17520.0,
+      "asset": "XRP",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "XRP@30m",
+      "dsr": {
+        "dsr": 1.0465474843080167e-21,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.359907808784371
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.417,
+      "gross": 0.14803335759112557,
+      "kind": "quantum",
+      "kurtosis": 11.970168820535825,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.26896664240887447,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -8.524250648556652,
+      "skewness": 0.6037718472534344,
+      "threshold": 0.0,
+      "turnover": 834.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.7223942208462333,
+      "annualization": 17520.0,
+      "asset": "XRP",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "XRP@30m",
+      "dsr": {
+        "dsr": 9.153205793818695e-25,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.539971326229972
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.3875,
+      "gross": 0.03134667376722139,
+      "kind": "quantum",
+      "kurtosis": 19.6231075396768,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.3561533262327787,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -13.446752029825012,
+      "skewness": 0.893298874501332,
+      "threshold": 0.2,
+      "turnover": 775.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.41589267285861714,
+      "annualization": 17520.0,
+      "asset": "XRP",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "XRP@30m",
+      "dsr": {
+        "dsr": 2.0669924699090946e-18,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.569316110864149
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2605,
+      "gross": 0.12419063964044114,
+      "kind": "quantum",
+      "kurtosis": 42.14728807215398,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.1363093603595589,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -6.7428768053012265,
+      "skewness": 2.490540681186096,
+      "threshold": 0.5,
+      "turnover": 521.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 17520.0,
+      "asset": "XRP",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "XRP@30m",
+      "dsr": {
+        "dsr": 2.3131442948975578e-24,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.471017763781839
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.44,
+      "gross": 0.05243001609373954,
+      "kind": "quantum",
+      "kurtosis": 12.21311630357672,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.3875699839062605,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -12.338858789143716,
+      "skewness": 0.8593675949728097,
+      "threshold": 0.0,
+      "turnover": 880.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.5087719298245614,
+      "annualization": 17520.0,
+      "asset": "XRP",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "XRP@30m",
+      "dsr": {
+        "dsr": 2.1665118903291112e-20,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.7068606018056105
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.3165,
+      "gross": 0.08813271567281222,
+      "kind": "quantum",
+      "kurtosis": 32.25596679775322,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.2283672843271878,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -10.310255802901258,
+      "skewness": 2.2678672817510717,
+      "threshold": 0.2,
+      "turnover": 633.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.20330237358101136,
+      "annualization": 17520.0,
+      "asset": "XRP",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "XRP@30m",
+      "dsr": {
+        "dsr": 6.298559840141376e-22,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.567948518427425
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.14250000000000002,
+      "gross": -0.0007501506761496968,
+      "kind": "quantum",
+      "kurtosis": 32.94528475827745,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.1432501506761497,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -10.741565827725639,
+      "skewness": 1.235743966230247,
+      "threshold": 0.5,
+      "turnover": 285.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 17520.0,
+      "asset": "TRX",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "TRX@30m",
+      "dsr": {
+        "dsr": 3.954602405884635e-74,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 5.06893391595558
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.447,
+      "gross": -0.03480539531917071,
+      "kind": "quantum",
+      "kurtosis": 8.070727989234546,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.4818053953191707,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -59.23983740900252,
+      "skewness": 0.1464641723518747,
+      "threshold": 0.0,
+      "turnover": 894.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.6914344685242518,
+      "annualization": 17520.0,
+      "asset": "TRX",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "TRX@30m",
+      "dsr": {
+        "dsr": 8.077355341407399e-92,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.936860043489377
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.40800000000000003,
+      "gross": -0.03803805630859847,
+      "kind": "quantum",
+      "kurtosis": 8.938164706478387,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.4460380563085985,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -67.26674683359764,
+      "skewness": -0.3264977711861784,
+      "threshold": 0.2,
+      "turnover": 816.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.40970072239422084,
+      "annualization": 17520.0,
+      "asset": "TRX",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "TRX@30m",
+      "dsr": {
+        "dsr": 3.538154106379537e-65,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 5.261322628373999
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.28400000000000003,
+      "gross": -0.0074093891163617975,
+      "kind": "quantum",
+      "kurtosis": 19.192008310303887,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.2914093891163618,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -56.59224905431303,
+      "skewness": -0.7062197884017052,
+      "threshold": 0.5,
+      "turnover": 568.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 17520.0,
+      "asset": "TRX",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "TRX@30m",
+      "dsr": {
+        "dsr": 6.701350440232368e-88,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.396265785804426
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.444,
+      "gross": -5.1690242179436297e-05,
+      "kind": "quantum",
+      "kurtosis": 8.743808050432865,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.44405169024217944,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -54.32649240322606,
+      "skewness": -0.6292772319648565,
+      "threshold": 0.0,
+      "turnover": 888.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.4850361197110423,
+      "annualization": 17520.0,
+      "asset": "TRX",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "TRX@30m",
+      "dsr": {
+        "dsr": 1.9195624420612677e-111,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.224749869336942
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.324,
+      "gross": -0.02915338862451078,
+      "kind": "quantum",
+      "kurtosis": 14.879950001495118,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.3531533886245108,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -61.7429458119505,
+      "skewness": -1.6483222726100994,
+      "threshold": 0.2,
+      "turnover": 648.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.20123839009287925,
+      "annualization": 17520.0,
+      "asset": "TRX",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "TRX@30m",
+      "dsr": {
+        "dsr": 5.6875599865034106e-68,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.056687763070289
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.149,
+      "gross": 0.0026433092933257907,
+      "kind": "quantum",
+      "kurtosis": 28.887960714821205,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.1463566907066742,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -37.61556032969522,
+      "skewness": -2.300658539166604,
+      "threshold": 0.5,
+      "turnover": 298.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 17520.0,
+      "asset": "LTC",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "LTC@30m",
+      "dsr": {
+        "dsr": 3.9060157530955037e-26,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.559011129750634
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.44,
+      "gross": -0.16361908508276457,
+      "kind": "quantum",
+      "kurtosis": 16.23403469218814,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.6036190850827646,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -15.016720073144821,
+      "skewness": 0.875728151058053,
+      "threshold": 0.0,
+      "turnover": 880.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.6904024767801857,
+      "annualization": 17520.0,
+      "asset": "LTC",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "LTC@30m",
+      "dsr": {
+        "dsr": 1.856377806309234e-22,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.648574844133249
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.3685,
+      "gross": -0.020776300804022263,
+      "kind": "quantum",
+      "kurtosis": 20.791877844206677,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.3892763008040223,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -12.096199854771035,
+      "skewness": 1.6699706433352013,
+      "threshold": 0.2,
+      "turnover": 737.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.40350877192982454,
+      "annualization": 17520.0,
+      "asset": "LTC",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "LTC@30m",
+      "dsr": {
+        "dsr": 2.162612096835781e-18,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.7162972972560535
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.2555,
+      "gross": 0.041817058200020796,
+      "kind": "quantum",
+      "kurtosis": 38.44650050150999,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.21368294179997924,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -7.993666580090023,
+      "skewness": 3.2261420516537878,
+      "threshold": 0.5,
+      "turnover": 511.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 17520.0,
+      "asset": "LTC",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "LTC@30m",
+      "dsr": {
+        "dsr": 3.0017435725636047e-21,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.329443422710312
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.45,
+      "gross": 0.13820470209310898,
+      "kind": "quantum",
+      "kurtosis": 16.496760537921194,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.3117952979068911,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -7.757079147455839,
+      "skewness": 0.3809597579388555,
+      "threshold": 0.0,
+      "turnover": 900.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.47368421052631576,
+      "annualization": 17520.0,
+      "asset": "LTC",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "LTC@30m",
+      "dsr": {
+        "dsr": 5.0688068871604326e-21,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.458209220299663
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.3025,
+      "gross": 0.05177905242481362,
+      "kind": "quantum",
+      "kurtosis": 30.651716255709992,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.2507209475751864,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -8.719454966200486,
+      "skewness": 1.0016272746660162,
+      "threshold": 0.2,
+      "turnover": 605.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.20330237358101136,
+      "annualization": 17520.0,
+      "asset": "LTC",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "LTC@30m",
+      "dsr": {
+        "dsr": 2.9600216123262532e-18,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.615257104156436
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1395,
+      "gross": -0.0022510541772744475,
+      "kind": "quantum",
+      "kurtosis": 85.4822182210865,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.14175105417727446,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -6.952377503123696,
+      "skewness": 2.258224716187038,
+      "threshold": 0.5,
+      "turnover": 279.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 17520.0,
+      "asset": "BCH",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "BCH@30m",
+      "dsr": {
+        "dsr": 5.970143500178841e-20,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.25288925240707
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.374,
+      "gross": 0.14913446291094345,
+      "kind": "quantum",
+      "kurtosis": 18.69523654522717,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.22486553708905657,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -5.676074006591902,
+      "skewness": -0.20530282453089788,
+      "threshold": 0.0,
+      "turnover": 748.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.6986584107327142,
+      "annualization": 17520.0,
+      "asset": "BCH",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "BCH@30m",
+      "dsr": {
+        "dsr": 1.495838245183097e-19,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.275114255038747
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.3405,
+      "gross": 0.14818779591806397,
+      "kind": "quantum",
+      "kurtosis": 27.24313522183124,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.19231220408193608,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -5.447448297069736,
+      "skewness": -0.03181317142121755,
+      "threshold": 0.2,
+      "turnover": 681.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.40350877192982454,
+      "annualization": 17520.0,
+      "asset": "BCH",
+      "circuit_sha256": "1e184193409dc4fcb7c4be96be611ad7f07ef1564ace2176aec44e18f8ac174f",
+      "dataset_id": "BCH@30m",
+      "dsr": {
+        "dsr": 2.8122958392433178e-14,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 0.9999999999999719,
+        "se_sharpe": 4.218004532096488
+      },
+      "features": [
+        "H-MOM",
+        "CVD"
+      ],
+      "fees": 0.23850000000000002,
+      "gross": 0.27167774214874374,
+      "kind": "quantum",
+      "kurtosis": 40.819635639980575,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": 0.03317774214874371,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": 1.1913419945213366,
+      "skewness": 1.9779135416597895,
+      "threshold": 0.5,
+      "turnover": 477.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 1.0,
+      "annualization": 17520.0,
+      "asset": "BCH",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "BCH@30m",
+      "dsr": {
+        "dsr": 7.879628379985884e-30,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.187819147341716
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.433,
+      "gross": -0.13318939011422515,
+      "kind": "quantum",
+      "kurtosis": 18.30236701776688,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.5661893901142252,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -14.358819920323343,
+      "skewness": -0.7551455062020481,
+      "threshold": 0.0,
+      "turnover": 866.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.5015479876160991,
+      "annualization": 17520.0,
+      "asset": "BCH",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "BCH@30m",
+      "dsr": {
+        "dsr": 1.0948865912157147e-28,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 4.266805430679272
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.3125,
+      "gross": -0.08545714483065048,
+      "kind": "quantum",
+      "kurtosis": 31.822553670030064,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.39795714483065053,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -14.252483750006894,
+      "skewness": -0.7750970360241002,
+      "threshold": 0.2,
+      "turnover": 625.0,
+      "var_trials": 120.8542315942691
+    },
+    {
+      "active_fraction": 0.2260061919504644,
+      "annualization": 17520.0,
+      "asset": "BCH",
+      "circuit_sha256": "5c30c2f220936d64e76da18ff7b74c71d98fca71b4efc11dcd00da0965aba25e",
+      "dataset_id": "BCH@30m",
+      "dsr": {
+        "dsr": 9.566758451288233e-30,
+        "expected_max_sr": 32.896131593709505,
+        "is_significant": false,
+        "p_value": 1.0,
+        "se_sharpe": 3.865046010526526
+      },
+      "features": [
+        "H-MOM",
+        "CVD",
+        "H-BB"
+      ],
+      "fees": 0.1625,
+      "gross": -0.060510359449433615,
+      "kind": "quantum",
+      "kurtosis": 70.9250833468369,
+      "layers": 1,
+      "n_invalid": 0.0,
+      "n_obs": 969.0,
+      "n_trials": 410,
+      "net": -0.22301035944943365,
+      "resolution": "30m",
+      "rule": "symmetric",
+      "sharpe": -10.650684571101744,
+      "skewness": -3.576839569790825,
+      "threshold": 0.5,
+      "turnover": 325.0,
+      "var_trials": 120.8542315942691
+    }
+  ],
+  "rule": "symmetric",
+  "rules_available": [
+    "symmetric",
+    "long_only",
+    "short_below_zero"
+  ],
+  "schema": "apedp.quantum_signal_ledger.v2",
+  "significance_report": {
+    "1d": {
+      "best": {
+        "dataset_id": "DOT@1d",
+        "dsr": 0.06227384653501396,
+        "features": [
+          "H-MOM",
+          "CVD",
+          "H-BB"
+        ],
+        "sharpe": 1.1820303827977632,
+        "threshold": 0.0
+      },
+      "floor": 0.95,
+      "hurdle": 2.257862996683092,
+      "n_trials_charged": 410,
+      "rows": 42,
+      "rows_clearing_floor": 0,
+      "var_trials": 0.5693343315865286,
+      "verdict": "no row clears the floor"
+    },
+    "30m": {
+      "best": {
+        "dataset_id": "BCH@30m",
+        "dsr": 2.8122958392433178e-14,
+        "features": [
+          "H-MOM",
+          "CVD"
+        ],
+        "sharpe": 1.1913419945213366,
+        "threshold": 0.5
+      },
+      "floor": 0.95,
+      "hurdle": 32.896131593709505,
+      "n_trials_charged": 410,
+      "rows": 28,
+      "rows_clearing_floor": 0,
+      "var_trials": 120.8542315942691,
+      "verdict": "no row clears the floor"
+    }
+  },
+  "significant_rows": [],
+  "thresholds": [
+    0.0,
+    0.2,
+    0.5
+  ],
+  "train_fraction": 0.7,
+  "trial_components": {
+    "baselines": 10,
+    "parameter_fits": 340,
+    "threshold_grid": 60
+  },
+  "trials_by_resolution": {
+    "1d": 243,
+    "30m": 161
+  },
+  "var_trials": {
+    "by_resolution": {
+      "1d": 0.5693343315865286,
+      "30m": 120.8542315942691
+    },
+    "pooled": 64.78626123083453
+  },
+  "warmup_bars": 30
+}
