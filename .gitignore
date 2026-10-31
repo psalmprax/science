@@ -74,3 +74,12 @@ artifacts/
 checkpoints/
 docs/media/
 .gstack/
+
+# Large binary circuit artifacts: a single .kmb receipt is ~845 MB, and until
+# 2026-10-31 the index carried four copies of the same one. Only the canonical
+# receipt that the `prepare_*_artifacts.py` scripts read is tracked; copies are
+# produced from it on demand. (Tracked before this rule existed, so the three
+# below are removed from the index rather than from the working tree.)
+apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/sample_submission/dqi.kmb
+apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/google-verifiable-quantum-circuit-compilation.zip
+artifacts/quantum_compilation/dqi/iteration_sweep_receipts/dqi_niters_216.kmb

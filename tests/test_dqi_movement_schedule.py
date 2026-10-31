@@ -18,6 +18,8 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 RECORD = ROOT / "benchmarks" / "quantum_compilation" / "dqi_movement_schedule.json"
 SCRIPT = ROOT / "scripts" / "measure_dqi_movement_schedule.py"
+MOVEMENT_DOC = ROOT / "docs" / "DQI_MOVEMENT_SCHEDULE.md"
+CAMPAIGN_DOC = ROOT / "docs" / "EEA_SCHEDULE_CAMPAIGN.md"
 
 
 @pytest.fixture(scope="module")
@@ -97,7 +99,7 @@ def test_the_campaigns_zero_saving_arms_were_copies_and_now_are_not(record):
     assert "never called" in audit["why"]
     # Now that the method is named for what it overrides, the gate is in the stream:
     # the composed arm saves exactly 0.0 and stays correct, the c3-dropping arm finds
-    # 45,377.7 of work the decoder needs and is wrong.
+    # 45,377.7 of work the decoder needs and is wrong (on this record's own base).
     assert observation["campaign_composed_saving"] == 0.0
     assert observation["campaign_composed_correct"] is True
     assert observation["campaign_composed_shift_region"] == \
@@ -124,6 +126,22 @@ def test_the_reads_are_counted_beside_every_toffoli_figure(record):
     for name, arm in record["arms"].items():
         assert "mid_circuit_reads_per_shot" in arm, name
         assert "instructions_per_shot" in arm, name
+
+
+def test_the_docs_quote_the_records_per_shot_ranges(record):
+    """The probe's ranges are per-shot minima and maxima, not a narrow band."""
+    predicate = record["observation"]["exchange_predicate"]
+
+    def span(values):
+        return f"{min(values)}-{max(values)}"
+
+    assert span(predicate["exchanges_per_shot"]) == "27-36"
+    assert span(predicate["c3_rounds_with_flag_clear_per_shot"]) == "36-45"
+    for doc in (MOVEMENT_DOC, CAMPAIGN_DOC):
+        text = doc.read_text(encoding="utf-8")
+        assert span(predicate["exchanges_per_shot"]) in text, doc.name
+    assert span(predicate["c3_rounds_with_flag_clear_per_shot"]) in \
+        MOVEMENT_DOC.read_text(encoding="utf-8")
 
 
 def test_the_record_pins_the_script(record):

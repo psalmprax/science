@@ -173,14 +173,14 @@ instance over 64 shots (222 rounds, 14,208 round-shots):
 | | total | per shot |
 |---|---|---|
 | rounds where `c3` fires | 4,608 | **72.0 exactly, on every shot** |
-| rounds where the exchange fires (`c3 ∧ flag`) | 2,052 | 27-33 |
-| `c3` rounds where the flag is **clear** | **2,556 (55.5%)** | 39-45 |
+| rounds where the exchange fires (`c3 ∧ flag`) | 2,052 | 27-36 |
+| `c3` rounds where the flag is **clear** | **2,556 (55.5%)** | 36-45 |
 | distinct `c3` sets / distinct exchange sets | 10 / 10 | — |
 
 So the flag is **not** redundant in a `c3` round: it is clear in 2,556 of them, and
 in those rounds the shift's `¬flag ∧ (c0 ∨ c3)` term runs while the exchange does
 not. Exchanging on `c3` alone therefore performs 72 permutations where the decoder
-asks for 27-33, on state the EEA has not finished with: the arm is wrong, and the
+asks for 27-36, on state the EEA has not finished with: the arm is wrong, and the
 cost it shows is inflated by the divergence it causes (§6 rule 4), which is why the
 73.0 saving C3 predicted never appeared. This also settles what §5 left open about
 the campaign's S3b arm: the `¬flag ∧ c3` branch is live, so an arm that drops the

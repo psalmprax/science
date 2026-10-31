@@ -2,7 +2,9 @@
 
 **Status:** measurement note · **Scope:** the DQI decoder at the pinned instance
 (m=4095, n=70, GF(2^12), 64 shots) and Benchmark II's 445,229-Toffoli target ·
-**Evidence:** `benchmarks/quantum_compilation/gf54_native_opcode.json`,
+**Evidence:** `benchmarks/quantum_compilation/dqi_arm_submission_score.json` (the arm's
+score as `verify()` assigns it, Experiment F),
+`benchmarks/quantum_compilation/gf54_native_opcode.json`,
 `benchmarks/quantum_compilation/kickmix_mr_arm_costs.json`,
 `benchmarks/quantum_compilation/gf54_mul_kickmix.json`,
 `benchmarks/quantum_compilation/gf_mul_and_static_headroom.json`,
@@ -251,7 +253,84 @@ plan for it, block by block, is
 obligations and the falsifiers, because a deletion that changes the state is not a
 measurement (the 86.33% multiply share was that mistake).
 
-## 5. Pins
+## 5. Closing statement: unreachable without `MR`, and not reached with it
+
+Every row below is a circuit this repository has built and a score the competition's
+own `verify()` has assigned. [`BENCHMARK2_STATUS_DECISION.md`](BENCHMARK2_STATUS_DECISION.md)
+records what that table decides.
+
+| build | best correct circuit | score at 102,400 shots | vs 1.6975e12 |
+|---|---|---|---|
+| **pinned** (what can be submitted) | reference + reduced-window 54-AND, 5,433,438.2 per shot at `Q` 1,893 | **2.319438e13** (Experiment E) | **13.66×** |
+| local `MR` rebuild | six-lever arm, 1,221,408.0 per shot at `Q` 1,913 | **5.324728e12** (Experiment F) | **3.137×** |
+| local `MR` rebuild | arm + the five schedule gates, 685,936.2 per shot at `Q` 1,913 | **2.990339e12** (Experiment G) | **1.762×** |
+| — | derived Benchmark II target | 1.6975e12 | 1× |
+
+Three conclusions follow, and they are independent:
+
+1. **No circuit the pinned binary can compile comes near the target.** The best correct
+   one is 13.66× out, and that is not a search gap: the multiply is 42.45% of the
+   reference's static Toffoli stream, so deleting *all* of it — which no emitter can
+   do — would leave the reference 8.29× out. Experiment E measures the only part of
+   that share that is actually available: 9 Toffolis of 75 per controlled call, for
+   5.0946%.
+2. **`MR` is the only surface change that moves the order of magnitude, and it is not
+   enough.** It takes the reference 4.142× (to 3.48× out) and the arm 4.5898× (to
+   3.137×), and the campaign arm to 1.762×. The reason it cannot finish
+   the job is §2's third term: 472,768.2 Toffolis per shot are not field products at
+   all, and gating them is what the campaign already did.
+3. **What is left is a decoder algorithm.** After the campaign the remaining 240,785.8
+   Toffolis are the swap's 64,224, the shift's 96,584.6, `shift_step`'s 30,912,
+   `update_flag`'s 30,240 and the rest of the multiply window. A shorter EEA, a
+   different error locator, or a construction that does not evaluate 4,095 positions
+   per shot is the only class of change that reaches 445,229.
+
+Experiment G also closes the last unmeasured row in that table: the campaign's stacked
+arm, through `verify()` at 102,400 shots, passes with **0 value and 0 phase errors**,
+executes **685,936.2051367187** Toffolis per shot at `Q` 1,913 (its recorded 686,014.8
+to 1.1e-4) and scores **2.990339e12** — **0.12236** of the pinned reference, and
+**1.762×** the target once the `Q` term is included. Record:
+`benchmarks/quantum_compilation/dqi_campaign_arm_submission_score.json`.
+
+### 5.1 The external-optimizer check
+
+The one comparison that could be made against a general-purpose tool was made, on the
+part of the circuit a Clifford+T optimizer can express: the multiply's forward AND
+netlist, recorded from the emitter itself and given to **PyZX 0.10.7**
+(`scripts/compare_gf_mul_external_optimizer.py`, record
+`benchmarks/quantum_compilation/gf_mul_external_optimizer.json`).
+
+| | measured |
+|---|---|
+| our netlist | **54** ANDs, 1,004 CNOTs, 54 measured clears at **0** Toffoli |
+| our controlled call | **66** Toffoli-like gates (54 AND + the 12-Toffoli add) |
+| PyZX 0.10.7, Clifford pass | T **378 → 378**, CNOT 1,328 → 824 |
+| PyZX 0.10.7, `full_optimize` | **did not return within 90 s** at 99 qubits and 378 T |
+| unitary accounting | forward + adjoint = **108** ANDs = **756** T before optimization |
+
+So a general-purpose optimizer does not beat the AND count: the 54 Toffolis are the
+function, not slack in a Clifford skeleton, and the only thing it removes is Clifford
+work. Our clears are 0 Toffoli because they are measurements with classically
+conditioned fixups — an option a unitary optimizer does not have, which is why its
+honest figure is 108 ANDs rather than 54. The decoder itself cannot be offered to it at
+all: its stream carries `HMR` and `INFO_TAG`, and the arm's own clears are `mr`, neither
+of which a Clifford+T optimizer models. The 7-T decomposition the comparison uses was
+verified on all eight basis states before any number was taken (max error 3.1e-16).
+
+So the closing position is: **Benchmark II is unreachable on the pinned competition
+binary, unreachable on the `MR` rebuild as the decoder stands, and reachable — if at
+all — only by replacing the decoder algorithm**, whose measured plan and correctness
+obligations are in [`EEA_AND_PREDICATE_PLAN.md`](EEA_AND_PREDICATE_PLAN.md).
+
+What would overturn this, stated so it can be checked rather than argued: a circuit
+this repository can build and `verify()` scores below 1.6975e12; or a measured
+`T_mean` below 445,229 at `Q` ≤ 1,789 on any build; or a decoder that removes the
+non-product 472,768.2 without reading qubits into classical bits (which is what
+[`MR_PATCH_REQUEST.md`](MR_PATCH_REQUEST.md) already asks for, and no more than
+that). Until one of those exists, the numbers above are the frontier, and quotes of
+"14.4×" are a target, not a result.
+
+## 6. Pins
 
 `tests/test_dyn_mr_gated_arms_kickmix.py` pins the numbers this note rests on:
 

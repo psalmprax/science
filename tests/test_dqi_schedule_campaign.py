@@ -315,6 +315,17 @@ def test_the_campaign_and_the_plan_agree_about_what_it_changed():
     assert "Experiment B" in text
     assert "311,780.7" in text and "327,094" in text
 
+    # S3b is quoted on this record's own base, and the note never swaps in the
+    # movement script's figure (45,377.7, a base 2,952 lower) as if it were this
+    # record's: the two differ, and only the record decides which is which.
+    record = json.loads(RECORD.read_text())
+    s3b = record["arms"]["drop_shift_c3"]
+    assert s3b["mean_toffoli_like"] == 1_176_070.703125
+    assert s3b["saving_per_shot"] == 45_396.140625
+    assert f"{s3b['saving_per_shot']:,.1f}" in text  # 45,396.1
+    assert f"{record['control']['mean_toffoli_like'] - s3b['mean_toffoli_like']:,.1f}" \
+        in text  # 45,396.1 again, from the two T values
+
     plan = PLAN_DOC.read_text(encoding="utf-8")
     assert "EEA_SCHEDULE_CAMPAIGN.md" in plan
     assert "532,500" in plan and "688,966.8" in plan

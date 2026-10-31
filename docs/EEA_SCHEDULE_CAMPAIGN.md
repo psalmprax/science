@@ -50,7 +50,7 @@ variant exists; `prediction.written_before_variants` records that ordering.
 | **S1** | the sweep's quotient selection (`n_q == j`, `n_q == j+1`) | saving ≥ `chain − burn` = `105,696 − 5,328` = **100,368** | the selection is one-hot: at most two of the up-to-72 emitted positions carry the quotient, so every other chain cswap is a no-op |
 | **S2** | the shift's `do_shift` mask | **no saving predicted** (lower bound 0); under 1% of the region closes the shift half | `do_shift` is the XOR of three threshold intervals, so the firing set is the active window, not a one-hot |
 | **S3** | the wholesale A/B exchange | composing the shift with the swap saves **0.0** | their predicates are disjoint (`ctrl` is one-hot and the flag is one value) |
-| **S3b** | the shift's `c3` branch | dropping the shift in every `c3` round saves **0.0** and stays correct | the flag is set in those rounds, so the branch is the identity — **falsified on re-measurement (§3.3): the flag is clear in 2,556 of 4,608 `c3` rounds, the arm finds 45,377.7 and is incorrect** |
+| **S3b** | the shift's `c3` branch | dropping the shift in every `c3` round saves **0.0** and stays correct | the flag is set in those rounds, so the branch is the identity — **falsified on re-measurement (§3.3): the flag is clear in 2,556 of 4,608 `c3` rounds, the arm finds 45,396.1 and is incorrect** |
 | **S4** | the product's `mul` control | **no saving predicted** (lower bound 0); ≥ 50,000 promotes | `mul` is the multiply window, not a one-hot, so the saving is whatever the window excludes |
 | **S5** | all five gates in one circuit (S1–S4 plus the two already-promoted flag/metadata gates) | saving = `532,500 + 2,952` = **535,452**, i.e. `T` = **686,014.8** | the three schedule gates remove movement and product no-ops; the two flag/metadata gates remove update work in dead rounds; the work sets are disjoint, so the savings add |
 | **S6** | the multiplier of every surviving product (`q_i != 0`) — Experiment B | **no saving declared (0.0)**; it promotes only if it beats its own read cost | a live round's quotient has a nonzero leading term, so the predicate should be zero in too few positions to pay for a read at every one (see §2.2) |
@@ -185,7 +185,7 @@ the instruction stream falls with it, and the price is measurement depth.*
   to the control by construction — the method that would have changed them was never called
   (§3.3) — so neither tested the predicate. Rebuilt under the name the decoder actually
   calls and measured at the pinned instance: the composed arm saves **0.0** and is correct,
-  which confirms S3; the arm that drops the shift from every `c3` round saves **45,377.7** and
+  which confirms S3; the arm that drops the shift from every `c3` round saves **45,396.1** and
   is **incorrect**, which falsifies S3b's premise (the flag is *clear* in 2,556 of the 4,608
   `c3` rounds). The per-round table in the record (164 rounds with shift executions, 92 with
   swap executions, 66 where the batch shows both) is an aggregate over 64 shots and is **not**
@@ -256,13 +256,14 @@ So S3's prediction is now **measured** rather than assumed: an arm that skips th
 shift exactly where the exchange fires executes the *identical* Toffoli count and
 stays correct, because there is nothing to skip -- the shift is already dead in
 every round the exchange runs in. S3b's premise is **false**: dropping the shift in
-every `c3` round does find 45,377.7 of work, and the decoder asks for that work, so
-the arm is wrong. The `¬flag ∧ c3` branch of the shift is live, not dead.
+every `c3` round does find 45,396.1 of work on this record's base (45,377.7 on the
+2,952-lower one), and the decoder asks for that work, so the arm is wrong. The
+`¬flag ∧ c3` branch of the shift is live, not dead.
 
 Why both are true at once is the probe in
 [`DQI_MOVEMENT_SCHEDULE.md`](DQI_MOVEMENT_SCHEDULE.md) §6: over 64 shots and 222
 rounds, `c3` fires **72** times on every shot (4,608 firings, invariant), the
-exchange fires **27-33** times (2,052 total), and the post-update flag is *clear* in
+exchange fires **27-36** times (2,052 total), and the post-update flag is *clear* in
 **2,556 of the 4,608** `c3` rounds. The flag is therefore not redundant in a `c3`
 round, which is why S3b's arm is wrong and why exchanging on `c3` alone is wrong
 (Experiment C's falsified C3); and in the 2,052 rounds where the flag is set the

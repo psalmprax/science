@@ -8,6 +8,9 @@ and the local `MR` rebuild that may not · **Evidence:**
 `scripts/measure_dqi_official_compatibility.py`; builds on
 [`DQI_RESOURCE_RECONCILIATION.md`](DQI_RESOURCE_RECONCILIATION.md) §2 and
 [`DQI_MOVEMENT_SCHEDULE.md`](DQI_MOVEMENT_SCHEDULE.md).
+Experiment E (§8) closes this record's last open item with
+`benchmarks/quantum_compilation/dqi_submission_score.json`, produced by
+`scripts/measure_dqi_submission_score.py`.
 
 `DQI_RESOURCE_RECONCILIATION.md` §2 records one sentence — `arm on the pinned
 binary: built = False, AttributeError: 'Builder' object has no attribute 'mr'` —
@@ -231,3 +234,162 @@ by a classically conditioned `CZ`.
 A future edit that calls the missing `MR` the only blocker, quotes the arm as a
 submission, quotes 0.952 as an attainable score, reports a candidate without its
 phase errors, or claims the `hmr` clears are safe fails there.
+
+## 8. Experiment E: the score the competition's own verifier assigns
+
+§5 scored the candidate with the verifier's *rule*, applied by hand to 64 shots, and
+§6 ended on the one thing that was left: "not a submission until it is run through
+the verifier's shot sample end to end". This section runs `verify()` itself, from
+`verifiers/dqi/verify_submission_dqi.py` — **every scoring line unmodified**, with
+one *diagnostic-only* stub for `reaction_depth` (§8, "One line of `verify()` is not
+run") — on both circuits at the competition's own budget — **102,400 shots** (400
+batches of 256) at `log2_delta = -128`. Record:
+`benchmarks/quantum_compilation/dqi_submission_score.json`.
+
+The stub is not a modification of the verifier's logic and the record carries the
+exact patch (`verifier_patch`: the replaced line, the replacement, both SHA-256s and
+the reason). `tests/test_dqi_submission_score.py` proves the claim instead of
+asserting it: the patch applies byte-exactly to the shipped file, `reaction_depth`
+occurs once in the whole module, and an AST comparison shows the patched module
+differs from the shipped one in exactly one dict value inside `verify`'s return —
+so it cannot reach the `PASS` decision, the value or phase checks, `eps_plus`, `R`
+or the score.
+
+The budget is not decoration. `eps_plus` at `log2_delta = -128` is
+`1 - 2^(-128/n)`, so even a *zero-error* run is refused below ~1,375 shots: at 256
+shots the same passing circuits get `eps_plus = 0.2929` and the verifier raises
+"Effective error rate … >= 1/16". The smallest batch-aligned budget a zero-error run
+can pass at is **1,536** shots, and the record verifies at the full official
+102,400 — a fraction of the official budget of 1.0.
+
+| | `Q` | static `T` | executed `T`/shot | value errors | phase errors | `eps_plus` | `R` | **score** |
+|---|---|---|---|---|---|---|---|---|
+| reference (built-in multiply) | 1,893 | 5,725,461 | 5,725,108.382109 | 0/102,400 | 0/102,400 | 8.660587e-4 | 1.191260 | **2.443946e13** |
+| reduced-window 54-AND (`del_and` + `del_gf2_mul`) | 1,893 | 5,433,789 | 5,433,438.229658 | 0/102,400 | 0/102,400 | 8.660587e-4 | 1.191260 | **2.319438e13** |
+
+Both `PASS`. The score ratio is **0.949054** (0.94906 to five places) — a **5.09%
+improvement**, and the ratio is *exactly* the Toffoli ratio: `Q` is equal, both runs
+have zero errors, so they share `eps_plus` and `R`, and the comparison carries no
+error-rate or qubit penalty in either direction. In the executed-mean column the
+candidate reads 38.6 Toffolis above D2's 5,433,399.609375 (the reference 36.8 above
+its own 5,725,071.609375); the static column is the exact one, and those
+differences are shot noise on the classically conditioned Toffolis, not a change of
+circuit.
+
+### Where the 5.09% comes from, to the gate
+
+The candidate replaces only `ixor_gf2_mul`. The reference emits **32,408** multiply
+calls, and at 75 Toffoli-like gates per call against 66 that is `9 x 32,408 =
+291,672`. Measured on the static streams: 5,725,461 − 5,433,789 = **291,672**,
+exactly. Measured on the executed means: **291,670.152** per shot — 1.85 gates below the
+static delta, which is the same quantity to 6.4e-6 relative, and the 1.85 is the
+conditioned Toffolis. The operation deltas agree to that place: `CCX` differs by
+29,867,023,611 across 102,400 shots, i.e. 291,670.152 per shot, and no other
+Toffoli-like operation moves at all (`CSWAP` does not appear among the deltas). The
+large `CX`, `HMR` and `CZ` deltas are not savings but the shape of the change: the
+multiply is emitted as gates, so the candidate's stream is 104,555,982 operations
+against 86,051,014, and what those extra Clifford-like gates buy is the Toffoli.
+No gate is saved anywhere but in the multiply, which is **42.45%** of the
+reference's static stream: the candidate removes **5.0943%** of that stream
+(5.0946% of the executed mean).
+
+### Why the levers are still out, measured rather than asserted
+
+§6 said a lever cannot compile because its condition is a *read*. That is now a
+property of the binary surface, not an inference. Of the **29** methods in the
+pinned extension whose signature mentions a classical bit (`km.b`), exactly **one**
+writes a bit from qubit data — `hmr` — and it is not a read: on a qubit prepared in
+`|1>` it wrote 1 on **24 of 64** shots and flipped the tracked phase on exactly
+those 24, so its outcome is a measurement and not the qubit's value. Every other
+method only consumes a bit as a condition. The classical-condition machinery is
+there (`push_condition`, `bit_store`); the instruction that would put a qubit's
+value into it is not.
+
+Two further consequences, stated because they are the honest boundary of the
+record:
+
+- **Absolute score, not just the ratio.** The competition's published target is
+  `R(eps_plus) * 1,789^2 * 445,229 = 1.6975e12`. The candidate's `2.319438e13` is
+  **13.66x above** that target; the reference is 14.40x above. The 5.09% is what
+  the pinned binary permits, and the remaining factor is the schedule — reachable
+  only through `mr`.
+- **One line of `verify()` is not run.** `reaction_depth` is a reported diagnostic,
+  not part of the score; on the 86M-operation reference it peaked at 13.9 GB and
+  136 s, which gets the process killed here. It is stubbed in a temporary copy and
+  relocated into `verifier_patch` in the record; every scoring line is the shipped
+  one. The run is therefore the competition verifier with a documented
+  diagnostic-only shim, not a literal unmodified invocation — and the shim's
+  isolation from the verdict is pinned by test, not by this sentence.
+
+For reference, the verifier took 125.1 s on the reference and 140.3 s on the
+candidate at 102,400 shots (builds 15.4 s and 80.7 s), so this is a run anyone with
+the pinned bundle can repeat.
+
+### Pins
+
+`tests/test_dqi_submission_score.py` pins: both circuits `PASS` with zero value and
+zero phase errors at the official 102,400 shots and the same `eps_plus` and `R`;
+the 1,536-shot floor and the 256-shot refusal; `score = R * Q^2 * T` recomputed from
+each row's own numbers; the score ratio equal to the Toffoli ratio at `Q` = 1,893
+and equal to 0.94906; the decomposition `9 x 32,408 = 291,672` against both the
+static and the executed streams, and `CCX / shots` equal to the executed delta; the
+29-method bit surface with `hmr` the only writer and not a read; and the record's
+`reaction_depth` patch.
+
+A future edit that quotes a score ratio for this candidate other than its Toffoli
+ratio, reports a budget below 102,400 as official, claims the levers can be
+compiled, or describes `hmr` as a read fails there.
+
+## 9. Experiment F: the arm's score, measured instead of multiplied out
+
+§6 and §8 leave the other half of the frontier as a product: the six-lever arm
+executes 1,221,466.8 Toffolis per shot at `Q` = 1,913, so its score *would be*
+`R * Q^2 * T`. That product had never been run through `verify()`, and the arm cannot
+run on the pinned binary at all. This section measures it on the local `MR` rebuild
+(`scripts/build_kickmix_mr.py`: the vendored sources at their recorded commit plus
+`scripts/kickmix_mr_opcode.patch`), at the competition's own budget — **102,400
+shots**, `log2_delta = -128`, the 54-AND product policy. Record:
+`benchmarks/quantum_compilation/dqi_arm_submission_score.json`.
+
+| | `Q` | static `T` | executed `T`/shot | value errors | phase errors | `R` | **score** |
+|---|---|---|---|---|---|---|---|
+| pinned reference (Experiment E) | 1,893 | 5,725,461 | 5,725,108.382109 | 0/102,400 | 0/102,400 | 1.191260 | **2.443946e13** |
+| **six-lever arm, MR rebuild** | **1,913** | 3,132,510 | **1,221,408.044756** | **0/102,400** | **0/102,400** | 1.191260 | **5.324728e12** |
+| derived Benchmark II target | 1,789 | — | 445,229 | — | — | 1.191260 | 1.6975e12 |
+
+Three things this settles that no earlier record could:
+
+- **The arm is correct by the verifier's own standard.** Value *and* phase errors on
+the sampled shots, with its classical-condition reads (`mr`) in the stream — not a
+hand-applied rule on 64 shots.
+- **The arm reproduces its recorded row.** 1,221,408.044756 against 1,221,466.8 is a
+relative difference of 4.8e-5; `T` is a mean over sampled syndromes, and the static
+count of 3,132,510 is exact.
+- **The arm's score is measured, and it is 4.5898x the reference's** — a score ratio
+of **0.2179**, exactly the `Q^2 T` ratio the reachability note computed by hand
+(1,913² × 1,221,408.0 against 1,893² × 5,725,108.4). Both rows have zero errors, so
+`eps_plus` and `R` are shared and carry no penalty either way.
+
+**It is still not a win.** The target is `R * 1,789^2 * 445,229`; at `Q` = 1,913 the
+same score needs `T` = **509,088**, and the arm executes 1,221,408 — **2.743x** on the
+Toffoli count, **1.143x** on the qubit term, **3.137x** on the score. So `MR` is
+necessary and not sufficient: the remaining factor is the decoder algorithm, not an
+opcode.
+
+**This is not a receipt.** `apedp_dyn/quantum_compilation/contracts.py` lets only the
+pinned extension produce one, and the pinned extension has no `mr`; the record says so
+in `status`, in `kickmix_role` and in `scope`, and no submission is claimed. The run
+costs 6.7 s to build and 236.8 s to verify, so it is repeatable by anyone holding the
+vendored sources.
+
+### Pins
+
+`tests/test_dqi_arm_submission_score.py` pins: `PASS` with zero value and zero phase
+errors at 102,400 shots; `Q` = 1,913 and `T` within 0.15% of 1,221,466.8 with the
+exact static 3,132,510; `score = R * Q^2 * T` to 1e-12; the like-for-like ratio
+0.2179 (= 4.5898x) against the pinned reference at the same budget; the target gap
+3.137x with `T` needed 509,088; and the record's own statement that it is not a
+receipt.
+
+A future edit that quotes the arm as a submission, reports its score without the
+build it was measured on, or claims it reaches the target fails there.

@@ -36,9 +36,12 @@ from apedp_dyn.epistemic.experiment_ledger import (
     HoldoutContaminationError,
 )
 from apedp_dyn.quantum_compilation.candidates import (
+    CORRECTNESS_CLAIMING_STATUSES,
     CandidateStatus,
     CircuitCandidate,
     VerifierReceipt,
+    evidence_from_receipt,
+    missing_correctness_checks,
 )
 
 __all__ = [
@@ -456,7 +459,18 @@ class QuantumCandidateLedger:
             status = CandidateStatus.VERIFIED_NONIMPROVING
             reason = "full-domain verification passed but did not beat the incumbent"
 
-        updated = candidate.with_status(status, receipt=receipt)
+        # A correctness claim needs value, junk and phase accounted for. The receipt is
+        # the evidence: for a per-shot verifier its own error counts, for a cost-model
+        # verifier an explicit statement that it does not measure them. A claiming
+        # status with no evidence is not promoted; it is recorded as insufficient.
+        evidence = evidence_from_receipt(receipt, candidate.benchmark)
+        if status in CORRECTNESS_CLAIMING_STATUSES:
+            missing = missing_correctness_checks(evidence, benchmark=candidate.benchmark)
+            if missing:
+                status = CandidateStatus.INSUFFICIENT_EVIDENCE
+                reason = "the receipt does not establish correctness: " + "; ".join(missing)
+
+        updated = candidate.with_status(status, receipt=receipt, evidence=evidence)
         self._ledger.update_lifecycle_state(
             candidate.candidate_id,
             _STATUS_TO_CORE[status],
