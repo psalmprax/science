@@ -300,7 +300,7 @@ jobs:
       contents: read
     steps:
       - name: Download wheel artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: apedp_kernel-wheel-${{ github.sha }}
           path: wheelhouse
