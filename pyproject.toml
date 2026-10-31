@@ -27,7 +27,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
-    "ruff==0.17.1",
+    "ruff==0.17.3",
     "mypy==2.4.0",
     "maturin==1.15.0",
     "PyYAML==6.0.3",
