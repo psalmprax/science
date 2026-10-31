@@ -1,3 +1,25 @@
+## 2026-10-31 — The unpushed range could not be pushed: GitHub's 100 MB limit
+
+- **THE PUSH WAS REJECTED, AND NOT BY ANYTHING NEW.** `stage` was 57 commits ahead of
+  `origin/stage`, and `50df2b1` had committed four artifacts over GitHub's per-file limit:
+  the 122 MB competition zip, the 122 MB `FeMoCo76o113e.fcidump`, and two 846 MB `.kmb`
+  receipts — 1.9 GB of blobs. None of it was in the published range, so the repair is
+  confined to local commits.
+- **WHAT WAS REWRITTEN.** `filter-branch --index-filter` over `origin/stage..HEAD` removed
+  those five paths from the 57 unpushed commits; one commit became empty and was pruned
+  (57 → 56). Every hash in that range changed. `backup/pre-rewrite-stage` holds the
+  pre-rewrite tip, so the old history is recoverable.
+- **THE FILES STAY ON DISK.** Two are needed by code that reads them: the canonical
+  `dqi_niters_222.kmb` that four `prepare_*_artifacts.py` scripts copy from, and the FCIDUMP
+  the DFTHCSOS verifier scores against. Both are now ignored and must be fetched separately;
+  `verifiers/dfthcsos/SCORING_README.md` pins the FCIDUMP's size and SHA-256
+  (128,128,348 bytes, `e5a48af7…e1bd`), so a re-download is verifiable rather than assumed.
+- **WHAT THIS DOES NOT DO: shrink the local repository.** The backup branch still
+  references the old objects, so nothing is reclaimed until it is retired and `git gc`
+  runs. The gain is that a clone can now exist at all.
+
+Updated: `.gitignore`, `CHANGELOG.md`.
+
 ## 2026-10-31 — Two checkouts, one canonical, and a route map for the designer
 
 - **`science` IS CANONICAL; THE SIBLING IS AN ARCHIVE.** The two checkouts share a common
