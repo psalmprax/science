@@ -107,3 +107,58 @@ test so the failure cannot be quietly dropped.
 
 Contract `derive_n_a(deg(A)) = n + 1 - deg(A)` was verified exhaustively for `n = 4, 12, 70` in
 both directions; the accounting still reports one 8-qubit register and the b-pair untouched.
+
+## Root cause: the invariant dies at the first swap
+
+The substituted comparison is not the fault. `scripts/diagnose_derived_flag_predicate.py` builds
+the predicate alone — `A`, `B`, a register loaded with `n + 1 - A`, the reference comparison and
+the derived loop — and simulates **every** `(A, B)` basis pair: all 5,184 agree, under both
+`control=True` and a qubit control. So the cascade computes what it is asked to compute.
+
+What it is asked to compute is the problem. Sweeping the EEA window
+(`dqi_recycled_equivalence_bisect.json`, same 64 shots in every arm and window):
+
+| `n_iters` | reference | `_update_flag` only | all sites + driver |
+|---|---|---|---|
+| 2 | 0v / 30p | 0v / 30p | 0v / 30p |
+| 8 | 0v / 28p | 0v / 28p | **64v** / 0p |
+| 32 | 0v / 27p | 0v / 27p | **64v** / 0p |
+| 128 | 0v / 34p | 0v / 34p | **64v** / 0p |
+| 222 | 0v / 0p | **52v** / 0p | **64v** / 0p |
+
+The one-body substitution matches the reference at every window short of the full run and fails
+only at 222; the all-sites build fails from the first window that fires a swap. That is the
+signature of a premise that holds early and stops holding, not of a mis-emitted comparison.
+
+**The invariant holds only while the a-pair has never been swapped.** `n_A + n_a = n + 1` is
+established at initialisation, and the only thing that writes `n_a` afterwards is
+`_swap_a_and_b`, which exchanges the a-pair with the b-pair. That pair's sum varies — measured at
+`n_B + n_b ∈ {3, 4, 5}` on the `n = 4` trace — so after a swap `n_a = old n_b`, which is not
+`n + 1 - new n_A`. Every derived read after the first swap that lands a non-complementary value is
+then wrong. The one-body build still carries a real `n_a`, which is why it survives 128 iterations
+and fails in the last phase where those swaps have accumulated; the all-sites build has no `n_a`
+at all, so its swap write assumes the same false invariant and fails immediately.
+
+This is falsifier #4 applied to the other register: `n_a` is derivable only pre-swap, and tracking
+the pair sum to recover it needs a register — the one being removed. So **1,885 is not reachable by
+this substitution**, and the 11.3% Toffoli cost below buys a peak that does not belong to a working
+decoder.
+
+## What that cost does to the projected score
+
+The trade is not close. On the built circuits the recycled decoder costs **1.1133×** the
+reference's Toffolis (6,374,245 vs 5,725,461, or 2,922 extra per EEA iteration against 25,790),
+while the 8 qubits buy **0.9916×** in `Q²` (1,885² vs 1,893²). Applied to the projection's
+T_mean target of 445,229 — the lever that supplies the rest of the gain — the recycling moves
+
+| quantity | before | after recycling |
+|---|---|---|
+| `T_mean` | 445,229 | 495,680 |
+| projected gain | 12.968× | **11.648×** |
+| score factor vs the 12.968× projection | 1.000 | **0.898** |
+
+So the register removal as built is **score-negative by about 10%**: the qubit saving is a 0.8%
+improvement and the gate cost is a 10.2% regression. The ratio is first-order rather than exact,
+because T_mean is a per-shot mean with early halting while the delta is a static count — but both
+scale with iterations executed, so the ratio survives that correction. This is the second reason
+the 1,885 build is not the campaign's answer even if the equivalence bug is found.

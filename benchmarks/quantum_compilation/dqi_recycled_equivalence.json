@@ -1,5 +1,5 @@
 {
-  "what": "64-shot equivalence of the substituted pass bodies against the reference decoder, both arms driven over the same shots",
+  "what": "64-shot equivalence of the substituted pass bodies against the reference decoder, all arms driven over the same shots",
   "script": "scripts/verify_recycled_equivalence.py",
   "instance": {
     "m": 4095,

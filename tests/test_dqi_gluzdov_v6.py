@@ -560,3 +560,36 @@ def test_the_scored_window_record_holds_the_all_sites_peak():
     assert full["one_body"]["peak_qubits"] == PEAK_QUBITS_REFERENCE
     assert full["one_body"]["toffoli_delta"] == 634032
 
+
+def test_the_substitution_breaks_at_the_first_swap():
+    """Exact through 128 iterations, wrong at 222; the swap write is wrong from 8."""
+    record = json.loads(
+        (Path(__file__).resolve().parents[1] / "benchmarks" / "quantum_compilation"
+         / "dqi_recycled_equivalence_bisect.json").read_text()
+    )
+    windows = {w["n_iters"]: w["arms"] for w in record["windows"]}
+    one_128 = windows[128]["update_flag_substituted"]
+    assert one_128["value_errors"] == 0
+    assert one_128["phase_errors"] == windows[128]["reference"]["phase_errors"]
+    assert windows[222]["update_flag_substituted"]["value_errors"] == 52
+    assert windows[2]["all_sites_substituted"]["value_errors"] == 0
+    assert windows[8]["all_sites_substituted"]["value_errors"] == 64
+
+
+def test_the_recycling_cost_outweighs_the_qubit_gain():
+    """11.3% more Toffolis against a 0.8% Q^2 gain: the lever as built is score-negative."""
+    record = json.loads(
+        (Path(__file__).resolve().parents[1] / "benchmarks" / "quantum_compilation"
+         / "dqi_recycled_degrees_window.json").read_text()
+    )
+    full = next(w for w in record["windows"] if w["n_iters"] == 222)
+    ratio = full["all_sites"]["toffolis"] / full["reference_toffolis"]
+    assert 1.11 < ratio < 1.12
+
+    scaled_target = T_MEAN_TARGET_V6 * ratio
+    gain_scaled = BASELINE_DQI_COST / (R_EPS_PLUS * PEAK_QUBITS_SOURCED ** 2 * scaled_target)
+    # The cost divides the gain exactly by the Toffoli ratio; the qubit gain does not repay it.
+    assert math.isclose(gain_scaled, TARGET_GAIN_FACTOR / ratio, rel_tol=1e-12)
+    assert gain_scaled < TARGET_GAIN_FACTOR
+    assert (PEAK_QUBITS_SOURCED / PEAK_QUBITS_REFERENCE) ** 2 > 1 / ratio
+
