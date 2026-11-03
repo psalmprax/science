@@ -30,6 +30,17 @@ the predicates, the counter and halting decode, the shifts, the metadata, and th
 multiply-and-add control. It is the object of this plan, and it is **1.062× the entire
 445,229 target on its own**.
 
+**Basis of the two numbers this plan compares against.** `scripts/measure_dqi_recycling_offsets.py`
+reads the decoder's own `n_A`, `n_B`, `n_a`, `n_b` after every EEA sub-step. The a-pair is
+constant but at `n + 1` rather than `n`; the b-pair is not constant at all. So only `n_a`
+can be recycled — 8 qubits at `n = 70`, a supported peak of **1,885**, not 1,789 — and
+recycling moves registers, never gates, so 445,229 has **no route from it**. That register is
+now closed outright: the 1,885 build fails 64-shot equivalence and is score-negative, so this
+plan stands on its own measurements and nothing is scored at 1,885
+([`DQI_RECYCLED_PASS_BODIES.md`](DQI_RECYCLED_PASS_BODIES.md)). Every ratio
+below is measured against a target, not against a derived quantity. Record:
+`RECYCLING_MEASUREMENT` in `apedp_dyn/quantum_compilation/dqi_gluzdov_v6.py`.
+
 ## 2. What `C` contains, measured
 
 ### 2.1 Measured exactly: the six unconditional regions

@@ -110,6 +110,25 @@
     "n_iters": 222,
     "r": 2016
   },
+  "projection": {
+    "aspirational": {
+      "cost": 1697504187470.8674,
+      "peak_qubits": 1789,
+      "status": "UNSOURCED_96_QUBITS"
+    },
+    "cost": 1900602959045.8218,
+    "gain_factor": 12.858794872098121,
+    "peak_qubits": 1893,
+    "replaces": {
+      "cost": 1884572641931.1646,
+      "gain_factor": 12.968172751690407,
+      "peak_qubits": 1885,
+      "reason": "the recycled build fails 64-shot equivalence (52/64) and costs 1.1133x the reference's Toffolis, i.e. 0.898x this projection",
+      "status": "WITHDRAWN_RECYCLING_CLOSED"
+    },
+    "scored_at": "the verifier's 1,893: the only peak a verified circuit has, because the 1,885 build peaks correctly and decodes wrongly",
+    "status": "OPERATIVE_ON_VERIFIER_PEAK"
+  },
   "qubits": {
     "aspirational_peak_qubits": 1789,
     "gap_to_aspirational_qubits": 96,
@@ -148,11 +167,13 @@
     "recyclable": [
       "n_a"
     ],
+    "route_status": "CLOSED on correctness and on score: the built decoder peaks at 1,885 and fails 64-shot equivalence (52/64), and its +648,784 Toffolis make it 0.898x the projection. See docs/DQI_RECYCLED_PASS_BODIES.md and dqi_recycled_equivalence_bisect.json",
     "script": "scripts/measure_dqi_recycling_offsets.py",
     "supported_peak_qubits": 1885,
     "target_peak_qubits": 1789,
     "target_status": "UNSOURCED: only the a-pair is constant, and at n + 1 rather than n, so one logm-bit register can go (8 qubits at n=70). The b-pair varies, so n_b cannot be derived from n_B. The 104-qubit and 445,229-Toffoli targets are not implied by degree recycling."
   },
+  "recycling_status": "CLOSED_CORRECTNESS_AND_SCORE",
   "single_array_trade": {
     "array_bits": 852,
     "assumption": "re-deriving one remainder per round costs exactly one division call",

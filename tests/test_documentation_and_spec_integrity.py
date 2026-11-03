@@ -297,9 +297,21 @@ def test_the_data_path_floor_is_recorded_with_the_target():
     reachability = (root / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
     compatibility = (root / "DQI_OFFICIAL_COMPATIBILITY.md").read_text()
 
-    assert "55 < 64" in reachability
+    assert "23 < 64" in reachability
     assert "model_data_path_floor" in reachability
-    assert "55 against the 64" in compatibility
+    assert "23 against the 64" in compatibility
+    # Recycling is closed on both grounds and the projection is rescored at the verifier peak.
+    assert "closed on both grounds" in reachability
+    assert "0.898×" in reachability
+    assert "1.9006e12" in reachability and "1.9006e12" in compatibility
+
+    import pathlib
+
+    campaign = (
+        pathlib.Path(__file__).resolve().parents[1] / "docs" / "EEA_SCHEDULE_CAMPAIGN.md"
+    ).read_text()
+    assert "route is now closed" in campaign
+    assert "0.898×" in campaign
 
 
 def test_the_single_array_trade_is_recorded():

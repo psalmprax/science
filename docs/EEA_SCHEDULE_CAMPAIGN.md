@@ -20,6 +20,26 @@ the Toffoli (2,952.0) so that the two sessions' numbers are one record rather th
 stack was declared before the arm was built — `S5_stack`, `532,500 + 2,952 = 535,452` →
 `T = 686,014.8` — and it matched to **0.0 Toffoli**.
 
+**The target this campaign is measured against is a target, not a derivation.**
+`scripts/measure_dqi_recycling_offsets.py` reads the decoder's own `n_A`, `n_B`, `n_a`,
+`n_b` after every EEA sub-step. The a-pair is constant at `n + 1` rather than `n` and the
+b-pair varies, so only `n_a` is recyclable: 8 qubits at `n = 70`, a supported peak of
+**1,885**, not 1,789. Recycling cannot move a single gate, so 445,229 has no route from
+it — the 1.541× below is measured against the campaign target, and the route to the
+target is the multiply-accumulate arithmetic this campaign does not touch. Record:
+`RECYCLING_MEASUREMENT` in `apedp_dyn/quantum_compilation/dqi_gluzdov_v6.py`.
+
+**That route is now closed, and this campaign must not be read as depending on it.** The
+build that removes `n_a` exists and peaks at 1,885 (`dqi_recycled_degrees_window.json`), but
+it **fails 64-shot equivalence** — 52/64 value errors for the one-body substitution, 64/64
+for the all-sites build, against the reference's 0/64 — because the a-pair invariant dies at
+the first `_swap_a_and_b`, which exchanges a b-pair whose sum varies. It is also
+**score-negative**: `+648,784` Toffolis (1.1133×) against a 0.9916× `Q²` gain makes it
+**0.898×** the projection. So recycling is closed on both grounds, no qubit from it is
+usable, and the 1.541× and every figure below stand on the schedule alone. Full record:
+[`DQI_RECYCLED_PASS_BODIES.md`](DQI_RECYCLED_PASS_BODIES.md) §§"Root cause", "What that
+cost does to the projected score".
+
 ## 1. The schedule fact, and what it licenses
 
 Every predicate register in this decoder is in a computational basis state, because the

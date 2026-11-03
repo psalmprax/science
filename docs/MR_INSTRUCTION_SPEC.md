@@ -146,7 +146,13 @@ and check §2 against the existing `hmr` implementation — `MR` is an `hmr` tha
 
 3.599× is not the 12.86× the Benchmark II target needs. `T_mean` lands at 1.591M
 against 445,229 — a 3.57× gap — and what remains is one multiply-accumulate sweep
-per live round, which the algorithm requires. `Q` stays at 1,893: 1,752 persistent
+per live round, which the algorithm requires. That 445,229 figure is a target, not a
+derivation: `scripts/measure_dqi_recycling_offsets.py` shows degree recycling can remove
+one `logm`-bit register at most (8 qubits at `n = 70`; supported peak **1,885**, not
+1,789) and cannot remove a gate, so the gap below is closed by arithmetic rather than by
+register work. **That register is now closed as a lever too:** the 1,885 build fails 64-shot
+equivalence and is score-negative, so nothing is scored at 1,885 — see
+[`DQI_RECYCLED_PASS_BODIES.md`](DQI_RECYCLED_PASS_BODIES.md). `Q` stays at 1,893: 1,752 persistent
 registers (`2 × 73 × 12`, both factors frozen by the instance) plus 141 transient.
 The honest reading is that this instruction removes the part of the reference
 circuit's cost that is *avoidable*, and the rest is the decoder.

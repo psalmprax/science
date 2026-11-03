@@ -561,6 +561,26 @@ def test_the_scored_window_record_holds_the_all_sites_peak():
     assert full["one_body"]["toffoli_delta"] == 634032
 
 
+def test_the_projection_is_rescored_on_the_verifier_peak():
+    """Recycling is closed, so the operative row is 1,893 and 1,885 is carried as withdrawn."""
+    projection = design_projection_dqi_gluzdov_v6()
+    assert projection["recycling_status"] == "CLOSED_CORRECTNESS_AND_SCORE"
+
+    operative = projection["projection"]
+    assert operative["status"] == "OPERATIVE_ON_VERIFIER_PEAK"
+    assert operative["peak_qubits"] == PEAK_QUBITS_REFERENCE == 1893
+    assert math.isclose(
+        operative["cost"], R_EPS_PLUS * 1893 ** 2 * T_MEAN_TARGET_V6, rel_tol=1e-12
+    )
+    assert 12.85 < operative["gain_factor"] < 12.87
+
+    withdrawn = operative["replaces"]
+    assert withdrawn["peak_qubits"] == 1885
+    assert math.isclose(withdrawn["cost"], TARGET_DQI_COST, rel_tol=1e-12)
+    assert withdrawn["status"] == "WITHDRAWN_RECYCLING_CLOSED"
+    assert operative["aspirational"]["peak_qubits"] == 1789
+
+
 def test_the_substitution_breaks_at_the_first_swap():
     """Exact through 128 iterations, wrong at 222; the swap write is wrong from 8."""
     record = json.loads(

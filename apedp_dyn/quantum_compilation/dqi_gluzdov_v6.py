@@ -105,6 +105,15 @@ BASELINE_DQI_COST: float = 24439463583672.93
 #: Scored at the sourced peak. Only Q is measured; T_mean below is a target.
 TARGET_DQI_COST: float = R_EPS_PLUS * (PEAK_QUBITS_SOURCED ** 2) * T_MEAN_TARGET_V6
 TARGET_GAIN_FACTOR: float = BASELINE_DQI_COST / TARGET_DQI_COST  # ~12.97x
+
+#: Degree-register recycling is closed on correctness and on score
+#: (`docs/DQI_RECYCLED_PASS_BODIES.md`): the build with `n_a` removed peaks at 1,885 but fails
+#: 64-shot equivalence (52/64) and its +648,784 Toffolis make it 0.898x the projection. Nothing
+#: is therefore scored at 1,885. The operative projection is scored at the peak a verified
+#: circuit has -- the verifier's 1,893 -- and the 1,885 row is carried as withdrawn.
+PROJECTION_PEAK_QUBITS: int = PEAK_QUBITS_REFERENCE
+PROJECTION_DQI_COST: float = R_EPS_PLUS * (PROJECTION_PEAK_QUBITS ** 2) * T_MEAN_TARGET_V6
+PROJECTION_GAIN_FACTOR: float = BASELINE_DQI_COST / PROJECTION_DQI_COST
 #: The 1,789 arithmetic, kept only so the 14.396x figure has an address. Nothing here
 #: reaches it: 96 qubits beyond what one recyclable register can supply.
 ASPIRATIONAL_DQI_COST_AT_1789: float = R_EPS_PLUS * (PEAK_QUBITS_V6 ** 2) * T_MEAN_TARGET_V6
@@ -508,6 +517,11 @@ RECYCLING_MEASUREMENT: dict[str, Any] = {
     "n_A_plus_n_a": {"behaviour": "constant", "value_offset": "n + 1", "docs_claim": "n"},
     "n_B_plus_n_b": {"behaviour": "varies", "observed": [3, 4, 5], "docs_claim": "n + 1"},
     "recyclable": ["n_a"],
+    "route_status": (
+        "CLOSED on correctness and on score: the built decoder peaks at 1,885 and fails "
+        "64-shot equivalence (52/64), and its +648,784 Toffolis make it 0.898x the projection. "
+        "See docs/DQI_RECYCLED_PASS_BODIES.md and dqi_recycled_equivalence_bisect.json"
+    ),
     "qubits_removable_at_benchmark": RECYCLED_QUBITS_AT_BENCHMARK,
     "supported_peak_qubits": PEAK_QUBITS_SOURCED,
     "target_peak_qubits": PEAK_QUBITS_V6,
@@ -537,6 +551,32 @@ def design_projection_dqi_gluzdov_v6() -> dict[str, Any]:
         "recycling_applied_in_circuit": RECYCLING_APPLIED_IN_CIRCUIT,
         "architecture": "gluzdov_v6_degree_register_recycling",
         "recycling_basis": RECYCLING_MEASUREMENT,
+        "recycling_status": "CLOSED_CORRECTNESS_AND_SCORE",
+        "projection": {
+            "status": "OPERATIVE_ON_VERIFIER_PEAK",
+            "peak_qubits": PROJECTION_PEAK_QUBITS,
+            "cost": PROJECTION_DQI_COST,
+            "gain_factor": PROJECTION_GAIN_FACTOR,
+            "scored_at": (
+                "the verifier's 1,893: the only peak a verified circuit has, because the "
+                "1,885 build peaks correctly and decodes wrongly"
+            ),
+            "replaces": {
+                "peak_qubits": PEAK_QUBITS_SOURCED,
+                "cost": TARGET_DQI_COST,
+                "gain_factor": TARGET_GAIN_FACTOR,
+                "status": "WITHDRAWN_RECYCLING_CLOSED",
+                "reason": (
+                    "the recycled build fails 64-shot equivalence (52/64) and costs 1.1133x "
+                    "the reference's Toffolis, i.e. 0.898x this projection"
+                ),
+            },
+            "aspirational": {
+                "peak_qubits": PEAK_QUBITS_V6,
+                "cost": ASPIRATIONAL_DQI_COST_AT_1789,
+                "status": "UNSOURCED_96_QUBITS",
+            },
+        },
         "parameters": {
             "m": config.m,
             "n": config.n,

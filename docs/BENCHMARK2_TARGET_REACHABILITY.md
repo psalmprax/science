@@ -368,12 +368,17 @@ never a count any build has produced or is projected to produce.
 `"mean_toffolis": "UNSOURCED: ..."` and scores the projection at the sourced peak rather
 than against the 1,789 row it was derived with.
 
-### 7.2 The 96-qubit gap is arithmetically closed
+### 7.2 The 96-qubit gap is arithmetically closed — and recycling adds nothing to it
 
-`Q = 1,885` because exactly one degree register is recyclable. The decoder allocates
-**five** (`n_A`, `n_B`, `n_a`, `n_b`, `n_q`), each `log2(n)` wide — 8 qubits at `n = 70` —
-and one is gone. **The most any further recycling could remove is the other four: 32
-qubits**, which lands at **1,853**. The target needs **96**.
+`Q = 1,885` was the hope: exactly one degree register looked recyclable. **That route is now
+closed.** The decoder allocates **five** registers (`n_A`, `n_B`, `n_a`, `n_b`, `n_q`), each
+`log2(n)` wide — 8 qubits at `n = 70`. The build that removes `n_a` does reach **1,885**
+(`dqi_recycled_degrees_window.json`), but it fails 64-shot equivalence (52/64 value errors)
+and costs `+648,784` Toffolis, so it is 0.898× the projection rather than an improvement
+([`DQI_RECYCLED_PASS_BODIES.md`](DQI_RECYCLED_PASS_BODIES.md) §7.8 records the closure). **The
+usable recycling saving is therefore 0 qubits**, and even the register-count ceiling — the
+other four, **32 qubits**, landing at **1,853** — is a ceiling on a lever that yields nothing.
+The target needs **96**.
 
 **96 > 32**, so no register-recycling variant of this decoder reaches 1,789 — not because a
 derivation is missing, but because the registers are not there to remove. The four that
@@ -393,7 +398,7 @@ peak = 1,853 + 8k        k = degree registers materialised
 | k | registers kept | peak | gap to 1,789 |
 |---|---|---|---|
 | 5 | `n_A n_B n_a n_b n_q` (measured) | 1,893 | 104 |
-| 4 | `n_A n_B n_b n_q` (measured-supported) | 1,885 | 96 |
+| 4 | `n_A n_B n_b n_q` (built, fails equivalence) | 1,885 | 96 |
 | 3 | any three | 1,877 | 88 |
 | 2 | any two | 1,869 | 80 |
 | 1 | any one | 1,861 | 72 |
@@ -437,15 +442,15 @@ the two together still do not get there:
 
 | lever | qubits | basis |
 |---|---|---|
-| degree-register recycling | 32 | §7.3: four remaining registers × 8 |
+| degree-register recycling | **0** | §7.2/§7.8: the 8-qubit build peaks at 1,885 and fails equivalence, so nothing from it is usable |
 | workspace window 42 → 19 | 23 | §1.1, measured on the 1,935-qubit build |
-| **sum** | **55** | |
+| **sum** | **23** | |
 | needed (1,853 → 1,789) | **64** | |
 
-**55 < 64**, and 55 is an *upper* bound: the window saving was measured on a 1,935-qubit
-build, so any build already at 1,853 has spent part of it. Nine qubits remain unaccounted for
-even at both levers' limits, which means the rest is data-path width — and the data path does
-not move in small steps. One polynomial array is `(n + 1) × m = 71 × 12 = 852` qubits, larger
+**23 < 64**, and 23 is an *upper* bound: the window saving was measured on a 1,935-qubit
+build, so any build already at 1,853 has spent part of it. Forty-one qubits remain unaccounted
+for even at the surviving lever's limit, which means the rest is data-path width — and the data
+path does not move in small steps. One polynomial array is `(n + 1) × m = 71 × 12 = 852` qubits, larger
 than every lever combined; dropping or narrowing one is worth more than all of them and is a
 different circuit, not a schedule. `model_data_path_floor()` computes the table.
 
@@ -480,9 +485,43 @@ before any builder work.
 ### 7.7 The window figure cannot be re-measured at 1,853 yet
 
 The 23-qubit workspace saving in §7.5 was measured on a build at 1,935 qubits, and making it
-contemporaneous needs a build near 1,853. None exists: `RECYCLING_APPLIED_IN_CIRCUIT` is
-`False`, the compiled circuit is reference-equivalent, and the reference decoder exposes no
-window knob — so the window can only be measured on the arm builds the builder already emits,
-all of which are at or above 1,912. The re-measurement is therefore blocked on the recycled
-pass bodies, not on effort, and §7.5's 55 stays an upper bound until one exists.
+contemporaneous needs a build near 1,853. The recycled build now exists and does not decode (§7.8),
+`RECYCLING_APPLIED_IN_CIRCUIT` stays `False`, the compiled circuit is reference-equivalent, and
+the reference decoder exposes no window knob — so the window can only be measured on the arm builds the builder already emits,
+all of which are at or above 1,912. The re-measurement is therefore blocked on a working recycled
+build, not on effort, and §7.5's 23 stays an upper bound until one exists.
+
+### 7.8 Recycling is closed, and the projection is rescored on the verifier's peak
+
+Degree-register recycling is **closed on both grounds**, measured rather than argued:
+
+| check | result |
+|---|---|
+| peak of the build with `n_a` removed | **1,885** at the scored window (`dqi_recycled_degrees_window.json`) |
+| 64-shot equivalence, one substituted body | **52/64 value errors**, reference 0/64 |
+| 64-shot equivalence, all sites + driver | **64/64 value errors** |
+| bisection of the failure | one-body arm exact through **128** iterations, wrong at 222; all-sites wrong from **8** |
+| cost of the peak | **+648,784 Toffolis** (1.1133×), `Q²` gain 0.9916×, **0.898×** the projection |
+
+The cause is not the derived comparison — that is exact over all 5,184 `(A, b)` pairs
+(`scripts/diagnose_derived_flag_predicate.py`) — but the premise: `n_A + n_a = n + 1` only
+holds until `_swap_a_and_b` exchanges the a-pair with the b-pair, whose sum varies. After that
+swap `n_a = old n_b ≠ n + 1 - new n_A`, and tracking the pair sum to recover it needs the
+register being removed. Falsifier #4 of the pass-body sketch therefore applies to `n_a`
+itself, not only to `n_b`.
+
+**What replaces the 1,885-scored projection: nothing is scored at 1,885.** The operative
+projection is scored at the peak a verified circuit actually has — the verifier's **1,893** —
+with the same unsourced `T_mean = 445,229`:
+
+| row | `Q` | `T_mean` | cost | gain vs baseline | status |
+|---|---|---|---|---|---|
+| operative | **1,893** | 445,229 | **1.9006e12** | **12.859×** | scored on the measured peak |
+| withdrawn | 1,885 | 445,229 | 1.8846e12 | 12.968× | recycling closed |
+| aspirational | 1,789 | 445,229 | 1.6975e12 | 14.396× | 96 qubits that nothing supplies |
+
+`design_projection_dqi_gluzdov_v6()` carries the operative numbers under `projection` and the
+withdrawn row under `projection.replaces`; `dqi_design_projection.json` is regenerated from it.
+The gain falls by 0.86% relative to the withdrawn row, which is the whole worth of the lever
+that turned out not to work.
 

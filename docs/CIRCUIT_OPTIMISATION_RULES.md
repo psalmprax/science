@@ -133,6 +133,16 @@ here, and both were caught by measuring the substitute instead of deleting the o
 * A controlled multiply costs its AND count **plus 12**, in either implementation, so a
   cheaper multiply does not scale the whole 75.
 
+**Every ratio below is against an unsourced target.** `scripts/measure_dqi_recycling_offsets.py`
+reads the decoder's own degree registers after each EEA sub-step and finds the a-pair
+constant at `n + 1` (not `n`) and the b-pair varying, so the recyclable saving is one
+`logm`-bit register — 8 qubits at `n = 70`, a supported peak of **1,885**, not 1,789 — and
+the 445,229-Toffoli row is a target with no derivation behind it, since recycling moves
+registers and not gates. See `RECYCLING_MEASUREMENT` in
+`apedp_dyn/quantum_compilation/dqi_gluzdov_v6.py`. **And that one register does not work:**
+the 1,885 build fails 64-shot equivalence and costs 11.3% more Toffolis, so the lever is
+closed and ratios are quoted against 1,893 — [`DQI_RECYCLED_PASS_BODIES.md`](DQI_RECYCLED_PASS_BODIES.md).
+
 With the decomposition, the arm priced for any multiply cost:
 
 | If the multiply cost | `T_mean` per shot | Ratio | vs 445,229 |

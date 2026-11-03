@@ -365,7 +365,8 @@ shots**, `log2_delta = -128`, the 54-AND product policy. Record:
 | pinned reference (Experiment E) | 1,893 | 5,725,461 | 5,725,108.382109 | 0/102,400 | 0/102,400 | 1.191260 | **2.443946e13** |
 | **six-lever arm, MR rebuild** | **1,913** | 3,132,510 | **1,221,408.044756** | **0/102,400** | **0/102,400** | 1.191260 | **5.324728e12** |
 | derived Benchmark II target | 1,789 | — | 445,229 | — | — | 1.191260 | 1.6975e12 |
-| sourced projection at the measured peak | 1,885 | — | 445,229 | — | — | 1.191260 | 1.8846e12 |
+| **operative projection at the verifier peak** | **1,893** | — | 445,229 | — | — | 1.191260 | **1.9006e12** |
+| withdrawn projection at the recycled peak | 1,885 | — | 445,229 | — | — | 1.191260 | 1.8846e12 |
 
 Three things this settles that no earlier record could:
 
@@ -407,9 +408,11 @@ build it was measured on, or claims it reaches the target fails there.
 ## The two numbers the target row cannot supply
 
 - **`Q` = 1,789 needs 96 qubits that do not exist.** Five degree registers at 8 qubits each
-  is 40; one is recyclable and has been counted (1,885). The other four are 32, so the floor
-  under any recycling is **1,853**. 96 > 32: closed by counting registers, not by a missing
-  derivation.
+  is 40, and the one that looked recyclable (`n_a`) is now **closed**: the build reaches 1,885
+  but decodes wrongly (52/64 at 64 shots) and costs 11.3% more Toffolis, so it is 0.898× the
+  projection ([`DQI_RECYCLED_PASS_BODIES.md`](DQI_RECYCLED_PASS_BODIES.md)). Even the ceiling —
+  the other four registers, 32 qubits, floor 1,853 — is a ceiling on a lever worth nothing.
+  96 > 32, and 32 > 0: closed twice over, not by a missing derivation.
 - **`T_mean` = 445,229 is permanently unsourced.** No circuit produces it. The measured arms
   are 686,014.8, 1,221,466.8 and 472,768.2, and the last of those already assumes every field
   product and every controlled add are free, which they are not. The projection is therefore
@@ -436,12 +439,13 @@ and **2.806e+12** — the best of them still
 **1.489×** the target. Width is worth ~6% of the score, not
 the gap. Model: `model_score_at_qubit_floor()`.
 
-## Width levers sum to 55 of the 64 qubits needed
+## Width levers sum to 23 of the 64 qubits needed
 
-Measured width savings here are 32 qubits of degree-register recycling plus 23 from the
-workspace window (42 → 19), which is **55 against the 64** the target needs — and the window
-figure is an upper bound, since it was measured at 1,935 qubits. The remaining 9 qubits are
-data-path width: one polynomial array is 852 qubits. Model: `model_data_path_floor()`.
+The recycled-register lever is closed — its 8-qubit build fails equivalence and its cost is
+score-negative — so the only measured width saving left is **23** from the workspace window
+(42 → 19), which is **23 against the 64** the target needs. That is an upper bound too, since
+it was measured at 1,935 qubits. The remaining 41 qubits are data-path width: one polynomial
+array is 852 qubits. Model: `model_data_path_floor()`.
 
 ## One array, if the algorithm allowed it
 
