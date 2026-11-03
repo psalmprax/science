@@ -7,10 +7,12 @@ Tests:
 2. Scratch wire pooling and uncomputation: peak qubits strictly Q <= 1,789.
 3. Reed-Solomon syndrome generation, EEA, and Chien/Forney error-vector recovery across weights.
 4. Boundary values (empty error vector, max correctable errors, error weight exceeding l).
-5. Resource accounting: T_mean ≈ 445,229, Q <= 1,789, R(eps_plus) ≈ 1.19126, score <= 1.698e12
-   (this row is arithmetic on the *target*, not a measured result).
-6. Target gain factor >= 14.396x is arithmetic only; the projection must report
-   HOLD with no official verifier receipt rather than claiming PASS.
+5. Resource accounting: the projection is scored at the *sourced* peak Q = 1,885 (verifier
+   1,893 less one recyclable register), giving R(eps_plus) * Q^2 * T_mean ≈ 1.885e12, with
+   T_mean = 445,229 still unsourced.
+6. Target gain factor ≈ 12.97x is arithmetic only; the projection must report HOLD with no
+   official verifier receipt rather than claiming PASS. The 1,789 figure stays recorded as
+   an unreachable target: 96 qubits below the sourced peak.
 7. Kickmix circuit builder integration when available.
 8. dqi_builder architecture dispatch (reference default, V6 selectable).
 """
@@ -18,56 +20,68 @@ Tests:
 from __future__ import annotations
 
 import math
-import os
+
 import pytest
-import numpy as np
 
 from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import (
+    ASPIRATIONAL_DQI_COST_AT_1789,
     BASELINE_DQI_COST,
     DEFAULT_DEGREE,
-    DEFAULT_M,
     DEFAULT_N,
-    DEFAULT_N_ITERS,
-    DEFAULT_R,
-    EPS_PLUS,
-    MAX_ERRORS,
+    DEGREE_REGISTER_COUNT,
+    MAX_FURTHER_RECYCLING_QUBITS,
+    MEASURED_DQI_ARMS,
+    PEAK_FLOOR_UNDER_RECYCLING,
     PEAK_QUBITS_REFERENCE,
+    PEAK_QUBITS_SOURCED,
     PEAK_QUBITS_V6,
     QUBIT_CAP_V6,
     R_EPS_PLUS,
-    TARGET_DQI_COST,
-    TARGET_GAIN_FACTOR,
+    RECYCLED_QUBITS_AT_BENCHMARK,
+    REMAINING_DEGREE_REGISTERS,
     T_MEAN_REFERENCE,
     T_MEAN_TARGET_V6,
+    TARGET_DQI_COST,
+    TARGET_GAIN_FACTOR,
+    WIDTH_LEVERS_MEASURED,
     GF2FieldModel,
     GluzdovV6Config,
     GluzdovV6Decoder,
     build_candidate,
     design_projection_dqi_gluzdov_v6,
+    load_measured_dqi_arms,
+    model_data_path_floor,
+    model_degree_register_floor,
+    model_score_at_qubit_floor,
+    model_single_polynomial_array,
 )
 
 
 def test_gluzdov_v6_constants_and_target_metrics():
     """Verify architectural parameters, qubit limits, and cost scaling targets."""
-    assert PEAK_QUBITS_V6 == 1789
-    assert QUBIT_CAP_V6 == 1789
     assert PEAK_QUBITS_REFERENCE == 1893
-    assert PEAK_QUBITS_V6 < PEAK_QUBITS_REFERENCE
-    assert PEAK_QUBITS_REFERENCE - PEAK_QUBITS_V6 == 104
+    assert PEAK_QUBITS_SOURCED == 1885
+    assert PEAK_QUBITS_SOURCED == PEAK_QUBITS_REFERENCE - RECYCLED_QUBITS_AT_BENCHMARK
+    assert QUBIT_CAP_V6 == PEAK_QUBITS_SOURCED
+    # The campaign target survives only as the measured gap: 96 qubits beyond reach.
+    assert PEAK_QUBITS_V6 == 1789
+    assert PEAK_QUBITS_SOURCED - PEAK_QUBITS_V6 == 96
 
     assert T_MEAN_TARGET_V6 == 445229.0
     assert T_MEAN_REFERENCE > 5.7e6
     assert math.isclose(BASELINE_DQI_COST, 24439463583672.93, rel_tol=1e-9)
 
-    # Score calculation: R(eps_plus) * Q^2 * T_mean
-    recomputed_cost = R_EPS_PLUS * (PEAK_QUBITS_V6 ** 2) * T_MEAN_TARGET_V6
-    assert recomputed_cost <= 1.698e12
-    assert math.isclose(recomputed_cost, TARGET_DQI_COST, rel_tol=1e-4)
+    # The projection is scored at the sourced peak, not at the unreachable target.
+    recomputed_cost = R_EPS_PLUS * (PEAK_QUBITS_SOURCED ** 2) * T_MEAN_TARGET_V6
+    assert math.isclose(recomputed_cost, TARGET_DQI_COST, rel_tol=1e-12)
+    assert math.isclose(recomputed_cost, 1.8846e12, rel_tol=1e-3)
 
-    # Gain factor: 24.439T / 1.698T ≈ 14.396x
+    # Gain factor: 24.439T / 1.885T ≈ 12.97x, down from the 14.396x the 1,789 target gave.
     gain = BASELINE_DQI_COST / recomputed_cost
-    assert gain >= 14.396
-    assert math.isclose(gain, 14.397, rel_tol=1e-3)
+    assert math.isclose(gain, 12.97, rel_tol=1e-3)
+    assert math.isclose(TARGET_GAIN_FACTOR, gain, rel_tol=1e-12)
+    assert math.isclose(ASPIRATIONAL_DQI_COST_AT_1789, 1.6975e12, rel_tol=1e-3)
+    assert ASPIRATIONAL_DQI_COST_AT_1789 < TARGET_DQI_COST
 
 
 def test_gf2_field_arithmetic_correctness():
@@ -103,7 +117,7 @@ def test_degree_register_recycling_invariants():
     # 2 errors
     errs = {2: 3, 5: 7}
     syndromes = decoder.evaluate_syndromes(errs)
-    sigma, omega, stats = decoder.synchronized_eea_with_degree_recycling(syndromes)
+    _sigma, _omega, stats = decoder.synchronized_eea_with_degree_recycling(syndromes)
 
     assert stats["recycled_degree_invariants_verified"] is True
     recycled_invariants = stats["recycled_invariants"]
@@ -165,26 +179,37 @@ def test_boundary_error_weight_exceeded():
 
 
 def test_design_projection_dqi_gluzdov_v6():
-    """Verify projection arithmetic and that it reports HOLD, not a pass.
-
-    The projection is arithmetic on a target row. Claiming an official pass here
-    would fabricate a verifier result, so the gate must stay explicitly open.
-    """
+    """The projection is scored at the sourced peak, and still reports HOLD."""
     proj = design_projection_dqi_gluzdov_v6()
     assert proj["status"] == "ANALYTICAL_PROJECTION_ONLY"
     assert proj["compiled_kmb"] is False
     assert proj["official_verifier_run"] is False
-    assert proj["architecture"] == "gluzdov_v6_degree_register_recycling"
-    assert proj["qubits"]["v6_peak_qubits"] <= 1789
-    assert proj["qubits"]["qubit_reduction"] == 104
-    assert proj["toffolis"]["v6_target_mean_toffolis"] == 445229.0
-    assert proj["costs"]["recomputed_v6_cost"] <= 1.698e12
-    assert proj["costs"]["gain_factor"] >= 14.396
-    assert proj["acceptance_gate"]["arithmetic_within_target"] is True
-    assert proj["acceptance_gate"]["passes_official_verifier_constraint"] is False
-    assert proj["acceptance_gate"]["status"] == "HOLD_FOR_COMPILED_AND_VERIFIED_RECEIPT"
-    assert len(proj["acceptance_gate"]["required_evidence"]) >= 3
+    assert proj["recycling_applied_in_circuit"] is False
 
+    qubits = proj["qubits"]
+    assert qubits["reference_peak_qubits"] == 1893
+    assert qubits["sourced_peak_qubits"] == 1885
+    assert qubits["v6_peak_qubits"] == qubits["sourced_peak_qubits"]
+    assert qubits["qubit_cap"] == 1885
+    # The 1,789 target is carried as the recorded gap, not as the scored peak.
+    assert qubits["aspirational_peak_qubits"] == 1789
+    assert qubits["gap_to_aspirational_qubits"] == 96
+
+    costs = proj["costs"]
+    assert math.isclose(costs["recomputed_v6_cost"], TARGET_DQI_COST, rel_tol=1e-12)
+    assert math.isclose(
+        costs["gain_factor"], BASELINE_DQI_COST / costs["recomputed_v6_cost"], rel_tol=1e-12
+    )
+    assert costs["gain_factor"] < 14.396  # the 1,789 figure is no longer the projection
+    assert "UNSOURCED" in proj["target_basis"]["mean_toffolis"]
+    assert "sourced" in proj["target_basis"]["peak_qubits"]
+
+    gate = proj["acceptance_gate"]
+    assert gate["arithmetic_within_target"] is True
+    assert gate["passes_official_verifier_constraint"] is False
+    assert gate["status"] == "HOLD_FOR_COMPILED_AND_VERIFIED_RECEIPT"
+    assert any("1,885" in item for item in gate["required_evidence"])
+    assert any("unsourced" in item for item in gate["required_evidence"])
 
 def test_scratch_wire_pooling_qubit_count_guarantee():
     """Verify that scratch wire pooling and degree recycling guarantee Q <= 1,789.
@@ -236,7 +261,7 @@ def test_circuit_builder_candidate_when_kickmix_available():
     """Test build_candidate() when kickmix is available."""
     try:
         import kickmix as km  # noqa: F401
-    except (ImportError, Exception):
+    except ImportError:
         pytest.skip("kickmix not available in test environment")
 
     # If kickmix is available, compile a candidate with small iters
@@ -260,3 +285,156 @@ def test_dqi_builder_architecture_dispatch():
 
     with pytest.raises(ValueError, match="positive integer"):
         dqi_builder.build_candidate(n_iters=True)
+
+
+def test_dqi_design_projection_artifact_matches_the_live_projection():
+    """The committed artifact is the function's own output, not a copy that can drift."""
+    import json
+    import pathlib
+
+    artifact = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "benchmarks"
+        / "quantum_compilation"
+        / "dqi_design_projection.json"
+    )
+    assert artifact.exists(), "run scripts/write_dqi_design_projection.py"
+    assert json.loads(artifact.read_text()) == design_projection_dqi_gluzdov_v6()
+
+
+def test_no_amount_of_register_recycling_reaches_1789():
+    """96 qubits are wanted and 32 exist: the target is closed by counting registers."""
+    assert REMAINING_DEGREE_REGISTERS == 4  # n_A, n_B, n_b, n_q
+    assert MAX_FURTHER_RECYCLING_QUBITS == 32  # 4 registers x 8 qubits
+    assert PEAK_FLOOR_UNDER_RECYCLING == 1853
+    assert PEAK_QUBITS_SOURCED - PEAK_QUBITS_V6 == 96
+    # The whole argument, in one line: there are not enough registers left.
+    assert MAX_FURTHER_RECYCLING_QUBITS < PEAK_QUBITS_SOURCED - PEAK_QUBITS_V6
+
+
+def test_degree_register_floor_model_anchors_and_reaches():
+    """peak = 1,853 + 8k, anchored on both measured points, and never at the target."""
+    model = model_degree_register_floor()
+    base = PEAK_QUBITS_REFERENCE - DEGREE_REGISTER_COUNT * 8
+    assert base == 1853
+    assert model["base_qubits"] == base
+    assert model["model"] == "peak = 1853 + 8k"
+
+    # The model reproduces both measured endpoints, which is what anchors it.
+    assert model["anchors"]["reference_measured"] == {"k": 5, "peak_qubits": 1893}
+    assert model["anchors"]["recycled_measured"] == {"k": 4, "peak_qubits": 1885}
+
+    rows = {row["materialised_degree_registers"]: row for row in model["rows"]}
+    assert sorted(rows) == [0, 1, 2, 3, 4, 5]
+    assert rows[5]["peak_qubits"] == 1893
+    assert rows[4]["peak_qubits"] == 1885
+    for k, row in rows.items():
+        assert row["peak_qubits"] == base + 8 * k
+        assert row["gap_to_1789"] == row["peak_qubits"] - 1789
+        assert row["reaches_target"] is False
+
+    # The point of the model: the register lever runs out 64 qubits short.
+    assert model["zero_register_floor"] == 1853
+    assert model["gap_below_zero_register_floor"] == 64
+    assert model["gap_below_zero_register_floor"] > 0
+    assert "data-path width" in model["finding"]
+
+
+def test_projection_carries_the_register_floor_model():
+    projection = design_projection_dqi_gluzdov_v6()
+    assert projection["degree_register_floor"] == model_degree_register_floor()
+
+
+def test_no_measured_arm_is_at_the_register_floor():
+    """The floor is a model: every arm the verifier scored is 40+ qubits wider than it."""
+    model = model_score_at_qubit_floor()
+    assert model["floor_qubits"] == 1853
+    assert model["narrowest_measured_qubits"] == 1893
+    assert model["any_measured_at_or_below_floor"] is False
+    assert len(model["rows"]) == len(MEASURED_DQI_ARMS) == 3
+    assert all(row["qubits"] > model["floor_qubits"] for row in model["rows"])
+
+    # The rescale is exactly the squared width ratio, and nothing about it is a measurement.
+    for row in model["rows"]:
+        assert math.isclose(row["rescale_factor"], (1853 / row["qubits"]) ** 2, rel_tol=1e-12)
+        assert math.isclose(
+            row["rescaled_score"], row["score"] * row["rescale_factor"], rel_tol=1e-12
+        )
+        assert math.isclose(
+            row["ratio_to_target"], row["rescaled_score"] / TARGET_DQI_COST, rel_tol=1e-12
+        )
+        # Width alone does not close the gap: every arm is still over the target at 1,853.
+        assert row["ratio_to_target"] > 1.0
+
+
+def test_measured_arm_scores_are_read_from_the_records():
+    """The three scores come from their records; these bounds only cross-check them."""
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1] / "benchmarks" / "quantum_compilation"
+    arms = load_measured_dqi_arms()
+    assert len(arms) == len(MEASURED_DQI_ARMS) == 3
+    for arm in arms:
+        assert (root / arm["record"]).exists()
+        assert arm["score"] > 0
+        assert arm["qubits"] > 1853
+
+    by_record = {arm["record"]: arm for arm in arms}
+    # Accuracy anchors, not the source: if a record is re-run these move, and the record should
+    # be re-read rather than this test edited to match.
+    assert abs(by_record["dqi_submission_score.json"]["score"] / 2.319438e13 - 1) < 1e-3
+    assert abs(by_record["dqi_arm_submission_score.json"]["score"] / 5.324728e12 - 1) < 1e-3
+    assert (
+        abs(by_record["dqi_campaign_arm_submission_score.json"]["score"] / 2.990339e12 - 1) < 1e-3
+    )
+    # The submission record also carries the reference; the loader must pick ours.
+    assert by_record["dqi_submission_score.json"]["row_path"] == "verified.candidate"
+
+
+def test_missing_dqi_record_raises_rather_than_defaulting(monkeypatch, tmp_path):
+    """A missing artifact must not silently become a typed-in number."""
+    import apedp_dyn.quantum_compilation.dqi_gluzdov_v6 as dqi_module
+
+    monkeypatch.setattr(dqi_module, "_BENCHMARK_DIR", tmp_path)
+    with pytest.raises(dqi_module.DqiRecordError):
+        dqi_module.load_measured_dqi_arms()
+
+
+def test_measured_width_levers_do_not_reach_the_target():
+    """32 qubits of recycling + 23 of window = 55 against 64 needed: 9 short."""
+    model = model_data_path_floor()
+    assert model["register_floor_qubits"] == 1853
+    assert model["qubits_needed"] == 64
+    assert [lever["qubits"] for lever in model["levers"]] == [32, 23]
+    assert model["lever_sum_qubits"] == 55
+    assert model["shortfall_qubits"] == 9
+    assert model["reaches_target"] is False
+    # A single polynomial array is bigger than every lever combined.
+    assert model["polynomial_array_qubits"] == 71 * 12 == 852
+    assert model["polynomial_array_qubits"] > model["lever_sum_qubits"]
+    assert len(WIDTH_LEVERS_MEASURED) == 2
+
+
+def test_single_array_trade_prices_both_sides():
+    """852 qubits out, one division scaffold per round in, and the score still improves."""
+    model = model_single_polynomial_array()
+    assert model["array_bits"] == 71 * 12 == 852
+    assert model["peak_with_one_array"] == 1853 - 852 == 1001
+    assert model["reaches_target"] is True  # Q stops binding, which is the interesting part
+    assert model["extra_toffolis_per_round"] == 864 * 54 == 46656
+    assert model["eea_rounds"] == 222
+    assert model["extra_toffolis_per_shot"] == 46656 * 222 == 10357632
+    assert math.isclose(
+        model["modelled_toffolis_per_shot"],
+        model["reference_toffolis_per_shot"] + model["extra_toffolis_per_shot"],
+        rel_tol=1e-12,
+    )
+    assert 2.80 < model["toffoli_multiplier"] < 2.82
+    # The whole point of the trade: Q^2 falls faster than T rises.
+    assert math.isclose(
+        model["score_ratio_vs_reference"],
+        (1001 / 1893) ** 2 * model["toffoli_multiplier"],
+        rel_tol=1e-12,
+    )
+    assert 0.78 < model["score_ratio_vs_reference"] < 0.79
+    assert "one division" in model["assumption"]

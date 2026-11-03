@@ -353,3 +353,129 @@ that). Until one of those exists, the numbers above are the frontier, and quotes
 
 A future claim that an opcode closes the remaining 2.744× has to move one of those pins,
 and §2 says which term it would have to be.
+
+## 7. Two closures this note can now make
+
+### 7.1 445,229 is permanently unsourced
+
+The target has no circuit behind it, and optimising the circuits this repository has will
+not produce one. The measured ladder is **686,014.8** (the schedule campaign, 1.541×),
+**1,221,466.8** (the six-lever arm, 2.744×) and **472,768.2** (§2's last row: every field
+product *and* every controlled add free — impossible — and still 1.062×). So 445,229 is
+labelled **permanently unsourced**: a derived aim kept so comparisons have a denominator,
+never a count any build has produced or is projected to produce.
+`design_projection_dqi_gluzdov_v6()` records it as
+`"mean_toffolis": "UNSOURCED: ..."` and scores the projection at the sourced peak rather
+than against the 1,789 row it was derived with.
+
+### 7.2 The 96-qubit gap is arithmetically closed
+
+`Q = 1,885` because exactly one degree register is recyclable. The decoder allocates
+**five** (`n_A`, `n_B`, `n_a`, `n_b`, `n_q`), each `log2(n)` wide — 8 qubits at `n = 70` —
+and one is gone. **The most any further recycling could remove is the other four: 32
+qubits**, which lands at **1,853**. The target needs **96**.
+
+**96 > 32**, so no register-recycling variant of this decoder reaches 1,789 — not because a
+derivation is missing, but because the registers are not there to remove. The four that
+remain are load-bearing: `n_A`/`n_B` are the degrees the EEA compares, `n_b` cannot be
+derived because the b-pair varies, and `n_q` addresses the quotient register. Getting below
+1,853 means allocating fewer qubits, which is a different circuit rather than a schedule.
+
+### 7.3 The floor as a function of how many registers are materialised
+
+The two measured endpoints pin a one-parameter model. The reference materialises all five
+registers at 1,893 qubits; removing `n_a` gives 1,885. Both steps are the same 8 qubits, so
+
+```
+peak = 1,853 + 8k        k = degree registers materialised
+```
+
+| k | registers kept | peak | gap to 1,789 |
+|---|---|---|---|
+| 5 | `n_A n_B n_a n_b n_q` (measured) | 1,893 | 104 |
+| 4 | `n_A n_B n_b n_q` (measured-supported) | 1,885 | 96 |
+| 3 | any three | 1,877 | 88 |
+| 2 | any two | 1,869 | 80 |
+| 1 | any one | 1,861 | 72 |
+| 0 | none at all | **1,853** | **64** |
+
+`model_degree_register_floor()` computes this table and `dqi_design_projection.json` carries
+it under `degree_register_floor`. The row that decides the question is the last one: **a
+decoder that materialises no degree register at all still lands at 1,853**, 64 qubits above
+the target. So 1,789 is not reachable by allocating fewer registers — that lever is exhausted
+64 qubits short, and what remains is data-path width, the `A`/`B`/`a`/`b` polynomial arrays,
+which recycling does not touch and which is a different resource entirely.
+
+### 7.4 No measured arm is at the floor, and what one would score there
+
+Nothing has been built at 1,853 qubits: the narrowest DQI circuit the verifier has scored is
+**1,893** (the pinned reference) and both `MR` arms sit at **1,913**. So a floor-width
+circuit cannot be *certified* from any record in this repository — the floor is a model, not
+a build. What can be done is arithmetic on the measured scores, holding each arm's executed
+Toffoli count and its measured `R` fixed and scaling by `(1853/Q)²`:
+
+| arm | Q | measured score | at 1,853 | vs 1.8846e12 target |
+|---|---|---|---|---|
+| pinned reference (reduced-window 54-AND) | 1893 | 2.319e+13 | 2.222e+13 | 11.793× |
+| six-lever MR arm | 1913 | 5.325e+12 | 4.996e+12 | 2.651× |
+| campaign arm (five schedule gates) | 1913 | 2.99e+12 | 2.806e+12 | 1.489× |
+
+`model_score_at_qubit_floor()` reproduces this table. The width lever is worth about **6%**
+of the score per arm — and it is not enough: at 1,853 the campaign arm is still
+**1.489×** the target. So the last 64 qubits are worth
+taking only after the Toffoli count moves, and they cannot be taken by register recycling at
+all (§7.3). What would overturn this: a built circuit at `Q ≤ 1,853` that `verify()` scores
+— which would also need the narrower allocation to leave the instruction stream unchanged,
+the assumption the rescale makes and no build demonstrates.
+
+### 7.5 The last 64 qubits have no measured lever
+
+At the register floor the allocation contributes nothing more (§7.3), so the 64 qubits between
+1,853 and the target have to come from somewhere else. Only one other width lever in this
+repository has a measured saving — the workspace window cut from 42 to 19 qubits (§1.1) — and
+the two together still do not get there:
+
+| lever | qubits | basis |
+|---|---|---|
+| degree-register recycling | 32 | §7.3: four remaining registers × 8 |
+| workspace window 42 → 19 | 23 | §1.1, measured on the 1,935-qubit build |
+| **sum** | **55** | |
+| needed (1,853 → 1,789) | **64** | |
+
+**55 < 64**, and 55 is an *upper* bound: the window saving was measured on a 1,935-qubit
+build, so any build already at 1,853 has spent part of it. Nine qubits remain unaccounted for
+even at both levers' limits, which means the rest is data-path width — and the data path does
+not move in small steps. One polynomial array is `(n + 1) × m = 71 × 12 = 852` qubits, larger
+than every lever combined; dropping or narrowing one is worth more than all of them and is a
+different circuit, not a schedule. `model_data_path_floor()` computes the table.
+
+### 7.6 What holding one polynomial array would trade
+
+The data path holds a remainder pair and a coefficient pair. Dropping to one array is the only
+change larger than every lever in §7.5, and it prices in three lines:
+
+- **Qubits.** One array is `(n + 1) × m = 71 × 12 = 852` bits, so from the register floor the
+  peak would be **1,001** — 788 under the target. `Q` stops binding.
+- **Toffolis.** The EEA update is a 2×2 transform on the remainder pair and again on the
+  coefficient pair, so both remainders are read every round; holding one means re-deriving the
+  other from the syndrome each round, which is one extra division scaffold. At the measured 864
+  products × 54 ANDs that is **46,656 Toffolis per round**, **+10,357,632 per shot** over 222
+  rounds: 5,725,108.4 → **16,082,740.4**, or **2.81×**.
+- **Score.** `R · Q² · T` at that lower bound is **0.786×** the reference — the `Q²` win (0.28)
+  is larger than the `T` loss (2.81).
+
+So the trade is favourable on the benchmark metric even on pessimistic arithmetic, which is a
+reason to test it rather than to dismiss it, and is not a claim that it works. The one
+assumption to falsify: **re-deriving the dropped remainder costs exactly one division and
+nothing else.** `model_single_polynomial_array()` computes the table, and
+`dqi_design_projection.json` carries it under `single_array_trade`.
+
+### 7.7 The window figure cannot be re-measured at 1,853 yet
+
+The 23-qubit workspace saving in §7.5 was measured on a build at 1,935 qubits, and making it
+contemporaneous needs a build near 1,853. None exists: `RECYCLING_APPLIED_IN_CIRCUIT` is
+`False`, the compiled circuit is reference-equivalent, and the reference decoder exposes no
+window knob — so the window can only be measured on the arm builds the builder already emits,
+all of which are at or above 1,912. The re-measurement is therefore blocked on the recycled
+pass bodies, not on effort, and §7.5's 55 stays an upper bound until one exists.
+

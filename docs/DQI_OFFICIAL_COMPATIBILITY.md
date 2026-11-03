@@ -325,6 +325,15 @@ For reference, the verifier took 125.1 s on the reference and 140.3 s on the
 candidate at 102,400 shots (builds 15.4 s and 80.7 s), so this is a run anyone with
 the pinned bundle can repeat.
 
+**The 1,789/445,229 target used above is not derived.**
+`scripts/measure_dqi_recycling_offsets.py` reads the decoder's own `n_A`, `n_B`, `n_a`,
+`n_b` after every EEA sub-step: the a-pair is constant at `n + 1` rather than `n`, and
+the b-pair varies, so only `n_a` can be recycled — 8 qubits at `n = 70`, a supported
+peak of **1,885**, not 1,789. Degree recycling changes which registers exist and never
+which gates run, so it says nothing about 445,229. Both figures are targets the campaign
+measures against; see `RECYCLING_MEASUREMENT` in
+`apedp_dyn/quantum_compilation/dqi_gluzdov_v6.py`.
+
 ### Pins
 
 `tests/test_dqi_submission_score.py` pins: both circuits `PASS` with zero value and
@@ -356,6 +365,7 @@ shots**, `log2_delta = -128`, the 54-AND product policy. Record:
 | pinned reference (Experiment E) | 1,893 | 5,725,461 | 5,725,108.382109 | 0/102,400 | 0/102,400 | 1.191260 | **2.443946e13** |
 | **six-lever arm, MR rebuild** | **1,913** | 3,132,510 | **1,221,408.044756** | **0/102,400** | **0/102,400** | 1.191260 | **5.324728e12** |
 | derived Benchmark II target | 1,789 | — | 445,229 | — | — | 1.191260 | 1.6975e12 |
+| sourced projection at the measured peak | 1,885 | — | 445,229 | — | — | 1.191260 | 1.8846e12 |
 
 Three things this settles that no earlier record could:
 
@@ -393,3 +403,52 @@ receipt.
 
 A future edit that quotes the arm as a submission, reports its score without the
 build it was measured on, or claims it reaches the target fails there.
+
+## The two numbers the target row cannot supply
+
+- **`Q` = 1,789 needs 96 qubits that do not exist.** Five degree registers at 8 qubits each
+  is 40; one is recyclable and has been counted (1,885). The other four are 32, so the floor
+  under any recycling is **1,853**. 96 > 32: closed by counting registers, not by a missing
+  derivation.
+- **`T_mean` = 445,229 is permanently unsourced.** No circuit produces it. The measured arms
+  are 686,014.8, 1,221,466.8 and 472,768.2, and the last of those already assumes every field
+  product and every controlled add are free, which they are not. The projection is therefore
+  one measured factor (`Q`) times one aim (`T`), and says so in `target_basis`.
+
+Committed artifact: `benchmarks/quantum_compilation/dqi_design_projection.json`, written by
+`scripts/write_dqi_design_projection.py` and pinned to the live function by
+`tests/test_dqi_gluzdov_v6.py`.
+
+## The floor by register count
+
+`peak = 1,853 + 8k` over `k` materialised degree registers, anchored on the two measured
+points (`k = 5` → 1,893, `k = 4` → 1,885). The **zero-register floor** is 1,853, so even
+allocating none of them leaves 64 qubits to find: 1,789 is not a register-count question.
+Model: `model_degree_register_floor()`; carried in
+`benchmarks/quantum_compilation/dqi_design_projection.json`.
+
+## Nothing measured runs at the floor
+
+The narrowest scored circuit is 1,893 qubits and both `MR` arms run at 1,913, so 1,853 is a
+model rather than a build. Rescaled by `(1853/Q)²` at their measured Toffoli counts, the arms
+score **2.222e+13**, **4.996e+12**
+and **2.806e+12** — the best of them still
+**1.489×** the target. Width is worth ~6% of the score, not
+the gap. Model: `model_score_at_qubit_floor()`.
+
+## Width levers sum to 55 of the 64 qubits needed
+
+Measured width savings here are 32 qubits of degree-register recycling plus 23 from the
+workspace window (42 → 19), which is **55 against the 64** the target needs — and the window
+figure is an upper bound, since it was measured at 1,935 qubits. The remaining 9 qubits are
+data-path width: one polynomial array is 852 qubits. Model: `model_data_path_floor()`.
+
+## One array, if the algorithm allowed it
+
+One polynomial array is 852 bits: held singly, the peak would be **1,001** and `Q` would stop
+binding. But the EEA reads both remainders every round, so the dropped one must be re-derived
+from the syndrome — one extra division scaffold per round, 46,656 Toffolis, which over 222
+rounds is **2.81×** the reference at **0.786×** its score. Favourable arithmetic, unproven
+construction; the assumption to falsify is that re-derivation costs one division and nothing
+else. Model: `model_single_polynomial_array()`.
+

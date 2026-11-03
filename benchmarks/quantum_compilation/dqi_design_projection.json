@@ -1,0 +1,181 @@
+{
+  "acceptance_gate": {
+    "arithmetic_within_target": true,
+    "passes_official_verifier_constraint": false,
+    "required_evidence": [
+      "compiled .kmb circuit for the recycled architecture",
+      "official verify_submission_dqi.py PASS at log2_delta=-128",
+      "measured mean Toffoli count consistent with T_mean <= 445,229 (this threshold is itself unsourced)",
+      "measured peak qubit count consistent with Q <= 1,885"
+    ],
+    "status": "HOLD_FOR_COMPILED_AND_VERIFIED_RECEIPT"
+  },
+  "architecture": "gluzdov_v6_degree_register_recycling",
+  "circuit_mode": "reference_equivalent",
+  "compiled_kmb": false,
+  "costs": {
+    "baseline_dqi_cost": 24439463583672.93,
+    "cost_difference": 0.0,
+    "eps_plus": 0.0008660587301657926,
+    "gain_factor": 12.968172751690407,
+    "r_overhead": 1.1912604648115832,
+    "recomputed_v6_cost": 1884572641931.1646,
+    "target_dqi_cost": 1884572641931.1646,
+    "target_gain_factor": 12.968172751690407
+  },
+  "data_path_floor": {
+    "finding": "the measured width levers sum to 55 qubits against the 64 needed, so they do not reach the target; the remainder is data-path width, and a single polynomial array is larger than all of them together",
+    "lever_sum_qubits": 55,
+    "levers": [
+      {
+        "basis": "4 remaining registers x 8 qubits (model_degree_register_floor)",
+        "lever": "degree-register recycling",
+        "qubits": 32
+      },
+      {
+        "basis": "BENCHMARK2_TARGET_REACHABILITY.md section 1.1, measured on the 1,935-qubit build",
+        "lever": "workspace window 42 -> 19",
+        "qubits": 23
+      }
+    ],
+    "polynomial_array_qubits": 852,
+    "qubits_needed": 64,
+    "reaches_target": false,
+    "register_floor_qubits": 1853,
+    "shortfall_qubits": 9,
+    "target_qubits": 1789
+  },
+  "degree_register_floor": {
+    "anchors": {
+      "recycled_measured": {
+        "k": 4,
+        "peak_qubits": 1885
+      },
+      "reference_measured": {
+        "k": 5,
+        "peak_qubits": 1893
+      }
+    },
+    "base_qubits": 1853,
+    "finding": "no degree-register allocation reaches 1,789: materialising none of them still leaves 64 qubits to find, and those are data-path width (the A/B/a/b arrays), not registers",
+    "gap_below_zero_register_floor": 64,
+    "model": "peak = 1853 + 8k",
+    "register_qubits": 8,
+    "rows": [
+      {
+        "gap_to_1789": 104,
+        "materialised_degree_registers": 5,
+        "peak_qubits": 1893,
+        "reaches_target": false
+      },
+      {
+        "gap_to_1789": 96,
+        "materialised_degree_registers": 4,
+        "peak_qubits": 1885,
+        "reaches_target": false
+      },
+      {
+        "gap_to_1789": 88,
+        "materialised_degree_registers": 3,
+        "peak_qubits": 1877,
+        "reaches_target": false
+      },
+      {
+        "gap_to_1789": 80,
+        "materialised_degree_registers": 2,
+        "peak_qubits": 1869,
+        "reaches_target": false
+      },
+      {
+        "gap_to_1789": 72,
+        "materialised_degree_registers": 1,
+        "peak_qubits": 1861,
+        "reaches_target": false
+      },
+      {
+        "gap_to_1789": 64,
+        "materialised_degree_registers": 0,
+        "peak_qubits": 1853,
+        "reaches_target": false
+      }
+    ],
+    "zero_register_floor": 1853
+  },
+  "official_verifier_run": false,
+  "parameters": {
+    "degree": 12,
+    "m": 4095,
+    "max_errors": 35,
+    "n": 70,
+    "n_iters": 222,
+    "r": 2016
+  },
+  "qubits": {
+    "aspirational_peak_qubits": 1789,
+    "gap_to_aspirational_qubits": 96,
+    "max_further_recycling_qubits": 32,
+    "peak_floor_under_recycling": 1853,
+    "qubit_cap": 1885,
+    "qubit_reduction": 8,
+    "reference_peak_qubits": 1893,
+    "relative_qubit_ratio": 0.9957739038563127,
+    "sourced_peak_qubits": 1885,
+    "v6_peak_qubits": 1885
+  },
+  "recycling_applied_in_circuit": false,
+  "recycling_basis": {
+    "instance": {
+      "degree": 3,
+      "n_syndromes": 4,
+      "sub_steps": 120
+    },
+    "measured_on": "the decoder's own n_A, n_B, n_a, n_b registers, read after every sub-step",
+    "n_A_plus_n_a": {
+      "behaviour": "constant",
+      "docs_claim": "n",
+      "value_offset": "n + 1"
+    },
+    "n_B_plus_n_b": {
+      "behaviour": "varies",
+      "docs_claim": "n + 1",
+      "observed": [
+        3,
+        4,
+        5
+      ]
+    },
+    "qubits_removable_at_benchmark": 8,
+    "recyclable": [
+      "n_a"
+    ],
+    "script": "scripts/measure_dqi_recycling_offsets.py",
+    "supported_peak_qubits": 1885,
+    "target_peak_qubits": 1789,
+    "target_status": "UNSOURCED: only the a-pair is constant, and at n + 1 rather than n, so one logm-bit register can go (8 qubits at n=70). The b-pair varies, so n_b cannot be derived from n_B. The 104-qubit and 445,229-Toffoli targets are not implied by degree recycling."
+  },
+  "single_array_trade": {
+    "array_bits": 852,
+    "assumption": "re-deriving one remainder per round costs exactly one division scaffold",
+    "eea_rounds": 222,
+    "extra_toffolis_per_round": 46656,
+    "extra_toffolis_per_shot": 10357632,
+    "modelled_toffolis_per_shot": 16082740.382109374,
+    "peak_with_one_array": 1001,
+    "qubits_saved": 852,
+    "reaches_target": true,
+    "reference_toffolis_per_shot": 5725108.382109375,
+    "score_ratio_vs_reference": 0.7854947119281012,
+    "toffoli_multiplier": 2.80915911257977,
+    "verdict": "Q falls to 1,001 and stops binding, T rises 2.81x, and the score lands at 0.785 of the reference: favourable on the metric, and unproven as a construction"
+  },
+  "status": "ANALYTICAL_PROJECTION_ONLY",
+  "target_basis": {
+    "mean_toffolis": "UNSOURCED: 445,229 has no circuit behind it, so the projection is one measured term (Q) times one target (T)",
+    "peak_qubits": "sourced: the verifier's 1,893 less the one register the decoder's own register measurement shows is removable (8 qubits at n = 70)"
+  },
+  "toffolis": {
+    "reference_mean_toffolis": 5725108.382109375,
+    "toffoli_reduction_factor": 12.858794872098121,
+    "v6_target_mean_toffolis": 445229.0
+  }
+}

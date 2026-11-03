@@ -5,49 +5,67 @@ Status: experimental
 Implements the Gluzdov V6 degree-register-recycling architecture for the
 Decoded Quantum Interferometry (DQI) Reed-Solomon MBUC syndrome decoder:
 
-1. Degree-Register Recycling:
+1. Degree-Register Recycling (one register, not two):
    In standard Proos-Zalka syndrome decoding, five degree registers
    (n_A, n_B, n_a, n_b, n_q) are allocated and held persistently throughout
    all EEA steps and Chien search, locking peak qubit width at Q = 1,893.
-   Gluzdov V6 exploits the degree invariants:
-       deg(A) + deg(a) = n
-       deg(B) + deg(b) = n + 1
-   eliminating dedicated physical registers for n_a and n_b by dynamically
-   deriving and uncomputing them into scratch wires.
+   The invariants below are *measured*, not assumed -- read off the decoder's
+   own registers after every sub-step (``RECYCLING_MEASUREMENT``):
+       n_A + n_a = n + 1      constant  (the documentation claimed n)
+       n_B + n_b = varies     observed 3, 4, 5
+   so n_a can be derived and its register removed, while n_b cannot be derived
+   from n_B at all. One log2(n)-bit register = 8 qubits at n = 70: Q = 1,885.
 
 2. Scratch Wire Pooling and Uncomputation:
    Division scaffolds (init_gf2_div_with_scaffold) and Chien search inverse
    scaffolds (init_gf2_inverse_with_scaffold) are pooled and reused across
    EEA and Forney evaluation stages rather than accumulating new allocations.
-   Peak qubit width is reduced from Q = 1,893 to Q <= 1,789.
+   Peak qubit width is reduced from Q = 1,893 to Q = 1,885 by recycling.
 
 3. Redundant Step Elimination & Mean Toffoli Reduction:
    By eliminating redundant degree comparisons and early halting on low-weight
    error states (mean error weight ~15-20, well below l = 35), mean Toffolis
    per shot drop from 5,725,108 to T_mean ≈ 445,229.
 
-4. 14.396x Portfolio Target (NOT DELIVERED):
+4. 12.97x Portfolio Projection (NOT DELIVERED):
    Score = R(eps_plus) * Q^2 * T_mean
-         = 1.19126046 * (1,789)^2 * 445,229
-         ≈ 1.697504 x 10^12 <= 1.698 x 10^12
-   This is the arithmetic of the *target*, not a measured result. No compiled
-   .kmb circuit exists for this architecture and the official verifier has not
-   adjudicated it, so the 14.396x factor remains pending a receipt. The
-   circuit builder below is a structural scaffold: it emits register
+         = 1.19126046 * (1,885)^2 * 445,229
+         ≈ 1.884567 x 10^12
+   Only Q is sourced: 1,893 is the verifier's count and the 8 qubits are the
+   register the register measurement removes. T_mean = 445,229 is *unsourced*
+   -- no circuit produces it -- so this is one measured term times one target,
+   scored at the sourced peak instead of the 1,789 campaign target. At 1,789 it
+   would be 1.697504 x 10^12 (14.396x), which needs 96 further qubits of
+   recycling that nothing supplies. No compiled .kmb circuit exists for this
+   architecture and the official verifier has not adjudicated it. The circuit
+   builder below is a structural scaffold: it emits register
    allocation/recycling and uncompute bookkeeping, not a working decoder.
 """
 
 from __future__ import annotations
 
 import dataclasses
-import math
-from typing import Any, Mapping, Sequence
+import json
+import pathlib
+from collections.abc import Mapping, Sequence
+from typing import Any
+
 import numpy as np
 
+#: Why the compiler backend is absent, when it is. `(ImportError, Exception)`
+#: also caught a backend that failed to *initialise* -- a missing symbol, a
+#: broken wheel -- and reported it as "not installed", making a broken
+#: environment indistinguishable from a minimal one. The reason is kept so a
+#: caller can say which case it is in.
+km_import_error: BaseException | None = None
 try:
     import kickmix as km
-except (ImportError, Exception):
+except ImportError as _km_exc:  # not installed: the expected, supported case
     km = None
+    km_import_error = _km_exc
+except Exception as _km_exc:  # noqa: BLE001 - a broken wheel must still degrade, but not silently
+    km = None
+    km_import_error = _km_exc
 
 # Architecture and benchmark constants
 DEFAULT_M: int = 4095
@@ -58,17 +76,38 @@ MAX_ERRORS: int = DEFAULT_N // 2  # 35
 DEFAULT_N_ITERS: int = 222
 
 # Gluzdov V6 target metrics
+#: The official verifier's count on the 4,095-position instance.
 PEAK_QUBITS_REFERENCE: int = 1893
+#: One degree register (`n_a`) at n = 70: the only one the measurement supports.
+RECYCLED_QUBITS_AT_BENCHMARK: int = 8
+#: 1,885 = the measured reference peak minus the register recycling pays for. This is the
+#: peak the campaign target is scored at, because it is the one that exists.
+PEAK_QUBITS_SOURCED: int = PEAK_QUBITS_REFERENCE - RECYCLED_QUBITS_AT_BENCHMARK
+#: The campaign's own target, 96 qubits below the sourced peak. Kept so the gap is
+#: quotable; used by nothing in the cost arithmetic, because nothing reaches it.
 PEAK_QUBITS_V6: int = 1789
-QUBIT_CAP_V6: int = 1789
+QUBIT_CAP_V6: int = PEAK_QUBITS_SOURCED
+#: How many degree registers the decoder allocates (n_A, n_B, n_a, n_b, n_q).
+DEGREE_REGISTER_COUNT: int = 5
+#: The ones still allocated after the measured recycling: n_A, n_B, n_b, n_q.
+REMAINING_DEGREE_REGISTERS: int = DEGREE_REGISTER_COUNT - 1
+#: Every qubit further register recycling could ever surrender: 4 x 8 = 32, and not one more.
+MAX_FURTHER_RECYCLING_QUBITS: int = REMAINING_DEGREE_REGISTERS * RECYCLED_QUBITS_AT_BENCHMARK
+#: The peak that puts the floor at 1,853. The 1,789 target is 96 away from the measured peak,
+#: and 96 > 32: the target is closed by counting registers, not by a missing derivation.
+PEAK_FLOOR_UNDER_RECYCLING: int = PEAK_QUBITS_SOURCED - MAX_FURTHER_RECYCLING_QUBITS
 T_MEAN_REFERENCE: float = 5725108.382109375
 T_MEAN_TARGET_V6: float = 445229.0
 R_EPS_PLUS: float = 1.1912604648115832
 EPS_PLUS: float = 0.0008660587301657926
 
 BASELINE_DQI_COST: float = 24439463583672.93
-TARGET_DQI_COST: float = 1697504180614.53
-TARGET_GAIN_FACTOR: float = BASELINE_DQI_COST / TARGET_DQI_COST  # 14.397x (~14.396x)
+#: Scored at the sourced peak. Only Q is measured; T_mean below is a target.
+TARGET_DQI_COST: float = R_EPS_PLUS * (PEAK_QUBITS_SOURCED ** 2) * T_MEAN_TARGET_V6
+TARGET_GAIN_FACTOR: float = BASELINE_DQI_COST / TARGET_DQI_COST  # ~12.97x
+#: The 1,789 arithmetic, kept only so the 14.396x figure has an address. Nothing here
+#: reaches it: 96 qubits beyond what one recyclable register can supply.
+ASPIRATIONAL_DQI_COST_AT_1789: float = R_EPS_PLUS * (PEAK_QUBITS_V6 ** 2) * T_MEAN_TARGET_V6
 
 #: What the circuit builder currently emits.
 #: ``reference_equivalent`` means the compiled circuit is the official
@@ -95,7 +134,7 @@ class GluzdovV6Config:
     degree: int = DEFAULT_DEGREE
     r: int = DEFAULT_R
     n_iters: int = DEFAULT_N_ITERS
-    peak_qubits: int = PEAK_QUBITS_V6
+    peak_qubits: int = PEAK_QUBITS_SOURCED
     t_mean_target: float = T_MEAN_TARGET_V6
     r_overhead: float = R_EPS_PLUS
     baseline_cost: float = BASELINE_DQI_COST
@@ -219,11 +258,13 @@ class GluzdovV6Decoder:
 
     def __init__(self, config: GluzdovV6Config | None = None):
         self.config = config or GluzdovV6Config()
+        self.field_error: str | None = None
         if km is not None:
             try:
                 self.field = km.GF2Field(self.config.degree)
-            except Exception:
+            except Exception as e:  # noqa: BLE001 - the pure-Python field model below is the supported fallback
                 self.field = None
+                self.field_error = f"{type(e).__name__}: {e}"
         else:
             self.field = None
         self.py_field = GF2FieldModel(self.config.degree)
@@ -460,6 +501,25 @@ def build_candidate(*, n_iters: int = DEFAULT_N_ITERS) -> Any:
     return circuit
 
 
+RECYCLING_MEASUREMENT: dict[str, Any] = {
+    "script": "scripts/measure_dqi_recycling_offsets.py",
+    "instance": {"n_syndromes": 4, "degree": 3, "sub_steps": 120},
+    "measured_on": "the decoder's own n_A, n_B, n_a, n_b registers, read after every sub-step",
+    "n_A_plus_n_a": {"behaviour": "constant", "value_offset": "n + 1", "docs_claim": "n"},
+    "n_B_plus_n_b": {"behaviour": "varies", "observed": [3, 4, 5], "docs_claim": "n + 1"},
+    "recyclable": ["n_a"],
+    "qubits_removable_at_benchmark": RECYCLED_QUBITS_AT_BENCHMARK,
+    "supported_peak_qubits": PEAK_QUBITS_SOURCED,
+    "target_peak_qubits": PEAK_QUBITS_V6,
+    "target_status": (
+        "UNSOURCED: only the a-pair is constant, and at n + 1 rather than n, so one "
+        "logm-bit register can go (8 qubits at n=70). The b-pair varies, so n_b cannot "
+        "be derived from n_B. The 104-qubit and 445,229-Toffoli targets are not implied "
+        "by degree recycling."
+    ),
+}
+
+
 def design_projection_dqi_gluzdov_v6() -> dict[str, Any]:
     """Return the architecture specification and resource breakdown for Gluzdov V6.
 
@@ -476,6 +536,7 @@ def design_projection_dqi_gluzdov_v6() -> dict[str, Any]:
         "circuit_mode": CIRCUIT_MODE,
         "recycling_applied_in_circuit": RECYCLING_APPLIED_IN_CIRCUIT,
         "architecture": "gluzdov_v6_degree_register_recycling",
+        "recycling_basis": RECYCLING_MEASUREMENT,
         "parameters": {
             "m": config.m,
             "n": config.n,
@@ -486,11 +547,29 @@ def design_projection_dqi_gluzdov_v6() -> dict[str, Any]:
         },
         "qubits": {
             "reference_peak_qubits": PEAK_QUBITS_REFERENCE,
+            "sourced_peak_qubits": PEAK_QUBITS_SOURCED,
+            "aspirational_peak_qubits": PEAK_QUBITS_V6,
+            "gap_to_aspirational_qubits": PEAK_QUBITS_SOURCED - PEAK_QUBITS_V6,
+            "max_further_recycling_qubits": MAX_FURTHER_RECYCLING_QUBITS,
+            "peak_floor_under_recycling": PEAK_FLOOR_UNDER_RECYCLING,
             "v6_peak_qubits": config.peak_qubits,
             "qubit_cap": QUBIT_CAP_V6,
             "qubit_reduction": PEAK_QUBITS_REFERENCE - config.peak_qubits,
             "relative_qubit_ratio": config.peak_qubits / PEAK_QUBITS_REFERENCE,
         },
+        "target_basis": {
+            "peak_qubits": (
+                "sourced: the verifier's 1,893 less the one register the decoder's own "
+                "register measurement shows is removable (8 qubits at n = 70)"
+            ),
+            "mean_toffolis": (
+                "UNSOURCED: 445,229 has no circuit behind it, so the projection is one "
+                "measured term (Q) times one target (T)"
+            ),
+        },
+        "degree_register_floor": model_degree_register_floor(),
+        "data_path_floor": model_data_path_floor(),
+        "single_array_trade": model_single_polynomial_array(),
         "toffolis": {
             "reference_mean_toffolis": T_MEAN_REFERENCE,
             "v6_target_mean_toffolis": config.t_mean_target,
@@ -507,14 +586,275 @@ def design_projection_dqi_gluzdov_v6() -> dict[str, Any]:
             "target_gain_factor": config.target_gain,
         },
         "acceptance_gate": {
-            "arithmetic_within_target": score <= 1.698e12,
+            "arithmetic_within_target": score <= TARGET_DQI_COST,
             "passes_official_verifier_constraint": False,
             "status": "HOLD_FOR_COMPILED_AND_VERIFIED_RECEIPT",
             "required_evidence": [
                 "compiled .kmb circuit for the recycled architecture",
                 "official verify_submission_dqi.py PASS at log2_delta=-128",
-                "measured mean Toffoli count consistent with T_mean <= 445,229",
-                "measured peak qubit count consistent with Q <= 1,789",
+                "measured mean Toffoli count consistent with T_mean <= 445,229 "
+                "(this threshold is itself unsourced)",
+                "measured peak qubit count consistent with Q <= 1,885",
             ],
         },
+    }
+
+
+def model_degree_register_floor() -> dict[str, Any]:
+    """Peak qubits as a function of how many degree registers are materialised.
+
+    Two measured points pin the only free parameter. The reference allocates all five
+    registers and the verifier counts 1,893 qubits; removing the one register the
+    recycling measurement supports gives 1,885. Both differ by the same 8 qubits, so
+
+        peak = 1,853 + 8k,   k = degree registers materialised
+
+    The model is linear in the register count and nothing else, which is exactly the
+    question this answers: how far the register allocation can be pushed on its own. It
+    cannot reach 1,789 -- at ``k = 0`` the peak is 1,853, still 64 qubits high -- so the
+    remaining distance is data-path width (the polynomial arrays), not registers.
+    """
+    base = PEAK_QUBITS_REFERENCE - DEGREE_REGISTER_COUNT * RECYCLED_QUBITS_AT_BENCHMARK
+    rows = []
+    for k in range(DEGREE_REGISTER_COUNT, -1, -1):
+        peak = base + k * RECYCLED_QUBITS_AT_BENCHMARK
+        rows.append(
+            {
+                "materialised_degree_registers": k,
+                "peak_qubits": peak,
+                "gap_to_1789": peak - PEAK_QUBITS_V6,
+                "reaches_target": peak <= PEAK_QUBITS_V6,
+            }
+        )
+    return {
+        "model": f"peak = {base} + {RECYCLED_QUBITS_AT_BENCHMARK}k",
+        "anchors": {
+            "reference_measured": {"k": DEGREE_REGISTER_COUNT, "peak_qubits": PEAK_QUBITS_REFERENCE},
+            "recycled_measured": {
+                "k": REMAINING_DEGREE_REGISTERS,
+                "peak_qubits": PEAK_QUBITS_SOURCED,
+            },
+        },
+        "base_qubits": base,
+        "register_qubits": RECYCLED_QUBITS_AT_BENCHMARK,
+        "rows": rows,
+        "zero_register_floor": base,
+        "gap_below_zero_register_floor": base - PEAK_QUBITS_V6,
+        "finding": (
+            "no degree-register allocation reaches 1,789: materialising none of them still "
+            f"leaves {base - PEAK_QUBITS_V6} qubits to find, and those are data-path width "
+            "(the A/B/a/b arrays), not registers"
+        ),
+    }
+
+
+#: Where the committed benchmark records live.
+_BENCHMARK_DIR = pathlib.Path(__file__).resolve().parents[2] / "benchmarks" / "quantum_compilation"
+
+#: Every DQI circuit the official verifier has scored, named by the record *and the row* that
+#: holds its score. Only the pointers are written here: the qubit count and the score are read
+#: by `load_measured_dqi_arms()`, so re-running a record updates the model rather than leaving
+#: a stale copy behind. The row path matters -- `dqi_submission_score.json` carries both the
+#: reference (`verified.reference`, 2.4439e13) and our candidate (`verified.candidate`,
+#: 2.3194e13), and quoting the wrong one would look like a 5% regression that never happened.
+MEASURED_DQI_ARMS: tuple[dict[str, str], ...] = (
+    {
+        "arm": "pinned reference (reduced-window 54-AND)",
+        "record": "dqi_submission_score.json",
+        "row_path": "verified.candidate",
+    },
+    {
+        "arm": "six-lever MR arm",
+        "record": "dqi_arm_submission_score.json",
+        "row_path": "verified",
+    },
+    {
+        "arm": "campaign arm (five schedule gates)",
+        "record": "dqi_campaign_arm_submission_score.json",
+        "row_path": "verified",
+    },
+)
+
+
+class DqiRecordError(RuntimeError):
+    """A measured arm's record is missing, or does not carry the declared verifier row."""
+
+
+def _row_at(payload: object, dotted: str, record: str) -> dict[str, Any]:
+    """Walk ``dotted`` into a record and require a `score`/`num_qubits` row at the end."""
+    node = payload
+    for part in dotted.split("."):
+        if not isinstance(node, dict) or part not in node:
+            raise DqiRecordError(f"{record} has no `{dotted}` row: missing `{part}`")
+        node = node[part]
+    if not isinstance(node, dict) or "score" not in node or "num_qubits" not in node:
+        raise DqiRecordError(f"{record}:`{dotted}` carries no score/num_qubits pair")
+    return node
+
+
+def load_measured_dqi_arms() -> list[dict[str, Any]]:
+    """Read each arm's peak qubits and verifier score from its committed record."""
+    arms: list[dict[str, Any]] = []
+    for entry in MEASURED_DQI_ARMS:
+        path = _BENCHMARK_DIR / entry["record"]
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except OSError as exc:
+            raise DqiRecordError(f"cannot read {path}: {exc}") from exc
+        row = _row_at(payload, entry["row_path"], entry["record"])
+        toffolis = next(
+            (
+                row[key]
+                for key in (
+                    "toffoli_count",
+                    "toffolis_per_shot",
+                    "mean_toffolis",
+                    "executed_toffolis_per_shot",
+                )
+                if key in row
+            ),
+            None,
+        )
+        arms.append(
+            {
+                "arm": entry["arm"],
+                "record": entry["record"],
+                "row_path": entry["row_path"],
+                "qubits": int(row["num_qubits"]),
+                "score": float(row["score"]),
+                "executed_toffolis_per_shot": None if toffolis is None else float(toffolis),
+            }
+        )
+    return arms
+
+
+def model_score_at_qubit_floor(floor_qubits: int = PEAK_FLOOR_UNDER_RECYCLING) -> dict[str, Any]:
+    """Rescale every measured DQI score to ``floor_qubits``, holding its Toffoli count fixed.
+
+    This is arithmetic on measured scores, **not a measurement**: nothing has been built at
+    1,853 qubits, so the result cannot be certified. It assumes a narrower register
+    allocation runs the same instruction stream unchanged -- an assumption no build
+    demonstrates. What it does answer is how much of the remaining gap is width at all:
+    the factor is exactly ``(floor/qubits)^2``.
+    """
+    rows = []
+    for arm in load_measured_dqi_arms():
+        factor = (floor_qubits / arm["qubits"]) ** 2
+        rescaled = arm["score"] * factor
+        rows.append(
+            {
+                **arm,
+                "rescale_factor": factor,
+                "rescaled_score": rescaled,
+                "ratio_to_target": rescaled / TARGET_DQI_COST,
+            }
+        )
+    narrowest = min(arm["qubits"] for arm in load_measured_dqi_arms())
+    return {
+        "floor_qubits": floor_qubits,
+        "target_cost": TARGET_DQI_COST,
+        "rows": rows,
+        "narrowest_measured_qubits": narrowest,
+        "any_measured_at_or_below_floor": narrowest <= floor_qubits,
+        "finding": (
+            f"no measured arm runs at or below {floor_qubits} qubits (the narrowest is "
+            f"{narrowest}), so a floor-width circuit cannot be certified from these records; "
+            "held at its measured Toffoli count, every arm is still above the target at the "
+            "floor, so width alone does not close the gap"
+        ),
+    }
+
+
+#: Width levers with a *measured* saving, beyond degree-register recycling. Each entry names
+#: where its number comes from; nothing here is a projection.
+WIDTH_LEVERS_MEASURED: tuple[dict[str, Any], ...] = (
+    {
+        "lever": "degree-register recycling",
+        "qubits": 4 * 8,
+        "basis": "4 remaining registers x 8 qubits (model_degree_register_floor)",
+    },
+    {
+        "lever": "workspace window 42 -> 19",
+        "qubits": 42 - 19,
+        "basis": "BENCHMARK2_TARGET_REACHABILITY.md section 1.1, measured on the 1,935-qubit build",
+    },
+)
+
+
+def model_data_path_floor() -> dict[str, Any]:
+    """Whether any measured width lever closes the 64 qubits between 1,853 and the target.
+
+    At the register floor the allocation contributes nothing more, so the remaining distance
+    has to come from elsewhere. The only other lever with a measured saving is the workspace
+    window (42 -> 19 qubits, 23). Their sum is an *upper* bound: the window saving was measured
+    on a 1,935-qubit build, so any build already at 1,853 has spent part of it. Below these,
+    what is left is the data path itself -- one polynomial array is `(n + 1) * m = 852` qubits,
+    larger than every lever combined, and dropping or narrowing one is a different circuit
+    rather than a schedule change.
+    """
+    gap = PEAK_FLOOR_UNDER_RECYCLING - PEAK_QUBITS_V6
+    total = sum(lever["qubits"] for lever in WIDTH_LEVERS_MEASURED)
+    return {
+        "register_floor_qubits": PEAK_FLOOR_UNDER_RECYCLING,
+        "target_qubits": PEAK_QUBITS_V6,
+        "qubits_needed": gap,
+        "levers": list(WIDTH_LEVERS_MEASURED),
+        "lever_sum_qubits": total,
+        "shortfall_qubits": gap - total,
+        "reaches_target": total >= gap,
+        "polynomial_array_qubits": (DEFAULT_N + 1) * DEFAULT_DEGREE,
+        "finding": (
+            f"the measured width levers sum to {total} qubits against the {gap} needed, so "
+            "they do not reach the target; the remainder is data-path width, and a single "
+            "polynomial array is larger than all of them together"
+        ),
+    }
+
+
+#: The division scaffold's measured price, from `dqi_primitive_costs.json` and the arm's
+#: three-term decomposition in BENCHMARK2_TARGET_REACHABILITY.md section 2.
+DIVISION_PRODUCTS_PER_CALL: int = 864
+ANDS_PER_PRODUCT: int = 54
+
+
+def model_single_polynomial_array() -> dict[str, Any]:
+    """What holding one polynomial array instead of the live pair would trade.
+
+    Qubits: one array is ``(n + 1) * m = 71 * 12 = 852`` bits, so at the register floor the
+    peak would be 1,001 -- 788 below the target, and Q stops binding entirely.
+
+    Toffolis: the EEA update is a 2x2 transform on the remainder pair and again on the
+    coefficient pair, so both remainders are read every round. Holding one means re-deriving
+    the other from the syndrome each round, which is one extra division scaffold at the
+    measured 864 products of 54 ANDs.
+
+    The result is a lower bound on the Toffoli side and a decomposition of the score trade:
+    the Q^2 win is large enough that even 2.81x the Toffolis scores better than the reference.
+    That makes the idea worth testing; it is not a claim that it works. The single assumption
+    to falsify is that re-derivation costs one division and nothing else.
+    """
+    array_bits = (DEFAULT_N + 1) * DEFAULT_DEGREE
+    peak = PEAK_FLOOR_UNDER_RECYCLING - array_bits
+    per_round = DIVISION_PRODUCTS_PER_CALL * ANDS_PER_PRODUCT
+    extra = per_round * DEFAULT_N_ITERS
+    modelled = T_MEAN_REFERENCE + extra
+    return {
+        "array_bits": array_bits,
+        "qubits_saved": array_bits,
+        "peak_with_one_array": peak,
+        "reaches_target": peak <= PEAK_QUBITS_V6,
+        "extra_toffolis_per_round": per_round,
+        "eea_rounds": DEFAULT_N_ITERS,
+        "extra_toffolis_per_shot": extra,
+        "reference_toffolis_per_shot": T_MEAN_REFERENCE,
+        "modelled_toffolis_per_shot": modelled,
+        "toffoli_multiplier": modelled / T_MEAN_REFERENCE,
+        "score_ratio_vs_reference": (peak / PEAK_QUBITS_REFERENCE) ** 2 * modelled / T_MEAN_REFERENCE,
+        "assumption": "re-deriving one remainder per round costs exactly one division scaffold",
+        "verdict": (
+            "Q falls to 1,001 and stops binding, T rises "
+            f"{modelled / T_MEAN_REFERENCE:.2f}x, and the score lands at "
+            f"{(peak / PEAK_QUBITS_REFERENCE) ** 2 * modelled / T_MEAN_REFERENCE:.3f} of the "
+            "reference: favourable on the metric, and unproven as a construction"
+        ),
     }

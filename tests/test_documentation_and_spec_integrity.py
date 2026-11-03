@@ -232,3 +232,85 @@ def test_registry_status_tags_match_code_status_labels():
         checked += 1
 
     assert checked >= 10, f"registry status consistency check covered too few modules ({checked})"
+
+
+def test_mmlm_graph_state_figures_in_the_index_match_the_record():
+    """The 54-win / 308-gate figures are quoted in DOCUMENTATION.md; they are measured.
+
+    The table sentence could drift from the artifact without any test noticing, which is
+    the failure the record was created to prevent.
+    """
+    import json
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    record = json.loads(
+        (root / "benchmarks" / "quantum_compilation" / "vqc_mmlm_graph_state.json").read_text()
+    )
+    index = (root / "docs" / "DOCUMENTATION.md").read_text()
+
+    assert index.count("54 wins / 21 ties / 0 losses") >= 1
+    assert f"{record['wins']} wins / {record['ties']} ties / {record['losses']} losses" in index
+    assert f"{record['saved_two_qubit_gates']} two-qubit gates saved" in index
+    assert f"{record['certified_valid']}/{record['targets']} certified" in index
+    # The gate totals are quoted with thousands separators; check both ends.
+    assert f"{record['baseline_two_qubit_gates']:,}" in index
+    assert f"{record['mmlm_two_qubit_gates']:,}" in index
+
+
+def test_dqi_target_closures_are_recorded_in_the_campaign_docs():
+    """The two closures are prose where a reader will meet the target, and pinned here."""
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    reachability = (root / "docs" / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
+    compatibility = (root / "docs" / "DQI_OFFICIAL_COMPATIBILITY.md").read_text()
+
+    for text in (reachability, compatibility):
+        assert "permanently unsourced" in text
+    assert "96 > 32" in reachability
+    assert "1,853" in compatibility
+    assert (
+        root / "benchmarks" / "quantum_compilation" / "dqi_design_projection.json"
+    ).exists()
+
+
+def test_the_register_floor_model_is_recorded_where_the_target_is():
+    """The one-parameter floor and its 64-qubit shortfall are next to the target table."""
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1] / "docs"
+    reachability = (root / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
+    compatibility = (root / "DQI_OFFICIAL_COMPATIBILITY.md").read_text()
+
+    assert "peak = 1,853 + 8k" in reachability
+    assert "zero-register floor" in compatibility
+    assert "64 qubits" in reachability
+
+
+def test_the_data_path_floor_is_recorded_with_the_target():
+    """The 55-vs-64 accounting sits next to the target table and stays there."""
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1] / "docs"
+    reachability = (root / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
+    compatibility = (root / "DQI_OFFICIAL_COMPATIBILITY.md").read_text()
+
+    assert "55 < 64" in reachability
+    assert "model_data_path_floor" in reachability
+    assert "55 against the 64" in compatibility
+
+
+def test_the_single_array_trade_is_recorded():
+    """The 1,001 / 2.81x / 0.786x trade is in the note that carries the target."""
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1] / "docs"
+    reachability = (root / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
+    compatibility = (root / "DQI_OFFICIAL_COMPATIBILITY.md").read_text()
+
+    assert "0.786×" in reachability
+    assert "**1,001**" in reachability
+    assert "2.81×" in reachability
+    assert "1,001" in compatibility
+    assert "RECYCLING_APPLIED_IN_CIRCUIT" in reachability
