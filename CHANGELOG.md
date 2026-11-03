@@ -1,3 +1,28 @@
+## 2026-11-03 — Three "leapfrog" stubs are retracted and removed from the package
+
+- **The three candidate modules never implemented their benchmarks, so they are gone.**
+  `dqi_schur_forney.py` allocated 888 qubits' worth of registers and emitted 35 `cswap`/`cx`
+  pairs: no GF(2^12) arithmetic, so it decodes nothing, and its zero-`Z_POW` compliance is
+  vacuous. `dfthcsos_riemannian_15batch.py` never read an integral (no FCIDUMP ships in this
+  checkout) and "passed" the 20 mHa gate with `error_1`/`error_2` dict literals beside a
+  `lambda_eff` clamped by `min()`. `build_digit_serial_58q` built at 47 qubits with 473 gates
+  and 200 toffoli-like ops — no coefficient table, no derivative chain — so it cannot compute
+  `1/sqrt(x)`, and no `.kmb` was ever compiled or scored.
+- **Every quoted figure was an input, not a result.** `Q <= 888`, `T <= 420,000`,
+  `T <= 14,800` / `Q <= 420`, `lambda_eff <= 46.8`, `error_1 = 3.19 mHa`,
+  `error_2 = 18.2 mHa` and `C_1 = 89,505.6` are constants in the modules; `58 x 1543.2` uses
+  1,235 asserted Toffolis against a 47-qubit, 200-Toffoli circuit. The 3,133,452-input
+  certificate belongs to the champion integer model, which this change does not touch
+  (`src/signed_digit_invsqrt_v3.py` is byte-identical to its committed state).
+- **`dqi_builder` no longer advertises a phantom architecture.** The `_ArchitectureTuple`
+  override — `__contains__` answering `True` for `single_array_schur` while `__eq__` still
+  reported `("proos_zalka", "gluzdov_v6")`, so one test asserted both and both passed — is
+  deleted; `AVAILABLE_ARCHITECTURES` is a plain tuple of the two architectures with code
+  behind them, and `tests/test_dyn_dqi_builder_architectures.py` pins that.
+- **Where the code went.** All three stubs, their writer and their three test files are in
+  untracked `build/apedp_stubs/`; `docs/DOCUMENTATION.md` carries one retraction row in place
+  of the two rows that quoted the figures as achievements.
+
 ## 2026-11-03 — Degree-register recycling is closed on correctness and on score, and the DQI projection moves to 1,893
 
 - **The recycled `n_a` build reaches 1,885 and does not decode.** Removing the register costs

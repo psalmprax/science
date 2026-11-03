@@ -29,7 +29,11 @@ from __future__ import annotations
 from typing import Any
 
 #: Architectures this adapter can build, in descending order of evidentiary
-#: strength (receipted first).
+#: strength (receipted first). A plain tuple: it lists exactly what ``build_candidate``
+#: can dispatch to and nothing else. The former ``single_array_schur`` name aimed at
+#: ``dqi_schur_forney.py``, which was an 878-qubit stub with no decoder arithmetic in it;
+#: it is retired out of the package (``build/apedp_stubs/``) and must not be advertised
+#: here, because a name in this registry reads as a buildable architecture.
 AVAILABLE_ARCHITECTURES: tuple[str, ...] = ("proos_zalka", "gluzdov_v6")
 
 DEFAULT_ARCHITECTURE: str = "proos_zalka"
