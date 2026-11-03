@@ -85,12 +85,24 @@ The 12-bit family built by `kaggle/dfthcsos/notebook.ipynb` reproduces the sampl
 **byte for byte** (`submission sha256 276d464f…`, same score 3.3556e9): two independent
 builders, the same words, the same submission.
 
-## The decision already waiting on that input
+## The question that was waiting on that input, and its answer
 
-`brot = 9, J = 11` costs **55,636** Toffolis (122 qubits, 7 circuits) — 12.5% below the
-10-bit family — and pays for it with an angle table whose error doubles. The score decides:
-the 9-bit family wins while `lambda_eff(9) / lambda_eff(10) >= 0.875`. See §3b of the scope
-note. Nothing else needs deciding.
+`brot = 9, J = 11` costs **55,636** Toffolis (122 qubits, 7 circuits), 12.5% below the 10-bit
+family, and the open question was whether a refit of its words could pay for the coarser grid:
+the 9-bit family wins while `lambda_eff(9) / lambda_eff(10) >= 0.875`.
+
+It cannot. `scripts/refit_dfthcsos_words.py --oracle 12 11` builds the best submission any
+grid allows: it encodes the unquantised vectors on the Givens tree and then rebuilds the
+one-body rows from the *decoded* two-body block, which is the order the shipped table uses.
+At 12 bits it reproduces the shipped family exactly (`3.185 / 18.640 mHa`, `lambda_eff`
+49.301), which is the check that the construction is the real one; at 11 bits it lands at
+`6.480 / 25.035 mHa` — still 5 mHa over the gate. No search can beat an oracle, so the
+11-bit and 10-bit families are unreachable, not merely unfitted.
+
+The reason is one level up. The unquantised vector set is itself at **16.13 mHa**, so the
+whole factorisation has **3.87 mHa** of headroom under a 20 mHa gate, and one bit of grid
+costs 8.9 of it. The floor is 12 bits because the factorisation is near the gate, not
+because the words were rounded.
 
 ## Ideas that were tried and rejected, with the measurement
 
@@ -106,10 +118,11 @@ note. Nothing else needs deciding.
 
 ## What is not known
 
-- `lambda_eff` is now measured for the reference at **49.301** (`E_gap` 3.965, cost 3.356e9), and
-the failing quantity is not the metric but the words: they must be refit at the submitted
-precision instead of rounded into it, which is what the public 8-bit table does to reach 18.6 mHa.
-No refit exists in this checkout.
+- `lambda_eff` is now measured for the reference at **49.301** (`E_gap` 3.965, cost
+3.356e9), and the failing quantity is not the metric but the words. A refit at the coarser
+precision was measured (`scripts/refit_dfthcsos_words.py --oracle 12 11`) and does not
+rescue it: the oracle 11-bit encoding is 25.0 mHa, against a 20 mHa gate and a 16.13 mHa
+continuous floor.
 - Whether a sub-`A` Toffoli tree exists: **no, not for this payload.** Two constructions were
   built and measured. The chunked read (§5) costs 17.2x and does not recover the words at any
   block size. The shared comparator ladder the `O(sqrt(A))` model actually describes (§5.1)

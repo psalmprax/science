@@ -1,0 +1,49 @@
+{
+  "benchmark": "dfthcsos",
+  "what": "Every precision the 128-qubit cap admits, scored by dfthcsos/verify.py at 64 shots per address.",
+  "source": "Kaggle kernel psalmprax/benchmark-iii-a-123-qubit-angle-family, version 4 (public), run 2026-11-03",
+  "error_limit": 0.02,
+  "qubit_cap": 128,
+  "note": "error_1 and error_2 are in Hartree. The failing rows are produced by requantising the shipped 12-bit words, not by refitting them; see scripts/refit_dfthcsos_words.py for what the grid costs versus the vector set itself.",
+  "rows": [
+    {
+      "brot": 12,
+      "batch_size": 8,
+      "circuits": 10,
+      "angles_qubits": 119,
+      "angles_toffoli": 79480,
+      "toffoli_total": 93237,
+      "qubits_total": 730,
+      "error_1": 0.0031852,
+      "error_2": 0.0186396,
+      "lambda_eff": 49.301369,
+      "admitted": true
+    },
+    {
+      "brot": 11,
+      "batch_size": 9,
+      "circuits": 9,
+      "angles_qubits": 122,
+      "angles_toffoli": 71532,
+      "toffoli_total": 84989,
+      "qubits_total": 733,
+      "error_1": 0.2212933,
+      "error_2": 0.051739,
+      "lambda_eff": 50.293835,
+      "admitted": false
+    },
+    {
+      "brot": 10,
+      "batch_size": 10,
+      "circuits": 8,
+      "angles_qubits": 123,
+      "angles_toffoli": 63584,
+      "toffoli_total": 76741,
+      "qubits_total": 734,
+      "error_1": 0.2423037,
+      "error_2": 0.0593783,
+      "lambda_eff": 50.459695,
+      "admitted": false
+    }
+  ]
+}
