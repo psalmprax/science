@@ -1,0 +1,13 @@
+{
+  "id": "<your-kaggle-username>/dfthcsos-123q-angle-family",
+  "title": "Benchmark III: a 123-qubit angle family",
+  "code_file": "notebook.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_internet": false,
+  "dataset_sources": ["<your-kaggle-username>/dfthcsos-bundle"],
+  "competition_sources": ["google-verifiable-quantum-circuit-compilation"],
+  "kernel_sources": []
+}

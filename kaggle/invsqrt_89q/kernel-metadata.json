@@ -1,0 +1,19 @@
+{
+  "id": "psalmprax/apedp-q-a-verified-89-qubit-inverse-square-root",
+  "title": "APEDP-Q: a verified 89-qubit inverse square root",
+  "code_file": "notebook.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": false,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "competition_sources": [
+    "google-verifiable-quantum-circuit-compilation"
+  ],
+  "dataset_sources": [
+    "psalmprax/apedp-q-89q-circuit"
+  ],
+  "kernel_sources": [],
+  "docker_image": "gcr.io/kaggle-images/python"
+}
