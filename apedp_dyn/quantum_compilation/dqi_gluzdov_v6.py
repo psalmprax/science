@@ -973,14 +973,21 @@ def derive_n_a(a_degree: int, n: int = DEFAULT_N) -> int:
     return n + 1 - a_degree
 
 
-#: The five pass bodies that read `n_a` as a unary loop control.
+#: The pass bodies that actually touch `n_a`, read off the reference signatures instead of
+#: asserted. The earlier five-site list was wrong on two entries: `_shift_b_array_right(...
+#: n_B, n_b, flag, ctrl, ...)` and `_update_metadata(..., n_B, n_b, n_q, flag, ctrl)` take no
+#: `n_a` argument at all, so there is nothing in them to substitute.
 RECYCLED_READ_SITES: tuple[str, ...] = (
-    "_update_flag",
-    "_multiply_and_add_or_sub",
-    "_shift_b_array_right",
-    "_update_metadata",
-    "_swap_a_and_b",
+    "_update_flag",              # reads `n_a == n_b` twice (substituted)
+    "_multiply_and_add_or_sub",  # unary cursor over `n_a`, plus `n_q += n_a` / `n_q -= n_a`
+    "_swap_a_and_b",             # cswaps `n_a` with `n_b`: reads and writes it
 )
+#: Bodies the sketch named that never take `n_a`: they need no edit, and claiming otherwise
+#: would inflate the work the register removal requires.
+RECYCLED_NON_READ_SITES: tuple[str, ...] = ("_shift_b_array_right", "_update_metadata")
+#: The driver: allocates `n_a`, initialises its leading bit, threads it through both EEA
+#: passes, and frees it. This is the fourth edit -- and the one that removes the qubits.
+RECYCLED_DRIVER_SITE: str = "build_syndrome_decoding_mbuc"
 
 
 def model_recycled_n_a_substitution(n: int = DEFAULT_N, rounds: int = DEFAULT_N_ITERS) -> dict[str, Any]:
@@ -1002,13 +1009,15 @@ def model_recycled_n_a_substitution(n: int = DEFAULT_N, rounds: int = DEFAULT_N_
         "peak_to": PEAK_QUBITS_SOURCED,
         "read_sites": list(RECYCLED_READ_SITES),
         "read_sites_count": len(RECYCLED_READ_SITES),
+        "bodies_that_never_take_n_a": list(RECYCLED_NON_READ_SITES),
+        "driver_site": RECYCLED_DRIVER_SITE,
         "rounds": rounds,
         "toffoli_cost": "not modelled: the count must be measured on the built body",
         "build_status": (
-            "one of five read sites substituted: `_update_flag` derives the predicate from "
-            "n_A and reads no n_a (RecycledUpdateFlagDecoder). The other four still read the "
-            "register, so it is still allocated and a build peaks at 1,893; 1,885 remains an "
-            "accounting figure until all five bodies and the driver change"
+            "all three readers substituted (`RecycledDegreeDecoder`) and the driver no longer "
+            "allocates `n_a`; the measured peak and Toffoli delta for that build are in "
+            "`dqi_recycled_degrees_window.json`. 1,885 is the build's peak only if the extra "
+            "cursor the derivation needs spends less than the 8 qubits the register frees"
         ),
         "b_pair": "unchanged: n_B + n_b varies, so n_b cannot be derived the same way",
     }
@@ -1151,7 +1160,269 @@ def build_candidate_with_recycled_flag_body(*, n_iters: int = DEFAULT_N_ITERS) -
         "read_sites_remaining": len(RECYCLED_READ_SITES) - 1,
         "finding": (
             "one body is not enough to move the peak: the register is still allocated for the "
-            "four bodies that read it, so the build stays at the reference peak and the 1,885 "
-            "stay accounting"
+            "two bodies that still read it, so the build stays at the reference peak and the "
+            "1,885 stay accounting"
         ),
+    }
+
+
+class _MirroredCursor:
+    """Presents a unary cursor over `n_A` as a cursor over `n_a = n + 1 - n_A`.
+
+    The reference bodies address `n_a` through `unary_iteration(n_a)` and read it with
+    `_active(cursor, value, limit)`. Mirroring the address turns every such read into the
+    same read on `n_A` at the complementary value, so a body can keep its own threshold and
+    equality logic unchanged while never touching the register.
+    """
+
+    __slots__ = ("_cursor", "_sum")
+
+    def __init__(self, cursor: Any, n: int) -> None:
+        self._cursor = cursor
+        self._sum = n + 1
+
+    def move_to(self, value: int) -> None:
+        self._cursor.move_to(self._sum - value)
+
+    @property
+    def match_qubit(self) -> Any:
+        return self._cursor.match_qubit
+
+
+def _recycled_degree_decoder_class() -> Any:
+    """The reference decoder with `n_a` removed: three readers derive it, the driver drops it.
+
+    Every qubit `n_a` occupied is gone, so this is the build that can actually move the peak.
+    What it costs is measured, not argued: the derivation runs a cursor over `n_A` where the
+    register read used to be, and that scratch is charged against the 8 qubits freed.
+    """
+    DR = _load_reference_decoder()
+    cached = getattr(DR, "_RECYCLED_DEGREE_DECODER", None)
+    if cached is not None:
+        return cached
+
+    class RecycledDegreeDecoder(_recycled_flag_decoder_class()):
+        """No `n_a` register at all; `_update_flag` is inherited from the one-body prototype."""
+
+        def build_syndrome_decoding_mbuc(self, builder, *, syndromes, error_mbuc, n_iters):
+            gf = self.field
+            n = self.n_syndromes
+            degree = gf.degree
+            if len(syndromes) != n:
+                raise ValueError(f"Expected {n} syndrome registers, got {len(syndromes)}.")
+            if any(len(s) != degree for s in syndromes):
+                raise ValueError(f"Every syndrome register must have length {degree}.")
+            m = n + 3
+
+            reg_a = [builder.alloc_qubits(degree) if i < 3 else syndromes[i - 3] for i in range(m)]
+            reg_b = [builder.alloc_qubits(degree) for _ in range(m)]
+
+            logm = m.bit_length() + 1
+            n_A = builder.alloc_qubits(logm)
+            n_B = builder.alloc_qubits(logm)
+            n_b = builder.alloc_qubits(logm)
+            n_q = builder.alloc_qubits(logm)
+            flag = builder.alloc_qubits(1)[0]
+            counter = builder.alloc_qubits(2)
+            halting_counter = builder.alloc_qubits(n_iters.bit_length())
+
+            # `n_a`'s leading bit is gone with the register; the rest of the init is unchanged.
+            init_ones = km.array([reg_a[0][0], reg_b[m - 1][0], flag])
+            builder.x(init_ones)
+            builder.gf2_iadd(n, target=n_A)
+            builder.gf2_iadd(n + 1, target=n_B)
+
+            # `n_A` doubles as the `n_a` slot: every substituted body asserts that sentinel.
+            with builder.mark("initial_shift"):
+                self._initial_shift_loop(builder, reg_a, n_A, is_adjoint=False)
+            with builder.mark("forward_eea"):
+                self._synchronized_eea(builder, reg_a, reg_b, n_A, n_B, n_A, n_b, n_q, flag,
+                                       counter, halting_counter, n_iters=n_iters,
+                                       is_adjoint=False)
+            with builder.mark("chien_forney_mbuc"):
+                self._chien_search_and_forney_mbuc(builder, reg_b, error_mbuc, n_b, n_B)
+            with builder.mark("reverse_eea"):
+                self._synchronized_eea(builder, reg_a, reg_b, n_A, n_B, n_A, n_b, n_q, flag,
+                                       counter, halting_counter, n_iters=n_iters,
+                                       is_adjoint=True)
+            with builder.mark("uncompute_initial_shift"):
+                self._initial_shift_loop(builder, reg_a, n_A, is_adjoint=True)
+
+            builder.gf2_iadd(n + 1, target=n_B)
+            builder.gf2_iadd(n, target=n_A)
+            builder.x(init_ones)
+
+            for reg in (halting_counter, counter, flag, n_q, n_b, n_B, n_A, *reg_a[:3], *reg_b):
+                builder.free(reg)
+
+        def _multiply_and_add_or_sub(self, builder, reg_a, reg_b, n_A, n_a, n_q, ctrl, it,
+                                     *, is_adjoint):
+            """The reference body with every `n_a` read mirrored onto `n_A`.
+
+            `n_q += n_a` becomes `n_q += n + 1 - n_A`, and the `n_a` unary cursor becomes a
+            cursor over `n_A` whose addresses are mirrored, so the thresholds and equality
+            tests keep their own form.
+            """
+            if n_a is not n_A:
+                raise RuntimeError(
+                    "RecycledDegreeDecoder expects the driver to pass n_A in the n_a slot; "
+                    "a body that received a live n_a would read a register that is not allocated"
+                )
+            c0_hc, _, _, c3_hc = ctrl
+            gf = self.field
+            m = len(reg_b)
+            n = self.n_syndromes
+
+            def accumulate_quotient(index: int, control) -> None:
+                with builder.mark("quotient_div"):
+                    ratio, scaffold = builder.init_gf2_div_with_scaffold(
+                        reg_b[index], reg_a[index], field=gf)
+                    builder.gf2_iadd(ratio, target=q_i, field=gf, control=control)
+                    builder.del_gf2_div_with_scaffold(
+                        reg_b[index], reg_a[index], target=ratio, scaffold=scaffold, field=gf)
+                    builder.free(scaffold + ratio)
+
+            def sweep_positions() -> None:
+                with builder.mark("sweep_positions"):
+                    lim_q = min(m - 1, 1 + it)
+                    lim_q1 = min(m, 1 + it)
+                    lim_a = min(m - 2, it // 2 + 1)
+                    lim_A = m - 2
+                    order = range(m) if is_adjoint else range(m - 1, -1, -1)
+
+                    with (
+                        builder.unary_iteration(n_q, control=c0_hc) as eq_i,
+                        builder.unary_iteration(n_q, control=c3_hc) as eq_ip1,
+                        builder.unary_iteration(n_A, control=c3_hc) as cur_a_A,
+                        builder.unary_iteration(n_A, control=c0_hc) as cur_A,
+                    ):
+                        mul = builder.alloc_qubits(1)[0]
+                        cur_a = _MirroredCursor(cur_a_A, n)
+
+                        def endpoint(i: int) -> None:
+                            DR._xor_threshold(builder, cur_a, lim_a, mul, c3_hc, i + 1,
+                                              at_least=True, lowest=1)
+                            DR._xor_threshold(builder, cur_A, lim_A, mul, c0_hc, m - i,
+                                              at_least=True, lowest=1)
+
+                        prev = None
+                        for i in order:
+                            if prev is None:
+                                endpoint(i)
+                            else:
+                                builder.cx(
+                                    km.array([
+                                        DR._active(cur_a, min(prev, i) + 1, lim_a),
+                                        DR._active(cur_A, m - max(prev, i), lim_A),
+                                    ]),
+                                    mul,
+                                )
+                            prev = i
+
+                            swaps = [a for a in (DR._active(eq_i, i, lim_q),
+                                                 DR._active(eq_ip1, i + 1, lim_q1))
+                                     if a is not False]
+                            multiplies = i < lim_a or i >= 2
+
+                            if is_adjoint and multiplies:
+                                builder.ixor_gf2_mul(q_i, reg_a[i], target=reg_b[i], field=gf,
+                                                     control=mul)
+                            if len(swaps) == 1:
+                                builder.cswap(swaps[0], q_i, reg_a[i])
+                            elif swaps:
+                                both = builder.alloc_qubits(1)[0]
+                                builder.cx(km.array(swaps), both)
+                                builder.cswap(both, q_i, reg_a[i])
+                                builder.cx(km.array(swaps), both)
+                                builder.free(both)
+                            if not is_adjoint and multiplies:
+                                builder.ixor_gf2_mul(q_i, reg_a[i], target=reg_b[i], field=gf,
+                                                     control=mul)
+
+                        endpoint(prev)
+                        builder.free(mul)
+
+            with builder.mark("multiply_and_add_or_sub"):
+                q_i = builder.alloc_qubits(gf.degree)
+                leading, trailing = (0, m - 1) if is_adjoint else (m - 1, 0)
+                accumulate_quotient(leading, c3_hc if is_adjoint else c0_hc)
+                builder.iadd(n + 1, target=n_q)
+                builder.isub(n_A, target=n_q)
+                sweep_positions()
+                builder.isub(n + 1, target=n_q)
+                builder.iadd(n_A, target=n_q)
+                accumulate_quotient(trailing, c0_hc if is_adjoint else c3_hc)
+                builder.free(q_i)
+
+        def _swap_a_and_b(self, builder, reg_a, reg_b, n_A, n_B, n_a, n_b, flag, ctrl):
+            """Swap the pairs, and write the new `n_b` from the invariant instead of a cswap.
+
+            The reference cswaps `n_a` with `n_b`. With `n_a` gone, the new `n_b` is `old n_a`,
+            which is `n + 1 - new n_B` -- the invariant again, now used as a *write*: the
+            register is cleared under the swap control and reloaded from the swapped `n_B`.
+            """
+            if n_a is not n_A:
+                raise RuntimeError(
+                    "RecycledDegreeDecoder expects the driver to pass n_A in the n_a slot"
+                )
+            n = self.n_syndromes
+            with builder.mark("swap_a_and_b_recycled"):
+                c3_hc = ctrl[3]
+                swap_ctrl = builder.alloc_qubits(1)[0]
+                builder.init_and(c3_hc, flag, swap_ctrl)
+
+                builder.cswap(swap_ctrl, n_A, n_B)
+                lhs = km.array([q for r in reg_a for q in r])
+                rhs = km.array([q for r in reg_b for q in r])
+                builder.cswap(swap_ctrl, lhs, rhs)
+
+                for q in n_b:
+                    builder.cx(swap_ctrl, q)
+                builder.iadd(n + 1, target=n_b, control=swap_ctrl)
+                builder.isub(n_B, target=n_b, control=swap_ctrl)
+
+                builder.del_and(c3_hc, flag, swap_ctrl)
+                builder.free(swap_ctrl)
+
+    DR._RECYCLED_DEGREE_DECODER = RecycledDegreeDecoder
+    return RecycledDegreeDecoder
+
+
+def build_candidate_with_recycled_degrees(*, n_iters: int = DEFAULT_N_ITERS) -> dict[str, Any]:
+    """Build the decoder with the `n_a` register removed, and report the measured peak.
+
+    This is the build the accounting has been waiting for: nothing allocates `n_a`, so the peak
+    either reads 1,885 or the derivation's own scratch has spent what the register freed.
+    """
+    if km is None:
+        raise RuntimeError("Kickmix is required to build physical circuits")
+    reference = build_candidate(n_iters=n_iters)
+
+    decoder_cls = _recycled_degree_decoder_class()
+    degree, n, m = DEFAULT_DEGREE, DEFAULT_N, DEFAULT_M
+    builder = km.CircuitBuilder()
+    syndromes = [builder.create_quantum_register(degree, name=f"S{i}") for i in range(n)]
+    error_masks = [
+        builder.create_classical_register(degree, name=f"E{j}") for j in range(m)
+    ]
+    decoder_cls(n, km.GF2Field(degree)).build_syndrome_decoding_mbuc(
+        builder, syndromes=syndromes, error_mbuc=error_masks, n_iters=n_iters
+    )
+    recycled = builder.finish_circuit()
+    toffolis = lambda circuit: int(circuit.operation_statistics().num_toffoli_like)  # noqa: E731
+    reference_peak = int(reference.num_qubits)
+    recycled_peak = int(recycled.num_qubits)
+    return {
+        "n_iters": n_iters,
+        "reference_peak_qubits": reference_peak,
+        "recycled_degrees_peak_qubits": recycled_peak,
+        "peak_delta": recycled_peak - reference_peak,
+        "register_removed_qubits": RECYCLED_QUBITS_AT_BENCHMARK,
+        "accounting_peak_qubits": PEAK_QUBITS_SOURCED,
+        "matches_accounting": recycled_peak == PEAK_QUBITS_SOURCED,
+        "reference_toffolis": toffolis(reference),
+        "recycled_degrees_toffolis": toffolis(recycled),
+        "toffoli_delta": toffolis(recycled) - toffolis(reference),
+        "read_sites_substituted": len(RECYCLED_READ_SITES),
+        "driver_recycled": True,
     }

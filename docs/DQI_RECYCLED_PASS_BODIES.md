@@ -11,26 +11,41 @@ Only the a-pair is recyclable: `n_A + n_a = n + 1` is constant (the documentatio
 while `n_B + n_b` varies over 3, 4, 5 and cannot be derived from `n_B`. So a build removes exactly
 one register — `n_a`, 8 qubits at `n = 70` — and nothing else: **Q = 1,885**, not 1,789.
 
-## The five read sites
+## The read sites, measured
 
-The degree registers are read as unary loop controls in five bodies: `_update_flag`,
-`_multiply_and_add_or_sub`, `_shift_b_array_right`, `_update_metadata` and `_swap_a_and_b`. Each
-read is a comparison against a counter rather than a data dependency, which is what makes the
-substitution admissible at all: it changes *when* the value is produced, not what the pass computes.
+An earlier version of this page listed five bodies. Read off the vendored signatures, that is
+wrong on two of them: `_shift_b_array_right(..., n_B, n_b, flag, ctrl, ...)` and
+`_update_metadata(..., n_B, n_b, n_q, flag, ctrl)` take no `n_a` argument at all — there is
+nothing in either to substitute. The register is touched in **three** bodies plus the driver:
 
-## The substitution
+| site | access |
+|---|---|
+| `_update_flag` | reads `n_a == n_b` twice (sub-step 2 and sub-step 3) |
+| `_multiply_and_add_or_sub` | a unary cursor over `n_a`, plus `n_q += n_a` and `n_q -= n_a` |
+| `_swap_a_and_b` | cswaps `n_a` with `n_b` — reads *and writes* it |
+| `build_syndrome_decoding_mbuc` | allocates `n_a`, sets its leading bit, threads it through both EEA passes, frees it |
 
-At each site, `n_a` is replaced by `n + 1 - n_A`, computed as a leading-zero count on `A`. The pass
-already compares `A` against the counter to decide termination, so the count is the same comparator
-tree it already runs, kept in the existing counter decode rather than in a new register. No
-persistent register is added; the scratch the count needs is the pooling the V6 scaffolding already
-performs.
+The reads are comparisons and cursor addresses rather than data dependencies, which is what makes
+substitution conceivable: it changes *when* the value is produced, not what the pass computes. The
+writer is the harder site, because a swap is where a live `n_a` can be *put back* non-derivably.
 
-Three edits per site:
+## The substitution, as built
 
-1. delete the `n_a` register allocation and its uncompute;
-2. at each use, emit the leading-zero count on `A` into the freed counter wire;
-3. uncompute that count with the site's own adjoint, so the pass is exactly restored.
+The leading-zero count sketched earlier was not needed and is not what shipped. Two mechanisms do
+the work instead:
+
+1. **Mirrored cursor.** `_multiply_and_add_or_sub` addresses `n_a` through `unary_iteration(n_a)`;
+   that becomes `unary_iteration(n_A)` behind a mirror (`move_to(v)` → `move_to(n + 1 - v)`), so the
+   body keeps its own thresholds and equality tests while never naming the register.
+2. **Arithmetic at the read.** `n_q += n_a` becomes `n_q += n + 1; n_q -= n_A` (and the `isub` form
+   dually), which is the invariant applied as two constant/register adds.
+
+`_swap_a_and_b` writes instead of reading: the reference cswaps `n_a` with `n_b`, and with no
+register the new `n_b` must be `old n_a = n + 1 - new n_B`. The build clears `n_b` under the swap
+control and reloads it with `iadd(n + 1)` then `isub(n_B)`.
+
+The driver edit is what actually removes qubits: `n_a` is no longer allocated, initialised or freed,
+and `n_A` is passed in its slot as a sentinel the substituted bodies assert on.
 
 ## Order of work
 
@@ -54,21 +69,41 @@ Three edits per site:
 It makes the window figure contemporaneous, so §7.5's "55 < 64" becomes a same-build sum. It does
 not reach 1,789: this lever is worth 8 qubits here, and 32 at its absolute limit.
 
-## Status of the substitution
+## Status of the substitution: peak reached, equivalence failed
 
-The first body is implemented. `RecycledUpdateFlagDecoder._update_flag` reads no `n_a`: both of its
-`flip_if_equal(n_a, n_b, …)` comparisons are replaced by `n_A == n + 1 - n_b`, swept through the
-`n_b` cursor the pass already runs, so no persistent register is added. The identity is checked
-exhaustively over every `(deg(A), n_b)` pair the decoder can hold
-(`derived_flag_predicate()`, 5,184 pairs at `n = 70`).
+All three readers are substituted (`RecycledDegreeDecoder`) and the driver no longer allocates
+`n_a`, so this is the build the accounting was waiting for. Measured at the scored 222-iteration
+window (`dqi_recycled_degrees_window.json`):
 
-**It does not move the peak, and that is the finding** (the accounting is still
-1,893 → 1,885; the build is not). Measured at `n_iters = 4`: reference **1,888** qubits, substituted body **1,888** — identical — for **+11,424 Toffolis**. The substituted body therefore buys nothing on its own: it costs gates and returns no wires until the register stops being allocated. Record: `benchmarks/quantum_compilation/dqi_recycled_flag_body_build.json`. The other four bodies still read `n_a`, so
-the register is still allocated: `build_candidate_with_recycled_flag_body()` builds the full
-pipeline and reports the same peak as the reference build. **1,885 remains an accounting figure**
-until all five bodies and the driver change; a one-body substitution cannot produce a 1,885-qubit
-circuit, and claiming otherwise is exactly what the accounting is there to prevent.
+| build | peak | Toffolis | Δ vs reference |
+|---|---|---|---|
+| reference | 1,893 | 5,725,461 | — |
+| `_update_flag` only | 1,893 | 6,359,493 | +634,032 |
+| all three sites + driver | **1,885** | 6,374,245 | +648,784 |
 
-Contract `derive_n_a(deg(A)) = n + 1 - deg(A)` was already verified exhaustively for
-`n = 4, 12, 70` in both directions; `model_recycled_n_a_substitution()` still reports one 8-qubit
-register and the b-pair untouched.
+Falsifier #1 passes. The register is gone and the build peaks at 1,885: the accounting's
+1,893 → 1,885 is reproduced by a circuit, for **+648,784 Toffolis** — 11.3% of the reference
+total. At the short 4-iteration window the same build reads 1,880 against the reference's 1,888,
+which is why a window-4 number is not the number the score sees, and why the earlier record
+(`dqi_recycled_flag_body_build.json`, +11,424) understated the cost by a factor of 55.
+
+**Falsifier #2 fails.** `RecycledUpdateFlagDecoder._update_flag` reads no `n_a`, and its predicate
+identity holds over all 5,184 `(deg(A), n_b)` pairs (`derived_flag_predicate()`) — which is exactly
+what makes the next table informative rather than ambiguous. `scripts/verify_recycled_equivalence.py`
+drives the bundle's own `verify()` over the scored instance at 64 shots, every arm on the *same*
+shots:
+
+| arm | value errors | phase errors |
+|---|---|---|
+| reference | 0/64 | 0/64 |
+| `_update_flag` only | **52/64** | 0/64 |
+| all three sites + driver | **64/64** | 0/64 |
+
+The first body substituted is already wrong, so the fault is in the derived predicate as built and
+not only in the swap's write. An arithmetic identity that holds does not make the emitted cascade
+compute it. So **1,885 is a peak, not a decoder**: `RECYCLING_APPLIED_IN_CIRCUIT` stays `False`,
+the 1,885-scored projection stays analytical, and `dqi_recycled_equivalence.json` is pinned by a
+test so the failure cannot be quietly dropped.
+
+Contract `derive_n_a(deg(A)) = n + 1 - deg(A)` was verified exhaustively for `n = 4, 12, 70` in
+both directions; the accounting still reports one 8-qubit register and the b-pair untouched.

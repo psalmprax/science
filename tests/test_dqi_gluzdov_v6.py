@@ -19,7 +19,9 @@ Tests:
 
 from __future__ import annotations
 
+import json
 import math
+from pathlib import Path
 
 import pytest
 
@@ -37,6 +39,7 @@ from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import (
     PEAK_QUBITS_V6,
     QUBIT_CAP_V6,
     R_EPS_PLUS,
+    RECYCLED_NON_READ_SITES,
     RECYCLED_QUBITS_AT_BENCHMARK,
     REMAINING_DEGREE_REGISTERS,
     T_MEAN_REFERENCE,
@@ -48,6 +51,7 @@ from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import (
     GluzdovV6Config,
     GluzdovV6Decoder,
     build_candidate,
+    build_candidate_with_recycled_degrees,
     build_candidate_with_recycled_flag_body,
     derive_n_a,
     derived_flag_predicate,
@@ -459,9 +463,11 @@ def test_recycled_substitution_accounts_for_exactly_one_register():
     assert model["peak_from"] == 1893
     assert model["peak_to"] == 1885
     assert model["peak_from"] - model["peak_to"] == 8
-    assert model["read_sites_count"] == 5
-    assert "one of five read sites substituted" in model["build_status"]
-    assert "1,885 remains an accounting figure" in model["build_status"]
+    # Three, not five: two of the bodies the sketch named never take `n_a`.
+    assert model["read_sites_count"] == 3
+    assert model["driver_site"] == "build_syndrome_decoding_mbuc"
+    assert "all three readers substituted" in model["build_status"]
+    assert "1,885 is the build's peak only if" in model["build_status"]
     assert "measured on the built body" in model["toffoli_cost"]
     assert "varies" in model["b_pair"]
 
@@ -513,9 +519,44 @@ def test_one_body_substitution_does_not_move_the_built_peak():
 
     report = build_candidate_with_recycled_flag_body(n_iters=4)
     assert report["read_sites_substituted"] == 1
-    assert report["read_sites_remaining"] == 4
+    # Two, not four: `_shift_b_array_right` and `_update_metadata` never take `n_a`.
+    assert report["read_sites_remaining"] == 2
+    assert set(RECYCLED_NON_READ_SITES) == {"_shift_b_array_right", "_update_metadata"}
     assert report["peak_unchanged"] is True
     assert report["recycled_flag_peak_qubits"] == report["reference_peak_qubits"]
     assert report["accounting_peak_qubits"] == 1885
     assert "not enough to move the peak" in report["finding"]
+
+
+def test_all_sites_build_removes_the_register():
+    """With the driver changed the register is gone, so the peak drops by its width."""
+    try:
+        import kickmix  # noqa: F401
+    except ImportError:
+        pytest.skip("kickmix not available in test environment")
+
+    report = build_candidate_with_recycled_degrees(n_iters=4)
+    assert report["read_sites_substituted"] == 3
+    assert report["driver_recycled"] is True
+    assert report["peak_delta"] == -RECYCLED_QUBITS_AT_BENCHMARK
+    assert (
+        report["recycled_degrees_peak_qubits"]
+        == report["reference_peak_qubits"] - RECYCLED_QUBITS_AT_BENCHMARK
+    )
+
+
+def test_the_scored_window_record_holds_the_all_sites_peak():
+    """At 222 iterations the build peaks at 1,885, and the record says what it cost."""
+    record = json.loads(
+        (Path(__file__).resolve().parents[1] / "benchmarks" / "quantum_compilation"
+         / "dqi_recycled_degrees_window.json").read_text()
+    )
+    full = next(w for w in record["windows"] if w["n_iters"] == 222)
+    assert full["reference_peak_qubits"] == PEAK_QUBITS_REFERENCE
+    assert full["all_sites"]["peak_qubits"] == PEAK_QUBITS_SOURCED
+    assert full["all_sites"]["matches_accounting"] is True
+    assert full["all_sites"]["toffoli_delta"] == 648784
+    # The one-body build buys nothing: same peak as the reference at the scored window.
+    assert full["one_body"]["peak_qubits"] == PEAK_QUBITS_REFERENCE
+    assert full["one_body"]["toffoli_delta"] == 634032
 

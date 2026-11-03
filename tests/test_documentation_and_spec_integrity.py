@@ -330,8 +330,20 @@ def test_the_recycled_substitution_status_is_recorded():
     assert "derive_n_a" in bodies
     assert "1,893 → 1,885" in bodies
     assert "reads no `n_a`" in bodies
-    assert "1,885 remains an accounting figure" in bodies
+    # The build reaches the peak and fails equivalence; both are stated, neither is dropped.
+    assert "is a peak, not a decoder" in bodies
+    assert "52/64" in bodies and "fail" in bodies
     assert "dqi_recycled_flag_body_build.json" in bodies
+    assert "dqi_recycled_degrees_window.json" in bodies
+    assert "dqi_recycled_equivalence.json" in bodies
+
+    equivalence = json.loads(
+        (pathlib.Path(__file__).resolve().parents[1] / "benchmarks" / "quantum_compilation"
+         / "dqi_recycled_equivalence.json").read_text()
+    )
+    assert equivalence["arms"]["reference"]["value_errors"] == 0
+    assert equivalence["equivalent_to_reference"]["update_flag_substituted"] is False
+    assert equivalence["equivalent_to_reference"]["all_sites_substituted"] is False
     record = json.loads((pathlib.Path(__file__).resolve().parents[1] / "benchmarks" /
                          "quantum_compilation" / "dqi_recycled_flag_body_build.json").read_text())
     assert record["peak_unchanged"] is True

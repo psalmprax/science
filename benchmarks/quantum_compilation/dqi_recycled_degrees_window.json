@@ -1,0 +1,40 @@
+{
+  "what": "peak and Toffolis for the reference build, the one-body recycled build and the all-sites recycled build, at a short window and at the scored 222-iteration window",
+  "script": "scripts/measure_recycled_degrees.py",
+  "windows": [
+    {
+      "n_iters": 4,
+      "reference_peak_qubits": 1888,
+      "reference_toffolis": 1574953,
+      "one_body": {
+        "peak_qubits": 1888,
+        "toffolis": 1586377,
+        "toffoli_delta": 11424
+      },
+      "all_sites": {
+        "peak_qubits": 1880,
+        "toffolis": 1586633,
+        "toffoli_delta": 11680,
+        "matches_accounting": false
+      }
+    },
+    {
+      "n_iters": 222,
+      "reference_peak_qubits": 1893,
+      "reference_toffolis": 5725461,
+      "one_body": {
+        "peak_qubits": 1893,
+        "toffolis": 6359493,
+        "toffoli_delta": 634032
+      },
+      "all_sites": {
+        "peak_qubits": 1885,
+        "toffolis": 6374245,
+        "toffoli_delta": 648784,
+        "matches_accounting": true
+      }
+    }
+  ],
+  "accounting_peak_qubits": 1885,
+  "verdict": "at the scored window the all-sites build peaks at 1885 against the reference's 1893 and costs 648,784 more Toffolis; the one-body build costs 634,032 and buys nothing"
+}
