@@ -447,8 +447,10 @@ data-path width: one polynomial array is 852 qubits. Model: `model_data_path_flo
 
 One polynomial array is 852 bits: held singly, the peak would be **1,001** and `Q` would stop
 binding. But the EEA reads both remainders every round, so the dropped one must be re-derived
-from the syndrome — one extra division scaffold per round, 46,656 Toffolis, which over 222
-rounds is **2.81×** the reference at **0.786×** its score. Favourable arithmetic, unproven
-construction; the assumption to falsify is that re-derivation costs one division and nothing
-else. Model: `model_single_polynomial_array()`.
-
+from the syndrome — one extra division per round, and that division is priced two ways here:
+**378** Toffolis in `dqi_primitive_costs.json`, **46,656** in §2's 864 × 54 decomposition. Over
+222 rounds the score lands between **0.284×** and **0.786×** the reference, so the trade is
+favourable under either price and the claim does not rest on settling the granularity. It does
+rest on the assumption that re-derivation costs one division and nothing else, which
+[`DQI_SINGLE_ARRAY_DECODER_CONTRACT.md`](DQI_SINGLE_ARRAY_DECODER_CONTRACT.md) requires be
+proven first. Model: `model_single_polynomial_array()`.

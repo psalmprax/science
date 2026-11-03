@@ -7,10 +7,12 @@
 ## What is claimed, and what it rests on
 
 Holding one polynomial array instead of the live pair would put the peak at **1,001** qubits (852
-saved from the 1,853 register floor) and cost one extra division per EEA round, priced at **378**
-Toffolis by `dqi_primitive_costs.json` and at **46,656** by §2's product decomposition. Over 222
-rounds that is 1.015×–2.81× the reference Toffolis, and `R · Q² · T` lands at **0.284×–0.786×**
-the reference score — favourable at both prices.
+saved from the 1,853 register floor) and cost one extra division per EEA round, priced at **378** Toffolis per call, counted off the emitted gate stream (one
+`init_gf2_div_with_scaffold` at GF(2^12) is 378 CCX, matching `divide_scaffold_pair`). Over
+222 rounds that is **1.015×** the reference Toffolis, and `R · Q² · T` lands at **0.284×**
+the reference score — favourable. The 46,656 figure is the decoder's whole division bill per
+shot (123.4 calls), not a per-call price, and the earlier 2.81× / 0.786× figures are
+withdrawn as a per-shot quantity multiplied by the round count.
 
 All of that is arithmetic under one sentence, and the sentence is the entire risk:
 

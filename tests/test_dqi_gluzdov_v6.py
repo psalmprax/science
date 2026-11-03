@@ -48,11 +48,16 @@ from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import (
     GluzdovV6Config,
     GluzdovV6Decoder,
     build_candidate,
+    build_candidate_with_recycled_flag_body,
+    derive_n_a,
+    derived_flag_predicate,
     design_projection_dqi_gluzdov_v6,
+    load_division_gate_stream,
     load_division_scaffold_toffoli,
     load_measured_dqi_arms,
     model_data_path_floor,
     model_degree_register_floor,
+    model_recycled_n_a_substitution,
     model_score_at_qubit_floor,
     model_single_polynomial_array,
 )
@@ -433,36 +438,84 @@ def test_missing_primitive_record_raises_rather_than_quoting_a_literal(monkeypat
         dqi_module.load_division_scaffold_toffoli()
 
 
-def test_single_array_trade_is_bracketed_by_the_two_measured_prices():
-    """852 qubits out; Toffolis in at 378/round to 46,656/round; the score improves at both."""
+
+def test_derive_n_a_matches_the_measured_invariant_exhaustively():
+    """n_a = n + 1 - deg(A) for every degree the decoder can reach, both directions."""
+    for n in (4, 12, 70):
+        for degree in range(0, n + 2):
+            n_a = derive_n_a(degree, n)
+            assert n_a == n + 1 - degree
+            assert degree + n_a == n + 1  # the measured identity, restored
+    with pytest.raises(ValueError):
+        derive_n_a(-1, 70)
+    with pytest.raises(ValueError):
+        derive_n_a(72, 70)
+
+
+def test_recycled_substitution_accounts_for_exactly_one_register():
+    """8 qubits out (1,893 -> 1,885), five read sites, and one of them substituted."""
+    model = model_recycled_n_a_substitution()
+    assert model["register_removed_qubits"] == 8
+    assert model["peak_from"] == 1893
+    assert model["peak_to"] == 1885
+    assert model["peak_from"] - model["peak_to"] == 8
+    assert model["read_sites_count"] == 5
+    assert "one of five read sites substituted" in model["build_status"]
+    assert "1,885 remains an accounting figure" in model["build_status"]
+    assert "measured on the built body" in model["toffoli_cost"]
+    assert "varies" in model["b_pair"]
+
+def test_single_array_trade_is_priced_per_call_not_per_shot_budget():
+    """One division call is 378 T (measured); 46,656 is the whole shot's division bill."""
     model = model_single_polynomial_array()
-    assert model["array_bits"] == 71 * 12 == 852
-    assert model["peak_with_one_array"] == 1853 - 852 == 1001
-    assert model["reaches_target"] is True  # Q stops binding, which is the interesting part
-    assert model["eea_rounds"] == 222
-    assert model["cost_basis"]["record"] == "dqi_primitive_costs.json"
+    assert model["array_bits"] == 852
+    assert model["peak_with_one_array"] == 1001
+    assert model["reaches_target"] is True
 
-    trade = model["toffoli_trade"]
-    assert trade["record_price_per_round"] == 378.0
-    assert trade["decomposition_price_per_round"] == 864 * 54 == 46656
-    assert "different quantities" in trade["discrepancy"]
+    div = model["division"]
+    assert div["price_per_call_toffolis"] == 378.0
+    assert div["gate_stream_ccx"]["divide_call_ccx"] == 378.0
+    assert div["gate_stream_ccx"]["inverse_call_ccx"] == 315.0
+    assert div["per_shot_bill_toffolis"] == 46656.0
+    assert 123 < div["implied_calls_per_shot"] < 124
+    assert "not a second price" in div["granularity"]
 
-    low = trade["bounds"]["at_record_price"]
-    high = trade["bounds"]["at_decomposition_price"]
-    assert math.isclose(low["extra_toffolis_per_shot"], 378.0 * 222, rel_tol=1e-12)
-    assert math.isclose(high["extra_toffolis_per_shot"], 46656.0 * 222, rel_tol=1e-12)
-    assert 1.01 < low["multiplier"] < 1.02
-    assert 2.80 < high["multiplier"] < 2.82
-    for bound in (low, high):
-        assert math.isclose(
-            bound["total_toffolis_per_shot"],
-            T_MEAN_REFERENCE + bound["extra_toffolis_per_shot"],
-            rel_tol=1e-12,
-        )
-        assert bound["score_ratio_vs_reference"] < 1.0
-    assert math.isclose(
-        low["score_ratio_vs_reference"], (1001 / 1893) ** 2 * low["multiplier"], rel_tol=1e-12
-    )
-    assert 0.28 < low["score_ratio_vs_reference"] < 0.29
-    assert 0.78 < high["score_ratio_vs_reference"] < 0.79
-    assert "one division" in model["assumption"]
+    assert model["extra_toffolis_per_shot"] == 378.0 * 222 == 83916.0
+    assert 1.01 < model["toffoli_multiplier"] < 1.02
+    assert 0.28 < model["score_ratio_vs_reference"] < 0.29
+    # The regression this test exists for: 46,656 is per shot, not per round.
+    assert model["extra_toffolis_per_shot"] != 46656.0 * 222
+
+
+def test_division_granularity_record_is_sourced():
+    """The gate-stream record is required, and it agrees with the primitive-cost record."""
+    stream = load_division_gate_stream()
+    assert stream["record"] == "dqi_division_granularity.json"
+    assert stream["script"] == "scripts/verify_division_granularity.py"
+    assert stream["per_call_toffolis"] == stream["divide_call_ccx"] == 378.0
+    assert stream["per_shot_bill_toffolis"] == 46656.0
+
+
+def test_derived_flag_predicate_matches_the_carried_register():
+    """The substituted `_update_flag` reads the same condition: n_a == n_b iff n_A == n+1-n_b."""
+    result = derived_flag_predicate()
+    assert result["holds"] is True
+    assert result["pairs_checked"] == (DEFAULT_N + 2) ** 2
+    assert result["register_read"] is False
+
+
+def test_one_body_substitution_does_not_move_the_built_peak():
+    """Only `_update_flag` stops reading `n_a`, so the register is still allocated."""
+    try:
+        import kickmix  # noqa: F401
+    except ImportError:
+        pytest.skip("kickmix not available in test environment")
+
+    report = build_candidate_with_recycled_flag_body(n_iters=4)
+    assert report["read_sites_substituted"] == 1
+    assert report["read_sites_remaining"] == 4
+    assert report["peak_unchanged"] is True
+    assert report["recycled_flag_peak_qubits"] == report["reference_peak_qubits"]
+    assert report["accounting_peak_qubits"] == 1885
+    assert "not enough to move the peak" in report["finding"]
+

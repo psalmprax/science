@@ -53,3 +53,22 @@ Three edits per site:
 
 It makes the window figure contemporaneous, so §7.5's "55 < 64" becomes a same-build sum. It does
 not reach 1,789: this lever is worth 8 qubits here, and 32 at its absolute limit.
+
+## Status of the substitution
+
+The first body is implemented. `RecycledUpdateFlagDecoder._update_flag` reads no `n_a`: both of its
+`flip_if_equal(n_a, n_b, …)` comparisons are replaced by `n_A == n + 1 - n_b`, swept through the
+`n_b` cursor the pass already runs, so no persistent register is added. The identity is checked
+exhaustively over every `(deg(A), n_b)` pair the decoder can hold
+(`derived_flag_predicate()`, 5,184 pairs at `n = 70`).
+
+**It does not move the peak, and that is the finding** (the accounting is still
+1,893 → 1,885; the build is not). The other four bodies still read `n_a`, so
+the register is still allocated: `build_candidate_with_recycled_flag_body()` builds the full
+pipeline and reports the same peak as the reference build. **1,885 remains an accounting figure**
+until all five bodies and the driver change; a one-body substitution cannot produce a 1,885-qubit
+circuit, and claiming otherwise is exactly what the accounting is there to prevent.
+
+Contract `derive_n_a(deg(A)) = n + 1 - deg(A)` was already verified exhaustively for
+`n = 4, 12, 70` in both directions; `model_recycled_n_a_substitution()` still reports one 8-qubit
+register and the b-pair untouched.

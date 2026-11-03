@@ -452,27 +452,30 @@ different circuit, not a schedule. `model_data_path_floor()` computes the table.
 ### 7.6 What holding one polynomial array would trade
 
 The data path holds a remainder pair and a coefficient pair. Dropping to one array is the only
-change larger than every lever in §7.5, and two of its three lines are settled while the third is
-not.
+change larger than every lever in §7.5.
 
 - **Qubits.** One array is `(n + 1) × m = 71 × 12 = 852` bits, so from the register floor the peak
   would be **1,001** — 788 under the target. `Q` stops binding.
-- **Toffolis — bracketed, because two measured numbers disagree.** The EEA reads both remainders
-  every round, so the dropped one must be re-derived from the syndrome each round: one extra
-  division. `dqi_primitive_costs.json` prices a divide scaffold pair at **378** Toffolis; §2's
-  decomposition prices the products inside one division call at **864 × 54 = 46,656**. They are
-  different quantities and 124× apart. Over 222 rounds that is **83,916** to **10,357,632** extra
-  per shot: 5,725,108.4 → **5,809,024.4 (1.015×)** to **16,082,740.4 (2.81×)**.
-- **Score.** `R · Q² · T` lands between **0.284×** and **0.786×** the reference. The `Q²` win
-  (0.28) beats even the pessimistic `T` loss, so **the trade is favourable under both prices** and
-  the conclusion does not depend on settling the discrepancy — which is why it is a bracket and
-  not a chosen number.
+- **Toffolis, and the price of one division.** The EEA reads both remainders every round, so the
+  dropped one must be re-derived each round: one extra division **call**. What a call costs was
+  settled by counting gates, not by quoting a table: building one
+  `init_gf2_div_with_scaffold` at GF(2¹²) emits **378 CCX**, exactly `divide_scaffold_pair` in
+  `dqi_primitive_costs.json` (the inverse scaffold emits 315, matching `inverse_scaffold_pair`
+  too), recorded in `benchmarks/quantum_compilation/dqi_division_granularity.json` by
+  `scripts/verify_division_granularity.py`. Over 222 rounds:
+  **+83,916 Toffolis per shot**, i.e. 5,725,108.4 → **5,809,024.4 (1.015×)**.
+- **Score.** `R · Q² · T` lands at **0.284×** the reference. The `Q²` factor (0.28) beats the
+  `T` penalty (1.015), so the trade is favourable — on arithmetic, for a construction nobody has
+  built.
 
-What this arithmetic cannot supply is the sentence it rests on: *re-deriving the dropped remainder
-costs one division and nothing else.* That is a claim about a circuit, it is what
+**The granularity question, settled.** §2's 864 products × 54 ANDs = **46,656** is not a second
+price for the same call: 46,656 / 378 = **123.4 calls**, so it is the decoder's *whole* division
+bill for one shot. An earlier version of this section multiplied it by the round count, reporting
+**2.81×** and a score range of 0.284×–0.786×; that overstated the extra by the number of rounds
+and the higher figure is withdrawn. What the arithmetic still cannot supply is the sentence it
+rests on — that re-deriving a remainder costs one division and nothing else — which
 [`DQI_SINGLE_ARRAY_DECODER_CONTRACT.md`](DQI_SINGLE_ARRAY_DECODER_CONTRACT.md) requires be proven
-before any builder work, and `model_single_polynomial_array()` returns the bracket with that
-assumption named in the returned dict.
+before any builder work.
 
 ### 7.7 The window figure cannot be re-measured at 1,853 yet
 

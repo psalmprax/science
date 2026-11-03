@@ -155,37 +155,41 @@
   },
   "single_array_trade": {
     "array_bits": 852,
-    "assumption": "re-deriving one remainder per round costs exactly one division scaffold",
+    "assumption": "re-deriving one remainder per round costs exactly one division call",
     "cost_basis": {
       "divide_scaffold_pair_toffoli": 378.0,
       "inverse_scaffold_pair_toffoli": 315.0,
       "path": "primitives_per_call",
       "record": "dqi_primitive_costs.json"
     },
+    "division": {
+      "ands_per_product": 54,
+      "decoder_division_products_per_shot": 864,
+      "gate_stream_ccx": {
+        "ands_per_product": 54,
+        "divide_call_ccx": 378.0,
+        "implied_calls_per_shot": 123.43,
+        "inverse_call_ccx": 315.0,
+        "per_call_toffolis": 378.0,
+        "per_shot_bill_toffolis": 46656.0,
+        "per_shot_products": 864,
+        "record": "dqi_division_granularity.json",
+        "script": "scripts/verify_division_granularity.py"
+      },
+      "granularity": "378 is one call (measured from the emitted gate stream); 46,656 is the decoder's whole division bill for one shot, about 123 calls -- not a second price for the same call",
+      "implied_calls_per_shot": 123.43,
+      "per_shot_bill_toffolis": 46656.0,
+      "price_per_call_toffolis": 378.0
+    },
     "eea_rounds": 222,
+    "extra_toffolis_per_shot": 83916.0,
     "peak_with_one_array": 1001,
     "qubits_saved": 852,
     "reaches_target": true,
-    "toffoli_trade": {
-      "bounds": {
-        "at_decomposition_price": {
-          "extra_toffolis_per_shot": 10357632.0,
-          "multiplier": 2.80915911257977,
-          "score_ratio_vs_reference": 0.7854947119281012,
-          "total_toffolis_per_shot": 16082740.382109374
-        },
-        "at_record_price": {
-          "extra_toffolis_per_shot": 83916.0,
-          "multiplier": 1.014657539106549,
-          "score_ratio_vs_reference": 0.28371768897570504,
-          "total_toffolis_per_shot": 5809024.382109375
-        }
-      },
-      "decomposition_price_per_round": 46656.0,
-      "discrepancy": "the record prices a divide scaffold pair at 378 Toffolis while section 2 prices the products inside one division at 46656; they are different quantities and the score is reported at both, never at the friendlier one alone",
-      "record_price_per_round": 378.0
-    },
-    "verdict": "Q falls to 1001 and stops binding; T rises 1.015x to 2.809x, and the score lands between 0.284 and 0.785 of the reference: favourable at both ends, and unproven as a construction"
+    "score_ratio_vs_reference": 0.28371768897570504,
+    "toffoli_multiplier": 1.014657539106549,
+    "total_toffolis_per_shot": 5809024.382109375,
+    "verdict": "Q falls to 1001 and stops binding; T rises 1.015x and the score lands at 0.284 of the reference: favourable, and unproven as a construction"
   },
   "status": "ANALYTICAL_PROJECTION_ONLY",
   "target_basis": {

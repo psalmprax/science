@@ -1,0 +1,37 @@
+{
+  "what": "CCX emitted by one GF(2^12) scaffold call, read off the built circuit rather than off a table",
+  "script": "scripts/verify_division_granularity.py",
+  "builder": "kickmix.CircuitBuilder",
+  "field_degree": 12,
+  "calls": {
+    "init_gf2_div_with_scaffold": {
+      "ccx": 378,
+      "cx": 3288,
+      "swap": 179,
+      "r": 72,
+      "peak_qubits": 96
+    },
+    "init_gf2_inverse_with_scaffold": {
+      "ccx": 315,
+      "cx": 2807,
+      "swap": 158,
+      "r": 60,
+      "peak_qubits": 84
+    }
+  },
+  "record_cross_check": {
+    "record": "dqi_primitive_costs.json",
+    "path": "primitives_per_call",
+    "divide_scaffold_pair": 378.0,
+    "inverse_scaffold_pair": 315.0,
+    "agrees": true
+  },
+  "granularity": {
+    "per_call_toffolis": 378,
+    "per_shot_products": 864,
+    "ands_per_product": 54,
+    "per_shot_bill_toffolis": 46656,
+    "implied_calls_per_shot": 123.43
+  },
+  "verdict": "378 Toffolis is one division call, measured; 46,656 is the whole decoder's division bill for one shot, about 123.4 calls. Multiplying the per-shot bill by the EEA round count overstates the single-array trade by that same factor"
+}

@@ -811,16 +811,58 @@ def model_data_path_floor() -> dict[str, Any]:
     }
 
 
-#: Section 2's decomposition of the arm: the products inside one division scaffold call, and
-#: the ANDs each costs. These are *not* in `dqi_primitive_costs.json`, which prices a scaffold
-#: pair at a different granularity, so both are carried and the model brackets the trade.
-DECOMPOSITION_DIVISION_PRODUCTS_PER_CALL: int = 864
-DECOMPOSITION_ANDS_PER_PRODUCT: int = 54
+#: Section 2's decomposition of the arm: the decoder's *total* division bill for one shot (864
+#: products), and the ANDs each product costs (54). Per shot, not per call -- see
+#: `load_division_gate_stream()` for the measurement that separates the two.
+DECODER_DIVISION_PRODUCTS_PER_SHOT: int = 864
+ANDS_PER_PRODUCT: int = 54
 
 
 class PrimitiveCostError(RuntimeError):
     """The primitive-cost record is absent or does not carry a needed count."""
 
+
+
+class DivisionRecordError(RuntimeError):
+    """The gate-stream record is missing, or disagrees with the primitive-cost record."""
+
+
+def load_division_gate_stream() -> dict[str, Any]:
+    """Read one division call's Toffoli count off the circuit the builder emits.
+
+    ``dqi_division_granularity.json`` is written by
+    ``scripts/verify_division_granularity.py``, which builds one
+    ``init_gf2_div_with_scaffold`` call at GF(2^12) and counts its CCX operations. That
+    measurement is what separates the two prices: one call carries 378 Toffolis, while
+    46,656 (864 products x 54 ANDs) is the decoder's whole division bill for a shot, or
+    about 123 calls. Raises rather than falling back, so a missing or moved record is a
+    failure and not a quietly different price.
+    """
+    path = _BENCHMARK_DIR / "dqi_division_granularity.json"
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise DivisionRecordError(f"cannot read {path}: {exc}") from exc
+    try:
+        div = payload["calls"]["init_gf2_div_with_scaffold"]["ccx"]
+        inv = payload["calls"]["init_gf2_inverse_with_scaffold"]["ccx"]
+        granularity = payload["granularity"]
+        agrees = payload["record_cross_check"]["agrees"]
+    except (KeyError, TypeError) as exc:
+        raise DivisionRecordError(f"{path.name} is missing {exc}") from exc
+    if not agrees:
+        raise DivisionRecordError(f"{path.name} records a gate stream its cost record disagrees with")
+    return {
+        "record": path.name,
+        "script": payload.get("script"),
+        "divide_call_ccx": float(div),
+        "inverse_call_ccx": float(inv),
+        "per_call_toffolis": float(granularity["per_call_toffolis"]),
+        "per_shot_products": int(granularity["per_shot_products"]),
+        "ands_per_product": int(granularity["ands_per_product"]),
+        "per_shot_bill_toffolis": float(granularity["per_shot_bill_toffolis"]),
+        "implied_calls_per_shot": float(granularity["implied_calls_per_shot"]),
+    }
 
 def load_division_scaffold_toffoli() -> dict[str, Any]:
     """Read the measured Toffoli price of one divide/inverse scaffold pair.
@@ -858,39 +900,31 @@ def model_single_polynomial_array() -> dict[str, Any]:
     Qubits: one array is ``(n + 1) * m = 71 * 12 = 852`` bits, so from the register floor the
     peak would be 1,001 -- 788 under the target, and Q stops binding.
 
-    Toffolis: the EEA reads both remainders every round, so the dropped one must be re-derived
-    from the syndrome each round -- one extra division. The cost of that division is *bracketed*
-    rather than asserted, because two numbers in this repository disagree:
+    Toffolis: the EEA reads both remainders every round, so the dropped one must be
+    re-derived each round -- one extra division call. What a call costs was settled by
+    counting gates rather than by quoting a table: one ``init_gf2_div_with_scaffold`` at
+    GF(2^12) emits **378 CCX**, which is `divide_scaffold_pair` in
+    `dqi_primitive_costs.json` (the inverse scaffold's 315 matches `inverse_scaffold_pair`
+    too). So 378 is the price of one call.
 
-    * ``dqi_primitive_costs.json`` prices a divide scaffold pair at **378** Toffolis (measured);
-    * Section 2 of BENCHMARK2_TARGET_REACHABILITY decomposes the arm with **864 products x 54
-      ANDs = 46,656** for the products inside one division call (also measured, different
-      quantity).
-
-    The model reports the score at both ends, so the conclusion does not depend on settling
-    which granularity the re-derivation actually costs. What it does depend on is the sentence
-    in ``assumption``, which no arithmetic here proves.
+    The 46,656 figure is not a competing price for the same thing: it is 864 products x 54
+    ANDs, and 46,656 / 378 = 123.4, so it is the decoder's *whole* division bill for one shot.
+    Multiplying it by the round count -- which an earlier version of this model did, reporting
+    2.81x -- overstates the extra by exactly the number of rounds.
     """
     array_bits = (DEFAULT_N + 1) * DEFAULT_DEGREE
     peak = PEAK_FLOOR_UNDER_RECYCLING - array_bits
     rounds = DEFAULT_N_ITERS
     record = load_division_scaffold_toffoli()
-    low_per_round = record["divide_scaffold_pair_toffoli"]
-    high_per_round = float(DECOMPOSITION_DIVISION_PRODUCTS_PER_CALL * DECOMPOSITION_ANDS_PER_PRODUCT)
-
-    def at(price: float) -> dict[str, float]:
-        per_shot = price * rounds
-        total = T_MEAN_REFERENCE + per_shot
-        return {
-            "extra_toffolis_per_shot": per_shot,
-            "total_toffolis_per_shot": total,
-            "multiplier": total / T_MEAN_REFERENCE,
-            "score_ratio_vs_reference": (peak / PEAK_QUBITS_REFERENCE) ** 2
-            * total
-            / T_MEAN_REFERENCE,
-        }
-
-    trade = {"at_record_price": at(low_per_round), "at_decomposition_price": at(high_per_round)}
+    stream = load_division_gate_stream()
+    price_per_call = record["divide_scaffold_pair_toffoli"]
+    if price_per_call != stream["divide_call_ccx"]:
+        raise DivisionRecordError(
+            "the cost record prices a division call at "
+            f"{price_per_call:g} Toffolis but the built call emits {stream['divide_call_ccx']:g}"
+        )
+    extra_per_shot = price_per_call * rounds
+    total = T_MEAN_REFERENCE + extra_per_shot
     return {
         "array_bits": array_bits,
         "qubits_saved": array_bits,
@@ -898,24 +932,226 @@ def model_single_polynomial_array() -> dict[str, Any]:
         "reaches_target": peak <= PEAK_QUBITS_V6,
         "eea_rounds": rounds,
         "cost_basis": record,
-        "toffoli_trade": {
-            "record_price_per_round": low_per_round,
-            "decomposition_price_per_round": high_per_round,
-            "bounds": trade,
-            "discrepancy": (
-                f"the record prices a divide scaffold pair at {low_per_round:g} Toffolis while "
-                f"section 2 prices the products inside one division at {high_per_round:g}; they "
-                "are different quantities and the score is reported at both, never at the "
-                "friendlier one alone"
+        "division": {
+            "price_per_call_toffolis": price_per_call,
+            "gate_stream_ccx": stream,
+            "decoder_division_products_per_shot": DECODER_DIVISION_PRODUCTS_PER_SHOT,
+            "ands_per_product": ANDS_PER_PRODUCT,
+            "per_shot_bill_toffolis": (
+                float(DECODER_DIVISION_PRODUCTS_PER_SHOT * ANDS_PER_PRODUCT)
+            ),
+            "implied_calls_per_shot": stream["implied_calls_per_shot"],
+            "granularity": (
+                "378 is one call (measured from the emitted gate stream); 46,656 is the "
+                "decoder's whole division bill for one shot, about 123 calls -- not a second "
+                "price for the same call"
             ),
         },
-        "assumption": "re-deriving one remainder per round costs exactly one division scaffold",
+        "extra_toffolis_per_shot": extra_per_shot,
+        "total_toffolis_per_shot": total,
+        "toffoli_multiplier": total / T_MEAN_REFERENCE,
+        "score_ratio_vs_reference": (peak / PEAK_QUBITS_REFERENCE) ** 2 * total / T_MEAN_REFERENCE,
+        "assumption": "re-deriving one remainder per round costs exactly one division call",
         "verdict": (
-            f"Q falls to {peak} and stops binding; T rises "
-            f"{trade['at_record_price']['multiplier']:.3f}x to "
-            f"{trade['at_decomposition_price']['multiplier']:.3f}x, and the score lands between "
-            f"{trade['at_record_price']['score_ratio_vs_reference']:.3f} and "
-            f"{trade['at_decomposition_price']['score_ratio_vs_reference']:.3f} of the reference: "
-            "favourable at both ends, and unproven as a construction"
+            f"Q falls to {peak} and stops binding; T rises {total / T_MEAN_REFERENCE:.3f}x and "
+            f"the score lands at "
+            f"{(peak / PEAK_QUBITS_REFERENCE) ** 2 * total / T_MEAN_REFERENCE:.3f} of the "
+            "reference: favourable, and unproven as a construction"
+        ),
+    }
+
+
+def derive_n_a(a_degree: int, n: int = DEFAULT_N) -> int:
+    """The recycled degree register, from the invariant the decoder measurement established.
+
+    ``n_A + n_a = n + 1`` is constant, so ``n_a`` is not an independent register: it is a
+    function of the degree of ``A``. This is the whole substitution -- the value is produced
+    when it is read instead of being carried, which is what removes the register.
+    """
+    if a_degree < 0 or a_degree > n + 1:
+        raise ValueError(f"degree {a_degree} is outside [0, {n + 1}]")
+    return n + 1 - a_degree
+
+
+#: The five pass bodies that read `n_a` as a unary loop control.
+RECYCLED_READ_SITES: tuple[str, ...] = (
+    "_update_flag",
+    "_multiply_and_add_or_sub",
+    "_shift_b_array_right",
+    "_update_metadata",
+    "_swap_a_and_b",
+)
+
+
+def model_recycled_n_a_substitution(n: int = DEFAULT_N, rounds: int = DEFAULT_N_ITERS) -> dict[str, Any]:
+    """What removing the `n_a` register buys, and what is still missing to build it.
+
+    The mechanism is exact: `n_a = n + 1 - deg(A)`, checked exhaustively over the degree range
+    by the test suite. The register is `RECYCLED_QUBITS_AT_BENCHMARK` wide, so the peak moves
+    from 1,893 to 1,885 and no other register changes.
+
+    What this does *not* do is emit the gates. The five read sites live in the vendored
+    reference decoder, which this repository does not edit, so there is no .kmb build to
+    measure and the count's Toffoli cost is left unmodelled rather than guessed.
+    """
+    return {
+        "invariant": "n_A + n_a = n + 1 (measured, constant)",
+        "derivation": "n_a = n + 1 - deg(A), evaluated at each read site",
+        "register_removed_qubits": RECYCLED_QUBITS_AT_BENCHMARK,
+        "peak_from": PEAK_QUBITS_REFERENCE,
+        "peak_to": PEAK_QUBITS_SOURCED,
+        "read_sites": list(RECYCLED_READ_SITES),
+        "read_sites_count": len(RECYCLED_READ_SITES),
+        "rounds": rounds,
+        "toffoli_cost": "not modelled: the count must be measured on the built body",
+        "build_status": (
+            "one of five read sites substituted: `_update_flag` derives the predicate from "
+            "n_A and reads no n_a (RecycledUpdateFlagDecoder). The other four still read the "
+            "register, so it is still allocated and a build peaks at 1,893; 1,885 remains an "
+            "accounting figure until all five bodies and the driver change"
+        ),
+        "b_pair": "unchanged: n_B + n_b varies, so n_b cannot be derived the same way",
+    }
+
+
+
+def _recycled_flag_decoder_class() -> Any:
+    """The reference decoder with `_update_flag` reading `n_A` instead of `n_a`.
+
+    Built lazily because it subclasses vendored reference code that is only importable with
+    the competition bundle's `verifiers/` directory on ``sys.path``.
+    """
+    DR = _load_reference_decoder()
+    cached = getattr(DR, "_RECYCLED_FLAG_DECODER", None)
+    if cached is not None:
+        return cached
+
+    class RecycledUpdateFlagDecoder(DR.ProosAndZalkaDecoder):
+        """`n_a == n_b` read as `n_A == n + 1 - n_b`, using the cursor the pass already runs.
+
+        The value is produced at the read instead of carried, which is the whole substitution:
+        no register is read, no persistent register is added, and the counter decode the body
+        already performs is what sweeps the candidate values of `n_b`.
+        """
+
+        def _update_flag(self, builder, reg_b, n_A, n_B, n_a, n_b, n_q, flag, ctrl):
+            # `n_a` is accepted for signature compatibility and never read.
+            n = self.n_syndromes
+            m = len(reg_b)
+            lim_b = n + 1
+            with builder.mark("update_flag_recycled"):
+                c0, c1, c2, c3 = ctrl
+                aux = builder.alloc_qubits(1)[0]
+
+                builder.flip_if_less_than(n_A, n_B, target=aux, control=c0)
+                builder.flip_if_equal(n_q, 0, target=flag, control=aux)
+                builder.flip_if_less_than(n_A, n_B, target=aux, control=c0)
+                builder.flip_if_equal(n_A, n_B, target=flag, control=c0)
+
+                builder.flip_if_equal(n_A, n_B, target=flag, control=c1)
+                builder.cx(c1, flag)
+                builder.flip_if_equal(n_B, 1, target=aux, control=c1)
+                builder.cx(c1, aux)
+                builder.flip_if_equal(reg_b[m - 2], 0, target=flag, control=aux)
+                builder.cx(c1, aux)
+                builder.flip_if_equal(n_B, 1, target=aux, control=c1)
+
+                builder.cx(c2, flag)
+                builder.flip_if_equal(n_b, 0, target=aux, control=c2)
+                builder.cx(c2, aux)
+                builder.flip_if_equal(reg_b[0], 0, target=flag, control=aux)
+                builder.cx(c2, aux)
+                builder.flip_if_equal(n_b, 0, target=aux, control=c2)
+                builder.iadd(1, target=n_b)
+                self._flip_if_derived_equal(builder, DR, n_A, n_b, n, lim_b, flag, c2)
+                builder.isub(1, target=n_b)
+
+                self._flip_if_derived_equal(builder, DR, n_A, n_b, n, lim_b, flag, c3)
+                builder.flip_if_equal(n_q, 1, target=flag, control=c3)
+
+                builder.free(aux)
+
+        @staticmethod
+        def _flip_if_derived_equal(builder, DR, n_A, n_b, n, lim_b, flag, control) -> None:
+            """`flag ^= control and (n_A == n + 1 - n_b)`, the derived form of `n_a == n_b`."""
+            with builder.unary_iteration(n_b, control=control) as cur_b:
+                for k in range(lim_b + 1):
+                    hit = DR._active(cur_b, k, lim_b)
+                    if hit is False:
+                        continue
+                    value = n + 1 - k
+                    if value < 0:
+                        continue
+                    builder.flip_if_equal(n_A, value, target=flag, control=hit)
+
+    DR._RECYCLED_FLAG_DECODER = RecycledUpdateFlagDecoder
+    return RecycledUpdateFlagDecoder
+
+
+def derived_flag_predicate(n_a_register_absent: bool = True) -> dict[str, Any]:
+    """Check the substitution as arithmetic: `n_a == n_b` iff `n_A == n + 1 - n_b`.
+
+    Exhaustive over every pair the decoder can hold, in both directions, so the identity the
+    substituted body relies on is not assumed.
+    """
+    n = DEFAULT_N
+    checked = 0
+    for a_degree in range(0, n + 2):
+        n_a = derive_n_a(a_degree, n)
+        for n_b_value in range(0, n + 2):
+            carried = n_a == n_b_value
+            derived = a_degree == n + 1 - n_b_value
+            if carried != derived:
+                raise AssertionError(
+                    f"derived predicate disagrees at deg(A)={a_degree}, n_b={n_b_value}"
+                )
+            checked += 1
+    return {
+        "register_read": not n_a_register_absent,
+        "identity": "n_a == n_b  <=>  n_A == n + 1 - n_b",
+        "pairs_checked": checked,
+        "holds": True,
+    }
+
+
+def build_candidate_with_recycled_flag_body(*, n_iters: int = DEFAULT_N_ITERS) -> Any:
+    """Build the decoder with one read site substituted, and report what that does to the peak.
+
+    Only `_update_flag` no longer reads `n_a`; the other four bodies still do, so the register
+    is still allocated. The returned dict carries both numbers -- the reference build's peak and
+    this one's -- because a one-body substitution cannot lower the peak and pretending
+    otherwise is what the 1,885 accounting is supposed to prevent.
+    """
+    if km is None:
+        raise RuntimeError("Kickmix is required to build physical circuits")
+    reference = build_candidate(n_iters=n_iters)
+
+    decoder_cls = _recycled_flag_decoder_class()
+    degree, n, m = DEFAULT_DEGREE, DEFAULT_N, DEFAULT_M
+    builder = km.CircuitBuilder()
+    syndromes = [builder.create_quantum_register(degree, name=f"S{i}") for i in range(n)]
+    error_masks = [
+        builder.create_classical_register(degree, name=f"E{j}") for j in range(m)
+    ]
+    decoder_cls(n, km.GF2Field(degree)).build_syndrome_decoding_mbuc(
+        builder, syndromes=syndromes, error_mbuc=error_masks, n_iters=n_iters
+    )
+    recycled = builder.finish_circuit()
+    toffolis = lambda circuit: int(circuit.operation_statistics().num_toffoli_like)  # noqa: E731
+    return {
+        "n_iters": n_iters,
+        "reference_peak_qubits": int(reference.num_qubits),
+        "recycled_flag_peak_qubits": int(recycled.num_qubits),
+        "peak_unchanged": int(reference.num_qubits) == int(recycled.num_qubits),
+        "reference_toffolis": toffolis(reference),
+        "recycled_flag_toffolis": toffolis(recycled),
+        "toffoli_delta": toffolis(recycled) - toffolis(reference),
+        "accounting_peak_qubits": model_recycled_n_a_substitution()["peak_to"],
+        "read_sites_substituted": 1,
+        "read_sites_remaining": len(RECYCLED_READ_SITES) - 1,
+        "finding": (
+            "one body is not enough to move the peak: the register is still allocated for the "
+            "four bodies that read it, so the build stays at the reference peak and the 1,885 "
+            "stay accounting"
         ),
     }

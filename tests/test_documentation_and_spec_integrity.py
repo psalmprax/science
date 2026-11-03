@@ -318,3 +318,15 @@ def test_the_single_array_trade_is_recorded():
     bodies = (root / "docs" / "DQI_RECYCLED_PASS_BODIES.md").read_text()
     assert "Derivation lemma" in contract and "Falsifiers" in contract
     assert "1,885" in bodies and "leading-zero" in bodies
+
+
+def test_the_recycled_substitution_status_is_recorded():
+    import pathlib
+
+    bodies = (
+        pathlib.Path(__file__).resolve().parents[1] / "docs" / "DQI_RECYCLED_PASS_BODIES.md"
+    ).read_text()
+    assert "derive_n_a" in bodies
+    assert "1,893 → 1,885" in bodies
+    assert "reads no `n_a`" in bodies
+    assert "1,885 remains an accounting figure" in bodies
