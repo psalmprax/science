@@ -1,3 +1,1873 @@
+## 2026-11-03 — Degree-register recycling is closed on correctness and on score, and the DQI projection moves to 1,893
+
+- **The recycled `n_a` build reaches 1,885 and does not decode.** Removing the register costs
+  `+648,784` Toffolis and peaks exactly where the accounting said (`dqi_recycled_degrees_window.json`),
+  but 64-shot verification gives **52/64** value errors for the one-body substitution and **64/64**
+  for the all-sites build against the reference's 0/64.
+
+- **The cause is the premise, not the comparison.** The derived predicate is exact over all 5,184
+  `(A, b)` basis pairs, and the failure bisects to the first `_swap_a_and_b`: the a-pair sum is only
+  `n + 1` until the swap exchanges it with a b-pair whose sum varies, so `n_a` is derivable only
+  pre-swap — which needs the register the build removed.
+
+- **It is also score-negative.** 1.1133× the Toffolis against a 0.9916× `Q²` gain is **0.898×** the
+  projection, so even a working build would lose.
+
+- **Nothing is scored at 1,885 any more.** The operative projection is the verifier peak:
+  `R · 1,893² · 445,229 = 1.9006e12` (**12.859×**), with 1,885 carried as withdrawn and 1,789 as
+  the unsourced aspirational row. Campaign docs (`EEA_SCHEDULE_CAMPAIGN.md`,
+  `BENCHMARK2_TARGET_REACHABILITY.md` §7.8, `DQI_OFFICIAL_COMPATIBILITY.md`) record the closure.
+
+## 2026-11-02 — The FCIDUMP is downloadable, and every precision we tried fails it
+
+- **`FeMoCo76o113e.fcidump` is in the competition data, not in this repository's bundle copy.**
+  Downloaded at 128,128,348 bytes it makes the chemistry half scoreable: the reference submission
+  passes at `error_1` 3.19 mHa and `error_2` 18.64 mHa, `lambda_eff` 49.301, cost 3.356e9.
+
+- **Every angle family in this repository is rejected by it.** Rounded from the sample's 12-bit
+  words, `brot = 10` gives `error_1` 242.3 mHa, `brot = 9` gives 338.3 and `brot = 8` gives
+  568.2, against a 20 mHa tolerance. Their Toffoli counts (63,584 / 55,636 / 47,688) are real
+  arithmetic on an invalid submission. Word recovery passed on all three because it checks the
+  loaded table, not the Hamiltonian. The earlier "25% cheaper at 8 bits" entry is withdrawn.
+
+- **The gap to the public best is the table, twice over.** Its `(9, 143, 40)` submission carries
+  1,363 addresses to the sample's 3,976, and its words are refit at 8 bits rather than rounded
+  into 8 bits -- which is why it reaches 18.6 mHa where rounding does not.
+
+## 2026-11-02 — The in-cap matrix covers all four layouts, and `J = 4` does not rescue the structured one
+
+- **The split table in the decision note is now the four-layout grid it replaced.**
+  `--low-matrix` walks eight densities on all four payload layouts, so the random-only table
+  §2 carried is gone. At `J = 10`: random 1,406 -> 3,691 Toffolis picking `low = 2` only up to
+  0.50, per-address 386 -> 3,770, blocked 89 -> 122 and contiguous 15 -- the last three at
+  `low = 0`, i.e. the tree, at every density.
+
+- **No structured layout picks the ladder at `J = 4` either, where the wide split fits.**
+  With `low = 5` in cap the structured trees stay at `low = 0` (per-address 355–3,453, blocked
+  103–131, contiguous 14–15) while the random window widens from 0.50 to 0.75 bits per address
+  (0.41–0.89x). The cause is measured: those trees are 14–131 Toffolis, so the ladder's
+  183-Toffoli addressing alone exceeds the read it would replace. The cap was not the only
+  reason the structured regimes lose.
+
+- **The flat comparator table is dominated on both axes.** At `low = 12` (`S > rows`, one
+  comparator per address) the read costs 6,980 and 7,548 Toffolis at 7,094 and 7,662 qubits,
+  against 3,691 and 3,770 at 123 -- 58x the qubits for no fewer Toffolis.
+
+## 2026-11-02 — The ladder's crossing is bracketed at `[0.91, 0.95]`, and the builder now agrees with its rule
+
+- **The builder and the cost rule disagreed on block counts, and the builder was wrong.**
+  The ladder crossed `H = 2**(n - low)` blocks when the table has `ceil(rows/S)` -- 128 at
+  `low=5` where 3,976 rows give 125 -- so every full-table ladder count was three Toffolis
+  high. The builder now trims, and the rule matches the built circuit on an uneven table
+  (`rows=100`, `low=2` -> 25 blocks, 27 addressing Toffolis) as well as on powers of two.
+
+- **Placement, not density, decides the tree.** At equal payload (1,988 set bits) the tree
+  costs 3,160 Toffolis with the payload scattered, 122 in eight contiguous runs, and 15 in
+  one run, while the ladder is 2,171 in all three -- its `ccx` count is the payload count,
+  wherever it sits. Structured emptiness is therefore strictly bad for the ladder, and the
+  random-placement crossing is its best case.
+
+- **The ladder now collapses like the tree, and that moves the crossing 0.87 -> 0.91.**
+  `build_ladder(early_break=True)` applies the tree's rule at both levels -- a uniform offset
+  range loads once against its own ladder control, a uniform block range needs one load and no
+  descendants, and an all-uniform table skips the shared ladder entirely. At one bit per address
+  it still loses by 8% (4,032 against 3,744).
+
+- **The structured-layout comparison was wrong, and the sweep's cache was the cause.** It cached
+  one ladder per density, which is sound only while the ladder is layout-invariant -- and it is
+  not once it collapses, so blocked and contiguous layouts were reporting the *random* table's
+  cost (4,032 for both). Keyed by placement, the like-for-like numbers are 296 against 131 (eight
+  runs) and 74 against 14 (one run). Closer, still losing, and no crossing anywhere.
+
+- **The window closes at `J = 10`, the family that ships.** 100 payload qubits leave only
+  `low = 2` in the cap, so addressing costs 996 against 183 and the crossing falls from 0.91 to
+  **0.56**; the family's bracket is `[0.56, 0.75]`. The 8% per-address advantage does not survive
+  either -- it is 1.20x at every density (4,765 against 3,974 at one bit per address), because
+  the payload is one bit wherever you look while the addressing is 5.4x larger.
+
+- **The offset ladder is now built only where a load addresses it.** It used to be built in full
+  (`2(S - 1)` gates, `2(S - 1)` ancillas) whenever a single block was mixed, which was a fixed tax
+  the tree never pays and it made structured tables look hopeless. A uniform range still gets a
+  control -- a load lands on it -- but its subtree is not descended into. Contiguous payload:
+  74 -> 20 Toffolis (1.43x the tree rather than 5.3x); eight runs: 280 (2.14x). Still losing, and
+  the remaining gap is structural: the tree skips a whole address range at one node.
+
+- **`low = 2` was not the split to choose, so the 0.56 crossing was not the family's answer.**
+  `--low-scan` costs every split with its qubit count: the cap admits `low <= 0, 1, 2` at `J = 10`
+  (134 qubits from `low = 3`), and the best of those is `low = 0` -- the tree itself, 3,770
+  Toffolis at one bit per address against `low = 2`'s 4,765. No in-cap split beats the tree on the
+  shipped family; the ladder's advantage starts at `low = 3` and is comfortable at `low = 5`.
+
+- **The shipped tree's early-break now compares whole rows, and it saves nothing on this table.**
+  `build_delta_circuit` matched cells against the scalar `delta[lo, 0]`, so it only collapsed
+  blocks that were one repeated 0/1 pattern; it now compares each row to `delta[lo]`, a strict
+  generalisation. `--break-audit` counts what that finds: **0, 0, 0, 0, 0, 0, 0, 0** collapsible
+  ranges across the 8 real delta tables, family Toffolis unchanged at 3,974 x 8. A synthetic
+  table with one bit on every address finds 198 ranges and drops to 3,770 -- the same 204 -- so
+  those 204 Toffolis belong to a table that repeats rows, not to this one.
+
+- **The `J = 10` grid firms up the in-cap answer.** `--low-matrix` over all eight densities:
+  `low = 0` is the best in-cap split at 0.75 and above for random tables and at every density
+  for a fully populated one; the sparse random tables at 0.10-0.50 do prefer `low = 2`
+  (1,105 / 1,921 / 2,952 against trees of 1,406 / 2,325 / 3,080). The shipped table is fully
+  populated at 40 bits per address, so its in-cap answer is the tree.
+
+- **Decision note.** `docs/BENCHMARK3_LADDER_DECISION.md` states the four regimes, the cap
+  argument, the break port and the reproduction commands in one place, so the question does not
+  get reopened without new data.
+
+- **The 8% populated-table win is withdrawn.** Porting the row-equality break to the tree made the
+  tree cheaper on every table that repeats rows, and the ladder no longer wins anywhere the table
+  is fully populated: 3,638 against 3,453 at `J = 4, low = 5` (1.05x, was 0.92x) and 4,765 against
+  3,770 at `J = 10, low = 2` (1.26x). The measured crossing moves from 0.91 to **0.87** with the
+  ladder's break and **0.84** without it. The ladder now has exactly one winning regime -- payload
+  sparse enough to leave empty addresses -- and the real table is nowhere near it at 40.0 set bits
+  per address.
+
+- **The shipped angle table has no uniform block at 16, 62, 124 or 256 addresses**, so
+  early-break never fires on it and its tree stays at `rows - 2 = 3,974`. That puts the real
+  crossing between the measured 0.91 (maximum collapse) and the fixed-payload 0.953 (no
+  collapse), which is the honest form of the claim.
+
+- **The collapse is driven by empty addresses, not by repeated words.** Scattering each set bit
+  to its own bit position leaves tree and ladder costs unchanged. Filling one bit into *every*
+  address is the ladder's only winning regime (8% cheaper, tree at `rows - 2`), and 40 bits on
+  every address -- the shipped table -- is 40x past it, so the two conditions cannot be met at
+  once.
+
+- **The real density is 40.0 set bits per address at `J=10`, and the FCIDUMP cannot move it.**
+  The delta table is the angle table, set by the rotation words, not by the integrals; an
+  FCIDUMP enters scoring through `lambda_eff`. Density is `~J * brot / 2` (measured: 16.08 at
+  `J=4`, 40.01 at `J=10`), so reaching the crossing would need 91.3% of the 39,760 cells zero
+  where the table has 0.4% zero words at `brot=10`. No precision reaches it: the only sparse
+  row is `brot=1`, where every column is constant and every delta is zero.
+
+## 2026-11-02 — The `O(sqrt(A))` QROM ladder is built: addressing 21.7x cheaper, total 40.3x worse
+
+- **The ladder the cost model describes is now a circuit, not an extrapolation.**
+  `scripts/prototype_dfthcsos_dirty_ladder.py` builds the shared-comparator read: `sqrt(A)`
+  offset controls computed once and kept alive, a tree over the block index, and each
+  block's rows loaded against controls that are already computed. Every variant passes the
+  competition's own `recover_words_from_circuits`, so nothing is reported for a read that
+  does not load the table.
+
+- **The result splits in two.** Addressing falls from 3,974 Toffolis to **183** at `low=5`
+  (21.7x), so the model is right about the addressing. But a load now needs two controls, so
+  the payload bits become Toffolis instead of `cx`s, and the tree wins because it amortises
+  one Toffoli over every set payload bit while the ladder has none to amortise. The payload
+  is per circuit, so `J` sets the damage: **40.3x** the tree on the shipped `J=10` family
+  (159,068 set bits, 160,064 total, best in-cap split `low=2`), and 16.1x at `J=4`. The
+  16.1x figure this entry first carried was the `J=4` configuration, not the shipped family.
+
+- **The break-even was wrong in a way that mattered.** Pinning it exposed two errors in the
+  cost rule, both now fixed and pinned: the shipped tree costs `A - 2` Toffolis, not `A - 1`
+  (its root split is a CX pair), and a payload load is Toffoli-like only when it has two
+  controls, so `low=0` costs exactly the tree at any payload. Corrected, the fixed-payload
+  break-even is 3,791 set bits (0.953 per address at `J=4`, 0.749 at `J=10`). Measured on
+  real circuits across densities (`--sweep`), the actual crossing is **0.87 set bits per
+  address**, because the tree's early-break also collapses the all-zero subtrees that make a
+  sparse payload cheap (3,974 at full fan-out, 3,744 at one bit per address, 1,405 at 0.10).
+  The ladder chases a target that retreats. **One set bit per address, the sparsest
+  non-empty table there is, still loses at 1.11x**, so the earlier claim that such a table
+  would make the ladder cheaper is withdrawn; it needs at least a seventh of the addresses
+  to carry no set bit at all. Every density recovers its words, so this is cost, not
+  correctness.
+
+- **Two correctness bugs were found by the checker, not by inspection.** A shared ladder
+  needs `2(sqrt(A) - 1)` ancillas, not `sqrt(A) - 1`, because every leaf must be alive while
+  the loads run; and `del_and` assumes its ancilla holds `control AND bit`, so the left child
+  (built as `control AND NOT bit`) has to be flipped into that polarity before uncompute.
+  Without the second fix every split failed with `uncorrected phase (measurement kickback)`,
+  which is exactly the class of error a size pin cannot see.
+
+- **The accounting is now pinned by tests, at both ends.**
+  `tests/test_dyn_dfthcsos_sub128_family.py` pins the addressing counts (`{0: 3974, 2: 996,
+  4: 275, 5: 183, 6: 185}`) and the break-even arithmetic, and a slow test rebuilds the
+  density sweep at 0.10, 0.75 and 1.00 set bits per address, costs both structures, and
+  requires each to recover its words. A future builder change that moves a count, or that
+  quietly makes one-set-bit-per-address look cheap, fails there.
+
+## 2026-11-02 — The blind referee is re-minted as `APEDPX_FROZEN_v1_12.json`
+
+- **The re-mint is verified against the old referee, not asserted.** The 10-case blind L2
+  challenge was re-run under `v1_12` and compared field by field with the committed record
+  the `v1_11` referee produced: **0 differences across 40 comparisons** (`actual_status`,
+  `epistemic_attribution`, `promoted_equation`, `passed_honest_contract`), and the run
+  rewrote `benchmarks/l2_blind_challenge_results.json` byte-identically. `apedp_dyn.ui` is
+  never imported by the blind path, which is what makes the server split irrelevant to the
+  outcomes rather than merely unlikely to matter. Record check: exactly one of the 15 guard
+  hashes moved, thresholds and blind cases are identical to `v1_11`.
+
+- **Guard-only re-mint after the dashboard server split.** `apedp_dyn/ui/server.py` moved
+  from 2,433 to 1,950 lines by extracting `apedp_dyn/ui/helpers.py`, which is why
+  `tests/test_dyn_blind.py::test_guard_passes_on_frozen_tree` started failing with
+  `REFEREE OR FROZEN RECORD CHANGED since APEDP-X v1.11-FROZEN`. Exactly one of the 15
+  guard files had moved (`7e84dbb9…` -> `0e1ac14c…`); the 14 referee and trap-suite files
+  keep their v1.11 hashes, which is the check that this mint blesses a server refactor and
+  nothing else. Thresholds, blind cases and the `env` block are carried through unchanged,
+  because no re-evaluation was performed and the local interpreter set differs from the
+  sealed one — recording it as if it were the sealed environment would be a false claim.
+  The `remint_log` entry records the old and new digest and the reason.
+
+- **`frozen_spec.py` needs no change.** It pins 3 referee files plus one benchmark JSON,
+  none of which is the server, so `verify_all_frozen_records_or_raise` was green throughout
+  and still is.
+
+## 2026-11-02 — Blanket exception handlers and module size are now gated, and `_core.py` is split
+
+## 2026-11-02 — The DQI circuit is restored, and a missing artifact now says so
+
+- **`sample_submission/dqi.kmb` is back, byte-for-byte.** The reference decoder that
+  passed the official verifier at 102,400 shots (1,893 qubits, 5,725,461 Toffoli-like,
+  score 2.4439e13) had been deleted from `artifacts/`, leaving only the JSON receipt.
+  Two surviving copies in `/tmp` hash to `959471d05a26373b…04995`, the value the receipt
+  records, and one was copied into place with the hash re-verified after the copy. The
+  target path was already in `.gitignore`, so the 886 MB file stays out of history. The
+  contract digest moves from `0c0acca…` to `726a531c…` because `sample_artifact` is part
+  of it; no test pinned the old value.
+
+- **A proposer with no artifact now raises instead of returning `[]`.**
+  `DqiProposer.generate` raises `MissingSampleArtifactError` when neither `artifact_paths`
+  nor the contract supplies one. That empty list is what made
+  `test_dqi_and_dfthcsos_proposers_screen_and_measure` fail with a bare `0 == 1` and no
+  hint that a file was missing. `budget=0` still returns `[]`, because an exhausted budget
+  and an absent input are different questions.
+
+- **The 886 MB circuits have a documented home.** `config/quantum_artifact_manifest.json`
+  records sha256, size and role for each verified circuit, including the one row whose
+  bytes are gone (its hash comes from the sweep receipt, so it stays recoverable).
+  `scripts/verify_quantum_artifacts.py` checks what is present, re-records it, or
+  materializes it from a content-addressed cache. Absence passes; corruption fails.
+
+
+## 2026-11-02 — Zero silent blanket handlers, `model_synthesis.py` split, and two stale verdict expectations
+
+- **The blanket-handler ratchet reads zero.** 22 -> 0. Most of the remainder were
+  legitimate best-effort paths that had simply never recorded a rationale, and each now
+  carries a site-specific one instead of a generic string. Eight were real defects:
+  four in `apedp_dyn/quantum_compilation/faros_isq.py` alone, where a failed resource
+  read fell back to `90 qubits / 1,448 Toffolis / 1 t-like / 44 rotations` -- the
+  measured values of a *previous* champion -- so a broken statistics call produced a
+  cost profile that looked like a measurement of this circuit. It now raises, because
+  those four numbers decide the score. `apedp/stability_selection.py` returned `{}` when
+  every replicate failed, which reads exactly like "no feature met the threshold"; it
+  now raises. The `kickmix` guards in `dqi_gluzdov_v6.py` and
+  `dfthcsos_signed_4bank.py` caught `(ImportError, Exception)` and reported a broken
+  wheel as "not installed"; the reason is now kept in `km_import_error`, and a failed
+  `GF2Field` construction records `field_error`.
+
+- **The audit itself was undercounting.** A nested `raise` inside a guard
+  (`if strict: raise ... from e`) did not count as re-raising, so handlers that do
+  propagate their failure on the strict path were classified as silent.
+
+- **`apedp/model_synthesis.py` drops from 2,145 to 1,705 lines.** `SynthesizedModel`,
+  `SynthesisDiagnostics`, the BIC re-rank, amplitude caps, adversarial classification,
+  abstention wording, input normalisation, the noise floor and regime identifiability
+  moved byte-for-byte to `apedp/model_synthesis_helpers.py`. The move silently dropped
+  eleven module-level constants the class still needed -- ruff's F821 caught six, and
+  the remaining five only surfaced as an ImportError in
+  `tests/test_abstention_reason_codes.py`, because they were imported by test rather
+  than used by the module. The full original surface is now re-exported and verified
+  against a pre-split AST of the file.
+
+- **The creep sandbox verdict is correct and its test is stale.**
+  `tests/test_dyn_ui_sandbox.py::test_creep_abstains` expects `multi_hypothesis` and gets
+  `unique_support`. The sandbox is not malfunctioning: the power law holdout RMSE is
+  1.606 against a rival at 51.71, `delta_rmse = 50.10` against `tau = 3.01`, margin 47.09,
+  and the paired block bootstrap confirms. The verdict follows its own rule, and the
+  pinned expectation predates the relative-noise generator fix recorded in
+  `creep_powerlaw.py`. The test is now `test_creep_verdict_agrees_with_its_margin`: it
+  pins the agreement the contract promises -- the verdict matches the promotion, a
+  promotion happens only when `delta_rmse > tau_epi`, and only `power_law` may be
+  promoted -- rather than a verdict the corrected generator no longer produces.
+
+- **`test_dqi_and_dfthcsos_proposers_screen_and_measure` was hiding a missing input.**
+  `DqiProposer` wraps a pre-compiled `.kmb` artifact, and `load_contract` reports
+  `sample_artifact=None` when that sample is not on disk, so `generate` returned `[]` and
+  the test failed at `len(...) == 1` without saying why. An empty list is the correct
+  answer to "no artifact", so it is now pinned as such, and the pipeline stage under test
+  is given an explicit placeholder artifact: `screen`, `compile` and `measure_resources`
+  need the file to exist and be non-empty, and the verifier is what reads the circuit
+  inside it. The pre-existing `I001`/`F401`/`UP035` findings in `dqi_gluzdov_v6.py` are
+  fixed in the same pass.
+
+
+## 2026-11-02 — The parser allowlist gets a public name, two files are exempted properly, and `server.py` is split
+
+- **`_SAFE_FUNCS` had no path from `apedp` to itself, and 10 tests were failing on it.**
+  `apedp/epistemic.py` imported it from `apedp.safety`, which is a pure re-export façade
+  whose `__all__` never listed it. The table lives in `apedp_dyn/safety.py`, and importing
+  `apedp_dyn` directly from `apedp/epistemic.py` would have inverted the layering the
+  façade exists to protect. `apedp_dyn/safety.py` now exposes `SAFE_FUNCTIONS` as the
+  public alias (the same dict object, so a runtime extension is seen under both names)
+  and `apedp.safety` re-exports it, so `from apedp.safety import SAFE_FUNCTIONS` is the
+  supported path. `tests/test_prospective_and_composer.py` and
+  `tests/test_discovery_benchmark.py` went from 10 failures to 55 passing.
+
+- **`apedp/physics_constraints.py` did not need inline noqas, and adding them was wrong.**
+  `pyproject.toml` already exempts that file and `apedp/special_functions.py` from
+  `BLE001`, because every handler there binds the exception and reports it as an
+  `_unverified` violation -- the catch-all is the design. Inline `# noqa: BLE001` on top
+  produced `RUF100` "unused directive" on all seven. The ratchet now reads the linter's
+  per-file exemptions and treats them as the annotated decision they are, which took the
+  tree from 32 silent blanket handlers to 22 without weakening the classification.
+
+- **`apedp_dyn/ui/server.py` drops from 2,433 to 1,950 lines.** The non-route machinery
+  moved byte-for-byte to `apedp_dyn/ui/helpers.py`: the API-key gate, the audit writer,
+  the JSON serialisers, and the four formatting helpers behind the sandbox and market
+  endpoints. All 22 route decorators stayed in `server.py`, `server` imports the moved
+  names back so callers that import or patch them still resolve, and `_AUDIT_LOG` still
+  resolves to the same path because the new module sits in the same directory.
+
+
+- **`apedp/discovery/_core.py` drops from 2,908 to 2,421 lines.** The Bayes block
+  (`ModelEvidence`, `BayesianRefinementEngine`, the integration helpers and
+  `STANDARD_RATIONALS`) moved verbatim to `apedp/discovery/_bayes.py`. Nothing was
+  rewritten: `_core` re-exports the moved names and `apedp/discovery/__init__.py`
+  star-imports `_core`, so every one of the ten modules that do
+  `from apedp.discovery import BayesianRefinementEngine` is unchanged, and the
+  re-exported objects are the same objects, not copies. The one non-mechanical part is
+  `STANDARD_RATIONALS`: the moved code closes over it, so it had to travel with the
+  block rather than be imported back (which would be circular).
+
+- **`scripts/audit_exception_hygiene.py` turns the blanket-`except` complaint into a
+  ratchet.** It walks the AST of every first-party module and classifies each
+  `except Exception` / bare `except` as annotated (it re-raises, or the line carries
+  `# noqa: BLE001`) or silent. The per-module silent counts and the 25 largest module
+  sizes are pinned in `benchmarks/exception_hygiene_baseline.json`; `--check` fails when
+  either gets worse and says nothing when they improve. A `noqa` naming any other rule
+  is deliberately not accepted as a rationale.
+
+- **CI runs the ratchet.** `.github/workflows/test.yml` gained the `--check` step and
+  the split's surface test, both in the existing quality job. The tree already carried
+  the right convention in the epistemic layer (`# noqa: BLE001 - deliberate catch-all: …`),
+  so the baseline records where that discipline has not yet reached rather than starting
+  from zero.
+
+- **The gate is tested, not just run.** `tests/test_dyn_exception_hygiene.py` feeds
+  synthetic sources with known labels through the classifier, so a version that answers
+  "annotated" unconditionally cannot pass while policing nothing, and it asserts the
+  check actually fires on a fresh silent handler and on a size overrun.
+
+## 2026-11-02 — The 89Q champion's qubits are spent on the adder carry chain, and the zero-angle rotations are already gone
+
+- **The qubit peak is in `folded_gadd`, not in the Boolean restoration.** The score is
+  `Q x toffoli_equivalent`, so at Q = 89 one qubit is worth 19.9 Toffolis (1,770.8 units,
+  1.12%), more than any single rotation (0.40%) and far more than one Toffoli (0.0565%).
+  `scripts/diagnose_invsqrt_qubit_peak.py` wraps the builder's allocation calls and
+  reports every rise in the live count with its call site. The peak is the temporary
+  carry chain of the 21-bit adder in `outer()` (`scheduled_arithmetic90.py:252`), so the
+  Boolean plan does not set Q: this is why the 26-node mixed-polarity curves plan kept
+  Q = 89 and only matched the Toffoli count. Shrinking the restoration further cannot
+  lower the score.
+
+- **Three calibration entries read zero, and dropping them breaks the circuit.**
+  `src/invsqrt_calibration.json` holds 48 deltas, of which indices 15-17 are exactly 0 and
+  18 is already in `droppedOriginalRotationIndices`. `scripts/try_drop_zero_rotations.py`
+  rebuilt the champion and applied `{15,16,17,18}`: the official verifier fails at x = 1
+  with a phase error of 0.125 turns against a tolerance of 5.96e-8. The reason is
+  arithmetic, not luck: the compiler leaves 45 `z_pow` ops and the shipped rewrite already
+  removes the three zero entries plus index 18, taking 48 to 44. Naming 15-17 again shifts
+  the index mapping and deletes three real rotations. The shipped 44 is therefore the
+  floor, and the four-rotation difference is accounted for rather than unexplained.
+
+- **Champion unchanged.** Rebuilt hash `ce04c9d5...`, Q = 89, 1,466 static Toffolis, score
+  157,605.52 at 25,600 shots, `tests/test_dyn_invsqrt_champion_rebuild.py` 3 passed.
+
+## 2026-11-02 — Fig. 12(b) is digitised, and both photonics docs are rewritten in plain prose
+
+- **Fig. 12(b) is now extracted by the same script, so Eq. (11)'s per-N curves are
+  checked against the implementation rather than eyeballed.** The panel plots the cycle
+  against loss for N = 2..12, and Eq. (11) makes each curve's slope proportional to
+  `2n_i^max + 1`, so the ratios have to be 5, 4.2, 3.4, 2.6, 1.8 and 1. Measured:
+  5.006, 4.195, 3.396, 2.604, 1.805 and 1.000, a worst deviation of 0.26%. Two columns
+  of band centres give the slopes without any y calibration, since the L factor is
+  common to every curve and cancels in the ratio. `scripts/digitise_fig12_cycle.py`
+  reports drift against the pinned values; a band-counting bug that seeded both the run
+  and the output list reported 7 curves per column and is fixed.
+
+- **`docs/SPARROW_QUANTUM_DETERMINISTIC_PHOTONICS.md` and
+  `docs/PHOTONIC_ACCELERATOR_BOUNDARY.md` were rewritten to remove em dashes, bold
+  label headers, title-case headings and the rest of the AI tells.** No number, formula,
+  table row, section number or measured claim changed; §5.2, §5.4, §5.5 and §6 keep
+  their numbers because scripts and tests cite them.
+
+## 2026-11-02 — The photonic blueprint's numbers are re-read against its published tables
+
+- **sFFCC is the *synchronous foliated Floquet colour code*, and the spec doc now says
+  so.** Two documents called it “semi-fluid” and the circulating summary called it a
+  “staggered face-centred cubic” lattice. It is a 2D colour (CSS) code on a
+  three-colourable hexagonal lattice, foliated into a 3D cluster state and measured
+  colour by colour on a Floquet schedule. `docs/SPARROW_QUANTUM_DETERMINISTIC_PHOTONICS.md` §4
+  and the `docs/DOCUMENTATION.md` module row are corrected.
+
+- **The Table II thresholds are now labelled as targets, not achievements.** Every
+  channel in §5 is an inequality the hardware must reach; the “Operating Target”
+  column is the referee's default spec, not a device. The published caption to Table I
+  (“these values currently do not satisfy all timing inequalities, owing to equipment
+  constraints; they are provided solely as indicative timescales”) is quoted, because
+  it is the paper's own statement of the gap.
+
+- **The 2.65 µs / 377 kHz clock is revealed as a floor, and the doc's speed claim is
+  corrected.** The paper's own Table IV reports 209τ_echo ≈ 6 µs at L=3 (excluding
+  classical decoding); the repository's 12Lτ_rep is one RUS attempt per layer and is
+  ~12× optimistic at L=3. The doc's “~1,000× faster than trapped-ion or neutral-atom”
+  becomes the Table IV comparison, which also shows the photonic cycle is *slower*
+  than superconducting. The DQI section says so.
+
+- **`SFFCCLatticeArchitect` gains the `3L^2` fibre EOMs Table III requires,** omitted
+  from the bill until now, and `SFFCCFeasibilityGate` prices what the resource table
+  leaves out: Eq. (5)'s feedforward budget (3.94 ns at τ_rep = 13.8 ns against 34.3 ns
+  at τ_echo = 29 ns — the same 23 ns reference loop passes or fails depending on the
+  reading), Eq. (8)'s phase-shifter switching and detector deadtime, and the decoder
+  throughput implied by 18L³ fusions per cycle (~2.78 × 10¹⁰ s⁻¹ at L=16). An
+  unassessed decoder is reported as unassessed, never as a pass.
+
+- **PsiQuantum's photon source is spontaneous four-wave mixing, not SPDC in silicon.**
+  Silicon is centrosymmetric and has no χ⁽²⁾, so §2.1 of the photonics doc now assigns
+  SPDC to the bulk crystals (KTP, BBO, PPKTP) and SFWM to the silicon platforms. The
+  probabilistic-source argument is unchanged; the paragraph also records that
+  PsiQuantum's fusion architecture absorbs a low per-source rate by running many
+  sources rather than a naive multiplexing tree.
+
+- **The logical cycle time was digitised off Fig. 12(a), and the caption-only
+  interpolation was wrong.** The caption gives 209 τ_echo at L=3 and calls the scaling
+  linear; a 500 dpi render, nine y-tick anchors and ten detected curves give ≈742 at
+  L=8, ≈1613 at L=16 and ≈2246 at L=22 — affine at **107.5 τ_echo per unit L**, not
+  proportional, fitted to 4.5 τ_echo rms. `paper_table_iv_cycle_seconds` now uses that
+  line, moving the L=16 cycle from 32.32 µs to **46.59 µs**, the DQI wall clock from
+  185.1 s to **266.7 s** (~46.6× the stated 1 µs superconducting point), and the
+  decoder requirement from 4.32e12 to **3.00e12** fusion outcomes/s. The sensitivity
+  table, the three docs and the non-submission artifact follow; the report now prints
+  a decoder/s column, `wall_clock_sensitivity()` exposes the basis × τ_echo × L grid,
+  and `SFFCCFeasibilityGate.decoder_requirements()` states the rate per code distance
+  on both clock bases. The extraction itself lives in `scripts/digitise_fig12_cycle.py`
+  (render, nine tick anchors, ten curve centres, affine fit) and its ten points are
+  pinned in `tests/test_dyn_sparrow_deterministic_photonics.py`, so the model has to
+  reproduce the published figure rather than a remembered slope.
+
+- **Fig. 12(b) is digitised too, and it confirms the `2n+1` factor.** The panel's six
+  curves (N = 2..12) have slopes whose ratios to the N = 2 slope are 4.991, 4.190,
+  3.389, 2.602, 1.796 and 1.000, against (2N+1)/5 = 5.000, 4.200, 3.400, 2.600, 1.800
+  and 1.000. The check is calibration-free because every curve shares the same L factor,
+  so only the ratio is measurable without a y-axis conversion. `digitise_panel_b()`
+  re-runs it and the ratios are pinned in the same test module.
+
+
+- **`scripts/compare_integer_relation_methods.py` now records three seeded random
+  families beside the eight designed cases** (`random.Random(20261102)`, 40 cases
+  each): a dyadic relation the box can hold, the same construction with coefficients
+  of 20–400 that it cannot, and continuous draws at `eps = 1e-300` where no relation
+  exists at input precision. Over 128 cases: branch-and-bound **84 correct, 44 refused
+  out of scope, 0 wrong**; LLL/PSLQ **128 correct, 0 wrong**. All 80 planted relations
+  are recovered up to sign (42 identical, 38 negated by the first-non-zero-positive
+  canonical rule, all 38 checked to be exact negations). The seed *and* the generator
+  parameters are recorded, because a seed without them reproduces nothing, and the
+  design block states that these rates are a distribution over those three families
+  and not over discovery work. `tests/test_dyn_integer_relation_methods.py` recomputes
+  every rate from the rows and pins the behaviour each family's construction fixes.
+
+- **The discovery harvest can now say where its minutes go.**
+  `scripts/harvest_integer_relations_from_discoveries.py --profile` times both
+  searchers per group and prints the totals by input count, by source file, and the
+  slowest groups with their JSON pointers. The query path was extracted into `_query`
+  so the profiled run and the recording run execute the same code. Profiled result:
+  of 429.5 s, **59.2% is the 25 groups with six inputs and 33.8% the 14 groups with
+  fifteen**; the 134 two-input groups cost 0.04 s together. 99% of the run is the
+  Feynman artifact. The only branch-and-bound-dominated questions are `trials[66]` and
+  `trials[67]` at 11.2 s each — a 25^6 box — while every 15-input group spends its
+  12–22 s in the reduction and 0.01 ms in the box, which refuses `n > 8`. Recorded in
+  `docs/INTEGER_RELATION_METHODS.md`.
+
+## 2026-11-02 — The LLL pass keeps its decomposition in place, and the first attempt is recorded as slower
+
+- **The integer-relation reduction is now driven by an `f64` Gram-Schmidt pass with
+exact certification instead of an exact `BigRational` pass per step.**
+  `lll_reduce_fast` builds the decomposition once, updates it with the standard
+  size-reduction identities, rebuilds it only after a swap, and then asks
+  `exact_violation` whether the result really satisfies the LLL conditions in
+  rationals, repairing at most a bounded number of times before falling back to the
+  exact-only `lll_reduce`. Measured with `cargo test --release -p apedp-kernel --lib
+  rime::pslq -- --nocapture` on an eight-row, twenty-digit basis with no short
+  relation: **454.5 ms → 265.5 ms (1.7×)**, both bases certified by the same exact
+  check, 8/8 kernel tests and 7/7 Python tests green. The recorded timings in
+  `benchmarks/integer_relation_methods.json` are unchanged in outcome.
+
+- **The first version of this fast path was 2× slower, and that is now in the doc.**
+  It rebuilt the `f64` decomposition from `BigInt` twice per iteration and restarted
+  the sweep after every repair: 79.9 s against the exact path's 42.1 s on a
+  twelve-row, twenty-seven-digit basis (0.5×). The lesson is recorded in
+  `docs/INTEGER_RELATION_METHODS.md` because "float Gram-Schmidt" is not the
+  speedup — keeping the decomposition in place is. The timing test prints its
+  measurements instead of asserting a wall-clock threshold, and asserts the thing
+  that must not regress: that the `f64`-driven basis passes the exact LLL
+  conditions.
+
+- **The result statement no longer claims exact-rational Gram-Schmidt.** Every
+  `IntegerRelation`/`PslqResult` statement said
+  `reduction: LLL on [ I | round(x * 10^digits) ], exact-rational Gram-Schmidt`,
+  which would have been false for the new driver. It now names the `f64` pass, the
+  periodic exact re-orthogonalisation and the exact certification.
+
+## 2026-11-02 — Dead trees deleted, and a stale pin corrected against the record
+
+- **`crates/apedp_kernel/` and the six `packages/apedp-*` shells are deleted.** The
+  ten abandoned Rust modules were never a workspace member and were never built;
+  the six shells had no implementation of their own, only a `sys.path` insertion
+  and a wildcard re-export from `apedp_dyn`, so each wheel was a second name for
+  one implementation — and its `production` row in `docs/DOCUMENTATION.md`
+  claimed a shipped artifact for code the core already shipped. Nothing imported
+  the shells (they were installed in no environment here) and no active manifest
+  named the abandoned crate, so no import, reader or provenance record changed.
+  Removed with them: their dependabot entries, the `/crates/` CODEOWNERS rule (and
+  the pin that expected it), and five matrix legs of the wheels workflow. The
+  abandoned tree's rejection test is now a deletion test, so either tree returning
+  fails before review. `packages/` holds `jetflow-video` only.
+
+- **The H-A coupling rank pin was stale, not the machinery.**
+  `tests/test_dyn_ha_coupling.py` pinned `H-RV,H-RV,H-A,H-P×8` with H-A rank-1
+  once — the sequence recorded before FLAW-A01 (2026-10-21) removed the
+  forward-leaking train blocks. `_d5` shifts the target by five days, so a block
+  within five days of the origin boundary reads out-of-sample rows, and the leak
+  was carrying the H-P plurality. The corrected sequence is
+  `H-RV,H-RV,H-A,H-A,H-A,H-RV×6` (H-A# 3/11), and it is not a re-snapshot of
+  whatever the code now does: §77 of `docs/TRADING_EQUATION_FORENSICS.md` already
+  recorded the after-the-fix column (H-A# 3/3/5 for BTC/ETH/SOL), and the new test
+  reproduces those three numbers, failing if the pre-fix 1/1/1 column returns.
+  §76 now carries the correction note and `3/11` instead of `1/11`.
+
+- **Two red tests that were reporting the wrong thing are green.** The
+  jetflow-video standalone contract tested `"import apedp" not in source`, which
+  also matches the optional `import apedp_kernel` native probe and reported a
+  dependency the package does not declare; it now matches the core import exactly
+  and still forbids `apedp_dyn`. The CI-matrix pin split the README on a heading
+  that no longer exists; it reads the section that is actually there.
+
+- **The integer-relation search has a second method, and it is the one that scales.**
+  `find_integer_relation` searches a box, refuses `n > 8` and returns no
+  certificate; `find_integer_relation_lll` (new, `rime/pslq.rs`) reduces
+  `[ I | round(x·10^digits) ]` with exact-rational Gram-Schmidt and verifies every
+  candidate by exact substitution on the `f64` inputs. Three filters keep the
+  reduction from manufacturing answers, and each exists for a measured failure:
+  an always-present lattice vector of size `10^(digits/n)` (hence a 10× size
+  margin), rounding of the constant column (hence a residual that must sit 4× above
+  that floor unless it is exactly zero), and the float dot product (hence exact
+  rationals). Measured on eight declared cases
+  (`benchmarks/integer_relation_methods.json`): the box search is 4 correct, 4
+  refusals outside its declared scope, 0 wrong; the reduction is 8 correct, 0
+  wrong; they agree on 4, and the box search is two orders of magnitude faster at
+  the median (around 0.1 ms against 10–20 ms across reruns) precisely where it can
+  be asked. The reduction is the
+  only one that answers `137:−89:−1` outside a `max_coeff` of 20, or `n = 10` and
+  `n = 12`. Also recorded: allowed past the input precision, the same three
+  "independent irrationals" yield an exact relation among their 52-bit rationals
+  with coefficients around `10^8` — a fact about the rounded inputs, not about the
+  constants, and both are kept in the record rather than only the second.
+  [`docs/INTEGER_RELATION_METHODS.md`](docs/INTEGER_RELATION_METHODS.md) states the
+  cost curve and the acceptance rules; the documentation row that called the box
+  search "PSLQ/lattice null-space" now names what it runs.
+
+## 2026-11-01 — The remaining placeholders refuse, measure or say what they are
+
+- **The Lean layer no longer proves its invariants from themselves.** 94 theorems in
+  63 of the 366 generated modules were proved by `by rw [<axiom>]`, where `<axiom>`
+  was the invariant itself, declared a few lines above — so the conclusion was a
+  premise and the kernel's exit 0 measured syntax, not truth. The generator now
+  detects a proof whose rewrite names a core axiom and emits the statement with
+  `sorry` instead, marking it `unproved_statement`; the module still typechecks, and
+  `proof_claim_status` drops from P2 to P0 because nothing was derived. The 94
+  on-disk theorems were rewritten the same way and every one of the 63 files was
+  recompiled with the local Lean binary (exit 0, `sorry` warnings only). What is
+  proved by a real tactic is untouched: `dx_dt = -gamma * x` still reaches P2 through
+  `omega` and `zero_le`. The pins that asserted P2 for the circular path were part of
+  the defect — one test was literally named `..._achieve_p2` — and now assert P0 plus
+  the absence of a self-rewrite. `theorems proved by rewriting a local axiom` is 0 in
+  `benchmarks/formal/lean_axiom_audit.json`, and the audit test fails if it returns.
+
+- **Notebook lineage removed, and the decorative latent space with it.** Fifty-five
+  source files in `apedp/`, `apedp_dyn/`, `packages/`, `scripts/`, `benchmarks/`
+  and `tests/` opened with `# Databricks notebook source`, and fourteen of them
+  also carried `# COMMAND ----------` separators — 69 marker lines in total. They
+  were inert comments, but they were not provenance: the modules had been edited
+  as ordinary Python for months, and the header told a reader the file was a
+  notebook export. Nothing reads the marker (the notebook adapter detects the
+  *runtime*, not the file), so the lines were removed rather than explained.
+  `HierarchicalSearch.__init__` also built `self.latent = LatentSpace()` and never
+  read it: the attribute was decoration, and since `LatentSpace.decode` refuses
+  there was no path on which it could have returned anything. The class stays
+  exported for callers that use its distance and interpolation helpers. The sweep
+  that found both is recorded in [`docs/SCAFFOLD_INVENTORY.md`](docs/SCAFFOLD_INVENTORY.md).
+
+- **The multiscale materialiser emits once, and declares only what it emits.**
+  `_materialize_multiscale` carried three near-identical branches — fast,
+  slow, and unlabelled-falls-back-to-slow — differing only in which symbol
+  `tau` held. That duplication is what let the labels stop reaching the
+  emission: the fast branch could be broken while the slow branch, exercising
+  the same code shape, stayed correct and kept the mode looking alive. The
+  three are now one emission that picks the constant by label, and a term
+  labelled both fast and slow is refused rather than resolved silently.
+  `tau_fast` and `tau_slow` are appended only if an emitted term used them, so
+  a candidate that labels nothing fast no longer carries a fitted dimension no
+  equation mentions. The pin in `tests/test_dyn_d3.py` changed with it: it
+  asked "is `tau_fast` declared?", which both constants satisfied
+  unconditionally — including while `tau_fast` appeared in no equation at all.
+  It now asserts declared equals used, on the emitted right-hand sides. 104
+  lines become 66.
+
+- **The siblings of the coefficient-prefix defect: a power and a denominator.**
+  The earlier sweep asked for `}*{`; `**` and `/` bind tighter than `*`, so the
+  same mis-binding reaches further. `1/{feat_name}` on a column named `a + b`
+  is `1/a + b` — the reciprocal never sees the second addend while the scorer
+  divides the whole column — and `{feat_name}**2` is `a + b**2`, which raises
+  only `b`. Five live sites were found and fixed: the RIME-AD multi-rational
+  basis and its cooperative Hill form, `coordinate_transmuter`'s tunneling
+  exponential and power law, `_core.recombine_power_law` (including its
+  exponent-1 branch, where the terms are joined with `*`), and
+  `feature_selection`'s hypothesis atom set. `term_format` gained
+  `powered(operand, exponent)` and `over(numerator, denominator)` on the rule
+  `scaled` already follows: leave an atomic operand untouched so no emitted
+  string and no candidate id moves. The audit script grew the second scanner —
+  the sweep now covers four shapes — a power, a quotient, a function
+  argument and a left factor (`{operand}*2`) — and finds 330 sites: 51 adjudicated in scope, the other
+  279 reported with the reason they are not arithmetic (counters, paths,
+  markdown, derivative notation, formatted numbers). Widening it found a sixth
+  live defect: `f"exp(-{variable})"` in `feature_selection`'s atom set, where
+  the sign is not a delimiter — `exp(-a + b)` is not `exp(-(a + b))` — and it
+  now goes through `atom()` — and
+  `tests/test_term_builder_structure_audit.py` fails on an unrecorded in-scope
+  site, on a stale entry, and on a registry verdict outside the declared
+  vocabulary. The scope rule is a naming heuristic and the record says so.
+
+- **The proposer tree now lints clean, and three blanket handlers became
+explicit.** `ruff check apedp_dyn/proposers/` reported eleven findings in
+  `sindy_proposer.py` and two more in the basis-regression and reservoir
+  proposers; all thirteen are resolved rather than suppressed. In the SINDy
+  proposer the grammar import moved above the kernel import probe (E402), the
+  probe itself now catches `ImportError` only so a broken extension is visible
+  instead of costing the Rust path silently, `zip(coeffs, terms)` is `strict`,
+  the per-variable score closure binds its library names as defaults instead of
+  reading a variable the enclosing loop rebinds (B023 — a score that outlived
+  its iteration would index the next variable's library), and the adapter's
+  inner handler narrowed to `AttributeError` because `CandidateProposal.formula`
+  is a `str` and nothing else can raise there. The one deliberate blanket catch
+  that remains — the PyO3 boundary, where a panic, a shape mismatch and a dtype
+  refusal arrive as different classes and all mean "use NumPy" — carries a
+  `noqa: BLE001` with that reason and logs the exception. A dead module-level
+  `try: class ... except Exception: pass` around `SINDyGrammarAdapter` was
+  removed: it guarded a class definition, which cannot fail, so it only made
+  the adapter's disappearance look possible. The basis-regression and reservoir
+  ridge solves now catch `LinAlgError`/`ValueError` and log the fallback to
+  `lstsq`, which is the case `pinv` actually fails on. Writing the behavioural
+  pin for that closure found a real defect underneath it: `score` paired a
+  library column index with the coefficient list positionally, so a candidate
+  whose single active term was not the first library column raised
+  `IndexError`, and with two active terms it scored one term with the other's
+  coefficient. The pairing is now by term name, and
+  `test_each_sindy_candidate_scores_with_its_own_terms_and_coefficients` pins
+  it from both directions (including a frame whose columns are swapped).
+
+- **The coefficient-prefix fix is now tested through the proposers, not only
+  through the formatter.** `tests/test_sum_named_column_binding.py` drives four
+  proposers with a column literally named `a + b` — regime switching,
+  distributed lag, sparse microstructure and the RIME-AD multivariate emitter —
+  and asserts on the formula that comes out, because every name in use is
+  atomic and the defect was latent: a formatter unit test proved only that
+  `scaled` brackets an operand, never that a proposer reached it. Each probe
+  fails if it produces no proposal, so an empty result cannot pass, and the
+  shared helper is itself tested against the unparenthesised form `1.2345*a + b`
+  so it cannot accept everything. The sparse probe additionally re-evaluates
+  the printed formula and compares it to the scorer's output, which checks that
+  the formula describes the arithmetic rather than merely looking bound.
+
+- **A capability flag that was true over an empty function, and a proposer that
+  turned every failure into a null result.** The sixth sweep, grepping for the
+  shape of the earlier findings rather than for module names.
+  `packages/jetflow-video/jetflow_video/stepper.py` guarded its "Rust fast path"
+  with `if _RUST_AVAILABLE: try: pass except: pass`. The kernel really does
+  export `jetflow_compute_acceleration`, so the flag was true, the kernel was
+  never called, and `tests/test_jetflow_rust_kernels.py` compared the Python
+  path with itself — a parity pin that could not fail. The acceleration now
+  goes through `_acceleration_between`, which calls the kernel on both the
+  directional and the central-difference paths and falls back only when the
+  kernel refuses a shape; `NATIVE_ACCELERATION_CALLS` makes the branch
+  observable. `apedp_dyn/grammar/llm_proposer.py` returned `[]` for a missing
+  key, an unreachable base URL, a missing `httpx` and a provider 503, all
+  indistinguishable from "no suggestion": it now raises
+  `LLMProposerUnavailable` naming the provider, model and env vars, and records
+  `last_outcome` so an empty list is always explainable. Registered instead of
+  changed, with reasons in `docs/SCAFFOLD_INVENTORY.md`: the video package's
+  availability flags (consumed, with real fallbacks), the finance problem's
+  inert placeholder truth RHS, and the mesh discovery `dx=1.0`, which is a
+  fail-closed type probe before the search and is replaced by the measured
+  median edge length in the returned model.
+
+- **The coefficient-prefix sweep covered the rest of the repo, and found a third
+  live site.** The question was asked of every f-string that formats a field, a
+  `*` and another field — 47 sites across `apedp/`, `apedp_dyn/`, `scripts/` and
+  `benchmarks/` — because that shape is the defect, not the file it lives in.
+  `apedp_dyn/ui/server.py` emitted the promoted theta-double-dot equation as
+  `{coef} * {expr}` over a canonical expression that is routinely a sum, so the
+  coefficient landed on the first addend; the neighbouring state and energy
+  strings already parenthesised, which is how it survived review. Fixed in
+  place. Two latent families were closed: caller-named operands
+  (`qed.library.render`, `sindy`, `sparse_microstructure`, `regime_switching`,
+  `invariant_transfer`, `distributed_lag_interaction`, `rime_ad`,
+  `stem_proposers`) and the `exp(c*name)` labels in `discovery/_core.py` and
+  `family_detection.py`, where a sum-named column shifted the exponent. The new
+  `apedp_dyn/grammar/term_format.py` returns an atomic operand untouched, so
+  recorded equations and candidate-id hashes do not move. Every surviving site
+  carries a verdict in `STRING_ASSEMBLY_SITES`, and a site that is neither
+  adjudicated nor converted fails `tests/test_term_builder_structure_audit.py`.
+
+- **Every term builder and every emission site was audited for the `dxr` defect,
+  and one more was found.** The question is asked numerically rather than by
+  inspection — for a single-term equation, `rhs(p=2) - 2*rhs(p=1) == 0` — and the
+  first version of the check was itself wrong: with two terms on one RHS,
+  doubling one coefficient leaves the other's contribution in place, so a
+  correct emission reads as broken (the residual was exactly `-q0*u1`). Record:
+  `benchmarks/term_builder_structure_audit.json` by
+  `scripts/audit_term_builder_structure.py`, pinned by
+  `tests/test_term_builder_structure_audit.py`, documented in
+  `docs/TERM_BUILDER_STRUCTURE_AUDIT.md`. Result: the grammar's seven emission
+  sites bind their coefficient to the whole expression; the two live defects
+  were **outside** the grammar — `advanced_search._expansions` formatted a seed
+  into `{expr}*2`, `{expr}**2` and `{expr}*{var}` without parentheses, so on a
+  sum seed (`x0 + 1`, which the coarse templates emit) the mutation reached the
+  constant and the search silently explored a different family than it named;
+  and `SINDyProposer` emitted `f"{c}*{name}"`, latent because every library
+  column is a product today. Both now parenthesise the operand. `_core.py` uses
+  `sp.Mul(coeff, part)` and is structurally immune.
+- **The two-timescale split never used its fast timescale.** Found by the same
+  audit: `enumerate_coupled` records `fast_variables`/`slow_variables` on each
+  equation, but `_materialize_multiscale` read them from the *system* metadata,
+  which holds only `family`/`dae_mode`/`timescales`/`constraint_terms`. Every
+  term fell through to "default to slow", so `tau_fast` was a declared
+  parameter that appeared in no equation and the mode emitted one timescale
+  while reporting two. The materialiser now unions the per-equation labels with
+  the system-level keys, and the audit pins `tau_fast` in the fast equation.
+- **What is not a single product is now recorded, with the right verdict for
+  each family.** `dxr` and `u_relax` are sums and legitimate — `u_relax` is
+  checked on a velocity-driven probe plant, because on the Duffing plant a force
+  input minus a velocity is incoherent and the unit check refuses it for a units
+  reason, not a formatting one. Eight builders (`sat_*`, `inv_x*`, `log_abs_x`,
+  `sqrt_abs_x`, `ret_x`) add a literal dimensionless `1` to a dimensional state
+  and are refused on every dimensional problem; that is the documented
+  dimensionless-only vocabulary, and the record says so instead of calling the
+  gate a bug. `sin_x`/`cos_x`/`tanh_x` are refused separately as dimensional
+  arguments.
+
+- **The band split was re-run on per-pixel semantics, and the better signal fixed
+  no verdict.** `scripts/compare_region_split_to_semantics.py` runs SegFormer-B0
+  (ADE20K, weights pinned by SHA-256) on the ten audit photographs and cuts the
+  two boundaries where the class *composition* changes most, with the analysis
+  size, `min_band_fraction`, two-cut rule, evidence thresholds, hand labels and
+  0.06 tolerance all held at the values the texture and depth arms used. Median
+  boundary error falls to **0.115** against texture's 0.182 and depth's 0.228 and
+  the worst case to 0.268 against 0.280, but the verdicts are identical to
+  texture's (2 close / 1 partial / 4 wrong, none changed) and only 4 of 10 splits
+  are endorsed by the evidence gate. The four failures are the two causes the
+  first audit named — a true boundary below the 15 % minimum band height, and
+  three-regime scenes forced into exactly two cuts — which no signal choice can
+  fix. Record: `data/region_mask_audit/semantic_comparison.json`.
+- **A class map cannot enter the texture splitter, and it fails silently.**
+  ADE20K class ids are nominal, so `row_texture_energy`'s horizontal differences
+  measure the numbering of the vocabulary. `derive_region_masks` still returns
+  boundaries (0.18/0.75) for that input; only its evidence gate refuses them,
+  with a cut decisiveness of 0.0. That measurement is now in the record so the
+  arm's own score — total variation in class composition across a row — has a
+  documented reason to exist rather than looking like an algorithm change made
+  for convenience. The semantic environment also needed three pins a torch 2.3
+  CPU build forces (`transformers==4.44.2`, `tokenizers==0.19.1`,
+  `huggingface-hub==0.25.2`), each found by an ImportError and documented.
+
+- **The mechanical grammar can no longer emit a free symbol.** `c1`/`c2` built the
+  constant `1` as a "constraint basis"; `grad_x`/`laplacian_x` returned an unbound
+  symbol for an operator with no grid behind it; `zscore_x`, `ma_x`, `mom_x`,
+  `rsi_like`, `bollinger` and `macd_like` referenced `mu_x`, `sigma_x`, `x_lag1`,
+  `x_ma`, `x_std`, `x_ema_fast/slow` that no caller binds. All ten keep their
+  names (enumeration, families, canonicalisation and the proposer's filters use
+  them) and raise `UnavailableGrammarTerm` with the reason at materialisation.
+  Consequence measured, not glossed: the coupled ODE slate narrows from 1764 to
+  225 candidates, the difference being the slates carrying a constant-1
+  "constraint". (The survivor count quoted at the time, 64 of 225, turned out to
+  be a `dxr` string-formatting artefact rather than a dimensional filter; the
+  correction is in the entry below.)
+- **The three remaining unbound symbols are bound or refused.** Found while
+  auditing the grammar after the ten placeholders were withdrawn: (1)
+  `mechanical_grammar.materialize` substituted `gxr_remote` for a remote-position
+  term in a single-DOF problem — a symbol no state, input or parameter supplies —
+  and left gate 1 to report `unknown symbol 'gxr_remote'`, which reads like bad
+  caller data; it now raises `UnavailableGrammarTerm` naming the two-DOF grammar
+  as what the term needs. (2) `proposer._library_matrix` built the saturation laws
+  against the generic scale `gL` and never substituted it, so `lambdify` produced
+  a column calling an undefined name: a `NameError`, not a refusal. The library
+  now skips them with the reason. (3) All six build sites in `coupled.py` passed
+  `gL{i}` to the builder and never substituted it, so `_unit_of` raised `unknown
+  symbol 'gL0'` and every two-DOF saturation term was recorded as unbuildable;
+  `_bind_scale` now registers the scale as its own parameter in the state's units
+  (`role="scale"`), as the single-DOF path already did. Pinned by three tests in
+  `tests/test_scaffold_refusals.py` that assert no emitted expression contains a
+  bare `gL`.
+- **The sparse library drops duplicate columns.** Withdrawn terms contribute no
+  column; `drop_collinear_columns` drops a column correlating above
+  `COLLINEARITY_LIMIT = 0.999` with one kept earlier. Measured need: `sin_x`
+  correlates with `x` at 0.99997 on the Duffing trajectory, and the damping term
+  lost the 5 % threshold race to it (`{u, x, x3}` recovered instead of
+  `{u, x, x3, v}`). Recovery is exact again, and the same guard applies to any
+  explicit vocabulary a caller passes.
+- **The Triton flag stops claiming a kernel it does not have.** `TRITON_KERNELS`
+  is an empty registry and `is_triton_available()` requires it, so an installed
+  Triton plus a CUDA device no longer reports a Triton path that is pure PyTorch.
+- **The video region masks are derived from the picture.** `derive_region_masks`
+  (`apedp_dyn/video/region_masks.py`) splits the frame at the two sharpest steps
+  in its per-row texture energy and returns the boundaries and band energies;
+  the hard-coded top-40 %/bottom-40 %/middle-30 % bands are gone.
+- **The derived region masks were audited against real photographs.** Ten
+  CC-licensed photographs (`data/region_mask_audit/photos/`, licence, source and
+  SHA-256 per file in `PROVENANCE.json`) were run through `derive_region_masks`
+  and scored against band boundaries hand-labelled from a ruled contact sheet.
+  Result, stated plainly: **2 of 7 scored frames close, 1 partial, 4 wrong**,
+  median boundary error **0.18** of the frame height (worst 0.28). Three of the
+  ten have no three-band horizontal structure at all — a forest corridor, an
+  aircraft-window sea view, a sky-over-sea horizon — and the splitter returns two
+  interior boundaries for every one of them, because it has no output that says
+  "no bands". Two diagnostics in the record predict the failures without any
+  labels: `texture_order` is non-monotone on 6/10, and the left/right halves
+  disagree by more than the tolerance on 5/10. The fetcher refuses files whose
+  Commons *categories* name a painting, drawing or collage — which is how a
+  Kuindzhi oil was kept out after the title filter passed it. Written up in
+  `docs/REGION_MASK_AUDIT.md`, pinned by
+  `tests/test_region_mask_photo_audit.py`.
+- **The region split measures its own support and can refuse.** Following the
+  photograph audit, `derive_region_masks` returns an `evidence` block —
+  `cut_decisiveness`, `half_disagreement` (the same cut search run on the left
+  and right halves), `texture_order`, `reliable` and the `reasons` — and raises
+  `UnusableRegionSplit` when called with `require_reliable=True` and nothing
+  supports the split. Measured against the hand labels: it accepts **1 of 10**
+  photographs (`beach_palm_trees`, one of the two within tolerance), accepts
+  **none** of the four wrong splits, and rejects one split that was in fact close
+  (`mountain_lake_reflection`, where the lagoon's halves carry different texture
+  and one row boundary genuinely does not describe the frame). Timid, not wrong.
+  `cut_decisiveness` never fired (10x or more on every photograph): on this
+  sample the three-band model, not the cut detection, is what fails. The
+  animator keeps its sky/sea/subject convention but prints the reasons when the
+  picture does not support one instead of animating bands it cannot defend. A
+  two-band result is *not* implemented and the record says so.
+- **The two-DOF coupling term was never built, and a two-DOF saturation model now
+  fits end to end.** Two materialiser defects, both in how a term's coefficient
+  reaches the expression string. (1) `parts.append(f"({p}*{sstr(built)})")` did
+  not parenthesise the built expression, so any term whose builder returns a
+  *sum* had its coefficient applied to the first addend only. `dxr` is `XR - X`,
+  so it emitted `(q2*-x1 + x2)`: the remote position entered with coefficient 1
+  and gate 1 saw a length added to an acceleration. **Every** coupling candidate
+  died at gate 1 for a formatting reason, and the slate's "survivors" were
+  exactly the uncoupled ones — the rival D2-COUPLED is designed to defeat. The
+  same line bug affected `u_relax` in the single-DOF grammar. Fixed in
+  `_materialize_ode`, `_materialize_constrained`, `_materialize_multiscale` and
+  `mechanical_grammar.materialize`. Measured consequence: the coupled slate goes
+  from **64 kept to 225 kept — all of them** — so gate 1 filters nothing in this
+  slate and the old 64 was never evidence of dimensional filtering. (2)
+  `enumerate_coupled` emitted a saturation term bare, so `_bind_scale` refused it
+  and every two-DOF saturation candidate was unbuildable. Each mass's
+  `langmuir_bind`/`hill2_bind`/`hill3_bind` now carries its own fitted reference
+  level (`s0_langmuir`, `s1_langmuir`, …) in the state's units with
+  `role="scale"`. On a planted two-DOF Langmuir plant (per mass: `c`=0.20/0.15,
+  `a`=2.0/3.0, `s`=0.30/0.45) the chain enumerate → prune → materialize → fit
+  recovers `c`=−0.172/−0.150, `a`=−1.892/−2.911, `s`=0.260/0.428 at a train loss
+  of 1.2e-4 — every parameter within 13.9 %. Recorded by
+  `scripts/measure_two_dof_saturation_fit.py` →
+  `benchmarks/two_dof_saturation_fit_results.json`: slate 225/225 kept, the
+  planted law passes gate 4 at confirmation RMSE 0.052 while the Hill n=2 and
+  n=3 rivals fail it at 9.65 and 1.35, and adjudication returns
+  `unique_support`. A noise sweep on the series the fitter consumes (0/1/3 %,
+  with confirmation truth left exact) gives reference-level errors 13.2/5.0 %,
+  2.8/0.5 % and 5.0/2.3 % — 1 % noise recovers *better* than 0 %. The cause is
+  measured, not guessed: **the automatic warm start stops 261x above a reachable
+  minimum.** The objective at the planted parameters is 6.5e-06, a plant-seeded
+  fit reaches 4.77e-07 with every parameter within 1 %, and the self-started fit
+  terminates after about 24 evaluations at 1.24e-04 while reporting
+  `success=True` — the warm start seeds the reference level from median|x| and
+  the optimiser leaves it essentially where it was seeded. So the recorded
+  13.9 % recovery is the warm start's ceiling, not the information in the data:
+  the parameters are identifiable and the search is not finding them. Both fits
+  are in the record under `objective_floor`, and a test pins the gap so it
+  cannot be forgotten. Pinned by
+  `tests/test_dyn_two_dof_saturation_fit.py` (11 tests), which also checks that
+  a saturating rival nesting the linear D2-COUPLED truth does not beat it on
+  confirmation.
+- **The region split was re-run on a real depth model, and lost — for a measured
+  reason.** `scripts/compare_region_split_to_depth.py` hands the same splitter
+  (same 256 px size, smoothing, minimum band height, hand labels and tolerance)
+  the MiDaS_small relative-depth map instead of RGB, and records the comparison in
+  `data/region_mask_audit/model_comparison.json` with the checkpoint pinned by
+  SHA-256 (85,761,505 bytes) alongside the torch/torchvision/timm versions it ran
+  under. Result: **0 close / 4 partial / 3 wrong** against texture's 2 / 1 / 4,
+  median boundary error 0.228 vs 0.182. The reason is measured, not asserted:
+  MiDaS's row-mean depth is close to a linear ramp (median R² 0.827 vs 0.240 for
+  texture; rank correlation +0.83 to +0.96 in all ten photographs), and a
+  step-seeking split has nothing to cut in a monotone field — so the evidence
+  gate refused **all ten** depth splits. Swapping the signal without changing the
+  algorithm does not help, and the gate is what stops the pipeline presenting
+  gradient artefacts as bands. Pinned by
+  `tests/test_region_mask_depth_comparison.py`.
+- **The text encoder says what it is.** `EMBEDDING_METHOD =
+  "feature_hashing+hand_written_concept_ontology"`, `PRETRAINED_SEMANTICS =
+  False`, BLAKE2b instead of MD5, and a docstring that states a hash cannot carry
+  semantics the ontology does not name.
+- **Derived QD rows cannot reach a GENERATION verdict.** `yu_cdse_rows` marks
+  every row `independent_measurement: False` with its provenance, and
+  `adjudicate_verdict` withholds `GENERATION` unless the rows are the measured
+  Phase A table, keeping `CONFIRMATION` for agreement with the source curve.
+- **The Tesla/energy simulators state their assumptions.** Slip, efficiency,
+  primary voltage and irradiance are parameters (same defaults) echoed in
+  `assumptions`, and every return carries `evidence: closed_form_textbook`.
+- **The neural symbolic regressor implements teacher forcing.** `decode` accepts
+  `targets` (used by `supervised_loss`) or an `rng` (used by the REINFORCE loss),
+  so logits and chosen tokens align; losses are scalar arrays so `grad` works;
+  `train_step` is eager and `TRAIN_STEP_JITTABLE = False` says why.
+
+Updated: `apedp_dyn/grammar/mechanical_grammar.py`,
+`apedp_dyn/grammar/proposer.py`, `apedp_dyn/cuda/batch_physics_steppers.py`,
+`apedp_dyn/video/region_masks.py` (new), `scripts/animate_picture_to_video.py`,
+`packages/jetflow-video/jetflow_video/text_encoder.py`, `apedp/qd_generation.py`,
+`apedp/experimental_physics.py`, `apedp/neural_discovery/symbolic.py`,
+`tests/test_scaffold_refusals.py` (new), `tests/test_dyn_d2b.py`,
+`tests/test_dyn_d3.py`, `tests/test_dyn_d4.py`, `tests/test_dyn_d5.py`,
+`docs/SCAFFOLD_INVENTORY.md`, `CHANGELOG.md`.
+
+## 2026-11-01 — Formal and applied layers measured; negative results registered
+
+- **The Lean layer now reports its own emptiness.** `scripts/audit_lean_formal_layer.py`
+  scans all 557 `.lean` files: **0 are `checked`**, 360 are `axiom_injected`, 196 contain
+  `sorry`/`admit`; 12,470 axioms, 1,054 theorems, and **94 theorems proved by rewriting with
+  a local axiom**. `docs/LEAN_FORMAL_STATUS.md` states the rule: no result may be called
+  formally verified on a non-`checked` file, and lists what would make it verification.
+- **Every applied-science return is labelled.** `scripts/audit_applied_basis.py` walks the
+  AST of `apedp/applied_*.py` and requires an evidence label on each returned dictionary;
+  the six modules whose returns were unlabelled (electrical, fusion, materials, neuromorphic,
+  defects, biopharma) now carry `EVIDENCE` and mark each return, so the count is 0 and a
+  test fails if it rises. `_pam_matches` in synthetic-bio is reported as a boolean helper
+  (it returns `True`/`False`, not a number), which is the only remaining constant return.
+- **A negative-results register exists.** `docs/NEGATIVE_RESULTS_REGISTER.md` records the
+  patent index's 8 decisive claims against a floor of 50 and its 7 refusals, the Lean layer's
+  0 checked files, the applied modules' reference-only basis, and points at the quantum
+  ledger rather than restating it. Section 5 names the gap: no register yet for accepted
+  hypotheses that later failed to replicate.
+
+Updated: `scripts/audit_lean_formal_layer.py` (new), `scripts/audit_applied_basis.py` (new),
+`benchmarks/formal/lean_axiom_audit.json` (new), `benchmarks/applied_basis_report.json`
+(new), `docs/LEAN_FORMAL_STATUS.md` (new), `docs/NEGATIVE_RESULTS_REGISTER.md` (new),
+`apedp/applied_electrical.py`, `apedp/applied_fusion.py`, `apedp/applied_materials.py`,
+`apedp/applied_neuromorphic.py`, `tests/test_formal_and_applied_audits.py` (new),
+`CHANGELOG.md`.
+
+## 2026-11-02 — The Rust bridge moves into `apedp_dyn`; the GA fallback is registered, not imported
+
+- **`apedp/rust_bridge.py` moved to `apedp_dyn/rust_bridge.py`.** Its last dependency on
+  the legacy root was the Python GA fallback: three lazy imports of
+  `NativeSearchUnavailableError`, `SearchConfig` and `evolve` from
+  `apedp.evolutionary_search`. The bridge now asks `apedp_dyn/native_search.py` for that
+  API, and the legacy tree registers its GA when `apedp.rust_bridge` is imported. The
+  canonical package names no legacy module.
+- **The error class moved with the contract.** `NativeSearchUnavailableError` is defined in
+  `apedp_dyn/native_search.py` and re-exported from `apedp.evolutionary_search`, so both
+  public import paths return the same class object.
+- **The legacy path is a forwarding shim, not a copied re-export.** The bridge owns
+  module-level state (`_RUST_AVAILABLE`, `apedp_kernel`, caches, tallies) that tests
+  replace to inject a fake kernel; a plain re-export would copy those bindings and a patch
+  on one module would silently miss the other. `apedp/rust_bridge.py` forwards attribute
+  reads to the implementation, and the two fake-kernel suites patch the implementation.
+- **If nothing registered a provider, the bridge refuses.** Requesting the Python fallback
+  from a pure-`apedp_dyn` context raises `NativeSearchUnavailableError` naming the missing
+  registration instead of quietly running a different search.
+
+Result: `apedp_dyn` import-time edges into `apedp` are **0** (6 at the start of this work).
+The reverse direction, `apedp` -> `apedp_dyn`, remains the intended one.
+
+Updated: `apedp_dyn/rust_bridge.py` (moved), `apedp/rust_bridge.py` (forwarding shim),
+`apedp_dyn/native_search.py` (new), `apedp/evolutionary_search.py`,
+`apedp_dyn/video/decoupled_transport.py`, `apedp_dyn/video/eval_gate.py`,
+`apedp_dyn/proposers/rime_ad_proposer.py`, `tests/test_rust_bridge_dispatch.py`,
+`tests/test_rust_bridge_observability.py`, `docs/DOCUMENTATION.md`, `CHANGELOG.md`.
+
+## 2026-11-02 — The hardened parser and the proof-claim tier move into `apedp_dyn`
+
+- **`apedp/safety.py` moved to `apedp_dyn/safety.py`; the old path is a façade.** Two of
+  the six import-time edges from the canonical package back into the legacy root were
+  `from apedp.safety import safe_parse_expr`: the SSM/latent side is gone, but the Lean
+  bridge still pulled the legacy parser in on every import. The parser is
+  stdlib-plus-sympy with no `apedp` imports, so it moves cleanly; `apedp/safety.py` now
+  re-exports six names through a literal `__all__`, which
+  `tests/test_facade_contracts.py` checks resolves.
+- **`ProofClaimStatus` moved to `apedp_dyn/epistemic/proof_claim.py`.** The enum had been
+  defined inside `apedp/mathematical/mathematical_layer.py`, so
+  `apedp_dyn.epistemic.lean_universal_bridge` and the Lean-proof builder both imported the
+  legacy root to name a three-value enum. `mathematical_layer` now imports and re-exports
+  it, so both public paths resolve.
+- **`rust_bridge` is the one edge that did not move, and the reason is measured.** It is
+  not self-contained: three call sites delegate the Python fallback to
+  `apedp.evolutionary_search` (`NativeSearchUnavailableError`, `SearchConfig`, `evolve`),
+  a 1,175-line module that is itself part of the legacy discovery stack. Moving the bridge
+  alone would relocate the import rather than remove it, so `apedp_dyn`'s three users
+  (`video/decoupled_transport.py`, `video/eval_gate.py`,
+  `proposers/rime_ad_proposer.py`) keep the existing path until the GA fallback is either
+  moved with it or inverted to register itself.
+
+Result: `apedp_dyn` import-time edges into `apedp` fell from **6 to 3** (the three
+`rust_bridge` users); the reverse direction, `apedp` into `apedp_dyn`, is unchanged and is
+the intended one. Fresh-interpreter first-import of six entry points is pinned by
+`tests/test_facade_contracts.py`.
+
+Updated: `apedp_dyn/safety.py` (moved from `apedp/safety.py`), `apedp/safety.py` (façade),
+`apedp_dyn/epistemic/proof_claim.py` (new), `apedp/mathematical/mathematical_layer.py`,
+`apedp_dyn/epistemic/lean_universal_bridge.py`,
+`apedp_dyn/sandbox/build_all_system_equations_lean_proofs.py`,
+`tests/test_facade_contracts.py`, `tests/test_flaw_fixes.py`,
+`docs/DOCUMENTATION.md`, `docs/MAINTAINABILITY_SCORE.md` (new, re-scores
+maintainability 6.0 -> 7.0 from the measurements above), `CHANGELOG.md`.
+
+## 2026-11-02 — The façade audit stops auditing other people's code
+
+- **24 permanently-red façade cases were vendored copies, not our code.**
+  `tests/test_facade_contracts.py` parametrizes over every module
+  `tools.coverage_audit.is_reexport_facade` classifies as a re-export shim. The walk
+  reached `apepd_dyn/sandbox/.../kickmix/_qualtran_src`, an upstream git checkout copied
+  in for a build, whose `__all__` is legitimately empty — so 24 upstream modules failed
+  "a façade that exports nothing", and no change on our side could ever fix them. A
+  finding that cannot be fixed is how a report stops being read.
+- **The exclusion is a rule, not a path.** `_iter_python_files` now prunes (1) any nested
+  git checkout, (2) any directory named `site-packages`, and (3) any `.venv*` — the last
+  two because `.venv-region-models` was contributing another 16 failures of exactly the
+  same kind from a torchvision copy. This mirrors the rule
+  `tests/test_documentation_and_spec_integrity.py` already applies to the orphan scan,
+  and `build/`, `dist/` and `.kilo/worktrees` were already excluded for the same reason.
+
+Result: `tests/test_facade_contracts.py` is **82 passed, 0 failed** (was 82 passed, 24
+failed), and `tests/test_coverage_audit.py` stays 16 passed.
+
+Updated: `tools/coverage_audit.py`, `CHANGELOG.md`.
+
+## 2026-11-02 — No opt-in to a fabricated kernel answer, the seal is re-minted, and a tactic template is not called verified
+
+- **The placeholder opt-in is gone.** `ssm_scan`'s pass-through, `mamba2_selective_scan`'s
+  `0.9*u` and `LatentSpace.decode`'s `"x0"` were previously reachable through
+  `APEDP_ALLOW_PLACEHOLDER_KERNELS=1`, which meant the fabricated answers could still be
+  requested. All three bodies are deleted, so the two SSM kernels and the latent decoder
+  refuse with `NotImplementedError` and no variable brings the constants back. A test
+  scans every `.rs` file in the crate rather than the two that used to hold the flag, and
+  `cargo check` now builds with 0 warnings (the deleted placeholders were the source of
+  the six unused-argument warnings).
+- **The blind referee is re-minted as `APEDPX_FROZEN_v1_11.json`.** `apedp_dyn/ui/server.py`
+  changed when its sandbox wiring was edited, so the v1_10 pin refused to score
+  (`REFEREE OR FROZEN RECORD CHANGED since APEDP-X v1.10-FROZEN`). The new record re-pins
+  the guard set; no referee file, threshold or blind case changed, and
+  `tests/test_dyn_blind.py` scores again on the re-minted seal.
+- **The Lean bridge may not describe a tactic template as verified.** The module returned a
+  proof-shaped object for `by positivity` / `by ring` / `by linarith` patterns that it never
+  submitted to Lean; those notes now say `NOT machine-checked`, and a test pins the absence
+  of "formally verified" from the module plus the presence of that disclaimer. The audited
+  layer itself is unchanged and still honest: 557 `.lean` files, 12,470 axioms,
+  `checked: 0`, `python3 scripts/audit_lean_formal_layer.py --check` exiting 1 by design.
+
+Updated: `rust/apedp-kernel/src/ssm.rs`, `rust/apedp-kernel/src/latent.rs`,
+`apedp_dyn/sandbox/blind_benchmark.py`, `apedp_dyn/sandbox/APEDPX_FROZEN_v1_11.json` (new),
+`apedp_dyn/epistemic/lean_universal_bridge.py`, `ARCHITECTURE.md`,
+`tests/test_placeholder_kernels_refuse.py`, `tests/test_dyn_lean_universal_bridge.py`,
+`tests/test_dyn_blind.py`, `CHANGELOG.md`.
+
+## 2026-11-01 — Three flaw fixes: operation-skeleton matching, thin-index floor, refusing placeholders
+
+- **The structural tier compares the operation tree, not degree and symbol count.**
+  `2*Z_meas/Z_ref` used to be `RELATED_STRUCTURE` to `1 - SS_res/SS_tot` because both had
+  degree 2 and two symbols; an Arrhenius law likewise matched an exponential-plus-constant
+  temperature law. Symbols and numbers are now replaced by *positional* sentinels and the
+  skeletons compared, so `RELATED_STRUCTURE_IN_PATENT_CORPUS` means one functional form
+  with different constants. A single shared sentinel was tried first and rejected: it made
+  `Z_meas/Z_ref` cancel to `1`, collapsing unrelated forms onto the same skeleton.
+- **Thin-index floor is declared and reported.** `DECISIVE_CLAIM_FLOOR = 50`; every verdict
+  from an index below it now says "this index holds 8 decisive claims against a declared
+  floor of 50, so absence here is absence from a thin index", and `corpus_status()` reports
+  `decisive_claims_floor`, `meets_decisive_floor` and `thin`.
+- **Placeholder kernels refuse instead of returning plausible constants.** `ssm_scan`
+  (returned its input), `mamba2_selective_scan` (returned `0.9*u`) and
+  `LatentSpace.decode` (returned `"x0"`) raise `NotImplementedError` unless
+  `APEDP_ALLOW_PLACEHOLDER_KERNELS=1`; the Python latent decoder always refuses, and
+  `latent.rs` is documented as a feature hash rather than a VAE. The integer-relation
+  search declares `INTEGER_RELATION_METHOD = "brute_force_branch_and_bound"` and no longer
+  claims PSLQ.
+- **The EPO OPS claims path is exercised end to end** through a replay: token → search →
+  claims → raw artefact, asserting URL, Bearer headers, claim numbering and digest, so
+  turning off Google's endpoint is a credentials problem rather than a code problem.
+
+Updated: `apedp/patent_prior_art.py` (`DECISIVE_CLAIM_FLOOR`, operation-skeleton tier),
+`scripts/run_patent_prior_art.py`, `scripts/grow_patent_corpus.py` (OPS transport),
+`rust/apedp-kernel/src/ssm.rs`, `rust/apedp-kernel/src/latent.rs`,
+`rust/apedp-kernel/src/rime/number_theory.rs`, `apedp/advanced_search.py`,
+`tests/test_placeholder_kernels_refuse.py` (new), `tests/test_patent_bulk_sources.py`,
+`tests/test_patent_corpus_real.py`, `tests/test_dyn_patent_prior_art.py`,
+`docs/SEARCH_ENGINE_GAPS.md`, `benchmarks/patent_prior_art/prior_art_run.json`,
+`CHANGELOG.md`.
+
+## 2026-11-01 — The Google block lifted; 19 new records and 2 newly reachable claims normalised
+
+- **The third harvest attempt succeeded.** `01:34:17Z` returned HTTP `200` where the two
+  earlier attempts got `503`: five queries fetched **21 publications** (32 raw artefacts),
+  and `--build` grew the corpus from 10 to **29 records**. The attempt log keeps all three
+  attempts with their status, so the growth is attributable to a specific opening rather
+  than to a change in method.
+- **Two newly reachable claims state a relation, and both were normalised by hand.**
+  `US11496054B2` claim 1 states a volt-second balance and its solved form, recorded as
+  `(d2*U2 - d1*U1)/d3` — **decisive**, because the difference and the division are
+  structure. `US12021452B2` claim 1 states a `2:1` conversion ratio, recorded as
+  `V_in/V_out` — **operand-only**, since a ratio of two bare quantities matches any
+  quotient. The other 17 new records state no relation in any claim; each carries a
+  `_note` saying all of its claims were read and counted as unsearchable.
+- **The split is visible and measured: 15 searchable claims — 8 decisive, 7 refused**
+  (EP4334731B1 2/7/8, US12021452B2 1, US20250321289A1 11, US8965721B2 1/8), across 7
+  records with a stated relation and 22 unsearchable. `REFUSED_CLAIMS.md`,
+  `prior_art_run.json` and the corpus split in `harvest_attempts.jsonl` all report those
+  numbers; the automatic extractor still parses 0 of **501** claims, which is why the
+  growth is transcription rather than extraction.
+
+Updated: `data/patents/corpus.jsonl`, `data/patents/normalised_claims.json`,
+`data/patents/extraction_yield.json`, `data/patents/harvest_attempts.jsonl`,
+`data/patents/REFUSED_CLAIMS.md`, `benchmarks/patent_prior_art/prior_art_run.json`,
+`apedp/patent_prior_art.py` (scope text), `scripts/run_patent_prior_art.py`,
+`data/patents/PROVENANCE.md`, `docs/SEARCH_ENGINE_GAPS.md`, `docs/SCAFFOLD_INVENTORY.md`,
+`tests/test_patent_corpus_real.py`, `tests/test_patent_bulk_sources.py`,
+`tests/test_scaffold_inventory.py`, `CHANGELOG.md`.
+
+## 2026-11-01 — Harvest re-run once more: still 503, so no claim became newly reachable
+
+- **Re-ran the harvest; the block is still up.** `01:34:17Z` returned HTTP `503` on both
+  the query endpoint and a publication page, logged as the third attempt with
+  `records_added: 0`. No record arrived, so **no claim became newly reachable and nothing
+  needed normalising**: the corpus stays at 10 records, 13 normalised claims.
+- **The decisive/operand-only split is now recorded with every attempt.** `log_attempt`
+  writes `corpus_split` (records, searchable, decisive, refused operand-only, and the
+  refused claim numbers per record) and `--retry-harvest` prints it whether the source is
+  blocked or open, so a blocked run reports what the corpus is rather than only what it
+  failed to add. Verified after the re-run: 13 claims, **7 decisive, 6 refused**
+  (EP4334731B1 2/7/8, US20250321289A1 11, US8965721B2 1/8).
+
+Updated: `scripts/grow_patent_corpus.py` (`corpus_split`, `_format_split`,
+`log_attempt(split=...)`), `data/patents/harvest_attempts.jsonl`,
+`data/patents/PROVENANCE.md`, `tests/test_patent_bulk_sources.py`, `CHANGELOG.md`.
+
+## 2026-11-01 — A structured candidate can no longer be swallowed by an operand-only claim
+
+- **Found while probing the tier order: `2*Z_meas/Z_ref` was refused as operand-only.**
+  `check_rename_isomorphism` accepts a scalar multiple, so a candidate carrying a
+  coefficient was isomorphic to the bare-quotient claim `Z_meas/Z_ref` and the refusal
+  fired — reporting a structured form as undecidable by a claim that states less than it
+  does. The operand-only tier now only speaks for a candidate that is itself
+  operand-only (`is_operand_only(candidate)`), so a coefficient or an inner function
+  falls through to the decisive, structural and absence tiers.
+- **Tier order is the guarantee, stated where it is relied on:** the decisive tier is
+  consulted first and returns immediately, so a decisive claim wins regardless of the
+  order records appear in the corpus; the refusal is reached only when no decisive claim
+  matched and the candidate belongs to the refused form class.
+- **A probe row was added to the run record:** `structured_not_swallowed`
+  (`2*Z_meas/Z_ref`) previously returned `CLAIM_STATES_OPERANDS_ONLY`; it now reaches the
+  structural tier against a decisive claim (`RELATED_STRUCTURE_IN_PATENT_CORPUS`, same
+  coarse signature as `1 - SS_res/SS_tot`). The run fails if any structured candidate is
+  ever refused as operand-only (`ordering_violations`), records
+  `matched_claim_is_decisive` per candidate, and a unit test pins the case with the
+  operand-only record listed first.
+
+Updated: `apedp/patent_prior_art.py` (operand-only tier guard),
+`scripts/run_patent_prior_art.py` (`structured_not_swallowed` probe),
+`benchmarks/patent_prior_art/prior_art_run.json`, `tests/test_dyn_patent_prior_art.py`,
+`CHANGELOG.md`.
+
+## 2026-11-01 — The operand-only refusals are listed per record, not just counted
+
+- **Each refused claim now carries its reason.** `operand_only_form_class()` names the
+  defect (`bare quotient`, `bare product`, `bare symbol (an equality of names)`) and
+  `operand_only_refusals()` returns one entry per refused claim with the record, claim
+  number, normalised form, class, why it cannot decide a verdict, and the transcription
+  note that quotes the claim. The six refusals live in three records: EP4334731B1 claims
+  2/7/8, US8965721B2 claims 1/8, US20250321289A1 claim 11.
+- **`data/patents/REFUSED_CLAIMS.md` is generated from the corpus** by
+  `refusals_markdown()` and written by `scripts/run_patent_prior_art.py`, with a
+  per-record header stating how many of that record's claims are refused and how many
+  remain decisive. A test regenerates it and fails when the file is stale, so the list
+  cannot drift from the claims it describes.
+- **`prior_art_run.json` carries the refusals** as `refusals.by_form_class`,
+  `refusals.by_record`, `refusals.detail` and a per-record `refused_claims` list, and
+  `corpus_status()` gained an `operand_only` list beside `operand_only_claims`.
+
+Updated: `apedp/patent_prior_art.py` (`operand_only_form_class`,
+`OperandOnlyRefusal`, `operand_only_refusals`, `refusals_markdown`),
+`scripts/run_patent_prior_art.py`, `data/patents/REFUSED_CLAIMS.md` (new),
+`benchmarks/patent_prior_art/prior_art_run.json`, `tests/test_patent_corpus_real.py`,
+`CHANGELOG.md`.
+
+## 2026-11-01 — Harvest retried: still blocked at 503, and the attempt is now on disk
+
+- **Retried the harvest, the block has not lifted.** `https://patents.google.com/xhr/query` and individual
+  publication pages both answer `503` with the "Sorry…" block page, so **no records were added**: the corpus
+  stays at 10 records, 13 normalised claims. Nothing was fetched on the strength of a partial response.
+- **`--retry-harvest` makes the retry auditable.** Each attempt appends to
+  `data/patents/harvest_attempts.jsonl` — `attempted_utc`, endpoint, `http_status`, `outcome`
+  (`open`/`blocked`/`unreachable`) and `records_added` — and exits `3` while the source is blocked, so a
+  scheduler or shell check can tell "could not query" from "queried and found nothing". An `open` attempt
+  logs twice: once before harvesting and once with the count it added.
+- **A test pins the log's shape**, and asserts every blocked attempt added zero records. `PROVENANCE.md`
+  names the logged 503 as the reason the corpus is still ten records.
+
+Updated: `scripts/grow_patent_corpus.py` (`--retry-harvest`, `log_attempt`),
+`data/patents/harvest_attempts.jsonl` (new), `data/patents/PROVENANCE.md`,
+`tests/test_patent_bulk_sources.py`, `CHANGELOG.md`.
+
+## 2026-11-01 — EPO OPS adapter tests replay recorded responses; the authenticated one skips rather than fakes
+
+- **Recorded, not synthesised.** `data/patents/ops_fixtures/` holds two responses recorded from the live
+  endpoints without OAuth — `claims_EP4334731_403.xml` (403 "violation of Fair Use policy") and
+  `token_401.xml` (401 "Client identifier is required") — with URL, method, timestamp, byte count and
+  SHA-256 in `PROVENANCE.json`. A test re-hashes every fixture against that file, so a replayed body
+  cannot drift from its recording.
+- **The replay goes through the adapter, not the parser.** `epo_ops_claims()` gained a `transport`
+  parameter, defaulting to the live GET; a replay now exercises the endpoint it builds, the
+  `Authorization: Bearer …` and `Accept: application/xml` headers, and the mapping from status to
+  `SourceUnavailable(status=…)`. The recorded 403 asserts all four.
+- **The authenticated replay test exists and skips, with the reason and the command.** No authenticated
+  claims response could be recorded here (401/403 measured), so
+  `test_recorded_authenticated_claims_response_replays` skips until
+  `scripts/record_epo_ops_fixture.py --number EP4334731` runs with `EPO_OPS_KEY`/`EPO_OPS_SECRET` and
+  writes `claims_EP4334731.xml`. The recorder exits `2` and writes nothing while the credentials are
+  absent, so an empty fixture directory can never look like a recorded one.
+- **Synthetic XML keeps its place, labelled.** The existing inline-fragment test is still a parser test;
+  the new replay tests are the ones that claim a recording, and the skip is visible in the run summary
+  rather than silently absent.
+
+Updated: `scripts/grow_patent_corpus.py` (`epo_ops_claims(transport=…)`),
+`scripts/record_epo_ops_fixture.py` (new), `data/patents/ops_fixtures/` (new: two recordings plus
+`PROVENANCE.json`), `data/patents/PROVENANCE.md`, `tests/test_patent_bulk_sources.py`, `CHANGELOG.md`.
+
+## 2026-11-01 — Claim 1 of the five harvested patents curated: no relation in four, a pointer in one
+
+- **Claim 1 was read for all five harvested patents, and none states a relation.**
+  `US11921163B2`, `US12130335B2`, `US12372585B2` and `US20250321289A1` state procedures (a GNN pipeline,
+  a QV→IC→ICA pipeline, a time-series model input/output, an ML-plus-Kalman fusion pipeline);
+  `US11474159B2` names three "relation functions" without writing them. The reading is stored as a
+  `claim_1` object (`states_relation`, `reason`) on each record, so "claim 1 was read" is on disk rather
+  than implied.
+- **The set grew by one form, not five, and the reason is recorded.** The pointer in `US11474159B2`
+  claim 1 resolves to dependent claims 3, 5, 6, 7 and 8; claim 6's simplified law
+  `-0.01*b_SEI*SOH + b_SEI` is a form distinct from claim 5's free-slope version, and was normalised —
+  decisive, because the `-0.01` coupling is the claim's own coefficient. Claim 3's Arrhenius law was not
+  counted a second time: it is the same form as claim 7. Searchable claims **12 → 13**, decisive
+  **6 → 7**, operand-only unchanged at 6.
+- **No arithmetic was invented to make claim 1 yield formulas.** The Kalman fusion in
+  `US20250321289A1` claim 1 and the incremental-capacity derivative in `US12130335B2` claim 1 are named in
+  the reasons as things the claim does not state; writing `sum(w_i * SoH_i)` or `dQ/dV` would be the
+  builder's physics wearing the claim's number.
+- **Pinned** by `test_harvested_records_record_what_claim_1_states` (all five readings present and
+  relation-free, claim 6 present with its coefficient) and the updated per-record pin, which now allows
+  one record to hold four claims and asserts that exactly one does.
+
+Updated: `data/patents/normalised_claims.json`, `data/patents/corpus.jsonl`,
+`benchmarks/patent_prior_art/prior_art_run.json`, `apedp/patent_prior_art.py`, `data/patents/PROVENANCE.md`,
+`docs/SEARCH_ENGINE_GAPS.md`, `docs/SCAFFOLD_INVENTORY.md`, `tests/test_patent_corpus_real.py`,
+`tests/test_scaffold_inventory.py`, `CHANGELOG.md`.
+
+## 2026-11-01 — Bulk-source growth measured as blocked, with every endpoint tried written down
+
+- **Re-attempted live, same day, with no credentials in the environment.** EPO OPS answers `401`
+  "Client identifier is required" on the token endpoint and `403` "violation of Fair Use policy"
+  anonymously on a claims request; PatentsView's API host does not resolve; Google Patents serves a `503`
+  block page on both the query endpoint and individual publication pages. No records were added, because
+  adding records was not possible without a credential.
+- **Two further keyless routes were tried and recorded, so a later reader does not repeat them.**
+  USPTO's legacy `ds-api` bulk search now `301`s to `data.uspto.gov`, whose API is key-gated, and
+  USPTO's Open Data Portal is key-gated outright. HuggingFace BIGPATENT's viewer was inspected: it
+  serves `abstract` and `description` and **no claim text**, so it cannot produce a claim record; HUPD
+  carries claims but its dataset viewer is unsupported, so no rows are retrievable without the full
+  download.
+- **`--probe-sources` now records six endpoints** with a per-source note separating "needs a key" from
+  "would not serve claims even with a key", so a credential refusal is distinguishable from a dead end.
+  `data/patents/SOURCES.md` was regenerated from that probe and `data/patents/PROVENANCE.md` carries the
+  same measurements.
+- **What unblocks growth is a credential, not code.** `--source epo-ops` (claims directly) and
+  `--source patentsview` (discovery, claims then from OPS) are implemented and pinned; both exit `2`
+  with the measured reason while `EPO_OPS_KEY`/`EPO_OPS_SECRET` or `PATENTSVIEW_API_KEY` are absent.
+
+Updated: `scripts/grow_patent_corpus.py` (two endpoints, per-source notes), `data/patents/SOURCES.md`
+(regenerated), `data/patents/PROVENANCE.md`, `tests/test_patent_bulk_sources.py` (the probe table must
+name every endpoint tried), `CHANGELOG.md`.
+
+## 2026-11-01 — The prior-art engine refuses to conclude from a bare quotient or product
+
+- **`Z_meas/Z_ref` can no longer return `KNOWN_IN_PATENT_CORPUS`.** `is_operand_only()`
+  classifies a normalised form that names its operands and one operation and nothing about them:
+  `A/B`, `A*B`, `A+B` on bare symbols, with no function, offset, coefficient or composite operand
+  inside. Such a claim is isomorphic to **any** candidate built the same way, so a match says
+  nothing about the patent. Five of the ten normalised claims are in this class — `Z_meas/Z_ref`,
+  `I_lim*V_min`, `eta_C*i_ch`, `C_t_I/C_0_I`, `C_t_E/C_0_E` — and are held apart as
+  `PATENT.decisive` vs `PATENT.operand_only` rather than searched as if they decided anything.
+- **A new status carries the refusal:** `CLAIM_STATES_OPERANDS_ONLY`, with the matching record,
+  claim number and expression, and a disclaimer saying the match is not evidence and is refused
+  rather than reported as known. Structured forms are unaffected: `AF*exp(t_A)`, `1 - SS_res/SS_tot`,
+  `k_SEI*SOH + b_SEI`, `s(t)**2` and `A_SEI*exp(B_SEI/T) + C_SEI` still decide, and the structural
+  tier only compares decisive claims.
+- **Counts are reported, not implied.** `corpus_status()` and every audit result carry
+  `decisive_claims: 5` and `operand_only_claims: 5` (searchable stays 10), and the run record
+  reports both.
+- **Two declared expectations moved, with the reason recorded.** `self_check_efficiency`
+  (`eta_C*i_ch`) and `generic_ratio` (`x/y`) now expect `CLAIM_STATES_OPERANDS_ONLY`, and the probes
+  exist precisely to keep that refusal measured instead of skipping the cases that used to read
+  `KNOWN`. `tests/test_dyn_patent_prior_art.py` pins the refusal, the structured-form pass-through,
+  and the classifier on five operand-only and five structured forms.
+
+Updated: `apedp/patent_prior_art.py` (`is_operand_only`, `CLAIM_STATES_OPERANDS_ONLY`,
+`decisive`/`operand_only` search splits, `decisive_claims`/`operand_only_claims` on results and in
+`corpus_status()`), `scripts/run_patent_prior_art.py`, `benchmarks/patent_prior_art/prior_art_run.json`,
+`data/patents/PROVENANCE.md`, `docs/SEARCH_ENGINE_GAPS.md`, `docs/SCAFFOLD_INVENTORY.md`,
+`tests/test_dyn_patent_prior_art.py`, `tests/test_patent_corpus_real.py`,
+`tests/test_scaffold_inventory.py`, `CHANGELOG.md`.
+
+## 2026-11-01 — Patent corpus normalised per claim: 3 → 10 searchable forms, claim number on every verdict
+
+- **The one-claim limit no longer bounds a verdict.** `data/patents/normalised_claims.json` moved to
+  schema `v2`, where each record carries a `claims` list. Every claim whose text states an explicit
+  relation was normalised by hand: EP4334731B1 claims 2/7/8 (`eta_C*i_ch`, `C_t_I/C_0_I`, `C_t_E/C_0_E`),
+  US11474159B2 claims 4/5/7 (`1 - SS_res/SS_tot`, `k_SEI*SOH + b_SEI`, `A_SEI*exp(B_SEI/T) + C_SEI`),
+  US8965721B2 claims 1/8 (`Z_meas/Z_ref`, `I_lim*V_min`), US20250321289A1 claim 4 (`s(t)**2`) and
+  US7120566B1 claim 1 (`AF*exp(t_A)`). Searchable claims went **3 → 10 across five records**.
+- **The engine searches all of them.** `NormalisedClaim` carries claim number, verbatim text, expression
+  and note; `PatentPriorArtIndex.searchable` is a (record, claim) pair per normalised claim, and every
+  verdict now reports `matched_claim_number` beside `matched_patent_id`, so a `KNOWN` result names the
+  claim that matched instead of implying the patent as a whole. Records without a stated relation are
+  still counted, not dropped: five records, unchanged in the denominator.
+- **Two normalisations are marked COARSE, and say so.** `1 - SS_res/SS_tot` groups the claim's two sums,
+  and `s(t)**2` drops the claim's definite integral; both therefore match more than the claim states.
+  The note records the dropped structure, and the granularity limit in `PROVENANCE.md` now names them.
+- **A measured consequence in the run record.** With claim 7 of US11474159B2 normalised, the declared
+  `arrhenius_rate` probe moved from `NOT_FOUND_IN_PATENT_CORPUS` to `RELATED_STRUCTURE_IN_PATENT_CORPUS`:
+  the structural tier's signature (function `exp`, exponent degree -1, four symbols) coincides for an
+  exponential-plus-constant temperature law and an Arrhenius law, which are *not* equivalent. The
+  expectation was updated with that reason rather than the probe being removed, and the row now measures
+  how coarse the structural tier is. `generic_ratio` still matches a quotient form, now with three
+  quotient claims in the corpus to land on.
+
+Updated: `data/patents/normalised_claims.json` (schema v2), `data/patents/corpus.jsonl`,
+`apedp/patent_prior_art.py` (`NormalisedClaim`, multi-claim search, `matched_claim_number`,
+`records_with_formula`, `max_claims_per_record`), `scripts/grow_patent_corpus.py`,
+`scripts/run_patent_prior_art.py`, `benchmarks/patent_prior_art/prior_art_run.json`,
+`data/patents/PROVENANCE.md`, `docs/SCAFFOLD_INVENTORY.md`, `tests/test_patent_corpus_real.py`,
+`tests/test_dyn_patent_prior_art.py`, `tests/test_scaffold_inventory.py`, `CHANGELOG.md`.
+
+## 2026-11-01 — Patent corpus grown to ten records; the bulk paths refuse instead of pretending
+
+- **Both named bulk sources are implemented, and neither can be used here.** `--source patentsview`
+  (PatentsView `search` API, `PATENTSVIEW_API_KEY`) and `--source epo-ops` (OAuth token + per-publication
+  `.../claims`, `EPO_OPS_KEY`/`EPO_OPS_SECRET`) now exist in `scripts/grow_patent_corpus.py` and both
+  **exit 2 with the measured reason** when their credentials or endpoints are unavailable, so an
+  unqueried source can never be read as "no patents found". Measured on 2026-11-01: PatentsView's host
+  does not resolve and its legacy endpoint answers HTML, EPO OPS answers `403` without OAuth, and Google
+  Patents' query endpoint began returning a `503` block page mid-run (individual publication pages too).
+- **What grew: the record layer, 5 → 10.** Five publications were harvested from the Google Patents
+  query endpoint on the same subject vocabulary as the curated five, each keeping the query that found
+  it, its digest and its retrieval date. `data/patents/SOURCES.md` records every endpoint's HTTP status
+  and states that a query-selected sample is not an office population.
+- **What did not grow: the searchable layer.** The strict extractor was run over **every** claim of every
+  artefact — 173 claims, **0 parsed formulas** — because patent claims state relations in prose and
+  equations appear as images. `data/patents/extraction_yield.json` stores that measurement, and
+  `corpus_status()` now reports `records`, `unsearchable_records`, `claims_scanned_for_formulas`,
+  `formulas_found_in_claim_text` and `corpus_sha256`, so a `NOT_FOUND_IN_PATENT_CORPUS` verdict carries
+  its own denominator instead of a bare record count.
+- **Growth is transcription, not fetching.** Widening the matchable set means normalising each held
+  claim by hand, as was done for the curated five; a larger corpus alone widens only the set absence is
+  stated over. That distinction is now written in `data/patents/PROVENANCE.md` and in the module docstring.
+- **Pinned** by `tests/test_patent_bulk_sources.py` (both refusal paths and exit codes, the OPS claims
+  parser on a synthetic fixture, refusal of claim-less and non-XML responses), the extraction-yield and
+  harvested-row pins in `tests/test_patent_corpus_real.py`, and the updated coverage pin in
+  `tests/test_scaffold_inventory.py`. The prior-art run record was regenerated.
+
+Updated: `scripts/grow_patent_corpus.py`, `apedp/patent_prior_art.py`, `data/patents/corpus.jsonl`,
+`data/patents/PROVENANCE.md`, `data/patents/SOURCES.md`, `data/patents/extraction_yield.json` (new),
+`benchmarks/patent_prior_art/prior_art_run.json`, `docs/SCAFFOLD_INVENTORY.md`,
+`tests/test_patent_bulk_sources.py` (new), `tests/test_patent_corpus_real.py`,
+`tests/test_scaffold_inventory.py`, `CHANGELOG.md`.
+
+## 2026-11-01 — Both experimental benchmark tables checked against their sources: unverified
+
+- **A script that re-fetches the cited literature.** `scripts/verify_external_benchmark_sources.py`
+  pulls NASA TM-81927 (Harris 1981), the NASA TMR digitizations of Ladson (TM 100526) and
+  Gregory & O'Reilly (R&M 3726), and the Meyers 2006 review, records URL/status/bytes/SHA-256
+  for each, and measures what they contain. Exit `0` matched, `1` a measurement moved, `2` a
+  source was unreachable — and unreachable is recorded as unverified, never as verified.
+- **NACA 0012 — `unverified`.** The cited report has one table (section coordinates) and its
+  pressure distributions are figures; no accessible source tabulates Cp at x/c=0.25 across
+  Mach. The digitized Mach-0.30 tap at alpha~0 gives Cp(0.25) = -0.3551; scaled by
+  Prandtl–Glauert, the table's values from M=0.50 to M=0.80 are a **constant 1.475x** too
+  negative — five Mach numbers to three decimals — and the table states neither alpha nor Re,
+  although Cp(0.25) moves by a factor of 2.8 between alpha~0 and alpha=10 in that source.
+- **Nanocrystalline copper — `unverified`.** The published data at the one comparable grain
+  size are IGC compacts: 650 MPa at 19 nm and 850 MPa at 20 nm, against the table's 910 MPa at
+  20 nm — **+7.1% over the strongest and +40.0% over the weakest**. The table's 980 MPa peak at
+  12 nm exceeds the review's stated 100–900 MPa envelope for 100 um–26 nm, and ten of the
+  eleven rows have no traceable record.
+- **Marked, not corrected.** `NACA0012TransonicBenchmark.provenance()` and
+  `NanocrystallineMicrocompressionBenchmark.provenance()` now return `verified: False` with the
+  citation, check date, record path and reason, so a caller sees the status without reading a
+  page. The datasets are untouched: inventing a correction would be a larger defect.
+- **Recorded** in `benchmarks/external_benchmarks_source_check.json` and
+  `docs/BENCHMARK_SOURCE_VERIFICATION.md`, and pinned by
+  `tests/test_external_benchmark_source_verification.py` (recorded hashes vs live datasets,
+  the constant-ratio signature, the alpha dependence, the 20 nm comparison, the two flags).
+
+Updated: `scripts/verify_external_benchmark_sources.py` (new),
+`benchmarks/external_benchmarks_source_check.json` (new),
+`docs/BENCHMARK_SOURCE_VERIFICATION.md` (new),
+`tests/test_external_benchmark_source_verification.py` (new),
+`apedp/ingestion/external_benchmarks.py`, `CHANGELOG.md`.
+
+## 2026-11-01 — The census over `apedp_dyn`: five vendored modules named, not dropped
+
+- **Run without the record's exclusion, `apedp_dyn` reports 22 modules.** Seventeen are
+  this repository's and were already recorded and named in the inventory; the other five sit
+  inside the vendored harness, which the record skips.
+- **The five are now named.** `docs/SCAFFOLD_INVENTORY.md` lists each path, its tables and its
+  functions — three in Qualtran's `_qualtran_src` (`bloq_report_card`, `qlt_ir/_examples`,
+  `surface_code/flasq/volume_counting`, `surface_code/ui`) and `verifiers/dfthcsos/scoreinfra/reference.py`.
+  They stay out of the gate because they are third-party code, but an exclusion nobody can
+  audit is indistinguishable from an omission, so the set is written down and pinned.
+- **The pin is the new test** `test_every_census_module_in_apedp_dyn_is_named_in_the_inventory`:
+  seventeen recorded modules must be named in the table, five vendored modules must be named
+  in the exclusion list, and none of the five may appear in the record. A sixth vendored
+  module fails until it is named so the reviewer can see what was set aside.
+
+Updated: `docs/SCAFFOLD_INVENTORY.md`, `tests/test_scaffold_inventory.py`, `CHANGELOG.md`.
+
+## 2026-11-01 — The census becomes a pre-commit gate, so an unrecorded table cannot reach review
+
+- **`scripts/audit_static_tables.py --check`.** The census used to print and exit 0 whatever
+  it found. It now compares the live tree against `scripts/static_table_census.json` and exits
+  `1` when a table appears, disappears or moves between modules — three cases, because a
+  relocated table is a stale record even when the count is unchanged.
+- **One record, two readers.** The JSON holds both roots (`apedp`, `apedp_dyn`) and the
+  excluded vendored harness; the hook and `tests/test_scaffold_inventory.py` read the same
+  file, so the test and the gate can no longer disagree about what is recorded. The inline
+  `EXPECTED_STATIC_TABLES` dictionaries were removed in favour of it.
+- **A pre-commit hook** (`static-table-census`, `always_run`, no filenames) sits next to
+  `ruff-changed` in `.pre-commit-config.yaml`, so the failure happens before review, not in
+  the reviewer's head. Exit `2` is reserved for a check that cannot run at all, so a broken
+  baseline is not mistaken for a clean tree.
+- **Record 28 modules**: eleven in `apedp`, seventeen in `apedp_dyn` (the fourth sweep). A new
+  table needs two edits — the record and a row in `docs/SCAFFOLD_INVENTORY.md` — and the suite
+  refuses a record whose functions are not named on that page.
+
+Updated: `scripts/audit_static_tables.py`, `scripts/static_table_census.json` (new),
+`.pre-commit-config.yaml`, `tests/test_scaffold_inventory.py`, `docs/SCAFFOLD_INVENTORY.md`,
+`CHANGELOG.md`.
+
+## 2026-11-01 — `apedp_dyn` swept by the same two signals, and what survived reading
+
+- **Method unchanged, scope doubled.** The audit that produced the `apedp` sweeps now runs
+  over `apedp_dyn`: an unused parameter in a function body, and a return that is a pure literal.
+  **161 candidates** survived the two signals; each was read.
+- **What was not listed, and why.** Abstract and protocol methods (`vqc/backends.run`,
+  `grammar/proposer.propose`, the `experiment*.py` protocols, six `remote_storage`
+  declarations), twelve `fit_and_propose(**kwargs)` parity stubs, underscore arguments
+  (`_t`, `_objects`), predicates returning a literal label chosen from their inputs, and
+  thirteen `proposer_id` methods returning a constant identifier.
+- **Fifteen findings survived, and every row is a measurement.** The largest: the execution
+  cost models ignore the inputs their own formula has no term for (fixed-plus-slippage
+  ignores `volumes` — identical drag at 1e3 and 1e9 — Almgren–Chriss ignores `spreads`, the
+  queue model ignores `prices`); `check_with_pi_groups` never touches `pi_groups` and the gate
+  ships with no regimes, so every regime name raises; `certified_cbf_guard` ignores `headings`,
+  so the certificate is a point-mass QP that says nothing about the unicycle heading;
+  `infer_shape_prior` drops three knobs; `simulate_type2_fusion` ignores the state it names;
+  `run_eseds_trap` forwards none of `r`/`K`/`N0`/`bootstrap_n_boot`; `ablation` discards the
+  supplied `coefficients`; four benchmark generators accept a `seed` that drives nothing.
+- **Two documented no-ops are separated from the findings** — `predict_next_frame(order)` and
+  `simulate_pair(m, k)` say in their docstrings that the argument is retained for interface
+  compatibility. That is the same fact, honestly labelled.
+- **Census for `apedp_dyn`: seventeen modules** read a container literal on a return path, all
+  of them catalogues, registries or step ladders. Two are recorded as census **false
+  positives** found by reading: `candidate_ir.base_provenance` returns
+  `list(c.parent_candidates)` (a candidate field reached through `c`, not `self`, so the state
+  exclusion misses it) and `vqc/native.last_failure`/`tallies` are accessors over the native
+  extension's module-level state.
+- **Not covered, and said so**: behaviour behind a correct signature, and the vendored harness
+  under `sandbox/google-verifiable-quantum-circuit-compilation/`.
+
+Updated: `docs/SCAFFOLD_INVENTORY.md`, `tests/test_scaffold_inventory.py`, `CHANGELOG.md`.
+
+## 2026-11-01 — The static-table rule becomes a gate that fails, not a report
+
+- **`scripts/scope_scan.py` (new, audit-only).** `scripts/audit_static_tables.py`
+  answers *what does this function return*; that is an inventory question, and it
+  reports a units registry and a fabricated prediction alike. The new scan asks the
+  narrower one: does the name promise more than the return delivers?
+- **The rule, in three conditions.** The name matches a predictive prefix at a word
+  boundary (`predict_*` … `rank*`, `score*`); no parameter reaches any return; and
+  what comes back is either a literal the body never computed (with no parameter read
+  anywhere in the body) or a module/class-level container from the census.
+- **Two exclusions keep it usable, and both were forced by the first run.**
+  `forecast_regime(x)` returning `"UP"`/`"DOWN"` is a predicate branching on its
+  input, so the literal branch requires that the body never reads a parameter;
+  `classify_modality(frame)` classifies and then maps the class through a table, so
+  the table branch requires that *every* return is a lookup. A function that raises
+  is a refusal and is never reported. Matching `propose` without a boundary had
+  flagged thirteen `proposer_id` methods that return a constant string identifier.
+- **MEASURED: two functions in the whole repository qualify**, one per package side —
+  `apedp/applied_materials.py::search_candidates` (returns `REFERENCE_CANDIDATES`)
+  and `apedp/evidence.py::rank` (returns `_RANK`). Both are tables, both are
+  recorded with a reason, and `apedp_dyn` has none. The scan covers `apedp` and
+  `apedp_dyn`, skipping vendored `_qualtran_src`, `benchmark_corpus*` and tests.
+- **A check you can run.** `python scripts/scope_scan.py` exits `0` on the recorded
+  tree, `1` when a finding appears that is not in
+  `scripts/scope_scan_baseline.json` — or when a recorded one vanishes — and `2`
+  when the scan cannot run. The baseline is not a hiding place: every entry needs a
+  `why`, a row in `docs/SCAFFOLD_INVENTORY.md`, and agreement with the finding.
+- **What it does not catch**, stated on the page rather than implied: a constant
+  under a non-predictive name, one assembled by a helper, and a table read on every
+  path with a computed key.
+
+Updated: `scripts/scope_scan.py` (new), `scripts/scope_scan_baseline.json` (new),
+`tests/test_scaffold_inventory.py`, `docs/SCAFFOLD_INVENTORY.md`, `CHANGELOG.md`.
+
+## 2026-11-01 — Hamming ranking vs a position-weighted seed score, and where they part
+
+- **Two rankings, both reported.** `predict_off_targets` keeps `top_sites` in flat Hamming order
+  (mismatch count, then seed mismatches, then position) and adds `weighted_top_sites`, ordered by
+  `position_weighted_score`: a stated linear ramp from 0.25 at the 5' end to 1.0 immediately 5' of
+  the PAM, normalised to mismatch equivalents. One PAM-proximal mismatch scores 0.08 on a 20 nt
+  guide, one distal mismatch 0.02.
+- **Disagreement is counted, and split by what it means.** `ranking_comparison` reports
+  concordant/discordant pairs, Kendall's τ, and — the part worth reading — within-band versus
+  cross-band discords. A within-band discord refines a tie the count cannot break; a cross-band
+  discord overrules the count, which is a weaker claim and is reported apart.
+- **MEASURED WHERE THEY DISAGREE.** On a six-site panel (1–3 mismatches, chosen to separate the
+  two): 11 concordant pairs, 4 discordant, τ = 0.467 — and **all four are cross-band**, the
+  weighted score preferring a 3-mismatch distal site (0.069) to a 1-mismatch PAM-proximal one
+  (0.08). On the two-site fixture the orders are exactly reversed, τ = −1: one proximal mismatch
+  (0.08) versus two distal mismatches (0.066). On a same-count pair — 2 mismatches at (10, 11),
+  0.106, versus 2 at (0, 19), 0.10 — the disagreement is within-band, τ = −1, which is the case
+  the comparison exists for.
+- **What this is not**: a cutting-efficiency model. The weights are the two constants above, not a
+  fitted CFD matrix, and the Hamming count still decides the primary order. A uniform random 5 kb
+  reference has no off-targets, so it produces no comparison at all (τ = `None`).
+
+Updated: `apedp/applied_synthetic_bio.py`, `tests/test_scaffold_inventory.py`,
+`docs/SCAFFOLD_INVENTORY.md`, `CHANGELOG.md`.
+
+## 2026-11-01 — A genome-slice fetcher, so the off-target scan can search a real region
+
+- **`apedp/ingestion/genome_region.py` (new, experimental).** `fetch_region` pulls a slice from
+  the Ensembl REST API and `scan_region` runs the off-target scan on it, carrying the provenance
+  into the result. Until now the scan required a reference string nobody could produce, so every
+  run used a hand-written sequence.
+- **The slice is validated before it is scanned.** Non-DNA characters, a body shorter or longer
+  than the coordinates requested, a malformed region, or a range above the 1 Mb cap all raise.
+  A truncated fetch must never read as "no off-targets found".
+- **Provenance is returned, not asserted**: assembly, chromosome, 1-based inclusive coordinates,
+  strand, provider URL, retrieval date and the SHA-256 of the sequence travel with the scan, and
+  each reported site gains `genomic_start` in addition to its slice-relative offset.
+- **RUN END TO END, TWICE, ON GRCh38.** The 2 kb slice `13:32930000..32932000` (2001 bp, SHA-256
+  `3680bb31…`) yields 169 PAM-adjacent sites and exactly one exact match -- the guide's own locus at
+  **32,930,010** -- with no mismatch, bulge or indel candidate. A 50 kb slice `13:32930000..32980000`
+  (50,001 bp) yields 5,369 sites with the same outcome (fetch 8.6 s, scan 1.0 s). That is the
+  arithmetic, not a disappointment: a 20-mer within four mismatches has probability ~3e-7 per site,
+  so a 2 kb window should contain none.
+- **Offline from here.** The 2 kb slice and its guide are frozen in
+  `tests/fixtures/genome/grch38_chr13_slice.json`, and eight tests exercise the fetcher and the
+  end-to-end path without a socket -- including the truncated-slice refusal that keeps a network
+  failure from becoming a clean result.
+
+Updated: `apedp/ingestion/genome_region.py`, `tests/test_genome_region_fetch.py`,
+`tests/fixtures/genome/grch38_chr13_slice.json`, `docs/SCAFFOLD_INVENTORY.md`, `CHANGELOG.md`.
+
+## 2026-11-01 — One-base bulges and single indels in the CRISPR off-target scan
+
+- **The scan now tolerates one gap, and says which side it is on.** `predict_off_targets`
+  adds `bulge` sites (the reference carries one extra base) and `indel` sites (the reference
+  is missing one), each anchored at the PAM end because anchoring at the 5' end would charge
+  an indel for shifting the whole window.
+- **The old count keeps its meaning.** `predicted_off_targets` stays mismatch-only;
+  `bulge_off_targets`, `indel_off_targets` and `total_off_targets` are reported beside it, so
+  enabling a tolerance cannot silently change a number a caller already reads.
+- **MEASURED CONTRIBUTIONS.** On the purpose-built references each tolerance recovers exactly
+  the site it models (bulge: 1 site, 0 mismatches, gap at 9; indel: 1 site, 0 mismatches, gap at
+  11), and the switches are independent. On the existing fixture (two mismatch sites, max 4) each
+  adds 2 candidates. On a uniform random 5 kb reference (599 PAM-adjacent sites, max 4) both add
+  **0** — a 19-base gapped alignment within four mismatches does not occur at that error budget,
+  so the tolerances are not a blanket inflation of the count.
+- **Still not modelled, and now named precisely**: `bulges_longer_than_one_base`,
+  `multiply_gapped_alignments`, `rna_dna_duplex_energetics`. The previous flat
+  `bulge_loops`/`indel_tolerance` entries are gone because the first step is now taken.
+
+Updated: `apedp/applied_synthetic_bio.py`, `tests/test_scaffold_inventory.py`,
+`docs/SCAFFOLD_INVENTORY.md`, `CHANGELOG.md`.
+
+## 2026-10-31 — Demo leverage mapping replaced by cost-aware mean-variance sizing
+
+- **`epistemic_position_sizing` is gone.** It mapped an epistemic status to a leverage number
+  (1.0 / 0.5 / 0.25 / 0.0) and needed `POSITION_SIZING_IS_DEMO_ONLY` and a
+  `position_sizing_is_demo_only` field to warn readers. `size_positions` replaces it: it solves
+  `max w'μ − (γ/2)w'Σw − c|w − w_prev|₁` on `{w ≥ 0, Σw ≤ gross}` by proximal gradient with an
+  exact capped-simplex projection, so the size depends on the forecast, the **covariance**, the
+  **fee** and a stated risk aversion — not on the verdict.
+- **The flag is retired.** The verdict now only gates admissibility: `INSUFFICIENT_EVIDENCE`,
+  `NO_VALID_CANDIDATE` and `EXTRAPOLATION_UNJUSTIFIED` admit nothing, and
+  `BOOTSTRAP_INSTABILITY` is refused even under `MULTI_HYPOTHESIS` because a sign that flips under
+  resampling is not a direction to take. Nothing is disclaimed, because nothing is invented.
+- **The L1 cost term is a no-trade band.** An edge thinner than the fee produces turnover 0 and
+  cost 0 rather than a smaller position, which is what charging a trade means.
+- **TWO OLD NUMBERS DID NOT SURVIVE THE RULE, AND BOTH ARE NOW PINNED AS MEASURED.** The
+  `volatility_scaled_momentum` regime used to report a full 1.0 allocation under `UNIQUE_SUPPORT`;
+  its holdout mean over that window is **negative** (−2.4% per bar, σ = 2.7%), so a long-only rule
+  facing a 5 bps fee takes no position, and the test asserts gross 0.0 with the reason stated. The
+  old 1.0 came from the verdict, not from the data: an identified model of the dynamics is not by
+  itself a profitable long. And the collinear-factor experiment used to report a
+  50% "diversified" size; the rule puts the position in a corner (share 0.00–0.00 across five
+  shifted holdout windows), because with ρ = 0.999 the only thing separating the factors is a 5%
+  mean difference. That is a sharper statement than the old one: the referee's non-identifiability
+  concerns **which mechanism** drives the target, not which position to hold.
+- **`FinanceComparisonResult` and `RealMarketDiscoveryReport`** carry the `SizingDecision` instead of
+  a float; `gross_exposure` is a property. Sizing uses the holdout slice only, and the price-level
+  benchmark sizes its holdout **returns** rather than price levels, which would have mixed units.
+
+Updated: `apedp_dyn/sandbox/finance_l2_demo.py`, `apedp_dyn/sandbox/market_real_data_benchmark.py`,
+`tests/test_dyn_finance_l2.py`, `tests/test_dyn_market_real_data.py`,
+`tests/test_dyn_preregistered_real_data_benchmark.py`, `tests/test_scaffold_inventory.py`,
+`docs/SCAFFOLD_INVENTORY.md`, `CHANGELOG.md`.
+
+## 2026-10-31 — A real (small) patent corpus, and the prior-art engine run on it
+
+- **`data/patents/corpus.jsonl` now exists**: five real publications fetched from Google Patents
+  on 2026-10-31 — US6285999B1, US8965721B2, US7120566B1, US11488017B2, EP4334731B1 — each with
+  its source URL, retrieval date and the SHA-256 of the HTML it came from. This closes the
+  `refused` row in `docs/SCAFFOLD_INVENTORY.md`: the search machinery had nothing to search.
+- **Three records carry a normalised claim expression; two do not.** US6285999B1 and
+  US11488017B2 state no relation in claim 1, so they are counted as unsearchable rather than
+  dropped, which is the distinction `NO_SEARCHABLE_CLAIMS` already existed to preserve.
+- **`scripts/fetch_patent_corpus.py`** (new, audit-only) makes the corpus reproducible: verbatim
+  claims under `data/patents/raw/`, the normalised expression in a separate curated file with the
+  sentence it was read from, and `--verify` to re-fetch and compare digests. Its first version
+  split each claim into one record per paragraph — Google breaks a claim across several
+  `div.claim-text` blocks — so claim 1 of US6285999B1 appeared twice, truncated. Fixed by
+  grouping fragments under their enclosing `div.claim`.
+- **`scripts/run_patent_prior_art.py`** (new) audits six declared candidates against the corpus
+  and **fails loudly** if the engine disagrees with any declared expectation; the run is
+  recorded in `benchmarks/patent_prior_art/prior_art_run.json`.
+- **A GRANULARITY DEFECT IS NOW MEASURED, NOT HIDDEN.** US8965721B2 claim 1 names "a ratio of
+  said measured DC impedance to a reference DC impedance" and no functional form, so its
+  expression is `Z_meas/Z_ref` — which matches *any* quotient. The probe `generic_ratio`
+  (`x/y`) matches it, and that is recorded as a corpus defect: a coarse transcription inflates
+  matches, and `KNOWN_IN_PATENT_CORPUS` must be read against *which* expression matched.
+- **Three fetches were rejected, not silently dropped**: US2237713A, CN102403767B and
+  DE102011079469A1 expose no claim text (claims are page images), which is a stated selection
+  bias towards recent text-extractable filings.
+- **`corpus_status()` no longer answers "not bundled".** It reports 5 records, 3 searchable, the
+  jurisdictions, the retrieval date, the provenance description and the one-claim-per-record
+  scope; the `FileNotFoundError` now names the bundled path instead of claiming the directory
+  does not exist.
+
+Updated: `apedp/patent_prior_art.py`, `scripts/fetch_patent_corpus.py` (new),
+`scripts/run_patent_prior_art.py` (new), `data/patents/{corpus.jsonl,normalised_claims.json,
+PROVENANCE.md,raw/*}` (new), `benchmarks/patent_prior_art/prior_art_run.json` (new),
+`tests/test_patent_corpus_real.py` (new), `tests/test_scaffold_inventory.py`,
+`docs/SEARCH_ENGINE_GAPS.md`, `docs/SCAFFOLD_INVENTORY.md`, `docs/DOCUMENTATION.md`,
+`CHANGELOG.md`.
+
+## 2026-10-31 — Static-table census for the apedp package
+
+- **`scripts/audit_static_tables.py`** reports every function that returns a value read from a
+  module- or class-level container literal rather than computed. Eleven modules qualify (ten rows
+  in the inventory, two of them sharing one table), and the set is now pinned by a test, so a new
+  table cannot appear without being recorded in `docs/SCAFFOLD_INVENTORY.md`.
+- **THE FIRST RUN WAS WRONG IN BOTH DIRECTIONS, AND BOTH ARE RECORDED.** It reported every
+  `to_dict` that returns a dataclass field with a tuple default (`ablation`, three `epistemic`
+  records, `evidence`, `evidence_report`, `source_audit`) — state, not tables. Tightening the
+  exclusion to *any attribute reached through `self`* removed them, but also removed
+  `VectorizedDimensionalEngine.DIM_MAP`, which `get_unit_vector` reads through `self` while being a
+  `ClassVar` table; the rule now keeps any `ClassVar` container literal even via `self`. An earlier
+  tightening also dropped every class-body table by treating all annotations as fields, hiding
+  `applied_materials.REFERENCE_CANDIDATES` and `external_benchmarks.CASES`; only annotations with no
+  value or a `field(...)` default count as fields.
+- **NONE OF THE ELEVEN IS A DEFECT**, and the page says so: a unit registry, a seed-page list, an
+  evidence-tier map and a curated priors table are things that should be tables. They are listed so
+  that `suggest_mechanistic_priors` cannot be read as a fitted posterior.
+
+Updated: `scripts/audit_static_tables.py` (new), `tests/test_scaffold_inventory.py`,
+`docs/SCAFFOLD_INVENTORY.md`, `CHANGELOG.md`.
+
+## 2026-10-31 — Third sweep: a scenario that threw its own evidence away
+
+- **AN AST SCAN OVER EVERY `apedp/**/*.py`**, for parameters never referenced and returns that are
+  pure literal tables. Most hits were predicates whose literal verdicts are chosen by their inputs
+  (control flow, not constants) and were discarded; the survivors are in
+  `docs/SCAFFOLD_INVENTORY.md`.
+- **`scenario_20_anscombe_metrology` COMPUTED A RESULT AND RETURNED A SENTENCE.** It built means,
+  variances, correlations and quadratic curvature for all four Anscombe datasets, asserted that
+  dataset 2 carried the distinguishing curvature, and then returned
+  `{'anscombe_disambiguation': '...'}` — the claim without the evidence. The result now carries
+  `curvature_a_by_dataset`, the threshold, the distinguishing set and the full statistics.
+- **`PublicationText.ready_for_discovery` IS A GATE THAT NEVER OPENS, WHICH IS CORRECT AND WAS
+  UNDOCUMENTED.** Extracted PDF prose is not measured data, so `False` is the right answer; a bare
+  constant could be mistaken for a check that failed on this input. It now says so and exposes
+  `readiness_reason`.
+- **The honest constants are registered rather than changed**: `scientific_layers._const` (the only
+  function in the package that ignores its parameters, by design — a null model),
+  `model_synthesis._exp_templates` (a four-template search grammar), and
+  `quantum_checks.amplitude_convention_note` ("Convention, not code"). `applied_defects.py` is
+  `computed` throughout and is now on record as the last `applied_*` module.
+
+Updated: `apedp/scenarios.py`, `apedp/source_ingestion.py`, `tests/test_scaffold_inventory.py`,
+`docs/SCAFFOLD_INVENTORY.md`, `CHANGELOG.md`.
+
+## 2026-10-31 — Off-target search is real, and still refuses without a genome
+
+- **THE REFUSAL BECAME A SEARCH.** `CRISPRDesigner.predict_off_targets` now takes a reference
+  sequence and finds every PAM-adjacent protospacer on both strands, Hamming-scores each against
+  the guide, reports seed-window mismatches, positions and strand, and ranks by mismatch count.
+  `find_protospacers` locates PAM motifs and takes the protospacer upstream rather than sliding the
+  guide across the reference, because a nuclease only addresses protospacers adjacent to a PAM.
+- **WHAT IT STILL REFUSES, AND WHY THAT IS NOT A REGRESSION.** `genome_size_mb` is gone: a genome's
+  size cannot produce its off-target count, so passing an int raises `TypeError` and passing
+  nothing raises `NotImplementedError`. The old constant `12` with `confidence: 'high'` is what
+  that signature produced for every guide.
+- **EXACT MATCHES ARE COUNTED APART FROM OFF-TARGETS.** The intended on-target locus is itself an
+  exact match, so folding zeros into `predicted_off_targets` would inflate every guide by one.
+  Exact sites are reported separately in `exact_sites`, and the ceiling is stated in
+  `score_basis: hamming_mismatch_count` and in `not_modelled` (cutting efficiency, indel spectrum,
+  bulge loops, chromatin, genome-wide scan). A site count is not a cutting frequency.
+
+Updated: `apedp/applied_synthetic_bio.py`, `tests/test_scaffold_inventory.py`,
+`docs/SCAFFOLD_INVENTORY.md`, `CHANGELOG.md`.
+
+## 2026-10-31 — The equation harvester is brace-balanced
+
+- **A FLAT CHARACTER CLASS BECAME A DEPTH COUNTER.** `_extract_formula_strings` stopped at the
+  first closing brace, so any formula containing its own group — a fraction, a matrix, a nested
+  subscript — came back as a fragment. The scan now walks from the opening brace of the
+  displaystyle prefix to the brace that closes it, so `x^{2} + y^{2}` survives whole instead of
+  returning as `x^{2`.
+- **BOTH BRANCHES NOW AGREE ON SHAPE.** The alt-attribute branch used to return its formulas still
+  wrapped in the displaystyle prefix while the displaystyle branch stripped it; alt candidates are
+  now unwrapped, and the inclusion rule (`=`, length, `\begin`/`\align`/attribute noise) lives in
+  one `_is_formula` used by both.
+- **WHAT IS STILL LOSSY, STATED WHERE IT MATTERS.** Macros are not expanded, non-displaystyle math
+  is skipped, and HTML entities are only partly decoded. `EXTRACTION_IS_LOSSY` therefore stays
+  `True` and its meaning was narrowed in the module docstring, the inventory row and the tests: the
+  strings are source text that must be re-parsed and verified, not mathematics that has been.
+
+Updated: `apedp/ingestion/ingestion_web_equations.py`, `tests/test_scaffold_inventory.py`,
+`docs/SCAFFOLD_INVENTORY.md`, `CHANGELOG.md`.
+
+## 2026-10-31 — Corpus, audio and sizing: the second scaffold sweep
+
+- **A SEARCH OVER A NONEXISTENT CORPUS NOW SAYS SO.** `apedp/patent_prior_art.py` is real
+  provenance-checked machinery — it refuses unattributed records, refuses duplicate patent ids and
+  refuses expressions that do not parse — but `data/patents/` does not exist, so no search can have
+  been performed. `load_patent_corpus` already raised `FileNotFoundError`; the gap was that nothing
+  let a reader tell an absent corpus from a completed search. `corpus_status()` returns
+  `{"bundled": False, ...}` and the error names the missing corpus.
+- **A PLACEHOLDER THAT RETURNED A NUMBER NOW CARRIES ITS FLAG.** `finance_l2_demo.epistemic_position_sizing`
+  maps epistemic status to leverage and was marked DEMO-ONLY in a docstring — invisible to the caller
+  reading `recommended_position_size: 1.0`. The flag is now `POSITION_SIZING_IS_DEMO_ONLY` and a
+  `position_sizing_is_demo_only` field on every `FinanceComparisonResult`.
+- **HARDCODED NARRATIVE REPLACED WITH OBSERVED OUTCOMES.** The demo's insight strings asserted
+  "converting an abstention into UNIQUE_SUPPORT" and "reducing position size to 50%" regardless of
+  what the run produced — and the module's own header already recorded that the 50% path does not
+  fire. Both now report the statuses and the size actually observed.
+- **Two modules needed no change, so they are registered instead.** `applied_electrical.py` is
+  genuinely closed-form per-unit and per-cycle arithmetic with its own ceiling noted; the audio
+  spectrogram transport is verified on synthetic chirps only and says so. Both are rows in
+  `docs/SCAFFOLD_INVENTORY.md`, because "no change needed" is a finding worth recording.
+
+Updated: `apedp/patent_prior_art.py`, `apedp_dyn/sandbox/finance_l2_demo.py`,
+`tests/test_scaffold_inventory.py`, `docs/SCAFFOLD_INVENTORY.md`, `CHANGELOG.md`.
+
+## 2026-10-31 — Scaffold tier inventory: a constant may not be returned as a prediction
+
+- **THE AUDIT'S CENTRAL FINDING WAS NARROWER THAN "these modules are simple".** Being simple
+  is fine; `tests/test_scaffold_inventory.py` exists because several of these modules returned
+  a fixed number under a name that said *prediction*: `predicted_off_targets: 12` with
+  `confidence: high`, `titer_prediction_g_l: 50`, `advantage_over_gpu: "1000x energy efficiency"`,
+  and a "sea level rise" that was warming multiplied by 0.2 m/K.
+- **THREE REFUSED, WHERE THE HONEST ANSWER NEEDED A MODEL THAT IS ABSENT.**
+  `CRISPRDesigner.predict_off_targets` now raises: no reference genome, no mismatch scan, and a
+  constant count is indistinguishable from a prediction. It joins `optimize_confinement` and
+  `discover_targets(omics_data=...)`.
+- **THE REST CARRY THEIR TIER.** `evidence` (`rule_screen`, `literature_lookup`,
+  `planning_template`, `reference_spec`, `gc_heuristic`) plus `not_modelled` beside every verdict,
+  so "drug-like: good" cannot be read as "permeable and stable". Two silent drops are also closed:
+  `NeuromorphicArchitect.design_system` echoed no `requirements` and now returns them with
+  `requirements_used: []`, and `MetabolicPathwayOptimizer` separates the literature yield, the
+  assumed 0.85 recovery and a `titer_computed_g_l` of `None`.
+- **NAME VERSUS BEHAVIOUR, FIXED IN THREE MODULES.** `ingestion_academic_apis.py` is twenty
+  endpoint strings with `CONNECTS_TO_SERVICES = False` (no client, no auth, no request); the
+  web-equation harvester states `EXTRACTION_IS_LOSSY` and has its brace truncation pinned by a
+  test; `cluster_launcher.py` renders Slurm/Kubernetes/KubeRay artifacts with
+  `SUBMITS_JOBS = False` — it never calls `sbatch`, `kubectl` or an API.
+- **A DEAD BRANCH WAS FOUND WHILE PINNING THE HARVESTER.** Documenting the Wikipedia equation
+  extractor's lossiness required demonstrating that it extracts anything at all, and the
+  `{\displaystyle …}` branch matched nothing: the pattern was double-escaped, so `\\s*` searched
+  for a literal backslash followed by a run of `s`, which real markup never contains. Every
+  result the module ever produced came from the `alt=` attribute branch. Escaping is now
+  generated with `re.escape` instead of typed, and both branches are pinned — the flat case
+  returns intact, the nested case returns a fragment cut at the first inner brace.
+- **THE GOLDBACH BANNER NOW SAYS WHAT IT IS NOT.** The verifier checks a finite range; Goldbach is
+  already verified to 4e18, so a run at any limit this program reaches is sieve throughput, not
+  frontier number theory. That sentence is now printed beside the result.
+- **`docs/SCAFFOLD_INVENTORY.md` is the table**, row by row, including the modules whose own
+  docstrings were already honest (`applied_materials`, `applied_fusion`, `se3_flow`, the two
+  robotics transports) and the five components worth calling strong, described narrowly. The
+  negative demonstration is cited by its path (`benchmarks/equation_discovery/qed_001_recovery.json`)
+  rather than restated from memory.
+
+Updated: `apedp/applied_synthetic_bio.py`, `apedp/applied_neuromorphic.py`,
+`apedp/applied_climate.py`, `apedp/ingestion/ingestion_academic_apis.py`,
+`apedp/ingestion/ingestion_web_equations.py`, `apedp_dyn/distributed/cluster_launcher.py`,
+`rust/goldbach_verifier/src/main.rs`, `tests/test_scaffold_inventory.py` (new),
+`docs/SCAFFOLD_INVENTORY.md` (new), `docs/DOCUMENTATION.md`, `CHANGELOG.md`.
+
+## 2026-10-31 — The biopharma boundary, made checkable instead of argued about
+
+- **THE ONE FALSE CLAIM IN THE AUDIT IS NOW TRUE, UNDER ITS OWN NAME.** The review said the
+  repository's answer to p-hacking was a "Benjamini-Hochberg/FDR referee in
+  `apedp_dyn/epistemic/`". It was not: every FDR hit in the tree was the referee's own error
+  rate, a Bonferroni witness test, or a per-claim boolean. The real multiplicity instrument
+  was `trial_ledger.py`'s Deflated Sharpe Ratio, which is Sharpe-based and does not transfer
+  to a p-value panel. `apedp_dyn/epistemic/multiple_testing.py` is now an exact
+  BH / Benjamini-Yekutieli / Holm implementation that reports the **effective threshold** —
+  the largest raw p it would reject — because "we corrected for multiplicity" is not a
+  checkable sentence and "the bar was 3.1e-4, not 0.05" is. Refuses NaN, out-of-range values,
+  empty families and unknown methods by name.
+- **A SILENT DROP BECAME A REFUSAL.** `UniversalDrugTargetDiscovery.discover_targets` accepted
+  `omics_data` and never read it. Discarding the argument is the worst of the three available
+  behaviours, because a caller who passes expression data has every reason to believe it was
+  used. It now raises `NotImplementedError` naming why, and every returned target carries
+  `evidence: literature_curated` and `computed_from_omics: false`.
+- **THE SKETCHES DECLARE THEMSELVES.** `NON_PREDICTIVE_COMPONENTS` states, per callable, which
+  inputs are read, which returned content is constant and why; each entry is pinned
+  behaviourally. `ADMETPredictor` gained `modelled` / `not_modelled` (clearance, Caco-2, hERG,
+  hepatotoxicity and nine more are explicitly outside it). `ProteinDesigner.design_enzyme`
+  named Rosetta, AlphaFold and ProteinMPNN as strings and ran none of them; it now also returns
+  `executed_tools: []` and `evidence: planning_template`.
+- **THE ACHIRALITY LIMITATION IS NOW A SWITCH.** Distance-only energies cannot distinguish
+  enantiomers — identical distances, identical energy, full stop. `MolecularForceField` accepts
+  opt-in `chirality_terms` adding `kc/2 (V - V0)^2` on the signed volume, a pseudoscalar that a
+  mirror negates. Default stays empty, which keeps the field achiral and the existing
+  reflection-equivariance tests meaningful; supplying a term buys enantiomer separation at the
+  stated cost of SO(3)-only symmetry. A chiral spring model is still not a force field anyone
+  should compute binding affinities with, and `docs/BIOPHARMA_SCOPE.md` says so.
+- **The scope is written down, verified row by row**, in `docs/BIOPHARMA_SCOPE.md` — including
+  the three uses that are genuine (PK/PD law discovery via `apedp_dyn/ode/` and the SINDy/PDE
+  proposers, biomarker screening under exact FDR, and adversarial audit of third-party claims)
+  and the four capabilities real drug discovery would need that are absent here. No docking,
+  no SMILES, no conformer generation, no retrosynthesis: the audit's central verdict stands.
+
+Updated: `apedp_dyn/epistemic/multiple_testing.py` (new), `apedp/applied_biopharma.py`,
+`apedp/applied_synthetic_bio.py`, `apedp_dyn/molecular/se3_flow.py`,
+`tests/test_multiple_testing_and_biopharma_scope.py` (new), `docs/BIOPHARMA_SCOPE.md` (new),
+`docs/DOCUMENTATION.md`, `CHANGELOG.md`.
+
 ## 2026-10-31 — The unpushed range could not be pushed: GitHub's 100 MB limit
 
 - **THE PUSH WAS REJECTED, AND NOT BY ANYTHING NEW.** `stage` was 57 commits ahead of
