@@ -258,6 +258,29 @@ def test_mmlm_graph_state_figures_in_the_index_match_the_record():
     assert f"{record['baseline_two_qubit_gates']:,}" in index
     assert f"{record['mmlm_two_qubit_gates']:,}" in index
 
+    # The headline is a total over three families that are not comparable. The split is
+    # quoted beside it and generated from the same record, because "54 wins" reads as a
+    # uniform result when 77% of it is one family and the regular families thin with width.
+    split = ", ".join(
+        f"`{name}` **{block['wins']}/{block['targets']} wins, "
+        f"{block['saved_two_qubit_gates']} gates**"
+        for name, block in sorted(record["families"].items())
+    )
+    assert split in index, f"the family split is not quoted as recorded: {split}"
+    assert sum(b["wins"] for b in record["families"].values()) == record["wins"]
+    assert (
+        sum(b["saved_two_qubit_gates"] for b in record["families"].values())
+        == record["saved_two_qubit_gates"]
+    )
+    for family, bands in record["by_width"].items():
+        assert sum(b["targets"] for b in bands.values()) == record["families"][family]["targets"]
+    # The width cut is the part no total can show: regular4 saves nothing at 32 qubits.
+    assert f"`regular4` {record['by_width']['regular4']['32']['saved_two_qubit_gates']} gates at 32q" in index
+    assert (
+        record["by_width"]["regular4"]["64"]["saved_two_qubit_gates"]
+        < record["by_width"]["random_graph"]["64"]["saved_two_qubit_gates"]
+    )
+
 
 def test_dqi_target_closures_are_recorded_in_the_campaign_docs():
     """The two closures are prose where a reader will meet the target, and pinned here."""

@@ -48,6 +48,41 @@ def main() -> int:
     wins = sum(1 for row in rows if row["saved_two_qubit_gates"] > 0)
     ties = sum(1 for row in rows if row["saved_two_qubit_gates"] == 0)
     losses = len(rows) - wins - ties
+
+    # The total is what gets quoted and it hides where it came from: the three families are
+    # not comparable, and on the regular ones the saving thins with width. Both cuts are
+    # written here so a reader (and `tests/test_documentation_and_spec_integrity.py`) can
+    # check the headline against the family and width it is made of.
+    families: dict[str, dict[str, int]] = {}
+    by_width: dict[str, dict[str, dict[str, int]]] = {}
+    for row in rows:
+        fam = families.setdefault(
+            row["family"],
+            {
+                "targets": 0,
+                "wins": 0,
+                "ties": 0,
+                "baseline_two_qubit_gates": 0,
+                "saved_two_qubit_gates": 0,
+            },
+        )
+        band = by_width.setdefault(row["family"], {}).setdefault(
+            str(row["width"]),
+            {
+                "targets": 0,
+                "wins": 0,
+                "baseline_two_qubit_gates": 0,
+                "saved_two_qubit_gates": 0,
+            },
+        )
+        for block in (fam, band):
+            block["targets"] += 1
+            block["baseline_two_qubit_gates"] += row["baseline_two_qubit_gates"]
+            block["saved_two_qubit_gates"] += row["saved_two_qubit_gates"]
+            if row["saved_two_qubit_gates"] > 0:
+                block["wins"] += 1
+        if row["saved_two_qubit_gates"] == 0:
+            fam["ties"] += 1
     payload = {
         "benchmark": "vqc_mmlm_graph_state",
         "what": "MMLM local-complementation + symplectic CX graph-state synthesis against one CZ per edge.",
@@ -60,6 +95,8 @@ def main() -> int:
         "baseline_two_qubit_gates": sum(row["baseline_two_qubit_gates"] for row in rows),
         "mmlm_two_qubit_gates": sum(row["mmlm_two_qubit_gates"] for row in rows),
         "certified_valid": sum(1 for row in rows if row["verdict"] == "VALID"),
+        "families": families,
+        "by_width": by_width,
         "rows": rows,
     }
     OUTPUT.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
@@ -67,6 +104,17 @@ def main() -> int:
           f"{payload['saved_two_qubit_gates']} two-qubit gates saved "
           f"({payload['baseline_two_qubit_gates']} -> {payload['mmlm_two_qubit_gates']}); "
           f"{payload['certified_valid']}/{len(rows)} certified VALID")
+    for name, block in sorted(families.items()):
+        print(
+            f"  {name:<13} {block['wins']:>2}/{block['targets']} wins, "
+            f"{block['saved_two_qubit_gates']:>4} of {block['baseline_two_qubit_gates']:>5} gates"
+        )
+    for name, bands in sorted(by_width.items()):
+        cells = ", ".join(
+            f"{width}q={band['saved_two_qubit_gates']}({band['wins']}/{band['targets']})"
+            for width, band in sorted(bands.items(), key=lambda item: int(item[0]))
+        )
+        print(f"  {name:<13} {cells}")
     print("wrote", OUTPUT.relative_to(REPO_ROOT))
     return 0
 

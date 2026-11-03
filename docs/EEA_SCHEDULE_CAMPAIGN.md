@@ -13,7 +13,9 @@ The plan ranked those three regions as "a different schedule, not a tidier gate"
 pointer substitution until it was proved. This is the campaign that discharges the
 obligation, and it answers with a measured saving rather than an argument:
 **1,221,466.8 → 686,014.8 executed Toffolis per shot (−43.84%) at unchanged `Q` = 1,913**,
-which is **1.541×** the 445,229 target instead of 2.744×. That figure is the *stacked* arm:
+which is **1.541×** the 445,229 target instead of 2.744×, and **1.451×** the 472,768.2 floor
+that bracket now uses as its aim (see "What this campaign is aimed at"). That figure is the
+*stacked* arm:
 the three movement/product gates (`everything`, 688,966.8) plus the flag/metadata gate the
 earlier combined arm was promoted on, re-measured here as `control_gates` and reproduced to
 the Toffoli (2,952.0) so that the two sessions' numbers are one record rather than two. The
@@ -39,6 +41,23 @@ the first `_swap_a_and_b`, which exchanges a b-pair whose sum varies. It is also
 usable, and the 1.541× and every figure below stand on the schedule alone. Full record:
 [`DQI_RECYCLED_PASS_BODIES.md`](DQI_RECYCLED_PASS_BODIES.md) §§"Root cause", "What that
 cost does to the projected score".
+
+### What this campaign is aimed at
+
+The 445,229 in the ratios above is the **denominator**, not the aim. 472,768.2 Toffolis per
+shot of this decoder are work that is not a field product at all — the EEA iterations, their
+predicates, the counter decode, the shifts and the metadata — so 445,229 sits **6.19% below**
+the floor the algorithm cannot cross, and freeing every field product and every controlled add
+still leaves the shot at 1.062× the target. Aiming at a number whose best case is a loss is not
+a campaign, so the aim is now the two things that are still movable: **686,014.8 → 472,768.2**
+by decoder algorithm, and **1,913 → 1,893** on this arm — which P6 below makes a *price* rather
+than a free cut: every schedule arm runs at `Q` = 1,913, identical to its control, so the five
+gates cost no width and dropping them recovers none. The 20 qubits are the six levers', and
+[`BENCHMARK2_TARGET_REACHABILITY.md`](BENCHMARK2_TARGET_REACHABILITY.md) §7.11 prices them at
+4,212,030.2 Toffolis per shot.
+`TARGET_ROLE` in `dqi_gluzdov_v6.py` records the decision as `SCORE_DENOMINATOR_NOT_AIM`, and
+[`BENCHMARK2_TARGET_REACHABILITY.md`](BENCHMARK2_TARGET_REACHABILITY.md) §7.9–§7.10 carries the
+frontier table it sits in.
 
 ## 1. The schedule fact, and what it licenses
 

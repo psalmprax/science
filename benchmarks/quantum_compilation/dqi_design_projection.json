@@ -1,14 +1,15 @@
 {
   "acceptance_gate": {
-    "arithmetic_within_target": true,
+    "operative_within_withdrawn_target": false,
     "passes_official_verifier_constraint": false,
     "required_evidence": [
       "compiled .kmb circuit for the recycled architecture",
       "official verify_submission_dqi.py PASS at log2_delta=-128",
-      "measured mean Toffoli count consistent with T_mean <= 445,229 (this threshold is itself unsourced)",
-      "measured peak qubit count consistent with Q <= 1,885"
+      "measured mean Toffoli count consistent with T_mean <= 445,229 (unsourced, and 6.19% below the algorithm floor, so no build reaches it)",
+      "measured peak qubit count consistent with Q <= 1,893 (the verifier's count; the 1,885 recycled build does not decode)"
     ],
-    "status": "HOLD_FOR_COMPILED_AND_VERIFIED_RECEIPT"
+    "status": "HOLD_FOR_COMPILED_AND_VERIFIED_RECEIPT",
+    "withdrawn_config_arithmetic_within_target": true
   },
   "architecture": "gluzdov_v6_degree_register_recycling",
   "circuit_mode": "reference_equivalent",
@@ -24,13 +25,15 @@
     "target_gain_factor": 12.968172751690407
   },
   "data_path_floor": {
-    "finding": "the measured width levers sum to 55 qubits against the 64 needed, so they do not reach the target; the remainder is data-path width, and a single polynomial array is larger than all of them together",
-    "lever_sum_qubits": 55,
+    "finding": "the measured width levers sum to 23 qubits against the 64 needed, so they do not reach the target and 41 are left with no lever at all; the remainder is data-path width, and a single polynomial array is larger than all of them together",
+    "floor_reachable": false,
+    "floor_requires": "32 qubits of degree-register recycling, which is closed on correctness and score",
+    "lever_sum_qubits": 23,
     "levers": [
       {
-        "basis": "4 remaining registers x 8 qubits (model_degree_register_floor)",
+        "basis": "closed: the build with n_a removed peaks at 1,885 and fails 64-shot equivalence (52/64), so none of the 32 qubits it counted is usable (docs/DQI_RECYCLED_PASS_BODIES.md)",
         "lever": "degree-register recycling",
-        "qubits": 32
+        "qubits": 0
       },
       {
         "basis": "BENCHMARK2_TARGET_REACHABILITY.md section 1.1, measured on the 1,935-qubit build",
@@ -42,7 +45,8 @@
     "qubits_needed": 64,
     "reaches_target": false,
     "register_floor_qubits": 1853,
-    "shortfall_qubits": 9,
+    "shortfall_qubits": 41,
+    "sum_is_upper_bound": true,
     "target_qubits": 1789
   },
   "degree_register_floor": {
@@ -131,15 +135,17 @@
   },
   "qubits": {
     "aspirational_peak_qubits": 1789,
-    "gap_to_aspirational_qubits": 96,
+    "gap_to_aspirational_qubits": 104,
     "max_further_recycling_qubits": 32,
     "peak_floor_under_recycling": 1853,
-    "qubit_cap": 1885,
+    "qubit_cap": 1893,
     "qubit_reduction": 8,
     "reference_peak_qubits": 1893,
     "relative_qubit_ratio": 0.9957739038563127,
-    "sourced_peak_qubits": 1885,
-    "v6_peak_qubits": 1885
+    "sourced_peak_qubits": 1893,
+    "v6_peak_qubits": 1885,
+    "withdrawn_gap_to_aspirational_qubits": 96,
+    "withdrawn_peak_qubits": 1885
   },
   "recycling_applied_in_circuit": false,
   "recycling_basis": {
@@ -174,6 +180,48 @@
     "target_status": "UNSOURCED: only the a-pair is constant, and at n + 1 rather than n, so one logm-bit register can go (8 qubits at n=70). The b-pair varies, so n_b cannot be derived from n_B. The 104-qubit and 445,229-Toffoli targets are not implied by degree recycling."
   },
   "recycling_status": "CLOSED_CORRECTNESS_AND_SCORE",
+  "remaining_width_levers": {
+    "array_to_remainder_ratio": 20.78048780487805,
+    "framings": {
+      "below_register_floor": {
+        "framing_exists": false,
+        "from_qubits": 1853,
+        "qubits_needed": 64,
+        "remainder": 41,
+        "window_saving": 23
+      },
+      "from_measured_reference": {
+        "framing_exists": true,
+        "from_qubits": 1893,
+        "qubits_needed": 104,
+        "remainder": 81,
+        "window_saving": 23
+      },
+      "from_widest_measured_arm": {
+        "framing_exists": true,
+        "from_qubits": 1913,
+        "qubits_needed": 124,
+        "remainder": 101,
+        "window_saving": 23
+      }
+    },
+    "levers_left_sum_qubits": 0,
+    "levers_measured": [
+      {
+        "basis": "closed: the build with n_a removed peaks at 1,885 and fails 64-shot equivalence (52/64), so none of the 32 qubits it counted is usable (docs/DQI_RECYCLED_PASS_BODIES.md)",
+        "lever": "degree-register recycling",
+        "qubits": 0
+      },
+      {
+        "basis": "BENCHMARK2_TARGET_REACHABILITY.md section 1.1, measured on the 1,935-qubit build",
+        "lever": "workspace window 42 -> 19",
+        "qubits": 23
+      }
+    ],
+    "polynomial_array_qubits": 852,
+    "supplied": false,
+    "verdict": "no: the window's 23 is the last measured width saving, so 41 qubits of the floor-framed gap have no lever, and the floor framing is itself optimistic because it needs recycling that is closed -- the live gaps are 81 from the verifier's peak and 101 from the schedule arm. Nothing supplies them in small steps: the only change larger than the remainder is dropping a polynomial array (852 qubits), which is a different decoder with an undischarged correctness obligation"
+  },
   "single_array_trade": {
     "array_bits": 852,
     "assumption": "re-deriving one remainder per round costs exactly one division call",
@@ -215,11 +263,41 @@
   "status": "ANALYTICAL_PROJECTION_ONLY",
   "target_basis": {
     "mean_toffolis": "UNSOURCED: 445,229 has no circuit behind it, so the projection is one measured term (Q) times one target (T)",
-    "peak_qubits": "sourced: the verifier's 1,893 less the one register the decoder's own register measurement shows is removable (8 qubits at n = 70)"
+    "peak_qubits": "measured: the verifier's 1,893, which is the only peak a verified circuit has. The 1,885 the recycling measurement supports is withdrawn -- that build peaks correctly and fails 64-shot equivalence"
+  },
+  "toffoli_target": {
+    "algorithm_floor_mean_toffolis": 472768.2,
+    "attainable_cost_at_operative_peak": 2018162877671.416,
+    "attainable_gain_factor": 12.109757767356973,
+    "decision": "445,229 does not stay the aim: it is 6.19% below the 472,768.2 of non-product work this algorithm spends, so the best attainable circuit still scores above the target and the projection's 12.857x is a ceiling nothing reaches. It is retained as the score denominator only; the aim is the measured 686,014.8 toward 472,768.2",
+    "frontier_to_floor_ratio": 1.451059525577228,
+    "frontier_to_target_ratio": 1.5408133791823984,
+    "measured_frontier_mean_toffolis": 686014.8,
+    "projection_reaches_target": false,
+    "target_below_floor": true,
+    "target_mean_toffolis": 445229.0,
+    "target_role": "SCORE_DENOMINATOR_NOT_AIM",
+    "target_to_floor_ratio": 1.0618540122049551
   },
   "toffolis": {
     "reference_mean_toffolis": 5725108.382109375,
     "toffoli_reduction_factor": 12.858794872098121,
     "v6_target_mean_toffolis": 445229.0
+  },
+  "width_giveback": {
+    "dropping_schedule_gates_recovers_qubits": false,
+    "finding": "the 20 qubits are not the schedule gates': every schedule arm runs at 1913 qubits against its control's 1913, so the five gates are width-free and dropping them recovers nothing. Giving the 20 back means dropping the six levers, and that costs 4,212,030.2 Toffolis per shot (210,601.5 per qubit) for a 1.0212x width credit: the score gets 4.36x worse",
+    "from_qubits": 1913,
+    "qubits_given_back": 20,
+    "schedule_gate_qubits": 0,
+    "schedule_gate_toffolis": 535471.8396191406,
+    "score_ratio": 0.22956979908393893,
+    "score_worsening_factor": 4.3559736689683834,
+    "to_qubits": 1893,
+    "toffoli_ratio": 0.22479468673976136,
+    "toffolis_given_back_per_shot": 4212030.184902344,
+    "toffolis_per_qubit": 210601.5092451172,
+    "width_credit": 1.0212421050222846,
+    "width_scored_against": "dqi_submission_score.json"
   }
 }

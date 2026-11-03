@@ -29,13 +29,19 @@ def main() -> int:
     projection = design_projection_dqi_gluzdov_v6()
     OUTPUT.write_text(json.dumps(projection, indent=2, sort_keys=True) + "\n")
     qubits = projection["qubits"]
-    costs = projection["costs"]
+    operative = projection["projection"]
+    target = projection["toffoli_target"]
     print(
-        f"Q {qubits['sourced_peak_qubits']} (cap {qubits['qubit_cap']}), "
-        f"aspirational {qubits['aspirational_peak_qubits']}, "
-        f"gap {qubits['gap_to_aspirational_qubits']}, floor {qubits['peak_floor_under_recycling']}"
+        f"Q {operative['peak_qubits']} (cap {qubits['qubit_cap']}), "
+        f"withdrawn {qubits['withdrawn_peak_qubits']}, next {qubits['aspirational_peak_qubits']}",
+        f"(gap {qubits['withdrawn_gap_to_aspirational_qubits']}), floor {qubits['peak_floor_under_recycling']}",
     )
-    print(f"cost {costs['recomputed_v6_cost']:.6g}, gain {costs['gain_factor']:.3f}x")
+    print(
+        f"cost {operative['cost']:.6g}, gain {operative['gain_factor']:.3f}x, "
+        f"T at aim {target['algorithm_floor_mean_toffolis']:,.1f} "
+        f"({target['measured_frontier_mean_toffolis']:,.1f} measured, "
+        f"{target['frontier_to_floor_ratio']:.3f}x it)"
+    )
     print("wrote", OUTPUT.relative_to(REPO_ROOT))
     return 0
 

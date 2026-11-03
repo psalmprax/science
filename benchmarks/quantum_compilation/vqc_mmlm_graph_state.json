@@ -1,7 +1,128 @@
 {
   "baseline_two_qubit_gates": 6193,
   "benchmark": "vqc_mmlm_graph_state",
+  "by_width": {
+    "random_graph": {
+      "12": {
+        "baseline_two_qubit_gates": 89,
+        "saved_two_qubit_gates": 15,
+        "targets": 5,
+        "wins": 5
+      },
+      "20": {
+        "baseline_two_qubit_gates": 207,
+        "saved_two_qubit_gates": 36,
+        "targets": 5,
+        "wins": 5
+      },
+      "32": {
+        "baseline_two_qubit_gates": 432,
+        "saved_two_qubit_gates": 61,
+        "targets": 5,
+        "wins": 5
+      },
+      "48": {
+        "baseline_two_qubit_gates": 883,
+        "saved_two_qubit_gates": 64,
+        "targets": 5,
+        "wins": 5
+      },
+      "64": {
+        "baseline_two_qubit_gates": 1502,
+        "saved_two_qubit_gates": 62,
+        "targets": 5,
+        "wins": 5
+      }
+    },
+    "regular3": {
+      "12": {
+        "baseline_two_qubit_gates": 90,
+        "saved_two_qubit_gates": 9,
+        "targets": 5,
+        "wins": 5
+      },
+      "20": {
+        "baseline_two_qubit_gates": 150,
+        "saved_two_qubit_gates": 7,
+        "targets": 5,
+        "wins": 3
+      },
+      "32": {
+        "baseline_two_qubit_gates": 240,
+        "saved_two_qubit_gates": 5,
+        "targets": 5,
+        "wins": 4
+      },
+      "48": {
+        "baseline_two_qubit_gates": 360,
+        "saved_two_qubit_gates": 5,
+        "targets": 5,
+        "wins": 3
+      },
+      "64": {
+        "baseline_two_qubit_gates": 480,
+        "saved_two_qubit_gates": 3,
+        "targets": 5,
+        "wins": 2
+      }
+    },
+    "regular4": {
+      "12": {
+        "baseline_two_qubit_gates": 120,
+        "saved_two_qubit_gates": 28,
+        "targets": 5,
+        "wins": 5
+      },
+      "20": {
+        "baseline_two_qubit_gates": 200,
+        "saved_two_qubit_gates": 9,
+        "targets": 5,
+        "wins": 3
+      },
+      "32": {
+        "baseline_two_qubit_gates": 320,
+        "saved_two_qubit_gates": 0,
+        "targets": 5,
+        "wins": 0
+      },
+      "48": {
+        "baseline_two_qubit_gates": 480,
+        "saved_two_qubit_gates": 1,
+        "targets": 5,
+        "wins": 1
+      },
+      "64": {
+        "baseline_two_qubit_gates": 640,
+        "saved_two_qubit_gates": 3,
+        "targets": 5,
+        "wins": 3
+      }
+    }
+  },
   "certified_valid": 75,
+  "families": {
+    "random_graph": {
+      "baseline_two_qubit_gates": 3113,
+      "saved_two_qubit_gates": 238,
+      "targets": 25,
+      "ties": 0,
+      "wins": 25
+    },
+    "regular3": {
+      "baseline_two_qubit_gates": 1320,
+      "saved_two_qubit_gates": 29,
+      "targets": 25,
+      "ties": 8,
+      "wins": 17
+    },
+    "regular4": {
+      "baseline_two_qubit_gates": 1760,
+      "saved_two_qubit_gates": 41,
+      "targets": 25,
+      "ties": 13,
+      "wins": 12
+    }
+  },
   "generated_by": "scripts/measure_vqc_mmlm_graph_states.py",
   "losses": 0,
   "mmlm_two_qubit_gates": 5885,

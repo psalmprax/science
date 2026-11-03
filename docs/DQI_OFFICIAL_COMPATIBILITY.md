@@ -415,8 +415,10 @@ build it was measured on, or claims it reaches the target fails there.
   96 > 32, and 32 > 0: closed twice over, not by a missing derivation.
 - **`T_mean` = 445,229 is permanently unsourced.** No circuit produces it. The measured arms
   are 686,014.8, 1,221,466.8 and 472,768.2, and the last of those already assumes every field
-  product and every controlled add are free, which they are not. The projection is therefore
-  one measured factor (`Q`) times one aim (`T`), and says so in `target_basis`.
+  product and every controlled add are free, which they are not. It therefore sits **6.19%
+  below the algorithm's own floor** and is kept only as the **score denominator**:
+  `TARGET_ROLE = SCORE_DENOMINATOR_NOT_AIM`. The projection is one measured factor (`Q`) times
+  one denominator (`T`), and the aim is the measured 686,014.8 toward 472,768.2.
 
 Committed artifact: `benchmarks/quantum_compilation/dqi_design_projection.json`, written by
 `scripts/write_dqi_design_projection.py` and pinned to the live function by

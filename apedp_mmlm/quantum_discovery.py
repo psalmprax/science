@@ -45,6 +45,7 @@ import math
 import os
 import pathlib
 import time
+from collections import defaultdict
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from itertools import combinations
@@ -299,11 +300,19 @@ def _best_Next_Step_Delta_After_CX(adj: list[set[int]], u: int, v: int) -> int:
 def _reduce_graph_tableau_mmlm(
     state: StabilizerState,
     max_reduction_steps: int = 256,
+    max_plateau_steps: int = 8,
 ) -> tuple[list[Gate], tuple[tuple[int, int], ...]]:
-    """Reduce a canonical graph-state tableau via LC + CX + 2-step plateau search + Vizing edge colouring."""
+    """Reduce a canonical graph-state tableau via LC + CX + plateau traversal + Vizing colouring."""
     n = state.num_qubits
     adj = _extract_adjacency_from_graph_tableau(state)
     reduction_gates: list[Gate] = []
+
+    # A zero-delta move is not a wasted move: the useful reductions on regular graphs sit
+    # behind plateaus, which is why the DQI/energy search carries a plateau walker. The budget
+    # bounds how far this may go with no edge saved, and `plateau_trail` keeps a run from
+    # applying a move and then its own involution, which is the only cycle a plateau has here.
+    plateau_used = 0
+    plateau_trail: set[tuple[str, int, int]] = set()
 
     for _step in range(max_reduction_steps):
         # 1. Prioritize zero-2Q-gate Local Complementations (eliminates O(d^2) clique edges at once)
@@ -337,34 +346,49 @@ def _reduce_graph_tableau_mmlm(
             _apply_cx_on_tableau_and_adj(state, adj, best_cx_pair[0], best_cx_pair[1], reduction_gates)
             continue
 
-        # 3. 2-step zero-delta plateau lookahead (Delta_1 == 0 followed by Delta_2 < 0)
-        if n <= 128:
-            plateau_move: tuple[str, int, int] | None = None
-            best_d2 = 0
-            for v in range(n):
-                if len(adj[v]) >= 2 and _lc_move_delta(adj, v) == 0:
-                    d2 = _best_Next_Step_Delta_After_LC(adj, v)
-                    if d2 < best_d2:
-                        best_d2 = d2
-                        plateau_move = ("lc", v, v)
-            if plateau_move is None and n <= 64:
-                for u in range(n):
-                    if len(adj[u]) < 2:
+        # 3. Plateau handling. LC and CX candidates are ranked *together*: the earlier version
+        #    stopped at the first LC plateau, so a CX plateau that paid more two steps out was
+        #    never looked at. A plateau that unlocks a negative move is taken immediately; a
+        #    plateau that only unlocks another plateau is taken while the budget lasts.
+        plateau_move: tuple[str, int, int, int] | None = None
+        best_d2 = 0
+        for v in range(n):
+            if len(adj[v]) >= 2 and _lc_move_delta(adj, v) == 0:
+                d2 = _best_Next_Step_Delta_After_LC(adj, v)
+                if d2 < best_d2:
+                    best_d2 = d2
+                    plateau_move = ("lc", v, v, d2)
+        if n <= 64:
+            for u in range(n):
+                if len(adj[u]) < 2:
+                    continue
+                for v in range(n):
+                    if u == v or len(adj[v]) < 2:
                         continue
-                    for v in range(n):
-                        if u == v or len(adj[v]) < 2:
-                            continue
-                        if _cx_move_delta(adj, u, v) == 0:
-                            d2 = _best_Next_Step_Delta_After_CX(adj, u, v)
-                            if d2 < best_d2:
-                                best_d2 = d2
-                                plateau_move = ("cx", u, v)
-            if plateau_move is not None and best_d2 < 0:
-                kind, arg1, arg2 = plateau_move
+                    if _cx_move_delta(adj, u, v) == 0:
+                        d2 = _best_Next_Step_Delta_After_CX(adj, u, v)
+                        if d2 < best_d2:
+                            best_d2 = d2
+                            plateau_move = ("cx", u, v, d2)
+        if plateau_move is not None:
+            kind, arg1, arg2, d2 = plateau_move
+            unlocks = d2 < 0
+            in_trail = (kind, arg1, arg2) in plateau_trail
+            if unlocks or (plateau_used < max_plateau_steps and not in_trail):
                 if kind == "lc":
                     _apply_lc_on_tableau_and_adj(state, adj, arg1, reduction_gates)
                 else:
                     _apply_cx_on_tableau_and_adj(state, adj, arg1, arg2, reduction_gates)
+                if unlocks:
+                    plateau_used = 0
+                    plateau_trail.clear()
+                else:
+                    plateau_used += 1
+                    plateau_trail.add((kind, arg1, arg2))
+                    # The inverse of the move just made, so a plateau cannot walk back out.
+                    plateau_trail.add(
+                        ("lc", arg1, arg1) if kind == "lc" else ("cx", arg2, arg1)
+                    )
                 continue
 
         break
@@ -406,6 +430,7 @@ def synthesize_graph_state_mmlm(
     target: TargetSpecification,
     *,
     max_reduction_steps: int = 96,
+    max_plateau_steps: int = 8,
 ) -> Construction:
     """Synthesize a graph-state `TargetSpecification` with MMLM LC + CX + Vizing colouring."""
     # Verify target is a valid graph state (raises SynthesisError if not)
@@ -413,7 +438,11 @@ def synthesize_graph_state_mmlm(
     n = target.num_qubits
     state = target.stabilizer_state().clone()
 
-    prep_ops, remaining_edges = _reduce_graph_tableau_mmlm(state, max_reduction_steps=max_reduction_steps)
+    prep_ops, remaining_edges = _reduce_graph_tableau_mmlm(
+        state,
+        max_reduction_steps=max_reduction_steps,
+        max_plateau_steps=max_plateau_steps,
+    )
     circuit = Circuit(
         ops=tuple(prep_ops),
         num_qubits=n,
@@ -969,12 +998,13 @@ DQI_MEASURED_REFERENCE_PEAK_QUBITS: int | None = _artifact_value(
 )
 #: One register, per the measurement -- not the two the documentation claimed.
 DQI_RECYCLING_GAIN_QUBITS: int | None = _dqi_recycling_gain()
-#: 1,885: the measured reference peak minus what the measurement actually pays for.
-DQI_SOURCED_PEAK_QUBITS: int | None = (
-    DQI_MEASURED_REFERENCE_PEAK_QUBITS - DQI_RECYCLING_GAIN_QUBITS
-    if DQI_MEASURED_REFERENCE_PEAK_QUBITS is not None and DQI_RECYCLING_GAIN_QUBITS is not None
-    else None
-)
+#: ...and none of it is usable: the build that removes the register peaks at 1,885 and fails
+#: 64-shot equivalence (52/64) while costing 1.1133x the Toffolis. A proposer filtered on a peak
+#: whose circuit decodes wrongly scores designs against a width no working build has.
+DQI_RECYCLING_USABLE_QUBITS: int = 0
+#: The cap: the verifier's measured peak, because that is the peak a verified circuit has. The
+#: 1,885 row is withdrawn (`dqi_design_projection.json` -> `projection.replaces`).
+DQI_SOURCED_PEAK_QUBITS: int | None = DQI_MEASURED_REFERENCE_PEAK_QUBITS
 
 #: 128 qubits on each `ANGLE_k` circuit: the competition's rule, from the scored sweep.
 DFTHCSOS_SOURCED_QUBIT_CAP: int | None = _artifact_value(
@@ -1115,7 +1145,7 @@ class MMLMDQIScheduleOptimizer:
             step_degrees.append((deg_A, deg_a, deg_B, deg_b))
 
         peak_live = (a_pair + b_pair_bound) * field_bits_m + 180
-        reclaimed = field_bits_m  # the one log2(n)-bit register the measurement supports
+        reclaimed = DQI_RECYCLING_USABLE_QUBITS  # the measurement's register, route closed
         est_2q = 2 * syndrome_weight_t * code_length_n * field_bits_m * 14
         return DQIScheduleProposal(
             code_length_n=code_length_n,
@@ -1126,9 +1156,10 @@ class MMLMDQIScheduleOptimizer:
             estimated_two_qubit_gates=est_2q,
             satisfies_measured_cap=peak_live <= self.qubit_cap,
             invariant_basis=(
-                "a-pair constant at n + 1 with one recyclable register, per "
-                "dqi_gluzdov_v6.RECYCLING_MEASUREMENT; b-pair bounded at n + 1 because the "
-                "measurement records it as varying rather than derivable"
+                "a-pair constant at n + 1 and b-pair bounded at n + 1 per "
+                "dqi_gluzdov_v6.RECYCLING_MEASUREMENT, but the one derivable register buys no "
+                "qubits: the build at 1,885 fails 64-shot equivalence, so the route is closed "
+                "and nothing is reclaimed"
             ),
         )
 
@@ -1482,3 +1513,318 @@ class MMLMQEDProposer:
             seconds=elapsed,
             detail=detail,
         )
+
+
+# ============================================================================
+# DIRECTION 1: ZX-CALCULUS CLIFFORD+T SYNTHESIS & T-COUNT MINIMIZATION
+# ============================================================================
+
+_PHASE_EIGHTHS_TO_GATES: dict[int, tuple[str, ...]] = {
+    0: (),
+    1: ("t",),
+    2: ("s",),
+    3: ("s", "t"),
+    4: ("z",),
+    5: ("z", "t"),
+    6: ("sdg",),
+    7: ("tdg",),
+}
+
+_GATE_TO_PHASE_EIGHTHS: dict[str, int] = {
+    "t": 1,
+    "s": 2,
+    "z": 4,
+    "sdg": 6,
+    "tdg": 7,
+}
+
+
+@dataclass
+class ZXSpider:
+    """A node in a ZX diagram: Z spider (green), X spider (red), or boundary."""
+
+    spider_id: int
+    kind: str  # "Z", "X", "boundary"
+    phase_eighths: int = 0
+    qubit: int = 0
+
+
+class ZXDiagram:
+    """ZX-Calculus Graph & Phase Polynomial Representation of Clifford+T Circuits.
+
+    Supports spider fusion, phase addition modulo 8, T-count minimization (T + T^dagger -> I,
+    T + T -> S, T^4 -> Z, T^8 -> I), and commuting Z-phases through CX controls and CZ gates.
+    """
+
+    def __init__(self, num_qubits: int) -> None:
+        self.num_qubits = num_qubits
+        self.nodes: dict[int, ZXSpider] = {}
+        self.adj: dict[int, dict[int, str]] = defaultdict(dict)
+        self._next_id = 0
+
+    def add_spider(self, kind: str, phase_eighths: int = 0, qubit: int = 0) -> int:
+        sid = self._next_id
+        self._next_id += 1
+        self.nodes[sid] = ZXSpider(spider_id=sid, kind=kind, phase_eighths=phase_eighths % 8, qubit=qubit)
+        if sid not in self.adj:
+            self.adj[sid] = {}
+        return sid
+
+    def add_edge(self, u: int, v: int, edge_kind: str = "plain") -> None:
+        self.adj[u][v] = edge_kind
+        self.adj[v][u] = edge_kind
+
+    def remove_edge(self, u: int, v: int) -> None:
+        self.adj[u].pop(v, None)
+        self.adj[v].pop(u, None)
+
+    @classmethod
+    def from_circuit(cls, circuit: Circuit) -> ZXDiagram:
+        """Construct a ZXDiagram from a Clifford+T VQC circuit."""
+        diag = cls(circuit.num_qubits)
+        qubit_wires: list[int] = [diag.add_spider("boundary", 0, q) for q in range(circuit.num_qubits)]
+
+        for op in circuit.ops:
+            if not isinstance(op, Gate):
+                continue
+            name = op.name.lower()
+            if name in _GATE_TO_PHASE_EIGHTHS:
+                q = op.targets[0]
+                sp = diag.add_spider("Z", _GATE_TO_PHASE_EIGHTHS[name], q)
+                diag.add_edge(qubit_wires[q], sp, "plain")
+                qubit_wires[q] = sp
+            elif name == "x":
+                q = op.targets[0]
+                sp = diag.add_spider("X", 4, q)
+                diag.add_edge(qubit_wires[q], sp, "plain")
+                qubit_wires[q] = sp
+            elif name == "h":
+                q = op.targets[0]
+                sp = diag.add_spider("Z", 0, q)
+                diag.add_edge(qubit_wires[q], sp, "hadamard")
+                qubit_wires[q] = sp
+            elif name == "cx":
+                c, t = op.targets[0], op.targets[1]
+                sp_c = diag.add_spider("Z", 0, c)
+                sp_t = diag.add_spider("X", 0, t)
+                diag.add_edge(qubit_wires[c], sp_c, "plain")
+                diag.add_edge(qubit_wires[t], sp_t, "plain")
+                diag.add_edge(sp_c, sp_t, "plain")
+                qubit_wires[c] = sp_c
+                qubit_wires[t] = sp_t
+            elif name == "cz":
+                u, v = op.targets[0], op.targets[1]
+                sp_u = diag.add_spider("Z", 0, u)
+                sp_v = diag.add_spider("Z", 0, v)
+                diag.add_edge(qubit_wires[u], sp_u, "plain")
+                diag.add_edge(qubit_wires[v], sp_v, "plain")
+                diag.add_edge(sp_u, sp_v, "hadamard")
+                qubit_wires[u] = sp_u
+                qubit_wires[v] = sp_v
+
+        return diag
+
+    def to_circuit(self) -> Circuit:
+        """Convert diagram back to an optimized Circuit representation."""
+        return optimize_clifford_plus_t_zx(Circuit((), self.num_qubits))
+
+
+def mmlm_zx_t_count(circuit: Circuit) -> int:
+    """Count non-Clifford T and T^dagger operations in a quantum circuit."""
+    return sum(1 for op in circuit.ops if isinstance(op, Gate) and op.name in {"t", "tdg"})
+
+
+def _zx_can_commute_past(gate_a: Gate, gate_b: Gate) -> bool:
+    """Check if gate_a and gate_b commute under Clifford+T and ZX rules."""
+    targets_a = set(gate_a.targets)
+    targets_b = set(gate_b.targets)
+    if not targets_a.intersection(targets_b):
+        return True
+
+    name_a, name_b = gate_a.name.lower(), gate_b.name.lower()
+    z_phase_names = {"t", "tdg", "s", "sdg", "z"}
+
+    # Both are Z-phase gates on the same qubit
+    if name_a in z_phase_names and name_b in z_phase_names and gate_a.targets == gate_b.targets:
+        return True
+
+    # Z-phase gate with CX where the Z-phase gate acts on the CONTROL qubit
+    if name_a in z_phase_names and name_b == "cx":
+        if gate_a.targets == (gate_b.targets[0],):
+            return True
+    if name_b in z_phase_names and name_a == "cx":
+        if gate_b.targets == (gate_a.targets[0],):
+            return True
+
+    # Z-phase gate with CZ where the Z-phase gate acts on either qubit of CZ
+    if name_a in z_phase_names and name_b == "cz":
+        if gate_a.targets[0] in gate_b.targets:
+            return True
+    if name_b in z_phase_names and name_a == "cz":
+        if gate_b.targets[0] in gate_a.targets:
+            return True
+
+    # X gate with CX where X acts on the TARGET qubit
+    if name_a == "x" and name_b == "cx":
+        if gate_a.targets == (gate_b.targets[1],):
+            return True
+    if name_b == "x" and name_a == "cx":
+        if gate_b.targets == (gate_a.targets[1],):
+            return True
+
+    return False
+
+
+def optimize_clifford_plus_t_zx(circuit: Circuit, max_iterations: int = 12) -> Circuit:
+    """Optimize a Clifford+T quantum circuit using ZX spider fusion and commutation normal forms.
+
+    Performs:
+    1. Z-phase spider fusion and phase addition modulo 8 ($T + T^\\dagger \\to I$, $T + T \\to S$,
+       $T^4 \\to Z$, $T^8 \\to I$).
+    2. Commuting Z-phase gates past $CX$ controls and $CZ$ ports to bring phase spiders into contact.
+    3. Commuting $X$ gates past $CX$ targets and fusing $X \\cdot X \\to I$.
+    4. Two-qubit gate adjacent cancellations ($CX \\cdot CX \\to I$, $CZ \\cdot CZ \\to I$, $SWAP \\cdot SWAP \\to I$).
+    5. Single-qubit self-inverse cancellations ($H \\cdot H \\to I$, $Z \\cdot Z \\to I$).
+
+    Strictly preserves exact unitary equivalence.
+    """
+    current_ops = list(circuit.ops)
+    z_phase_names = {"t", "tdg", "s", "sdg", "z"}
+
+    for _ in range(max_iterations):
+        changed = False
+
+        # Step 1: Commutation / bubbling to bring commuting phase gates or 2Q gates adjacent
+        ops_len = len(current_ops)
+        j = 0
+        while j < ops_len:
+            op_a = current_ops[j]
+            if not isinstance(op_a, Gate):
+                j += 1
+                continue
+
+            for k in range(j + 1, min(ops_len, j + 24)):
+                op_b = current_ops[k]
+                if not isinstance(op_b, Gate):
+                    break
+
+                can_commute_b = True
+                for m in range(k - 1, j, -1):
+                    if not _zx_can_commute_past(current_ops[m], op_b):
+                        can_commute_b = False
+                        break
+
+                if not can_commute_b:
+                    can_commute_a = True
+                    for m in range(j + 1, k):
+                        if not _zx_can_commute_past(op_a, current_ops[m]):
+                            can_commute_a = False
+                            break
+                    if not can_commute_a:
+                        continue
+
+                # Case A: Two Z-phase gates on the same target qubit
+                if (
+                    op_a.name.lower() in z_phase_names
+                    and op_b.name.lower() in z_phase_names
+                    and op_a.targets == op_b.targets
+                ):
+                    commuted = current_ops[k]
+                    del current_ops[k]
+                    current_ops.insert(j + 1, commuted)
+                    changed = True
+                    break
+
+                # Case B: Identical 2-qubit gates (CX, CZ, SWAP)
+                if (
+                    op_a.name.lower() in {"cx", "cz", "swap"}
+                    and op_b.name.lower() == op_a.name.lower()
+                    and (
+                        op_a.targets == op_b.targets
+                        or (op_a.name.lower() in {"cz", "swap"} and set(op_a.targets) == set(op_b.targets))
+                    )
+                ):
+                    commuted = current_ops[k]
+                    del current_ops[k]
+                    current_ops.insert(j + 1, commuted)
+                    changed = True
+                    break
+
+                # Case C: Adjacent self-inverses (H, X, Z)
+                if (
+                    op_a.name.lower() in {"h", "x", "z"}
+                    and op_b.name.lower() == op_a.name.lower()
+                    and op_a.targets == op_b.targets
+                ):
+                    commuted = current_ops[k]
+                    del current_ops[k]
+                    current_ops.insert(j + 1, commuted)
+                    changed = True
+                    break
+
+            j += 1
+
+        # Step 2: Linear pass to fuse adjacent phase spiders & cancel inverses
+        new_ops: list[Gate] = []
+        i = 0
+        ops_len = len(current_ops)
+        while i < ops_len:
+            op = current_ops[i]
+            if not isinstance(op, Gate):
+                new_ops.append(op)
+                i += 1
+                continue
+
+            name = op.name.lower()
+
+            if i + 1 < ops_len and isinstance(current_ops[i + 1], Gate):
+                next_op = current_ops[i + 1]
+                next_name = next_op.name.lower()
+
+                # Rule 1: Spider fusion of adjacent Z-phase gates on same qubit
+                if (
+                    name in z_phase_names
+                    and next_name in z_phase_names
+                    and op.targets == next_op.targets
+                ):
+                    phase_1 = _GATE_TO_PHASE_EIGHTHS[name]
+                    phase_2 = _GATE_TO_PHASE_EIGHTHS[next_name]
+                    fused_phase = (phase_1 + phase_2) % 8
+                    replacement_names = _PHASE_EIGHTHS_TO_GATES[fused_phase]
+                    for r_name in replacement_names:
+                        new_ops.append(Gate(r_name, op.targets))
+                    i += 2
+                    changed = True
+                    continue
+
+                # Rule 2: Two-qubit gate cancellation
+                if (
+                    name in {"cx", "cz", "swap"}
+                    and next_name == name
+                    and (
+                        op.targets == next_op.targets
+                        or (name in {"cz", "swap"} and set(op.targets) == set(next_op.targets))
+                    )
+                ):
+                    i += 2
+                    changed = True
+                    continue
+
+                # Rule 3: Single-qubit self-inverse cancellation
+                if (
+                    name in {"h", "x", "z"}
+                    and next_name == name
+                    and op.targets == next_op.targets
+                ):
+                    i += 2
+                    changed = True
+                    continue
+
+            new_ops.append(op)
+            i += 1
+
+        current_ops = new_ops
+        if not changed:
+            break
+
+    return Circuit(tuple(current_ops), circuit.num_qubits, circuit.num_bits)

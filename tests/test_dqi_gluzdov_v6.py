@@ -7,12 +7,12 @@ Tests:
 2. Scratch wire pooling and uncomputation: peak qubits strictly Q <= 1,789.
 3. Reed-Solomon syndrome generation, EEA, and Chien/Forney error-vector recovery across weights.
 4. Boundary values (empty error vector, max correctable errors, error weight exceeding l).
-5. Resource accounting: the projection is scored at the *sourced* peak Q = 1,885 (verifier
-   1,893 less one recyclable register), giving R(eps_plus) * Q^2 * T_mean ≈ 1.885e12, with
-   T_mean = 445,229 still unsourced.
-6. Target gain factor ≈ 12.97x is arithmetic only; the projection must report HOLD with no
+5. Resource accounting: the projection is scored at the verifier's peak Q = 1,893, giving
+   R(eps_plus) * Q^2 * T_mean ≈ 1.9006e12, with T_mean = 445,229 still unsourced. The 1,885
+   recycled peak is carried as **withdrawn**: that build fails 64-shot equivalence.
+6. Target gain factor ≈ 12.86x is arithmetic only; the projection must report HOLD with no
    official verifier receipt rather than claiming PASS. The 1,789 figure stays recorded as
-   an unreachable target: 96 qubits below the sourced peak.
+   an unreachable target: 104 qubits below the verifier peak.
 7. Kickmix circuit builder integration when available.
 8. dqi_builder architecture dispatch (reference default, V6 selectable).
 """
@@ -188,8 +188,15 @@ def test_boundary_error_weight_exceeded():
         dec.simulate_error_vector(excess_errors)
 
 
+from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import (
+    T_MEAN_ALGORITHM_FLOOR,
+    model_remaining_width_levers,
+    toffoli_target_decision,
+)
+
+
 def test_design_projection_dqi_gluzdov_v6():
-    """The projection is scored at the sourced peak, and still reports HOLD."""
+    """The projection is scored at the verifier peak, and still reports HOLD."""
     proj = design_projection_dqi_gluzdov_v6()
     assert proj["status"] == "ANALYTICAL_PROJECTION_ONLY"
     assert proj["compiled_kmb"] is False
@@ -198,12 +205,21 @@ def test_design_projection_dqi_gluzdov_v6():
 
     qubits = proj["qubits"]
     assert qubits["reference_peak_qubits"] == 1893
-    assert qubits["sourced_peak_qubits"] == 1885
-    assert qubits["v6_peak_qubits"] == qubits["sourced_peak_qubits"]
-    assert qubits["qubit_cap"] == 1885
+    # The cap follows the peak a verified circuit has; the 1,885 row is carried as withdrawn.
+    assert qubits["sourced_peak_qubits"] == 1893
+    assert qubits["qubit_cap"] == 1893
+    assert qubits["withdrawn_peak_qubits"] == 1885
+    assert qubits["v6_peak_qubits"] == 1885  # the withdrawn config, not the scored peak
     # The 1,789 target is carried as the recorded gap, not as the scored peak.
     assert qubits["aspirational_peak_qubits"] == 1789
-    assert qubits["gap_to_aspirational_qubits"] == 96
+    assert qubits["gap_to_aspirational_qubits"] == 104
+    assert qubits["withdrawn_gap_to_aspirational_qubits"] == 96
+
+    operative = proj["projection"]
+    assert operative["status"] == "OPERATIVE_ON_VERIFIER_PEAK"
+    assert operative["peak_qubits"] == 1893
+    assert operative["cost"] > TARGET_DQI_COST  # the withdrawn width is not available
+    assert operative["replaces"]["status"] == "WITHDRAWN_RECYCLING_CLOSED"
 
     costs = proj["costs"]
     assert math.isclose(costs["recomputed_v6_cost"], TARGET_DQI_COST, rel_tol=1e-12)
@@ -212,13 +228,24 @@ def test_design_projection_dqi_gluzdov_v6():
     )
     assert costs["gain_factor"] < 14.396  # the 1,789 figure is no longer the projection
     assert "UNSOURCED" in proj["target_basis"]["mean_toffolis"]
-    assert "sourced" in proj["target_basis"]["peak_qubits"]
+    assert "measured" in proj["target_basis"]["peak_qubits"]
+
+    # The 20 qubits above the reference are the six levers', not the schedule gates': the
+    # campaign measured `Q` unchanged across every arm, so no gate can be dropped for width.
+    giveback = proj["width_giveback"]
+    assert giveback["from_qubits"] - giveback["to_qubits"] == 20
+    assert giveback["schedule_gate_qubits"] == 0
+    assert giveback["dropping_schedule_gates_recovers_qubits"] is False
+    assert giveback["toffolis_given_back_per_shot"] > 4_000_000
+    assert 200_000 < giveback["toffolis_per_qubit"] < 220_000
+    assert 4.3 < giveback["score_worsening_factor"] < 4.4
 
     gate = proj["acceptance_gate"]
-    assert gate["arithmetic_within_target"] is True
+    # The operative projection is *above* the target built around the withdrawn 1,885.
+    assert gate["operative_within_withdrawn_target"] is False
     assert gate["passes_official_verifier_constraint"] is False
     assert gate["status"] == "HOLD_FOR_COMPILED_AND_VERIFIED_RECEIPT"
-    assert any("1,885" in item for item in gate["required_evidence"])
+    assert any("1,893" in item for item in gate["required_evidence"])
     assert any("unsourced" in item for item in gate["required_evidence"])
 
 def test_scratch_wire_pooling_qubit_count_guarantee():
@@ -411,18 +438,82 @@ def test_missing_dqi_record_raises_rather_than_defaulting(monkeypatch, tmp_path)
 
 
 def test_measured_width_levers_do_not_reach_the_target():
-    """32 qubits of recycling + 23 of window = 55 against 64 needed: 9 short."""
+    """Recycling is 0 and the window 23, against 64 needed: 41 short, at an unreachable floor."""
     model = model_data_path_floor()
     assert model["register_floor_qubits"] == 1853
+    assert model["floor_reachable"] is False
     assert model["qubits_needed"] == 64
-    assert [lever["qubits"] for lever in model["levers"]] == [32, 23]
-    assert model["lever_sum_qubits"] == 55
-    assert model["shortfall_qubits"] == 9
+    # The recycling lever that used to count 32 now counts 0: the build that reaches 1,885
+    # decodes wrongly, so nothing it would have saved is usable.
+    assert [lever["qubits"] for lever in model["levers"]] == [0, 23]
+    assert model["lever_sum_qubits"] == 23
+    assert model["shortfall_qubits"] == 41
     assert model["reaches_target"] is False
+    assert model["sum_is_upper_bound"] is True
     # A single polynomial array is bigger than every lever combined.
     assert model["polynomial_array_qubits"] == 71 * 12 == 852
     assert model["polynomial_array_qubits"] > model["lever_sum_qubits"]
     assert len(WIDTH_LEVERS_MEASURED) == 2
+
+
+def test_the_41_qubits_the_window_leaves_have_no_lever():
+    """41 below the floor, 81 from the verifier peak, 101 from the arm: none supplied."""
+    model = model_remaining_width_levers()
+    below_floor = model["framings"]["below_register_floor"]
+    from_reference = model["framings"]["from_measured_reference"]
+    from_widest = model["framings"]["from_widest_measured_arm"]
+
+    assert below_floor["qubits_needed"] == 64
+    assert below_floor["window_saving"] == 23
+    assert below_floor["remainder"] == 41
+    assert below_floor["framing_exists"] is False
+
+    # The floor is conditional on closed recycling, so the live gaps are the larger ones.
+    assert from_reference["from_qubits"] == 1893
+    assert from_reference["remainder"] == 104 - 23 == 81
+    assert from_widest is not None and from_widest["from_qubits"] == 1913
+    assert from_widest["remainder"] == 124 - 23 == 101
+    for framing in (below_floor, from_reference, from_widest):
+        assert framing["remainder"] > 0
+
+    # Nothing left: the window is the last measured saving, so the remainder of the levers is 0.
+    assert model["levers_left_sum_qubits"] == 0
+    assert model["supplied"] is False
+    assert model["polynomial_array_qubits"] == 852
+    assert math.isclose(model["array_to_remainder_ratio"], 852 / 41, rel_tol=1e-12)
+    assert "no lever" in model["verdict"]
+
+
+def test_445229_is_a_denominator_and_no_longer_the_aim():
+    """The target sits below the algorithm's own floor, so the best case is already a loss."""
+    decision = toffoli_target_decision()
+    assert T_MEAN_TARGET_V6 == 445229.0
+    assert T_MEAN_ALGORITHM_FLOOR == 472768.2
+    assert decision["target_below_floor"] is True
+    assert decision["target_role"] == "SCORE_DENOMINATOR_NOT_AIM"
+    assert math.isclose(decision["target_to_floor_ratio"], 472768.2 / 445229.0, rel_tol=1e-12)
+    assert decision["target_to_floor_ratio"] > 1.0
+
+    # The frontier is 1.541x the target and 1.451x the floor: still above both.
+    assert decision["measured_frontier_mean_toffolis"] == 686014.8
+    assert abs(decision["frontier_to_target_ratio"] - 1.54083) < 1e-4
+    assert abs(decision["frontier_to_floor_ratio"] - 1.45106) < 1e-4
+
+    # The best any circuit of this algorithm can do is the floor, and it still loses.
+    assert decision["projection_reaches_target"] is False
+    assert decision["attainable_cost_at_operative_peak"] > TARGET_DQI_COST
+    assert decision["attainable_gain_factor"] < TARGET_GAIN_FACTOR
+
+
+def test_projection_carries_the_lever_count_and_the_target_decision():
+    projection = design_projection_dqi_gluzdov_v6()
+    assert projection["remaining_width_levers"] == model_remaining_width_levers()
+    assert projection["toffoli_target"] == toffoli_target_decision()
+    assert projection["data_path_floor"]["shortfall_qubits"] == 41
+    # The acceptance gate names the peak that exists, not the withdrawn one.
+    evidence = " ".join(projection["acceptance_gate"]["required_evidence"])
+    assert "Q <= 1,893" in evidence
+    assert "Q <= 1,885" not in evidence
 
 
 def test_division_price_is_read_from_the_primitive_record():

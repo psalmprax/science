@@ -356,14 +356,14 @@ and §2 says which term it would have to be.
 
 ## 7. Two closures this note can now make
 
-### 7.1 445,229 is permanently unsourced
-
-The target has no circuit behind it, and optimising the circuits this repository has will
-not produce one. The measured ladder is **686,014.8** (the schedule campaign, 1.541×),
+### 7.1 445,229 is permanently unsourcedThe target has no circuit behind it, and optimising the circuits this repository has will not
+produce one. The measured ladder is **686,014.8** (the schedule campaign, 1.541×),
 **1,221,466.8** (the six-lever arm, 2.744×) and **472,768.2** (§2's last row: every field
 product *and* every controlled add free — impossible — and still 1.062×). So 445,229 is
 labelled **permanently unsourced**: a derived aim kept so comparisons have a denominator,
-never a count any build has produced or is projected to produce.
+never a count any build has produced or is projected to produce. It is also **6.19% below the
+algorithm's own floor**, which is why it stops being the campaign's aim in §7.10 and stays only
+as the score's denominator.
 `design_projection_dqi_gluzdov_v6()` records it as
 `"mean_toffolis": "UNSOURCED: ..."` and scores the projection at the sourced peak rather
 than against the 1,789 row it was derived with.
@@ -448,11 +448,20 @@ the two together still do not get there:
 | needed (1,853 → 1,789) | **64** | |
 
 **23 < 64**, and 23 is an *upper* bound: the window saving was measured on a 1,935-qubit
-build, so any build already at 1,853 has spent part of it. Forty-one qubits remain unaccounted
-for even at the surviving lever's limit, which means the rest is data-path width — and the data
-path does not move in small steps. One polynomial array is `(n + 1) × m = 71 × 12 = 852` qubits, larger
-than every lever combined; dropping or narrowing one is worth more than all of them and is a
-different circuit, not a schedule. `model_data_path_floor()` computes the table.
+build, so any build already at 1,853 has spent part of it. Forty-one qubits therefore remain
+unaccounted for even at the surviving lever's limit, and no other measured lever supplies them:
+
+| framing | from | needed | window | remainder | does that build exist? |
+|---|---|---|---|---|---|
+| below the register floor | 1,853 | 64 | 23 | **41** | no — it needs the closed recycling |
+| from the verifier peak | 1,893 | 104 | 23 | **81** | yes |
+| from the schedule arm | 1,913 | 124 | 23 | **101** | yes, and it carries the 686,014.8 |
+
+So the answer is **no**: the window is the last width lever with a measured saving, the levers
+left sum to **0**, and the 41 is the most optimistic of three remainders. The only change larger
+than it is the data path — one polynomial array is `(n + 1) × m = 71 × 12 = 852` qubits, **20.8×**
+the 41 — and dropping one is a different circuit with an undischarged obligation (§7.6), not a
+width lever. `model_data_path_floor()` and `model_remaining_width_levers()` compute both tables.
 
 ### 7.6 What holding one polynomial array would trade
 
@@ -524,4 +533,83 @@ with the same unsourced `T_mean = 445,229`:
 withdrawn row under `projection.replaces`; `dqi_design_projection.json` is regenerated from it.
 The gain falls by 0.86% relative to the withdrawn row, which is the whole worth of the lever
 that turned out not to work.
+
+### 7.9 The frontier, in one table
+
+Every rung below is `R(eps_plus) · Q² · T` with `R = 1.1912604648`, scored against the
+**operative** denominator of 1.9006e12 (the 1,893/445,229 row of §7.8), so a row above 1.000×
+is a loss. The last two rows are not builds: one is the target the score is divided by, the
+other is the aspiration §7.2 closed.
+
+| # | rung | `Q` | `T_mean`/shot | score | vs 1.9006e12 | gain vs baseline | basis |
+|---|---|---|---|---|---|---|---|
+| 1 | pinned reference, reduced-window 54-AND | 1,893 | 5,433,438.2 | 2.3194e13 | 12.204× | 1.054× | measured, verifier PASS |
+| 2 | six-lever `MR` arm | 1,913 | 1,221,466.8 | 5.3250e12 | 2.802× | 4.590× | measured |
+| 3 | **campaign arm, five schedule gates** | **1,913** | **685,936.2** | **2.9903e12** | **1.573×** | **8.173×** | measured, verifier PASS at 102,400 shots |
+| 4 | rung 3 with every field product and controlled add free | 1,913 | 472,768.2 | 2.0610e12 | 1.084× | 11.858× | impossible; bounds the *algorithm* |
+| 5 | rung 4 at the verifier peak | 1,893 | 472,768.2 | 2.0182e12 | 1.062× | 12.110× | needs the 32 closed qubits |
+| — | Benchmark II target (denominator) | 1,893 | 445,229 | 1.9006e12 | 1.000× | 12.859× | derived, unsourced, below the floor |
+| — | aspirational | 1,789 | 445,229 | 1.6975e12 | 0.893× | 14.397× | 104 qubits nothing supplies |
+
+What that table says, in three lines:
+
+- **The width axis is exhausted**: rung 3 already sits 20 qubits wider than the reference, every
+  qubit lever left is worth 0 (§7.2) or 23 that cannot be re-measured at the floor (§7.7), and
+  giving those 20 back costs 4,212,030.2 Toffolis per shot (§7.11).
+- **The Toffoli axis has one live rung and one dead one**: 686,014.8 → 472,768.2 is optimisation
+  (a decoder algorithm, §7.10); 472,768.2 → 445,229 is not, because it is below the non-product
+  floor of the algorithm itself.
+- **The frontier is rung 3.** Nothing above it has been built, and rungs 4–5 are markers on the
+  map, not destinations.
+
+### 7.10 445,229 stops being the aim
+
+The schedule campaign left the decoder at 686,014.8, which is **1.541×** the target. The
+decision this note makes is that the target does not survive as the aim, and the reason is
+arithmetic rather than fatigue: **445,229 is 6.19% below the floor of work this algorithm
+spends.** 472,768.2 Toffolis per shot are the EEA iterations, their predicates, the counter
+decode, the shifts and the metadata — not field products — so making every field product and
+every controlled add free (rung 4) still leaves the shot at **1.062×** the target. Aiming at
+445,229 would mean aiming at a number whose best case is already a loss.
+
+What it stays is the **denominator**. The 14.397× Benchmark II score is derived from it, and a
+score needs a fixed divisor to stay comparable, so `TARGET_ROLE` is
+`SCORE_DENOMINATOR_NOT_AIM` and the projection's 12.857× is labelled a ceiling nothing reaches.
+The aim becomes the two things that are still movable:
+
+1. **686,014.8 → 472,768.2** by decoder algorithm — a shorter EEA, a different error locator, or
+   a construction that does not evaluate 4,095 positions per shot
+   ([`EEA_AND_PREDICATE_PLAN.md`](EEA_AND_PREDICATE_PLAN.md), [`NONMULTIPLY_LEDGER.md`](NONMULTIPLY_LEDGER.md));
+2. **1,913 → 1,893** on the campaign arm, worth 1.084× → 1.062× *if it were free* — and §7.11
+   measures that it is not: the 20 qubits are the six levers', not the schedule gates', and
+   giving them back costs 4,212,030.2 Toffolis per shot. This is the width floor of an
+   optimisation, not a queue of pending cuts.
+
+`toffoli_target_decision()` carries the decision and `dqi_design_projection.json` ships it under
+`toffoli_target`. What would overturn it: a decoder that does not spend the 472,768.2 at all —
+which is a different benchmark answer, not a better optimisation of this one.
+
+### 7.11 What the 20 qubits cost
+
+§7.9 was phrased as "the 20 qubits the schedule gates cost", and the campaign's own control
+measurement says otherwise: **every schedule arm reports `Q` = 1,913, identical to its six-lever
+control** (P6 in [`EEA_SCHEDULE_CAMPAIGN.md`](EEA_SCHEDULE_CAMPAIGN.md) §2.1), because a
+classical read flows through the region's existing scratch and adds no wire. The five gates are
+width-free, so dropping them recovers nothing, and the 20 qubits belong to the six levers.
+
+Their price is measured rather than projected — two verifier passes at 102,400 shots:
+
+| arm | `Q` | `T_mean`/shot | score | giving back the 20 qubits |
+|---|---|---|---|---|
+| pinned reference, reduced-window 54-AND | 1,893 | 5,433,438.2 | 2.3194e13 | — |
+| six-lever `MR` arm (holds the 20) | 1,913 | 1,221,408.0 | 5.3247e12 | **costs 4,212,030.2 T/shot** |
+
+`Q` enters the score squared, so 20 qubits are worth **1.0213×**, while the shot they cost is
+worth **4.448×**. Giving them back therefore multiplies the score by **4.36×**, which is
+**210,601.5 Toffolis per qubit**. That closes the width axis from the other end: not only is
+there no lever left (§7.7), the width already taken is the cheapest in the design.
+
+`model_width_giveback_cost()` computes this from the two records rather than from prose, and
+`dqi_design_projection.json` ships it under `width_giveback`, so the attribution cannot drift
+back to the schedule gates.
 

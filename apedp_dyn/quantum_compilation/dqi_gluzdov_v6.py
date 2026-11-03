@@ -98,6 +98,16 @@ MAX_FURTHER_RECYCLING_QUBITS: int = REMAINING_DEGREE_REGISTERS * RECYCLED_QUBITS
 PEAK_FLOOR_UNDER_RECYCLING: int = PEAK_QUBITS_SOURCED - MAX_FURTHER_RECYCLING_QUBITS
 T_MEAN_REFERENCE: float = 5725108.382109375
 T_MEAN_TARGET_V6: float = 445229.0
+#: The floor under this *algorithm*, not under this build. `BENCHMARK2_TARGET_REACHABILITY.md`
+#: section 2 decomposes the 1,221,466.8 arm into 748,698.6 of field products and **472,768.2**
+#: of work that is not a field product at all: the EEA iterations, their predicates, the counter
+#: decode, the shifts and the metadata. Freeing every field product *and* every controlled add --
+#: physically impossible -- still leaves that term, so 445,229 sits 6.19% below it.
+T_MEAN_ALGORITHM_FLOOR: float = 472768.2
+#: The measured frontier: the schedule campaign's stacked arm, reproduced by the verifier at
+#: 685,936.2051367187 per shot (`dqi_campaign_arm_submission_score.json`) against the campaign's
+#: recorded 686,014.8 (`dqi_schedule_campaign.json`).
+CAMPAIGN_FRONTIER_T_MEAN: float = 686014.8
 R_EPS_PLUS: float = 1.1912604648115832
 EPS_PLUS: float = 0.0008660587301657926
 
@@ -117,6 +127,17 @@ PROJECTION_GAIN_FACTOR: float = BASELINE_DQI_COST / PROJECTION_DQI_COST
 #: The 1,789 arithmetic, kept only so the 14.396x figure has an address. Nothing here
 #: reaches it: 96 qubits beyond what one recyclable register can supply.
 ASPIRATIONAL_DQI_COST_AT_1789: float = R_EPS_PLUS * (PEAK_QUBITS_V6 ** 2) * T_MEAN_TARGET_V6
+
+#: 445,229 is below the algorithm floor, so it cannot stay the campaign's aim: the best case it
+#: has is already a loss. It stays as the *denominator* of the Benchmark II score -- the 14.397x
+#: target is derived from it, and a score needs a fixed divisor -- and the aim becomes the
+#: measured frontier moving toward the floor. Scored at the operative peak, the floor is the best
+#: any circuit of this algorithm can do, and it is still above the target.
+TARGET_IS_BELOW_ALGORITHM_FLOOR: bool = T_MEAN_TARGET_V6 < T_MEAN_ALGORITHM_FLOOR
+TARGET_TO_FLOOR_RATIO: float = T_MEAN_ALGORITHM_FLOOR / T_MEAN_TARGET_V6
+TARGET_ROLE: str = "SCORE_DENOMINATOR_NOT_AIM"
+ATTAINABLE_DQI_COST: float = R_EPS_PLUS * (PROJECTION_PEAK_QUBITS ** 2) * T_MEAN_ALGORITHM_FLOOR
+ATTAINABLE_GAIN_FACTOR: float = BASELINE_DQI_COST / ATTAINABLE_DQI_COST
 
 #: What the circuit builder currently emits.
 #: ``reference_equivalent`` means the compiled circuit is the official
@@ -587,20 +608,25 @@ def design_projection_dqi_gluzdov_v6() -> dict[str, Any]:
         },
         "qubits": {
             "reference_peak_qubits": PEAK_QUBITS_REFERENCE,
-            "sourced_peak_qubits": PEAK_QUBITS_SOURCED,
+            # The cap is the peak a verified circuit has, not the one recycling hoped for: the
+            # 1,885 build decodes wrongly, so a cap at 1,885 would filter on a width nothing has.
+            "qubit_cap": PROJECTION_PEAK_QUBITS,
+            "sourced_peak_qubits": PROJECTION_PEAK_QUBITS,
             "aspirational_peak_qubits": PEAK_QUBITS_V6,
-            "gap_to_aspirational_qubits": PEAK_QUBITS_SOURCED - PEAK_QUBITS_V6,
+            "gap_to_aspirational_qubits": PROJECTION_PEAK_QUBITS - PEAK_QUBITS_V6,
+            "withdrawn_peak_qubits": PEAK_QUBITS_SOURCED,
+            "withdrawn_gap_to_aspirational_qubits": PEAK_QUBITS_SOURCED - PEAK_QUBITS_V6,
             "max_further_recycling_qubits": MAX_FURTHER_RECYCLING_QUBITS,
             "peak_floor_under_recycling": PEAK_FLOOR_UNDER_RECYCLING,
             "v6_peak_qubits": config.peak_qubits,
-            "qubit_cap": QUBIT_CAP_V6,
             "qubit_reduction": PEAK_QUBITS_REFERENCE - config.peak_qubits,
             "relative_qubit_ratio": config.peak_qubits / PEAK_QUBITS_REFERENCE,
         },
         "target_basis": {
             "peak_qubits": (
-                "sourced: the verifier's 1,893 less the one register the decoder's own "
-                "register measurement shows is removable (8 qubits at n = 70)"
+                "measured: the verifier's 1,893, which is the only peak a verified circuit has. "
+                "The 1,885 the recycling measurement supports is withdrawn -- that build peaks "
+                "correctly and fails 64-shot equivalence"
             ),
             "mean_toffolis": (
                 "UNSOURCED: 445,229 has no circuit behind it, so the projection is one "
@@ -609,6 +635,9 @@ def design_projection_dqi_gluzdov_v6() -> dict[str, Any]:
         },
         "degree_register_floor": model_degree_register_floor(),
         "data_path_floor": model_data_path_floor(),
+        "remaining_width_levers": model_remaining_width_levers(),
+        "width_giveback": model_width_giveback_cost(),
+        "toffoli_target": toffoli_target_decision(),
         "single_array_trade": model_single_polynomial_array(),
         "toffolis": {
             "reference_mean_toffolis": T_MEAN_REFERENCE,
@@ -626,15 +655,19 @@ def design_projection_dqi_gluzdov_v6() -> dict[str, Any]:
             "target_gain_factor": config.target_gain,
         },
         "acceptance_gate": {
-            "arithmetic_within_target": score <= TARGET_DQI_COST,
+            # Scored at the verifier's peak, the operative projection is *above* the target that
+            # was built around the withdrawn 1,885: the width the lever bought is not available.
+            "operative_within_withdrawn_target": PROJECTION_DQI_COST <= TARGET_DQI_COST,
+            "withdrawn_config_arithmetic_within_target": score <= TARGET_DQI_COST,
             "passes_official_verifier_constraint": False,
             "status": "HOLD_FOR_COMPILED_AND_VERIFIED_RECEIPT",
             "required_evidence": [
                 "compiled .kmb circuit for the recycled architecture",
                 "official verify_submission_dqi.py PASS at log2_delta=-128",
                 "measured mean Toffoli count consistent with T_mean <= 445,229 "
-                "(this threshold is itself unsourced)",
-                "measured peak qubit count consistent with Q <= 1,885",
+                "(unsourced, and 6.19% below the algorithm floor, so no build reaches it)",
+                "measured peak qubit count consistent with Q <= 1,893 "
+                "(the verifier's count; the 1,885 recycled build does not decode)",
             ],
         },
     }
@@ -810,8 +843,12 @@ def model_score_at_qubit_floor(floor_qubits: int = PEAK_FLOOR_UNDER_RECYCLING) -
 WIDTH_LEVERS_MEASURED: tuple[dict[str, Any], ...] = (
     {
         "lever": "degree-register recycling",
-        "qubits": 4 * 8,
-        "basis": "4 remaining registers x 8 qubits (model_degree_register_floor)",
+        "qubits": 0,
+        "basis": (
+            "closed: the build with n_a removed peaks at 1,885 and fails 64-shot equivalence "
+            "(52/64), so none of the 32 qubits it counted is usable "
+            "(docs/DQI_RECYCLED_PASS_BODIES.md)"
+        ),
     },
     {
         "lever": "workspace window 42 -> 19",
@@ -825,28 +862,220 @@ def model_data_path_floor() -> dict[str, Any]:
     """Whether any measured width lever closes the 64 qubits between 1,853 and the target.
 
     At the register floor the allocation contributes nothing more, so the remaining distance
-    has to come from elsewhere. The only other lever with a measured saving is the workspace
-    window (42 -> 19 qubits, 23). Their sum is an *upper* bound: the window saving was measured
-    on a 1,935-qubit build, so any build already at 1,853 has spent part of it. Below these,
-    what is left is the data path itself -- one polynomial array is `(n + 1) * m = 852` qubits,
-    larger than every lever combined, and dropping or narrowing one is a different circuit
-    rather than a schedule change.
+    has to come from elsewhere. Only one lever with a measured saving survives the recycling
+    closure -- the workspace window (42 -> 19 qubits, 23) -- and 23 < 64, so 41 qubits are left
+    with no lever at all. The sum is an *upper* bound for a second reason: the window saving was
+    measured on a 1,935-qubit build, so any build already at the floor has spent part of it.
+
+    The 1,853 floor is itself conditional: it needs 32 qubits of register recycling, and that
+    route is closed, so the 64 is a gap below a floor no working build reaches --
+    `model_remaining_width_levers()` states the same question against the peaks that exist.
+    Below these levers what is left is the data path itself -- one polynomial array is
+    `(n + 1) * m = 852` qubits, larger than every lever combined, and dropping or narrowing one
+    is a different circuit rather than a schedule change.
     """
     gap = PEAK_FLOOR_UNDER_RECYCLING - PEAK_QUBITS_V6
     total = sum(lever["qubits"] for lever in WIDTH_LEVERS_MEASURED)
     return {
         "register_floor_qubits": PEAK_FLOOR_UNDER_RECYCLING,
+        "floor_reachable": False,
+        "floor_requires": (
+            "32 qubits of degree-register recycling, which is closed on correctness and score"
+        ),
         "target_qubits": PEAK_QUBITS_V6,
         "qubits_needed": gap,
         "levers": list(WIDTH_LEVERS_MEASURED),
         "lever_sum_qubits": total,
         "shortfall_qubits": gap - total,
         "reaches_target": total >= gap,
+        "sum_is_upper_bound": True,
         "polynomial_array_qubits": (DEFAULT_N + 1) * DEFAULT_DEGREE,
         "finding": (
             f"the measured width levers sum to {total} qubits against the {gap} needed, so "
-            "they do not reach the target; the remainder is data-path width, and a single "
-            "polynomial array is larger than all of them together"
+            f"they do not reach the target and {gap - total} are left with no lever at all; "
+            "the remainder is data-path width, and a single polynomial array is larger than "
+            "all of them together"
+        ),
+    }
+
+
+def _widest_measured_arm_qubits() -> int | None:
+    """The widest circuit the verifier has scored, if the arm records are readable."""
+    try:
+        return max(arm["qubits"] for arm in load_measured_dqi_arms())
+    except (DqiRecordError, ValueError):
+        return None
+
+
+def model_remaining_width_levers() -> dict[str, Any]:
+    """The 41 qubits the window saving leaves: is any lever left that could supply them?
+
+    Three framings, and they do not agree -- which is the finding rather than a defect:
+
+    * **41** -- the question as asked, framed against the 1,853 register floor: 64 needed, 23
+      from the window, 41 left. No measured lever supplies any of them.
+    * **81** -- the same question against the peak a verified circuit actually has (1,893). The
+      floor is conditional on recycling that is closed, so this is the live gap.
+    * **101** -- against the widest arm carrying the campaign's Toffoli count (the 1,913-qubit
+      schedule arm), which is the build a width change would actually have to shrink.
+
+    The only change larger than 41 qubits is the data path: one polynomial array is 852, so
+    dropping one would supply all three framings -- and it is not a width lever at all, it is a
+    different decoder, carrying the obligation `docs/DQI_SINGLE_ARRAY_DECODER_CONTRACT.md`
+    records and no construction.
+    """
+    window = next(
+        lever["qubits"]
+        for lever in WIDTH_LEVERS_MEASURED
+        if lever["lever"].startswith("workspace")
+    )
+    floor_gap = PEAK_FLOOR_UNDER_RECYCLING - PEAK_QUBITS_V6
+    reference_gap = PEAK_QUBITS_REFERENCE - PEAK_QUBITS_V6
+    widest = _widest_measured_arm_qubits()
+    array = (DEFAULT_N + 1) * DEFAULT_DEGREE
+    remainder = floor_gap - window
+    return {
+        "framings": {
+            "below_register_floor": {
+                "from_qubits": PEAK_FLOOR_UNDER_RECYCLING,
+                "qubits_needed": floor_gap,
+                "window_saving": window,
+                "remainder": remainder,
+                "framing_exists": False,
+            },
+            "from_measured_reference": {
+                "from_qubits": PEAK_QUBITS_REFERENCE,
+                "qubits_needed": reference_gap,
+                "window_saving": window,
+                "remainder": reference_gap - window,
+                "framing_exists": True,
+            },
+            "from_widest_measured_arm": (
+                None
+                if widest is None
+                else {
+                    "from_qubits": widest,
+                    "qubits_needed": widest - PEAK_QUBITS_V6,
+                    "window_saving": window,
+                    "remainder": widest - PEAK_QUBITS_V6 - window,
+                    "framing_exists": True,
+                }
+            ),
+        },
+        "levers_measured": list(WIDTH_LEVERS_MEASURED),
+        "levers_left_sum_qubits": sum(
+            lever["qubits"]
+            for lever in WIDTH_LEVERS_MEASURED
+            if not lever["lever"].startswith("workspace")
+        ),
+        "polynomial_array_qubits": array,
+        "array_to_remainder_ratio": array / remainder,
+        "supplied": False,
+        "verdict": (
+            f"no: the window's {window} is the last measured width saving, so {remainder} qubits "
+            "of the floor-framed gap have no lever, and the floor framing is itself optimistic "
+            "because it needs recycling that is closed -- the live gaps are 81 from the verifier's "
+            "peak and 101 from the schedule arm. Nothing supplies them in small steps: the only "
+            "change larger than the remainder is dropping a polynomial array (852 qubits), which "
+            "is a different decoder with an undischarged correctness obligation"
+        ),
+    }
+
+
+def _measured_arm(name: str) -> dict[str, Any]:
+    """Pull one arm out of the records by name, refusing to guess if it is absent."""
+    for arm in load_measured_dqi_arms():
+        if arm["arm"] == name:
+            if arm["executed_toffolis_per_shot"] is None:
+                raise DqiRecordError(f"{arm['record']} carries no Toffoli count for `{name}`")
+            return arm
+    raise DqiRecordError(f"no measured arm named `{name}`")
+
+
+def model_width_giveback_cost() -> dict[str, Any]:
+    """What the 20 qubits above the reference cost, and what giving them back would buy.
+
+    The obvious reading -- that the five schedule gates spend the 20 -- is the one the
+    campaign's own P6 measurement refutes: every schedule arm reports ``Q`` = 1,913, the same
+    as its six-lever control, because a classical read reuses the region's scratch and adds no
+    wire. So dropping the five gates recovers **0** qubits, and the 20 belong to the six levers.
+
+    Their price is the difference between two verifier passes, not a projection: 1,221,408.0
+    Toffolis per shot at 1,913 against 5,433,438.2 at 1,893. ``Q`` enters the score squared, so
+    20 qubits are worth 1.0213x, while the shot they cost is worth 4.448x -- giving them back
+    multiplies the score by 1/(1.0213/4.448) = 4.36. That is the answer to "is the arm too
+    wide": it is 4.36 times cheaper than the reference it is wider than.
+    """
+    pinned = _measured_arm("pinned reference (reduced-window 54-AND)")
+    six = _measured_arm("six-lever MR arm")
+    campaign = _measured_arm("campaign arm (five schedule gates)")
+    qubits_given_back = six["qubits"] - pinned["qubits"]
+    toffolis_given_back = (
+        pinned["executed_toffolis_per_shot"] - six["executed_toffolis_per_shot"]
+    )
+    width_credit = (six["qubits"] / pinned["qubits"]) ** 2
+    toffoli_ratio = six["executed_toffolis_per_shot"] / pinned["executed_toffolis_per_shot"]
+    score_ratio = width_credit * toffoli_ratio
+    schedule_qubits = campaign["qubits"] - six["qubits"]
+    schedule_toffolis = (
+        six["executed_toffolis_per_shot"] - campaign["executed_toffolis_per_shot"]
+    )
+    return {
+        "qubits_given_back": qubits_given_back,
+        "from_qubits": six["qubits"],
+        "to_qubits": pinned["qubits"],
+        "toffolis_given_back_per_shot": toffolis_given_back,
+        "toffolis_per_qubit": toffolis_given_back / qubits_given_back,
+        "toffoli_ratio": toffoli_ratio,
+        "width_credit": width_credit,
+        "score_ratio": score_ratio,
+        "score_worsening_factor": 1.0 / score_ratio,
+        "schedule_gate_qubits": schedule_qubits,
+        "schedule_gate_toffolis": schedule_toffolis,
+        "dropping_schedule_gates_recovers_qubits": schedule_qubits > 0,
+        "width_scored_against": pinned["record"],
+        "finding": (
+            f"the {qubits_given_back} qubits are not the schedule gates': every schedule arm "
+            f"runs at {campaign['qubits']} qubits against its control's {six['qubits']}, so the "
+            "five gates are width-free and dropping them recovers nothing. Giving the 20 back "
+            "means dropping the six levers, and that costs "
+            f"{toffolis_given_back:,.1f} Toffolis per shot "
+            f"({toffolis_given_back / qubits_given_back:,.1f} per qubit) for a "
+            f"{width_credit:.4f}x width credit: the score gets {1.0 / score_ratio:.2f}x worse"
+        ),
+    }
+
+
+def toffoli_target_decision() -> dict[str, Any]:
+    """Whether 445,229 stays the campaign's aim now that the arm stands at 686,014.8.
+
+    It does not. The target is **6.19% below the floor this decoder's algorithm cannot cross**:
+    472,768.2 Toffolis per shot are spent on work that is not a field product -- the EEA
+    iterations, their predicates, the counter decode, the shifts, the metadata -- so freeing all
+    field arithmetic still leaves the shot at 1.062x the target. Keeping 445,229 as the aim would
+    mean aiming at a number whose best case is already a loss.
+
+    What it stays is the denominator. The 14.397x Benchmark II score is derived from it, and a
+    score needs a fixed divisor to stay comparable, so the target is retained as
+    ``SCORE_DENOMINATOR_NOT_AIM``: the aim becomes the measured frontier moving toward the floor.
+    """
+    return {
+        "target_mean_toffolis": T_MEAN_TARGET_V6,
+        "algorithm_floor_mean_toffolis": T_MEAN_ALGORITHM_FLOOR,
+        "target_below_floor": TARGET_IS_BELOW_ALGORITHM_FLOOR,
+        "target_to_floor_ratio": TARGET_TO_FLOOR_RATIO,
+        "target_role": TARGET_ROLE,
+        "measured_frontier_mean_toffolis": CAMPAIGN_FRONTIER_T_MEAN,
+        "frontier_to_target_ratio": CAMPAIGN_FRONTIER_T_MEAN / T_MEAN_TARGET_V6,
+        "frontier_to_floor_ratio": CAMPAIGN_FRONTIER_T_MEAN / T_MEAN_ALGORITHM_FLOOR,
+        "attainable_cost_at_operative_peak": ATTAINABLE_DQI_COST,
+        "attainable_gain_factor": ATTAINABLE_GAIN_FACTOR,
+        "projection_reaches_target": False,
+        "decision": (
+            "445,229 does not stay the aim: it is 6.19% below the 472,768.2 of non-product work "
+            "this algorithm spends, so the best attainable circuit still scores above the target "
+            "and the projection's 12.857x is a ceiling nothing reaches. It is retained as the "
+            "score denominator only; the aim is the measured 686,014.8 toward 472,768.2"
         ),
     }
 
