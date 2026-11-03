@@ -613,3 +613,33 @@ there no lever left (§7.7), the width already taken is the cheapest in the desi
 `dqi_design_projection.json` ships it under `width_giveback`, so the attribution cannot drift
 back to the schedule gates.
 
+
+### 7.12 The frontier, restated: one measured arm, every width route closed
+
+Benchmark II stops here, so this is the statement the record should be read from rather than the
+incremental sections above.
+
+**The frontier is the measured 1,913-wide arm — §7.9 rung 3.** It is the only rung that is a
+circuit: 685,936.2 Toffolis per shot at 102,400 verification shots with zero value and phase
+errors, score **2.9903e12**, **8.173×** the baseline. Its `Q` is 1,913 and the score is denominated
+against the verifier's 1,893 peak (1.9006e12), so the same arm reads **1.573×** against that
+denominator. No circuit exists at 1,893 qubits that beats it.
+
+**Every width route is closed, and each closure is a measurement:**
+
+| route | what it promised | measured outcome | record |
+|---|---|---|---|
+| hold one polynomial array | peak **1,001**, `Q²` ×0.28, `T` ×1.015 → **0.284×** | both one-array packings decode **6/216** (first failure at weight 1) against 216/216 for three regions | `dqi_single_array_packing.json`, §7.6 |
+| re-derive `B_t` instead | same peak, one division per round | a measured **17,143** Toffolis per EEA round makes the replay **55.8×** the EEA bill compute-only (**10.64× worse** than the reference) and **111.5×** with Bennett (**21.00× worse**), and it needs the `reg_a` it was meant to free | `dqi_single_array_replay_cost.json`, §7.6 |
+| degree-register recycling | peak **1,885** | peaks at 1,885 and fails 64-shot equivalence **52/64**, at +648,784 Toffolis (0.898×) | §7.8, `dqi_recycled_equivalence.json` |
+| register floor at **1,853** | a decoded circuit there | no measured arm reaches it; 1,885 is a peak, not a decoder | §7.3, §7.4 |
+| the 23-qubit window saving | 1,853 | measured on a 1,935 build; not contemporaneous, and blocked on a working recycled build | §7.7 |
+| give back the 20 schedule qubits | rung 3 at 1,893 | costs **4,212,030.2** Toffolis per shot | §7.11 |
+| everything else | — | the remaining levers sum to **0** | §7.5 |
+
+The projection carries this as `single_array_trade.route_status = "CLOSED_ON_MEASUREMENT"`, with
+the packed trade still present and its `1.015×` / `0.284×` figures explicitly withdrawn; the model
+keeps the arithmetic so the record of what was believed is auditable, and refuses it as available.
+
+What is left is not a width question: the only live axis is the decoder algorithm (§7.10), and its
+best case is rung 4 at 2.0610e12 — still a loss against the 1.9006e12 denominator.

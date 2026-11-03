@@ -374,6 +374,77 @@ def test_the_single_array_packing_closure_matches_its_artifact():
     assert "1,001" in contract
 
 
+def test_the_replay_route_price_matches_its_artifact():
+    """The contract's replay price comes from a build, so the doc must quote the artifact.
+
+    `17,143` per round and the two score multiples are the numbers that killed the route; if the
+    artifact is regenerated at a different `n_iters` the contract section has to be rewritten rather
+    than left quoting a superseded price.
+    """
+    import json
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    record = json.loads(
+        (root / "benchmarks" / "quantum_compilation" / "dqi_single_array_replay_cost.json").read_text()
+    )
+    contract = (root / "docs" / "DQI_SINGLE_ARRAY_DECODER_CONTRACT.md").read_text()
+
+    per_round = record["per_round"]["both_eea_passes"]
+    bill = record["replay_bill"]
+    assert per_round == round(sum(record["marginal_toffoli_per_round_step"]) / 3)
+    assert bill["compute_only"]["multiple_of_eea"] > 1.0, "the route must be priced as a loss"
+    assert bill["with_bennett_uncompute"]["multiple_of_eea"] > bill["compute_only"]["multiple_of_eea"]
+    assert 222 * (222 + 1) // 2 == bill["rounds_units_to_produce_B_t_at_every_t"]
+
+    assert f"{per_round:,}" in contract
+    assert f"{bill['compute_only']['score_multiple_of_reference']:.2f}× worse" in contract
+    assert f"{bill['with_bennett_uncompute']['score_multiple_of_reference']:.2f}× worse" in contract
+    assert "REPLAY_ROUTE_CLOSED" in contract
+
+
+def test_the_frontier_restatement_agrees_with_the_projection():
+    """The frontier section is final-state prose; it must not drift from the projection.
+
+    Every width route in it is closed by an artifact, and the one number a reader will quote —
+    the rung-3 score — comes from the same record the rest of the campaign is scored against.
+    """
+    import json
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    projection = json.loads(
+        (root / "benchmarks" / "quantum_compilation" / "dqi_design_projection.json").read_text()
+    )
+    reachability = (root / "docs" / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
+    arm = json.loads(
+        (root / "benchmarks" / "quantum_compilation"
+         / "dqi_campaign_arm_submission_score.json").read_text()
+    )
+    replay = json.loads(
+        (root / "benchmarks" / "quantum_compilation" / "dqi_single_array_replay_cost.json").read_text()
+    )
+
+    trade = projection["single_array_trade"]
+    assert trade["route_status"] == "CLOSED_ON_MEASUREMENT"
+    assert trade["peak_with_one_array"] == 1001
+    assert "CLOSED_ON_MEASUREMENT" in reachability
+    assert "withdrawn" in trade["closure"]["headline"], (
+        "the closure must say the 0.284x trade is withdrawn, not merely that it is closed"
+    )
+
+    # The frontier arm's own verified numbers are what the section quotes. The doc writes the
+    # score without a signed exponent and the Toffoli count to one decimal, so match that form.
+    score = f"{arm['verified']['score']:.4e}".replace("e+", "e")
+    assert score in reachability, score
+    assert f"{arm['verified']['toffoli_count']:,.1f}" in reachability
+    assert f"{arm['verified']['num_qubits']:,}" in reachability
+
+    # And the replay price it rules the route out on.
+    assert f"{replay['per_round']['both_eea_passes']:,}" in reachability
+    assert f"{replay['replay_bill']['with_bennett_uncompute']['score_multiple_of_reference']:.2f}×" in reachability
+
+
 def test_the_single_array_trade_is_recorded():
     """The bracketed trade and the two design docs are reachable from the note with the target."""
     import pathlib

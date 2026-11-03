@@ -225,6 +225,11 @@
   "single_array_trade": {
     "array_bits": 852,
     "assumption": "re-deriving one remainder per round costs exactly one division call",
+    "closure": {
+      "headline": "the 1.015x Toffoli / 0.284x score trade is withdrawn; peak 1,001 is unreachable",
+      "packing": "CLOSED: a one-array BM update reads C_old and B_old while B' = C_old writes C_old away, so both packings decode 6/216 against 216/216 for three regions, first failure at weight 1 -- dqi_single_array_packing.json",
+      "replay": "CLOSED on score and on space: a measured 17,143 Toffolis per EEA round makes B_t replay 55.8x the EEA bill compute-only (score 10.64x worse than the reference) and 111.5x with Bennett (21.00x worse), and the replay needs the reg_a it was meant to free -- dqi_single_array_replay_cost.json"
+    },
     "cost_basis": {
       "divide_scaffold_pair_toffoli": 378.0,
       "inverse_scaffold_pair_toffoli": 315.0,
@@ -255,6 +260,7 @@
     "peak_with_one_array": 1001,
     "qubits_saved": 852,
     "reaches_target": true,
+    "route_status": "CLOSED_ON_MEASUREMENT",
     "score_ratio_vs_reference": 0.28371768897570504,
     "toffoli_multiplier": 1.014657539106549,
     "total_toffolis_per_shot": 5809024.382109375,

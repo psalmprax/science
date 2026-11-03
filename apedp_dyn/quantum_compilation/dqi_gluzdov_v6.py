@@ -1199,6 +1199,25 @@ def model_single_polynomial_array() -> dict[str, Any]:
         "qubits_saved": array_bits,
         "peak_with_one_array": peak,
         "reaches_target": peak <= PEAK_QUBITS_V6,
+        # The trade below is priced on an assumption that has since been measured false, so the
+        # projection must not carry it as available. Both closures are records, not arguments.
+        "route_status": "CLOSED_ON_MEASUREMENT",
+        "closure": {
+            "packing": (
+                "CLOSED: a one-array BM update reads C_old and B_old while B' = C_old writes "
+                "C_old away, so both packings decode 6/216 against 216/216 for three regions, "
+                "first failure at weight 1 -- dqi_single_array_packing.json"
+            ),
+            "replay": (
+                "CLOSED on score and on space: a measured 17,143 Toffolis per EEA round makes "
+                "B_t replay 55.8x the EEA bill compute-only (score 10.64x worse than the "
+                "reference) and 111.5x with Bennett (21.00x worse), and the replay needs the "
+                "reg_a it was meant to free -- dqi_single_array_replay_cost.json"
+            ),
+            "headline": (
+                "the 1.015x Toffoli / 0.284x score trade is withdrawn; peak 1,001 is unreachable"
+            ),
+        },
         "eea_rounds": rounds,
         "cost_basis": record,
         "division": {

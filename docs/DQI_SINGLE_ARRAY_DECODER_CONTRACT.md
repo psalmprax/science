@@ -78,6 +78,39 @@ repacking the reference update, and the contract's surviving route is re-derivin
 a nested EEA, not one division per round. That route has not been priced or built, so the ledger
 figures (1.015× Toffolis, 0.284×) remain arithmetic on an assumption, and no circuit exists.
 
+## Measured price of the replay route (2026-11-03)
+
+With packing closed, the only surviving route is re-deriving `B_t` by replay. That is priceable
+off the emitter before a gate is designed. The reference decoder built at `n_iters = 1..4` gives a
+marginal **17,143 Toffoli-like operations per EEA round** (both passes, 8,571 per direction);
+`benchmarks/quantum_compilation/dqi_single_array_replay_cost.json`.
+
+| quantity | measured |
+|---|---|
+| one EEA round, both passes | **17,143** Toffolis |
+| division calls per round (2 `accumulate_quotient`, each init + del) | 4 × 378 = 1,512 (**8.8%** of a round) |
+| whole EEA bill, 222 rounds | 3,805,672 = **66.5%** of the 5,725,108 reference total |
+| replay round-units to have `B_t` at every `t` | 24,753 = 222·223/2 |
+| replay, compute only | 212.2M Toffolis = **55.8×** the EEA bill |
+| replay, Bennett-uncomputed | 424.3M Toffolis = **111.5×** the EEA bill |
+
+Carrying those through `R · Q² · T` on the contract's own `Q = 1,001`:
+
+| accounting | total Toffolis | × reference | score × reference |
+|---|---|---|---|
+| compute only (free uncompute — optimistic) | 217.9M | 38.06× | **10.64× worse** |
+| Bennett uncompute | 430.1M | 75.12× | **21.00× worse** |
+
+So the trade is not `0.284×`; the `Q²` saving of 0.2796 is swamped by a Toffoli multiple in the
+tens. The contract's `+1 division per round` assumption underprices this by the replay's round
+count, not by a constant: one division is 378 CCX against a rounded-measured round of 17,143, and
+the replay is not one division — it is `t` rounds at round `t`.
+
+The route also fails on space before it fails on score: the replay runs the forward pass on the
+same `reg_a` the outer round is holding, so it cannot share the array. Either `reg_a` is saved
+elsewhere (+876 qubits, the exact quantity the trade was meant to remove) or a second array is
+held. **The 1,001 peak and the replay cannot coexist.** `REPLAY_ROUTE_CLOSED`.
+
 ## What is not claimed
 
 No construction exists. `RECYCLING_APPLIED_IN_CIRCUIT` stays `False` and the compiled circuit stays
