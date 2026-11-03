@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import inspect
+import json
 import re
 from pathlib import Path
 
@@ -330,3 +331,10 @@ def test_the_recycled_substitution_status_is_recorded():
     assert "1,893 → 1,885" in bodies
     assert "reads no `n_a`" in bodies
     assert "1,885 remains an accounting figure" in bodies
+    assert "dqi_recycled_flag_body_build.json" in bodies
+    record = json.loads((pathlib.Path(__file__).resolve().parents[1] / "benchmarks" /
+                         "quantum_compilation" / "dqi_recycled_flag_body_build.json").read_text())
+    assert record["peak_unchanged"] is True
+    assert record["recycled_flag_peak_qubits"] == record["reference_peak_qubits"]
+    assert record["read_sites_substituted"] == 1
+    assert record["accounting_peak_qubits"] == 1885

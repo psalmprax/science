@@ -63,7 +63,7 @@ exhaustively over every `(deg(A), n_b)` pair the decoder can hold
 (`derived_flag_predicate()`, 5,184 pairs at `n = 70`).
 
 **It does not move the peak, and that is the finding** (the accounting is still
-1,893 → 1,885; the build is not). The other four bodies still read `n_a`, so
+1,893 → 1,885; the build is not). Measured at `n_iters = 4`: reference **1,888** qubits, substituted body **1,888** — identical — for **+11,424 Toffolis**. The substituted body therefore buys nothing on its own: it costs gates and returns no wires until the register stops being allocated. Record: `benchmarks/quantum_compilation/dqi_recycled_flag_body_build.json`. The other four bodies still read `n_a`, so
 the register is still allocated: `build_candidate_with_recycled_flag_body()` builds the full
 pipeline and reports the same peak as the reference build. **1,885 remains an accounting figure**
 until all five bodies and the driver change; a one-body substitution cannot produce a 1,885-qubit
