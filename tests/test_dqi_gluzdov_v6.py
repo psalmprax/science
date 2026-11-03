@@ -49,6 +49,7 @@ from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import (
     GluzdovV6Decoder,
     build_candidate,
     design_projection_dqi_gluzdov_v6,
+    load_division_scaffold_toffoli,
     load_measured_dqi_arms,
     model_data_path_floor,
     model_degree_register_floor,
@@ -415,26 +416,53 @@ def test_measured_width_levers_do_not_reach_the_target():
     assert len(WIDTH_LEVERS_MEASURED) == 2
 
 
-def test_single_array_trade_prices_both_sides():
-    """852 qubits out, one division scaffold per round in, and the score still improves."""
+def test_division_price_is_read_from_the_primitive_record():
+    """378 Toffolis per divide scaffold pair comes from dqi_primitive_costs.json."""
+    record = load_division_scaffold_toffoli()
+    assert record["record"] == "dqi_primitive_costs.json"
+    assert record["path"] == "primitives_per_call"
+    assert record["divide_scaffold_pair_toffoli"] == 378.0
+    assert record["inverse_scaffold_pair_toffoli"] == 315.0
+
+
+def test_missing_primitive_record_raises_rather_than_quoting_a_literal(monkeypatch, tmp_path):
+    import apedp_dyn.quantum_compilation.dqi_gluzdov_v6 as dqi_module
+
+    monkeypatch.setattr(dqi_module, "_BENCHMARK_DIR", tmp_path)
+    with pytest.raises(dqi_module.PrimitiveCostError):
+        dqi_module.load_division_scaffold_toffoli()
+
+
+def test_single_array_trade_is_bracketed_by_the_two_measured_prices():
+    """852 qubits out; Toffolis in at 378/round to 46,656/round; the score improves at both."""
     model = model_single_polynomial_array()
     assert model["array_bits"] == 71 * 12 == 852
     assert model["peak_with_one_array"] == 1853 - 852 == 1001
     assert model["reaches_target"] is True  # Q stops binding, which is the interesting part
-    assert model["extra_toffolis_per_round"] == 864 * 54 == 46656
     assert model["eea_rounds"] == 222
-    assert model["extra_toffolis_per_shot"] == 46656 * 222 == 10357632
+    assert model["cost_basis"]["record"] == "dqi_primitive_costs.json"
+
+    trade = model["toffoli_trade"]
+    assert trade["record_price_per_round"] == 378.0
+    assert trade["decomposition_price_per_round"] == 864 * 54 == 46656
+    assert "different quantities" in trade["discrepancy"]
+
+    low = trade["bounds"]["at_record_price"]
+    high = trade["bounds"]["at_decomposition_price"]
+    assert math.isclose(low["extra_toffolis_per_shot"], 378.0 * 222, rel_tol=1e-12)
+    assert math.isclose(high["extra_toffolis_per_shot"], 46656.0 * 222, rel_tol=1e-12)
+    assert 1.01 < low["multiplier"] < 1.02
+    assert 2.80 < high["multiplier"] < 2.82
+    for bound in (low, high):
+        assert math.isclose(
+            bound["total_toffolis_per_shot"],
+            T_MEAN_REFERENCE + bound["extra_toffolis_per_shot"],
+            rel_tol=1e-12,
+        )
+        assert bound["score_ratio_vs_reference"] < 1.0
     assert math.isclose(
-        model["modelled_toffolis_per_shot"],
-        model["reference_toffolis_per_shot"] + model["extra_toffolis_per_shot"],
-        rel_tol=1e-12,
+        low["score_ratio_vs_reference"], (1001 / 1893) ** 2 * low["multiplier"], rel_tol=1e-12
     )
-    assert 2.80 < model["toffoli_multiplier"] < 2.82
-    # The whole point of the trade: Q^2 falls faster than T rises.
-    assert math.isclose(
-        model["score_ratio_vs_reference"],
-        (1001 / 1893) ** 2 * model["toffoli_multiplier"],
-        rel_tol=1e-12,
-    )
-    assert 0.78 < model["score_ratio_vs_reference"] < 0.79
+    assert 0.28 < low["score_ratio_vs_reference"] < 0.29
+    assert 0.78 < high["score_ratio_vs_reference"] < 0.79
     assert "one division" in model["assumption"]

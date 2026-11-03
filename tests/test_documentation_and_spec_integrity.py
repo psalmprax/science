@@ -302,15 +302,19 @@ def test_the_data_path_floor_is_recorded_with_the_target():
 
 
 def test_the_single_array_trade_is_recorded():
-    """The 1,001 / 2.81x / 0.786x trade is in the note that carries the target."""
+    """The bracketed trade and the two design docs are reachable from the note with the target."""
     import pathlib
 
-    root = pathlib.Path(__file__).resolve().parents[1] / "docs"
-    reachability = (root / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
-    compatibility = (root / "DQI_OFFICIAL_COMPATIBILITY.md").read_text()
+    root = pathlib.Path(__file__).resolve().parents[1]
+    reachability = (root / "docs" / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
+    compatibility = (root / "docs" / "DQI_OFFICIAL_COMPATIBILITY.md").read_text()
 
-    assert "0.786×" in reachability
     assert "**1,001**" in reachability
-    assert "2.81×" in reachability
+    assert "0.284×" in reachability and "0.786×" in reachability
+    assert "378" in reachability and "46,656" in reachability
     assert "1,001" in compatibility
-    assert "RECYCLING_APPLIED_IN_CIRCUIT" in reachability
+
+    contract = (root / "docs" / "DQI_SINGLE_ARRAY_DECODER_CONTRACT.md").read_text()
+    bodies = (root / "docs" / "DQI_RECYCLED_PASS_BODIES.md").read_text()
+    assert "Derivation lemma" in contract and "Falsifiers" in contract
+    assert "1,885" in bodies and "leading-zero" in bodies

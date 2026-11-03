@@ -452,23 +452,27 @@ different circuit, not a schedule. `model_data_path_floor()` computes the table.
 ### 7.6 What holding one polynomial array would trade
 
 The data path holds a remainder pair and a coefficient pair. Dropping to one array is the only
-change larger than every lever in §7.5, and it prices in three lines:
+change larger than every lever in §7.5, and two of its three lines are settled while the third is
+not.
 
-- **Qubits.** One array is `(n + 1) × m = 71 × 12 = 852` bits, so from the register floor the
-  peak would be **1,001** — 788 under the target. `Q` stops binding.
-- **Toffolis.** The EEA update is a 2×2 transform on the remainder pair and again on the
-  coefficient pair, so both remainders are read every round; holding one means re-deriving the
-  other from the syndrome each round, which is one extra division scaffold. At the measured 864
-  products × 54 ANDs that is **46,656 Toffolis per round**, **+10,357,632 per shot** over 222
-  rounds: 5,725,108.4 → **16,082,740.4**, or **2.81×**.
-- **Score.** `R · Q² · T` at that lower bound is **0.786×** the reference — the `Q²` win (0.28)
-  is larger than the `T` loss (2.81).
+- **Qubits.** One array is `(n + 1) × m = 71 × 12 = 852` bits, so from the register floor the peak
+  would be **1,001** — 788 under the target. `Q` stops binding.
+- **Toffolis — bracketed, because two measured numbers disagree.** The EEA reads both remainders
+  every round, so the dropped one must be re-derived from the syndrome each round: one extra
+  division. `dqi_primitive_costs.json` prices a divide scaffold pair at **378** Toffolis; §2's
+  decomposition prices the products inside one division call at **864 × 54 = 46,656**. They are
+  different quantities and 124× apart. Over 222 rounds that is **83,916** to **10,357,632** extra
+  per shot: 5,725,108.4 → **5,809,024.4 (1.015×)** to **16,082,740.4 (2.81×)**.
+- **Score.** `R · Q² · T` lands between **0.284×** and **0.786×** the reference. The `Q²` win
+  (0.28) beats even the pessimistic `T` loss, so **the trade is favourable under both prices** and
+  the conclusion does not depend on settling the discrepancy — which is why it is a bracket and
+  not a chosen number.
 
-So the trade is favourable on the benchmark metric even on pessimistic arithmetic, which is a
-reason to test it rather than to dismiss it, and is not a claim that it works. The one
-assumption to falsify: **re-deriving the dropped remainder costs exactly one division and
-nothing else.** `model_single_polynomial_array()` computes the table, and
-`dqi_design_projection.json` carries it under `single_array_trade`.
+What this arithmetic cannot supply is the sentence it rests on: *re-deriving the dropped remainder
+costs one division and nothing else.* That is a claim about a circuit, it is what
+[`DQI_SINGLE_ARRAY_DECODER_CONTRACT.md`](DQI_SINGLE_ARRAY_DECODER_CONTRACT.md) requires be proven
+before any builder work, and `model_single_polynomial_array()` returns the bracket with that
+assumption named in the returned dict.
 
 ### 7.7 The window figure cannot be re-measured at 1,853 yet
 

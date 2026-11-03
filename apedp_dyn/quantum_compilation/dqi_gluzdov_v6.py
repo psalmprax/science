@@ -811,50 +811,111 @@ def model_data_path_floor() -> dict[str, Any]:
     }
 
 
-#: The division scaffold's measured price, from `dqi_primitive_costs.json` and the arm's
-#: three-term decomposition in BENCHMARK2_TARGET_REACHABILITY.md section 2.
-DIVISION_PRODUCTS_PER_CALL: int = 864
-ANDS_PER_PRODUCT: int = 54
+#: Section 2's decomposition of the arm: the products inside one division scaffold call, and
+#: the ANDs each costs. These are *not* in `dqi_primitive_costs.json`, which prices a scaffold
+#: pair at a different granularity, so both are carried and the model brackets the trade.
+DECOMPOSITION_DIVISION_PRODUCTS_PER_CALL: int = 864
+DECOMPOSITION_ANDS_PER_PRODUCT: int = 54
+
+
+class PrimitiveCostError(RuntimeError):
+    """The primitive-cost record is absent or does not carry a needed count."""
+
+
+def load_division_scaffold_toffoli() -> dict[str, Any]:
+    """Read the measured Toffoli price of one divide/inverse scaffold pair.
+
+    This is the one part of the single-array cost the record actually settles:
+    `primitives_per_call.divide_scaffold_pair` is 378 Toffolis, measured from the reference
+    decoder. Section 2's decomposition prices the *products inside* a division call at 864 x 54,
+    which is a different quantity and 124x larger; the model reports both rather than picking
+    the friendlier one.
+    """
+    path = _BENCHMARK_DIR / "dqi_primitive_costs.json"
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise PrimitiveCostError(f"cannot read {path}: {exc}") from exc
+    per_call = payload.get("primitives_per_call")
+    if not isinstance(per_call, dict):
+        raise PrimitiveCostError(f"{path.name} has no `primitives_per_call` block")
+    missing = [
+        key for key in ("divide_scaffold_pair", "inverse_scaffold_pair") if key not in per_call
+    ]
+    if missing:
+        raise PrimitiveCostError(f"{path.name} is missing {missing} in `primitives_per_call`")
+    return {
+        "record": path.name,
+        "path": "primitives_per_call",
+        "divide_scaffold_pair_toffoli": float(per_call["divide_scaffold_pair"]),
+        "inverse_scaffold_pair_toffoli": float(per_call["inverse_scaffold_pair"]),
+    }
 
 
 def model_single_polynomial_array() -> dict[str, Any]:
     """What holding one polynomial array instead of the live pair would trade.
 
-    Qubits: one array is ``(n + 1) * m = 71 * 12 = 852`` bits, so at the register floor the
-    peak would be 1,001 -- 788 below the target, and Q stops binding entirely.
+    Qubits: one array is ``(n + 1) * m = 71 * 12 = 852`` bits, so from the register floor the
+    peak would be 1,001 -- 788 under the target, and Q stops binding.
 
-    Toffolis: the EEA update is a 2x2 transform on the remainder pair and again on the
-    coefficient pair, so both remainders are read every round. Holding one means re-deriving
-    the other from the syndrome each round, which is one extra division scaffold at the
-    measured 864 products of 54 ANDs.
+    Toffolis: the EEA reads both remainders every round, so the dropped one must be re-derived
+    from the syndrome each round -- one extra division. The cost of that division is *bracketed*
+    rather than asserted, because two numbers in this repository disagree:
 
-    The result is a lower bound on the Toffoli side and a decomposition of the score trade:
-    the Q^2 win is large enough that even 2.81x the Toffolis scores better than the reference.
-    That makes the idea worth testing; it is not a claim that it works. The single assumption
-    to falsify is that re-derivation costs one division and nothing else.
+    * ``dqi_primitive_costs.json`` prices a divide scaffold pair at **378** Toffolis (measured);
+    * Section 2 of BENCHMARK2_TARGET_REACHABILITY decomposes the arm with **864 products x 54
+      ANDs = 46,656** for the products inside one division call (also measured, different
+      quantity).
+
+    The model reports the score at both ends, so the conclusion does not depend on settling
+    which granularity the re-derivation actually costs. What it does depend on is the sentence
+    in ``assumption``, which no arithmetic here proves.
     """
     array_bits = (DEFAULT_N + 1) * DEFAULT_DEGREE
     peak = PEAK_FLOOR_UNDER_RECYCLING - array_bits
-    per_round = DIVISION_PRODUCTS_PER_CALL * ANDS_PER_PRODUCT
-    extra = per_round * DEFAULT_N_ITERS
-    modelled = T_MEAN_REFERENCE + extra
+    rounds = DEFAULT_N_ITERS
+    record = load_division_scaffold_toffoli()
+    low_per_round = record["divide_scaffold_pair_toffoli"]
+    high_per_round = float(DECOMPOSITION_DIVISION_PRODUCTS_PER_CALL * DECOMPOSITION_ANDS_PER_PRODUCT)
+
+    def at(price: float) -> dict[str, float]:
+        per_shot = price * rounds
+        total = T_MEAN_REFERENCE + per_shot
+        return {
+            "extra_toffolis_per_shot": per_shot,
+            "total_toffolis_per_shot": total,
+            "multiplier": total / T_MEAN_REFERENCE,
+            "score_ratio_vs_reference": (peak / PEAK_QUBITS_REFERENCE) ** 2
+            * total
+            / T_MEAN_REFERENCE,
+        }
+
+    trade = {"at_record_price": at(low_per_round), "at_decomposition_price": at(high_per_round)}
     return {
         "array_bits": array_bits,
         "qubits_saved": array_bits,
         "peak_with_one_array": peak,
         "reaches_target": peak <= PEAK_QUBITS_V6,
-        "extra_toffolis_per_round": per_round,
-        "eea_rounds": DEFAULT_N_ITERS,
-        "extra_toffolis_per_shot": extra,
-        "reference_toffolis_per_shot": T_MEAN_REFERENCE,
-        "modelled_toffolis_per_shot": modelled,
-        "toffoli_multiplier": modelled / T_MEAN_REFERENCE,
-        "score_ratio_vs_reference": (peak / PEAK_QUBITS_REFERENCE) ** 2 * modelled / T_MEAN_REFERENCE,
+        "eea_rounds": rounds,
+        "cost_basis": record,
+        "toffoli_trade": {
+            "record_price_per_round": low_per_round,
+            "decomposition_price_per_round": high_per_round,
+            "bounds": trade,
+            "discrepancy": (
+                f"the record prices a divide scaffold pair at {low_per_round:g} Toffolis while "
+                f"section 2 prices the products inside one division at {high_per_round:g}; they "
+                "are different quantities and the score is reported at both, never at the "
+                "friendlier one alone"
+            ),
+        },
         "assumption": "re-deriving one remainder per round costs exactly one division scaffold",
         "verdict": (
-            "Q falls to 1,001 and stops binding, T rises "
-            f"{modelled / T_MEAN_REFERENCE:.2f}x, and the score lands at "
-            f"{(peak / PEAK_QUBITS_REFERENCE) ** 2 * modelled / T_MEAN_REFERENCE:.3f} of the "
-            "reference: favourable on the metric, and unproven as a construction"
+            f"Q falls to {peak} and stops binding; T rises "
+            f"{trade['at_record_price']['multiplier']:.3f}x to "
+            f"{trade['at_decomposition_price']['multiplier']:.3f}x, and the score lands between "
+            f"{trade['at_record_price']['score_ratio_vs_reference']:.3f} and "
+            f"{trade['at_decomposition_price']['score_ratio_vs_reference']:.3f} of the reference: "
+            "favourable at both ends, and unproven as a construction"
         ),
     }
