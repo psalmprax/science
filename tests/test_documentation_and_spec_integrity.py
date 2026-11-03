@@ -337,6 +337,43 @@ def test_the_data_path_floor_is_recorded_with_the_target():
     assert "0.898×" in campaign
 
 
+def test_the_single_array_packing_closure_matches_its_artifact():
+    """The contract says the packing route is closed; the arm totals come from the record.
+
+    The route was killed by a classical probe rather than by building a decoder, so the prose and
+    the numbers have only this comparison keeping them in step: regenerate the artifact with a
+    different arm total and the contract doc has to move with it.
+    """
+    import json
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    record = json.loads(
+        (root / "benchmarks" / "quantum_compilation" / "dqi_single_array_packing.json").read_text()
+    )
+    contract = (root / "docs" / "DQI_SINGLE_ARRAY_DECODER_CONTRACT.md").read_text()
+
+    arms = record["arms"]
+    three = arms["three_region"]
+    assert three["failed"] == 0, "the three-region core must decode every planted pattern"
+    boundary = record["failure_boundary"]
+    assert boundary["failed_to_decode"] == boundary["trials"], (
+        "the weight-l+1 boundary must fail for every trial, or a false pass cannot be seen"
+    )
+    for name in ("two_region_naive", "two_region_swapped"):
+        arm = arms[name]
+        assert arm["first_failure"]["weight"] == 1, (
+            f"{name} must fail at the first weight, not merely lose a few patterns"
+        )
+        assert f"{arm['decoded']}/{three['decoded']}" in contract, (
+            f"the contract doc does not quote {name}'s {arm['decoded']}/{three['decoded']}"
+        )
+    assert f"**{three['decoded']}/{three['decoded']}**" in contract
+    assert "PACKING_ROUTE_CLOSED" in contract
+    assert "weight 1" in contract
+    assert "1,001" in contract
+
+
 def test_the_single_array_trade_is_recorded():
     """The bracketed trade and the two design docs are reachable from the note with the target."""
     import pathlib

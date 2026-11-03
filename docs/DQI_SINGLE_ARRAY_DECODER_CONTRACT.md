@@ -1,6 +1,6 @@
 # DQI single-array decoder: the correctness obligation, before any builder work
 
-**Status:** design contract, nothing built · **Basis:** `model_single_polynomial_array()` and
+**Status:** design contract; the packing route is **measured and closed** (see §Measured closure) · **Basis:** `model_single_polynomial_array()` and
 [`BENCHMARK2_TARGET_REACHABILITY.md`](BENCHMARK2_TARGET_REACHABILITY.md) §7.6 ·
 **Artifact:** `benchmarks/quantum_compilation/dqi_design_projection.json` (`single_array_trade`)
 
@@ -50,6 +50,33 @@ Each of these kills the claim; none is optional.
 | 4 | peak qubits | not 1,001 — the array was not actually dropped (an alias survived) |
 | 5 | score | it beats 0.284× — suspect uncharged work; recompute from the executed stream |
 | 6 | weight-`l+1` inputs | they decode instead of failing — the re-derivation erased the failure boundary |
+
+## Measured closure of the packing route (2026-11-03)
+
+The 1,001 peak assumes one 73-slot array can hold what `reg_a` and `reg_b` hold between them. That
+is a claim about the BM update's write pattern, and it is decidable classically before a gate is
+built:
+
+```
+C' = C + (d/b) x^m B        reads C_old and B_old, writes C's region
+B' = C_old                  reads C_old,             writes B's region
+```
+
+Whichever region is written first destroys data the other still has to read. Both orders were run
+over weights 0–35 (6 trials each, `benchmarks/quantum_compilation/dqi_single_array_packing.json`):
+
+| arm | decoded | failed | first failure |
+|---|---|---|---|
+| three regions (`C`, `B`, scratch — the reference's live set) | **216/216** | 0 | — |
+| two regions, `C'` in place then `C_old` copied | 6/216 | 210 | weight 1 (planted 1, decoded 2) |
+| two regions, roles exchanged each step | 6/216 | 210 | weight 1 (planted 1, decoded 1) |
+
+The 6 successes in each two-region arm are the weight-0 trials: **neither packing decodes even one
+error**. The weight-`l+1` boundary still holds for the three-region core (20/20 fail to decode), so
+the harness can see a false pass. `PACKING_ROUTE_CLOSED`: the 1,001 peak is not reachable by
+repacking the reference update, and the contract's surviving route is re-deriving `B_t` by replay —
+a nested EEA, not one division per round. That route has not been priced or built, so the ledger
+figures (1.015× Toffolis, 0.284×) remain arithmetic on an assumption, and no circuit exists.
 
 ## What is not claimed
 
