@@ -64,6 +64,7 @@ from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import (
     model_recycled_n_a_substitution,
     model_score_at_qubit_floor,
     model_single_polynomial_array,
+    product_axis_decision,
 )
 
 
@@ -485,7 +486,13 @@ def test_the_41_qubits_the_window_leaves_have_no_lever():
 
 
 def test_445229_is_a_denominator_and_no_longer_the_aim():
-    """The target sits below the algorithm's own floor, so the best case is already a loss."""
+    """The target sits below the *six-lever* arm's residual, so the best case is already a loss.
+
+    That claim is true of the arm the 472,768.2 was measured on and false of the campaign arm,
+    whose own residual is 299,953.2. `test_rung4_is_priced_on_the_campaign_arms_own_residual`
+    carries the second half; this one is the first, and the decision object now says which arm
+    its floor belongs to so neither can be quoted alone.
+    """
     decision = toffoli_target_decision()
     assert T_MEAN_TARGET_V6 == 445229.0
     assert T_MEAN_ALGORITHM_FLOOR == 472768.2
@@ -499,10 +506,73 @@ def test_445229_is_a_denominator_and_no_longer_the_aim():
     assert abs(decision["frontier_to_target_ratio"] - 1.54083) < 1e-4
     assert abs(decision["frontier_to_floor_ratio"] - 1.45106) < 1e-4
 
-    # The best any circuit of this algorithm can do is the floor, and it still loses.
+    # The projection's .857x is still a ceiling nothing reaches, because the target's T is not
+    # a mean any circuit has executed.
     assert decision["projection_reaches_target"] is False
-    assert decision["attainable_cost_at_operative_peak"] > TARGET_DQI_COST
-    assert decision["attainable_gain_factor"] < TARGET_GAIN_FACTOR
+    # The attainable figure was priced on the six-lever residual, so it read as a loss (1.062x
+    # at the peak). On the campaign arm's own residual it is below the denominator -- which is
+    # the corrected statement, not a claim that the target has been reached.
+    assert decision["attainable_cost_at_operative_peak"] < TARGET_DQI_COST
+    assert decision["attainable_is_below_denominator"] is True
+    assert decision["attainable_gain_factor"] > TARGET_GAIN_FACTOR
+    assert decision["attainable_cost_at_verifier_peak"] < decision["attainable_cost_at_operative_peak"]
+
+    # The floor above is the six-lever arm's, and the object says so rather than implying it is
+    # the campaign arm's: on the campaign arm the target is above its residual, not below it.
+    assert decision["floor_is_six_lever_arm_residual"] is True
+    assert decision["campaign_floor_mean_toffolis"] == 299953.2
+    assert decision["target_above_campaign_floor"] is True
+    assert decision["campaign_floor_to_target_ratio"] < 1.0
+
+
+def test_rung4_is_priced_on_the_campaign_arms_own_residual():
+    """Rung 4 is rung 3's residual, not the six-lever arm's — and at rung 3's it is a win.
+
+    The frontier table priced "rung 3 with every field product free" at 472,768.2, which is the
+    six-lever arm's non-product residual. Rung 3 is the campaign arm, whose own residual is
+    299,953.2 (`dqi_schedule_campaign.json` section 4), so freeing its products leaves that term
+    and scores 0.688x the denominator -- the best row in the table, not a 1.084x loss. This pin
+    exists because a substituted residual made the cheapest family look inadmissible.
+    """
+    axis = product_axis_decision()
+
+    assert axis["tabulated_used_the_six_lever_residual"] is True
+    assert axis["tabulated_overstatement_toffolis"] == 172815.0
+    assert axis["campaign_residual_toffolis"] == 299953.2
+    assert axis["campaign_products_toffolis"] == 386061.7
+    # The campaign arm's split is rung 3's own: 386,061.7 + 299,953.2 = 686,014.8.
+    assert abs(axis["campaign_residual_toffolis"] + axis["campaign_products_toffolis"]
+               - 686014.8) < 0.2
+
+    # Freeing rung 3's products leaves rung 3's residual, and that is below the denominator.
+    rung4 = axis["rung4_corrected"]
+    assert rung4["qubits"] == 1913
+    assert rung4["t_mean_toffolis"] == 299953.2
+    assert rung4["vs_denominator"] < 1.0
+    assert abs(rung4["vs_denominator"] - 0.68802) < 1e-4
+    assert abs(rung4["score"] - 1.3076e12) / 1.3076e12 < 1e-3
+    # The tabulated row is retained for audit and is the only one that reads as a loss.
+    assert axis["rung4_as_tabulated"]["vs_denominator"] > 1.0
+
+    # The target is 145,275.8 above this arm's floor, so it needs products at 37.6% of cost.
+    assert axis["target_room_above_residual_toffolis"] == 145275.8
+    assert abs(axis["products_must_fall_toffolis"] - 240785.9) < 0.2
+    assert abs(axis["products_allowed_fraction"] - 0.37630) < 1e-4
+
+    # And the 2n-1 = 23 AND bound straddles it, so neither reading is claimed as a verdict.
+    bracket = axis["and_dimension_bound"]
+    assert bracket["straddles_the_target"] is True
+    assert bracket["and_part_scales"]["vs_target"] > 1.0
+    assert bracket["whole_call_scales"]["vs_target"] < 1.0
+    assert "not" in bracket["what_settles_it"]
+    # The target needs two closures at once, and at the campaign arm's own width the AND bound
+    # is not enough: 1.019x at 1,913, 0.998x only at the verifier peak.
+    best = axis["best_product_rung"]
+    assert best["qubits"] == 1893
+    assert best["vs_denominator_at_1913"] > 1.0
+    assert best["vs_denominator"] < 1.0
+    assert best["needs_both_closures"] is True
+    assert "2n-1 = 23 lower bound" in axis["verdict"]
 
 
 def test_projection_carries_the_lever_count_and_the_target_decision():

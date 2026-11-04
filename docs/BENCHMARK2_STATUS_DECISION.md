@@ -49,6 +49,13 @@ removed — neither physically available — the arm is still 1.062× the target
 240,785.8 are the swap, the shift, `shift_step`, `update_flag` and the rest of the multiply
 window.
 
+**Corrected 2026-11-04 (§7.13 of the reachability note).** The 1.062× above prices the six-lever
+arm's 472,768.2 at the campaign arm's width. The campaign arm's own residual is 299,953.2, so
+freeing *its* products scores **0.688×** and the target sits 145,275.8 *above* this arm's floor.
+The decision below stands, on a different ground: reaching 445,229 needs the surviving 386,061.7
+of products at 37.6% of their cost — about 15.6 ANDs per multiply, below the `2n − 1 = 23` lower
+bound — and at that bound the arm is 1.019× at 1,913, 0.998× only with the 20 qubits returned.
+
 The decision: no further multiply/AND-base-case work is planned, and the 23-AND dimension
 bound is recorded as the only remaining field-arithmetic lever rather than as a task. The
 next class of change is a decoder algorithm — a shorter EEA, a different error locator, or
@@ -92,9 +99,9 @@ Two things from this line of work do continue, and neither is a Toffoli count:
   2.319438e13 with a smaller `Q`.
 - **D2:** an upstream `MR` (or any Z-basis read) in the shipped extension; or a
   measurement-free construction that reproduces the arm's saving without one.
-- **D3:** a field-arithmetic result that reaches the 23-AND bound at 12 bits or reduces the
-  non-product 472,768.2 — the two things §2 of the reachability note says would be needed,
-  and neither is in hand.
+- **D3:** a field-arithmetic result that reaches the 23-AND bound at 12 bits, or reduces the
+  campaign arm's non-product 299,953.2 (the six-lever 472,768.2, not that arm's own) — the two
+  things §2 of the reachability note says would be needed, and neither is in hand.
 
 ## Pins
 

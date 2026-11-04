@@ -108,6 +108,32 @@ T_MEAN_ALGORITHM_FLOOR: float = 472768.2
 #: 685,936.2051367187 per shot (`dqi_campaign_arm_submission_score.json`) against the campaign's
 #: recorded 686,014.8 (`dqi_schedule_campaign.json`).
 CAMPAIGN_FRONTIER_T_MEAN: float = 686014.8
+#: The campaign arm's width, measured: every schedule arm reports ``Q`` = 1,913, the same as its
+#: six-lever control (P6 in `EEA_SCHEDULE_CAMPAIGN.md` §2.1).
+CAMPAIGN_ARM_QUBITS: int = 1913
+#: The campaign arm's **own** decomposition, measured and region-attributed in
+#: `dqi_schedule_campaign.json` §4: ``686,014.8 = 386,061.7 products + 299,953.2 non-product``.
+#: The 299,953.2 is the term that survives "every field product and controlled add free", so it --
+#: not the six-lever 472,768.2 -- is what rung 4 of the frontier is. Using the six-lever residual
+#: at the campaign arm's width described an arm that does not exist and overstated the floor by
+#: exactly the 172,815 the schedule campaign had already removed from the residual.
+CAMPAIGN_PRODUCT_T_MEAN: float = 386061.7
+CAMPAIGN_RESIDUAL_T_MEAN: float = 299953.2
+#: The campaign arm's inversion and division products, measured separately in §4 so the multiply
+#: window (331,023.0) and the scaffold products (55,038.7) can be priced apart.
+CAMPAIGN_INVERSION_DIVISION_T_MEAN: float = 55038.7
+#: One degree-12 multiply call in the Karatsuba reference form: 63 Toffolis, of which 54 are ANDs
+#: (`gf_mul_and_static_headroom.json`, `degrees.12`).
+KARATSUBA_TOFFOLI_PER_CALL_DEGREE_12: float = 63.0
+#: The multiply window halves the executed calls (10,510 -> 5,255), priced at 63 Toffolis each:
+#: 54 ANDs plus 9 Toffolis per call that are not ANDs (`gf_mul_and_static_headroom.json`,
+#: `ccx_delta_per_call` = 9).
+MULTIPLY_CALLS_AFTER_WINDOW: int = 10510 // 2
+MULTIPLY_NON_AND_TOFFOLI_PER_CALL: int = 9
+#: The dimension bound on ANDs for a GF(2^n) product: 2n - 1, so 23 at n = 12. Nothing measured
+#: reaches it (the Karatsuba recursion is exact at 54 and no split beats it), which is why it is a
+#: bound on the arithmetic and not a circuit.
+AND_DIMENSION_BOUND: int = 2 * 12 - 1
 R_EPS_PLUS: float = 1.1912604648115832
 EPS_PLUS: float = 0.0008660587301657926
 
@@ -133,11 +159,21 @@ ASPIRATIONAL_DQI_COST_AT_1789: float = R_EPS_PLUS * (PEAK_QUBITS_V6 ** 2) * T_ME
 #: target is derived from it, and a score needs a fixed divisor -- and the aim becomes the
 #: measured frontier moving toward the floor. Scored at the operative peak, the floor is the best
 #: any circuit of this algorithm can do, and it is still above the target.
+#: True of the six-lever arm's residual, which 472,768.2 is. It is *false* of the campaign arm,
+#: whose own residual is 299,953.2 and which therefore has 145,275.8 of room under the target.
+#: Both are reported (`floor_is_six_lever_arm_residual`, `target_above_campaign_floor`) so the
+#: narrower claim cannot be quoted as the broader one -- see `product_axis_decision()`.
 TARGET_IS_BELOW_ALGORITHM_FLOOR: bool = T_MEAN_TARGET_V6 < T_MEAN_ALGORITHM_FLOOR
 TARGET_TO_FLOOR_RATIO: float = T_MEAN_ALGORITHM_FLOOR / T_MEAN_TARGET_V6
 TARGET_ROLE: str = "SCORE_DENOMINATOR_NOT_AIM"
-ATTAINABLE_DQI_COST: float = R_EPS_PLUS * (PROJECTION_PEAK_QUBITS ** 2) * T_MEAN_ALGORITHM_FLOOR
+#: The best the campaign's own arm can do with every field product and controlled add free: its
+#: measured non-product residual (299,953.2), not the six-lever arm's 472,768.2. Scored at the
+#: campaign arm's measured 1,913 because that is the width a circuit of it actually has; the same
+#: term at the 1,893 verifier peak is carried separately and needs the 32 qubits §7.12 closed.
+ATTAINABLE_DQI_COST: float = R_EPS_PLUS * (CAMPAIGN_ARM_QUBITS ** 2) * CAMPAIGN_RESIDUAL_T_MEAN
 ATTAINABLE_GAIN_FACTOR: float = BASELINE_DQI_COST / ATTAINABLE_DQI_COST
+ATTAINABLE_DQI_COST_AT_PEAK: float = (R_EPS_PLUS * (PROJECTION_PEAK_QUBITS ** 2)
+                                     * CAMPAIGN_RESIDUAL_T_MEAN)
 
 #: What the circuit builder currently emits.
 #: ``reference_equivalent`` means the compiled circuit is the official
@@ -638,6 +674,7 @@ def design_projection_dqi_gluzdov_v6() -> dict[str, Any]:
         "remaining_width_levers": model_remaining_width_levers(),
         "width_giveback": model_width_giveback_cost(),
         "toffoli_target": toffoli_target_decision(),
+        "product_axis": product_axis_decision(),
         "single_array_trade": model_single_polynomial_array(),
         "toffolis": {
             "reference_mean_toffolis": T_MEAN_REFERENCE,
@@ -1049,15 +1086,20 @@ def model_width_giveback_cost() -> dict[str, Any]:
 def toffoli_target_decision() -> dict[str, Any]:
     """Whether 445,229 stays the campaign's aim now that the arm stands at 686,014.8.
 
-    It does not. The target is **6.19% below the floor this decoder's algorithm cannot cross**:
-    472,768.2 Toffolis per shot are spent on work that is not a field product -- the EEA
-    iterations, their predicates, the counter decode, the shifts, the metadata -- so freeing all
-    field arithmetic still leaves the shot at 1.062x the target. Keeping 445,229 as the aim would
-    mean aiming at a number whose best case is already a loss.
+    It does not, but **the original reason was wrong and is withdrawn**. 472,768.2 is the
+    *six-lever* arm's non-product residual, at 1,894 qubits, before the schedule campaign touched
+    it. The campaign arm's own residual is **299,953.2** (`dqi_schedule_campaign.json` §4), which
+    is **32.7% below** the target rather than 6.19% above it: the target sits 145,275.8 Toffolis
+    *above* the floor of this arm, not below it. Freeing every product from the campaign arm is
+    therefore rung 4 of §7.9 at **1.3076e12 = 0.688x** the denominator -- a win, not the 1.084x
+    loss the table recorded.
 
-    What it stays is the denominator. The 14.397x Benchmark II score is derived from it, and a
-    score needs a fixed divisor to stay comparable, so the target is retained as
-    ``SCORE_DENOMINATOR_NOT_AIM``: the aim becomes the measured frontier moving toward the floor.
+    What survives is the conclusion and the denominator role, on the correct footing: reaching
+    445,229 needs the surviving field-product stream down to **37.6%** of its measured 386,061.7,
+    and the strongest bound on record (2n - 1 = 23 ANDs) delivers 49.6% if only the AND part of a
+    call scales, or ~37.4% if the whole 63-Toffoli call does. That bracket straddles the target
+    (1.104x to 0.998x), so the barrier is the AND count of one GF(2^12) multiply, not this arm's
+    residual -- and ``product_axis_decision()`` carries the arithmetic rather than a verdict.
     """
     return {
         "target_mean_toffolis": T_MEAN_TARGET_V6,
@@ -1070,12 +1112,141 @@ def toffoli_target_decision() -> dict[str, Any]:
         "frontier_to_floor_ratio": CAMPAIGN_FRONTIER_T_MEAN / T_MEAN_ALGORITHM_FLOOR,
         "attainable_cost_at_operative_peak": ATTAINABLE_DQI_COST,
         "attainable_gain_factor": ATTAINABLE_GAIN_FACTOR,
+        "attainable_cost_at_verifier_peak": ATTAINABLE_DQI_COST_AT_PEAK,
+        "attainable_is_below_denominator": ATTAINABLE_DQI_COST < TARGET_DQI_COST,
         "projection_reaches_target": False,
+        # The floor above is the six-lever arm's, which is why `target_below_floor` is true of it
+        # and false of the campaign arm. Both are reported so neither can be quoted alone.
+        "floor_is_six_lever_arm_residual": True,
+        "campaign_floor_mean_toffolis": CAMPAIGN_RESIDUAL_T_MEAN,
+        "target_above_campaign_floor": T_MEAN_TARGET_V6 > CAMPAIGN_RESIDUAL_T_MEAN,
+        "campaign_floor_to_target_ratio": CAMPAIGN_RESIDUAL_T_MEAN / T_MEAN_TARGET_V6,
         "decision": (
-            "445,229 does not stay the aim: it is 6.19% below the 472,768.2 of non-product work "
-            "this algorithm spends, so the best attainable circuit still scores above the target "
-            "and the projection's 12.857x is a ceiling nothing reaches. It is retained as the "
-            "score denominator only; the aim is the measured 686,014.8 toward 472,768.2"
+            "445,229 does not stay the aim, but not because it is below a floor: that was the "
+            "six-lever arm's 472,768.2, and the campaign arm's own residual is 299,953.2, which "
+            "leaves the target 145,275.8 above it -- 0.688x if every product were free. It stays "
+            "the score denominator because reaching it needs the surviving product stream at "
+            "37.6% of its cost, and the 2n-1 = 23 AND bound delivers 49.6% at best on the "
+            "AND-scaling reading. The aim is the AND count of one GF(2^12) multiply"
+        ),
+    }
+
+
+def product_axis_decision() -> dict[str, Any]:
+    """Rung 4 corrected: what the campaign arm's own product-free point is, and what the target needs.
+
+    ``BENCHMARK2_TARGET_REACHABILITY.md`` §7.9 rung 4 was tabulated as 472,768.2 at the campaign
+    arm's 1,913 qubits, which mixes two arms: 472,768.2 is the six-lever residual, and the
+    campaign arm is 386,061.7 products + **299,953.2** non-product. Freeing every product from
+    rung 3 therefore leaves 299,953.2, and that scores below the denominator rather than above it.
+
+    The result the table drew -- that the target is below the floor of this algorithm -- does not
+    survive. What does is that the target is not *reached*: it needs the product stream at 37.6%
+    of its measured cost, and the only bound of that size (2n - 1 ANDs) lands between 49.6% and
+    ~37.4% of it depending on whether the 9 non-AND Toffolis per call scale with the ANDs. No
+    record settles that, so the rung is bracketed rather than decided.
+    """
+    denominator = R_EPS_PLUS * (PEAK_QUBITS_REFERENCE ** 2) * T_MEAN_TARGET_V6
+
+    def score_at(qubits: int, t_mean: float) -> dict[str, Any]:
+        value = R_EPS_PLUS * (qubits ** 2) * t_mean
+        return {
+            "qubits": qubits,
+            "t_mean_toffolis": t_mean,
+            "score": value,
+            "vs_denominator": value / denominator,
+            "gain_vs_baseline": BASELINE_DQI_COST / value,
+        }
+
+    # Rung 4 is rung 3 with its products freed, so the term it keeps is rung 3's own residual.
+    rung4 = score_at(CAMPAIGN_ARM_QUBITS, CAMPAIGN_RESIDUAL_T_MEAN)
+    rung4_at_peak = score_at(PEAK_QUBITS_REFERENCE, CAMPAIGN_RESIDUAL_T_MEAN)
+    # What the table recorded, kept so the size of the substitution stays auditable.
+    tabulated = score_at(CAMPAIGN_ARM_QUBITS, T_MEAN_ALGORITHM_FLOOR)
+
+    allowed = T_MEAN_TARGET_V6 - CAMPAIGN_RESIDUAL_T_MEAN
+    must_fall = CAMPAIGN_PRODUCT_T_MEAN - allowed
+
+    # The 2n - 1 bound, priced two ways because nothing measured says which is right.
+    ands = AND_DIMENSION_BOUND
+    and_scaling_multiply = MULTIPLY_CALLS_AFTER_WINDOW * (ands + MULTIPLY_NON_AND_TOFFOLI_PER_CALL)
+    multiply_term = CAMPAIGN_PRODUCT_T_MEAN - CAMPAIGN_INVERSION_DIVISION_T_MEAN
+    whole_call_scaling_multiply = (multiply_term * ands
+                                   / KARATSUBA_TOFFOLI_PER_CALL_DEGREE_12)
+    inversion_division = CAMPAIGN_INVERSION_DIVISION_T_MEAN * ands / float(ANDS_PER_PRODUCT)
+
+    def at_bound(multiply: float) -> dict[str, Any]:
+        products = multiply + inversion_division
+        t_mean = CAMPAIGN_RESIDUAL_T_MEAN + products
+        return {
+            "ands": ands,
+            "multiply_toffolis": multiply,
+            "inversion_division_toffolis": inversion_division,
+            "products_toffolis": products,
+            "products_fraction_of_current": products / CAMPAIGN_PRODUCT_T_MEAN,
+            "t_mean_toffolis": t_mean,
+            "vs_target": t_mean / T_MEAN_TARGET_V6,
+            "vs_denominator": score_at(CAMPAIGN_ARM_QUBITS, t_mean)["vs_denominator"],
+            # The same T at the verifier peak: the target's 445,229 is denominated at 1,893, so
+            # this is the row that decides whether the AND bound alone is enough.
+            "vs_denominator_at_verifier_peak": score_at(
+                PEAK_QUBITS_REFERENCE, t_mean)["vs_denominator"],
+        }
+
+    bracket = {
+        "and_part_scales": at_bound(and_scaling_multiply),
+        "whole_call_scales": at_bound(whole_call_scaling_multiply),
+        "straddles_the_target": (
+            at_bound(and_scaling_multiply)["vs_target"] > 1.0
+            > at_bound(whole_call_scaling_multiply)["vs_target"]
+        ),
+        "needs_below_the_and_bound": (
+            "the AND-scaling reading needs products at 37.6% of cost, which is about 15.6 ANDs "
+            "per multiply, below the 2n-1 = 23 lower bound on ANDs for one GF(2^12) product: "
+            "so that reading is excluded rather than unmeasured"),
+        "what_settles_it": (
+            "the per-call decomposition of the 63-Toffoli multiply: which part of the 9 Toffolis "
+            "that are not ANDs is AND-dependent. No record separates them, so the 23-AND rung is "
+            "1.104x or 0.998x the target and neither is claimed"
+        ),
+    }
+
+    # The only configuration that beats the denominator: the 2n-1 AND bound *and* the verifier
+    # peak at once. At the campaign arm's own 1,913 the same T reads 1.019x, so the 20 qubits
+    # cost more than the AND bound saves.
+    best_product = bracket["whole_call_scales"]
+    both_at_once = {
+        "qubits": PEAK_QUBITS_REFERENCE,
+        "ands": ands,
+        "t_mean_toffolis": best_product["t_mean_toffolis"],
+        "vs_denominator": best_product["vs_denominator_at_verifier_peak"],
+        "vs_denominator_at_1913": best_product["vs_denominator"],
+        "needs_both_closures": True,
+    }
+
+    return {
+        "rung4_corrected": rung4,
+        "rung4_at_verifier_peak": rung4_at_peak,
+        "rung4_as_tabulated": tabulated,
+        "tabulated_overstatement_toffolis": T_MEAN_ALGORITHM_FLOOR - CAMPAIGN_RESIDUAL_T_MEAN,
+        "tabulated_used_the_six_lever_residual": True,
+        "campaign_residual_toffolis": CAMPAIGN_RESIDUAL_T_MEAN,
+        "campaign_products_toffolis": CAMPAIGN_PRODUCT_T_MEAN,
+        "target_room_above_residual_toffolis": allowed,
+        "products_must_fall_toffolis": must_fall,
+        "products_must_fall_fraction": must_fall / CAMPAIGN_PRODUCT_T_MEAN,
+        "products_allowed_fraction": allowed / CAMPAIGN_PRODUCT_T_MEAN,
+        "and_dimension_bound": bracket,
+        "best_product_rung": both_at_once,
+        "verdict": (
+            "rung 4 is not worth building -- it is a counterfactual, not a circuit -- but it is "
+            "worth correcting: at the campaign arm's own residual it is 0.688x the denominator, "
+            "the best row in the table, and the target sits above this arm's floor by 145,275.8 "
+            "Toffolis. The product axis does not reach the target either: 37.6% of current cost "
+            "is about 15.6 ANDs per multiply, below the 2n-1 = 23 lower bound, so that reading is "
+            "excluded; at the bound the arm is 1.019x at 1,913 and 0.998x only if the 20 qubits "
+            "are also returned. Both closures are measured as unattainable, so the denominator "
+            "stands -- on that ground, not on a floor the campaign arm does not have"
         ),
     }
 

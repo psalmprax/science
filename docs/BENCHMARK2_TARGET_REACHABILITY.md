@@ -546,9 +546,11 @@ other is the aspiration §7.2 closed.
 | 1 | pinned reference, reduced-window 54-AND | 1,893 | 5,433,438.2 | 2.3194e13 | 12.204× | 1.054× | measured, verifier PASS |
 | 2 | six-lever `MR` arm | 1,913 | 1,221,466.8 | 5.3250e12 | 2.802× | 4.590× | measured |
 | 3 | **campaign arm, five schedule gates** | **1,913** | **685,936.2** | **2.9903e12** | **1.573×** | **8.173×** | measured, verifier PASS at 102,400 shots |
-| 4 | rung 3 with every field product and controlled add free | 1,913 | 472,768.2 | 2.0610e12 | 1.084× | 11.858× | impossible; bounds the *algorithm* |
-| 5 | rung 4 at the verifier peak | 1,893 | 472,768.2 | 2.0182e12 | 1.062× | 12.110× | needs the 32 closed qubits |
-| — | Benchmark II target (denominator) | 1,893 | 445,229 | 1.9006e12 | 1.000× | 12.859× | derived, unsourced, below the floor |
+| 4 | rung 3 with every field product and controlled add free | 1,913 | 299,953.2 | 1.3076e12 | **0.688×** | 18.690× | not a circuit; bounds the *arm* (§7.13) |
+| 5 | rung 4 at the verifier peak | 1,893 | 299,953.2 | 1.2804e12 | **0.674×** | 19.087× | needs the 32 closed qubits |
+| 6 | rung 3 at the 2n−1 = 23 AND bound, whole call scaling | 1,913 | 444,245.3 | 1.9367e12 | 1.019× | 12.619× | not a circuit; bounds the *multiplier* |
+| 7 | rung 6 at the verifier peak | 1,893 | 444,245.3 | 1.8964e12 | **0.998×** | 12.887× | needs both closures at once (§7.13) |
+| — | Benchmark II target (denominator) | 1,893 | 445,229 | 1.9006e12 | 1.000× | 12.859× | derived, unsourced; 145,275.8 above rung 4 |
 | — | aspirational | 1,789 | 445,229 | 1.6975e12 | 0.893× | 14.397× | 104 qubits nothing supplies |
 
 What that table says, in three lines:
@@ -556,38 +558,50 @@ What that table says, in three lines:
 - **The width axis is exhausted**: rung 3 already sits 20 qubits wider than the reference, every
   qubit lever left is worth 0 (§7.2) or 23 that cannot be re-measured at the floor (§7.7), and
   giving those 20 back costs 4,212,030.2 Toffolis per shot (§7.11).
-- **The Toffoli axis has one live rung and one dead one**: 686,014.8 → 472,768.2 is optimisation
-  (a decoder algorithm, §7.10); 472,768.2 → 445,229 is not, because it is below the non-product
-  floor of the algorithm itself.
-- **The frontier is rung 3.** Nothing above it has been built, and rungs 4–5 are markers on the
-  map, not destinations.
+- **The Toffoli axis is bounded below by rung 4, and the bound is a win**: freeing rung 3's own
+  products leaves 299,953.2 and scores **0.688×**, so the target is *not* below this arm's floor
+  — it sits 145,275.8 above it (§7.13). What keeps it out of reach is that the products must fall
+  to 37.6% of their cost (≈15.6 ANDs per multiply, below the 2n−1 = 23 lower bound), and at that
+  bound the arm is still 1.019× at 1,913.
+- **The frontier is rung 3.** Nothing above it has been built. Rungs 4–5 are the arm's floor and
+  rungs 6–7 the multiplier's; neither is a destination, and rung 7 needs two closures at once.
 
 ### 7.10 445,229 stops being the aim
 
 The schedule campaign left the decoder at 686,014.8, which is **1.541×** the target. The
-decision this note makes is that the target does not survive as the aim, and the reason is
-arithmetic rather than fatigue: **445,229 is 6.19% below the floor of work this algorithm
-spends.** 472,768.2 Toffolis per shot are the EEA iterations, their predicates, the counter
-decode, the shifts and the metadata — not field products — so making every field product and
-every controlled add free (rung 4) still leaves the shot at **1.062×** the target. Aiming at
-445,229 would mean aiming at a number whose best case is already a loss.
+decision this note makes is that the target does not survive as the aim — but **the reason first
+given for it does not survive either**, and §7.13 records the correction. 472,768.2 is the
+*six-lever* arm's residual, measured before the campaign removed anything; the campaign arm's own
+residual is **299,953.2**, which is 32.7% *below* the target. "445,229 is below the floor" is
+therefore false of the arm the campaign built: rung 4 is **0.688×**, a record rather than a loss.
+
+What keeps the target out of reach is the product stream and the width together. With 299,953.2
+fixed, 445,229 allows 145,275.8 of product work where the arm spends 386,061.7, so the products
+must fall to **37.6%** of their cost — about **15.6 ANDs per multiply**, below the `2n − 1 = 23`
+lower bound and therefore excluded. At that bound the arm is **1.019×** at its own 1,913 qubits
+and **0.998×** only if the 20 qubits come back, and §7.11 measures that giveback at 4,212,030.2
+Toffolis per shot. The aim is the measured frontier toward a multiplier at the AND bound, and the
+denominator role is unchanged.
 
 What it stays is the **denominator**. The 14.397× Benchmark II score is derived from it, and a
 score needs a fixed divisor to stay comparable, so `TARGET_ROLE` is
 `SCORE_DENOMINATOR_NOT_AIM` and the projection's 12.857× is labelled a ceiling nothing reaches.
 The aim becomes the two things that are still movable:
 
-1. **686,014.8 → 472,768.2** by decoder algorithm — a shorter EEA, a different error locator, or
-   a construction that does not evaluate 4,095 positions per shot
-   ([`EEA_AND_PREDICATE_PLAN.md`](EEA_AND_PREDICATE_PLAN.md), [`NONMULTIPLY_LEDGER.md`](NONMULTIPLY_LEDGER.md));
-2. **1,913 → 1,893** on the campaign arm, worth 1.084× → 1.062× *if it were free* — and §7.11
+1. **686,014.8 → 299,953.2** if every product were free — a bound, not a build, and the row that
+   shows the target is reachable in principle on this arm. The *movable* aim is the product
+   stream, **386,061.7 → 145,275.8** for the target itself, which needs the multiply at the
+   `2n − 1 = 23` AND bound (§7.13);
+2. **1,913 → 1,893** on the campaign arm, worth 0.688× → 0.674× *if it were free* — and §7.11
    measures that it is not: the 20 qubits are the six levers', not the schedule gates', and
    giving them back costs 4,212,030.2 Toffolis per shot. This is the width floor of an
    optimisation, not a queue of pending cuts.
 
 `toffoli_target_decision()` carries the decision and `dqi_design_projection.json` ships it under
-`toffoli_target`. What would overturn it: a decoder that does not spend the 472,768.2 at all —
-which is a different benchmark answer, not a better optimisation of this one.
+`toffoli_target`, with `product_axis` alongside it. What would overturn it: a GF(2¹²) multiply
+below the `2n − 1` AND bound, which a lower bound excludes; or a decoder that does not spend the
+299,953.2 at all, which is a different benchmark answer rather than a better optimisation of
+this one.
 
 ### 7.11 What the 20 qubits cost
 
@@ -641,5 +655,63 @@ The projection carries this as `single_array_trade.route_status = "CLOSED_ON_MEA
 the packed trade still present and its `1.015×` / `0.284×` figures explicitly withdrawn; the model
 keeps the arithmetic so the record of what was believed is auditable, and refuses it as available.
 
-What is left is not a width question: the only live axis is the decoder algorithm (§7.10), and its
-best case is rung 4 at 2.0610e12 — still a loss against the 1.9006e12 denominator.
+What is left is not a width question. The Toffoli axis is bounded below by rung 4 at **1.3076e12
+(0.688×)** — the campaign arm's own residual, corrected in §7.13 — and the best *product* rung is
+**1.019×** at 1,913, reaching 0.998× only at 1,893. The target therefore needs the `2n − 1` AND
+bound and the verifier peak simultaneously, and §7.11 and §7.12 have each measured as
+unattainable.
+
+### 7.13 Rung 4 was priced on the wrong arm — the decision, and what it changes
+
+The question here is whether rung 4, "every field product and controlled add free", is worth
+building. It is not, for two reasons, and only the first had been stated.
+
+**It is not a build.** A rung that makes every product free prices a counterfactual. There is no
+circuit to construct and no builder work that turns it into one.
+
+**And it was mis-valued.** §7.9's original row read 472,768.2 at 1,913 qubits, which is the
+*six-lever* arm's non-product residual — an arm at 1,894 qubits, before the schedule campaign
+removed anything. Rung 3 is the campaign arm, and its own decomposition is
+`686,014.8 = 386,061.7 products + 299,953.2 non-product`, region-attributed in
+[`EEA_SCHEDULE_CAMPAIGN.md`](EEA_SCHEDULE_CAMPAIGN.md) §4. Freeing rung 3's products therefore
+leaves **299,953.2**, not 472,768.2:
+
+| rung 4 | `Q` | `T_mean`/shot | score | vs 1.9006e12 | gain |
+|---|---|---|---|---|---|
+| as tabulated (six-lever residual) | 1,913 | 472,768.2 | 2.0610e12 | 1.084× | 11.858× |
+| **corrected (campaign residual)** | **1,913** | **299,953.2** | **1.3076e12** | **0.688×** | **18.690×** |
+| corrected, at the verifier peak | 1,893 | 299,953.2 | 1.2804e12 | 0.674× | 19.087× |
+
+The substituted residual overstated the floor by exactly **172,815.0**, which is the amount the
+campaign had already taken out of it. So "445,229 is below the floor of this algorithm" is true of
+the six-lever arm and false of the arm that was built: **the campaign arm's floor is 145,275.8
+Toffolis below the target**, and rung 4 is the best row in §7.9 rather than a 1.084× loss.
+`product_axis_decision()` computes all three rows and the projection carries them under
+`product_axis`, with the tabulated figure retained as `rung4_as_tabulated` so the substitution
+stays auditable.
+
+**What actually keeps 445,229 out of reach.** Not the residual. With 299,953.2 fixed, the target
+allows **145,275.8** of product work where the arm spends **386,061.7**: the products must fall
+**62.4%**, to **37.6%** of their measured cost. In AND terms that is about **15.6 ANDs per
+multiply**, and `2n − 1 = 23` is a lower bound on the AND count of one GF(2¹²) product, so the
+requirement is **excluded, not merely unmeasured**. At the bound itself:
+
+| rung 3 at the 23-AND bound | `Q` | `T_mean`/shot | score | vs 1.9006e12 |
+|---|---|---|---|---|
+| per-call cost scales only in its AND part | 1,913 | 491,555.6 | 2.1429e12 | 1.128× |
+| the whole 63-Toffoli call scales | 1,913 | 444,245.3 | 1.9367e12 | **1.019×** |
+| whole call, at the verifier peak | 1,893 | 444,245.3 | 1.8964e12 | **0.998×** |
+
+The two rows differ only in whether the 9 Toffolis per call that are not ANDs also scale, and no
+record separates them — the 23-AND rung is 1.128× or 1.019× the denominator and neither is
+claimed. Under the reading that reaches furthest, the best product rung is **1.019×** at the arm's
+own width: returning the 20 qubits is what turns it into 0.998×, and §7.11 prices that giveback at
+4,212,030.2 Toffolis per shot.
+
+**The decision.** Rung 4 is not worth building, and the aim does not move back to 445,229 either:
+the target is reachable only if the multiply reaches the `2n − 1` bound *and* the verifier peak is
+recovered, and each is separately measured as unattainable. What changes is the reason. The
+barrier is a **lower bound on multiplication**, not a claimed floor on this decoder's residual, so
+the campaign's remaining question is the composition of one 63-Toffoli multiply call rather than
+another EEA deletion. Pinned by
+`tests/test_dqi_gluzdov_v6.py::test_rung4_is_priced_on_the_campaign_arms_own_residual`.

@@ -38,9 +38,23 @@ def main() -> int:
     )
     print(
         f"cost {operative['cost']:.6g}, gain {operative['gain_factor']:.3f}x, "
-        f"T at aim {target['algorithm_floor_mean_toffolis']:,.1f} "
+        f"T at aim {target['algorithm_floor_mean_toffolis']:,.1f} (six-lever residual) "
         f"({target['measured_frontier_mean_toffolis']:,.1f} measured, "
         f"{target['frontier_to_floor_ratio']:.3f}x it)"
+    )
+    axis = projection["product_axis"]
+    rung4 = axis["rung4_corrected"]
+    print(
+        f"rung 4 (campaign residual {axis['campaign_residual_toffolis']:,.1f}): "
+        f"{rung4['score']:.4e} = {rung4['vs_denominator']:.3f}x the denominator, "
+        f"gain {rung4['gain_vs_baseline']:.3f}x; tabulated row overstated the floor by "
+        f"{axis['tabulated_overstatement_toffolis']:,.1f}"
+    )
+    bracket = axis["and_dimension_bound"]
+    print(
+        f"23-AND bound straddles the target: "
+        f"{bracket['and_part_scales']['vs_target']:.3f}x (AND-scaling) to "
+        f"{bracket['whole_call_scales']['vs_target']:.3f}x (whole-call)"
     )
     print("wrote", OUTPUT.relative_to(REPO_ROOT))
     return 0

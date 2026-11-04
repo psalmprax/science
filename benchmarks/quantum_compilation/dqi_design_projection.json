@@ -114,6 +114,73 @@
     "n_iters": 222,
     "r": 2016
   },
+  "product_axis": {
+    "and_dimension_bound": {
+      "and_part_scales": {
+        "ands": 23,
+        "inversion_division_toffolis": 23442.409259259257,
+        "multiply_toffolis": 168160,
+        "products_fraction_of_current": 0.49629996774935004,
+        "products_toffolis": 191602.40925925926,
+        "t_mean_toffolis": 491555.6092592593,
+        "vs_denominator": 1.1275035658850556,
+        "vs_denominator_at_verifier_peak": 1.1040511944623088,
+        "vs_target": 1.1040511944623088
+      },
+      "needs_below_the_and_bound": "the AND-scaling reading needs products at 37.6% of cost, which is about 15.6 ANDs per multiply, below the 2n-1 = 23 lower bound on ANDs for one GF(2^12) product: so that reading is excluded rather than unmeasured",
+      "straddles_the_target": true,
+      "what_settles_it": "the per-call decomposition of the 63-Toffoli multiply: which part of the 9 Toffolis that are not ANDs is AND-dependent. No record separates them, so the 23-AND rung is 1.104x or 0.998x the target and neither is claimed",
+      "whole_call_scales": {
+        "ands": 23,
+        "inversion_division_toffolis": 23442.409259259257,
+        "multiply_toffolis": 120849.66666666667,
+        "products_fraction_of_current": 0.3737539256702385,
+        "products_toffolis": 144292.07592592592,
+        "t_mean_toffolis": 444245.27592592593,
+        "vs_denominator": 1.0189856921557179,
+        "vs_denominator_at_verifier_peak": 0.9977905211159334,
+        "vs_target": 0.9977905211159335
+      }
+    },
+    "best_product_rung": {
+      "ands": 23,
+      "needs_both_closures": true,
+      "qubits": 1893,
+      "t_mean_toffolis": 444245.27592592593,
+      "vs_denominator": 0.9977905211159334,
+      "vs_denominator_at_1913": 1.0189856921557179
+    },
+    "campaign_products_toffolis": 386061.7,
+    "campaign_residual_toffolis": 299953.2,
+    "products_allowed_fraction": 0.37630202633413257,
+    "products_must_fall_fraction": 0.6236979736658674,
+    "products_must_fall_toffolis": 240785.90000000002,
+    "rung4_as_tabulated": {
+      "gain_vs_baseline": 11.857871613208435,
+      "qubits": 1913,
+      "score": 2061032905470.9878,
+      "t_mean_toffolis": 472768.2,
+      "vs_denominator": 1.0844100266505468
+    },
+    "rung4_at_verifier_peak": {
+      "gain_vs_baseline": 19.0866721278832,
+      "qubits": 1893,
+      "score": 1280446555582.1008,
+      "t_mean_toffolis": 299953.2,
+      "vs_denominator": 0.673705441469446
+    },
+    "rung4_corrected": {
+      "gain_vs_baseline": 18.68966431565874,
+      "qubits": 1913,
+      "score": 1307645935791.198,
+      "t_mean_toffolis": 299953.2,
+      "vs_denominator": 0.6880163632112244
+    },
+    "tabulated_overstatement_toffolis": 172815.0,
+    "tabulated_used_the_six_lever_residual": true,
+    "target_room_above_residual_toffolis": 145275.8,
+    "verdict": "rung 4 is not worth building -- it is a counterfactual, not a circuit -- but it is worth correcting: at the campaign arm's own residual it is 0.688x the denominator, the best row in the table, and the target sits above this arm's floor by 145,275.8 Toffolis. The product axis does not reach the target either: 37.6% of current cost is about 15.6 ANDs per multiply, below the 2n-1 = 23 lower bound, so that reading is excluded; at the bound the arm is 1.019x at 1,913 and 0.998x only if the 20 qubits are also returned. Both closures are measured as unattainable, so the denominator stands -- on that ground, not on a floor the campaign arm does not have"
+  },
   "projection": {
     "aspirational": {
       "cost": 1697504187470.8674,
@@ -273,13 +340,19 @@
   },
   "toffoli_target": {
     "algorithm_floor_mean_toffolis": 472768.2,
-    "attainable_cost_at_operative_peak": 2018162877671.416,
-    "attainable_gain_factor": 12.109757767356973,
-    "decision": "445,229 does not stay the aim: it is 6.19% below the 472,768.2 of non-product work this algorithm spends, so the best attainable circuit still scores above the target and the projection's 12.857x is a ceiling nothing reaches. It is retained as the score denominator only; the aim is the measured 686,014.8 toward 472,768.2",
+    "attainable_cost_at_operative_peak": 1307645935791.198,
+    "attainable_cost_at_verifier_peak": 1280446555582.1008,
+    "attainable_gain_factor": 18.68966431565874,
+    "attainable_is_below_denominator": true,
+    "campaign_floor_mean_toffolis": 299953.2,
+    "campaign_floor_to_target_ratio": 0.6737054414694461,
+    "decision": "445,229 does not stay the aim, but not because it is below a floor: that was the six-lever arm's 472,768.2, and the campaign arm's own residual is 299,953.2, which leaves the target 145,275.8 above it -- 0.688x if every product were free. It stays the score denominator because reaching it needs the surviving product stream at 37.6% of its cost, and the 2n-1 = 23 AND bound delivers 49.6% at best on the AND-scaling reading. The aim is the AND count of one GF(2^12) multiply",
+    "floor_is_six_lever_arm_residual": true,
     "frontier_to_floor_ratio": 1.451059525577228,
     "frontier_to_target_ratio": 1.5408133791823984,
     "measured_frontier_mean_toffolis": 686014.8,
     "projection_reaches_target": false,
+    "target_above_campaign_floor": true,
     "target_below_floor": true,
     "target_mean_toffolis": 445229.0,
     "target_role": "SCORE_DENOMINATOR_NOT_AIM",

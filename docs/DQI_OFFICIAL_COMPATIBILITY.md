@@ -415,10 +415,17 @@ build it was measured on, or claims it reaches the target fails there.
   96 > 32, and 32 > 0: closed twice over, not by a missing derivation.
 - **`T_mean` = 445,229 is permanently unsourced.** No circuit produces it. The measured arms
   are 686,014.8, 1,221,466.8 and 472,768.2, and the last of those already assumes every field
-  product and every controlled add are free, which they are not. It therefore sits **6.19%
-  below the algorithm's own floor** and is kept only as the **score denominator**:
-  `TARGET_ROLE = SCORE_DENOMINATOR_NOT_AIM`. The projection is one measured factor (`Q`) times
-  one denominator (`T`), and the aim is the measured 686,014.8 toward 472,768.2.
+  product and every controlled add are free, which they are not. It is kept as the **score
+  denominator**: `TARGET_ROLE = SCORE_DENOMINATOR_NOT_AIM`. The projection is one measured
+  factor (`Q`) times one denominator (`T`).
+
+  **Corrected 2026-11-04.** The claim that the target sits "6.19% below the algorithm's own
+  floor" is withdrawn: 472,768.2 is the six-lever arm's residual, and the campaign arm's own is
+  299,953.2, so the target is **145,275.8 above** that floor and rung 4 is **0.688×** the
+  denominator, not 1.062×. The denominator role survives because 445,229 needs the surviving
+  386,061.7 of products at 37.6% of their cost — about 15.6 ANDs per multiply against a
+  `2n − 1 = 23` lower bound — and at that bound the arm is 1.019× at 1,913, 0.998× only at
+  1,893 ([`BENCHMARK2_TARGET_REACHABILITY.md`](BENCHMARK2_TARGET_REACHABILITY.md) §7.13).
 
 Committed artifact: `benchmarks/quantum_compilation/dqi_design_projection.json`, written by
 `scripts/write_dqi_design_projection.py` and pinned to the live function by

@@ -328,6 +328,36 @@ def test_the_data_path_floor_is_recorded_with_the_target():
     assert "0.898×" in reachability
     assert "1.9006e12" in reachability and "1.9006e12" in compatibility
 
+
+def test_the_frontier_rung4_prices_rung3s_own_residual():
+    """§7.9 rung 4 must keep *rung 3's* residual, not the six-lever arm's 472,768.2.
+
+    Substituting 472,768.2 into the campaign arm's row made rung 4 read 1.084× -- a loss --
+    when the arm's own residual is 299,953.2 and freeing it scores 0.688×. That substitution
+    is what let the cheapest family look inadmissible, so the figures in the note are pinned
+    against the model that computes them.
+    """
+    import pathlib
+
+    from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import product_axis_decision
+
+    root = pathlib.Path(__file__).resolve().parents[1] / "docs"
+    reachability = (root / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
+    axis = product_axis_decision()
+    rung4 = axis["rung4_corrected"]
+
+    assert axis["campaign_residual_toffolis"] == 299953.2
+    assert f"{rung4['t_mean_toffolis']:,.1f}" in reachability
+    assert f"{rung4['score']:.4e}".replace("e+12", "e12") in reachability
+    assert f"{rung4['vs_denominator']:.3f}×" in reachability
+    # The replaced row is retained for audit rather than deleted, and labelled as the
+    # six-lever residual it actually was.
+    assert "as tabulated (six-lever residual)" in reachability
+    assert f"{axis['tabulated_overstatement_toffolis']:,.1f}" in reachability
+    # The product axis, which is where the remaining gap actually lives.
+    assert f"{axis['products_allowed_fraction'] * 100:.1f}%" in reachability
+    assert "product_axis_decision" in reachability
+
     import pathlib
 
     campaign = (

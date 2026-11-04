@@ -44,13 +44,17 @@ cost does to the projected score".
 
 ### What this campaign is aimed at
 
-The 445,229 in the ratios above is the **denominator**, not the aim. 472,768.2 Toffolis per
-shot of this decoder are work that is not a field product at all — the EEA iterations, their
-predicates, the counter decode, the shifts and the metadata — so 445,229 sits **6.19% below**
-the floor the algorithm cannot cross, and freeing every field product and every controlled add
-still leaves the shot at 1.062× the target. Aiming at a number whose best case is a loss is not
-a campaign, so the aim is now the two things that are still movable: **686,014.8 → 472,768.2**
-by decoder algorithm, and **1,913 → 1,893** on this arm — which P6 below makes a *price* rather
+The 445,229 in the ratios above is the **denominator**, not the aim. The reason first given for
+that is **withdrawn**: 472,768.2 Toffolis per shot is the *six-lever* arm's non-product residual,
+and this campaign took 172,815 out of it, so §4's arm carries **299,953.2** non-product and the
+target sits **145,275.8 above** its floor rather than 6.19% below it. Freeing this arm's products
+is therefore **0.688×** the denominator — a record, not a loss
+([`BENCHMARK2_TARGET_REACHABILITY.md`](BENCHMARK2_TARGET_REACHABILITY.md) §7.13). What keeps the
+target out of reach is that it needs the surviving **386,061.7** of products at **37.6%** of
+their cost — about 15.6 ANDs per multiply, below the `2n − 1 = 23` lower bound — and at that bound
+the arm is 1.019× at its own width, 0.998× only with the 20 qubits returned. So the aim is now
+the two things that are still movable: **386,061.7 → 145,275.8** on the product stream, and
+**1,913 → 1,893** on this arm — which P6 below makes a *price* rather
 than a free cut: every schedule arm runs at `Q` = 1,913, identical to its control, so the five
 gates cost no width and dropping them recovers none. The 20 qubits are the six levers', and
 [`BENCHMARK2_TARGET_REACHABILITY.md`](BENCHMARK2_TARGET_REACHABILITY.md) §7.11 prices them at
