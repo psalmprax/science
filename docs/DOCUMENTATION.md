@@ -739,12 +739,14 @@ the implementation module (e.g. `apedp.falsification.falsifier`).
 
 ### 5.12 `apedp/applied_biopharma.py` — Applied Biopharma & Drug Discovery
 
-Comprehensive drug discovery across therapeutic areas (oncology, cardiovascular, neurodegenerative, infectious disease, immunology, diabetes, etc.), including biomarker analysis, target identification/prioritization, drug repurposing, combination therapy discovery/trial simulation, ADMET prediction, lead optimization, and clinical trial design.
+Experimental planning and rule-screening utilities across illustrative disease areas. This is not a comprehensive or validated drug-discovery platform: target examples are static, ADMET is a Lipinski/Veber rule screen, and trial outputs are planning sketches rather than efficacy estimates.
 
 **Status:** `experimental`  
 **Tests:** `tests/test_applied_engineering_pharma.py`.
 
-**Exports:** `DiseaseBiomarkerAnalyzer`, `UniversalDrugTargetDiscovery`, `LeadOptimizer`, `ADMETPredictor` (rule-based Lipinski/Veber screen, not a predictive ADMET model), `ClinicalTrialDesigner`, `DrugRepurposingEngine`, `CombinationTrialSimulator` (planning sketch; computes no p-value). Trial and efficacy outputs are deterministic (SHA-256 of inputs, not Python's salted `hash()`).
+**Exports:** `DiseaseBiomarkerAnalyzer` (illustrative reference-range checks), `UniversalDrugTargetDiscovery` (static examples; refuses `omics_data` because it is not analyzed), `LeadOptimizer` (descriptor suggestions only), `ADMETPredictor` (rule-based Lipinski/Veber screen, not a predictive ADMET model), `ClinicalTrialDesigner` (template), `DrugRepurposingEngine` (static examples), and `CombinationTrialSimulator` (assumed planning rates; computes no p-value). Trial and efficacy outputs are deterministic (SHA-256 of inputs, not Python's salted `hash()`).
+
+See [`BIOPHARMA_SCOPE.md`](BIOPHARMA_SCOPE.md) for implemented scope, explicit exclusions, and evidence requirements. [`apedp_dyn.epistemic.multiple_testing`](../apedp_dyn/epistemic/multiple_testing.py) provides BH/BY/Holm correction for caller-supplied p-values; it does not generate biomarker statistics.
 
 ### 5.13 `apedp/applied_fusion.py` — Applied Fusion Energy
 

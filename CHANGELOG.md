@@ -16,12 +16,14 @@ inferred releases.
 ### Added
 - Release-governance and changelog conventions.
 - Security reporting policy, dependency-update automation, and CodeQL analysis.
+- Validated BH/BY/Holm p-value adjustment with caller-supplied alpha, ordered results, and effective rejection threshold.
+- Explicit biopharma scope documentation and regression tests for evidence labels and unsupported omics inputs.
 
 ### Changed
-- _Record user-visible changes here._
+- Biopharma heuristics now identify their evidence tier and unsupported outputs; target discovery refuses ignored omics input, and unsupported biomarker measurements are reported as not assessed.
 
 ### Fixed
-- _Record user-visible fixes here._
+- Reject nonfinite or invalid inputs in biomarker and ADMET rule screens.
 
 ### Security
 - _Record security-related changes here._

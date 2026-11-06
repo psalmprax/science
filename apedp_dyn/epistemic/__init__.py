@@ -43,6 +43,10 @@ from apedp_dyn.epistemic.market_extrapolation import (
     evaluate_30_asset_market_ladder,
     evaluate_single_asset_market_ladder,
 )
+from apedp_dyn.epistemic.multiple_testing import (
+    MultipleTestingResult,
+    adjust_p_values,
+)
 
 __all__ = [
     "CAPABILITY_ABSENT",
@@ -62,11 +66,13 @@ __all__ = [
     "GaussianProcessRegressor",
     "MarketExtrapolationResult",
     "MarketRung",
+    "MultipleTestingResult",
     "ProposalErrorMetrics",
     "ProposalNotEvaluableError",
     "RBFKernel",
     "RungEvaluation",
     "adjudicate",
+    "adjust_p_values",
     "bootstrap_available",
     "evaluate_30_asset_market_ladder",
     "evaluate_cross_asset_gate",

@@ -1,17 +1,13 @@
-"""APEDP Applied Biopharma & Drug Discovery Engine.
+"""Experimental biopharma planning sketches and rule-based screens.
 
-Comprehensive drug discovery platform supporting:
-1. Multi-disease target identification and validation
-2. Biomarker discovery and patient stratification
-3. Hit-to-lead optimization
-4. ADMET/Toxicology prediction
-5. Clinical trial design and patient matching
-6. Drug repurposing and combination therapy
+This module does not perform molecular docking, structure-based design,
+predictive ADMET modeling, or clinical efficacy estimation.
 """
 
 from __future__ import annotations
 
 import hashlib
+import math
 from typing import Any, ClassVar
 
 
@@ -38,12 +34,24 @@ class DiseaseBiomarkerAnalyzer:
     @classmethod
     def analyze_biomarkers(cls, disease_area: str, values: dict[str, float]) -> dict[str, Any]:
         config = cls.DISEASE_BIOMARKERS.get(disease_area, {'markers': [], 'normal_ranges': {}})
+        if any(not math.isfinite(value) for value in values.values()):
+            raise ValueError("biomarker values must be finite")
+        known_markers = set(config['markers'])
+        assessed_markers = [
+            marker for marker in values
+            if marker in known_markers and marker in config['normal_ranges']
+        ]
         results: dict[str, Any] = {
             'disease_area': disease_area,
-            'analyzed_markers': list(values.keys()),
+            'analyzed_markers': assessed_markers,
+            'not_assessed_markers': [
+                marker for marker in values if marker not in assessed_markers
+            ],
             'abnormal': [],
             'risk_score': 0.0,
-            'recommendations': []
+            'recommendations': [],
+            'evidence': 'rule_screen',
+            'interpretation': 'illustrative threshold check; not a clinical risk estimate',
         }
         for marker, value in values.items():
             if marker in config['normal_ranges']:
@@ -82,11 +90,22 @@ class UniversalDrugTargetDiscovery:
     
     @classmethod
     def discover_targets(cls, disease: str, omics_data: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+        if omics_data is not None:
+            raise NotImplementedError(
+                "omics_data is not analyzed; target prioritization uses only "
+                "the static illustrative target list"
+            )
         targets = cls.THERAPEUTIC_TARGETS.get(disease.lower(), [])
         ranked = []
         for t in targets:
             score = t.get('tractability', 0.5) * 0.7 + 0.3
-            ranked.append({**t, 'priority_score': round(score, 3), 'confidence': 'high' if score > 0.8 else 'medium'})
+            ranked.append({
+                **t,
+                'priority_score': round(score, 3),
+                'priority_method': 'illustrative tractability heuristic',
+                'evidence': 'static_example',
+                'computed_from_omics': False,
+            })
         return sorted(ranked, key=lambda x: x['priority_score'], reverse=True)
     
     @classmethod
@@ -123,11 +142,25 @@ class ADMETPredictor:
     @staticmethod
     def predict_properties(molecular_weight: float, logp: float, h_bond_donors: int = 0,
                           h_bond_acceptors: int = 0, rotatable_bonds: int = 0, tpsa: float = 70) -> dict[str, Any]:
+        continuous_values = (molecular_weight, logp, tpsa)
+        integer_values = (h_bond_donors, h_bond_acceptors, rotatable_bonds)
+        if any(not math.isfinite(value) for value in continuous_values):
+            raise ValueError("molecular descriptors must be finite")
+        if any(not isinstance(value, int) or value < 0 for value in integer_values):
+            raise ValueError("count descriptors must be non-negative integers")
+        if molecular_weight < 0 or tpsa < 0:
+            raise ValueError("molecular weight and TPSA must be non-negative")
         properties: dict[str, Any] = {
             'molecular_weight': molecular_weight, 'logp': logp,
             'h_bond_donors': h_bond_donors, 'h_bond_acceptors': h_bond_acceptors,
             'rotatable_bonds': rotatable_bonds, 'tpsa': tpsa
         }
+        properties['evidence'] = 'rule_screen'
+        properties['modelled'] = ['Lipinski rule-of-five violations', 'Veber rule violations']
+        properties['not_modelled'] = [
+            'absorption', 'distribution', 'metabolism', 'excretion', 'toxicity',
+            'clearance', 'permeability', 'hERG', 'hepatotoxicity',
+        ]
         lipinski_violations = sum([
             molecular_weight > 500, logp > 5, h_bond_donors > 5, h_bond_acceptors > 10
         ])
@@ -174,8 +207,9 @@ class DrugRepurposingEngine:
             if disease.lower() not in str(info['indications']).lower():
                 candidates.append({
                     'drug': drug, 'targets': info['targets'],
-                    'repurposing_score': 0.6, 'evidence': 'computational_prediction',
-                    'rationale': f'Shared mechanisms with {disease}'
+                    'repurposing_score': 0.6, 'evidence': 'static_example',
+                    'rationale': f'Illustrative shared-mechanism placeholder for {disease}',
+                    'computed_from_patient_or_omics_data': False,
                 })
         return sorted(candidates, key=lambda x: x['repurposing_score'], reverse=True)
 
