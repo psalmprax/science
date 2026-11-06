@@ -45,7 +45,7 @@ import numpy as np
 
 try:
     import kickmix as km
-except (ImportError, Exception):
+except (ImportError, Exception):  # noqa: BLE001 - kickmix is an optional external compiler: ImportError, OSError from a broken wheel and AttributeError from a partial install all must leave km=None so the documented HOLD status stands instead of crashing the module
     km = None
 
 # Canonical architecture constants

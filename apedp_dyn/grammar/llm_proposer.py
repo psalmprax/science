@@ -278,7 +278,7 @@ Return as JSON: [{{"terms": ["x", "v"], "rationale": "...", "confidence": 0.8}},
                         parameter_bounds={f"a{j}": (-1e6, 1e6) for j in range(len(valid_terms))},
                     )
                     candidates.append(cand)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - the loop builds candidates from untrusted model output; a malformed suggestion must yield the candidates built so far, and the failure is logged as a warning
             logger.warning("LLM proposer candidate construction failed; returning partial results: %s", exc)
         return candidates
 

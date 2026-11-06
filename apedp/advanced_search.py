@@ -801,13 +801,12 @@ class HierarchicalSearch:
                     f"sin({seed})", f"{seed}+1")
         # The seed itself is kept: with coefficients fitted, ``x`` is the right
         # answer for a straight line and dropping it would rank a worse shape first.
-        harmonics = tuple(
-            f"{function}({scale}*{seed})"
-            for function in ("sin", "cos")
-            for scale in _TRIG_FREQUENCY_SCALES
-        )
+        #
+        # Frequency-scaled trig is not part of this tuple: this method is the
+        # closed template family, and the harmonic probes are a separate one
+        # that ``_mid_search`` layers on top.
         return (expr, *[expansion.format(e=seed) for expansion in _EXTENDED_EXPANSIONS],
-                *harmonics, f"{seed}*{var}", f"{seed}/(1+{var})")
+                f"{seed}*{var}", f"{seed}/(1+{var})")
 
     def _mid_search(self, seeds: list[dict[str, Any]], var_names: list[str], budget: int,
                     data: list[Any] | None = None,
@@ -820,7 +819,13 @@ class HierarchicalSearch:
         seen: set[str] = set()
         for seed in seeds[:5]:
             expr = seed['expression']
-            for expanded in self._expansions(expr, var):
+            probes = self._expansions(expr, var)
+            if self.template_set == "extended":
+                from apedp_dyn.grammar.term_format import atom
+                unit = atom(expr)  # the seed is one operand, not its first addend
+                probes = (*probes, *(f"{fn}({sc}*{unit})" for fn in ("sin", "cos")
+                                     for sc in _TRIG_FREQUENCY_SCALES))
+            for expanded in probes:
                 if expanded in seen:
                     continue
                 seen.add(expanded)

@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 try:
     import apedp_kernel
     RUST_AVAILABLE = hasattr(apedp_kernel, 'compute_metrics')
-except Exception:
+except Exception:  # noqa: BLE001 - the native extension is optional: a broken or half-installed .so raises OSError/AttributeError at import, not only ImportError; RUST_AVAILABLE records the outcome
     apedp_kernel = None
     RUST_AVAILABLE = False
 
@@ -88,7 +88,7 @@ class SINDyProposer(ProposerBase):
                 else:
                     active_list = list(active)
                 return Xi, active_list
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - the kernel is an accelerator; any failure falls back to the NumPy sparse regression implementing the same algorithm, and the fallback is logged
                 logger.warning("SINDy Rust sparse regression failed; falling back to NumPy: %s", exc)
         Xi = np.linalg.lstsq(Theta, dX, rcond=None)[0]
         for _ in range(self.max_iter):
@@ -196,10 +196,10 @@ try:
                     try:
                         # try to parse simple formula
                         results.append(p.formula)
-                    except Exception:
+                    except Exception:  # noqa: BLE001 - the grammar adapter is optional glue over a problem object whose shape is not contractual; a problem without truth_t/truth_y yields no candidate
                         continue
                 return results
-            except Exception:
+            except Exception:  # noqa: BLE001 - a proposal with no renderable formula contributes no string; the remaining proposals are still returned
                 return []
-except Exception:
+except Exception:  # noqa: BLE001 - the outer failure yields no candidate from this adapter and is now logged with exc_info, so an unparseable problem is not mistaken for an empty search
     pass

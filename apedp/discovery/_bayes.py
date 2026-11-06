@@ -1,24 +1,21 @@
-"""Bayesian model evidence and refinement, extracted verbatim from ``_core``.
+"""Bayesian model comparison and selection for :mod:`apedp.discovery`.
 
-Nothing here changed when it moved. ``_core`` re-exports these names and
-``apedp.discovery`` star-imports ``_core``, so every documented import path --
-``from apedp.discovery import BayesianRefinementEngine`` -- resolves exactly as
-before; ``tests/test_dyn_exception_hygiene.py`` and
-``tests/test_dyn_discovery_module_split.py`` pin that.
+Split out of ``_core.py``: the marginal-likelihood machinery (nested quadrature,
+Laplace approximation), the information criteria, and the rational-coefficient
+table the coefficient snapper reads are one subject -- deciding which model the
+data supports -- and this module is that subject.
 
-The integration helpers (``_log_integrand``, ``_log_integrate``,
-``_finite_difference_hessian``, ``_dim_add``, ``_dim_scale``,
-``_snap_coefficient``, ``_dim_dict``) stay private to this module. The last two
-are also re-exported for ``MultiVariableSRE``, which still lives in ``_core``
-and calls them.
+Nothing here imports ``_core``. The dependency runs the other way, which is what
+keeps ``_core``'s re-export a single object rather than a second copy that can
+drift (``apedp.discovery._core.BayesianRefinementEngine is
+apedp.discovery._bayes.BayesianRefinementEngine``).
 """
 from __future__ import annotations
 
-from collections.abc import Callable
-from dataclasses import dataclass
-
 import numpy as np
 import sympy as sp
+from collections.abc import Callable
+from dataclasses import dataclass
 
 STANDARD_RATIONALS: list[tuple[float, sp.Expr]] = [
     (0.5, sp.Rational(1, 2)),
@@ -33,7 +30,6 @@ STANDARD_RATIONALS: list[tuple[float, sp.Expr]] = [
     (-1.0, sp.Integer(-1)),
     (-0.5, sp.Rational(-1, 2)),
 ]
-
 
 
 @dataclass(frozen=True)

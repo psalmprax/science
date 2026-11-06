@@ -28,14 +28,14 @@ def stability_select(
                 found = fit_fn(X, y, **kwargs)
             else:
                 found = fit_fn(**kwargs)
-        except Exception:
+        except Exception:  # noqa: BLE001 - one of k resamples failing drops that draw from the count; propagating would abort the whole ensemble over a single resample
             continue
         if not isinstance(found, dict):
             continue
         for name, c in found.items():
             try:
                 c_f = float(c)
-            except Exception:
+            except Exception:  # noqa: BLE001 - a coefficient that is not a finite number cannot enter the mean; the term is skipped for this draw and the k-count stays the denominator
                 continue
             counts[name] = counts.get(name, 0) + 1
             sums[name] = sums.get(name, 0.0) + c_f

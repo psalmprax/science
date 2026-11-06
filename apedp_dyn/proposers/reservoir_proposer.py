@@ -59,7 +59,7 @@ class ReservoirProposer(ProposerBase):
         S = np.hstack([np.ones((n_samples, 1)), X, states])
         try:
             W_out = np.linalg.pinv(S.T @ S + 1e-6 * np.eye(S.shape[1])) @ S.T @ dX
-        except Exception:
+        except Exception:  # noqa: BLE001 - pinv of a singular Gram matrix raises LinAlgError, and degenerate input adds shape/dtype errors; lstsq is the documented fallback for the same ridge solve
             W_out = np.linalg.lstsq(S, dX, rcond=None)[0]
         formula = f"ESN(reservoir={self.reservoir_size}, spectral_radius={self.spectral_radius})"
         _n_vars = n_vars

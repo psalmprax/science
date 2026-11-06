@@ -203,7 +203,7 @@ def create_app() -> FastAPI:
     try:
         from apedp.api.routes import visualization
         app.include_router(visualization.router, tags=["visualization"])
-    except Exception:
+    except Exception:  # noqa: BLE001 - optional route module: a missing dependency at import time must disable these routes, not the whole API; the failure is logged with exc_info
         logging.getLogger(__name__).warning("visualization router failed to load; /visualization routes are disabled", exc_info=True)
 
     return app

@@ -94,7 +94,7 @@ class VarProOptimizer:
                 status=status,
                 note=note,
             )
-        except Exception:
+        except Exception:  # noqa: BLE001 - QR can fail on a rank-deficient or degenerate basis (LinAlgError, shape or convergence error); SVD of the same design matrix is the documented fallback and estimates the same thing
             logger.debug("Identifiability QR fallback to SVD", exc_info=True)
             try:
                 s = np.linalg.svd(Phi, compute_uv=False)

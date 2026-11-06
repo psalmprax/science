@@ -28,7 +28,7 @@ def generate_or_load_zeta_zeros(n_zeros: int = 200) -> list[dict[str, float]]:
                 data = json.load(f)
             if len(data) >= n_zeros:
                 return data[:n_zeros]  # type: ignore[no-any-return]
-        except Exception:
+        except Exception:  # noqa: BLE001 - the zero cache is an optimisation; unreadable or truncated JSON falls through to recomputation, which is the authority
             logger.debug("cached zeta zeros load failed, recomputing", exc_info=True)
 
     # Compute high-precision zeros
@@ -56,7 +56,7 @@ def generate_or_load_zeta_zeros(n_zeros: int = 200) -> list[dict[str, float]]:
     try:
         with open(CACHE_FILE, "w", encoding="utf-8") as f:
             json.dump(zeros, f, indent=2)
-    except Exception:
+    except Exception:  # noqa: BLE001 - a failed cache write leaves the computed zeros valid; the cache is an optimisation, not the result
         logger.debug("caching zeta zeros failed", exc_info=True)
 
     return zeros

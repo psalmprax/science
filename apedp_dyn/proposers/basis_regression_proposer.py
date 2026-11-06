@@ -67,7 +67,7 @@ class BasisRegressionProposer(ProposerBase):
         # ridge regression
         try:
             coef = np.linalg.pinv(Phi.T @ Phi + 1e-6 * np.eye(Phi.shape[1])) @ Phi.T @ y
-        except Exception:
+        except Exception:  # noqa: BLE001 - pinv of a singular Gram matrix raises LinAlgError, and degenerate X adds shape/dtype errors; lstsq solves the same normal equations and is the documented fallback
             coef = np.linalg.lstsq(Phi, y, rcond=None)[0]
         formula = f"BasisRegression({self.basis}, n_basis={self.n_basis}, degree={self.degree})"
         _basis_builder = self.build_basis

@@ -1524,7 +1524,7 @@ print(json.dumps(res))
         static_toffoli = int(circ_stats["static_toffoli"])
         t_like = int(circ_stats["t_like"])
         rotations = int(circ_stats["rotations"])
-    except Exception:
+    except Exception:  # noqa: BLE001 - the statistics come from a second interpreter reading the circuit file; a missing kickmix, a timeout or non-JSON output must not abort compilation, and `circuit_stats_source` records whether the figures are measured or nominal
         num_qubits = 90
         static_toffoli = 1448
         t_like = 1

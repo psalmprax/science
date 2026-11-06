@@ -74,7 +74,7 @@ class APEDPScenarioSuite:
             try:
                 res = func()
                 self.results[name] = {'status': 'PASS', 'details': res}
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 - a scenario harness must run every scenario; the failure is recorded as status FAIL with its message, never as PASS
                 logger.warning("Scenario '%s' failed", name, exc_info=True)
                 self.results[name] = {'status': 'FAIL', 'error': str(e)}
 

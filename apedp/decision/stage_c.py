@@ -297,7 +297,7 @@ class StageCDecisionEngine:
             tol = 1e-9 * span
             try:
                 components = engine.extract_singular_components(c.expression)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 - sympy's component extractor raises an open set; the failure is recorded against this candidate in `inconclusive`, so it is withheld rather than certified pole-free
                 # Recorded as inconclusive, not skipped. Skipping leaves the
                 # candidate out of `refusals`, and the caller reads absence of
                 # refusal as "no pole in the observed data" -- so a sympy
@@ -345,7 +345,7 @@ class StageCDecisionEngine:
                     # unexpected happened: the expression is simply outside the
                     # scope this routine claims.
                     continue
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001 - an in-scope root search that raises is recorded in `inconclusive` as unchecked poles; no narrower tuple makes that failure representable
                     # A failure on something that *should* have been in scope.
                     # The component's roots are absent from `roots`, so its
                     # poles are never range-checked and the candidate would
@@ -610,7 +610,7 @@ class StageCDecisionEngine:
                                     f"{abs(mean_d):.2e} <= 1.96 * SE = {1.96 * se_d:.2e} "
                                     f"over {len(d)} paired residuals"
                                 )
-                    except Exception as e:
+                    except Exception as e:  # noqa: BLE001 - the paired-bootstrap failure is appended to `se_probe_failures` and the engine abstains; the record, not the exception type, is what the caller reads
                         # Leaving is_noise_equiv False here does not merely
                         # withhold a trade-off note: it keeps the candidate out
                         # of `competitive`, which is what promotes the run to
