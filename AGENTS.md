@@ -48,7 +48,13 @@ pytest tests/test_dyn_competing_proposers_and_dsr.py \
        tests/test_dyn_molecular_se3_flow.py \
        tests/test_dyn_robotics_trajectory.py \
        tests/test_dyn_temporal_rate_modulation.py \
-       tests/test_dyn_temporal_rate_io.py -v
+       tests/test_dyn_temporal_rate_io.py \
+       tests/test_gf2_wsp.py \
+       tests/test_gf2_rank_search.py \
+       tests/test_field_tensor_search.py \
+       tests/test_gf2_mul_proposer.py \
+       tests/test_quantum_verdict_tristate.py \
+       tests/test_quantum_compilation.py -v
 ```
 
 ---

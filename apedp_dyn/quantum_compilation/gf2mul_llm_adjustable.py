@@ -779,23 +779,83 @@ class MMLMMultiplier:
 
         return decomp
 
-    def _encode_with_factors(self, input_data: np.ndarray, decomp: TensorDecomposition) -> np.ndarray:
-        """Encode input data using the tensor decomposition factors.
+    # --- GF(2) bilinear primitives -------------------------------------------------
+    # The decomposition is a bilinear algorithm, not a float encoder:
+    #     u_r = <U_r, a>,  v_r = <V_r, b>,  p_r = u_r & v_r,  y_k = XOR_r W[r,k] & p_r
+    # Every number the tracks report is derived from those bits, and `exact` compares
+    # the result against the field model instead of assuming it.
 
-        Simple encoding: project input through U and V factors.
+    def _as_bits(self, operand: Any, width: int) -> np.ndarray:
+        """Bit vector of ``operand`` in the polynomial basis (length ``width``)."""
+        if isinstance(operand, (int, np.integer)) and not isinstance(operand, bool):
+            value = int(operand)
+            if value < 0 or value >= (1 << width):
+                raise ValueError(
+                    f"operand {value} does not fit in the {width} bits of GF(2^{width})"
+                )
+            return np.array([(value >> bit) & 1 for bit in range(width)], dtype=np.uint8)
+        array = np.asarray(operand).ravel()
+        if array.size < width:
+            raise ValueError(
+                f"operand needs at least {width} bit entries, got {array.size}"
+            )
+        return (array[:width].astype(np.int64) & 1).astype(np.uint8)
+
+    @staticmethod
+    def _bits_to_int(bits: np.ndarray) -> int:
+        """Pack a little-endian bit vector into an integer."""
+        return int(
+            sum(int(bit) << index for index, bit in enumerate(np.asarray(bits).ravel()))
+        )
+
+    def _project(self, factors: np.ndarray, operand: Any) -> np.ndarray:
+        """``<factors[r], operand>`` over GF(2) for every atom ``r``."""
+        bits = self._as_bits(operand, int(factors.shape[1]))
+        return (factors.astype(np.uint8) @ bits) & 1
+
+    def bilinear_multiply(
+        self,
+        left: Any,
+        right: Any,
+        decomp: TensorDecomposition | None = None,
+    ) -> dict[str, Any]:
+        """Run the decomposition as an actual GF(2) multiplication algorithm."""
+        decomposition = decomp if decomp is not None else self.default_decomp
+        left_bits = self._project(decomposition.U, left)
+        right_bits = self._project(decomposition.V, right)
+        products = (left_bits & right_bits).astype(np.uint8)
+        output_bits = (decomposition.W.T.astype(np.uint8) @ products) & 1
+        product = self._bits_to_int(output_bits)
+        left_int = self._bits_to_int(self._as_bits(left, self.degree))
+        right_int = self._bits_to_int(self._as_bits(right, self.degree))
+        expected = self.gf.mul(left_int, right_int)
+        return {
+            "left": left_int,
+            "right": right_int,
+            "product": product,
+            "expected": expected,
+            "exact": product == expected,
+            "bits": output_bits,
+            "state_bits": products,
+            "bilinear_products": int(products.sum()),
+            "rank": decomposition.rank,
+        }
+
+    def _operand_pair(self, input_data: Any, second_operand: Any = None) -> tuple[Any, Any]:
+        """Split a packed input into two operands, or pair it with the identity.
+
+        A single operand is multiplied by 1 so the call still exercises the whole
+        bilinear path; pass ``second_operand`` or a ``2 * degree``-wide input to
+        multiply two arbitrary elements.
         """
-        # Simple encoding: project input through U and V factors
-        result = input_data.astype(float) @ decomp.U.astype(float).T
-        return result @ decomp.V.astype(float)
-
-
-    def _energy_guided_decode(self, encoded: np.ndarray) -> str:
-        """Energy-guided decoding of the encoded representation."""
-        # Compute energy score and decode
-        energy = float(np.sum(encoded ** 2))
-        # Decode to simple representation
-        decoded_bits = (encoded > 0).astype(int)
-        return f"energy={energy:.4f},bits={decoded_bits[:8].tolist()}"
+        if second_operand is not None:
+            return input_data, second_operand
+        if isinstance(input_data, (int, np.integer)) and not isinstance(input_data, bool):
+            return int(input_data), 1
+        array = np.asarray(input_data).ravel()
+        if array.size >= 2 * self.degree:
+            return array[: self.degree], array[self.degree : 2 * self.degree]
+        return array, 1
 
     def search_rank(
         self,
@@ -888,25 +948,27 @@ class MMLMTrackA(MMLMMultiplier):
         self.track = "A_NonNeural"
         self.engine_type = "WeightedAutomatonEngine"
 
-    def process_with_tensor(self, input_data: np.ndarray) -> dict[str, Any]:
-        """Process input using the GF(2^12) tensor decomposition.
+    def process_with_tensor(self, input_data: Any, second_operand: Any = None) -> dict[str, Any]:
+        """Multiply through the decomposition over GF(2) (Track A: non-neural engine).
 
-        In Track A, the tensor decomposition serves as a mathematical language
-        model for context representation and reasoning.
+        The decomposition *is* the algorithm here: every reported number is a bit
+        produced by its U/V/W factors, and ``exact`` compares the product against the
+        field model rather than assuming the factors are correct.
         """
-        # Use the decomposition for context encoding
         decomp = self.get_decomposition(rank=54)
         exact, _ = decomp.reconstruct(self.tensor)
-
-        # Encode input using the tensor factors
-        encoded = self._encode_with_factors(input_data, decomp)
-        # Apply energy-guided decoding
-        decoded = self._energy_guided_decode(encoded)
+        left, right = self._operand_pair(input_data, second_operand)
+        result = self.bilinear_multiply(left, right, decomp)
 
         return {
             "track": self.track,
-            "encoded_shape": encoded.shape,
-            "decoded": decoded,
+            "engine": self.engine_type,
+            "operands": {"left": result["left"], "right": result["right"]},
+            "product": result["product"],
+            "expected_product": result["expected"],
+            "exact": result["exact"],
+            "product_bits": result["bits"].tolist(),
+            "bilinear_products": result["bilinear_products"],
             "decomposition_exact": exact,
             "tensor_rank": decomp.rank,
         }
@@ -925,56 +987,77 @@ class MMLMTrackB(MMLMMultiplier):
         self.engine_type = "HybridAblationConfig"
         self.use_continuous = True
 
-    def process_with_tensor(self, input_data: np.ndarray) -> dict[str, Any]:
-        """Process input using GF(2^12) tensor with hybrid ablation.
+    def process_with_tensor(self, input_data: Any, second_operand: Any = None) -> dict[str, Any]:
+        """Exact GF(2) path versus a float encoder, ablated on measured error.
 
-        Track B optionally uses continuous semantic encoders alongside the
-        binary tensor decomposition, ablating them if they don't provide net benefit.
+        The float path only replaces the exact one when it reproduces every output
+        bit *and* costs fewer multiplications; otherwise the exact path wins.  That
+        is a criterion the data can fail, not a fixed preference.
         """
         decomp = self.get_decomposition(rank=54)
-
-        # Binary tensor decomposition path
         exact, _ = decomp.reconstruct(self.tensor)
-        binary_result = self._binary_path(input_data, decomp)
+        left, right = self._operand_pair(input_data, second_operand)
 
-        # Optional continuous path (ablate if no benefit)
-        if self.use_continuous:
-            continuous_result = self._continuous_path(input_data, decomp)
-            # Compare and keep the better
-            if continuous_result["llikelihood"] > binary_result["llikelihood"]:
-                result = continuous_result
-                uses_continuous = True
-            else:
-                result = binary_result
-                uses_continuous = False
-        else:
-            result = binary_result
-            uses_continuous = False
+        binary_result = self._binary_path(left, right, decomp)
+        continuous_result = self._continuous_path(left, right, decomp)
+        use_continuous = self.use_continuous and (
+            continuous_result["hamming_errors"] == 0
+            and continuous_result["float_macs"] < binary_result["bilinear_products"]
+        )
+        result = continuous_result if use_continuous else binary_result
 
         return {
             "track": self.track,
-            "uses_continuous": uses_continuous,
-            "decomposition_exact": exact,
+            "engine": self.engine_type,
+            "uses_continuous": use_continuous,
+            "exact": binary_result["exact"],
+            "product": result["product"],
+            "expected_product": result["expected"],
+            "binary": binary_result,
+            "continuous": continuous_result,
             "result": result,
+            "decomposition_exact": exact,
         }
 
-    def _binary_path(self, input_data: np.ndarray, decomp: TensorDecomposition) -> dict[str, Any]:
-        """Binary tensor decomposition path."""
-        encoded = self._encode_with_factors(input_data, decomp)
-        llikelihood = float(np.mean(encoded))
-        return {"llikelihood": llikelihood, "path": "binary_tensor"}
+    def _binary_path(
+        self, left: Any, right: Any, decomp: TensorDecomposition
+    ) -> dict[str, Any]:
+        """Exact GF(2) bilinear path."""
+        result = self.bilinear_multiply(left, right, decomp)
+        return {
+            "path": "gf2_bilinear",
+            "product": result["product"],
+            "expected": result["expected"],
+            "exact": result["exact"],
+            "hamming_errors": (
+                0 if result["exact"] else int(bin(result["product"] ^ result["expected"]).count("1"))
+            ),
+            "bilinear_products": result["bilinear_products"],
+        }
 
-    def _continuous_path(self, input_data: np.ndarray, decomp: TensorDecomposition) -> dict[str, Any]:
-        """Continuous semantic encoder path (ablated if no net benefit).
+    def _continuous_path(
+        self, left: Any, right: Any, decomp: TensorDecomposition
+    ) -> dict[str, Any]:
+        """Floating-point encoder on a projection fixed at construction.
 
-        The projection is fixed at construction from the instance seed, so the same
-        input always takes the same path.  Both paths report the *mean* activation,
-        because a sum over a 12x12 projection and a mean over a rank-54 encoding are
-        not comparable quantities.
+        Deterministic by construction: the projection comes from the instance seed, so
+        the same operands always produce the same product and the same error count.
         """
-        encoded = input_data.astype(float) @ self._continuous_projection
-        llikelihood = float(np.mean(encoded))
-        return {"llikelihood": llikelihood, "path": "continuous_encoder"}
+        left_bits = self._as_bits(left, self.degree).astype(float)
+        right_bits = self._as_bits(right, self.degree).astype(float)
+        approximate = float(left_bits @ self._continuous_projection @ right_bits)
+        product = int(abs(round(approximate))) & ((1 << self.degree) - 1)
+        expected = self.gf.mul(
+            self._bits_to_int(left_bits), self._bits_to_int(right_bits)
+        )
+        return {
+            "path": "float_projection",
+            "product": product,
+            "expected": expected,
+            "exact": product == expected,
+            "hamming_errors": int(bin(product ^ expected).count("1")),
+            "float_macs": int(self.degree**2),
+        }
 
 
 class MMLMTrackC(MMLMMultiplier):
@@ -990,86 +1073,82 @@ class MMLMTrackC(MMLMMultiplier):
         self.engine_type = "SelectiveStateEngine"
         self.use_ssm = True  # Selective state modeling
 
-    def process_with_tensor(self, input_data: np.ndarray) -> dict[str, Any]:
-        """Process input using GF(2^12) tensor with attention-free dynamics.
+    def process_with_tensor(self, input_data: Any, second_operand: Any = None) -> dict[str, Any]:
+        """Multiply over GF(2) and score the result without self-attention.
 
-        Track C replaces self-attention with selective state-space dynamics and
-        hierarchical tensor memory, using the GF(2^12) tensor as the core mathematical
-        operations layer.
+        Track C replaces attention with two measurements taken over the bilinear tick:
+        the live-product state and a tree contraction of the output bits.
         """
         decomp = self.get_decomposition(rank=54)
+        exact, _ = decomp.reconstruct(self.tensor)
+        left, right = self._operand_pair(input_data, second_operand)
+        bilinear = self.bilinear_multiply(left, right, decomp)
 
-        # Apply selective state-space dynamics
-        ssd_result = self._selective_state_dynamics(input_data, decomp)
-
-        # Apply hierarchical tensor memory
-        htm_result = self._hierarchical_tensor_memory(input_data, decomp)
-
-        # Speculative energy rescoring
-        energy_result = self._speculative_energy_rescoring(input_data, decomp, ssd_result, htm_result)
+        ssd_result = self._selective_state_dynamics(bilinear, decomp)
+        htm_result = self._hierarchical_tensor_memory(bilinear, decomp)
+        energy_result = self._speculative_energy_rescoring(ssd_result, htm_result)
 
         return {
             "track": self.track,
+            "engine": self.engine_type,
             "use_ssm": self.use_ssm,
+            "product": bilinear["product"],
+            "expected_product": bilinear["expected"],
+            "exact": bilinear["exact"],
             "ssd_result": ssd_result,
             "htm_result": htm_result,
             "energy_result": energy_result,
+            "decomposition_exact": exact,
         }
 
-    def _selective_state_dynamics(self, input_data: np.ndarray, decomp: TensorDecomposition) -> dict[str, Any]:
-        """Selective state-space dynamics using the tensor decomposition."""
-        encoded = self._encode_with_factors(input_data, decomp)
-        return {
-            "encoded_shape": encoded.shape,
-            "dynamics_applied": True,
-            "energy": float(np.sum(encoded**2)),
-        }
+    def _selective_state_dynamics(
+        self, bilinear: dict[str, Any], decomp: TensorDecomposition
+    ) -> dict[str, Any]:
+        """State the algorithm carries between projection and reduction.
 
-    def _hierarchical_tensor_memory(self, input_data: np.ndarray, decomp: TensorDecomposition) -> dict[str, Any]:
-        """Hierarchical tensor memory (tree tensor network).
-
-        The input is folded into a degree-wide leaf vector and contracted pairwise up
-        the tree; the reported energy is the squared root of that contraction, so it
-        is a measurement of this input rather than a placeholder zero.
+        ``p_r = u_r & v_r`` is that state, so the energy counts live bilinear products
+        instead of measuring a float projection.
         """
-        flat = np.asarray(input_data, dtype=float).ravel()
-        width = min(flat.size, self.degree)
-        contracted = np.zeros(self.degree, dtype=float)
-        contracted[:width] = flat[:width]
-        level = contracted.copy()
+        state = np.asarray(bilinear["state_bits"], dtype=float)
+        return {
+            "state_width": int(state.size),
+            "dynamics_applied": True,
+            "active_products": int(state.sum()),
+            "energy": float(np.sum(state**2)),
+        }
+
+    def _hierarchical_tensor_memory(
+        self, bilinear: dict[str, Any], decomp: TensorDecomposition
+    ) -> dict[str, Any]:
+        """Contract the output bits pairwise up a binary tree (tree tensor network)."""
+        level = np.asarray(bilinear["bits"], dtype=float)
         depth = 0
         while level.size > 1:
             half = level.size // 2
             level = level[:half] + level[half : 2 * half]
             depth += 1
         return {
-            "contracted_shape": (width,),
+            "contracted_shape": (1,),
             "tree_depth": depth,
             "energy": float(level[0] ** 2) if level.size else 0.0,
+            "parity": int(level[0]) & 1 if level.size else 0,
             "memory_applied": True,
         }
 
     def _speculative_energy_rescoring(
-        self, input_data: np.ndarray, decomp: TensorDecomposition,
-        ssd_result: dict, htm_result: dict
+        self, ssd_result: dict[str, Any], htm_result: dict[str, Any]
     ) -> dict[str, Any]:
-        """Speculative energy rescoring combining all components."""
-        # Combine the measured component energies.  Both components report a real
-        # energy now, so a zero here means the input really carried none.
-        ssd_energy = float(ssd_result.get("energy", 0.0))
-        htm_energy = float(htm_result.get("energy", 0.0))
+        """Combine the two measured energies and decode speculatively."""
+        ssd_energy = float(ssd_result["energy"])
+        htm_energy = float(htm_result["energy"])
         combined_energy = ssd_energy + htm_energy
-
-        # Speculative decode
-        spec_decoded = f"energy={combined_energy:.4f},track={self.track}"
-
         return {
             "combined_energy": combined_energy,
             "energy_components": {
                 "selective_state": ssd_energy,
                 "tensor_memory": htm_energy,
             },
-            "speculative_decode": spec_decoded,
+            "speculative_decode": f"energy={combined_energy:.4f},track={self.track}",
             "rescoring_applied": True,
         }
 
