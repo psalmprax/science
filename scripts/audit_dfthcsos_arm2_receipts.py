@@ -28,7 +28,11 @@ def sha(value: Any, label: str) -> str:
     return value.lower()
 
 
-def check_receipt(w: dict[str, Any], label: str) -> dict[str, Any]:
+ARM2 = "arm2_reed_muller_angle_buffering_only"
+
+
+def check_receipt(w: dict[str, Any], label: str, *, expected_arm: str = ARM2,
+                  arm1_expected: bool = False) -> dict[str, Any]:
     r = w.get("official_receipt")
     m = w.get("experiment_manifest")
     if not isinstance(r, dict) or not isinstance(m, dict):
@@ -44,10 +48,12 @@ def check_receipt(w: dict[str, Any], label: str) -> dict[str, Any]:
     relative = abs(lam*q*t-score)/score
     if relative > 1e-9:
         raise ValueError(f"{label}: score does not reconcile with lambda_eff*Q*T (relative error {relative:.3g})")
-    if m.get("arm") != "arm2_reed_muller_angle_buffering_only":
-        raise ValueError(f"{label}: manifest arm must be arm2_reed_muller_angle_buffering_only")
-    if m.get("arm1_selectswap_enabled") is not False:
-        raise ValueError(f"{label}: explicitly set arm1_selectswap_enabled=false for isolation")
+    if m.get("arm") != expected_arm:
+        raise ValueError(f"{label}: manifest arm must be {expected_arm}")
+    if m.get("arm1_selectswap_enabled") is not arm1_expected:
+        raise ValueError(
+            f"{label}: arm1_selectswap_enabled must be "
+            f"{str(arm1_expected).lower()} for this arm")
     if m.get("input_npz_unchanged") is not True:
         raise ValueError(f"{label}: input_npz_unchanged must be true")
     if m.get("lookup_semantics_pass") is not True or m.get("phase_semantics_pass") is not True:

@@ -163,7 +163,37 @@ class AIFeynmanBenchmarkSuite:
         return calc_unit.dimensionality == target_unit.dimensionality
 
 
-class NACA0012TransonicBenchmark:
+_UNVERIFIED_REASONS: dict[str, str] = {
+    "NACA0012TransonicBenchmark": (
+        "the cited report carries the NACA 0012 section coordinates and no Cp-versus-Mach "
+        "table; the five low-Mach table values are a constant 1.475-1.476 multiple of the "
+        "measured Ladson point, the signature of a constructed series"),
+    "NanocrystallineMicrocompressionBenchmark": (
+        "the table's 910 MPa at 20 nm sits 7.1% above the highest published point (850 MPa) "
+        "and its 12 nm peak exceeds the review's 100-900 MPa envelope, so the numbers are "
+        "not the published ones"),
+}
+
+
+class _UnverifiedTableProvenance:
+    """Self-reporting for a table whose cited source does not carry its numbers.
+
+    The measurement is in ``benchmarks/external_benchmarks_source_check.json``. A
+    benchmark inheriting credibility from a citation it does not reproduce is the
+    defect this exists to prevent, so ``verified`` is a literal ``False`` rather
+    than a field a caller can set.
+    """
+
+    @classmethod
+    def provenance(cls) -> dict[str, object]:
+        return {
+            "verified": False,
+            "record": "benchmarks/external_benchmarks_source_check.json",
+            "reason": _UNVERIFIED_REASONS[cls.__name__],
+        }
+
+
+class NACA0012TransonicBenchmark(_UnverifiedTableProvenance):
     """Empirical wind tunnel dataset for transonic aerodynamics on NACA 0012 airfoil.
     
     Data Source: NASA Langley / AGARD-AR-138 Experimental Database for Computer Program Assessment.
@@ -234,7 +264,7 @@ class NACA0012TransonicBenchmark:
         )
 
 
-class NanocrystallineMicrocompressionBenchmark:
+class NanocrystallineMicrocompressionBenchmark(_UnverifiedTableProvenance):
     """Empirical micropillar compression benchmark for nanoscale metallurgy (Hall-Petch breakdown).
     
     Data Source: Compiled from experimental microcompression literature (Greer et al., Uchic et al.,

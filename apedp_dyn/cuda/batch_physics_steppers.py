@@ -26,9 +26,21 @@ except ImportError:
     HAS_TRITON = False
 
 
+#: Kernels this module actually registers with Triton. Empty on purpose: no
+#: Triton kernel is implemented here, so a true availability flag would advertise
+#: a backend that has nothing to run. ``is_triton_available`` reads this registry
+#: rather than the import flag, so installing Triton cannot turn a claim on.
+_TRITON_KERNELS: tuple[str, ...] = ()
+
+
+def triton_kernels() -> tuple[str, ...]:
+    """Names of the Triton kernels registered by this module (currently none)."""
+    return _TRITON_KERNELS
+
+
 def is_triton_available() -> bool:
-    """Return True if Triton is installed and CUDA is available."""
-    return HAS_TRITON and torch.cuda.is_available()
+    """True only when Triton imports, CUDA is present, and a kernel is registered."""
+    return bool(HAS_TRITON and torch.cuda.is_available() and triton_kernels())
 
 
 def get_default_physics_device() -> torch.device:
