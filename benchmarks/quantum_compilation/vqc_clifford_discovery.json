@@ -1,6 +1,6 @@
 {
   "schema": "apedp.vqc.clifford_discovery.v1",
-  "generated_utc": "2026-10-30T17:28:14Z",
+  "generated_utc": "2026-11-06T05:38:01Z",
   "command": {
     "qubits": 100,
     "shots": 64,
@@ -17,7 +17,7 @@
     "gates_saved": 122,
     "rewrites_available_at_the_reference": 77,
     "step_limit": 1000,
-    "search_seconds": 2.8889754149131477,
+    "search_seconds": 5.268307392999986,
     "reference_provenance": {
       "described_as": "a GHZ chain with cancelling pairs, s/sdg algebra and Pauli-conjugation identities spliced into it",
       "deliberately_inefficient": true,
@@ -1004,8 +1004,8 @@
         },
         "passed": true
       },
-      "image_engine": "rust",
-      "image_verified_by": "suite",
+      "image_engine": "python",
+      "image_verified_by": "python",
       "compared": 200,
       "mismatched": 0,
       "mismatches": [],
@@ -1117,7 +1117,7 @@
     "support_identical": true,
     "max_count_difference": 0,
     "within_four_sigma": true,
-    "seconds": 0.4698912769090384
+    "seconds": 1.2639359419999892
   },
   "state_scope_only": {
     "unitary_scope": "INVALID",
@@ -1219,7 +1219,7 @@
         "support_identical": true,
         "max_count_difference": 0,
         "within_four_sigma": true,
-        "seconds": 0.4698912769090384
+        "seconds": 1.2639359419999892
       },
       "passed": true
     },
@@ -1237,7 +1237,7 @@
     }
   ],
   "limitations": [
-    "the search space is local rewrites over Clifford gates, not a general synthesiser: it cannot propose a circuit that is not reachable by cancellations, S/Z algebra, Pauli conjugation or commuting a pair past disjoint gates",
+    "the search space is local rewrites over Clifford gates, not a general synthesiser: it cannot propose a circuit that is not reachable by cancellations, S/Z algebra, Pauli conjugation or commuting a pair past disjoint or otherwise commuting gates",
     "the reference circuit is deliberately inefficient (see workload.reference_provenance): the measured reduction is against an unoptimised circuit, and the discovered 100-operation chain is the optimised GHZ preparation itself, so the number to quote is 'it reached the n-operation, depth-n circuit', not 'it is 55% faster than GHZ'",
     "synthesis from a specification, with no reference circuit, is a separate experiment (scripts/measure_vqc_synthesis.py); this loop still needs a circuit to start from",
     "the ranking is (operations, depth); the search is greedy and stops at a local optimum, so 'best' means best reachable, not optimal",
@@ -1246,12 +1246,12 @@
     "wall clock is one host and one process"
   ],
   "reproducibility": {
-    "script_sha256": "1c7c594d651d4dae71084b61689dc1099a9735a1483061ac01600de057363067",
-    "search_sha256": "82ab9dafc16c3bf6fcebc05fc35231305812c14a2b8e7dd794d3ed6ff92dd946",
+    "script_sha256": "65b71c914335db961df0b2a1afda05835a28b6ecbddf125cfc0d84fa55de9ff0",
+    "search_sha256": "cf3fba99826254f6652ff0aa7370cdf81d734d7809c5d25a6feb380cbb23b78d",
     "equivalence_sha256": "6008e76dc4eabd853adedde51cc7356bd15193beecd781cb2fc7109a7538801b",
     "discovery_sha256": "f825dfd168704f1993f738a3ad740f6e4a044795fc19fa1339f460cdaed8b7f9",
     "python": "3.12.3",
-    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
     "command": "python scripts/measure_vqc_clifford_discovery.py --qubits 100 --shots 64 --seed 20261030"
   },
   "verdict": "a 100-qubit Clifford circuit was rewritten, every step certified as the same unitary without a matrix, the result promoted on sufficient evidence, and the state-only and mutated alternatives refused"

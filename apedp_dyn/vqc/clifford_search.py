@@ -7,7 +7,7 @@ deliberately not a general circuit synthesiser:
 
 * **propose** -- local rewrites that are semantics-preserving *by construction*:
   cancelling self-inverse pairs (`h h`, `x x`, `cx cx`, `cz cz`, `swap swap`),
-  commuting such a pair past gates that touch none of its qubits, the `S`/`Sdg`
+  commuting such a pair past gates that commute with it, the `S`/`Sdg`
   algebra (`s sdg` vanishes, `s s = z`), and the two Pauli identities `h z h = x`
   and `h x h = z`;
 * **certify** -- every accepted step is decided by
@@ -69,14 +69,28 @@ def _gate(op: object) -> Gate | None:
     return None
 
 
+def _commute(left: Gate, right: Gate) -> bool:
+    """Conservative commutation rules for the supported unparameterized gates."""
+    left_targets, right_targets = set(left.targets), set(right.targets)
+    if not left_targets & right_targets:
+        return True
+    diagonal = {"z", "s", "sdg", "cz", "t", "tdg"}
+    if left.name in diagonal and right.name in diagonal:
+        return True
+    if left.name == right.name == "cx":
+        left_control, left_target = left.targets
+        right_control, right_target = right.targets
+        # CNOTs commute when their controls or their targets are shared.
+        return left_control == right_control or left_target == right_target
+    return False
+
+
 def _transparent_between(ops: Sequence[object], start: int, stop: int,
-                         targets: frozenset[int]) -> bool:
-    """Whether every operation strictly between `start` and `stop` misses `targets`."""
+                         mover: Gate) -> bool:
+    """Whether every operation strictly between the pair commutes with it."""
     for index in range(start + 1, stop):
         op = _gate(ops[index])
-        if op is None:
-            return False
-        if targets & set(op.targets):
+        if op is None or not _commute(mover, op):
             return False
     return True
 
@@ -108,9 +122,9 @@ def propose_rewrites(circuit: Circuit) -> Iterator[tuple[str, Circuit]]:
     for (name, targets), positions in sorted(groups.items()):
         if len(positions) < 2:
             continue
-        target_set = frozenset(targets)
+        mover = Gate(name, targets)
         for first_index, second_index in itertools.pairwise(positions):
-            if not _transparent_between(ops, first_index, second_index, target_set):
+            if not _transparent_between(ops, first_index, second_index, mover):
                 continue
             if name in SELF_INVERSE:
                 yield (f"cancel {name}{tuple(targets)}", _with_pair_removed(
@@ -131,13 +145,15 @@ def propose_rewrites(circuit: Circuit) -> Iterator[tuple[str, Circuit]]:
                 if second_index < first_index:
                     continue
                 if not _transparent_between(ops, first_index, second_index,
-                                            frozenset(targets)):
+                                            Gate(name, targets)):
                     continue
                 yield ("cancel s*sdg", _with_pair_removed(circuit, first_index,
                                                           second_index))
 
     # `h z h = x` and `h x h = z`: three gates become one, exactly.
-    conjugation = {("h", "z"): "x", ("h", "x"): "z"}
+    # H Y H = -Y; the minus sign is one free global phase for this standalone
+    # unitary, just as in the equivalence referee's other conjugation checks.
+    conjugation = {("h", "z"): "x", ("h", "x"): "z", ("h", "y"): "y"}
     for index in range(len(ops) - 2):
         first, middle, last = (_gate(ops[index]), _gate(ops[index + 1]),
                                _gate(ops[index + 2]))
