@@ -42,9 +42,15 @@ and [review owners](../.github/CODEOWNERS).
 - `build_multiplication_tensor()`: Exact degree×degree×degree binary tensor
 - `TensorDecomposition`: Rank-r decomposition (U, V, W factors)
 - `WSPLayer`: Exactness-preserving uniform, importance-pruning, and transformation modes
-- `MMLMTrackA` (NonNeural): Pure mathematical language modeling
-- `MMLMTrackB` (Hybrid): Ablation-governed hybrid with continuous encoders
-- `MMLMTrackC` (AttentionFree): Attention-free state-space dynamics
+- `MMLMTrackA` (NonNeural): exact GF(2) product through the rank-54 decomposition; no token model
+- `MMLMTrackB` (Hybrid): exact path ablated against a least-squares-fitted real model of the same rank and factors
+- `MMLMTrackC` (AttentionFree): exact product scored by bit-level energies (live products, tree contraction)
+
+Each track returns a `scope` block (`unit`, `models_tokens: False`,
+`implements_attention: False`). The A/B/C names come from the MMLM programme; what these
+classes do is field arithmetic, and a test asserts the scope rather than trusting the
+name. `tests/test_mmlm_tracks.py` pins exactness, packed-operand splitting, Track B
+determinism, and Track C's energy identities.
 
 **LLM tunable interface** (`LLMTunableGF2Multiplier`):
 - Full round-trip LLM adjustment of all parameters
@@ -101,8 +107,11 @@ processed = m.process(sample)
 - The recursive degree-12 Karatsuba factors are checked against all tensor coefficients; a failed check falls back to schoolbook factors.
 - WSP importance and transformation updates preserve an exact input decomposition or return the original unchanged.
 - LLM tuning replaces immutable field/WSP configuration objects instead of mutating frozen dataclasses.
-- `_encode_with_factors` and `_energy_guided_decode` moved to `MMLMMultiplier` base class for track compatibility
-- Sample processing works across all three MMLM tracks
+- Tracks run the decomposition as the algorithm (`u_r = <U_r,a>`, `v_r = <V_r,b>`, `p_r = u_r & v_r`, `y = W^T p`) and compare the product with the field model; a float projection is no longer reported as a product
+- Track B's ablation fits its reduction weights by least squares over 16,384 operand pairs at the same rank and the same factors, so the float path is the strongest real-valued model available rather than a random baseline; a real model cannot reproduce XOR, and the measured Hamming error says so
+- Track C's tree contraction carries an odd trailing bit instead of dropping it, so its reported energy equals the bit count (a 9-bit product used to score 36.0 instead of 81.0, with the wrong parity)
+- Every track returns a `scope` block (`unit`, `models_tokens: False`, `implements_attention: False`), and `tests/test_mmlm_tracks.py` asserts it along with exactness over sampled pairs
+- `tests/test_tracked_import_closure.py` (standard suite) fails when tracked code imports a module git does not track, and the module's rank-search engine, field-tensor search, proposer and tests are tracked so a clean checkout imports them
 
 (#13-small-physics-llm)
 14. [Contributing](#14-contributing)
