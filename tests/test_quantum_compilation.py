@@ -83,6 +83,24 @@ from apedp_dyn.quantum_compilation.referee import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+# `kickmix.so` is a compiled artifact, not source: the index carries the directory's
+# LICENSE and the vendored tree, never the binary. A fresh clone therefore cannot load
+# the pinned contract, so these tests skip with the build command instead of failing 18
+# times for a file the repository was never meant to ship.
+_KICKMIX_ROOT = (
+    REPO_ROOT
+    / "apedp_dyn"
+    / "sandbox"
+    / "google-verifiable-quantum-circuit-compilation"
+    / "kickmix"
+)
+if not (_KICKMIX_ROOT / "kickmix.so").is_file():
+    pytest.skip(
+        f"kickmix extension not built at {_KICKMIX_ROOT / 'kickmix.so'}; "
+        "run `python scripts/setup_verifier_env.py` to build it",
+        allow_module_level=True,
+    )
 COMPETITION_ROOT = default_competition_root()
 KICKMIX_PYTHON = os.environ.get("APEDP_Q_KICKMIX_PYTHON")
 

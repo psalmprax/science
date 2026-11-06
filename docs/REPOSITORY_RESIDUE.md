@@ -18,6 +18,19 @@ the next sweep starts from this table instead of from `git status`.
 | `unused/` | 24 KB | 1 | Not imported by any tracked module, which is what `tests/test_tracked_import_closure.py` checks. Keeping it out of the index keeps it out of the import graph. |
 | `data/skills/` | — | 0 | Empty directory. Nothing to track; git does not store empty directories anyway. |
 
+## The compiled extension a clone cannot have
+
+`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/kickmix.so` is a
+built extension. The index carries the directory's `LICENSE.txt` and the vendored tree,
+not the binary, so a clone that has not run `scripts/setup_verifier_env.py` cannot load
+the pinned contract.
+
+That used to surface as **18 failures** in `tests/test_quantum_compilation.py` on a clean
+clone — the same `FileNotFoundError` raised by `contracts.load_contract`. The module now
+skips with the build command when the binary is absent, so the clone reports what is
+actually true (this test needs a build step) rather than a red suite. Where the
+extension exists, nothing changes: the tests run.
+
 ## The sixteen test modules that do not pass
 
 These are real tests, and they are **not** in the index because a tracked test is a
