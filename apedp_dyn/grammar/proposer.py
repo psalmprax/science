@@ -99,6 +99,14 @@ def _library_matrix(problem, term_names: Sequence[str]):
             skipped.append(name)
             continue
         rexpr = built.subs(subs)
+        # A scaled law carries its reference level as a fitted parameter. There
+        # is no fitted value at library-build time, so the column cannot be
+        # evaluated; emitting it anyway made `gL` reach lambdify unbound.
+        unbound = sorted(str(s) for s in rexpr.atoms(sp.Symbol) if s not in syms)
+        if unbound:
+            skipped.append(f"{name}: unbound {', '.join(unbound)} "
+                           "(no fitted value at library-build time)")
+            continue
         col = np.asarray(sp.lambdify(syms, rexpr, modules=["numpy"])(*args),
                          dtype=float).ravel()
         if col.size == 1 and len(t) > 1:

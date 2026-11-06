@@ -269,8 +269,13 @@ class NeuralSymbolicRegressor(nn.Module):
         latent = self.encoder(xy)
         return latent
 
-    def decode(self, latent: Array, train: bool = False, rng: PRNGKey | None = None) -> tuple[Array, Array]:
+    def decode(self, latent: Array, train: bool = False, rng: PRNGKey | None = None,
+               targets: Array | None = None) -> tuple[Array, Array]:
         """Autoregressive decoding of expression tokens.
+
+        Args:
+            targets: recorded token ids. In training they are the teacher-forced
+                prefix; without them the decoder feeds back its own choice.
 
         Returns:
             logits: (batch, seq_len, vocab_size)
@@ -282,15 +287,24 @@ class NeuralSymbolicRegressor(nn.Module):
 
         logits_list = []
 
-        for _pos in range(self.config.max_seq_len - 1):
+        for pos in range(self.config.max_seq_len - 1):
             # Decoder forward - pass latent for conditioning
             logits = self.decoder(tokens, latent, train=train)
             next_logits = logits[:, -1, :]  # (batch, vocab)
             logits_list.append(next_logits)
 
             if train:
-                # Teacher forcing would go here
-                pass
+                # Teacher forcing: feed the recorded token for this position so
+                # the next-token loss is trained on the true prefix rather than
+                # on the model's own (initially random) samples. With no
+                # targets there is no recorded prefix, so the model feeds back
+                # its own greedy choice -- free-running, stated rather than
+                # silently substituted for the training path.
+                if targets is not None and pos + 1 < targets.shape[1]:
+                    next_token = targets[:, pos + 1]
+                else:
+                    next_token = jnp.argmax(next_logits, axis=-1)
+                tokens = jnp.concatenate([tokens, next_token[:, None]], axis=1)
             else:
                 # Sample next token, or decode greedily when no PRNG was
                 # supplied. make_rng('sample') raises InvalidRngError unless
@@ -310,10 +324,12 @@ class NeuralSymbolicRegressor(nn.Module):
         return logits, tokens
 
     def forward(self, x: Array, y: Array, train: bool = False,
-                rng: PRNGKey | None = None) -> dict[str, Array]:
+                rng: PRNGKey | None = None,
+                targets: Array | None = None) -> dict[str, Array]:
         """Full forward pass."""
         latent = self.encode(x, y)
-        logits, tokens = self.decode(latent, train=train, rng=rng)
+        logits, tokens = self.decode(latent, train=train, rng=rng,
+                                     targets=targets)
 
         return {
             'latent': latent,
@@ -439,7 +455,6 @@ def discover_symbolic(x_data: dict[str, Array],
     optimizer = optax.adam(config.learning_rate)
     opt_state = optimizer.init(params)
 
-    @jit
     def train_step(params, opt_state, x, y, key):
         loss, info = model.apply({'params': params}, x, y, method=model.loss_fn, key=key)
         grads = grad(lambda p: model.apply({'params': p}, x, y, method=model.loss_fn, key=key)[0])(params)
@@ -468,6 +483,12 @@ def discover_symbolic(x_data: dict[str, Array],
 
 
 # MLPResNet import for encoder
+
+# The training step is eager: the loss runs autoregressive decoding, a Python
+# loop over positions, and a tokeniser reward, so tracing it would freeze the
+# sequence length and the reward at trace time. Recorded as a module constant so
+# the claim is machine-readable instead of being implied by a missing decorator.
+TRAIN_STEP_JITTABLE = False
 
 __all__ = [
     "ID_TO_VOCAB",

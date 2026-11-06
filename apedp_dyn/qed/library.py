@@ -112,10 +112,13 @@ class TermLibrary:
             )
         if not support:
             return f"{lhs} = 0"
+        from apedp_dyn.grammar.term_format import atom
+
         parts = []
         for index, coefficient in zip(support, coefficients, strict=True):
             name = self.terms[index].name
-            body = f"{float(coefficient):+.6g}" if name == "1" else f"{float(coefficient):+.6g}*{name}"
+            body = (f"{float(coefficient):+.6g}" if name == "1"
+                    else f"{float(coefficient):+.6g}*{atom(name)}")
             parts.append(body)
         return f"{lhs} = " + " ".join(parts)
 

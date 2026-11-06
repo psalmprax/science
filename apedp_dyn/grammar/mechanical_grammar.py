@@ -33,6 +33,65 @@ from apedp_dyn.model import DynamicalEquation, Parameter, PhysicalModel
 # Grammar vocabulary: label -> builder over generic (X, V, U, XR) symbols,
 # where XR is the remote position (2-DOF coupling). Single-DOF materialize
 # leaves XR unmapped so xr-terms die loudly at gate 1, never silently.
+# Vocabulary names the grammar still enumerates but cannot build. Each entry
+# says what is missing, because the name alone does not: a caller who sees
+# `grad_x` in a slate needs to know it is a spatial derivative on a grid, not a
+# state transform it forgot to bind.
+UNAVAILABLE_TERMS = {
+    "c1": "constraint term 1: the basis is the constant 1, so it relates no "
+          "states and no index-1 reduction exists for it",
+    "c2": "constraint term 2: the basis is the constant 1, so it relates no "
+          "states and no index-1 reduction exists for it",
+    "grad_x": "spatial gradient: needs a spatial grid the trajectory problems "
+              "do not carry",
+    "laplacian_x": "spatial laplacian: needs a spatial grid the trajectory "
+                   "problems do not carry",
+    "zscore_x": "rolling z-score: needs the mu_x/sigma_x series that no "
+                "problem supplies",
+    "ma_x": "moving average: needs the x_lag1 series that no problem supplies",
+    "mom_x": "momentum: needs the x_lag1 series that no problem supplies",
+    "rsi_like": "RSI-like bounded momentum: needs the x_ma series that no "
+                "problem supplies",
+    "bollinger": "Bollinger band: needs the x_ma/x_std series that no problem "
+                 "supplies",
+    "macd_like": "MACD-like difference: needs the x_ema_fast/x_ema_slow series "
+                 "that no problem supplies",
+}
+
+
+class UnavailableGrammarTerm(ValueError):
+    """A vocabulary name that no builder can turn into an expression.
+
+    Subclasses ValueError so it propagates through the materialisation call
+    sites unchanged and is still caught by `prune_admissible`, which records it
+    as a rejection reason rather than letting a placeholder reach a fit.
+    """
+
+    def __init__(self, term: str, reason: str | None = None):
+        detail = reason if reason is not None else UNAVAILABLE_TERMS.get(term, "")
+        super().__init__(f"grammar term {term!r} is unavailable: {detail}")
+        self.term = term
+        self.reason = detail
+
+
+def _unavailable(term: str):
+    """Builder for a vocabulary name that refuses instead of returning a value.
+
+    The refusal is raised on call, not at import: the slate keeps enumerating
+    the name, so counts, canonical forms and candidate ids do not move.
+    """
+
+    def build(X, V, U, XR, SX):
+        raise UnavailableGrammarTerm(term)
+
+    build.__doc__ = UNAVAILABLE_TERMS[term]
+    return build
+
+
+# Terms that need the remote mass's position. Single-DOF materialisation has
+# nowhere to bind it, so it refuses for the same reason the placeholders do.
+_REMOTE_TERMS = frozenset({"xr", "dxr"})
+
 _TERM_BUILDERS = {
     "one": lambda X, V, U, XR, SX: sp.Integer(1),
     "x": lambda X, V, U, XR, SX: X,
@@ -49,14 +108,14 @@ _TERM_BUILDERS = {
     "sign_x": lambda X, V, U, XR, SX: sp.sign(X),
     "xr": lambda X, V, U, XR, SX: XR,
     "dxr": lambda X, V, U, XR, SX: XR - X,  # typed relative displacement Δx
-    "c1": lambda X, V, U, XR, SX: X ** 0,  # constraint term 1 (dimensionless)
-    "c2": lambda X, V, U, XR, SX: X ** 0,  # constraint term 2 (dimensionless)
+    "c1": _unavailable("c1"),
+    "c2": _unavailable("c2"),
     "x_f": lambda X, V, U, XR, SX: X,  # fast-state variable
     "v_f": lambda X, V, U, XR, SX: V,  # fast velocity
     "x_s": lambda X, V, U, XR, SX: X,  # slow-state variable
     "v_s": lambda X, V, U, XR, SX: V,  # slow velocity
-    "grad_x": lambda X, V, U, XR, SX: sp.symbols("grad_x"),  # spatial gradient ∇x
-    "laplacian_x": lambda X, V, U, XR, SX: sp.symbols("laplacian_x"),  # ∇²x
+    "grad_x": _unavailable("grad_x"),
+    "laplacian_x": _unavailable("laplacian_x"),
     "sat_x": lambda X, V, U, XR, SX: X / (1 + sp.Abs(X)),
     "sat_v": lambda X, V, U, XR, SX: V / (1 + sp.Abs(V)),
     "sat_u": lambda X, V, U, XR, SX: U / (1 + sp.Abs(U)),
@@ -73,12 +132,12 @@ _TERM_BUILDERS = {
     "abs_v_u": lambda X, V, U, XR, SX: sp.Abs(V) * U,
     # Trading/finance oriented terms
     "ret_x": lambda X, V, U, XR, SX: X / (1 + X),  # approximate return-like transform
-    "zscore_x": lambda X, V, U, XR, SX: (X - sp.symbols("mu_x")) / (sp.symbols("sigma_x") + 1e-12),
-    "ma_x": lambda X, V, U, XR, SX: (X + sp.symbols("x_lag1")) / 2,  # moving average placeholder
-    "mom_x": lambda X, V, U, XR, SX: X - sp.symbols("x_lag1"),  # momentum
-    "rsi_like": lambda X, V, U, XR, SX: sp.tanh(X - sp.symbols("x_ma")),  # RSI-like bounded momentum
-    "bollinger": lambda X, V, U, XR, SX: (X - sp.symbols("x_ma")) / (sp.symbols("x_std") + 1e-12),
-    "macd_like": lambda X, V, U, XR, SX: (sp.symbols("x_ema_fast") - sp.symbols("x_ema_slow")),
+    "zscore_x": _unavailable("zscore_x"),
+    "ma_x": _unavailable("ma_x"),
+    "mom_x": _unavailable("mom_x"),
+    "rsi_like": _unavailable("rsi_like"),
+    "bollinger": _unavailable("bollinger"),
+    "macd_like": _unavailable("macd_like"),
     # Saturating binding laws need a reference scale with the state's units:
     # `X/(L+|X|)` is Langmuir/Michaelis-Menten occupancy and `X^2/(L^2+X^2)` its
     # cooperative (Hill n=2) form. L arrives as the term's `scale_parameter`;
@@ -93,7 +152,7 @@ DEFAULT_TOPOLOGY = ("one", "x", "x3", "v", "abs_v_v", "sin_x", "u")
 DEFAULT_BOUNDS = (-1e6, 1e6)
 # A saturation reference scale is positive (it is a half-saturation level).
 SATURATION_SCALE_BOUNDS = (1e-9, 1e9)
-_SCALED_TERMS = frozenset({"langmuir_bind", "hill2_bind"})
+_SCALED_TERMS = frozenset({"langmuir_bind", "hill2_bind", "hill3_bind"})
 
 
 def validate(candidate: CandidateDynamics) -> None:
@@ -204,6 +263,12 @@ def materialize(problem, candidate: CandidateDynamics) -> PhysicalModel:
     parts: list[str] = []
     parameters: list[Parameter] = []
     for t in candidate.terms:
+        if t.name in _REMOTE_TERMS:
+            raise UnavailableGrammarTerm(
+                t.name,
+                f"remote-position term {t.name!r} needs a second degree of "
+                "freedom; single-DOF materialisation has no remote state to "
+                "bind")
         built = _TERM_BUILDERS[t.name](X, V, U, XR, SX)
         gu_sym = sp.Symbol(inp.name) if inp is not None else U
         rexpr = built.subs({X: sp.Symbol(pos.name), V: sp.Symbol(vel.name),
@@ -224,7 +289,9 @@ def materialize(problem, candidate: CandidateDynamics) -> PhysicalModel:
                 t.scale_parameter, SATURATION_SCALE_BOUNDS)
             parameters.append(Parameter(t.scale_parameter, real[pos.name], None,
                                         sbounds, role="scale"))
-        parts.append(f"({t.parameter}*{sp.sstr(rexpr)})")
+        # Structural product, not text: a sum operand must be multiplied as a
+        # unit, or the coefficient lands on its first addend only.
+        parts.append(sp.sstr(sp.Mul(sp.Symbol(t.parameter), rexpr)))
     accel = " + ".join(parts) if parts else "0"
     equations = (DynamicalEquation(pos.name, vel.name),
                  DynamicalEquation(vel.name, accel))
@@ -308,6 +375,8 @@ def select_by_train_loss(fitted: list[ScoredCandidate]) -> ScoredCandidate:
 
 
 __all__ = [
+    "UNAVAILABLE_TERMS",
+    "UnavailableGrammarTerm",
     "DEFAULT_BOUNDS",
     "DEFAULT_TOPOLOGY",
     "deduplicate",

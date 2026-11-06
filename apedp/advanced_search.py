@@ -782,18 +782,24 @@ class HierarchicalSearch:
 
     def _expansions(self, expr: str, var: str) -> tuple[str, ...]:
         """The structural moves applied to a surviving seed, per template set."""
+        from apedp_dyn.grammar.term_format import atom
+
+        # A seed can be a sum (`x0 + 1`), so every template that appends an
+        # operator to it has to receive it as one unit, or the operator applies
+        # to the seed's first addend only.
+        seed = atom(expr)
         if self.template_set == "classic":
-            return (f"{expr}**2", f"{expr}*2", f"2*{expr}",
-                    f"sin({expr})", f"{expr}+1")
+            return (f"{seed}**2", f"{seed}*2", f"2*{seed}",
+                    f"sin({seed})", f"{seed}+1")
         # The seed itself is kept: with coefficients fitted, ``x`` is the right
         # answer for a straight line and dropping it would rank a worse shape first.
         harmonics = tuple(
-            f"{function}({scale}*({expr}))"
+            f"{function}({scale}*{seed})"
             for function in ("sin", "cos")
             for scale in _TRIG_FREQUENCY_SCALES
         )
-        return (expr, *[expansion.format(e=expr) for expansion in _EXTENDED_EXPANSIONS],
-                *harmonics, f"{expr}*{var}", f"{expr}/(1+{var})")
+        return (expr, *[expansion.format(e=seed) for expansion in _EXTENDED_EXPANSIONS],
+                *harmonics, f"{seed}*{var}", f"{seed}/(1+{var})")
 
     def _mid_search(self, seeds: list[dict[str, Any]], var_names: list[str], budget: int,
                     data: list[Any] | None = None,

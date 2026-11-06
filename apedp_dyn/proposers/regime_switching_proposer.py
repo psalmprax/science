@@ -82,11 +82,12 @@ class RegimeSwitchingProposer(ProposerBase):
         beta_low = fit_ridge(X[mask_low], y[mask_low])
         beta_high = fit_ridge(X[mask_high], y[mask_high])
 
+        from apedp_dyn.grammar.term_format import atom
         formula_str = (
             f"IF vol > {tau:.4f} THEN "
-            + " + ".join(f"{b:+.4f}*{c}" for b, c in zip(beta_high, feature_cols, strict=True))
+            + " + ".join(f"{b:+.4f}*{atom(c)}" for b, c in zip(beta_high, feature_cols, strict=True))
             + " ELSE "
-            + " + ".join(f"{b:+.4f}*{c}" for b, c in zip(beta_low, feature_cols, strict=True))
+            + " + ".join(f"{b:+.4f}*{atom(c)}" for b, c in zip(beta_low, feature_cols, strict=True))
         )
 
         def compute_score(d: pd.DataFrame) -> np.ndarray:

@@ -704,16 +704,18 @@ def distill_via_surrogate(x_data: dict[str, np.ndarray],
         return {"terms": [], "note": f"distill failed: {e}"}
 def recombine_power_law(variables: list[str], exponents: list[float]) -> str:
     """Render a power-law product string from parallel variable/exponent lists."""
+    from apedp_dyn.grammar.term_format import atom, powered
+
     terms = []
     for name, p in zip(variables, exponents, strict=False):
         if abs(p) < 1e-12:
             continue
         if abs(p - round(p)) > 1e-9:
-            terms.append(f"{name}**({p})")
+            terms.append(powered(name, f"({p})"))
         elif round(p) == 1:
-            terms.append(name)
+            terms.append(atom(name))
         else:
-            terms.append(f"{name}**{round(p)}")
+            terms.append(powered(name, str(round(p))))
     return "*".join(terms) if terms else "1"
 
 

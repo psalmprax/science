@@ -21,6 +21,29 @@ except Exception:
     apedp_kernel = None
     _RUST_AVAILABLE = False
 
+# How many times the native acceleration kernel has actually been entered. A
+# parity test that monkeypatches the flag off compares the Python path with
+# itself; this counter is what lets a test show the native branch ran.
+NATIVE_ACCELERATION_CALLS = [0]
+
+
+def _acceleration_between(v_from: torch.Tensor, v_to: torch.Tensor,
+                          h_eff: float) -> torch.Tensor:
+    r"""Directional acceleration between two velocity samples.
+
+    Uses the native kernel when it is available, and falls back to the same
+    quotient in Python when it refuses. Both paths return the same value by
+    construction, so the fallback is a capability gap and not a second answer.
+    """
+    if _RUST_AVAILABLE and apedp_kernel is not None:
+        try:
+            NATIVE_ACCELERATION_CALLS[0] += 1
+            return apedp_kernel.jetflow_compute_acceleration(v_from, v_to, h_eff)
+        except Exception:
+            # Not counted: the kernel was entered and produced nothing.
+            NATIVE_ACCELERATION_CALLS[0] -= 1
+    return (v_to - v_from) / h_eff
+
 
 @dataclass(frozen=False)
 class JetFlowConfig:
@@ -70,12 +93,6 @@ class JetFlowStepper:
         (z + h * v_t, t + h), requiring only 1 additional velocity evaluation
         instead of 4 separate partial-derivative probes.
         """
-        if _RUST_AVAILABLE and apedp_kernel is not None:
-            try:
-                # Try Rust fast path if available
-                pass
-            except Exception:
-                pass
         eps = float(self.config.eps_fd)
         if getattr(self.config, 'use_central_diff', False):
             # Central difference for better accuracy
@@ -91,7 +108,7 @@ class JetFlowStepper:
             h_eff = t_f - t_b
             if abs(h_eff) <= 1e-12:
                 return torch.zeros_like(v_current)
-            return (v_f - v_b) / h_eff
+            return _acceleration_between(v_f, v_b, h_eff)
         # Step in the integration direction so t + h stays inside [0, 1]
         if dt is not None and dt < 0.0:
             h = -eps if (t - eps) >= 0.0 else eps
@@ -105,7 +122,7 @@ class JetFlowStepper:
 
         z_probe = z + h_eff * v_current
         v_probe = velocity_fn(z_probe, t_probe)
-        return (v_probe - v_current) / h_eff
+        return _acceleration_between(v_probe, v_current, h_eff)
 
     def step(
         self,

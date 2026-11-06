@@ -106,7 +106,9 @@ class SparseMicrostructureProposer(ProposerBase):
                 if not active_terms:
                     continue
 
-                formula_parts = [f"{v:+.4f}*{k}" for k, v in active_terms.items()]
+                from apedp_dyn.grammar.term_format import atom
+                formula_parts = [f"{v:+.4f}*{atom(k)}"
+                                 for k, v in active_terms.items()]
                 formula_str = " ".join(formula_parts)
                 cand_idx += 1
 

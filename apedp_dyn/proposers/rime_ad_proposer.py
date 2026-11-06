@@ -555,8 +555,9 @@ class RimeAdProposer(ProposerBase):
             for i in range(len(feature_cols)):
                 for j in range(i, len(feature_cols)):
                     c1, c2 = feature_cols[i], feature_cols[j]
+                    from apedp_dyn.grammar.term_format import atom
                     X_mat.append(df[c1].to_numpy(dtype=float) * df[c2].to_numpy(dtype=float))
-                    col_names.append(f"{c1}*{c2}")
+                    col_names.append(f"{atom(c1)}*{atom(c2)}")
 
         X_arr = np.column_stack(X_mat)
         coef, *_ = np.linalg.lstsq(X_arr, y, rcond=None)
@@ -575,7 +576,8 @@ class RimeAdProposer(ProposerBase):
                         tm.append(test_df[c1].to_numpy(dtype=float) * test_df[c2].to_numpy(dtype=float))
             return np.asarray(np.asarray(np.asarray(np.column_stack(tm) @ coef)))
 
-        formula = " + ".join(f"{c:.4f}*{name}" for c, name in zip(coef, col_names, strict=False) if abs(c) > 1e-4)
+        from apedp_dyn.grammar.term_format import atom
+        formula = " + ".join(f"{c:.4f}*{atom(name)}" for c, name in zip(coef, col_names, strict=False) if abs(c) > 1e-4)
         return [
             CandidateProposal(
                 proposer_id=self.proposer_id,

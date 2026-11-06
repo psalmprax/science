@@ -126,26 +126,35 @@ class SINDyProposer(ProposerBase):
             if not terms or terms == ["1"]:
                 continue
             formula_parts = []
+            from apedp_dyn.grammar.term_format import atom
             for c, t in zip(coeffs, terms):
                 if t == "1":
                     formula_parts.append(f"{c:.6g}")
                 elif t.startswith("x"):
-                    formula_parts.append(f"{c:.6g}*{t}")
+                    formula_parts.append(f"{c:.6g}*{atom(t)}")
                 else:
-                    formula_parts.append(f"{c:.6g}*{t}")
+                    formula_parts.append(f"{c:.6g}*{atom(t)}")
             formula = " + ".join(formula_parts) if formula_parts else "0"
-            _lib_names = names
-            _lib_matrix = Theta
-            def make_score(f=formula, terms=terms, coeffs=coeffs):
+
+            def make_score(terms=tuple(terms), coeffs=tuple(coeffs)):
+                # Bind this candidate's own (term, coefficient) pairs at build
+                # time. The factory used to close over the loop's library names
+                # and use their positions to index the shorter coefficient list,
+                # so a later candidate scored an earlier one's terms -- or, when
+                # the first term was not in the library's first column, raised.
+                pairs = tuple((t, c) for t, c in zip(terms, coeffs) if t != "1")
+                constants = tuple(c for t, c in zip(terms, coeffs) if t == "1")
+
                 def score(df):
-                    cols = [np.asarray(df[n], dtype=float).ravel() for n in _lib_names]
-                    X_eval = np.column_stack(cols)
-                    idx = [i for i, nm in enumerate(_lib_names) if nm in terms]
-                    if not idx:
-                        return np.full(len(df), float(coeffs[0])) if coeffs else np.zeros(len(df))
-                    selected = X_eval[:, idx]
-                    pred = selected @ np.asarray([coeffs[i] for i in idx], dtype=float)
-                    return pred.ravel()
+                    rows = len(df)
+                    if not pairs:
+                        return np.full(rows, float(sum(constants)) if constants
+                                       else 0.0)
+                    pred = np.zeros(rows, dtype=float)
+                    for name, weight in pairs:
+                        pred += weight * np.asarray(df[name], dtype=float).ravel()
+                    return pred
+
                 return score
             proposals.append(CandidateProposal(
                 proposer_id=self.proposer_id,
@@ -154,7 +163,7 @@ class SINDyProposer(ProposerBase):
                 strategy_archetype=StrategyArchetype.DYNAMICAL_SYSTEM,
                 declared_scale_invariant=False,
                 declared_nominal_dependencies=tuple(variable_names),
-                compute_score=make_score(formula, terms, coeffs),
+                compute_score=make_score(),
                 parameters={"coefficients": coeffs, "terms": terms},
                 metadata={"method": "sindy", "active_terms": len(terms)},
             ))

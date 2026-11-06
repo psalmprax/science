@@ -125,7 +125,9 @@ class DistributedLagInteractionProposer(ProposerBase):
         # exactly the fitted model: y = bias + sum(w_raw * raw_feature).
         raw_weights = {X_df.columns[i]: float(coefs[i] / x_std[i]) for i in non_zero_idx}
         bias = float(model.intercept_ - np.sum(coefs[non_zero_idx] * x_mean[non_zero_idx] / x_std[non_zero_idx]))
-        formula_terms = [f"{raw_weights[name]:+.4f} * {name}" for name in selected_names]
+        from apedp_dyn.grammar.term_format import atom
+        formula_terms = [f"{raw_weights[name]:+.4f}*{atom(name)}"
+                         for name in selected_names]
         formula_str = f"intercept({bias:.4f}) " + " ".join(formula_terms)
 
         max_lag = max((spec[2] for spec in column_spec.values() if spec[0] == "lag"), default=0)
