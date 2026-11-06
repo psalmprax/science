@@ -1,0 +1,7541 @@
+{
+  "schema_version": "2.0",
+  "experiment": "reachability of planted law families, classic versus extended templates",
+  "protocol": {
+    "train_rows": 200,
+    "holdout_rows": 100,
+    "noise_fractions": [
+      0.01,
+      0.05
+    ],
+    "noise_scale": "fraction of target standard deviation on training rows only",
+    "budget": 120,
+    "beam_depth": 2,
+    "beam_width": 12,
+    "seeds": [
+      7,
+      17,
+      27
+    ],
+    "input_ranges": [
+      [
+        0.5,
+        3.0
+      ],
+      [
+        0.1,
+        10.0
+      ]
+    ],
+    "extended_trig_frequency_scales": [
+      0.5,
+      2.0,
+      3.0
+    ],
+    "recovery_criterion": "holdout R^2 >= 0.99, coefficients refitted on train",
+    "leakage": "search, coefficient fitting, and noise-scale selection use training rows only; holdout rows score the selected candidate"
+  },
+  "laws": [
+    {
+      "law": "linear",
+      "planted_expression": "3.0*x0",
+      "variables": [
+        "x0"
+      ],
+      "engines": {
+        "classic": {
+          "expression": "x0**2+1",
+          "train_r2": 0.8349735285524875,
+          "holdout_r2": 0.9733979842574442,
+          "recovered": false,
+          "n_candidates": 31
+        },
+        "extended": {
+          "expression": "x0",
+          "train_r2": 0.999893312772573,
+          "holdout_r2": 0.9998997975695137,
+          "recovered": true,
+          "n_candidates": 51
+        },
+        "beam_classic": {
+          "expression": "x0",
+          "train_r2": 0.999893312772573,
+          "holdout_r2": 0.9998997975695137,
+          "recovered": true,
+          "n_candidates": 27
+        },
+        "beam_extended": {
+          "expression": "x0",
+          "train_r2": 0.999893312772573,
+          "holdout_r2": 0.9998997975695137,
+          "recovered": true,
+          "n_candidates": 34
+        }
+      }
+    },
+    {
+      "law": "quadratic",
+      "planted_expression": "2.0*x0**2 + 1.0",
+      "variables": [
+        "x0"
+      ],
+      "engines": {
+        "classic": {
+          "expression": "exp(x0)+1",
+          "train_r2": 0.9800136706922553,
+          "holdout_r2": 0.983598205556744,
+          "recovered": false,
+          "n_candidates": 31
+        },
+        "extended": {
+          "expression": "x0**2",
+          "train_r2": 0.9998786868943174,
+          "holdout_r2": 0.9999243050543798,
+          "recovered": true,
+          "n_candidates": 51
+        },
+        "beam_classic": {
+          "expression": "x0",
+          "train_r2": 0.9669572604311194,
+          "holdout_r2": 0.9684566686939847,
+          "recovered": false,
+          "n_candidates": 27
+        },
+        "beam_extended": {
+          "expression": "x0**2",
+          "train_r2": 0.9998786868943174,
+          "holdout_r2": 0.9999243050543798,
+          "recovered": true,
+          "n_candidates": 34
+        }
+      }
+    },
+    {
+      "law": "cubic",
+      "planted_expression": "0.5*x0**3",
+      "variables": [
+        "x0"
+      ],
+      "engines": {
+        "classic": {
+          "expression": "x0**2+1",
+          "train_r2": 0.8558529580143905,
+          "holdout_r2": 0.9773018555817233,
+          "recovered": false,
+          "n_candidates": 31
+        },
+        "extended": {
+          "expression": "x0**3",
+          "train_r2": 0.9999021193820593,
+          "holdout_r2": 0.9999338948292285,
+          "recovered": true,
+          "n_candidates": 51
+        },
+        "beam_classic": {
+          "expression": "x0",
+          "train_r2": 0.9003155823927024,
+          "holdout_r2": 0.8913455185613071,
+          "recovered": false,
+          "n_candidates": 27
+        },
+        "beam_extended": {
+          "expression": "x0**3",
+          "train_r2": 0.9999021193820593,
+          "holdout_r2": 0.9999338948292285,
+          "recovered": true,
+          "n_candidates": 34
+        }
+      }
+    },
+    {
+      "law": "square_root",
+      "planted_expression": "4.0*sqrt(x0)",
+      "variables": [
+        "x0"
+      ],
+      "engines": {
+        "classic": {
+          "expression": "x0**2+1",
+          "train_r2": -1.272305734121416,
+          "holdout_r2": 0.9197675615162931,
+          "recovered": false,
+          "n_candidates": 31
+        },
+        "extended": {
+          "expression": "x0**0.5",
+          "train_r2": 0.999895677447225,
+          "holdout_r2": 0.999912422522011,
+          "recovered": true,
+          "n_candidates": 52
+        },
+        "beam_classic": {
+          "expression": "x0",
+          "train_r2": 0.9890392599552283,
+          "holdout_r2": 0.9894044183734422,
+          "recovered": false,
+          "n_candidates": 27
+        },
+        "beam_extended": {
+          "expression": "sqrt(x0)",
+          "train_r2": 0.999895677447225,
+          "holdout_r2": 0.999912422522011,
+          "recovered": true,
+          "n_candidates": 34
+        }
+      }
+    },
+    {
+      "law": "inverse",
+      "planted_expression": "1.2/x0",
+      "variables": [
+        "x0"
+      ],
+      "engines": {
+        "classic": {
+          "expression": "sin(x0)",
+          "train_r2": -0.28602022602366306,
+          "holdout_r2": -0.004185426743446241,
+          "recovered": false,
+          "n_candidates": 31
+        },
+        "extended": {
+          "expression": "1/x0",
+          "train_r2": 0.9999016517026919,
+          "holdout_r2": 0.9998981766365166,
+          "recovered": true,
+          "n_candidates": 53
+        },
+        "beam_classic": {
+          "expression": "(x0+2)",
+          "train_r2": 0.8373754867581029,
+          "holdout_r2": 0.8052527874297295,
+          "recovered": false,
+          "n_candidates": 27
+        },
+        "beam_extended": {
+          "expression": "1/x0",
+          "train_r2": 0.9999016517026919,
+          "holdout_r2": 0.9998981766365166,
+          "recovered": true,
+          "n_candidates": 34
+        }
+      }
+    },
+    {
+      "law": "power_2_5",
+      "planted_expression": "x0**2.5",
+      "variables": [
+        "x0"
+      ],
+      "engines": {
+        "classic": {
+          "expression": "x0**2*2",
+          "train_r2": 0.8275018743771649,
+          "holdout_r2": 0.9946448353674798,
+          "recovered": true,
+          "n_candidates": 31
+        },
+        "extended": {
+          "expression": "x0**3/(1+x0)",
+          "train_r2": 0.9987942684181995,
+          "holdout_r2": 0.9987973561772864,
+          "recovered": true,
+          "n_candidates": 51
+        },
+        "beam_classic": {
+          "expression": "x0",
+          "train_r2": 0.9405400666209321,
+          "holdout_r2": 0.9418316047693759,
+          "recovered": false,
+          "n_candidates": 27
+        },
+        "beam_extended": {
+          "expression": "((x0+x0)+(x0+x0**3))",
+          "train_r2": 0.9996445754271301,
+          "holdout_r2": 0.9996883513567207,
+          "recovered": true,
+          "n_candidates": 34
+        }
+      }
+    },
+    {
+      "law": "exponential_decay",
+      "planted_expression": "2.0*exp(-0.7*x0)",
+      "variables": [
+        "x0"
+      ],
+      "engines": {
+        "classic": {
+          "expression": "sin(sin(x0))",
+          "train_r2": 0.018905037306210404,
+          "holdout_r2": 0.04961668287270715,
+          "recovered": false,
+          "n_candidates": 31
+        },
+        "extended": {
+          "expression": "exp(-(x0**0.5))",
+          "train_r2": 0.9988056682956508,
+          "holdout_r2": 0.9988775804471758,
+          "recovered": true,
+          "n_candidates": 53
+        },
+        "beam_classic": {
+          "expression": "x0",
+          "train_r2": 0.9457939790258626,
+          "holdout_r2": 0.9500948949509079,
+          "recovered": false,
+          "n_candidates": 27
+        },
+        "beam_extended": {
+          "expression": "log(x0)",
+          "train_r2": 0.9987492356965288,
+          "holdout_r2": 0.9987744833348162,
+          "recovered": true,
+          "n_candidates": 34
+        }
+      }
+    },
+    {
+      "law": "logarithm",
+      "planted_expression": "3.0*log(x0)",
+      "variables": [
+        "x0"
+      ],
+      "engines": {
+        "classic": {
+          "expression": "x0",
+          "train_r2": 0.641823372167206,
+          "holdout_r2": 0.9521181082153652,
+          "recovered": false,
+          "n_candidates": 31
+        },
+        "extended": {
+          "expression": "log(x0)",
+          "train_r2": 0.9999019453479281,
+          "holdout_r2": 0.9998683005711914,
+          "recovered": true,
+          "n_candidates": 52
+        },
+        "beam_classic": {
+          "expression": "x0",
+          "train_r2": 0.9542258824178412,
+          "holdout_r2": 0.9521181082153652,
+          "recovered": false,
+          "n_candidates": 27
+        },
+        "beam_extended": {
+          "expression": "log(x0)",
+          "train_r2": 0.9999019453479281,
+          "holdout_r2": 0.9998683005711914,
+          "recovered": true,
+          "n_candidates": 34
+        }
+      }
+    },
+    {
+      "law": "sine",
+      "planted_expression": "sin(2.0*x0)",
+      "variables": [
+        "x0"
+      ],
+      "engines": {
+        "classic": {
+          "expression": "sin(x0**2)",
+          "train_r2": -0.0605781278169375,
+          "holdout_r2": 0.36894379771480124,
+          "recovered": false,
+          "n_candidates": 31
+        },
+        "extended": {
+          "expression": "sin(2.0*(x0))",
+          "train_r2": 0.9999009436740982,
+          "holdout_r2": 0.9998827404253959,
+          "recovered": true,
+          "n_candidates": 53
+        },
+        "beam_classic": {
+          "expression": "(x0+2)",
+          "train_r2": 0.7650244977351442,
+          "holdout_r2": 0.7445965117371143,
+          "recovered": false,
+          "n_candidates": 27
+        },
+        "beam_extended": {
+          "expression": "(x0+sin(x0))",
+          "train_r2": 0.8577558859695954,
+          "holdout_r2": 0.8463318223183252,
+          "recovered": false,
+          "n_candidates": 34
+        }
+      }
+    },
+    {
+      "law": "rational_saturation",
+      "planted_expression": "3.0*x0/(1.0+0.5*x0)",
+      "variables": [
+        "x0"
+      ],
+      "engines": {
+        "classic": {
+          "expression": "x0+1",
+          "train_r2": 0.9491619282029806,
+          "holdout_r2": 0.9652273693310602,
+          "recovered": false,
+          "n_candidates": 31
+        },
+        "extended": {
+          "expression": "sqrt(x0**0.5)",
+          "train_r2": 0.9994247770851109,
+          "holdout_r2": 0.9994105242139525,
+          "recovered": true,
+          "n_candidates": 52
+        },
+        "beam_classic": {
+          "expression": "x0",
+          "train_r2": 0.9677579734951736,
+          "holdout_r2": 0.9652273693310602,
+          "recovered": false,
+          "n_candidates": 27
+        },
+        "beam_extended": {
+          "expression": "log(x0)",
+          "train_r2": 0.997819663451729,
+          "holdout_r2": 0.9978532327420263,
+          "recovered": true,
+          "n_candidates": 34
+        }
+      }
+    },
+    {
+      "law": "product",
+      "planted_expression": "x0*x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "engines": {
+        "classic": {
+          "expression": "x0*x1",
+          "train_r2": 0.9999078231316989,
+          "holdout_r2": 0.9999169326943776,
+          "recovered": true,
+          "n_candidates": 38
+        },
+        "extended": {
+          "expression": "x0*x1",
+          "train_r2": 0.9999099309631301,
+          "holdout_r2": 0.9999169326943776,
+          "recovered": true,
+          "n_candidates": 63
+        },
+        "beam_classic": {
+          "expression": "(x0+x1)",
+          "train_r2": 0.9191493142540523,
+          "holdout_r2": 0.9180186787442192,
+          "recovered": false,
+          "n_candidates": 28
+        },
+        "beam_extended": {
+          "expression": "(x0+x1)",
+          "train_r2": 0.9191493142540523,
+          "holdout_r2": 0.9180186787442192,
+          "recovered": false,
+          "n_candidates": 42
+        }
+      }
+    },
+    {
+      "law": "ratio",
+      "planted_expression": "x0/x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "engines": {
+        "classic": {
+          "expression": "x0",
+          "train_r2": 0.11331434938247564,
+          "holdout_r2": 0.40493312868339626,
+          "recovered": false,
+          "n_candidates": 38
+        },
+        "extended": {
+          "expression": "x0/x1",
+          "train_r2": 0.99988973028299,
+          "holdout_r2": 0.9998935500028767,
+          "recovered": true,
+          "n_candidates": 62
+        },
+        "beam_classic": {
+          "expression": "x1",
+          "train_r2": 0.47002478142269544,
+          "holdout_r2": 0.526063597104365,
+          "recovered": false,
+          "n_candidates": 28
+        },
+        "beam_extended": {
+          "expression": "1/x1",
+          "train_r2": 0.5719131647991496,
+          "holdout_r2": 0.6130003020927013,
+          "recovered": false,
+          "n_candidates": 42
+        }
+      }
+    }
+  ],
+  "trials": [
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "linear",
+      "planted_expression": "3.0*x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.02188333461862187,
+      "law_seed": 7,
+      "classic": {
+        "expression": "x0**2+1",
+        "train_r2": 0.8349735285524875,
+        "holdout_r2": 0.9733979842574442,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0",
+        "train_r2": 0.999893312772573,
+        "holdout_r2": 0.9998997975695137,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.999893312772573,
+        "holdout_r2": 0.9998997975695137,
+        "recovered": true,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0",
+        "train_r2": 0.999893312772573,
+        "holdout_r2": 0.9998997975695137,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "quadratic",
+      "planted_expression": "2.0*x0**2 + 1.0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.05026530619274211,
+      "law_seed": 8,
+      "classic": {
+        "expression": "exp(x0)+1",
+        "train_r2": 0.9800136706922553,
+        "holdout_r2": 0.983598205556744,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9998786868943174,
+        "holdout_r2": 0.9999243050543798,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9669572604311194,
+        "holdout_r2": 0.9684566686939847,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9998786868943174,
+        "holdout_r2": 0.9999243050543798,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "cubic",
+      "planted_expression": "0.5*x0**3",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.03816745317258835,
+      "law_seed": 9,
+      "classic": {
+        "expression": "x0**2+1",
+        "train_r2": 0.8558529580143905,
+        "holdout_r2": 0.9773018555817233,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9999021193820593,
+        "holdout_r2": 0.9999338948292285,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9003155823927024,
+        "holdout_r2": 0.8913455185613071,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9999021193820593,
+        "holdout_r2": 0.9999338948292285,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "square_root",
+      "planted_expression": "4.0*sqrt(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.011005294109447103,
+      "law_seed": 10,
+      "classic": {
+        "expression": "x0**2+1",
+        "train_r2": -1.272305734121416,
+        "holdout_r2": 0.9197675615162931,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**0.5",
+        "train_r2": 0.999895677447225,
+        "holdout_r2": 0.999912422522011,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9890392599552283,
+        "holdout_r2": 0.9894044183734422,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "sqrt(x0)",
+        "train_r2": 0.999895677447225,
+        "holdout_r2": 0.999912422522011,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "inverse",
+      "planted_expression": "1.2/x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.004891801380090647,
+      "law_seed": 11,
+      "classic": {
+        "expression": "sin(x0)",
+        "train_r2": -0.28602022602366306,
+        "holdout_r2": -0.004185426743446241,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9999016517026919,
+        "holdout_r2": 0.9998981766365166,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "(x0+2)",
+        "train_r2": 0.8373754867581029,
+        "holdout_r2": 0.8052527874297295,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9999016517026919,
+        "holdout_r2": 0.9998981766365166,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "power_2_5",
+      "planted_expression": "x0**2.5",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.046803565112517244,
+      "law_seed": 12,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.8275018743771649,
+        "holdout_r2": 0.9946448353674798,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3/(1+x0)",
+        "train_r2": 0.9987942684181995,
+        "holdout_r2": 0.9987973561772864,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9405400666209321,
+        "holdout_r2": 0.9418316047693759,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "((x0+x0)+(x0+x0**3))",
+        "train_r2": 0.9996445754271301,
+        "holdout_r2": 0.9996883513567207,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "exponential_decay",
+      "planted_expression": "2.0*exp(-0.7*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.0031792599601199183,
+      "law_seed": 13,
+      "classic": {
+        "expression": "sin(sin(x0))",
+        "train_r2": 0.018905037306210404,
+        "holdout_r2": 0.04961668287270715,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "exp(-(x0**0.5))",
+        "train_r2": 0.9988056682956508,
+        "holdout_r2": 0.9988775804471758,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9457939790258626,
+        "holdout_r2": 0.9500948949509079,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9987492356965288,
+        "holdout_r2": 0.9987744833348162,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "logarithm",
+      "planted_expression": "3.0*log(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.015097733036583069,
+      "law_seed": 14,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.641823372167206,
+        "holdout_r2": 0.9521181082153652,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9999019453479281,
+        "holdout_r2": 0.9998683005711914,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9542258824178412,
+        "holdout_r2": 0.9521181082153652,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9999019453479281,
+        "holdout_r2": 0.9998683005711914,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "sine",
+      "planted_expression": "sin(2.0*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.0070325000155560796,
+      "law_seed": 15,
+      "classic": {
+        "expression": "sin(x0**2)",
+        "train_r2": -0.0605781278169375,
+        "holdout_r2": 0.36894379771480124,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(2.0*(x0))",
+        "train_r2": 0.9999009436740982,
+        "holdout_r2": 0.9998827404253959,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "(x0+2)",
+        "train_r2": 0.7650244977351442,
+        "holdout_r2": 0.7445965117371143,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "(x0+sin(x0))",
+        "train_r2": 0.8577558859695954,
+        "holdout_r2": 0.8463318223183252,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "rational_saturation",
+      "planted_expression": "3.0*x0/(1.0+0.5*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.0068145116654628034,
+      "law_seed": 16,
+      "classic": {
+        "expression": "x0+1",
+        "train_r2": 0.9491619282029806,
+        "holdout_r2": 0.9652273693310602,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sqrt(x0**0.5)",
+        "train_r2": 0.9994247770851109,
+        "holdout_r2": 0.9994105242139525,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9677579734951736,
+        "holdout_r2": 0.9652273693310602,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.997819663451729,
+        "holdout_r2": 0.9978532327420263,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "product",
+      "planted_expression": "x0*x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.017204280517616525,
+      "law_seed": 17,
+      "classic": {
+        "expression": "x0*x1",
+        "train_r2": 0.9999078231316989,
+        "holdout_r2": 0.9999169326943776,
+        "recovered": true,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0*x1",
+        "train_r2": 0.9999099309631301,
+        "holdout_r2": 0.9999169326943776,
+        "recovered": true,
+        "n_candidates": 63
+      },
+      "beam_classic": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.9191493142540523,
+        "holdout_r2": 0.9180186787442192,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.9191493142540523,
+        "holdout_r2": 0.9180186787442192,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "ratio",
+      "planted_expression": "x0/x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.00946111118409887,
+      "law_seed": 18,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.11331434938247564,
+        "holdout_r2": 0.40493312868339626,
+        "recovered": false,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0/x1",
+        "train_r2": 0.99988973028299,
+        "holdout_r2": 0.9998935500028767,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "x1",
+        "train_r2": 0.47002478142269544,
+        "holdout_r2": 0.526063597104365,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "1/x1",
+        "train_r2": 0.5719131647991496,
+        "holdout_r2": 0.6130003020927013,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "linear",
+      "planted_expression": "3.0*x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.0866580050897426,
+      "law_seed": 7,
+      "classic": {
+        "expression": "x0*2",
+        "train_r2": 0.544785071266987,
+        "holdout_r2": 0.9998997975695137,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0",
+        "train_r2": 0.999893312772573,
+        "holdout_r2": 0.9998997975695137,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.999893312772573,
+        "holdout_r2": 0.9998997975695137,
+        "recovered": true,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0",
+        "train_r2": 0.999893312772573,
+        "holdout_r2": 0.9998997975695137,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "quadratic",
+      "planted_expression": "2.0*x0**2 + 1.0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.5835127215981736,
+      "law_seed": 8,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.9995802545837186,
+        "holdout_r2": 0.9999236499342183,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9998786806520767,
+        "holdout_r2": 0.9999236499342183,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9397728703467502,
+        "holdout_r2": 0.9418549564767353,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9998786806520767,
+        "holdout_r2": 0.9999236499342183,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "cubic",
+      "planted_expression": "0.5*x0**3",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 1.40880796159973,
+      "law_seed": 9,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.4518073823256411,
+        "holdout_r2": 0.9705884257572783,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9999020773805406,
+        "holdout_r2": 0.999934112851136,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "(x0+x0)",
+        "train_r2": 0.8472287053905623,
+        "holdout_r2": 0.8344245631881767,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9999020773805406,
+        "holdout_r2": 0.999934112851136,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "square_root",
+      "planted_expression": "4.0*sqrt(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.027311603318627937,
+      "law_seed": 10,
+      "classic": {
+        "expression": "x0+1",
+        "train_r2": 0.11648891361203084,
+        "holdout_r2": 0.9701836981680867,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**0.5",
+        "train_r2": 0.9998955742564434,
+        "holdout_r2": 0.9999138537125251,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "((x0+x0)+(1+1))",
+        "train_r2": 0.9681953004835319,
+        "holdout_r2": 0.9701836981680866,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "sqrt(x0)",
+        "train_r2": 0.9998955742564434,
+        "holdout_r2": 0.9999138537125251,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "inverse",
+      "planted_expression": "1.2/x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.007505155294559032,
+      "law_seed": 11,
+      "classic": {
+        "expression": "sin(x0)**2",
+        "train_r2": -0.3538044035378145,
+        "holdout_r2": 0.006019862877605919,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "1/x0",
+        "train_r2": 0.999901514081639,
+        "holdout_r2": 0.9999106553506039,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "(x0+x0)",
+        "train_r2": 0.4574437947492168,
+        "holdout_r2": 0.3858537308882005,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "1/x0",
+        "train_r2": 0.999901514081639,
+        "holdout_r2": 0.9999106553506039,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "power_2_5",
+      "planted_expression": "x0**2.5",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.9566980232336828,
+      "law_seed": 12,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.8047987643546184,
+        "holdout_r2": 0.9926331551030837,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3/(1+x0)",
+        "train_r2": 0.9954938413036042,
+        "holdout_r2": 0.9955539307766985,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9011689107954293,
+        "holdout_r2": 0.9038352547515526,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "((x0+x0)+(x0+x0**3))",
+        "train_r2": 0.9959911757227581,
+        "holdout_r2": 0.9957269757627154,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "exponential_decay",
+      "planted_expression": "2.0*exp(-0.7*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.004138472770941188,
+      "law_seed": 13,
+      "classic": {
+        "expression": "sin(x0)**2",
+        "train_r2": -1.2207040764769026,
+        "holdout_r2": -0.009189549372282224,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0/(1+x0)",
+        "train_r2": 0.9837858040541946,
+        "holdout_r2": 0.9824347339216221,
+        "recovered": false,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "(x0+x0)",
+        "train_r2": 0.5891308188662919,
+        "holdout_r2": 0.60191830707416,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "exp(-x0)",
+        "train_r2": 0.9730418232814276,
+        "holdout_r2": 0.9614494641888394,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "logarithm",
+      "planted_expression": "3.0*log(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.028519633500297722,
+      "law_seed": 14,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.6582785460900688,
+        "holdout_r2": 0.8178670335644234,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9999015706427199,
+        "holdout_r2": 0.9998744859991786,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8202985302424922,
+        "holdout_r2": 0.8178670335644234,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9999015706427199,
+        "holdout_r2": 0.9998744859991786,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "sine",
+      "planted_expression": "sin(2.0*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.007104883147037791,
+      "law_seed": 15,
+      "classic": {
+        "expression": "sin(x0**2)",
+        "train_r2": -0.8237684828796568,
+        "holdout_r2": 0.0005620921894806674,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(2.0*(x0))",
+        "train_r2": 0.9999006587968642,
+        "holdout_r2": 0.9998581917237805,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.003318503701512765,
+        "holdout_r2": -0.014765876552687462,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "exp(-x0)",
+        "train_r2": 0.048374379355981434,
+        "holdout_r2": -0.017148679555364588,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "rational_saturation",
+      "planted_expression": "3.0*x0/(1.0+0.5*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.011497105082496371,
+      "law_seed": 16,
+      "classic": {
+        "expression": "x0",
+        "train_r2": -2.548680518757608,
+        "holdout_r2": 0.8094453206391822,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(0.5*(x0**0.5))",
+        "train_r2": 0.9983638808526754,
+        "holdout_r2": 0.998214722774392,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.826097368114641,
+        "holdout_r2": 0.8094453206391822,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9912188574568795,
+        "holdout_r2": 0.9932266233571702,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "product",
+      "planted_expression": "x0*x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.20301439989174927,
+      "law_seed": 17,
+      "classic": {
+        "expression": "x0*x1",
+        "train_r2": 0.9999077991663652,
+        "holdout_r2": 0.9999171496890188,
+        "recovered": true,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0*x1",
+        "train_r2": 0.9999096522924018,
+        "holdout_r2": 0.9999171496890188,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.8570201146937713,
+        "holdout_r2": 0.8561290104802084,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.8570201146937713,
+        "holdout_r2": 0.8561290104802084,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "ratio",
+      "planted_expression": "x0/x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.06469805157434118,
+      "law_seed": 18,
+      "classic": {
+        "expression": "sin(x0)+1",
+        "train_r2": -0.08482705833066406,
+        "holdout_r2": -0.1197423172802301,
+        "recovered": false,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0/x1",
+        "train_r2": 0.9998894910213862,
+        "holdout_r2": 0.9993503491311914,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "x1",
+        "train_r2": 0.19108658613158325,
+        "holdout_r2": 0.24744657052267394,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "1/x1",
+        "train_r2": 0.8389726922856079,
+        "holdout_r2": 0.47599337168556277,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "linear",
+      "planted_expression": "3.0*x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.10941667309310935,
+      "law_seed": 7,
+      "classic": {
+        "expression": "x0**2+1",
+        "train_r2": 0.8314169149861137,
+        "holdout_r2": 0.968264001867083,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0",
+        "train_r2": 0.9973421952581719,
+        "holdout_r2": 0.9975015938370848,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9973421952581719,
+        "holdout_r2": 0.9975015938370848,
+        "recovered": true,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0",
+        "train_r2": 0.9973421952581719,
+        "holdout_r2": 0.9975015938370848,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "quadratic",
+      "planted_expression": "2.0*x0**2 + 1.0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.25132653096371055,
+      "law_seed": 8,
+      "classic": {
+        "expression": "exp(x0)+1",
+        "train_r2": 0.9770423107934951,
+        "holdout_r2": 0.9805382737395462,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9969790123821515,
+        "holdout_r2": 0.9981254041455104,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9644303327028916,
+        "holdout_r2": 0.9684669575461964,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9969790123821515,
+        "holdout_r2": 0.9981254041455104,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "cubic",
+      "planted_expression": "0.5*x0**3",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.19083726586294178,
+      "law_seed": 9,
+      "classic": {
+        "expression": "x0**2+1",
+        "train_r2": 0.8540511714954693,
+        "holdout_r2": 0.9745525370257662,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9975619688263894,
+        "holdout_r2": 0.9983421699051529,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9010085146656701,
+        "holdout_r2": 0.8872991908813759,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9975619688263894,
+        "holdout_r2": 0.9983421699051529,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "square_root",
+      "planted_expression": "4.0*sqrt(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.05502647054723552,
+      "law_seed": 10,
+      "classic": {
+        "expression": "x0**2+1",
+        "train_r2": -1.2912009910067344,
+        "holdout_r2": 0.9208707963933226,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**0.5",
+        "train_r2": 0.9973839090341269,
+        "holdout_r2": 0.9978122279465023,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9855260247259188,
+        "holdout_r2": 0.9885639954969347,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "sqrt(x0)",
+        "train_r2": 0.9973839090341269,
+        "holdout_r2": 0.9978122279465023,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "inverse",
+      "planted_expression": "1.2/x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.02445900690045323,
+      "law_seed": 11,
+      "classic": {
+        "expression": "sin(x0)",
+        "train_r2": -0.282135533279984,
+        "holdout_r2": -0.004715055524941558,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9975524904214982,
+        "holdout_r2": 0.9974433578073192,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "(x0+2)",
+        "train_r2": 0.8366514837099176,
+        "holdout_r2": 0.7984107708994812,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9975524904214982,
+        "holdout_r2": 0.9974433578073192,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "power_2_5",
+      "planted_expression": "x0**2.5",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.2340178255625862,
+      "law_seed": 12,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.8259704543961003,
+        "holdout_r2": 0.9921427318883423,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3/(1+x0)",
+        "train_r2": 0.996388577075925,
+        "holdout_r2": 0.99603046371738,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "(x0+2)",
+        "train_r2": 0.9370123479034133,
+        "holdout_r2": 0.9404411793785139,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "((x0+x0)+(x0+x0**3))",
+        "train_r2": 0.9971766778423785,
+        "holdout_r2": 0.9968241778988106,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "exponential_decay",
+      "planted_expression": "2.0*exp(-0.7*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.015896299800599593,
+      "law_seed": 13,
+      "classic": {
+        "expression": "sin(sin(x0))",
+        "train_r2": 0.012901446503929437,
+        "holdout_r2": 0.049869370353778475,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "exp(-(x0**0.5))",
+        "train_r2": 0.9962747941583556,
+        "holdout_r2": 0.9965264342184093,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9405052232338588,
+        "holdout_r2": 0.9469249069695399,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9959516634700817,
+        "holdout_r2": 0.9964252049302197,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "logarithm",
+      "planted_expression": "3.0*log(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.07548866518291535,
+      "law_seed": 14,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.6415855717134495,
+        "holdout_r2": 0.9478158420702087,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9975194921106754,
+        "holdout_r2": 0.9967968793880639,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9511644748682573,
+        "holdout_r2": 0.9478158420702087,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9975194921106754,
+        "holdout_r2": 0.9967968793880639,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "sine",
+      "planted_expression": "sin(2.0*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.0351625000777804,
+      "law_seed": 15,
+      "classic": {
+        "expression": "sin(x0**2)",
+        "train_r2": -0.06073744357451094,
+        "holdout_r2": 0.3656218891089975,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(2.0*(x0))",
+        "train_r2": 0.9975397301791132,
+        "holdout_r2": 0.9970463396461584,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "(x0-2)",
+        "train_r2": 0.7638056043779994,
+        "holdout_r2": 0.7461127199461075,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "(x0+sin(x0))",
+        "train_r2": 0.8546375264820992,
+        "holdout_r2": 0.8443602035477552,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "rational_saturation",
+      "planted_expression": "3.0*x0/(1.0+0.5*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.03407255832731402,
+      "law_seed": 16,
+      "classic": {
+        "expression": "x0+1",
+        "train_r2": 0.9469698867757502,
+        "holdout_r2": 0.9627343112698225,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sqrt(x0**0.5)",
+        "train_r2": 0.9971320633803508,
+        "holdout_r2": 0.9972635565722737,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9653774275543249,
+        "holdout_r2": 0.9627343112698225,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9955521396053515,
+        "holdout_r2": 0.9958656791107617,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "product",
+      "planted_expression": "x0*x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.08602140258808262,
+      "law_seed": 17,
+      "classic": {
+        "expression": "x0*x1",
+        "train_r2": 0.9977196243829897,
+        "holdout_r2": 0.9979537845801921,
+        "recovered": true,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0*x1",
+        "train_r2": 0.997771770300821,
+        "holdout_r2": 0.9979537845801921,
+        "recovered": true,
+        "n_candidates": 63
+      },
+      "beam_classic": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.9199160480705887,
+        "holdout_r2": 0.916381355707137,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.9199160480705887,
+        "holdout_r2": 0.916381355707137,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "ratio",
+      "planted_expression": "x0/x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.04730555592049435,
+      "law_seed": 18,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.10737825418248803,
+        "holdout_r2": 0.4051522926559895,
+        "recovered": false,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0/x1",
+        "train_r2": 0.9972318539393377,
+        "holdout_r2": 0.9973528575629559,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "(x1+1)",
+        "train_r2": 0.4699271391096508,
+        "holdout_r2": 0.5244586319812032,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "1/x1",
+        "train_r2": 0.5719854318968275,
+        "holdout_r2": 0.6144417598409053,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "linear",
+      "planted_expression": "3.0*x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.433290025448713,
+      "law_seed": 7,
+      "classic": {
+        "expression": "x0*2",
+        "train_r2": 0.5413669679796652,
+        "holdout_r2": 0.9975015938370848,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0",
+        "train_r2": 0.9973421952581719,
+        "holdout_r2": 0.9975015938370848,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9973421952581719,
+        "holdout_r2": 0.9975015938370848,
+        "recovered": true,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0",
+        "train_r2": 0.9973421952581719,
+        "holdout_r2": 0.9975015938370848,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "quadratic",
+      "planted_expression": "2.0*x0**2 + 1.0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 2.917563607990868,
+      "law_seed": 8,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.9966613572190348,
+        "holdout_r2": 0.9981080469683575,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9969785451607829,
+        "holdout_r2": 0.9981080469683575,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9374311533547773,
+        "holdout_r2": 0.9426127404897487,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9969785451607829,
+        "holdout_r2": 0.9981080469683575,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "cubic",
+      "planted_expression": "0.5*x0**3",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 7.04403980799865,
+      "law_seed": 9,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.4528677520362613,
+        "holdout_r2": 0.9676840807130904,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9975590354032976,
+        "holdout_r2": 0.9983487756966315,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8486535218224923,
+        "holdout_r2": 0.8298368660607965,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "(x0+x0**3)",
+        "train_r2": 0.9975896383972538,
+        "holdout_r2": 0.998291400540447,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "square_root",
+      "planted_expression": "4.0*sqrt(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.13655801659313968,
+      "law_seed": 10,
+      "classic": {
+        "expression": "x0+1",
+        "train_r2": 0.11598187856680131,
+        "holdout_r2": 0.9702073019732691,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**0.5",
+        "train_r2": 0.9973833088652432,
+        "holdout_r2": 0.9978459833998029,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9639559198026041,
+        "holdout_r2": 0.9702073019732691,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "sqrt(x0)",
+        "train_r2": 0.9973833088652432,
+        "holdout_r2": 0.9978459833998029,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "inverse",
+      "planted_expression": "1.2/x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.03752577647279516,
+      "law_seed": 11,
+      "classic": {
+        "expression": "sin(x0)**2",
+        "train_r2": -0.3531026577930787,
+        "holdout_r2": 0.005799818948497348,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "1/x0",
+        "train_r2": 0.997542824469404,
+        "holdout_r2": 0.9977598270470991,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "(x0+1)",
+        "train_r2": 0.4588108942628196,
+        "holdout_r2": 0.3802265526715264,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "1/x0",
+        "train_r2": 0.997542824469404,
+        "holdout_r2": 0.9977598270470991,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "power_2_5",
+      "planted_expression": "x0**2.5",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 4.783490116168414,
+      "law_seed": 12,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.8021552471268143,
+        "holdout_r2": 0.9902684300947079,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3/(1+x0)",
+        "train_r2": 0.9930222316249984,
+        "holdout_r2": 0.993037624648091,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "(x0+x0)",
+        "train_r2": 0.8974368162618237,
+        "holdout_r2": 0.9030700893162156,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "((x0+x0)+(x0+x0**3))",
+        "train_r2": 0.9937346692178858,
+        "holdout_r2": 0.9925601963888736,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "exponential_decay",
+      "planted_expression": "2.0*exp(-0.7*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.02069236385470594,
+      "law_seed": 13,
+      "classic": {
+        "expression": "sin(x0)**2",
+        "train_r2": -1.2051516715055022,
+        "holdout_r2": -0.007936637777310018,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0/(1+x0)",
+        "train_r2": 0.9797775182227334,
+        "holdout_r2": 0.9786756804880749,
+        "recovered": false,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.5836363786520502,
+        "holdout_r2": 0.5934777142550542,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "exp(-x0)",
+        "train_r2": 0.9708048876669956,
+        "holdout_r2": 0.961879176216575,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "logarithm",
+      "planted_expression": "3.0*log(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.14259816750148863,
+      "law_seed": 14,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.6494054377701611,
+        "holdout_r2": 0.8131410575059759,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9975123634615933,
+        "holdout_r2": 0.9969520990084456,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8159286969984721,
+        "holdout_r2": 0.8131410575059759,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9975123634615933,
+        "holdout_r2": 0.9969520990084456,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "sine",
+      "planted_expression": "sin(2.0*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.035524415735188955,
+      "law_seed": 15,
+      "classic": {
+        "expression": "sin(x0**2)",
+        "train_r2": -0.822013078817899,
+        "holdout_r2": 0.00043932973894433847,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(2.0*(x0))",
+        "train_r2": 0.9975267070694033,
+        "holdout_r2": 0.9964447635102753,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.00355793756590872,
+        "holdout_r2": -0.015515763697707463,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "exp(-x0)",
+        "train_r2": 0.0479978763570138,
+        "holdout_r2": -0.02048424195918841,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "rational_saturation",
+      "planted_expression": "3.0*x0/(1.0+0.5*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.05748552541248186,
+      "law_seed": 16,
+      "classic": {
+        "expression": "x0",
+        "train_r2": -2.50691331752928,
+        "holdout_r2": 0.8057945448341264,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(0.5*(x0**0.5))",
+        "train_r2": 0.9963506643035338,
+        "holdout_r2": 0.9959267687740555,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8249535717855637,
+        "holdout_r2": 0.8057945448341264,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9889863536924987,
+        "holdout_r2": 0.9913302576167915,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "product",
+      "planted_expression": "x0*x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 1.0150719994587465,
+      "law_seed": 17,
+      "classic": {
+        "expression": "x0*x1",
+        "train_r2": 0.9977166878941898,
+        "holdout_r2": 0.9979590391138445,
+        "recovered": true,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0*x1",
+        "train_r2": 0.9977625797256012,
+        "holdout_r2": 0.9979590391138445,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.8589629202180432,
+        "holdout_r2": 0.8551199561087017,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.8589629202180432,
+        "holdout_r2": 0.8551199561087017,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "ratio",
+      "planted_expression": "x0/x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.3234902578717059,
+      "law_seed": 18,
+      "classic": {
+        "expression": "sin(x0)+1",
+        "train_r2": -0.08579524527162419,
+        "holdout_r2": -0.10951466681265765,
+        "recovered": false,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0/x1",
+        "train_r2": 0.997229989134621,
+        "holdout_r2": 0.9842626975185061,
+        "recovered": false,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "(x1+x1)",
+        "train_r2": 0.1902916226334569,
+        "holdout_r2": 0.2511125535770943,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "1/x1",
+        "train_r2": 0.8379809187095948,
+        "holdout_r2": 0.488098586721161,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "linear",
+      "planted_expression": "3.0*x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.020780913362717337,
+      "law_seed": 17,
+      "classic": {
+        "expression": "x0**2+1",
+        "train_r2": 0.8057115354138399,
+        "holdout_r2": 0.9674472643884872,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0",
+        "train_r2": 0.9999106374767924,
+        "holdout_r2": 0.9998990440777527,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9999106374767924,
+        "holdout_r2": 0.9998990440777527,
+        "recovered": true,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0",
+        "train_r2": 0.9999106374767924,
+        "holdout_r2": 0.9998990440777527,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "quadratic",
+      "planted_expression": "2.0*x0**2 + 1.0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.05320598265528908,
+      "law_seed": 18,
+      "classic": {
+        "expression": "exp(x0)+1",
+        "train_r2": 0.9775615252034867,
+        "holdout_r2": 0.9799636325411083,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9998903122696631,
+        "holdout_r2": 0.9998902911283968,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9647894463047006,
+        "holdout_r2": 0.9706485995758865,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9998903122696631,
+        "holdout_r2": 0.9998902911283968,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "cubic",
+      "planted_expression": "0.5*x0**3",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.03864029950785705,
+      "law_seed": 19,
+      "classic": {
+        "expression": "x0**2",
+        "train_r2": 0.8591496279703661,
+        "holdout_r2": 0.9794988493749742,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9999260905392895,
+        "holdout_r2": 0.9998968436725095,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8937209085200023,
+        "holdout_r2": 0.9023073973708817,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9999260905392895,
+        "holdout_r2": 0.9998968436725095,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "square_root",
+      "planted_expression": "4.0*sqrt(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.011221539354958716,
+      "law_seed": 20,
+      "classic": {
+        "expression": "x0**2+1",
+        "train_r2": -1.1470319546329657,
+        "holdout_r2": 0.9196632487648764,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**0.5",
+        "train_r2": 0.9999061178078793,
+        "holdout_r2": 0.9999094012235631,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9888785368457322,
+        "holdout_r2": 0.9883692381308898,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "sqrt(x0)",
+        "train_r2": 0.9999061178078793,
+        "holdout_r2": 0.9999094012235631,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "inverse",
+      "planted_expression": "1.2/x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.0053142023137138636,
+      "law_seed": 21,
+      "classic": {
+        "expression": "sin(x0)",
+        "train_r2": -0.30869106351885667,
+        "holdout_r2": -0.01713767691944046,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9998903153859938,
+        "holdout_r2": 0.9998423571460919,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "(x0+1)",
+        "train_r2": 0.7953297080910497,
+        "holdout_r2": 0.7782898998024536,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9998903153859938,
+        "holdout_r2": 0.9998423571460919,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "power_2_5",
+      "planted_expression": "x0**2.5",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.044467669253930094,
+      "law_seed": 22,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.8044292509067723,
+        "holdout_r2": 0.9914163131583825,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3/(1+x0)",
+        "train_r2": 0.9986536841322641,
+        "holdout_r2": 0.9981825650943266,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9361291759888458,
+        "holdout_r2": 0.9128719473889789,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "((x0+x0)+(x0+x0**3))",
+        "train_r2": 0.9997153986917954,
+        "holdout_r2": 0.9995446608392212,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "exponential_decay",
+      "planted_expression": "2.0*exp(-0.7*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.003240732628864228,
+      "law_seed": 23,
+      "classic": {
+        "expression": "sin(sin(x0))",
+        "train_r2": -0.008326505147768115,
+        "holdout_r2": 0.14740464235719652,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "exp(-(x0**0.5))",
+        "train_r2": 0.9989171975475925,
+        "holdout_r2": 0.9990534906617392,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9522086496016864,
+        "holdout_r2": 0.9542862264845919,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9988363435081056,
+        "holdout_r2": 0.9989282034258995,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "logarithm",
+      "planted_expression": "3.0*log(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.013584061200747361,
+      "law_seed": 24,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.6448620184981539,
+        "holdout_r2": 0.9568968820045434,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9999016970236302,
+        "holdout_r2": 0.9999166078596852,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9550130010136658,
+        "holdout_r2": 0.9568968820045434,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9999016970236302,
+        "holdout_r2": 0.9999166078596852,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "sine",
+      "planted_expression": "sin(2.0*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.007460727070854606,
+      "law_seed": 25,
+      "classic": {
+        "expression": "sin(x0**2)",
+        "train_r2": 0.09757026738260544,
+        "holdout_r2": 0.3089527275263889,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(2.0*(x0))",
+        "train_r2": 0.9999010958535606,
+        "holdout_r2": 0.9998952581307242,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8119525686018089,
+        "holdout_r2": 0.7037009014447964,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "(x0+sin(x0))",
+        "train_r2": 0.8725161847722893,
+        "holdout_r2": 0.8560206002021786,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "rational_saturation",
+      "planted_expression": "3.0*x0/(1.0+0.5*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.006551283198423395,
+      "law_seed": 26,
+      "classic": {
+        "expression": "x0+1",
+        "train_r2": 0.9369705009197764,
+        "holdout_r2": 0.9662876427983309,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sqrt(x0**0.5)",
+        "train_r2": 0.9993991532079408,
+        "holdout_r2": 0.999313488817977,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9697831512932554,
+        "holdout_r2": 0.9662876427983309,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9977837525665842,
+        "holdout_r2": 0.9979862952281545,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "product",
+      "planted_expression": "x0*x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.018842777476985675,
+      "law_seed": 27,
+      "classic": {
+        "expression": "x0*x1",
+        "train_r2": 0.999888819988288,
+        "holdout_r2": 0.9999291459828806,
+        "recovered": true,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0*x1",
+        "train_r2": 0.9998890832689598,
+        "holdout_r2": 0.9999291459828806,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.9240672728146493,
+        "holdout_r2": 0.9243867482596636,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.9240672728146493,
+        "holdout_r2": 0.9243867482596636,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "ratio",
+      "planted_expression": "x0/x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.009952580941519872,
+      "law_seed": 28,
+      "classic": {
+        "expression": "x0",
+        "train_r2": -0.06089892237576744,
+        "holdout_r2": 0.30696270431999806,
+        "recovered": false,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0/x1",
+        "train_r2": 0.9999029058300866,
+        "holdout_r2": 0.9998114606495955,
+        "recovered": true,
+        "n_candidates": 63
+      },
+      "beam_classic": {
+        "expression": "x1",
+        "train_r2": 0.5139561989576864,
+        "holdout_r2": 0.4814949977403783,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "1/x1",
+        "train_r2": 0.6486155862998992,
+        "holdout_r2": 0.5211349864781485,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "linear",
+      "planted_expression": "3.0*x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.08229241691636065,
+      "law_seed": 17,
+      "classic": {
+        "expression": "x0*2",
+        "train_r2": 0.527683274453437,
+        "holdout_r2": 0.9998990440777527,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0",
+        "train_r2": 0.9999106374767924,
+        "holdout_r2": 0.9998990440777527,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9999106374767924,
+        "holdout_r2": 0.9998990440777527,
+        "recovered": true,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0",
+        "train_r2": 0.9999106374767924,
+        "holdout_r2": 0.9998990440777527,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "quadratic",
+      "planted_expression": "2.0*x0**2 + 1.0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.6172826484385601,
+      "law_seed": 18,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.9996122684462321,
+        "holdout_r2": 0.9998914653326316,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9998902278328381,
+        "holdout_r2": 0.9998914653326316,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9358262663722174,
+        "holdout_r2": 0.9464219697817728,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9998902278328381,
+        "holdout_r2": 0.9998914653326316,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "cubic",
+      "planted_expression": "0.5*x0**3",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 1.421028039946425,
+      "law_seed": 19,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.4724630701261452,
+        "holdout_r2": 0.9727363297576948,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9999260691637304,
+        "holdout_r2": 0.9998970408808524,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "(x0-1)",
+        "train_r2": 0.836325413139569,
+        "holdout_r2": 0.8500072603566879,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9999260691637304,
+        "holdout_r2": 0.9998970408808524,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "square_root",
+      "planted_expression": "4.0*sqrt(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.02805064968506944,
+      "law_seed": 20,
+      "classic": {
+        "expression": "x0+1",
+        "train_r2": 0.17247128928368094,
+        "holdout_r2": 0.9606519357377994,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**0.5",
+        "train_r2": 0.9999061775797953,
+        "holdout_r2": 0.9999124856844928,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9678706375557357,
+        "holdout_r2": 0.9606519357377995,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "sqrt(x0)",
+        "train_r2": 0.9999061775797953,
+        "holdout_r2": 0.9999124856844928,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "inverse",
+      "planted_expression": "1.2/x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.015136759284559405,
+      "law_seed": 21,
+      "classic": {
+        "expression": "sin(exp(x0))",
+        "train_r2": -0.0787595381305275,
+        "holdout_r2": -0.12569719978384364,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9998900783175513,
+        "holdout_r2": 0.9996207678776177,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "((x0+x0)+(x0+2))",
+        "train_r2": 0.3430728154717203,
+        "holdout_r2": 0.08150498215186153,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9998900783175513,
+        "holdout_r2": 0.9996207678776177,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "power_2_5",
+      "planted_expression": "x0**2.5",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.9122218837752855,
+      "law_seed": 22,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.8047067611540853,
+        "holdout_r2": 0.9875376995534652,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3/(1+x0)",
+        "train_r2": 0.9947920284194337,
+        "holdout_r2": 0.9926672713626782,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8932372422550163,
+        "holdout_r2": 0.8482970670665635,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "((x0+x0)+(x0+x0**3))",
+        "train_r2": 0.9951132961050407,
+        "holdout_r2": 0.9934375887133944,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "exponential_decay",
+      "planted_expression": "2.0*exp(-0.7*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.004153785811351766,
+      "law_seed": 23,
+      "classic": {
+        "expression": "sin(x0)**2",
+        "train_r2": -1.1968716513004085,
+        "holdout_r2": -0.005323723068285435,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0/(1+x0)",
+        "train_r2": 0.9863010174711572,
+        "holdout_r2": 0.9819613705852731,
+        "recovered": false,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.6289654800666595,
+        "holdout_r2": 0.6185325261234735,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "exp(-x0)",
+        "train_r2": 0.9724119502810484,
+        "holdout_r2": 0.9697116616973654,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "logarithm",
+      "planted_expression": "3.0*log(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.02443847146875391,
+      "law_seed": 24,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.691965165383836,
+        "holdout_r2": 0.8600425047173483,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9999017011782854,
+        "holdout_r2": 0.9999124395859568,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8407228502052289,
+        "holdout_r2": 0.8600425047173483,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9999017011782854,
+        "holdout_r2": 0.9999124395859568,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "sine",
+      "planted_expression": "sin(2.0*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.0066922998002964945,
+      "law_seed": 25,
+      "classic": {
+        "expression": "sin(x0**2)",
+        "train_r2": -0.5390840529825391,
+        "holdout_r2": -0.026601892325845755,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(2.0*(x0))",
+        "train_r2": 0.9999004769937272,
+        "holdout_r2": 0.9999153966588206,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "((x0+x0)+(x0-2))",
+        "train_r2": 0.016307593683655086,
+        "holdout_r2": 0.0008588842192129853,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "exp(-x0)",
+        "train_r2": 0.06814728613412258,
+        "holdout_r2": 0.06650305801030354,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "rational_saturation",
+      "planted_expression": "3.0*x0/(1.0+0.5*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.010295344650964608,
+      "law_seed": 26,
+      "classic": {
+        "expression": "x0",
+        "train_r2": -4.313787395992483,
+        "holdout_r2": 0.8222796045872568,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(0.5*(x0**0.5))",
+        "train_r2": 0.9977268399667507,
+        "holdout_r2": 0.997843961327747,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8149300083609207,
+        "holdout_r2": 0.8222796045872568,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.991006373576127,
+        "holdout_r2": 0.9942475810902213,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "product",
+      "planted_expression": "x0*x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.2251049122444033,
+      "law_seed": 27,
+      "classic": {
+        "expression": "x0*x1",
+        "train_r2": 0.9998888110093,
+        "holdout_r2": 0.9999286513367756,
+        "recovered": true,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0*x1",
+        "train_r2": 0.999889113753436,
+        "holdout_r2": 0.9999286513367756,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.869102432100801,
+        "holdout_r2": 0.8689855826272592,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.869102432100801,
+        "holdout_r2": 0.8689855826272592,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "ratio",
+      "planted_expression": "x0/x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.06826499723472676,
+      "law_seed": 28,
+      "classic": {
+        "expression": "sin(x0)+1",
+        "train_r2": -0.06325018710025931,
+        "holdout_r2": -0.3348419800034306,
+        "recovered": false,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0/x1",
+        "train_r2": 0.9998990600744215,
+        "holdout_r2": 0.998786760051248,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "(x1+1)",
+        "train_r2": 0.18844295961093327,
+        "holdout_r2": -0.1753852173793191,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "1/x1",
+        "train_r2": 0.7035388326642513,
+        "holdout_r2": 0.36654434435061045,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "linear",
+      "planted_expression": "3.0*x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.10390456681358669,
+      "law_seed": 17,
+      "classic": {
+        "expression": "x0**2+1",
+        "train_r2": 0.806326167063729,
+        "holdout_r2": 0.9656154629518172,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0",
+        "train_r2": 0.9977940715456234,
+        "holdout_r2": 0.9974943779075844,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9977940715456234,
+        "holdout_r2": 0.9974943779075844,
+        "recovered": true,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0",
+        "train_r2": 0.9977940715456234,
+        "holdout_r2": 0.9974943779075844,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "quadratic",
+      "planted_expression": "2.0*x0**2 + 1.0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.2660299132764454,
+      "law_seed": 18,
+      "classic": {
+        "expression": "exp(x0)+1",
+        "train_r2": 0.9753560021804202,
+        "holdout_r2": 0.974727196022961,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9972392695452545,
+        "holdout_r2": 0.99726641630512,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9614023558004854,
+        "holdout_r2": 0.9714170832264049,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9972392695452545,
+        "holdout_r2": 0.99726641630512,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "cubic",
+      "planted_expression": "0.5*x0**3",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.19320149753928526,
+      "law_seed": 19,
+      "classic": {
+        "expression": "x0**2",
+        "train_r2": 0.8584874282102554,
+        "holdout_r2": 0.9762482225348278,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9981480397529859,
+        "holdout_r2": 0.9974196282640929,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "((x0+x0)+(x0-2))",
+        "train_r2": 0.891656057680681,
+        "holdout_r2": 0.898636059689866,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9981480397529859,
+        "holdout_r2": 0.9974196282640929,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "square_root",
+      "planted_expression": "4.0*sqrt(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.05610769677479358,
+      "law_seed": 20,
+      "classic": {
+        "expression": "x0**2+1",
+        "train_r2": -1.148511784049739,
+        "holdout_r2": 0.9180539453265516,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**0.5",
+        "train_r2": 0.9976597103817475,
+        "holdout_r2": 0.9977274893425317,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.985817887177954,
+        "holdout_r2": 0.986361697419266,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "sqrt(x0)",
+        "train_r2": 0.9976597103817475,
+        "holdout_r2": 0.9977274893425317,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "inverse",
+      "planted_expression": "1.2/x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.026571011568569322,
+      "law_seed": 21,
+      "classic": {
+        "expression": "sin(x0)",
+        "train_r2": -0.31017464064461553,
+        "holdout_r2": -0.018442886440292794,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9972489579143214,
+        "holdout_r2": 0.9960493156793292,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.7932641952624817,
+        "holdout_r2": 0.7723586569289098,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9972489579143214,
+        "holdout_r2": 0.9960493156793292,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "power_2_5",
+      "planted_expression": "x0**2.5",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.2223383462696505,
+      "law_seed": 22,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.805038528485095,
+        "holdout_r2": 0.9882403066391336,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3/(1+x0)",
+        "train_r2": 0.9965724808696359,
+        "holdout_r2": 0.9952714670721959,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9352689524554499,
+        "holdout_r2": 0.90863041681126,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "((x0+x0)+(x0+x0**3))",
+        "train_r2": 0.9975899551056829,
+        "holdout_r2": 0.9969216594067165,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "exponential_decay",
+      "planted_expression": "2.0*exp(-0.7*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.016203663144321142,
+      "law_seed": 23,
+      "classic": {
+        "expression": "sin(sin(x0))",
+        "train_r2": -0.015303204896556677,
+        "holdout_r2": 0.14375569687430856,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "exp(-(x0**0.5))",
+        "train_r2": 0.9968855647759661,
+        "holdout_r2": 0.9969624138956187,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9470092783026008,
+        "holdout_r2": 0.9513929682731668,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9965257565330371,
+        "holdout_r2": 0.996739620720963,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "logarithm",
+      "planted_expression": "3.0*log(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.06792030600373682,
+      "law_seed": 24,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.6451919345685797,
+        "holdout_r2": 0.955153160690532,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9975451319122062,
+        "holdout_r2": 0.9979198003145009,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.953355140272661,
+        "holdout_r2": 0.955153160690532,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9975451319122062,
+        "holdout_r2": 0.9979198003145009,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "sine",
+      "planted_expression": "sin(2.0*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.03730363535427303,
+      "law_seed": 25,
+      "classic": {
+        "expression": "sin(x0**2)",
+        "train_r2": 0.1070474475143286,
+        "holdout_r2": 0.3083121196200963,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(2.0*(x0))",
+        "train_r2": 0.9975541932748959,
+        "holdout_r2": 0.9973911544951679,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8093928676334468,
+        "holdout_r2": 0.6997672314368972,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "(x0+sin(x0))",
+        "train_r2": 0.870651043308574,
+        "holdout_r2": 0.8517594314583649,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "rational_saturation",
+      "planted_expression": "3.0*x0/(1.0+0.5*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.032756415992116976,
+      "law_seed": 26,
+      "classic": {
+        "expression": "x0+1",
+        "train_r2": 0.9347173831416169,
+        "holdout_r2": 0.9635300640404447,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sqrt(x0**0.5)",
+        "train_r2": 0.9967140570047694,
+        "holdout_r2": 0.9968837429233255,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9670488289181276,
+        "holdout_r2": 0.9635300640404447,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9951632892569041,
+        "holdout_r2": 0.9956641205657278,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "product",
+      "planted_expression": "x0*x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.09421388738492838,
+      "law_seed": 27,
+      "classic": {
+        "expression": "x0*x1",
+        "train_r2": 0.9972174903810658,
+        "holdout_r2": 0.998219073487573,
+        "recovered": true,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0*x1",
+        "train_r2": 0.9972240795241156,
+        "holdout_r2": 0.998219073487573,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "((x0+x0)+(x1+x1))",
+        "train_r2": 0.9225913087404074,
+        "holdout_r2": 0.9215248071145732,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.9225913087404073,
+        "holdout_r2": 0.9215248071145732,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "ratio",
+      "planted_expression": "x0/x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.04976290470759936,
+      "law_seed": 28,
+      "classic": {
+        "expression": "x0",
+        "train_r2": -0.04608020098666432,
+        "holdout_r2": 0.28280606792280694,
+        "recovered": false,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0/x1",
+        "train_r2": 0.9976139194974841,
+        "holdout_r2": 0.9952866306013545,
+        "recovered": true,
+        "n_candidates": 63
+      },
+      "beam_classic": {
+        "expression": "x1",
+        "train_r2": 0.5098103238150367,
+        "holdout_r2": 0.48876756609933103,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "1/x1",
+        "train_r2": 0.6422149905794113,
+        "holdout_r2": 0.5295288139666267,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "linear",
+      "planted_expression": "3.0*x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.4114620845818032,
+      "law_seed": 17,
+      "classic": {
+        "expression": "x0*2",
+        "train_r2": 0.5232027052787181,
+        "holdout_r2": 0.9974943779075844,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0",
+        "train_r2": 0.9977940715456234,
+        "holdout_r2": 0.9974943779075844,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9977940715456234,
+        "holdout_r2": 0.9974943779075844,
+        "recovered": true,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0",
+        "train_r2": 0.9977940715456234,
+        "holdout_r2": 0.9974943779075844,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "quadratic",
+      "planted_expression": "2.0*x0**2 + 1.0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 3.0864132421928008,
+      "law_seed": 18,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.9968688868642136,
+        "holdout_r2": 0.9972922686678752,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9972380489431217,
+        "holdout_r2": 0.9972922686678752,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9320887580401438,
+        "holdout_r2": 0.9483639620539156,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9972380489431217,
+        "holdout_r2": 0.9972922686678752,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "cubic",
+      "planted_expression": "0.5*x0**3",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 7.1051401997321255,
+      "law_seed": 19,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.472543269287813,
+        "holdout_r2": 0.9692389022247839,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9981478818166928,
+        "holdout_r2": 0.997426014219597,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8340936250629756,
+        "holdout_r2": 0.8460167438756667,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9981478818166928,
+        "holdout_r2": 0.997426014219597,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "square_root",
+      "planted_expression": "4.0*sqrt(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.1402532484253472,
+      "law_seed": 20,
+      "classic": {
+        "expression": "x0+1",
+        "train_r2": 0.16821797368574765,
+        "holdout_r2": 0.9586342326084226,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**0.5",
+        "train_r2": 0.9976635515529627,
+        "holdout_r2": 0.9978051895943286,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9639028329247084,
+        "holdout_r2": 0.9586342326084227,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "sqrt(x0)",
+        "train_r2": 0.9976635515529627,
+        "holdout_r2": 0.9978051895943286,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "inverse",
+      "planted_expression": "1.2/x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.07568379642279703,
+      "law_seed": 21,
+      "classic": {
+        "expression": "sin(exp(x0))",
+        "train_r2": -0.07902380966091682,
+        "holdout_r2": -0.12998849874974128,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9972481560276713,
+        "holdout_r2": 0.9906575781606797,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "(x0+x0)",
+        "train_r2": 0.34049912561144746,
+        "holdout_r2": 0.0646454437119468,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9972481560276713,
+        "holdout_r2": 0.9906575781606797,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "power_2_5",
+      "planted_expression": "x0**2.5",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 4.561109418876427,
+      "law_seed": 22,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.8021774589909043,
+        "holdout_r2": 0.9840405022337045,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3/(1+x0)",
+        "train_r2": 0.9928492409825852,
+        "holdout_r2": 0.9893145964307577,
+        "recovered": false,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.892849129499804,
+        "holdout_r2": 0.8433436608081162,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "((x0+x0)+(x0+x0**3))",
+        "train_r2": 0.9927354600911178,
+        "holdout_r2": 0.991042715634623,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "exponential_decay",
+      "planted_expression": "2.0*exp(-0.7*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.020768929056758832,
+      "law_seed": 23,
+      "classic": {
+        "expression": "sin(x0)**2",
+        "train_r2": -1.1900818344713615,
+        "holdout_r2": -0.005766360860744779,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0/(1+x0)",
+        "train_r2": 0.9827403909927607,
+        "holdout_r2": 0.978918681589084,
+        "recovered": false,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.6211726991922344,
+        "holdout_r2": 0.6167858464179953,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "exp(-x0)",
+        "train_r2": 0.9715401470794451,
+        "holdout_r2": 0.9672539859601332,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "logarithm",
+      "planted_expression": "3.0*log(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.12219235734376954,
+      "law_seed": 24,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.6923166003025508,
+        "holdout_r2": 0.8577770892801835,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.997544677900261,
+        "holdout_r2": 0.9978187774119074,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8394189519855517,
+        "holdout_r2": 0.8577770892801835,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.997544677900261,
+        "holdout_r2": 0.9978187774119074,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "sine",
+      "planted_expression": "sin(2.0*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.03346149900148247,
+      "law_seed": 25,
+      "classic": {
+        "expression": "sin(x0**2)",
+        "train_r2": -0.5329093750676677,
+        "holdout_r2": -0.026448303706434917,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(2.0*(x0))",
+        "train_r2": 0.9975329748697918,
+        "holdout_r2": 0.9978754143116049,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "(x0+x0)",
+        "train_r2": 0.017066724204743755,
+        "holdout_r2": 0.00041728783160077665,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "exp(-x0)",
+        "train_r2": 0.06946152964590202,
+        "holdout_r2": 0.06668239214867,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "rational_saturation",
+      "planted_expression": "3.0*x0/(1.0+0.5*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.05147672325482305,
+      "law_seed": 26,
+      "classic": {
+        "expression": "x0",
+        "train_r2": -4.2941292738296895,
+        "holdout_r2": 0.8199702143650045,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(0.5*(x0**0.5))",
+        "train_r2": 0.9948432174106439,
+        "holdout_r2": 0.9959622155535852,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "(x0-1)",
+        "train_r2": 0.8124175416609917,
+        "holdout_r2": 0.8199702143650044,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9877588311552308,
+        "holdout_r2": 0.9918967984211892,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "product",
+      "planted_expression": "x0*x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 1.1255245612220166,
+      "law_seed": 27,
+      "classic": {
+        "expression": "x0*x1",
+        "train_r2": 0.9972163652119255,
+        "holdout_r2": 0.9982073270413686,
+        "recovered": true,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0*x1",
+        "train_r2": 0.9972239444614849,
+        "holdout_r2": 0.9982073270413686,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.8679224476132584,
+        "holdout_r2": 0.8656258674350708,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.8679224476132584,
+        "holdout_r2": 0.8656258674350708,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "ratio",
+      "planted_expression": "x0/x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.3413249861736338,
+      "law_seed": 28,
+      "classic": {
+        "expression": "sin(x0)+1",
+        "train_r2": -0.0641053417277675,
+        "holdout_r2": -0.35430097742603683,
+        "recovered": false,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0/x1",
+        "train_r2": 0.9974830180035902,
+        "holdout_r2": 0.9707523566610722,
+        "recovered": false,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "x1",
+        "train_r2": 0.19078784280007888,
+        "holdout_r2": -0.1652464504377762,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "1/x1",
+        "train_r2": 0.6998014249833386,
+        "holdout_r2": 0.37930436342961826,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "linear",
+      "planted_expression": "3.0*x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.022346210552824194,
+      "law_seed": 27,
+      "classic": {
+        "expression": "x0**2+1",
+        "train_r2": 0.8458373523387617,
+        "holdout_r2": 0.9688383912666139,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0",
+        "train_r2": 0.9998889581845375,
+        "holdout_r2": 0.9999078676883977,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9998889581845375,
+        "holdout_r2": 0.9999078676883977,
+        "recovered": true,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0",
+        "train_r2": 0.9998889581845375,
+        "holdout_r2": 0.9999078676883977,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "quadratic",
+      "planted_expression": "2.0*x0**2 + 1.0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.05425306864451245,
+      "law_seed": 28,
+      "classic": {
+        "expression": "exp(x0)+1",
+        "train_r2": 0.9807013103405252,
+        "holdout_r2": 0.9843350826309675,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9999031458320919,
+        "holdout_r2": 0.9998804293203218,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9698524769965261,
+        "holdout_r2": 0.9659338626398982,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9999031458320919,
+        "holdout_r2": 0.9998804293203218,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "cubic",
+      "planted_expression": "0.5*x0**3",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.037396471007233985,
+      "law_seed": 29,
+      "classic": {
+        "expression": "x0**2",
+        "train_r2": 0.8613905256310733,
+        "holdout_r2": 0.9786911076682351,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9999097089195236,
+        "holdout_r2": 0.9999020223747789,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8889662156413757,
+        "holdout_r2": 0.8947761054142345,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9999097089195236,
+        "holdout_r2": 0.9999020223747789,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "square_root",
+      "planted_expression": "4.0*sqrt(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.011276732587458227,
+      "law_seed": 30,
+      "classic": {
+        "expression": "x0*2",
+        "train_r2": -1.277065981506106,
+        "holdout_r2": 0.9874213644555898,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**0.5",
+        "train_r2": 0.999906950690117,
+        "holdout_r2": 0.9999106851238065,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.988811410604424,
+        "holdout_r2": 0.9874213644555898,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "sqrt(x0)",
+        "train_r2": 0.999906950690117,
+        "holdout_r2": 0.9999106851238065,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "inverse",
+      "planted_expression": "1.2/x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.004874592067175413,
+      "law_seed": 31,
+      "classic": {
+        "expression": "sin(sin(x0))",
+        "train_r2": -0.23117141376799055,
+        "holdout_r2": 0.022814859702238177,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9999051240694471,
+        "holdout_r2": 0.9998751874522295,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8119325168060136,
+        "holdout_r2": 0.7924023908731075,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9999051240694471,
+        "holdout_r2": 0.9998751874522295,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "power_2_5",
+      "planted_expression": "x0**2.5",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.04597076221951846,
+      "law_seed": 32,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.8268572331490722,
+        "holdout_r2": 0.9945511612596344,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3/(1+x0)",
+        "train_r2": 0.9987500570649313,
+        "holdout_r2": 0.9988511922976822,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9340635447583595,
+        "holdout_r2": 0.9410127457863541,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "((x0+x0)+(x0+x0**3))",
+        "train_r2": 0.9996732678203698,
+        "holdout_r2": 0.99964896605036,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "exponential_decay",
+      "planted_expression": "2.0*exp(-0.7*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.003225725027327926,
+      "law_seed": 33,
+      "classic": {
+        "expression": "sin(sin(x0))",
+        "train_r2": -0.02308345185765548,
+        "holdout_r2": 0.01920226228814348,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9988393092559511,
+        "holdout_r2": 0.9989449748076771,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "(x0+1)",
+        "train_r2": 0.9523208576571237,
+        "holdout_r2": 0.9520361893268248,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9988393092559511,
+        "holdout_r2": 0.9989449748076771,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "logarithm",
+      "planted_expression": "3.0*log(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.014118539525641141,
+      "law_seed": 34,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.6727462956510841,
+        "holdout_r2": 0.9484433277518708,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9999063215397145,
+        "holdout_r2": 0.9999094984307678,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9458087299056088,
+        "holdout_r2": 0.9484433277518708,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9999063215397145,
+        "holdout_r2": 0.9999094984307678,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "sine",
+      "planted_expression": "sin(2.0*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.0075198949716295885,
+      "law_seed": 35,
+      "classic": {
+        "expression": "sin(x0**2)",
+        "train_r2": -0.022906362715318762,
+        "holdout_r2": 0.4306691276205601,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(2.0*(x0))",
+        "train_r2": 0.9998943926112038,
+        "holdout_r2": 0.9998909163976498,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8327033575907437,
+        "holdout_r2": 0.7646183837359248,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "(x0+sin(x0))",
+        "train_r2": 0.8718426010093321,
+        "holdout_r2": 0.868436805831993,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "rational_saturation",
+      "planted_expression": "3.0*x0/(1.0+0.5*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.006399533323232171,
+      "law_seed": 36,
+      "classic": {
+        "expression": "x0+1",
+        "train_r2": 0.9485807339410548,
+        "holdout_r2": 0.9689336865077717,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sqrt(x0**0.5)",
+        "train_r2": 0.9994506766587555,
+        "holdout_r2": 0.9994206499350714,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9669905644613513,
+        "holdout_r2": 0.9689336865077717,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9973010490337175,
+        "holdout_r2": 0.9979526353933419,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "product",
+      "planted_expression": "x0*x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.016468250118407,
+      "law_seed": 37,
+      "classic": {
+        "expression": "x0*x1",
+        "train_r2": 0.9998988710591736,
+        "holdout_r2": 0.9999249431851894,
+        "recovered": true,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0*x1",
+        "train_r2": 0.9998996973722604,
+        "holdout_r2": 0.9999249431851894,
+        "recovered": true,
+        "n_candidates": 63
+      },
+      "beam_classic": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.9188708481921428,
+        "holdout_r2": 0.9101266102591551,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.9188708481921428,
+        "holdout_r2": 0.9101266102591551,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "ratio",
+      "planted_expression": "x0/x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.009076832434251659,
+      "law_seed": 38,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.13458389072666133,
+        "holdout_r2": 0.29459285068108476,
+        "recovered": false,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0/x1",
+        "train_r2": 0.9998900841542991,
+        "holdout_r2": 0.9999133437006794,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "(x1+1)",
+        "train_r2": 0.4826035270491803,
+        "holdout_r2": 0.4570508076026124,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "1/x1",
+        "train_r2": 0.6025963204786402,
+        "holdout_r2": 0.5854194997865223,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "linear",
+      "planted_expression": "3.0*x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.0884909937891838,
+      "law_seed": 27,
+      "classic": {
+        "expression": "x0*2",
+        "train_r2": 0.5394543131301344,
+        "holdout_r2": 0.9999078676883977,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0",
+        "train_r2": 0.9998889581845375,
+        "holdout_r2": 0.9999078676883977,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9998889581845375,
+        "holdout_r2": 0.9999078676883977,
+        "recovered": true,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0",
+        "train_r2": 0.9998889581845375,
+        "holdout_r2": 0.9999078676883977,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "quadratic",
+      "planted_expression": "2.0*x0**2 + 1.0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.6324244240591314,
+      "law_seed": 28,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.9996254906607737,
+        "holdout_r2": 0.9998807443890995,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9999032775381783,
+        "holdout_r2": 0.9998807443890995,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9456699383593136,
+        "holdout_r2": 0.9386726852139387,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9999032775381783,
+        "holdout_r2": 0.9998807443890995,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "cubic",
+      "planted_expression": "0.5*x0**3",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 1.3805068681457846,
+      "law_seed": 29,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.4944897253860029,
+        "holdout_r2": 0.9725920534110978,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9999096892108205,
+        "holdout_r2": 0.999903440884673,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8301244754502751,
+        "holdout_r2": 0.8410501608534153,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9999096892108205,
+        "holdout_r2": 0.999903440884673,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "square_root",
+      "planted_expression": "4.0*sqrt(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.027977472828004654,
+      "law_seed": 30,
+      "classic": {
+        "expression": "x0+1",
+        "train_r2": 0.17459945251540554,
+        "holdout_r2": 0.9612244610000122,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**0.5",
+        "train_r2": 0.9999070206652012,
+        "holdout_r2": 0.9999163323028255,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9680605515730989,
+        "holdout_r2": 0.9612244610000122,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "sqrt(x0)",
+        "train_r2": 0.9999070206652012,
+        "holdout_r2": 0.9999163323028255,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "inverse",
+      "planted_expression": "1.2/x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.009637801599186615,
+      "law_seed": 31,
+      "classic": {
+        "expression": "sin(x0)**2",
+        "train_r2": -0.22849205291682329,
+        "holdout_r2": 0.01842535307114357,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9999050219053816,
+        "holdout_r2": 0.9999439283680174,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.36959644303002137,
+        "holdout_r2": 0.20930679591209067,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9999050219053816,
+        "holdout_r2": 0.9999439283680174,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "power_2_5",
+      "planted_expression": "x0**2.5",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.9452586089220718,
+      "law_seed": 32,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.8112749542291722,
+        "holdout_r2": 0.9924329793890186,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3/(1+x0)",
+        "train_r2": 0.9952448164537087,
+        "holdout_r2": 0.9955208360541472,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8911030882155098,
+        "holdout_r2": 0.9010969906347088,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "((x0+x0)+(x0+x0**3))",
+        "train_r2": 0.9956768960719196,
+        "holdout_r2": 0.9957816788584651,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "exponential_decay",
+      "planted_expression": "2.0*exp(-0.7*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.004282433410259187,
+      "law_seed": 33,
+      "classic": {
+        "expression": "sin(x0)**2",
+        "train_r2": -1.079734543664041,
+        "holdout_r2": 0.01958531325584212,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0/(1+x0)",
+        "train_r2": 0.986930449898804,
+        "holdout_r2": 0.9884009035448752,
+        "recovered": false,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "((x0+x0)+(2+2))",
+        "train_r2": 0.6093983138299895,
+        "holdout_r2": 0.6059338539732595,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "exp(-x0)",
+        "train_r2": 0.9739849182491943,
+        "holdout_r2": 0.9769358762513892,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "logarithm",
+      "planted_expression": "3.0*log(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.027171699889590516,
+      "law_seed": 34,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.6057015444720204,
+        "holdout_r2": 0.7993728882019004,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9999063803998437,
+        "holdout_r2": 0.9999092177013392,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.780106316904318,
+        "holdout_r2": 0.7993728882019004,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9999063803998437,
+        "holdout_r2": 0.9999092177013392,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "sine",
+      "planted_expression": "sin(2.0*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.006973882719088382,
+      "law_seed": 35,
+      "classic": {
+        "expression": "sin(x0)**2",
+        "train_r2": -0.7283640129822893,
+        "holdout_r2": -0.018556538809549217,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(2.0*(x0))",
+        "train_r2": 0.9998944105188521,
+        "holdout_r2": 0.9998831432166904,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "(x0+1)",
+        "train_r2": 0.060701179482359535,
+        "holdout_r2": -0.05051113582985156,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "exp(-x0)",
+        "train_r2": 0.08273879036237475,
+        "holdout_r2": 0.036396712931437314,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "rational_saturation",
+      "planted_expression": "3.0*x0/(1.0+0.5*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.010599586544983686,
+      "law_seed": 36,
+      "classic": {
+        "expression": "x0",
+        "train_r2": -2.8711468933467525,
+        "holdout_r2": 0.8252911073729219,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(0.5*(x0**0.5))",
+        "train_r2": 0.9983824281386154,
+        "holdout_r2": 0.9979674656205576,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8019047159910315,
+        "holdout_r2": 0.8252911073729219,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9891344636090978,
+        "holdout_r2": 0.9934113955136161,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "product",
+      "planted_expression": "x0*x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.1920860196235674,
+      "law_seed": 37,
+      "classic": {
+        "expression": "x0*x1",
+        "train_r2": 0.9998988808509714,
+        "holdout_r2": 0.9999259546264343,
+        "recovered": true,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0*x1",
+        "train_r2": 0.9998997420772022,
+        "holdout_r2": 0.9999259546264343,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.8535997793840425,
+        "holdout_r2": 0.839941240787381,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.8535997793840425,
+        "holdout_r2": 0.839941240787381,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "ratio",
+      "planted_expression": "x0/x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.04298365930894856,
+      "law_seed": 38,
+      "classic": {
+        "expression": "sin(x0)+1",
+        "train_r2": -0.08029032212517029,
+        "holdout_r2": -0.017107462112826877,
+        "recovered": false,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0/x1",
+        "train_r2": 0.9998903717809502,
+        "holdout_r2": 0.9998617187463187,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "(x1+2)",
+        "train_r2": 0.23020368966261817,
+        "holdout_r2": 0.3078928737262626,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "1/x1",
+        "train_r2": 0.7515642826549135,
+        "holdout_r2": 0.7356696106696188,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "linear",
+      "planted_expression": "3.0*x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.11173105276412097,
+      "law_seed": 27,
+      "classic": {
+        "expression": "x0**2+1",
+        "train_r2": 0.8435833168286586,
+        "holdout_r2": 0.9686070410261709,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0",
+        "train_r2": 0.9972300036823954,
+        "holdout_r2": 0.9976854049868935,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9972300036823954,
+        "holdout_r2": 0.9976854049868935,
+        "recovered": true,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0",
+        "train_r2": 0.9972300036823954,
+        "holdout_r2": 0.9976854049868935,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "quadratic",
+      "planted_expression": "2.0*x0**2 + 1.0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.27126534322256224,
+      "law_seed": 28,
+      "classic": {
+        "expression": "exp(x0)+1",
+        "train_r2": 0.9796158637070652,
+        "holdout_r2": 0.9803978596585684,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9976209380505698,
+        "holdout_r2": 0.9969555349642109,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9668459268772138,
+        "holdout_r2": 0.9634908476637069,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9976209380505698,
+        "holdout_r2": 0.9969555349642109,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "cubic",
+      "planted_expression": "0.5*x0**3",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.18698235503616992,
+      "law_seed": 29,
+      "classic": {
+        "expression": "x0**2",
+        "train_r2": 0.8606673442384967,
+        "holdout_r2": 0.9764226970779377,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9977325712448827,
+        "holdout_r2": 0.9975439157454212,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8870889379979987,
+        "holdout_r2": 0.8924980229105878,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9977325712448827,
+        "holdout_r2": 0.9975439157454212,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "square_root",
+      "planted_expression": "4.0*sqrt(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.056383662937291135,
+      "law_seed": 30,
+      "classic": {
+        "expression": "x0*2",
+        "train_r2": -1.2738703797323718,
+        "holdout_r2": 0.9856511470147485,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**0.5",
+        "train_r2": 0.9976713017626067,
+        "holdout_r2": 0.997729280420812,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "(x0+x0)",
+        "train_r2": 0.9875869855926729,
+        "holdout_r2": 0.9856511470147485,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "sqrt(x0)",
+        "train_r2": 0.9976713017626067,
+        "holdout_r2": 0.997729280420812,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "inverse",
+      "planted_expression": "1.2/x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.02437296033587707,
+      "law_seed": 31,
+      "classic": {
+        "expression": "sin(sin(x0))",
+        "train_r2": -0.23048906258707236,
+        "holdout_r2": 0.02425710100997147,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "1/x0",
+        "train_r2": 0.997624889723158,
+        "holdout_r2": 0.9969265769979403,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8095405431922391,
+        "holdout_r2": 0.8002524384826856,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "1/x0",
+        "train_r2": 0.997624889723158,
+        "holdout_r2": 0.9969265769979403,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "power_2_5",
+      "planted_expression": "x0**2.5",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.2298538110975923,
+      "law_seed": 32,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.8244683972319417,
+        "holdout_r2": 0.9926716272599088,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3/(1+x0)",
+        "train_r2": 0.996679408160922,
+        "holdout_r2": 0.9968395050815709,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9330096258206595,
+        "holdout_r2": 0.9398607246186531,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "((x0+x0)+(x0+x0**3))",
+        "train_r2": 0.9973992547649647,
+        "holdout_r2": 0.9976278814917973,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "exponential_decay",
+      "planted_expression": "2.0*exp(-0.7*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.01612862513663963,
+      "law_seed": 33,
+      "classic": {
+        "expression": "sin(sin(x0))",
+        "train_r2": -0.028224384130450142,
+        "holdout_r2": 0.020775527447573827,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "exp(-(x0**0.5))",
+        "train_r2": 0.9965623298334422,
+        "holdout_r2": 0.996545824829802,
+        "recovered": true,
+        "n_candidates": 53
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9483203200544202,
+        "holdout_r2": 0.9504886508450796,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.996549992601656,
+        "holdout_r2": 0.9970499960830262,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "logarithm",
+      "planted_expression": "3.0*log(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.0705926976282057,
+      "law_seed": 34,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.6725061634559102,
+        "holdout_r2": 0.9445553384846784,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9976612671652952,
+        "holdout_r2": 0.9977607529947797,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "(x0+1)",
+        "train_r2": 0.9427015328388044,
+        "holdout_r2": 0.9445553384846784,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9976612671652952,
+        "holdout_r2": 0.9977607529947797,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "sine",
+      "planted_expression": "sin(2.0*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.03759947485814794,
+      "law_seed": 35,
+      "classic": {
+        "expression": "sin(x0**2)",
+        "train_r2": -0.02265973264396748,
+        "holdout_r2": 0.43603205683102875,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(2.0*(x0))",
+        "train_r2": 0.9973708401337019,
+        "holdout_r2": 0.9972752942289441,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8326903859621182,
+        "holdout_r2": 0.7559748770742927,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "(x0+sin(x0))",
+        "train_r2": 0.8701388273969131,
+        "holdout_r2": 0.8618215137284722,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "rational_saturation",
+      "planted_expression": "3.0*x0/(1.0+0.5*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.03199766661616085,
+      "law_seed": 36,
+      "classic": {
+        "expression": "x0+1",
+        "train_r2": 0.9478525576585892,
+        "holdout_r2": 0.96612549431922,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sqrt(x0**0.5)",
+        "train_r2": 0.9970693123121169,
+        "holdout_r2": 0.9964907829919335,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9651931137096184,
+        "holdout_r2": 0.96612549431922,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9947138453839403,
+        "holdout_r2": 0.995029381817562,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "product",
+      "planted_expression": "x0*x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.08234125059203501,
+      "law_seed": 37,
+      "classic": {
+        "expression": "x0*x1",
+        "train_r2": 0.9974846183459556,
+        "holdout_r2": 0.9981223787387454,
+        "recovered": true,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0*x1",
+        "train_r2": 0.9975051712436892,
+        "holdout_r2": 0.9981223787387454,
+        "recovered": true,
+        "n_candidates": 63
+      },
+      "beam_classic": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.9156188110691591,
+        "holdout_r2": 0.9076171384747111,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.9156188110691591,
+        "holdout_r2": 0.9076171384747111,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "law": "ratio",
+      "planted_expression": "x0/x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.04538416217125829,
+      "law_seed": 38,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.13386752496092713,
+        "holdout_r2": 0.2930728975990471,
+        "recovered": false,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0/x1",
+        "train_r2": 0.9972550837334357,
+        "holdout_r2": 0.9978247604161216,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "x1",
+        "train_r2": 0.482230884103228,
+        "holdout_r2": 0.45203038743809265,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "1/x1",
+        "train_r2": 0.6024396408939736,
+        "holdout_r2": 0.5815805135566774,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "linear",
+      "planted_expression": "3.0*x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.442454968945919,
+      "law_seed": 27,
+      "classic": {
+        "expression": "x0*2",
+        "train_r2": 0.5389458885521292,
+        "holdout_r2": 0.9976854049868935,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0",
+        "train_r2": 0.9972300036823954,
+        "holdout_r2": 0.9976854049868935,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9972300036823954,
+        "holdout_r2": 0.9976854049868935,
+        "recovered": true,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0",
+        "train_r2": 0.9972300036823954,
+        "holdout_r2": 0.9976854049868935,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "quadratic",
+      "planted_expression": "2.0*x0**2 + 1.0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 3.162122120295657,
+      "law_seed": 28,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.9971520025744666,
+        "holdout_r2": 0.9969634602014462,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9976247728761299,
+        "holdout_r2": 0.9969634602014462,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.942673153175728,
+        "holdout_r2": 0.9361024875395603,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**2",
+        "train_r2": 0.9976247728761299,
+        "holdout_r2": 0.9969634602014462,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "cubic",
+      "planted_expression": "0.5*x0**3",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 6.9025343407289235,
+      "law_seed": 29,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.4932580853465781,
+        "holdout_r2": 0.9704266125067929,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9977323211388669,
+        "holdout_r2": 0.9975793828989777,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8280913389859865,
+        "holdout_r2": 0.8388259155451088,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "x0**3",
+        "train_r2": 0.9977323211388669,
+        "holdout_r2": 0.9975793828989777,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "square_root",
+      "planted_expression": "4.0*sqrt(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.13988736414002328,
+      "law_seed": 30,
+      "classic": {
+        "expression": "x0+1",
+        "train_r2": 0.17708330084115598,
+        "holdout_r2": 0.9595016121793029,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**0.5",
+        "train_r2": 0.9976712714609149,
+        "holdout_r2": 0.9978747182756318,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.9675781236574192,
+        "holdout_r2": 0.9595016121793029,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "sqrt(x0)",
+        "train_r2": 0.9976712714609149,
+        "holdout_r2": 0.9978747182756318,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "inverse",
+      "planted_expression": "1.2/x0",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.04818900799593308,
+      "law_seed": 31,
+      "classic": {
+        "expression": "sin(x0)**2",
+        "train_r2": -0.2301600609025094,
+        "holdout_r2": 0.018238360699763256,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9976260501963257,
+        "holdout_r2": 0.9985967984187448,
+        "recovered": true,
+        "n_candidates": 52
+      },
+      "beam_classic": {
+        "expression": "(x0+x0)",
+        "train_r2": 0.36716790848016934,
+        "holdout_r2": 0.21560588891275578,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "1/x0",
+        "train_r2": 0.9976260501963257,
+        "holdout_r2": 0.9985967984187448,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "power_2_5",
+      "planted_expression": "x0**2.5",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 4.726293044610359,
+      "law_seed": 32,
+      "classic": {
+        "expression": "x0**2*2",
+        "train_r2": 0.8101935419735635,
+        "holdout_r2": 0.990437262853008,
+        "recovered": true,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0**3/(1+x0)",
+        "train_r2": 0.9933314471823133,
+        "holdout_r2": 0.9934727644243091,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8903022470496651,
+        "holdout_r2": 0.9000613404764942,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "((x0+x0)+(x0+x0**3))",
+        "train_r2": 0.9931307977772511,
+        "holdout_r2": 0.993554818367442,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "exponential_decay",
+      "planted_expression": "2.0*exp(-0.7*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.021412167051295936,
+      "law_seed": 33,
+      "classic": {
+        "expression": "sin(x0)**2",
+        "train_r2": -1.0793584969255008,
+        "holdout_r2": 0.019636377974791563,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "x0/(1+x0)",
+        "train_r2": 0.9832670259099342,
+        "holdout_r2": 0.9870340770228175,
+        "recovered": false,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.6021047414205015,
+        "holdout_r2": 0.6031686260930202,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "exp(-x0)",
+        "train_r2": 0.9732437763889642,
+        "holdout_r2": 0.976752895827106,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "logarithm",
+      "planted_expression": "3.0*log(x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.13585849944795259,
+      "law_seed": 34,
+      "classic": {
+        "expression": "x0",
+        "train_r2": 0.6042753069696287,
+        "holdout_r2": 0.7951709421142785,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9976675392420123,
+        "holdout_r2": 0.9977578345884395,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "(x0+1)",
+        "train_r2": 0.7757962406274161,
+        "holdout_r2": 0.7951709421142786,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9976675392420123,
+        "holdout_r2": 0.9977578345884395,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "sine",
+      "planted_expression": "sin(2.0*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.03486941359544191,
+      "law_seed": 35,
+      "classic": {
+        "expression": "sin(x0)**2",
+        "train_r2": -0.7313806778974985,
+        "holdout_r2": -0.019795468496329294,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(2.0*(x0))",
+        "train_r2": 0.9973718592851791,
+        "holdout_r2": 0.9970602748004846,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.06137224326151103,
+        "holdout_r2": -0.05509981354050408,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "exp(-x0)",
+        "train_r2": 0.08315066931262705,
+        "holdout_r2": 0.033891002878233656,
+        "recovered": false,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "rational_saturation",
+      "planted_expression": "3.0*x0/(1.0+0.5*x0)",
+      "variables": [
+        "x0"
+      ],
+      "noise_scale_from_train": 0.05299793272491843,
+      "law_seed": 36,
+      "classic": {
+        "expression": "x0",
+        "train_r2": -2.815496959092761,
+        "holdout_r2": 0.8224381097005564,
+        "recovered": false,
+        "n_candidates": 31
+      },
+      "extended": {
+        "expression": "sin(0.5*(x0**0.5))",
+        "train_r2": 0.9963699993839881,
+        "holdout_r2": 0.9950184384861859,
+        "recovered": true,
+        "n_candidates": 51
+      },
+      "beam_classic": {
+        "expression": "x0",
+        "train_r2": 0.8023640712730606,
+        "holdout_r2": 0.8224381097005564,
+        "recovered": false,
+        "n_candidates": 27
+      },
+      "beam_extended": {
+        "expression": "log(x0)",
+        "train_r2": 0.9878113521286079,
+        "holdout_r2": 0.9912923470075643,
+        "recovered": true,
+        "n_candidates": 34
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "product",
+      "planted_expression": "x0*x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.960430098117837,
+      "law_seed": 37,
+      "classic": {
+        "expression": "x0*x1",
+        "train_r2": 0.9974858294520557,
+        "holdout_r2": 0.998148387508923,
+        "recovered": true,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0*x1",
+        "train_r2": 0.997507242504333,
+        "holdout_r2": 0.998148387508923,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.8503008116215964,
+        "holdout_r2": 0.837261388264955,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "(x0+x1)",
+        "train_r2": 0.8503008116215964,
+        "holdout_r2": 0.837261388264955,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "law": "ratio",
+      "planted_expression": "x0/x1",
+      "variables": [
+        "x0",
+        "x1"
+      ],
+      "noise_scale_from_train": 0.21491829654474282,
+      "law_seed": 38,
+      "classic": {
+        "expression": "sin(x0)+1",
+        "train_r2": -0.07947705167823371,
+        "holdout_r2": -0.015776343013299998,
+        "recovered": false,
+        "n_candidates": 38
+      },
+      "extended": {
+        "expression": "x0/x1",
+        "train_r2": 0.9972759059122734,
+        "holdout_r2": 0.9965466194256164,
+        "recovered": true,
+        "n_candidates": 62
+      },
+      "beam_classic": {
+        "expression": "x1",
+        "train_r2": 0.2289119308477735,
+        "holdout_r2": 0.3001230164141556,
+        "recovered": false,
+        "n_candidates": 28
+      },
+      "beam_extended": {
+        "expression": "1/x1",
+        "train_r2": 0.7513080822078987,
+        "holdout_r2": 0.7287665896807571,
+        "recovered": false,
+        "n_candidates": 42
+      }
+    }
+  ],
+  "condition_summaries": [
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "n_laws": 12,
+      "recovered_by_engine": {
+        "classic": 2,
+        "extended": 12,
+        "beam_classic": 1,
+        "beam_extended": 9
+      },
+      "recovered_laws": {
+        "classic": [
+          "power_2_5",
+          "product"
+        ],
+        "extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "exponential_decay",
+          "logarithm",
+          "sine",
+          "rational_saturation",
+          "product",
+          "ratio"
+        ],
+        "beam_classic": [
+          "linear"
+        ],
+        "beam_extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "exponential_decay",
+          "logarithm",
+          "rational_saturation"
+        ]
+      },
+      "closed_by_extended_hierarchical": [
+        "linear",
+        "quadratic",
+        "cubic",
+        "square_root",
+        "inverse",
+        "exponential_decay",
+        "logarithm",
+        "sine",
+        "rational_saturation",
+        "ratio"
+      ],
+      "still_unreachable_by_both_extended_engines": [],
+      "every_recovered_candidate_clears_the_criterion": true,
+      "extended_covers_every_classic_recovery": true,
+      "extended_covers_every_beam_classic_recovery": true
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "n_laws": 12,
+      "recovered_by_engine": {
+        "classic": 4,
+        "extended": 11,
+        "beam_classic": 1,
+        "beam_extended": 8
+      },
+      "recovered_laws": {
+        "classic": [
+          "linear",
+          "quadratic",
+          "power_2_5",
+          "product"
+        ],
+        "extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "logarithm",
+          "sine",
+          "rational_saturation",
+          "product",
+          "ratio"
+        ],
+        "beam_classic": [
+          "linear"
+        ],
+        "beam_extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "logarithm",
+          "rational_saturation"
+        ]
+      },
+      "closed_by_extended_hierarchical": [
+        "cubic",
+        "square_root",
+        "inverse",
+        "logarithm",
+        "sine",
+        "rational_saturation",
+        "ratio"
+      ],
+      "still_unreachable_by_both_extended_engines": [
+        "exponential_decay"
+      ],
+      "every_recovered_candidate_clears_the_criterion": true,
+      "extended_covers_every_classic_recovery": true,
+      "extended_covers_every_beam_classic_recovery": true
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "n_laws": 12,
+      "recovered_by_engine": {
+        "classic": 2,
+        "extended": 12,
+        "beam_classic": 1,
+        "beam_extended": 9
+      },
+      "recovered_laws": {
+        "classic": [
+          "power_2_5",
+          "product"
+        ],
+        "extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "exponential_decay",
+          "logarithm",
+          "sine",
+          "rational_saturation",
+          "product",
+          "ratio"
+        ],
+        "beam_classic": [
+          "linear"
+        ],
+        "beam_extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "exponential_decay",
+          "logarithm",
+          "rational_saturation"
+        ]
+      },
+      "closed_by_extended_hierarchical": [
+        "linear",
+        "quadratic",
+        "cubic",
+        "square_root",
+        "inverse",
+        "exponential_decay",
+        "logarithm",
+        "sine",
+        "rational_saturation",
+        "ratio"
+      ],
+      "still_unreachable_by_both_extended_engines": [],
+      "every_recovered_candidate_clears_the_criterion": true,
+      "extended_covers_every_classic_recovery": true,
+      "extended_covers_every_beam_classic_recovery": true
+    },
+    {
+      "seed": 7,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "n_laws": 12,
+      "recovered_by_engine": {
+        "classic": 4,
+        "extended": 10,
+        "beam_classic": 1,
+        "beam_extended": 8
+      },
+      "recovered_laws": {
+        "classic": [
+          "linear",
+          "quadratic",
+          "power_2_5",
+          "product"
+        ],
+        "extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "logarithm",
+          "sine",
+          "rational_saturation",
+          "product"
+        ],
+        "beam_classic": [
+          "linear"
+        ],
+        "beam_extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "logarithm",
+          "rational_saturation"
+        ]
+      },
+      "closed_by_extended_hierarchical": [
+        "cubic",
+        "square_root",
+        "inverse",
+        "logarithm",
+        "sine",
+        "rational_saturation"
+      ],
+      "still_unreachable_by_both_extended_engines": [
+        "exponential_decay",
+        "ratio"
+      ],
+      "every_recovered_candidate_clears_the_criterion": true,
+      "extended_covers_every_classic_recovery": true,
+      "extended_covers_every_beam_classic_recovery": true
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "n_laws": 12,
+      "recovered_by_engine": {
+        "classic": 2,
+        "extended": 12,
+        "beam_classic": 1,
+        "beam_extended": 9
+      },
+      "recovered_laws": {
+        "classic": [
+          "power_2_5",
+          "product"
+        ],
+        "extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "exponential_decay",
+          "logarithm",
+          "sine",
+          "rational_saturation",
+          "product",
+          "ratio"
+        ],
+        "beam_classic": [
+          "linear"
+        ],
+        "beam_extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "exponential_decay",
+          "logarithm",
+          "rational_saturation"
+        ]
+      },
+      "closed_by_extended_hierarchical": [
+        "linear",
+        "quadratic",
+        "cubic",
+        "square_root",
+        "inverse",
+        "exponential_decay",
+        "logarithm",
+        "sine",
+        "rational_saturation",
+        "ratio"
+      ],
+      "still_unreachable_by_both_extended_engines": [],
+      "every_recovered_candidate_clears_the_criterion": true,
+      "extended_covers_every_classic_recovery": true,
+      "extended_covers_every_beam_classic_recovery": true
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "n_laws": 12,
+      "recovered_by_engine": {
+        "classic": 3,
+        "extended": 11,
+        "beam_classic": 1,
+        "beam_extended": 8
+      },
+      "recovered_laws": {
+        "classic": [
+          "linear",
+          "quadratic",
+          "product"
+        ],
+        "extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "logarithm",
+          "sine",
+          "rational_saturation",
+          "product",
+          "ratio"
+        ],
+        "beam_classic": [
+          "linear"
+        ],
+        "beam_extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "logarithm",
+          "rational_saturation"
+        ]
+      },
+      "closed_by_extended_hierarchical": [
+        "cubic",
+        "square_root",
+        "inverse",
+        "power_2_5",
+        "logarithm",
+        "sine",
+        "rational_saturation",
+        "ratio"
+      ],
+      "still_unreachable_by_both_extended_engines": [
+        "exponential_decay"
+      ],
+      "every_recovered_candidate_clears_the_criterion": true,
+      "extended_covers_every_classic_recovery": true,
+      "extended_covers_every_beam_classic_recovery": true
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "n_laws": 12,
+      "recovered_by_engine": {
+        "classic": 1,
+        "extended": 12,
+        "beam_classic": 1,
+        "beam_extended": 9
+      },
+      "recovered_laws": {
+        "classic": [
+          "product"
+        ],
+        "extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "exponential_decay",
+          "logarithm",
+          "sine",
+          "rational_saturation",
+          "product",
+          "ratio"
+        ],
+        "beam_classic": [
+          "linear"
+        ],
+        "beam_extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "exponential_decay",
+          "logarithm",
+          "rational_saturation"
+        ]
+      },
+      "closed_by_extended_hierarchical": [
+        "linear",
+        "quadratic",
+        "cubic",
+        "square_root",
+        "inverse",
+        "power_2_5",
+        "exponential_decay",
+        "logarithm",
+        "sine",
+        "rational_saturation",
+        "ratio"
+      ],
+      "still_unreachable_by_both_extended_engines": [],
+      "every_recovered_candidate_clears_the_criterion": true,
+      "extended_covers_every_classic_recovery": true,
+      "extended_covers_every_beam_classic_recovery": true
+    },
+    {
+      "seed": 17,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "n_laws": 12,
+      "recovered_by_engine": {
+        "classic": 3,
+        "extended": 9,
+        "beam_classic": 1,
+        "beam_extended": 8
+      },
+      "recovered_laws": {
+        "classic": [
+          "linear",
+          "quadratic",
+          "product"
+        ],
+        "extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "logarithm",
+          "sine",
+          "rational_saturation",
+          "product"
+        ],
+        "beam_classic": [
+          "linear"
+        ],
+        "beam_extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "logarithm",
+          "rational_saturation"
+        ]
+      },
+      "closed_by_extended_hierarchical": [
+        "cubic",
+        "square_root",
+        "inverse",
+        "logarithm",
+        "sine",
+        "rational_saturation"
+      ],
+      "still_unreachable_by_both_extended_engines": [
+        "exponential_decay",
+        "ratio"
+      ],
+      "every_recovered_candidate_clears_the_criterion": true,
+      "extended_covers_every_classic_recovery": true,
+      "extended_covers_every_beam_classic_recovery": true
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "n_laws": 12,
+      "recovered_by_engine": {
+        "classic": 2,
+        "extended": 12,
+        "beam_classic": 1,
+        "beam_extended": 9
+      },
+      "recovered_laws": {
+        "classic": [
+          "power_2_5",
+          "product"
+        ],
+        "extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "exponential_decay",
+          "logarithm",
+          "sine",
+          "rational_saturation",
+          "product",
+          "ratio"
+        ],
+        "beam_classic": [
+          "linear"
+        ],
+        "beam_extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "exponential_decay",
+          "logarithm",
+          "rational_saturation"
+        ]
+      },
+      "closed_by_extended_hierarchical": [
+        "linear",
+        "quadratic",
+        "cubic",
+        "square_root",
+        "inverse",
+        "exponential_decay",
+        "logarithm",
+        "sine",
+        "rational_saturation",
+        "ratio"
+      ],
+      "still_unreachable_by_both_extended_engines": [],
+      "every_recovered_candidate_clears_the_criterion": true,
+      "extended_covers_every_classic_recovery": true,
+      "extended_covers_every_beam_classic_recovery": true
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.01,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "n_laws": 12,
+      "recovered_by_engine": {
+        "classic": 4,
+        "extended": 11,
+        "beam_classic": 1,
+        "beam_extended": 8
+      },
+      "recovered_laws": {
+        "classic": [
+          "linear",
+          "quadratic",
+          "power_2_5",
+          "product"
+        ],
+        "extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "logarithm",
+          "sine",
+          "rational_saturation",
+          "product",
+          "ratio"
+        ],
+        "beam_classic": [
+          "linear"
+        ],
+        "beam_extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "logarithm",
+          "rational_saturation"
+        ]
+      },
+      "closed_by_extended_hierarchical": [
+        "cubic",
+        "square_root",
+        "inverse",
+        "logarithm",
+        "sine",
+        "rational_saturation",
+        "ratio"
+      ],
+      "still_unreachable_by_both_extended_engines": [
+        "exponential_decay"
+      ],
+      "every_recovered_candidate_clears_the_criterion": true,
+      "extended_covers_every_classic_recovery": true,
+      "extended_covers_every_beam_classic_recovery": true
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.5,
+        3.0
+      ],
+      "n_laws": 12,
+      "recovered_by_engine": {
+        "classic": 2,
+        "extended": 12,
+        "beam_classic": 1,
+        "beam_extended": 9
+      },
+      "recovered_laws": {
+        "classic": [
+          "power_2_5",
+          "product"
+        ],
+        "extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "exponential_decay",
+          "logarithm",
+          "sine",
+          "rational_saturation",
+          "product",
+          "ratio"
+        ],
+        "beam_classic": [
+          "linear"
+        ],
+        "beam_extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "exponential_decay",
+          "logarithm",
+          "rational_saturation"
+        ]
+      },
+      "closed_by_extended_hierarchical": [
+        "linear",
+        "quadratic",
+        "cubic",
+        "square_root",
+        "inverse",
+        "exponential_decay",
+        "logarithm",
+        "sine",
+        "rational_saturation",
+        "ratio"
+      ],
+      "still_unreachable_by_both_extended_engines": [],
+      "every_recovered_candidate_clears_the_criterion": true,
+      "extended_covers_every_classic_recovery": true,
+      "extended_covers_every_beam_classic_recovery": true
+    },
+    {
+      "seed": 27,
+      "noise_fraction": 0.05,
+      "input_range": [
+        0.1,
+        10.0
+      ],
+      "n_laws": 12,
+      "recovered_by_engine": {
+        "classic": 4,
+        "extended": 11,
+        "beam_classic": 1,
+        "beam_extended": 8
+      },
+      "recovered_laws": {
+        "classic": [
+          "linear",
+          "quadratic",
+          "power_2_5",
+          "product"
+        ],
+        "extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "logarithm",
+          "sine",
+          "rational_saturation",
+          "product",
+          "ratio"
+        ],
+        "beam_classic": [
+          "linear"
+        ],
+        "beam_extended": [
+          "linear",
+          "quadratic",
+          "cubic",
+          "square_root",
+          "inverse",
+          "power_2_5",
+          "logarithm",
+          "rational_saturation"
+        ]
+      },
+      "closed_by_extended_hierarchical": [
+        "cubic",
+        "square_root",
+        "inverse",
+        "logarithm",
+        "sine",
+        "rational_saturation",
+        "ratio"
+      ],
+      "still_unreachable_by_both_extended_engines": [
+        "exponential_decay"
+      ],
+      "every_recovered_candidate_clears_the_criterion": true,
+      "extended_covers_every_classic_recovery": true,
+      "extended_covers_every_beam_classic_recovery": true
+    }
+  ],
+  "summary": {
+    "n_laws": 12,
+    "recovered_by_engine": {
+      "classic": 2,
+      "extended": 12,
+      "beam_classic": 1,
+      "beam_extended": 9
+    },
+    "recovered_laws": {
+      "classic": [
+        "power_2_5",
+        "product"
+      ],
+      "extended": [
+        "linear",
+        "quadratic",
+        "cubic",
+        "square_root",
+        "inverse",
+        "power_2_5",
+        "exponential_decay",
+        "logarithm",
+        "sine",
+        "rational_saturation",
+        "product",
+        "ratio"
+      ],
+      "beam_classic": [
+        "linear"
+      ],
+      "beam_extended": [
+        "linear",
+        "quadratic",
+        "cubic",
+        "square_root",
+        "inverse",
+        "power_2_5",
+        "exponential_decay",
+        "logarithm",
+        "rational_saturation"
+      ]
+    },
+    "closed_by_extended_hierarchical": [
+      "linear",
+      "quadratic",
+      "cubic",
+      "square_root",
+      "inverse",
+      "exponential_decay",
+      "logarithm",
+      "sine",
+      "rational_saturation",
+      "ratio"
+    ],
+    "still_unreachable_by_both_extended_engines": [],
+    "every_recovered_candidate_clears_the_criterion": true,
+    "extended_covers_every_classic_recovery": true,
+    "extended_covers_every_beam_classic_recovery": true
+  },
+  "checks": {
+    "every_recovered_candidate_clears_the_criterion": true,
+    "extended_covers_every_classic_recovery": true,
+    "extended_covers_every_beam_classic_recovery": true
+  },
+  "all_trials_scored_consistently": true
+}

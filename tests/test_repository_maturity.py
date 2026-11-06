@@ -57,7 +57,7 @@ def test_readme_quickstart_uses_existing_verification_tests() -> None:
 
 def test_readme_ci_matrix_tracks_workflows_and_make_targets() -> None:
     readme = (ROOT / "README.md").read_text()
-    matrix = readme.split("## CI status matrix\n", 1)[1].split("\n## ", 1)[0]
+    matrix = readme.split("## Required checks and CI status matrix\n", 1)[1].split("\n## ", 1)[0]
     makefile = (ROOT / "Makefile").read_text()
     for target in re.findall(r"`make ([a-z-]+)`", matrix):
         assert re.search(rf"(?m)^{re.escape(target)}:", makefile), target

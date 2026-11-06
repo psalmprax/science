@@ -22,11 +22,17 @@ Implements:
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 import re
 import time
 from collections.abc import Sequence
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field, fields
+from datetime import datetime
+from itertools import pairwise
+from statistics import mean, stdev
+from urllib.parse import urlparse
 
 import numpy as np
 
@@ -634,36 +640,106 @@ class AblationComparisonReport:
 
 @dataclass
 class Milestone1SummaryReport:
-    """Complete Milestone 1 execution report including H1-H5 falsification verdicts."""
+    """Milestone 1 measurements and scope-limited hypothesis comparison outcomes."""
 
     model_metrics: dict[str, BenchmarkMetrics]
     ablation_report: AblationComparisonReport
-    hypothesis_verdicts: dict[str, bool]
+    hypothesis_verdicts: dict[str, str]
     hypothesis_evidence: dict[str, str] = field(default_factory=dict)
+    protocol_summary: dict[str, object] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class MMLMBenchmarkDataset:
+    """Train/dev/test text with declared source, license, retrieval time, and split hashes."""
+
+    name: str
+    source_url: str
+    license_id: str
+    license_url: str
+    retrieved_at: str
+    train_texts: tuple[str, ...]
+    dev_texts: tuple[str, ...]
+    test_texts: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not self.name.strip() or not self.license_id.strip():
+            raise ValueError("dataset name and license_id must be non-empty")
+        for field_name in ("source_url", "license_url"):
+            parsed = urlparse(getattr(self, field_name))
+            if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+                raise ValueError(f"{field_name} must be an absolute http(s) URL")
+        try:
+            datetime.fromisoformat(self.retrieved_at.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError("retrieved_at must be an ISO-8601 timestamp") from exc
+        splits = (self.train_texts, self.dev_texts, self.test_texts)
+        if any(not split or any(not isinstance(text, str) or not text.strip() for text in split)
+               for split in splits):
+            raise ValueError("train, dev, and test splits must contain non-empty text")
+        train, dev, test = (set(split) for split in splits)
+        if train & dev or train & test or dev & test:
+            raise ValueError("train, dev, and test text records must be disjoint")
+
+    def provenance(self) -> dict[str, object]:
+        """Return source/license metadata and stable hashes of each declared split."""
+        return {
+            "name": self.name,
+            "source_url": self.source_url,
+            "license_id": self.license_id,
+            "license_url": self.license_url,
+            "retrieved_at": self.retrieved_at,
+            "split_sha256": {
+                split_name: hashlib.sha256(
+                    json.dumps(
+                        texts, ensure_ascii=False, separators=(",", ":")
+                    ).encode("utf-8")
+                ).hexdigest()
+                for split_name, texts in (
+                    ("train", self.train_texts),
+                    ("dev", self.dev_texts),
+                    ("test", self.test_texts),
+                )
+            },
+        }
 
 
 class Milestone1BenchmarkSuite:
-    """Executes the 4 initial workloads (WikiText-style LM, TinyStories generation, KV recall, ListOps)."""
+    """Runs synthetic or provenance-declared text evaluation plus fixed task probes.
 
-    def __init__(self) -> None:
-        self.train_corpus = [
-            "quantum state evolution preserves unitary norm under hamiltonian dynamics .",
-            "tensor train factorization compresses high dimensional probability distributions .",
-            "energy based models evaluate global sequence compatibility and constraints .",
-            "john works_in berlin and john has_occupation engineer in the laboratory .",
-            "alice works_in zurich and alice has_occupation physicist studying optics .",
-            "once upon a time a curious scientist built a small telescope to observe stars .",
-            "the small telescope revealed bright planets orbiting a distant golden sun .",
-            "probabilistic circuits compute exact marginals in linear time over trees .",
-            "stabilizer circuits commute across graph state neighborhood symmetries .",
-            "local complementation transforms graph states without two qubit gates .",
-        ]
-        self.eval_corpus = [
-            "quantum state evolution compresses high dimensional probability distributions .",
-            "once upon a time a curious scientist observed bright planets .",
-            "probabilistic circuits evaluate global sequence compatibility .",
-            "local complementation transforms graph states under hamiltonian dynamics .",
-        ]
+    The default split tests compositional generalization to unseen triples. An
+    optional externally sourced corpus can be supplied with split/source/license
+    metadata; its provenance declaration is not independently audited here.
+    """
+
+    def __init__(self, dataset: MMLMBenchmarkDataset | None = None) -> None:
+        subjects = ("ada", "ben", "cyra", "dax", "elena")
+        relations = ("works_in", "studies", "builds", "observes", "uses")
+        objects = ("lab", "optics", "models", "stars", "circuits")
+        splits: dict[str, list[tuple[str, str, str]]] = {
+            "train": [],
+            "dev": [],
+            "test": [],
+        }
+        for i, subject in enumerate(subjects):
+            for j, relation in enumerate(relations):
+                for k, obj in enumerate(objects):
+                    bucket = (i + 2 * j + 3 * k) % 5
+                    split = "train" if bucket < 3 else "dev" if bucket == 3 else "test"
+                    splits[split].append((subject, relation, obj))
+
+        self.train_triples = frozenset(splits["train"])
+        self.dev_triples = frozenset(splits["dev"])
+        self.test_triples = frozenset(splits["test"])
+        self.dataset = dataset
+        if dataset is None:
+            self.train_corpus = [f"{s} {r} {o} ." for s, r, o in splits["train"]]
+            self.dev_corpus = [f"{s} {r} {o} ." for s, r, o in splits["dev"]]
+            self.eval_corpus = [f"{s} {r} {o} ." for s, r, o in splits["test"]]
+        else:
+            self.train_corpus = list(dataset.train_texts)
+            self.dev_corpus = list(dataset.dev_texts)
+            self.eval_corpus = list(dataset.test_texts)
         self.kv_tasks = [
             (
                 "alpha equals seven . beta equals nine . noise token one two three four five six seven eight nine ten .",
@@ -748,9 +824,78 @@ class Milestone1BenchmarkSuite:
             inference_tokens_per_sec=round(tok_per_sec, 1),
         )
 
-    def run_milestone_1(self) -> Milestone1SummaryReport:
-        """Train and evaluate A0, B0 (with ablations), C0, Transformer, and SSM under matched conditions."""
+    def _streaming_retention(self, model: object) -> tuple[float, int, int]:
+        """Measure top-1 next-token accuracy from B0's dynamical state in one pass."""
+        dynamics = model.dynamics  # type: ignore[attr-defined]
+        tokenizer: MMLMTokenizer = model.tokenizer  # type: ignore[attr-defined]
+        correct = total = 0
+        for text in self.eval_corpus:
+            sequence = tokenizer.encode(text)
+            state = np.zeros(dynamics.state_dim, dtype=np.float64)
+            for current, target in pairwise(sequence):
+                current_id = int(current) % tokenizer.vocab_size
+                state = (
+                    state @ dynamics.transition_matrix
+                    + dynamics.token_projection[current_id]
+                )
+                logits = state @ dynamics.readout
+                prediction = int(np.argmax(logits))
+                correct += prediction == int(target) % tokenizer.vocab_size
+                total += 1
+        return correct / max(1, total), correct, total
+
+    @staticmethod
+    def _quality_efficiency_axes(
+        hybrid: BenchmarkMetrics, baseline: BenchmarkMetrics
+    ) -> dict[str, bool | int]:
+        """Return majority wins in the preregistered quality and efficiency axes."""
+        quality_results = (
+            hybrid.held_out_perplexity < baseline.held_out_perplexity,
+            hybrid.bits_per_byte < baseline.bits_per_byte,
+            hybrid.long_context_retrieval_accuracy
+            > baseline.long_context_retrieval_accuracy,
+            hybrid.compositional_reasoning_accuracy
+            > baseline.compositional_reasoning_accuracy,
+            hybrid.generation_energy < baseline.generation_energy,
+        )
+        efficiency_results = (
+            hybrid.serialized_bytes < baseline.serialized_bytes,
+            hybrid.training_time_ms < baseline.training_time_ms,
+            hybrid.inference_tokens_per_sec
+            > baseline.inference_tokens_per_sec,
+        )
+        quality_wins = sum(quality_results)
+        efficiency_wins = sum(efficiency_results)
+        return {
+            "quality": quality_wins > len(quality_results) // 2,
+            "efficiency": efficiency_wins > len(efficiency_results) // 2,
+            "quality_metric_wins": quality_wins,
+            "efficiency_metric_wins": efficiency_wins,
+        }
+
+    def run_milestone_1(self, seed: int = 42) -> Milestone1SummaryReport:
+        """Train and evaluate all models under matched conditions for one initialization seed."""
         tokenizer = MMLMTokenizer(max_vocab_size=512).fit(self.train_corpus)
+        frozen_hypotheses = {
+            hypothesis.hypothesis_id: hypothesis for hypothesis in default_frozen_hypotheses()
+        }
+        h2_threshold_match = re.search(
+            r">=\s*([0-9]+(?:\.[0-9]+)?)",
+            frozen_hypotheses["H2"].baseline_comparison_rule,
+        )
+        h5_axis_match = re.search(
+            r"at_least_(one|two|three|[0-9]+)_axes",
+            frozen_hypotheses["H5"].baseline_comparison_rule,
+        )
+        if h2_threshold_match is None or h5_axis_match is None:
+            raise ValueError("H2/H5 frozen baseline rules have an unsupported format")
+        h2_threshold = float(h2_threshold_match.group(1))
+        h5_axis_threshold = {
+            "one": 1,
+            "two": 2,
+            "three": 3,
+        }.get(h5_axis_match.group(1), int(h5_axis_match.group(1))
+              if h5_axis_match.group(1).isdigit() else 0)
 
         def train_and_measure(m: object) -> BenchmarkMetrics:
             t_start = time.perf_counter()
@@ -758,23 +903,40 @@ class Milestone1BenchmarkSuite:
             t_ms = (time.perf_counter() - t_start) * 1000.0
             return self.evaluate_model(m, t_ms)
 
-        m_a0 = train_and_measure(NonNeuralMMLM_A0(tokenizer))
-        m_b0_full = train_and_measure(HybridMMLM_B0(tokenizer, HybridAblationConfig()))
+        m_a0 = train_and_measure(NonNeuralMMLM_A0(tokenizer, seed=seed))
+        b0_full_model = HybridMMLM_B0(tokenizer, HybridAblationConfig(), seed=seed)
+        m_b0_full = train_and_measure(b0_full_model)
         m_b0_no_nn = train_and_measure(
-            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_neural_semantic_encoder=False))
+            HybridMMLM_B0(
+                tokenizer, HybridAblationConfig(use_neural_semantic_encoder=False), seed=seed
+            )
         )
         m_b0_no_hg = train_and_measure(
-            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_hypergraph_memory=False))
+            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_hypergraph_memory=False), seed=seed)
         )
         m_b0_1d_tt = train_and_measure(
-            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_tree_tensor_memory=False))
+            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_tree_tensor_memory=False), seed=seed)
         )
         m_b0_no_energy = train_and_measure(
-            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_energy_evaluator=False))
+            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_energy_evaluator=False), seed=seed)
         )
-        m_c0 = train_and_measure(AttentionFreeMMLM_C0(tokenizer))
-        m_tf = train_and_measure(TransformerBaseline(tokenizer))
-        m_ssm = train_and_measure(SSMBaseline(tokenizer))
+        m_c0 = train_and_measure(AttentionFreeMMLM_C0(tokenizer, seed=seed))
+        m_tf = train_and_measure(TransformerBaseline(tokenizer, seed=seed))
+        m_ssm = train_and_measure(SSMBaseline(tokenizer, seed=seed))
+
+        streaming_score, streaming_correct, streaming_total = self._streaming_retention(
+            b0_full_model
+        )
+        h5_axes = {
+            hybrid_name: {
+                baseline_name: self._quality_efficiency_axes(
+                    {"B0": m_b0_full, "C0": m_c0}[hybrid_name],
+                    {"Transformer": m_tf, "SSM": m_ssm}[baseline_name],
+                )
+                for baseline_name in ("Transformer", "SSM")
+            }
+            for hybrid_name in ("B0", "C0")
+        }
 
         ablation_report = AblationComparisonReport(
             full_b0_metrics=m_b0_full,
@@ -784,20 +946,73 @@ class Milestone1BenchmarkSuite:
             without_energy_evaluator=m_b0_no_energy,
         )
 
-        # Evaluate frozen hypotheses H1-H5
+        # These are observed single-run comparisons, not statistical hypothesis tests.
         h_verdicts = {
-            "H1": m_b0_full.held_out_perplexity <= m_b0_1d_tt.held_out_perplexity,
-            "H2": m_a0.held_out_perplexity < tokenizer.vocab_size,
-            "H3": m_b0_full.long_context_retrieval_accuracy > m_b0_no_hg.long_context_retrieval_accuracy,
-            "H4": m_b0_full.generation_energy <= m_b0_no_energy.generation_energy,
+            "H1": (
+                "OBSERVED_COMPARISON_PASS"
+                if m_b0_full.held_out_perplexity <= m_b0_1d_tt.held_out_perplexity
+                else "OBSERVED_COMPARISON_FAIL"
+            ),
+            "H2": (
+                "OBSERVED_COMPARISON_PASS"
+                if streaming_score >= h2_threshold
+                else "OBSERVED_COMPARISON_FAIL"
+            ),
+            "H3": (
+                "OBSERVED_COMPARISON_PASS"
+                if m_b0_full.long_context_retrieval_accuracy
+                > m_b0_no_hg.long_context_retrieval_accuracy
+                else "OBSERVED_COMPARISON_FAIL"
+            ),
+            "H4": (
+                "OBSERVED_COMPARISON_PASS"
+                if m_b0_full.generation_energy <= m_b0_no_energy.generation_energy
+                else "OBSERVED_COMPARISON_FAIL"
+            ),
             "H5": (
-                m_c0.long_context_retrieval_accuracy >= m_tf.long_context_retrieval_accuracy
-                and m_c0.compositional_reasoning_accuracy > m_ssm.compositional_reasoning_accuracy
+                "OBSERVED_COMPARISON_PASS"
+                if any(
+                    all(
+                        sum((axes["quality"], axes["efficiency"])) >= h5_axis_threshold
+                        for axes in comparisons.values()
+                    )
+                    for comparisons in h5_axes.values()
+                )
+                else "OBSERVED_COMPARISON_FAIL"
             ),
         }
         h_evidence = {
-            h.hypothesis_id: f"{h.statement} -> Verified={h_verdicts[h.hypothesis_id]}"
-            for h in default_frozen_hypotheses()
+            "H1": (
+                f"One fixed {self.dataset.name if self.dataset else 'synthetic held-out-triple'} "
+                f"split: B0 perplexity "
+                f"{m_b0_full.held_out_perplexity} vs 1D-only ablation "
+                f"{m_b0_1d_tt.held_out_perplexity}; comparison is descriptive, "
+                "not a significance test."
+            ),
+            "H2": (
+                f"Single-run dynamical-only streaming top-1 next-token accuracy "
+                f"{streaming_correct}/{streaming_total} = {streaming_score:.4f}; "
+                f"the registered {h2_threshold:.2f} threshold is applied. This is a narrow "
+                "dynamical-only next-token retention proxy, not a general long-context result."
+            ),
+            "H3": (
+                f"One fixed retrieval set: full B0 accuracy "
+                f"{m_b0_full.long_context_retrieval_accuracy} vs no-hypergraph "
+                f"ablation {m_b0_no_hg.long_context_retrieval_accuracy}."
+            ),
+            "H4": (
+                f"One fixed generation prompt: full B0 energy "
+                f"{m_b0_full.generation_energy} vs no-energy ablation "
+                f"{m_b0_no_energy.generation_energy}."
+            ),
+            "H5": (
+                "Single-run quality and efficiency axes: quality requires wins on "
+                "a majority of perplexity, bits/byte, retrieval, compositional "
+                "accuracy, and generation energy; efficiency requires a majority "
+                "of state bytes, training time, and inference throughput. A hybrid "
+                "must win both axes against both baselines; this descriptive "
+                "comparison is not a significance test."
+            ),
         }
 
         return Milestone1SummaryReport(
@@ -811,4 +1026,105 @@ class Milestone1BenchmarkSuite:
             ablation_report=ablation_report,
             hypothesis_verdicts=h_verdicts,
             hypothesis_evidence=h_evidence,
+            protocol_summary={
+                "dataset": (
+                    "deterministic synthetic subject-relation-object triples"
+                    if self.dataset is None else self.dataset.name
+                ),
+                "split_sizes": {
+                    "train": len(self.train_corpus),
+                    "dev": len(self.dev_corpus),
+                    "test": len(self.eval_corpus),
+                },
+                "exact_triple_splits_disjoint": (
+                    not (
+                        (self.train_triples & self.dev_triples)
+                        or (self.train_triples & self.test_triples)
+                        or (self.dev_triples & self.test_triples)
+                    )
+                    if self.dataset is None else None
+                ),
+                "tokenizer_fit_split": "train",
+                "external_or_real_world_evidence": self.dataset is not None,
+                "dataset_provenance_independently_verified": False,
+                "dataset_provenance": (
+                    None if self.dataset is None else self.dataset.provenance()
+                ),
+                "task_metrics_scope": (
+                    "fixed synthetic retrieval/ListOps tasks"
+                    if self.dataset is not None else "synthetic benchmark suite"
+                ),
+                "streaming_retention_score": streaming_score,
+                "streaming_retention_threshold": h2_threshold,
+                "h5_quality_efficiency_axes": h5_axes,
+                "h5_axes_required": h5_axis_threshold,
+                "replicates": 1,
+                "seed": seed,
+            },
         )
+
+    def run_repeated_milestone_1(self, seeds: Sequence[int]) -> dict[str, object]:
+        """Run independent initializations and report raw runs plus descriptive variability.
+
+        Repeats share one configured train/dev/test split, so this measures
+        initialization sensitivity only, not dataset-to-dataset variance.
+        """
+        if len(seeds) < 2:
+            raise ValueError("at least two seeds are required for repeated evaluation")
+        if any(not isinstance(seed, int) or isinstance(seed, bool) for seed in seeds):
+            raise TypeError("all seeds must be integers")
+        if len(set(seeds)) != len(seeds):
+            raise ValueError("seeds must be unique")
+
+        reports = [self.run_milestone_1(seed=seed) for seed in seeds]
+        metric_groups: dict[str, list[BenchmarkMetrics]] = {
+            model_name: [report.model_metrics[model_name] for report in reports]
+            for model_name in reports[0].model_metrics
+        }
+        for ablation_name in (
+            "full_b0_metrics",
+            "without_neural_encoder",
+            "without_hypergraph_memory",
+            "without_tree_tensor_1d_only",
+            "without_energy_evaluator",
+        ):
+            metric_groups[f"B0_{ablation_name}"] = [
+                getattr(report.ablation_report, ablation_name) for report in reports
+            ]
+
+        metric_summary = {}
+        for model_name, model_runs in metric_groups.items():
+            metric_summary[model_name] = {}
+            for metric_field in fields(BenchmarkMetrics):
+                if metric_field.name == "model_id":
+                    continue
+                values = [getattr(metrics, metric_field.name) for metrics in model_runs]
+                metric_summary[model_name][metric_field.name] = {
+                    "mean": mean(values),
+                    "sample_std": stdev(values),
+                    "values": values,
+                }
+        verdict_frequencies = {
+            hypothesis: {
+                verdict: sum(
+                    report.hypothesis_verdicts[hypothesis] == verdict for report in reports
+                )
+                / len(reports)
+                for verdict in sorted(
+                    {report.hypothesis_verdicts[hypothesis] for report in reports}
+                )
+            }
+            for hypothesis in reports[0].hypothesis_verdicts
+        }
+        return {
+            "protocol_summary": {
+                "dataset": reports[0].protocol_summary["dataset"],
+                "external_or_real_world_evidence": self.dataset is not None,
+                "replicates": len(reports),
+                "seeds": list(seeds),
+                "variability_scope": "model initialization on one fixed dataset split",
+            },
+            "runs": [asdict(report) for report in reports],
+            "metric_summary": metric_summary,
+            "hypothesis_verdict_frequencies": verdict_frequencies,
+        }

@@ -157,11 +157,24 @@ def test_five_mathematical_engines_independently():
 
 
 def test_milestone_1_tracks_a0_b0_c0_ablations_and_hypotheses_h1_to_h5():
-    """Run the complete Milestone 1 benchmark suite, ablations, and H1-H5 hypothesis checks."""
+    """Run the milestone benchmark and check evidence-scoped comparison outcomes."""
     hyps = default_frozen_hypotheses()
     assert len(hyps) == 5
 
     suite = Milestone1BenchmarkSuite()
+    assert len(suite.train_triples) == 75
+    assert len(suite.dev_triples) == 25
+    assert len(suite.test_triples) == 25
+    assert suite.train_triples.isdisjoint(suite.dev_triples)
+    assert suite.train_triples.isdisjoint(suite.test_triples)
+    assert suite.dev_triples.isdisjoint(suite.test_triples)
+    tokenizer = MMLMTokenizer(max_vocab_size=128).fit(suite.train_corpus)
+    unk_id = tokenizer.token_to_id[tokenizer.UNK_TOKEN]
+    assert all(
+        unk_id not in tokenizer.encode(sentence)
+        for sentence in (*suite.dev_corpus, *suite.eval_corpus)
+    )
+
     report = suite.run_milestone_1()
 
     assert set(report.model_metrics.keys()) == {"A0", "B0", "C0", "Transformer", "SSM"}
@@ -172,10 +185,20 @@ def test_milestone_1_tracks_a0_b0_c0_ablations_and_hypotheses_h1_to_h5():
         assert 0.0 <= metrics.compositional_reasoning_accuracy <= 1.0
         assert metrics.serialized_bytes > 0
 
-    for h_id in ("H1", "H2", "H3", "H4", "H5"):
-        assert report.hypothesis_verdicts[h_id] is True, (
-            f"Hypothesis {h_id} failed: {report.hypothesis_evidence.get(h_id)}"
-        )
+    assert set(report.hypothesis_verdicts) == {"H1", "H2", "H3", "H4", "H5"}
+    assert report.hypothesis_verdicts["H2"] in {
+        "OBSERVED_COMPARISON_PASS",
+        "OBSERVED_COMPARISON_FAIL",
+    }
+    assert report.hypothesis_verdicts["H5"] in {
+        "OBSERVED_COMPARISON_PASS",
+        "OBSERVED_COMPARISON_FAIL",
+    }
+    assert all(isinstance(outcome, str) for outcome in report.hypothesis_verdicts.values())
+    assert all(report.hypothesis_evidence.values())
+    assert report.protocol_summary["split_sizes"] == {"train": 75, "dev": 25, "test": 25}
+    assert report.protocol_summary["exact_triple_splits_disjoint"] is True
+    assert report.protocol_summary["external_or_real_world_evidence"] is False
 
     assert (
         report.ablation_report.full_b0_metrics.long_context_retrieval_accuracy
