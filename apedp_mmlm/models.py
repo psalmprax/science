@@ -634,36 +634,45 @@ class AblationComparisonReport:
 
 @dataclass
 class Milestone1SummaryReport:
-    """Complete Milestone 1 execution report including H1-H5 falsification verdicts."""
+    """Milestone 1 measurements and scope-limited hypothesis comparison outcomes."""
 
     model_metrics: dict[str, BenchmarkMetrics]
     ablation_report: AblationComparisonReport
-    hypothesis_verdicts: dict[str, bool]
+    hypothesis_verdicts: dict[str, str]
     hypothesis_evidence: dict[str, str] = field(default_factory=dict)
+    protocol_summary: dict[str, object] = field(default_factory=dict)
 
 
 class Milestone1BenchmarkSuite:
-    """Executes the 4 initial workloads (WikiText-style LM, TinyStories generation, KV recall, ListOps)."""
+    """Runs a synthetic held-out-triple benchmark plus retrieval and ListOps tasks.
+
+    The language-model split tests compositional generalization to unseen
+    subject-relation-object triples. It is a controlled synthetic benchmark,
+    not a substitute for external language-model evaluation.
+    """
 
     def __init__(self) -> None:
-        self.train_corpus = [
-            "quantum state evolution preserves unitary norm under hamiltonian dynamics .",
-            "tensor train factorization compresses high dimensional probability distributions .",
-            "energy based models evaluate global sequence compatibility and constraints .",
-            "john works_in berlin and john has_occupation engineer in the laboratory .",
-            "alice works_in zurich and alice has_occupation physicist studying optics .",
-            "once upon a time a curious scientist built a small telescope to observe stars .",
-            "the small telescope revealed bright planets orbiting a distant golden sun .",
-            "probabilistic circuits compute exact marginals in linear time over trees .",
-            "stabilizer circuits commute across graph state neighborhood symmetries .",
-            "local complementation transforms graph states without two qubit gates .",
-        ]
-        self.eval_corpus = [
-            "quantum state evolution compresses high dimensional probability distributions .",
-            "once upon a time a curious scientist observed bright planets .",
-            "probabilistic circuits evaluate global sequence compatibility .",
-            "local complementation transforms graph states under hamiltonian dynamics .",
-        ]
+        subjects = ("ada", "ben", "cyra", "dax", "elena")
+        relations = ("works_in", "studies", "builds", "observes", "uses")
+        objects = ("lab", "optics", "models", "stars", "circuits")
+        splits: dict[str, list[tuple[str, str, str]]] = {
+            "train": [],
+            "dev": [],
+            "test": [],
+        }
+        for i, subject in enumerate(subjects):
+            for j, relation in enumerate(relations):
+                for k, obj in enumerate(objects):
+                    bucket = (i + 2 * j + 3 * k) % 5
+                    split = "train" if bucket < 3 else "dev" if bucket == 3 else "test"
+                    splits[split].append((subject, relation, obj))
+
+        self.train_triples = frozenset(splits["train"])
+        self.dev_triples = frozenset(splits["dev"])
+        self.test_triples = frozenset(splits["test"])
+        self.train_corpus = [f"{s} {r} {o} ." for s, r, o in splits["train"]]
+        self.dev_corpus = [f"{s} {r} {o} ." for s, r, o in splits["dev"]]
+        self.eval_corpus = [f"{s} {r} {o} ." for s, r, o in splits["test"]]
         self.kv_tasks = [
             (
                 "alpha equals seven . beta equals nine . noise token one two three four five six seven eight nine ten .",
@@ -784,20 +793,55 @@ class Milestone1BenchmarkSuite:
             without_energy_evaluator=m_b0_no_energy,
         )
 
-        # Evaluate frozen hypotheses H1-H5
+        # These are observed single-run comparisons, not statistical hypothesis
+        # tests. H2's registered retention metric and H5's composite quality /
+        # efficiency criterion are not measured by this benchmark.
         h_verdicts = {
-            "H1": m_b0_full.held_out_perplexity <= m_b0_1d_tt.held_out_perplexity,
-            "H2": m_a0.held_out_perplexity < tokenizer.vocab_size,
-            "H3": m_b0_full.long_context_retrieval_accuracy > m_b0_no_hg.long_context_retrieval_accuracy,
-            "H4": m_b0_full.generation_energy <= m_b0_no_energy.generation_energy,
-            "H5": (
-                m_c0.long_context_retrieval_accuracy >= m_tf.long_context_retrieval_accuracy
-                and m_c0.compositional_reasoning_accuracy > m_ssm.compositional_reasoning_accuracy
+            "H1": (
+                "OBSERVED_COMPARISON_PASS"
+                if m_b0_full.held_out_perplexity <= m_b0_1d_tt.held_out_perplexity
+                else "OBSERVED_COMPARISON_FAIL"
             ),
+            "H2": "NOT_ASSESSED",
+            "H3": (
+                "OBSERVED_COMPARISON_PASS"
+                if m_b0_full.long_context_retrieval_accuracy
+                > m_b0_no_hg.long_context_retrieval_accuracy
+                else "OBSERVED_COMPARISON_FAIL"
+            ),
+            "H4": (
+                "OBSERVED_COMPARISON_PASS"
+                if m_b0_full.generation_energy <= m_b0_no_energy.generation_energy
+                else "OBSERVED_COMPARISON_FAIL"
+            ),
+            "H5": "NOT_ASSESSED",
         }
         h_evidence = {
-            h.hypothesis_id: f"{h.statement} -> Verified={h_verdicts[h.hypothesis_id]}"
-            for h in default_frozen_hypotheses()
+            "H1": (
+                f"One synthetic held-out-triple split: B0 perplexity "
+                f"{m_b0_full.held_out_perplexity} vs 1D-only ablation "
+                f"{m_b0_1d_tt.held_out_perplexity}; comparison is descriptive, "
+                "not a significance test."
+            ),
+            "H2": (
+                "NOT_ASSESSED: the suite does not measure the preregistered "
+                "streaming-retention metric."
+            ),
+            "H3": (
+                f"One fixed retrieval set: full B0 accuracy "
+                f"{m_b0_full.long_context_retrieval_accuracy} vs no-hypergraph "
+                f"ablation {m_b0_no_hg.long_context_retrieval_accuracy}."
+            ),
+            "H4": (
+                f"One fixed generation prompt: full B0 energy "
+                f"{m_b0_full.generation_energy} vs no-energy ablation "
+                f"{m_b0_no_energy.generation_energy}."
+            ),
+            "H5": (
+                "NOT_ASSESSED: the registered composite quality-efficiency "
+                "criterion is not computed; selected task metrics alone do not "
+                "establish competitive performance."
+            ),
         }
 
         return Milestone1SummaryReport(
@@ -811,4 +855,20 @@ class Milestone1BenchmarkSuite:
             ablation_report=ablation_report,
             hypothesis_verdicts=h_verdicts,
             hypothesis_evidence=h_evidence,
+            protocol_summary={
+                "dataset": "deterministic synthetic subject-relation-object triples",
+                "split_sizes": {
+                    "train": len(self.train_triples),
+                    "dev": len(self.dev_triples),
+                    "test": len(self.test_triples),
+                },
+                "exact_triple_splits_disjoint": not (
+                    (self.train_triples & self.dev_triples)
+                    or (self.train_triples & self.test_triples)
+                    or (self.dev_triples & self.test_triples)
+                ),
+                "tokenizer_fit_split": "train",
+                "external_or_real_world_evidence": False,
+                "replicates": 1,
+            },
         )
