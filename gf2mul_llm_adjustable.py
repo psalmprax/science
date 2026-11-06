@@ -252,6 +252,92 @@ def build_schoolbook_decomposition(
     )
 
 
+def build_karatsuba_polynomial_decomposition(
+    degree: int = 12, modulus_int: int = 0x1053
+) -> TensorDecomposition:
+    """Build and certify a recursive Karatsuba decomposition for GF(2^degree).
+
+    Inputs are polynomial-basis bit vectors. Recursive Karatsuba multiplies
+    zero-padded input polynomials, then each output coefficient is reduced
+    modulo ``modulus_int`` to produce the field-basis output factors.
+    """
+    if degree < 1 or modulus_int.bit_length() != degree + 1:
+        raise ValueError("degree and modulus_int must describe a degree-sized field")
+    padded_degree = 1 << (degree - 1).bit_length()
+
+    def recursive_atoms(size: int) -> list[tuple[int, int, int]]:
+        if size == 1:
+            return [(1, 1, 1)]
+        half = size // 2
+        low_atoms = recursive_atoms(half)
+        atoms: list[tuple[int, int, int]] = []
+        for left, right, output in low_atoms:
+            atoms.append((left, right, output ^ (output << half)))
+        for left, right, output in low_atoms:
+            atoms.append(
+                (left << half, right << half, (output << (2 * half)) ^ (output << half))
+            )
+        for left, right, output in low_atoms:
+            atoms.append(
+                (left | (left << half), right | (right << half), output << half)
+            )
+        return atoms
+
+    input_mask = (1 << degree) - 1
+    folded_atoms: dict[tuple[int, int], int] = {}
+    for left_mask, right_mask, product_mask in recursive_atoms(padded_degree):
+        left_mask &= input_mask
+        right_mask &= input_mask
+        if not left_mask or not right_mask:
+            continue
+        # Multiplication is commutative, so canonicalize input factor order and
+        # combine repeated products by XORing their output linear forms.
+        if left_mask > right_mask:
+            left_mask, right_mask = right_mask, left_mask
+        field_output = 0
+        for coefficient in range(2 * degree - 1):
+            if (product_mask >> coefficient) & 1:
+                field_output ^= _gf2_poly_mod(1 << coefficient, modulus_int, degree)
+        key = (left_mask, right_mask)
+        folded_atoms[key] = folded_atoms.get(key, 0) ^ field_output
+
+    terms = [
+        (left_mask, right_mask, output_mask)
+        for (left_mask, right_mask), output_mask in sorted(folded_atoms.items())
+        if output_mask
+    ]
+    U = np.zeros((len(terms), degree), dtype=np.uint8)
+    V = np.zeros((len(terms), degree), dtype=np.uint8)
+    W = np.zeros((len(terms), degree), dtype=np.uint8)
+    for row, (left_mask, right_mask, output_mask) in enumerate(terms):
+        for bit in range(degree):
+            U[row, bit] = (left_mask >> bit) & 1
+            V[row, bit] = (right_mask >> bit) & 1
+            W[row, bit] = (output_mask >> bit) & 1
+
+    decomposition = TensorDecomposition(
+        rank=len(terms),
+        U=U,
+        V=V,
+        W=W,
+        name=f"Karatsuba-Polynomial-{degree}",
+        metadata={
+            "category": "recursive_polynomial_karatsuba",
+            "nonlinear_count": len(terms),
+            "padded_degree": padded_degree,
+            "modulus_int": modulus_int,
+        },
+    )
+    tensor = build_multiplication_tensor(degree, modulus_int)
+    exact, mismatches = decomposition.reconstruct(tensor)
+    if not exact:
+        raise ValueError(
+            "recursive Karatsuba decomposition failed exact tensor reconstruction "
+            f"({len(mismatches)} mismatches)"
+        )
+    return decomposition
+
+
 def build_karatsuba_decomposition(degree: int = 12) -> TensorDecomposition:
     """Build the 63-product published Karatsuba reference decomposition.
 
@@ -619,8 +705,11 @@ class MMLMMultiplier:
         # Build default tensor
         self.tensor = build_multiplication_tensor(degree=self.degree, modulus_int=self.field_config.modulus_int)
 
-        # Build default decomposition (Karatsuba-63 -> 54)
-        proposed_decomp = build_54_referencedecomposition(degree=self.degree)
+        # Prefer a recursive polynomial Karatsuba decomposition, then fail safe
+        # to schoolbook factors if the exact coefficient screen rejects it.
+        proposed_decomp = build_karatsuba_polynomial_decomposition(
+            degree=self.degree, modulus_int=self.field_config.modulus_int
+        )
         proposed_exact, _ = proposed_decomp.reconstruct(self.tensor)
         if proposed_exact:
             self.default_decomp = proposed_decomp
@@ -629,7 +718,7 @@ class MMLMMultiplier:
                 degree=self.degree, modulus_int=self.field_config.modulus_int
             )
             self.default_decomp.metadata["fallback_reason"] = (
-                "proposed rank-54 factors failed exact tensor reconstruction"
+                "proposed Karatsuba factors failed exact tensor reconstruction"
             )
 
         # Initialize WSP layer

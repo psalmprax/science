@@ -10,6 +10,7 @@ from gf2mul_llm_adjustable import (
     TensorDecomposition,
     WSPConfig,
     WSPLayer,
+    build_karatsuba_polynomial_decomposition,
     build_multiplication_tensor,
     build_schoolbook_decomposition,
 )
@@ -125,7 +126,21 @@ def test_target_rank_above_current_rank_does_not_corrupt_rank_metadata():
     assert diagnostics["target_rank_reached"]
 
 
-def test_schoolbook_baseline_is_exact_and_multiplier_fails_safe_on_placeholder_rank():
+def test_recursive_karatsuba_is_exact_and_lower_rank_than_schoolbook():
+    degree = 12
+    modulus = 0x1053
+    tensor = build_multiplication_tensor(degree, modulus)
+    karatsuba = build_karatsuba_polynomial_decomposition(degree, modulus)
+    schoolbook = build_schoolbook_decomposition(degree, modulus)
+
+    assert karatsuba.reconstruct(tensor)[0]
+    assert schoolbook.reconstruct(tensor)[0]
+    assert karatsuba.rank < schoolbook.rank
+    assert karatsuba.rank == 81
+    assert karatsuba.metadata["nonlinear_count"] == 81
+
+
+def test_schoolbook_baseline_is_exact_and_multiplier_honors_unreachable_rank():
     degree = 3
     modulus = 0b1011
     tensor = build_multiplication_tensor(degree, modulus)
@@ -142,8 +157,13 @@ def test_schoolbook_baseline_is_exact_and_multiplier_fails_safe_on_placeholder_r
     )
     result = multiplier.get_decomposition(rank=1)
     assert result.reconstruct(tensor)[0]
-    assert result.metadata["fallback_reason"].startswith("proposed rank-54")
     assert not result.metadata["rank_request_diagnostics"]["target_rank_reached"]
+
+
+def test_multiplier_uses_certified_karatsuba_factors_by_default():
+    multiplier = MMLMMultiplier()
+    assert multiplier.default_decomp.rank == 81
+    assert multiplier.default_decomp.reconstruct(multiplier.tensor)[0]
 
 
 def test_llm_tuning_replaces_frozen_configs_without_losing_exactness():
