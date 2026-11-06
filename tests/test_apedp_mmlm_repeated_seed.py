@@ -11,7 +11,7 @@ def test_repeated_seed_summary_reports_raw_metrics_and_variability():
     assert summary["protocol_summary"]["replicates"] == 2
     assert summary["protocol_summary"]["seeds"] == [31, 47]
     assert summary["protocol_summary"]["variability_scope"] == (
-        "model initialization on one fixed synthetic split"
+        "model initialization on one fixed dataset split"
     )
     assert summary["protocol_summary"]["external_or_real_world_evidence"] is False
     assert [run["protocol_summary"]["seed"] for run in summary["runs"]] == [31, 47]
@@ -20,7 +20,11 @@ def test_repeated_seed_summary_reports_raw_metrics_and_variability():
     assert len(perplexity["values"]) == 2
     assert perplexity["mean"] == pytest.approx(sum(perplexity["values"]) / 2)
     assert perplexity["sample_std"] >= 0.0
-    assert summary["hypothesis_verdict_frequencies"]["H2"] == {"NOT_ASSESSED": 1.0}
+    assert sum(summary["hypothesis_verdict_frequencies"]["H2"].values()) == 1.0
+    assert set(summary["hypothesis_verdict_frequencies"]["H2"]) <= {
+        "OBSERVED_COMPARISON_PASS",
+        "OBSERVED_COMPARISON_FAIL",
+    }
 
 
 def test_repeated_seed_summary_requires_multiple_unique_integer_seeds():
