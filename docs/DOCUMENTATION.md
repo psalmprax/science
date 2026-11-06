@@ -3039,6 +3039,8 @@ Three limits follow, stated so they are not mistaken for gaps a code change woul
 
 ### 5.25 `apedp_dyn.epistemic.discovery_envelope` — Admission Without Verification
 
+**Module:** `apedp_dyn/epistemic/discovery_envelope.py`
+
 **Status:** `experimental`
 
 **Description:** Wraps a candidate that passed every gate in the only two states the
