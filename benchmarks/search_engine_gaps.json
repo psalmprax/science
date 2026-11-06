@@ -8,6 +8,11 @@
     "beam_depth": 2,
     "beam_width": 12,
     "seed": 7,
+    "extended_trig_frequency_scales": [
+      0.5,
+      2.0,
+      3.0
+    ],
     "recovery_criterion": "holdout R^2 >= 0.99, coefficients refitted on train",
     "leakage": "search sees training rows only; the holdout rows score the returned candidate and are never read during the search"
   },
@@ -31,7 +36,7 @@
           "train_r2": 0.9999122155889842,
           "holdout_r2": 0.9999236178526606,
           "recovered": true,
-          "n_candidates": 50
+          "n_candidates": 51
         },
         "beam_classic": {
           "expression": "x0",
@@ -68,7 +73,7 @@
           "train_r2": 0.9999047596534758,
           "holdout_r2": 0.9999048135541518,
           "recovered": true,
-          "n_candidates": 50
+          "n_candidates": 51
         },
         "beam_classic": {
           "expression": "x0",
@@ -105,7 +110,7 @@
           "train_r2": 0.9998951099043922,
           "holdout_r2": 0.9998917964445196,
           "recovered": true,
-          "n_candidates": 50
+          "n_candidates": 51
         },
         "beam_classic": {
           "expression": "x0",
@@ -142,7 +147,7 @@
           "train_r2": 0.9998934851469877,
           "holdout_r2": 0.9999037914906942,
           "recovered": true,
-          "n_candidates": 50
+          "n_candidates": 52
         },
         "beam_classic": {
           "expression": "x0",
@@ -179,7 +184,7 @@
           "train_r2": 0.9998941014967896,
           "holdout_r2": 0.9999128078249824,
           "recovered": true,
-          "n_candidates": 51
+          "n_candidates": 53
         },
         "beam_classic": {
           "expression": "x0",
@@ -216,7 +221,7 @@
           "train_r2": 0.9988000106296459,
           "holdout_r2": 0.998738317248273,
           "recovered": true,
-          "n_candidates": 50
+          "n_candidates": 51
         },
         "beam_classic": {
           "expression": "x0",
@@ -253,7 +258,7 @@
           "train_r2": 0.9987775688857584,
           "holdout_r2": 0.9986932856369389,
           "recovered": true,
-          "n_candidates": 50
+          "n_candidates": 52
         },
         "beam_classic": {
           "expression": "x0",
@@ -290,7 +295,7 @@
           "train_r2": 0.9999055883452257,
           "holdout_r2": 0.9998823900652005,
           "recovered": true,
-          "n_candidates": 51
+          "n_candidates": 52
         },
         "beam_classic": {
           "expression": "x0",
@@ -323,11 +328,11 @@
           "n_candidates": 31
         },
         "extended": {
-          "expression": "cos(x0)",
-          "train_r2": 0.8475586410701738,
-          "holdout_r2": 0.8311005034917782,
-          "recovered": false,
-          "n_candidates": 51
+          "expression": "sin(2.0*(x0))",
+          "train_r2": 0.999910098449181,
+          "holdout_r2": 0.9998955076588109,
+          "recovered": true,
+          "n_candidates": 53
         },
         "beam_classic": {
           "expression": "x0",
@@ -364,7 +369,7 @@
           "train_r2": 0.9994757074778485,
           "holdout_r2": 0.9993712730803266,
           "recovered": true,
-          "n_candidates": 51
+          "n_candidates": 52
         },
         "beam_classic": {
           "expression": "x0",
@@ -402,7 +407,7 @@
           "train_r2": 0.9999030320584025,
           "holdout_r2": 0.9999080352878111,
           "recovered": true,
-          "n_candidates": 61
+          "n_candidates": 63
         },
         "beam_classic": {
           "expression": "(x0+x1)",
@@ -440,7 +445,7 @@
           "train_r2": 0.9999159036299758,
           "holdout_r2": 0.9998784909790581,
           "recovered": true,
-          "n_candidates": 61
+          "n_candidates": 62
         },
         "beam_classic": {
           "expression": "x1",
@@ -463,7 +468,7 @@
     "n_laws": 12,
     "recovered_by_engine": {
       "classic": 2,
-      "extended": 11,
+      "extended": 12,
       "beam_classic": 1,
       "beam_extended": 9
     },
@@ -481,6 +486,7 @@
         "power_2_5",
         "exponential_decay",
         "logarithm",
+        "sine",
         "rational_saturation",
         "product",
         "ratio"
@@ -508,12 +514,11 @@
       "inverse",
       "exponential_decay",
       "logarithm",
+      "sine",
       "rational_saturation",
       "ratio"
     ],
-    "still_unreachable_by_both_extended_engines": [
-      "sine"
-    ]
+    "still_unreachable_by_both_extended_engines": []
   },
   "checks": {
     "every_recovered_candidate_clears_the_criterion": true,

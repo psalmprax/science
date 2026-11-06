@@ -334,7 +334,7 @@ def main() -> int:
             "the search space is local rewrites over Clifford gates, not a general "
             "synthesiser: it cannot propose a circuit that is not reachable by "
             "cancellations, S/Z algebra, Pauli conjugation or commuting a pair past "
-            "disjoint gates",
+            "disjoint or otherwise commuting gates",
             "the reference circuit is deliberately inefficient (see "
             "workload.reference_provenance): the measured reduction is against an "
             "unoptimised circuit, and the discovered 100-operation chain is the "

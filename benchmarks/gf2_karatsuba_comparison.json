@@ -1,0 +1,40 @@
+{
+  "degree": 12,
+  "modulus_int": 4179,
+  "seed": 20261106,
+  "python": "3.12.3",
+  "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+  "numpy": "2.5.4",
+  "runtime_scope": "packed-bit Python evaluator; not compiled-circuit or hardware runtime",
+  "xor_count_scope": "unshared input/output linear-circuit estimate",
+  "results": {
+    "schoolbook": {
+      "bilinear_rank_and_and_count": 144,
+      "exact_tensor_reconstruction": true,
+      "input_linear_xors_unshared": 0,
+      "output_linear_xors_unshared": 351,
+      "total_linear_xors_unshared": 351,
+      "python_evaluator_runtime": {
+        "median_microseconds_per_multiply": 13.273,
+        "min_microseconds_per_multiply": 13.232,
+        "max_microseconds_per_multiply": 17.301,
+        "samples": 11,
+        "multiplications_per_sample": 1024
+      }
+    },
+    "recursive_karatsuba": {
+      "bilinear_rank_and_and_count": 54,
+      "exact_tensor_reconstruction": true,
+      "input_linear_xors_unshared": 212,
+      "output_linear_xors_unshared": 301,
+      "total_linear_xors_unshared": 513,
+      "python_evaluator_runtime": {
+        "median_microseconds_per_multiply": 5.409,
+        "min_microseconds_per_multiply": 5.394,
+        "max_microseconds_per_multiply": 5.469,
+        "samples": 11,
+        "multiplications_per_sample": 1024
+      }
+    }
+  }
+}

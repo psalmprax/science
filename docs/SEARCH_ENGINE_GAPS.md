@@ -48,7 +48,7 @@ variables plus `1` and `2`, so the same forms are unreachable there.
 | engine | recovered |
 |---|---|
 | `HierarchicalSearch`, classic | **2/12** (`power_2_5`, `product`) |
-| `HierarchicalSearch`, extended | **11/12** |
+| `HierarchicalSearch`, extended | **12/12** |
 | `beam_search_expressions`, classic atoms | **1/12** (`linear`) |
 | `beam_search_expressions(include_functions=True)` | **9/12** |
 
@@ -60,10 +60,19 @@ default atom set cannot compose. Both extensions are opt-in-preserving: `include
 defaults to `False` so existing atom counts and orderings do not move, and
 `template_set="classic"` reproduces the old behaviour for comparison.
 
-**Not closed, and reported as such:** a sinusoid of non-unit frequency. `sin(2x)` is fitted
-by `a*sin(x)+b`, which reaches `R^2 = 0.83` at best. Closing it needs a fitted frequency,
-which is a nonlinear parameter the current fitter does not have; the record keeps it in
-`still_unreachable` rather than tuning the template list until the test passes.
+The benchmark's `sin(2x)` miss is now covered by bounded frequency-scaled sine and cosine
+expansions (multipliers 0.5, 2 and 3) in the extended hierarchical mid phase. A regression
+test searches noisy training observations, then applies the returned expression and
+training-fitted scale/offset to an independent noisy holdout; the holdout is not passed to
+search. The rerun of the 12-law protocol recovers the sine case at holdout `R^2 = 0.9999`,
+bringing extended hierarchical recovery from 11/12 to 12/12. The regenerated
+`benchmarks/search_engine_gaps.json` records both the measured result and the frequency
+multipliers used. This closes the measured `sin(2x)` gap without fitting frequency from
+confirmation data.
+
+**Still limited:** these are discrete frequency multipliers, not continuous frequency or
+phase estimation. Off-grid frequencies and phase-shifted sinusoids remain outside this
+change's evidence; the added regression pin does not claim general periodic-law recovery.
 
 ## 3. The evolutionary search selected on the confirmation rows
 
@@ -127,9 +136,10 @@ must carry its URL and retrieval date, because the loader requires them.
 ## 5. Pins
 
 - `tests/test_search_engines_real.py` — the ranker prefers the smaller error, `search()`
-  returns its best candidate, the extended set reaches a decay the classic set cannot, a
-  fitted coefficient is recovered (`7.5*x**2` → `x0**2` with scale 7.5), and the beam
-  function atoms are present only when asked for.
+  returns its best candidate, the extended set reaches a decay the classic set cannot,
+  harmonic recovery transfers to an untouched holdout, a fitted coefficient is recovered
+  (`7.5*x**2` → `x0**2` with scale 7.5), and the beam function atoms are present only when
+  asked for.
 - `tests/test_evolutionary_search.py` — the confirmation rows cannot move the pick, and the
   confirmed error is measured rather than chosen.
 - `tests/test_dyn_patent_prior_art.py` — provenance refusal, duplicate refusal, unparseable
@@ -137,3 +147,27 @@ must carry its URL and retrieval date, because the loader requires them.
   synthetic disclosure in every verdict.
 - `benchmarks/search_engine_gaps.json` — the twelve-law table above, with the protocol
   (train/holdout sizes, noise, budget, criterion, leakage statement) recorded beside it.
+
+## 6. Robustness across noise, range, and generated worlds
+
+The original one-seed measurement is now complemented by
+`scripts/measure_search_engine_gaps.py`'s multi-condition protocol and the
+reproducible record in `benchmarks/search_engine_robustness.json`. The recorded
+run crosses three synthetic-world seeds (7, 17, 27), two train-scaled noise
+levels (1% and 5%), and two positive input ranges ([0.5, 3] and [0.1, 10]):
+12 conditions and 144 law/condition trials across the same 12 planted families.
+The extended hierarchical engine recovered 135/144 trials (9–12 of 12 per
+condition); the extended beam recovered 102/144 (8–9 per condition).
+
+For each condition, input rows are split before noise is added. Noise magnitude
+uses only the training target's standard deviation; candidate search and
+coefficient fitting see training rows only, and holdout rows score the fixed
+candidate. This removes even the previous use of full-target scale for noise
+generation.
+
+These are multiple generated synthetic worlds, not independent real datasets.
+Both train and holdout inputs within a condition are sampled from the same
+declared interval; changing intervals between conditions is not an
+out-of-distribution train/test experiment. The results show sensitivity to
+seed, noise and domain width, but do not establish recovery on real scientific
+data, arbitrary equations, extrapolation ranges or phase/off-grid periodic laws.

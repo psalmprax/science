@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from apedp.advanced_search import HierarchicalSearch, NGTSSearch
+from apedp.advanced_search import HierarchicalSearch, NGTSSearch, _evaluate_expression
 from apedp.ensemble_search import EnsembleSearcher
 from apedp.feature_selection import beam_search_expressions
 
@@ -171,6 +171,28 @@ def test_extended_search_fits_coefficients_it_was_not_given():
     assert out
     assert out[0]["expression"] == "x0**2"
     assert abs(out[0]["fitted_scale"] - 7.5) < 1e-6
+
+
+def test_extended_search_recovers_harmonic_on_untouched_holdout():
+    train_rng = np.random.default_rng(8)
+    test_rng = np.random.default_rng(9)
+    x_train = train_rng.uniform(0.5, 3.0, 200)
+    y_signal = np.sin(2.0 * x_train)
+    y_train = y_signal + train_rng.normal(0.0, 0.01 * np.std(y_signal), x_train.size)
+    x_test = test_rng.uniform(0.5, 3.0, 100)
+    y_test_signal = np.sin(2.0 * x_test)
+    y_test = y_test_signal + test_rng.normal(
+        0.0, 0.01 * np.std(y_test_signal), x_test.size)
+
+    candidates = HierarchicalSearch().search(
+        x_train.reshape(-1, 1), y_train, budget=120, variable_names=["x0"])
+    candidate = next(c for c in candidates if c["expression"] == "sin(2.0*(x0))")
+    prediction = _evaluate_expression(candidate["expression"], ["x0"], [x_test])
+    assert prediction is not None
+    prediction = candidate["fitted_scale"] * prediction + candidate["fitted_offset"]
+    holdout_r2 = 1.0 - np.sum((y_test - prediction) ** 2) / np.sum(
+        (y_test - np.mean(y_test)) ** 2)
+    assert holdout_r2 > 0.99
 
 
 def test_beam_functions_reach_the_forms_the_plain_atoms_cannot():

@@ -10,7 +10,7 @@ loop at 100 qubits, and adjudication receipts · **Evidence:** `apedp_dyn/vqc/`,
 `tests/test_vqc_core.py` (63 tests), `tests/test_vqc_codes.py` (46),
 `tests/test_vqc_equivalence.py` (20), `tests/test_vqc_clifford_equivalence.py` (19),
 `tests/test_vqc_stabilizer.py` (40), `tests/test_vqc_decoders.py` (18),
-`tests/test_vqc_discovery.py` (13), `tests/test_vqc_clifford_discovery.py` (15),
+`tests/test_vqc_discovery.py` (13), `tests/test_vqc_clifford_discovery.py` (21),
 `tests/test_vqc_qasm.py` (15), `tests/test_vqc_stabilizer_scaling.py` (7),
 `tests/test_vqc_synthesis.py` (56), `tests/test_vqc_placement.py` (34),
 `tests/test_vqc_external_comparison.py` (51), `tests/test_vqc_corpus.py` (11),
@@ -506,8 +506,10 @@ promotion.
 
 The search space is local rewrites that preserve the unitary *by construction*:
 cancelling self-inverse pairs (`h h`, `cx cx`, `cz cz`, `swap swap`, …), the same
-cancellation when the pair only *commutes* past disjoint gates, the `S` algebra
-(`s sdg` vanishes, `s s = z`), and the Pauli conjugations `h z h = x`, `h x h = z`.
+cancellation when the pair only *commutes* past intervening gates (including CNOTs
+sharing a control or target, and diagonal CZ/phase gates), the `S` algebra
+(`s sdg` vanishes, `s s = z`), and the Pauli conjugations `h z h = x`, `h x h = z`,
+`h y h = y` up to global phase.
 That list is a real limitation, and the record states it: this is not a synthesiser,
 and it cannot propose a circuit that these rules cannot reach.
 

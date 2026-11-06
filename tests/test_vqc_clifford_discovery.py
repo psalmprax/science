@@ -81,6 +81,34 @@ def test_the_rewrites_remove_work_and_never_add_it():
         assert resource_score(candidate) < before
 
 
+@pytest.mark.parametrize(
+    ("gates", "expected_gate"),
+    (
+        ((Gate("cx", (0, 1)), Gate("cx", (0, 2)), Gate("cx", (0, 1))),
+         Gate("cx", (0, 2))),
+        ((Gate("cx", (0, 2)), Gate("cx", (1, 2)), Gate("cx", (0, 2))),
+         Gate("cx", (1, 2))),
+        ((Gate("cz", (0, 1)), Gate("cz", (1, 2)), Gate("cz", (0, 1))),
+         Gate("cz", (1, 2))),
+    ),
+)
+def test_commuting_entanglers_can_expose_a_cancellable_pair(gates, expected_gate):
+    circuit = Circuit(ops=gates, num_qubits=3)
+    outcome = search(circuit, mutations=0)
+    assert outcome.best.ops == (expected_gate,)
+    assert resource_score(outcome.best) == (1, 1)
+    assert adjudicate_clifford_equivalence(circuit, outcome.best).verdict == "VALID"
+
+
+def test_hadamard_y_hadamard_rewrite_is_certified_up_to_global_phase():
+    circuit = Circuit(ops=(Gate("h", (0,)), Gate("y", (0,)), Gate("h", (0,))),
+                      num_qubits=1)
+    rewrites = list(propose_rewrites(circuit))
+    rewrite = next(candidate for rule, candidate in rewrites if rule == "h y h = y")
+    assert rewrite.ops == (Gate("y", (0,)),)
+    assert adjudicate_clifford_equivalence(circuit, rewrite).verdict == "VALID"
+
+
 def test_the_self_inverse_set_is_exactly_the_gates_that_are_their_own_inverse():
     for name in SELF_INVERSE:
         # Two of them in a row is the identity: the empty circuit is equivalent.
