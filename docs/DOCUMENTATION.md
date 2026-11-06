@@ -46,11 +46,26 @@ and [review owners](../.github/CODEOWNERS).
 - `MMLMTrackB` (Hybrid): exact path ablated against a least-squares-fitted real model of the same rank and factors
 - `MMLMTrackC` (AttentionFree): exact product scored by bit-level energies (live products, tree contraction)
 
-Each track returns a `scope` block (`unit`, `models_tokens: False`,
+Each track returns a `scope` block (`unit`, `compositions`, `models_tokens: False`,
 `implements_attention: False`). The A/B/C names come from the MMLM programme; what these
 classes do is field arithmetic, and a test asserts the scope rather than trusting the
 name. `tests/test_mmlm_tracks.py` pins exactness, packed-operand splitting, Track B
 determinism, and Track C's energy identities.
+
+The tracks are not one multiply deep. `bilinear_multiply_batch` runs many pairs through
+the same U/V/W factors, and two compositions are built on it:
+
+- `invert_batch` inverts elements as `x**(2**12 - 2)` by square-and-multiply — 11
+  squarings and 10 multiplications, **21 field products per element** — and returns
+  `x * x**-1 == 1` for each one. All 4,095 non-zero elements of GF(2^12) invert exactly
+  through the rank-54 decomposition (86,000 products), which is a property no single
+  product can demonstrate. Zero and out-of-field inputs raise rather than return 0.
+- `gf_matvec` contracts a GF(2^12) matrix against a vector with one product per non-zero
+  entry and XOR accumulation, reporting the executed count and the skipped zero entries.
+  It is compared entry by entry against the field model, and a short row raises.
+
+Both are covered in `tests/test_mmlm_tracks.py` for all three tracks, so a chain that is
+wrong in the middle fails the identity instead of returning a plausible number.
 
 **LLM tunable interface** (`LLMTunableGF2Multiplier`):
 - Full round-trip LLM adjustment of all parameters
