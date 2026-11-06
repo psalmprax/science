@@ -56,7 +56,8 @@ pytest tests/test_dyn_competing_proposers_and_dsr.py \
        tests/test_quantum_verdict_tristate.py \
        tests/test_quantum_compilation.py \
        tests/test_mmlm_tracks.py \
-       tests/test_tracked_import_closure.py -v
+       tests/test_tracked_import_closure.py \
+       tests/test_discovery_envelope.py -v
 ```
 
 ---

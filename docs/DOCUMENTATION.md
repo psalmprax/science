@@ -3036,3 +3036,28 @@ Three limits follow, stated so they are not mistaken for gaps a code change woul
   indexed, that status tags match docstring `Status:` lines, and that links resolve — not
   that every sentence is true. Measurements are pinned by tests; the narrative around them
   is not.
+
+### 5.25 `apedp_dyn.epistemic.discovery_envelope` — Admission Without Verification
+
+**Status:** `experimental`
+
+**Description:** Wraps a candidate that passed every gate in the only two states the
+repository allows it to have: `refused`, or `awaiting_external_verification`. There is no
+`verified` state. The envelope carries the gates that actually ran, the measured evidence,
+a required non-empty list of claims the gates do **not** establish, and an
+`ExternalVerificationRequest` naming the measurement, its acceptance condition, and why it
+cannot be run in this environment.
+
+Admission is not confirmation: `admit_for_external_verification` refuses a candidate with
+no gate, no stated limit, or no external request, because each of those omissions turns a
+plausible candidate into a claim nobody can check. A failing gate yields `refused` and
+names the gate. This is the shape an honest discovery claim takes here — candidate,
+numbers, limits, and the experiment a human must run.
+
+**Tests:** `tests/test_discovery_envelope.py` (in the AGENTS.md standard suite) pins the
+four refusals, the absence of a verified state, and one worked case built from a real
+`MMLMTrackA` result rather than a fixture.
+
+**References:** `docs/SCAFFOLD_INVENTORY.md` ("Discovery envelopes: admitted, never
+verified"); `apedp_dyn/epistemic/experiment_ledger.py` for the lifecycle states this sits
+above.

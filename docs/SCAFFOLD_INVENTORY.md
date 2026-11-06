@@ -365,6 +365,31 @@ The distinction that matters is not "physics-good, biopharma-bad". It is that a
 model which states its own limits can be trusted within them, and a table which
 does not say it is a table cannot be trusted at all.
 
+## Discovery envelopes: admitted, never verified
+
+A gate can prove that a candidate passed the checks it was given. It cannot prove that
+the candidate is right about the world, and the moment a passing gate is readable as
+"discovered", the audit in this page has failed.
+
+`apedp_dyn/epistemic/discovery_envelope.py` makes the difference a type. A candidate that
+passes every gate is `AWAITING_EXTERNAL_VERIFICATION` — there is no `VERIFIED` state to
+promote it into — and the envelope carries three things the old return values did not:
+
+| field | why it is required |
+|---|---|
+| `gates` | at least one check must have run; an empty set admits nothing |
+| `withheld_claims` | a non-empty list of what the gates do **not** establish; empty reads as "everything" |
+| `external_verification` | the measurement that would settle it, with its acceptance condition and why it cannot be run here |
+
+Any failing gate produces `REFUSED` and names the gate. `tests/test_discovery_envelope.py`
+pins the four refusals and the absence of a verified state, and includes one worked case
+built from a real track result rather than a fixture.
+
+This is the shape of an honest discovery claim in this repository: the candidate, the
+numbers behind it, what it does not cover, and the experiment a human must run. It is
+narrower than "the system discovered a drug", and it is the widest claim the evidence
+here supports.
+
 ## The one rule
 
 **A constant may not be returned as a prediction.** The audit's most serious
