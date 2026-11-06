@@ -707,7 +707,7 @@ results = suite.run_all()
 
 External data source connectors.
 
-- `ingestion_academic_apis.py` — Academic API connectors (arXiv, DOI)
+- `ingestion_academic_apis.py` — Crossref metadata search via `search_crossref()`, with query, DOI, source URL, and retrieval-time provenance; not a full-text or novelty search
 - `ingestion_docs.py` — DOCX/PDF document loaders
 - `ingestion_web_equations.py` — Wikipedia equation harvesting
 
