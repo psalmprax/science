@@ -26,7 +26,8 @@ import math
 import re
 import time
 from collections.abc import Sequence
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field, fields
+from statistics import mean, stdev
 
 import numpy as np
 
@@ -757,8 +758,8 @@ class Milestone1BenchmarkSuite:
             inference_tokens_per_sec=round(tok_per_sec, 1),
         )
 
-    def run_milestone_1(self) -> Milestone1SummaryReport:
-        """Train and evaluate A0, B0 (with ablations), C0, Transformer, and SSM under matched conditions."""
+    def run_milestone_1(self, seed: int = 42) -> Milestone1SummaryReport:
+        """Train and evaluate all models under matched conditions for one initialization seed."""
         tokenizer = MMLMTokenizer(max_vocab_size=512).fit(self.train_corpus)
 
         def train_and_measure(m: object) -> BenchmarkMetrics:
@@ -767,23 +768,25 @@ class Milestone1BenchmarkSuite:
             t_ms = (time.perf_counter() - t_start) * 1000.0
             return self.evaluate_model(m, t_ms)
 
-        m_a0 = train_and_measure(NonNeuralMMLM_A0(tokenizer))
-        m_b0_full = train_and_measure(HybridMMLM_B0(tokenizer, HybridAblationConfig()))
+        m_a0 = train_and_measure(NonNeuralMMLM_A0(tokenizer, seed=seed))
+        m_b0_full = train_and_measure(HybridMMLM_B0(tokenizer, HybridAblationConfig(), seed=seed))
         m_b0_no_nn = train_and_measure(
-            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_neural_semantic_encoder=False))
+            HybridMMLM_B0(
+                tokenizer, HybridAblationConfig(use_neural_semantic_encoder=False), seed=seed
+            )
         )
         m_b0_no_hg = train_and_measure(
-            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_hypergraph_memory=False))
+            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_hypergraph_memory=False), seed=seed)
         )
         m_b0_1d_tt = train_and_measure(
-            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_tree_tensor_memory=False))
+            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_tree_tensor_memory=False), seed=seed)
         )
         m_b0_no_energy = train_and_measure(
-            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_energy_evaluator=False))
+            HybridMMLM_B0(tokenizer, HybridAblationConfig(use_energy_evaluator=False), seed=seed)
         )
-        m_c0 = train_and_measure(AttentionFreeMMLM_C0(tokenizer))
-        m_tf = train_and_measure(TransformerBaseline(tokenizer))
-        m_ssm = train_and_measure(SSMBaseline(tokenizer))
+        m_c0 = train_and_measure(AttentionFreeMMLM_C0(tokenizer, seed=seed))
+        m_tf = train_and_measure(TransformerBaseline(tokenizer, seed=seed))
+        m_ssm = train_and_measure(SSMBaseline(tokenizer, seed=seed))
 
         ablation_report = AblationComparisonReport(
             full_b0_metrics=m_b0_full,
@@ -870,5 +873,72 @@ class Milestone1BenchmarkSuite:
                 "tokenizer_fit_split": "train",
                 "external_or_real_world_evidence": False,
                 "replicates": 1,
+                "seed": seed,
             },
         )
+
+    def run_repeated_milestone_1(self, seeds: Sequence[int]) -> dict[str, object]:
+        """Run independent initializations and report raw runs plus descriptive variability.
+
+        Repeats share the same deterministic synthetic split, so this measures
+        initialization sensitivity only and is not external-data validation.
+        """
+        if len(seeds) < 2:
+            raise ValueError("at least two seeds are required for repeated evaluation")
+        if any(not isinstance(seed, int) or isinstance(seed, bool) for seed in seeds):
+            raise TypeError("all seeds must be integers")
+        if len(set(seeds)) != len(seeds):
+            raise ValueError("seeds must be unique")
+
+        reports = [self.run_milestone_1(seed=seed) for seed in seeds]
+        metric_groups: dict[str, list[BenchmarkMetrics]] = {
+            model_name: [report.model_metrics[model_name] for report in reports]
+            for model_name in reports[0].model_metrics
+        }
+        for ablation_name in (
+            "full_b0_metrics",
+            "without_neural_encoder",
+            "without_hypergraph_memory",
+            "without_tree_tensor_1d_only",
+            "without_energy_evaluator",
+        ):
+            metric_groups[f"B0_{ablation_name}"] = [
+                getattr(report.ablation_report, ablation_name) for report in reports
+            ]
+
+        metric_summary = {}
+        for model_name, model_runs in metric_groups.items():
+            metric_summary[model_name] = {}
+            for metric_field in fields(BenchmarkMetrics):
+                if metric_field.name == "model_id":
+                    continue
+                values = [getattr(metrics, metric_field.name) for metrics in model_runs]
+                metric_summary[model_name][metric_field.name] = {
+                    "mean": mean(values),
+                    "sample_std": stdev(values),
+                    "values": values,
+                }
+        verdict_frequencies = {
+            hypothesis: {
+                verdict: sum(
+                    report.hypothesis_verdicts[hypothesis] == verdict for report in reports
+                )
+                / len(reports)
+                for verdict in sorted(
+                    {report.hypothesis_verdicts[hypothesis] for report in reports}
+                )
+            }
+            for hypothesis in reports[0].hypothesis_verdicts
+        }
+        return {
+            "protocol_summary": {
+                "dataset": "deterministic synthetic subject-relation-object triples",
+                "external_or_real_world_evidence": False,
+                "replicates": len(reports),
+                "seeds": list(seeds),
+                "variability_scope": "model initialization on one fixed synthetic split",
+            },
+            "runs": [asdict(report) for report in reports],
+            "metric_summary": metric_summary,
+            "hypothesis_verdict_frequencies": verdict_frequencies,
+        }
