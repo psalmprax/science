@@ -9,11 +9,14 @@ still resolves and nothing downstream changed.
 module. The rest is the scoring machinery the synthesizer calls: BIC re-ranking
 (disabled pending the frozen-protocol decision recorded beside it), amplitude
 caps, adversarial classification, abstention wording, input normalisation, the
-noise floor, and regime identifiability.
+noise floor, regime identifiability, the regime detector itself, and the two
+static template grammars (``s2_templates`` / ``exp_templates``) the class
+delegates to.
 """
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any, TypedDict
 
@@ -27,8 +30,6 @@ from apedp.decision.stage_c import (
 )
 
 logger = logging.getLogger("apedp.model_synthesis")
-
-
 
 # Bayesian Information Criterion penalty per free parameter, as a multiplier
 # on val_mse: BIC ranking is equivalent to ranking on
@@ -500,3 +501,235 @@ def _regime_identifiability(xs: np.ndarray, ys: np.ndarray) -> tuple[bool, str]:
             "bracket an interior extremum and fit a power law to both branches"
         )
     return False, ""
+
+
+
+
+def detect_regimes(
+    x: np.ndarray,
+    y: np.ndarray,
+    domain_gaps: Sequence[tuple[float, float]] = (),
+) -> dict[str, Any]:
+    """Detects qualitative physical regimes: onset, turnover, growth, divergence, or oscillations."""
+    idx_sort = np.argsort(x)
+    xs = x[idx_sort]
+    ys = y[idx_sort]
+    n = len(xs)
+
+    is_underspecified, underspecification_reason = _regime_identifiability(xs, ys)
+    if is_underspecified:
+        return {
+            "n_samples": n,
+            "x_min": float(xs[0]),
+            "x_max": float(xs[-1]),
+            "is_underspecified": True,
+            "underspecification_reason": underspecification_reason,
+            "alpha_est": 1.0,
+            "has_turnover": False,
+            "x_peak": float(xs[-1]),
+            "is_decaying": False,
+            "is_oscillatory": False,
+            "has_critical_divergence": False,
+            "xc_est": None,
+            "critical_edge_ratio": None,
+            "is_monotonic_growth": False,
+            "has_shock_discontinuity": False,
+            "zero_crossings": 0,
+        }
+
+    # 1. Sign changes / Oscillations (Class S4)
+    has_negatives = bool(np.min(ys) < -0.05 * np.max(np.abs(ys)))
+    zero_crossings = int(np.sum(np.diff(np.sign(ys)) != 0)) if has_negatives else 0
+    is_oscillatory = bool(has_negatives and zero_crossings >= 1)
+
+    # 2. Critical divergence & sampling gaps (Class S3)
+    dx = np.diff(xs)
+    has_gap = len(dx) > 0 and bool(np.max(dx) > 2.5 * np.median(dx))
+    has_critical_divergence = False
+    xc_est = None
+
+    if has_gap or domain_gaps:
+        if domain_gaps:
+            g_min, g_max = domain_gaps[0]
+            xc_cand = (g_min + g_max) / 2.0
+        else:
+            idx_gap = int(np.argmax(dx))
+            g_min, g_max = xs[idx_gap], xs[idx_gap + 1]
+            xc_cand = (g_min + g_max) / 2.0
+
+        near_left = xs < g_min
+        near_right = xs > g_max
+        if np.any(near_left) and np.any(near_right):
+            y_left_edge = ys[near_left][-1]
+            y_right_edge = ys[near_right][0]
+            med_y = float(np.median(ys))
+            if y_left_edge > med_y and y_right_edge > med_y:
+                has_critical_divergence = True
+                xc_est = float(round(xc_cand, 2))
+                # Edge elevation ratio: how strongly the data rises toward
+                # the gap. True divergences (S21) show large ratios; random
+                # subsample-spacing artifacts sit near 1.0. Recorded so the
+                # template proposer can union S2 candidates on weak evidence
+                # instead of catastrophically excluding the true family.
+                denom = abs(med_y) if med_y != 0.0 else 1.0
+                critical_edge_ratio = float(min(y_left_edge, y_right_edge) / denom)
+            else:
+                critical_edge_ratio = None
+        else:
+            critical_edge_ratio = None
+    else:
+        critical_edge_ratio = None
+
+    # 3. Initial power law onset
+    k_near = max(int(n * 0.25), 4)
+    x_near, y_near = xs[:k_near], ys[:k_near]
+    pos_mask = (x_near > 0) & (y_near > 0)
+    if np.sum(pos_mask) >= 3:
+        p = np.polyfit(np.log(x_near[pos_mask]), np.log(y_near[pos_mask]), 1)
+        alpha_est = float(p[0])
+    else:
+        alpha_est = 1.0
+
+    # 4. Check for turnover / peak (Class S1)
+    peak_idx = int(np.argmax(ys))
+    has_turnover = bool(0 < peak_idx < n - 1 and ys[-1] < 0.7 * ys[peak_idx])
+    x_peak = float(xs[peak_idx]) if has_turnover else float(xs[-1])
+
+    # If it has a turnover, it is an envelope (Class S1), NOT a critical scaling divergence (Class S3)
+    if has_turnover:
+        has_critical_divergence = False
+        xc_est = None
+
+    # 5. Far regime asymptotic decay
+    k_far = max(int(n * 0.3), 4)
+    _x_far, y_far = xs[-k_far:], ys[-k_far:]
+    is_decaying = bool(float(np.mean(np.diff(y_far))) < 0.0)
+
+
+    # 6. Monotonic growth (Class S2: Boundary layer)
+    is_monotonic_growth = bool(
+        (not has_turnover)
+        and (not is_oscillatory)
+        and (not has_critical_divergence)
+        and (ys[-1] >= 0.7 * np.max(ys))
+    )
+
+    # 7. Shock discontinuity check (Class S5)
+    dx_eff = np.maximum(dx, np.median(dx) * 0.2)
+    slopes = np.diff(ys) / dx_eff
+    slope_jumps = np.abs(np.diff(slopes))
+    y_range = float(np.ptp(ys)) + 1e-12
+    max_dy = float(np.max(np.abs(np.diff(ys))))
+    has_shock_discontinuity = bool(
+        len(slope_jumps) > 0
+        and np.max(slope_jumps) > 5.0 * (np.median(slope_jumps) + 1e-3)
+        and np.max(slope_jumps) > 5.0
+        and max_dy > 0.15 * y_range
+    )
+
+
+    return {
+        "n_samples": n,
+        "x_min": float(xs[0]),
+        "x_max": float(xs[-1]),
+        "is_underspecified": bool(is_underspecified),
+        "underspecification_reason": underspecification_reason,
+        "alpha_est": float(alpha_est),
+        "has_turnover": bool(has_turnover),
+        "x_peak": float(x_peak),
+        "is_decaying": bool(is_decaying),
+        "is_oscillatory": bool(is_oscillatory),
+        "has_critical_divergence": bool(has_critical_divergence),
+        "xc_est": xc_est,
+        "critical_edge_ratio": critical_edge_ratio,
+        "is_monotonic_growth": bool(is_monotonic_growth),
+        "has_shock_discontinuity": bool(has_shock_discontinuity),
+        "zero_crossings": int(zero_crossings),
+    }
+
+
+def s2_templates(x_min: float | None = None) -> list[tuple[str, str]]:
+    """Class S2 monotonic-growth template set (power / log-boundary / rational).
+
+    ``x_min`` is the smallest observed x, used only to gate the reciprocal
+    Arrhenius template. ``None`` means "domain unknown", in which case the
+    template is proposed: guessing wrong there costs one rejected fit,
+    whereas silently withholding a legitimate form would hide a real
+    mechanism.
+    """
+    structures: list[tuple[str, str]] = []
+    alphas = [0.0, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
+    betas = [0.5, 1.0, 1.5, 2.0]
+    for a in alphas:
+        for b in betas:
+            if a == 0.0:
+                structures.append((f"A * log(1.0 + B * (x**{b}))", "logarithmic_boundary_layer"))
+            else:
+                structures.append((f"A * (x**{a}) * log(1.0 + B * (x**{b}))", "logarithmic_boundary_layer"))
+                structures.append((f"(A * (x**{a})) / (1.0 + B * (x**{b}))", "rational_transition"))
+        if a > 0.0:
+            structures.append((f"A * (x**{a})", "power_law"))
+    structures.append(("A * log(x) + B", "logarithmic_boundary_layer"))
+    structures.append(("A * x + B", "linear_baseline"))
+    structures.append(("A * x**2 + B * x + C", "polynomial_baseline"))
+    # Logistic saturation (A60-class): K/(1+A*exp(-r*x)) is monotone
+    # saturating growth with no power-law/rational representation; without
+    # it, saturating data loses to rational surrogates by proposal absence.
+    # EARNED: on EXT-BENCH-60 this is the only template that can represent
+    # `adv-logistic` (10/(1+9*exp(-1.2x))), and it recovers it to ~4
+    # significant figures. K takes y units (no x-mapping needed); C maps
+    # as a rate via the generic x**1 role.
+    structures.append(("A / (1.0 + B * exp(-C * x))", "logistic_saturation"))
+    # Arrhenius reciprocal-variable form: k = A*exp(-B/T) depends on 1/x,
+    # not x, so no power/exponential template can represent it (the search
+    # would need to discover the reciprocal transform). B is a rate in 1/x
+    # units and needs no x-mapping (it never multiplies x).
+    #
+    # Own family label, deliberately NOT "exponential_decay": the ordinary
+    # A*exp(-B*x) template carries that label, and sharing it would make
+    # family-accuracy scoring unable to distinguish an Arrhenius fit from
+    # an ordinary exponential fit, which are different claims about the
+    # world. It is a reciprocal in x, not a rate.
+    #
+    # Domain-gated on x > 0. exp(-B/x) has a pole at x = 0 and diverges
+    # for x -> 0+ whenever B > 0, so proposing it on a domain that reaches
+    # or crosses zero can only ever produce inf/NaN. Unconditionally
+    # proposed, it also emitted a divide-by-zero warning on every problem
+    # in the corpus while winning none of them: no EXT-BENCH truth uses
+    # the 1/x form. It is kept because it is a genuine physical form with a
+    # real use case, not because it has earned a place here -- and it is
+    # now measurable, so a corpus that does contain Arrhenius truth can
+    # use it.
+    if x_min is None or (np.isfinite(x_min) and x_min > 0.0):
+        structures.append(("A * exp(-B / x)", "arrhenius_decay"))
+    # Cubic/quartic reach (P03/P04-class): higher-degree polynomials are
+    # genuine grammar, but each extra degree is an overfitting liability at
+    # finite noise. They compete on equal terms; parsimony tiebreak, MDL,
+    # and Stage C dispose. Not extended further: degree >= 5 has no
+    # identified use case and the combinatorial cost is unjustified.
+    structures.append(("A * x**3 + B * x**2 + C * x + D", "polynomial_baseline"))
+    structures.append(("A * x**4 + B * x**3 + C * x**2 + D * x + F", "polynomial_baseline"))
+    # Monotonic exponential envelopes: A * x**p * exp(-C * x**r) is
+    # monotone over finite positive domains for small C yet lives in no
+    # other branch (S1 proposes it only when S2/S3/S4 all miss). Without
+    # these, envelope truths (C41-class) lose to rational surrogates by
+    # proposal absence, not by evidence. Bounded subset; fitted rate C and
+    # Stage D refine it.
+    for _o in ("x**1.0", "x**1.5", "x**2.0"):
+        for _e in ("exp(-C * x)", "exp(-C * x**0.5)"):
+            structures.append((f"A * {_o} * {_e}", "exponential_envelope"))
+    return structures
+
+def exp_templates() -> list[tuple[str, str]]:
+    """Pure-exponential template subset (S1 extinctions with unit onset).
+
+    Used for decaying data whose critical flag is weak: the true family may
+    be exponential decay, which neither S3 nor S2 proposes. Small fixed set;
+    the continuous rate C is fitted, Stage D refines it.
+    """
+    return [
+        ("A * exp(-C * x)", "exponential_decay"),
+        ("A * exp(-C * x**0.5)", "exponential_decay"),
+        ("A * exp(-C * x**1.5)", "exponential_decay"),
+        ("A * exp(-C * x**2)", "exponential_decay"),
+    ]

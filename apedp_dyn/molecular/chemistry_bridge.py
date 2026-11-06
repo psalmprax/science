@@ -714,15 +714,13 @@ def embed_conformer_3d(
     coords += rng.normal(0.0, 0.08, size=(n, 3))
     coords -= coords.mean(axis=0, keepdims=True)
 
-    # Chirality volume constraints for chiral centers
-    chirality_terms: list[tuple[int, int, int, int, float]] = []
-    for idx, atom in enumerate(graph.atoms):
-        if atom.chiral_tag != 0:
-            nbrs = [nbr for nbr, _, _ in adj[idx]]
-            if len(nbrs) >= 3:
-                target_vol = 0.65 * float(atom.chiral_tag)
-                chirality_terms.append((idx, nbrs[0], nbrs[1], nbrs[2], target_vol))
-
+    # Chirality is deliberately *not* enforced at this stage. The SE(3) flow
+    # relaxes bond lengths and soft repulsion only, and its force field is
+    # distance-only by construction, so it cannot separate enantiomers -- its
+    # own docstring says so. Passing chirality terms to it was a TypeError
+    # waiting for the first chiral ligand. The terms belong to
+    # `PocketConditionedForceField`, which `build_pocket_force_field` derives
+    # from this same graph and which the pocket relaxation evaluates every step.
     if bond_tuples and n_relax_steps > 0:
         from apedp_dyn.molecular.se3_flow import MolecularForceField, relax
 
@@ -733,8 +731,6 @@ def embed_conformer_3d(
             target_length=mean_r0,
             repulsion_strength=1e-4,
             repulsion_sigma=0.35,
-            chirality_terms=tuple(chirality_terms),
-            chirality_strength=1.0,
         )
         res = relax(coords, ff, step_size=0.005, n_steps=n_relax_steps)
         coords = res.coordinates - res.coordinates.mean(axis=0, keepdims=True)

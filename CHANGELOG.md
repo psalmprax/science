@@ -21,9 +21,12 @@ inferred releases.
 
 ### Changed
 - Biopharma heuristics now identify their evidence tier and unsupported outputs; target discovery refuses ignored omics input, and unsupported biomarker measurements are reported as not assessed.
+- `packages/` holds `jetflow-video` only. The six `packages/apedp-*` re-export shells (`audio`, `continuum`, `distributed`, `molecular`, `quantum`, `robotics`) were deleted with their `wheels.yml` matrix entries and dependabot configs: each `__init__.py` inserted the repo root on `sys.path` and re-exported `apedp_dyn`, so no wheel carried an implementation of its own. Their behaviour is tested where it lives (`tests/test_dyn_all_subpackages.py`).
+- `apedp/model_synthesis.py` is 1,494 lines (was 2,145): the split into `apedp/model_synthesis_helpers.py` had been created but never finished, so both copies were live and the class still carried the detector and template grammars. The module-level block now comes from the helpers module and the class delegates to `detect_regimes`, `s2_templates` and `exp_templates` there; every documented import path is re-exported.
 
 ### Fixed
 - Reject nonfinite or invalid inputs in biomarker and ADMET rule screens.
+- `embed_conformer_3d` passed `chirality_terms`/`chirality_strength` to `MolecularForceField`, which is distance-only and therefore achiral by construction, so every pocket relaxation of a chiral ligand raised `TypeError` before it started. The embedding now relaxes bonds and soft repulsion only, and says so; chirality is enforced by `PocketConditionedForceField`, which `build_pocket_force_field` derives from the same graph and which the pocket relaxation evaluates every step.
 
 ### Security
 - _Record security-related changes here._

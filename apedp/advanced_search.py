@@ -802,9 +802,7 @@ class HierarchicalSearch:
         # The seed itself is kept: with coefficients fitted, ``x`` is the right
         # answer for a straight line and dropping it would rank a worse shape first.
         #
-        # Frequency-scaled trig is not part of this tuple: this method is the
-        # closed template family, and the harmonic probes are a separate one
-        # that ``_mid_search`` layers on top.
+        # Frequency-scaled trig is a separate family, layered on in ``_mid_search``.
         return (expr, *[expansion.format(e=seed) for expansion in _EXTENDED_EXPANSIONS],
                 f"{seed}*{var}", f"{seed}/(1+{var})")
 
