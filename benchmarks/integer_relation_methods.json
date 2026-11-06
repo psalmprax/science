@@ -1,0 +1,5757 @@
+{
+  "generated_by": "scripts/compare_integer_relation_methods.py",
+  "kernel": {
+    "branch_and_bound": "rime_number_theory_integer_relation_json",
+    "lll_pslq": "rime_number_theory_lll_relation_json"
+  },
+  "methods": {
+    "branch_and_bound": {
+      "constant": "brute_force_branch_and_bound",
+      "cost": "O((2*max_coeff+1)^n), exact inside the box, refuses n > 8",
+      "acceptance": "minimal-l1 vector inside the box with |m.x| <= eps",
+      "scope": "coefficients inside max_coeff and at most eight inputs"
+    },
+    "lll_pslq": {
+      "constant": "lll_integer_relation_pslq",
+      "cost": "polynomial in n for fixed precision; coefficient range is not a box",
+      "acceptance": "exact rational substitution, plus a size margin against the generic 10^(digits/n) vector and a residual above the embedding rounding floor unless the residual is exactly zero",
+      "scope": "any n; coefficients bounded only by what the reduction reaches"
+    }
+  },
+  "design": {
+    "cases": "eight hand-built cases with a declared criterion and a declared scope each, plus three seeded random families",
+    "not_a_distribution": true,
+    "not_a_distribution_why": "the random families are produced by a fixed generator, not sampled from the questions real work asks: the two planted families always carry a relation and the independent family never does. Their pass rates say whether each searcher does what its contract says on that generator, and nothing about discovery-rate in general",
+    "randomized": "seed=20261102, 40 cases per family drawn by random.Random(seed) in family order, so re-running the script reproduces the case list; a seed without the generator parameters would reproduce nothing",
+    "assessment_rule": "a refusal inside a method's documented scope is `wrong`; a refusal outside it is `refused_out_of_scope`, which is not an error",
+    "precision": "start_digits=17 is what an f64 carries; escalation adds coefficient range, not information, and the residual guards reject relations the embedding would otherwise manufacture",
+    "float_limit": "a relation among f64 inputs must clear digits_of_residual + n*log10(max|m|) working digits; for n=3 and |m|~10^2 that is about 21, which an f64 cannot supply. The outside-the-box case therefore uses exactly representable dyadic values, so its zero residual is a property of the inputs and not of the arithmetic",
+    "timing": "measured on one machine in a single process against an optimised build; the branch-and-bound cost is combinatorial in n and the box, so its small-case time says nothing about larger inputs",
+    "independent_irrationals": "eps=1e-300 is below any residual the f64 values admit, so both searchers must refuse: the case tests refusal, not reach"
+  },
+  "rows": [
+    {
+      "case": "stoichiometry",
+      "family": "designed",
+      "criterion": "specific",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 5,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 0.01,
+      "expected_coefficients": [
+        2,
+        1,
+        -2
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          1,
+          -2
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.128
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          1,
+          -2
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 2,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 12,
+        "reason": null,
+        "elapsed_ms": 0.402
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "harmonic_ratio",
+      "family": "designed",
+      "criterion": "specific",
+      "branch_and_bound_scope": "in",
+      "n": 2,
+      "branch_and_bound_max_coeff": 5,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-09,
+      "expected_coefficients": [
+        3,
+        -2
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          -2
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.013
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -2
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 316227766.01683795,
+        "iterations": 3,
+        "reason": null,
+        "elapsed_ms": 0.104
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "planted_three_term",
+      "family": "designed",
+      "criterion": "specific",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 5,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        1,
+        1,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.055
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          -1
+        ],
+        "absolute_residual": -2.220446049250313e-16,
+        "relative_residual": 3.5287022769978883e-17,
+        "verified": true,
+        "digits_held": 16.45238498230634,
+        "working_digits": 17,
+        "max_coefficient": 1,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 24,
+        "reason": null,
+        "elapsed_ms": 0.454
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "coefficients_outside_the_box",
+      "family": "designed",
+      "criterion": "specific",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 20,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        137,
+        -89,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 2.344
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          137,
+          -89,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 137,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 11,
+        "reason": null,
+        "elapsed_ms": 0.431
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "ten_inputs_exact_sum",
+      "family": "designed",
+      "criterion": "exact_relation",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 10,
+      "branch_and_bound_max_coeff": 20,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-10,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.006
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 1,
+        "generic_coefficient_bound": 50.11872336272722,
+        "iterations": 42,
+        "reason": null,
+        "elapsed_ms": 1.495
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "twelve_inputs_exact_weighted_sum",
+      "family": "designed",
+      "criterion": "exact_relation",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 12,
+      "branch_and_bound_max_coeff": 40,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-10,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.007
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 1,
+        "generic_coefficient_bound": 26.101572156825373,
+        "iterations": 48,
+        "reason": null,
+        "elapsed_ms": 2.676
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "independent_irrationals",
+      "family": "designed",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 50,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 65.224
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 0.648
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "rounded_values_have_an_exact_relation",
+      "family": "designed",
+      "criterion": "exact_relation",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 50,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 40,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 57.184
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          82119140,
+          22504678,
+          -69368753
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 27,
+        "max_coefficient": 82119140,
+        "generic_coefficient_bound": 1000000000.0,
+        "iterations": 102,
+        "reason": null,
+        "elapsed_ms": 1.391
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_000",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -2,
+        -3,
+        3,
+        -4,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          3,
+          -3,
+          4,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 17.413
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          3,
+          -3,
+          4,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 2511.88643150958,
+        "iterations": 40,
+        "reason": null,
+        "elapsed_ms": 1.242
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_001",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -1,
+        -2,
+        3,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          2,
+          -3,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 1.296
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          2,
+          -3,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 29,
+        "reason": null,
+        "elapsed_ms": 0.812
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_002",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -4,
+        -3,
+        -3,
+        -3,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          4,
+          3,
+          3,
+          3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 18.504
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          4,
+          3,
+          3,
+          3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 2511.88643150958,
+        "iterations": 89,
+        "reason": null,
+        "elapsed_ms": 38.252
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_003",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -3,
+        3,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          -3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.117
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 12,
+        "reason": null,
+        "elapsed_ms": 0.546
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_004",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -3,
+        1,
+        3,
+        -3,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          -1,
+          -3,
+          3,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 19.095
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -1,
+          -3,
+          3,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 2511.88643150958,
+        "iterations": 39,
+        "reason": null,
+        "elapsed_ms": 1.478
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_005",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        1,
+        2,
+        -3,
+        4,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          2,
+          -3,
+          4,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 17.69
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          2,
+          -3,
+          4,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 2511.88643150958,
+        "iterations": 100,
+        "reason": null,
+        "elapsed_ms": 36.814
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_006",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        2,
+        2,
+        3,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          2,
+          3,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 1.117
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          2,
+          3,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 24,
+        "reason": null,
+        "elapsed_ms": 0.704
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_007",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        3,
+        1,
+        1,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          1,
+          1,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 1.143
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          1,
+          1,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 26,
+        "reason": null,
+        "elapsed_ms": 0.62
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_008",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        1,
+        -2,
+        1,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -2,
+          1,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 1.223
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -2,
+          1,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 2,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 29,
+        "reason": null,
+        "elapsed_ms": 0.647
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_009",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -3,
+        -3,
+        -2,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          3,
+          2,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 1.142
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          3,
+          2,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 25,
+        "reason": null,
+        "elapsed_ms": 0.688
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_010",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -2,
+        -2,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          2,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.094
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          2,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 2,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 14,
+        "reason": null,
+        "elapsed_ms": 0.309
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_011",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -2,
+        1,
+        3,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          -1,
+          -3,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 1.134
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          -1,
+          -3,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 24,
+        "reason": null,
+        "elapsed_ms": 0.634
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_012",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        2,
+        3,
+        4,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          3,
+          4,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 1.154
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          3,
+          4,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 30,
+        "reason": null,
+        "elapsed_ms": 0.668
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_013",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -4,
+        1,
+        3,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          4,
+          -1,
+          -3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 1.132
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          4,
+          -1,
+          -3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 27,
+        "reason": null,
+        "elapsed_ms": 0.643
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_014",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        4,
+        -1,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          4,
+          -1,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.095
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          4,
+          -1,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 16,
+        "reason": null,
+        "elapsed_ms": 0.354
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_015",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -3,
+        3,
+        3,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          -3,
+          -3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 1.129
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -3,
+          -3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 23,
+        "reason": null,
+        "elapsed_ms": 0.666
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_016",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -4,
+        2,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          4,
+          -2,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.078
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          4,
+          -2,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 14,
+        "reason": null,
+        "elapsed_ms": 0.297
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_017",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        1,
+        3,
+        -1,
+        2,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          3,
+          -1,
+          2,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 17.095
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          3,
+          -1,
+          2,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 2511.88643150958,
+        "iterations": 63,
+        "reason": null,
+        "elapsed_ms": 14.945
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_018",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        1,
+        -1,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.088
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 1,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 17,
+        "reason": null,
+        "elapsed_ms": 0.313
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_019",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        2,
+        1,
+        1,
+        -3,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          1,
+          1,
+          -3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 22.4
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          1,
+          1,
+          -3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 2511.88643150958,
+        "iterations": 101,
+        "reason": null,
+        "elapsed_ms": 39.746
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_020",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -1,
+        -1,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.091
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 1,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 16,
+        "reason": null,
+        "elapsed_ms": 0.344
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_021",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        2,
+        -4,
+        2,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          -4,
+          2,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 1.158
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          -4,
+          2,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 24,
+        "reason": null,
+        "elapsed_ms": 0.638
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_022",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        2,
+        4,
+        3,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          4,
+          3,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 1.258
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          4,
+          3,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 18,
+        "reason": null,
+        "elapsed_ms": 0.464
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_023",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        1,
+        -2,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -2,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.082
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -2,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 2,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 11,
+        "reason": null,
+        "elapsed_ms": 0.317
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_024",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        2,
+        2,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          2,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.078
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          2,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 2,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 9,
+        "reason": null,
+        "elapsed_ms": 0.266
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_025",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        4,
+        4,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          4,
+          4,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.081
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          4,
+          4,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 13,
+        "reason": null,
+        "elapsed_ms": 0.319
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_026",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        3,
+        3,
+        -3,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          3,
+          -3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 1.203
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          3,
+          -3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 24,
+        "reason": null,
+        "elapsed_ms": 0.686
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_027",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        3,
+        -3,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          -3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.082
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 14,
+        "reason": null,
+        "elapsed_ms": 0.323
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_028",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        3,
+        2,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          2,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.084
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          2,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 12,
+        "reason": null,
+        "elapsed_ms": 0.31
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_029",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        1,
+        1,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.085
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 1,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 16,
+        "reason": null,
+        "elapsed_ms": 0.409
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_030",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        2,
+        1,
+        -1,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          1,
+          -1,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 2.312
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          1,
+          -1,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 2,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 24,
+        "reason": null,
+        "elapsed_ms": 0.6
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_031",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        2,
+        -1,
+        -4,
+        -1,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          -1,
+          -4,
+          -1,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 17.157
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          -1,
+          -4,
+          -1,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 2511.88643150958,
+        "iterations": 53,
+        "reason": null,
+        "elapsed_ms": 9.03
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_032",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        4,
+        -1,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          4,
+          -1,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.1
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          4,
+          -1,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 14,
+        "reason": null,
+        "elapsed_ms": 0.298
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_033",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -3,
+        -2,
+        -4,
+        4,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          2,
+          4,
+          -4,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 18.519
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          2,
+          4,
+          -4,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 2511.88643150958,
+        "iterations": 42,
+        "reason": null,
+        "elapsed_ms": 5.598
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_034",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -2,
+        -1,
+        -3,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          1,
+          3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 2.325
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          1,
+          3,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 26,
+        "reason": null,
+        "elapsed_ms": 0.814
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_035",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -3,
+        -1,
+        4,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          1,
+          -4,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 1.589
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          1,
+          -4,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 17782.794100389227,
+        "iterations": 28,
+        "reason": null,
+        "elapsed_ms": 0.634
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_036",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -4,
+        1,
+        1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          4,
+          -1,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.439
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          4,
+          -1,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 16,
+        "reason": null,
+        "elapsed_ms": 0.311
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_037",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        3,
+        -2,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          -2,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 0.074
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -2,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 16,
+        "reason": null,
+        "elapsed_ms": 0.316
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_038",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -1,
+        4,
+        -2,
+        4,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -4,
+          2,
+          -4,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 16.11
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -4,
+          2,
+          -4,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 4,
+        "generic_coefficient_bound": 2511.88643150958,
+        "iterations": 44,
+        "reason": null,
+        "elapsed_ms": 1.057
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_in_box_039",
+      "family": "random_planted_in_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -1,
+        3,
+        3,
+        -2,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -3,
+          -3,
+          2,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "verified": null,
+        "digits_held": null,
+        "reason": null,
+        "elapsed_ms": 17.322
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -3,
+          -3,
+          2,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 3,
+        "generic_coefficient_bound": 2511.88643150958,
+        "iterations": 47,
+        "reason": null,
+        "elapsed_ms": 1.179
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_000",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -241,
+        182,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 3.436
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          241,
+          -182,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 241,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 14,
+        "reason": null,
+        "elapsed_ms": 0.417
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_001",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        387,
+        52,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.535
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          387,
+          52,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 387,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 14,
+        "reason": null,
+        "elapsed_ms": 0.426
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_002",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        34,
+        -131,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.528
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          34,
+          -131,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 131,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 13,
+        "reason": null,
+        "elapsed_ms": 0.405
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_003",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        244,
+        207,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 3.546
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          244,
+          207,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 244,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 15,
+        "reason": null,
+        "elapsed_ms": 0.425
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_004",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        383,
+        97,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.496
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          383,
+          97,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 383,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 13,
+        "reason": null,
+        "elapsed_ms": 0.417
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_005",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        29,
+        167,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 3.888
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          29,
+          167,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 167,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 12,
+        "reason": null,
+        "elapsed_ms": 0.604
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_006",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -294,
+        -178,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.577
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          294,
+          178,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 294,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 14,
+        "reason": null,
+        "elapsed_ms": 0.456
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_007",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -113,
+        -20,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 3.547
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          113,
+          20,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 113,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 13,
+        "reason": null,
+        "elapsed_ms": 0.431
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_008",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -128,
+        183,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.553
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          128,
+          -183,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 183,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 17,
+        "reason": null,
+        "elapsed_ms": 0.413
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_009",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -70,
+        389,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.542
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          70,
+          -389,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 389,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 17,
+        "reason": null,
+        "elapsed_ms": 0.474
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_010",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -362,
+        -114,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.537
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          362,
+          114,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 362,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 15,
+        "reason": null,
+        "elapsed_ms": 0.438
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_011",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -380,
+        -297,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.509
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          380,
+          297,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 380,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 16,
+        "reason": null,
+        "elapsed_ms": 0.429
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_012",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        76,
+        251,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.545
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          76,
+          251,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 251,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 17,
+        "reason": null,
+        "elapsed_ms": 0.39
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_013",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -352,
+        -221,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.535
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          352,
+          221,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 352,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 15,
+        "reason": null,
+        "elapsed_ms": 0.474
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_014",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        356,
+        -265,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.506
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          356,
+          -265,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 356,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 14,
+        "reason": null,
+        "elapsed_ms": 0.536
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_015",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        186,
+        -243,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.489
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          186,
+          -243,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 243,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 13,
+        "reason": null,
+        "elapsed_ms": 0.439
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_016",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        290,
+        -146,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.499
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          290,
+          -146,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 290,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 12,
+        "reason": null,
+        "elapsed_ms": 2.62
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_017",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -214,
+        -350,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.57
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          214,
+          350,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 350,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 14,
+        "reason": null,
+        "elapsed_ms": 0.44
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_018",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        34,
+        165,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.518
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          34,
+          165,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 165,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 14,
+        "reason": null,
+        "elapsed_ms": 0.403
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_019",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        129,
+        -82,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.549
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          129,
+          -82,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 129,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 17,
+        "reason": null,
+        "elapsed_ms": 0.41
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_020",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        215,
+        -352,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.523
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          215,
+          -352,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 352,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 18,
+        "reason": null,
+        "elapsed_ms": 0.382
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_021",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -149,
+        -84,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.511
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          149,
+          84,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 149,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 16,
+        "reason": null,
+        "elapsed_ms": 0.403
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_022",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        243,
+        34,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.517
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          243,
+          34,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 243,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 17,
+        "reason": null,
+        "elapsed_ms": 0.412
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_023",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -112,
+        -222,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.545
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          112,
+          222,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 222,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 13,
+        "reason": null,
+        "elapsed_ms": 0.376
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_024",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        243,
+        -224,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.518
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          243,
+          -224,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 243,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 17,
+        "reason": null,
+        "elapsed_ms": 0.364
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_025",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -321,
+        -43,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.503
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          321,
+          43,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 321,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 14,
+        "reason": null,
+        "elapsed_ms": 0.45
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_026",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        309,
+        -271,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.502
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          309,
+          -271,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 309,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 14,
+        "reason": null,
+        "elapsed_ms": 0.43
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_027",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -257,
+        -293,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.946
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          257,
+          293,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 293,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 16,
+        "reason": null,
+        "elapsed_ms": 0.442
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_028",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        46,
+        -310,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.518
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          46,
+          -310,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 310,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 15,
+        "reason": null,
+        "elapsed_ms": 0.494
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_029",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -107,
+        311,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.582
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          107,
+          -311,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 311,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 15,
+        "reason": null,
+        "elapsed_ms": 0.487
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_030",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -395,
+        -271,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.54
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          395,
+          271,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 395,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 15,
+        "reason": null,
+        "elapsed_ms": 0.411
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_031",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -360,
+        -309,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.542
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          360,
+          309,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 360,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 13,
+        "reason": null,
+        "elapsed_ms": 0.45
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_032",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        277,
+        205,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.498
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          277,
+          205,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 277,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 15,
+        "reason": null,
+        "elapsed_ms": 0.426
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_033",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -277,
+        -324,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.546
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          277,
+          324,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 324,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 12,
+        "reason": null,
+        "elapsed_ms": 0.418
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_034",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        295,
+        25,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.566
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          295,
+          25,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 295,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 13,
+        "reason": null,
+        "elapsed_ms": 0.412
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_035",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        315,
+        363,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.525
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          315,
+          363,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 363,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 19,
+        "reason": null,
+        "elapsed_ms": 0.477
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_036",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -339,
+        167,
+        1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.56
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          339,
+          -167,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 339,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 13,
+        "reason": null,
+        "elapsed_ms": 0.38
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_037",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        288,
+        165,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.64
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          288,
+          165,
+          -1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 288,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 16,
+        "reason": null,
+        "elapsed_ms": 0.396
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_038",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -169,
+        -101,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.526
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          169,
+          101,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 169,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 14,
+        "reason": null,
+        "elapsed_ms": 0.409
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_planted_out_of_box_039",
+      "family": "random_planted_out_of_box",
+      "criterion": "relation_within_tolerance",
+      "branch_and_bound_scope": "out_of_scope",
+      "n": 3,
+      "branch_and_bound_max_coeff": 12,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 100,
+      "eps": 1e-12,
+      "expected_coefficients": [
+        -273,
+        135,
+        -1
+      ],
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.517
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          273,
+          -135,
+          1
+        ],
+        "absolute_residual": 0.0,
+        "relative_residual": 0.0,
+        "verified": true,
+        "digits_held": null,
+        "working_digits": 17,
+        "max_coefficient": 273,
+        "generic_coefficient_bound": 464158.8833612782,
+        "iterations": 12,
+        "reason": null,
+        "elapsed_ms": 0.389
+      },
+      "agreement": false,
+      "branch_and_bound_assessment": "refused_out_of_scope",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_000",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 16.797
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 2.209
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_001",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.42
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 1.532
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_002",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.351
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 1.206
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_003",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.088
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 0.62
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_004",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.083
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 0.857
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_005",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 18.577
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 2.082
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_006",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.267
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 1.247
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_007",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 55.724
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 2.252
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_008",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 16.768
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 1.975
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_009",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 55.944
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 2.161
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_010",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 17.746
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 5.217
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_011",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.089
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 0.662
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_012",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.116
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 32.253
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_013",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 15.503
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 2.096
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_014",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.232
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 1.25
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_015",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.273
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 1.508
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_016",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.116
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 0.633
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_017",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 19.526
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 1.752
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_018",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.073
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 0.624
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_019",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 41.455
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 2.356
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_020",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.299
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 1.325
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_021",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.345
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 6.198
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_022",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 22.341
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 1.893
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_023",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.101
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 0.565
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_024",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.084
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 0.525
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_025",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.128
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 1.19
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_026",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.293
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 1.516
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_027",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.087
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 0.844
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_028",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.385
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 2.865
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_029",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 18.827
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 2.07
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_030",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.082
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 0.609
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_031",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.331
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 1.136
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_032",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 28.954
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 2.034
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_033",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.179
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 2.737
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_034",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.154
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 0.882
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_035",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 3,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 0.13
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 0.806
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_036",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 15.494
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 2.32
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_037",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 16.79
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 2.192
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_038",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 4,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 1.241
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 1.27
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    },
+    {
+      "case": "random_independent_039",
+      "family": "random_independent",
+      "criterion": "refusal",
+      "branch_and_bound_scope": "in",
+      "n": 5,
+      "branch_and_bound_max_coeff": 6,
+      "lll_pslq_max_coeff": 0,
+      "lll_pslq_max_digits": 17,
+      "eps": 1e-300,
+      "expected_coefficients": null,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "searched the box, found nothing",
+        "elapsed_ms": 19.224
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "absolute_residual": null,
+        "verified": null,
+        "digits_held": null,
+        "reason": "no verified candidate at any precision on the ladder",
+        "elapsed_ms": 2.217
+      },
+      "agreement": true,
+      "branch_and_bound_assessment": "correct",
+      "lll_pslq_assessment": "correct"
+    }
+  ],
+  "summary": {
+    "cases": 128,
+    "agree": 84,
+    "branch_and_bound": {
+      "correct": 84,
+      "refused_out_of_scope": 44,
+      "wrong": 0
+    },
+    "lll_pslq": {
+      "correct": 128,
+      "refused_out_of_scope": 0,
+      "wrong": 0
+    },
+    "branch_and_bound_refusals": 85,
+    "lll_pslq_refusals": 41,
+    "median_elapsed_ms": {
+      "branch_and_bound": 0.582,
+      "lll_pslq": 0.62
+    },
+    "slowest_elapsed_ms": {
+      "branch_and_bound": 65.224,
+      "lll_pslq": 39.746
+    },
+    "randomized": {
+      "seed": 20261102,
+      "per_family": 40,
+      "families": {
+        "random_independent": {
+          "cases": 40,
+          "branches": [
+            "in"
+          ],
+          "branch_and_bound": {
+            "correct": 40,
+            "refused_out_of_scope": 0,
+            "wrong": 0,
+            "pass_rate": 1.0
+          },
+          "lll_pslq": {
+            "correct": 40,
+            "refused_out_of_scope": 0,
+            "wrong": 0,
+            "pass_rate": 1.0
+          },
+          "planted_vector_recovered_by_lll_pslq": 0,
+          "planted_vector_recovered_by_branch_and_bound": 0
+        },
+        "random_planted_in_box": {
+          "cases": 40,
+          "branches": [
+            "in"
+          ],
+          "branch_and_bound": {
+            "correct": 40,
+            "refused_out_of_scope": 0,
+            "wrong": 0,
+            "pass_rate": 1.0
+          },
+          "lll_pslq": {
+            "correct": 40,
+            "refused_out_of_scope": 0,
+            "wrong": 0,
+            "pass_rate": 1.0
+          },
+          "planted_vector_recovered_by_lll_pslq": 22,
+          "planted_vector_recovered_by_branch_and_bound": 22
+        },
+        "random_planted_out_of_box": {
+          "cases": 40,
+          "branches": [
+            "out_of_scope"
+          ],
+          "branch_and_bound": {
+            "correct": 0,
+            "refused_out_of_scope": 40,
+            "wrong": 0,
+            "pass_rate": 0.0
+          },
+          "lll_pslq": {
+            "correct": 40,
+            "refused_out_of_scope": 0,
+            "wrong": 0,
+            "pass_rate": 1.0
+          },
+          "planted_vector_recovered_by_lll_pslq": 20,
+          "planted_vector_recovered_by_branch_and_bound": 0
+        }
+      }
+    }
+  }
+}
