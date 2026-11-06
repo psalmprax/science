@@ -22,6 +22,8 @@ Implements:
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 import re
 import time
@@ -681,8 +683,6 @@ class MMLMBenchmarkDataset:
 
     def provenance(self) -> dict[str, object]:
         """Return source/license metadata and stable hashes of each declared split."""
-        import hashlib
-
         return {
             "name": self.name,
             "source_url": self.source_url,
@@ -691,7 +691,9 @@ class MMLMBenchmarkDataset:
             "retrieved_at": self.retrieved_at,
             "split_sha256": {
                 split_name: hashlib.sha256(
-                    "\n".join(texts).encode("utf-8")
+                    json.dumps(
+                        texts, ensure_ascii=False, separators=(",", ":")
+                    ).encode("utf-8")
                 ).hexdigest()
                 for split_name, texts in (
                     ("train", self.train_texts),
@@ -703,11 +705,11 @@ class MMLMBenchmarkDataset:
 
 
 class Milestone1BenchmarkSuite:
-    """Runs a synthetic held-out-triple benchmark plus retrieval and ListOps tasks.
+    """Runs synthetic or provenance-declared text evaluation plus fixed task probes.
 
-    The language-model split tests compositional generalization to unseen
-    subject-relation-object triples. It is a controlled synthetic benchmark,
-    not a substitute for external language-model evaluation.
+    The default split tests compositional generalization to unseen triples. An
+    optional externally sourced corpus can be supplied with split/source/license
+    metadata; its provenance declaration is not independently audited here.
     """
 
     def __init__(self, dataset: MMLMBenchmarkDataset | None = None) -> None:
@@ -847,23 +849,26 @@ class Milestone1BenchmarkSuite:
         hybrid: BenchmarkMetrics, baseline: BenchmarkMetrics
     ) -> dict[str, bool | int]:
         """Return majority wins in the preregistered quality and efficiency axes."""
-        quality_wins = sum((
+        quality_results = (
             hybrid.held_out_perplexity < baseline.held_out_perplexity,
             hybrid.bits_per_byte < baseline.bits_per_byte,
             hybrid.long_context_retrieval_accuracy
             > baseline.long_context_retrieval_accuracy,
             hybrid.compositional_reasoning_accuracy
             > baseline.compositional_reasoning_accuracy,
-        ))
-        efficiency_wins = sum((
+            hybrid.generation_energy < baseline.generation_energy,
+        )
+        efficiency_results = (
             hybrid.serialized_bytes < baseline.serialized_bytes,
             hybrid.training_time_ms < baseline.training_time_ms,
             hybrid.inference_tokens_per_sec
             > baseline.inference_tokens_per_sec,
-        ))
+        )
+        quality_wins = sum(quality_results)
+        efficiency_wins = sum(efficiency_results)
         return {
-            "quality": quality_wins >= 2,
-            "efficiency": efficiency_wins >= 2,
+            "quality": quality_wins > len(quality_results) // 2,
+            "efficiency": efficiency_wins > len(efficiency_results) // 2,
             "quality_metric_wins": quality_wins,
             "efficiency_metric_wins": efficiency_wins,
         }
@@ -978,7 +983,8 @@ class Milestone1BenchmarkSuite:
         }
         h_evidence = {
             "H1": (
-                f"One synthetic held-out-triple split: B0 perplexity "
+                f"One fixed {self.dataset.name if self.dataset else 'synthetic held-out-triple'} "
+                f"split: B0 perplexity "
                 f"{m_b0_full.held_out_perplexity} vs 1D-only ablation "
                 f"{m_b0_1d_tt.held_out_perplexity}; comparison is descriptive, "
                 "not a significance test."
@@ -987,7 +993,7 @@ class Milestone1BenchmarkSuite:
                 f"Single-run dynamical-only streaming top-1 next-token accuracy "
                 f"{streaming_correct}/{streaming_total} = {streaming_score:.4f}; "
                 f"the registered {h2_threshold:.2f} threshold is applied. This is a narrow "
-                "synthetic retention proxy, not a general long-context result."
+                "dynamical-only next-token retention proxy, not a general long-context result."
             ),
             "H3": (
                 f"One fixed retrieval set: full B0 accuracy "
@@ -1001,10 +1007,10 @@ class Milestone1BenchmarkSuite:
             ),
             "H5": (
                 "Single-run quality and efficiency axes: quality requires wins on "
-                "at least two of perplexity, bits/byte, retrieval, and compositional "
-                "accuracy; efficiency requires wins on at least two of state bytes, "
-                "training time, and inference throughput. A hybrid must win both "
-                "axes against both baselines; this descriptive "
+                "a majority of perplexity, bits/byte, retrieval, compositional "
+                "accuracy, and generation energy; efficiency requires a majority "
+                "of state bytes, training time, and inference throughput. A hybrid "
+                "must win both axes against both baselines; this descriptive "
                 "comparison is not a significance test."
             ),
         }
@@ -1040,6 +1046,7 @@ class Milestone1BenchmarkSuite:
                 ),
                 "tokenizer_fit_split": "train",
                 "external_or_real_world_evidence": self.dataset is not None,
+                "dataset_provenance_independently_verified": False,
                 "dataset_provenance": (
                     None if self.dataset is None else self.dataset.provenance()
                 ),
@@ -1059,8 +1066,8 @@ class Milestone1BenchmarkSuite:
     def run_repeated_milestone_1(self, seeds: Sequence[int]) -> dict[str, object]:
         """Run independent initializations and report raw runs plus descriptive variability.
 
-        Repeats share the same deterministic synthetic split, so this measures
-        initialization sensitivity only and is not external-data validation.
+        Repeats share one configured train/dev/test split, so this measures
+        initialization sensitivity only, not dataset-to-dataset variance.
         """
         if len(seeds) < 2:
             raise ValueError("at least two seeds are required for repeated evaluation")

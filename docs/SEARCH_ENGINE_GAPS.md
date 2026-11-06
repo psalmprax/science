@@ -147,3 +147,27 @@ must carry its URL and retrieval date, because the loader requires them.
   synthetic disclosure in every verdict.
 - `benchmarks/search_engine_gaps.json` — the twelve-law table above, with the protocol
   (train/holdout sizes, noise, budget, criterion, leakage statement) recorded beside it.
+
+## 6. Robustness across noise, range, and generated worlds
+
+The original one-seed measurement is now complemented by
+`scripts/measure_search_engine_gaps.py`'s multi-condition protocol and the
+reproducible record in `benchmarks/search_engine_robustness.json`. The recorded
+run crosses three synthetic-world seeds (7, 17, 27), two train-scaled noise
+levels (1% and 5%), and two positive input ranges ([0.5, 3] and [0.1, 10]):
+12 conditions and 144 law/condition trials across the same 12 planted families.
+The extended hierarchical engine recovered 135/144 trials (9–12 of 12 per
+condition); the extended beam recovered 102/144 (8–9 per condition).
+
+For each condition, input rows are split before noise is added. Noise magnitude
+uses only the training target's standard deviation; candidate search and
+coefficient fitting see training rows only, and holdout rows score the fixed
+candidate. This removes even the previous use of full-target scale for noise
+generation.
+
+These are multiple generated synthetic worlds, not independent real datasets.
+Both train and holdout inputs within a condition are sampled from the same
+declared interval; changing intervals between conditions is not an
+out-of-distribution train/test experiment. The results show sensitivity to
+seed, noise and domain width, but do not establish recovery on real scientific
+data, arbitrary equations, extrapolation ranges or phase/off-grid periodic laws.

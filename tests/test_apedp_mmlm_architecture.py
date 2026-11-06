@@ -186,8 +186,14 @@ def test_milestone_1_tracks_a0_b0_c0_ablations_and_hypotheses_h1_to_h5():
         assert metrics.serialized_bytes > 0
 
     assert set(report.hypothesis_verdicts) == {"H1", "H2", "H3", "H4", "H5"}
-    assert report.hypothesis_verdicts["H2"] == "NOT_ASSESSED"
-    assert report.hypothesis_verdicts["H5"] == "NOT_ASSESSED"
+    assert report.hypothesis_verdicts["H2"] in {
+        "OBSERVED_COMPARISON_PASS",
+        "OBSERVED_COMPARISON_FAIL",
+    }
+    assert report.hypothesis_verdicts["H5"] in {
+        "OBSERVED_COMPARISON_PASS",
+        "OBSERVED_COMPARISON_FAIL",
+    }
     assert all(isinstance(outcome, str) for outcome in report.hypothesis_verdicts.values())
     assert all(report.hypothesis_evidence.values())
     assert report.protocol_summary["split_sizes"] == {"train": 75, "dev": 25, "test": 25}
