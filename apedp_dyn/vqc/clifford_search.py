@@ -150,7 +150,7 @@ def propose_rewrites(circuit: Circuit) -> Iterator[tuple[str, Circuit]]:
                 yield ("cancel s*sdg", _with_pair_removed(circuit, first_index,
                                                           second_index))
 
-    # `h z h = x` and `h x h = z`: three gates become one, exactly.
+    # Hadamard conjugates a Pauli to one Pauli, up to global phase for Y.
     # H Y H = -Y; the minus sign is one free global phase for this standalone
     # unitary, just as in the equivalence referee's other conjugation checks.
     conjugation = {("h", "z"): "x", ("h", "x"): "z", ("h", "y"): "y"}
