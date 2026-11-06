@@ -8,7 +8,17 @@ from __future__ import annotations
 
 import hashlib
 import math
+from numbers import Integral
 from typing import Any, ClassVar
+
+
+def _is_finite_number(value: Any) -> bool:
+    if isinstance(value, bool):
+        return False
+    try:
+        return math.isfinite(value)
+    except (TypeError, ValueError):
+        return False
 
 
 def _stable_unit(*parts: str) -> float:
@@ -34,7 +44,7 @@ class DiseaseBiomarkerAnalyzer:
     @classmethod
     def analyze_biomarkers(cls, disease_area: str, values: dict[str, float]) -> dict[str, Any]:
         config = cls.DISEASE_BIOMARKERS.get(disease_area, {'markers': [], 'normal_ranges': {}})
-        if any(not math.isfinite(value) for value in values.values()):
+        if any(not _is_finite_number(value) for value in values.values()):
             raise ValueError("biomarker values must be finite")
         known_markers = set(config['markers'])
         assessed_markers = [
@@ -144,9 +154,12 @@ class ADMETPredictor:
                           h_bond_acceptors: int = 0, rotatable_bonds: int = 0, tpsa: float = 70) -> dict[str, Any]:
         continuous_values = (molecular_weight, logp, tpsa)
         integer_values = (h_bond_donors, h_bond_acceptors, rotatable_bonds)
-        if any(not math.isfinite(value) for value in continuous_values):
+        if any(not _is_finite_number(value) for value in continuous_values):
             raise ValueError("molecular descriptors must be finite")
-        if any(not isinstance(value, int) or value < 0 for value in integer_values):
+        if any(
+            isinstance(value, bool) or not isinstance(value, Integral) or value < 0
+            for value in integer_values
+        ):
             raise ValueError("count descriptors must be non-negative integers")
         if molecular_weight < 0 or tpsa < 0:
             raise ValueError("molecular weight and TPSA must be non-negative")
@@ -156,7 +169,7 @@ class ADMETPredictor:
             'rotatable_bonds': rotatable_bonds, 'tpsa': tpsa
         }
         properties['evidence'] = 'rule_screen'
-        properties['modelled'] = ['Lipinski rule-of-five violations', 'Veber rule violations']
+        properties['checks_applied'] = ['Lipinski rule-of-five', 'Veber rules']
         properties['not_modelled'] = [
             'absorption', 'distribution', 'metabolism', 'excretion', 'toxicity',
             'clearance', 'permeability', 'hERG', 'hepatotoxicity',

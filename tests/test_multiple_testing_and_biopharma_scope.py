@@ -92,7 +92,7 @@ def test_admet_output_is_labeled_as_a_rule_screen():
     result = ADMETPredictor.predict_properties(300, 2.0, 2, 4, 3, 60)
 
     assert result["evidence"] == "rule_screen"
-    assert "Lipinski rule-of-five violations" in result["modelled"]
+    assert "Lipinski rule-of-five" in result["checks_applied"]
     assert "hERG" in result["not_modelled"]
 
 
