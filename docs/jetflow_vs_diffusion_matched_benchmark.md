@@ -46,6 +46,15 @@ fluid-domain advantage is DOMAIN-SCOPED to continuum transport; no unscoped
 generalization claim is made. Confirmation seeds {407, 508, 509} are frozen in the
 v0.3 prereg to replicate the ordering (H1-collision).
 
+The three confirmation runs are synthetic collision-world evidence, not an
+independent real-video test. Before expanding the headline claim, run a frozen,
+matched-budget comparison on appropriately licensed real-video datasets covering
+each claimed domain, with scene-disjoint splits, at least five seeds, and all
+per-seed outcomes reported. The synthetic collision loss remains a known
+failure-domain result even if future fluid-domain evaluations are positive; the
+release gates and provenance requirements are listed in
+[`GAP_ANALYSIS.md`](GAP_ANALYSIS.md).
+
 Notes on instrument symbolism:
 - **FVD-proxy SWD** = sliced-Wasserstein-2 on a frozen deterministic featurizer (NOT I3D-FVD; honest label per [`apedp_dyn/video/eval_gate.py`](file:///home/psalmprax/ALL_PROJECTS/science/apedp_dyn/video/eval_gate.py)). Real-vs-holdout anchor SWD = `0.388`.
 - **Temp. smooth** = temporal second-difference of per-frame grayscale; lower = smoother (less flicker).

@@ -90,7 +90,7 @@ processed = m.process(sample)
 **Status tags:** `experimental` — fully functional but new integration; status may be updated to `production` after extended validation.
 
 **Known limitations:**
-- The current rank-54 and Karatsuba factor builders are placeholders and fail exact tensor reconstruction. The multiplier falls back to an exact schoolbook decomposition and reports when the requested rank cannot be reached.
+- The default recursive polynomial Karatsuba decomposition is exactly verified at rank 54 for GF(2^12), below the exact schoolbook rank 144. This is not a proof of minimum rank or a compiled/reversible circuit-cost claim; see `benchmarks/gf2_karatsuba_comparison.json` for the scoped evaluator and XOR estimate.
 - Importance pruning uses support only to order candidate removals; every accepted removal is checked against the full tensor. A requested sparsity or rank is not guaranteed if it would make the decomposition inexact.
 - LLM transforms are accepted only when exactness is preserved. `new_atoms` remains unsupported, and the rank-search interface reports a verified starting point rather than claiming an unimplemented search.
 
@@ -98,7 +98,7 @@ processed = m.process(sample)
 - Module `gf2mul_llm_adjustable.py` created with full GF(2^12) multiplier, tensor decomposition, WSP layer, and MMLM track integrations
 - Verified GF2FieldModel generates all 4095 non-zero elements with pe=2 and prim_poly=0x1053
 - Verified multiplication closure and tensor symmetry
-- The proposed rank-54 decomposition is now checked against all tensor coefficients; invalid factors are not used as a baseline.
+- The recursive degree-12 Karatsuba factors are checked against all tensor coefficients; a failed check falls back to schoolbook factors.
 - WSP importance and transformation updates preserve an exact input decomposition or return the original unchanged.
 - LLM tuning replaces immutable field/WSP configuration objects instead of mutating frozen dataclasses.
 - `_encode_with_factors` and `_energy_guided_decode` moved to `MMLMMultiplier` base class for track compatibility

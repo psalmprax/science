@@ -10,6 +10,8 @@ from gf2mul_llm_adjustable import (
     TensorDecomposition,
     WSPConfig,
     WSPLayer,
+    build_54_referencedecomposition,
+    build_karatsuba_decomposition,
     build_karatsuba_polynomial_decomposition,
     build_multiplication_tensor,
     build_schoolbook_decomposition,
@@ -25,6 +27,17 @@ def _redundant_exact_decomposition():
         W=np.ones((2, 1), dtype=np.uint8),
     )
     return tensor, decomposition
+
+
+def _polynomial_product_mod(left: int, right: int, degree: int, modulus: int) -> int:
+    product = 0
+    for bit in range(degree):
+        if (right >> bit) & 1:
+            product ^= left << bit
+    for bit in range(2 * degree - 2, degree - 1, -1):
+        if (product >> bit) & 1:
+            product ^= modulus << (bit - degree)
+    return product
 
 
 def test_importance_pruning_only_removes_exactly_redundant_atoms():
@@ -138,6 +151,10 @@ def test_recursive_karatsuba_is_exact_and_lower_rank_than_schoolbook():
     assert karatsuba.rank < schoolbook.rank
     assert karatsuba.rank == 54
     assert karatsuba.metadata["nonlinear_count"] == 54
+    for compatibility_builder in (build_karatsuba_decomposition, build_54_referencedecomposition):
+        compatible = compatibility_builder(degree)
+        assert compatible.rank == 54
+        assert compatible.reconstruct(tensor)[0]
 
 
 def test_schoolbook_baseline_is_exact_and_multiplier_honors_unreachable_rank():
@@ -164,6 +181,13 @@ def test_multiplier_uses_certified_karatsuba_factors_by_default():
     multiplier = MMLMMultiplier()
     assert multiplier.default_decomp.rank == 54
     assert multiplier.default_decomp.reconstruct(multiplier.tensor)[0]
+    requested = multiplier.get_decomposition(rank=53)
+    assert requested.rank == 54
+    assert requested.reconstruct(multiplier.tensor)[0]
+    assert not requested.metadata["rank_request_diagnostics"]["target_rank_reached"]
+    for left, right in ((0, 0), (1, 1), (0xFFF, 0xFFF), (0xA53, 0x65C)):
+        expected = _polynomial_product_mod(left, right, 12, 0x1053)
+        assert multiplier.gf.mul(left, right) == expected
 
 
 def test_llm_tuning_replaces_frozen_configs_without_losing_exactness():

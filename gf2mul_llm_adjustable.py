@@ -4,11 +4,10 @@ This module provides a configurable GF(2^12) multiplication tensor and decomposi
 that can be adjusted by an LLM. The key parameters (primitive element, irreducible
 polynomial, decomposition strategy) are all exposed and can be tuned.
 
-Core finding from earlier research:
-- Karatsuba-63 -> 54 under span deflation (9 atoms dropped)
-- Rank 54 is the minimum achievable via span rewrites
-- Published rank-51 incumbent has all-zero factors and cannot be deflated
-- WSP (Weight-Space Programming) provides an additional adjustment layer
+The default degree-12 decomposition is generated recursively and verified
+against the complete multiplication tensor. Its rank is an exact upper bound,
+not a proof of globally minimal bilinear complexity or compiled circuit cost.
+WSP transformations are accepted only when they preserve exact reconstruction.
 """
 
 from __future__ import annotations
@@ -338,56 +337,16 @@ def build_karatsuba_polynomial_decomposition(
 
 
 def build_karatsuba_decomposition(degree: int = 12) -> TensorDecomposition:
-    """Build the 63-product published Karatsuba reference decomposition.
-
-    This is the published Karatsuba Toffoli count for GF(2^12).
-    """
-    rank = 63
-    U = np.zeros((rank, degree), dtype=np.uint8)
-    V = np.zeros((rank, degree), dtype=np.uint8)
-    W = np.zeros((rank, degree), dtype=np.uint8)
-
-    # Fill with Karatsuba terms (simplified placeholder)
-    for r in range(rank):
-        U[r, r % degree] = 1
-        V[r, (r * 3) % degree] = 1
-        W[r, (r * 5) % degree] = 1
-
-    return TensorDecomposition(
-        rank=rank,
-        U=U,
-        V=V,
-        W=W,
-        name="Karatsuba-63",
-        metadata={"category": "published_karatsuba", "nonlinear_count": 63},
-    )
+    """Compatibility entry point for the certified recursive decomposition."""
+    return build_karatsuba_polynomial_decomposition(degree)
 
 
 def build_54_referencedecomposition(degree: int = 12) -> TensorDecomposition:
-    """Build the verified 54-product Karatsuba base-case composition.
-
-    This is the deflated-from-63 rank, achieved by 9 span deflations
-    from the Karatsuba-63 decomposition.
-    """
-    rank = 54
-    U = np.zeros((rank, degree), dtype=np.uint8)
-    V = np.zeros((rank, degree), dtype=np.uint8)
-    W = np.zeros((rank, degree), dtype=np.uint8)
-
-    # Fill with base-composed terms (mu(2)=3, mu(3)=6 composition)
-    for r in range(rank):
-        U[r, r % degree] = 1
-        V[r, (r * 7) % degree] = 1
-        W[r, (r * 11) % degree] = 1
-
-    return TensorDecomposition(
-        rank=rank,
-        U=U,
-        V=V,
-        W=W,
-        name="Karatsuba-54-BaseComposed",
-        metadata={"category": "independent_base_composed", "nonlinear_count": 54},
-    )
+    """Compatibility entry point for the exact degree-12 polynomial construction."""
+    decomposition = build_karatsuba_polynomial_decomposition(degree)
+    if degree == 12 and decomposition.rank != 54:
+        raise ValueError(f"expected degree-12 rank 54, got {decomposition.rank}")
+    return decomposition
 
 
 # ============================================================================
@@ -1194,7 +1153,7 @@ def demo_llm_adjustable_multiplier():
     print("LLM-ADJUSTABLE GF(2^12) QUANTUM MULTIPLIER")
     print("=" * 70)
 
-    # 1. Default configuration (Track A, Karatsuba-63 -> 54)
+    # 1. Default configuration (Track A, exact recursive rank-54 factors)
     print("\n1. DEFAULT CONFIGURATION (Track A, Rank 54)")
     print("-" * 70)
     multiplier = LLMTunableGF2Multiplier(track="A")
