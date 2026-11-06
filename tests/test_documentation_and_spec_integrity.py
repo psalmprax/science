@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import inspect
+import json
 import re
 from pathlib import Path
 
@@ -157,14 +158,25 @@ def test_orphan_module_detection():
     2026-10-19 (125 -> 67 -> 0): every ``apedp_dyn`` module is now indexed.
     Adding a module without indexing it fails this test; there is no pin left
     to mask a regression.
+
+    Third-party checkouts vendored inside the sandbox for a build are not APEDP
+    modules: ``kickmix/_qualtran_src`` is an upstream git repository (759 files),
+    indexed in DOCUMENTATION.md as a tree rather than file by file. Any nested
+    repository (a ``.git`` below the scan root) is therefore skipped, which is
+    what keeps the scan on code this repository actually authors.
     """
     doc_path = REPO_ROOT / "docs" / "DOCUMENTATION.md"
     doc_text = doc_path.read_text(encoding="utf-8")
 
+    vendored_roots = {marker.parent for marker in (REPO_ROOT / "apedp_dyn").rglob(".git")}
+
+    def authored(py_file: Path) -> bool:
+        return ("__pycache__" not in py_file.parts
+                and not py_file.name.startswith("__")
+                and not any(root in py_file.parents for root in vendored_roots))
+
     all_modules = sorted(
-        py_file
-        for py_file in (REPO_ROOT / "apedp_dyn").rglob("*.py")
-        if "__pycache__" not in py_file.parts and not py_file.name.startswith("__")
+        py_file for py_file in (REPO_ROOT / "apedp_dyn").rglob("*.py") if authored(py_file)
     )
     unindexed = {
         str(py_file.relative_to(REPO_ROOT))
@@ -221,3 +233,293 @@ def test_registry_status_tags_match_code_status_labels():
         checked += 1
 
     assert checked >= 10, f"registry status consistency check covered too few modules ({checked})"
+
+
+def test_mmlm_graph_state_figures_in_the_index_match_the_record():
+    """The 54-win / 308-gate figures are quoted in DOCUMENTATION.md; they are measured.
+
+    The table sentence could drift from the artifact without any test noticing, which is
+    the failure the record was created to prevent.
+    """
+    import json
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    record = json.loads(
+        (root / "benchmarks" / "quantum_compilation" / "vqc_mmlm_graph_state.json").read_text()
+    )
+    index = (root / "docs" / "DOCUMENTATION.md").read_text()
+
+    assert index.count("54 wins / 21 ties / 0 losses") >= 1
+    assert f"{record['wins']} wins / {record['ties']} ties / {record['losses']} losses" in index
+    assert f"{record['saved_two_qubit_gates']} two-qubit gates saved" in index
+    assert f"{record['certified_valid']}/{record['targets']} certified" in index
+    # The gate totals are quoted with thousands separators; check both ends.
+    assert f"{record['baseline_two_qubit_gates']:,}" in index
+    assert f"{record['mmlm_two_qubit_gates']:,}" in index
+
+    # The headline is a total over three families that are not comparable. The split is
+    # quoted beside it and generated from the same record, because "54 wins" reads as a
+    # uniform result when 77% of it is one family and the regular families thin with width.
+    split = ", ".join(
+        f"`{name}` **{block['wins']}/{block['targets']} wins, "
+        f"{block['saved_two_qubit_gates']} gates**"
+        for name, block in sorted(record["families"].items())
+    )
+    assert split in index, f"the family split is not quoted as recorded: {split}"
+    assert sum(b["wins"] for b in record["families"].values()) == record["wins"]
+    assert (
+        sum(b["saved_two_qubit_gates"] for b in record["families"].values())
+        == record["saved_two_qubit_gates"]
+    )
+    for family, bands in record["by_width"].items():
+        assert sum(b["targets"] for b in bands.values()) == record["families"][family]["targets"]
+    # The width cut is the part no total can show: regular4 saves nothing at 32 qubits.
+    assert f"`regular4` {record['by_width']['regular4']['32']['saved_two_qubit_gates']} gates at 32q" in index
+    assert (
+        record["by_width"]["regular4"]["64"]["saved_two_qubit_gates"]
+        < record["by_width"]["random_graph"]["64"]["saved_two_qubit_gates"]
+    )
+
+
+def test_dqi_target_closures_are_recorded_in_the_campaign_docs():
+    """The two closures are prose where a reader will meet the target, and pinned here."""
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    reachability = (root / "docs" / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
+    compatibility = (root / "docs" / "DQI_OFFICIAL_COMPATIBILITY.md").read_text()
+
+    for text in (reachability, compatibility):
+        assert "permanently unsourced" in text
+    assert "96 > 32" in reachability
+    assert "1,853" in compatibility
+    assert (
+        root / "benchmarks" / "quantum_compilation" / "dqi_design_projection.json"
+    ).exists()
+
+
+def test_the_register_floor_model_is_recorded_where_the_target_is():
+    """The one-parameter floor and its 64-qubit shortfall are next to the target table."""
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1] / "docs"
+    reachability = (root / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
+    compatibility = (root / "DQI_OFFICIAL_COMPATIBILITY.md").read_text()
+
+    assert "peak = 1,853 + 8k" in reachability
+    assert "zero-register floor" in compatibility
+    assert "64 qubits" in reachability
+
+
+def test_the_data_path_floor_is_recorded_with_the_target():
+    """The 55-vs-64 accounting sits next to the target table and stays there."""
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1] / "docs"
+    reachability = (root / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
+    compatibility = (root / "DQI_OFFICIAL_COMPATIBILITY.md").read_text()
+
+    assert "23 < 64" in reachability
+    assert "model_data_path_floor" in reachability
+    assert "23 against the 64" in compatibility
+    # Recycling is closed on both grounds and the projection is rescored at the verifier peak.
+    assert "closed on both grounds" in reachability
+    assert "0.898×" in reachability
+    assert "1.9006e12" in reachability and "1.9006e12" in compatibility
+
+
+def test_the_frontier_rung4_prices_rung3s_own_residual():
+    """§7.9 rung 4 must keep *rung 3's* residual, not the six-lever arm's 472,768.2.
+
+    Substituting 472,768.2 into the campaign arm's row made rung 4 read 1.084× -- a loss --
+    when the arm's own residual is 299,953.2 and freeing it scores 0.688×. That substitution
+    is what let the cheapest family look inadmissible, so the figures in the note are pinned
+    against the model that computes them.
+    """
+    import pathlib
+
+    from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import product_axis_decision
+
+    root = pathlib.Path(__file__).resolve().parents[1] / "docs"
+    reachability = (root / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
+    axis = product_axis_decision()
+    rung4 = axis["rung4_corrected"]
+
+    assert axis["campaign_residual_toffolis"] == 299953.2
+    assert f"{rung4['t_mean_toffolis']:,.1f}" in reachability
+    assert f"{rung4['score']:.4e}".replace("e+12", "e12") in reachability
+    assert f"{rung4['vs_denominator']:.3f}×" in reachability
+    # The replaced row is retained for audit rather than deleted, and labelled as the
+    # six-lever residual it actually was.
+    assert "as tabulated (six-lever residual)" in reachability
+    assert f"{axis['tabulated_overstatement_toffolis']:,.1f}" in reachability
+    # The product axis, which is where the remaining gap actually lives.
+    assert f"{axis['products_allowed_fraction'] * 100:.1f}%" in reachability
+    assert "product_axis_decision" in reachability
+
+    import pathlib
+
+    campaign = (
+        pathlib.Path(__file__).resolve().parents[1] / "docs" / "EEA_SCHEDULE_CAMPAIGN.md"
+    ).read_text()
+    assert "route is now closed" in campaign
+    assert "0.898×" in campaign
+
+
+def test_the_single_array_packing_closure_matches_its_artifact():
+    """The contract says the packing route is closed; the arm totals come from the record.
+
+    The route was killed by a classical probe rather than by building a decoder, so the prose and
+    the numbers have only this comparison keeping them in step: regenerate the artifact with a
+    different arm total and the contract doc has to move with it.
+    """
+    import json
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    record = json.loads(
+        (root / "benchmarks" / "quantum_compilation" / "dqi_single_array_packing.json").read_text()
+    )
+    contract = (root / "docs" / "DQI_SINGLE_ARRAY_DECODER_CONTRACT.md").read_text()
+
+    arms = record["arms"]
+    three = arms["three_region"]
+    assert three["failed"] == 0, "the three-region core must decode every planted pattern"
+    boundary = record["failure_boundary"]
+    assert boundary["failed_to_decode"] == boundary["trials"], (
+        "the weight-l+1 boundary must fail for every trial, or a false pass cannot be seen"
+    )
+    for name in ("two_region_naive", "two_region_swapped"):
+        arm = arms[name]
+        assert arm["first_failure"]["weight"] == 1, (
+            f"{name} must fail at the first weight, not merely lose a few patterns"
+        )
+        assert f"{arm['decoded']}/{three['decoded']}" in contract, (
+            f"the contract doc does not quote {name}'s {arm['decoded']}/{three['decoded']}"
+        )
+    assert f"**{three['decoded']}/{three['decoded']}**" in contract
+    assert "PACKING_ROUTE_CLOSED" in contract
+    assert "weight 1" in contract
+    assert "1,001" in contract
+
+
+def test_the_replay_route_price_matches_its_artifact():
+    """The contract's replay price comes from a build, so the doc must quote the artifact.
+
+    `17,143` per round and the two score multiples are the numbers that killed the route; if the
+    artifact is regenerated at a different `n_iters` the contract section has to be rewritten rather
+    than left quoting a superseded price.
+    """
+    import json
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    record = json.loads(
+        (root / "benchmarks" / "quantum_compilation" / "dqi_single_array_replay_cost.json").read_text()
+    )
+    contract = (root / "docs" / "DQI_SINGLE_ARRAY_DECODER_CONTRACT.md").read_text()
+
+    per_round = record["per_round"]["both_eea_passes"]
+    bill = record["replay_bill"]
+    assert per_round == round(sum(record["marginal_toffoli_per_round_step"]) / 3)
+    assert bill["compute_only"]["multiple_of_eea"] > 1.0, "the route must be priced as a loss"
+    assert bill["with_bennett_uncompute"]["multiple_of_eea"] > bill["compute_only"]["multiple_of_eea"]
+    assert 222 * (222 + 1) // 2 == bill["rounds_units_to_produce_B_t_at_every_t"]
+
+    assert f"{per_round:,}" in contract
+    assert f"{bill['compute_only']['score_multiple_of_reference']:.2f}× worse" in contract
+    assert f"{bill['with_bennett_uncompute']['score_multiple_of_reference']:.2f}× worse" in contract
+    assert "REPLAY_ROUTE_CLOSED" in contract
+
+
+def test_the_frontier_restatement_agrees_with_the_projection():
+    """The frontier section is final-state prose; it must not drift from the projection.
+
+    Every width route in it is closed by an artifact, and the one number a reader will quote —
+    the rung-3 score — comes from the same record the rest of the campaign is scored against.
+    """
+    import json
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    projection = json.loads(
+        (root / "benchmarks" / "quantum_compilation" / "dqi_design_projection.json").read_text()
+    )
+    reachability = (root / "docs" / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
+    arm = json.loads(
+        (root / "benchmarks" / "quantum_compilation"
+         / "dqi_campaign_arm_submission_score.json").read_text()
+    )
+    replay = json.loads(
+        (root / "benchmarks" / "quantum_compilation" / "dqi_single_array_replay_cost.json").read_text()
+    )
+
+    trade = projection["single_array_trade"]
+    assert trade["route_status"] == "CLOSED_ON_MEASUREMENT"
+    assert trade["peak_with_one_array"] == 1001
+    assert "CLOSED_ON_MEASUREMENT" in reachability
+    assert "withdrawn" in trade["closure"]["headline"], (
+        "the closure must say the 0.284x trade is withdrawn, not merely that it is closed"
+    )
+
+    # The frontier arm's own verified numbers are what the section quotes. The doc writes the
+    # score without a signed exponent and the Toffoli count to one decimal, so match that form.
+    score = f"{arm['verified']['score']:.4e}".replace("e+", "e")
+    assert score in reachability, score
+    assert f"{arm['verified']['toffoli_count']:,.1f}" in reachability
+    assert f"{arm['verified']['num_qubits']:,}" in reachability
+
+    # And the replay price it rules the route out on.
+    assert f"{replay['per_round']['both_eea_passes']:,}" in reachability
+    assert f"{replay['replay_bill']['with_bennett_uncompute']['score_multiple_of_reference']:.2f}×" in reachability
+
+
+def test_the_single_array_trade_is_recorded():
+    """The bracketed trade and the two design docs are reachable from the note with the target."""
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    reachability = (root / "docs" / "BENCHMARK2_TARGET_REACHABILITY.md").read_text()
+    compatibility = (root / "docs" / "DQI_OFFICIAL_COMPATIBILITY.md").read_text()
+
+    assert "**1,001**" in reachability
+    assert "0.284×" in reachability and "0.786×" in reachability
+    assert "378" in reachability and "46,656" in reachability
+    assert "1,001" in compatibility
+
+    contract = (root / "docs" / "DQI_SINGLE_ARRAY_DECODER_CONTRACT.md").read_text()
+    bodies = (root / "docs" / "DQI_RECYCLED_PASS_BODIES.md").read_text()
+    assert "Derivation lemma" in contract and "Falsifiers" in contract
+    assert "1,885" in bodies and "leading-zero" in bodies
+
+
+def test_the_recycled_substitution_status_is_recorded():
+    import pathlib
+
+    bodies = (
+        pathlib.Path(__file__).resolve().parents[1] / "docs" / "DQI_RECYCLED_PASS_BODIES.md"
+    ).read_text()
+    assert "derive_n_a" in bodies
+    assert "1,893 → 1,885" in bodies
+    assert "reads no `n_a`" in bodies
+    # The build reaches the peak and fails equivalence; both are stated, neither is dropped.
+    assert "is a peak, not a decoder" in bodies
+    assert "52/64" in bodies and "fail" in bodies
+    assert "dqi_recycled_flag_body_build.json" in bodies
+    assert "dqi_recycled_degrees_window.json" in bodies
+    assert "dqi_recycled_equivalence.json" in bodies
+
+    equivalence = json.loads(
+        (pathlib.Path(__file__).resolve().parents[1] / "benchmarks" / "quantum_compilation"
+         / "dqi_recycled_equivalence.json").read_text()
+    )
+    assert equivalence["arms"]["reference"]["value_errors"] == 0
+    assert equivalence["equivalent_to_reference"]["update_flag_substituted"] is False
+    assert equivalence["equivalent_to_reference"]["all_sites_substituted"] is False
+    record = json.loads((pathlib.Path(__file__).resolve().parents[1] / "benchmarks" /
+                         "quantum_compilation" / "dqi_recycled_flag_body_build.json").read_text())
+    assert record["peak_unchanged"] is True
+    assert record["recycled_flag_peak_qubits"] == record["reference_peak_qubits"]
+    assert record["read_sites_substituted"] == 1
+    assert record["accounting_peak_qubits"] == 1885

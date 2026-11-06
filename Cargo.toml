@@ -12,6 +12,7 @@
 # against would silently lose opt-level/lto. They live here now.
 members = [
     "rust/apedp-kernel",
+    "rust/apedp-vqc",
 ]
 resolver = "2"
 

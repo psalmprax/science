@@ -258,7 +258,8 @@ def held_out_split(ids: Sequence[str], holdout_fraction: float = 0.2,
     n_hold = max(1, round(holdout_fraction * len(ids)))
     hold = [ids[i] for i in order[:n_hold]]
     train = [ids[i] for i in order[n_hold:]]
-    assert not (set(hold) & set(train))
+    if set(hold) & set(train):
+        raise RuntimeError("train/holdout split overlaps; leakage would invalidate the gate")
     return tuple(sorted(train)), tuple(sorted(hold))
 
 

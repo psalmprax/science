@@ -15,8 +15,11 @@ Combines six capabilities in one engine so each can be ablated separately:
    at birth (structural violations only -- free coefficients are never
    punished), and declared-symmetry rejection.
 5. **Pareto hall-of-fame with grouped selection**: nondominated front on
-   (train error, complexity); the final pick minimizes *holdout* error along
-   the front instead of training loss.
+   (train error, complexity); the final pick is chosen by inner cross-validation
+   over the training rows, and any test rows supplied are read only afterwards,
+   to report the chosen pick's confirmation error. Selecting on the test rows
+   would turn the confirmation set into a second training set and make its error
+   a selection score wearing a holdout label.
 6. **ALPS age layering**: islands double as age layers; newcomers enter at
    layer 0 and age upward, preserving exploration late in the run.
 
@@ -78,6 +81,13 @@ class SearchConfig:
     tune_constants: bool = True
     tune_restarts: int = 2
     tune_iters: int = 40
+    selection_folds: int = 5
+    """Inner cross-validation folds used to pick the reported candidate.
+
+    The folds are drawn from the training rows only. The test rows a caller
+    passes into :func:`evolve` never participate in the pick; they measure the
+    confirmation error of a candidate that is already chosen.
+    """
     alps: bool = True
     threads: int = 0
     normalize: bool = True
@@ -145,11 +155,24 @@ class SearchResult:
     variable_scaling: dict[str, list[float]] = field(default_factory=dict)
     denormalized_best: str | None = None
     denormalized_pick: str | None = None
+    confirmation_mse: float | None = None
+    """Error of :attr:`grouped_pick` on the untouched test rows, or ``None``.
+
+    Measured after selection, from the parameters refitted on the whole
+    training split. It is a confirmation measurement, not a selection score.
+    """
+    selection_method: str = "inner_cv"
+    """How :attr:`grouped_pick` was chosen (``"inner_cv"`` or ``"train_error"``)."""
+    selection_folds: int = 0
+    """Folds actually used by the inner cross-validation (0 when it fell back)."""
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "best_expression": self.best_expression,
             "grouped_pick": self.grouped_pick,
+            "confirmation_mse": self.confirmation_mse,
+            "selection_method": self.selection_method,
+            "selection_folds": self.selection_folds,
             "pareto_front": self.pareto_front,
             "generations_run": self.generations_run,
             "n_evaluations": self.n_evaluations,
@@ -795,10 +818,13 @@ def evolve(
 ) -> SearchResult:
     """Run the island evolutionary search with grouped final selection.
 
-    The Pareto front trades train error against complexity; ``grouped_pick``
-    is the front member minimizing *holdout* error when test data is
-    supplied, else the lowest-train-error member. Every upgrade in
-    :class:`SearchConfig` toggles independently for ablation.
+    The Pareto front trades train error against complexity. ``grouped_pick``
+    is the front member with the lowest inner-cross-validation error on the
+    training rows, falling back to the lowest-train-error member when no
+    candidate survives the folds. Test rows are read only after the pick is
+    fixed, to report ``confirmation_mse``: they never influence which
+    candidate is reported, so the confirmation split stays untouched. Every
+    upgrade in :class:`SearchConfig` toggles independently for ablation.
 
     ``on_generation`` is an observability hook only (generation index plus
     stringified population); it cannot alter the search, so instrumented
@@ -868,16 +894,43 @@ def evolve(
             best_item = min(pareto_list, key=lambda item: item["mse"]) if pareto_list else None
             best_expr_str = best_item["expression"] if best_item is not None else None
 
+            # Selection runs on folds of the training rows only. The kernel resolves
+            # each candidate's constants inside the expression it returns, so a fold
+            # is evaluated without a refit; what the fold measures is how the
+            # candidate behaves on rows it was not fitted to. The test rows are never
+            # read here -- they measure the pick's confirmation error below.
             grouped_pick = best_expr_str
-            if x_test is not None and y_test is not None and pareto_list:
-                best_holdout_mse = float("inf")
+            folds = max(2, int(cfg.selection_folds))
+            selection_folds = 0
+            if pareto_list and raw_target.shape[0] >= 2 * folds:
+                fold_of = np.arange(raw_target.shape[0]) % folds
+                scored_pick: list[tuple[str, float]] = []
                 for item in pareto_list:
                     expr_str = item["expression"]
-                    test_eval = bridge.evaluate_expression(expr_str, names, [x_test[n] for n in names])
-                    h_mse = float(np.mean((test_eval - y_test) ** 2))
-                    if h_mse < best_holdout_mse:
-                        best_holdout_mse = h_mse
-                        grouped_pick = expr_str
+                    fold_mses: list[float] = []
+                    for fold in range(folds):
+                        held = fold_of == fold
+                        if not held.any():
+                            fold_mses = []
+                            break
+                        fold_eval = bridge.evaluate_expression(
+                            expr_str, names,
+                            [raw_arrays[name][held] for name in names])
+                        fold_mses.append(float(np.mean(
+                            (np.asarray(fold_eval) - raw_target[held]) ** 2)))
+                    if len(fold_mses) == folds:
+                        scored_pick.append((expr_str, float(np.mean(fold_mses))))
+                if scored_pick:
+                    grouped_pick = min(scored_pick, key=lambda pair: pair[1])[0]
+                    selection_folds = folds
+
+            confirmation_mse: float | None = None
+            if x_test is not None and y_test is not None and grouped_pick is not None:
+                test_target = np.asarray(y_test, dtype=float).ravel()
+                test_eval = bridge.evaluate_expression(
+                    grouped_pick, names,
+                    [np.asarray(x_test[name], dtype=float).ravel() for name in names])
+                confirmation_mse = float(np.mean((np.asarray(test_eval) - test_target) ** 2))
 
             return SearchResult(
                 best_expression=best_expr_str,
@@ -889,6 +942,9 @@ def evolve(
                 variable_scaling={},
                 denormalized_best=best_expr_str,
                 denormalized_pick=grouped_pick,
+                confirmation_mse=confirmation_mse,
+                selection_method="inner_cv" if selection_folds else "train_error",
+                selection_folds=selection_folds,
             )
         except Exception as e:  # deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
             if strict_native:
@@ -1105,39 +1161,89 @@ def evolve(
             seen[key] = (mse, complexity)
     front = _pareto_front([(key, mse, complexity) for key, (mse, complexity) in seen.items()])
     best = min(front, key=lambda item: item[1])[0] if front else None
+    # Selection runs on inner folds of the training rows only. `x_test`/`y_test`
+    # are never read here: a pick steered by the test rows would make them a
+    # second training set, and their error would be a selection score reported
+    # under a holdout label.
     grouped_pick_scaled: str | None = None
+    selection_folds_used = 0
+    folds = max(2, int(cfg.selection_folds))
     y_mu, y_scale_locals = scaling.get("__target__", [0.0, 1.0])
-    if x_test is not None and y_test is not None and front:
+    if len(front) > 1 and target.shape[0] >= 2 * folds:
+        fold_of = np.arange(target.shape[0]) % folds
+        selection_scores: list[tuple[str, float]] = []
+        for key, _, _ in front:
+            expression = safe_parse_expr(key)
+            skeleton, params = skeletonize(expression)
+            fold_mses: list[float] = []
+            for fold in range(folds):
+                fit_rows = fold_of != fold
+                held_rows = ~fit_rows
+                if fit_rows.sum() < 2 or not held_rows.any():
+                    fold_mses = []
+                    break
+                inner_arrays = {name: arrays[name][fit_rows] for name in names}
+                param_map, _ = tune_nonlinear(
+                    skeleton, params, data_symbols, inner_arrays, target[fit_rows], cache,
+                    restarts=1, iters=cfg.tune_iters, seed=cfg.seed,
+                    use_projection=cfg.use_projection,
+                )
+                substituted = skeleton.xreplace(param_map)
+                if _broken_after_substitution(substituted):
+                    fold_mses = []
+                    break
+                function = _lambdify_cached(cache, substituted, data_symbols)
+                with np.errstate(all="ignore"):
+                    prediction = _real_or_none(
+                        function(*[arrays[str(symbol)][held_rows]
+                                   for symbol in data_symbols]),
+                        (int(held_rows.sum()),),
+                    )
+                if prediction is None:
+                    fold_mses = []
+                    break
+                fold_mses.append(float(np.mean((prediction - target[held_rows]) ** 2)))
+            if len(fold_mses) == folds:
+                selection_scores.append((key, float(np.mean(fold_mses))))
+        if selection_scores:
+            grouped_pick_scaled = min(selection_scores, key=lambda pair: pair[1])[0]
+            selection_folds_used = folds
+    if grouped_pick_scaled is None and front:
+        # No candidate survived the inner folds: report the front's lowest
+        # training error and say so, rather than falling back to the test rows.
+        grouped_pick_scaled = best
+
+    confirmation_mse: float | None = None
+    if x_test is not None and y_test is not None and grouped_pick_scaled is not None:
+        # Confirmation only: the pick is already fixed, and its parameters are
+        # refitted on the whole training split before the test rows are read.
         test_arrays = {name: np.asarray(x_test[name], dtype=float).ravel() for name in x_test}
         if scaling:
-            # Grouped evaluation happens in the same standardized space the
-            # front was fitted in; denormalization is presentation-only.
+            # Evaluation happens in the same standardized space the front was
+            # fitted in; denormalization is presentation-only.
             for name, (mu, sigma) in scaling.items():
                 if name in test_arrays:
                     test_arrays[name] = (test_arrays[name] - mu) / sigma
         test_target = np.asarray(y_test, dtype=float).ravel()
-        scored_front = []
-        for key, _, _ in front:
-            expression = safe_parse_expr(key)
-            skeleton, params = skeletonize(expression)
-            param_map, _ = tune_nonlinear(
-                skeleton, params, data_symbols, arrays, target, cache,
-                restarts=1, iters=cfg.tune_iters, seed=cfg.seed, use_projection=cfg.use_projection,
-            )
-            substituted = skeleton.xreplace(param_map)
-            if _broken_after_substitution(substituted):
-                continue
+        expression = safe_parse_expr(grouped_pick_scaled)
+        skeleton, params = skeletonize(expression)
+        param_map, _ = tune_nonlinear(
+            skeleton, params, data_symbols, arrays, target, cache,
+            restarts=1, iters=cfg.tune_iters, seed=cfg.seed, use_projection=cfg.use_projection,
+        )
+        substituted = skeleton.xreplace(param_map)
+        if not _broken_after_substitution(substituted):
             function = _lambdify_cached(cache, substituted, data_symbols)
             with np.errstate(all="ignore"):
                 prediction = _real_or_none(
-                    function(*[test_arrays[str(symbol)] for symbol in data_symbols]), test_target.shape
+                    function(*[test_arrays[str(symbol)] for symbol in data_symbols]),
+                    test_target.shape,
                 )
             if prediction is not None:
                 # Back to physical units: the front was fitted to the
-                # train-normalized target, the holdout target is raw.
-                scored_front.append((key, float(np.mean((prediction * y_scale_locals + y_mu - test_target) ** 2))))
-        if scored_front:
-            grouped_pick_scaled = min(scored_front, key=lambda pair: pair[1])[0]
+                # train-normalized target, the test target is raw.
+                confirmation_mse = float(np.mean(
+                    (prediction * y_scale_locals + y_mu - test_target) ** 2))
     def _denormalized(expression_str: str | None) -> str | None:
         if expression_str is None or not scaling:
             return expression_str
@@ -1156,6 +1262,9 @@ def evolve(
         variable_scaling=scaling,
         denormalized_best=_denormalized(best),
         denormalized_pick=_denormalized(grouped_pick_scaled),
+        confirmation_mse=confirmation_mse,
+        selection_method="inner_cv" if selection_folds_used else "train_error",
+        selection_folds=selection_folds_used,
     )
 
 

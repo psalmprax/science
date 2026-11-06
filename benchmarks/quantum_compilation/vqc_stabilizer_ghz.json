@@ -1,0 +1,433 @@
+{
+  "experiment": "VQC -- the stabilizer tier, cross-checked and then used at 100 qubits",
+  "tiers": {
+    "dense": "apedp_dyn.vqc.backends.StatevectorBackend (exponential, exact)",
+    "stabilizer": "apedp_dyn.vqc.stabilizer.StabilizerBackend (Clifford only, exact)"
+  },
+  "probability_agreement": [
+    {
+      "qubits": 2,
+      "amplitudes_compared": 4,
+      "nonzero_outcomes": 2,
+      "expected_nonzero_outcomes": 2,
+      "max_abs_probability_deviation": 1.1102230246251565e-16
+    },
+    {
+      "qubits": 3,
+      "amplitudes_compared": 8,
+      "nonzero_outcomes": 2,
+      "expected_nonzero_outcomes": 2,
+      "max_abs_probability_deviation": 1.1102230246251565e-16
+    },
+    {
+      "qubits": 4,
+      "amplitudes_compared": 16,
+      "nonzero_outcomes": 2,
+      "expected_nonzero_outcomes": 2,
+      "max_abs_probability_deviation": 1.1102230246251565e-16
+    },
+    {
+      "qubits": 5,
+      "amplitudes_compared": 32,
+      "nonzero_outcomes": 2,
+      "expected_nonzero_outcomes": 2,
+      "max_abs_probability_deviation": 1.1102230246251565e-16
+    },
+    {
+      "qubits": 6,
+      "amplitudes_compared": 64,
+      "nonzero_outcomes": 2,
+      "expected_nonzero_outcomes": 2,
+      "max_abs_probability_deviation": 1.1102230246251565e-16
+    },
+    {
+      "qubits": 7,
+      "amplitudes_compared": 128,
+      "nonzero_outcomes": 2,
+      "expected_nonzero_outcomes": 2,
+      "max_abs_probability_deviation": 1.1102230246251565e-16
+    },
+    {
+      "qubits": 8,
+      "amplitudes_compared": 256,
+      "nonzero_outcomes": 2,
+      "expected_nonzero_outcomes": 2,
+      "max_abs_probability_deviation": 1.1102230246251565e-16
+    },
+    {
+      "qubits": 9,
+      "amplitudes_compared": 512,
+      "nonzero_outcomes": 2,
+      "expected_nonzero_outcomes": 2,
+      "max_abs_probability_deviation": 1.1102230246251565e-16
+    },
+    {
+      "qubits": 10,
+      "amplitudes_compared": 1024,
+      "nonzero_outcomes": 2,
+      "expected_nonzero_outcomes": 2,
+      "max_abs_probability_deviation": 1.1102230246251565e-16
+    },
+    {
+      "qubits": 11,
+      "amplitudes_compared": 2048,
+      "nonzero_outcomes": 2,
+      "expected_nonzero_outcomes": 2,
+      "max_abs_probability_deviation": 1.1102230246251565e-16
+    },
+    {
+      "qubits": 12,
+      "amplitudes_compared": 4096,
+      "nonzero_outcomes": 2,
+      "expected_nonzero_outcomes": 2,
+      "max_abs_probability_deviation": 1.1102230246251565e-16
+    }
+  ],
+  "pauli_agreement": {
+    "qubits": 6,
+    "strings": 22,
+    "max_abs_deviation": 2.220446049250313e-16,
+    "rows": [
+      {
+        "pauli": "XXXXXX",
+        "stabilizer": 1.0,
+        "dense": 0.9999999999999998
+      },
+      {
+        "pauli": "ZZIIII",
+        "stabilizer": 1.0,
+        "dense": 0.9999999999999998
+      },
+      {
+        "pauli": "IZZIII",
+        "stabilizer": 1.0,
+        "dense": 0.9999999999999998
+      },
+      {
+        "pauli": "IIZZII",
+        "stabilizer": 1.0,
+        "dense": 0.9999999999999998
+      },
+      {
+        "pauli": "IIIZZI",
+        "stabilizer": 1.0,
+        "dense": 0.9999999999999998
+      },
+      {
+        "pauli": "IIIIZZ",
+        "stabilizer": 1.0,
+        "dense": 0.9999999999999998
+      },
+      {
+        "pauli": "XYZIYY",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "IYYZXX",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "XIIYXY",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "ZZYIIZ",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "YZZXXY",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "ZXXIZI",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "XYZXXI",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "IZXIZZ",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "ZIXXII",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "ZYIIXZ",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "YXYIYY",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "YXIYYX",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "IIYZZX",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "YIIZYY",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "ZIYYXX",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      },
+      {
+        "pauli": "ZXIXIY",
+        "stabilizer": 0.0,
+        "dense": 0.0
+      }
+    ]
+  },
+  "hundred_qubit_ghz": {
+    "qubits": 100,
+    "generators_match_closed_form": true,
+    "stabilizer_count": 100,
+    "probability_00": 0.5,
+    "probability_11": 0.5,
+    "probability_of_one_mixed_string": 0.0,
+    "shots": 512,
+    "seed": 20261030,
+    "counts": {
+      "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000": 248,
+      "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111": 264
+    },
+    "counts_inside_five_sigma": true,
+    "only_two_outcomes_seen": true,
+    "seconds": 5.709019111935049,
+    "x_basis": {
+      "shots": 128,
+      "even_parity_only": true,
+      "distinct_strings": 128,
+      "collisions": 0,
+      "closed_form_probability_each": 1.5777218104420236e-30
+    },
+    "dense_tier_cost": {
+      "num_qubits": 100,
+      "log10_amplitudes": 30.10299956639812,
+      "log10_bytes_at_16_per_amplitude": 31.307119549054043,
+      "digits_of_amplitudes": 31,
+      "amplitudes": 1.2676506002282294e+30,
+      "bytes_at_16_per_amplitude": 2.028240960365167e+31
+    },
+    "analytic_basis_probability": 0.5
+  },
+  "clifford_equivalence_100": {
+    "qubits": 100,
+    "rows": [
+      {
+        "candidate": "chain, plus XZXZ on qubit 5 (a global phase of -1)",
+        "verdict": "VALID",
+        "mismatched_images": 0,
+        "compared_images": 200,
+        "first_mismatches": []
+      },
+      {
+        "candidate": "star construction: the same prepared state, a different unitary",
+        "verdict": "INVALID",
+        "mismatched_images": 196,
+        "compared_images": 200,
+        "first_mismatches": [
+          {
+            "basis": "X_1",
+            "reference": "+IXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "candidate": "+IXIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+          },
+          {
+            "basis": "X_2",
+            "reference": "+IIXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "candidate": "+IIXIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+          }
+        ]
+      },
+      {
+        "candidate": "chain with cx(0,1) replaced by cz(0,1)",
+        "verdict": "INVALID",
+        "mismatched_images": 3,
+        "compared_images": 200,
+        "first_mismatches": [
+          {
+            "basis": "Z_0",
+            "reference": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "candidate": "+XZIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+          },
+          {
+            "basis": "X_1",
+            "reference": "+IXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "candidate": "+ZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          }
+        ]
+      }
+    ],
+    "state_scope": {
+      "star": {
+        "verdict": "VALID",
+        "mismatched": 0
+      },
+      "global_phase": {
+        "verdict": "VALID"
+      },
+      "decides": "the prepared state, up to one global phase"
+    },
+    "dense_verdict": "UNRESOLVED",
+    "dense_reason": "100 qubits is a 1267650600228229401496703205376 x 1267650600228229401496703205376 matrix; this checker stops at 10",
+    "seconds": 0.25943101197481155
+  },
+  "checks": [
+    {
+      "check": "every GHZ outcome probability agrees with the dense tier",
+      "requirement": "maximum absolute deviation at most 1e-12 for chains of 2 to 12 qubits, i.e. 8188 probabilities in total",
+      "measured": {
+        "chains": 11,
+        "probabilities": 8188,
+        "max_abs_deviation": 1.1102230246251565e-16
+      },
+      "passed": true
+    },
+    {
+      "check": "Pauli expectations agree with the dense tier",
+      "requirement": "identical +/-1/0 for the GHZ stabilizers and random Pauli strings on six qubits",
+      "measured": {
+        "strings": 22,
+        "max_abs_deviation": 2.220446049250313e-16
+      },
+      "passed": true
+    },
+    {
+      "check": "the 100-qubit chain is the closed-form GHZ state",
+      "requirement": "the 100 generators equal the textbook set, and the only outcomes with nonzero probability are the two uniform strings at 1/2",
+      "measured": {
+        "generators_match": true,
+        "generator_count": 100,
+        "probability_00": 0.5,
+        "probability_11": 0.5,
+        "probability_of_mixed_string": 0.0
+      },
+      "passed": true
+    },
+    {
+      "check": "the sampled 100-qubit run produces only the two GHZ outcomes, at 1/2",
+      "requirement": "512 shots, only 0^100 and 1^100, each count within five sigma of 256",
+      "measured": {
+        "counts": {
+          "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000": 248,
+          "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111": 264
+        },
+        "only_two_outcomes": true,
+        "inside_five_sigma": true
+      },
+      "passed": true
+    },
+    {
+      "check": "the equivalence referee decides 100-qubit Clifford pairs",
+      "requirement": "a global phase is VALID, a changed gate is INVALID with the mismatched images named, and the same prepared state from a different unitary is INVALID at unitary scope and VALID at state scope",
+      "measured": {
+        "qubits": 100,
+        "rows": [
+          {
+            "candidate": "chain, plus XZXZ on qubit 5 (a global phase of -1)",
+            "verdict": "VALID",
+            "mismatched_images": 0,
+            "compared_images": 200,
+            "first_mismatches": []
+          },
+          {
+            "candidate": "star construction: the same prepared state, a different unitary",
+            "verdict": "INVALID",
+            "mismatched_images": 196,
+            "compared_images": 200,
+            "first_mismatches": [
+              {
+                "basis": "X_1",
+                "reference": "+IXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+                "candidate": "+IXIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+              },
+              {
+                "basis": "X_2",
+                "reference": "+IIXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+                "candidate": "+IIXIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+              }
+            ]
+          },
+          {
+            "candidate": "chain with cx(0,1) replaced by cz(0,1)",
+            "verdict": "INVALID",
+            "mismatched_images": 3,
+            "compared_images": 200,
+            "first_mismatches": [
+              {
+                "basis": "Z_0",
+                "reference": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+                "candidate": "+XZIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+              },
+              {
+                "basis": "X_1",
+                "reference": "+IXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+                "candidate": "+ZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+              }
+            ]
+          }
+        ],
+        "state_scope": {
+          "star": {
+            "verdict": "VALID",
+            "mismatched": 0
+          },
+          "global_phase": {
+            "verdict": "VALID"
+          },
+          "decides": "the prepared state, up to one global phase"
+        },
+        "dense_verdict": "UNRESOLVED",
+        "dense_reason": "100 qubits is a 1267650600228229401496703205376 x 1267650600228229401496703205376 matrix; this checker stops at 10",
+        "seconds": 0.25943101197481155
+      },
+      "passed": true
+    },
+    {
+      "check": "the X-basis chain is uniform over even-parity strings",
+      "requirement": "every sampled string has even parity, no two of 128 shots collide (there are 2**99 of them), and the closed-form weight is 2**-99",
+      "measured": {
+        "shots": 128,
+        "even_parity_only": true,
+        "distinct_strings": 128,
+        "collisions": 0,
+        "closed_form_probability_each": 1.5777218104420236e-30
+      },
+      "passed": true
+    }
+  ],
+  "failed_checks": [],
+  "limitations": [
+    "the stabilizer tier refuses non-Clifford gates and every Noise operation; the dense tier remains the referee for those",
+    "agreement is measured up to 12 qubits because that is where the dense tier still fits in memory, not because the stabilizer tier stops there",
+    "a GHZ chain is a Clifford state with a closed form, so this demonstrates the tier's reach and its agreement, not that it can certify an arbitrary circuit"
+  ],
+  "reproducibility": {
+    "script_sha256": "cab6ad5b85a7679c3ed6325b8d497dfc3a14758b391e9a0aa31302a822f90241",
+    "module_sha256": "a658cfec2d15dd8ba20d4f3b06d33bdefb4ec6f622891826ebda349d99c18faa",
+    "command": "python scripts/measure_vqc_stabilizer_ghz.py --shots 512 --x-shots 128 --seed 20261030"
+  },
+  "verdict": "the stabilizer tier reproduces the dense tier on every probability and Pauli string it can be compared on, and carries the 100-qubit GHZ chain the dense tier cannot hold"
+}

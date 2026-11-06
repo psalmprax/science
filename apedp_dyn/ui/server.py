@@ -1,6 +1,7 @@
 """FastAPI Web Studio Server for APEDP Epistemic Discovery & Adjudication."""
 from __future__ import annotations
 
+import ast
 import logging
 import os
 import re
@@ -27,7 +28,12 @@ from apedp_dyn.epistemic.claim_ladder import (
     adjudicate_scientific_claim,
 )
 from apedp_dyn.harness import AEH
-from apedp_dyn.market.assets import AVAILABLE_ASSETS, load_series_with_dates
+from apedp_dyn.orchestration.competition import competition_records
+from apedp_dyn.market.assets import (
+    AVAILABLE_ASSETS,
+    compute_strictly_causal_features,
+    load_series_with_dates,
+)
 from apedp_dyn.market.regimes import REGIME_METADATA, MarketRegime
 from apedp_dyn.market.sweep import (
     execute_window_discovery,
@@ -615,6 +621,13 @@ def discover_registry(req: dict[str, Any]) -> dict[str, Any]:
         plot_actual = np.concatenate([target, Y_ho])
         plot_pred = np.concatenate([pred_vals, pred_ho])
         split_idx = len(t)
+        # The multiterm engine stores the prediction it fitted, on the same
+        # train-then-holdout axis. Prefer it over rebuilding the curve from term
+        # names, but only when it is complete and aligned with the plotted time.
+        _stored = (top_cand.provenance.get("gate4_status", {}).get("full_prediction")
+                   if top_cand is not None else None)
+        if _stored and len(_stored) == len(plot_t) and all(v is not None for v in _stored):
+            plot_pred = np.asarray(_stored, dtype=float)
 
     expr = ""
     last_state = target_state
@@ -904,6 +917,58 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
             return True
         return bool(re.fullmatch(r"x3", s))
 
+    def _eval_safe_term(expr: str) -> np.ndarray | None:
+        """Evaluate a grammar term over this system's own state series.
+
+        Accepts only arithmetic over state names, numeric literals, a numeric
+        constant exponent and sin/cos/exp/sqrt. Parsed with ``ast`` (never
+        ``eval``). Returns None for anything else, so the caller still fails
+        loudly instead of fabricating a curve.
+        """
+        funcs = {"sin": np.sin, "cos": np.cos, "exp": np.exp, "sqrt": np.sqrt}
+
+        def _ev(node: ast.AST) -> Any:
+            if isinstance(node, ast.Expression):
+                return _ev(node.body)
+            if (isinstance(node, ast.Constant)
+                    and isinstance(node.value, (int, float))
+                    and not isinstance(node.value, bool)):
+                return float(node.value)
+            if isinstance(node, ast.Name) and node.id in state_series:
+                return np.asarray(state_series[node.id], dtype=float)
+            if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
+                v = _ev(node.operand)
+                return v if isinstance(node.op, ast.UAdd) else -v
+            if isinstance(node, ast.BinOp):
+                a = _ev(node.left)
+                b = _ev(node.right)
+                if isinstance(node.op, ast.Add):
+                    return a + b
+                if isinstance(node.op, ast.Sub):
+                    return a - b
+                if isinstance(node.op, ast.Mult):
+                    return a * b
+                if isinstance(node.op, ast.Div):
+                    return a / b
+                if isinstance(node.op, ast.Pow):
+                    if np.ndim(b) != 0 or abs(float(b)) > 10:
+                        raise ValueError("unsupported exponent")
+                    return a ** float(b)
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                    and node.func.id in funcs and len(node.args) == 1 and not node.keywords):
+                return funcs[node.func.id](_ev(node.args[0]))
+            raise ValueError("unsupported expression")
+
+        try:
+            tree = ast.parse(expr.replace("^", "**"), mode="eval")
+            with np.errstate(all="ignore"):
+                out = np.asarray(_ev(tree), dtype=float)
+        except (SyntaxError, ValueError, TypeError, ZeroDivisionError):
+            return None
+        if out.ndim == 0 or not np.all(np.isfinite(out)):
+            return None
+        return out
+
     if top_cand is not None:
         if top_cand.fit and top_cand.fit.param_values:
             # Multi-term or single term prediction
@@ -920,14 +985,17 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
                     elif _cubic_term(t_name) and "x" in state_series:
                         pred_vals += w * (state_series["x"] ** 3)
                     else:
-                        raise HTTPException(
-                            status_code=500,
-                            detail=(
-                                f"Cannot reconstruct plot series for term '{t_name}' "
-                                f"in system '{req.system}' (available states: "
-                                f"{sorted(state_series)})."
-                            ),
-                        )
+                        series = _eval_safe_term(t_name)
+                        if series is None:
+                            raise HTTPException(
+                                status_code=500,
+                                detail=(
+                                    f"Cannot reconstruct plot series for term '{t_name}' "
+                                    f"in system '{req.system}' (available states: "
+                                    f"{sorted(state_series)})."
+                                ),
+                            )
+                        pred_vals += w * series
             else:
                 coef = top_cand.fit.param_values.get("theta_1", 1.0)
                 cid = top_cand.candidate.candidate_id
@@ -1070,6 +1138,13 @@ def discover_physics(req: PhysicsRequest) -> dict[str, Any]:
         "rival_a": rival_a,
         "rival_b": rival_b,
         "pareto_candidates": formatted_pareto,
+        "competition": competition_records(
+            {k: np.asarray(v, dtype=float) for k, v in state_series.items()},
+            np.asarray(y_obs, dtype=float),
+            not_applicable={"ode": "physics route runs a fixed generated system",
+                            "pde": "physics route has no spatial grid",
+                            "hawkes": "physics route has no event times"},
+        ),
         "epistemic_framework": {
             "version": "APEDP-X v1.0-FROZEN",
             "autonomy_level": "LEVEL_1_SELF_CORRECTING_REFEREE",
@@ -1218,6 +1293,19 @@ def market_sweep(req: MarketSweepRequest) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Market sweep failed: {e}") from e
 
 
+def _market_competition(asset: str, window: Any) -> list[dict[str, Any]]:
+    """Engine competition on the window's TRAIN slice (holdout never enters)."""
+    dates, prices = load_series_with_dates(asset)
+    date_to_idx = {d: i for i, d in enumerate(dates)}
+    causal = compute_strictly_causal_features(prices)
+    i0 = date_to_idx[window.train_start]
+    i1 = date_to_idx[window.train_end]
+    sl = slice(i0, i1 + 1)
+    X = {"r_lag": causal["r_lag"][sl], "vol": causal["vol"][sl],
+         "ma_dev": causal["ma_dev"][sl]}
+    return competition_records(X, causal["returns"][sl], train_ratio=0.6)
+
+
 @app.post("/api/discover/market", dependencies=[Depends(_require_api_key)])
 def discover_market(req: MarketRequest) -> dict[str, Any]:
     """Execute rolling-window L2 open discovery on genuine market records."""
@@ -1266,6 +1354,7 @@ def discover_market(req: MarketRequest) -> dict[str, Any]:
             "prices": ho_prices,
             "returns": ho_returns,
         },
+        "competition": _market_competition(req.asset, window),
     })
     _audit("discover/market", {"window_id": record.window_id,
                                "asset": record.asset,
@@ -1812,6 +1901,16 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
             series=series_info,
             extra=extra,
         )
+        # Every applicable engine on the same data, side by side. Each record
+        # is its own verdict; promotion is still decided only by the referee.
+        from apedp_dyn.orchestration.competition import competition_for_upload
+        try:
+            resp["competition"] = competition_for_upload(
+                csv_data, target_col=req.target_column
+            )
+        except Exception as exc:  # noqa: BLE001 - competition is additive
+            resp["competition"] = [{"engine": "competition", "status": "FAILED",
+                                    "reason": f"{type(exc).__name__}: {exc}"}]
     elif req.sandbox_id == "volume_market":
         from apedp_dyn.sandbox.volume_sandbox import run_volume_adjudication
         requested_sym = (req.asset or "BTC").upper()

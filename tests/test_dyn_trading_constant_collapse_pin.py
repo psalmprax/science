@@ -109,7 +109,7 @@ def test_penalty_scale_is_one_for_var_ge_one_targets():
 
 def test_penalty_scale_shrinks_with_small_variance():
     regressor = _build_regressor()
-    ofi, dp = _simulate_tutorial_microstructure()
+    _ofi, dp = _simulate_tutorial_microstructure()
     scale = regressor._fitness_penalty_scale(dp)
     assert 0.0 < scale == float(np.var(dp))  # scale == var(y) for var(y) < 1
     assert scale < 1.0

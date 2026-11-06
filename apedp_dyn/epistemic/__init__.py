@@ -13,6 +13,10 @@ from apedp_dyn.epistemic.adjudicate import (
     resolution_floor,
     scale_from_observations,
 )
+from apedp_dyn.epistemic.bayesian_active_learning import (
+    ActiveLearningSuggestion,
+    BayesianActiveLearner,
+)
 from apedp_dyn.epistemic.cross_asset_gate import (
     CrossAssetGateReport,
     CrossAssetGateStatus,
@@ -26,6 +30,12 @@ from apedp_dyn.epistemic.gate4_provenance import (
     noise_sigma_from_residuals,
     scored_candidate,
 )
+from apedp_dyn.epistemic.gp_uncertainty import (
+    BayesianOptimizer,
+    GaussianProcessRegressor,
+    GPPrediction,
+    RBFKernel,
+)
 from apedp_dyn.epistemic.market_extrapolation import (
     MarketExtrapolationResult,
     MarketRung,
@@ -37,7 +47,10 @@ from apedp_dyn.epistemic.market_extrapolation import (
 __all__ = [
     "CAPABILITY_ABSENT",
     "REL_FLOOR",
+    "ActiveLearningSuggestion",
     "Adjudication",
+    "BayesianActiveLearner",
+    "BayesianOptimizer",
     "BenchmarkLevel",
     "CrossAssetGateReport",
     "CrossAssetGateStatus",
@@ -45,10 +58,13 @@ __all__ = [
     "EpistemicAttribution",
     "EpistemicContract",
     "EpistemicStatus",
+    "GPPrediction",
+    "GaussianProcessRegressor",
     "MarketExtrapolationResult",
     "MarketRung",
     "ProposalErrorMetrics",
     "ProposalNotEvaluableError",
+    "RBFKernel",
     "RungEvaluation",
     "adjudicate",
     "bootstrap_available",
@@ -62,5 +78,3 @@ __all__ = [
     "scale_from_observations",
     "scored_candidate",
 ]
-
-

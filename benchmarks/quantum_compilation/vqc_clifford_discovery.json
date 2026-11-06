@@ -1,0 +1,1258 @@
+{
+  "schema": "apedp.vqc.clifford_discovery.v1",
+  "generated_utc": "2026-10-30T17:28:14Z",
+  "command": {
+    "qubits": 100,
+    "shots": 64,
+    "seed": 20261030
+  },
+  "qubits": 100,
+  "workload": {
+    "reference_operations": 222,
+    "reference_two_qubit_gates": 99,
+    "reference_depth": 108,
+    "best_operations": 100,
+    "best_two_qubit_gates": 99,
+    "best_depth": 100,
+    "gates_saved": 122,
+    "rewrites_available_at_the_reference": 77,
+    "step_limit": 1000,
+    "search_seconds": 2.8889754149131477,
+    "reference_provenance": {
+      "described_as": "a GHZ chain with cancelling pairs, s/sdg algebra and Pauli-conjugation identities spliced into it",
+      "deliberately_inefficient": true,
+      "optimised_ghz_reference_operations": 100,
+      "optimised_ghz_reference_depth": 100,
+      "what_the_reduction_measures": "how much of the inserted work the rewrite rules remove; it does not establish a 54.95% advantage over an optimised GHZ implementation, and the discovered circuit is that optimised preparation, not something shorter",
+      "what_it_does_not_measure": "cost against a circuit built by a synthesiser from the specification, which is the experiment in measure_vqc_synthesis.py"
+    }
+  },
+  "steps": [
+    {
+      "rule": "cancel z(99,)",
+      "score": [
+        220,
+        106
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel h(99,)",
+      "score": [
+        218,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(0,)",
+      "score": [
+        216,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(0,)",
+      "score": [
+        214,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(5,)",
+      "score": [
+        212,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(10,)",
+      "score": [
+        210,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(11,)",
+      "score": [
+        208,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(15,)",
+      "score": [
+        206,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(20,)",
+      "score": [
+        204,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(22,)",
+      "score": [
+        202,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(25,)",
+      "score": [
+        200,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(30,)",
+      "score": [
+        198,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(33,)",
+      "score": [
+        196,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(35,)",
+      "score": [
+        194,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(40,)",
+      "score": [
+        192,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(44,)",
+      "score": [
+        190,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(45,)",
+      "score": [
+        188,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(50,)",
+      "score": [
+        186,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(55,)",
+      "score": [
+        184,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(55,)",
+      "score": [
+        182,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(60,)",
+      "score": [
+        180,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(65,)",
+      "score": [
+        178,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(66,)",
+      "score": [
+        176,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(70,)",
+      "score": [
+        174,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(75,)",
+      "score": [
+        172,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(77,)",
+      "score": [
+        170,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(80,)",
+      "score": [
+        168,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(85,)",
+      "score": [
+        166,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(88,)",
+      "score": [
+        164,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(90,)",
+      "score": [
+        162,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(95,)",
+      "score": [
+        160,
+        104
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        159,
+        103
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        158,
+        102
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(99,)",
+      "score": [
+        156,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        155,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        154,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(1,)",
+      "score": [
+        152,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        151,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        150,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(8,)",
+      "score": [
+        148,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        147,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        146,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(15,)",
+      "score": [
+        144,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        143,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        142,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(22,)",
+      "score": [
+        140,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        139,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        138,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(29,)",
+      "score": [
+        136,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        135,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        134,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(36,)",
+      "score": [
+        132,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        131,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        130,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(43,)",
+      "score": [
+        128,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        127,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        126,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(50,)",
+      "score": [
+        124,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        123,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        122,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(57,)",
+      "score": [
+        120,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        119,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        118,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(64,)",
+      "score": [
+        116,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        115,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        114,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(71,)",
+      "score": [
+        112,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        111,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        110,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(78,)",
+      "score": [
+        108,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        107,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        106,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(85,)",
+      "score": [
+        104,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        103,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "s s = z",
+      "score": [
+        102,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    },
+    {
+      "rule": "cancel z(92,)",
+      "score": [
+        100,
+        100
+      ],
+      "verdict": "VALID",
+      "mismatched": 0,
+      "first_mismatch": null,
+      "accepted": true
+    }
+  ],
+  "mutations": [
+    {
+      "rule": "delete cx(68, 69)",
+      "score": [
+        99,
+        69
+      ],
+      "verdict": "INVALID",
+      "mismatched": 70,
+      "first_mismatch": {
+        "basis": "Z_0",
+        "reference": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "candidate": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+      },
+      "accepted": false
+    },
+    {
+      "rule": "cx -> the other two-qubit gate",
+      "score": [
+        100,
+        100
+      ],
+      "verdict": "INVALID",
+      "mismatched": 73,
+      "first_mismatch": {
+        "basis": "Z_0",
+        "reference": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "candidate": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXZIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+      },
+      "accepted": false
+    },
+    {
+      "rule": "delete cx(51, 52)",
+      "score": [
+        99,
+        52
+      ],
+      "verdict": "INVALID",
+      "mismatched": 53,
+      "first_mismatch": {
+        "basis": "Z_0",
+        "reference": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "candidate": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+      },
+      "accepted": false
+    },
+    {
+      "rule": "cx -> the other two-qubit gate",
+      "score": [
+        100,
+        100
+      ],
+      "verdict": "INVALID",
+      "mismatched": 95,
+      "first_mismatch": {
+        "basis": "Z_0",
+        "reference": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "candidate": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXZIIIIII"
+      },
+      "accepted": false
+    },
+    {
+      "rule": "cx -> the other two-qubit gate",
+      "score": [
+        100,
+        100
+      ],
+      "verdict": "INVALID",
+      "mismatched": 77,
+      "first_mismatch": {
+        "basis": "Z_0",
+        "reference": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "candidate": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXZIIIIIIIIIIIIIIIIIIIIIIII"
+      },
+      "accepted": false
+    },
+    {
+      "rule": "cx -> the other two-qubit gate",
+      "score": [
+        100,
+        100
+      ],
+      "verdict": "INVALID",
+      "mismatched": 83,
+      "first_mismatch": {
+        "basis": "Z_0",
+        "reference": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "candidate": "+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXZIIIIIIIIIIIIIIIIII"
+      },
+      "accepted": false
+    }
+  ],
+  "admission": {
+    "candidate": {
+      "candidate_id": "ghz-chain-rewritten",
+      "source": "vqc.clifford_search",
+      "reference_sha256": "79640a010d8af532ba7e2d7308afc1a3df076ce3d7bf34f7f29006c215102144",
+      "candidate_sha256": "7f95ee72e0b1b054b817303a8a1fb0edf964114d8216d30999ceaa4af85e0157",
+      "claims": {
+        "operations": 100
+      },
+      "declares_distribution": false,
+      "shots": 4096,
+      "seed": 0,
+      "metadata": {
+        "search": "greedy-rewrite"
+      }
+    },
+    "tier": "stabilizer",
+    "verdict": "VALID",
+    "claim_verdict": "MET",
+    "evidence": "SUFFICIENT",
+    "semantic_verdict": "VALID",
+    "resource_verdict": "MET",
+    "evidence_sufficiency": "SUFFICIENT",
+    "promotion_decision": "PROMOTED",
+    "promotable": true,
+    "refused_reasons": [],
+    "equivalence": {
+      "tier": "stabilizer",
+      "scope": "unitary",
+      "decides": "the unitary, up to one global phase",
+      "reference_sha256": "79640a010d8af532ba7e2d7308afc1a3df076ce3d7bf34f7f29006c215102144",
+      "candidate_sha256": "7f95ee72e0b1b054b817303a8a1fb0edf964114d8216d30999ceaa4af85e0157",
+      "qubits": 100,
+      "verdict": "VALID",
+      "promotable": true,
+      "claim_verdict": "MET",
+      "claim": {
+        "name": "the candidate meets the resource claim it is offered under",
+        "requirement": "every claimed measure is at most the claimed value",
+        "measured": {
+          "claims": {
+            "operations": 100
+          },
+          "unmet": {}
+        },
+        "passed": true
+      },
+      "image_engine": "rust",
+      "image_verified_by": "suite",
+      "compared": 200,
+      "mismatched": 0,
+      "mismatches": [],
+      "checks": [
+        {
+          "name": "reference is a Clifford unitary circuit",
+          "requirement": "unconditioned gates from ['cx', 'cz', 'h', 's', 'sdg', 'swap', 'x', 'y', 'z'], no measurement, reset or noise",
+          "measured": {
+            "qubits": 100,
+            "gates": 222
+          },
+          "passed": true
+        },
+        {
+          "name": "candidate is a Clifford unitary circuit",
+          "requirement": "unconditioned gates from ['cx', 'cz', 'h', 's', 'sdg', 'swap', 'x', 'y', 'z'], no measurement, reset or noise",
+          "measured": {
+            "qubits": 100,
+            "gates": 100
+          },
+          "passed": true
+        },
+        {
+          "name": "both circuits act on the same number of qubits",
+          "requirement": "the same Hilbert space, so a comparison is meaningful",
+          "measured": {
+            "reference": 100,
+            "candidate": 100
+          },
+          "passed": true
+        },
+        {
+          "name": "the conjugation action on every Pauli generator agrees",
+          "requirement": "all 200 images of X_q and Z_q are the same signed Pauli string; a relative phase or a different operation changes one, a global phase changes none",
+          "measured": {
+            "compared": 200,
+            "mismatched": 0,
+            "mismatches": [],
+            "global_phase_visible": false
+          },
+          "passed": true
+        }
+      ],
+      "resources": {
+        "reference": {
+          "qubits": 100,
+          "bits": 0,
+          "ancillas": 0,
+          "operations": 222,
+          "gates": {
+            "cx": 99,
+            "h": 3,
+            "s": 60,
+            "z": 60
+          },
+          "two_qubit_gates": 99,
+          "measurements": 0,
+          "resets": 0,
+          "noise_operations": 0,
+          "depth": 108
+        },
+        "candidate": {
+          "qubits": 100,
+          "bits": 0,
+          "ancillas": 0,
+          "operations": 100,
+          "gates": {
+            "cx": 99,
+            "h": 1
+          },
+          "two_qubit_gates": 99,
+          "measurements": 0,
+          "resets": 0,
+          "noise_operations": 0,
+          "depth": 100
+        },
+        "provenance": {
+          "candidate_id": "ghz-chain-rewritten",
+          "source": "vqc.clifford_search"
+        }
+      }
+    },
+    "distribution": null,
+    "checks": [
+      {
+        "name": "the candidate is equivalent to its reference circuit",
+        "requirement": "the stabilizer tier's conjugation images agree exactly",
+        "measured": {
+          "tier": "stabilizer",
+          "scope": "unitary",
+          "mismatched": 0,
+          "compared": 200
+        },
+        "passed": true
+      }
+    ]
+  },
+  "sampling": {
+    "shots": 64,
+    "seed": 20261030,
+    "reference_support": [
+      "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+    ],
+    "candidate_support": [
+      "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+    ],
+    "support_identical": true,
+    "max_count_difference": 0,
+    "within_four_sigma": true,
+    "seconds": 0.4698912769090384
+  },
+  "state_scope_only": {
+    "unitary_scope": "INVALID",
+    "unitary_mismatched": 196,
+    "state_scope": "VALID",
+    "admission": {
+      "verdict": "INVALID",
+      "evidence": "SUFFICIENT",
+      "promotable": false
+    },
+    "refusal": "candidate 'ghz-star' is INVALID, not VALID: the candidate is equivalent to its reference circuit: failed"
+  },
+  "dense_cross_check": {
+    "qubits": 8,
+    "verdict": "VALID",
+    "distance": 1.5700924586837752e-16
+  },
+  "checks": [
+    {
+      "check": "every accepted rewrite is certified as the same unitary",
+      "requirement": "each step compared against the original reference at 100 qubits, from 2n Pauli images, with no matrix",
+      "measured": {
+        "steps": 76,
+        "accepted": 76,
+        "rejected": 0
+      },
+      "passed": true
+    },
+    {
+      "check": "the best circuit is strictly cheaper than the reference",
+      "requirement": "fewer operations, and fewer two-qubit gates",
+      "measured": {
+        "reference": 222,
+        "best": 100,
+        "reference_two_qubit": 99,
+        "best_two_qubit": 99
+      },
+      "passed": true
+    },
+    {
+      "check": "the search converged before its step cap",
+      "requirement": "a local optimum, not a truncated loop",
+      "measured": {
+        "steps": 76,
+        "cap": 1000
+      },
+      "passed": true
+    },
+    {
+      "check": "the promoted candidate carries sufficient evidence",
+      "requirement": "valid, claim met, evidence SUFFICIENT, tier stabilizer",
+      "measured": {
+        "promoted": true,
+        "tier": "stabilizer",
+        "semantic": "VALID",
+        "resource": "MET",
+        "evidence": "SUFFICIENT"
+      },
+      "passed": true
+    },
+    {
+      "check": "mutated candidates are refused, not promoted",
+      "requirement": "every semantics-breaking edit comes back INVALID with a named image",
+      "measured": {
+        "mutations": 6,
+        "refused": 6,
+        "passed_by_accident": 0
+      },
+      "passed": true
+    },
+    {
+      "check": "a cheaper candidate that only prepares the same state is refused",
+      "requirement": "unitary scope INVALID, state scope VALID, admission refuses",
+      "measured": {
+        "star_operations": 100,
+        "reference_operations": 222,
+        "unitary_scope": "INVALID",
+        "unitary_mismatched": 196,
+        "state_scope": "VALID",
+        "admission": "INVALID",
+        "promoted": false
+      },
+      "passed": true
+    },
+    {
+      "check": "the two circuits sample identically on the stabilizer backend",
+      "requirement": "same support, counts within four sigma at 64 shots",
+      "measured": {
+        "shots": 64,
+        "seed": 20261030,
+        "reference_support": [
+          "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        "candidate_support": [
+          "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+        ],
+        "support_identical": true,
+        "max_count_difference": 0,
+        "within_four_sigma": true,
+        "seconds": 0.4698912769090384
+      },
+      "passed": true
+    },
+    {
+      "check": "the dense tier agrees on a small copy of the same workload",
+      "requirement": "8-qubit version checked with the dense referee as well",
+      "measured": {
+        "dense_verdict": "VALID",
+        "dense_distance": 1.5700924586837752e-16,
+        "small_reference_operations": 20,
+        "small_best_operations": 8,
+        "small_step_cap_hit": false
+      },
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "the search space is local rewrites over Clifford gates, not a general synthesiser: it cannot propose a circuit that is not reachable by cancellations, S/Z algebra, Pauli conjugation or commuting a pair past disjoint gates",
+    "the reference circuit is deliberately inefficient (see workload.reference_provenance): the measured reduction is against an unoptimised circuit, and the discovered 100-operation chain is the optimised GHZ preparation itself, so the number to quote is 'it reached the n-operation, depth-n circuit', not 'it is 55% faster than GHZ'",
+    "synthesis from a specification, with no reference circuit, is a separate experiment (scripts/measure_vqc_synthesis.py); this loop still needs a circuit to start from",
+    "the ranking is (operations, depth); the search is greedy and stops at a local optimum, so 'best' means best reachable, not optimal",
+    "the referee is exact but the workload is a Clifford circuit with a closed form; a general non-Clifford circuit at this size is still UNRESOLVED",
+    "sampling is a spot check at a stated shot count, not a distribution test, and neither backends nor the referee execute noise here",
+    "wall clock is one host and one process"
+  ],
+  "reproducibility": {
+    "script_sha256": "1c7c594d651d4dae71084b61689dc1099a9735a1483061ac01600de057363067",
+    "search_sha256": "82ab9dafc16c3bf6fcebc05fc35231305812c14a2b8e7dd794d3ed6ff92dd946",
+    "equivalence_sha256": "6008e76dc4eabd853adedde51cc7356bd15193beecd781cb2fc7109a7538801b",
+    "discovery_sha256": "f825dfd168704f1993f738a3ad740f6e4a044795fc19fa1339f460cdaed8b7f9",
+    "python": "3.12.3",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "command": "python scripts/measure_vqc_clifford_discovery.py --qubits 100 --shots 64 --seed 20261030"
+  },
+  "verdict": "a 100-qubit Clifford circuit was rewritten, every step certified as the same unitary without a matrix, the result promoted on sufficient evidence, and the state-only and mutated alternatives refused"
+}

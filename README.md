@@ -193,6 +193,64 @@ explains `packages/`, `crates/`, the active `rust/` kernel, and `apedp*` boundar
 Reviews route to `@psalmprax` via [CODEOWNERS](.github/CODEOWNERS).
 Existing imports, persisted evidence, and directory paths are unchanged.
 
+## APEDP-Q Benchmark I: the 62-qubit bar and why 89 is this design's floor
+
+The quantum-compilation arm submits to Google Quantum AI's verifiable circuit compilation
+competition. Benchmark I asks for a reversible circuit for `1/sqrt(x)` on
+`x in [1, 3,133,452]`, scored as `Q x (Toffoli-equivalents + T/4)` against a reference cost
+of 2,076,774.23. Our pinned entry is **89 qubits at 157,601.08** (official `PASS`,
+200,540,928 shots, worst error/tolerance 0.9996227, `sha256 ce04c9d5…`).
+
+The best public artifact is **62 qubits at 100,569.53**, 1.57x better, and it wins while its
+static stream is *larger* than ours (1,495 Toffolis against 1,466). The score is a product,
+so width dominates: at Q = 62 one qubit is worth 26.2 Toffoli-equivalents, and on the
+25,600-shot basis where our rebuild reads 157,605.5, **84% of the 57,036-point gap is width
+alone** (our own 1,770.8 te at their Q would score 109,789.5). Matching their Q would put us
+at 99,165 — the bar is reachable at **Q = 56 with no gate cut at all**, and out of reach at
+Q = 62 without shedding 148.7 te.
+
+| Q | 62 | 56 | 48 | 40 | 32 |
+|---|---|---|---|---|---|
+| toffoli-equivalents allowed to match 100,569.53 | 1,622.09 | 1,795.9 | 2,095.2 | 2,514.2 | 3,142.8 |
+| versus our 1,770.8 | 148.7 over | 25.1 spare | 324.4 spare | 743.4 spare | 1,372.0 spare |
+
+### Where the 89 qubits are
+
+Instrumenting the builder per qubit id: at the peak 71 named qubits are live (22 `x`,
+21 phase accumulator, 12 residual, 7 coarse, 6 curvature, 5 flags) and `folded_gadd`
+allocates 18 carries on top of them. Those 18 carries are the whole distance between us and
+the public circuit's 40 working qubits — the arithmetic is 49 registers either way.
+
+### Three levers, each measured shut
+
+| lever | measured | why it fails |
+|---|---|---|
+| segment the 21-bit carry chain | Q 76 at +56 Toffolis, i.e. 138,837 | aborts in the exact-domain compiler (`Scratch function is not zero`, `portable_exact_domain.py:285`). A segment's carry-out is consumed by the next segment and preserved there, and a carry-out is a majority of three qubits, not an AND, so `del_and` cannot clear it. Only a Z-basis measurement would, and this pinned build has no `mr` — the same missing surface that blocks the DQI arm — while `hmr` is not phase-safe. |
+| record-restore the registers | Q ≈ 60 at `te ≈ 2,171`, i.e. 130,260 | rebuilding `residual`, `c2` and `coarse` on demand costs 328 + 39 + ~30 Toffolis per shot at measured decision-diagram node counts, so it is 1.21x better than our entry and still 1.30x behind 100,569.53 |
+| phase the digits serially | 34,997 Q / 101,914 T at 22 bits | each digit's function grows x3.2 per two input bits, and sharing one multi-output plan across digits measures *wider* at every k from 3 to 9 (1.4-1.5x) for 1% of the Toffolis |
+
+A fourth saving was cheaper to price than to build: the polynomial correction is 8
+signed-digit rows, but every single-row drop lands between 1.14x and 48x the verifier's
+tolerance, and all 8 rows together are only 132 of the 1,466 Toffolis. The largest block in
+the stream is the 14 outer-row 21-bit accumulation at 560, 38% of it.
+
+### What the verdict is, and what it is not
+
+`89 / 1,770.8 / 157,601.08` is the endpoint of *this* arithmetic, not a waypoint: every way
+out of it is either blocked by a missing opcode or priced at a loss. Beating 100,569.53
+needs a schedule that never holds a 21-bit accumulator, a 12-bit residual and a curvature
+word at once — a rewrite, not a tidy-up. It is also scoped: the ceiling is a statement about
+the APEDP-Q / SABLE search space, not about the competition, and the champion's 0.999623 of
+tolerance leaves no room for further approximation.
+
+Full record: [`docs/INVSQRT_SUB62_DESIGN.md`](docs/INVSQRT_SUB62_DESIGN.md) (per-lever
+measurements, the build log, and the reproduction commands),
+[§5 of the frontier audit](docs/invsqrt_frontier_and_portfolio_synthesis.md) (the
+25,600-shot basis and the public artifact's provenance), and
+[`kaggle/README.md`](kaggle/README.md) (the submission route).
+
+---
+
 ## Key Documentation
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md): Component boundaries, evidence flow, and holdout firewalls.
@@ -204,6 +262,7 @@ Existing imports, persisted evidence, and directory paths are unchanged.
 - [`AGENTS.md`](AGENTS.md): Repository guidelines and integrity rules for AI coding assistants.
 - [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md): Complete module-by-module reference and status index.
 - [`docs/apedp_discovery_engine_ledger_and_benchmarks_audit.md`](docs/apedp_discovery_engine_ledger_and_benchmarks_audit.md): Engineering audit mapping guarantees to tests.
+- [`docs/INVSQRT_SUB62_DESIGN.md`](docs/INVSQRT_SUB62_DESIGN.md): Benchmark I width ceiling — the 62-qubit bar, where the 89 qubits are, and the three levers measured shut.
 
 ## Releases and versioning
 

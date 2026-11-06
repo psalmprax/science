@@ -18,6 +18,50 @@ from apedp.applied_defects import (
     AppliedPhysicsDefectAuditor,
     UniversalAppliedDefectEngine,
 )
+from apedp.applied_biopharma import (
+    ADMETPredictor,
+    ClinicalTrialDesigner,
+    CombinationTrialSimulator,
+    DiabetesBiomarkerAnalyzer,
+    DiseaseBiomarkerAnalyzer,
+    DrugRepurposingEngine,
+    DrugTargetDiscovery,
+    LeadOptimizer,
+    UniversalDrugTargetDiscovery,
+)
+from apedp.applied_fusion import (
+    FusionFuelCycle,
+    FusionMaterials,
+    FusionReactorDesigner,
+    PlasmaPhysicsAnalyzer,
+)
+from apedp.experimental_physics import (
+    ExperimentalEnergyConcepts,
+    TeslaInventionSimulator,
+)
+from apedp.applied_materials import (
+    CatalystDiscovery,
+    EnergyStorageMaterials,
+    MetamaterialDesigner,
+    SuperconductorDiscovery,
+)
+from apedp.applied_synthetic_bio import (
+    CRISPRDesigner,
+    MetabolicPathwayOptimizer,
+    ProteinDesigner,
+)
+from apedp.applied_climate import (
+    CarbonMineralization,
+    ClimateModeling,
+    DirectAirCapture,
+)
+from apedp.applied_neuromorphic import (
+    NeuromorphicChipDesigner,
+)
+from apedp.applied_electrical import (
+    ElectronicsDesign,
+    PowerSystems,
+)
 from apedp.benchmarks import (
     BenchmarkCaseResult,
     BenchmarkCategory,

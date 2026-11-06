@@ -1,0 +1,222 @@
+{
+  "engine": "kickmix",
+  "kickmix": "/home/psalmprax/ALL_PROJECTS/science/build/kickmix_mr/lib/kickmix.cpython-313-x86_64-linux-gnu.so",
+  "kickmix_sha256": "9a3e6bb0c787f6294c8849101f3c2b2204f7c6b418aa8735e06a47525dcbbe41",
+  "kickmix_role": "local rebuild with MR; not the pinned competition binary",
+  "instance": {
+    "m": 4095,
+    "n": 70,
+    "degree": 12,
+    "shots": 8,
+    "official": true
+  },
+  "b_bilinear_search": {
+    "method": "exact search over rank-1 matrices u v^T whose span holds all 2n-1 anti-diagonals of the product tensor; exhaustive at n=2,3",
+    "n2": {
+      "n": 2,
+      "rank": 3,
+      "proved": true,
+      "candidates": 9,
+      "nodes": 26,
+      "pairs": [
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          3
+        ]
+      ],
+      "weights": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      "verified_pairs": 16,
+      "mismatches": 0
+    },
+    "n3": {
+      "n": 3,
+      "rank": 6,
+      "proved": true,
+      "candidates": 49,
+      "nodes": 2947112,
+      "pairs": [
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          6,
+          6
+        ]
+      ],
+      "weights": [
+        [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          0,
+          1,
+          1,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          1,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ]
+      ],
+      "verified_pairs": 64,
+      "mismatches": 0
+    },
+    "base_and_costs": {
+      "2": 3,
+      "3": 6
+    },
+    "composed_and_count_12": 54,
+    "karatsuba_builtin_and_count_12": 63,
+    "composed_verified_against_field": {
+      "samples": 200,
+      "mismatches": 0
+    }
+  },
+  "a_predicate_ceiling": {
+    "measure": "static Toffoli-like count with one region deleted outright; static counts do not depend on state, so the difference is that region's own gates and an exact ceiling for any predicate on it (executed <= static)",
+    "baseline_static_toffoli": 3486597,
+    "regions": {
+      "_update_flag": {
+        "static_toffoli_without_region": 3453741,
+        "ceiling_static_toffoli": 32856,
+        "ceiling_percent_of_static": 0.94235152499701
+      },
+      "_update_metadata": {
+        "static_toffoli_without_region": 3474165,
+        "ceiling_static_toffoli": 12432,
+        "ceiling_percent_of_static": 0.35656544189076056
+      },
+      "_update_counter": {
+        "static_toffoli_without_region": 3486375,
+        "ceiling_static_toffoli": 222,
+        "ceiling_percent_of_static": 0.006367240033763581
+      },
+      "_update_halting_counter": {
+        "static_toffoli_without_region": 3475941,
+        "ceiling_static_toffoli": 10656,
+        "ceiling_percent_of_static": 0.3056275216206519
+      },
+      "_initial_shift_loop": {
+        "static_toffoli_without_region": 3455685,
+        "ceiling_static_toffoli": 30912,
+        "ceiling_percent_of_static": 0.8865951528094587
+      },
+      "_pre_align_reg_b": {
+        "static_toffoli_without_region": 3479205,
+        "ceiling_static_toffoli": 7392,
+        "ceiling_percent_of_static": 0.21201188436747923
+      }
+    },
+    "total_ceiling_static_toffoli": 94470,
+    "total_ceiling_percent": 2.7095187657191238
+  },
+  "c_decoder_requirement": {
+    "target_t_mean": 445229.0,
+    "derived_from": {
+      "executed_six_levers": 1325230.0,
+      "multiply_calls_per_shot": 10510,
+      "everything_else_per_shot": 536980.0,
+      "controlled_add_per_call": 12,
+      "model": "t(ands) = everything_else + calls * (ands + 12), so the controlled add is counted in every row -- a multiply costs ands + 12, not ands",
+      "measured_in": "benchmarks/quantum_compilation/gf54_mul_kickmix.json",
+      "superseded_share_percent": 86.33,
+      "superseded_54_and_projection": 1161791.2772857142
+    },
+    "ladder": {
+      "63": {
+        "t_mean": 1325230.0,
+        "ratio_vs_reference": 4.3200588652535785,
+        "ratio_vs_target": 2.976513210055949
+      },
+      "54": {
+        "t_mean": 1230640.0,
+        "ratio_vs_reference": 4.652109154586232,
+        "ratio_vs_target": 2.7640607417755807
+      },
+      "45": {
+        "t_mean": 1136050.0,
+        "ratio_vs_reference": 5.039453906078077,
+        "ratio_vs_target": 2.5516082734952126
+      },
+      "23": {
+        "t_mean": 904830.0,
+        "ratio_vs_reference": 6.3272345191914505,
+        "ratio_vs_target": 2.032280017698757
+      },
+      "0": {
+        "t_mean": 663100.0,
+        "ratio_vs_reference": 8.633798235560247,
+        "ratio_vs_target": 1.4893459320933722
+      }
+    }
+  },
+  "finding": "B: the exact search gives mu(2) = 3 and mu(3) = 6 (the n=3 minimum is proved, not estimated: every choice of five rank-1 matrices was tried). Composed by Karatsuba to n=12 that is 54 ANDs against the built-in 63, i.e. 14.3% fewer, and the composed algorithm reproduces the field product on 200 sampled inputs with 0 mismatches.  A: deleting every region that still runs unconditionally is worth at most 94,470 static Toffolis (2.71% of the arm's emitted stream, and executed <= static), so a predicate discoverer has that much to find here and no more.  C: the multiply is most of the gap but not all of it. The arm decomposes exactly as 536,980.0 Toffoli of non-multiply work plus 10,510 executed calls of a multiply that costs its AND count plus 12, so at the proved 6-AND base the arm would execute 1,230,640.0 per shot; even a 23-AND multiply -- the 2n-1 dimension bound, which this repository has no characteristic-2 construction for -- leaves 904,830.0 (2.03x the 445,229 target), and a multiply that cost nothing but its 12-Toffoli add still leaves 663,100.0 (1.49x the target). So no multiply, however cheap, delivers the target on this decoder: the 536,980.0 that is not the multiply has to shrink too, which is an algorithm change."
+}

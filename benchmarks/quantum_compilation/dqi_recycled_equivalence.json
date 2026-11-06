@@ -1,0 +1,49 @@
+{
+  "what": "64-shot equivalence of the substituted pass bodies against the reference decoder, all arms driven over the same shots",
+  "script": "scripts/verify_recycled_equivalence.py",
+  "instance": {
+    "m": 4095,
+    "n": 70,
+    "degree": 12,
+    "r": 2016,
+    "n_iters": 222
+  },
+  "shots": 64,
+  "seed": 20261103,
+  "log2_delta": -2.0,
+  "shared_shots": true,
+  "certification_note": "64 shots cannot certify a sub-1/16 error rate at tight confidence, so log2_delta is the loosest-with-PASS value and the claim rests on the arms sharing counts",
+  "arms": {
+    "reference": {
+      "built": true,
+      "status": "PASS",
+      "value_errors": 0,
+      "phase_errors": 0,
+      "verified_shots": 64,
+      "effective_error_rate": 0.021427937912299865,
+      "score": 61234170175145.42
+    },
+    "update_flag_substituted": {
+      "built": true,
+      "status": "FAILED_CONFIDENCE_BOUND",
+      "value_errors": 52,
+      "phase_errors": 0,
+      "verified_shots": 64,
+      "detail": "Effective error rate 0.8494 >= 1/16 at log2_delta=-2.0 (empirical=0.8125, value_errors=52/64, phase_errors=0/64)"
+    },
+    "all_sites_substituted": {
+      "built": true,
+      "status": "FAILED_CONFIDENCE_BOUND",
+      "value_errors": 64,
+      "phase_errors": 0,
+      "verified_shots": 64,
+      "detail": "Effective error rate 1.0000 >= 1/16 at log2_delta=-2.0 (empirical=1.0000, value_errors=64/64, phase_errors=0/64)"
+    }
+  },
+  "equivalent_to_reference": {
+    "update_flag_substituted": false,
+    "all_sites_substituted": false
+  },
+  "verdict": "at least one substituted body disagrees with the reference on these shots",
+  "dropped_instance": "m=15, n=6, degree=4: the reference decoder itself fails it, so it cannot show a substitution equivalent to the reference"
+}

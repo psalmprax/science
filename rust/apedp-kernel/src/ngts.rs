@@ -265,42 +265,33 @@ impl PyNGTSSearch {
         serde_json::to_string(&stats).unwrap_or_default()
     }
 
-    fn run_simulations(&mut self, num_sims: usize) -> usize {
+    /// Run UCT simulations, scoring each selected leaf with `reward`.
+    ///
+    /// The caller supplies the value; without a reward function no simulation can
+    /// produce one, so nothing runs and 0 is returned instead of recording a
+    /// random score.
+    #[pyo3(signature = (num_sims, reward=None))]
+    fn run_simulations(
+        &mut self,
+        py: Python<'_>,
+        num_sims: usize,
+        reward: Option<Py<PyAny>>,
+    ) -> PyResult<usize> {
+        let callback = match reward {
+            Some(cb) => cb,
+            None => return Ok(0),
+        };
         let mut completed = 0;
         for _ in 0..num_sims {
-            let selected = self.ngts.select(0);
-            // Expand if needed
-            if let Some(node) = self.ngts.nodes.get(&selected) {
-                if node.children.is_empty() && node.depth < self.ngts.config.max_depth {
-                    // Add some default actions
-                    let actions = vec![
-                        (format!("{} + 1", node.expression), 0.1),
-                        (format!("{} * x0", node.expression), 0.1),
-                        (format!("sin({})", node.expression), 0.05),
-                    ];
-                    self.ngts.expand(selected, actions);
-                    if let Some(child) = self.ngts.nodes.get(&selected).and_then(|n| n.children.first().cloned()) {
-                        // Simulate
-                        let value = 0.5 + (rand_simple() * 0.5);
-                        self.ngts.backpropagate(child, value);
-                        completed += 1;
-                        continue;
-                    }
-                }
-            }
-            // Just backpropagate
-            let value = rand_simple() * 0.5;
-            self.ngts.backpropagate(selected, value);
+            let leaf = self.ngts.select(0);
+            let expression = match self.ngts.nodes.get(&leaf) {
+                Some(node) => node.expression.clone(),
+                None => continue,
+            };
+            let value: f64 = callback.call1(py, (expression,))?.extract(py)?;
+            self.ngts.backpropagate(leaf, value);
             completed += 1;
         }
-        completed
+        Ok(completed)
     }
-}
-
-fn rand_simple() -> f64 {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
-    let mut hasher = DefaultHasher::new();
-    std::time::SystemTime::now().hash(&mut hasher);
-    (hasher.finish() as f64) / (u64::MAX as f64)
 }

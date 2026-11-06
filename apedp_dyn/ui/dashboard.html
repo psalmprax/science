@@ -688,6 +688,15 @@
           </div>
         </div>
 
+        <!-- Competition: every applicable engine on the same data, side by side -->
+        <div id="sandbox-competition-box" class="hidden p-4 bg-slate-500/10 border border-slate-500/30 rounded-xl space-y-2">
+          <div class="font-mono text-xs font-bold text-slate-300">ENGINE COMPETITION (each verdict stands alone; the referee decides promotion)</div>
+          <table class="w-full text-xs font-mono text-left">
+            <thead class="text-slate-500"><tr><th class="pr-3">Engine</th><th class="pr-3">Status</th><th class="pr-3">Verdict</th><th class="pr-3">Promoted</th><th class="pr-3">Best RMSE</th><th>Note</th></tr></thead>
+            <tbody id="sandbox-competition-rows"></tbody>
+          </table>
+        </div>
+
         <!-- Multi-Hypothesis Split-Screen (Visible only on MULTI_HYPOTHESIS) -->
         <div id="sandbox-multi-rivals-box" class="hidden p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-3">
           <div class="flex items-center space-x-2 text-amber-400 font-mono text-xs font-bold">
@@ -1744,10 +1753,42 @@
       }
     }
 
+    function renderCompetition(rows) {
+      const box = document.getElementById('sandbox-competition-box');
+      const tbody = document.getElementById('sandbox-competition-rows');
+      if (!box || !tbody) return;
+      tbody.innerHTML = '';
+      if (!Array.isArray(rows) || rows.length === 0) {
+        box.classList.add('hidden');
+        return;
+      }
+      rows.forEach((r) => {
+        const tr = document.createElement('tr');
+        const cells = [
+          r.engine || '—',
+          r.status || '—',
+          r.adjudication_status || '—',
+          r.promoted_equation || '—',
+          r.best_rmse != null ? Number(r.best_rmse).toPrecision(4) : '—',
+          r.reason || '',
+        ];
+        cells.forEach((text) => {
+          const td = document.createElement('td');
+          td.className = 'pr-3 py-1 text-slate-300';
+          td.textContent = String(text);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      box.classList.remove('hidden');
+    }
+
     function renderSandboxResults(data) {
       const badge = document.getElementById('sandbox-verdict-badge');
       const v = (data.verdict || 'unknown').toLowerCase();
       badge.innerText = v.toUpperCase();
+
+      renderCompetition(data.competition);
 
       const multiBox = document.getElementById('sandbox-multi-rivals-box');
 

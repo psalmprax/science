@@ -1,0 +1,1089 @@
+{
+  "audit": "candidate rows whose correctness claim rests on an unchecked register",
+  "why": "Experiment D's candidate was called correct because its syndromes came back; Experiment D2 measured the phase and found 37 of 64 shots wrong. A record can carry the gap only if something asks for it.",
+  "records_scanned": 33,
+  "totals": {
+    "claims_correct_aggregate_only": 51,
+    "checked": 12,
+    "PARTIAL_EVIDENCE_MISSING_PHASE": 6,
+    "PARTIAL_EVIDENCE_MISSING_JUNK_AND_PHASE": 7,
+    "resources-only": 5
+  },
+  "gaps": [
+    {
+      "record": "benchmarks/quantum_compilation/dqi_official_compatibility.json",
+      "path": "builds.pinned.reference",
+      "toffoli": 5725071.609375,
+      "missing": [
+        "phase"
+      ],
+      "claims_correct": false
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_official_compatibility.json",
+      "path": "builds.pinned.candidate",
+      "toffoli": 5433399.609375,
+      "missing": [
+        "junk",
+        "phase"
+      ],
+      "claims_correct": false
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_official_compatibility.json",
+      "path": "builds.local.reference",
+      "toffoli": 5725071.609375,
+      "missing": [
+        "phase"
+      ],
+      "claims_correct": false
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_official_compatibility.json",
+      "path": "builds.local.reference_and54",
+      "toffoli": 5201222.53125,
+      "missing": [
+        "junk",
+        "phase"
+      ],
+      "claims_correct": false
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_official_compatibility.json",
+      "path": "builds.local.candidate",
+      "toffoli": 5433399.609375,
+      "missing": [
+        "junk",
+        "phase"
+      ],
+      "claims_correct": false
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_official_compatibility.json",
+      "path": "comparison.reference_and54_local_only",
+      "toffoli": 5201222.53125,
+      "missing": [
+        "junk",
+        "phase"
+      ],
+      "claims_correct": false
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_official_compatibility.json",
+      "path": "blockers.gf_product.measured_row",
+      "toffoli": 5201222.53125,
+      "missing": [
+        "junk",
+        "phase"
+      ],
+      "claims_correct": false
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_official_compatibility.json",
+      "path": "floor.candidate",
+      "toffoli": 5433399.609375,
+      "missing": [
+        "junk",
+        "phase"
+      ],
+      "claims_correct": false
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_official_compatibility.json",
+      "path": "checks[6].measured",
+      "toffoli": 5433399.609375,
+      "missing": [
+        "junk",
+        "phase"
+      ],
+      "claims_correct": false
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_resource_reconciliation.json",
+      "path": "reference.pinned",
+      "toffoli": 5725071.609375,
+      "missing": [
+        "phase"
+      ],
+      "claims_correct": false
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_resource_reconciliation.json",
+      "path": "reference.local",
+      "toffoli": 5725071.609375,
+      "missing": [
+        "phase"
+      ],
+      "claims_correct": false
+    },
+    {
+      "record": "benchmarks/quantum_compilation/gf54_native_opcode.json",
+      "path": "reference.builtin",
+      "toffoli": 5725071.609375,
+      "missing": [
+        "phase"
+      ],
+      "claims_correct": false
+    },
+    {
+      "record": "benchmarks/quantum_compilation/gf54_native_opcode.json",
+      "path": "reference.and54",
+      "toffoli": 5201222.53125,
+      "missing": [
+        "phase"
+      ],
+      "claims_correct": false
+    }
+  ],
+  "per_record": [
+    {
+      "record": "benchmarks/quantum_compilation/designer_directions.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_arm_submission_score.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_campaign_arm_submission_score.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_combined_arm.json",
+      "rows": [
+        {
+          "path": "arms.control",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1221466.84375
+        },
+        {
+          "path": "arms.halt_gated",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1220242.84375
+        },
+        {
+          "path": "arms.combined",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1218514.84375
+        }
+      ],
+      "counts": {
+        "claims_correct_aggregate_only": 3
+      }
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_eea_oracle_ledger.json",
+      "rows": [
+        {
+          "path": "control",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1221466.84375
+        },
+        {
+          "path": "halt_gated",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1220242.84375
+        }
+      ],
+      "counts": {
+        "claims_correct_aggregate_only": 2
+      }
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_flag_predicate_reuse.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_lever_leave_one_out.json",
+      "rows": [
+        {
+          "path": "full",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1325229.953125
+        },
+        {
+          "path": "levers.gate_forney",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 2752033.234375
+        },
+        {
+          "path": "levers.clear_eea",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 2632915.578125
+        },
+        {
+          "path": "levers.gate_sweep",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1948987.953125
+        },
+        {
+          "path": "levers.gate_swap",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1459251.953125
+        },
+        {
+          "path": "levers.gate_shift",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1400126.328125
+        },
+        {
+          "path": "levers.gate_quotient",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1381389.953125
+        }
+      ],
+      "counts": {
+        "claims_correct_aggregate_only": 7
+      }
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_movement_schedule.json",
+      "rows": [
+        {
+          "path": "arms.rebased",
+          "status": "checked",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": true,
+          "claims_correct": false,
+          "toffoli": 505092.765625
+        },
+        {
+          "path": "arms.swap_cx",
+          "status": "checked",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": true,
+          "claims_correct": false,
+          "toffoli": 686014.84375
+        },
+        {
+          "path": "arms.swap_on_c3",
+          "status": "checked",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": true,
+          "claims_correct": false,
+          "toffoli": 852267.40625
+        },
+        {
+          "path": "arms.probe",
+          "status": "checked",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": true,
+          "claims_correct": false,
+          "toffoli": 686014.84375
+        },
+        {
+          "path": "arms.campaign_none",
+          "status": "checked",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": true,
+          "claims_correct": false,
+          "toffoli": 1218514.84375
+        },
+        {
+          "path": "arms.campaign_composed",
+          "status": "checked",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": true,
+          "claims_correct": false,
+          "toffoli": 1218514.84375
+        },
+        {
+          "path": "arms.campaign_drop_c3",
+          "status": "checked",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": true,
+          "claims_correct": false,
+          "toffoli": 1173137.078125
+        }
+      ],
+      "counts": {
+        "checked": 7
+      }
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_nonmultiply_ledger.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_official_candidate.json",
+      "rows": [
+        {
+          "path": "arms.reference",
+          "status": "checked",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": true,
+          "claims_correct": false,
+          "toffoli": 5725071.609375
+        },
+        {
+          "path": "arms.hmr_candidate",
+          "status": "checked",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": true,
+          "claims_correct": false,
+          "toffoli": 5433399.609375
+        },
+        {
+          "path": "arms.copied_eea",
+          "status": "checked",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": true,
+          "claims_correct": false,
+          "toffoli": 3438873.609375
+        },
+        {
+          "path": "arms.phase_safe_multiply",
+          "status": "checked",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": true,
+          "claims_correct": false,
+          "toffoli": 5433399.609375
+        },
+        {
+          "path": "checks[4].measured",
+          "status": "checked",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": true,
+          "claims_correct": false,
+          "toffoli": 5433399.609375
+        }
+      ],
+      "counts": {
+        "checked": 5
+      }
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_official_compatibility.json",
+      "rows": [
+        {
+          "path": "builds.pinned.reference",
+          "status": "PARTIAL_EVIDENCE_MISSING_PHASE",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 5725071.609375
+        },
+        {
+          "path": "builds.pinned.candidate",
+          "status": "PARTIAL_EVIDENCE_MISSING_JUNK_AND_PHASE",
+          "value_checked": true,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 5433399.609375
+        },
+        {
+          "path": "builds.local.reference",
+          "status": "PARTIAL_EVIDENCE_MISSING_PHASE",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 5725071.609375
+        },
+        {
+          "path": "builds.local.reference_and54",
+          "status": "PARTIAL_EVIDENCE_MISSING_JUNK_AND_PHASE",
+          "value_checked": true,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 5201222.53125
+        },
+        {
+          "path": "builds.local.candidate",
+          "status": "PARTIAL_EVIDENCE_MISSING_JUNK_AND_PHASE",
+          "value_checked": true,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 5433399.609375
+        },
+        {
+          "path": "comparison.reference_and54_local_only",
+          "status": "PARTIAL_EVIDENCE_MISSING_JUNK_AND_PHASE",
+          "value_checked": true,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 5201222.53125
+        },
+        {
+          "path": "blockers.gf_product.measured_row",
+          "status": "PARTIAL_EVIDENCE_MISSING_JUNK_AND_PHASE",
+          "value_checked": true,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 5201222.53125
+        },
+        {
+          "path": "floor.candidate",
+          "status": "PARTIAL_EVIDENCE_MISSING_JUNK_AND_PHASE",
+          "value_checked": true,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 5433399.609375
+        },
+        {
+          "path": "checks[6].measured",
+          "status": "PARTIAL_EVIDENCE_MISSING_JUNK_AND_PHASE",
+          "value_checked": true,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 5433399.609375
+        }
+      ],
+      "counts": {
+        "PARTIAL_EVIDENCE_MISSING_PHASE": 2,
+        "PARTIAL_EVIDENCE_MISSING_JUNK_AND_PHASE": 7
+      }
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_predicate_gating.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_primitive_costs.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_region_ledger.json",
+      "rows": [
+        {
+          "path": "six_levers",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1221466.84375
+        },
+        {
+          "path": "per_lever.forney",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 2465442.15625
+        },
+        {
+          "path": "per_lever.clear",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 2426786.46875
+        },
+        {
+          "path": "per_lever.sweep",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1777778.84375
+        },
+        {
+          "path": "per_lever.swap",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1355488.84375
+        },
+        {
+          "path": "per_lever.shift",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1296363.21875
+        },
+        {
+          "path": "per_lever.quotient",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1269850.84375
+        }
+      ],
+      "counts": {
+        "claims_correct_aggregate_only": 7
+      }
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_resource_reconciliation.json",
+      "rows": [
+        {
+          "path": "reference.pinned",
+          "status": "PARTIAL_EVIDENCE_MISSING_PHASE",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 5725071.609375
+        },
+        {
+          "path": "reference.local",
+          "status": "PARTIAL_EVIDENCE_MISSING_PHASE",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 5725071.609375
+        },
+        {
+          "path": "arm.local_build",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1221466.84375
+        },
+        {
+          "path": "arm.recorded_local_measurement",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1221466.84375
+        }
+      ],
+      "counts": {
+        "PARTIAL_EVIDENCE_MISSING_PHASE": 2,
+        "claims_correct_aggregate_only": 2
+      }
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_schedule_campaign.json",
+      "rows": [
+        {
+          "path": "control",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1221466.84375
+        },
+        {
+          "path": "arms.sweep",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1117498.84375
+        },
+        {
+          "path": "arms.shift",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1155571.84375
+        },
+        {
+          "path": "arms.products",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 858829.84375
+        },
+        {
+          "path": "arms.both",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1051603.84375
+        },
+        {
+          "path": "arms.everything",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 688966.84375
+        },
+        {
+          "path": "arms.composed",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1221466.84375
+        },
+        {
+          "path": "arms.drop_shift_c3",
+          "status": "resources-only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 1176070.703125
+        },
+        {
+          "path": "arms.falsify_sweep_stale",
+          "status": "resources-only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 1439186.9375
+        },
+        {
+          "path": "arms.falsify_shift_complement",
+          "status": "resources-only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 1141612.375
+        },
+        {
+          "path": "arms.falsify_shift_stale",
+          "status": "resources-only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 1140854.875
+        },
+        {
+          "path": "arms.falsify_zero_q",
+          "status": "resources-only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 168134.21875
+        },
+        {
+          "path": "arms.control_gates",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1218514.84375
+        },
+        {
+          "path": "arms.stacked",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 686014.84375
+        },
+        {
+          "path": "arms.zero_q",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 997795.5625
+        },
+        {
+          "path": "promotion_checks[42].measured",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1218514.84375
+        }
+      ],
+      "counts": {
+        "claims_correct_aggregate_only": 11,
+        "resources-only": 5
+      }
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_scratch_pool.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_submission_score.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/gf54_mul_kickmix.json",
+      "rows": [
+        {
+          "path": "arms.gated_builtin",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1325229.953125
+        },
+        {
+          "path": "arms.gated_gf54",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1230639.953125
+        }
+      ],
+      "counts": {
+        "claims_correct_aggregate_only": 2
+      }
+    },
+    {
+      "record": "benchmarks/quantum_compilation/gf54_native_opcode.json",
+      "rows": [
+        {
+          "path": "reference.builtin",
+          "status": "PARTIAL_EVIDENCE_MISSING_PHASE",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 5725071.609375
+        },
+        {
+          "path": "reference.and54",
+          "status": "PARTIAL_EVIDENCE_MISSING_PHASE",
+          "value_checked": true,
+          "junk_checked": true,
+          "phase_checked": false,
+          "claims_correct": false,
+          "toffoli": 5201222.53125
+        },
+        {
+          "path": "arm.builtin",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1325229.953125
+        },
+        {
+          "path": "arm.and54",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1221466.84375
+        }
+      ],
+      "counts": {
+        "PARTIAL_EVIDENCE_MISSING_PHASE": 2,
+        "claims_correct_aggregate_only": 2
+      }
+    },
+    {
+      "record": "benchmarks/quantum_compilation/gf_mul_and_static_headroom.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/gf_mul_external_optimizer.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/kickmix_mr_arm_costs.json",
+      "rows": [
+        {
+          "path": "cumulative.reference",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 5725071.609375
+        },
+        {
+          "path": "cumulative.forney",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 4298268.328125
+        },
+        {
+          "path": "cumulative.forney+clear",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 2157906.328125
+        },
+        {
+          "path": "cumulative.forney+clear+sweep",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1590308.328125
+        },
+        {
+          "path": "cumulative.forney+clear+sweep+swap",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1456286.328125
+        },
+        {
+          "path": "cumulative.all",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1381389.953125
+        },
+        {
+          "path": "cumulative.all+quotient",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1325229.953125
+        },
+        {
+          "path": "arms.swap",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 5457027.609375
+        },
+        {
+          "path": "arms.sweep",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 4589875.609375
+        },
+        {
+          "path": "arms.forney",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 4298268.328125
+        },
+        {
+          "path": "arms.clear",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 3584709.609375
+        },
+        {
+          "path": "arms.shift",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 5575278.859375
+        },
+        {
+          "path": "arms.quotient",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 4477555.609375
+        },
+        {
+          "path": "arms.all",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1381389.953125
+        },
+        {
+          "path": "arms.full",
+          "status": "claims_correct_aggregate_only",
+          "value_checked": false,
+          "junk_checked": false,
+          "phase_checked": false,
+          "claims_correct": true,
+          "toffoli": 1325229.953125
+        }
+      ],
+      "counts": {
+        "claims_correct_aggregate_only": 15
+      }
+    },
+    {
+      "record": "benchmarks/quantum_compilation/local_mr_arms.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/quantum_signal_ledger.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/vqc_clifford_discovery.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/vqc_external_comparison.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/vqc_licence_boundary.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/vqc_native_parity.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/vqc_phase0_baseline.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/vqc_stabilizer_ghz.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/vqc_stabilizer_scaling.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/vqc_synthesis.json",
+      "rows": [],
+      "counts": {}
+    }
+  ],
+  "reading": {
+    "checked": "claims correctness and records value, junk and phase",
+    "PARTIAL_EVIDENCE_MISSING_*": "claims correctness while recording some of the three checks and not the named ones \u2014 Experiment D's shape",
+    "claims_correct_aggregate_only": "a bare `correct` boolean: nothing recorded to re-check, but no partial evidence either",
+    "measured-not-claimed": "records at least one check but does not claim correctness; a measurement, not an assertion",
+    "resources-only": "counts only \u2014 no correctness claim either way"
+  },
+  "scope": {
+    "measured": "a structural scan of every record's candidate rows",
+    "not_measured": "it cannot tell whether a recorded `phase: true` was computed against the right expectation; that stays per-record evidence"
+  },
+  "reproducibility": {
+    "script_sha256": "f65711281363cedc61abb58d7afd743b343d547ac2e6f33eee5d747dfafc44a5",
+    "git_rev": "75ef0cc7df415e6bae73c23fadd380348929d3a1"
+  }
+}

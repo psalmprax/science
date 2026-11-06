@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Any
 
 import sympy as sp
 
@@ -21,7 +20,7 @@ class FastCanonicalizer:
                 kernel = bridge.kernel
                 if hasattr(kernel, 'canonicalize_expr'):
                     return kernel.canonicalize_expr(expr_str)
-        except Exception:
+        except Exception:  # noqa: BLE001,S110
             pass
         
         return self._python_canonicalize(expr_str)
@@ -33,7 +32,7 @@ class FastCanonicalizer:
             # Use sympy's canonicalization
             expr_canon = sp.simplify(expr)
             return str(expr_canon)
-        except Exception:
+        except Exception:  # noqa: BLE001
             return expr_str
     
     def deduplicate(self, expressions: list[str]) -> list[str]:
@@ -49,7 +48,7 @@ class FastCanonicalizer:
         return unique
     
     def _hash_expr(self, expr_str: str) -> str:
-        return hashlib.md5(expr_str.encode()).hexdigest()
+        return hashlib.md5(expr_str.encode(), usedforsecurity=False).hexdigest()
 
 
 _default_canon = None

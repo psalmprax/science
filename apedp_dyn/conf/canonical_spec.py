@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 SPEC_PATH = Path(__file__).resolve().parent.parent.parent / "specifications" / "canonical_preregistered_spec_v1.json"
-PINNED_SPEC_SHA256 = "5bb42f0341b7a024d21280ee69922bd7dbfebd33cf55506253e3f5248411ec04"
+PINNED_SPEC_SHA256 = "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343"
 # Pin history (AGENTS.md §1.3 re-certification trail, stored in-code next to the
 # pin):
 #   a11fd957c0b787856c62b698a06715e0acf58b393eaa52a70a905d5b0582d141
@@ -26,6 +26,16 @@ PINNED_SPEC_SHA256 = "5bb42f0341b7a024d21280ee69922bd7dbfebd33cf55506253e3f52484
 #   hardcoded literals into the canonical file per the specification-
 #   centralization rule. Ed25519 governance manifest re-signing remains
 #   trustee-blocked; see FLAW-01.)
+#   → a5e13979529d002362cb132454c2a6899455af8367656a0f1ab226eeab0c09de
+#   (2026-10-28 Hypothesis B preregistration: added the temporal-rate
+#   modulation null-test thresholds. No existing threshold changed. The
+#   governance manifest remains un-resigned; FLAW-01 is still OPEN.)
+#   → dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343
+#   (2026-10-29 integrity hardening: added
+#   temporal_rate_min_compositions=2 so the common-mode claim's requirement
+#   for two physically distinct compositions is a canonical threshold rather
+#   than a hardcoded literal. No existing threshold changed. The governance
+#   manifest remains un-resigned; FLAW-01 is still OPEN.)
 
 
 class SpecificationIntegrityError(RuntimeError):
@@ -79,6 +89,35 @@ REFEREE_MIN_VRR: float = float(_THRESHOLDS["referee_min_vrr"])
 
 ODE_REFEREE_MIN_MEAN_R2: float = float(_THRESHOLDS["ode_referee_min_mean_r2"])
 ODE_REFEREE_MIN_WORST_R2: float = float(_THRESHOLDS["ode_referee_min_worst_r2"])
+
+TEMPORAL_RATE_MIN_CLOCKS: int = int(_THRESHOLDS["temporal_rate_min_clocks"])
+TEMPORAL_RATE_MIN_COMPOSITIONS: int = int(
+    _THRESHOLDS["temporal_rate_min_compositions"]
+)
+TEMPORAL_RATE_MIN_DRIVE_CYCLES: float = float(_THRESHOLDS["temporal_rate_min_drive_cycles"])
+TEMPORAL_RATE_MIN_SAMPLES_PER_CYCLE: float = float(
+    _THRESHOLDS["temporal_rate_min_samples_per_cycle"]
+)
+TEMPORAL_RATE_HARMONICS: int = int(_THRESHOLDS["temporal_rate_harmonics"])
+TEMPORAL_RATE_SURROGATE_DRAWS: int = int(_THRESHOLDS["temporal_rate_surrogate_draws"])
+TEMPORAL_RATE_FAMILYWISE_ALPHA: float = float(_THRESHOLDS["temporal_rate_familywise_alpha"])
+TEMPORAL_RATE_HETEROGENEITY_ALPHA: float = float(
+    _THRESHOLDS["temporal_rate_heterogeneity_alpha"]
+)
+TEMPORAL_RATE_MIN_FRACTIONAL_AMPLITUDE: float = float(
+    _THRESHOLDS["temporal_rate_min_fractional_amplitude"]
+)
+TEMPORAL_RATE_MIN_CALIBRATION_SNR: float = float(_THRESHOLDS["temporal_rate_min_calibration_snr"])
+TEMPORAL_RATE_CALIBRATION_TRIALS: int = int(_THRESHOLDS["temporal_rate_calibration_trials"])
+TEMPORAL_RATE_CALIBRATION_FPR_MAX: float = float(
+    _THRESHOLDS["temporal_rate_calibration_fpr_max"]
+)
+TEMPORAL_RATE_CALIBRATION_POWER_MIN: float = float(
+    _THRESHOLDS["temporal_rate_calibration_power_min"]
+)
+TEMPORAL_RATE_INJECTION_FRACTIONAL_AMPLITUDE: float = float(
+    _THRESHOLDS["temporal_rate_injection_fractional_amplitude"]
+)
 
 STOCK_SPLIT_INVARIANCE_TOLERANCE: float = float(_THRESHOLDS["stock_split_invariance_tolerance"])
 PRUNING_HOLDOUT_R2_BASE_FLOOR: float = float(_THRESHOLDS["pruning_holdout_r2_base_floor"])

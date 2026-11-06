@@ -1,0 +1,1422 @@
+diff --git a/src/kickmix/build/circuit_builder.cc b/src/kickmix/build/circuit_builder.cc
+index cb16572..8962658 100644
+--- a/src/kickmix/build/circuit_builder.cc
++++ b/src/kickmix/build/circuit_builder.cc
+@@ -222,6 +222,18 @@ void CircuitBuilder::hmr_if(QubitId target, BitId out, BitId cond) {
+     mut.b0.push_back(out.tagged_id);
+ }
+ 
++void CircuitBuilder::mr(QubitId target, BitId out) {
++    mut.op_types.push_back(OpType::MR);
++    mut.q0.push_back(target.tagged_id);
++    mut.b0.push_back(out.tagged_id);
++}
++void CircuitBuilder::mr_if(QubitId target, BitId out, BitId cond) {
++    mut.op_types.push_back(OpType::MR_IF);
++    mut.bc.push_back(cond.tagged_id);
++    mut.q0.push_back(target.tagged_id);
++    mut.b0.push_back(out.tagged_id);
++}
++
+ void CircuitBuilder::reset(QubitId target) {
+     mut.op_types.push_back(OpType::R);
+     mut.q0.push_back(target.tagged_id);
+@@ -410,6 +422,15 @@ void CircuitBuilder::broadcast_hmr(stride_span<const QubitId> target, stride_spa
+     mut.b0.push_back_many(output.cast_data<const uint32_t>());
+ }
+ 
++void CircuitBuilder::broadcast_mr(stride_span<const QubitId> target, stride_span<const BitId> output) {
++    if (target.size() != output.size()) {
++        throw std::invalid_argument("target.size() != output.size()");
++    }
++    mut.op_types.push_back_repeat(OpType::MR, target.size());
++    mut.q0.push_back_many(target.cast_data<const uint32_t>());
++    mut.b0.push_back_many(output.cast_data<const uint32_t>());
++}
++
+ void CircuitBuilder::broadcast_cswap(
+     QubitOrTrue control, stride_span<const QubitId> q1, stride_span<const QubitId> q2) {
+     if (q1.size() != q2.size()) {
+diff --git a/src/kickmix/build/circuit_builder.h b/src/kickmix/build/circuit_builder.h
+index fd05956..ac78b57 100644
+--- a/src/kickmix/build/circuit_builder.h
++++ b/src/kickmix/build/circuit_builder.h
+@@ -118,9 +118,28 @@ struct RaiiDeferredMark {
+ /// 1. Downgrading. For example, ccz(bit, qubit, qubit) becoming a classically-controlled CZ.
+ /// 2. Broadcasting. For example, cx(qubit, list) becoming a list of CX gates.
+ /// 3. Allocating. For example, hmr(qubit) returning a different bit each time.
++/// Which algorithm the field-product generator uses.
++///
++/// This is a policy of the circuit, not a resource, and it lives on the builder because every
++/// consumer of a field product (the quotient sweep, the Itoh-Tsujii inversion inside Chien search,
++/// and the division) reaches the product through gen_gf_mul. Setting it on one builder therefore
++/// switches all three at once, which is the only way to ask whether a cheaper multiply lowers a
++/// circuit rather than one block of it.
++///
++/// Karatsuba is the upstream algorithm and the default; And54 is the base-case improvement proved
++/// by the bilinear search in `scripts/study_circuit_designer_directions.py` (54 ANDs against 63
++/// at GF(2^12)). And54 depends on the `MR` instruction, because it measures its own windows back
++/// to zero.
++enum class GFProduct {
++    Karatsuba,
++    And54,
++};
++
+ struct CircuitBuilder {
+     // Methods for creating register and allocating objects use these values (incrementing them as needed).
+     uint32_t next_qubit_id = 0;
++    /// Chooses the field-product algorithm used by gen_gf_mul (see GFProduct).
++    GFProduct gf_product = GFProduct::Karatsuba;
+     uint32_t next_bit_id = 0;
+     uint32_t next_register_id = 0;
+     // Available temporarily allocated bits.
+@@ -210,6 +229,25 @@ struct CircuitBuilder {
+     ///     out: The bit to store the measurement result into.
+     ///     cond: A classical condition bit that determines if the operation happens.
+     void hmr_if(QubitId target, BitId out, BitId cond);
++    /// Emits an 'MR' instruction.
++    ///
++    /// An MR is a Z-basis measurement fused with a Z-basis reset that leaves the
++    /// shot's accumulated phase unchanged.
++    ///
++    /// Args:
++    ///     target: The qubit to Z-measure and Z-reset.
++    ///     out: The bit to store the measurement result into.
++    void mr(QubitId target, BitId out);
++    /// Emits an 'MR_IF' instruction.
++    ///
++    /// An MR is a Z-basis measurement fused with a Z-basis reset that leaves the
++    /// shot's accumulated phase unchanged.
++    ///
++    /// Args:
++    ///     target: The qubit to Z-measure and Z-reset.
++    ///     out: The bit to store the measurement result into.
++    ///     cond: A classical condition bit that determines if the operation happens.
++    void mr_if(QubitId target, BitId out, BitId cond);
+     void push_condition(BitId bit);
+     void pop_condition();
+ 
+@@ -335,6 +373,7 @@ struct CircuitBuilder {
+     void cswap(QubitOrBitOrBool control, QubitId q1, QubitId q2);
+     void broadcast_cswap(QubitOrTrue control, stride_span<const QubitId> q1, stride_span<const QubitId> q2);
+     void broadcast_hmr(stride_span<const QubitId> target, stride_span<const BitId> output);
++    void broadcast_mr(stride_span<const QubitId> target, stride_span<const BitId> output);
+ 
+     RaiiCircuitBuilderPopPushedCondition raii_push_condition(BitId control);
+ 
+diff --git a/src/kickmix/circuit/circuit.cc b/src/kickmix/circuit/circuit.cc
+index fa9ce40..ffb49df 100644
+--- a/src/kickmix/circuit/circuit.cc
++++ b/src/kickmix/circuit/circuit.cc
+@@ -617,6 +617,9 @@ void Circuit::write_kmx_to(FILE *file) const {
+             case OpType::HMR:
+                 fprintf(file, "HMR q%u b%u\n", (unsigned)*cur_q0++, (unsigned)*cur_bit_targ++);
+                 break;
++            case OpType::MR:
++                fprintf(file, "MR q%u b%u\n", (unsigned)*cur_q0++, (unsigned)*cur_bit_targ++);
++                break;
+             case OpType::CZ:
+                 fprintf(file, "CZ q%u q%u\n", (unsigned)*cur_qq0++, (unsigned)*cur_qq1++);
+                 break;
+@@ -679,6 +682,14 @@ void Circuit::write_kmx_to(FILE *file) const {
+                     (unsigned)*cur_bit_targ++,
+                     (unsigned)*cur_bit_cond++);
+                 break;
++            case OpType::MR_IF:
++                fprintf(
++                    file,
++                    "MR q%u b%u if b%u\n",
++                    (unsigned)*cur_q0++,
++                    (unsigned)*cur_bit_targ++,
++                    (unsigned)*cur_bit_cond++);
++                break;
+             case OpType::CZ_IF:
+                 fprintf(
+                     file, "CZ q%u q%u if b%u\n", (unsigned)*cur_qq0++, (unsigned)*cur_qq1++, (unsigned)*cur_bit_cond++);
+@@ -878,6 +889,9 @@ void Circuit::write_kmx_to(std::ostream &out) const {
+             case OpType::HMR:
+                 out << "HMR q" << *cur_q0++ << " b" << *cur_bit_targ++;
+                 break;
++            case OpType::MR:
++                out << "MR q" << *cur_q0++ << " b" << *cur_bit_targ++;
++                break;
+             case OpType::CZ:
+                 out << "CZ q" << *cur_qq0++ << " q" << *cur_qq1++;
+                 break;
+@@ -936,6 +950,9 @@ void Circuit::write_kmx_to(std::ostream &out) const {
+             case OpType::HMR_IF:
+                 out << "HMR q" << *cur_q0++ << " b" << *cur_bit_targ++ << " if b" << *cur_bit_cond++;
+                 break;
++            case OpType::MR_IF:
++                out << "MR q" << *cur_q0++ << " b" << *cur_bit_targ++ << " if b" << *cur_bit_cond++;
++                break;
+             case OpType::CZ_IF:
+                 out << "CZ q" << *cur_qq0++ << " q" << *cur_qq1++ << " if b" << *cur_bit_cond++;
+                 break;
+@@ -1633,6 +1650,8 @@ void Circuit::write_analysis_svg_to(std::ostream &out, size_t reference_qubit_co
+         switch (op.kind) {
+             case OpType::HMR:
+             case OpType::HMR_IF:
++            case OpType::MR:
++            case OpType::MR_IF:
+                 active_qubits[op.q_target.untagged_id() / 64] &= ~(uint64_t{1} << (op.q_target.untagged_id() % 64));
+                 break;
+             default:
+@@ -1680,6 +1699,8 @@ void Circuit::write_analysis_svg_to(std::ostream &out, size_t reference_qubit_co
+             case OpType::DEBUG_PRINT_Q_IF:
+             case OpType::HMR:
+             case OpType::HMR_IF:
++            case OpType::MR:
++            case OpType::MR_IF:
+             case OpType::R_IF:
+             case OpType::X_IF:
+             case OpType::Z_IF:
+diff --git a/src/kickmix/circuit/circuit_diagram.cc b/src/kickmix/circuit/circuit_diagram.cc
+index 9bc1d00..bf021c1 100644
+--- a/src/kickmix/circuit/circuit_diagram.cc
++++ b/src/kickmix/circuit/circuit_diagram.cc
+@@ -373,6 +373,13 @@ static std::vector<std::string> generate_text_diagram_lines(const Circuit &circu
+                 line.append("HMR=b");
+                 push_back_u32(line, op.c_target.untagged_id());
+                 break;
++            case OpType::MR:
++            case OpType::MR_IF:
++                line.pop_back();
++                filler_chars[q2y(op.q_target)] = ' ';
++                line.append("MR=b");
++                push_back_u32(line, op.c_target.untagged_id());
++                break;
+             case OpType::X:
+             case OpType::X_IF:
+                 filler_chars[q2y(op.q_target)] = '-';
+diff --git a/src/kickmix/circuit/circuit_diagram_html.cc b/src/kickmix/circuit/circuit_diagram_html.cc
+index cf4bd18..5ab5968 100644
+--- a/src/kickmix/circuit/circuit_diagram_html.cc
++++ b/src/kickmix/circuit/circuit_diagram_html.cc
+@@ -113,10 +113,12 @@ Controls: mouse wheel to zoom, click and drag to pan.)HTML";
+                 case OpType::CZ_IF:
+                 case OpType::R_IF:
+                 case OpType::HMR_IF:
++                case OpType::MR_IF:
+                 case OpType::CX:
+                 case OpType::CZ:
+                 case OpType::R:
+                 case OpType::HMR:
++                case OpType::MR:
+                     num_stabilizer_ops += 1;
+                     break;
+                 case OpType::CCX:
+@@ -225,7 +227,8 @@ Controls: mouse wheel to zoom, click and drag to pan.)HTML";
+         const auto &op = operations[k];
+         if (op.kind == OpType::R || op.kind == OpType::R_IF) {
+             active[op.q_target.untagged_id()] = false;
+-        } else if (op.kind == OpType::HMR || op.kind == OpType::HMR_IF) {
++        } else if (op.kind == OpType::HMR || op.kind == OpType::HMR_IF || op.kind == OpType::MR ||
++                   op.kind == OpType::MR_IF) {
+             active[op.q_target.untagged_id()] = true;
+         }
+     }
+@@ -551,7 +554,9 @@ Controls: mouse wheel to zoom, click and drag to pan.)HTML";
+         if ((op.kind == OpType::R || op.kind == OpType::R_IF) && !active[op.q_target.untagged_id()]) {
+             wire_transitions[op.q_target.untagged_id()].push_back(x);
+             active[op.q_target.untagged_id()] = true;
+-        } else if ((op.kind == OpType::HMR || op.kind == OpType::HMR_IF) && active[op.q_target.untagged_id()]) {
++        } else if ((op.kind == OpType::HMR || op.kind == OpType::HMR_IF || op.kind == OpType::MR ||
++                    op.kind == OpType::MR_IF) &&
++                   active[op.q_target.untagged_id()]) {
+             wire_transitions[op.q_target.untagged_id()].push_back(x);
+             active[op.q_target.untagged_id()] = false;
+         }
+@@ -816,9 +821,13 @@ Controls: mouse wheel to zoom, click and drag to pan.)HTML";
+ 
+                     break;
+                 }
++                case OpType::MR_IF:
++                case OpType::MR:
+                 case OpType::HMR_IF:
+                 case OpType::HMR: {
+-                    // Draw black box labeled with 'MX'.
++                    // Draw black box labeled with 'MX' (or 'MZ' for the Z-basis variant).
++                    bool is_z_measurement =
++                        sub_op.kind == OpType::MR || sub_op.kind == OpType::MR_IF;
+                     double y = q2y(sub_op.q_target);
+                     svg << "<rect";
+                     svg << " x=\"" << x - 4 << "\"";
+@@ -844,7 +853,7 @@ Controls: mouse wheel to zoom, click and drag to pan.)HTML";
+                     svg << " font-size=\"6\"";
+                     svg << " font-family=\"monospace\"";
+                     svg << " fill=\"white\"";
+-                    svg << " >MX</text>";
++                    svg << " >" << (is_z_measurement ? "MZ" : "MX") << "</text>";
+ 
+                     // Draw classical output.
+                     svg << "<path";
+diff --git a/src/kickmix/circuit/circuit_util.cc b/src/kickmix/circuit/circuit_util.cc
+index 256afad..162a2ed 100644
+--- a/src/kickmix/circuit/circuit_util.cc
++++ b/src/kickmix/circuit/circuit_util.cc
+@@ -115,6 +115,21 @@ size_t kickmix::compute_reaction_depth(size_t num_qubits, size_t num_bits, std::
+                     z_bump(op.q_target.qubit(), cond_depth);
+                 }
+                 break;
++            case OpType::MR:
++            case OpType::MR_IF:
++                if (condition_depth_stack.size() == 1 && !op.c_condition.is_bit()) {
++                    // The outcome is the qubit's Z value, which a bit flip would corrupt;
++                    // the reset leaves a known state behind.
++                    c_depth[op.c_target.untagged_id()] = x_depth[op.q_target.untagged_id()] + 1;
++                    x_depth[op.q_target.untagged_id()] = 0;
++                    z_depth[op.q_target.untagged_id()] = 0;
++                } else {
++                    c_bump(op.c_target.bit(), cond_depth);
++                    c_bump(op.c_target.bit(), x_depth[op.q_target.untagged_id()] + 1);
++                    x_bump(op.q_target.qubit(), cond_depth);
++                    z_bump(op.q_target.qubit(), cond_depth);
++                }
++                break;
+             case OpType::CCX:
+             case OpType::CCX_IF:
+                 x_bump(op.q_target.qubit(), cond_depth + 1);
+diff --git a/src/kickmix/circuit/mutable_circuit.cc b/src/kickmix/circuit/mutable_circuit.cc
+index 5eb19d2..da8cd6c 100644
+--- a/src/kickmix/circuit/mutable_circuit.cc
++++ b/src/kickmix/circuit/mutable_circuit.cc
+@@ -65,6 +65,7 @@ static std::array<OpData, 128> compute_op_data() {
+     define("CSWAP", OpType::CSWAP, true, true);
+     define("R", OpType::R, true, true);
+     define("HMR", OpType::HMR, true, true);
++    define("MR", OpType::MR, true, true);
+     define("BIT_INVERT", OpType::BIT_INVERT, true, true);
+     define("BIT_STORE0", OpType::BIT_STORE0, true, true);
+     define("BIT_STORE1", OpType::BIT_STORE1, true, true);
+diff --git a/src/kickmix/circuit/op_type.cc b/src/kickmix/circuit/op_type.cc
+index e5bf735..f01f2c1 100644
+--- a/src/kickmix/circuit/op_type.cc
++++ b/src/kickmix/circuit/op_type.cc
+@@ -15,6 +15,7 @@ static consteval std::array<std::string_view, 256> make_op_type_name_table() {
+     table[(uint8_t)OpType::Z] = "Z";
+     table[(uint8_t)OpType::R] = "R";
+     table[(uint8_t)OpType::HMR] = "HMR";
++    table[(uint8_t)OpType::MR] = "MR";
+     table[(uint8_t)OpType::CX] = "CX";
+     table[(uint8_t)OpType::CZ] = "CZ";
+     table[(uint8_t)OpType::SWAP] = "SWAP";
+@@ -34,6 +35,7 @@ static consteval std::array<std::string_view, 256> make_op_type_name_table() {
+     table[(uint8_t)OpType::Z_IF] = "Z_IF";
+     table[(uint8_t)OpType::R_IF] = "R_IF";
+     table[(uint8_t)OpType::HMR_IF] = "HMR_IF";
++    table[(uint8_t)OpType::MR_IF] = "MR_IF";
+     table[(uint8_t)OpType::CX_IF] = "CX_IF";
+     table[(uint8_t)OpType::CZ_IF] = "CZ_IF";
+     table[(uint8_t)OpType::SWAP_IF] = "SWAP_IF";
+@@ -50,7 +52,7 @@ static consteval std::array<std::string_view, 256> make_op_type_name_table() {
+ }
+ std::array<std::string_view, 256> kickmix::OP_TYPE_NAME_TABLE = make_op_type_name_table();
+ 
+-std::array<OpType, 39> kickmix::OP_TYPE_TABLE{
++std::array<OpType, 41> kickmix::OP_TYPE_TABLE{
+     OpType::NEG,
+     OpType::BIT_INVERT,
+     OpType::BIT_STORE0,
+@@ -59,6 +61,7 @@ std::array<OpType, 39> kickmix::OP_TYPE_TABLE{
+     OpType::Z,
+     OpType::R,
+     OpType::HMR,
++    OpType::MR,
+     OpType::CX,
+     OpType::CZ,
+     OpType::SWAP,
+@@ -80,6 +83,7 @@ std::array<OpType, 39> kickmix::OP_TYPE_TABLE{
+     OpType::Z_IF,
+     OpType::R_IF,
+     OpType::HMR_IF,
++    OpType::MR_IF,
+     OpType::CX_IF,
+     OpType::CZ_IF,
+     OpType::SWAP_IF,
+diff --git a/src/kickmix/circuit/op_type.h b/src/kickmix/circuit/op_type.h
+index 65560d5..d173294 100644
+--- a/src/kickmix/circuit/op_type.h
++++ b/src/kickmix/circuit/op_type.h
+@@ -52,6 +52,7 @@ enum class OpType : uint8_t {
+     DEBUG_PRINT_Q = 0x7 | OP_HAS_1Q,  // Asks simulator to print debugging information about a qubit.
+ 
+     HMR = 0x0 | OP_HAS_1Q | OP_HAS_1B,  // Hadamard+measure+reset a qubit.
++    MR = 0x4 | OP_HAS_1Q | OP_HAS_1B,   // Z-basis measure+reset a qubit, leaving the tracked phase alone.
+ 
+     CZ = 0x0 | OP_HAS_2Q,    // Negate global phase when two qubits are both 1.
+     CX = 0x1 | OP_HAS_2Q,    // Bit flip second qubit if first qubit is 1.
+@@ -85,6 +86,7 @@ enum class OpType : uint8_t {
+         OP_HAS_COND,  // Asks simulator to print debugging information about a qubit if given condition bit is 1.
+ 
+     HMR_IF = 0x0 | OP_HAS_1Q | OP_HAS_1B | OP_HAS_COND,  // Hadamard+measure+reset a qubit if given condition bit is 1.
++    MR_IF = 0x4 | OP_HAS_1Q | OP_HAS_1B | OP_HAS_COND,   // Z-basis measure+reset a qubit if given condition bit is 1.
+ 
+     CZ_IF =
+         0x0 | OP_HAS_2Q | OP_HAS_COND,  // Negate global phase when two qubits are both 1 if given condition bit is 1.
+@@ -110,7 +112,7 @@ inline uint8_t operator&(OpType t, uint8_t other) {
+ }
+ 
+ extern std::array<std::string_view, 256> OP_TYPE_NAME_TABLE;
+-extern std::array<OpType, 39> OP_TYPE_TABLE;
++extern std::array<OpType, 41> OP_TYPE_TABLE;
+ 
+ }  // namespace kickmix
+ 
+diff --git a/src/kickmix/gen/gf_arithmetic/gen_gf_mul.cc b/src/kickmix/gen/gf_arithmetic/gen_gf_mul.cc
+index d4448e4..8a02dd7 100644
+--- a/src/kickmix/gen/gf_arithmetic/gen_gf_mul.cc
++++ b/src/kickmix/gen/gf_arithmetic/gen_gf_mul.cc
+@@ -7,6 +7,7 @@
+ #include "kickmix/gen/gf_arithmetic/gen_gf_iadd.h"
+ #include "kickmix/gen/gf_arithmetic/gen_gf_imul_classical.h"
+ #include "kickmix/gen/gf_arithmetic/gen_gf_imul_x.h"
++#include "kickmix/gen/gf_arithmetic/gen_gf_mul54.h"
+ 
+ using namespace kickmix;
+ 
+@@ -131,6 +132,14 @@ void kickmix::gen_gf_mul(
+     throw_unless(Q_lhs.size() == m, "gen_gf_mul: Q_lhs.size() != field.degree()");
+     throw_unless(Q_rhs.size() == m, "gen_gf_mul: Q_rhs.size() != field.degree()");
+ 
++    // The product algorithm is a builder policy, so the inversion and the division that are built
++    // out of products move with it. gen_gf_unmul does not need the branch: it measures the
++    // register that holds the product and is independent of how the product was computed.
++    if (builder.gf_product == GFProduct::And54) {
++        gen_gf54_mul(builder, ctx, field, Q_target, Q_lhs, Q_rhs, control);
++        return;
++    }
++
+     if (control.is_qubit()) {
+         // Controlling every Toffoli of the product would turn them all into three control gates.
+         // It is much cheaper to compute the product unconditionally into a temporary register, add
+diff --git a/src/kickmix/gen/gf_arithmetic/gen_gf_mul54.cc b/src/kickmix/gen/gf_arithmetic/gen_gf_mul54.cc
+new file mode 100644
+index 0000000..9d9c8a6
+--- /dev/null
++++ b/src/kickmix/gen/gf_arithmetic/gen_gf_mul54.cc
+@@ -0,0 +1,382 @@
++#include "kickmix/gen/gf_arithmetic/gen_gf_mul54.h"
++
++#include <algorithm>
++#include <array>
++#include <span>
++#include <string>
++#include <utility>
++#include <vector>
++
++#include "kickmix/gen/gf_arithmetic/gen_gf_mul.h"
++
++using namespace kickmix;
++
++namespace {
++
++/// One base-case bilinear algorithm: product t is (pairs[t].first . lhs) * (pairs[t].second . rhs)
++/// with bit i of each mask selecting the i-th bit, and output bit k is the XOR of the products
++/// whose bit is set in weights[k]. Transcribed from the exhaustive search that proved
++/// mu(2) = 3 and mu(3) = 6; `scripts/gf54_mul.py` holds the same tables for the Python emitter.
++struct BaseAlgorithm {
++    std::vector<std::pair<uint32_t, uint32_t>> pairs;
++    std::vector<uint32_t> weights;
++};
++
++const BaseAlgorithm &base_algorithm(size_t n) {
++    static const std::vector<std::pair<uint32_t, uint32_t>> one_pairs = {{1, 1}};
++    static const std::vector<uint32_t> one_weights = {0b1};
++    static const std::vector<std::pair<uint32_t, uint32_t>> two_pairs = {{1, 1}, {2, 2}, {3, 3}};
++    static const std::vector<uint32_t> two_weights = {0b001, 0b111, 0b010};
++    static const std::vector<std::pair<uint32_t, uint32_t>> three_pairs = {
++        {1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 6}};
++    static const std::vector<uint32_t> three_weights = {
++        0b000001, 0b000111, 0b011011, 0b101010, 0b001000};
++    static const BaseAlgorithm algorithms[4] = {
++        {one_pairs, one_weights},
++        {one_pairs, one_weights},
++        {two_pairs, two_weights},
++        {three_pairs, three_weights},
++    };
++    throw_unless(n >= 1 && n <= 3, "gen_gf54_mul: no base algorithm for this width");
++    return algorithms[n];
++}
++
++/// Scratch handed out by a bump allocator over a single span of clean qubits.
++///
++/// The context has no way to give workspace back, so the routine takes its peak need once and
++/// reuses it: each sub-product's window is measured back to zero and released before the next
++/// one is taken, which is what keeps the peak at 42 qubits at GF(2^12) rather than the 101 the
++/// summed widths would need.
++struct ScratchPool {
++    QubitId *base;
++    size_t capacity;
++    size_t used = 0;
++    BitId clear_bit;
++
++    std::vector<QubitId> take(size_t count, std::string_view what) {
++        throw_unless(used + count <= capacity,
++                     std::string("gen_gf54_mul: out of scratch in ") + std::string(what));
++        std::vector<QubitId> result(base + used, base + used + count);
++        used += count;
++        return result;
++    }
++    void release(size_t count) {
++        throw_unless(used >= count, "gen_gf54_mul: released more scratch than was taken");
++        used -= count;
++    }
++};
++
++void clear_scratch(CircuitBuilder &builder, const std::vector<QubitId> &qubits, BitId bit) {
++    for (QubitId q : qubits) {
++        builder.mr(q, bit);
++    }
++}
++
++/// Emits `out ^= lhs * rhs` as polynomials over GF(2), using the base algorithms composed by
++/// Karatsuba. `out` has 2n-1 bits and must start at zero; `lhs` and `rhs` are restored.
++void gen_poly_product(
++    CircuitBuilder &builder,
++    ScratchPool &pool,
++    const std::vector<QubitId> &lhs,
++    const std::vector<QubitId> &rhs,
++    const std::vector<QubitId> &out) {
++    size_t n = lhs.size();
++    throw_unless(rhs.size() == n, "gen_gf54_mul: factors of different widths");
++    throw_unless(out.size() == 2 * n - 1, "gen_gf54_mul: product window of the wrong width");
++    if (n == 0) {
++        return;
++    }
++
++    if (n <= 3) {
++        const BaseAlgorithm &algo = base_algorithm(n);
++        throw_unless(algo.weights.size() == 2 * n - 1,
++                     "gen_gf54_mul: base algorithm has the wrong number of output rows");
++        std::vector<QubitId> slots = pool.take(3, "base case");
++        QubitId product = slots[0];
++        for (size_t t = 0; t < algo.pairs.size(); t++) {
++            auto [u_mask, v_mask] = algo.pairs[t];
++            // A one-bit form is a register bit; a two-bit form is its XOR, which is computed into
++            // a scratch qubit and undone when the product has been absorbed.
++            std::vector<QubitId> left_bits;
++            std::vector<QubitId> right_bits;
++            for (size_t i = 0; i < n; i++) {
++                if ((u_mask >> i) & 1) {
++                    left_bits.push_back(lhs[i]);
++                }
++                if ((v_mask >> i) & 1) {
++                    right_bits.push_back(rhs[i]);
++                }
++            }
++            QubitId left = left_bits[0];
++            if (left_bits.size() > 1) {
++                left = slots[1];
++                for (QubitId q : left_bits) {
++                    builder.cx(q, left);
++                }
++            }
++            QubitId right = right_bits[0];
++            if (right_bits.size() > 1) {
++                right = slots[2];
++                for (QubitId q : right_bits) {
++                    builder.cx(q, right);
++                }
++            }
++
++            builder.ccx(left, right, product);
++            // `weights[k]` is the row of the bilinear form for output bit k: bit t of it is
++            // the coefficient of product t. So this product lands in every output bit whose
++            // row selects it -- reading the table the other way round (row t, bit k) indexes
++            // past the end for the last products and produces a wrong multiplier.
++            for (size_t k = 0; k < out.size(); k++) {
++                if ((algo.weights[k] >> t) & 1) {
++                    builder.cx(product, out[k]);
++                }
++            }
++            // The AND's target holds `left & right`, a function of the state, so clearing it by
++            // measurement costs no Toffoli and touches no phase.
++            builder.del_and(left, right, product);
++
++            if (right_bits.size() > 1) {
++                for (size_t k = right_bits.size(); k-- > 0;) {
++                    builder.cx(right_bits[k], right);
++                }
++            }
++            if (left_bits.size() > 1) {
++                for (size_t k = left_bits.size(); k-- > 0;) {
++                    builder.cx(left_bits[k], left);
++                }
++            }
++        }
++        pool.release(3);
++        return;
++    }
++
++    // Karatsuba: lhs = lo + x^k hi, and the product is low + x^k (mid + low + high) + x^2k high.
++    size_t k = (n + 1) / 2;
++    size_t window_low = 2 * k - 1;
++    size_t window_high = 2 * (n - k) - 1;
++
++    {
++        std::vector<QubitId> low = pool.take(window_low, "low sub-product");
++        std::vector<QubitId> lhs_lo(lhs.begin(), lhs.begin() + k);
++        std::vector<QubitId> rhs_lo(rhs.begin(), rhs.begin() + k);
++        gen_poly_product(builder, pool, lhs_lo, rhs_lo, low);
++        for (size_t i = 0; i < window_low; i++) {
++            builder.cx(low[i], out[i]);          // + low
++            builder.cx(low[i], out[k + i]);       // + x^k low
++        }
++        clear_scratch(builder, low, pool.clear_bit);
++        pool.release(window_low);
++    }
++
++    {
++        std::vector<QubitId> high = pool.take(window_high, "high sub-product");
++        std::vector<QubitId> lhs_hi(lhs.begin() + k, lhs.end());
++        std::vector<QubitId> rhs_hi(rhs.begin() + k, rhs.end());
++        gen_poly_product(builder, pool, lhs_hi, rhs_hi, high);
++        for (size_t i = 0; i < window_high; i++) {
++            builder.cx(high[i], out[k + i]);       // + x^k high
++            builder.cx(high[i], out[2 * k + i]);   // + x^2k high
++        }
++        clear_scratch(builder, high, pool.clear_bit);
++        pool.release(window_high);
++    }
++
++    {
++        // The middle product's operands are the sums of the halves. They are written into the
++        // low halves and undone, which is how the in-place Karatsuba recursion does it too.
++        for (size_t i = 0; i + k < n; i++) {
++            builder.cx(lhs[k + i], lhs[i]);
++            builder.cx(rhs[k + i], rhs[i]);
++        }
++        std::vector<QubitId> mid = pool.take(window_low, "middle sub-product");
++        std::vector<QubitId> lhs_lo(lhs.begin(), lhs.begin() + k);
++        std::vector<QubitId> rhs_lo(rhs.begin(), rhs.begin() + k);
++        gen_poly_product(builder, pool, lhs_lo, rhs_lo, mid);
++        for (size_t i = 0; i < window_low; i++) {
++            builder.cx(mid[i], out[k + i]);
++        }
++        clear_scratch(builder, mid, pool.clear_bit);
++        pool.release(window_low);
++        for (size_t i = 0; i + k < n; i++) {
++            builder.cx(rhs[k + i], rhs[i]);
++            builder.cx(lhs[k + i], lhs[i]);
++        }
++    }
++}
++
++std::vector<QubitId> to_vector(stride_span<const QubitId> span) {
++    std::vector<QubitId> result;
++    result.reserve(span.size());
++    for (size_t i = 0; i < span.size(); i++) {
++        result.push_back(span[i]);
++    }
++    return result;
++}
++
++}  // namespace
++
++namespace {
++
++/// Peak clean qubits taken *inside* a width-`n` call to `gen_poly_product`, not counting the
++/// window that call writes into: each sub-product's window is measured back to zero and
++/// released before the next one is taken, so the peak is one sub-product's window plus the
++/// peak of computing it.
++///
++/// No 2n-1 window is ever held whole: `gen_gf54_mul` reduces every sub-product into the target
++/// as soon as it is computed (reduction is GF(2)-linear), so at GF(2^12) the peak is 11 + 5 + 3
++/// = 19 qubits instead of the 42 a full product window plus this scratch needed.
++size_t scratch_inside_product(size_t n) {
++    if (n <= 3) {
++        return 3;  // the base case's product qubit and its two linear-form qubits
++    }
++    size_t k = (n + 1) / 2;
++    size_t low = (2 * k - 1) + scratch_inside_product(k);
++    size_t high = (2 * (n - k) - 1) + scratch_inside_product(n - k);
++    return std::max(low, high);
++}
++
++}  // namespace
++
++size_t kickmix::gf_mul54_workspace_size(size_t degree) {
++    if (degree <= 1) {
++        return 0;
++    }
++    if (degree <= 3) {
++        return (2 * degree - 1) + 3;
++    }
++    return scratch_inside_product(degree);
++}
++
++void kickmix::gen_gf54_mul(
++    CircuitBuilder &builder,
++    const CircuitGenCtx &ctx,
++    const GF2Field &field,
++    stride_span<const QubitId> Q_target,
++    stride_span<const QubitId> Q_lhs,
++    stride_span<const QubitId> Q_rhs,
++    QubitOrTrue control) {
++    size_t m = field.degree();
++    throw_unless(Q_target.size() == m, "gen_gf54_mul: Q_target.size() != field.degree()");
++    throw_unless(Q_lhs.size() == m, "gen_gf54_mul: Q_lhs.size() != field.degree()");
++    throw_unless(Q_rhs.size() == m, "gen_gf54_mul: Q_rhs.size() != field.degree()");
++
++    if (control.is_qubit()) {
++        // A controlled product costs the same as the built-in one does: compute it into a clean
++        // temporary, add that in under the control, then clear the temporary for free.
++        auto mark = builder.raii_mark_block_entry("c_gf_mul54");
++        CircuitGenCtx sub_ctx = ctx;
++        auto temp = sub_ctx.take_clean(m, "gen_gf54_mul");
++        builder.broadcast_reset(temp);
++        gen_gf54_mul(builder, sub_ctx, field, temp, Q_lhs, Q_rhs, true);
++        for (size_t k = 0; k < m; k++) {
++            builder.ccx((QubitId)control, temp[k], Q_target[k]);
++        }
++        gen_gf_unmul(builder, sub_ctx, field, temp, Q_lhs, Q_rhs);
++        return;
++    }
++
++    auto mark = builder.raii_mark_block_entry("gf_mul54");
++    size_t window_width = 2 * m - 1;
++    if (m == 0) {
++        return;
++    }
++    if (m == 1) {
++        builder.ccx(Q_lhs[0], Q_rhs[0], Q_target[0]);
++        return;
++    }
++
++    CircuitGenCtx sub_ctx = ctx;
++    auto scratch_span = sub_ctx.take_clean(gf_mul54_workspace_size(m), "gen_gf54_mul");
++    CircuitBuilderRaiiBit clear_bit = builder.alloc_clean_raii_bit();
++
++    ScratchPool pool{(QubitId *)scratch_span.data(), scratch_span.size(), 0, clear_bit.bit};
++    std::vector<QubitId> lhs = to_vector(Q_lhs);
++    std::vector<QubitId> rhs = to_vector(Q_rhs);
++
++    // x^d mod the field polynomial for every degree the unreduced product can reach.
++    //
++    // Reading the product through this table is what removes the 2m-1-bit window: reduction is
++    // GF(2)-linear, so each sub-product can be added to the target already reduced, instead of
++    // assembling the whole polynomial product in a window and reducing it afterwards. A table
++    // row is one CNOT per set coefficient, which is the same gate the after-the-fact reduction
++    // emitted, just applied once per sub-product instead of once per window bit.
++    std::vector<std::vector<size_t>> reduce(window_width);
++    {
++        GF2Poly x_pow = field.one();
++        for (size_t d = 0; d < window_width; d++) {
++            for (size_t b = 0; b < m; b++) {
++                if (x_pow.bit(b)) {
++                    reduce[d].push_back(b);
++                }
++            }
++            x_pow = field.mul(x_pow, GF2Poly::monomial(1));
++        }
++    }
++    // `piece[i]` is the coefficient of x^(offset + i) of the unreduced product.
++    auto accumulate = [&](const std::vector<QubitId> &piece, size_t offset) {
++        for (size_t i = 0; i < piece.size(); i++) {
++            for (size_t b : reduce[offset + i]) {
++                builder.cx(piece[i], Q_target[b]);
++            }
++        }
++    };
++
++    if (m <= 3) {
++        std::vector<QubitId> window = pool.take(window_width, "product window");
++        gen_poly_product(builder, pool, lhs, rhs, window);
++        accumulate(window, 0);
++        // The window holds a function of the operands, so measuring it back to zero is free and
++        // phase-safe.
++        clear_scratch(builder, window, clear_bit.bit);
++        pool.release(window_width);
++        return;
++    }
++
++    // Karatsuba: lhs = lo + x^k hi, and the product is lo + x^k (mid + lo + hi) + x^2k hi.
++    size_t k = (m + 1) / 2;
++    size_t window_low = 2 * k - 1;
++    size_t window_high = 2 * (m - k) - 1;
++
++    {
++        std::vector<QubitId> low = pool.take(window_low, "low sub-product");
++        std::vector<QubitId> lhs_lo(lhs.begin(), lhs.begin() + k);
++        std::vector<QubitId> rhs_lo(rhs.begin(), rhs.begin() + k);
++        gen_poly_product(builder, pool, lhs_lo, rhs_lo, low);
++        accumulate(low, 0);          // + lo
++        accumulate(low, k);          // + x^k lo
++        clear_scratch(builder, low, clear_bit.bit);
++        pool.release(window_low);
++    }
++
++    {
++        std::vector<QubitId> high = pool.take(window_high, "high sub-product");
++        std::vector<QubitId> lhs_hi(lhs.begin() + k, lhs.end());
++        std::vector<QubitId> rhs_hi(rhs.begin() + k, rhs.end());
++        gen_poly_product(builder, pool, lhs_hi, rhs_hi, high);
++        accumulate(high, k);         // + x^k high
++        accumulate(high, 2 * k);     // + x^2k high
++        clear_scratch(builder, high, clear_bit.bit);
++        pool.release(window_high);
++    }
++
++    {
++        // The middle product's operands are the sums of the halves. They are written into the
++        // low halves and undone, which is how the in-place Karatsuba recursion does it too.
++        for (size_t i = 0; i + k < m; i++) {
++            builder.cx(lhs[k + i], lhs[i]);
++            builder.cx(rhs[k + i], rhs[i]);
++        }
++        std::vector<QubitId> mid = pool.take(window_low, "middle sub-product");
++        std::vector<QubitId> lhs_lo(lhs.begin(), lhs.begin() + k);
++        std::vector<QubitId> rhs_lo(rhs.begin(), rhs.begin() + k);
++        gen_poly_product(builder, pool, lhs_lo, rhs_lo, mid);
++        accumulate(mid, k);
++        clear_scratch(builder, mid, clear_bit.bit);
++        pool.release(window_low);
++        for (size_t i = 0; i + k < m; i++) {
++            builder.cx(rhs[k + i], rhs[i]);
++            builder.cx(lhs[k + i], lhs[i]);
++        }
++    }
++}
+diff --git a/src/kickmix/gen/gf_arithmetic/gen_gf_mul54.h b/src/kickmix/gen/gf_arithmetic/gen_gf_mul54.h
+new file mode 100644
+index 0000000..df08d84
+--- /dev/null
++++ b/src/kickmix/gen/gf_arithmetic/gen_gf_mul54.h
+@@ -0,0 +1,59 @@
++#ifndef _KICKMIX_GEN_GF_MUL54_H
++#define _KICKMIX_GEN_GF_MUL54_H
++
++#include "kickmix/build/circuit_builder.h"
++#include "kickmix/build/circuit_gen_ctx.h"
++#include "kickmix/util/gf2_field.h"
++
++namespace kickmix {
++
++/// How many clean workspace qubits one uncontrolled 54-AND product needs at this width.
++///
++/// One sub-product window at a time: at each level the low, high and middle sub-products are
++/// computed one after another into a window of 2*ceil(n/2)-1 qubits, reduced straight into the
++/// target and measured back to zero before the next is allocated, so the peak is that window
++/// plus the peak of the level below it -- 19 qubits at GF(2^12) rather than the 42 a whole
++/// 2n-1-bit product window needed.
++size_t gf_mul54_workspace_size(size_t degree);
++
++/// Adds the product of two GF(2^m) registers into a third one, with 54 ANDs at m=12.
++///
++/// As pseudocode:
++///     Q_target ^= Q_lhs * Q_rhs  (mod the field polynomial)
++///
++/// This is the same operation as gen_gf_mul, using the bilinear algorithms the exact
++/// search in `scripts/study_circuit_designer_directions.py` established as minimal at
++/// two and three bits (mu(2) = 3, mu(3) = 6, both by exhaustion) instead of the
++/// Karatsuba recursion's base case. Composed by Karatsuba, `12 = 3 * 3 * 6` gives 54
++/// ANDs against the built-in 63.
++///
++/// Every AND's target is cleared with `del_and` (a measurement plus a classically
++/// conditioned phase fixup, no Toffoli), and the product window with `mr`, so the
++/// AND count is also the Toffoli count of the product: 54 against 63.
++///
++/// The structure follows gen_gf_mul: an uncontrolled product accumulates directly into
++/// Q_target through a clean window, while a controlled one computes the product into a
++/// clean temporary, adds it in under the control, and clears the temporary for free with
++/// gen_gf_unmul (which measures the temporary and fixes up the phase, and is independent
++/// of how the product was computed).
++///
++/// Requires:
++///     Q_target, Q_lhs, and Q_rhs all have size field.degree(), and are pairwise disjoint.
++///     ctx.clean_workspace has at least gf_mul54_workspace_size(degree) qubits,
++///     plus field.degree() more when the operation is controlled.
++///
++/// Not upstream: this routine depends on the `MR` instruction added by
++/// `scripts/kickmix_mr_opcode.patch`, because it measures its windows back to zero
++/// rather than uncomputing them.
++void gen_gf54_mul(
++    CircuitBuilder &builder,
++    const CircuitGenCtx &ctx,
++    const GF2Field &field,
++    stride_span<const QubitId> Q_target,
++    stride_span<const QubitId> Q_lhs,
++    stride_span<const QubitId> Q_rhs,
++    QubitOrTrue control = true);
++
++}  // namespace kickmix
++
++#endif
+diff --git a/src/kickmix/py/circuit/circuit_builder.pybind.cc b/src/kickmix/py/circuit/circuit_builder.pybind.cc
+index a44cb31..38dd63f 100644
+--- a/src/kickmix/py/circuit/circuit_builder.pybind.cc
++++ b/src/kickmix/py/circuit/circuit_builder.pybind.cc
+@@ -100,6 +100,18 @@ void broadcast_hmr_obj(PyCircuitBuilder &self, pybind11::object target_obj, pybi
+     self.builder.broadcast_hmr(target, output);
+ }
+ 
++void broadcast_mr_obj(PyCircuitBuilder &self, pybind11::object target_obj, pybind11::object output_obj) {
++    auto v_target = ConvertedArrayXZ::from_obj(target_obj, "target");
++    stride_span<const QubitId> target = v_target.span.checked_cast_to_qubit_ids("target");
++    auto v_output = ConvertedArrayXZ::from_obj(output_obj, "output");
++    stride_span<const BitId> output = v_output.span.checked_cast_to_bit_ids("output");
++    if (target.size() != output.size()) {
++        throw std::invalid_argument("len(target) != len(output)");
++    }
++
++    self.builder.broadcast_mr(target, output);
++}
++
+ void broadcast_reset_obj(PyCircuitBuilder &self, pybind11::object target_obj) {
+     auto v_target = ConvertedArrayXZ::from_obj(target_obj, "target");
+     stride_span<const QubitId> target = v_target.span.checked_cast_to_qubit_ids("target");
+@@ -159,6 +171,46 @@ void kickmix_py::register_circuit_builder_methods(pybind11::class_<PyCircuitBuil
+         )DOC")
+             .data());
+ 
++    c_circuit_builder.def_property(
++        "gf_product",
++        [](const PyCircuitBuilder &self) -> std::string {
++            return self.builder.gf_product == kickmix::GFProduct::And54 ? "and54" : "karatsuba";
++        },
++        [](PyCircuitBuilder &self, const std::string &name) {
++            if (name == "karatsuba") {
++                self.builder.gf_product = kickmix::GFProduct::Karatsuba;
++            } else if (name == "and54") {
++                self.builder.gf_product = kickmix::GFProduct::And54;
++            } else {
++                throw std::invalid_argument(
++                    "gf_product must be 'karatsuba' or 'and54', got " + name);
++            }
++        },
++        clean_doc_string(R"DOC(
++            @signature def gf_product(self) -> str:
++            Selects the algorithm the field-product generator uses.
++
++            `'karatsuba'` (the default) is the upstream recursion, 63 ANDs at GF(2^12).
++            `'and54'` uses the minimal two and three bit bilinear algorithms composed by
++            Karatsuba, 54 ANDs at GF(2^12), and needs more workspace (42 qubits at that
++            width against 12). Because it is a policy of gen_gf_mul rather than of one
++            call site, switching it moves every product in the circuit: the quotient
++            sweep, the Itoh-Tsujii inversion in Chien search, and the division.
++
++            `and54` depends on the `MR` instruction, so it is only available in a build
++            that carries `scripts/kickmix_mr_opcode.patch`.
++
++            Examples:
++                >>> import kickmix as km
++                >>> builder = km.CircuitBuilder()
++                >>> builder.gf_product
++                'karatsuba'
++                >>> builder.gf_product = 'and54'
++                >>> builder.gf_product
++                'and54'
++        )DOC")
++            .data());
++
+     c_circuit_builder.def_property_readonly(
+         "num_free_qubits",
+         [](PyCircuitBuilder &self) -> pybind11::object {
+@@ -1266,6 +1318,45 @@ void kickmix_py::register_circuit_builder_methods(pybind11::class_<PyCircuitBuil
+         )DOC")
+             .data());
+ 
++    c_circuit_builder.def(
++        "mr",
++        &broadcast_mr_obj,
++        pybind11::arg("target"),
++        pybind11::arg("output"),
++        clean_doc_string(R"DOC(
++            @signature def mr(self, target: km.q | km.array | Sequence[km.q], output: km.b | km.array | Sequence[km.b]) -> None:
++            Appends MR (Z-basis measurement and Z-basis reset) instructions.
++
++            Measures each target qubit in the Z basis (storing the measurement
++            outcome into the corresponding `output` bit) and resets the qubit to
++            the |0> state. Unlike `reset`, the shot's accumulated phase is left
++            unchanged. This method broadcasts over `km.array` and sequence
++            arguments of equal length.
++
++            Args:
++                target: The qubit or array/sequence of qubits to measure in the
++                    Z basis and reset to |0>.
++                output: The classical bit or array/sequence of classical bits to
++                    store the measurement results into.
++
++            Raises:
++                ValueError: `target` and `output` have different lengths, or
++                    contain non-qubit / non-bit items.
++
++            Examples:
++                >>> import kickmix as km
++                >>> builder = km.CircuitBuilder()
++                >>> q = builder.alloc_qubits(2)
++                >>> b = builder.alloc_bits(2)
++                >>> builder.mr(q, b)
++                >>> builder.finish_circuit()
++                km.Circuit('''
++                    MR q0 b0
++                    MR q1 b1
++                ''')
++        )DOC")
++            .data());
++
+     c_circuit_builder.def(
+         "init_lookup",
+         &append_init_lookup,
+diff --git a/src/kickmix/py/circuit/subs/gf_arithmetic.pybind.cc b/src/kickmix/py/circuit/subs/gf_arithmetic.pybind.cc
+index 5f11172..1d01dbb 100644
+--- a/src/kickmix/py/circuit/subs/gf_arithmetic.pybind.cc
++++ b/src/kickmix/py/circuit/subs/gf_arithmetic.pybind.cc
+@@ -12,12 +12,27 @@
+ #include "kickmix/gen/gf_arithmetic/gen_gf_imul_classical.h"
+ #include "kickmix/gen/gf_arithmetic/gen_gf_inverse.h"
+ #include "kickmix/gen/gf_arithmetic/gen_gf_mul.h"
++#include "kickmix/gen/gf_arithmetic/gen_gf_mul54.h"
+ #include "kickmix/py/circuit/control_helper.pybind.h"
+ #include "kickmix/py/util.pybind.h"
+ #include "kickmix/py/val/array.pybind.h"
+ #include "kickmix/py/val/converted_array.pybind.h"
+ 
+ using namespace kickmix;
++
++namespace {
++
++/// Extra clean qubits the 54-AND product needs on top of what the caller already asked for.
++///
++/// The product takes its window and recursion scratch from the context, so every entry point
++/// that can reach gen_gf_mul has to provision for it, not just ixor_gf2_mul: the inversion and
++/// the division are built out of products too, and they are where a cheaper multiply buys the
++/// most in this decoder.
++inline size_t clean_workspace_for_product(const CircuitBuilder &builder, const GF2Field &field) {
++    return builder.gf_product == GFProduct::And54 ? gf_mul54_workspace_size(field.degree()) : 0;
++}
++
++}  // namespace
+ using namespace kickmix_py;
+ 
+ namespace {
+@@ -825,6 +840,7 @@ void kickmix_py::append_ixor_gf2_mul_obj(
+     QubitOrTrue ctrl_val = control;
+ 
+     size_t needed_clean = ctrl_val.is_qubit() ? m : 0;
++    needed_clean += clean_workspace_for_product(self.builder, field);
+     size_t num_clean = self.num_free_qubits() >= needed_clean ? needed_clean : 0;
+     array_z clean = array_z::alloc_noinit(num_clean, QXZTypeTag8::QUBIT_ID);
+     for (size_t k = 0; k < clean.size(); k++) {
+@@ -862,6 +878,11 @@ void kickmix_py::append_del_gf2_mul_obj(
+     QubitOrTrue ctrl_val = control;
+ 
+     size_t needed_clean = ctrl_val.is_qubit() ? m : 0;
++    if (ctrl_val.is_qubit()) {
++        // Only the controlled path falls back to running the product; the measurement
++        // path needs no workspace at all.
++        needed_clean += clean_workspace_for_product(self.builder, field);
++    }
+     size_t num_clean = self.num_free_qubits() >= needed_clean ? needed_clean : 0;
+     array_z clean = array_z::alloc_noinit(num_clean, QXZTypeTag8::QUBIT_ID);
+     for (size_t k = 0; k < clean.size(); k++) {
+@@ -890,6 +911,7 @@ pybind11::object kickmix_py::append_init_gf2_inverse_obj(
+     auto target = target_conv.span.checked_cast_to_qubit_ids("target");
+ 
+     size_t needed_clean = gf_inverse_workspace_size(field);
++    needed_clean += clean_workspace_for_product(self.builder, field);
+     size_t num_clean = self.num_free_qubits() >= needed_clean ? needed_clean : 0;
+     array_z clean = array_z::alloc_noinit(num_clean, QXZTypeTag8::QUBIT_ID);
+     for (size_t k = 0; k < clean.size(); k++) {
+@@ -924,7 +946,19 @@ pybind11::object kickmix_py::append_init_gf2_inverse_with_scaffold_obj(
+     if (scaffold.size() > 0) {
+         self.builder.broadcast_reset(scaffold);
+     }
+-    gen_gf_inverse(self.builder, CircuitGenCtx{{}}, field, target, input, scaffold);
++    // The chain is supplied, so the inversion itself needs no workspace -- but the products it
++    // is built from do, and they are where a cheaper multiply buys the most here.
++    size_t needed_clean = clean_workspace_for_product(self.builder, field);
++    size_t num_clean = self.num_free_qubits() >= needed_clean ? needed_clean : 0;
++    array_z clean = array_z::alloc_noinit(num_clean, QXZTypeTag8::QUBIT_ID);
++    for (size_t k = 0; k < clean.size(); k++) {
++        clean[k] = self.alloc_qubit();
++    }
++    std::span<const QubitId> clean_span{(QubitId *)clean.items, clean.size()};
++    gen_gf_inverse(self.builder, CircuitGenCtx{clean_span}, field, target, input, scaffold);
++    for (size_t k = clean.size(); k--;) {
++        self.free_qubit((QubitId)clean[k]);
++    }
+     return pybind11::make_tuple(resolved, scaffold_obj);
+ }
+ 
+@@ -942,6 +976,7 @@ void kickmix_py::append_del_gf2_inverse_obj(
+     throw_unless(input.size() == m, "gen_gf_uninverse: Q_input.size() != field.degree()");
+ 
+     size_t needed_clean = gf_inverse_workspace_size(field);
++    needed_clean += clean_workspace_for_product(self.builder, field);
+     size_t num_clean = self.num_free_qubits() >= needed_clean ? needed_clean : 0;
+     array_z clean = array_z::alloc_noinit(num_clean, QXZTypeTag8::QUBIT_ID);
+     for (size_t k = 0; k < clean.size(); k++) {
+@@ -1020,7 +1055,17 @@ pybind11::object kickmix_py::append_init_gf2_div_with_scaffold_obj(
+     pybind11::object scaffold_obj = alloc_qubit_array_obj(self, m + gf_inverse_chain_size(field));
+     auto scaffold_conv = ConvertedArrayXZ::from_obj(scaffold_obj, "scaffold");
+     auto scaffold = scaffold_conv.span.checked_cast_to_qubit_ids("scaffold");
+-    gen_gf_div(self.builder, CircuitGenCtx{{}}, field, target, lhs, rhs, scaffold);
++    size_t needed_clean = clean_workspace_for_product(self.builder, field);
++    size_t num_clean = self.num_free_qubits() >= needed_clean ? needed_clean : 0;
++    array_z clean = array_z::alloc_noinit(num_clean, QXZTypeTag8::QUBIT_ID);
++    for (size_t k = 0; k < clean.size(); k++) {
++        clean[k] = self.alloc_qubit();
++    }
++    std::span<const QubitId> clean_span{(QubitId *)clean.items, clean.size()};
++    gen_gf_div(self.builder, CircuitGenCtx{clean_span}, field, target, lhs, rhs, scaffold);
++    for (size_t k = clean.size(); k--;) {
++        self.free_qubit((QubitId)clean[k]);
++    }
+     return pybind11::make_tuple(resolved, scaffold_obj);
+ }
+ 
+@@ -1042,6 +1087,7 @@ void kickmix_py::append_ixor_gf2_div_obj(
+     throw_unless(rhs.size() == m, "gen_gf_div: Q_rhs.size() != field.degree()");
+ 
+     size_t needed_clean = gf_div_workspace_size(field);
++    needed_clean += clean_workspace_for_product(self.builder, field);
+     size_t num_clean = self.num_free_qubits() >= needed_clean ? needed_clean : 0;
+     array_z clean = array_z::alloc_noinit(num_clean, QXZTypeTag8::QUBIT_ID);
+     for (size_t k = 0; k < clean.size(); k++) {
+@@ -1072,6 +1118,7 @@ void kickmix_py::append_del_gf2_div_obj(
+     throw_unless(rhs.size() == m, "gen_gf_undiv: Q_rhs.size() != field.degree()");
+ 
+     size_t needed_clean = gf_div_workspace_size(field);
++    needed_clean += clean_workspace_for_product(self.builder, field);
+     size_t num_clean = self.num_free_qubits() >= needed_clean ? needed_clean : 0;
+     array_z clean = array_z::alloc_noinit(num_clean, QXZTypeTag8::QUBIT_ID);
+     for (size_t k = 0; k < clean.size(); k++) {
+diff --git a/src/kickmix/py/operation_statistics.pybind.cc b/src/kickmix/py/operation_statistics.pybind.cc
+index c2c7028..d0107b7 100644
+--- a/src/kickmix/py/operation_statistics.pybind.cc
++++ b/src/kickmix/py/operation_statistics.pybind.cc
+@@ -21,7 +21,7 @@ using namespace kickmix_py;
+ 
+ namespace {
+ 
+-const std::array<std::pair<std::string_view, std::vector<OpType>>, 19> OP_COUNT_GROUPS{{
++const std::array<std::pair<std::string_view, std::vector<OpType>>, 20> OP_COUNT_GROUPS{{
+     {"NEG", {OpType::NEG, OpType::NEG_IF}},
+     {"BIT_INVERT", {OpType::BIT_INVERT, OpType::BIT_INVERT_IF}},
+     {"BIT_STORE0", {OpType::BIT_STORE0, OpType::BIT_STORE0_IF}},
+@@ -30,6 +30,7 @@ const std::array<std::pair<std::string_view, std::vector<OpType>>, 19> OP_COUNT_
+     {"Z", {OpType::Z, OpType::Z_IF}},
+     {"R", {OpType::R, OpType::R_IF}},
+     {"HMR", {OpType::HMR, OpType::HMR_IF}},
++    {"MR", {OpType::MR, OpType::MR_IF}},
+     {"CX", {OpType::CX, OpType::CX_IF}},
+     {"CZ", {OpType::CZ, OpType::CZ_IF}},
+     {"SWAP", {OpType::SWAP, OpType::SWAP_IF}},
+diff --git a/src/kickmix/sim/sim.h b/src/kickmix/sim/sim.h
+index adbacdb..fc03f6a 100644
+--- a/src/kickmix/sim/sim.h
++++ b/src/kickmix/sim/sim.h
+@@ -405,6 +405,23 @@ struct Sim {
+                     phase ^= cond;
+                     break;
+ 
++                case OpType::MR_IF:
++                    cond &= bits[*data_bit_cond++];
++                case OpType::MR: {
++                    // Z-basis measurement that leaves the tracked phase untouched,
++                    // fused with a Z-basis reset.
++                    auto target_q = *data_q0++;
++                    auto target_b = *data_bit_targ++;
++                    auto q = qubits[target_q];
++                    auto b = bits[target_b];
++                    b &= ~cond;
++                    b |= q & cond;
++                    q &= ~cond;
++                    qubits[target_q] = q;
++                    bits[target_b] = b;
++                    break;
++                }
++
+                 case OpType::HMR_IF:
+                     cond &= bits[*data_bit_cond++];
+                 case OpType::HMR: {
+diff --git a/src/kickmix/sim/sim.h b/src/kickmix/sim/sim.h
+--- a/src/kickmix/sim/sim.h
++++ b/src/kickmix/sim/sim.h
+@@ -3,6 +3,7 @@
+ 
+ #include <algorithm>
+ #include <array>
++#include <bit>
+ #include <functional>
+ #include <iostream>
+ #include <random>
+@@ -94,6 +95,24 @@
+     std::conditional_t<count_shots, std::array<PopCounter<TWord>, 256>, EmptyCounters<TWord>> new_op_counters{};
+     std::conditional_t<count_shots, std::array<PopCounter<TWord>, 129>, EmptyCounters<TWord>> z_pow_level_counters{};
+ 
++    /// Whether `op_execution_counts` is maintained during `apply`.
++    ///
++    /// The existing counters are per operation *type*, which cannot answer how much of a
++    /// circuit region was executed: two CCX instructions of the same type are
++    /// indistinguishable once summed. This flag turns on the per-operation vector, which can.
++    bool count_op_executions = false;
++    /// Shots that belong to this batch, as a bit mask.
++    ///
++    /// The word holds `BATCH_SIZE` shot lanes but a simulator may be asked for fewer, and the
++    /// unused lanes are simulated too (with all-zero inputs). Counting them would inflate
++    /// every unconditional instruction by the ratio of lanes to requested shots.
++    TWord op_count_mask = ~TWord{};
++    /// Executed shot count of each operation, indexed by operation index within the circuit.
++    ///
++    /// Only allocated when `count_op_executions` is set, because it is sized by the
++    /// circuit's instruction count rather than by a fixed enum.
++    std::vector<uint32_t> op_execution_counts;
++
+     void set_debug_print_to_stderr() {
+         debug_print_handler = [this](
+                                   QubitOrBitOrBool target, const TWord &target_val, BitOrBool, const TWord &cond_val) {
+@@ -309,6 +328,9 @@
+         auto *data_bit_targ = circuit.b0;
+         auto *data_angles = circuit.angles;
+         TWord phase = global_phase_ref();
++        if (count_op_executions && op_execution_counts.size() < circuit.num_ops) {
++            op_execution_counts.resize(circuit.num_ops, 0);
++        }
+         for (size_t k = 0; k < circuit.num_ops; k++) {
+             auto kind = circuit.op_types[k];
+ 
+@@ -523,6 +545,17 @@
+             // while `PUSH_CONDITION` / `POP_CONDITION` unconditionally set `cond = ~TWord{}`.
+             if constexpr (count_shots) {
+                 new_op_counters[(uint8_t)kind].masked_increments(cond);
++                // `cond` has a bit per shot, so its population count is how many shots
++                // executed this instruction. Same mask as the type counters, so a region's
++                // sum reconciles with `num_toffoli_like` exactly.
++                if (count_op_executions) {
++                    const TWord executed_mask = cond & op_count_mask;
++                    uint32_t executed = 0;
++                    for (size_t w = 0; w < SHOT_WORD_COUNT; w++) {
++                        executed += (uint32_t)std::popcount(executed_mask.u64(w));
++                    }
++                    op_execution_counts[k] += executed;
++                }
+             }
+         }
+ 
+@@ -532,6 +565,7 @@
+     void clear_operation_statistics() {
+         new_op_counters = {};
+         z_pow_level_counters = {};
++        op_execution_counts.clear();
+     }
+ 
+     void clear_for_shot() {
+diff --git a/src/kickmix/py/interactive_simulator.pybind.h b/src/kickmix/py/interactive_simulator.pybind.h
+--- a/src/kickmix/py/interactive_simulator.pybind.h
++++ b/src/kickmix/py/interactive_simulator.pybind.h
+@@ -15,6 +15,7 @@
+     size_t batch_size;
+     pybind11::object debug_print_target;
+     bool counting_operations = false;
++    bool counting_op_executions = false;
+     std::vector<kickmix::Sim<kickmix::b256, false>> simulators;
+     std::vector<kickmix::Sim<kickmix::b256, true>> counting_simulators;
+     std::vector<uint8_t> byte_buf;
+diff --git a/src/kickmix/py/interactive_simulator.pybind.cc b/src/kickmix/py/interactive_simulator.pybind.cc
+--- a/src/kickmix/py/interactive_simulator.pybind.cc
++++ b/src/kickmix/py/interactive_simulator.pybind.cc
+@@ -135,6 +135,14 @@
+             }
+             std::seed_seq seq(chunk_seed.begin(), chunk_seed.end());
+             sims.emplace_back(std::mt19937_64(seq));
++            // Only the first `chunk_size` lanes are requested shots; the rest of the word is
++            // simulated too, so per-operation execution counts must ignore it.
++            auto &chunk_sim = sims.back();
++            chunk_sim.op_count_mask = b256{};
++            size_t chunk_size = std::min(batch_size - k, PY_SIM_WORD_BITS);
++            for (size_t s = 0; s < chunk_size; s++) {
++                chunk_sim.op_count_mask.set_bit(s, true);
++            }
+         }
+         ensure_byte_buf_can_store_bits(sims.size() * PY_SIM_WORD_BITS);
+     });
+@@ -987,6 +995,101 @@
+         )DOC")
+             .data());
+ 
++    c_sim.def_property(
++        "counting_op_executions",
++        [](const PyInteractiveSimulator &self) -> bool {
++            return self.counting_op_executions;
++        },
++        [](PyInteractiveSimulator &self, bool value) {
++            if (value && !self.counting_operations) {
++                throw std::invalid_argument(
++                    "counting_op_executions requires counting_operations=True on the simulator, "
++                    "because per-operation counts are collected by the same pass.");
++            }
++            self.counting_op_executions = value;
++            for (auto &sim : self.counting_simulators) {
++                sim.count_op_executions = value;
++            }
++        },
++        clean_doc_string(R"DOC(
++            Whether to count how many shots execute each instruction.
++
++            `operation_statistics()` counts by operation type, so two
++            instructions of the same type are indistinguishable. This
++            option keeps a vector indexed by instruction instead, which
++            is what a per-region ledger needs: sum the entries inside a
++            region's `INFO_TAG` range.
++
++            Counts use the same per-shot condition mask as
++            `operation_statistics()`, so a region's sum reconciles with
++            the measured `num_toffoli_like` exactly. Enabling costs one
++            population count per instruction and one `uint32` per
++            instruction of memory, so it is off by default.
++
++            Examples:
++                >>> import kickmix as km
++                >>> sim = km.Simulator(4, counting_operations=True)
++                >>> sim.counting_op_executions = True
++                >>> sim.write_across_shots(km.b(0), 0b0101)
++                >>> sim.do(km.Circuit('CCX q0 q1 q2 if b0'))
++                >>> list(sim.operation_execution_counts())
++                [2]
++        )DOC")
++            .data());
++
++    c_sim.def(
++        "operation_execution_counts",
++        [](const PyInteractiveSimulator &self) -> pybind11::array_t<uint32_t> {
++            if (!self.counting_operations) {
++                throw std::invalid_argument(
++                    "Operation counting is not enabled on this simulator. "
++                    "Pass counting_operations=True to km.Simulator(...).");
++            }
++            if (!self.counting_op_executions) {
++                throw std::invalid_argument(
++                    "Per-operation counting is not enabled on this simulator. "
++                    "Set sim.counting_op_executions = True before calling do(...).");
++            }
++            size_t num_ops = 0;
++            for (const auto &sim : self.counting_simulators) {
++                num_ops = std::max(num_ops, sim.op_execution_counts.size());
++            }
++            pybind11::array_t<uint32_t> out(num_ops);
++            auto *ptr = out.mutable_data();
++            std::fill(ptr, ptr + num_ops, 0);
++            for (const auto &sim : self.counting_simulators) {
++                for (size_t k = 0; k < sim.op_execution_counts.size(); k++) {
++                    ptr[k] += sim.op_execution_counts[k];
++                }
++            }
++            return out;
++        },
++        clean_doc_string(R"DOC(
++            @signature def operation_execution_counts(self) -> np.ndarray:
++            Returns how many shots executed each instruction last run.
++
++            The array is indexed by instruction, not by operation type.
++            Conditional instructions count only the shots where their
++            condition held, exactly as `operation_statistics()` does.
++
++            Returns:
++                A `np.ndarray[np.uint32]` of length `len(circuit)`.
++
++            Raises:
++                ValueError: Operation counting, or per-instruction
++                    counting, was not enabled on this simulator.
++
++            Examples:
++                >>> import kickmix as km
++                >>> sim = km.Simulator(4, counting_operations=True)
++                >>> sim.counting_op_executions = True
++                >>> sim.write_across_shots(km.b(0), 0b0101)
++                >>> sim.do(km.Circuit('CCX q0 q1 q2 if b0'))
++                >>> sim.operation_execution_counts()
++                array([2], dtype=uint32)
++        )DOC")
++            .data());
++
+     c_sim.def(
+         "operation_statistics",
+         &PyOperationStatistics::from_simulator,
+diff --git a/src/kickmix/py/circuit/circuit.pybind.cc b/src/kickmix/py/circuit/circuit.pybind.cc
+--- a/src/kickmix/py/circuit/circuit.pybind.cc
++++ b/src/kickmix/py/circuit/circuit.pybind.cc
+@@ -3,6 +3,7 @@
+ #include <cstdio>
+ #include <memory>
+ #include <pybind11/iostream.h>
++#include <pybind11/numpy.h>
+ #include <pybind11/operators.h>
+ #include <pybind11/pybind11.h>
+ #include <pybind11/stl.h>
+@@ -211,6 +212,73 @@
+         )DOC")
+             .data());
+ 
++    c_circuit.def(
++        "info_tags",
++        [](const Circuit &self) -> pybind11::list {
++            pybind11::list out;
++            uint64_t start = 0;
++            const uint64_t *end_offsets = self.info_tag_end_offsets;
++            for (size_t k = 0; k < self.num_ops; k++) {
++                if (self.op_types[k] != OpType::INFO_TAG) {
++                    continue;
++                }
++                uint64_t end = *end_offsets++;
++                out.append(pybind11::make_tuple(
++                    k, pybind11::str(self.info_tag_chars + start, end - start)));
++                start = end;
++            }
++            return out;
++        },
++        clean_doc_string(R"DOC(
++            @signature def info_tags(self) -> list[tuple[int, str]]:
++            Returns the position and text of every `INFO_TAG`.
++
++            `builder.mark(name)` emits an `@enter:name` tag before a
++            region's instructions and an `@exit:name` tag after them, so
++            these pairs are the region boundaries of the circuit. With
++            `op_toffoli_like` they map per-instruction execution counts
++            onto the regions a ledger is written in.
++
++            Examples:
++                >>> import kickmix as km
++                >>> c = km.Circuit('''
++                ...     INFO_TAG "@enter:inc"
++                ...     CCX q0 q1 q2
++                ...     INFO_TAG "@exit:inc"
++                ... ''')
++                >>> c.info_tags()
++                [(0, '@enter:inc'), (2, '@exit:inc')]
++        )DOC")
++            .data());
++
++    c_circuit.def_property_readonly(
++        "op_toffoli_like",
++        [](const Circuit &self) -> pybind11::array_t<bool> {
++            pybind11::array_t<bool> out(self.num_ops);
++            auto *ptr = out.mutable_data();
++            for (size_t k = 0; k < self.num_ops; k++) {
++                OpType kind = self.op_types[k];
++                ptr[k] = kind == OpType::CCX || kind == OpType::CCX_IF || kind == OpType::CCZ ||
++                         kind == OpType::CCZ_IF || kind == OpType::CSWAP || kind == OpType::CSWAP_IF;
++            }
++            return out;
++        },
++        clean_doc_string(R"DOC(
++            Returns a mask that is true for each instruction
++            `num_toffoli_like` counts.
++
++            The mask is indexed by instruction, so
++            `circuit.op_toffoli_like.sum()` equals
++            `circuit.operation_statistics().num_toffoli_like`.
++
++            Examples:
++                >>> import kickmix as km
++                >>> c = km.Circuit('X q0' + chr(10) + 'CCX q0 q1 q2')
++                >>> c.op_toffoli_like.tolist()
++                [False, True]
++        )DOC")
++            .data());
++
+     c_circuit.def_property_readonly(
+         "num_qubits",
+         [](const Circuit &self) -> size_t {

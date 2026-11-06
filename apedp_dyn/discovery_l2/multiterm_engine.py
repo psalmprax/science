@@ -368,6 +368,22 @@ class MultiTermL2Engine:
                     "is_white": is_white,
                     "holdout_residuals": resid_ho.tolist(),
                     "holdout_sq_error": (resid_ho**2).tolist(),
+                    # Holdout-partition prediction from the same fitted coefficients.
+                    # Rows that are non-finite in any term are None, so consumers can
+                    # plot the series directly instead of rebuilding it from term names.
+                    "holdout_prediction": [
+                        (float(p) if np.isfinite(p) else None)
+                        for p in np.asarray(np.column_stack([term_vectors_ho[i] for i in idx_tuple]) @ coefs, dtype=float)
+                    ],
+                    # Full causal series (train rows then holdout rows), the same
+                    # layout as the plotted time axis. Non-finite rows are None.
+                    "full_prediction": [
+                        (float(p) if np.isfinite(p) else None)
+                        for p in np.asarray(
+                            np.column_stack([np.concatenate([term_vectors_tr[i], term_vectors_ho[i]]) for i in idx_tuple]) @ coefs,
+                            dtype=float,
+                        )
+                    ],
                 }
 
                 sc = ScoredCandidate(

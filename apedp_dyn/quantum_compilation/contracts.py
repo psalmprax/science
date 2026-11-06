@@ -23,6 +23,8 @@ import os
 from pathlib import Path
 from typing import Any
 
+from . import kickmix_builds
+
 __all__ = [
     "ContractIntegrityError",
     "VerifierContract",
@@ -187,6 +189,12 @@ class VerifierContract:
     sample_artifact: Path | None
     verifier_sha256: str
     kickmix_sha256: str
+    #: SHA-256 of the extension file itself, and which pinned build it is. The tree hash
+    #: above is the bundle-level pin; this one names the bytes a run actually loads, so a
+    #: contract cannot silently swap the shipped build for an unpinned rebuild (or vice
+    #: versa) while keeping the same tree hash.
+    kickmix_extension_sha256: str
+    kickmix_build: str
     sample_sha256: str | None
     constants: dict[str, Any]
     contract_sha256: str
@@ -209,6 +217,12 @@ class VerifierContract:
                 f"kickmix tree changed: expected {self.kickmix_sha256}, "
                 f"found {current_kickmix}"
             )
+        current_build = _pinned_extension(self.kickmix_root)
+        if current_build.sha256 != self.kickmix_extension_sha256:
+            raise ContractIntegrityError(
+                f"kickmix extension changed: expected {self.kickmix_extension_sha256} "
+                f"({self.kickmix_build}), found {current_build.sha256} ({current_build.name})"
+            )
         if self.sample_artifact is not None and self.sample_sha256 is not None:
             current_sample = sha256_file(self.sample_artifact)
             if current_sample != self.sample_sha256:
@@ -227,10 +241,21 @@ class VerifierContract:
             "sample_artifact": str(self.sample_artifact) if self.sample_artifact else None,
             "verifier_sha256": self.verifier_sha256,
             "kickmix_sha256": self.kickmix_sha256,
+            "kickmix_extension_sha256": self.kickmix_extension_sha256,
+            "kickmix_build": self.kickmix_build,
             "sample_sha256": self.sample_sha256,
             "constants": dict(self.constants),
             "contract_sha256": self.contract_sha256,
         }
+
+
+def _pinned_extension(kickmix_root: Path) -> kickmix_builds.PinnedBuild:
+    """Return the pinned build for ``kickmix_root/kickmix.so``, refusing anything else."""
+    extension = Path(kickmix_root) / "kickmix.so"
+    try:
+        return kickmix_builds.assert_allowed(extension)
+    except kickmix_builds.UnpinnedKickmixBuildError as exc:
+        raise ContractIntegrityError(str(exc)) from None
 
 
 def _contract_digest(fields: dict[str, Any]) -> str:
@@ -267,6 +292,7 @@ def load_contract(
     )
     verifier_sha = sha256_tree(verifier_root)
     kickmix_sha = sha256_tree(kickmix_root)
+    extension_build = _pinned_extension(kickmix_root)
     fields = {
         "benchmark": benchmark,
         "competition_root": str(root),
@@ -276,6 +302,8 @@ def load_contract(
         "sample_artifact": str(sample_artifact) if sample_artifact else None,
         "verifier_sha256": verifier_sha,
         "kickmix_sha256": kickmix_sha,
+        "kickmix_extension_sha256": extension_build.sha256,
+        "kickmix_build": extension_build.name,
         "sample_sha256": sample_sha,
         "constants": constants,
     }
@@ -288,6 +316,8 @@ def load_contract(
         sample_artifact=sample_artifact,
         verifier_sha256=verifier_sha,
         kickmix_sha256=kickmix_sha,
+        kickmix_extension_sha256=extension_build.sha256,
+        kickmix_build=extension_build.name,
         sample_sha256=sample_sha,
         constants=constants,
         contract_sha256="",

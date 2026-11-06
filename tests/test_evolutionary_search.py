@@ -89,6 +89,31 @@ def test_evolve_grouped_pick_uses_holdout():
     xte = {k: v[20:] for k, v in x_dict.items()}
     result = evolve(xtr, y[:20], xte, y[20:], config=_tiny_config())
     assert result.grouped_pick is not None
+    assert result.confirmation_mse is not None
+    assert result.selection_method in {"inner_cv", "train_error"}
+
+
+def test_grouped_pick_is_selected_without_reading_the_confirmation_rows():
+    """The pick must be a function of the training rows alone.
+
+    Same training data, a confirmation set whose targets are inverted: a
+    selection that consulted the test rows would move its pick (or at least its
+    reported ``confirmation_mse``) toward fitting them. The pick is identical and
+    only the confirmation error changes.
+    """
+    x_dict, y = _quad_data()
+    xtr = {k: v[:20] for k, v in x_dict.items()}
+    xte = {k: v[20:] for k, v in x_dict.items()}
+    honest = evolve(xtr, y[:20], xte, y[20:], config=_tiny_config())
+    inverted = evolve(xtr, y[:20], xte, -y[20:], config=_tiny_config())
+    assert honest.grouped_pick == inverted.grouped_pick
+    assert honest.best_expression == inverted.best_expression
+    assert honest.selection_folds == inverted.selection_folds
+    assert honest.confirmation_mse is not None
+    assert inverted.confirmation_mse is not None
+    # The confirmed error is measured, not chosen: inverting the targets has to
+    # make the reported confirmation error worse for the same pick.
+    assert honest.confirmation_mse < inverted.confirmation_mse
 
 
 def test_dim_gate_rejects_at_birth():

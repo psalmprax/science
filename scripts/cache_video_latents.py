@@ -10,13 +10,14 @@ import glob
 import os
 import re
 import time
+import zlib
+
 import imageio.v3 as iio
 import numpy as np
 import torch
 import torch.nn.functional as F
-from tqdm import tqdm
-
 from jetflow_video import ContinuousWaveletVAE
+from tqdm import tqdm
 
 
 def extract_action_label(filename: str) -> str:
@@ -33,7 +34,7 @@ def extract_action_label(filename: str) -> str:
 
 def create_text_embedding(label: str, text_dim: int = 64) -> torch.Tensor:
     """Deterministic normalized semantic embedding from action label string."""
-    rng = np.random.RandomState(abs(hash(label)) % (2**31))
+    rng = np.random.RandomState(zlib.crc32(label.encode()) % (2**31))
     vec = rng.randn(text_dim).astype(np.float32)
     norm = np.linalg.norm(vec)
     return torch.from_numpy(vec / max(1e-8, norm))

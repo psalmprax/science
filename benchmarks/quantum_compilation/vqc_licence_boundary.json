@@ -1,0 +1,355 @@
+{
+  "experiment": "VQC -- the amplitude tier and the licence boundary",
+  "declared_in": "docs/EEA_SCHEDULE_CAMPAIGN.md \u00a72.1 (P1) and docs/DQI_OFFICIAL_COMPATIBILITY.md",
+  "scope": "the read-then-gate gadget the whole arm's saving rests on, at sizes where amplitudes are representable; not a competition engine and not a receipt path",
+  "basis_states": {
+    "rows": [
+      {
+        "input": {
+          "control": 0,
+          "left": 0,
+          "right": 0,
+          "ancilla": 0
+        },
+        "reference_branches": 1,
+        "gated_branches": 1,
+        "classical_bit_equals_control": true,
+        "states_equal_up_to_phase": true,
+        "ancilla_returns_to_zero": true
+      },
+      {
+        "input": {
+          "control": 0,
+          "left": 0,
+          "right": 1,
+          "ancilla": 0
+        },
+        "reference_branches": 1,
+        "gated_branches": 1,
+        "classical_bit_equals_control": true,
+        "states_equal_up_to_phase": true,
+        "ancilla_returns_to_zero": true
+      },
+      {
+        "input": {
+          "control": 0,
+          "left": 1,
+          "right": 0,
+          "ancilla": 0
+        },
+        "reference_branches": 1,
+        "gated_branches": 1,
+        "classical_bit_equals_control": true,
+        "states_equal_up_to_phase": true,
+        "ancilla_returns_to_zero": true
+      },
+      {
+        "input": {
+          "control": 0,
+          "left": 1,
+          "right": 1,
+          "ancilla": 0
+        },
+        "reference_branches": 1,
+        "gated_branches": 1,
+        "classical_bit_equals_control": true,
+        "states_equal_up_to_phase": true,
+        "ancilla_returns_to_zero": true
+      },
+      {
+        "input": {
+          "control": 1,
+          "left": 0,
+          "right": 0,
+          "ancilla": 0
+        },
+        "reference_branches": 1,
+        "gated_branches": 1,
+        "classical_bit_equals_control": true,
+        "states_equal_up_to_phase": true,
+        "ancilla_returns_to_zero": true
+      },
+      {
+        "input": {
+          "control": 1,
+          "left": 0,
+          "right": 1,
+          "ancilla": 0
+        },
+        "reference_branches": 1,
+        "gated_branches": 1,
+        "classical_bit_equals_control": true,
+        "states_equal_up_to_phase": true,
+        "ancilla_returns_to_zero": true
+      },
+      {
+        "input": {
+          "control": 1,
+          "left": 1,
+          "right": 0,
+          "ancilla": 0
+        },
+        "reference_branches": 1,
+        "gated_branches": 1,
+        "classical_bit_equals_control": true,
+        "states_equal_up_to_phase": true,
+        "ancilla_returns_to_zero": true
+      },
+      {
+        "input": {
+          "control": 1,
+          "left": 1,
+          "right": 1,
+          "ancilla": 0
+        },
+        "reference_branches": 1,
+        "gated_branches": 1,
+        "classical_bit_equals_control": true,
+        "states_equal_up_to_phase": true,
+        "ancilla_returns_to_zero": true
+      }
+    ],
+    "all_equal": true,
+    "gadget": {
+      "qubits": 4,
+      "control": 0,
+      "ancilla": 1,
+      "swapped": [
+        2,
+        3
+      ]
+    }
+  },
+  "superposition": {
+    "input": "control = |+>, left = |1>, right = |0>",
+    "reference_branches": 1,
+    "gated_branches": 2,
+    "gated_branch_weights": [
+      0.5000000000000001,
+      0.4999999999999999
+    ],
+    "gated_branch_bits": [
+      [
+        false
+      ],
+      [
+        true
+      ]
+    ],
+    "fidelity_of_gated_mixture_against_reference": 0.4999999999999999,
+    "reference_control_offdiagonal": 0.4999999999999999,
+    "gated_control_offdiagonal": 0.0,
+    "reference_control_p": [
+      0.5000000000000001,
+      0.4999999999999999
+    ],
+    "states_equal_up_to_phase": false
+  },
+  "readout_identity": {
+    "question": "can the pinned binary's HMR stand in for the MR instruction the arms use?",
+    "hmr_on_zero": {
+      "branches": [
+        {
+          "bits": [
+            false
+          ],
+          "probability": 0.5000000000000001
+        },
+        {
+          "bits": [
+            true
+          ],
+          "probability": 0.4999999999999999
+        }
+      ],
+      "outcome_is_random": true,
+      "matches_mr": false
+    },
+    "h_then_hmr": {
+      "branches": [
+        {
+          "bits": [
+            false
+          ],
+          "probability": 1.0
+        }
+      ],
+      "matches_mr_on_basis": true,
+      "matches_mr_on_superposition": true
+    },
+    "double_h_hmr": {
+      "note": "the substitution applied twice is the same map, since H*H = I",
+      "matches_mr_on_basis": true
+    },
+    "conclusion": "the substitution is exact algebra and needs a Hadamard gate, which the pinned competition binary's builder does not expose (Experiment D records the surface); HMR on its own measures in the X basis, so it randomises a basis-state qubit instead of reporting it"
+  },
+  "kickmix_cross_check": {
+    "available": true,
+    "extension": "/home/psalmprax/ALL_PROJECTS/science/build/kickmix_mr/lib/kickmix.cpython-313-x86_64-linux-gnu.so",
+    "rows": [
+      {
+        "input": 0,
+        "kickmix": 0,
+        "statevector": 0
+      },
+      {
+        "input": 1,
+        "kickmix": 1,
+        "statevector": 1
+      },
+      {
+        "input": 2,
+        "kickmix": 0,
+        "statevector": 0
+      },
+      {
+        "input": 3,
+        "kickmix": 1,
+        "statevector": 1
+      },
+      {
+        "input": 4,
+        "kickmix": 4,
+        "statevector": 4
+      },
+      {
+        "input": 5,
+        "kickmix": 9,
+        "statevector": 9
+      },
+      {
+        "input": 6,
+        "kickmix": 8,
+        "statevector": 8
+      },
+      {
+        "input": 7,
+        "kickmix": 5,
+        "statevector": 5
+      }
+    ],
+    "agree": true,
+    "note": "the local MR rebuild is the only engine that can execute this gadget; the pinned binary cannot (no `mr`)"
+  },
+  "dimension": {
+    "arm": {
+      "num_qubits": 1913,
+      "log10_amplitudes": 575.870381705196,
+      "log10_bytes_at_16_per_amplitude": 577.0745016878519,
+      "digits_of_amplitudes": 576,
+      "amplitudes": "too large for a float; see log10_amplitudes",
+      "bytes_at_16_per_amplitude": "too large for a float; see log10_bytes_at_16_per_amplitude"
+    },
+    "reference": {
+      "num_qubits": 1893,
+      "log10_amplitudes": 569.8497817919164,
+      "log10_bytes_at_16_per_amplitude": 571.0539017745723,
+      "digits_of_amplitudes": 570,
+      "amplitudes": "too large for a float; see log10_amplitudes",
+      "bytes_at_16_per_amplitude": "too large for a float; see log10_bytes_at_16_per_amplitude"
+    },
+    "note": "an amplitude-level verification of the arm would need one complex number per basis state of a 1,913-qubit register; the counts in this repository are therefore basis-state counts, and this tier's reach is the gadget, not the decoder"
+  },
+  "checks": [
+    {
+      "check": "on every computational-basis input the two maps are the same state",
+      "requirement": "all 8 inputs equal up to global phase, the bit equals the control, and the ancilla returns to |0>",
+      "measured": {
+        "inputs": 8,
+        "all_equal": true,
+        "ancilla_clean": true
+      },
+      "passed": true
+    },
+    {
+      "check": "outside the basis the two maps differ, and by how much",
+      "requirement": "the gated map is a mixture (more than one branch) and the fidelity against the coherent reference is below 1",
+      "measured": {
+        "gated_branches": 2,
+        "fidelity": 0.4999999999999999
+      },
+      "passed": true
+    },
+    {
+      "check": "HMR alone is not MR",
+      "requirement": "a random outcome on |0>, i.e. two branches at 1/2 each",
+      "measured": [
+        {
+          "bits": [
+            false
+          ],
+          "probability": 0.5000000000000001
+        },
+        {
+          "bits": [
+            true
+          ],
+          "probability": 0.4999999999999999
+        }
+      ],
+      "passed": true
+    },
+    {
+      "check": "H then HMR is MR exactly, which is why the blocker is the missing H",
+      "requirement": "identical branch structure on basis and superposed inputs",
+      "measured": {
+        "basis": true,
+        "superposition": true
+      },
+      "passed": true
+    },
+    {
+      "check": "the tier agrees with kickmix on the gated gadget's basis inputs",
+      "requirement": "identical output register values on all 8 inputs",
+      "measured": [
+        {
+          "input": 0,
+          "kickmix": 0,
+          "statevector": 0
+        },
+        {
+          "input": 1,
+          "kickmix": 1,
+          "statevector": 1
+        },
+        {
+          "input": 2,
+          "kickmix": 0,
+          "statevector": 0
+        },
+        {
+          "input": 3,
+          "kickmix": 1,
+          "statevector": 1
+        },
+        {
+          "input": 4,
+          "kickmix": 4,
+          "statevector": 4
+        },
+        {
+          "input": 5,
+          "kickmix": 9,
+          "statevector": 9
+        },
+        {
+          "input": 6,
+          "kickmix": 8,
+          "statevector": 8
+        },
+        {
+          "input": 7,
+          "kickmix": 5,
+          "statevector": 5
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "failed_checks": [],
+  "reproducibility": {
+    "script_sha256": "5f42819ac442c4471f309080c9374867e3b20d0979a85b364fe74d927afb4120",
+    "module_sha256": "f79b062779ca12e5e3dec897fdab71204f501152f77b4cce05da8476b64c931c"
+  },
+  "verdict": "the licence is exactly the basis: identical on every computational-basis input, a dephasing outside it"
+}

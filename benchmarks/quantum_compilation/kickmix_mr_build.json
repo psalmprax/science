@@ -1,0 +1,173 @@
+{
+  "receipt": "the MR-capable kickmix extension, rebuilt from this repository",
+  "why": "the shipped competition build has no `mr`, so every MR-gated arm and every measured clear runs on this extension; until now its bytes had no name, so a receipt citing it proved nothing",
+  "script": "scripts/build_kickmix_mr.py",
+  "script_sha256": "df7fcadc7b299132e4b820bd7c0f688ba7789afad1bb88592da4787d423a36cb",
+  "command": "python --out build/kickmix_mr --record benchmarks/quantum_compilation/kickmix_mr_build.json --compare build/km_repro_a/src/build/km_repro_a/lib --compare build/km_legacy/lib",
+  "mode": "rebuilt",
+  "source": {
+    "tree": "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src/kickmix",
+    "commit": "638777fac4379bc62e2a1e4a52cf1a1753895d48",
+    "pinned_commit": "638777fac4379bc62e2a1e4a52cf1a1753895d48",
+    "checkout_has_uncommitted_edits": true,
+    "note": "exported with `git archive HEAD`, so uncommitted edits cannot leak in"
+  },
+  "patch": {
+    "file": "scripts/kickmix_mr_opcode.patch",
+    "sha256": "9d96fd3a7099791d0896fe984299aa0e32f4c96a6a8977d02609078470264b0f"
+  },
+  "toolchain": {
+    "python": "3.13.14",
+    "pybind11": "2.12.0",
+    "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39"
+  },
+  "build": {
+    "extension": "build/kickmix_mr/lib/kickmix.cpython-313-x86_64-linux-gnu.so",
+    "bytes": 3254928,
+    "sha256": "36b1e6ef63686b0fe872d89ecf178ea3e72fb4afce956397ad484ebee8ddb939",
+    "instructions": {
+      "has_mr": true,
+      "has_mr_if": false,
+      "public_methods": 60,
+      "qubits": 72,
+      "ops": 5380,
+      "instructions": {
+        "BIT_INVERT": 520,
+        "BIT_STORE0": 54,
+        "R": 72,
+        "HMR": 72,
+        "MR": 12,
+        "CX": 3233,
+        "CZ": 720,
+        "SWAP": 192,
+        "CCX": 315,
+        "INFO_TAG": 190
+      }
+    }
+  },
+  "pin": {
+    "registry": "apedp_dyn/quantum_compilation/kickmix_builds.py",
+    "expected_sha256": "36b1e6ef63686b0fe872d89ecf178ea3e72fb4afce956397ad484ebee8ddb939",
+    "matched": true,
+    "allowed_for_verifier": true
+  },
+  "comparisons": [
+    {
+      "path": "build/km_repro_a/src/build/km_repro_a/lib/kickmix.cpython-313-x86_64-linux-gnu.so",
+      "sha256": "36b1e6ef63686b0fe872d89ecf178ea3e72fb4afce956397ad484ebee8ddb939",
+      "identical_bytes": true,
+      "same_instructions": true,
+      "same_public_methods": true,
+      "pinned_build": {
+        "name": "mr",
+        "sha256": "36b1e6ef63686b0fe872d89ecf178ea3e72fb4afce956397ad484ebee8ddb939",
+        "allowed_for_verifier": true,
+        "has_mr": true,
+        "provenance": {
+          "file": "build/kickmix_mr/lib/kickmix.cpython-313-x86_64-linux-gnu.so (gitignored)",
+          "script": "scripts/build_kickmix_mr.py",
+          "source_commit": "638777fac4379bc62e2a1e4a52cf1a1753895d48",
+          "source_tree": "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src",
+          "patch": "scripts/kickmix_mr_opcode.patch",
+          "patch_sha256": "9d96fd3a7099791d0896fe984299aa0e32f4c96a6a8977d02609078470264b0f",
+          "interpreter": "CPython 3.13.14",
+          "pybind11": "2.12.0",
+          "public_methods": 60,
+          "mr_if": false
+        }
+      },
+      "other_instructions": {
+        "BIT_INVERT": 520,
+        "BIT_STORE0": 54,
+        "R": 72,
+        "HMR": 72,
+        "MR": 12,
+        "CX": 3233,
+        "CZ": 720,
+        "SWAP": 192,
+        "CCX": 315,
+        "INFO_TAG": 190
+      }
+    },
+    {
+      "path": "build/km_legacy/lib/kickmix.cpython-313-x86_64-linux-gnu.so",
+      "sha256": "e57dcc471213e43f79c767e585514aaa8315168235d4c5fd5539f59d2217c378",
+      "identical_bytes": false,
+      "same_instructions": true,
+      "same_public_methods": true,
+      "pinned_build": {
+        "name": "legacy-working-tree",
+        "sha256": "e57dcc471213e43f79c767e585514aaa8315168235d4c5fd5539f59d2217c378",
+        "allowed_for_verifier": false,
+        "has_mr": true,
+        "provenance": {
+          "file": "build/kickmix_mr/lib (earlier build, replaced)",
+          "how_built": "copied from the vendored working tree, whose checkout carries uncommitted edits; not reproducible from the pinned commit plus patch",
+          "cited_by": [
+            "kickmix_mr_arm_costs.json",
+            "gf54_mul_kickmix.json",
+            "designer_directions.json",
+            "dqi_region_ledger.json",
+            "dqi_schedule_campaign.json"
+          ],
+          "equivalence": "same 60 public methods and same per-instruction counts as the pinned mr build on the GF(2^12) inverse + mr probe recorded in benchmarks/quantum_compilation/kickmix_mr_build.json"
+        }
+      },
+      "other_instructions": {
+        "BIT_INVERT": 520,
+        "BIT_STORE0": 54,
+        "R": 72,
+        "HMR": 72,
+        "MR": 12,
+        "CX": 3233,
+        "CZ": 720,
+        "SWAP": 192,
+        "CCX": 315,
+        "INFO_TAG": 190
+      }
+    }
+  ],
+  "determinism": {
+    "claim": "two builds of the pinned commit plus patch in different output directories produce identical bytes",
+    "evidence": [
+      {
+        "path": "build/km_repro_a/src/build/km_repro_a/lib/kickmix.cpython-313-x86_64-linux-gnu.so",
+        "sha256": "36b1e6ef63686b0fe872d89ecf178ea3e72fb4afce956397ad484ebee8ddb939",
+        "identical_bytes": true,
+        "same_instructions": true,
+        "same_public_methods": true,
+        "pinned_build": {
+          "name": "mr",
+          "sha256": "36b1e6ef63686b0fe872d89ecf178ea3e72fb4afce956397ad484ebee8ddb939",
+          "allowed_for_verifier": true,
+          "has_mr": true,
+          "provenance": {
+            "file": "build/kickmix_mr/lib/kickmix.cpython-313-x86_64-linux-gnu.so (gitignored)",
+            "script": "scripts/build_kickmix_mr.py",
+            "source_commit": "638777fac4379bc62e2a1e4a52cf1a1753895d48",
+            "source_tree": "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src",
+            "patch": "scripts/kickmix_mr_opcode.patch",
+            "patch_sha256": "9d96fd3a7099791d0896fe984299aa0e32f4c96a6a8977d02609078470264b0f",
+            "interpreter": "CPython 3.13.14",
+            "pybind11": "2.12.0",
+            "public_methods": 60,
+            "mr_if": false
+          }
+        },
+        "other_instructions": {
+          "BIT_INVERT": 520,
+          "BIT_STORE0": 54,
+          "R": 72,
+          "HMR": 72,
+          "MR": 12,
+          "CX": 3233,
+          "CZ": 720,
+          "SWAP": 192,
+          "CCX": 315,
+          "INFO_TAG": 190
+        }
+      }
+    ]
+  }
+}

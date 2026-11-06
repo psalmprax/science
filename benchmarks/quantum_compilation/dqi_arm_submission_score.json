@@ -1,0 +1,135 @@
+{
+  "experiment": "F",
+  "question": "what does the competition's own verifier score the MR-gated six-lever arm, measured rather than multiplied out?",
+  "declared_in": "docs/DQI_OFFICIAL_COMPATIBILITY.md",
+  "instance": {
+    "m": 4095,
+    "n": 70,
+    "degree": 12,
+    "shots": 102400,
+    "batch_size": 256,
+    "log2_delta": -128.0,
+    "arm": "full",
+    "clear_with": "mr",
+    "product_policy": "and54"
+  },
+  "status": "measured on the local MR rebuild; NOT a receipt",
+  "kickmix": "/home/psalmprax/ALL_PROJECTS/science/build/kickmix_mr/lib/kickmix.cpython-313-x86_64-linux-gnu.so",
+  "kickmix_sha256": "e57dcc471213e43f79c767e585514aaa8315168235d4c5fd5539f59d2217c378",
+  "kickmix_role": "the local rebuild from `scripts/build_kickmix_mr.py` (vendored sources + `scripts/kickmix_mr_opcode.patch`). It has `mr` and `gf_product`; the pinned competition binary has neither, so only this build can execute the arm and only the pinned build may produce a receipt.",
+  "build_seconds": 6.67,
+  "verify_seconds": 236.8,
+  "verifier_patch": {
+    "source": "/home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dqi/verify_submission_dqi.py",
+    "source_sha256": "f14274bc0943fb9769ddb01131be6063191a15009fe1caf1d4bdd9fd25194e65",
+    "patched_sha256": "4182963a380c914ae23623e924bc4513bf4a72dc66b18ac78f3328a32ac11d34",
+    "replaced": "'reaction_depth': circuit.reaction_depth(),",
+    "with": "'reaction_depth': None,  # not computed by Experiment E",
+    "why": "`reaction_depth` is a reported diagnostic, not part of the score; on the 86M-op reference it peaked at 13.9 GB and took 136 s, which gets the process killed here. Every scoring line is the shipped one."
+  },
+  "verified": {
+    "status": "PASS",
+    "score": 5324728209826.311,
+    "verified_shots": 102400,
+    "value_errors": 0,
+    "phase_errors": 0,
+    "empirical_error_rate": 0.0,
+    "effective_error_rate": 0.0008660587301657926,
+    "repetition_factor": 1.1912604648115832,
+    "toffoli_count": 1221408.0447558593,
+    "max_toffoli_count": 3132510,
+    "num_qubits": 1913,
+    "num_bits": 52450,
+    "reaction_depth": null,
+    "num_ops": 76883226,
+    "mean_error_weight": 31.046737331746634,
+    "circuit_sha256": "749e347bf892e4bfb8cccc79a6e64a31dc6f9f79d7d32c6d71d871031e0bbe3a"
+  },
+  "budget": {
+    "verified_shots": 102400,
+    "official_num_shots": 102400,
+    "fraction_of_official": 1.0,
+    "zero_error_bound_at_this_budget": {
+      "shots": 102400,
+      "errors": 0,
+      "effective_error_rate": 0.0008660587301657926,
+      "repetition_factor": 1.1912604648115832,
+      "passes": true
+    }
+  },
+  "comparisons": {
+    "pinned_reference": {
+      "score": 24439463583672.93,
+      "toffoli_count": 5725108.382109375,
+      "num_qubits": 1893,
+      "verified_shots": 102400,
+      "record": "benchmarks/quantum_compilation/dqi_submission_score.json"
+    },
+    "ratio_to_pinned_reference": 0.21787418498757713,
+    "ratio_is_like_for_like": true,
+    "target": {
+      "score": 1697500000000.0,
+      "qubits": 1789,
+      "toffoli_mean": 445229
+    },
+    "ratio_to_target": 3.1368060146252197,
+    "toffoli_ratio_to_target": 2.7433254454580887,
+    "qubit_ratio_squared_to_target": 1.1434291479418508,
+    "toffolis_needed_at_this_Q": 509087.8161090023
+  },
+  "checks": [
+    {
+      "check": "the arm passes the competition's verifier",
+      "requirement": "status PASS, zero value and zero phase errors, eps_plus < 1/16",
+      "measured": {
+        "status": "PASS",
+        "value_errors": 0,
+        "phase_errors": 0,
+        "effective_error_rate": 0.0008660587301657926
+      },
+      "passed": true
+    },
+    {
+      "check": "the arm reproduces the row the opcode and campaign records carry",
+      "requirement": "T = 1,221,466.8 per shot (within 0.0015 relative) at Q = 1913",
+      "measured": {
+        "toffoli_count": 1221408.0447558593,
+        "num_qubits": 1913
+      },
+      "passed": true
+    },
+    {
+      "check": "the score is R * Q^2 * T from the verifier's own numbers",
+      "requirement": "the reported score equals R(eps_plus) * Q^2 * T to 1e-12",
+      "measured": {
+        "score": 5324728209826.311,
+        "repetition_factor": 1.1912604648115832,
+        "num_qubits": 1913,
+        "toffoli_count": 1221408.0447558593
+      },
+      "passed": true
+    },
+    {
+      "check": "the arm is still above the derived Benchmark II target",
+      "requirement": "the record states the measured gap; this check fails only if the arm is *inside* the target, which would make the note's verdict wrong",
+      "measured": {
+        "ratio_to_target": 3.1368060146252197,
+        "toffoli_ratio_to_target": 2.7433254454580887,
+        "qubit_ratio_squared_to_target": 1.1434291479418508,
+        "toffolis_needed_at_this_Q": 509087.8161090023
+      },
+      "passed": true
+    }
+  ],
+  "failed_checks": [],
+  "finding": "on the local MR rebuild, the competition's `verify()` passes the six-lever arm at 102,400 shots with 0 value and 0 phase errors and scores 5.324728e+12 (Q=1913, T=1221408.044756, R=1.191260). That is 0.2179x the pinned reference's 2.443946e+13 at the same shot count, and 3.137x the derived Benchmark II target of 1.6975e+12 -- so the arm does not reach the target either. The gap is not the multiply: at Q=1913 the target's 445,229 Toffolis would have to be 509,088, and the arm executes 1,221,408.0. No circuit this repository can build on any build reaches the target; the pinned binary's own best correct circuit is the 2.319438e13 of Experiment E.",
+  "scope": {
+    "measured": "the competition's verifier on the arm at 102,400 shots (every scoring line unmodified; only `reaction_depth` is stubbed, see verifier_patch): status, value and phase errors, `eps_plus`, `R`, score, Q and T",
+    "not_measured": "a receipt, or anything about the pinned binary: the arm needs `mr`, which the pinned build does not have, so this row cannot be submitted and is not a submission"
+  },
+  "reproducibility": {
+    "script_sha256": "ae3c1d466518326f1cc0e165dc901cc43cbc23ad802b15eae1cf1458a7d05094",
+    "python": "3.13.14",
+    "git_rev": "75ef0cc7df415e6bae73c23fadd380348929d3a1"
+  }
+}

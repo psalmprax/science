@@ -1,0 +1,382 @@
+{
+  "acceptance_gate": {
+    "operative_within_withdrawn_target": false,
+    "passes_official_verifier_constraint": false,
+    "required_evidence": [
+      "compiled .kmb circuit for the recycled architecture",
+      "official verify_submission_dqi.py PASS at log2_delta=-128",
+      "measured mean Toffoli count consistent with T_mean <= 445,229 (unsourced, and 6.19% below the algorithm floor, so no build reaches it)",
+      "measured peak qubit count consistent with Q <= 1,893 (the verifier's count; the 1,885 recycled build does not decode)"
+    ],
+    "status": "HOLD_FOR_COMPILED_AND_VERIFIED_RECEIPT",
+    "withdrawn_config_arithmetic_within_target": true
+  },
+  "architecture": "gluzdov_v6_degree_register_recycling",
+  "circuit_mode": "reference_equivalent",
+  "compiled_kmb": false,
+  "costs": {
+    "baseline_dqi_cost": 24439463583672.93,
+    "cost_difference": 0.0,
+    "eps_plus": 0.0008660587301657926,
+    "gain_factor": 12.968172751690407,
+    "r_overhead": 1.1912604648115832,
+    "recomputed_v6_cost": 1884572641931.1646,
+    "target_dqi_cost": 1884572641931.1646,
+    "target_gain_factor": 12.968172751690407
+  },
+  "data_path_floor": {
+    "finding": "the measured width levers sum to 23 qubits against the 64 needed, so they do not reach the target and 41 are left with no lever at all; the remainder is data-path width, and a single polynomial array is larger than all of them together",
+    "floor_reachable": false,
+    "floor_requires": "32 qubits of degree-register recycling, which is closed on correctness and score",
+    "lever_sum_qubits": 23,
+    "levers": [
+      {
+        "basis": "closed: the build with n_a removed peaks at 1,885 and fails 64-shot equivalence (52/64), so none of the 32 qubits it counted is usable (docs/DQI_RECYCLED_PASS_BODIES.md)",
+        "lever": "degree-register recycling",
+        "qubits": 0
+      },
+      {
+        "basis": "BENCHMARK2_TARGET_REACHABILITY.md section 1.1, measured on the 1,935-qubit build",
+        "lever": "workspace window 42 -> 19",
+        "qubits": 23
+      }
+    ],
+    "polynomial_array_qubits": 852,
+    "qubits_needed": 64,
+    "reaches_target": false,
+    "register_floor_qubits": 1853,
+    "shortfall_qubits": 41,
+    "sum_is_upper_bound": true,
+    "target_qubits": 1789
+  },
+  "degree_register_floor": {
+    "anchors": {
+      "recycled_measured": {
+        "k": 4,
+        "peak_qubits": 1885
+      },
+      "reference_measured": {
+        "k": 5,
+        "peak_qubits": 1893
+      }
+    },
+    "base_qubits": 1853,
+    "finding": "no degree-register allocation reaches 1,789: materialising none of them still leaves 64 qubits to find, and those are data-path width (the A/B/a/b arrays), not registers",
+    "gap_below_zero_register_floor": 64,
+    "model": "peak = 1853 + 8k",
+    "register_qubits": 8,
+    "rows": [
+      {
+        "gap_to_1789": 104,
+        "materialised_degree_registers": 5,
+        "peak_qubits": 1893,
+        "reaches_target": false
+      },
+      {
+        "gap_to_1789": 96,
+        "materialised_degree_registers": 4,
+        "peak_qubits": 1885,
+        "reaches_target": false
+      },
+      {
+        "gap_to_1789": 88,
+        "materialised_degree_registers": 3,
+        "peak_qubits": 1877,
+        "reaches_target": false
+      },
+      {
+        "gap_to_1789": 80,
+        "materialised_degree_registers": 2,
+        "peak_qubits": 1869,
+        "reaches_target": false
+      },
+      {
+        "gap_to_1789": 72,
+        "materialised_degree_registers": 1,
+        "peak_qubits": 1861,
+        "reaches_target": false
+      },
+      {
+        "gap_to_1789": 64,
+        "materialised_degree_registers": 0,
+        "peak_qubits": 1853,
+        "reaches_target": false
+      }
+    ],
+    "zero_register_floor": 1853
+  },
+  "official_verifier_run": false,
+  "parameters": {
+    "degree": 12,
+    "m": 4095,
+    "max_errors": 35,
+    "n": 70,
+    "n_iters": 222,
+    "r": 2016
+  },
+  "product_axis": {
+    "and_dimension_bound": {
+      "and_part_scales": {
+        "ands": 23,
+        "inversion_division_toffolis": 23442.409259259257,
+        "multiply_toffolis": 168160,
+        "products_fraction_of_current": 0.49629996774935004,
+        "products_toffolis": 191602.40925925926,
+        "t_mean_toffolis": 491555.6092592593,
+        "vs_denominator": 1.1275035658850556,
+        "vs_denominator_at_verifier_peak": 1.1040511944623088,
+        "vs_target": 1.1040511944623088
+      },
+      "needs_below_the_and_bound": "the AND-scaling reading needs products at 37.6% of cost, which is about 15.6 ANDs per multiply, below the 2n-1 = 23 lower bound on ANDs for one GF(2^12) product: so that reading is excluded rather than unmeasured",
+      "straddles_the_target": true,
+      "what_settles_it": "the per-call decomposition of the 63-Toffoli multiply: which part of the 9 Toffolis that are not ANDs is AND-dependent. No record separates them, so the 23-AND rung is 1.104x or 0.998x the target and neither is claimed",
+      "whole_call_scales": {
+        "ands": 23,
+        "inversion_division_toffolis": 23442.409259259257,
+        "multiply_toffolis": 120849.66666666667,
+        "products_fraction_of_current": 0.3737539256702385,
+        "products_toffolis": 144292.07592592592,
+        "t_mean_toffolis": 444245.27592592593,
+        "vs_denominator": 1.0189856921557179,
+        "vs_denominator_at_verifier_peak": 0.9977905211159334,
+        "vs_target": 0.9977905211159335
+      }
+    },
+    "best_product_rung": {
+      "ands": 23,
+      "needs_both_closures": true,
+      "qubits": 1893,
+      "t_mean_toffolis": 444245.27592592593,
+      "vs_denominator": 0.9977905211159334,
+      "vs_denominator_at_1913": 1.0189856921557179
+    },
+    "campaign_products_toffolis": 386061.7,
+    "campaign_residual_toffolis": 299953.2,
+    "products_allowed_fraction": 0.37630202633413257,
+    "products_must_fall_fraction": 0.6236979736658674,
+    "products_must_fall_toffolis": 240785.90000000002,
+    "rung4_as_tabulated": {
+      "gain_vs_baseline": 11.857871613208435,
+      "qubits": 1913,
+      "score": 2061032905470.9878,
+      "t_mean_toffolis": 472768.2,
+      "vs_denominator": 1.0844100266505468
+    },
+    "rung4_at_verifier_peak": {
+      "gain_vs_baseline": 19.0866721278832,
+      "qubits": 1893,
+      "score": 1280446555582.1008,
+      "t_mean_toffolis": 299953.2,
+      "vs_denominator": 0.673705441469446
+    },
+    "rung4_corrected": {
+      "gain_vs_baseline": 18.68966431565874,
+      "qubits": 1913,
+      "score": 1307645935791.198,
+      "t_mean_toffolis": 299953.2,
+      "vs_denominator": 0.6880163632112244
+    },
+    "tabulated_overstatement_toffolis": 172815.0,
+    "tabulated_used_the_six_lever_residual": true,
+    "target_room_above_residual_toffolis": 145275.8,
+    "verdict": "rung 4 is not worth building -- it is a counterfactual, not a circuit -- but it is worth correcting: at the campaign arm's own residual it is 0.688x the denominator, the best row in the table, and the target sits above this arm's floor by 145,275.8 Toffolis. The product axis does not reach the target either: 37.6% of current cost is about 15.6 ANDs per multiply, below the 2n-1 = 23 lower bound, so that reading is excluded; at the bound the arm is 1.019x at 1,913 and 0.998x only if the 20 qubits are also returned. Both closures are measured as unattainable, so the denominator stands -- on that ground, not on a floor the campaign arm does not have"
+  },
+  "projection": {
+    "aspirational": {
+      "cost": 1697504187470.8674,
+      "peak_qubits": 1789,
+      "status": "UNSOURCED_96_QUBITS"
+    },
+    "cost": 1900602959045.8218,
+    "gain_factor": 12.858794872098121,
+    "peak_qubits": 1893,
+    "replaces": {
+      "cost": 1884572641931.1646,
+      "gain_factor": 12.968172751690407,
+      "peak_qubits": 1885,
+      "reason": "the recycled build fails 64-shot equivalence (52/64) and costs 1.1133x the reference's Toffolis, i.e. 0.898x this projection",
+      "status": "WITHDRAWN_RECYCLING_CLOSED"
+    },
+    "scored_at": "the verifier's 1,893: the only peak a verified circuit has, because the 1,885 build peaks correctly and decodes wrongly",
+    "status": "OPERATIVE_ON_VERIFIER_PEAK"
+  },
+  "qubits": {
+    "aspirational_peak_qubits": 1789,
+    "gap_to_aspirational_qubits": 104,
+    "max_further_recycling_qubits": 32,
+    "peak_floor_under_recycling": 1853,
+    "qubit_cap": 1893,
+    "qubit_reduction": 8,
+    "reference_peak_qubits": 1893,
+    "relative_qubit_ratio": 0.9957739038563127,
+    "sourced_peak_qubits": 1893,
+    "v6_peak_qubits": 1885,
+    "withdrawn_gap_to_aspirational_qubits": 96,
+    "withdrawn_peak_qubits": 1885
+  },
+  "recycling_applied_in_circuit": false,
+  "recycling_basis": {
+    "instance": {
+      "degree": 3,
+      "n_syndromes": 4,
+      "sub_steps": 120
+    },
+    "measured_on": "the decoder's own n_A, n_B, n_a, n_b registers, read after every sub-step",
+    "n_A_plus_n_a": {
+      "behaviour": "constant",
+      "docs_claim": "n",
+      "value_offset": "n + 1"
+    },
+    "n_B_plus_n_b": {
+      "behaviour": "varies",
+      "docs_claim": "n + 1",
+      "observed": [
+        3,
+        4,
+        5
+      ]
+    },
+    "qubits_removable_at_benchmark": 8,
+    "recyclable": [
+      "n_a"
+    ],
+    "route_status": "CLOSED on correctness and on score: the built decoder peaks at 1,885 and fails 64-shot equivalence (52/64), and its +648,784 Toffolis make it 0.898x the projection. See docs/DQI_RECYCLED_PASS_BODIES.md and dqi_recycled_equivalence_bisect.json",
+    "script": "scripts/measure_dqi_recycling_offsets.py",
+    "supported_peak_qubits": 1885,
+    "target_peak_qubits": 1789,
+    "target_status": "UNSOURCED: only the a-pair is constant, and at n + 1 rather than n, so one logm-bit register can go (8 qubits at n=70). The b-pair varies, so n_b cannot be derived from n_B. The 104-qubit and 445,229-Toffoli targets are not implied by degree recycling."
+  },
+  "recycling_status": "CLOSED_CORRECTNESS_AND_SCORE",
+  "remaining_width_levers": {
+    "array_to_remainder_ratio": 20.78048780487805,
+    "framings": {
+      "below_register_floor": {
+        "framing_exists": false,
+        "from_qubits": 1853,
+        "qubits_needed": 64,
+        "remainder": 41,
+        "window_saving": 23
+      },
+      "from_measured_reference": {
+        "framing_exists": true,
+        "from_qubits": 1893,
+        "qubits_needed": 104,
+        "remainder": 81,
+        "window_saving": 23
+      },
+      "from_widest_measured_arm": {
+        "framing_exists": true,
+        "from_qubits": 1913,
+        "qubits_needed": 124,
+        "remainder": 101,
+        "window_saving": 23
+      }
+    },
+    "levers_left_sum_qubits": 0,
+    "levers_measured": [
+      {
+        "basis": "closed: the build with n_a removed peaks at 1,885 and fails 64-shot equivalence (52/64), so none of the 32 qubits it counted is usable (docs/DQI_RECYCLED_PASS_BODIES.md)",
+        "lever": "degree-register recycling",
+        "qubits": 0
+      },
+      {
+        "basis": "BENCHMARK2_TARGET_REACHABILITY.md section 1.1, measured on the 1,935-qubit build",
+        "lever": "workspace window 42 -> 19",
+        "qubits": 23
+      }
+    ],
+    "polynomial_array_qubits": 852,
+    "supplied": false,
+    "verdict": "no: the window's 23 is the last measured width saving, so 41 qubits of the floor-framed gap have no lever, and the floor framing is itself optimistic because it needs recycling that is closed -- the live gaps are 81 from the verifier's peak and 101 from the schedule arm. Nothing supplies them in small steps: the only change larger than the remainder is dropping a polynomial array (852 qubits), which is a different decoder with an undischarged correctness obligation"
+  },
+  "single_array_trade": {
+    "array_bits": 852,
+    "assumption": "re-deriving one remainder per round costs exactly one division call",
+    "closure": {
+      "headline": "the 1.015x Toffoli / 0.284x score trade is withdrawn; peak 1,001 is unreachable",
+      "packing": "CLOSED: a one-array BM update reads C_old and B_old while B' = C_old writes C_old away, so both packings decode 6/216 against 216/216 for three regions, first failure at weight 1 -- dqi_single_array_packing.json",
+      "replay": "CLOSED on score and on space: a measured 17,143 Toffolis per EEA round makes B_t replay 55.8x the EEA bill compute-only (score 10.64x worse than the reference) and 111.5x with Bennett (21.00x worse), and the replay needs the reg_a it was meant to free -- dqi_single_array_replay_cost.json"
+    },
+    "cost_basis": {
+      "divide_scaffold_pair_toffoli": 378.0,
+      "inverse_scaffold_pair_toffoli": 315.0,
+      "path": "primitives_per_call",
+      "record": "dqi_primitive_costs.json"
+    },
+    "division": {
+      "ands_per_product": 54,
+      "decoder_division_products_per_shot": 864,
+      "gate_stream_ccx": {
+        "ands_per_product": 54,
+        "divide_call_ccx": 378.0,
+        "implied_calls_per_shot": 123.43,
+        "inverse_call_ccx": 315.0,
+        "per_call_toffolis": 378.0,
+        "per_shot_bill_toffolis": 46656.0,
+        "per_shot_products": 864,
+        "record": "dqi_division_granularity.json",
+        "script": "scripts/verify_division_granularity.py"
+      },
+      "granularity": "378 is one call (measured from the emitted gate stream); 46,656 is the decoder's whole division bill for one shot, about 123 calls -- not a second price for the same call",
+      "implied_calls_per_shot": 123.43,
+      "per_shot_bill_toffolis": 46656.0,
+      "price_per_call_toffolis": 378.0
+    },
+    "eea_rounds": 222,
+    "extra_toffolis_per_shot": 83916.0,
+    "peak_with_one_array": 1001,
+    "qubits_saved": 852,
+    "reaches_target": true,
+    "route_status": "CLOSED_ON_MEASUREMENT",
+    "score_ratio_vs_reference": 0.28371768897570504,
+    "toffoli_multiplier": 1.014657539106549,
+    "total_toffolis_per_shot": 5809024.382109375,
+    "verdict": "Q falls to 1001 and stops binding; T rises 1.015x and the score lands at 0.284 of the reference: favourable, and unproven as a construction"
+  },
+  "status": "ANALYTICAL_PROJECTION_ONLY",
+  "target_basis": {
+    "mean_toffolis": "UNSOURCED: 445,229 has no circuit behind it, so the projection is one measured term (Q) times one target (T)",
+    "peak_qubits": "measured: the verifier's 1,893, which is the only peak a verified circuit has. The 1,885 the recycling measurement supports is withdrawn -- that build peaks correctly and fails 64-shot equivalence"
+  },
+  "toffoli_target": {
+    "algorithm_floor_mean_toffolis": 472768.2,
+    "attainable_cost_at_operative_peak": 1307645935791.198,
+    "attainable_cost_at_verifier_peak": 1280446555582.1008,
+    "attainable_gain_factor": 18.68966431565874,
+    "attainable_is_below_denominator": true,
+    "campaign_floor_mean_toffolis": 299953.2,
+    "campaign_floor_to_target_ratio": 0.6737054414694461,
+    "decision": "445,229 does not stay the aim, but not because it is below a floor: that was the six-lever arm's 472,768.2, and the campaign arm's own residual is 299,953.2, which leaves the target 145,275.8 above it -- 0.688x if every product were free. It stays the score denominator because reaching it needs the surviving product stream at 37.6% of its cost, and the 2n-1 = 23 AND bound delivers 49.6% at best on the AND-scaling reading. The aim is the AND count of one GF(2^12) multiply",
+    "floor_is_six_lever_arm_residual": true,
+    "frontier_to_floor_ratio": 1.451059525577228,
+    "frontier_to_target_ratio": 1.5408133791823984,
+    "measured_frontier_mean_toffolis": 686014.8,
+    "projection_reaches_target": false,
+    "target_above_campaign_floor": true,
+    "target_below_floor": true,
+    "target_mean_toffolis": 445229.0,
+    "target_role": "SCORE_DENOMINATOR_NOT_AIM",
+    "target_to_floor_ratio": 1.0618540122049551
+  },
+  "toffolis": {
+    "reference_mean_toffolis": 5725108.382109375,
+    "toffoli_reduction_factor": 12.858794872098121,
+    "v6_target_mean_toffolis": 445229.0
+  },
+  "width_giveback": {
+    "dropping_schedule_gates_recovers_qubits": false,
+    "finding": "the 20 qubits are not the schedule gates': every schedule arm runs at 1913 qubits against its control's 1913, so the five gates are width-free and dropping them recovers nothing. Giving the 20 back means dropping the six levers, and that costs 4,212,030.2 Toffolis per shot (210,601.5 per qubit) for a 1.0212x width credit: the score gets 4.36x worse",
+    "from_qubits": 1913,
+    "qubits_given_back": 20,
+    "schedule_gate_qubits": 0,
+    "schedule_gate_toffolis": 535471.8396191406,
+    "score_ratio": 0.22956979908393893,
+    "score_worsening_factor": 4.3559736689683834,
+    "to_qubits": 1893,
+    "toffoli_ratio": 0.22479468673976136,
+    "toffolis_given_back_per_shot": 4212030.184902344,
+    "toffolis_per_qubit": 210601.5092451172,
+    "width_credit": 1.0212421050222846,
+    "width_scored_against": "dqi_submission_score.json"
+  }
+}

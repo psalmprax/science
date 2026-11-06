@@ -1,0 +1,7 @@
+{
+  "artifact": "benchmarks/quantum_compilation/quantum_signal_holdouts.jsonl",
+  "byte_length": 198027,
+  "chain_sha256": "ac4227742cd05fd0f98f911a6db1f37ba35f5f5c5c6053c25da8ec1f9c444b96",
+  "lines": 282,
+  "seal_version": 1
+}

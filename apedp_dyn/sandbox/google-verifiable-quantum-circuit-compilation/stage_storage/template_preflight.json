@@ -1,0 +1,20 @@
+{
+  "status": "BLOCKED_UNCONFIGURED_TEMPLATE",
+  "placeholders": [
+    "plan.repo_root='/ABSOLUTE/PATH/TO/science'",
+    "plan.competition_root='/ABSOLUTE/PATH/TO/google-verifiable-quantum-circuit-compilation'",
+    "plan.protected_files[0].path='<SET_RECEIPT_BOUND_SUBMISSION_NPZ_PATH>'",
+    "plan.protected_files[0].sha256='REPLACE_WITH_RECEIPT_BOUND_SHA256'",
+    "plan.source_files[0].path='<SET_OFFICIAL_INVSQRT_VERIFIER_PATH>'",
+    "plan.source_files[1].path='<SET_OFFICIAL_DQI_VERIFIER_PATH>'",
+    "plan.source_files[2].path='<SET_DFTHCSOS_VERIFY_PATH>'",
+    "plan.source_files[3].path='<SET_DFTHCSOS_COSTS_PREPARE_PATH>'",
+    "plan.source_files[4].path='<SET_DFTHCSOS_CIRCUITS_PATH>'",
+    "plan.components[0].candidate_builder_command[1]='<SET_V4_INVSQRT_BUILDER_SCRIPT>'",
+    "plan.components[0].official_verifier_command[1]='<SET_OFFICIAL_INVSQRT_WRAPPER>'",
+    "plan.components[1].candidate_builder_command[1]='<SET_V4_DQI_BUILDER_SCRIPT>'",
+    "plan.components[1].official_verifier_command[1]='<SET_OFFICIAL_DQI_WRAPPER>'",
+    "plan.components[2].candidate_builder_command[1]='<SET_V4_DFTHCSOS_BUILDER_SCRIPT>'",
+    "plan.components[2].official_verifier_command[1]='<SET_OFFICIAL_DFTHCSOS_WRAPPER>'"
+  ]
+}

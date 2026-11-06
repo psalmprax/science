@@ -1,0 +1,28 @@
+{
+  "_note": "Official invsqrt receipt from the published Kaggle kernel run at the graded shot budget, downloaded with `kaggle kernels output`. The numbers are the verifier's, not recomputed here.",
+  "benchmark": "invsqrt",
+  "drift_vs_pinned": 0.03467926412122324,
+  "kernel": "psalmprax/apedp-q-a-verified-89-qubit-inverse-square-root",
+  "kernel_version": 4,
+  "pinned_reference_score": 157601.0808,
+  "receipt": {
+    "circuit_sha256": "ce04c9d54dc42e42455444022b6652a6efb0be2630aca7b485d3efd4e58fa9de",
+    "max_toffoli_count": 1466,
+    "num_ops": 27381,
+    "num_qubits": 89,
+    "reaction_depth": 200,
+    "rotation_count": 44.0,
+    "rotation_eps": 2.8381742236929845e-13,
+    "score": 157601.11547926412,
+    "status": "PASS",
+    "t_count": 1.0,
+    "toffoli_count": 1455.4996215136694,
+    "toffoli_equivalent": 1770.7990503288104,
+    "verified_shots": 200540928,
+    "worst_error_over_tolerance": 0.9996227434818049,
+    "worst_x": 32
+  },
+  "reference_cost": 2076774.233715282,
+  "shots_per_x": null,
+  "verified_shots": 200540928
+}

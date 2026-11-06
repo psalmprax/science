@@ -1,0 +1,108 @@
+{
+ "probe": "scripts/measure_dqi_scratch_pool.py",
+ "interpreter": "CPython 3.13 (kickmix.so is a 3.13 build; 3.12 fails with undefined symbol PyObject_ClearManagedDict)",
+ "question": "can a shared scratch pool reclaim the ids above the concurrent peak?",
+ "recycling": {
+  "first_alloc": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "after_free_realloc": [
+   3,
+   2,
+   1,
+   0
+  ],
+  "while_held": [
+   4,
+   5
+  ],
+  "recycles": true,
+  "no_double_booking": true
+ },
+ "measurement": {
+  "peak_live": 1828,
+  "peak_at_frame": "_chien_search_and_forney_mbuc",
+  "live_frames_at_peak": [
+   {
+    "frame": "build",
+    "entry_live": 0,
+    "own_peak": 1828
+   },
+   {
+    "frame": "build_syndrome_decoding_mbuc",
+    "entry_live": 840,
+    "own_peak": 988
+   },
+   {
+    "frame": "_chien_search_and_forney_mbuc",
+    "entry_live": 1803,
+    "own_peak": 25
+   }
+  ],
+  "frame_scratch": [
+   {
+    "name": "build",
+    "entry_live": 0,
+    "own_peak": 1828
+   },
+   {
+    "name": "build_syndrome_decoding_mbuc",
+    "entry_live": 840,
+    "own_peak": 988
+   },
+   {
+    "name": "_chien_search_and_forney_mbuc",
+    "entry_live": 1803,
+    "own_peak": 25
+   },
+   {
+    "name": "_synchronized_eea",
+    "entry_live": 1803,
+    "own_peak": 20
+   },
+   {
+    "name": "_synchronized_eea",
+    "entry_live": 1803,
+    "own_peak": 20
+   },
+   {
+    "name": "_multiply_and_add_or_sub",
+    "entry_live": 1809,
+    "own_peak": 14
+   },
+   {
+    "name": "_multiply_and_add_or_sub",
+    "entry_live": 1809,
+    "own_peak": 14
+   },
+   {
+    "name": "_multiply_and_add_or_sub",
+    "entry_live": 1809,
+    "own_peak": 14
+   }
+  ],
+  "frames_closed": 4005,
+  "total_qubits": 1893,
+  "distinct_minus_peak": 65,
+  "trace_max_id": 1873,
+  "instance": {
+   "n_syndromes": 70,
+   "degree": 12,
+   "codeword": 4095
+  },
+  "peak_concurrent": 1828,
+  "live_at_end": 840,
+  "toffoli_mean": 5725461,
+  "stranded_ids": 65,
+  "replay": {
+   "lifo": 1821,
+   "lowest": 1821,
+   "shipped": 1893
+  },
+  "pool_ceiling": 25,
+  "replay_covers_shipped_ids": false
+ }
+}

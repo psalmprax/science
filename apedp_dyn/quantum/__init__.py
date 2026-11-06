@@ -23,6 +23,15 @@ from apedp_dyn.quantum.magic_state import (
     compute_willow_cultivation_round,
     simulate_distillation_cascade,
 )
+from apedp_dyn.quantum.dqi_photonic_resource import (
+    DQI_GLUZDOV_V6_TARGET_WORKLOAD,
+    DQI_REFERENCE_WORKLOAD,
+    DQIPhotonicMappingAssumptions,
+    DQIPhotonicResourceMapper,
+    DQIWorkload,
+    SuperconductingBaseline,
+    map_reference_workload,
+)
 from apedp_dyn.quantum.sparrow_photonics import (
     DeterministicVsProbabilisticScaling,
     PassiveFusionEngine,
@@ -35,6 +44,12 @@ from apedp_dyn.quantum.sparrow_photonics import (
 __all__ = [
     "THERMODYNAMIC_ENERGY_PER_SITE_HEISENBERG",
     "DeterministicVsProbabilisticScaling",
+    "DQI_GLUZDOV_V6_TARGET_WORKLOAD",
+    "DQI_REFERENCE_WORKLOAD",
+    "DQIPhotonicMappingAssumptions",
+    "DQIPhotonicResourceMapper",
+    "DQIWorkload",
+    "SuperconductingBaseline",
     "DistillationProtocol",
     "DistillationRoundResult",
     "DistillationScheduleResult",
@@ -52,6 +67,7 @@ __all__ = [
     "heisenberg_exact_ground_energy",
     "heisenberg_mpo",
     "heisenberg_sparse_hamiltonian",
+    "map_reference_workload",
     "mps_energy_expectation",
     "simulate_distillation_cascade",
 ]

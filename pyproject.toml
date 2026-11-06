@@ -36,7 +36,7 @@ dev = [
 ]
 test = [
     "pytest>=8.0",
-    "torch==2.9.1",
+    "torch==2.14.1",
     "jax>=0.4",
     "flax>=0.8",
     "optax>=0.2",
@@ -62,6 +62,19 @@ neural = [
 ]
 orchestration = [
     "redis>=5.0",
+]
+# Optional: the external comparison harness (scripts/compare_vqc_external_tools.py)
+# only. Nothing in apedp_dyn imports qiskit or stim; without either, the harness
+# records that comparison as unavailable and the rest of the VQC suite is unchanged.
+compare = [
+    "qiskit>=2.0",
+    "stim>=1.12",
+    # Recorded device coupling-map snapshots for the routing comparison; without it
+    # the device task is an abstention and every other row is unchanged.
+    "qiskit-ibm-runtime>=0.30",
+    # The equivalence task's second referee. It needs qiskit to receive the circuits,
+    # and without it that task is an abstention with a reason, not a loss.
+    "mqt.qcec>=3.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -139,6 +152,7 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # Pure re-export surface: the unused imports ARE the public API.
 "apedp/__init__.py" = ["F401"]
+"**/__init__.py" = ["F401"]
 "apedp/pde_solvers.py" = ["E731"]
 "apedp/cross_domain_benchmark.py" = ["E731", "E402"]
 "apedp/neural_discovery/symbolic.py" = ["E402", "S105"]

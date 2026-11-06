@@ -571,7 +571,7 @@ class RustKernelBridge:
                 ]
                 self._tally(_KERNEL_PATH_RUST)
                 return formatted, total_evals
-            except Exception as e:  # noqa: BLE001 - best-effort probe must not crash
+            except Exception as e:
                 if native_search_enforced():
                     from apedp.evolutionary_search import NativeSearchUnavailableError
 

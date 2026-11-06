@@ -46,7 +46,9 @@ pytest tests/test_dyn_competing_proposers_and_dsr.py \
        tests/test_dyn_lob_transport.py \
        tests/test_dyn_audio_field_transport.py \
        tests/test_dyn_molecular_se3_flow.py \
-       tests/test_dyn_robotics_trajectory.py -v
+       tests/test_dyn_robotics_trajectory.py \
+       tests/test_dyn_temporal_rate_modulation.py \
+       tests/test_dyn_temporal_rate_io.py -v
 ```
 
 ---

@@ -24,6 +24,9 @@ echo "== ruff (whole package: informational, pre-existing debt) =="
 echo "== frozen referee integrity =="
 .venv/bin/python -c "from apedp_dyn.sandbox.blind_benchmark import verify_referee; verify_referee(); print('referee integrity OK')"
 
+echo "== operational storage headroom guard =="
+.venv/bin/python -m apedp_dyn.operational.lifecycle_pruner --guard --max-usage 92
+
 echo "== import smoke tier =="
 .venv/bin/python -m pytest tests/test_smoke_imports.py -q
 

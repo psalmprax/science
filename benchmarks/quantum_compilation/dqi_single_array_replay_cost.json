@@ -1,0 +1,37 @@
+{
+  "experiment": "S2",
+  "question": "what would it cost to re-derive B_t by replay, the single-array route that survives the packing closure?",
+  "declared_in": "docs/DQI_SINGLE_ARRAY_DECODER_CONTRACT.md",
+  "method": "build the reference decoder at n_iters = 1..4 with kickmix and take the marginal Toffoli-like count per round off the emitted stream; price the replay against that measured marginal",
+  "builder": "kickmix.CircuitBuilder + verifiers/dqi/dqi_reference_circuit.ProosAndZalkaDecoder",
+  "builds": [
+    {"n_iters": 1, "qubits": 1886, "toffoli_like": 1523525, "instructions": 47885020},
+    {"n_iters": 2, "qubits": 1887, "toffoli_like": 1540537, "instructions": 48049978},
+    {"n_iters": 3, "qubits": 1887, "toffoli_like": 1557717, "instructions": 48216718},
+    {"n_iters": 4, "qubits": 1888, "toffoli_like": 1574953, "instructions": 48383710}
+  ],
+  "marginal_toffoli_per_round_step": [17012, 17180, 17236],
+  "per_round": {
+    "both_eea_passes": 17143,
+    "one_direction": 8571.3,
+    "divisions_per_round": 4,
+    "division_note": "two accumulate_quotient calls, each with init + del of the scaffold: 4 x 378 = 1,512 CCX",
+    "division_share_of_a_round": 0.088
+  },
+  "reference": {
+    "rounds": 222,
+    "eea_bill_both_passes": 3805672,
+    "eea_share_of_total": 0.665,
+    "total_toffoli": 5725108.38
+  },
+  "replay_bill": {
+    "rounds_units_to_produce_B_t_at_every_t": 24753,
+    "rule": "round t needs t forward rounds, so the sum over t is 222*223/2",
+    "compute_only": {"replay_toffoli": 212166214, "multiple_of_eea": 55.8, "total_toffoli": 217891322, "multiple_of_reference": 38.06, "score_multiple_of_reference": 10.64},
+    "with_bennett_uncompute": {"replay_toffoli": 424332428, "multiple_of_eea": 111.5, "total_toffoli": 430057536, "multiple_of_reference": 75.12, "score_multiple_of_reference": 21.0}
+  },
+  "score_basis": "R * Q^2 * T, with Q = 1001 / 1893 on the contract's own peak, so the Q^2 saving is 0.2796 and every Toffoli multiple passes straight through",
+  "space_argument": "the replay runs the forward pass on the same reg_a the outer round is holding, so it cannot share the array: either reg_a is saved elsewhere (+876 qubits, which is exactly what was removed) or a second array is held. The 1,001 peak and the replay cannot coexist, independent of Toffoli cost.",
+  "verdict": "REPLAY_ROUTE_CLOSED: not 0.284x but 10.6x worse than the reference in the most optimistic accounting (compute-only, free uncompute) and 21.0x worse with Bennett, before counting the second array the replay needs. The contract's '+1 division per round' prices 1,512 CCX against a measured 17,143 Toffoli round and is wrong by the replay's round count, not by a factor of two.",
+  "consequence": "the single-array trade is withdrawn on both score and space; no circuit exists, no registry entry, and dqi_builder still offers only proos_zalka and gluzdov_v6"
+}

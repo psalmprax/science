@@ -151,15 +151,6 @@ class NoetherConservationEngine:
         - Otherwise, pairs channels (2k, 2k+1) into 2D spatial vector fields and projects onto
           the divergence-free solenoidal subspace (\nabla \cdot v = 0).
         """
-        if _RUST_NOETHER_AVAILABLE and apedp_kernel is not None and velocity_field.ndim == 4:
-            try:
-                v_out, div_r = apedp_kernel.jetflow_noether_project(velocity_field.detach().cpu().numpy().astype('float64'))
-                import numpy as _np
-                if hasattr(v_out, '__array__'):
-                    v_out_t = torch.from_numpy(_np.array(v_out)).to(velocity_field.device).to(velocity_field.dtype)
-                    return v_out_t, float(div_r)
-            except Exception:
-                pass
         if velocity_field.ndim != 4:
             raise ValueError(f"Expected 4D tensor (T, C, H, W), got {velocity_field.shape}")
 

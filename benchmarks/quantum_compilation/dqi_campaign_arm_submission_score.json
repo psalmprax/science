@@ -1,0 +1,159 @@
+{
+  "experiment": "G",
+  "question": "what does the competition's own verifier score the best circuit this repository has built -- the campaign's stacked arm?",
+  "declared_in": "docs/BENCHMARK2_TARGET_REACHABILITY.md",
+  "instance": {
+    "m": 4095,
+    "n": 70,
+    "degree": 12,
+    "shots": 102400,
+    "batch_size": 256,
+    "log2_delta": -128.0,
+    "arm": "stacked",
+    "clear_with": "mr",
+    "product_policy": "and54",
+    "gates": {
+      "gate_forney": true,
+      "clear_eea": true,
+      "gate_sweep": true,
+      "gate_swap": true,
+      "gate_shift": true,
+      "gate_quotient": true
+    },
+    "mixins": [
+      "HaltGatedDecoder",
+      "ReusedFlagPredicateDecoder"
+    ]
+  },
+  "status": "measured on the local MR rebuild; NOT a receipt",
+  "kickmix": "/home/psalmprax/ALL_PROJECTS/science/build/kickmix_mr/lib/kickmix.cpython-313-x86_64-linux-gnu.so",
+  "kickmix_sha256": "e57dcc471213e43f79c767e585514aaa8315168235d4c5fd5539f59d2217c378",
+  "kickmix_role": "the local rebuild from `scripts/build_kickmix_mr.py`. It has `mr` (the arm's classical-condition reads) and `gf_product` (the 54-AND policy); the pinned competition binary has neither, so this circuit cannot be submitted and only the pinned build may produce a receipt.",
+  "build_seconds": 9.1,
+  "verify_seconds": 279.1,
+  "verifier_patch": {
+    "source": "/home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dqi/verify_submission_dqi.py",
+    "source_sha256": "f14274bc0943fb9769ddb01131be6063191a15009fe1caf1d4bdd9fd25194e65",
+    "patched_sha256": "4182963a380c914ae23623e924bc4513bf4a72dc66b18ac78f3328a32ac11d34",
+    "replaced": "'reaction_depth': circuit.reaction_depth(),",
+    "with": "'reaction_depth': None,  # not computed by Experiment E",
+    "why": "`reaction_depth` is a reported diagnostic, not part of the score; on the 86M-op reference it peaked at 13.9 GB and took 136 s, which gets the process killed here. Every scoring line is the shipped one."
+  },
+  "verified": {
+    "status": "PASS",
+    "score": 2990338795715.691,
+    "verified_shots": 102400,
+    "value_errors": 0,
+    "phase_errors": 0,
+    "empirical_error_rate": 0.0,
+    "effective_error_rate": 0.0008660587301657926,
+    "repetition_factor": 1.1912604648115832,
+    "toffoli_count": 685936.2051367187,
+    "max_toffoli_count": 3130734,
+    "num_qubits": 1913,
+    "num_bits": 53338,
+    "reaction_depth": null,
+    "num_ops": 77205090,
+    "mean_error_weight": 31.046737331746634,
+    "circuit_sha256": "13f24deed6c28fd8271e96996d4aa04bbc413464144b243c3031da6559befd9b"
+  },
+  "budget": {
+    "verified_shots": 102400,
+    "official_num_shots": 102400,
+    "fraction_of_official": 1.0,
+    "zero_error_bound_at_this_budget": {
+      "shots": 102400,
+      "errors": 0,
+      "effective_error_rate": 0.0008660587301657926,
+      "repetition_factor": 1.1912604648115832,
+      "passes": true
+    }
+  },
+  "comparisons": {
+    "pinned_reference": {
+      "score": 24439463583672.93,
+      "toffoli_count": 5725108.382109375,
+      "num_qubits": 1893,
+      "verified_shots": 102400
+    },
+    "six_lever_arm": {
+      "score": 5324728209826.311,
+      "toffoli_count": 1221408.0447558593,
+      "verified_shots": 102400
+    },
+    "ratio_to_pinned_reference": 0.12235697340400802,
+    "ratio_to_six_lever_arm": 0.5615946350458391,
+    "ratio_is_like_for_like": true,
+    "target": {
+      "score": 1697500000000.0,
+      "qubits": 1789,
+      "toffoli_mean": 445229
+    },
+    "ratio_to_target": 1.7616134289930432,
+    "toffoli_ratio_to_target": 1.5406368523539993,
+    "qubit_ratio_squared_to_target": 1.1434291479418508,
+    "toffolis_needed_at_this_Q": 509087.8161090023
+  },
+  "checks": [
+    {
+      "check": "the campaign arm passes the competition's verifier",
+      "requirement": "status PASS, zero value and zero phase errors, eps_plus < 1/16",
+      "measured": {
+        "status": "PASS",
+        "value_errors": 0,
+        "phase_errors": 0,
+        "effective_error_rate": 0.0008660587301657926
+      },
+      "passed": true
+    },
+    {
+      "check": "the circuit reproduces the campaign's stacked row",
+      "requirement": "T = 686,014.8 per shot (within 0.0015 relative) at Q = 1913",
+      "measured": {
+        "toffoli_count": 685936.2051367187,
+        "num_qubits": 1913
+      },
+      "passed": true
+    },
+    {
+      "check": "the campaign arm beats the six-lever arm it stacks on",
+      "requirement": "a lower score than Experiment F's row, at the same shot count and the same Q",
+      "measured": {
+        "score": 2990338795715.691,
+        "six_lever_score": 5324728209826.311,
+        "ratio": 0.5615946350458391
+      },
+      "passed": true
+    },
+    {
+      "check": "the score is R * Q^2 * T from the verifier's own numbers",
+      "requirement": "the reported score equals R(eps_plus) * Q^2 * T to 1e-12",
+      "measured": {
+        "score": 2990338795715.691,
+        "repetition_factor": 1.1912604648115832
+      },
+      "passed": true
+    },
+    {
+      "check": "the campaign arm is still above the derived target",
+      "requirement": "the record states the measured gap; this fails only if the arm is *inside* the target",
+      "measured": {
+        "ratio_to_target": 1.7616134289930432,
+        "toffoli_ratio_to_target": 1.5406368523539993,
+        "toffolis_needed_at_this_Q": 509087.8161090023
+      },
+      "passed": true
+    }
+  ],
+  "failed_checks": [],
+  "finding": "the campaign's stacked arm passes the competition's `verify()` at 102,400 shots with 0 value and 0 phase errors and scores 2.990339e+12 (Q=1913, T=685936.205137, R=1.191260). Its `Q^2 T` product had put it at 1.541x the derived target on `T` alone; the measured score is 1.762x the target once the `Q` term (1.143x) is included, and at Q=1913 the target's 445,229 would have to be 509,088 against the measured 685,936.2. This is the frontier: no circuit this repository can build on any extension reaches 1.6975e12, and the share it is missing is decoder algorithm, not an opcode.",
+  "scope": {
+    "measured": "the competition's verifier on the stacked arm at 102,400 shots (every scoring line unmodified; only `reaction_depth` is stubbed, see verifier_patch): status, value and phase errors, `eps_plus`, `R`, score, Q and T",
+    "not_measured": "a receipt, or anything about the pinned binary: the arm needs `mr` and `gf_product`, so this row cannot be submitted and is not a submission"
+  },
+  "reproducibility": {
+    "script_sha256": "90df3af8c8df7d8cba95c04181db41e6bfbb3f517c0c929580b92d349ac068dc",
+    "python": "3.13.14",
+    "git_rev": "75ef0cc7df415e6bae73c23fadd380348929d3a1"
+  }
+}

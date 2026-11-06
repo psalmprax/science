@@ -136,7 +136,8 @@ def generate_truth(problem: DynProblem, regime: str,
 
     sol = solve_ivp(f, reg["t_span"], x0, method="DOP853",
                     rtol=1e-11, atol=1e-13, t_eval=t_eval)
-    assert sol.success and np.all(np.isfinite(sol.y)), f"truth generation failed: {problem.problem_id}/{regime}"
+    if not (sol.success and np.all(np.isfinite(sol.y))):
+        raise RuntimeError(f"truth generation failed: {problem.problem_id}/{regime}")
     return t_eval, sol.y.T
 
 

@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "repo_root": "/ABSOLUTE/PATH/TO/science",
+  "competition_root": "/ABSOLUTE/PATH/TO/google-verifiable-quantum-circuit-compilation",
+  "output_root": "artifacts/quantum_compilation/official_receipt_runs",
+  "stop_on_first_failure": true,
+  "protected_files": [
+    {
+      "path": "PATH/TO/FROZEN/dfthcsos/submission.npz",
+      "sha256": "REPLACE_WITH_RECEIPT_BOUND_SHA256"
+    }
+  ],
+  "components": [
+    {
+      "name": "invsqrt",
+      "candidate_builder_command": ["python", "PATH/TO/BUILD_SCRIPT.py", "--output-dir", "{run_dir}/invsqrt_artifacts"],
+      "artifact_paths": ["PATH/TO/GENERATED/invsqrt.kmb"],
+      "official_verifier_command": ["python", "PATH/TO/VERIFY_SCRIPT.py", "--candidate", "PATH/TO/GENERATED/invsqrt.kmb", "--receipt", "{receipt_path}"],
+      "receipt_status_field": "status",
+      "receipt_score_field": "score",
+      "receipt_checks": [
+        {"field": "verified_shots", "op": "ge", "value": 200540928}
+      ]
+    },
+    {
+      "name": "dqi",
+      "candidate_builder_command": ["python", "PATH/TO/BUILD_SCRIPT.py", "--output-dir", "{run_dir}/dqi_artifacts"],
+      "artifact_paths": ["PATH/TO/GENERATED/dqi.kmb"],
+      "official_verifier_command": ["python", "PATH/TO/VERIFY_SCRIPT.py", "--candidate", "PATH/TO/GENERATED/dqi.kmb", "--receipt", "{receipt_path}"],
+      "receipt_status_field": "status",
+      "receipt_score_field": "score",
+      "receipt_checks": [
+        {"field": "verified_shots", "op": "ge", "value": 102400},
+        {"field": "value_errors", "op": "eq", "value": 0},
+        {"field": "phase_errors", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "name": "dfthcsos",
+      "candidate_builder_command": ["python", "PATH/TO/BUILD_SCRIPT.py", "--output-dir", "{run_dir}/dfthcsos_artifacts"],
+      "artifact_paths": ["PATH/TO/GENERATED/dfthcsos/submission.npz", "PATH/TO/GENERATED/dfthcsos/angle_k_0.kmb"],
+      "official_verifier_command": ["python", "PATH/TO/VERIFY_SCRIPT.py", "--candidate-dir", "PATH/TO/GENERATED/dfthcsos", "--receipt", "{receipt_path}"],
+      "receipt_status_field": "status",
+      "receipt_score_field": "score",
+      "receipt_checks": [
+        {"field": "verified_shots", "op": "ge", "value": 254464},
+        {"field": "angles_within_cap", "op": "eq", "value": true},
+        {"field": "num_circuits", "op": "eq", "value": 25}
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-.PHONY: install test lint typecheck lint-rust format clean clean-cache kernel wheel reproduce
+.PHONY: install test lint typecheck lint-rust format clean clean-cache kernel vqc-native vqc-parity wheel reproduce
 
 install:
 	pip install -e .
@@ -7,6 +7,18 @@ install:
 # Requires: Rust toolchain + `pip install maturin`.
 kernel:
 	maturin develop --release --manifest-path rust/apedp-kernel/Cargo.toml
+
+# Build the Rust VQC execution core (pauli algebra, stabilizer tableau, Clifford
+# images) into the active environment. Optional: `apedp_dyn/vqc/native.py` falls
+# back to the Python tier when the module is absent, so this is a speed path, not
+# a dependency.
+vqc-native:
+	maturin develop --release --manifest-path rust/apedp-vqc/Cargo.toml
+
+# Re-measure the native core against the Python tier on identical frozen inputs
+# and rewrite benchmarks/quantum_compilation/vqc_native_parity.json.
+vqc-parity: vqc-native
+	python scripts/measure_vqc_rust_parity.py
 
 # Build a distributable wheel (rust/apedp-kernel via maturin) into dist/.
 wheel:

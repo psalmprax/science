@@ -5,46 +5,46 @@
     {
       "evaluated": 200,
       "n": 150,
-      "remainder_pct": 93.9,
-      "us_graph_eval_phase": 1.2,
-      "us_per_candidate": 32.9,
-      "us_readout_fit_phase": 0.8,
-      "us_search_bookkeeping_remainder": 30.9
+      "remainder_pct": 70.7,
+      "us_graph_eval_phase": 24.4,
+      "us_per_candidate": 116.6,
+      "us_readout_fit_phase": 9.8,
+      "us_search_bookkeeping_remainder": 82.4
     },
     {
       "evaluated": 200,
       "n": 600,
-      "remainder_pct": 51.5,
-      "us_graph_eval_phase": 5.7,
-      "us_per_candidate": 23.1,
-      "us_readout_fit_phase": 5.5,
-      "us_search_bookkeeping_remainder": 11.9
+      "remainder_pct": 19.5,
+      "us_graph_eval_phase": 97.9,
+      "us_per_candidate": 165.2,
+      "us_readout_fit_phase": 35.2,
+      "us_search_bookkeeping_remainder": 32.1
     },
     {
       "evaluated": 200,
       "n": 1200,
-      "remainder_pct": 68.1,
-      "us_graph_eval_phase": 6.7,
-      "us_per_candidate": 39.9,
-      "us_readout_fit_phase": 6.0,
-      "us_search_bookkeeping_remainder": 27.2
+      "remainder_pct": 0.0,
+      "us_graph_eval_phase": 237.7,
+      "us_per_candidate": 213.4,
+      "us_readout_fit_phase": 85.9,
+      "us_search_bookkeeping_remainder": 0.0
     },
     {
       "evaluated": 200,
       "n": 3000,
-      "remainder_pct": 22.8,
-      "us_graph_eval_phase": 27.9,
-      "us_per_candidate": 71.7,
-      "us_readout_fit_phase": 27.4,
-      "us_search_bookkeeping_remainder": 16.4
+      "remainder_pct": 0.0,
+      "us_graph_eval_phase": 413.9,
+      "us_per_candidate": 417.5,
+      "us_readout_fit_phase": 141.8,
+      "us_search_bookkeeping_remainder": 0.0
     },
     {
       "evaluated": 200,
       "n": 12000,
       "remainder_pct": 0.0,
-      "us_graph_eval_phase": 176.7,
-      "us_per_candidate": 253.2,
-      "us_readout_fit_phase": 114.6,
+      "us_graph_eval_phase": 3708.1,
+      "us_per_candidate": 1260.8,
+      "us_readout_fit_phase": 738.8,
       "us_search_bookkeeping_remainder": 0.0
     }
   ]

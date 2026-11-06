@@ -177,7 +177,8 @@ def run_ledger(syms: list[str], data: dict[str, pd.DataFrame],
     gross = sum(x["gross"] for x in out)
     fees = sum(x["fee"] for x in out)
     net = sum(x["net"] for x in out)
-    assert abs((gross - fees) - net) < 1e-9, "accounting identity violated"
+    if abs((gross - fees) - net) >= 1e-9:
+        raise RuntimeError("accounting identity violated")
 
     # Non-binding threshold check: assert active fraction lies within operational bounds
     is_binding = True

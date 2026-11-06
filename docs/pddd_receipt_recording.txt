@@ -1,0 +1,41 @@
+Patch: apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/dqi_iteration_sweep_patch
+Branch: stage
+Decision recorded: 2026-10-28
+
+Why scripts/sweep_dqi_eea_bound.py was restored:
+The patch-provided runner is run_dqi_iteration_sweep.sh, and it calls
+$PATCH_ROOT/scripts/sweep_dqi_eea_bound.py. So the patch's canonical semantics live in the
+patch tree, not in a repo-root scripts/ copy. In this checkout I first ran a guarded
+repo-root replay of the same sweep because the repo-local QCOMP_ROOT tree was missing the
+kickmix/*.py sources and apedp_dyn/quantum_compilation/dqi_reference_circuit.py. That replay
+was a container workaround, not the patch file. To keep the patch auditable, I restored
+scripts/sweep_dqi_eea_bound.py to the exact patch-provided content and did not keep the
+guarded replay in that path.
+
+What was committed under this story:
+- artifacts/quantum_compilation/dqi/iteration_sweep_receipts/
+  - results.json
+  - summary.json
+  - audit.txt
+  - dqi_niters_222.kmb
+  - dqi_niters_216.kmb
+- scripts/sweep_dqi_eea_bound.py  (restored to patch-provided content)
+
+Why the .kmb artifacts and the restored script are kept together:
+The receipts are the promotion record; the script is the intended patch entry point that the
+patch runner uses. Keeping them in the same commit makes the record traceable from git log
+without leaving the guarded container replay in the repo-root scripts path.
+
+What this commit does NOT establish:
+It establishes PASS receipts under one seed/configuration in this container with the guarded
+replay path. It does not, by itself, prove unseen-seed generalization, and it does not mean
+the shipped repo-local QCOMP_ROOT tree is whole. The repo-local competition bundle still needs
+kickmix/*.py and apedp_dyn/quantum_compilation/dqi_reference_circuit.py or an equivalent
+QCOMP_ROOT arrangement before run_dqi_iteration_sweep.sh can be trusted end to end here.
+
+Receipt facts recovered here:
+n_iters=222: VERIFIED, score=24439463583672.93, formula_check=PASS
+n_iters=216: VERIFIED, score=25486318723264.527, formula_check=PASS
+baseline n_iters=222 score / pinned ledger 24439473914136.67 = 0.999999577304
+best verified n_iters=222
+n_iters=216 vs 222: gain=0.958924820x, delta=-4.10752%

@@ -1,0 +1,520 @@
+{
+  "experiment": "E -- the official score, its exact decomposition, and why the levers still cannot compile",
+  "declared_in": "docs/DQI_OFFICIAL_COMPATIBILITY.md \u00a77",
+  "question": "D and D2 measured Toffoli counts and hand-checked correctness. What score does the competition's own verifier assign, where in the reference's gate stream does that saving come from, and can a pinned primitive read a qubit into a bit?",
+  "instance": {
+    "m": 4095,
+    "n": 70,
+    "degree": 12,
+    "shots": 102400,
+    "batch_size": 256,
+    "log2_delta": -128.0
+  },
+  "budget": {
+    "verified_shots": 102400,
+    "official_num_shots": 102400,
+    "fraction_of_official": 1.0,
+    "zero_error_bound_at_this_budget": {
+      "shots": 102400,
+      "errors": 0,
+      "effective_error_rate": 0.0008660587301657926,
+      "repetition_factor": 1.1912604648115832,
+      "passes": true
+    },
+    "zero_error_bound_at_official_budget": {
+      "shots": 102400,
+      "errors": 0,
+      "effective_error_rate": 0.0008660587301657926,
+      "repetition_factor": 1.1912604648115832,
+      "passes": true
+    },
+    "smallest_passing_budget": 1536
+  },
+  "build": {
+    "build": "/home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix",
+    "extension": "/home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/kickmix.so",
+    "extension_sha256": "c66b3216c4029e0cdfd09054306aa0feadf53ab2f50c1164e37f752874e5005e",
+    "has_mr": false
+  },
+  "verifier_patch": {
+    "source": "/home/psalmprax/ALL_PROJECTS/science/apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dqi/verify_submission_dqi.py",
+    "source_sha256": "f14274bc0943fb9769ddb01131be6063191a15009fe1caf1d4bdd9fd25194e65",
+    "patched_sha256": "4182963a380c914ae23623e924bc4513bf4a72dc66b18ac78f3328a32ac11d34",
+    "replaced": "'reaction_depth': circuit.reaction_depth(),",
+    "with": "'reaction_depth': None,  # not computed by Experiment E",
+    "why": "`reaction_depth` is a reported diagnostic, not part of the score; on the 86M-op reference it peaked at 13.9 GB and took 136 s, which gets the process killed here. Every scoring line is the shipped one."
+  },
+  "verified": {
+    "reference": {
+      "status": "PASS",
+      "score": 24439463583672.93,
+      "verified_shots": 102400,
+      "value_errors": 0,
+      "phase_errors": 0,
+      "empirical_error_rate": 0.0,
+      "effective_error_rate": 0.0008660587301657926,
+      "repetition_factor": 1.1912604648115832,
+      "toffoli_count": 5725108.382109375,
+      "max_toffoli_count": 5725461,
+      "num_qubits": 1893,
+      "num_bits": 49154,
+      "reaction_depth": null,
+      "num_ops": 86051014,
+      "mean_error_weight": 31.046737331746634,
+      "circuit_sha256": "959471d05a26373b4f14ca0cae2d8639ea25f18170d9f6532139aa51ccc04995"
+    },
+    "candidate": {
+      "status": "PASS",
+      "score": 23194375876416.566,
+      "verified_shots": 102400,
+      "value_errors": 0,
+      "phase_errors": 0,
+      "empirical_error_rate": 0.0,
+      "effective_error_rate": 0.0008660587301657926,
+      "repetition_factor": 1.1912604648115832,
+      "toffoli_count": 5433438.229658203,
+      "max_toffoli_count": 5433789,
+      "num_qubits": 1893,
+      "num_bits": 49154,
+      "reaction_depth": null,
+      "num_ops": 104555982,
+      "mean_error_weight": 31.046737331746634,
+      "circuit_sha256": "a928732638e40560938091dc6123662d9e25e66142c20207b9ba050e9da62be4"
+    }
+  },
+  "timings": {
+    "reference": {
+      "build_seconds": 15.44,
+      "verify_seconds": 125.1
+    },
+    "candidate": {
+      "build_seconds": 80.68,
+      "verify_seconds": 140.3
+    }
+  },
+  "score_ratio": {
+    "score": 0.9490542129538326,
+    "toffoli": 0.9490542129538327,
+    "qubits": 1.0,
+    "t_ratio_squared": 0.9490542129538327
+  },
+  "decomposition": {
+    "multiply_calls": 32408,
+    "toffolis_per_call": {
+      "reference": 75,
+      "candidate": 66,
+      "delta": 9
+    },
+    "predicted_delta": 291672,
+    "static_delta": 291672,
+    "executed_delta": 291670.15245117154,
+    "reference_toffoli_count": 5725108.382109375,
+    "reference_static_toffoli_count": 5725461,
+    "saving_fraction_of_executed": 0.050945787046167285,
+    "saving_fraction_of_static": 0.050942972103032405,
+    "multiply_share_of_static": 0.42452476752527,
+    "operation_count_deltas": {
+      "BIT_INVERT": -3389180,
+      "BIT_STORE0": -35574,
+      "BIT_STORE1": -78960,
+      "CCX": 29867023611,
+      "CX": -1735619557849,
+      "CZ": -89603689689,
+      "HMR": -179203335012,
+      "INFO_TAG": 59734425600,
+      "NEG": -3770,
+      "R": 39822892188,
+      "SWAP": 69690059712,
+      "X": -25872,
+      "Z": -6079
+    }
+  },
+  "lever_primitives": {
+    "bit_surface": {
+      "bit_store": {
+        "role": "target",
+        "signature": "@signature def bit_store(self, target: km.b | km.array, value: bool, *, control: km.b | bool | km.array = True) ",
+        "parameters": [
+          "target",
+          "value",
+          "control"
+        ]
+      },
+      "ccx": {
+        "role": "control",
+        "signature": "@signature def ccx(self, control1: bool | km.b | km.q | km.array, control2: bool | km.b | km.q | km.array, target: km.q | km.array) ",
+        "parameters": [
+          "control1",
+          "control2",
+          "target"
+        ]
+      },
+      "ccz": {
+        "role": "control",
+        "signature": "@signature def ccz(self, control1: bool | km.b | km.q | km.array, control2: bool | km.b | km.q | km.array, control3: bool | km.b | km.q | km.array) ",
+        "parameters": [
+          "control1",
+          "control2",
+          "control3"
+        ]
+      },
+      "cswap": {
+        "role": "control",
+        "signature": "@signature def cswap(self, control: bool | km.b | km.q | km.array, target1: km.q | km.array, target2: km.q | km.array) ",
+        "parameters": [
+          "control",
+          "target1",
+          "target2"
+        ]
+      },
+      "cx": {
+        "role": "target",
+        "signature": "@signature def cx(self, control: bool | km.b | km.q | km.array, target: km.q | km.b | km.xb | km.xbool | km.array) ",
+        "parameters": [
+          "control",
+          "target"
+        ]
+      },
+      "cz": {
+        "role": "control",
+        "signature": "@signature def cz(self, control1: bool | km.b | km.q | km.array, control2: bool | km.b | km.q | km.array) ",
+        "parameters": [
+          "control1",
+          "control2"
+        ]
+      },
+      "debug_print": {
+        "role": "control",
+        "signature": "@signature def debug_print(self, arg: km.q | km.b | bool | km.xb | km.xbool | km.array | Sequence[km.q | km.b | bool | km.xb | km.xbool]) ",
+        "parameters": [
+          "arg"
+        ]
+      },
+      "del_and": {
+        "role": "control",
+        "signature": "@signature def del_and(self, control1: bool | km.b | km.q | km.array, control2: bool | km.b | km.q | km.array, target: km.q | km.array) ",
+        "parameters": [
+          "control1",
+          "control2",
+          "target"
+        ]
+      },
+      "del_gf2_mul": {
+        "role": "control",
+        "signature": "@signature def del_gf2_mul(self, lhs: km.array, rhs: km.array, *, target: km.array, field: km.GF2Field | None = None, control: km.q | km.b | bool = True) ",
+        "parameters": [
+          "lhs",
+          "rhs",
+          "target",
+          "field",
+          "control"
+        ]
+      },
+      "flip_if_equal": {
+        "role": "control",
+        "signature": "@signature def flip_if_equal(self, lhs: km.array, rhs: km.array | int, *, target: km.q, control: km.q | km.b | bool = True) ",
+        "parameters": [
+          "lhs",
+          "rhs",
+          "target",
+          "control"
+        ]
+      },
+      "flip_if_greater_than": {
+        "role": "control",
+        "signature": "@signature def flip_if_greater_than(self, lhs: km.array, rhs: km.array | int, *, target: km.q, or_equal: km.q | km.b | bool = False, control: km.q | km.b | bool = True, btol: float = float('inf')) ",
+        "parameters": [
+          "lhs",
+          "rhs",
+          "target",
+          "or_equal",
+          "control",
+          "btol"
+        ]
+      },
+      "flip_if_less_than": {
+        "role": "control",
+        "signature": "@signature def flip_if_less_than(self, lhs: km.array, rhs: km.array | int, *, target: km.q, or_equal: km.q | km.b | bool = False, control: km.q | km.b | bool = True, btol: float = float('inf')) ",
+        "parameters": [
+          "lhs",
+          "rhs",
+          "target",
+          "or_equal",
+          "control",
+          "btol"
+        ]
+      },
+      "free": {
+        "role": "control",
+        "signature": "@signature def free(self, arg: km.q | km.b | km.array | Sequence[km.q | km.b]) ",
+        "parameters": [
+          "arg"
+        ]
+      },
+      "gf2_iadd": {
+        "role": "control",
+        "signature": "@signature def gf2_iadd(self, offset: km.array | int, *, target: km.array, field: km.GF2Field | None = None, control: km.q | km.b | bool = True) ",
+        "parameters": [
+          "offset",
+          "target",
+          "field",
+          "control"
+        ]
+      },
+      "hmr": {
+        "role": "output",
+        "signature": "@signature def hmr(self, target: km.q | km.array | Sequence[km.q], output: km.b | km.array | Sequence[km.b]) ",
+        "parameters": [
+          "target",
+          "output"
+        ]
+      },
+      "iadd": {
+        "role": "control",
+        "signature": "@signature def iadd(self, offset: km.array | int, *, target: km.array, control: km.q | km.b | bool = True, btol: float = float('inf')) ",
+        "parameters": [
+          "offset",
+          "target",
+          "control",
+          "btol"
+        ]
+      },
+      "init_and": {
+        "role": "control",
+        "signature": "@signature def init_and(self, control1: bool | km.b | km.q | km.array, control2: bool | km.b | km.q | km.array, target: km.q | km.array) ",
+        "parameters": [
+          "control1",
+          "control2",
+          "target"
+        ]
+      },
+      "init_gf2_mul": {
+        "role": "control",
+        "signature": "@signature def init_gf2_mul(self, lhs: km.array, rhs: km.array, *, target: km.array | str = \"alloc\", field: km.GF2Field | None = None, control: km.q | km.b | bool = True) ",
+        "parameters": [
+          "lhs",
+          "rhs",
+          "target",
+          "field",
+          "control"
+        ]
+      },
+      "isub": {
+        "role": "control",
+        "signature": "@signature def isub(self, offset: km.array | int, *, target: km.array, control: km.q | km.b | bool = True, btol: float = float('inf')) ",
+        "parameters": [
+          "offset",
+          "target",
+          "control",
+          "btol"
+        ]
+      },
+      "ixor_gf2_mul": {
+        "role": "control",
+        "signature": "@signature def ixor_gf2_mul(self, lhs: km.array, rhs: km.array, *, target: km.array, field: km.GF2Field | None = None, control: km.q | km.b | bool = True) ",
+        "parameters": [
+          "lhs",
+          "rhs",
+          "target",
+          "field",
+          "control"
+        ]
+      },
+      "left_rotate": {
+        "role": "control",
+        "signature": "@signature def left_rotate(self, target: km.array | Sequence[km.q], shift: int | km.array | Sequence[km.q | km.b | bool] = 1, *, control: km.q | km.b | bool = True) ",
+        "parameters": [
+          "target",
+          "shift",
+          "control"
+        ]
+      },
+      "multi_controlled_x": {
+        "role": "control",
+        "signature": "@signature def multi_controlled_x(self, controls: km.array | Sequence[km.q | km.b | bool], target: km.q | km.array | Sequence[km.q]) ",
+        "parameters": [
+          "controls",
+          "target"
+        ]
+      },
+      "neg_if": {
+        "role": "control",
+        "signature": "@signature def neg_if(self, condition: km.b) ",
+        "parameters": [
+          "condition"
+        ]
+      },
+      "push_condition": {
+        "role": "control",
+        "signature": "@signature def push_condition(self, condition: km.b) ",
+        "parameters": [
+          "condition"
+        ]
+      },
+      "right_rotate": {
+        "role": "control",
+        "signature": "@signature def right_rotate(self, target: km.array | Sequence[km.q], shift: int | km.array | Sequence[km.q | km.b | bool] = 1, *, control: km.q | km.b | bool = True) ",
+        "parameters": [
+          "target",
+          "shift",
+          "control"
+        ]
+      },
+      "swap": {
+        "role": "control",
+        "signature": "@signature def swap(self, target1: km.q | km.b | km.xb | km.array, target2: km.q | km.b | km.xb | km.array) ",
+        "parameters": [
+          "target1",
+          "target2"
+        ]
+      },
+      "unary_iteration": {
+        "role": "control",
+        "signature": "@signature def unary_iteration(self, address: km.array, address_values: range | None = None, *, control: km.q | km.b | bool = True) ",
+        "parameters": [
+          "address",
+          "address_values",
+          "control"
+        ]
+      },
+      "x": {
+        "role": "target",
+        "signature": "@signature def x(self, target: km.q | km.b | km.xb | km.xbool | Literal['|+>', '|",
+        "parameters": [
+          "target"
+        ]
+      },
+      "z": {
+        "role": "target",
+        "signature": "@signature def z(self, target: km.q | km.b | bool | km.array | Sequence[km.q | km.b | bool]) ",
+        "parameters": [
+          "target"
+        ]
+      }
+    },
+    "probes": {
+      "hmr": {
+        "callable": true,
+        "shots": 64,
+        "target_prepared": "|1>",
+        "bit_ones": 24,
+        "bit_zeros": 40,
+        "reads_qubit": false,
+        "writes_random": true,
+        "phase_flips": 24
+      }
+    }
+  },
+  "checks": [
+    {
+      "check": "the reference reproduces the row D2 recorded",
+      "requirement": "5725071.609375 Toffolis per shot at Q=1893 (within 0.0001 relative: the executed mean is shot-dependent)",
+      "measured": {
+        "toffoli_count": 5725108.382109375,
+        "num_qubits": 1893
+      },
+      "passed": true
+    },
+    {
+      "check": "the candidate reproduces the row D2 recorded",
+      "requirement": "5433399.609375 at Q=1893 (within 0.0001 relative)",
+      "measured": {
+        "toffoli_count": 5433438.229658203,
+        "num_qubits": 1893
+      },
+      "passed": true
+    },
+    {
+      "check": "the competition's verifier passes both circuits",
+      "requirement": "status PASS, zero value and phase errors, and eps_plus < 1/16 at 102400 shots",
+      "measured": {
+        "reference": {
+          "status": "PASS",
+          "value_errors": 0,
+          "phase_errors": 0,
+          "effective_error_rate": 0.0008660587301657926
+        },
+        "candidate": {
+          "status": "PASS",
+          "value_errors": 0,
+          "phase_errors": 0,
+          "effective_error_rate": 0.0008660587301657926
+        }
+      },
+      "passed": true
+    },
+    {
+      "check": "the score ratio is the Toffoli ratio, exactly",
+      "requirement": "no R and no Q penalty: score_ratio == T_ratio to 1e-12",
+      "measured": {
+        "score_ratio": 0.9490542129538326,
+        "t_ratio": 0.9490542129538327,
+        "q_ratio": 1.0
+      },
+      "passed": true
+    },
+    {
+      "check": "the saving is exactly the multiply's 9 Toffolis per call",
+      "requirement": "static delta 291672 == 9 x 32,408 calls = 291,672, and the executed delta within 1% of it",
+      "measured": {
+        "multiply_calls": 32408,
+        "toffolis_per_call_delta": 9,
+        "predicted_delta": 291672,
+        "static_delta": 291672,
+        "executed_delta": 291670.15245117154,
+        "operation_count_deltas": {
+          "BIT_INVERT": -3389180,
+          "BIT_STORE0": -35574,
+          "BIT_STORE1": -78960,
+          "CCX": 29867023611,
+          "CX": -1735619557849,
+          "CZ": -89603689689,
+          "HMR": -179203335012,
+          "INFO_TAG": 59734425600,
+          "NEG": -3770,
+          "R": 39822892188,
+          "SWAP": 69690059712,
+          "X": -25872,
+          "Z": -6079
+        }
+      },
+      "passed": true
+    },
+    {
+      "check": "no pinned primitive reads a qubit's value into a bit",
+      "requirement": "every qubit->bit writer in the pinned surface writes something that is not the qubit's value",
+      "measured": {
+        "qubit_to_bit_methods": [
+          "hmr"
+        ],
+        "bit_writers_that_read_the_qubit": [],
+        "probes": {
+          "hmr": {
+            "callable": true,
+            "shots": 64,
+            "target_prepared": "|1>",
+            "bit_ones": 24,
+            "bit_zeros": 40,
+            "reads_qubit": false,
+            "writes_random": true,
+            "phase_flips": 24
+          }
+        },
+        "has_mr": false
+      },
+      "passed": true
+    }
+  ],
+  "failed_checks": [],
+  "finding": "under the competition's own `verify()` at 102,400 shots the reference passes with 0 value and 0 phase errors and scores 2.443946e+13 (Q=1893, T=5725108.382109); the phase-safe 54-AND candidate passes with 0 and 0 and scores 2.319438e+13, a ratio of 0.949054. That is exactly its Toffoli ratio (0.949054) at equal Q, because both runs share the same zero-error `eps_plus` and therefore the same `R` -- the comparison carries no error-rate or qubit penalty in either direction. The saving is the multiply's alone: 32,408 calls x 9 = 291,672 static Toffolis per shot, exactly the measured static delta (291672); executed, the two circuits differ by 291670.152 per shot, the rest being the classically conditioned Toffolis whose firing is shot-dependent. The multiply is 42.45% of the reference's static Toffoli stream and the candidate removes 5.0943% of it (5.0946% of the executed mean). The levers' obstacle is measured here rather than assumed: of 29 pinned methods whose signature mentions a classical bit, 1 writes a bit from qubit data (hmr), and on |1> `hmr` wrote the value on 24/64 shots, so nothing in the pinned binary can express a read.",
+  "scope": {
+    "measured": "the competition's verifier on both circuits at 102,400 shots (every scoring line unmodified; only `reaction_depth` is stubbed, see verifier_patch): status, value and phase errors, `eps_plus`, `R`, score, Q, static and executed T; the emitted multiply-call count and the full operation-count deltas; and every pinned bit-writing primitive probed on |1>",
+    "not_measured": "nothing about the levers' Toffoli counts here -- they remain uncompilable, so they have no score; and the `reaction_depth` diagnostic, which the verifier computes on a 13.9 GB peak and which is not part of the score"
+  },
+  "reproducibility": {
+    "script_sha256": "7e815f554a9d811456550881aeb66ccf57e1fcb472ec16b44abe532ea1c7df31",
+    "kickmix_sha256": "c66b3216c4029e0cdfd09054306aa0feadf53ab2f50c1164e37f752874e5005e",
+    "python": "3.13.14",
+    "git_rev": "75ef0cc7df415e6bae73c23fadd380348929d3a1"
+  }
+}

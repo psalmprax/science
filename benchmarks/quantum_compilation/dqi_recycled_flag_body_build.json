@@ -1,0 +1,18 @@
+{
+  "what": "peak and Toffolis for the reference build and for the build with `_update_flag` substituted, at one fixed EEA window",
+  "script": "scripts/measure_recycled_flag_body.py",
+  "window_iters": 4,
+  "window_note": "peak and Toffolis depend on n_iters (the halting counter widens with it), so 1,888 here is this window, not the full-shot 1,893",
+  "n_iters": 4,
+  "reference_peak_qubits": 1888,
+  "recycled_flag_peak_qubits": 1888,
+  "peak_unchanged": true,
+  "reference_toffolis": 1574953,
+  "recycled_flag_toffolis": 1586377,
+  "toffoli_delta": 11424,
+  "accounting_peak_qubits": 1885,
+  "read_sites_substituted": 1,
+  "read_sites_remaining": 4,
+  "finding": "one body is not enough to move the peak: the register is still allocated for the four bodies that read it, so the build stays at the reference peak and the 1,885 stay accounting",
+  "conclusion": "the substituted body costs Toffolis and buys no qubits: the register is still allocated for the four bodies that read it, so 1,885 stays an accounting figure"
+}

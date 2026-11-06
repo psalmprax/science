@@ -1,0 +1,41 @@
+{
+  "experiment": "S1",
+  "question": "can the BM/EEA decoder run in one 73-slot polynomial array, as the single-array contract assumes?",
+  "declared_in": "docs/DQI_SINGLE_ARRAY_DECODER_CONTRACT.md",
+  "probe": "build/dqi_single_array/packed_bm_probe.py (gitignored throwaway; imports nothing from the package)",
+  "instance": {
+    "n_syndromes": 70,
+    "degree": 12,
+    "array_slots": 73,
+    "half_slots": 36,
+    "max_errors": 35,
+    "weights_tested": "0..35",
+    "trials_per_weight": 6,
+    "seed": 20261103
+  },
+  "arms": {
+    "three_region": {
+      "decoded": 216,
+      "failed": 0,
+      "first_failure": null,
+      "note": "C, B and one scratch copy -- the reference's live set; the ground-truth core"
+    },
+    "two_region_naive": {
+      "decoded": 6,
+      "failed": 210,
+      "first_failure": {"weight": 1, "planted": 1, "decoded": 2},
+      "note": "C and B packed in one array, C' written in place, then C_old copied to B's region"
+    },
+    "two_region_swapped": {
+      "decoded": 6,
+      "failed": 210,
+      "first_failure": {"weight": 1, "planted": 1, "decoded": 1},
+      "note": "roles exchanged each step so no data move is needed -- the packing 73 slots allow"
+    }
+  },
+  "weight_zero_trivial": "the 6 decodes in each two-region arm are the weight-0 trials; neither arm decodes even a single error",
+  "failure_boundary": {"weight": 36, "trials": 20, "failed_to_decode": 20},
+  "why": "C' = C + (d/b) x^m B reads C_old and B_old while B' = C_old writes C_old into B's region, so whichever region is written first destroys data the other still reads. Both orders were run; both fail at weight 1.",
+  "verdict": "PACKING_ROUTE_CLOSED: peak 1,001 is unreachable by repacking the reference update. The contract's remaining route is re-deriving B_t by replay, which is a nested EEA rather than one division per round; that is unmeasured and carries its own falsifiers.",
+  "consequence": "no single-array circuit was built, no registry entry was added, and dqi_builder still offers only proos_zalka and gluzdov_v6"
+}

@@ -1,0 +1,43 @@
+{
+  "status": "PLANNED_NOT_COMPILED",
+  "design": "signed_4_address_banking",
+  "source_assumption": "10-bit two-complement-like angle words are in [-256,255] and therefore satisfy bit9 == bit8; the actual frozen words must be checked.",
+  "N_angles": 75,
+  "J": 3,
+  "angle_circuits_K": 25,
+  "address_count": 3976,
+  "block_size_B": 4,
+  "bank_rows_per_batch": 994,
+  "base_word_bits_per_row": 30,
+  "delta_bank_count": 3,
+  "compressed_delta_bits_per_bank_row": 81,
+  "angle_circuit_width_components": {
+    "selection_qubits": 12,
+    "full_output_words": 30,
+    "delta_bank": 81,
+    "scratch": 5,
+    "peak_qubits_estimate": 128,
+    "cap": 128,
+    "headroom": 0
+  },
+  "claimed_Q_total": 661,
+  "Q_total_formula_assumption": "634 + 12J - 3J; must be matched to official verifier/source resource accounting before promotion.",
+  "classical_transform": {
+    "lookup_equivalence": "not_run_without_real_npz",
+    "phase_semantics": "not_applicable_to_classical_table",
+    "compiled_kmb": false
+  },
+  "cost_accounting": {
+    "angles_forward_reverse_factor": 2,
+    "must_use_per_circuit_Toffolis_from_Kickmix_simulator": true,
+    "non_angle_cost_components_need_source_reconciliation": true
+  },
+  "promotion_gate": [
+    "frozen input hash matches receipt",
+    "all 25 real ANGLE circuits <=128 qubits",
+    "all recovered words match reference",
+    "phase/read_phase_flipped_across_shots checks pass",
+    "official verify.py PASS",
+    "official cost strictly below pinned incumbent"
+  ]
+}

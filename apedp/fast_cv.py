@@ -27,7 +27,7 @@ class FastCrossValidator:
             val_idx = folds[fold_idx]
             train_idx = np.concatenate([folds[i] for i in range(k) if i != fold_idx])
             
-            X_train, y_train = X[train_idx], y[train_idx]
+            _X_train, _y_train = X[train_idx], y[train_idx]
             X_val, y_val = X[val_idx], y[val_idx]
             
             # For simplicity, evaluate on validation set using original expression

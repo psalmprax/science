@@ -1,0 +1,14 @@
+n_iters,status,Q,T_mean,epsilon_plus,R,score,score_formula_check,sha256
+222,VERIFIED,1893,5725108.382109375,0.0008660587301657926,1.1912604648115832,24439463583672.93,PASS,959471d05a26373b4f14ca0cae2d8639ea25f18170d9f6532139aa51ccc04995
+216,VERIFIED,1893,5608613.818330078,0.001556727747130138,1.268090778436335,25486318723264.527,PASS,4ae20e1c678ff79c5f42f090e0780a1319801b98db5f6e7ff7a313fadf712119
+
+Baseline n_iters=222: score=24439463583672.929687500000
+Pinned ledger reference cost: 24439473914136.671875000000
+Rebuilt-baseline / pinned-reference = 0.999999577304
+
+Verified cost comparisons (improvement > 1 means candidate is better):
+n_iters=216: gain=0.958924820x, delta=-4.10752%
+n_iters=222: gain=1.000000000x, delta=+0.00000%
+
+Best among formula-consistent PASS receipts: n_iters=222, score=24439463583672.929687500000
+NOTE: PASS receipts establish verifier acceptance under the run seed/configuration; they do not by themselves establish unseen-seed generalization.

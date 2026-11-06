@@ -12,7 +12,7 @@
       "family_title": "The quasi-Riemann hypothesis",
       "verdict": "consistent_finite_range",
       "engine": "rust/riemann_verifier (Euler-Maclaurin, from scratch)",
-      "domain": "zeta zeros on the critical line; off-line grid scan t in [10, 40], sigma in {0.2..0.8} (hardcoded window)",
+      "domain": "zeta zeros on the critical line; off-line grid scan t in [10, max_t] (window follows the requested height), sigma in {0.2..0.8}",
       "observed": {
         "primary_T60": {
           "max_t": 60.0,
@@ -22,6 +22,11 @@
           "calibration_gate": "PASS",
           "max_reference_delta": 1.15e-09,
           "off_line_grid_scan": "OFF_LINE_GRID_SCAN_PASS",
+          "off_line_grid_window": [
+            10.0,
+            60.0
+          ],
+          "off_line_grid_step": 0.1,
           "coverage_pct": 100.0
         },
         "coverage_sweep": [
@@ -33,6 +38,11 @@
             "calibration_gate": "PASS",
             "max_reference_delta": 1.15e-09,
             "off_line_grid_scan": "OFF_LINE_GRID_SCAN_PASS",
+            "off_line_grid_window": [
+              10.0,
+              100.0
+            ],
+            "off_line_grid_step": 0.1,
             "coverage_pct": 100.0
           },
           {
@@ -43,6 +53,11 @@
             "calibration_gate": "PASS",
             "max_reference_delta": 1.15e-09,
             "off_line_grid_scan": "OFF_LINE_GRID_SCAN_PASS",
+            "off_line_grid_window": [
+              10.0,
+              150.0
+            ],
+            "off_line_grid_step": 0.1,
             "coverage_pct": 98.1
           },
           {
@@ -53,6 +68,11 @@
             "calibration_gate": "PASS",
             "max_reference_delta": 1.15e-09,
             "off_line_grid_scan": "OFF_LINE_GRID_SCAN_PASS",
+            "off_line_grid_window": [
+              10.0,
+              200.0
+            ],
+            "off_line_grid_step": 0.1,
             "coverage_pct": 97.5
           },
           {
@@ -63,6 +83,11 @@
             "calibration_gate": "PASS",
             "max_reference_delta": 1.15e-09,
             "off_line_grid_scan": "OFF_LINE_GRID_SCAN_PASS",
+            "off_line_grid_window": [
+              10.0,
+              250.0
+            ],
+            "off_line_grid_step": 0.1,
             "coverage_pct": 89.8
           },
           {
@@ -73,16 +98,21 @@
             "calibration_gate": "PASS",
             "max_reference_delta": 1.15e-09,
             "off_line_grid_scan": "OFF_LINE_GRID_SCAN_PASS",
+            "off_line_grid_window": [
+              10.0,
+              300.0
+            ],
+            "off_line_grid_step": 0.1,
             "coverage_pct": 85.5
           }
         ]
       },
       "engine_limitations_found": [
         "Root-discovery completeness degrades with height at fixed cost: the scan step is hardcoded at 0.05 and the miss rate grows from 0% (T<=100) to 14.5% (T=300, 118/138 isolated). The CLI sample-count argument does not affect discovery, so the deficit is inherent to the engine, not to the invocation.",
-        "The OFF_LINE_GRID_SCAN_PASS verdict is scoped to a hardcoded window t in [10, 40] regardless of the requested height; it does not scan the requested range."
+        "The off-line grid window was hardcoded to t in [10, 40] regardless of the requested height, so a request at T=300 scanned 260 units fewer than asked and still reported OFF_LINE_GRID_SCAN_PASS. FIXED 2026-10-28: the window now follows max_t, and a scan whose resolution had to be coarsened to fit the sample budget reports OFF_LINE_GRID_SCAN_PASS_COARSENED instead of a bare PASS."
       ],
       "can_say": "at T=60 all 13 roots are isolated on the critical line, calibrated to 1.15e-9, and no off-line zero appears in the scanned window",
-      "cannot_say": "quasi-RH is about every Dirichlet L-function and all heights; the engine checks zeta(s) only, discovery misses zeros at higher T, and the off-line window is [10, 40] only"
+      "cannot_say": "quasi-RH is about every Dirichlet L-function and all heights; the engine checks zeta(s) only, discovery misses zeros at higher T (the off-line window now follows max_t, but the in-window scan is a 0.1 grid, not an interval enclosure)"
     },
     "5": {
       "family_title": "Irrationality of Catalan's constant",

@@ -5,9 +5,6 @@ Helps distinguish real laws from curve fits by assessing confidence.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
-
-import numpy as np
 
 
 @dataclass
@@ -24,7 +21,7 @@ class UncertaintyReport:
 class UncertaintyQuantifier:
     """Quantify uncertainty in discovered equations."""
     
-    def assess(self, equation: str, train_score: float, test_score: float = None, 
+    def assess(self, equation: str, train_score: float, test_score: float | None = None, 
                complexity: int = 1) -> UncertaintyReport:
         """Assess uncertainty of a discovered equation."""
         warnings = []

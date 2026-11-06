@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "repo_root": "/ABSOLUTE/PATH/TO/science",
+  "competition_root": "/ABSOLUTE/PATH/TO/google-verifiable-quantum-circuit-compilation",
+  "output_root": "artifacts/quantum_compilation/official_receipt_runs",
+  "stop_on_first_failure": true,
+  "protected_files": [
+    {
+      "root": "repo",
+      "path": "<SET_RECEIPT_BOUND_SUBMISSION_NPZ_PATH>",
+      "sha256": "REPLACE_WITH_RECEIPT_BOUND_SHA256"
+    }
+  ],
+  "source_files": [
+    {
+      "root": "repo",
+      "path": "<SET_V4_INVSQRT_BUILDER_SCRIPT>"
+    },
+    {
+      "root": "repo",
+      "path": "<SET_V4_DQI_BUILDER_SCRIPT>"
+    },
+    {
+      "root": "repo",
+      "path": "<SET_V4_DFTHCSOS_BUILDER_SCRIPT>"
+    },
+    {
+      "root": "competition",
+      "path": "<SET_OFFICIAL_INVSQRT_VERIFIER_PATH>"
+    },
+    {
+      "root": "competition",
+      "path": "<SET_OFFICIAL_DQI_VERIFIER_PATH>"
+    },
+    {
+      "root": "competition",
+      "path": "<SET_DFTHCSOS_VERIFY_PATH>"
+    },
+    {
+      "root": "competition",
+      "path": "<SET_DFTHCSOS_COSTS_PREPARE_PATH>"
+    },
+    {
+      "root": "competition",
+      "path": "<SET_DFTHCSOS_CIRCUITS_PATH>"
+    },
+    {
+      "root": "repo",
+      "path": "scripts/run_official_receipts.py"
+    }
+  ],
+  "components": [
+    {
+      "name": "invsqrt",
+      "candidate_builder_command": [
+        "python3.13",
+        "<SET_V4_INVSQRT_BUILDER_SCRIPT>",
+        "--output-dir",
+        "{component_dir}/artifacts"
+      ],
+      "artifact_paths": [
+        "{component_dir}/artifacts/invsqrt.kmb"
+      ],
+      "official_verifier_command": [
+        "python3.13",
+        "<SET_OFFICIAL_INVSQRT_WRAPPER>",
+        "--candidate",
+        "{component_dir}/artifacts/invsqrt.kmb",
+        "--receipt",
+        "{receipt_path}"
+      ],
+      "receipt_status_field": "status",
+      "receipt_score_field": "score",
+      "receipt_checks": [
+        {
+          "field": "verified_shots",
+          "op": "ge",
+          "value": 200540928
+        }
+      ]
+    },
+    {
+      "name": "dqi",
+      "candidate_builder_command": [
+        "python3.13",
+        "<SET_V4_DQI_BUILDER_SCRIPT>",
+        "--output-dir",
+        "{component_dir}/artifacts"
+      ],
+      "artifact_paths": [
+        "{component_dir}/artifacts/dqi.kmb"
+      ],
+      "official_verifier_command": [
+        "python3.13",
+        "<SET_OFFICIAL_DQI_WRAPPER>",
+        "--candidate",
+        "{component_dir}/artifacts/dqi.kmb",
+        "--receipt",
+        "{receipt_path}"
+      ],
+      "receipt_status_field": "status",
+      "receipt_score_field": "score",
+      "receipt_checks": [
+        {
+          "field": "verified_shots",
+          "op": "ge",
+          "value": 102400
+        },
+        {
+          "field": "value_errors",
+          "op": "eq",
+          "value": 0
+        },
+        {
+          "field": "phase_errors",
+          "op": "eq",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "dfthcsos",
+      "candidate_builder_command": [
+        "python3.13",
+        "<SET_V4_DFTHCSOS_BUILDER_SCRIPT>",
+        "--output-dir",
+        "{component_dir}/artifacts"
+      ],
+      "artifact_paths": [
+        "{component_dir}/artifacts/dfthcsos/submission.npz",
+        "{component_dir}/artifacts/dfthcsos/angle_k_0.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_1.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_2.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_3.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_4.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_5.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_6.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_7.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_8.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_9.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_10.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_11.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_12.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_13.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_14.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_15.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_16.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_17.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_18.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_19.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_20.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_21.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_22.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_23.kmb",
+        "{component_dir}/artifacts/dfthcsos/angle_k_24.kmb"
+      ],
+      "official_verifier_command": [
+        "python3.13",
+        "<SET_OFFICIAL_DFTHCSOS_WRAPPER>",
+        "--candidate-dir",
+        "{component_dir}/artifacts/dfthcsos",
+        "--receipt",
+        "{receipt_path}"
+      ],
+      "receipt_status_field": "status",
+      "receipt_score_field": "score",
+      "receipt_checks": [
+        {
+          "field": "verified_shots",
+          "op": "ge",
+          "value": 254464
+        },
+        {
+          "field": "angles_within_cap",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "num_circuits",
+          "op": "eq",
+          "value": 25
+        }
+      ]
+    }
+  ]
+}

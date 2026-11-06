@@ -1,0 +1,180 @@
+{
+  "engine": "kickmix",
+  "kickmix": "/home/psalmprax/ALL_PROJECTS/science/build/kickmix_mr/lib/kickmix.cpython-313-x86_64-linux-gnu.so",
+  "kickmix_sha256": "9a3e6bb0c787f6294c8849101f3c2b2204f7c6b418aa8735e06a47525dcbbe41",
+  "kickmix_role": "local rebuild with MR (scripts/build_kickmix_mr.py); not the pinned competition binary and not eligible for a receipt",
+  "instance": {
+    "m": 4095,
+    "n": 70,
+    "degree": 12,
+    "shots": 64,
+    "official": true
+  },
+  "multiply": {
+    "measure": "static Toffoli-like ops in one uncontrolled ixor_gf2_mul",
+    "degrees": {
+      "2": {
+        "measured": 3,
+        "karatsuba": 3
+      },
+      "3": {
+        "measured": 7,
+        "karatsuba": 7
+      },
+      "4": {
+        "measured": 9,
+        "karatsuba": 9
+      },
+      "6": {
+        "measured": 21,
+        "karatsuba": 21
+      },
+      "8": {
+        "measured": 27,
+        "karatsuba": 27
+      },
+      "12": {
+        "measured": 63,
+        "karatsuba": 63
+      }
+    },
+    "karatsuba_is_exact": true,
+    "executed": {
+      "six_levers_t_mean": 1325229.953125,
+      "six_levers_54_and_t_mean": 1230639.953125,
+      "executed_multiply_calls": 10510,
+      "multiply_t_mean": 788250,
+      "everything_else_t_mean": 536979.953125,
+      "multiply_share_percent": 59.48024326957313,
+      "ratio_vs_reference": 4.320059018059331,
+      "ccx_delta_per_call": 9,
+      "measured_in": "benchmarks/quantum_compilation/gf54_mul_kickmix.json",
+      "t_mean_at_63_ands": 1325229.953125,
+      "t_mean_at_54_ands": 1230639.953125,
+      "t_mean_at_45_ands": 1136049.953125,
+      "t_mean_at_0_ands": 663099.953125,
+      "ratio_with_free_multiply": 8.63379884588949
+    },
+    "derived_if_cheaper": {
+      "56_ands": {
+        "t_mean": 1251659.953125,
+        "ratio_vs_reference": 4.573983209821727
+      },
+      "50_ands": {
+        "t_mean": 1188599.953125,
+        "ratio_vs_reference": 4.816651384637837
+      },
+      "45_ands": {
+        "t_mean": 1136049.953125,
+        "ratio_vs_reference": 5.03945411401295
+      },
+      "40_ands": {
+        "t_mean": 1083499.953125,
+        "ratio_vs_reference": 5.283868811888649
+      }
+    }
+  },
+  "splits_at_degree_12": {
+    "6": 63,
+    "7": 67,
+    "8": 63,
+    "9": 93,
+    "10": 105,
+    "11": 119,
+    "schoolbook": 144
+  },
+  "static": {
+    "reference": {
+      "toffoli_like": 5725461,
+      "qubits": 1893,
+      "ops": {
+        "NEG": 1302,
+        "BIT_INVERT": 6479824,
+        "BIT_STORE0": 689460,
+        "BIT_STORE1": 49140,
+        "X": 828388,
+        "Z": 33744,
+        "R": 1227624,
+        "HMR": 1227624,
+        "CX": 53871594,
+        "CZ": 9440886,
+        "SWAP": 3134247,
+        "CSWAP": 1172616,
+        "CCX": 4552845,
+        "INFO_TAG": 3257126,
+        "POP_CONDITION": 42297,
+        "PUSH_CONDITION": 42297
+      },
+      "static_ratio_vs_reference": 1.0
+    },
+    "five levers": {
+      "toffoli_like": 3486597,
+      "qubits": 1894,
+      "ops": {
+        "NEG": 651,
+        "BIT_INVERT": 4517552,
+        "BIT_STORE0": 490768,
+        "BIT_STORE1": 103929,
+        "X": 372860,
+        "Z": 12777,
+        "R": 736440,
+        "HMR": 736440,
+        "MR": 53559,
+        "CX": 44101338,
+        "CZ": 6468786,
+        "SWAP": 2699391,
+        "CSWAP": 590004,
+        "CCX": 2896593,
+        "INFO_TAG": 2590788,
+        "POP_CONDITION": 78159,
+        "PUSH_CONDITION": 78159
+      },
+      "static_ratio_vs_reference": 1.6421344365293724
+    },
+    "six levers": {
+      "toffoli_like": 3486597,
+      "qubits": 1894,
+      "ops": {
+        "NEG": 651,
+        "BIT_INVERT": 4517552,
+        "BIT_STORE0": 490768,
+        "BIT_STORE1": 103929,
+        "X": 372860,
+        "Z": 12777,
+        "R": 736440,
+        "HMR": 736440,
+        "MR": 53559,
+        "CX": 44101338,
+        "CZ": 6468786,
+        "SWAP": 2699391,
+        "CSWAP": 590004,
+        "CCX": 2896593,
+        "INFO_TAG": 2590788,
+        "POP_CONDITION": 78603,
+        "PUSH_CONDITION": 78603
+      },
+      "static_ratio_vs_reference": 1.6421344365293724
+    }
+  },
+  "peephole": {
+    "reference": {
+      "events": 580940,
+      "removable": 0,
+      "by_kind": {},
+      "removable_percent": 0.0
+    },
+    "five levers": {
+      "events": 624538,
+      "removable": 0,
+      "by_kind": {},
+      "removable_percent": 0.0
+    },
+    "six levers": {
+      "events": 624538,
+      "removable": 0,
+      "by_kind": {},
+      "removable_percent": 0.0
+    }
+  },
+  "finding": "`ixor_gf2_mul` is the Karatsuba recursion to the gate: 63 static Toffolis at GF(2^12), matching K(12) = 63, and matching at every degree measured (GF(2^2)=3, GF(2^3)=7, GF(2^4)=9, GF(2^6)=21, GF(2^8)=27, GF(2^12)=63). No split of the recursion beats it at m=12: the best is 63, schoolbook is 144. Gating is invisible in the emitted stream -- six levers emit 3,486,597 static Toffolis against the reference's 5,725,461 (1.642x), and the quotient gate changes that by exactly 0, because it adds conditions rather than removing gates; the whole static saving is `clear_eea`, which deletes the reverse EEA (5,725,461 vs five levers 3,486,597). A local peephole removes 0 Toffolis across both arms, so there is no adjacent-cancellation headroom. The sweep's multiply is 59.48% of the six-lever arm's executed Toffolis (788,250.0 of 1,325,230.0 per shot, 10,510 calls), which makes it the largest remaining lever but not the only one: a hypothetical 45-AND multiply would give 5.039x, and a multiply that cost nothing but its 12-Toffoli controlled add would give 8.634x, still above Benchmark II's 445,229. No such cheaper coherent multiply was in hand when this was recorded; a free one requires measuring an operand, which `docs/CIRCUIT_OPTIMISATION_RULES.md` rules inadmissible."
+}
