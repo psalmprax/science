@@ -37,10 +37,23 @@ class GF2FieldConfig:
             object.__setattr__(self, 'irreducible_poly', self.modulus_int)
 
     def validate_primitive(self) -> bool:
-        """Validate that the primitive element generates the full multiplicative group."""
-        gf = GF2FieldModel(degree=self.degree, prim_poly=self.irreducible_poly)
-        order = (1 << self.degree) - 1
-        return gf.pow(self.primitive_element, order) == 1
+        """Whether ``primitive_element`` generates the full multiplicative group.
+
+        Returns False for an out-of-range element rather than raising, because the
+        caller is asking a yes/no question.  The field model itself refuses an
+        unusable generator loudly.
+        """
+        if not (2 <= self.primitive_element < (1 << self.degree)):
+            return False
+        try:
+            GF2FieldModel(
+                degree=self.degree,
+                prim_poly=self.irreducible_poly,
+                primitive_element=self.primitive_element,
+            )
+        except ValueError:
+            return False
+        return True
 
 
 @dataclass(frozen=True)
@@ -53,31 +66,19 @@ class GF2FieldModel:
     exp_table: np.ndarray
     log_table: np.ndarray
 
-    def __init__(self, degree: int = 12, prim_poly: int | None = None):
+    def __init__(
+        self,
+        degree: int = 12,
+        prim_poly: int | None = None,
+        primitive_element: int = 2,
+    ):
         object.__setattr__(self, 'degree', degree)
         object.__setattr__(self, 'order', (1 << degree) - 1)
         object.__setattr__(self, 'prim_poly', prim_poly if prim_poly else (0x1053 if degree == 12 else 0x13))
-        object.__setattr__(self, 'primitive_element', 2)
+        object.__setattr__(self, 'primitive_element', primitive_element)
 
-        # Build log/exp tables
+        # Build log/exp tables from the configured generator
         _init_tables(self)
-
-    def _init_tables(model: GF2FieldModel):
-        """Initialize log and exp tables for field arithmetic."""
-        x = 1
-        order = model.order
-        prim_poly = model.prim_poly
-
-        object.__setattr__(model, "exp_table", np.zeros(order * 2, dtype=np.int64))
-        object.__setattr__(model, "log_table", np.zeros(1 << model.degree, dtype=np.int64))
-
-        for i in range(order):
-            model.exp_table[i] = x
-            model.exp_table[i + order] = x
-            model.log_table[x] = i
-            x <<= 1
-            if x & (1 << model.degree):
-                x ^= prim_poly
 
     def mul(self, a: int, b: int) -> int:
         """Carry-less multiplication modulo irreducible polynomial."""
@@ -106,22 +107,60 @@ class GF2FieldModel:
         return int(self.exp_table[(int(self.log_table[a]) - int(self.log_table[b])) % self.order])
 
 
+def _gf2_carryless_mul(a: int, b: int) -> int:
+    """Carry-less (GF(2)[x]) product of two bit-packed polynomials."""
+    result = 0
+    while b:
+        if b & 1:
+            result ^= a
+        a <<= 1
+        b >>= 1
+    return result
+
+
 def _init_tables(model: GF2FieldModel):
-    """Initialize tables for a GF2FieldModel instance."""
-    x = 1
+    """Initialize tables for a GF2FieldModel instance from its generator.
+
+    The primitive element decides the whole table layout: ``exp`` walks the
+    multiplicative group as ``1, g, g^2, ...``.  An element that never reaches
+    the full order leaves gaps or repeats, so it is refused here instead of
+    silently producing a table that only looks like a field.
+    """
+    degree = model.degree
     order = model.order
-    prim_poly = model.prim_poly
+    modulus = model.prim_poly
+    generator = model.primitive_element
 
-    object.__setattr__(model, "exp_table", np.zeros(order * 2, dtype=np.int64))
-    object.__setattr__(model, "log_table", np.zeros(1 << model.degree, dtype=np.int64))
+    if not (2 <= generator < (1 << degree)):
+        raise ValueError(
+            f"primitive element {generator} is outside GF(2^{degree}); "
+            "it must be a nonzero element other than 1"
+        )
 
+    exp_table = np.zeros(order * 2, dtype=np.int64)
+    log_table = np.zeros(1 << degree, dtype=np.int64)
+    seen = np.zeros(1 << degree, dtype=bool)
+
+    x = 1
     for i in range(order):
-        model.exp_table[i] = x
-        model.exp_table[i + order] = x
-        model.log_table[x] = i
-        x <<= 1
-        if x & (1 << model.degree):
-            x ^= prim_poly
+        exp_table[i] = x
+        exp_table[i + order] = x
+        log_table[x] = i
+        seen[x] = True
+        x = _gf2_poly_mod(_gf2_carryless_mul(x, generator), modulus, degree)
+        if x == 0:
+            raise ValueError(
+                f"element {generator} is not invertible in GF(2^{degree})"
+            )
+
+    if x != 1 or not seen[1:].all():
+        raise ValueError(
+            f"element {generator} does not generate GF(2^{degree})*; "
+            "it is not primitive for this modulus"
+        )
+
+    object.__setattr__(model, "exp_table", exp_table)
+    object.__setattr__(model, "log_table", log_table)
 
 
 # ============================================================================
@@ -657,7 +696,11 @@ class MMLMMultiplier:
         self.degree = degree
 
         # Initialize field model
-        self.gf = GF2FieldModel(degree=self.degree, prim_poly=self.field_config.irreducible_poly)
+        self.gf = GF2FieldModel(
+            degree=self.degree,
+            prim_poly=self.field_config.irreducible_poly,
+            primitive_element=self.field_config.primitive_element,
+        )
 
         # Build default tensor
         self.tensor = build_multiplication_tensor(degree=self.degree, modulus_int=self.field_config.modulus_int)

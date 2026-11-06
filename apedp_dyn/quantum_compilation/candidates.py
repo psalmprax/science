@@ -46,6 +46,9 @@ class CandidateStatus(str, Enum):
     PROPOSED = "PROPOSED"
     SCREEN_REJECTED = "SCREEN_REJECTED"
     VERIFIER_REJECTED = "VERIFIER_REJECTED"
+    #: The verifier produced no measured verdict (timeout, crash, unparseable
+    #: summary). A capability gap, not evidence against the circuit.
+    UNVERIFIABLE = "UNVERIFIABLE"
     VERIFIED_NONIMPROVING = "VERIFIED_NONIMPROVING"
     VERIFIED_IMPROVEMENT = "VERIFIED_IMPROVEMENT"
     INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
