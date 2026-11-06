@@ -1,0 +1,47 @@
+{
+  "patent_id": "US5269149A",
+  "source": "https://patents.google.com/patent/US5269149A/en",
+  "retrieved_utc": "2026-11-01T01:35:15+00:00",
+  "http_status": 200,
+  "bytes": 172846,
+  "html_sha256": "dce5c2b6f301fe10585a189a25dd17db7a9da2538c6dd56ac9ac0c9065de61a5",
+  "jurisdiction": "US",
+  "title": "Method for long range transcontinental and transoceanic transport of fresh chilled meat",
+  "abstract": "Abstract A method for long range transcontinental or transoceanic transport of fresh chilled meat. The method concerns a transport of vacuum packaged chilled beef, pork or lamb meat or poultry or fish in refrigerated containers wherein one part of the container is filled with the frozen meat and the fresh non-frozen but chilled meat is placed in the close proximity of the frozen meat and insulated with foamed polystyrene laminated on both sides with sheets of insulated material. The chilled meat is stored in controlled atmosphere containing less then 1% of oxygen.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A method for preservation of vacuum-packed fresh chilled meat for about 8 to 10 weeks by storing said fresh chilled meat in a refrigeration container suitable for transport of a frozen food, wherein said container is insulated with insulation comprising foamed polystyrene plates of about one inch thickness laminated on one or both sides with aluminum foil, said insulation dividing said container into smaller enclosed compartments, wherein said compartments are maintained at a super-chilled temperature with blocks of frozen meat stored within said compartments, wherein the fresh chilled meat is surrounded with said blocks of said frozen meat, and wherein said super-chilled temperature is maintained at about ±1° C. with a fluctuation of about ±0.5° C. and wherein formation of hot and cold spots is essentially eliminated."
+    },
+    {
+      "num": "2",
+      "text": "2. The method of claim 1 wherein the container further comprises a controlled atmosphere option assuring that an atmosphere within the container contains a combination of an inert gas, 20-40% of carbon dioxide and less than 1% of oxygen."
+    },
+    {
+      "num": "3",
+      "text": "3. The method of claim 2 wherein the container's insulation consists of two sheets of aluminum foil laminated by polyethylene to two sides of a paper reinforced with glass fibers."
+    },
+    {
+      "num": "4",
+      "text": "4. The method of claim 3 wherein the temperature of the fresh chilled meat is maintained at a constant temperature of about -1° C. and a temperature fluctuation is about ±0.5° C."
+    },
+    {
+      "num": "5",
+      "text": "5. The method of claim 4 wherein the temperature of the block of frozen meat is around -20° C."
+    },
+    {
+      "num": "6",
+      "text": "6. The method of claim 5 wherein additionally the blocks of frozen meat are stored outside of the insulation."
+    },
+    {
+      "num": "7",
+      "text": "7. A method of claim 6 wherein the inert gas is selected from a group consisting of nitrogen, helium, argon, freon, and krypton."
+    },
+    {
+      "num": "8",
+      "text": "8. A method for preservation of vacuum-packed fresh chilled meat for about 8 to 10 weeks by storing said fresh chilled meat in a refrigeration container suitable for transport of a frozen food, wherein said container consists of compartments insulated with insulation comprising foamed polystyrene plates of about one inch thickness laminated on one or both sides with aluminum foil, wherein said compartments are maintained at a super-chilled temperature with blocks of frozen meat surrounding said compartments, wherein the chilled fresh meat is stored within the compartments surrounded with said blocks of said frozen meat, and wherein said super-chilled temperature within the compartment is maintained at about ±1° C. with a fluctuation of about ±0.5° C. and where formation of hot and cold spots is essentially eliminated."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "perishable food freshness prediction"
+}

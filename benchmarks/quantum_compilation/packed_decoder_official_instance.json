@@ -1,0 +1,86 @@
+{
+  "experiment": "Benchmark II packed decoder at the official instance, submitted to the official verifier",
+  "question": "can this repository's packed single-array decoder be built at the official 891-qubit instance and pass the competition verifier?",
+  "answer": "no on both counts: it builds and it is accepted by the register contract, but it lands at 1,788 qubits (891 is not reachable by this construction) and it FAILs on phase, because the packed array has no room for the Forney numerator.",
+  "declared_in": "docs/ATTESTED_WIDTH_AND_ACCURACY_BUDGET.md §1 (correction note added with this receipt)",
+  "instance": {
+    "m": 4095,
+    "n": 70,
+    "degree": 12,
+    "t": 35,
+    "positions": 4095,
+    "iterations": 70,
+    "clear": "reset",
+    "clear_note": "the shipped extension has no `mr` (the rebuilt one in /dev/shm does); `reset` and `mr` both emit zero ANDs"
+  },
+  "build": {
+    "script": "scripts/build_packed_decoder_submission.py",
+    "stages": [
+      "key equation: 70 packed iterations over the one sigma | B | d array",
+      "coefficient sweep: constant multiplies over 71 cells per position",
+      "Forney block: inverse + gf2_phase_by_product masked by E[j] + uncompute, at 4,095 positions",
+      "measured clear: reset of the array, omega and inverse"
+    ],
+    "qubits": 1788,
+    "num_ops": 44725333,
+    "static_toffolis": 1603035,
+    "build_seconds": 4.08,
+    "register_contract": "ACCEPTED",
+    "circuit": "build/dqi_packed_4095.kmb (gitignored, 460,148,028 bytes; 4 s to regenerate)",
+    "circuit_sha256": "dbe381a7e5245412966ca67c9a385bc1be4e342641c4a9db6c7941dac676933d"
+  },
+  "width": {
+    "syndrome_qubits_forced_by_contract": 840,
+    "packed_array_qubits": 876,
+    "omega_qubits": 12,
+    "inverse_qubits": 12,
+    "modelled_total": 1740,
+    "inverse_scaffold_above_model": 48,
+    "measured_total": 1788,
+    "layout_floor_with_control": 1731,
+    "reference_qubits": 1893,
+    "archived_qubits": 891,
+    "archived_qubits_outside_syndrome_registers": 51,
+    "conclusion": "the verifier's contract forces S0..S69 (70 x 12 = 840 qubits) inside Q and the packed array is a separate 876-qubit buffer, so the archived 891 leaves 51 qubits for everything else. 891 = 876 array + 12 scale + 3 control omits the syndrome block: with the syndromes counted the same design is 1,731, and the built stream measures 1,788. No optimisation of this construction reaches 891; the archive must be a different in-place schedule, which this checkout does not contain."
+  },
+  "submission": {
+    "runner": "scripts/run_dqi_full_instance_verifier.py",
+    "verifier_sha256": "f14274bc0943fb9769ddb01131be6063191a15009fe1caf1d4bdd9fd25194e65",
+    "patched_sha256": "649549c046d4150ee16a2266c4c5e82ae0d2a099417456a6851e56afc3dc4c0e",
+    "patch": "reaction_depth diagnostic -> None; identical to dqi_full_instance_reverify.json and dqi_archived_artifact_reverify.json",
+    "num_shots": 1024,
+    "status": "FAIL",
+    "error": "Effective error rate 0.6944 >= 1/16 at log2_delta=-128.0 (empirical=0.4980, value_errors=0/1024, phase_errors=510/1024)",
+    "value_errors": 0,
+    "phase_errors": 510,
+    "empirical_error_rate": 0.498,
+    "effective_error_rate": 0.6944,
+    "wall_clock_seconds": 25.53,
+    "peak_rss_kb": 1829672,
+    "why_1024_shots": "the measured error rate is 0.498 against the 1/16 = 0.0625 gate, 8x above it, so the failure is not the power floor that makes a small-budget run uninterpretable (cf. dqi_archived_artifact_reverify.json, where 0/256 bounds the rate at 0.2929 and only the full budget certifies)."
+  },
+  "reading": {
+    "value_errors_zero_is_vacuous": "the stream never writes the syndrome registers or the E registers, and it clears the array, omega and inverse to |0>, so 'syndromes restored and junk clean' holds without any decoding having happened. It is a structural pass, not a correctness pass.",
+    "phase_is_the_whole_defect": "the Forney numerator holds |0> and the packed array has no cell for it, so gf2_phase_by_product multiplies by zero and no phase ever flips: the phase is wrong exactly on the shots whose required phase is -1, measured at 510/1024 = 0.498.",
+    "what_would_pass": "an omega of 2t = 70 cells, or 36 cells for the truncated product, must persist while the syndromes and the array are live: 840 + 876 + 432 = 2,148 qubits and up, i.e. wider than the 1,893-qubit reference. The archive's 396,919 Toffolis at 891 qubits therefore remain a schedule this repository does not have, not a build it is one step away from."
+  },
+  "unshaped_assembly_attempt": {
+    "script": "scripts/assemble_packed_decoder.py",
+    "qubits": 5883,
+    "num_ops": 44737594,
+    "static_toffolis": 1603035,
+    "verdict": "REJECTED at the register contract: ValueError 'Registers must be exactly S0..S{n-1} and E0..E{m-1}.' -- the scaled assembly has 70 S registers, no E registers, and three named ancillas (bm_array, omega, inverse); its 4,095 per-position live qubits are why it is 5,883 wide."
+  },
+  "comparisons": {
+    "archive_toffolis": 396919.3329296875,
+    "built_over_archive_toffolis": 4.039,
+    "archive_qubits": 891,
+    "built_over_archive_qubits": 2.007,
+    "score": "not computed: the verifier raises before scoring on a FAIL, and a score for a phase-wrong circuit is not a score"
+  },
+  "scope": {
+    "measured": "one circuit built at the official parameters, its register contract checked by the verifier's own validate_registers, and the official verifier's own verdict and per-shot error counts at 1,024 shots",
+    "not_measured": "a passing submission, the full 102,400-shot budget, and the Forney numerator that would make the phase correct",
+    "reproduce": "/dev/shm/qvcc-venv313/bin/python scripts/build_packed_decoder_submission.py --out build/dqi_packed_4095.kmb && /dev/shm/qvcc-venv313/bin/python scripts/run_dqi_full_instance_verifier.py --circuit $PWD/build/dqi_packed_4095.kmb --num-shots 1024"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "patent_id": "US20220223901A1",
+  "source": "https://patents.google.com/patent/US20220223901A1/en",
+  "retrieved_utc": "2026-11-01T01:35:22+00:00",
+  "http_status": 200,
+  "bytes": 168846,
+  "html_sha256": "7759cc6ba2b249590aec8086276c57799f3e59e0a4c1fd2cef2481c9329d800d",
+  "jurisdiction": "US",
+  "title": "Battery pack, method and vehicle",
+  "abstract": "Abstract The invention provides a battery pack, a method and a vehicle. The battery pack battery has a cell group. The cell group comprises a lithium iron phosphate cell and a ternary lithium-ion cell, wherein the lithium iron phosphate cell and the ternary lithium-ion cell are arranged in series with each another.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1 . A battery pack having a cell group, wherein the cell group comprises a lithium iron phosphate cell and a ternary lithium-ion cell, wherein the lithium iron phosphate cell and the ternary lithium-ion cell are arranged in series with each another."
+    },
+    {
+      "num": "2",
+      "text": "2 . The battery pack according to claim 1 , wherein the lithium iron phosphate cell and the ternary lithium-ion cell are alternately arranged one by one."
+    },
+    {
+      "num": "3",
+      "text": "3 . The battery pack according to claim 1 , wherein two lithium iron phosphate cells and one ternary lithium-ion cell are arranged in series as a group."
+    },
+    {
+      "num": "4",
+      "text": "4 . The battery pack according to claim 1 , wherein the cell group has only one ternary lithium-ion cell."
+    },
+    {
+      "num": "5",
+      "text": "5 . The battery pack according to claim 1 , wherein the lithium iron phosphate cell and the ternary lithium-ion cell are arranged in a row with each other."
+    },
+    {
+      "num": "6",
+      "text": "6 . A method for measuring a state of charge of a battery pack, wherein the battery pack is a battery pack of claim 1 , and the method comprises: performing ampere-hour integral calculation when the battery pack is being charged and discharged; and/or correcting the calculation of the state of charge by using an open-circuit voltage of the ternary lithium-ion cell during standing of the battery pack when the state of charge of the battery pack is 5% to 95%; and/or correcting the calculation of the state of charge by using open-circuit voltages of the lithium iron phosphate cell and the ternary lithium-ion cell during standing of the battery pack when the state of charge of the battery pack is 0% to 5% or 95% to 100%."
+    },
+    {
+      "num": "7",
+      "text": "7 . The method according to claim 6 , wherein a resistive shunt is used to perform the ampere-hour integral calculation."
+    },
+    {
+      "num": "8",
+      "text": "8 . A vehicle comprising a battery pack of claim 1 ."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "battery charging efficiency measurement"
+}

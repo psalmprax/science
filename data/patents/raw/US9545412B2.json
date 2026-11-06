@@ -1,0 +1,75 @@
+{
+  "patent_id": "US9545412B2",
+  "source": "https://patents.google.com/patent/US9545412B2/en",
+  "retrieved_utc": "2026-11-01T01:35:05+00:00",
+  "http_status": 200,
+  "bytes": 767579,
+  "html_sha256": "54eff0ae946e4c78fcd972ef7ae572708d6b81c2e00970fca9a97a9551b7e1dd",
+  "jurisdiction": "US",
+  "title": "Composition and methods used during anti-HIV treatment",
+  "abstract": "Abstract This invention relates to a composition comprising an anti-HIV treatment and a treatment for side effects of said anti-HIV treatment in an HIV-infected patient. This invention is, for example, very useful in the treatment of side effects caused by certain anti-HIV treatments, for example premature aging and lipodystrophy, which can be caused by protease inhibitors or reverse transcriptase inhibitors. The composition of this invention includes at least one hydroxymethylglutaryl-coenzyme A (HMG-CoA) reductase inhibitor, at least one farnesyl-pyrophosphate synthase inhibitor, and at least one anti-HIV agent. One of the processes for treating an HIV-infected patient includes, in any order, the following steps: (i) administration of a mixture including at least one hydroxymethylglutaryl-coenzyme A (HMG-CoA) reductase inhibitor and at least one farnesyl-pyrophosphate synthase inhibitor and (ii) administration of an anti-HIV agent, in which the administrations are concomitant, successive or alternative.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A pharmaceutical composition, comprising: a synergistically effective amount of the combination of at least one hydroxymethylglutaryl-coenzyme A (HMG-CoA) reductase inhibitor or one of its physiologically acceptable salts, which is selected from the group consisting of pravastatin, atorvastatin, simvastatin, rivastatin, mevastatin, velostatin, fluvastatin, cerivastatin, rosuvastatin, pitavastatin, lovastatin, and a pharmaceutically acceptable salt thereof; and at least one farnesyl-pyrophosphate synthase inhibitor or one of its physiologically acceptable salts, wherein the farnesyl-pyrophosphate synthase inhibitor is selected from the group consisting of a molecule of the aminobiphosphonate (NBP) family or one of its physiologically acceptable salts which is an aminobisphosphonate selected from the group consisting of alendronic acid or its ionic form, alendronate; ibandronic acid or its ionic form, ibandronate; neridronic acid or its ionic form, neridronate; olpadronic acid or its ionic form, olpadronate; pamidronic acid or its ionic form, pamidronate; risedronic acid or its ionic form, risedronate; zoledronic acid or its ionic form, zoledronate; 4-N,N-dimethylaminomethane diphosphonic acid or its ionic form, dimethylaminomethanediphosphonate; α-amino-(4 hydroxybenzylidene) diphosphonate; and a pharmaceutically acceptable salt thereof, wherein the pharmaceutical composition further comprises at least one anti-HIV agent, and wherein the anti-HIV agent is a protease inhibitor or a reverse transcriptase inhibitor."
+    },
+    {
+      "num": "2",
+      "text": "2. The pharmaceutical composition according to claim 1 , in which the HMG-CoA reductase inhibitor is pravastatin and in which the farnesyl-pyrophosphate synthase inhibitor is zoledronic acid or its ionic form, zoledronate or is alendronic acid or its ionic form, alendronate."
+    },
+    {
+      "num": "3",
+      "text": "3. The pharmaceutical composition according to claim 1 , in which the anti-HIV agent is a protease inhibitor selected from the group consisting of fosamprenavir, lopinavir, ritonavir, amprenavir, atazanavir and indinavir."
+    },
+    {
+      "num": "4",
+      "text": "4. A process for treating an HIV-infected patient comprising the administration of a pharmaceutical composition according to claim 1 ."
+    },
+    {
+      "num": "5",
+      "text": "5. The process according to claim 4 , in which the administration is performed orally or by injection."
+    },
+    {
+      "num": "6",
+      "text": "6. A process for treating premature aging caused in a patient as a side effect of anti-HIV treatment, wherein the patient is administered an anti-HIV agent selected from the group consisting of protease inhibitors and reverse transcriptase inhibitors, which process comprises: the administration of a synergistically effective amount of the combination of at least one hydroxymethylglutaryl-coenzyme A (HMG-CoA) reductase inhibitor or one of its physiologically acceptable salts, which is selected from the group consisting of pravastatin, atorvastatin, simvastatin, rivastatin, mevastatin, velostatin, fluvastatin, cerivastatin, rosuvastatin, pitavastatin, lovastatin, and a pharmaceutically acceptable salt thereof; and at least one farnesyl-pyrophosphate synthase inhibitor or one of its physiologically acceptable salts which is an aminobisphosphonate selected from the group consisting of alendronic acid or its ionic form, alendronate; ibandronic acid or its ionic form, ibandronate; neridronic acid or its ionic form, neridronate; olpadronic acid or its ionic form, olpadronate; pamidronic acid or its ionic form, pamidronate; risedronic acid or its ionic form, risedronate; zoledronic acid or its ionic form, zoledronate; 4-N,N-dimethylaminomethane diphosphonic acid or its ionic form, dimethylaminomethanediphosphonate; α-amino-(4 hydroxybenzylidene) diphosphonate; and a pharmaceutically acceptable salt thereof."
+    },
+    {
+      "num": "7",
+      "text": "7. The process according to claim 6 , in which the HMG-CoA reductase inhibitor is pravastatin and the farnesyl-pyrophosphate synthase inhibitor is zoledronic acid or its ionic form, zoledronate or alendronic acid or its ionic form, alendronate."
+    },
+    {
+      "num": "8",
+      "text": "8. The process according to claim 6 , in which the administration is performed with a dose of the hydroxymethylglutaryl-coenzyme A (HMG-CoA) reductase inhibitor of 0.01 to 2 mg/kg of body weight and with a dose of the farnesyl-pyrophosphate synthase inhibitor or 0.01 to 40 mg/kg of body weight."
+    },
+    {
+      "num": "9",
+      "text": "9. The process according to claim 6 , in which the administration is performed orally or by injection."
+    },
+    {
+      "num": "10",
+      "text": "10. A process for treating an HIV-infected patient comprising, in any order, the following steps: i. administration of a synergistically effective amount of a mixture comprising at least one hydroxymethylgutaryl-coenzyme A (HMG-CoA) reductase inhibitor and at least one farnesyl-pyrophosphate synthase inhibitor, wherein the at least one HMG-CoA reductase inhibitor or one of its physiologically acceptable salts, is selected from the group consisting of pravastatin, atorvastatin, simvastatin, rivastatin, mevastatin, velostatin, fluvastatin, cerivastatin, rosuvastatin, pitavastatin, lovastatin, and a pharmaceutically acceptable salt thereof and wherein the at least one farnesyl-pyrophosphate synthase inhibitor or one of its physiologically acceptable salts is an aminobisphosphonate selected from the group consisting of alendronic acid or its ionic form, alendronate; ibandronic acid or its ionic form, ibandronate; neridronic acid or its ionic form, neridronate; olpadronic acid or its ionic form, olpadronate; pamidronic acid or its ionic form, pamidronate; risedronic acid or its ionic form, risedronate; zoledronic acid or its ionic form, zoledronate; 4-N,N-dimethylaminomethane diphosphonic acid or its ionic form, dimethylaminomethanediphosphonate; α-amino-(4 hydroxybenzylidene) diphosphonate; and a pharmaceutically acceptable salt thereof; and ii. administration of an anti-HIV agent, wherein the administrations are concomitant, successive, or alternative, and wherein the anti-HIV agent is a protease inhibitor or a reverse transcriptase inhibitor."
+    },
+    {
+      "num": "11",
+      "text": "11. The process according to claim 10 , in which said mixture and said anti-HIV agent are co-administered."
+    },
+    {
+      "num": "12",
+      "text": "12. The process according to claim 10 , in which the anti-HIV agent is a protease inhibitor selected from the group consisting of fosamprenavir, lopinavir, ritonavir, amprenavir, atazanavir and indinavir."
+    },
+    {
+      "num": "13",
+      "text": "13. The process according to claim 10 , in which at least one of the administrations is performed orally or by injection."
+    },
+    {
+      "num": "14",
+      "text": "14. The process according to claim 10 , in which the administration is performed with a dose of the hydroxymethulglutaryl-coenzyme A (HMG-CoA) reductase inhibitor of 0.01 to 2 mg/kg of body weight and with a dose of the farnesyl-pyrophosphate synthase inhibitor of 0.01 to 40 mg/kg of body weight."
+    },
+    {
+      "num": "15",
+      "text": "15. The process according to claim 10 , wherein the HMG-CoA reductase inhibitor is pravastatin and wherein the farnesyl-pyrophosphate synthase inhibitor is zolendronic acid or its ionic form, zoledronate or is alendronic acid or its ionic form, alendronate."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "product lifetime accelerated aging model"
+}

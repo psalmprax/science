@@ -1,0 +1,95 @@
+{
+  "patent_id": "US10209314B2",
+  "source": "https://patents.google.com/patent/US10209314B2/en",
+  "retrieved_utc": "2026-11-01T01:34:56+00:00",
+  "http_status": 200,
+  "bytes": 808585,
+  "html_sha256": "d190e01f630976d2fa45fc740f8ada73f640401bbf6a082acd43171e000d2c80",
+  "jurisdiction": "US",
+  "title": "Systems and methods for estimation and prediction of battery health and performance",
+  "abstract": "Abstract Systems and computer-implemented methods are used for analyzing battery information. The battery information may be acquired from both passive data acquisition and active data acquisition. Active data may be used for feature extraction and parameter identification responsive to the input data relative to an electrical equivalent circuit model to develop geometric-based parameters and optimization-based parameters. These parameters can be combined with a decision fusion algorithm to develop internal battery parameters. Analysis processes including particle filter analysis, neural network analysis, and auto regressive moving average analysis can be used to analyze the internal battery parameters and develop battery health metrics. Additional decision fusion algorithms can be used to combine the internal battery parameters and the battery health metrics to develop state-of-health estimations, state-of-charge estimations, remaining-useful-life predictions, and end-of-life predictions for the battery.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A computer-implemented method for analyzing energy storage device information, comprising: a feature extraction module configured for: receiving input data including passive information collected from passive measurements of a battery and active information collected from active measurements of a response of the battery to a stimulus signal applied to the battery; performing geometric-based parameter identification responsive to the input data relative to an electrical equivalent circuit model to develop geometric parameters; performing optimization-based parameter identification responsive to the input data relative to the electrical equivalent circuit model to develop optimized parameters; and performing a decision fusion algorithm for combining the geometric parameters and the optimized parameters to develop new internal battery parameters including at least a constant phase element exponent, electrolyte resistance, and charge transfer resistance; a state estimation module for updating an internal state model of the battery responsive to the new internal battery parameters; a health estimation module for processing the internal state model to determine a present battery health including one or both of a state-of-health (SOH) estimation and a state-of-charge (SOC) estimation for the battery; and a communication module for communicating one or more of the SOH estimation and the SOC estimation to a user, a related computing system, or a combination thereof."
+    },
+    {
+      "num": "2",
+      "text": "2. The computer-implemented method of claim 1 , wherein performing the geometric-based parameter identification further comprises deriving the constant phase element exponent, the electrolyte resistance, and the charge transfer resistance from a Nyquist plot representation of electrochemical impedance spectroscopy data collected from the active measurements."
+    },
+    {
+      "num": "3",
+      "text": "3. The computer-implemented method of claim 1 , wherein performing the optimization-based parameter identification further comprises deriving the constant phase element exponent, the electrolyte resistance, and the charge transfer resistance from electrochemical impedance spectroscopy data collected from the active measurements and performing a nonlinear optimization of each parameter estimated by minimizing a selected objective function."
+    },
+    {
+      "num": "4",
+      "text": "4. The computer-implemented method of claim 1 , wherein performing the decision fusion algorithm further comprises combining the geometric parameters and the optimized parameters with a weighted average."
+    },
+    {
+      "num": "5",
+      "text": "5. The computer-implemented method of claim 1 , further comprising: a health prediction module for processing the internal state model to determine a battery health prediction including one or both of a remaining-useful-life (RUL) prediction and an end-of-life (EOL) prediction for the battery; and wherein the communication module is further configured for communicating one or more of the RUL prediction and the EOL prediction, to the user, the related computing system, or a combination thereof."
+    },
+    {
+      "num": "6",
+      "text": "6. A computer-implemented method for analyzing battery information, comprising: receiving input data including passive information collected from passive measurements of a battery and active information collected from active measurements of a response of the battery to a stimulus signal applied to the battery; performing a feature extraction process using the input data to develop geometric parameters responsive to an analysis of the input data relative to an electrical equivalent circuit model, develop optimized parameters responsive to another analysis of the input data relative to the electrical equivalent circuit model, and combining the geometric parameters and the optimized parameters to develop internal battery parameters including at least a constant phase element exponent, electrolyte resistance, and charge transfer resistance; performing two or more analysis processes using the internal battery parameters to develop two or more health metrics corresponding to each analysis process, wherein the health metrics from the analysis processes are selected from capacity, available power, or pulse resistance; determining a state-of-health (SOH) estimation for the battery by performing a decision fusion algorithm for combining the two or more health metrics from the two or more analysis processes; and communicating the SOH estimation to a user, a related computing system, or a combination thereof."
+    },
+    {
+      "num": "7",
+      "text": "7. The computer-implemented method of claim 6 , wherein: one analysis process of the two or more analysis processes comprises using the internal battery parameters in a particle filter (PF) analysis to develop a PF capacity metric, a neural network (NN) analysis to develop an NN capacity metric, and an auto regressive moving average (ARMA) analysis to develop an ARMA capacity metric; and further comprising performing a capacity decision fusion algorithm for combining the PF capacity metric, the NN capacity metric, and the ARMA capacity metric to develop an overall capacity health metric for inclusion in the decision fusion algorithm as one of the two or more health metrics."
+    },
+    {
+      "num": "8",
+      "text": "8. The computer-implemented method of claim 6 , wherein: one analysis process of the two or more analysis processes comprises using the internal battery parameters in a particle filter (PF) analysis to develop a PF available power metric, a neural network (NN) analysis to develop an NN available power metric, and an auto regressive moving average (ARMA) analysis to develop an ARMA available power metric; and further comprising performing an available power decision fusion algorithm for combining the PF available power metric, the NN available power metric, and the ARMA available power metric to develop an overall available power health metric for inclusion in the decision fusion algorithm as one of the two or more health metrics."
+    },
+    {
+      "num": "9",
+      "text": "9. The computer-implemented method of claim 6 , wherein: one analysis process of the two or more analysis processes comprises using the internal battery parameters in a particle filter (PF) analysis to develop a PF pulse resistance metric, a neural network (NN) analysis to develop an NN pulse resistance metric, and an auto regressive moving average (ARMA) analysis to develop an ARMA pulse resistance metric; and further comprising performing a pulse resistance decision fusion algorithm for combining the PF pulse resistance metric, the NN pulse resistance metric, and the ARMA pulse resistance metric to develop an overall pulse resistance health metric for inclusion in the decision fusion algorithm as one of the two or more health metrics."
+    },
+    {
+      "num": "10",
+      "text": "10. The computer-implemented method of claim 6 , wherein: performing the two or more analysis processes comprises: performing a capacity analysis to develop an overall capacity health metric; performing an available power analysis to develop an overall available power health metric; and performing a pulse resistance analysis to develop an overall pulse resistance health metric; and performing the decision fusion algorithm comprises using a weighted average to combine the overall capacity health metric, the overall available power health metric, and the overall pulse resistance health metric to determine the SOH estimation."
+    },
+    {
+      "num": "11",
+      "text": "11. The computer-implemented method of claim 6 , further comprising: performing a remaining-useful-life (RUL) analysis responsive to the SOH estimation to develop an RUL prediction; and communicating the RUL prediction to the user, the related computing system, or a combination thereof."
+    },
+    {
+      "num": "12",
+      "text": "12. The computer-implemented method of claim 11 , further comprising: performing an end-of-life (EOL) analysis responsive to the SOH estimation and the RUL prediction to develop an EOL prediction; and communicating the EOL prediction to a user, a related computing system, or a combination thereof."
+    },
+    {
+      "num": "13",
+      "text": "13. A computer-implemented method for analyzing battery information, comprising: receiving input data including passive information collected from passive measurements of a battery and active information collected from active measurements of a response of the battery to a stimulus signal applied to the battery; performing a feature extraction process using the input data to develop internal battery parameters including at least a constant phase element exponent, electrolyte resistance, and charge transfer resistance; performing two or more analysis processes using the internal battery parameters to develop two or more state-of-charge (SOC) estimates corresponding to each analysis process, wherein: a first analysis processes comprises a particle filter analysis for estimating battery internal states responsive to the internal battery parameters followed by a first neural network analysis for developing a first SOC estimate from the battery internal states; and additional analysis processes are selected from a second neural network (NN) analysis and an auto regressive moving average (ARMA) analysis; determining an SOC estimation for the battery by performing a decision fusion algorithm for combining the two or more SOC estimates from the two or more analysis processes; and communicating the SOC estimation to a user, a related computing system, or a combination thereof."
+    },
+    {
+      "num": "14",
+      "text": "14. The computer-implemented method of claim 13 , wherein: performing the two or more analysis processes comprises: performing the second NN analysis to develop an NN SOC estimate; performing the ARMA analysis to develop an ARMA SOC estimate; and performing the first analysis processes to develop an NN-PF combined SOC estimate; and performing the decision fusion algorithm comprises using a weighted average to combine the NN SOC estimate, the ARMA SOC estimate, and the NN-PF combined SOC estimate to determine the SOC estimation."
+    },
+    {
+      "num": "15",
+      "text": "15. A computer-implemented method for analyzing battery information, comprising: receiving input data including passive information collected from passive measurements of a battery and active information collected from active measurements of a response of the battery to a stimulus signal applied to the battery; performing a feature extraction process using the input data to develop geometric parameters responsive to an analysis of the input data relative to an electrical equivalent circuit model, develop optimized parameters responsive to another analysis of the input data relative to the electrical equivalent circuit model, and combining the geometric parameters and the optimized parameters to develop internal battery parameters including at least a constant phase element exponent, electrolyte resistance, and charge transfer resistance; performing two or more analysis processes using the internal battery parameters to develop two or more Remaining-useful-life (RUL) estimates corresponding to each analysis process and two or more End-of-life (EOL) estimates corresponding to each analysis process, wherein the analysis processes are selected from a particle filter (PF) analysis, a neural network (NN) analysis, and an auto regressive moving average (ARMA) analysis; determining an RUL prediction for the battery by performing a decision fusion algorithm to combine the two or more RUL estimates from the two or more analysis processes, determining an EOL prediction for the battery by performing the decision fusion algorithm to combine the two or more EOL estimates from the two or more analysis processes; and communicating at least one of the RUL prediction and the EOL prediction to a user, a related computing system, or a combination thereof."
+    },
+    {
+      "num": "16",
+      "text": "16. The computer-implemented method of claim 15 , wherein: performing the two or more analysis processes comprises: performing the PF analysis to develop a PF RUL estimate; performing the NN analysis to develop an NN RUL estimate; and performing the ARMA analysis to develop an ARMA RUL estimate; and performing the decision fusion algorithm comprises using a weighted average to combine the PF RUL estimate, the NN RUL estimate, and the ARMA RUL estimate to determine the RUL prediction."
+    },
+    {
+      "num": "17",
+      "text": "17. The computer-implemented method of claim 15 , wherein: performing the two or more analysis processes comprises: performing the PF analysis to develop a PF EOL estimate; performing the NN analysis to develop an NN EOL estimate; and performing the ARMA analysis to develop an ARMA EOL estimate; and performing the decision fusion algorithm comprises using a weighted average to combine the PF EOL estimate, the NN EOL estimate, and the ARMA EOL estimate to determine the EOL prediction."
+    },
+    {
+      "num": "18",
+      "text": "18. A battery condition monitoring system, comprising: one or more active data acquisition units configured for applying a signal to a battery and measuring a response of the battery to the applied signal as active information; and processing circuitry configured for: performing geometric-based parameter identification responsive to the active information relative to an electrical equivalent circuit model to develop geometric parameters; performing optimization-based parameter identification responsive to the active information relative to the electrical equivalent circuit model to develop optimized parameters; performing a decision fusion algorithm for combining the geometric parameters and the optimized parameters to develop new internal battery parameters including at least a constant phase element exponent, electrolyte resistance, and charge transfer resistance; updating an internal state model of the battery responsive to the new internal battery parameters; processing the internal state model to determine a battery health prediction including one or both of a remaining-useful-life (RUL) prediction and an end-of-life (EOL) prediction for the battery; and communicating one or more of the RUL prediction, the EOL prediction, to a user, a related computing system, or a combination thereof."
+    },
+    {
+      "num": "19",
+      "text": "19. The battery condition monitoring system of claim 18 , wherein the processing circuitry is further configured for: a health estimation module for processing the internal state model to determine a present battery health including one or both of a state-of-health (SOH) estimation and a state-of-charge (SOC) estimation for the battery; and communicating one or more of the SOH estimation and the SOC estimation to the user, the related computing system, or a combination thereof."
+    },
+    {
+      "num": "20",
+      "text": "20. The battery condition monitoring system of claim 18 , further comprising: one or more passive data acquisition units configured for collecting passive information about the battery, the passive information selected from the group consisting of a temperature of the battery, voltage of the battery, and current of the battery; and wherein the processing circuitry is further configured for modifying the internal state model responsive to the passive information."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "battery state of health estimation"
+}

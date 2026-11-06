@@ -153,6 +153,26 @@ def velocity_field(coords: np.ndarray, force_field: MolecularForceField) -> np.n
     return -energy_gradient(coords, force_field)
 
 
+def signed_volume(
+    coords: np.ndarray, i: int, j: int, k: int, l: int
+) -> float:
+    """Signed triple product of the vectors from atom ``i`` to ``j``, ``k``, ``l``.
+
+    ``det([x_j - x_i, x_k - x_i, x_l - x_i])`` is **six times** the tetrahedron volume,
+    which is the unnormalised form the gradient needs: its sign is the handedness of the
+    quartet, and it flips under an improper transform, which is why a distance-only
+    energy cannot see chirality.  The gradient of ``0.5 * w * (v - target)**2`` is
+    ``w * (v - target) * [b x c, c x a, a x b, -(sum)]`` in this same convention, so
+    :mod:`apedp_dyn.molecular.equivariant_pocket_flow` must use the determinant and not
+    the volume.
+    """
+    points = np.asarray(coords, dtype=np.float64)
+    a = points[j] - points[i]
+    b = points[k] - points[i]
+    c = points[l] - points[i]
+    return float(np.dot(np.cross(b, c), a))
+
+
 def rigid_transform(coords: np.ndarray, rotation: np.ndarray, translation: np.ndarray) -> np.ndarray:
     """Apply ``x -> R x + t`` to every atom."""
     coords = np.asarray(coords, dtype=np.float64)

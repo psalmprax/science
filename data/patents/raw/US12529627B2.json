@@ -1,0 +1,95 @@
+{
+  "patent_id": "US12529627B2",
+  "source": "https://patents.google.com/patent/US12529627B2/en",
+  "retrieved_utc": "2026-11-01T01:35:11+00:00",
+  "http_status": 200,
+  "bytes": 441562,
+  "html_sha256": "3fa9277d93e6f23029bc808662b5fe8aa3529bb99689b9098c1393087ebe321e",
+  "jurisdiction": "US",
+  "title": "Monitoring stored ingestible products",
+  "abstract": "Abstract Provided herein are techniques, devices, and systems for monitoring an ingestible product stored in a storage receptacle with regards to at least its safety for ingestion. A computing system may receive, from multiple different data sources, data associated an ingestible product stored in a storage receptacle. Based on the data, the computing system may determine a metric associated with the ingestible product, the metric indicative of a probability of the ingestible product being safe to ingest. Based on the metric, the computing system may cause information to be output via a user device, wherein the information indicates whether the ingestible product is safe to ingest.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1 . A method for determining whether a food product stored in a temperature-controlled storage receptacle is safe to ingest, the method comprising: receiving, from a first device within the temperature-controlled storage receptacle where the food product is stored, first data associated with the food product; receiving, from a second device within the temperature-controlled storage receptacle where the food product is stored, second data associated with the food product; determining, based at least in part on the first data and the second data, a safety metric associated with the food product, the safety metric indicative of a probability of the food product being safe to ingest, wherein the safety metric is determined using a model of weights that: assigns a first weight to the first data, the first weight indicative of a reliability of the first data; assigns a second weight to the second data, the second weight indicative of a reliability of the second data; and computes the safety metric based at least in part on the first weight and the second weight; and causing information to be output via a user device based at least in part on the safety metric, wherein the information indicates whether the food product is safe to ingest."
+    },
+    {
+      "num": "2",
+      "text": "2 . The method of claim 1 , wherein: the first device comprises a camera; the first data comprises image data representing one or more images of the food product stored in the temperature-controlled storage receptacle; the second device comprises a temperature sensor; and the second data comprises temperature data indicating a temperature of the food product stored in the temperature-controlled storage receptacle."
+    },
+    {
+      "num": "3",
+      "text": "3 . The method of claim 2 , wherein the safety metric is determined using a pathogen growth model that models growth of a pathogen in the food product as a function of temperature."
+    },
+    {
+      "num": "4",
+      "text": "4 . The method of claim 1 , wherein: the first device comprises a camera; the first data comprises image data representing one or more images of the food product stored in the temperature-controlled storage receptacle; the second device comprises a gas sensor; and the second data comprises gas data indicating an odor of the food product stored in the temperature-controlled storage receptacle."
+    },
+    {
+      "num": "5",
+      "text": "5 . The method of claim 1 , wherein the determining of the safety metric is based at least in part on a risk profile of a user."
+    },
+    {
+      "num": "6",
+      "text": "6 . A system comprising: one or more processors; and memory storing computer-executable instructions that, when executed by the one or more processors, cause a performance of operations comprising: receiving, from a first device within a storage receptacle where a food product is stored, first data associated with the food product; receiving second data associated with the food product; determining, based at least in part on the first data and the second data, a metric associated with the food product, the metric indicative of a probability of the food product being safe to ingest, wherein the metric is determined using a model of weights that: assigns a first weight to the first data, the first weight indicative of a reliability of the first data; assigns a second weight to the second data, the second weight indicative of a reliability of the second data; and computes the metric based at least in part on the first weight and the second weight; and causing information to be output via a user device based at least in part on the metric, wherein the information indicates whether the food product is safe to ingest."
+    },
+    {
+      "num": "7",
+      "text": "7 . The system of claim 6 , wherein the determining of the metric is based at least in part on a risk profile of a user."
+    },
+    {
+      "num": "8",
+      "text": "8 . The system of claim 6 , wherein: the first device within the storage receptacle comprises a camera; the first data comprises image data representing one or more images of the food product stored in the storage receptacle; the second data comprises gas data indicating an odor of the food product stored in the storage receptacle; and the gas data is received from a gas sensor within the storage receptacle."
+    },
+    {
+      "num": "9",
+      "text": "9 . The system of claim 6 , wherein: the first device within the storage receptacle comprises a temperature sensor; the first data comprises temperature data indicating a temperature of the food product stored in the storage receptacle; and the metric is determined using a pathogen growth model that models growth of a pathogen in the food product as a function of temperature."
+    },
+    {
+      "num": "10",
+      "text": "10 . The system of claim 6 , wherein: the first device within the storage receptacle comprises at least one of: a camera; or a gas sensor; the first data comprises at least one of: image data representing one or more images of the food product stored in the storage receptacle; or gas data indicating an odor of the food product stored in the storage receptacle; the second data comprises food production data associated with a food production process that was carried out to produce the food product; and the food production data is received from a second device within a facility where the food product was processed."
+    },
+    {
+      "num": "11",
+      "text": "11 . The system of claim 6 , wherein the information further indicates a food preparation recommendation that uses the food product."
+    },
+    {
+      "num": "12",
+      "text": "12 . The system of claim 11 , wherein the food preparation recommendation comprises one or more of: a recipe for a meal using the food product; a menu of one or more meals incorporating the food product; or a suggested shopping list that includes a second food product or a food ingredient to acquire for use with the food product."
+    },
+    {
+      "num": "13",
+      "text": "13 . The system of claim 6 , wherein the metric is a first metric, the operations further comprising determining, based at least in part on the first data and the second data, a second metric associated with the food product, the second metric indicative of a freshness of the food product, wherein the causing the information to be output is further based on the second metric, and wherein the information further indicates whether the food product is fresh."
+    },
+    {
+      "num": "14",
+      "text": "14 . A method comprising: receiving, from a first device within a storage receptacle where a food product is stored, first data associated with the food product; receiving second data associated with the food product; determining, based at least in part on the first data and the second data, a metric associated with the food product, the metric indicative of a probability of the food product being safe to ingest, wherein the metric is determined using a model of weights that: assigns a first weight to the first data, the first weight indicative of a reliability of the first data; assigns a second weight to the second data, the second weight indicative of a reliability of the second data; and computes the metric based at least in part on the first weight and the second weight; and causing information to be output via a user device based at least in part on the metric, wherein the information indicates whether the food product is safe to ingest."
+    },
+    {
+      "num": "15",
+      "text": "15 . The method of claim 14 , wherein: the first device within the storage receptacle comprises a camera; the first data comprises image data representing one or more images of the food product stored in the storage receptacle; the second data comprises temperature data indicating a temperature of the food product stored in the storage receptacle; and the temperature data is received from a temperature sensor within the storage receptacle."
+    },
+    {
+      "num": "16",
+      "text": "16 . The method of claim 14 , wherein: the first device within the storage receptacle comprises a gas sensor; the first data comprises gas data indicating an odor of the food product stored in the storage receptacle; the second data comprises temperature data indicating a temperature of the food product stored in the storage receptacle; and the temperature data is received from a temperature sensor within the storage receptacle."
+    },
+    {
+      "num": "17",
+      "text": "17 . The method of claim 14 , wherein the information further indicates a food preparation recommendation that uses the food product."
+    },
+    {
+      "num": "18",
+      "text": "18 . The method of claim 14 , wherein the determining of the metric is based at least in part on a risk profile of a user."
+    },
+    {
+      "num": "19",
+      "text": "19 . The method of claim 14 , wherein: the metric comprises an expiration date of the food product; and the information further indicates the expiration date or a time remaining until the expiration date."
+    },
+    {
+      "num": "20",
+      "text": "20 . The method of claim 14 , wherein: the first device within the storage receptacle comprises a camera; the first data comprises image data representing one or more images of the food product stored in the storage receptacle; the method further comprises determining, based at least in part on the image data: a type of the food product; and a characteristic of the food product; and the determining of the metric is based at least in part on the type of the food product and the characteristic of the food product."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "perishable food freshness prediction"
+}

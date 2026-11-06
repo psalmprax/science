@@ -1,0 +1,929 @@
+{
+  "schema": "region_mask_model_comparison/v1",
+  "generated_by": "scripts/compare_region_split_to_depth.py",
+  "model": {
+    "hub_repo": "intel-isl/MiDaS",
+    "model": "MiDaS_small",
+    "transform": "small_transform",
+    "citation": "Ranftl et al., MiDaS v3.1 (2022)",
+    "output_semantics": "relative inverse depth; larger = nearer",
+    "torch": "2.3.1+cpu",
+    "torchvision": "0.18.1+cpu",
+    "timm": "0.9.16",
+    "device": "cpu",
+    "python": "3.12.3",
+    "executable": "/home/psalmprax/ALL_PROJECTS/science/.venv-region-models/bin/python",
+    "weights": {
+      "file": "midas_v21_small_256.pt",
+      "bytes": 85761505,
+      "sha256": "70d6b9c891758c67f974a6097fb0c608c7ee67fb81ac3e5588847d5596d56fca"
+    }
+  },
+  "method": "the same derive_region_masks splitter run on the MiDaS relative inverse-depth map instead of RGB, at the audit's analysis size; hand labels and tolerance reused from ground_truth.json",
+  "analysis_size": 256,
+  "tolerance_height_fraction": 0.06,
+  "photos": [
+    {
+      "file": "aerial_coastline.jpg",
+      "scene_regimes": 2,
+      "applicable": false,
+      "depth_boundaries": {
+        "upper_to_middle": 0.1992,
+        "middle_to_lower": 0.3555
+      },
+      "depth_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.336 of the height (limit 0.06): one row boundary does not describe the frame everywhere",
+          "band texture is non-monotone, so the bands are not an ordered stack and 'the smoothest band is the sky' has no meaning"
+        ],
+        "cut_decisiveness": 22.883,
+        "half_disagreement": 0.3359,
+        "texture_order": "non_monotone",
+        "half_cuts": {
+          "left": [
+            0.515625,
+            0.69140625
+          ],
+          "right": [
+            0.19921875,
+            0.35546875
+          ]
+        }
+      },
+      "texture_boundaries": {
+        "upper_to_middle": 0.5,
+        "middle_to_lower": 0.707
+      },
+      "texture_verdict": "undefined",
+      "texture_max_abs_error": null,
+      "depth_comparison": {
+        "verdict": "undefined"
+      },
+      "depth_verdict": "undefined",
+      "depth_max_abs_error": null,
+      "depth_range": [
+        0.0,
+        978.798
+      ],
+      "row_profile_every_16": [
+        382.196,
+        378.444,
+        379.28,
+        388.575,
+        400.218,
+        389.409,
+        378.551,
+        373.347,
+        389.375,
+        395.892,
+        403.567,
+        415.586,
+        433.753,
+        455.499,
+        477.382,
+        497.94
+      ],
+      "top_vs_bottom_mean": [
+        376.214,
+        507.299
+      ],
+      "depth_ramp": {
+        "ramp_r2": 0.7301,
+        "ramp_spearman": 0.8545,
+        "rise_across_frame": 121.063
+      },
+      "texture_ramp": {
+        "ramp_r2": 0.0001,
+        "ramp_spearman": 0.008,
+        "rise_across_frame": 0.0
+      },
+      "seconds": 2.3
+    },
+    {
+      "file": "beach_palm_trees.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "depth_boundaries": {
+        "upper_to_middle": 0.3281,
+        "middle_to_lower": 0.8477
+      },
+      "depth_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.234 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 14.027,
+        "half_disagreement": 0.2344,
+        "texture_order": "decreasing",
+        "half_cuts": {
+          "left": [
+            0.328125,
+            0.84765625
+          ],
+          "right": [
+            0.5625,
+            0.7109375
+          ]
+        }
+      },
+      "texture_boundaries": {
+        "upper_to_middle": 0.3398,
+        "middle_to_lower": 0.5664
+      },
+      "texture_verdict": "close",
+      "texture_max_abs_error": 0.0536,
+      "depth_comparison": {
+        "errors": {
+          "upper_to_middle": -0.0219,
+          "middle_to_lower": 0.2277
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.0219,
+          "middle_to_lower": 0.2277
+        },
+        "max_abs_error": 0.2277,
+        "within_tolerance": {
+          "upper_to_middle": true,
+          "middle_to_lower": false
+        },
+        "verdict": "partial"
+      },
+      "depth_verdict": "partial",
+      "depth_max_abs_error": 0.2277,
+      "depth_range": [
+        5.7994,
+        1045.735
+      ],
+      "row_profile_every_16": [
+        226.147,
+        223.751,
+        212.425,
+        188.522,
+        174.341,
+        168.027,
+        173.036,
+        172.399,
+        173.416,
+        195.599,
+        279.148,
+        376.238,
+        468.86,
+        560.222,
+        652.649,
+        750.778
+      ],
+      "top_vs_bottom_mean": [
+        223.677,
+        795.544
+      ],
+      "depth_ramp": {
+        "ramp_r2": 0.6849,
+        "ramp_spearman": 0.8276,
+        "rise_across_frame": 585.179
+      },
+      "texture_ramp": {
+        "ramp_r2": 0.6246,
+        "ramp_spearman": -0.7903,
+        "rise_across_frame": -0.067
+      },
+      "seconds": 2.14
+    },
+    {
+      "file": "breaking_waves.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "depth_boundaries": {
+        "upper_to_middle": 0.5352,
+        "middle_to_lower": 0.8438
+      },
+      "depth_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.297 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 43.435,
+        "half_disagreement": 0.2969,
+        "texture_order": "increasing",
+        "half_cuts": {
+          "left": [
+            0.25,
+            0.546875
+          ],
+          "right": [
+            0.52734375,
+            0.84375
+          ]
+        }
+      },
+      "texture_boundaries": {
+        "upper_to_middle": 0.3711,
+        "middle_to_lower": 0.6836
+      },
+      "texture_verdict": "wrong",
+      "texture_max_abs_error": 0.1611,
+      "depth_comparison": {
+        "errors": {
+          "upper_to_middle": 0.3252,
+          "middle_to_lower": 0.0938
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.3252,
+          "middle_to_lower": 0.0938
+        },
+        "max_abs_error": 0.3252,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": false
+        },
+        "verdict": "wrong"
+      },
+      "depth_verdict": "wrong",
+      "depth_max_abs_error": 0.3252,
+      "depth_range": [
+        0.0,
+        1087.5952
+      ],
+      "row_profile_every_16": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.954,
+        61.059,
+        96.036,
+        133.189,
+        181.655,
+        261.871,
+        328.33,
+        377.746,
+        440.292,
+        522.804,
+        687.867,
+        951.595
+      ],
+      "top_vs_bottom_mean": [
+        0.0,
+        988.926
+      ],
+      "depth_ramp": {
+        "ramp_r2": 0.8637,
+        "ramp_spearman": 0.9294,
+        "rise_across_frame": 962.51
+      },
+      "texture_ramp": {
+        "ramp_r2": 0.3732,
+        "ramp_spearman": 0.6109,
+        "rise_across_frame": 0.066
+      },
+      "seconds": 2.18
+    },
+    {
+      "file": "city_skyline_night.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "depth_boundaries": {
+        "upper_to_middle": 0.2656,
+        "middle_to_lower": 0.75
+      },
+      "depth_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.242 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 52.558,
+        "half_disagreement": 0.2422,
+        "texture_order": "increasing",
+        "half_cuts": {
+          "left": [
+            0.265625,
+            0.65234375
+          ],
+          "right": [
+            0.5078125,
+            0.75
+          ]
+        }
+      },
+      "texture_boundaries": {
+        "upper_to_middle": 0.2617,
+        "middle_to_lower": 0.7578
+      },
+      "texture_verdict": "partial",
+      "texture_max_abs_error": 0.1817,
+      "depth_comparison": {
+        "errors": {
+          "upper_to_middle": 0.1856,
+          "middle_to_lower": -0.03
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.1856,
+          "middle_to_lower": 0.03
+        },
+        "max_abs_error": 0.1856,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": true
+        },
+        "verdict": "partial"
+      },
+      "depth_verdict": "partial",
+      "depth_max_abs_error": 0.1856,
+      "depth_range": [
+        47.9101,
+        1504.8477
+      ],
+      "row_profile_every_16": [
+        118.61,
+        110.049,
+        102.805,
+        94.466,
+        94.321,
+        103.524,
+        115.175,
+        133.314,
+        159.258,
+        213.16,
+        269.254,
+        329.07,
+        435.505,
+        704.423,
+        775.577,
+        828.934
+      ],
+      "top_vs_bottom_mean": [
+        114.029,
+        853.526
+      ],
+      "depth_ramp": {
+        "ramp_r2": 0.7761,
+        "ramp_spearman": 0.881,
+        "rise_across_frame": 825.397
+      },
+      "texture_ramp": {
+        "ramp_r2": 0.106,
+        "ramp_spearman": 0.3256,
+        "rise_across_frame": 0.025
+      },
+      "seconds": 2.36
+    },
+    {
+      "file": "forest_path.jpg",
+      "scene_regimes": 2,
+      "applicable": false,
+      "depth_boundaries": {
+        "upper_to_middle": 0.1641,
+        "middle_to_lower": 0.5195
+      },
+      "depth_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.090 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 13.672,
+        "half_disagreement": 0.0898,
+        "texture_order": "decreasing",
+        "half_cuts": {
+          "left": [
+            0.1640625,
+            0.51953125
+          ],
+          "right": [
+            0.25390625,
+            0.51953125
+          ]
+        }
+      },
+      "texture_boundaries": {
+        "upper_to_middle": 0.2227,
+        "middle_to_lower": 0.5039
+      },
+      "texture_verdict": "undefined",
+      "texture_max_abs_error": null,
+      "depth_comparison": {
+        "verdict": "undefined"
+      },
+      "depth_verdict": "undefined",
+      "depth_max_abs_error": null,
+      "depth_range": [
+        0.0,
+        1049.5055
+      ],
+      "row_profile_every_16": [
+        200.775,
+        176.503,
+        154.279,
+        138.303,
+        122.55,
+        113.443,
+        107.97,
+        107.499,
+        119.805,
+        204.881,
+        317.596,
+        434.174,
+        552.593,
+        670.145,
+        786.086,
+        903.573
+      ],
+      "top_vs_bottom_mean": [
+        188.805,
+        958.42
+      ],
+      "depth_ramp": {
+        "ramp_r2": 0.7283,
+        "ramp_spearman": 0.8534,
+        "rise_across_frame": 832.731
+      },
+      "texture_ramp": {
+        "ramp_r2": 0.6888,
+        "ramp_spearman": -0.8299,
+        "rise_across_frame": -0.057
+      },
+      "seconds": 2.04
+    },
+    {
+      "file": "mountain_lake_reflection.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "depth_boundaries": {
+        "upper_to_middle": 0.3164,
+        "middle_to_lower": 0.7578
+      },
+      "depth_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.145 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 79.661,
+        "half_disagreement": 0.1445,
+        "texture_order": "increasing",
+        "half_cuts": {
+          "left": [
+            0.328125,
+            0.61328125
+          ],
+          "right": [
+            0.3046875,
+            0.7578125
+          ]
+        }
+      },
+      "texture_boundaries": {
+        "upper_to_middle": 0.3125,
+        "middle_to_lower": 0.4648
+      },
+      "texture_verdict": "close",
+      "texture_max_abs_error": 0.0125,
+      "depth_comparison": {
+        "errors": {
+          "upper_to_middle": 0.0164,
+          "middle_to_lower": 0.2878
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.0164,
+          "middle_to_lower": 0.2878
+        },
+        "max_abs_error": 0.2878,
+        "within_tolerance": {
+          "upper_to_middle": true,
+          "middle_to_lower": false
+        },
+        "verdict": "partial"
+      },
+      "depth_verdict": "partial",
+      "depth_max_abs_error": 0.2878,
+      "depth_range": [
+        0.0,
+        1218.8765
+      ],
+      "row_profile_every_16": [
+        0.161,
+        0.811,
+        1.599,
+        2.999,
+        5.831,
+        24.477,
+        107.883,
+        146.697,
+        201.927,
+        249.393,
+        302.016,
+        382.167,
+        432.928,
+        532.249,
+        614.995,
+        776.189
+      ],
+      "top_vs_bottom_mean": [
+        0.451,
+        806.386
+      ],
+      "depth_ramp": {
+        "ramp_r2": 0.9172,
+        "ramp_spearman": 0.9577,
+        "rise_across_frame": 850.574
+      },
+      "texture_ramp": {
+        "ramp_r2": 0.3794,
+        "ramp_spearman": 0.6159,
+        "rise_across_frame": 0.037
+      },
+      "seconds": 2.4
+    },
+    {
+      "file": "portrait_outdoors.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "depth_boundaries": {
+        "upper_to_middle": 0.5156,
+        "middle_to_lower": 0.8203
+      },
+      "depth_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.152 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 31.774,
+        "half_disagreement": 0.1523,
+        "texture_order": "increasing",
+        "half_cuts": {
+          "left": [
+            0.515625,
+            0.66796875
+          ],
+          "right": [
+            0.51953125,
+            0.8203125
+          ]
+        }
+      },
+      "texture_boundaries": {
+        "upper_to_middle": 0.5703,
+        "middle_to_lower": 0.8008
+      },
+      "texture_verdict": "wrong",
+      "texture_max_abs_error": 0.2703,
+      "depth_comparison": {
+        "errors": {
+          "upper_to_middle": 0.2156,
+          "middle_to_lower": 0.2703
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.2156,
+          "middle_to_lower": 0.2703
+        },
+        "max_abs_error": 0.2703,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": false
+        },
+        "verdict": "wrong"
+      },
+      "depth_verdict": "wrong",
+      "depth_max_abs_error": 0.2703,
+      "depth_range": [
+        0.0,
+        1167.9951
+      ],
+      "row_profile_every_16": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.959,
+        38.869,
+        123.144,
+        232.694,
+        348.332,
+        467.066,
+        597.31,
+        729.63,
+        859.399
+      ],
+      "top_vs_bottom_mean": [
+        0.0,
+        924.074
+      ],
+      "depth_ramp": {
+        "ramp_r2": 0.7988,
+        "ramp_spearman": 0.8937,
+        "rise_across_frame": 964.66
+      },
+      "texture_ramp": {
+        "ramp_r2": 0.6545,
+        "ramp_spearman": 0.809,
+        "rise_across_frame": 0.06
+      },
+      "seconds": 2.83
+    },
+    {
+      "file": "sand_dunes.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "depth_boundaries": {
+        "upper_to_middle": 0.1953,
+        "middle_to_lower": 0.6289
+      },
+      "depth_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.309 of the height (limit 0.06): one row boundary does not describe the frame everywhere",
+          "band texture is non-monotone, so the bands are not an ordered stack and 'the smoothest band is the sky' has no meaning"
+        ],
+        "cut_decisiveness": 37.334,
+        "half_disagreement": 0.3086,
+        "texture_order": "non_monotone",
+        "half_cuts": {
+          "left": [
+            0.1953125,
+            0.62890625
+          ],
+          "right": [
+            0.50390625,
+            0.6796875
+          ]
+        }
+      },
+      "texture_boundaries": {
+        "upper_to_middle": 0.5,
+        "middle_to_lower": 0.7383
+      },
+      "texture_verdict": "wrong",
+      "texture_max_abs_error": 0.28,
+      "depth_comparison": {
+        "errors": {
+          "upper_to_middle": -0.0247,
+          "middle_to_lower": 0.0789
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.0247,
+          "middle_to_lower": 0.0789
+        },
+        "max_abs_error": 0.0789,
+        "within_tolerance": {
+          "upper_to_middle": true,
+          "middle_to_lower": false
+        },
+        "verdict": "partial"
+      },
+      "depth_verdict": "partial",
+      "depth_max_abs_error": 0.0789,
+      "depth_range": [
+        0.0,
+        875.1823
+      ],
+      "row_profile_every_16": [
+        18.508,
+        18.414,
+        18.806,
+        19.515,
+        31.122,
+        47.534,
+        62.121,
+        77.144,
+        133.841,
+        176.52,
+        246.726,
+        417.189,
+        533.359,
+        616.183,
+        695.953,
+        764.049
+      ],
+      "top_vs_bottom_mean": [
+        18.419,
+        792.921
+      ],
+      "depth_ramp": {
+        "ramp_r2": 0.862,
+        "ramp_spearman": 0.9284,
+        "rise_across_frame": 885.928
+      },
+      "texture_ramp": {
+        "ramp_r2": 0.0189,
+        "ramp_spearman": 0.1376,
+        "rise_across_frame": 0.002
+      },
+      "seconds": 2.48
+    },
+    {
+      "file": "sea_sunset_horizon.jpg",
+      "scene_regimes": 2,
+      "applicable": false,
+      "depth_boundaries": {
+        "upper_to_middle": 0.2656,
+        "middle_to_lower": 0.6758
+      },
+      "depth_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.145 of the height (limit 0.06): one row boundary does not describe the frame everywhere",
+          "band texture is non-monotone, so the bands are not an ordered stack and 'the smoothest band is the sky' has no meaning"
+        ],
+        "cut_decisiveness": 59.676,
+        "half_disagreement": 0.1445,
+        "texture_order": "non_monotone",
+        "half_cuts": {
+          "left": [
+            0.34375,
+            0.53125
+          ],
+          "right": [
+            0.4140625,
+            0.67578125
+          ]
+        }
+      },
+      "texture_boundaries": {
+        "upper_to_middle": 0.2656,
+        "middle_to_lower": 0.7188
+      },
+      "texture_verdict": "undefined",
+      "texture_max_abs_error": null,
+      "depth_comparison": {
+        "verdict": "undefined"
+      },
+      "depth_verdict": "undefined",
+      "depth_max_abs_error": null,
+      "depth_range": [
+        0.0,
+        1294.6263
+      ],
+      "row_profile_every_16": [
+        8.508,
+        7.23,
+        3.574,
+        1.841,
+        0.606,
+        9.997,
+        36.317,
+        93.708,
+        198.492,
+        312.482,
+        436.671,
+        522.322,
+        601.839,
+        648.123,
+        674.157,
+        647.943
+      ],
+      "top_vs_bottom_mean": [
+        8.831,
+        641.962
+      ],
+      "depth_ramp": {
+        "ramp_r2": 0.8988,
+        "ramp_spearman": 0.9481,
+        "rise_across_frame": 897.418
+      },
+      "texture_ramp": {
+        "ramp_r2": 0.0295,
+        "ramp_spearman": -0.1717,
+        "rise_across_frame": -0.002
+      },
+      "seconds": 2.48
+    },
+    {
+      "file": "snow_field.jpg",
+      "scene_regimes": 3,
+      "applicable": true,
+      "depth_boundaries": {
+        "upper_to_middle": 0.5156,
+        "middle_to_lower": 0.7422
+      },
+      "depth_evidence": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.379 of the height (limit 0.06): one row boundary does not describe the frame everywhere",
+          "band texture is non-monotone, so the bands are not an ordered stack and 'the smoothest band is the sky' has no meaning"
+        ],
+        "cut_decisiveness": 24.881,
+        "half_disagreement": 0.3789,
+        "texture_order": "non_monotone",
+        "half_cuts": {
+          "left": [
+            0.52734375,
+            0.6953125
+          ],
+          "right": [
+            0.1484375,
+            0.53125
+          ]
+        }
+      },
+      "texture_boundaries": {
+        "upper_to_middle": 0.5273,
+        "middle_to_lower": 0.7422
+      },
+      "texture_verdict": "wrong",
+      "texture_max_abs_error": 0.1973,
+      "depth_comparison": {
+        "errors": {
+          "upper_to_middle": 0.1856,
+          "middle_to_lower": 0.1922
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.1856,
+          "middle_to_lower": 0.1922
+        },
+        "max_abs_error": 0.1922,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": false
+        },
+        "verdict": "wrong"
+      },
+      "depth_verdict": "wrong",
+      "depth_max_abs_error": 0.1922,
+      "depth_range": [
+        0.0,
+        696.5151
+      ],
+      "row_profile_every_16": [
+        4.627,
+        1.535,
+        0.45,
+        29.805,
+        47.685,
+        62.57,
+        74.369,
+        94.708,
+        123.488,
+        170.021,
+        194.141,
+        205.311,
+        275.492,
+        384.263,
+        487.474,
+        585.418
+      ],
+      "top_vs_bottom_mean": [
+        3.128,
+        628.697
+      ],
+      "depth_ramp": {
+        "ramp_r2": 0.8553,
+        "ramp_spearman": 0.9248,
+        "rise_across_frame": 606.346
+      },
+      "texture_ramp": {
+        "ramp_r2": 0.0215,
+        "ramp_spearman": 0.1467,
+        "rise_across_frame": 0.012
+      },
+      "seconds": 2.25
+    }
+  ],
+  "summary": {
+    "photos": 10,
+    "ramp_dominance": {
+      "depth_median_ramp_r2": 0.827,
+      "texture_median_ramp_r2": 0.2396,
+      "depth_ramp_r2_above_0.9": [
+        "mountain_lake_reflection.jpg"
+      ],
+      "note": "A profile that is a linear ramp has no step for the splitter to cut; the depth signal being ramp-dominated is why its cuts are arbitrary and its evidence gate refuses them."
+    },
+    "labelled": 7,
+    "texture": {
+      "scored": 7,
+      "close": 2,
+      "partial": 1,
+      "wrong": 4,
+      "median_abs_error": 0.1817,
+      "max_abs_error": 0.28
+    },
+    "depth": {
+      "scored": 7,
+      "close": 0,
+      "partial": 4,
+      "wrong": 3,
+      "median_abs_error": 0.2277,
+      "max_abs_error": 0.3252
+    },
+    "depth_reliable": 0,
+    "verdict_changed": [
+      {
+        "file": "beach_palm_trees.jpg",
+        "texture": "close",
+        "depth": "partial"
+      },
+      {
+        "file": "mountain_lake_reflection.jpg",
+        "texture": "close",
+        "depth": "partial"
+      },
+      {
+        "file": "sand_dunes.jpg",
+        "texture": "wrong",
+        "depth": "partial"
+      }
+    ]
+  },
+  "limitations": "Ten photographs, one resize, one hand labeller. MiDaS_small is the smallest variant, run on CPU at the audit's 256 px analysis size; a larger depth model would change the numbers. The splitter, the minimum band height and the tolerance are inherited unchanged, so this compares signals, not algorithms."
+}

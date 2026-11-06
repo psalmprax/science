@@ -1,0 +1,76 @@
+{
+  "schema": "region_mask_audit_ground_truth/v1",
+  "labelled_by": "hand, from the ruled contact sheet at 256x256 px",
+  "method": [
+    "Each tile was rendered at the same 256x256 the audit analyses, with a ruler",
+    "drawn at every 10% of height, and the horizontal boundary between bands was",
+    "read off that ruler. Boundaries are recorded as height fractions from the",
+    "top. Where a photograph does not have three stacked horizontal regions the",
+    "entry is marked applicable:false and no boundaries are invented for it --",
+    "that is the point, because derive_region_masks has no way to say so.",
+    "Labelling uncertainty is about 0.03 in height fraction."
+  ],
+  "tolerance_height_fraction": 0.06,
+  "labelled": {
+    "aerial_coastline.jpg": {
+      "regimes": 2,
+      "applicable": false,
+      "expected": null,
+      "note": "A view from an aircraft window over the Red Sea: sky above, water below, and a land spit that runs diagonally. There are two regimes, not three, and the strongest texture in the frame is the window frame at the left and right edges. Any interior boundary the splitter returns is drawn through open water."
+    },
+    "beach_palm_trees.jpg": {
+      "regimes": 3,
+      "applicable": true,
+      "expected": {"upper_to_middle": 0.35, "middle_to_lower": 0.62},
+      "note": "Sky and palm fronds above, open water in the middle, coral sand and rock in the foreground. Genuine three-band structure, which makes it one of the two cases where the split can be scored at all."
+    },
+    "breaking_waves.jpg": {
+      "regimes": 3,
+      "applicable": true,
+      "expected": {"upper_to_middle": 0.21, "middle_to_lower": 0.75},
+      "note": "Overcast sky above a sea horizon at about 0.21, wet beach and rock from about 0.75. The splitter placed its first boundary at 0.37, inside the sea, because the cloud texture near the top out-energies the horizon step itself."
+    },
+    "city_skyline_night.jpg": {
+      "regimes": 3,
+      "applicable": true,
+      "expected": {"upper_to_middle": 0.08, "middle_to_lower": 0.78},
+      "note": "A thin strip of night sky above the towers, buildings, then the floodlit street. The sky band is under the 15% minimum band height, so this structure is unreachable by construction rather than by error: the first boundary cannot legally sit at 0.08. Scored against the visible boundary anyway."
+    },
+    "forest_path.jpg": {
+      "regimes": 2,
+      "applicable": false,
+      "expected": null,
+      "note": "A corridor: textured canopy at the top and bottom, a path receding to a vanishing point at the centre. The texture change runs left-to-right around the path, not top-to-bottom, so a row split has no boundary to find and the two it returns are arbitrary."
+    },
+    "mountain_lake_reflection.jpg": {
+      "regimes": 3,
+      "applicable": true,
+      "expected": {"upper_to_middle": 0.30, "middle_to_lower": 0.47},
+      "note": "Cloud sky, a mountain ridge, then the iceberg-strewn lagoon. Three clean horizontal regimes and a sharp step at each."
+    },
+    "portrait_outdoors.jpg": {
+      "regimes": 3,
+      "applicable": true,
+      "expected": {"upper_to_middle": 0.30, "middle_to_lower": 0.55},
+      "note": "Overcast sky, distant moorland, then marsh and boardwalk in the foreground. The splitter put both boundaries below the true ones, at 0.57 and 0.80, because the boardwalk's plank texture and the water highlights in the bottom third out-energy the horizon."
+    },
+    "sand_dunes.jpg": {
+      "regimes": 3,
+      "applicable": true,
+      "expected": {"upper_to_middle": 0.22, "middle_to_lower": 0.55},
+      "note": "Hazy sky, a vegetated cliff face, then smooth beach sand. The splitter moved both cuts down into the dune, at 0.50 and 0.74: sand is almost texture-free, so the smoothest rows are at the bottom of the frame and they attract the lower cut."
+    },
+    "sea_sunset_horizon.jpg": {
+      "regimes": 2,
+      "applicable": false,
+      "expected": null,
+      "note": "Sky and sea with a single horizon at about 0.45, crossed by a propeller blade. Two regimes. The splitter returns boundaries at 0.27 and 0.72, inventing two transitions in a scene that has one."
+    },
+    "snow_field.jpg": {
+      "regimes": 3,
+      "applicable": true,
+      "expected": {"upper_to_middle": 0.33, "middle_to_lower": 0.55},
+      "note": "Flat overcast sky, a forested slope and mountain shoulder, then the snowfield with the cabin. Snow is the smoothest content in the frame, so the lower cut is pulled deep into the foreground, to 0.74."
+    }
+  }
+}

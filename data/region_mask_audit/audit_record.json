@@ -1,0 +1,704 @@
+{
+  "schema": "region_mask_audit/v1",
+  "photos_dir": "data/region_mask_audit/photos",
+  "method": "derive_region_masks run on the RGB image resized to 256x256; ground truth hand-labelled from the pictures, not from the module",
+  "tolerance_height_fraction": 0.06,
+  "min_band_fraction": 0.15,
+  "smoothing": 5,
+  "photos": [
+    {
+      "file": "aerial_coastline.jpg",
+      "sha256": "7a90d12472a6463fab7562af4abf0d4971a3d6811f4061009a66baaa50312afd",
+      "analysed_size": [
+        256,
+        256
+      ],
+      "boundaries": {
+        "upper_to_middle": 0.5,
+        "middle_to_lower": 0.707
+      },
+      "diagnostics": {
+        "texture_order": "non_monotone",
+        "band_energy_means": {
+          "upper": 0.011192,
+          "middle": 0.017031,
+          "lower": 0.007488
+        },
+        "band_energy_spread_fraction": 0.8797,
+        "chosen_step_over_median": 34.325,
+        "largest_step_over_profile_spread": 0.102,
+        "halves": {
+          "left": {
+            "upper_to_middle": 0.4844,
+            "middle_to_lower": 0.6992
+          },
+          "right": {
+            "upper_to_middle": 0.4688,
+            "middle_to_lower": 0.707
+          },
+          "diagonal_shift": {
+            "upper_to_middle": 0.0156,
+            "middle_to_lower": 0.0078
+          },
+          "max_shift": 0.0156
+        }
+      },
+      "gate": {
+        "reliable": false,
+        "reasons": [
+          "band texture is non-monotone, so the bands are not an ordered stack and 'the smoothest band is the sky' has no meaning"
+        ],
+        "cut_decisiveness": 34.325,
+        "half_disagreement": 0.0156,
+        "texture_order": "non_monotone"
+      },
+      "expected": null,
+      "comparison": {
+        "verdict": "undefined",
+        "boundaries_returned": 2,
+        "reason": "scene has no three-band horizontal structure; the splitter returned two boundaries anyway"
+      },
+      "ground_truth_note": "A view from an aircraft window over the Red Sea: sky above, water below, and a land spit that runs diagonally. There are two regimes, not three, and the strongest texture in the frame is the window frame at the left and right edges. Any interior boundary the splitter returns is drawn through open water.",
+      "scene_regimes": 2
+    },
+    {
+      "file": "beach_palm_trees.jpg",
+      "sha256": "ff26cc2ff123c1732e1974f8d900b9c46531a8135b7c1dd7a078ac513ace8b69",
+      "analysed_size": [
+        256,
+        256
+      ],
+      "boundaries": {
+        "upper_to_middle": 0.3398,
+        "middle_to_lower": 0.5664
+      },
+      "diagnostics": {
+        "texture_order": "decreasing",
+        "band_energy_means": {
+          "upper": 0.075979,
+          "middle": 0.074948,
+          "lower": 0.034139
+        },
+        "band_energy_spread_fraction": 0.8165,
+        "chosen_step_over_median": 15.166,
+        "largest_step_over_profile_spread": 0.203,
+        "halves": {
+          "left": {
+            "upper_to_middle": 0.3398,
+            "middle_to_lower": 0.5664
+          },
+          "right": {
+            "upper_to_middle": 0.3828,
+            "middle_to_lower": 0.5625
+          },
+          "diagonal_shift": {
+            "upper_to_middle": 0.043,
+            "middle_to_lower": 0.0039
+          },
+          "max_shift": 0.043
+        }
+      },
+      "gate": {
+        "reliable": true,
+        "reasons": [],
+        "cut_decisiveness": 15.166,
+        "half_disagreement": 0.043,
+        "texture_order": "decreasing"
+      },
+      "expected": {
+        "upper_to_middle": 0.35,
+        "middle_to_lower": 0.62
+      },
+      "comparison": {
+        "errors": {
+          "upper_to_middle": -0.0102,
+          "middle_to_lower": -0.0536
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.0102,
+          "middle_to_lower": 0.0536
+        },
+        "max_abs_error": 0.0536,
+        "within_tolerance": {
+          "upper_to_middle": true,
+          "middle_to_lower": true
+        },
+        "verdict": "close"
+      },
+      "ground_truth_note": "Sky and palm fronds above, open water in the middle, coral sand and rock in the foreground. Genuine three-band structure, which makes it one of the two cases where the split can be scored at all.",
+      "scene_regimes": 3
+    },
+    {
+      "file": "breaking_waves.jpg",
+      "sha256": "eee1ceff33cea22ae30c46876a708ca64c06db2355fca9eb8e7f30eeec7eb8a2",
+      "analysed_size": [
+        256,
+        256
+      ],
+      "boundaries": {
+        "upper_to_middle": 0.3711,
+        "middle_to_lower": 0.6836
+      },
+      "diagnostics": {
+        "texture_order": "increasing",
+        "band_energy_means": {
+          "upper": 0.012357,
+          "middle": 0.039578,
+          "lower": 0.046422
+        },
+        "band_energy_spread_fraction": 0.9777,
+        "chosen_step_over_median": 12.153,
+        "largest_step_over_profile_spread": 0.196,
+        "halves": {
+          "left": {
+            "upper_to_middle": 0.3906,
+            "middle_to_lower": 0.6836
+          },
+          "right": {
+            "upper_to_middle": 0.4219,
+            "middle_to_lower": 0.8477
+          },
+          "diagonal_shift": {
+            "upper_to_middle": 0.0312,
+            "middle_to_lower": 0.1641
+          },
+          "max_shift": 0.1641
+        }
+      },
+      "gate": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.164 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 12.153,
+        "half_disagreement": 0.1641,
+        "texture_order": "increasing"
+      },
+      "expected": {
+        "upper_to_middle": 0.21,
+        "middle_to_lower": 0.75
+      },
+      "comparison": {
+        "errors": {
+          "upper_to_middle": 0.1611,
+          "middle_to_lower": -0.0664
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.1611,
+          "middle_to_lower": 0.0664
+        },
+        "max_abs_error": 0.1611,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": false
+        },
+        "verdict": "wrong"
+      },
+      "ground_truth_note": "Overcast sky above a sea horizon at about 0.21, wet beach and rock from about 0.75. The splitter placed its first boundary at 0.37, inside the sea, because the cloud texture near the top out-energies the horizon step itself.",
+      "scene_regimes": 3
+    },
+    {
+      "file": "city_skyline_night.jpg",
+      "sha256": "d6c3e98985e7a09b56c4e47de00541894d90a8ffb8b4ba026cf4237f6c540f42",
+      "analysed_size": [
+        256,
+        256
+      ],
+      "boundaries": {
+        "upper_to_middle": 0.2617,
+        "middle_to_lower": 0.7578
+      },
+      "diagnostics": {
+        "texture_order": "non_monotone",
+        "band_energy_means": {
+          "upper": 0.010547,
+          "middle": 0.059498,
+          "lower": 0.031706
+        },
+        "band_energy_spread_fraction": 0.9643,
+        "chosen_step_over_median": 13.159,
+        "largest_step_over_profile_spread": 0.1,
+        "halves": {
+          "left": {
+            "upper_to_middle": 0.2617,
+            "middle_to_lower": 0.5625
+          },
+          "right": {
+            "upper_to_middle": 0.2617,
+            "middle_to_lower": 0.4219
+          },
+          "diagonal_shift": {
+            "upper_to_middle": 0.0,
+            "middle_to_lower": 0.1406
+          },
+          "max_shift": 0.1406
+        }
+      },
+      "gate": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.141 of the height (limit 0.06): one row boundary does not describe the frame everywhere",
+          "band texture is non-monotone, so the bands are not an ordered stack and 'the smoothest band is the sky' has no meaning"
+        ],
+        "cut_decisiveness": 13.159,
+        "half_disagreement": 0.1406,
+        "texture_order": "non_monotone"
+      },
+      "expected": {
+        "upper_to_middle": 0.08,
+        "middle_to_lower": 0.78
+      },
+      "comparison": {
+        "errors": {
+          "upper_to_middle": 0.1817,
+          "middle_to_lower": -0.0222
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.1817,
+          "middle_to_lower": 0.0222
+        },
+        "max_abs_error": 0.1817,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": true
+        },
+        "verdict": "partial"
+      },
+      "ground_truth_note": "A thin strip of night sky above the towers, buildings, then the floodlit street. The sky band is under the 15% minimum band height, so this structure is unreachable by construction rather than by error: the first boundary cannot legally sit at 0.08. Scored against the visible boundary anyway.",
+      "scene_regimes": 3
+    },
+    {
+      "file": "forest_path.jpg",
+      "sha256": "373441d2d5a850667bcfa49ad86028616b07a41cb8b5b49591cc856bbd37e4ef",
+      "analysed_size": [
+        256,
+        256
+      ],
+      "boundaries": {
+        "upper_to_middle": 0.2227,
+        "middle_to_lower": 0.5039
+      },
+      "diagnostics": {
+        "texture_order": "decreasing",
+        "band_energy_means": {
+          "upper": 0.090287,
+          "middle": 0.066442,
+          "lower": 0.044006
+        },
+        "band_energy_spread_fraction": 0.7365,
+        "chosen_step_over_median": 10.043,
+        "largest_step_over_profile_spread": 0.258,
+        "halves": {
+          "left": {
+            "upper_to_middle": 0.168,
+            "middle_to_lower": 0.7461
+          },
+          "right": {
+            "upper_to_middle": 0.2227,
+            "middle_to_lower": 0.5156
+          },
+          "diagonal_shift": {
+            "upper_to_middle": 0.0547,
+            "middle_to_lower": 0.2305
+          },
+          "max_shift": 0.2305
+        }
+      },
+      "gate": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.230 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 10.043,
+        "half_disagreement": 0.2305,
+        "texture_order": "decreasing"
+      },
+      "expected": null,
+      "comparison": {
+        "verdict": "undefined",
+        "boundaries_returned": 2,
+        "reason": "scene has no three-band horizontal structure; the splitter returned two boundaries anyway"
+      },
+      "ground_truth_note": "A corridor: textured canopy at the top and bottom, a path receding to a vanishing point at the centre. The texture change runs left-to-right around the path, not top-to-bottom, so a row split has no boundary to find and the two it returns are arbitrary.",
+      "scene_regimes": 2
+    },
+    {
+      "file": "mountain_lake_reflection.jpg",
+      "sha256": "b206fd50a4dd4cc4de0cfa7e7922c8f6091d16a6a2bc9363b07bc6a78cbcec34",
+      "analysed_size": [
+        256,
+        256
+      ],
+      "boundaries": {
+        "upper_to_middle": 0.3125,
+        "middle_to_lower": 0.4648
+      },
+      "diagnostics": {
+        "texture_order": "increasing",
+        "band_energy_means": {
+          "upper": 0.008694,
+          "middle": 0.025305,
+          "lower": 0.03438
+        },
+        "band_energy_spread_fraction": 0.928,
+        "chosen_step_over_median": 19.277,
+        "largest_step_over_profile_spread": 0.221,
+        "halves": {
+          "left": {
+            "upper_to_middle": 0.4609,
+            "middle_to_lower": 0.6953
+          },
+          "right": {
+            "upper_to_middle": 0.3164,
+            "middle_to_lower": 0.4648
+          },
+          "diagonal_shift": {
+            "upper_to_middle": 0.1445,
+            "middle_to_lower": 0.2305
+          },
+          "max_shift": 0.2305
+        }
+      },
+      "gate": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.230 of the height (limit 0.06): one row boundary does not describe the frame everywhere"
+        ],
+        "cut_decisiveness": 19.277,
+        "half_disagreement": 0.2305,
+        "texture_order": "increasing"
+      },
+      "expected": {
+        "upper_to_middle": 0.3,
+        "middle_to_lower": 0.47
+      },
+      "comparison": {
+        "errors": {
+          "upper_to_middle": 0.0125,
+          "middle_to_lower": -0.0052
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.0125,
+          "middle_to_lower": 0.0052
+        },
+        "max_abs_error": 0.0125,
+        "within_tolerance": {
+          "upper_to_middle": true,
+          "middle_to_lower": true
+        },
+        "verdict": "close"
+      },
+      "ground_truth_note": "Cloud sky, a mountain ridge, then the iceberg-strewn lagoon. Three clean horizontal regimes and a sharp step at each.",
+      "scene_regimes": 3
+    },
+    {
+      "file": "portrait_outdoors.jpg",
+      "sha256": "8a53d499cca9208ba53645d4f2f5164b95b63f65f0a7e1cc0950268ba935e43a",
+      "analysed_size": [
+        256,
+        256
+      ],
+      "boundaries": {
+        "upper_to_middle": 0.5703,
+        "middle_to_lower": 0.8008
+      },
+      "diagnostics": {
+        "texture_order": "non_monotone",
+        "band_energy_means": {
+          "upper": 0.005608,
+          "middle": 0.051448,
+          "lower": 0.038102
+        },
+        "band_energy_spread_fraction": 0.9816,
+        "chosen_step_over_median": 22.716,
+        "largest_step_over_profile_spread": 0.085,
+        "halves": {
+          "left": {
+            "upper_to_middle": 0.5938,
+            "middle_to_lower": 0.7852
+          },
+          "right": {
+            "upper_to_middle": 0.5781,
+            "middle_to_lower": 0.7422
+          },
+          "diagonal_shift": {
+            "upper_to_middle": 0.0156,
+            "middle_to_lower": 0.043
+          },
+          "max_shift": 0.043
+        }
+      },
+      "gate": {
+        "reliable": false,
+        "reasons": [
+          "band texture is non-monotone, so the bands are not an ordered stack and 'the smoothest band is the sky' has no meaning"
+        ],
+        "cut_decisiveness": 22.716,
+        "half_disagreement": 0.043,
+        "texture_order": "non_monotone"
+      },
+      "expected": {
+        "upper_to_middle": 0.3,
+        "middle_to_lower": 0.55
+      },
+      "comparison": {
+        "errors": {
+          "upper_to_middle": 0.2703,
+          "middle_to_lower": 0.2508
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.2703,
+          "middle_to_lower": 0.2508
+        },
+        "max_abs_error": 0.2703,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": false
+        },
+        "verdict": "wrong"
+      },
+      "ground_truth_note": "Overcast sky, distant moorland, then marsh and boardwalk in the foreground. The splitter put both boundaries below the true ones, at 0.57 and 0.80, because the boardwalk's plank texture and the water highlights in the bottom third out-energy the horizon.",
+      "scene_regimes": 3
+    },
+    {
+      "file": "sand_dunes.jpg",
+      "sha256": "6561c6c9d9b1583aba5f9eab138a24a603771519c2692b39b9b266d02a88c7d9",
+      "analysed_size": [
+        256,
+        256
+      ],
+      "boundaries": {
+        "upper_to_middle": 0.5,
+        "middle_to_lower": 0.7383
+      },
+      "diagnostics": {
+        "texture_order": "non_monotone",
+        "band_energy_means": {
+          "upper": 0.004238,
+          "middle": 0.010596,
+          "lower": 0.003554
+        },
+        "band_energy_spread_fraction": 0.915,
+        "chosen_step_over_median": 36.842,
+        "largest_step_over_profile_spread": 0.121,
+        "halves": {
+          "left": {
+            "upper_to_middle": 0.2539,
+            "middle_to_lower": 0.5781
+          },
+          "right": {
+            "upper_to_middle": 0.5,
+            "middle_to_lower": 0.6797
+          },
+          "diagonal_shift": {
+            "upper_to_middle": 0.2461,
+            "middle_to_lower": 0.1016
+          },
+          "max_shift": 0.2461
+        }
+      },
+      "gate": {
+        "reliable": false,
+        "reasons": [
+          "the left and right halves disagree by 0.246 of the height (limit 0.06): one row boundary does not describe the frame everywhere",
+          "band texture is non-monotone, so the bands are not an ordered stack and 'the smoothest band is the sky' has no meaning"
+        ],
+        "cut_decisiveness": 36.842,
+        "half_disagreement": 0.2461,
+        "texture_order": "non_monotone"
+      },
+      "expected": {
+        "upper_to_middle": 0.22,
+        "middle_to_lower": 0.55
+      },
+      "comparison": {
+        "errors": {
+          "upper_to_middle": 0.28,
+          "middle_to_lower": 0.1883
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.28,
+          "middle_to_lower": 0.1883
+        },
+        "max_abs_error": 0.28,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": false
+        },
+        "verdict": "wrong"
+      },
+      "ground_truth_note": "Hazy sky, a vegetated cliff face, then smooth beach sand. The splitter moved both cuts down into the dune, at 0.50 and 0.74: sand is almost texture-free, so the smoothest rows are at the bottom of the frame and they attract the lower cut.",
+      "scene_regimes": 3
+    },
+    {
+      "file": "sea_sunset_horizon.jpg",
+      "sha256": "efa390b0dd1eaaff75b03a781655c71fd3969e831e84c000686dfef4aa104829",
+      "analysed_size": [
+        256,
+        256
+      ],
+      "boundaries": {
+        "upper_to_middle": 0.2656,
+        "middle_to_lower": 0.7188
+      },
+      "diagnostics": {
+        "texture_order": "non_monotone",
+        "band_energy_means": {
+          "upper": 0.004005,
+          "middle": 0.009152,
+          "lower": 0.003604
+        },
+        "band_energy_spread_fraction": 0.8783,
+        "chosen_step_over_median": 20.624,
+        "largest_step_over_profile_spread": 0.102,
+        "halves": {
+          "left": {
+            "upper_to_middle": 0.2656,
+            "middle_to_lower": 0.4844
+          },
+          "right": {
+            "upper_to_middle": 0.2617,
+            "middle_to_lower": 0.4844
+          },
+          "diagonal_shift": {
+            "upper_to_middle": 0.0039,
+            "middle_to_lower": 0.0
+          },
+          "max_shift": 0.0039
+        }
+      },
+      "gate": {
+        "reliable": false,
+        "reasons": [
+          "band texture is non-monotone, so the bands are not an ordered stack and 'the smoothest band is the sky' has no meaning"
+        ],
+        "cut_decisiveness": 20.624,
+        "half_disagreement": 0.0039,
+        "texture_order": "non_monotone"
+      },
+      "expected": null,
+      "comparison": {
+        "verdict": "undefined",
+        "boundaries_returned": 2,
+        "reason": "scene has no three-band horizontal structure; the splitter returned two boundaries anyway"
+      },
+      "ground_truth_note": "Sky and sea with a single horizon at about 0.45, crossed by a propeller blade. Two regimes. The splitter returns boundaries at 0.27 and 0.72, inventing two transitions in a scene that has one.",
+      "scene_regimes": 2
+    },
+    {
+      "file": "snow_field.jpg",
+      "sha256": "95387c449b21bc5b9f2497a07f34c6f5b562e95808c5f229edda297af116c48e",
+      "analysed_size": [
+        256,
+        256
+      ],
+      "boundaries": {
+        "upper_to_middle": 0.5273,
+        "middle_to_lower": 0.7422
+      },
+      "diagnostics": {
+        "texture_order": "non_monotone",
+        "band_energy_means": {
+          "upper": 0.014588,
+          "middle": 0.063789,
+          "lower": 0.004451
+        },
+        "band_energy_spread_fraction": 0.9811,
+        "chosen_step_over_median": 39.159,
+        "largest_step_over_profile_spread": 0.088,
+        "halves": {
+          "left": {
+            "upper_to_middle": 0.5391,
+            "middle_to_lower": 0.6992
+          },
+          "right": {
+            "upper_to_middle": 0.5273,
+            "middle_to_lower": 0.6836
+          },
+          "diagonal_shift": {
+            "upper_to_middle": 0.0117,
+            "middle_to_lower": 0.0156
+          },
+          "max_shift": 0.0156
+        }
+      },
+      "gate": {
+        "reliable": false,
+        "reasons": [
+          "band texture is non-monotone, so the bands are not an ordered stack and 'the smoothest band is the sky' has no meaning"
+        ],
+        "cut_decisiveness": 39.159,
+        "half_disagreement": 0.0156,
+        "texture_order": "non_monotone"
+      },
+      "expected": {
+        "upper_to_middle": 0.33,
+        "middle_to_lower": 0.55
+      },
+      "comparison": {
+        "errors": {
+          "upper_to_middle": 0.1973,
+          "middle_to_lower": 0.1922
+        },
+        "abs_errors": {
+          "upper_to_middle": 0.1973,
+          "middle_to_lower": 0.1922
+        },
+        "max_abs_error": 0.1973,
+        "within_tolerance": {
+          "upper_to_middle": false,
+          "middle_to_lower": false
+        },
+        "verdict": "wrong"
+      },
+      "ground_truth_note": "Flat overcast sky, a forested slope and mountain shoulder, then the snowfield with the cabin. Snow is the smoothest content in the frame, so the lower cut is pulled deep into the foreground, to 0.74.",
+      "scene_regimes": 3
+    }
+  ],
+  "summary": {
+    "photos": 10,
+    "scored": 7,
+    "close": 2,
+    "partial": 1,
+    "wrong": 4,
+    "undefined": 3,
+    "unlabelled": 0,
+    "wrong_files": [
+      "breaking_waves.jpg",
+      "portrait_outdoors.jpg",
+      "sand_dunes.jpg",
+      "snow_field.jpg"
+    ],
+    "undefined_files": [
+      "aerial_coastline.jpg",
+      "forest_path.jpg",
+      "sea_sunset_horizon.jpg"
+    ],
+    "max_abs_error": 0.28,
+    "median_abs_error": 0.1817,
+    "non_monotone": [
+      "aerial_coastline.jpg",
+      "city_skyline_night.jpg",
+      "portrait_outdoors.jpg",
+      "sand_dunes.jpg",
+      "sea_sunset_horizon.jpg",
+      "snow_field.jpg"
+    ],
+    "diagonal_shift_over_tolerance": [
+      "breaking_waves.jpg",
+      "city_skyline_night.jpg",
+      "forest_path.jpg",
+      "mountain_lake_reflection.jpg",
+      "sand_dunes.jpg"
+    ],
+    "weak_cuts": [],
+    "gate_accepts": [
+      "beach_palm_trees.jpg"
+    ],
+    "gate_accepts_that_are_wrong": [],
+    "gate_rejects_that_were_close": [
+      "mountain_lake_reflection.jpg"
+    ]
+  },
+  "limitations": "10 photographs from one source, one resize, one smoothing window, labelled by one pair of eyes at about 0.03 height-fraction resolution. The band meaning is still assigned by the caller, so this audit measures whether the boundaries sit on a horizontal texture change, not whether the upper band is a sky."
+}

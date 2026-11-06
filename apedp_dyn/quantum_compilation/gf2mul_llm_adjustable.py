@@ -841,6 +841,158 @@ class MMLMMultiplier:
             "rank": decomposition.rank,
         }
 
+    def _as_bits_matrix(self, operands: Any) -> np.ndarray:
+        """Bit matrix ``(N, degree)`` from a sequence of field elements."""
+        rows = [self._as_bits(int(value), self.degree) for value in operands]
+        if not rows:
+            return np.zeros((0, self.degree), dtype=np.uint8)
+        return np.asarray(rows, dtype=np.uint8)
+
+    def _multiply_bits_batch(
+        self, left_bits: np.ndarray, right_bits: np.ndarray, decomp: TensorDecomposition
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Multiply ``N`` bit-vector pairs through one set of factors."""
+        U = np.asarray(decomp.U, dtype=np.int64)
+        V = np.asarray(decomp.V, dtype=np.int64)
+        W = np.asarray(decomp.W, dtype=np.int64)
+        u = (np.asarray(left_bits, dtype=np.int64) @ U.T) & 1
+        v = (np.asarray(right_bits, dtype=np.int64) @ V.T) & 1
+        products = (u & v).astype(np.uint8)
+        output_bits = (products.astype(np.int64) @ W) & 1
+        return output_bits, products
+
+    def bilinear_multiply_batch(
+        self, lefts: Any, rights: Any, decomp: TensorDecomposition | None = None
+    ) -> dict[str, Any]:
+        """Multiply many operand pairs through the same decomposition.
+
+        The scalar path takes one pair per call; this one contracts a whole batch with
+        the identical U/V/W factors, which is what makes the composition below possible
+        without leaving the verified algorithm.
+        """
+        decomposition = decomp if decomp is not None else self.default_decomp
+        left_values = [int(value) for value in lefts]
+        right_values = [int(value) for value in rights]
+        if len(left_values) != len(right_values):
+            raise ValueError(
+                f"batch needs equal operands, got {len(left_values)} and {len(right_values)}"
+            )
+        output_bits, products = self._multiply_bits_batch(
+            self._as_bits_matrix(left_values),
+            self._as_bits_matrix(right_values),
+            decomposition,
+        )
+        results = [self._bits_to_int(row) for row in output_bits]
+        expected = [self.gf.mul(left, right) for left, right in zip(left_values, right_values)]
+        return {
+            "products": results,
+            "expected": expected,
+            "exact": [result == want for result, want in zip(results, expected)],
+            "bits": output_bits,
+            "state_bits": products,
+            "pairs": len(results),
+            "bilinear_products": int(products.sum()),
+            "rank": decomposition.rank,
+        }
+
+    def invert_batch(
+        self, elements: Any, decomp: TensorDecomposition | None = None
+    ) -> dict[str, Any]:
+        """Invert field elements as ``x**(2**degree - 2)`` through the decomposition.
+
+        Every squaring and multiplication in the square-and-multiply chain runs through
+        the same rank-54 factors as :meth:`bilinear_multiply`, so an inverse is a
+        composition of field products rather than a table lookup.  The returned record
+        carries ``x * x**-1 == 1`` for every element and the products actually executed,
+        so a wrong chain shows up as a failed identity instead of as a plausible number.
+
+        Raises:
+            ValueError: if any element is zero or outside the field.
+        """
+        decomposition = decomp if decomp is not None else self.default_decomp
+        limit = 1 << self.degree
+        values = [int(value) for value in elements]
+        bad = sorted({value for value in values if value <= 0 or value >= limit})
+        if bad:
+            raise ValueError(
+                f"cannot invert {bad[:5]} in GF(2^{self.degree}): zero has no inverse "
+                "and the rest are outside the field"
+            )
+        bits = self._as_bits_matrix(values)
+        exponent_bits = [int(character) for character in bin(limit - 2)[2:]]
+        accumulator = bits.copy()
+        squarings = 0
+        multiplications = 0
+        for bit in exponent_bits[1:]:
+            accumulator, _ = self._multiply_bits_batch(
+                accumulator, accumulator, decomposition
+            )
+            squarings += 1
+            if bit:
+                accumulator, _ = self._multiply_bits_batch(accumulator, bits, decomposition)
+                multiplications += 1
+        inverses = [self._bits_to_int(row) for row in accumulator]
+        checks = [self.gf.mul(value, inverse) for value, inverse in zip(values, inverses)]
+        products_per_element = squarings + multiplications
+        return {
+            "inverses": inverses,
+            "checked": checks,
+            "exact": [check == 1 for check in checks],
+            "elements": len(values),
+            "squarings": squarings,
+            "multiplications": multiplications,
+            "products_per_element": products_per_element,
+            "bilinear_products": products_per_element * len(values),
+            "rank": decomposition.rank,
+        }
+
+    def gf_matvec(
+        self, matrix: Any, vector: Any, decomp: TensorDecomposition | None = None
+    ) -> dict[str, Any]:
+        """GF(2^b) matrix-vector product, one field product per non-zero entry.
+
+        This is the accumulation a decoder performs over its parity-check matrix, so it
+        is the smallest composition that exercises more than a single multiply.  The
+        result is compared entry by entry against the field model, and the executed
+        product count is reported rather than assumed.
+        """
+        decomposition = decomp if decomp is not None else self.default_decomp
+        rows = [[int(entry) for entry in row] for row in matrix]
+        values = [int(entry) for entry in vector]
+        for row in rows:
+            if len(row) != len(values):
+                raise ValueError(
+                    f"row of {len(row)} entries cannot contract a vector of {len(values)}"
+                )
+        results: list[int] = []
+        products = 0
+        zeros_skipped = 0
+        for row in rows:
+            accumulator = 0
+            for entry, value in zip(row, values):
+                if entry == 0 or value == 0:
+                    zeros_skipped += 1
+                    continue
+                result = self.bilinear_multiply(entry, value, decomposition)
+                accumulator ^= result["product"]  # addition in characteristic 2 is XOR
+                products += 1
+            results.append(accumulator)
+        expected: list[int] = []
+        for row in rows:
+            total = 0
+            for entry, value in zip(row, values):
+                total ^= self.gf.mul(entry, value)
+            expected.append(total)
+        return {
+            "result": results,
+            "expected": expected,
+            "exact": results == expected,
+            "entries": sum(len(row) for row in rows),
+            "products": products,
+            "zero_products_skipped": zeros_skipped,
+            "rank": decomposition.rank,
+        }
+
     def _operand_pair(self, input_data: Any, second_operand: Any = None) -> tuple[Any, Any]:
         """Split a packed input into two operands, or pair it with the identity.
 
@@ -956,11 +1108,15 @@ class MMLMTrackA(MMLMMultiplier):
         sequences) is not implemented here and is reported as such rather than implied.
         """
         return {
-            "unit": "one GF(2^12) product",
+            "unit": "GF(2^12) arithmetic",
             "algorithm": "exact rank-54 bilinear decomposition",
+            "compositions": ["product", "inverse", "matvec"],
             "models_tokens": False,
             "implements_attention": False,
-            "claim": "computes one field product exactly through the decomposition",
+            "claim": (
+                "computes a field product exactly through the decomposition, and composes "
+                "it for inversion and matrix-vector products"
+            ),
         }
 
     def process_with_tensor(self, input_data: Any, second_operand: Any = None) -> dict[str, Any]:
@@ -1006,11 +1162,15 @@ class MMLMTrackB(MMLMMultiplier):
     def _scope(self) -> dict[str, Any]:
         """Exact field multiplication plus a measured continuous ablation."""
         return {
-            "unit": "one GF(2^12) product",
+            "unit": "GF(2^12) arithmetic",
             "algorithm": "exact bilinear decomposition ablated against a fitted real model",
+            "compositions": ["product", "inverse", "matvec"],
             "models_tokens": False,
             "implements_attention": False,
-            "claim": "computes the exact product and reports where a real-valued model fails",
+            "claim": (
+                "computes the exact product, composes it for inversion and matrix-vector "
+                "products, and reports where a real-valued model fails"
+            ),
         }
 
     def process_with_tensor(self, input_data: Any, second_operand: Any = None) -> dict[str, Any]:
@@ -1147,11 +1307,15 @@ class MMLMTrackC(MMLMMultiplier):
     def _scope(self) -> dict[str, Any]:
         """Exact field multiplication scored by bit-level energies."""
         return {
-            "unit": "one GF(2^12) product",
+            "unit": "GF(2^12) arithmetic",
             "algorithm": "exact bilinear decomposition with bit-level energy scoring",
+            "compositions": ["product", "inverse", "matvec"],
             "models_tokens": False,
             "implements_attention": False,
-            "claim": "computes the exact product and scores its bits without attention",
+            "claim": (
+                "computes the exact product, composes it for inversion and matrix-vector "
+                "products, and scores bits without attention"
+            ),
         }
 
     def process_with_tensor(self, input_data: Any, second_operand: Any = None) -> dict[str, Any]:

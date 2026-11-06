@@ -1,0 +1,7431 @@
+{
+  "generated_by": "scripts/harvest_integer_relations_from_discoveries.py",
+  "sources": [
+    "benchmarks/known_truth_results.json",
+    "benchmarks/feynman_noise_rediscovery_state.json",
+    "benchmarks/lorenz_public_benchmark_results.json"
+  ],
+  "settings": {
+    "branch_and_bound": {
+      "max_coeff": 12,
+      "eps": 1e-09
+    },
+    "lll_pslq": {
+      "max_coeff": 0,
+      "eps": 1e-09,
+      "start_digits": 17,
+      "max_digits": 27,
+      "max_iterations": 5000
+    },
+    "max_groups": 400
+  },
+  "design": {
+    "grouping": "one question per emitted formula, per fitted coefficient vector, or per set of replicates of one quantity",
+    "provenance": "every row names its file and JSON pointer",
+    "bounded_ladder": "the reduction stops at 27 digits on purpose: past the input precision it starts returning exact relations among 52-bit rationals",
+    "not_a_claim_of_structure": "finding a relation in a group says those emitted numbers have one; it does not say the discovery was right about the world",
+    "skipped_groups": "groups beyond max_groups are counted, never sampled silently"
+  },
+  "rows": [
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[2].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "(0.667*x^2) * y' + (-1.000*x^1) * y = 0"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1000,
+          667
+        ],
+        "max_coefficient": 1000,
+        "absolute_residual": 3.730349362740526e-14,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[3].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "6.5258 * ((((x + 1) * (x + 1)) / (exp(2) + (x / 2)))) + -1.3438"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          6719,
+          32629
+        ],
+        "max_coefficient": 32629,
+        "absolute_residual": -1.6477930131486573e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[4].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "6.5278 * ((((x + 1) * (x + 1)) / (exp(2) + (x / 2)))) + -1.3327"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[5].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "6.5373 * ((((x + 1) * (x + 1)) / (exp(2) + (x / 2)))) + -1.3918"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          13918,
+          65373
+        ],
+        "max_coefficient": 65373,
+        "absolute_residual": 6.373568339768099e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[6].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "6.5357 * ((((x + 1) * (x + 1)) / (exp(2) + (x / 2)))) + -1.4148"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[7].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "11.7545 * ((((x^2) - (1 / x)) / (exp(2) + (x + 2)))) + 2.0747"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          20747,
+          -117545
+        ],
+        "max_coefficient": 117545,
+        "absolute_residual": 4.874323167314287e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[8].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "6.5340 * ((((x + 1) * (x + 1)) / (exp(2) + (x / 2)))) + -1.3934"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[9].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "6.4750 * ((((x^2) + (x * 2)) / (exp(2) + (x / 2)))) + -0.4906"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[10].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "10.9257 * ((((x^2) - (1 + 2)) / (exp(2) + (x + 1)))) + 4.4678"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          44678,
+          -109257
+        ],
+        "max_coefficient": 109257,
+        "absolute_residual": -9.599432360118954e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[11].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-10.9508 * (((exp(1) - (x^2)) / (exp(2) + (x + 1)))) + 4.2766"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          21383,
+          54754
+        ],
+        "max_coefficient": 54754,
+        "absolute_residual": 2.688160805064399e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[12].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "9.2760 * ((((x^2) + exp(1)) / (exp(1) + (x + 2)))) + -3.8582"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          19291,
+          46380
+        ],
+        "max_coefficient": 46380,
+        "absolute_residual": -7.265299473147024e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[13].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "9.6499 * ((((x^2) - (x / 2)) / (exp(2) + (x - 2)))) + 1.5829"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          15829,
+          -96499
+        ],
+        "max_coefficient": 96499,
+        "absolute_residual": 1.184963238642922e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[14].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "10.0998 * ((((x^2) + (1^2)) / (exp(2) + (x - 1)))) + -0.5372"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[30].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "(0.500*x^2) * y' + (1.000*x^1) * y = 0"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          -1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          -1
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[31].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "(-0.222*x^1 + 0.500*x^2) * y' + (-0.444 + 1.000*x^1) * y = 0"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          2,
+          -1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          2,
+          -1
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[32].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "(-0.167*x^1 + 0.500*x^2) * y' + (-0.333 + 1.000*x^1) * y = 0"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          2,
+          -1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          2,
+          -1
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[33].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "4.0052 * (1 / (x^2)) + 0.0012"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -10013
+        ],
+        "max_coefficient": 10013,
+        "absolute_residual": 1.999051965628773e-15,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[34].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "10.8620 * ((1 / ((x^2) * exp(1)))) + 0.0012"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -27155
+        ],
+        "max_coefficient": 27155,
+        "absolute_residual": 3.153076758022344e-15,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[35].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "4.0004 * (1 / (x^2)) + -0.0029"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          29,
+          40004
+        ],
+        "max_coefficient": 40004,
+        "absolute_residual": 6.716849298982197e-15,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[36].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "3.9974 * (1 / (x^2)) + -0.0003"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          39974
+        ],
+        "max_coefficient": 39974,
+        "absolute_residual": 5.773376568485311e-16,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[37].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "3.9939 * (1 / (x^2)) + -0.0037"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          37,
+          39939
+        ],
+        "max_coefficient": 39939,
+        "absolute_residual": -6.330005963839369e-15,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[38].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "3.9892 * (1 / (x^2)) + 0.0077"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          77,
+          -39892
+        ],
+        "max_coefficient": 39892,
+        "absolute_residual": -2.085137618124122e-14,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[39].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "29.5298 * ((1 / ((x^2) * exp(2)))) + 0.0016"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          8,
+          -147649
+        ],
+        "max_coefficient": 147649,
+        "absolute_residual": 1.5029210514994062e-15,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[40].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "4.0077 * (1 / (x^2)) + 0.0025"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          25,
+          -40077
+        ],
+        "max_coefficient": 40077,
+        "absolute_residual": -6.633148891266316e-15,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[41].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "0.7889 * ((((1 / 2) + (x + 2)) / (exp(x) - (x + 1)))) + 0.1695"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1695,
+          -7889
+        ],
+        "max_coefficient": 7889,
+        "absolute_residual": -1.5459855617905305e-14,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[42].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "3.9917 * (1 / (x^2)) + -0.0138"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          138,
+          39917
+        ],
+        "max_coefficient": 39917,
+        "absolute_residual": -1.7756629500098597e-14,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[43].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "3.4007 * (((exp(x) + (x / 2)) / (exp(x) * (x * x)))) + 0.0327"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          327,
+          -34007
+        ],
+        "max_coefficient": 34007,
+        "absolute_residual": 2.175343238874916e-14,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[44].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "3.9884 * (1 / (x^2)) + 0.0371"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          371,
+          -39884
+        ],
+        "max_coefficient": 39884,
+        "absolute_residual": -6.147859998861804e-14,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[60].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "2.0000*const + 1.5000*x1 + -0.7000*x2"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          5
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -4,
+          0
+        ],
+        "max_coefficient": 4,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[61].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "2.0000*const + 1.5000*x1 + -0.7000*x2"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          5
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -4,
+          0
+        ],
+        "max_coefficient": 4,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[62].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "2.0000*const + 1.5000*x1 + -0.7000*x2"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          5
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -4,
+          0
+        ],
+        "max_coefficient": 4,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[63].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "1.9967*const + 1.5026*x1 + -0.7034*x2 + 0.0012*x1*x1 + -0.0002*x1*x2"
+      },
+      "n": 5,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          1,
+          6
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          48,
+          -62,
+          4,
+          131,
+          120
+        ],
+        "max_coefficient": 131,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[64].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "1.9951*const + 1.5005*x1 + -0.7008*x2 + 0.0011*x1*x2 + 0.0003*x2*x2"
+      },
+      "n": 5,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          3,
+          -11
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          7,
+          121,
+          279,
+          -18,
+          56
+        ],
+        "max_coefficient": 279,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[65].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "1.9986*const + 1.5003*x1 + -0.6982*x2 + 0.0012*x1*x1 + -0.0003*x1*x2 + -0.0002*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          1,
+          4,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          1,
+          4,
+          0
+        ],
+        "max_coefficient": 4,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[66].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "2.0010*const + 1.4999*x1 + -0.6970*x2 + -0.0007*x1*x1 + 0.0010*x1*x2 + 0.0004*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          2,
+          1,
+          1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          2,
+          3,
+          -4
+        ],
+        "max_coefficient": 4,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[67].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "1.9964*const + 1.5022*x1 + -0.6977*x2 + 0.0005*x1*x1 + -0.0009*x1*x2 + 0.0003*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          3
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          3,
+          3,
+          4
+        ],
+        "max_coefficient": 4,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[68].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "1.9912*const + 1.4981*x1 + -0.7012*x2 + 0.0022*x1*x1 + -0.0008*x1*x2 + -0.0007*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          1,
+          1,
+          2
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          3,
+          10,
+          -2
+        ],
+        "max_coefficient": 10,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[69].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "1.9831*const + 1.5095*x1 + -0.6989*x2 + 0.0005*x1*x1 + -0.0082*x1*x2 + -0.0005*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          1
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[70].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "2.0071*const + 1.4987*x1 + -0.7100*x2 + 0.0053*x1*x1 + 0.0042*x1*x2 + -0.0038*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          2,
+          2,
+          5
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          -7,
+          -9,
+          -1,
+          2,
+          -22
+        ],
+        "max_coefficient": 22,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[71].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "2.0009*const + 1.5006*x1 + -0.7033*x2 + 0.0025*x1*x1 + 0.0080*x1*x2 + -0.0041*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          5,
+          1,
+          5
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          16,
+          -5,
+          0
+        ],
+        "max_coefficient": 16,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[72].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "1.9909*const + 1.5109*x1 + -0.7036*x2 + -0.0007*x1*x1 + -0.0050*x1*x2 + 0.0067*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          5,
+          -4,
+          0,
+          2
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          40,
+          -19,
+          -10
+        ],
+        "max_coefficient": 40,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[73].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "2.0428*const + 1.5077*x1 + -0.7035*x2 + -0.0069*x1*x1 + 0.0055*x1*x2 + 0.0015*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          5,
+          6,
+          1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          5,
+          3,
+          12
+        ],
+        "max_coefficient": 12,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[74].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "1.9823*const + 1.5016*x1 + -0.7064*x2 + -0.0027*x1*x1 + -0.0027*x1*x2 + 0.0121*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          1,
+          -1,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          1,
+          -1,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[90].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "(-0.167 + 0.333*x^1 + -0.500*x^2) * y' + (-0.333 + 1.000*x^1) * y = 0"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          2,
+          1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          2,
+          1
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[91].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "(0.167 + -0.333*x^1 + 0.500*x^2) * y' + (0.333 + -1.000*x^1) * y = 0"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          2,
+          1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          2,
+          1
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[92].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "(-0.167 + 0.333*x^1 + -0.500*x^2) * y' + (-0.333 + 1.000*x^1) * y = 0"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          2,
+          1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          2,
+          1
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[93].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "7.3803 * ((((x + x) + (x - 2)) / ((1 / x) * exp(2)))) + 1.0093"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          10093,
+          -73803
+        ],
+        "max_coefficient": 73803,
+        "absolute_residual": -5.513367540288527e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[94].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "7.3938 * ((((x + x) + (x - 2)) / ((1 / x) * exp(2)))) + 0.9939"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3313,
+          -24646
+        ],
+        "max_coefficient": 24646,
+        "absolute_residual": -1.1146639167236572e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[95].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "7.4003 * ((((x + x) + (x - 2)) / ((1 / x) * exp(2)))) + 0.9846"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          9846,
+          -74003
+        ],
+        "max_coefficient": 74003,
+        "absolute_residual": -5.6602500464464356e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[96].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "2.7222 * ((((x + x) + (x - 2)) / ((1 / x) * exp(1)))) + 0.9928"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          4964,
+          -13611
+        ],
+        "max_coefficient": 13611,
+        "absolute_residual": -4.4797499043625066e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[97].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "7.3935 * ((((x + x) + (x - 2)) / ((1 / x) * exp(2)))) + 0.9928"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          9928,
+          -73935
+        ],
+        "max_coefficient": 73935,
+        "absolute_residual": 2.8520519279595646e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[98].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "7.4008 * ((((x + x) + (x - 2)) / ((1 / x) * exp(2)))) + 0.9773"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          337,
+          -2552
+        ],
+        "max_coefficient": 2552,
+        "absolute_residual": 2.2648549702353193e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[99].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "2.7209 * ((((x + x) + (x - 2)) / ((1 / x) * exp(1)))) + 1.0246"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[100].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "7.4071 * ((((x + x) + (x - 2)) / ((1 / x) * exp(2)))) + 0.9377"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[101].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "7.3824 * ((((x + x) + (x - 2)) / ((1 / x) * exp(2)))) + 0.9701"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[102].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "2.6895 * ((((x + x) + (x - 2)) / ((1 / x) * exp(1)))) + 1.0464"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3488,
+          -8965
+        ],
+        "max_coefficient": 8965,
+        "absolute_residual": -7.396305790052793e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[103].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "22.3255 * ((((x^2) - (x / 2)) / ((1 / x) + exp(2)))) + 0.7051"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          7051,
+          -223255
+        ],
+        "max_coefficient": 223255,
+        "absolute_residual": 2.3205548593807634e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[104].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "7.2668 * ((((x + x) + (x - 2)) / ((1 / x) * exp(2)))) + 1.2206"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          6103,
+          -36334
+        ],
+        "max_coefficient": 36334,
+        "absolute_residual": 2.9181101979247615e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[121].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "(1.000*x^2) * y' + (0.300*x^2) * y = 0"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          -10
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -10
+        ],
+        "max_coefficient": 10,
+        "absolute_residual": 1.1102230246251565e-16,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[122].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "(1.000*x^2) * y' + (0.300*x^2) * y = 0"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          -10
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -10
+        ],
+        "max_coefficient": 10,
+        "absolute_residual": 1.1102230246251565e-16,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[123].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "1.1718 * ((((2^2) + (x / 1)) / exp((x / 2)))) + 0.2044"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          146,
+          -837
+        ],
+        "max_coefficient": 837,
+        "absolute_residual": -5.523359547510154e-15,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[124].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "1.1664 * ((((2^2) + (x / 1)) / exp((x / 2)))) + 0.2068"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          517,
+          -2916
+        ],
+        "max_coefficient": 2916,
+        "absolute_residual": 1.965094753586527e-14,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[125].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "1.1647 * ((((2^2) + (x / 1)) / exp((x / 2)))) + 0.2128"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          112,
+          -613
+        ],
+        "max_coefficient": 613,
+        "absolute_residual": 1.432187701766452e-14,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[126].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "1.1698 * ((((2^2) + (x / 1)) / exp((x / 2)))) + 0.2078"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[127].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "1.1674 * ((((2^2) + (x / 1)) / exp((x / 2)))) + 0.2097"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2097,
+          -11674
+        ],
+        "max_coefficient": 11674,
+        "absolute_residual": 1.4876988529977098e-14,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[128].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "1.1617 * ((((2^2) + (x / 1)) / exp((x / 2)))) + 0.2127"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[129].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "1.1752 * ((((2^2) + (x * 1)) / exp((x / 2)))) + 0.2015"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          155,
+          -904
+        ],
+        "max_coefficient": 904,
+        "absolute_residual": -7.771561172376096e-15,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[130].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "1.1641 * ((((2^2) + (x / 1)) / exp((x / 2)))) + 0.2070"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[131].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "1.1681 * ((((2^2) + (x / 1)) / exp((x / 2)))) + 0.2049"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[132].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "11.1128 * (((exp(x) - (1 / 2)) / (exp(x) * (x + 1)))) + -0.7476"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1869,
+          27782
+        ],
+        "max_coefficient": 27782,
+        "absolute_residual": -1.1532996779806126e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[133].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "1.2454 * (((exp(1) + (x + 1)) / exp((x / 2)))) + 0.1731"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[134].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "1.2558 * (((exp(1) + (x + 1)) / exp((x / 2)))) + 0.1803"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[150].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-10.0000 * ((1 / exp((x / 2)))) + 10.0000"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[151].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-10.0000 * ((1 / exp((x / 2)))) + 10.0000"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[152].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-10.0000 * ((1 / exp((x / 2)))) + 10.0000"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[153].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-10.0066 * ((1 / exp((x / 2)))) + 10.0010"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          50005,
+          50033
+        ],
+        "max_coefficient": 50033,
+        "absolute_residual": -5.800160352009698e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[154].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-9.9938 * ((1 / exp((x / 2)))) + 10.0006"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          50003,
+          49969
+        ],
+        "max_coefficient": 50003,
+        "absolute_residual": 6.95088431257318e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[155].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-5.0064 * ((2 / exp((x / 2)))) + 10.0035"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          33345,
+          16688
+        ],
+        "max_coefficient": 33345,
+        "absolute_residual": 5.9818816566803434e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[156].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-9.9672 * ((1 / exp((x / 2)))) + 9.9984"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          4166,
+          4153
+        ],
+        "max_coefficient": 4166,
+        "absolute_residual": 4.831690603168681e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[157].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-5.0153 * ((2 / exp((x / 2)))) + 10.0052"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          100052,
+          50153
+        ],
+        "max_coefficient": 100052,
+        "absolute_residual": 2.8903102133881475e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[158].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-9.9828 * ((1 / exp((x / 2)))) + 9.9936"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2776,
+          2773
+        ],
+        "max_coefficient": 2776,
+        "absolute_residual": 4.092726157978177e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[159].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-9.9820 * ((1 / exp((x / 2)))) + 9.9829"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          99829,
+          99820
+        ],
+        "max_coefficient": 99829,
+        "absolute_residual": 1.4526335689879488e-10,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[160].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-10.0157 * ((1 / exp((x / 2)))) + 10.0060"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          100060,
+          100157
+        ],
+        "max_coefficient": 100157,
+        "absolute_residual": -4.8608228553348454e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[161].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-5.0171 * ((2 / exp((x / 2)))) + 10.0065"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          100065,
+          50171
+        ],
+        "max_coefficient": 100065,
+        "absolute_residual": 3.054712038874641e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[162].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-10.0143 * ((1 / exp((x / 2)))) + 10.0122"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          33374,
+          33381
+        ],
+        "max_coefficient": 33381,
+        "absolute_residual": -1.4512835377900046e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[163].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-1.3471 * ((exp(2) / exp((x / 2)))) + 9.9726"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          99726,
+          13471
+        ],
+        "max_coefficient": 99726,
+        "absolute_residual": 2.353228722995482e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[164].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-5.0033 * ((2 / exp((x / 2)))) + 9.9799"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[180].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-16.0000 * (1 / (x + 2)) + 8.0000"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          2
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          2
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[181].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-16.0000 * (1 / (x + 2)) + 8.0000"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          2
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          2
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[182].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-16.0000 * (1 / (x + 2)) + 8.0000"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          2
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          2
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[183].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-43.4701 * ((1 / (exp(1) * (x + 2)))) + 7.9987"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          79987,
+          434701
+        ],
+        "max_coefficient": 434701,
+        "absolute_residual": -1.5833556687994133e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[184].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "59.1372 * ((x / (exp(2) * (x + 2)))) + -0.0010"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          5,
+          295686
+        ],
+        "max_coefficient": 295686,
+        "absolute_residual": -6.212044767472946e-15,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[185].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-43.4694 * ((1 / (exp(1) * (x + 2)))) + 7.9974"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          13329,
+          72449
+        ],
+        "max_coefficient": 72449,
+        "absolute_residual": -1.4913403845184803e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[186].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-43.4189 * ((1 / (exp(1) * (x + 2)))) + 7.9981"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          79981,
+          434189
+        ],
+        "max_coefficient": 434189,
+        "absolute_residual": -6.283773501536416e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[187].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "154.5274 * (((exp(1) + (x - 1)) / (exp(1) * (x + 2)))) + -48.8472"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          244236,
+          772637
+        ],
+        "max_coefficient": 772637,
+        "absolute_residual": -6.277929287534789e-10,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[188].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "59.1530 * ((x / (exp(2) * (x + 2)))) + -0.0055"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          11,
+          118306
+        ],
+        "max_coefficient": 118306,
+        "absolute_residual": 2.3380603009215406e-14,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[189].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "58.9964 * ((x / (exp(2) * (x + 2)))) + 0.0090"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          45,
+          -294982
+        ],
+        "max_coefficient": 294982,
+        "absolute_residual": 2.5840093953455323e-13,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[190].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-43.3555 * ((1 / (exp(1) * (x + 2)))) + 7.9951"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[191].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "59.3290 * ((x / (exp(2) * (x + 2)))) + -0.0254"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[192].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-15.8362 * (1 / (x + 2)) + 7.9940"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          39970,
+          79181
+        ],
+        "max_coefficient": 79181,
+        "absolute_residual": -1.1301182212264393e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[193].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "33.8283 * (((exp(1) + (x * 2)) / (exp(1) * (x + 2)))) + -16.8976"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          168976,
+          338283
+        ],
+        "max_coefficient": 338283,
+        "absolute_residual": -4.2859582549681363e-10,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[194].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-15.9330 * (1 / (x + 2)) + 7.9840"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          7984,
+          15933
+        ],
+        "max_coefficient": 15933,
+        "absolute_residual": 1.13509202037676e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[210].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "0.0001*y - 0.0003*x^2 + 0.0000*x^2*y = 0"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          1
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 0
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[211].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "8 * (x**2 / (2**2 + x**2)) + -4.71675e-09"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -4
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -4
+        ],
+        "max_coefficient": 4,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[212].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "8 * (x**2 / (2**2 + x**2)) + 5.14035e-09"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -4
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -4
+        ],
+        "max_coefficient": 4,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[213].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "7.99733 * (x**2 / (2.00209**2 + x**2)) + 0.00267491"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[214].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "7.99954 * (x**2 / (1.99534**2 + x**2)) + -0.00121203"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[215].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "8.01132 * (x**2 / (1.99567**2 + x**2)) + -0.0115507"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          333439,
+          -6899500,
+          -960793600
+        ],
+        "max_coefficient": 960793600,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[216].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "8.01011 * (x**2 / (1.99741**2 + x**2)) + -0.0107095"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          219877,
+          -1583915,
+          -130957440
+        ],
+        "max_coefficient": 130957440,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[217].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "8.00214 * (x**2 / (1.99534**2 + x**2)) + 0.000155183"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2934,
+          -11765,
+          -20000
+        ],
+        "max_coefficient": 20000,
+        "absolute_residual": 3.3210422259455363e-12,
+        "working_digits": 17
+      },
+      "relation_class": "approximate_large"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[218].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "8.0043 * (x**2 / (1.99414**2 + x**2)) + -0.00473358"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3049,
+          -12312,
+          -31000
+        ],
+        "max_coefficient": 31000,
+        "absolute_residual": 1.6576531813861095e-12,
+        "working_digits": 17
+      },
+      "relation_class": "approximate_large"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[219].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-2.9179 * (((exp(2) + (x * 1)) / ((x^2) + exp(1)))) + 8.1673"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          81673,
+          29179
+        ],
+        "max_coefficient": 81673,
+        "absolute_residual": -2.0742962902886575e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[220].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-2.9046 * (((exp(2) + (x * 1)) / ((x^2) + exp(1)))) + 8.1572"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[221].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-2.9277 * (((exp(2) + (x * 1)) / ((x^2) + exp(1)))) + 8.1630"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          9070,
+          3253
+        ],
+        "max_coefficient": 9070,
+        "absolute_residual": -9.015010959956271e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[222].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-2.9293 * (((exp(2) + (x * 1)) / ((x^2) + exp(1)))) + 8.1673"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          81673,
+          29293
+        ],
+        "max_coefficient": 81673,
+        "absolute_residual": -2.7111202172136473e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[223].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-2.9313 * (((exp(2) + (x * 1)) / ((x^2) + exp(1)))) + 8.1667"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          81667,
+          29313
+        ],
+        "max_coefficient": 81667,
+        "absolute_residual": 3.184963404123664e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[224].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-2.9224 * (((exp(2) + (x * 1)) / ((x^2) + exp(1)))) + 8.1686"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          40843,
+          14612
+        ],
+        "max_coefficient": 40843,
+        "absolute_residual": -9.71445146547012e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[243].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "product_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-0.0188*const + 0.0043*x1 + 0.0084*x2 + -0.0001*x1*x1 + 0.4986*x1*x2 + -0.0007*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          2,
+          -1,
+          2,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          1,
+          0,
+          8,
+          0,
+          5
+        ],
+        "max_coefficient": 8,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[244].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "product_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-0.0098*const + -0.0019*x1 + 0.0069*x2 + 0.0007*x1*x1 + 0.4996*x1*x2 + -0.0009*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -2,
+          1,
+          0,
+          0,
+          1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          1,
+          0,
+          4,
+          0,
+          1
+        ],
+        "max_coefficient": 4,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[245].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "product_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-0.0206*const + 0.0101*x1 + 0.0088*x2 + -0.0011*x1*x1 + 0.4983*x1*x2 + -0.0008*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          1,
+          -1,
+          -1,
+          0,
+          3
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          1,
+          -3,
+          0,
+          2
+        ],
+        "max_coefficient": 3,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[246].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "product_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-0.0392*const + 0.0316*x1 + -0.0072*x2 + -0.0043*x1*x1 + 0.4971*x1*x2 + 0.0031*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          1,
+          2,
+          4,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          0,
+          -2,
+          0,
+          0,
+          8
+        ],
+        "max_coefficient": 8,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[247].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "product_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-0.0102*const + 0.0086*x1 + -0.0023*x2 + -0.0007*x1*x1 + 0.4998*x1*x2"
+      },
+      "n": 5,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          -1,
+          1,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          6,
+          18,
+          0,
+          0
+        ],
+        "max_coefficient": 18,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[248].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "product_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "0.0004*const + 0.0085*x1 + -0.0212*x2 + -0.0002*x1*x1 + 0.4970*x1*x2 + 0.0060*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[249].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "product_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-0.0645*const + 0.0381*x1 + 0.0383*x2 + -0.0038*x1*x1 + 0.4873*x1*x2 + -0.0014*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          2,
+          -2,
+          1,
+          0,
+          -3
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          0,
+          -4,
+          0,
+          -8
+        ],
+        "max_coefficient": 8,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[250].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "product_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-0.1363*const + 0.0208*x1 + 0.0744*x2 + -0.0018*x1*x1 + 0.4942*x1*x2 + -0.0087*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          3,
+          -1,
+          3,
+          0,
+          -2
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          3,
+          -6,
+          0,
+          1,
+          -3
+        ],
+        "max_coefficient": 6,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[251].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "product_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-0.0163*const + -0.0122*x1 + 0.0126*x2 + 0.0048*x1*x1 + 0.4969*x1*x2 + -0.0010*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          1,
+          -2,
+          0,
+          3
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          2,
+          3,
+          -3,
+          0,
+          -1
+        ],
+        "max_coefficient": 3,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[252].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "product_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "0.2571*const + -0.0869*x1 + -0.0987*x2 + 0.0081*x1*x1 + 0.5080*x1*x2 + 0.0090*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          1,
+          -1,
+          0,
+          -1,
+          -2
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          7,
+          7,
+          1,
+          2,
+          2
+        ],
+        "max_coefficient": 7,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[253].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "product_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "0.0420*const + -0.0228*x1 + 0.0250*x2 + -0.0042*x1*x1 + 0.5047*x1*x2 + -0.0065*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          2,
+          1,
+          2,
+          0,
+          2
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          -2,
+          -5,
+          -2,
+          0,
+          2
+        ],
+        "max_coefficient": 5,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[254].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "product_two_var",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "0.0758*const + -0.0917*x1 + 0.0409*x2 + 0.0175*x1*x1 + 0.4901*x1*x2 + -0.0032*x2*x2"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          2,
+          0,
+          2,
+          0,
+          1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          5,
+          7,
+          6,
+          1,
+          0,
+          0
+        ],
+        "max_coefficient": 7,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[270].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-2.1429 * (cos(x) + (x * 1)) + 3.9661"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          39661,
+          21429
+        ],
+        "max_coefficient": 39661,
+        "absolute_residual": -1.9539925233402755e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[271].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-1.8036 * (cos(x) + (x + 2)) + 6.9792"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          5816,
+          1503
+        ],
+        "max_coefficient": 5816,
+        "absolute_residual": -1.0969003483296547e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[272].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-2.0130 * (cos(x) + (x - 1)) + 1.4943"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          4981,
+          6710
+        ],
+        "max_coefficient": 6710,
+        "absolute_residual": 2.3803181647963356e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[273].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-2.1419 * (cos(x) + (x * 1)) + 3.9653"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          39653,
+          21419
+        ],
+        "max_coefficient": 39653,
+        "absolute_residual": -4.433342581933175e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[274].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-1.8015 * (cos(x) + (x + 2)) + 6.9721"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          69721,
+          18015
+        ],
+        "max_coefficient": 69721,
+        "absolute_residual": -3.7057024115938475e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[275].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-2.0146 * (cos(x) + (x * 1)) + 3.5108"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          17554,
+          10073
+        ],
+        "max_coefficient": 17554,
+        "absolute_residual": -1.517452830057664e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[276].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-2.1420 * (cos(x) + (x - 1)) + 1.8206"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          9103,
+          10710
+        ],
+        "max_coefficient": 10710,
+        "absolute_residual": 8.313350008393172e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[277].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-1.7934 * (cos(x) + (x - 2)) + -0.2331"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          111,
+          -854
+        ],
+        "max_coefficient": 854,
+        "absolute_residual": -1.0269562977782698e-14,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[278].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-2.0230 * (cos(x) + (x - 2)) + -0.5201"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          743,
+          -2890
+        ],
+        "max_coefficient": 2890,
+        "absolute_residual": -7.815970093361102e-14,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[279].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-2.1602 * (cos(x) + (x - 1)) + 1.8388"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          9194,
+          10801
+        ],
+        "max_coefficient": 10801,
+        "absolute_residual": -1.2114753644709708e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[280].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-2.2271 * sin((2 / x)) + 1.3687"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[281].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-2.0103 * (cos(x) + (x + 1)) + 5.5149"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[282].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-2.1672 * (cos(x) + (x - 2)) + -0.3436"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          859,
+          -5418
+        ],
+        "max_coefficient": 5418,
+        "absolute_residual": 2.6711965972481266e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[283].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-2.2304 * sin((2 / x)) + 1.3507"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          13507,
+          22304
+        ],
+        "max_coefficient": 22304,
+        "absolute_residual": 1.0964562591198046e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[284].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-2.0156 * (cos(x) + (x - 1)) + 1.5027"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          15027,
+          20156
+        ],
+        "max_coefficient": 20156,
+        "absolute_residual": -2.3936408410918375e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[300].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "(-0.333*x^1 + 1.000*x^2) * y' + (0.167 + -0.500*x^1) * y = 0"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          1,
+          2
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          1,
+          2
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[301].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "0.7423 * (((exp(2) + (x - 1)) / exp((1 / x)))) + 1.9508"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          19508,
+          -7423
+        ],
+        "max_coefficient": 19508,
+        "absolute_residual": -1.4477308241112041e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[302].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "(-1.000*x^2) * y' + (0.500*x^1) * y = 0"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          2
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          2
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[303].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "0.7076 * (((exp(2) + (x * 1)) / exp((1 / x)))) + 1.7151"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[304].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "0.7430 * (((exp(2) + (x - 1)) / exp((1 / x)))) + 1.9440"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1944,
+          -743
+        ],
+        "max_coefficient": 1944,
+        "absolute_residual": 2.4868995751603507e-14,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[305].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "0.7383 * (((exp(2) + (x - 1)) / exp((1 / x)))) + 1.9830"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          6610,
+          -2461
+        ],
+        "max_coefficient": 6610,
+        "absolute_residual": -5.24913446042774e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[306].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "0.7066 * (((exp(2) + (x * 1)) / exp((1 / x)))) + 1.7193"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[307].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "5.7247 * ((((x^2) - exp(2)) / (exp(2) * (x + 1)))) + 6.5630"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          65630,
+          -57247
+        ],
+        "max_coefficient": 65630,
+        "absolute_residual": 3.843414475568352e-11,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[308].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "0.7358 * (((exp(2) + (x - 1)) / exp((1 / x)))) + 2.0070"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          10035,
+          -3679
+        ],
+        "max_coefficient": 10035,
+        "absolute_residual": -3.3506530883187224e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[309].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "0.7045 * (((exp(2) + (x * 1)) / exp((1 / x)))) + 1.7507"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          17507,
+          -7045
+        ],
+        "max_coefficient": 17507,
+        "absolute_residual": 8.074652058098764e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[310].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "0.7418 * (((exp(2) + (x - 1)) / exp((1 / x)))) + 1.9514"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[311].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "0.7382 * (((exp(2) + (x - 1)) / exp((1 / x)))) + 1.9750"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          9875,
+          -3691
+        ],
+        "max_coefficient": 9875,
+        "absolute_residual": -6.505906924303417e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[312].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "0.7090 * (((exp(2) + (x * 1)) / exp((1 / x)))) + 1.6690"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1669,
+          -709
+        ],
+        "max_coefficient": 1669,
+        "absolute_residual": -8.848477506262498e-14,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[313].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "0.7469 * (((exp(2) + (x - 1)) / exp((1 / x)))) + 1.9190"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[314].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "4.1902 * ((((2^2) + (x / 2)) / (exp(1) + (2 / x)))) + 0.0648"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          324,
+          -20951
+        ],
+        "max_coefficient": 20951,
+        "absolute_residual": 4.909961326404755e-14,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[330].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-1.5540 * ((((1^2) - (x + x)) / (exp(x) + (x / 2)))) + 0.6813"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2271,
+          5180
+        ],
+        "max_coefficient": 5180,
+        "absolute_residual": -2.2426505097428162e-14,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[331].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-1.5608 * ((((1^2) - (x + x)) / (exp(x) + (x / 2)))) + 0.6797"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[332].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-1.5551 * ((((1^2) - (x + x)) / (exp(x) + (x / 2)))) + 0.6815"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[333].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-1.5525 * ((((1^2) - (x + x)) / (exp(x) + (x / 2)))) + 0.6817"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[334].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-1.5618 * ((((1^2) - (x + x)) / (exp(x) + (x / 2)))) + 0.6795"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2265,
+          5206
+        ],
+        "max_coefficient": 5206,
+        "absolute_residual": -2.1160850849355484e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[335].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-1.5558 * ((((1^2) - (x + x)) / (exp(x) + (x / 2)))) + 0.6815"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          6815,
+          15558
+        ],
+        "max_coefficient": 15558,
+        "absolute_residual": -5.719869022868806e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[336].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-1.5536 * ((((1^2) - (x + x)) / (exp(x) + (x / 2)))) + 0.6810"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[337].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "5.1810 * ((((x^2) - (x / 2)) / (exp(x) * (x + x)))) + 0.7071"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2357,
+          -17270
+        ],
+        "max_coefficient": 17270,
+        "absolute_residual": 9.670042544485113e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[338].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-1.5579 * ((((1^2) - (x + x)) / (exp(x) + (x / 2)))) + 0.6812"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          6812,
+          15579
+        ],
+        "max_coefficient": 15579,
+        "absolute_residual": 5.773159728050814e-15,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[339].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-1.5571 * ((((1^2) - (x + x)) / (exp(x) + (x / 2)))) + 0.6801"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          6801,
+          15571
+        ],
+        "max_coefficient": 15571,
+        "absolute_residual": 1.074806910139614e-12,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[340].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-1.5647 * ((((1^2) - (x + x)) / (exp(x) + (x / 2)))) + 0.6787"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[341].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-1.5477 * ((((1^2) - (x + x)) / (exp(x) + (x / 2)))) + 0.6825"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          325,
+          737
+        ],
+        "max_coefficient": 737,
+        "absolute_residual": -2.786659791809143e-14,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[342].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "2.5726 * ((((x^2) - (x / 2)) / (exp(x) * (x * 1)))) + 0.7099"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[343].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "5.1632 * ((((x^2) - (x / 2)) / (exp(x) * (x + x)))) + 0.7090"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": false,
+        "coefficients": null,
+        "max_coefficient": null,
+        "absolute_residual": null,
+        "working_digits": null
+      },
+      "relation_class": null
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[344].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "2.6043 * ((((x^2) - (x / 2)) / (exp(x) * (x * 1)))) + 0.7037"
+      },
+      "n": 2,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          7037,
+          -26043
+        ],
+        "max_coefficient": 26043,
+        "absolute_residual": -9.414691248821327e-13,
+        "working_digits": 17
+      },
+      "relation_class": "rational_approximation"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[363].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.12.1",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-0.0729*const + 0.5023*mu + -0.0019*N_n + -0.5690*mu*mu + 1.0001*mu*N_n"
+      },
+      "n": 5,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          0,
+          5,
+          5,
+          3
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          9,
+          16,
+          64,
+          11,
+          -1
+        ],
+        "max_coefficient": 64,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[364].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.12.1",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-0.0498*const + 0.4230*mu + -0.0004*N_n + -0.4597*mu*mu + 0.9998*mu*N_n"
+      },
+      "n": 5,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          10,
+          -1,
+          -4,
+          -2,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          12,
+          -41,
+          0,
+          -76,
+          -17
+        ],
+        "max_coefficient": 76,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[365].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.12.1",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "0.2143*const + -0.4780*mu + -0.0035*N_n + 0.2208*mu*mu + 1.0034*mu*N_n"
+      },
+      "n": 5,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -3,
+          -5,
+          -3,
+          -1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          42,
+          14,
+          0,
+          -15,
+          1
+        ],
+        "max_coefficient": 42,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[366].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.12.1",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-0.1462*const + -0.1883*mu + 0.0081*N_n + 0.7587*mu*mu + 0.9925*mu*N_n"
+      },
+      "n": 5,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          2,
+          -4,
+          -3,
+          3
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          8,
+          -3,
+          24,
+          -6,
+          5
+        ],
+        "max_coefficient": 24,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[367].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.12.1",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-0.0212*const + 0.4297*mu + -0.0036*N_n + -0.2717*mu*mu + 0.9969*mu*N_n"
+      },
+      "n": 5,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          -2,
+          -5,
+          -7,
+          -1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -3,
+          -36,
+          14,
+          5
+        ],
+        "max_coefficient": 36,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[368].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.12.1",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-0.4212*const + 1.4290*mu + 0.0078*N_n + -1.1376*mu*mu + 0.9970*mu*N_n"
+      },
+      "n": 5,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          4,
+          -4,
+          0,
+          -3,
+          4
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          21,
+          0,
+          0,
+          8,
+          18
+        ],
+        "max_coefficient": 21,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[369].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.12.1",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-0.2378*const + 1.8470*mu + -0.0148*N_n + -1.3160*mu*mu + 1.0003*mu*N_n + 0.0002*N_n*N_n"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          3,
+          0,
+          -2,
+          1,
+          2,
+          -4
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          9,
+          -16,
+          -32,
+          -7,
+          22,
+          0
+        ],
+        "max_coefficient": 32,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[370].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.12.1",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-0.7753*const + 1.5337*mu + 0.0178*N_n + 0.0564*mu*mu + 0.9796*mu*N_n"
+      },
+      "n": 5,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          -4,
+          1,
+          -3,
+          8
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          6,
+          -6,
+          -10,
+          23,
+          13
+        ],
+        "max_coefficient": 23,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[371].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.12.1",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-0.2944*const + -1.2239*mu + 0.0145*N_n + 1.2820*mu*mu + 1.0097*mu*N_n + -0.0001*N_n*N_n"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          1,
+          -4,
+          1,
+          0,
+          1
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          46,
+          -11,
+          0,
+          4,
+          -5,
+          0
+        ],
+        "max_coefficient": 46,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[372].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.12.1",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "2.5608*const + -4.8489*mu + -0.0457*N_n + 2.8205*mu*mu + 1.0171*mu*N_n + 0.0003*N_n*N_n"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          1,
+          6,
+          0,
+          0,
+          5
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          11,
+          -5,
+          128,
+          -23,
+          18,
+          0
+        ],
+        "max_coefficient": 128,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[373].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.12.1",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-0.3738*const + 3.1939*mu + -0.0309*N_n + -5.3092*mu*mu + 1.0541*mu*N_n + 0.0001*N_n*N_n"
+      },
+      "n": 6,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          1,
+          1,
+          0,
+          -3,
+          -7
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          19,
+          23,
+          -32,
+          -3,
+          -79,
+          0
+        ],
+        "max_coefficient": 79,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[374].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.12.1",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "0.9524*const + -2.9626*mu + 0.0081*N_n + 3.2000*mu*mu + 0.9755*mu*N_n"
+      },
+      "n": 5,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -9,
+          -8,
+          -8,
+          -2
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          11,
+          11,
+          32,
+          5,
+          6
+        ],
+        "max_coefficient": 32,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[390].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-0.0003*x + 0.0002*u + -0.0016*x*x + -1.1525*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          3,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          8,
+          1,
+          0
+        ],
+        "max_coefficient": 8,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[391].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-0.0002*x + 0.0002*u + -0.0013*x*x + -1.1970*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[392].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "0.0002*x + 0.0002*u + -0.0002*x*x + -1.1706*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          0,
+          1,
+          1,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[393].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-0.0003*x + 0.0002*u + -0.0013*x*x + -1.1547*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          3,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          -2,
+          -1,
+          0
+        ],
+        "max_coefficient": 3,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[394].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-0.0002*x + 0.0002*u + -0.0014*x*x + -1.1969*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[395].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "0.0002*x + 0.0002*u + -0.0003*x*x + -1.1717*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[396].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-0.0003*x + 0.0002*u + -0.0012*x*x + -1.1526*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          4,
+          0,
+          -1,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          4,
+          0,
+          -1,
+          0
+        ],
+        "max_coefficient": 4,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[397].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-0.0002*x + 0.0002*u + -0.0004*x*x + -1.1963*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[398].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "0.0002*x + 0.0002*u + -0.0004*x*x + -1.1732*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[399].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-0.0003*x + 0.0002*u + -0.0034*x*x + -1.1596*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          2,
+          3,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          26,
+          -12,
+          -3,
+          0
+        ],
+        "max_coefficient": 26,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[400].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-0.0002*x + 0.0002*u + -0.0019*x*x + -1.1984*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[401].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "0.0002*x + 0.0002*u + -0.0001*x*x + -1.1671*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[402].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-0.0003*x + 0.0001*u + -0.0020*x*x + -1.1637*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          3,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          4,
+          -48,
+          -3,
+          0
+        ],
+        "max_coefficient": 48,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[403].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "-0.0002*x + 0.0002*u + -0.0029*x*x + -1.1943*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[404].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "0.0002*x + 0.0002*u + -0.0007*x*x + -1.1564*u*t"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0
+        ],
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[420].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "0.0030*const + 0.4571*d1 + 0.3138*d2 + -0.3599*n + -0.0510*d1*d1 + 0.0754*d1*d2 + -0.1286*d1*n + -0.0375*d2*d2 + -0.0469*d2*n + 0.1555*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          1,
+          -1,
+          0,
+          1,
+          0,
+          2,
+          1,
+          -1,
+          1
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[421].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "-0.1521*const + 0.4030*d1 + 0.3915*d2 + -0.1962*n + -0.0444*d1*d1 + 0.0718*d1*d2 + -0.1117*d1*n + -0.0430*d2*d2 + -0.0694*d2*n + 0.1084*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          0,
+          1,
+          1,
+          0,
+          1,
+          2,
+          0,
+          0,
+          1
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[422].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.0,
+        "formula": "0.1090*const + 0.4417*d1 + 0.3001*d2 + -0.4201*n + -0.0499*d1*d1 + 0.0787*d1*d2 + -0.1283*d1*n + -0.0373*d2*d2 + -0.0471*d2*n + 0.1689*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3,
+          0,
+          1,
+          1,
+          0,
+          -1,
+          1,
+          0,
+          0,
+          0
+        ],
+        "max_coefficient": 3,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[423].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "0.0044*const + 0.4567*d1 + 0.3129*d2 + -0.3616*n + -0.0510*d1*d1 + 0.0751*d1*d2 + -0.1280*d1*n + -0.0373*d2*d2 + -0.0464*d2*n + 0.1557*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          -1,
+          2,
+          2,
+          -2,
+          0
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[424].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "-0.1265*const + 0.4045*d1 + 0.3930*d2 + -0.2321*n + -0.0448*d1*d1 + 0.0718*d1*d2 + -0.1115*d1*n + -0.0437*d2*d2 + -0.0681*d2*n + 0.1184*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          1,
+          0,
+          0,
+          0,
+          1,
+          -3,
+          0,
+          1
+        ],
+        "max_coefficient": 3,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[425].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.01,
+        "formula": "0.1354*const + 0.4423*d1 + 0.3002*d2 + -0.4567*n + -0.0498*d1*d1 + 0.0786*d1*d2 + -0.1293*d1*n + -0.0375*d2*d2 + -0.0469*d2*n + 0.1816*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          1,
+          0,
+          1,
+          0,
+          -2,
+          -1,
+          0,
+          1,
+          -1
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[426].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-0.0217*const + 0.4574*d1 + 0.3127*d2 + -0.3269*n + -0.0508*d1*d1 + 0.0759*d1*d2 + -0.1299*d1*n + -0.0374*d2*d2 + -0.0467*d2*n + 0.1449*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          1,
+          0,
+          0,
+          0,
+          0,
+          2,
+          -1,
+          1,
+          -1
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[427].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "-0.0864*const + 0.3995*d1 + 0.3906*d2 + -0.2749*n + -0.0445*d1*d1 + 0.0724*d1*d2 + -0.1105*d1*n + -0.0434*d2*d2 + -0.0684*d2*n + 0.1320*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          -2,
+          0,
+          0,
+          -1
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[428].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.02,
+        "formula": "0.1239*const + 0.4332*d1 + 0.3015*d2 + -0.4277*n + -0.0496*d1*d1 + 0.0787*d1*d2 + -0.1237*d1*n + -0.0377*d2*d2 + -0.0473*d2*n + 0.1676*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          2,
+          1,
+          0,
+          0,
+          -2
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[429].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-0.0976*const + 0.4610*d1 + 0.3357*d2 + -0.2801*n + -0.0507*d1*d1 + 0.0750*d1*d2 + -0.1317*d1*n + -0.0376*d2*d2 + -0.0587*d2*n + 0.1429*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          0,
+          1,
+          0,
+          1,
+          -3,
+          0,
+          -1,
+          0,
+          0
+        ],
+        "max_coefficient": 3,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[430].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "-0.0541*const + 0.3926*d1 + 0.3827*d2 + -0.2829*n + -0.0436*d1*d1 + 0.0703*d1*d2 + -0.1065*d1*n + -0.0434*d2*d2 + -0.0601*d2*n + 0.1222*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          0,
+          2,
+          -1,
+          0
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[431].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.05,
+        "formula": "0.1979*const + 0.4462*d1 + 0.2932*d2 + -0.5322*n + -0.0497*d1*d1 + 0.0771*d1*d2 + -0.1289*d1*n + -0.0370*d2*d2 + -0.0408*d2*n + 0.1977*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          2,
+          -1,
+          0,
+          0,
+          -1,
+          -1,
+          0,
+          -1,
+          -1,
+          0
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[432].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "0.0578*const + 0.4536*d1 + 0.3086*d2 + -0.4276*n + -0.0502*d1*d1 + 0.0726*d1*d2 + -0.1246*d1*n + -0.0325*d2*d2 + -0.0539*d2*n + 0.1760*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          -1,
+          0,
+          -2,
+          0,
+          0
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[433].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "0.0383*const + 0.4019*d1 + 0.3577*d2 + -0.3904*n + -0.0440*d1*d1 + 0.0742*d1*d2 + -0.1162*d1*n + -0.0437*d2*d2 + -0.0495*d2*n + 0.1606*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          2,
+          0,
+          1,
+          2,
+          0
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[434].detail.top_formula",
+      "class": "within_emission",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "sigma_rel": 0.1,
+        "formula": "0.0856*const + 0.4354*d1 + 0.3026*d2 + -0.3915*n + -0.0489*d1*d1 + 0.0779*d1*d2 + -0.1250*d1*n + -0.0384*d2*d2 + -0.0439*d2*n + 0.1552*n*n"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          -2
+        ],
+        "max_coefficient": 2,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='affine_two_var', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "affine_two_var",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='exponential_decay', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "exponential_decay",
+        "engine": "rime_ad",
+        "replicates": 14
+      },
+      "n": 14,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='feynman_I.12.1', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "feynman_I.12.1",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='feynman_I.15.3x', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "feynman_I.15.3x",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='feynman_I.27.6', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "feynman_I.27.6",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          -1,
+          -1
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='hill2_cooperative', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "hill2_cooperative",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          1,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='inverse_square', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "inverse_square",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          -1,
+          -1,
+          -1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          1
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='langmuir_saturation', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "langmuir_saturation",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='mono_power_15', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "mono_power_15",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='product_two_var', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "product_two_var",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='quadratic_constant', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "quadratic_constant",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='rational_transition', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "rational_transition",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='saturated_growth', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "saturated_growth",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "trivial_duplicate"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='sinusoid', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "sinusoid",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          0,
+          0,
+          -1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -1
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/feynman_noise_rediscovery_state.json",
+      "pointer": "trials[world='sqrt_law', engine='rime_ad'].detail.top_formula[0]",
+      "class": "across_replicates",
+      "evidence": {
+        "world": "sqrt_law",
+        "engine": "rime_ad",
+        "replicates": 15
+      },
+      "n": 15,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          -1,
+          0,
+          0,
+          1,
+          -1,
+          0,
+          0
+        ],
+        "max_coefficient": 1,
+        "absolute_residual": 0.0,
+        "working_digits": 17
+      },
+      "relation_class": "exact_small"
+    },
+    {
+      "source": "benchmarks/lorenz_public_benchmark_results.json",
+      "pointer": "rows[0].coefficients",
+      "class": "within_emission",
+      "evidence": {
+        "noise_frac": 0.02,
+        "path": "B"
+      },
+      "n": 10,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": true
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          1,
+          17,
+          51,
+          2,
+          -8,
+          48,
+          -65,
+          -2,
+          -45,
+          26
+        ],
+        "max_coefficient": 65,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/lorenz_public_benchmark_results.json",
+      "pointer": "rows[1].coefficients",
+      "class": "within_emission",
+      "evidence": {
+        "noise_frac": 0.02,
+        "path": "B-prime"
+      },
+      "n": 4,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3836,
+          51518,
+          62276,
+          413699
+        ],
+        "max_coefficient": 413699,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/lorenz_public_benchmark_results.json",
+      "pointer": "rows[2].coefficients",
+      "class": "within_emission",
+      "evidence": {
+        "noise_frac": 0.02,
+        "path": "R"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          3614020,
+          -3715009,
+          109146593
+        ],
+        "max_coefficient": 109146593,
+        "absolute_residual": 0.0,
+        "working_digits": 27
+      },
+      "relation_class": "beyond_input_precision"
+    },
+    {
+      "source": "benchmarks/lorenz_public_benchmark_results.json",
+      "pointer": "rows[3].coefficients",
+      "class": "within_emission",
+      "evidence": {
+        "noise_frac": 0.02,
+        "path": "C"
+      },
+      "n": 3,
+      "branch_and_bound": {
+        "found": false,
+        "coefficients": null,
+        "out_of_scope": false
+      },
+      "lll_pslq": {
+        "found": true,
+        "coefficients": [
+          115,
+          3178,
+          -42
+        ],
+        "max_coefficient": 3178,
+        "absolute_residual": 1.1057821325266559e-13,
+        "working_digits": 17
+      },
+      "relation_class": "approximate_large"
+    }
+  ],
+  "summary": {
+    "groups": 235,
+    "groups_skipped_over_cap": 0,
+    "by_class": {
+      "within_emission": 220,
+      "across_replicates": 15
+    },
+    "branch_and_bound_found": 73,
+    "branch_and_bound_out_of_scope": 31,
+    "lll_pslq_found": 202,
+    "relation_classes": {
+      "rational_approximation": 66,
+      "exact_small": 48,
+      "beyond_input_precision": 71,
+      "trivial_duplicate": 14,
+      "approximate_large": 3
+    },
+    "coefficient_size_buckets": {
+      "over-100": 101,
+      "1-2": 55,
+      "3-10": 27,
+      "11-100": 19
+    },
+    "class_size_crosstab": {
+      "approximate_large@over-100": 3,
+      "beyond_input_precision@1-2": 3,
+      "beyond_input_precision@11-100": 19,
+      "beyond_input_precision@3-10": 17,
+      "beyond_input_precision@over-100": 32,
+      "exact_small@1-2": 38,
+      "exact_small@3-10": 10,
+      "rational_approximation@over-100": 66,
+      "trivial_duplicate@1-2": 14
+    },
+    "largest_coefficient": 960793600,
+    "inputs_histogram": {
+      "2": 134,
+      "3": 18,
+      "4": 16,
+      "5": 11,
+      "6": 25,
+      "10": 16,
+      "14": 1,
+      "15": 14
+    },
+    "agreement": 66
+  }
+}

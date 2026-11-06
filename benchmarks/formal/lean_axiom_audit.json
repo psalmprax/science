@@ -1,0 +1,40 @@
+{
+  "schema": "apedp.formal.lean_axiom_audit/v1",
+  "scope": "every .lean file in the repository; apedp_dyn/lean_formal is the layer that verification claims refer to",
+  "totals": {
+    "files": 557,
+    "axioms": 12470,
+    "theorems": 1054,
+    "sorry": 345,
+    "theorems_rewriting_a_local_axiom": 0
+  },
+  "classification": {
+    "checked": 0,
+    "axiom_injected": 297,
+    "incomplete": 259,
+    "declaration_only": 1
+  },
+  "checked_fraction": 0.0,
+  "files_under_lean_formal": 366,
+  "per_directory": {
+    "apedp_dyn": {
+      "files": 366,
+      "axioms": 12435,
+      "theorems": 729,
+      "incomplete": 71
+    },
+    "benchmarks": {
+      "files": 189,
+      "axioms": 1,
+      "theorems": 324,
+      "incomplete": 188
+    },
+    "scratch": {
+      "files": 2,
+      "axioms": 34,
+      "theorems": 1,
+      "incomplete": 0
+    }
+  },
+  "verdict": "Only the 'checked' files are machine-checked from Lean's foundations; an axiom_injected file proves its statement from an assumed axiom, which is a recording of intent, not a proof. No result in this repository may be described as formally verified on the strength of a non-'checked' file."
+}

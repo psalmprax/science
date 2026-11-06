@@ -1,0 +1,95 @@
+{
+  "patent_id": "US12142721B2",
+  "source": "https://patents.google.com/patent/US12142721B2/en",
+  "retrieved_utc": "2026-11-01T01:35:26+00:00",
+  "http_status": 200,
+  "bytes": 989082,
+  "html_sha256": "3aa728eaf55359bee19926bc75b094e4025b2dabf3544f07f9ca3baff679b4c3",
+  "jurisdiction": "US",
+  "title": "Methods for battery charging and formation",
+  "abstract": "Abstract Systems and methods for charging and discharging a plurality of batteries are described herein. In some embodiments, a system includes a battery module, an energy storage system electrically coupled to the battery module, a power source, and a controller. The energy storage system is operable in a first operating state in which energy is transferred from the energy storage system to the battery module to charge the battery module, and a second operating state in which energy is transferred from the battery module to the energy storage system to discharge the battery module. The power source electrically coupled to the energy storage system and is configured to transfer energy from the power source to the energy storage system based on an amount of stored energy in the energy storage system. The controller is operably coupled to the battery module and is configured to monitor and control a charging state of the battery module.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A battery formation method, comprising: transferring energy from an energy storage system to a plurality of batteries, the plurality of batteries monitored by a controller; determining, by the controller, a charging state of each battery of the plurality of batteries; in response to determining the charging state indicates an outlier battery, causing, by the controller, the outlier battery to be isolated from the other batteries of the plurality of batteries; and causing, by the controller, transfer of energy from the energy storage system to the plurality of batteries other than the outlier battery."
+    },
+    {
+      "num": "2",
+      "text": "2. The method of claim 1 , wherein determining the charging state includes monitoring at least one of voltage, temperature, state of charge, state of health, coolant flow, or current."
+    },
+    {
+      "num": "3",
+      "text": "3. The method of claim 1 , wherein the plurality of batteries are controlled by the controller."
+    },
+    {
+      "num": "4",
+      "text": "4. The method of claim 1 , wherein determining the charging state includes deriving the charging state from the specific gravity or pH value of an electrolyte of each battery of the plurality of batteries."
+    },
+    {
+      "num": "5",
+      "text": "5. The method of claim 1 , wherein determining the charging state includes measuring, by the controller, a voltage of each battery of the plurality of batteries; and determining, by the controller, the charging state based on the voltage and a discharge curve associated with each battery of the plurality of batteries."
+    },
+    {
+      "num": "6",
+      "text": "6. The method of claim 1 , wherein determining the charging state includes: measuring, by the controller, a battery current of each battery of the plurality of batteries; and determining, by the controller, the charging state based on the battery voltage and a Coulomb counting method."
+    },
+    {
+      "num": "7",
+      "text": "7. The method of claim 1 , wherein: determining the charging state is based on at least one measured characteristic, and the at least one measured characteristic is filtered by a Kalman filter."
+    },
+    {
+      "num": "8",
+      "text": "8. The method of claim 1 , wherein determining the charging state includes determining, by the controller, an internal pressure of each battery of the plurality of batteries; and determining, by the controller, the charging state based on the internal pressure."
+    },
+    {
+      "num": "9",
+      "text": "9. The method of claim 1 , the method further comprising: determining, by the controller, if the outlier battery includes a correctable defect; correcting the correctable defect of the outlier battery; and in response to the correctable defect of the outlier battery being corrected, causing, by the controller, transfer of energy to the corrected outlier battery."
+    },
+    {
+      "num": "10",
+      "text": "10. A battery charging method, comprising: transferring energy from an energy storage system to a plurality of batteries, the plurality of batteries monitored by a controller; determining, by the controller, a charging state of each battery of the plurality of batteries; in response to determining a charging state indicating a power event associated with a power source is occurring, causing, by the controller, discharge of the plurality of batteries into the energy storage system; and causing, by the controller, transfer of energy from the energy storage system to the power source to mitigate the energy event."
+    },
+    {
+      "num": "11",
+      "text": "11. The method of claim 10 , further comprising: in response to the energy event being mitigated, causing, by the controller, transfer of energy from the energy storage system to the plurality of batteries."
+    },
+    {
+      "num": "12",
+      "text": "12. The method of claim 10 , further comprising: determining, by the controller, a control signal from the power source; and determining, by the controller, a power event is occurring based on the control signal."
+    },
+    {
+      "num": "13",
+      "text": "13. The method of claim 10 , further comprising: concurrently causing, by the controller, transfer of energy from the energy storage system to the power source and to the plurality of batteries."
+    },
+    {
+      "num": "14",
+      "text": "14. The method of claim 10 , wherein the power source includes at least one of a solar power plant or an external utility."
+    },
+    {
+      "num": "15",
+      "text": "15. The method of claim 10 , wherein the power event includes a power outage or a low production rate."
+    },
+    {
+      "num": "16",
+      "text": "16. A battery formation method, comprising: transferring energy from an energy storage system to a plurality of batteries, the plurality of batteries monitored by a controller; determining, by the controller, a charging state of each battery of the plurality of batteries; determining, by the controller based on the charging state and at least one requirement, if it is desirable for at least one battery of the plurality of batteries to be discharged; in response to determining that it is desirable for a battery of the plurality of batteries to be discharged, causing, by the controller, discharge of the at least one battery to the energy storage system; determining, by the controller, a characteristic associated with the at least one battery; and based on the characteristic indicating that recharge is desired, causing, by the controller, transfer of energy from the energy storage system to the at least one battery."
+    },
+    {
+      "num": "17",
+      "text": "17. The method of claim 16 , further comprising: determining, by the controller, an amount of energy in the energy storage system; and in response to the amount of energy being below a predetermined threshold, causing, by the controller, transfer of energy from a power source to the energy storage system."
+    },
+    {
+      "num": "18",
+      "text": "18. The method of claim 16 , further comprising: during discharging, estimating, by the controller, a first amount of an amount of energy released from discharge; determining, by the controller, a second amount of energy associated with transferring energy to the at least one battery; determining, by the controller, whether the first amount of energy is less than a second amount of energy; and based on the first amount of energy being less than the second amount of energy, causing, by the controller, transfer of energy from a power source to the battery storage system."
+    },
+    {
+      "num": "19",
+      "text": "19. The method of claim 16 , wherein the at least one characteristic includes at least one of cell protection, charge control, demand management, state of charge, state of health, or cell balancing."
+    },
+    {
+      "num": "20",
+      "text": "20. The method of claim 16 , further comprising: determining, by the controller, if each battery of the plurality of batteries is fully charged; and in response to determining that at least a portion of the plurality of batteries are not fully charged, causing, by the controller, transfer of energy from the battery storage system to at least the portion of the plurality of batteries."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "battery charging efficiency measurement"
+}

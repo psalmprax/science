@@ -1,0 +1,18 @@
+{
+  "root": ["apedp", "apedp_dyn"],
+  "note": "Functions a predictive name promises more than the body delivers. Every entry needs a 'why' and a matching row in docs/SCAFFOLD_INVENTORY.md; tests/test_scaffold_inventory.py enforces both, so a new constant cannot be silenced by editing this file alone.",
+  "recorded": [
+    {
+      "module": "apedp/applied_materials.py",
+      "function": "search_candidates",
+      "bases": ["table:REFERENCE_CANDIDATES"],
+      "why": "Returns SuperconductorDiscovery.REFERENCE_CANDIDATES, a fixed list of four literature superconductors (LaH10, YBCO, MgB2, H3S). The name promises a search over candidate space; the return is a citation list, which is why the docstring says 'Not a search' and docs/SCAFFOLD_INVENTORY.md tiers it as literature_lookup."
+    },
+    {
+      "module": "apedp/evidence.py",
+      "function": "rank",
+      "bases": ["table:_RANK"],
+      "why": "EvidenceTier.rank is a property indexing the fixed ordering _RANK (PROVED 0 .. UNRESOLVED 3). The ordering is a schema decision about evidence kinds, not a judgement passed on the caller's data, so the lookup is the intended behaviour."
+    }
+  ]
+}

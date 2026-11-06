@@ -1,0 +1,95 @@
+{
+  "script": "scripts/measure_dqi_width_budget.py",
+  "class": "arithmetic on measured artifact parameters; no circuit is built",
+  "benchmark_ii": {
+    "instance": {
+      "positions": 73,
+      "bits": 12,
+      "register_qubits": 876
+    },
+    "archived": {
+      "qubits": 891,
+      "registers_that_fit": 1,
+      "transient_qubits": 15,
+      "mean_toffolis": 396919.3329296875,
+      "score": 375374174093.81177
+    },
+    "reference": {
+      "qubits": 1893,
+      "two_register_floor": 1752,
+      "transient_qubits": 141,
+      "mean_toffolis": 5725108.377705931
+    },
+    "conclusion": "the archived decoder holds one 876-qubit register and at most 15 transient qubits; a two-register design cannot be narrower than 1752, so this width is an algorithm change, not an optimisation of the reference",
+    "smallest_built_one_register_designs": {
+      "retired_stub": 878,
+      "single_array_projection": 1001
+    },
+    "exchange_rate": {
+      "score_per_qubit": 945668.6180770462,
+      "score_fraction_per_qubit": 0.002244668911335578,
+      "toffolis_per_qubit": 890.9524869353255,
+      "score_per_toffoli": 945719.0490650845,
+      "score_fraction_per_toffoli": 2.5194036093403025e-06
+    },
+    "emitter": {
+      "single_array_algorithm_verified": true,
+      "verification": "benchmarks/quantum_compilation/inplace_bm_verification.json",
+      "toffoli_measurement": "benchmarks/quantum_compilation/bm_iteration_toffolis.json",
+      "division_variant": {
+        "array_qubits": 876,
+        "transient_qubits": 23,
+        "total_qubits": 899,
+        "shortfall_vs_archive": 8
+      },
+      "inversionless_variant": {
+        "array_qubits": 876,
+        "scale_qubits": 12,
+        "control_qubits": 3,
+        "total_qubits": 891
+      },
+      "width_891_reproduced": true,
+      "reversible_builder_available": false,
+      "what_remains": "the width is settled: 891 = 876 array + 12 scale + 3 control, the division-free variant, verified at m=15, m=255 and m=4095. What is still missing is the complete reversible stream: the measured key-equation stage alone is 313,110 Toffolis (0.789x the archive), leaving 20.5 Toffolis per position for Chien, Forney and uncompute"
+    }
+  },
+  "benchmark_iii": {
+    "qubits": 427,
+    "mean_toffolis": 15459.0,
+    "lambda_eff": 47.184697373047555,
+    "temporary_qubits": 303,
+    "temporary_fraction_of_width": 0.7096018735362998,
+    "accuracy": {
+      "gate_ha": 0.02,
+      "error_2_ha": 0.019999997786250796,
+      "margin_ha": 2.213749204782456e-09,
+      "smallest_measured_rotation_perturbation": 0.004338807209360656,
+      "margin_over_perturbation": 5.102206892268584e-07,
+      "conclusion": "the bundle is at the gate: any rewrite that perturbs rotation precision fails, so only exactly accuracy-neutral width cuts are admissible"
+    },
+    "exchange_rate": {
+      "score_per_qubit": 729428.2366899422,
+      "score_fraction_per_qubit": 0.00234192037470726,
+      "toffolis_equal_to_one_qubit": 15459.0,
+      "score_per_toffoli": 20147.865778291307,
+      "score_fraction_per_toffoli": 6.468723720809884e-05
+    },
+    "admissible_width_cut": {
+      "max_qubits": 303,
+      "score_reduction_if_all_freed": 0.7096018735362998,
+      "note": "the state-prep scratch is exact, so recycling it is accuracy-neutral; the angle circuits are already at the 128 cap"
+    },
+    "in_tree_angle_family": {
+      "builder": "scripts/build_dfthcsos_sub128.py --brot 8 --batch-size 5",
+      "circuits_k": 15,
+      "peak_qubits_per_circuit": 63,
+      "toffoli_per_circuit": 3974,
+      "toffoli_two_passes": 119220,
+      "archived_angle_toffolis": 8718,
+      "toffoli_ratio_vs_archive": 13.675,
+      "workspace_product_vs_archive": 2.018,
+      "accuracy_effect": "none: the angle words are the same 8-bit table",
+      "conclusion": "arity is neutral (k-ary costs k-1 ANDs to decode one of k children, so every arity is rows-1 per circuit); QROAM's optimum at block 63 costs 1,905 Toffolis but needs 2,594 qubits against a 128-qubit cap; inside the cap the best block is 2 at 29,850 Toffolis. The archive's 581 per circuit is 3.42x below the cheapest cap-feasible shape, so the gap is the encoding, not the tuning"
+    }
+  }
+}

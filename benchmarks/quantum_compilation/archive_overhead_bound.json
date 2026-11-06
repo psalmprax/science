@@ -1,0 +1,39 @@
+{
+  "script": "scripts/bound_archive_overhead.py",
+  "inputs": {
+    "key_equation_toffolis": 313110.0,
+    "forney_toffolis_per_block": 315.0,
+    "adjoint_uncompute_toffolis": 313110.0,
+    "positions": 4095,
+    "max_live_blocks": 35,
+    "archive_toffolis": 396919.33
+  },
+  "feasible_region": {
+    "inequality": "313,110 + 315*w + u <= 396,919.33",
+    "remainder": 83809.33000000002,
+    "max_blocks_at_zero_overhead": 266.06136507936515,
+    "overhead_left_at_worst_case_weight": 72784.33000000002,
+    "overhead_left_fraction_of_remainder": 0.8684514003393179,
+    "per_measurement_round_at_worst_case_weight": 17.773951159951164,
+    "adjoint_uncompute_fits": false,
+    "shared_inversion_infeasible_by": 690271.6699999999,
+    "unconditional_blocks_infeasible_by": 1206115.67
+  },
+  "readings": {
+    "static_gated": {
+      "total": 1916145.0,
+      "fits": false
+    },
+    "runtime_gated": {
+      "total": 324135.0,
+      "fits": true,
+      "slack": 72784.33000000002
+    },
+    "runtime_gated_with_adjoint": {
+      "total": 637245.0,
+      "fits": false,
+      "exceeds_by": 240325.66999999998
+    }
+  },
+  "conclusion": "the remainder of 83,809 T covers the gated Forney block at worst-case weight 11,025 T with 72,784 T (87%) left over -- 17.8 T per measurement round across 4,095 rounds, or up to 266 executed blocks if nothing else is paid for. The adjoint uncompute does NOT fit (313,110 T against 83,809 T), so the archive's uncompute is measurement-based, and neither sharing scheme is affordable: the Montgomery batch inversion misses by 690,272 T and unconditional blocks by 1,206,116 T"
+}

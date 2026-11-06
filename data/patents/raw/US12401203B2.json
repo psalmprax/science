@@ -1,0 +1,91 @@
+{
+  "patent_id": "US12401203B2",
+  "source": "https://patents.google.com/patent/US12401203B2/en",
+  "retrieved_utc": "2026-11-01T01:35:20+00:00",
+  "http_status": 200,
+  "bytes": 578268,
+  "html_sha256": "cf27d9993c3c5fcdcd233f6ced409dfaa5d96c6a4b817ee089771be09c506e0e",
+  "jurisdiction": "US",
+  "title": "Charging method, battery management system of traction battery and charging pile",
+  "abstract": "Abstract A charging method is provided, which includes: acquiring a state parameter of a traction battery, the state parameter including a battery temperature; sending first charging mode demand information to a charging pile when the battery temperature is lower than a first preset threshold, where the first charging mode demand information is used for indicating a pulse charging mode, the pulse charging mode is a charging mode using a pulsed voltage or a pulsed current, and the pulsed voltage or the pulsed current is used for charging the traction battery. According to the technical solution of the embodiment of the application, the charging pile can output pulse current to charge the traction battery, so as to prevent the performance of the traction battery from being affected by directly charging the traction battery at a low temperature, thereby ensuring the performance of the traction battery.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A charging method, comprising: acquiring a state parameter of a traction battery, the state parameter comprising a battery temperature and a state of charge (SOC) of the traction battery; sending first charging mode demand information to a charging pile when the battery temperature is lower than a first preset threshold, wherein the first charging mode demand information is used for indicating a pulse charging mode, the pulse charging mode is a charging mode using a pulsed voltage or a pulsed current, and the pulsed voltage or the pulsed current is used for charging the traction battery, the first charging mode demand information comprises pulse electricity information in the pulse charging mode, the pulse electricity information comprises at least one of following information: pulse current demand information, pulse voltage demand information, pulse direction demand information and pulse frequency demand information, and the pulse electricity information is determined according to a predetermined mapping relationship of the battery temperature, the SOC, and pulse charging information; receiving the pulsed voltage or the pulsed current output by the charging pile according to the pulse electricity information; wherein before the sending first charging mode demand information to a charging pile, the method further comprises: receiving an output capability message sent by the charging pile, the output capability message being used for carrying a first charging parameter of the charging pile in the pulse charging mode, the first charging parameter comprises at least one of following parameters: a minimum pulse charging current, a minimum pulse charging voltage, a minimum pulse charging frequency and a maximum pulse charging frequency; judging a matching condition between the charging pile and the traction battery according to the first charging parameter; the sending first charging mode demand information to a charging pile comprises: sending the first charging mode demand information to the charging pile in the case that the charging pile matches the traction battery."
+    },
+    {
+      "num": "2",
+      "text": "2. The method according to claim 1 , wherein the state parameter further comprises a battery voltage, and the sending first charging mode demand information to a charging pile when the battery temperature is lower than a first preset threshold comprises: sending the first charging mode demand information to the charging pile when the battery temperature is lower than the first preset threshold and the battery voltage is lower than a second preset threshold."
+    },
+    {
+      "num": "3",
+      "text": "3. The method according to claim 1 , wherein the first charging parameter comprises at least one of following parameters: a maximum pulse charging current, a maximum pulse charging voltage and a pulse waveform that can be output."
+    },
+    {
+      "num": "4",
+      "text": "4. The method according to claim 1 , wherein the sending first charging mode demand information to a charging pile when the battery temperature is lower than a first preset threshold comprises: sending a charging inhibition message to the charging pile when the battery temperature is lower than the first preset threshold; and sending the first charging mode demand information to the charging pile; wherein the charging inhibition message is used for indicating that the charging pile stops outputting power to the traction battery."
+    },
+    {
+      "num": "5",
+      "text": "5. A battery management system of a traction battery, comprising a processor and a memory, the memory configured to store a computer program, and the processor configured to call the computer program to execute the charging method according to claim 1 ."
+    },
+    {
+      "num": "6",
+      "text": "6. The method according to claim 1 , wherein the method further comprises: in the case that the charging pile matches the traction battery, sending a ready message to the charging pile, the ready message indicating that the traction battery is ready to start charging."
+    },
+    {
+      "num": "7",
+      "text": "7. The method according to claim 1 , wherein the judging a matching condition between the charging pile and the traction battery according to the first charging parameter comprises: comparing a pulse electricity parameter allowed by the traction battery with the first charging parameter, to judge whether the traction battery matches the charging pile."
+    },
+    {
+      "num": "8",
+      "text": "8. The method according to claim 1 , wherein before the sending first charging mode demand information to a charging pile, the method further comprises: sending a charging parameter message to the charging pile, the charging parameter message being used for carrying a second charging parameter allowed by the traction battery in the pulse charging mode, and the second charging parameter being used for judging whether the traction battery matches the charging pile."
+    },
+    {
+      "num": "9",
+      "text": "9. The method according to claim 8 , wherein the second charging parameter comprises at least one of following parameters: a maximum allowable pulse charging current, a maximum allowable pulse charging voltage, and a maximum allowable pulse charging frequency."
+    },
+    {
+      "num": "10",
+      "text": "10. The method according to claim 1 , wherein the method further comprises: sending a first message to the charging pile regularly, the first message being used for indicating that the traction battery is normal."
+    },
+    {
+      "num": "11",
+      "text": "11. The method according to claim 10 , wherein the first message comprises a battery charging state message, the battery charging state message being used for carrying the battery charging state of the traction battery in the pulse charging mode, and the battery charging state comprising at least one of following state value: a pulse charging current measurement value, a pulse charging voltage measurement value, a pulse measurement direction, and a pulse frequency measurement value."
+    },
+    {
+      "num": "12",
+      "text": "12. The method according to claim 1 , wherein the method further comprises: receiving a second message sent by the charging pile regularly, the second message being used for indicating that the charging pile is normal."
+    },
+    {
+      "num": "13",
+      "text": "13. The method according to claim 12 , wherein the second message comprises a charging pile charging state message, the charging pile charging state message being used for carrying a charging pile charging state of the charging pile in the pulse charging mode, and the charging pile charging state comprising at least one of following state values: a pulse charging current output value, a pulse charging voltage output value, a pulse direction, and a pulse frequency output value."
+    },
+    {
+      "num": "14",
+      "text": "14. The method according to claim 1 , wherein the method further comprises: sending second charging mode demand information to the charging pile when the battery temperature is not lower than the first preset threshold, wherein the second charging mode demand information is used for indicating a direct current charging mode, the direct current charging mode is a charging mode using a constant voltage or a constant current, the constant voltage or constant current is used for charging the traction battery."
+    },
+    {
+      "num": "15",
+      "text": "15. The method according to claim 14 , wherein the state parameter further comprises a battery voltage, and the sending second charging mode demand information to the charging pile when the battery temperature is not lower than the first preset threshold comprises: sending the second charging mode demand information to the charging pile when the battery temperature is not lower than the first preset threshold or the battery voltage is not lower than the second preset threshold."
+    },
+    {
+      "num": "16",
+      "text": "16. The method according to claim 14 , further comprising: sending a third message to the charging pile regularly, the third message comprising a battery state, and the third message being a battery state message of the traction battery."
+    },
+    {
+      "num": "17",
+      "text": "17. A method for charging a traction battery, performed by a battery management system in communication with a charging pile, the method comprising: acquiring a state parameter of the traction battery, the state parameter comprising a battery temperature of the traction battery and a state of charge (SOC) of the traction battery; sending, to the charging pile, first charging mode demand information, wherein the first charging mode demand information indicates a pulse charging mode for the charging pile to charge the traction battery using a pulsed voltage or a pulsed current, the first charging mode demand information comprises pulse electricity information in the pulse charging mode, the pulse electricity information comprises at least one of following information: pulse current demand information, pulse voltage demand information, pulse direction demand information and pulse frequency demand information, and the pulse electricity information is determined according to a predetermined mapping relationship of the battery temperature, the SOC, and pulse charging information; receiving, from the charging pile, a response message indicating that the charging pile supports the pulse charging mode according to the first charging mode demand information; sending a charging inhibition message to the charging pile when the battery temperature is not lower than the first preset threshold, the charging inhibition message being used for indicating that the charging pile stops outputting power to the traction battery; and after sending the charging inhibition message, sending, to the charging pile, second charging mode demand information when the battery temperature is not lower than the first preset threshold, the second charging mode demand information indicating a direct current charging mode for the charging pile to charge the traction battery using a constant voltage or a constant current."
+    },
+    {
+      "num": "18",
+      "text": "18. The method of claim 17 , further comprising: sending, to the charging pile, a first message at regular intervals, the first message including a battery charging state message, the battery charging state message being used for indicating that the traction battery is in a normal state and carrying the battery charging state of the traction battery in the pulse charging mode, and the battery charging state including at least one of: a pulse charging current measurement value, a pulse charging voltage measurement value, a pulse measurement direction, and a pulse frequency measurement value."
+    },
+    {
+      "num": "19",
+      "text": "19. The method of claim 18 , further comprising: receiving, from the charging pile, a second message at regular intervals, the second message being used to indicate that the charging pile is in a normal state, the second message including a charging pile charging state message, the charging pile charging state message being used for carrying a charging pile charging state of the charging pile in the pulse charging mode, and the charging pile charging state including at least one of: a pulse charging current output value, a pulse charging voltage output value, a pulse direction, and a pulse frequency output value."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "battery charging efficiency measurement"
+}

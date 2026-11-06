@@ -1,0 +1,95 @@
+{
+  "patent_id": "US12191668B2",
+  "source": "https://patents.google.com/patent/US12191668B2/en",
+  "retrieved_utc": "2026-11-01T01:35:37+00:00",
+  "http_status": 200,
+  "bytes": 3294388,
+  "html_sha256": "7afeda902f48ee9b78117a2ce32075fa40333c13eb686d03956e1c2c4ccbb27e",
+  "jurisdiction": "US",
+  "title": "Maximizing power in a photovoltaic distributed power system",
+  "abstract": "Abstract A power harvesting system including multiple parallel-connected photovoltaic strings, each photovoltaic string includes a series-connection of photovoltaic panels. Multiple voltage-compensation circuits may be connected in series respectively with the photovoltaic strings. The voltage-compensation circuits may be configured to provide respective compensation voltages to the photovoltaic strings to maximize power harvested from the photovoltaic strings. The voltage-compensation circuits may be include respective inputs which may be connected to a source of power and respective outputs which may be connected in series with the photovoltaic strings.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A system comprising: a series string of photovoltaic modules comprising at least a first photovoltaic module and a second photovoltaic module, wherein each of the first photovoltaic module and the second photovoltaic module comprise a first terminal and a second terminal; wherein the second terminal of the first photovoltaic module is connected to the first terminal of the second photovoltaic module; and a compensation circuit, the compensation circuit comprising: a power converter; a first input terminal connected to the first terminal of the first photovoltaic module; a second input terminal connected to the second terminal of the first photovoltaic module and the first terminal of the second photovoltaic module; a first output terminal connected to the first input terminal of the compensation circuit; and a second output terminal connected to a direct current (DC) bus."
+    },
+    {
+      "num": "2",
+      "text": "2. The system of claim 1 , wherein the DC bus is connected to a first input terminal of an inverter."
+    },
+    {
+      "num": "3",
+      "text": "3. The system of claim 2 , wherein the inverter is connected to a power grid."
+    },
+    {
+      "num": "4",
+      "text": "4. The system of claim 2 , wherein the inverter is connected to an energy storage device."
+    },
+    {
+      "num": "5",
+      "text": "5. The system of claim 2 , wherein the second terminal of the second photovoltaic module is connected to a different DC bus."
+    },
+    {
+      "num": "6",
+      "text": "6. The system of claim 5 , wherein the different DC bus is connected to a second input terminal of the inverter."
+    },
+    {
+      "num": "7",
+      "text": "7. The system of claim 5 , wherein the different DC bus is a ground bus."
+    },
+    {
+      "num": "8",
+      "text": "8. The system of claim 1 , wherein the DC bus is a power bus."
+    },
+    {
+      "num": "9",
+      "text": "9. The system of claim 1 , wherein the DC bus is connected to a second compensation circuit."
+    },
+    {
+      "num": "10",
+      "text": "10. The system of claim 9 , wherein the second compensation circuit is connected to a second series string of photovoltaic modules."
+    },
+    {
+      "num": "11",
+      "text": "11. A method comprising: connecting a compensation circuit to a series string of photovoltaic modules, the series string comprising a first photovoltaic module and a second photovoltaic module, by: connecting a first input terminal of the compensation circuit to a first terminal of the first photovoltaic module; connecting a second input terminal of the compensation circuit to a second terminal of the first photovoltaic module and a first terminal of the second photovoltaic module; connecting a first output terminal of the compensation circuit to the first input terminal of the compensation circuit; connecting a second output terminal of the compensation circuit to a direct current (DC) bus; and; connecting the second terminal of the first photovoltaic module of the series string to the first terminal of the second photovoltaic module of the series string, wherein the compensation circuit comprises a power converter."
+    },
+    {
+      "num": "12",
+      "text": "12. The method of claim 11 , further comprising connecting the DC bus to a first input terminal of an inverter."
+    },
+    {
+      "num": "13",
+      "text": "13. The method of claim 12 , further comprising connecting the inverter to a power grid."
+    },
+    {
+      "num": "14",
+      "text": "14. The method of claim 12 , further comprising connecting the inverter to an energy storage device."
+    },
+    {
+      "num": "15",
+      "text": "15. The method of claim 12 , further comprising connecting a second terminal of the second photovoltaic module to a different DC bus."
+    },
+    {
+      "num": "16",
+      "text": "16. The method of claim 15 , further comprising connecting the different DC bus to a second input terminal of the inverter."
+    },
+    {
+      "num": "17",
+      "text": "17. The method of claim 15 , wherein the different DC bus is a ground bus."
+    },
+    {
+      "num": "18",
+      "text": "18. The method of claim 11 , wherein the DC bus is a power bus."
+    },
+    {
+      "num": "19",
+      "text": "19. The method of claim 11 , further comprising connecting the DC bus to a second compensation circuit."
+    },
+    {
+      "num": "20",
+      "text": "20. The method of claim 19 , further comprising connecting the second compensation circuit to a second series string of photovoltaic modules."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "system efficiency output input power ratio"
+}

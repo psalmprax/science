@@ -1,0 +1,302 @@
+{
+  "schema": "apedp.applied_basis_report/v1",
+  "label_keys": [
+    "basis",
+    "evidence",
+    "is_computed",
+    "is_measured",
+    "measured",
+    "not_modelled",
+    "predictive",
+    "reference"
+  ],
+  "modules": [
+    {
+      "module": "apedp/applied_biopharma.py",
+      "functions": [
+        {
+          "function": "drug_repurposing",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "optimize_lead",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_trial",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_combination_trial",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "simulate_combination_trial",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "simulate_repuposing_efficacy",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "screen",
+          "dict_returns": 1,
+          "labelled": 1
+        }
+      ],
+      "unlabelled": [],
+      "constant_returns": []
+    },
+    {
+      "module": "apedp/applied_climate.py",
+      "functions": [
+        {
+          "function": "analyze_dac_technology",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "analyze_mineralization",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "project_temperature",
+          "dict_returns": 1,
+          "labelled": 1
+        }
+      ],
+      "unlabelled": [],
+      "constant_returns": []
+    },
+    {
+      "module": "apedp/applied_defects.py",
+      "functions": [
+        {
+          "function": "audit_prandtl_glauert_compressibility",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "audit_knudsen_continuum_breakdown",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "audit_butler_volmer_electrochemical_saturation",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "audit_semenov_thermal_runaway",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "audit_hall_petch_nanoscale_breakdown",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "audit_griffith_crack_tip_singularity",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "audit_gibbs_thomson_melting_depression",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "audit_casimir_nems_stiction_divergence",
+          "dict_returns": 1,
+          "labelled": 1
+        }
+      ],
+      "unlabelled": [],
+      "constant_returns": []
+    },
+    {
+      "module": "apedp/applied_electrical.py",
+      "functions": [
+        {
+          "function": "analyze_grid",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_converter",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_circuit",
+          "dict_returns": 3,
+          "labelled": 3
+        },
+        {
+          "function": "design_system",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "analyze_device",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_controller",
+          "dict_returns": 1,
+          "labelled": 1
+        }
+      ],
+      "unlabelled": [],
+      "constant_returns": []
+    },
+    {
+      "module": "apedp/applied_fusion.py",
+      "functions": [
+        {
+          "function": "lawson_criterion",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "beta_limit",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_reactor",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "tritium_breeding_ratio",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "deuterium_availability",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "evaluate_pfm",
+          "dict_returns": 1,
+          "labelled": 1
+        }
+      ],
+      "unlabelled": [],
+      "constant_returns": []
+    },
+    {
+      "module": "apedp/applied_materials.py",
+      "functions": [
+        {
+          "function": "analyze_superconductor",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_catalyst",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "analyze_battery_material",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_cloak",
+          "dict_returns": 1,
+          "labelled": 1
+        }
+      ],
+      "unlabelled": [],
+      "constant_returns": []
+    },
+    {
+      "module": "apedp/applied_neuromorphic.py",
+      "functions": [
+        {
+          "function": "design_chip",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_snn",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_memristor",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_bci",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "recommend_algorithm",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_system",
+          "dict_returns": 1,
+          "labelled": 1
+        }
+      ],
+      "unlabelled": [],
+      "constant_returns": []
+    },
+    {
+      "module": "apedp/applied_synthetic_bio.py",
+      "functions": [
+        {
+          "function": "design_guide_rna",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "predict_off_targets",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_enzyme",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "optimize_pathway",
+          "dict_returns": 1,
+          "labelled": 1
+        }
+      ],
+      "unlabelled": [],
+      "constant_returns": [
+        "_pam_matches: returns the constant True",
+        "_pam_matches: returns the constant False"
+      ]
+    }
+  ],
+  "totals": {
+    "modules": 8,
+    "functions_with_dict_returns": 44,
+    "dict_returns": 46,
+    "unlabelled_returns": 0,
+    "constant_returns": 2
+  },
+  "verdict": "A module whose returns all carry a label states its own basis. An unlabelled return is a number a reader cannot tell from a computed one."
+}

@@ -1,0 +1,83 @@
+{
+  "patent_id": "US12021452B2",
+  "source": "https://patents.google.com/patent/US12021452B2/en",
+  "retrieved_utc": "2026-11-01T01:35:30+00:00",
+  "http_status": 200,
+  "bytes": 352984,
+  "html_sha256": "99eee0357af893cd30518c7c80e8dd46d5e70137b988c52740841c702f052f8c",
+  "jurisdiction": "US",
+  "title": "Multi-resonant switched capacitor power converter architecture",
+  "abstract": "Abstract A switched-capacitor (SC) network in an SC converter is controlled to operate at varying resonant modes to achieve high conversion ratio efficiency, at a low circuit component count. These power converters are suited to numerous application areas including improving energy efficiency of data centers. A family of resonant switched capacitor (SC) converters with multiple operating phases are presented “Multi-Resonant SC Converters”. Described in detail are an 8-to-1 Multi-Resonant-Doubler (MRD) converter and a 6-to-1 Cascaded Series-Parallel (CaSP). The topology of these converters make them amenable to combining like units in parallel toward reaching higher power levels.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1. A multi-resonant switched-capacitor converter apparatus, comprising: a series switch having an input for connection to a voltage input, wherein said series switch is for controlling the connection to the voltage input; a first switched-capacitor (SC) stage configured for a 2:1 conversion ratio which is coupled to an output of said series switch; one or more cascaded intermediate SC stages, each having an arbitrary conversion ratio; wherein a first intermediate SC stage, of said cascaded intermediate SC stages, is coupled to an output of said first SC stage while any subsequent intermediate SC stages are coupled in a cascading manner to an output of a previous intermediate SC stage; wherein said first switched-capacitor (SC) stage and said one or more cascaded intermediate SC stages each comprise one or more switching cells comprising one capacitor and three switches; a resonant inductor coupled from the output of the last of said cascaded intermediate SC stages to an output load being driven at a different voltage than said voltage input; wherein said switching of said switching cells is performed in receipt of multi-phase control signals having at least three phase states within each period of multi-phase control signals; and wherein said one or more switching cells are configured so that switching cells closer to the input side of said multi-resonant switched-capacitor converter apparatus are activated with shorter phase states than switching cells closer to the output of said multi-resonant SC converter apparatus."
+    },
+    {
+      "num": "2",
+      "text": "2. The apparatus of claim 1 , wherein during receipt of multi-phase control signals within each period of multi-phase control signals, said resonant inductor will resonate at multiple different resonant frequencies, as operates with and is resonating with different capacitor(s) of the switching cells."
+    },
+    {
+      "num": "3",
+      "text": "3. The apparatus of claim 2 , wherein said resonant operation is configured to provide soft-charging and soft-switching operations, toward enabling higher efficiency and power density than pure SC converters."
+    },
+    {
+      "num": "4",
+      "text": "4. The apparatus of claim 1 , wherein capacitors and switches in the switching cells have an increasing phase time hierarchy configuration in which stages closer to the input of said multi-resonant switched-capacitor converter apparatus are configured for operating at higher voltages than those in the stages closer to the output of said multi-resonant SC converter apparatus."
+    },
+    {
+      "num": "5",
+      "text": "5. The apparatus of claim 1 , wherein said increasing phase time hierarchical configuration allows multiple instances of said multi-resonant SC converter to be paralleled together, in optimizing utilization of flying capacitors and associated switches."
+    },
+    {
+      "num": "6",
+      "text": "6. The apparatus of claim 1 , wherein said multi-resonant switched-capacitor converter apparatus does not require interstage decoupling capacitors or interleaving operations toward reducing component count and control complexity."
+    },
+    {
+      "num": "7",
+      "text": "7. The apparatus of claim 1 , wherein said first switched-capacitor (SC) stage and said one or more cascaded intermediate SC stages comprise three voltage doublers."
+    },
+    {
+      "num": "8",
+      "text": "8. The apparatus of claim 7 , wherein said multi-resonant switched-capacitor converter is a four-phase, 8-to-1 multi-resonant switched-capacitor converter."
+    },
+    {
+      "num": "9",
+      "text": "9. The apparatus of claim 1 : wherein said one or more cascaded intermediate SC stages comprises at least one series-parallel mode stage; and wherein said at least one series-parallel mode stage is operated in a series mode to achieve a 2-to-1 voltage step-down during a first 1/N of a switching period, and is operated in a parallel mode to achieve an N-to-1 voltage step-down during a last (N-1)/N of the switching period."
+    },
+    {
+      "num": "10",
+      "text": "10. The apparatus of claim 9 , wherein said at least one series-parallel mode stage comprises a 3-to-1 series-parallel mode stage, whereby said multi-resonant switched-capacitor converter is a three-phase, 6-to-1 multi-resonant switched-capacitor converter."
+    },
+    {
+      "num": "11",
+      "text": "11. The apparatus of claim 9 , wherein said at least one series-parallel mode stage comprises a 4-to-1 series-parallel mode stage, whereby said multi-resonant switched-capacitor converter is a three-phase, 8-to-1 multi-resonant switched-capacitor converter."
+    },
+    {
+      "num": "12",
+      "text": "12. The apparatus of claim 9 , wherein said at least one series-parallel mode stage comprises a 5-to-1 series-parallel stage, whereby said multi-resonant switched-capacitor converter is a three-phase, 10-to-1 multi-resonant switched-capacitor converter."
+    },
+    {
+      "num": "13",
+      "text": "13. The apparatus of claim 9 : wherein said one or more cascaded intermediate SC stages comprises a doubler stage and said at least one series-parallel mode stage; and wherein said at least one series-parallel mode stage comprises a 3-to-1 series-parallel stage, whereby said multi-resonant switched-capacitor converter is a four-phase, 12-to-1 multi-resonant switched-capacitor converter."
+    },
+    {
+      "num": "14",
+      "text": "14. The apparatus of claim 1 , wherein at least one additional current path is added into said one or more cascaded intermediate SC stages to support higher output power."
+    },
+    {
+      "num": "15",
+      "text": "15. A multi-resonant switched-capacitor converter apparatus, comprising: a series switch having a first connection to a first port, wherein said series switch is for controlling the connection to the first port; a first switched-capacitor (SC) stage configured for a 2:1 conversion ratio which is coupled to a second connection of said series switch; one or more cascaded intermediate SC stages, each having an arbitrary conversion ratio; wherein a first intermediate SC stage, of said cascaded intermediate SC stages, is coupled to an second connection of said first SC stage while any subsequent intermediate SC stages are coupled in a cascading manner to previous intermediate SC stages; wherein said first switched-capacitor (SC) stage and said one or more cascaded intermediate SC stages each comprise one or more switching cells comprising one capacitor and three switches; a resonant inductor coupled from the output of the last of said cascaded intermediate SC stages to a second port being driven at a different voltage than said first port; wherein said switching of said switching cells is performed in receipt of multi-phase control signals having at least three phase states within each period of multi-phase control signals; wherein said one or more switching cells are configured so that switching cells closer to the first port of said multi-resonant SC converter apparatus are activated with shorter phase states than switching cells closer to the second port of said multi-resonant SC converter apparatus; and wherein said multi-resonant switched-capacitor converter operates in a step-down mode when an input voltage is coupled to said first port with the load connected to said second port; and wherein said multi-resonant switched-capacitor converter operates in a step-up mode when an input voltage is coupled to said second port with the load connect to said first port."
+    },
+    {
+      "num": "16",
+      "text": "16. A method for performing multi-resonant switched-capacitor power conversion, comprising: cascading a first switched-capacitor (SC) stage configured for a 2:1 conversion ratio from a voltage input to one or more cascaded intermediate SC stages, each having an arbitrary conversion ratio, through a resonant inductor to a load; wherein said first switched-capacitor (SC) stage and said one or more cascaded intermediate SC stages each comprise one or more switching cells comprising one capacitor and three switches; coupling a resonant inductor between an output from the last of said cascaded intermediate SC stages to an output load being driven at a different voltage than said voltage input; switching of said switching cells is performed in response to receipt of multi-phase control signals having at least three phase states within each period of multi-phase control signals; and arranging said one or more switching cells so that switching cells closer to the input side of said multi-resonant switched-capacitor converter apparatus are activated with shorter phase states than switching cells closer to the output of said converter apparatus."
+    },
+    {
+      "num": "17",
+      "text": "17. The method as recited in claim 16 , wherein at least one of the intermediate SC stages, within said one or more cascaded intermediate SC stages, operates as a series-parallel stage for operating in a series mode to achieve a 2-to-1 voltage step-down during a first 1/N of the switching period; and operating in a parallel mode to achieve an N-to-1 voltage step-down during a last (N-1)/N of the switching period."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "system efficiency output input power ratio"
+}

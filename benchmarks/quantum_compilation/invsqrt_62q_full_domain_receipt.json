@@ -1,0 +1,59 @@
+{
+  "_note": "Full-domain Benchmark I verification of the 62-qubit circuit archived in artifacts/checkpoints/submission_24_59.zip (sha256 af469847\u2026), run on 2026-11-05 with the official verifier from this repository. Unlike invsqrt_kernel_receipt.json (a published Kaggle kernel run), this is a local run: 3,133,452 inputs x 64 shots = 200,540,928 shots, the graded budget. Seeds derive from the circuit sha256, so the run is re-derivable from the command recorded below. `sample_vs_full_domain_delta` is an absolute score delta (full domain minus the 25,600-shot sample of the same circuit), not a ratio.",
+  "benchmark": "invsqrt",
+  "circuit": {
+    "sha256": "af4698478fbad775a5a271690cf4c2d8783caf0b8d12048106d1973c4ac6862e",
+    "num_qubits": 62,
+    "num_ops": 48262,
+    "reaction_depth": 851,
+    "bytes": 479055,
+    "source_archive": "artifacts/checkpoints/submission_24_59.zip",
+    "working_tree_copy": "artifacts/quantum_compilation/invsqrt/invsqrt_62q_archived.kmb"
+  },
+  "command": "PYTHONPATH=<repo>:<repo>/apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix .venv-kickmix/bin/python apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/invsqrt/verify_submission_invsqrt.py artifacts/quantum_compilation/invsqrt/invsqrt_62q_archived.kmb --max-x 3133452 --shots-per-x 64",
+  "protocol": {
+    "max_x": 3133452,
+    "shots_per_x": 64,
+    "verified_shots": 200540928,
+    "shots_per_x_note": "64 is the verifier default and the graded budget; max_x is the default 3*(2^10-2)^2."
+  },
+  "receipt": {
+    "status": "PASS",
+    "score": 97921.57954257724,
+    "toffoli_equivalent": 1579.3803152028586,
+    "toffoli_count": 1281.664677182505,
+    "max_toffoli_count": 1537,
+    "t_count": 11.49925652582998,
+    "rotation_count": 41.0,
+    "rotation_eps": 2.434041480874084e-13,
+    "num_qubits": 62,
+    "reaction_depth": 851,
+    "num_ops": 48262,
+    "verified_shots": 200540928,
+    "worst_error_over_tolerance": 0.9993237694056958,
+    "worst_x": 161,
+    "circuit_sha256": "af4698478fbad775a5a271690cf4c2d8783caf0b8d12048106d1973c4ac6862e"
+  },
+  "run": {
+    "date_utc": "2026-11-05",
+    "wall_clock_seconds": 445.87,
+    "cpu_percent": 561,
+    "peak_rss_kb": 525752,
+    "cpu_cores": 8,
+    "interpreter": "CPython 3.13 (.venv-kickmix) with the bundled kickmix extension",
+    "sandbox": "standard verifier batch size 256, batches-per-chunk 64, max_workers = all cores"
+  },
+  "reference_cost": 2076774.233715282,
+  "reference_cost_multiple": 21.208545,
+  "comparisons": {
+    "same_circuit_25_600_shot_sample": 97918.08845516219,
+    "sample_vs_full_domain_delta": 3.491087,
+    "sample_vs_full_domain_percent": 0.003565,
+    "pinned_89q_full_domain_score": 157601.0808,
+    "improvement_factor_vs_89q": 1.609462,
+    "percent_lower_vs_89q": 37.867444,
+    "public_62q_sampled_score": 100569.53,
+    "percent_lower_vs_public_62q_sampled": 2.632955
+  },
+  "verified_shots": 200540928
+}

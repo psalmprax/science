@@ -1,0 +1,216 @@
+{
+  "_schema": "apedp.patent_normalised_claims/v2",
+  "_scope": "Every claim of each record whose text states an explicit relation was normalised by hand \u2014 two or three per record wherever the claims state that many distinct relations, not claim 1 alone. A record whose claims state no relation lists an empty 'claims' list and is counted as unsearchable; its note records that all of its claims were read.",
+  "_transcription_rule": "The expression is the author's normalisation of the relation the claim states, written as a bare right-hand side (no '=') because the index compares symbolic forms. It is NOT the patent's text. A note marked COARSE records structure the normalisation dropped; that expression therefore matches more than the claim says, and a match on it is a transcription limit rather than a finding.",
+  "US6285999B1": {
+    "_note": "All 29 claims were read and scanned: none states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable. Declined to import the description's PageRank recurrence: a description is not a claim.",
+    "claims": []
+  },
+  "US8965721B2": {
+    "claims": [
+      {
+        "claim_number": "1",
+        "expression": "Z_meas/Z_ref",
+        "note": "Step (b): 'determining a ratio of said measured DC impedance to a reference DC impedance ... to establish an impedance degradation factor'. COARSE: the claim names the operands but not their functional form, so this expression matches any quotient; the engine holds it as operand-only and refuses to conclude from a match."
+      },
+      {
+        "claim_number": "8",
+        "expression": "I_lim*V_min",
+        "note": "Claim 8 states '(f) calculating a power discharge limit by multiplying said current discharge limit by V min'. Normalised as the product; the claim names the operands and the operation, not a functional form beyond the product, so it is operand-only too."
+      }
+    ]
+  },
+  "US7120566B1": {
+    "claims": [
+      {
+        "claim_number": "1",
+        "expression": "AF*exp(t_A)",
+        "note": "Claim 1 states 'using the relationship t F =AF\u00d7exp(t A )', with 't F is a time to failure on a field use time scale, AF is an acceleration factor, and t A is a time to failure on an accelerated time scale'. Normalised verbatim, including the patent's own dimensional oddity: it exponentiates a time, which is not dimensionally meaningful. Recorded as written rather than repaired, because repairing a claim is not this corpus's job."
+      },
+      {
+        "claim_number": "18",
+        "expression": "AF*exp(t_A)",
+        "note": "Claim 18 restates claim 1's relationship verbatim ('using the relationship t F =AF\u00d7exp(t A )') and adds that the data derives from a plurality of stress tests. Recorded so the claim set is enumerated rather than implied: it adds no new form, and the engine matches claim 1 first."
+      }
+    ]
+  },
+  "US11488017B2": {
+    "_note": "All 11 claims were read and scanned: they recite a CNN/RNN pipeline (embeddings, gradients, weight sharing) and lists of sensory data, with no equation, ratio phrase, percent or summation token in any claim. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "EP4334731B1": {
+    "claims": [
+      {
+        "claim_number": "2",
+        "expression": "eta_C*i_ch",
+        "note": "Claim 2 states 'the said efficiency characteristics are defined as: \u00ee ch = \u03b7 C i ch' (net current injected equals charging efficiency times gross current) and the mirror relation for discharging. Claim 1 renders these as image placeholders, so claim 2 was used and the choice is recorded here. A bare product, so the engine treats it as operand-only."
+      },
+      {
+        "claim_number": "7",
+        "expression": "C_t_I/C_0_I",
+        "note": "Claim 7 states 'SOH parameter in time is defined as SOH t = C t I / C 0 I ... where C 0 I corresponds with the first determination of mean battery charge capacity C I ... and C t I is a newly determined value C I'. Normalised as the quotient of charge capacities; operand-only for the same reason as claim 2."
+      },
+      {
+        "claim_number": "8",
+        "expression": "C_t_E/C_0_E",
+        "note": "Claim 8 states the same state-of-health definition over 'mean battery energy capacity C E': 'SOH t = C t E / C 0 E'. Normalised as the quotient of energy capacities; distinct from claim 7's charge capacity, so both are recorded."
+      }
+    ]
+  },
+  "US11474159B2": {
+    "claim_1": {
+      "states_relation": false,
+      "reason": "Claim 1 states a procedure (S1 peak extraction, S2 calibration, S3 on-line estimation) and defers the mathematics: 'relation functions of the standard sample are obtained based on the dual-embedded decoupling', with the first, second and third relation functions named but not written. Their forms are in dependent claims 3, 5, 6, 7 and 8; claim 3's Arrhenius law is the same form as claim 7's, so the distinct form added from this pointer is claim 6."
+    },
+    "claims": [
+      {
+        "claim_number": "4",
+        "expression": "1 - SS_res/SS_tot",
+        "note": "Claim 4 states 'R 2 = 1 - \u03a3 i = 1 N ( V i - \u1e7c i ) 2 \u03a3 i = 1 N ( V i - V\u0302 mean ) 2'. The two sums were grouped as SS_res and SS_tot; the grouping is mine, the definition is the claim's. COARSE: the grouped form matches any '1 - a/b' whatever the sums contain."
+      },
+      {
+        "claim_number": "5",
+        "expression": "k_SEI*SOH + b_SEI",
+        "note": "Claim 5 states '\u0394 U SEI,cycle,T =k SEI,T SOH+b SEI,T' as 'the linear relationship function between the aging state and the second voltage deviation'. Normalised as the affine relation in SOH; the temperature subscript is dropped because the claim fixes the temperature."
+      },
+      {
+        "claim_number": "7",
+        "expression": "A_SEI*exp(B_SEI/T) + C_SEI",
+        "note": "Claim 7 states 'k SEI,T =kb SEI,T =A SEI exp( B SEI /T )+ C SEI' \u2014 the claim sets both coefficients equal and defines them as an exponential in 1/T plus a constant."
+      },
+      {
+        "claim_number": "6",
+        "expression": "-0.01*b_SEI*SOH + b_SEI",
+        "note": "Claim 6 states 'k SEI,T =-0.01b SEI,T' and 'thus, the above linear relationship function between the aging state and the second voltage deviation \u0394U SEI,cycle,T is further simplified as: \u0394 U SEI,cycle,T =-0.01 b SEI,T SOH+b SEI,T'. Normalised as written, keeping the -0.01 coupling rather than freeing the slope: the numeric coefficient is the claim's, and it is why this form is decisive (a coefficient is structure). It is distinct from claim 5, where the slope is a symbol."
+      }
+    ]
+  },
+  "US20250321289A1": {
+    "claim_1": {
+      "states_relation": false,
+      "reason": "Claim 1 states a pipeline: apply several machine-learning algorithms to estimate SoH with a confidence value, then 'applying a Kalman filter based fusion algorithm for combining the state of health estimations'. A Kalman update is a weighted combination, but the claim states neither weights nor form, so normalising it would invent the arithmetic. This record states relations in claims 4 and 11, which are normalised."
+    },
+    "claims": [
+      {
+        "claim_number": "4",
+        "expression": "s(t)**2",
+        "note": "Claim 4 states 'signal strength over time, which is calculated as E = \u222b 0 \u221e s(t) 2 dt'. COARSE: only the integrand s(t)^2 was normalised, because a definite integral is not a form the index compares; the match therefore ignores the integration and any squared signal matches it. The other features listed in claim 4 (curve profiles, areas, slopes) state no relation."
+      },
+      {
+        "claim_number": "11",
+        "expression": "SoH_pred",
+        "note": "Claim 11 sets 'the battery state of health estimation equal to the battery SoH prediction' when the input data matches no known charging scenario. Normalised as the bare prediction symbol: an equality of names with no operation, so it is operand-only and can never decide a verdict. It is recorded because the claim does state a relation, and the count should show what kind of relation it is."
+      }
+    ]
+  },
+  "US11921163B2": {
+    "_note": "All 21 claims were read and scanned: they describe a modular machine-learning structure (modules, inputs, outputs, training), with no equation, ratio phrase, percent or summation token in any claim. The record is counted as unsearchable.",
+    "claim_1": {
+      "states_relation": false,
+      "reason": "Claim 1 states steps only: collect raw sensor data from a battery module, extract input features, update graph-neural-network node states, generate SoH indicator estimates from individual output states, then act on them. No quantity is related to another by an operation."
+    },
+    "claims": []
+  },
+  "US12130335B2": {
+    "_note": "All 20 claims were read and scanned: they recite extracting incremental-capacity areas and peaks and feeding them to a model, with no equation, ratio phrase, percent or summation token in any claim. The record is counted as unsearchable.",
+    "claim_1": {
+      "states_relation": false,
+      "reason": "Claim 1 states steps only: acquire voltage-versus-capacity data, 'obtaining an incremental capacity (IC) data based on at least the acquired QV data', extract an ICA area and peak, train a Support Vector Regression model. The derivative that defines IC is not written in the claim; importing dQ/dV would be the builder's physics, not the claim's text."
+    },
+    "claims": []
+  },
+  "US12372585B2": {
+    "_note": "All 22 claims were read and scanned: they recite receiving a time series of battery attributes and generating a battery state with a neural network, with no equation, ratio phrase, percent or summation token in any claim. The record is counted as unsearchable.",
+    "claim_1": {
+      "states_relation": false,
+      "reason": "Claim 1 states model input and output only: a time series of battery attributes (ambient temperature, and voltage and/or current, spanning charging and discharging) is received and a battery state including SoH is generated by one trained model. No algebraic relation is stated."
+    },
+    "claims": []
+  },
+  "US11496054B2": {
+    "claims": [
+      {
+        "claim_number": "1",
+        "expression": "(d2*U2 - d1*U1)/d3",
+        "note": "Claim 1 states the converter's volt-second balance as Equation (5) 'd 1 U 1 + d 3 U 3 = d 2 U 2' and then its solved form as Equation (6) 'U 3 = (d 2 U 2 - d 1 U 1)/d 3', where U 1 , U 2 , U 3 are sums of the transformer primary-winding voltage and the first-capacitor voltage in operating modes 1-3 and d 1 , d 2 , d 3 are duty ratios in those modes. The solved form was normalised because the RHS of Equation (5) is a bare product and would be held as operand-only. COARSE: the claim also states Equations (1)-(3), (7) and the resonance frequency w r = 1/sqrt(L k C 1); only one relation per claim is recorded, so a match here is a match on the volt-second relation and not on the whole claim."
+      }
+    ]
+  },
+  "US12021452B2": {
+    "claims": [
+      {
+        "claim_number": "1",
+        "expression": "V_in/V_out",
+        "note": "Claim 1 states 'a first switched-capacitor (SC) stage configured for a 2:1 conversion ratio', and further cascaded stages 'each having an arbitrary conversion ratio'. Normalised as the ratio of input to output voltage; the direction (input over output) is my reading of 'conversion ratio', and it is recorded here as such. COARSE: the claim names the two quantities and their ratio and no functional form, so any quotient is isomorphic to it and the engine holds it as operand-only."
+      }
+    ]
+  },
+  "US10209314B2": {
+    "_note": "All 20 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US10718727B2": {
+    "_note": "All 15 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US11050359B2": {
+    "_note": "All 2 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US11084591B2": {
+    "_note": "All 22 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US12142721B2": {
+    "_note": "All 20 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US12191668B2": {
+    "_note": "All 20 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US12401203B2": {
+    "_note": "All 19 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US12529627B2": {
+    "_note": "All 20 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US20220223901A1": {
+    "_note": "All 8 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US20250116981A1": {
+    "_note": "All 20 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US5269149A": {
+    "_note": "All 8 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US8642660B2": {
+    "_note": "All 1 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US8836284B2": {
+    "_note": "All 10 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US9121840B2": {
+    "_note": "All 8 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US9465078B2": {
+    "_note": "All 49 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US9545412B2": {
+    "_note": "All 15 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  },
+  "US9791519B2": {
+    "_note": "All 20 claims were read and scanned: they recite apparatus, method steps, compositions or control logic, and no claim states a relation between quantities \u2014 no equation, ratio phrase, percent or summation token appears in any of them. The record is counted as unsearchable.",
+    "claims": []
+  }
+}

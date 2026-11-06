@@ -97,11 +97,76 @@ def test_track_c_energy_equals_the_bit_counts_it_reports():
     assert energy["combined_energy"] == ssd["energy"] + htm["energy"]
 
 
+def test_batch_path_agrees_with_the_scalar_path():
+    multiplier = MMLMMultiplier()
+    pairs = [
+        (left, right)
+        for left in (0, 1, 7, 1234, 4095)
+        for right in (0, 3, 42, 4094)
+    ]
+    batch = multiplier.bilinear_multiply_batch(
+        [left for left, _ in pairs], [right for _, right in pairs]
+    )
+    assert batch["pairs"] == len(pairs)
+    for (left, right), product, exact in zip(
+        pairs, batch["products"], batch["exact"]
+    ):
+        scalar = multiplier.bilinear_multiply(left, right)
+        assert product == scalar["product"], (left, right)
+        assert exact is True, (left, right)
+
+
+@pytest.mark.parametrize("track_cls", TRACKS)
+def test_inverse_is_a_composition_verified_on_the_whole_group(track_cls):
+    """Inversion runs 21 products per element and is checked by x * x^-1 == 1."""
+    track = track_cls()
+    result = track.invert_batch(range(1, 4096))
+    assert result["elements"] == 4095
+    assert all(result["exact"]), result["inverses"][:5]
+    assert set(result["checked"]) == {1}
+    assert result["products_per_element"] == 21
+    assert result["bilinear_products"] == 21 * 4095
+    assert len(set(result["inverses"])) == 4095
+    assert track.gf.mul(0x5A3, result["inverses"][0x5A3 - 1]) == 1
+
+
+def test_inverse_refuses_zero_and_out_of_field_elements():
+    track = MMLMTrackA()
+    with pytest.raises(ValueError):
+        track.invert_batch([0])
+    with pytest.raises(ValueError):
+        track.invert_batch([4096])
+
+
+@pytest.mark.parametrize("track_cls", TRACKS)
+def test_matvec_composes_products_and_matches_the_field_model(track_cls):
+    track = track_cls()
+    rng = np.random.default_rng(11)
+    matrix = rng.integers(0, 4096, size=(6, 9))
+    vector = rng.integers(1, 4096, size=9)
+    out = track.gf_matvec(matrix, vector)
+    assert out["exact"], (out["result"], out["expected"])
+    assert out["entries"] == 54
+    assert out["products"] == int(np.count_nonzero(matrix))
+    assert out["products"] + out["zero_products_skipped"] == out["entries"]
+    for row, value in zip(matrix, out["result"]):
+        total = 0
+        for entry, element in zip(row, vector):
+            total ^= track.gf.mul(int(entry), int(element))
+        assert value == total
+
+
+def test_matvec_rejects_a_short_row():
+    with pytest.raises(ValueError):
+        MMLMTrackA().gf_matvec([[1, 2, 3], [4, 5]], [1, 2])
+
+
 @pytest.mark.parametrize("track_cls", TRACKS)
 def test_tracks_state_a_scope_they_have_not_overreached(track_cls):
     out = track_cls().process_with_tensor(3, second_operand=5)
     scope = out["scope"]
-    assert scope["unit"] == "one GF(2^12) product"
+    assert scope["unit"] == "GF(2^12) arithmetic"
+    assert scope["compositions"] == ["product", "inverse", "matvec"]
     assert scope["models_tokens"] is False
     assert scope["implements_attention"] is False
     assert "language model" not in scope["claim"].lower()

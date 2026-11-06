@@ -1,0 +1,125 @@
+{
+  "engine": "kickmix",
+  "kickmix": "/home/psalmprax/ALL_PROJECTS/science/build/kickmix_mr/lib/kickmix.cpython-313-x86_64-linux-gnu.so",
+  "kickmix_sha256": "e57dcc471213e43f79c767e585514aaa8315168235d4c5fd5539f59d2217c378",
+  "kickmix_role": "local rebuild with MR (scripts/build_kickmix_mr.py); not the pinned competition binary and not eligible for a receipt",
+  "measure": "static Toffolis of one ixor_gf2_mul at GF(2^12), attributed by the engine's own tags, plus every product span of the campaign arm",
+  "calls": [
+    {
+      "call": "unconditional (control=True)",
+      "control": "true",
+      "toffolis": 63,
+      "ops": {
+        "CX": 481,
+        "SWAP": 21,
+        "CCX": 63,
+        "INFO_TAG": 14
+      },
+      "toffolis_by_tag": {
+        "gf_mul": 63
+      },
+      "ops_by_role": {
+        "the bilinear product, accumulated in place": 63
+      }
+    },
+    {
+      "call": "classically controlled (a measurement bit)",
+      "control": "bit",
+      "toffolis": 63,
+      "ops": {
+        "CX": 481,
+        "SWAP": 21,
+        "CCX": 63,
+        "INFO_TAG": 14,
+        "POP_CONDITION": 1,
+        "PUSH_CONDITION": 1
+      },
+      "toffolis_by_tag": {
+        "gf_mul": 63
+      },
+      "ops_by_role": {
+        "the bilinear product, accumulated in place": 63
+      }
+    },
+    {
+      "call": "quantum-controlled (a control qubit)",
+      "control": "qubit",
+      "toffolis": 75,
+      "ops": {
+        "BIT_INVERT": 104,
+        "BIT_STORE0": 10,
+        "R": 12,
+        "HMR": 12,
+        "CX": 481,
+        "CZ": 144,
+        "SWAP": 21,
+        "CCX": 75,
+        "INFO_TAG": 22
+      },
+      "toffolis_by_tag": {
+        "gf_mul": 63,
+        "c_gf_iadd": 12
+      },
+      "ops_by_role": {
+        "the bilinear product, accumulated in place": 63,
+        "the controlled 12-bit add of that window into the target": 12
+      }
+    }
+  ],
+  "composition": {
+    "in_place_toffolis": 63,
+    "materialised_toffolis": 75,
+    "and_toffolis": 63,
+    "add_toffolis": 12,
+    "non_and_toffolis_in_a_63_toffoli_call": 0
+  },
+  "arm": {
+    "arm": "none",
+    "instance": {
+      "m": 15,
+      "n": 6,
+      "degree": 12
+    },
+    "qubits": 340,
+    "product_spans": 2196,
+    "product_toffolis": 90285,
+    "span_sizes": {
+      "0": 865,
+      "63": 795,
+      "75": 536
+    }
+  },
+  "arm_span_sizes_unexplained_by_the_two_call_shapes": [],
+  "record_cross_check": {
+    "multiply_calls": 10510,
+    "product_stream_before_the_window": 693660.0,
+    "product_stream_after_the_window": 331023.0,
+    "average_toffolis_per_call": 66.0,
+    "mixture": {
+      "product_stream": 693660.0,
+      "calls": 10510,
+      "average_toffolis_per_call": 66.0,
+      "explained_by_a_mixture_of_the_two_shapes": "63 and 75, 25.0% of calls carrying the 12-Toffoli add",
+      "after_the_window_average": 62.992007611798286
+    }
+  },
+  "bound_rows": {
+    "ands_at_bound": 23,
+    "add_toffolis": 12,
+    "measured_and_fraction_of_the_call": 1.0,
+    "measured_and_fraction_of_a_materialised_call": 0.84,
+    "in_place": {
+      "multiply_toffolis": 120849.66666666667,
+      "division_forney_toffolis": 23442.390625,
+      "products_toffolis": 144292.0572916667,
+      "t_mean_toffolis": 444245.2572916667
+    },
+    "materialised": {
+      "multiply_toffolis": 183901.66666666666,
+      "division_forney_toffolis": 23442.390625,
+      "products_toffolis": 207344.05729166666,
+      "t_mean_toffolis": 507297.2572916667
+    }
+  },
+  "verdict": "a 63-Toffoli GF(2^12) multiply call is 63 ANDs and nothing else; the only non-AND Toffolis in any product call are the 12 of c_gf_iadd, which belong to the 75-Toffoli materialising shape and are one Toffoli per output bit, so they do not scale with the AND count. The 9 in MULTIPLY_NON_AND_TOFFOLI_PER_CALL was ccx_delta_per_call -- the built-in-versus-54-AND-implementation difference -- and no call in the stream has that size. At the 23-AND bound the multiply is 120,849.7 if the product accumulates in place (T 444,245.3) and 183,901.7 if it must materialise (T 507,297.3); that is the whole bracket that remains, and it is a property of the accumulator, not an unmeasured split"
+}

@@ -1,0 +1,36 @@
+{
+  "schema": "apedp.exception-hygiene.v1",
+  "note": "Pinned by scripts/audit_exception_hygiene.py. Silent counts may fall freely; a rise fails CI. Delete a module's entry once its silent count reaches zero.",
+  "totals": {
+    "silent": 0,
+    "annotated": 196
+  },
+  "modules": {},
+  "size_budget": {
+    "apedp/discovery/_core.py": 2422,
+    "apedp_dyn/ui/server.py": 1950,
+    "apedp_dyn/quantum_compilation/faros_isq.py": 1713,
+    "apedp/model_synthesis.py": 1705,
+    "apedp_dyn/vqc/synthesis.py": 1675,
+    "apedp/epistemic.py": 1484,
+    "apedp_dyn/epistemic/lean_universal_bridge.py": 1480,
+    "apedp/pipeline.py": 1441,
+    "apedp_dyn/epistemic/high_dim_pde.py": 1384,
+    "apedp/evolutionary_search.py": 1275,
+    "apedp_dyn/epistemic/temporal_rate_modulation.py": 1199,
+    "apedp_dyn/rust_bridge.py": 1186,
+    "apedp_dyn/problems/catalog.py": 1156,
+    "apedp_dyn/vqc/external.py": 1139,
+    "apedp_dyn/epistemic/rime_repair_engine.py": 1112,
+    "apedp/eval_extended.py": 1109,
+    "apedp/repair.py": 1090,
+    "apedp_dyn/grammar/trading_grammar_catalog.py": 1037,
+    "apedp_dyn/epistemic/temporal_rate_io.py": 1032,
+    "apedp_dyn/quantum_compilation/invsqrt_signed_digit.py": 1018,
+    "src/signed_digit_invsqrt_v3.py": 1016,
+    "apedp/meshing.py": 1003,
+    "apedp_dyn/epistemic/adjudicate.py": 997,
+    "apedp/benchmarks/cases.py": 976,
+    "apedp/advanced_search.py": 890
+  }
+}

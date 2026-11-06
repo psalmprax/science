@@ -1,0 +1,75 @@
+{
+  "patent_id": "US20250321289A1",
+  "source": "https://patents.google.com/patent/US20250321289A1/en",
+  "retrieved_utc": "2026-11-01T00:23:08+00:00",
+  "http_status": 200,
+  "bytes": 425986,
+  "html_sha256": "c7c9465addfd39ed7fb39b7ed8e1969fb73226a4b74bd987e0d93107c5b506b9",
+  "jurisdiction": "US",
+  "title": "Method for estimation state of health of a battery",
+  "abstract": "Abstract A method for estimation of state of health of a rechargeable battery includes: obtaining input data of a set of predetermined battery features that jointly indicates State of Health of the battery; applying a plurality of machine learning algorithms to conduct state of health estimation of the battery, wherein each machine learning algorithm, based on obtained input data from the battery features, calculates an estimation of state of health of the battery, as well as quantitative estimation of a confidence interval/value of the state of health estimation of the battery; and applying a Kalman filter based fusion algorithm for combining the state of health estimations from all of said plurality of machine learning algorithms, for providing a fused state of health estimation.",
+  "claims": [
+    {
+      "num": "1",
+      "text": "1 . A method for estimation of state of health of a rechargeable battery, the method comprising: obtaining input data of a set of predetermined battery features that jointly indicates State of Health of the battery, applying a plurality of machine learning algorithms to conduct state of health estimation of the battery, wherein each machine learning algorithm, based on obtained input data from the battery features, calculates an estimation of state of health of the battery, as well as quantitative estimation of a confidence interval/value of the state of health estimation of the battery, and applying a Kalman filter based fusion algorithm for combining the state of health estimations from all of said plurality of machine learning algorithms, for providing a fused state of health estimation."
+    },
+    {
+      "num": "2",
+      "text": "2 . The method according to claim 1 , wherein the obtained input data is acquired in connection with a battery charging phase."
+    },
+    {
+      "num": "3",
+      "text": "3 . The method according to claim 1 , wherein the method further includes a setup phase performed before the step of obtaining input data, wherein the setup phase comprises training the machine learning algorithms."
+    },
+    {
+      "num": "4",
+      "text": "4 . The method according to claim 1 , wherein the predetermined battery features includes one or more of the following battery features, based on the latest battery charging event: voltage curve profile; current curve profile; time interval between a predefined voltage window; signal strength over time, which is calculated as E = ∫ 0 ∞ s ⁡ ( t ) 2 ⁢ dt , where s(t) is the signal; the area under the current curve; the area under the voltage curve; the slope of the voltage curve; the slope of the current curve; initial SoC; final SoC, charging temperature-related features; incremental capacity curve peak value; incremental capacity curve voltage level at peak value; final total battery output voltage; final individual cell voltage; and differential voltage curve."
+    },
+    {
+      "num": "5",
+      "text": "5 . The method according to claim 1 , wherein the method further includes a setup phase comprising selecting a set of unique charging scenarios, each having an unique charging start and/or charging stop position; and training the machine learning algorithms separately for each of the selected charging scenario and based on a data set that corresponds to the selected charging scenario, wherein the step of obtaining input data involves determining which one of the unique charging scenarios the obtained input data corresponds to, and wherein the step of applying a plurality of machine learning algorithms to conduct state of health estimation of the battery involves, for each of the machine learning algorithms, applying the machine learning algorithm that is trained on data associated with the determined charging scenario for calculating said estimation of state of health of the battery, as well as said quantitative estimation of a confidence interval/value of the state of health estimation of the battery."
+    },
+    {
+      "num": "6",
+      "text": "6 . The method according to claim 5 , wherein one set of predetermined battery features indicating State of Health of the battery is selected for each charging scenario of the set of unique charging scenarios, and wherein the predetermined battery features of at least one charging scenario of the set of unique charging scenarios differs from the predetermined battery features of another charging scenario of the set of unique charging scenarios."
+    },
+    {
+      "num": "7",
+      "text": "7 . The method according to claim 1 , wherein each of the sets of predetermined battery features indicating State of Health of the battery is determined by: first identifying a set of preliminary battery features that jointly indicates state of health of the battery, performing a correlation analysis of the preliminary battery features."
+    },
+    {
+      "num": "8",
+      "text": "8 . The method according to claim 1 , further comprising: calculating a battery SoH prediction by means of a histogram data-based machine learning prediction model, as well as quantitative estimation of a confidence interval/value of said battery SoH prediction, and applying said Kalman filter based fusion algorithm for combining the battery state of health estimations from all of said plurality of machine learning algorithms and the battery SoH prediction from said histogram data-based machine learning prediction model for providing a fused battery state of health estimation."
+    },
+    {
+      "num": "9",
+      "text": "9 . The method according to claim 8 , wherein the step of calculating battery SoH prediction by means of a histogram data-based machine learning prediction model involves a setup phase that includes, obtaining historical battery usage data, converting battery usage data to 1D histogram and extracting statistical properties from said 1D histogram, determining battery features based on extracting statistical properties, providing a global model by selecting and offline training of a machine learning algorithm based on the obtained historical battery usage data, and wherein the step of calculating battery SoH prediction by means of a histogram data-based machine learning prediction model during online use of the battery involves: calculating a global prediction of the battery SoH based on the global model; and adapting the global prediction of the battery SoH online based on measured historical battery capacity estimation values of the present battery for providing a final battery SoH prediction."
+    },
+    {
+      "num": "10",
+      "text": "10 . The method according to claim 5 , wherein the set of unique charging scenarios includes one or more of the following battery charging scenarios: Complete full Constant Current (CC)—Constant Voltage (CV) charging; partial CC-CV charging involving starting after the Incremental Capacity (IC) curve peak value and ending with the complete Constant Voltage (CV) phase; partial Constant Current (CC)—Constant Voltage (CV) charging when starting after the Incremental Capacity (IC) curve peak value and ending without Constant Voltage (CV) phase; Partial Constant Current (CC)—Constant Voltage (CV) charging when starting before the Incremental Capacity (IC) curve peak value and ending with the complete Constant Voltage (CV) phase; Partial Constant Current (CC)—Constant Voltage (CV) charging when starting before the IC peak value and ending without Constant Voltage (CV) phase."
+    },
+    {
+      "num": "11",
+      "text": "11 . The method according to claim 8 , comprising setting the battery state of health estimation equal to the battery SoH prediction as derived by means of the histogram data-based machine learning prediction model when the obtained input data does not correspond to any of the set of unique charging scenarios."
+    },
+    {
+      "num": "12",
+      "text": "12 . A system for estimation of state of health of a rechargeable battery, the system comprising: a rechargeable battery; a set of sensors configured for sensing a set of battery features on the rechargeable battery, wherein the set of battery features jointly indicate State of Health of the battery; an electronic control unit connected with the set of sensors and configured to: obtain input data relating to the set of predetermined battery features, apply a plurality of machine learning algorithms to conduct state of health estimation of the battery, wherein each machine learning algorithm, based on obtained input data from the battery features, calculates an estimation of state of health of the battery, as well as quantitative estimation of a confidence interval/value of the state of health estimation of the battery, and apply a Kalman filter based fusion algorithm for combining the state of health estimations from all of said plurality of machine learning algorithms, for providing a fused state of health estimation."
+    },
+    {
+      "num": "13",
+      "text": "13 . A vehicle comprising the system according to claim 12 ."
+    },
+    {
+      "num": "14",
+      "text": "14 . A data processing control unit comprising a processor configured to perform the steps of the method of claim 1 ."
+    },
+    {
+      "num": "15",
+      "text": "15 . A non-transitory computer readable medium storing a computer program comprising instructions that, when the computer program is executed by a computer, cause the computer to carry out the steps of the method of claim 1 ."
+    }
+  ],
+  "extractor": "scripts/grow_patent_corpus.py::fetch_publication",
+  "found_by_query": "battery state of health estimation"
+}

@@ -18,6 +18,7 @@ from apedp_dyn.molecular.se3_flow import (
     reflection_matrix,
     relax,
     rigid_transform,
+    signed_volume,
 )
 
 FORCE_FIELD = MolecularForceField(
@@ -107,3 +108,45 @@ def test_mirror_image_relaxation_is_exact_mirror(relaxation_bundle):
     assert gap < 1e-12, gap
     handedness_gap = float(np.max(np.abs(original.coordinates - original.coordinates @ mirror.T)))
     assert handedness_gap > 0.5, handedness_gap
+
+
+def test_signed_volume_is_the_determinant_not_the_volume():
+    """The chirality term needs the unnormalised determinant (six times the volume)."""
+    tetra = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    assert abs(signed_volume(tetra, 0, 1, 2, 3) - 1.0) < 1e-12
+
+    mirrored = tetra @ reflection_matrix().T
+    assert abs(signed_volume(mirrored, 0, 1, 2, 3) + 1.0) < 1e-12
+
+    coplanar = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0]])
+    assert abs(signed_volume(coplanar, 0, 1, 2, 3)) < 1e-12
+
+    translated = tetra + np.array([3.0, -2.0, 0.5])
+    assert abs(signed_volume(translated, 0, 1, 2, 3) - 1.0) < 1e-12
+
+
+def test_signed_volume_gradient_is_the_cross_product_set():
+    """The gradient convention equivariant_pocket_flow relies on, checked numerically."""
+    rng = np.random.default_rng(17)
+    coords = rng.normal(size=(4, 3))
+    a = coords[1] - coords[0]
+    b = coords[2] - coords[0]
+    c = coords[3] - coords[0]
+    gj, gk, gl = np.cross(b, c), np.cross(c, a), np.cross(a, b)
+    analytic = np.zeros((4, 3))
+    analytic[1] += gj
+    analytic[2] += gk
+    analytic[3] += gl
+    analytic[0] -= gj + gk + gl
+
+    step = 1e-6
+    numeric = np.zeros((4, 3))
+    for index in range(4):
+        for axis in range(3):
+            offset = np.zeros((4, 3))
+            offset[index, axis] = step
+            numeric[index, axis] = (
+                signed_volume(coords + offset, 0, 1, 2, 3)
+                - signed_volume(coords - offset, 0, 1, 2, 3)
+            ) / (2.0 * step)
+    assert float(np.max(np.abs(numeric - analytic))) < 1e-6
