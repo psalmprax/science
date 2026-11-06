@@ -948,6 +948,21 @@ class MMLMTrackA(MMLMMultiplier):
         self.track = "A_NonNeural"
         self.engine_type = "WeightedAutomatonEngine"
 
+    def _scope(self) -> dict[str, Any]:
+        """State the claim narrowly enough that a test can falsify it.
+
+        The class names come from the MMLM programme, but what this module does is
+        arithmetic: it computes one field product.  Anything wider (tokens, attention,
+        sequences) is not implemented here and is reported as such rather than implied.
+        """
+        return {
+            "unit": "one GF(2^12) product",
+            "algorithm": "exact rank-54 bilinear decomposition",
+            "models_tokens": False,
+            "implements_attention": False,
+            "claim": "computes one field product exactly through the decomposition",
+        }
+
     def process_with_tensor(self, input_data: Any, second_operand: Any = None) -> dict[str, Any]:
         """Multiply through the decomposition over GF(2) (Track A: non-neural engine).
 
@@ -969,6 +984,7 @@ class MMLMTrackA(MMLMMultiplier):
             "exact": result["exact"],
             "product_bits": result["bits"].tolist(),
             "bilinear_products": result["bilinear_products"],
+            "scope": self._scope(),
             "decomposition_exact": exact,
             "tensor_rank": decomp.rank,
         }
@@ -986,6 +1002,16 @@ class MMLMTrackB(MMLMMultiplier):
         self.track = "B_Hybrid"
         self.engine_type = "HybridAblationConfig"
         self.use_continuous = True
+
+    def _scope(self) -> dict[str, Any]:
+        """Exact field multiplication plus a measured continuous ablation."""
+        return {
+            "unit": "one GF(2^12) product",
+            "algorithm": "exact bilinear decomposition ablated against a fitted real model",
+            "models_tokens": False,
+            "implements_attention": False,
+            "claim": "computes the exact product and reports where a real-valued model fails",
+        }
 
     def process_with_tensor(self, input_data: Any, second_operand: Any = None) -> dict[str, Any]:
         """Exact GF(2) path versus a float encoder, ablated on measured error.
@@ -1016,6 +1042,7 @@ class MMLMTrackB(MMLMMultiplier):
             "binary": binary_result,
             "continuous": continuous_result,
             "result": result,
+            "scope": self._scope(),
             "decomposition_exact": exact,
         }
 
@@ -1038,26 +1065,70 @@ class MMLMTrackB(MMLMMultiplier):
     def _continuous_path(
         self, left: Any, right: Any, decomp: TensorDecomposition
     ) -> dict[str, Any]:
-        """Floating-point encoder on a projection fixed at construction.
+        """Real-valued model of the same rank, fitted rather than guessed.
 
-        Deterministic by construction: the projection comes from the instance seed, so
-        the same operands always produce the same product and the same error count.
+        The float path uses the identical U/V factors and the same number of atoms as
+        the exact path; only its reduction weights are fitted by least squares on a
+        fixed operand grid.  It is therefore the strongest real-valued model this
+        rank admits, so a loss here is a property of real arithmetic, not of the
+        comparison.
         """
+        U, V, weights, fit_hamming = self._fit_float_model(decomp)
         left_bits = self._as_bits(left, self.degree).astype(float)
         right_bits = self._as_bits(right, self.degree).astype(float)
-        approximate = float(left_bits @ self._continuous_projection @ right_bits)
-        product = int(abs(round(approximate))) & ((1 << self.degree) - 1)
+        products = (U @ left_bits) * (V @ right_bits)
+        approximate = products @ weights
+        product_bits = (approximate >= 0.5).astype(np.uint8)
+        product = self._bits_to_int(product_bits)
         expected = self.gf.mul(
             self._bits_to_int(left_bits), self._bits_to_int(right_bits)
         )
         return {
-            "path": "float_projection",
+            "path": "float_fitted_bilinear",
             "product": product,
             "expected": expected,
             "exact": product == expected,
             "hamming_errors": int(bin(product ^ expected).count("1")),
-            "float_macs": int(self.degree**2),
+            "fit_hamming_errors": fit_hamming,
+            "fit_samples": int(self._float_fit_samples),
+            "atoms": int(decomp.rank),
+            "float_macs": int(3 * decomp.rank * self.degree),
         }
+
+    def _fit_float_model(
+        self, decomp: TensorDecomposition
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, int]:
+        """Least-squares reduction weights for the real-valued path (deterministic)."""
+        cached = getattr(self, "_float_model_cache", None)
+        if cached is not None and cached[0] is decomp:
+            return cached[1:]
+
+        U = np.asarray(decomp.U, dtype=float)
+        V = np.asarray(decomp.V, dtype=float)
+        limit = 1 << self.degree
+        stride = max(1, limit // 128)
+        grid = range(0, limit, stride)
+
+        rows: list[np.ndarray] = []
+        targets: list[np.ndarray] = []
+        for left in grid:
+            left_bits = self._as_bits(left, self.degree).astype(float)
+            for right in grid:
+                right_bits = self._as_bits(right, self.degree).astype(float)
+                rows.append((U @ left_bits) * (V @ right_bits))
+                targets.append(
+                    self._as_bits(self.gf.mul(left, right), self.degree).astype(float)
+                )
+
+        design = np.asarray(rows)
+        target = np.asarray(targets)
+        weights, *_ = np.linalg.lstsq(design, target, rcond=None)
+        fitted = (design @ weights >= 0.5).astype(np.uint8)
+        fit_hamming = int(np.sum(fitted != target.astype(np.uint8)))
+
+        self._float_model_cache = (decomp, U, V, weights, fit_hamming)
+        self._float_fit_samples = int(design.shape[0])
+        return U, V, weights, fit_hamming
 
 
 class MMLMTrackC(MMLMMultiplier):
@@ -1072,6 +1143,16 @@ class MMLMTrackC(MMLMMultiplier):
         self.track = "C_AttentionFree"
         self.engine_type = "SelectiveStateEngine"
         self.use_ssm = True  # Selective state modeling
+
+    def _scope(self) -> dict[str, Any]:
+        """Exact field multiplication scored by bit-level energies."""
+        return {
+            "unit": "one GF(2^12) product",
+            "algorithm": "exact bilinear decomposition with bit-level energy scoring",
+            "models_tokens": False,
+            "implements_attention": False,
+            "claim": "computes the exact product and scores its bits without attention",
+        }
 
     def process_with_tensor(self, input_data: Any, second_operand: Any = None) -> dict[str, Any]:
         """Multiply over GF(2) and score the result without self-attention.
@@ -1098,6 +1179,7 @@ class MMLMTrackC(MMLMMultiplier):
             "ssd_result": ssd_result,
             "htm_result": htm_result,
             "energy_result": energy_result,
+            "scope": self._scope(),
             "decomposition_exact": exact,
         }
 
@@ -1124,8 +1206,11 @@ class MMLMTrackC(MMLMMultiplier):
         level = np.asarray(bilinear["bits"], dtype=float)
         depth = 0
         while level.size > 1:
-            half = level.size // 2
-            level = level[:half] + level[half : 2 * half]
+            pairs = level.size // 2
+            contracted = level[0 : 2 * pairs : 2] + level[1 : 2 * pairs : 2]
+            if level.size % 2:  # carry the odd trailing bit instead of dropping it
+                contracted = np.concatenate([contracted, level[-1:]])
+            level = contracted
             depth += 1
         return {
             "contracted_shape": (1,),

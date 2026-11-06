@@ -54,7 +54,8 @@ pytest tests/test_dyn_competing_proposers_and_dsr.py \
        tests/test_field_tensor_search.py \
        tests/test_gf2_mul_proposer.py \
        tests/test_quantum_verdict_tristate.py \
-       tests/test_quantum_compilation.py -v
+       tests/test_quantum_compilation.py \
+       tests/test_mmlm_tracks.py -v
 ```
 
 ---
