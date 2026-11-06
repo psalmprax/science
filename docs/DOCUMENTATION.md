@@ -21,7 +21,7 @@ and [review owners](../.github/CODEOWNERS).
 12. [Testing & CI/CD](#12-testing--cicd)
 13. [Small Physics LLM]
 
-### 5.23 `apedp_dyn.gf2mul_llm_adjustable` — LLM-Adjustable GF(2^12) Quantum Multiplier
+### 5.23 `apedp_dyn.quantum_compilation.gf2mul_llm_adjustable` — LLM-Adjustable GF(2^12) Quantum Multiplier
 
 **Status:** `experimental`
 
@@ -53,7 +53,7 @@ and [review owners](../.github/CODEOWNERS).
 
 **Example usage:**
 ```python
-from gf2mul_llm_adjustable import LLMTunableGF2Multiplier
+from apedp_dyn.quantum_compilation.gf2mul_llm_adjustable import LLMTunableGF2Multiplier
 import numpy as np
 
 # Default: Track A; the requested rank is checked against exact reconstruction
@@ -95,7 +95,7 @@ processed = m.process(sample)
 - LLM transforms are accepted only when exactness is preserved. `new_atoms` remains unsupported, and the rank-search interface reports a verified starting point rather than claiming an unimplemented search.
 
 **Recent updates:**
-- Module `gf2mul_llm_adjustable.py` created with full GF(2^12) multiplier, tensor decomposition, WSP layer, and MMLM track integrations
+- Module `apedp_dyn/quantum_compilation/gf2mul_llm_adjustable.py` (moved out of the repository root into the runtime package per CONTRIBUTING structure policy) with full GF(2^12) multiplier, tensor decomposition, WSP layer, and MMLM track integrations
 - Verified GF2FieldModel generates all 4095 non-zero elements with pe=2 and prim_poly=0x1053
 - Verified multiplication closure and tensor symmetry
 - The recursive degree-12 Karatsuba factors are checked against all tensor coefficients; a failed check falls back to schoolbook factors.

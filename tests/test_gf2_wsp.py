@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from gf2mul_llm_adjustable import (
+from apedp_dyn.quantum_compilation.gf2mul_llm_adjustable import (
     GF2FieldConfig,
     LLMTunableGF2Multiplier,
     MMLMMultiplier,

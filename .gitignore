@@ -89,3 +89,6 @@ artifacts/quantum_compilation/dqi/iteration_sweep_receipts/dqi_niters_216.kmb
 # verifiers/dfthcsos/SCORING_README.md, so a re-download is verifiable.
 apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dfthcsos/FeMoCo76o113e.fcidump
 artifacts/quantum_compilation/dqi/iteration_sweep_receipts/dqi_niters_222.kmb
+/.agents/
+/.claude/
+/skills-lock.json

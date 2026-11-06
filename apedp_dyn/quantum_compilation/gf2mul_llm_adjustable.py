@@ -17,6 +17,8 @@ from typing import Any
 
 import numpy as np
 
+from apedp_dyn.quantum.gf2_rank_search import search_rank as _exact_rank_search
+
 # ============================================================================
 # configurable GF(2^b) Field Model
 # ============================================================================
@@ -690,10 +692,14 @@ class MMLMMultiplier:
         field_config: GF2FieldConfig = None,
         wsp_config: WSPConfig = None,
         degree: int = 12,
+        seed: int = 42,
     ):
         self.field_config = field_config or GF2FieldConfig()
         self.wsp_config = wsp_config or WSPConfig()
         self.degree = degree
+        self.seed = seed
+        # Fixed at construction so a semantic path never depends on call order.
+        self._continuous_projection = np.random.RandomState(seed).randn(degree, degree)
 
         # Initialize field model
         self.gf = GF2FieldModel(
@@ -793,50 +799,62 @@ class MMLMMultiplier:
 
     def search_rank(
         self,
-        target_rank: int = 50,
+        target_rank: int | None = None,
         max_k: int = 3,
         start_decomp: TensorDecomposition = None,
-        time_limit_sec: float = 120.0,
+        time_limit_sec: float = 2.0,
+        seed: int = 42,
     ) -> dict[str, Any]:
-        """Search for a decomposition of rank <= target_rank using span rewrites.
+        """Shorten the decomposition with the exact span-rewrite engine.
 
-        This is the core search engine that tries to shorten the decomposition
-        by dropping atoms (deflation) and replacing k atoms with k-1 rank-one atoms.
+        Delegates to :func:`apedp_dyn.quantum.gf2_rank_search.search_rank`, which
+        reports a rank only after ``U``/``V``/``W`` reconstruct every one of the
+        ``n**3`` coefficients.  Deflation and ``k -> k-1`` rewrites are exhaustive
+        over their declared families but are not a proof of global minimality, so
+        the report never claims one.
 
         Args:
-            target_rank: Target rank to achieve (default 50, but 54 is minimum)
-            max_k: Maximum k for k->k-1 rewrite (default 3)
-            start_decomp: Starting decomposition (defaults to 54-reference)
-            time_limit_sec: Time limit in seconds
+            target_rank: Rank to stop at; ``None`` means "do not ask for a
+                reduction", so deflation still runs but no unsupported target is
+                asserted.  A target below the achievable rank is reported as
+                ``found=False`` after the budget is spent, not assumed.
+            max_k: Largest ``k`` for a ``k -> k-1`` rewrite.
+            start_decomp: Starting decomposition (defaults to the active one).
+            time_limit_sec: Search budget in seconds.
+            seed: Recorded for reproducibility of the run metadata.
 
         Returns:
-            Search results dictionary
+            The engine's own summary plus the request and reconstruction facts.
         """
         tensor = self.tensor
+        start = start_decomp if start_decomp is not None else self.default_decomp
+        exact, mismatches = verify_tensor_decomposition(tensor, start)
 
-        if start_decomp is None:
-            start_decomp = self.default_decomp
+        requested = start.rank if target_rank is None else target_rank
+        if not isinstance(requested, int) or isinstance(requested, bool) or requested < 1:
+            raise ValueError("target_rank must be a positive integer or None")
 
-        # Verify the starting decomposition
-        exact, _ = verify_tensor_decomposition(tensor, start_decomp)
-
-        # Build result report
-        result = {
-            "target_rank": target_rank,
-            "start_rank": start_decomp.rank,
-            "final_rank": start_decomp.rank,
-            "found": exact and start_decomp.rank <= target_rank,
-            "deflations": 0,
-            "rewrites": 0,
-            "moves_tried": 0,
-            "max_rewrite_k": max_k,
-            "residual_dimension": tensor.shape[0] * tensor.shape[1] - start_decomp.rank,
-            "exact_reconstruction": exact,
-            "target_rank_reached": start_decomp.rank <= target_rank,
-            "elapsed_sec": 0.0,
-        }
-
-        return result
+        engine = _exact_rank_search(
+            tensor,
+            target_rank=requested,
+            time_limit_sec=time_limit_sec,
+            seed=seed,
+            start=(start.U, start.V),
+            max_k=max_k,
+        )
+        payload: dict[str, Any] = dict(engine.summary())
+        payload.update(
+            {
+                "target_rank": requested,
+                "final_rank": engine.rank if engine.rank is not None else start.rank,
+                "start_exact": exact,
+                "start_mismatches": len(mismatches),
+                "exact_reconstruction": engine.U is not None,
+                "target_rank_reached": engine.rank is not None
+                and engine.rank <= requested,
+            }
+        )
+        return payload
 
     def apply_wsp_and_report(self, decomp: TensorDecomposition) -> dict[str, Any]:
         """Apply WSP and return comprehensive diagnostics."""
@@ -947,10 +965,15 @@ class MMLMTrackB(MMLMMultiplier):
         return {"llikelihood": llikelihood, "path": "binary_tensor"}
 
     def _continuous_path(self, input_data: np.ndarray, decomp: TensorDecomposition) -> dict[str, Any]:
-        """Continuous semantic encoder path (ablated if no net benefit)."""
-        # Use a simple continuous encoding
-        encoded = input_data.astype(float) @ np.random.randn(self.degree, self.degree)
-        llikelihood = float(np.sum(encoded))
+        """Continuous semantic encoder path (ablated if no net benefit).
+
+        The projection is fixed at construction from the instance seed, so the same
+        input always takes the same path.  Both paths report the *mean* activation,
+        because a sum over a 12x12 projection and a mean over a rank-54 encoding are
+        not comparable quantities.
+        """
+        encoded = input_data.astype(float) @ self._continuous_projection
+        llikelihood = float(np.mean(encoded))
         return {"llikelihood": llikelihood, "path": "continuous_encoder"}
 
 
@@ -995,22 +1018,34 @@ class MMLMTrackC(MMLMMultiplier):
 
     def _selective_state_dynamics(self, input_data: np.ndarray, decomp: TensorDecomposition) -> dict[str, Any]:
         """Selective state-space dynamics using the tensor decomposition."""
-        # Evolve state through the tensor factors
         encoded = self._encode_with_factors(input_data, decomp)
-        # Simplified: just report the encoded shape and some state info
         return {
             "encoded_shape": encoded.shape,
             "dynamics_applied": True,
+            "energy": float(np.sum(encoded**2)),
         }
 
     def _hierarchical_tensor_memory(self, input_data: np.ndarray, decomp: TensorDecomposition) -> dict[str, Any]:
-        """Hierarchical tensor memory (tree tensor network)."""
-        # Simplified: just report the contraction
-        context = list(range(min(len(input_data), self.degree)))
-        contracted_shape = (len(context),) if context else (0,)
+        """Hierarchical tensor memory (tree tensor network).
+
+        The input is folded into a degree-wide leaf vector and contracted pairwise up
+        the tree; the reported energy is the squared root of that contraction, so it
+        is a measurement of this input rather than a placeholder zero.
+        """
+        flat = np.asarray(input_data, dtype=float).ravel()
+        width = min(flat.size, self.degree)
+        contracted = np.zeros(self.degree, dtype=float)
+        contracted[:width] = flat[:width]
+        level = contracted.copy()
+        depth = 0
+        while level.size > 1:
+            half = level.size // 2
+            level = level[:half] + level[half : 2 * half]
+            depth += 1
         return {
-            "contracted_shape": contracted_shape,
-            "tree_depth": min(len(context), 6),
+            "contracted_shape": (width,),
+            "tree_depth": depth,
+            "energy": float(level[0] ** 2) if level.size else 0.0,
             "memory_applied": True,
         }
 
@@ -1019,18 +1054,21 @@ class MMLMTrackC(MMLMMultiplier):
         ssd_result: dict, htm_result: dict
     ) -> dict[str, Any]:
         """Speculative energy rescoring combining all components."""
-        # Combine energies from different components
-        combined_energy = float(
-            ssd_result.get("energy", 0) +
-            htm_result.get("energy", 0) +
-            0.0  # tensor mismatch proxy
-        )
+        # Combine the measured component energies.  Both components report a real
+        # energy now, so a zero here means the input really carried none.
+        ssd_energy = float(ssd_result.get("energy", 0.0))
+        htm_energy = float(htm_result.get("energy", 0.0))
+        combined_energy = ssd_energy + htm_energy
 
         # Speculative decode
         spec_decoded = f"energy={combined_energy:.4f},track={self.track}"
 
         return {
             "combined_energy": combined_energy,
+            "energy_components": {
+                "selective_state": ssd_energy,
+                "tensor_memory": htm_energy,
+            },
             "speculative_decode": spec_decoded,
             "rescoring_applied": True,
         }
@@ -1160,7 +1198,7 @@ class LLMTunableGF2Multiplier:
 
         # Search for shorter decomposition
         search_results = self.mmlm_model.search_rank(
-            target_rank=self.wsp_config.llm_adjustable_params.get("target_rank", 50),
+            target_rank=self.wsp_config.llm_adjustable_params.get("target_rank"),
         )
 
         return {
