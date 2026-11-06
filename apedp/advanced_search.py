@@ -611,6 +611,9 @@ _EXTENDED_BINARY = (
 _EXTENDED_EXPANSIONS = (
     "1/({e})", "sqrt({e})", "{e}**2", "exp(-({e}))", "sin({e})",
 )
+# Bounded harmonic multipliers for the coarse-to-mid search. These expand
+# periodic structure; they are not continuous frequency estimates.
+_TRIG_FREQUENCY_SCALES = (0.5, 2.0, 3.0)
 
 
 def _fit_scale_offset(expr: str, var_names: list[str], data: list[Any],
@@ -784,8 +787,13 @@ class HierarchicalSearch:
                     f"sin({expr})", f"{expr}+1")
         # The seed itself is kept: with coefficients fitted, ``x`` is the right
         # answer for a straight line and dropping it would rank a worse shape first.
+        harmonics = tuple(
+            f"{function}({scale}*({expr}))"
+            for function in ("sin", "cos")
+            for scale in _TRIG_FREQUENCY_SCALES
+        )
         return (expr, *[expansion.format(e=expr) for expansion in _EXTENDED_EXPANSIONS],
-                f"{expr}*{var}", f"{expr}/(1+{var})")
+                *harmonics, f"{expr}*{var}", f"{expr}/(1+{var})")
 
     def _mid_search(self, seeds: list[dict[str, Any]], var_names: list[str], budget: int,
                     data: list[Any] | None = None,

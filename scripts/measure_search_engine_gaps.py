@@ -40,6 +40,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from apedp.advanced_search import (  # noqa: E402 - after the path fix
+    _TRIG_FREQUENCY_SCALES,
     HierarchicalSearch,
     _evaluate_expression,
     _fit_scale_offset,
@@ -195,6 +196,7 @@ def main() -> int:
             "beam_depth": args.beam_depth,
             "beam_width": args.beam_width,
             "seed": args.seed,
+            "extended_trig_frequency_scales": list(_TRIG_FREQUENCY_SCALES),
             "recovery_criterion": f"holdout R^2 >= {RECOVERY_R2}, coefficients refitted on train",
             "leakage": "search sees training rows only; the holdout rows score the returned "
                        "candidate and are never read during the search",
