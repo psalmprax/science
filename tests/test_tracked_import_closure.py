@@ -15,7 +15,6 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGES = {"apedp", "apedp_dyn"}
 
 
 def _git(*args: str) -> str:
@@ -37,10 +36,19 @@ def _module_name(relative: str) -> str:
 
 
 def _resolve(module: str) -> list[Path]:
-    if not module or module.split(".")[0] not in PACKAGES:
+    """Resolve a module to a file in this repository, if it has one.
+
+    No package allow-list: anything that resolves inside the repo counts, including
+    namespace packages such as ``scripts`` and top-level source trees, because those
+    are exactly the imports a clean checkout fails on.
+    """
+    if not module:
         return []
+    if (ROOT / module.split(".")[0]).is_symlink():
+        return []  # symlinked trees are not indexable, so they are not the test's business
     base = ROOT.joinpath(*module.split("."))
-    return [path for path in (base.with_suffix(".py"), base / "__init__.py") if path.exists()]
+    candidates = (base.with_suffix(".py"), base / "__init__.py")
+    return [path for path in candidates if path.exists()]
 
 
 def _imports(path: Path, module: str) -> set[str]:
