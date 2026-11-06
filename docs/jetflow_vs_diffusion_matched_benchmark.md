@@ -51,3 +51,29 @@ Notes on instrument symbolism:
 - **Temp. smooth** = temporal second-difference of per-frame grayscale; lower = smoother (less flicker).
 - `model_passes_per_clip` is directly instrumented on `backbone.forward`. For `jet_tt_2step` the recorded 9.0 includes the one-time warmup generation amortized over `n_gen = 8`; the structural per-clip count under the 2-step CFG path is **8** (the confirmation protocol resets the counter after warmup; see `docs/PREREGISTRATION_JETFLOW_VIDEO_V02.md`).
 
+## Numerical integrator scope check
+
+`benchmarks/run_jetflow_integrator_sweep.py` and its result
+`benchmarks/jetflow_integrator_sweep.json` separately compare Jet2 with Euler at
+equal velocity-evaluation counts on three analytic ODE regimes. Each setting
+uses three initial-condition seeds; the reference is 4096-step fixed-step RK4.
+The table gives mean endpoint RMSE across seeds (lower is better):
+
+| Regime | Jet2 steps | Jet2 RMSE | Equal-evaluation Euler RMSE |
+|---|---:|---:|---:|
+| Linear time-varying | 1 | 0.1651 | 0.2829 |
+| Linear time-varying | 2 | 0.0572 | 0.1601 |
+| Linear time-varying | 4 | 0.0173 | 0.0859 |
+| Smooth nonlinear | 1 | 0.2608 | 0.1631 |
+| Smooth nonlinear | 2 | 0.0589 | 0.0925 |
+| Smooth nonlinear | 4 | 0.0115 | 0.0496 |
+| Stiff decay | 4 | 2400.74 | 2776.76 |
+| Stiff decay | 8 | 1482.74 | 2368.30 |
+
+This diagnostic indicates Jet2 can improve endpoint accuracy in the sampled
+smooth regimes at these budgets, but loses to Euler on the one-step nonlinear
+case and both methods have very large absolute errors on the tested stiff
+regime. It is an analytic solver study, not a learned-video quality, external
+dataset, or universal superiority result. It also does not yet test adaptive
+step control or tune the finite-difference epsilon; the video-domain collision
+confirmation above remains a negative transfer result.

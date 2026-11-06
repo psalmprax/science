@@ -25,15 +25,15 @@ and [review owners](../.github/CODEOWNERS).
 
 **Status:** `experimental`
 
-**Description:** GF(2^12) quantum multiplication tensor with LLM-adjustable parameters and integration with the MMLM tripartite architecture (Tracks A, B, C), including a Weight-Space Programming (WSP) layer that an LLM can tune.
+**Description:** Configurable GF(2^b) multiplication tensor and a Weight-Space Programming (WSP) interface whose accepted changes are certified by exact GF(2) tensor reconstruction. The LLM-tunable surface is experimental; it does not establish a rank-54 multiplier or a faster quantum circuit.
 
 **Configurable parameters (imported from `apedp_dyn.conf.canonical_spec`, no hardcoded thresholds):**
 - `primitive_element`: Adjustable pe (2, 3, 5, 7, ...)
 - `irreducible_poly`: Adjustable modulus polynomial (0x1053, 0x13, 0x11D, 0x409)
-- `decomposition_rank`: Rank selection (54 minimum via span deflation, 63 Karatsuba, 144 schoolbook)
+- `decomposition_rank`: Requested rank target; the returned rank may be higher when exact reconstruction cannot meet it
 - `weight_scheme`: WSP weight scheme ('uniform', 'importance', 'llm_tuned')
 - `sparsity_target`: Target sparsity for importance pruning (0-1)
-- `transform_type`: LLM-discovered transformation type ('swap', 'scale', 'mix', 'new_atoms')
+- `transform_type`: Certified transformation ('swap', binary `scale`, or invertible rank-axis `mix`); `new_atoms` is unsupported without a certified search
 - `target_rank`: Target rank for decomposition search
 - `track`: MMLM track selection ('A' = NonNeural, 'B' = Hybrid, 'C' = AttentionFree)
 
@@ -41,7 +41,7 @@ and [review owners](../.github/CODEOWNERS).
 - `GF2FieldModel`: Configurable GF(2^b) field arithmetic
 - `build_multiplication_tensor()`: Exact degree×degree×degree binary tensor
 - `TensorDecomposition`: Rank-r decomposition (U, V, W factors)
-- `WSPLayer`: Weight-Space Programming with three weight schemes
+- `WSPLayer`: Exactness-preserving uniform, importance-pruning, and transformation modes
 - `MMLMTrackA` (NonNeural): Pure mathematical language modeling
 - `MMLMTrackB` (Hybrid): Ablation-governed hybrid with continuous encoders
 - `MMLMTrackC` (AttentionFree): Attention-free state-space dynamics
@@ -56,7 +56,7 @@ and [review owners](../.github/CODEOWNERS).
 from gf2mul_llm_adjustable import LLMTunableGF2Multiplier
 import numpy as np
 
-# Default: Track A, rank 54, pe=2, poly 0x1053
+# Default: Track A; the requested rank is checked against exact reconstruction
 m = LLMTunableGF2Multiplier(track='A')
 r = m.tune()
 
@@ -90,17 +90,17 @@ processed = m.process(sample)
 **Status tags:** `experimental` — fully functional but new integration; status may be updated to `production` after extended validation.
 
 **Known limitations:**
-- Decomposition exactness: Rank-54 is the minimum achievable; `Exact: False` is expected for simplified decomposition placeholders
-- External rank-search functions not importable in this environment; `search_rank()` simplified to verification-only mode
+- The current rank-54 and Karatsuba factor builders are placeholders and fail exact tensor reconstruction. The multiplier falls back to an exact schoolbook decomposition and reports when the requested rank cannot be reached.
+- Importance pruning uses support only to order candidate removals; every accepted removal is checked against the full tensor. A requested sparsity or rank is not guaranteed if it would make the decomposition inexact.
+- LLM transforms are accepted only when exactness is preserved. `new_atoms` remains unsupported, and the rank-search interface reports a verified starting point rather than claiming an unimplemented search.
 
 **Recent updates:**
 - Module `gf2mul_llm_adjustable.py` created with full GF(2^12) multiplier, tensor decomposition, WSP layer, and MMLM track integrations
 - Verified GF2FieldModel generates all 4095 non-zero elements with pe=2 and prim_poly=0x1053
 - Verified multiplication closure and tensor symmetry
-- Verified default 54-reference decomposition structure
-- WSP layer supports three schemes: uniform, importance (pruning), llm_tuned (swap/scale/mix/new_atoms)
-- All three MMLM tracks (A, B, C) process_with_tensor() working with rank-54 decomposition
-- LLM tuning round-trip verified: change pe=3, change WSP scheme, try different tracks, process sample data, target-rank tuning
+- The proposed rank-54 decomposition is now checked against all tensor coefficients; invalid factors are not used as a baseline.
+- WSP importance and transformation updates preserve an exact input decomposition or return the original unchanged.
+- LLM tuning replaces immutable field/WSP configuration objects instead of mutating frozen dataclasses.
 - `_encode_with_factors` and `_energy_guided_decode` moved to `MMLMMultiplier` base class for track compatibility
 - Sample processing works across all three MMLM tracks
 

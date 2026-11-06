@@ -13,13 +13,10 @@ Core finding from earlier research:
 
 from __future__ import annotations
 
-import json
-import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 import numpy as np
-
 
 # ============================================================================
 # configurable GF(2^b) Field Model
@@ -171,7 +168,7 @@ def _gf2_poly_mod(a: int, mod: int, degree: int) -> int:
 
 def verify_tensor_decomposition(
     tensor: np.ndarray,
-    decomp: 'TensorDecomposition',
+    decomp: TensorDecomposition,
 ) -> tuple[bool, list[tuple[int, int, int]]]:
     """Reconstruct the tensor from U, V, W and verify every coefficient over GF(2)."""
     R = decomp.rank
@@ -222,7 +219,9 @@ class TensorDecomposition:
 # Baseline Decompositions (References)
 # ============================================================================
 
-def build_schoolbook_decomposition(degree: int = 12) -> TensorDecomposition:
+def build_schoolbook_decomposition(
+    degree: int = 12, modulus_int: int = 0x1053
+) -> TensorDecomposition:
     """Build the naive 144-product schoolbook bilinear decomposition.
 
     Rank = degree^2 = 144 for GF(2^12)
@@ -238,7 +237,7 @@ def build_schoolbook_decomposition(degree: int = 12) -> TensorDecomposition:
             U[r, i] = 1
             V[r, j] = 1
             # Product of α^i * α^j = α^(i+j) reduced mod polynomial
-            prod = _gf2_poly_mod(1 << (i + j), 0x1053, degree) if i + j < 2 * degree else 0
+            prod = _gf2_poly_mod(1 << (i + j), modulus_int, degree)
             for k in range(degree):
                 W[r, k] = (prod >> k) & 1
             r += 1
@@ -363,90 +362,147 @@ class WSPLayer:
         """Apply WSP transformations to a tensor decomposition.
 
         Returns:
-            (new_decomp, diagnostics) - the adjusted decomposition and diagnostics
+            (new_decomp, diagnostics) - an exact adjusted decomposition and diagnostics.
+
+        WSP never replaces a valid decomposition with an inexact candidate.
         """
-        R = decomp.rank
-        degree = decomp.U.shape[1]
-        diagnostics = {}
+        exact, mismatches = decomp.reconstruct(tensor)
+        diagnostics: dict[str, Any] = {
+            "input_exact": exact,
+            "input_mismatches": len(mismatches),
+            "accepted": False,
+        }
+        if not exact:
+            diagnostics["rejection_reason"] = "input decomposition is not exact"
+            return decomp, diagnostics
 
         if self.config.weight_scheme == "uniform":
-            # No change - verify the decomposition is exact
-            exact, mismatches = decomp.reconstruct(tensor)
-            diagnostics["uniform_exact"] = exact
-            diagnostics["uniform_mismatches"] = len(mismatches)
+            diagnostics.update({"accepted": True, "uniform_exact": True})
             return decomp, diagnostics
 
         elif self.config.weight_scheme == "importance":
-            # Prune low-importance atoms and reweight
-            new_decomp, diag = _prune_by_importance(decomp, tensor, self.config.sparsity_target)
+            new_decomp, diag = self._prune_by_importance(
+                decomp, tensor, sparsity_target=self.config.sparsity_target
+            )
             diagnostics.update(diag)
+            diagnostics["accepted"] = True
             return new_decomp, diagnostics
 
         elif self.config.weight_scheme == "llm_tuned":
-            # Apply LLM-discovered transformations
-            new_decomp, diag = _apply_llm_transformations(decomp, tensor, self.config.llm_adjustable_params)
-            diagnostics.update(diag)
+            try:
+                candidate, transform_diag = self._apply_llm_transformations(
+                    decomp, tensor, self.config.llm_adjustable_params
+                )
+            except ValueError as exc:
+                diagnostics["rejection_reason"] = str(exc)
+                return decomp, diagnostics
+
+            candidate_exact, candidate_mismatches = candidate.reconstruct(tensor)
+            if not candidate_exact:
+                diagnostics.update(transform_diag)
+                diagnostics.update({
+                    "candidate_exact": False,
+                    "candidate_mismatches": len(candidate_mismatches),
+                    "rejection_reason": "transformation does not preserve the tensor",
+                })
+                return decomp, diagnostics
+
+            target_rank = self.config.llm_adjustable_params.get("target_rank")
+            if target_rank is not None:
+                if not isinstance(target_rank, int) or isinstance(target_rank, bool) or target_rank < 1:
+                    diagnostics["rejection_reason"] = "target_rank must be a positive integer"
+                    return decomp, diagnostics
+                candidate, rank_diag = self._prune_by_importance(
+                    candidate, tensor, target_rank=target_rank
+                )
+                transform_diag.update(rank_diag)
+
+            diagnostics.update(transform_diag)
+            diagnostics.update({"accepted": True, "candidate_exact": True})
+            new_decomp = candidate
             return new_decomp, diagnostics
 
         else:
             raise ValueError(f"Unknown WSP weight scheme: {self.config.weight_scheme}")
 
+    @staticmethod
     def _prune_by_importance(
         decomp: TensorDecomposition,
         tensor: np.ndarray,
-        sparsity_target: float,
+        sparsity_target: float = 0.0,
+        target_rank: int | None = None,
     ) -> tuple[TensorDecomposition, dict[str, Any]]:
-        """Prune atoms with lowest contribution to tensor reconstruction."""
+        """Greedily remove low-support atoms only when exactness is preserved."""
         R = decomp.rank
-        degree = decomp.U.shape[1]
+        if target_rank is None:
+            target_keep = max(1, int(R * (1.0 - sparsity_target)))
+        else:
+            target_keep = min(R, max(1, target_rank))
 
-        # Compute contribution of each atom: ||U[r]|| * ||V[r]|| * ||W[r]||
-        contributions = []
+        contributions: list[tuple[int, int]] = []
         for r in range(R):
-            u_norm = float(np.sum(decomp.U[r]))  # number of 1-bits
-            v_norm = float(np.sum(decomp.V[r]))
-            w_norm = float(np.sum(decomp.W[r]))
-            contrib = u_norm * v_norm * w_norm
-            contributions.append((contrib, r))
+            support = (
+                int(np.count_nonzero(decomp.U[r]))
+                * int(np.count_nonzero(decomp.V[r]))
+                * int(np.count_nonzero(decomp.W[r]))
+            )
+            contributions.append((support, r))
+        contributions.sort()
 
-        # Sort by contribution (ascending - prune lowest first)
-        contributions.sort(key=lambda x: x[0])
+        keep_indices = list(range(R))
+        attempts = 0
+        for _, atom_index in contributions:
+            if len(keep_indices) <= target_keep:
+                break
+            candidate_indices = [i for i in keep_indices if i != atom_index]
+            candidate = TensorDecomposition(
+                rank=len(candidate_indices),
+                U=decomp.U[candidate_indices],
+                V=decomp.V[candidate_indices],
+                W=decomp.W[candidate_indices],
+                name=f"Pruned-{decomp.name}",
+                metadata={
+                    **decomp.metadata,
+                    "pruning_sparsity_requested": sparsity_target,
+                    "target_rank_requested": target_rank,
+                },
+            )
+            attempts += 1
+            candidate_exact, _ = candidate.reconstruct(tensor)
+            if candidate_exact:
+                keep_indices = candidate_indices
 
-        # Determine how many to keep based on sparsity target
-        target_keep = int(R * (1 - sparsity_target))
-        target_keep = max(1, min(target_keep, R))
-
-        # Keep the top target_keep atoms by contribution
-        keep_indices = set(r for _, r in contributions[-target_keep:])
-
-        # Build new decomposition
-        new_U = decomp.U[sorted(list(keep_indices))] if len(keep_indices) < R else decomp.U
-        new_V = decomp.V[sorted(list(keep_indices))] if len(keep_indices) < R else decomp.V
-        new_W = decomp.W[sorted(list(keep_indices))] if len(keep_indices) < R else decomp.W
-        new_rank = len(keep_indices)
-
-        # Verify the pruned decomposition
         new_decomp = TensorDecomposition(
-            rank=new_rank,
-            U=new_U,
-            V=new_V,
-            W=new_W,
+            rank=len(keep_indices),
+            U=decomp.U[keep_indices],
+            V=decomp.V[keep_indices],
+            W=decomp.W[keep_indices],
             name=f"Pruned-{decomp.name}",
-            metadata={**decomp.metadata, "pruning_sparsity": sparsity_target},
+            metadata={
+                **decomp.metadata,
+                "pruning_sparsity_requested": sparsity_target,
+                "target_rank_requested": target_rank,
+            },
         )
-
-        exact, mismatches = verify_tensor_decomposition(tensor, new_decomp)
+        exact, mismatches = new_decomp.reconstruct(tensor)
         diagnostics = {
-            "pruned_rank": new_rank,
-            "pruned_atoms_kept": new_rank,
-            "pruned_atoms_removed": R - new_rank,
+            "pruned_rank": new_decomp.rank,
+            "pruned_atoms_kept": new_decomp.rank,
+            "pruned_atoms_removed": R - new_decomp.rank,
             "pruned_exact": exact,
             "pruned_mismatches": len(mismatches),
-            "sparsity_target": sparsity_target,
+            "pruning_attempts": attempts,
+            "sparsity_target_requested": sparsity_target,
+            "sparsity_achieved": (R - new_decomp.rank) / max(1, R),
+            "target_rank_requested": target_rank,
+            "target_rank_reached": (
+                target_rank is None or new_decomp.rank <= target_rank
+            ),
         }
 
         return new_decomp, diagnostics
 
+    @staticmethod
     def _apply_llm_transformations(
         decomp: TensorDecomposition,
         tensor: np.ndarray,
@@ -460,92 +516,78 @@ class WSPLayer:
         - 'transformation_matrix': custom U/V/W transformations
         """
         R = decomp.rank
-        degree = decomp.U.shape[1]
         params = llm_params.copy()
-
         transform_type = params.pop("transform_type", "swap")
         target_rank = params.pop("target_rank", None)
 
         if transform_type == "swap":
-            # Swap U and V factors (commutativity of GF(2) multiplication)
             new_U = decomp.V.copy()
             new_V = decomp.U.copy()
             new_W = decomp.W.copy()
         elif transform_type == "scale":
-            # Scale factors by LLM-determined weights
             scale_u = params.get("scale_u", 1.0)
             scale_v = params.get("scale_v", 1.0)
             scale_w = params.get("scale_w", 1.0)
-            new_U = (decomp.U * scale_u) % 2
-            new_V = (decomp.V * scale_v) % 2
-            new_W = (decomp.W * scale_w) % 2
+            if any(value not in (0, 1) for value in (scale_u, scale_v, scale_w)):
+                raise ValueError("GF(2) scale factors must each be 0 or 1")
+            new_U = (decomp.U * int(scale_u)) % 2
+            new_V = (decomp.V * int(scale_v)) % 2
+            new_W = (decomp.W * int(scale_w)) % 2
         elif transform_type == "mix":
-            # Mix U, V, W using LLM-determined mixing matrices
             mix_matrix = params.get("mix_matrix", None)
             if mix_matrix is None:
-                # Default: random mixing within GF(2)
-                rng = np.random.default_rng(42)
-                mix_matrix = rng.integers(0, 2, size=(degree, degree))
-
-            new_U = (decomp.U @ mix_matrix) % 2
-            new_V = (decomp.V @ mix_matrix) % 2
-            new_W = decomp.W  # Keep W unchanged
+                raise ValueError("mix requires an explicit invertible rank-by-rank matrix")
+            mix_matrix = np.asarray(mix_matrix, dtype=np.uint8)
+            if mix_matrix.shape != (R, R) or not np.isin(mix_matrix, (0, 1)).all():
+                raise ValueError("mix_matrix must be a binary square matrix matching the rank")
+            inverse = WSPLayer._gf2_matrix_inverse(mix_matrix)
+            if inverse is None:
+                raise ValueError("mix_matrix must be invertible over GF(2)")
+            new_U = (mix_matrix @ decomp.U) % 2
+            new_V = (inverse.T @ decomp.V) % 2
+            new_W = decomp.W.copy()
         elif transform_type == "new_atoms":
-            # Add new rank-one atoms discovered by LLM
-            n_new = params.get("n_new", 1)
-            new_rank = R + n_new
-
-            new_U = np.vstack([decomp.U, np.zeros((n_new, degree), dtype=np.uint8)])
-            new_V = np.vstack([decomp.V, np.zeros((n_new, degree), dtype=np.uint8)])
-            new_W = np.vstack([decomp.W, np.zeros((n_new, degree), dtype=np.uint8)])
-
-            # Initialize new atoms with identity-like patterns
-            for r in range(R, new_rank):
-                new_U[r, r % degree] = 1
-                new_V[r, (r * 3) % degree] = 1
-                new_W[r, (r * 5) % degree] = 1
-            new_U[R:, :] = 0  # Zero out the truly new ones for now
-            new_V[R:, :] = 0
-            new_W[R:, :] = 0
+            raise ValueError("new_atoms requires a certified algebraic search and is unsupported")
         else:
             raise ValueError(f"Unknown LLM transform type: {transform_type}")
 
-        # Clamp rank if target specified
-        if target_rank is not None:
-            new_rank = target_rank
-            # Truncate or pad to target rank
-            if new_U.shape[0] > target_rank:
-                new_U = new_U[:target_rank]
-                new_V = new_V[:target_rank]
-                new_W = new_W[:target_rank]
-            elif new_U.shape[0] < target_rank:
-                pad = target_rank - new_U.shape[0]
-                new_U = np.vstack([new_U, np.zeros((pad, degree), dtype=np.uint8)])
-                new_V = np.vstack([new_V, np.zeros((pad, degree), dtype=np.uint8)])
-                new_W = np.vstack([new_W, np.zeros((pad, degree), dtype=np.uint8)])
-
+        new_rank = int(new_U.shape[0])
         new_decomp = TensorDecomposition(
             rank=new_rank,
             U=new_U,
             V=new_V,
             W=new_W,
             name=f"LLM-Tuned-{transform_type}",
-            metadata={**decomp.metadata, "llm_params": llm_params},
+            metadata={**decomp.metadata, "llm_params": llm_params.copy()},
         )
-
-        # Verify
         exact, mismatches = verify_tensor_decomposition(tensor, new_decomp)
         diagnostics = {
             "transform_type": transform_type,
-            "llm_applied": True,
+            "llm_applied": exact,
             "target_rank": target_rank,
             "final_rank": new_rank,
             "llm_exact": exact,
             "llm_mismatches": len(mismatches),
         }
-
         return new_decomp, diagnostics
 
+    @staticmethod
+    def _gf2_matrix_inverse(matrix: np.ndarray) -> np.ndarray | None:
+        """Invert a binary matrix using Gauss-Jordan elimination over GF(2)."""
+        size = matrix.shape[0]
+        augmented = np.concatenate(
+            (matrix.copy().astype(np.uint8) % 2, np.eye(size, dtype=np.uint8)), axis=1
+        )
+        for col in range(size):
+            pivots = np.flatnonzero(augmented[col:, col])
+            if not len(pivots):
+                return None
+            pivot = col + int(pivots[0])
+            augmented[[col, pivot]] = augmented[[pivot, col]]
+            for row in range(size):
+                if row != col and augmented[row, col]:
+                    augmented[row] ^= augmented[col]
+        return augmented[:, size:]
 
 # ============================================================================
 # MMLM Integration
@@ -578,7 +620,17 @@ class MMLMMultiplier:
         self.tensor = build_multiplication_tensor(degree=self.degree, modulus_int=self.field_config.modulus_int)
 
         # Build default decomposition (Karatsuba-63 -> 54)
-        self.default_decomp = build_54_referencedecomposition(degree=self.degree)
+        proposed_decomp = build_54_referencedecomposition(degree=self.degree)
+        proposed_exact, _ = proposed_decomp.reconstruct(self.tensor)
+        if proposed_exact:
+            self.default_decomp = proposed_decomp
+        else:
+            self.default_decomp = build_schoolbook_decomposition(
+                degree=self.degree, modulus_int=self.field_config.modulus_int
+            )
+            self.default_decomp.metadata["fallback_reason"] = (
+                "proposed rank-54 factors failed exact tensor reconstruction"
+            )
 
         # Initialize WSP layer
         self.wsp_layer = WSPLayer(config=self.wsp_config)
@@ -587,7 +639,9 @@ class MMLMMultiplier:
         """Get the multiplication tensor."""
         return self.tensor
 
-    def get_decomposition(self, rank: int = None, name: str = None) -> TensorDecomposition:
+    def get_decomposition(
+        self, rank: int | None = None, name: str | None = None
+    ) -> TensorDecomposition:
         """Get a tensor decomposition at the specified rank.
 
         Args:
@@ -597,33 +651,36 @@ class MMLMMultiplier:
         Returns:
             TensorDecomposition at the specified rank
         """
-        if rank is None:
-            rank = self.default_decomp.rank
-
-        if name is None:
-            name = f"Rank-{rank}"
-
-        # Start from the 54-reference and apply WSP if needed
+        requested_rank = self.default_decomp.rank if rank is None else rank
+        if not isinstance(requested_rank, int) or isinstance(requested_rank, bool) or requested_rank < 1:
+            raise ValueError("rank must be a positive integer")
         decomp = TensorDecomposition(
-            rank=rank,
-            U=np.zeros((rank, self.degree), dtype=np.uint8),
-            V=np.zeros((rank, self.degree), dtype=np.uint8),
-            W=np.zeros((rank, self.degree), dtype=np.uint8),
-            name=name,
+            rank=self.default_decomp.rank,
+            U=self.default_decomp.U.copy(),
+            V=self.default_decomp.V.copy(),
+            W=self.default_decomp.W.copy(),
+            name=name or self.default_decomp.name,
             metadata={**self.default_decomp.metadata, "generated": True},
         )
 
         # Apply WSP if configured
         if self.wsp_config.weight_scheme != "uniform":
             decomp, wsp_diag = self.wsp_layer.apply_wsp(decomp, self.tensor)
-            # Store WSP diagnostics
             decomp.metadata["wsp_diagnostics"] = wsp_diag
+
+        if decomp.rank > requested_rank:
+            decomp, rank_diag = WSPLayer._prune_by_importance(
+                decomp, self.tensor, target_rank=requested_rank
+            )
+            decomp.metadata["rank_request_diagnostics"] = rank_diag
+        decomp.metadata["requested_rank"] = requested_rank
 
         # Verify
         exact, mismatches = verify_tensor_decomposition(self.tensor, decomp)
         if not exact:
-            # Store verification result but don't crash
-            decomp.metadata["verification_mismatches"] = len(mismatches)
+            raise ValueError(
+                f"WSP returned an inexact decomposition ({len(mismatches)} mismatches)"
+            )
 
         return decomp
 
@@ -672,20 +729,21 @@ class MMLMMultiplier:
             start_decomp = self.default_decomp
 
         # Verify the starting decomposition
-        exact, mismatches = verify_tensor_decomposition(tensor, start_decomp)
+        exact, _ = verify_tensor_decomposition(tensor, start_decomp)
 
         # Build result report
         result = {
             "target_rank": target_rank,
             "start_rank": start_decomp.rank,
             "final_rank": start_decomp.rank,
-            "found": exact,
+            "found": exact and start_decomp.rank <= target_rank,
             "deflations": 0,
             "rewrites": 0,
             "moves_tried": 0,
             "max_rewrite_k": max_k,
             "residual_dimension": tensor.shape[0] * tensor.shape[1] - start_decomp.rank,
             "exact_reconstruction": exact,
+            "target_rank_reached": start_decomp.rank <= target_rank,
             "elapsed_sec": 0.0,
         }
 
@@ -957,24 +1015,34 @@ class LLMTunableGF2Multiplier:
         Returns:
             Tuning results
         """
-        # Update field config if parameters provided
+        # Config dataclasses are immutable, so build a validated replacement.
+        field_updates: dict[str, Any] = {}
         if "primitive_element" in kwargs:
-            self.field_config.primitive_element = kwargs["primitive_element"]
-        if "irreducible_poly" in kwargs:
-            self.field_config.irreducible_poly = kwargs["irreducible_poly"]
+            field_updates["primitive_element"] = kwargs["primitive_element"]
         if "degree" in kwargs:
-            self.degree = kwargs["degree"]
-            self.field_config.degree = kwargs["degree"]
+            field_updates["degree"] = kwargs["degree"]
+            if "irreducible_poly" not in kwargs:
+                field_updates.update({"irreducible_poly": None, "modulus_int": None})
+        if "irreducible_poly" in kwargs:
+            field_updates["irreducible_poly"] = kwargs["irreducible_poly"]
+            field_updates["modulus_int"] = kwargs["irreducible_poly"]
+        if field_updates:
+            self.field_config = replace(self.field_config, **field_updates)
+            self.degree = self.field_config.degree
 
-        # Update WSP config if parameters provided
+        wsp_params = dict(self.wsp_config.llm_adjustable_params)
+        wsp_updates: dict[str, Any] = {}
         if "weight_scheme" in kwargs:
-            self.wsp_config.weight_scheme = kwargs["weight_scheme"]
+            wsp_updates["weight_scheme"] = kwargs["weight_scheme"]
         if "sparsity_target" in kwargs:
-            self.wsp_config.sparsity_target = kwargs["sparsity_target"]
+            wsp_updates["sparsity_target"] = kwargs["sparsity_target"]
         if "transform_type" in kwargs:
-            self.wsp_config.llm_adjustable_params["transform_type"] = kwargs["transform_type"]
+            wsp_params["transform_type"] = kwargs["transform_type"]
         if "target_rank" in kwargs:
-            self.wsp_config.llm_adjustable_params["target_rank"] = kwargs["target_rank"]
+            wsp_params["target_rank"] = kwargs["target_rank"]
+        if wsp_updates or "transform_type" in kwargs or "target_rank" in kwargs:
+            wsp_updates["llm_adjustable_params"] = wsp_params
+            self.wsp_config = replace(self.wsp_config, **wsp_updates)
 
         # Reinitialize MMLM model with new config
         if self.track == "A":
