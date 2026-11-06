@@ -422,9 +422,17 @@ class LatentSpace:
         return embedding
 
     def decode(self, latent: list[float]) -> str:
-        if self._rust is not None:
-            return self._rust.decode(latent)
-        return "x0"
+        """Refuse: the encoder is a feature hash and has no inverse.
+
+        The native decoder refuses for the same reason (see
+        `rust/apedp-kernel/src/latent.rs`), so this delegates nowhere: a vector
+        cannot be turned back into an expression, and returning a fixed `"x0"`
+        made every latent look like the same equation.
+        """
+        raise NotImplementedError(
+            "LatentSpace.decode has no inverse: the encoder is a feature hash "
+            "over characters and token counts, so a vector does not determine "
+            "an expression")
 
     def interpolate(self, expr1: str, expr2: str, alpha: float) -> list[float]:
         if self._rust is not None:

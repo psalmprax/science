@@ -61,7 +61,17 @@ def audit(
     arm1_isolated: dict[str, Any],
     arm2_isolated: dict[str, Any],
 ) -> dict[str, Any]:
-    base = check_receipt(baseline, "baseline", expected_arm=None)
+    candidate_manifest = candidate.get("experiment_manifest")
+    if isinstance(candidate_manifest, dict) and candidate_manifest.get(
+            "arm1_selectswap_enabled") is not True:
+        raise ValueError(
+            "arm3 candidate must declare arm1_selectswap_enabled=true: the"
+            " interaction arm is defined by both levers being on")
+    # The baseline is the Arm 2 build with SelectSwap off, so it is checked as
+    # one. Passing `expected_arm=None` made every audit fail on the manifest
+    # comparison rather than on anything about the receipts.
+    base = check_receipt(baseline, "baseline", expected_arm=ARM2,
+                         arm1_expected=False)
     combined = check_receipt(candidate, "candidate", expected_arm=ARM3, arm1_expected=True)
     a1 = normalize_receipt(arm1_isolated, "arm1_isolated")
     a2 = check_receipt(arm2_isolated, "arm2_isolated", expected_arm=ARM2, arm1_expected=False)

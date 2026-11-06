@@ -39,7 +39,7 @@ def _acceleration_between(v_from: torch.Tensor, v_to: torch.Tensor,
         try:
             NATIVE_ACCELERATION_CALLS[0] += 1
             return apedp_kernel.jetflow_compute_acceleration(v_from, v_to, h_eff)
-        except Exception:
+        except Exception:  # noqa: BLE001 - an optional kernel may refuse any shape
             # Not counted: the kernel was entered and produced nothing.
             NATIVE_ACCELERATION_CALLS[0] -= 1
     return (v_to - v_from) / h_eff
