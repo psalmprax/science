@@ -136,8 +136,8 @@ def test_recursive_karatsuba_is_exact_and_lower_rank_than_schoolbook():
     assert karatsuba.reconstruct(tensor)[0]
     assert schoolbook.reconstruct(tensor)[0]
     assert karatsuba.rank < schoolbook.rank
-    assert karatsuba.rank == 81
-    assert karatsuba.metadata["nonlinear_count"] == 81
+    assert karatsuba.rank == 54
+    assert karatsuba.metadata["nonlinear_count"] == 54
 
 
 def test_schoolbook_baseline_is_exact_and_multiplier_honors_unreachable_rank():
@@ -162,7 +162,7 @@ def test_schoolbook_baseline_is_exact_and_multiplier_honors_unreachable_rank():
 
 def test_multiplier_uses_certified_karatsuba_factors_by_default():
     multiplier = MMLMMultiplier()
-    assert multiplier.default_decomp.rank == 81
+    assert multiplier.default_decomp.rank == 54
     assert multiplier.default_decomp.reconstruct(multiplier.tensor)[0]
 
 

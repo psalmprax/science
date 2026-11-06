@@ -39,8 +39,7 @@ class GF2FieldConfig:
 
     def validate_primitive(self) -> bool:
         """Validate that the primitive element generates the full multiplicative group."""
-        from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import GF2FieldModel as GF2FM
-        gf = GF2FM(degree=self.degree, prim_poly=self.irreducible_poly)
+        gf = GF2FieldModel(degree=self.degree, prim_poly=self.irreducible_poly)
         order = (1 << self.degree) - 1
         return gf.pow(self.primitive_element, order) == 1
 
@@ -70,8 +69,8 @@ class GF2FieldModel:
         order = model.order
         prim_poly = model.prim_poly
 
-        model.exp_table = np.zeros(order * 2, dtype=np.int64)
-        model.log_table = np.zeros(1 << model.degree, dtype=np.int64)
+        object.__setattr__(model, "exp_table", np.zeros(order * 2, dtype=np.int64))
+        object.__setattr__(model, "log_table", np.zeros(1 << model.degree, dtype=np.int64))
 
         for i in range(order):
             model.exp_table[i] = x
@@ -114,8 +113,8 @@ def _init_tables(model: GF2FieldModel):
     order = model.order
     prim_poly = model.prim_poly
 
-    model.exp_table = np.zeros(order * 2, dtype=np.int64)
-    model.log_table = np.zeros(1 << model.degree, dtype=np.int64)
+    object.__setattr__(model, "exp_table", np.zeros(order * 2, dtype=np.int64))
+    object.__setattr__(model, "log_table", np.zeros(1 << model.degree, dtype=np.int64))
 
     for i in range(order):
         model.exp_table[i] = x
@@ -699,7 +698,6 @@ class MMLMMultiplier:
         self.degree = degree
 
         # Initialize field model
-        from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import GF2FieldModel
         self.gf = GF2FieldModel(degree=self.degree, prim_poly=self.field_config.irreducible_poly)
 
         # Build default tensor
