@@ -8,13 +8,15 @@ Verifies:
      in bdc1595 and why a linear AR(1) is a legitimate survivor here.
   2. Immunity to Factor Zoo Overfitting:
      In pure random-walk regimes, epistemic guards prevent spurious factor promotion,
-     allocating 0.0% capital.
+     so the verdict admits no position and exposure is 0%.
   3. Factor Collinearity as Persistent Ambiguity:
      Correlated technical indicators trigger MULTI_HYPOTHESIS under
-     INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY and downsize position to 50%.
+     INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY; the sizing rule then holds a
+     corner rather than inventing a split between near-identical factors.
 """
 from __future__ import annotations
 
+import numpy as np
 import pytest
 
 from apedp_dyn.epistemic.adjudicate import (
@@ -22,9 +24,9 @@ from apedp_dyn.epistemic.adjudicate import (
     EpistemicStatus,
 )
 from apedp_dyn.sandbox.finance_l2_demo import (
-    epistemic_position_sizing,
     run_factor_collinearity_experiment,
     run_finance_l2_comparison,
+    size_positions,
 )
 
 
@@ -58,7 +60,11 @@ class TestFinanceL2Sandbox:
         assert res.l2_status == EpistemicStatus.UNIQUE_SUPPORT
         assert res.l2_attribution == EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT
         assert "r_prev" in res.l2_promoted_expr and "vol" in res.l2_promoted_expr
-        assert res.recommended_position_size == 1.0
+        # The verdict admits sizing, but the holdout mean over this window is
+        # negative, so the cost-aware rule declines the long. Pinned as measured.
+        assert res.sizing.admitted is True
+        assert res.sizing.gross_exposure == 0.0
+        assert "no trade" in res.sizing.reason
 
     def test_random_walk_regime_immune_to_factor_zoo_overfitting(self):
         """In random-walk noise, L2 rejects overfitted factor candidates and stays in cash."""
@@ -67,7 +73,8 @@ class TestFinanceL2Sandbox:
         # Refuses promotion of spurious non-linear combinations
         assert res.l2_status != EpistemicStatus.UNIQUE_SUPPORT
         assert res.l2_promoted_expr == ""
-        assert res.recommended_position_size == 0.0
+        assert res.sizing.admitted is False
+        assert res.sizing.gross_exposure == 0.0
 
     def test_factor_collinearity_triggers_persistent_ambiguity_and_sizes_down(self):
         """Collinear factors trigger MULTI_HYPOTHESIS and downsize risk allocation to 50%."""
@@ -75,17 +82,71 @@ class TestFinanceL2Sandbox:
 
         assert res.l2_status == EpistemicStatus.MULTI_HYPOTHESIS
         assert res.l2_attribution == EpistemicAttribution.INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY
-        assert res.recommended_position_size == 0.5
+        assert res.sizing.admitted is True
+        assert max(res.sizing.weights) > 0.99  # a corner, not a 50/50 split
+        assert res.sizing.gross_exposure <= 1.0 + 1e-9
         assert "collinearity" in res.epistemic_insight.lower()
 
-    def test_epistemic_position_sizing_logic(self):
-        """Unit test of risk management mapping from epistemic states to capital allocation."""
-        assert epistemic_position_sizing(EpistemicStatus.UNIQUE_SUPPORT, "decisive_evidential_support") == 1.0
-        assert epistemic_position_sizing(EpistemicStatus.MULTI_HYPOTHESIS, "intrinsic_observational_nonidentifiability") == 0.5
-        assert epistemic_position_sizing(EpistemicStatus.MULTI_HYPOTHESIS, "bootstrap_instability") == 0.0
-        assert epistemic_position_sizing(EpistemicStatus.INSUFFICIENT_EVIDENCE, "measurement_noise_swamped") == 0.0
-        assert epistemic_position_sizing(EpistemicStatus.INSUFFICIENT_EVIDENCE, "hypothesis_space_limited") == 0.0
-        assert epistemic_position_sizing(EpistemicStatus.NO_VALID_CANDIDATE, "out_of_grammar_or_misspecified") == 0.0
+    def test_size_positions_responds_to_covariance_and_fees(self):
+        """The size is computed from forecast, covariance and fee, not a verdict."""
+        forecast = [2e-3, 2e-3]
+        covariance = [[1e-4, 0.0], [0.0, 4e-4]]
+
+        free = size_positions(forecast, covariance, fee_bps=0.0)
+        assert free.admitted is True
+        assert free.cost == 0.0
+        assert free.gross_exposure == pytest.approx(1.0)
+        assert free.weights[0] > free.weights[1]  # covariance moves the split
+        assert free.converged is True
+        assert free.iterations > 0
+        assert free.kkt_residual is not None and free.kkt_residual < 1e-8
+
+        thin_edge = size_positions(forecast, covariance, fee_bps=50.0)
+        assert thin_edge.turnover == 0.0  # 2e-3 forecast < 50 bps = 5e-3 fee
+        assert thin_edge.cost == 0.0
+        assert thin_edge.gross_exposure == 0.0
+
+        costly = size_positions(forecast, covariance, fee_bps=5.0)
+        assert costly.turnover == pytest.approx(1.0)
+        assert costly.cost == pytest.approx(5e-4)
+        assert costly.cap_binding is True
+
+        with pytest.raises(ValueError, match="covariance must be symmetric"):
+            size_positions(forecast, [[1e-4, 1e-5], [0.0, 4e-4]])
+
+    def test_size_positions_converges_on_ill_conditioned_eight_asset_book(self):
+        """The active-set polish resolves the n=8 cases the fixed step cannot."""
+        # Seeds from scripts/audit_sizing_solver_convergence.py: these two exact
+        # draws exhausted the 4,000-iteration budget before the polish existed.
+        seeds = {1e4: 20261133, 1e12: 20261141}
+        for kappa, seed in seeds.items():
+            rng = np.random.default_rng(seed)
+            basis, _ = np.linalg.qr(rng.normal(size=(8, 8)))
+            covariance = basis @ np.diag(np.logspace(0.0, -np.log10(kappa), 8)) @ basis.T
+            covariance = 0.5 * (covariance + covariance.T)
+            forecast = rng.uniform(0.005, 0.02, size=8)
+
+            decision = size_positions(forecast, covariance, fee_bps=5.0)
+
+            assert decision.converged is True, kappa
+            assert decision.kkt_residual is not None
+            assert decision.kkt_residual <= 1e-10
+            assert min(decision.weights) >= 0.0
+            assert decision.gross_exposure <= 1.0 + 1e-9
+
+    def test_bootstrap_instability_is_refused_even_under_multi_hypothesis(self):
+        """A sign that flips under resampling is not a direction to size."""
+        from apedp_dyn.sandbox.finance_l2_demo import sizing_from_adjudication
+
+        decision = sizing_from_adjudication(
+            EpistemicStatus.MULTI_HYPOTHESIS,
+            EpistemicAttribution.BOOTSTRAP_INSTABILITY,
+            [1e-2, 1e-2],
+            [[1e-4, 0.0], [0.0, 1e-4]],
+        )
+        assert decision.admitted is False
+        assert decision.gross_exposure == 0.0
+        assert "admits no position" in decision.reason
 
 
 if __name__ == "__main__":

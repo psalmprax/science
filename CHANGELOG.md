@@ -18,13 +18,17 @@ inferred releases.
 - Security reporting policy, dependency-update automation, and CodeQL analysis.
 - Validated BH/BY/Holm p-value adjustment with caller-supplied alpha, ordered results, and effective rejection threshold.
 - Explicit biopharma scope documentation and regression tests for evidence labels and unsupported omics inputs.
+- Sizing convergence diagnostics: `SizingDecision` reports `iterations`, `converged` and an analytic `kkt_residual` instead of stopping silently at `max_iterations`, and a non-converged case is polished by an active-set solve with a smooth-QP/kink-snap fallback. All 36 audit cases converge; the worst residual is 9.9e-13.
+- `scripts/audit_sizing_solver_convergence.py` and `benchmarks/sizing_solver_convergence.json` measure the sizing solver on ill-conditioned covariances (36 cases, `n = 2, 4, 8`, `κ = 10²…10¹²`), documented in `docs/SIZING_SOLVER_CONVERGENCE.md`.
 
 ### Changed
 - Biopharma heuristics now identify their evidence tier and unsupported outputs; target discovery refuses ignored omics input, and unsupported biomarker measurements are reported as not assessed.
 - `packages/` holds `jetflow-video` only. The six `packages/apedp-*` re-export shells (`audio`, `continuum`, `distributed`, `molecular`, `quantum`, `robotics`) were deleted with their `wheels.yml` matrix entries and dependabot configs: each `__init__.py` inserted the repo root on `sys.path` and re-exported `apedp_dyn`, so no wheel carried an implementation of its own. Their behaviour is tested where it lives (`tests/test_dyn_all_subpackages.py`).
 - `apedp/model_synthesis.py` is 1,494 lines (was 2,145): the split into `apedp/model_synthesis_helpers.py` had been created but never finished, so both copies were live and the class still carried the detector and template grammars. The module-level block now comes from the helpers module and the class delegates to `detect_regimes`, `s2_templates` and `exp_templates` there; every documented import path is re-exported.
 
-### Fixed
+- Re-minted the APEDP-X freeze record as `APEDPX_FROZEN_v1_13.json` after `c38a172` moved the registry discovery route body from `apedp_dyn/ui/server.py` to `apedp_dyn/ui/registry_endpoint.py`. The moved body differs by one added import of the shared helpers, the route delegates through `discover_registry`, and no referee, threshold or blind case changed; `blind_benchmark.FROZEN_RECORD` now points at v1.13 (it still pointed at v1.10).
+- The CPython 3.13 verifier environment (`build/qvcc-venv313`) carries the runtime dependencies the quantum-compilation subprocess imports, so the kickmix screen test runs instead of skipping when `APEDP_Q_KICKMIX_PYTHON` names it.
+
 - Reject nonfinite or invalid inputs in biomarker and ADMET rule screens.
 - `embed_conformer_3d` passed `chirality_terms`/`chirality_strength` to `MolecularForceField`, which is distance-only and therefore achiral by construction, so every pocket relaxation of a chiral ligand raised `TypeError` before it started. The embedding now relaxes bonds and soft repulsion only, and says so; chirality is enforced by `PocketConditionedForceField`, which `build_pocket_force_field` derives from the same graph and which the pocket relaxation evaluates every step.
 

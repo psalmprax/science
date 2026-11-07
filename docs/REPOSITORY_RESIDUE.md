@@ -31,29 +31,95 @@ skips with the build command when the binary is absent, so the clone reports wha
 actually true (this test needs a build step) rather than a red suite. Where the
 extension exists, nothing changes: the tests run.
 
-## The sixteen test modules that do not pass
+## The eighteen formerly-unindexed modules, re-measured and triaged 2026-11-06
 
-These are real tests, and they are **not** in the index because a tracked test is a
-claim that it passes. Measured together on 2026-11-06 against current source:
-**57 failed, 80 passed, 1 skipped, 3 collection errors**. They are named here so the
-next sweep starts from a list rather than from a red run it has to rediscover.
+These are real tests. A tracked test is a claim that it passes, so the ones that
+still fail are named here rather than added to the index. Re-measured one module at
+a time (`-q`, no cache) against current source after this session's repairs:
+**1 failed, 249 passed, 1 skipped** across the eighteen modules the earlier
+register named.
 
-| module | state |
-|---|---|
-| `tests/test_scaffold_inventory.py` | collection error — imports `SCOPE` from `apedp.applied_synthetic_bio`, which no longer defines it |
-| `tests/test_patent_corpus_real.py` | collection error |
-| `tests/test_dfthcsos_arm3.py` | collection error |
-| `tests/test_dyn_drug_discovery_pipeline.py` | 2 failing of its own |
-| `tests/test_scaffold_refusals.py`, `tests/test_silent_scaffolds_refuse.py`, `tests/test_placeholder_kernels_refuse.py` | failing |
-| `tests/test_sum_named_column_binding.py`, `tests/test_term_builder_structure_audit.py` | failing |
-| `tests/test_dyn_exception_hygiene.py`, `tests/test_dyn_discovery_module_split.py` | failing |
-| `tests/test_dyn_two_dof_saturation_fit.py`, `tests/test_external_benchmark_source_verification.py` | failing |
-| `tests/test_formal_and_applied_audits.py`, `tests/test_patent_bulk_sources.py`, `tests/test_genome_region_fetch.py` | failing |
+The earlier snapshot was stale in both directions, which is why this section is a
+measurement rather than a list: modules it recorded as failing now pass, and one it
+recorded as a collection error now runs (and fails on its assertions, which is the
+honest state).
 
-Two further tests were removed from the index rather than named here, because they
-cannot run anywhere except the machine that holds the artifacts:
-`tests/test_region_mask_photo_audit.py` (ten licensed photographs) and
-`tests/test_dyn_dfthcsos_sub128_family.py` (archived receipts). Both stay on disk.
+| module | in index | measured | why it is red |
+|---|---|---|---|
+| `tests/test_scaffold_inventory.py` | yes | 65 passed | Every assertion is implemented: the applied modules, the web-equation extractor, the bundled patent corpus, the academic-endpoint configuration contract, cost-penalised position sizing, the Anscombe statistics return, the publication-text readiness reason and the census/scope baselines. Green, so it is added to the index in this pass. |
+| `tests/test_patent_corpus_real.py` | yes | 14 passed | Green after `BUNDLED_CORPUS_PATH`, `corpus_status()` and the operand-only refusal tier landed; the corpus, raw artefacts and provenance records were already on disk and are tracked, so the module is added to the index in this pass. |
+| `tests/test_formal_and_applied_audits.py` | no | 1 failed, 2 passed | The applied-basis audit now passes: every returned dictionary in all eight `applied_*` modules carries a basis label, and `benchmarks/applied_basis_report.json` is regenerated from that code. The Lean audit still refuses to certify itself — no file is `checked`. |
+| `tests/test_genome_region_fetch.py` | yes | 8 passed | Green after the scan gained `reference_length` and an empty-reference refusal; added to the index in the same pass. |
+| `tests/test_patent_bulk_sources.py` | yes | 14 passed, 1 skipped | Green: every logged attempt carries the split it left unchanged, and `grow_patent_corpus.corpus_split()` agrees with the corpus (29 records, 15 searchable, 8 decisive, 7 operand-only, refusals named per record). The one skip is the authenticated OPS claims replay, which needs a recording that only live credentials can produce. |
+| `tests/test_dyn_exception_hygiene.py` | yes | 12 passed | Green after this pass. The four breached size ceilings were met by consolidating code — an inlined single-use wrapper, a shared out-of-scope record, a moved seed builder, two never-taken DAG branches — not by re-pinning the baseline. Candidate for the index. |
+| `tests/test_dfthcsos_arm3.py` | yes | 8 passed | |
+| `tests/test_dyn_drug_discovery_pipeline.py` | yes | 7 passed | |
+| `tests/test_scaffold_refusals.py` | yes | 18 passed | |
+| `tests/test_dyn_discovery_module_split.py` | yes | 15 passed | |
+| `tests/test_dyn_two_dof_saturation_fit.py` | yes | 11 passed | |
+| `tests/test_silent_scaffolds_refuse.py` | yes | 7 passed | |
+| `tests/test_placeholder_kernels_refuse.py` | yes | 6 passed | |
+| `tests/test_sum_named_column_binding.py` | yes | 5 passed | |
+| `tests/test_term_builder_structure_audit.py` | yes | 22 passed | |
+| `tests/test_external_benchmark_source_verification.py` | yes | 9 passed | |
+| `tests/test_region_mask_photo_audit.py` | yes | 11 passed | Ten licensed photographs are present on this machine; the module skips when they or Pillow are absent. |
+| `tests/test_dyn_dfthcsos_sub128_family.py` | yes | 15 passed | Archived receipts are present on this machine; the module skips when the pinned interpreter/extension is absent. |
+
+Seventeen of the eighteen now pass. Every module that passed while untracked has
+been added to the index, which is what a green run licenses. The two artifact-dependent
+modules carry module-level skips for their inputs (Pillow or the licensed
+photographs for the mask audit; the pinned interpreter and extension for the
+DFTHCSOS family), so tracking them claims a pass where the inputs exist rather than
+a guarantee that a bare clone can run them.
+
+The scaffold-inventory row is the one worth reading twice. Its import error was
+real — `SCOPE`, `EXTRACTION_IS_LOSSY`, `SUBMITS_JOBS` and `describe` were genuinely
+missing, and are now declared with the tiers they actually have. The
+`applied_synthetic_bio` half is no longer a stub, the displaystyle/nested-brace
+extractor returns whole formulas, the patent corpus is reachable from the package
+with its operand-only refusals listed, and the static-table/scope-scan records match
+the tree, and the academic endpoint table is configuration-only with
+`CONNECTS_TO_SERVICES = False` and an anonymous Crossref metadata route. Every
+scaffold assertion is now implemented: the finance demo sizes from a
+cost-penalised mean-variance rule over a forecast, covariance and fee, the
+Anscombe scenario returns the statistics it computed, and the publication-text
+gate states why it never opens. No assertion in that file is still waiting on code.
+
+## The AGENTS.md dynamic suite, run whole (2026-11-07)
+
+The 24 modules listed in `AGENTS.md` §2, one process, no cache, with
+`APEDP_Q_KICKMIX_PYTHON` pointing at `build/qvcc-venv313/bin/python`:
+**275 passed, 0 failed, 0 skipped**. Without that environment variable the
+kickmix screen test skips by design (274 passed, 1 skipped), because the test
+needs a CPython 3.13 interpreter that can load the pinned extension.
+
+The frozen-tree guard now passes. The failure recorded earlier in this file was
+the guard working: `apedp_dyn/ui/server.py` changed in `c38a172` (2026-11-06)
+after the active record `APEDPX_FROZEN_v1_10.json` was committed in `7fb2082`
+(2026-10-26), and the guard refused to score blind cases until a record covered
+the change. The repair was to mint `APEDPX_FROZEN_v1_13.json` through the same
+review as the refactor, superseding v1.12 (the newest on disk) and carrying all
+fifteen file hashes plus a `remint_log` entry for `server.py`. The review found
+that `c38a172` moved the registry discovery route body into
+`apedp_dyn/ui/registry_endpoint.py`: an AST-normalised diff of the moved body
+against the old one is a single added import of the shared helpers, and
+`server.discover_registry` now delegates to `run_registry_discovery(req)`. No
+route, response shape, adjudication rule, threshold or blind case changed, and
+no blind case imports either module, so the record states "No referee change".
+`blind_benchmark.FROZEN_RECORD` was still pointing at v1.10 despite v1.11 and
+v1.12 existing; it now names v1.13. `tests/test_dyn_blind.py` is 10 passed.
+
+The kickmix skip is also gone where the 3.13 environment exists: `python3.13
+scripts/setup_verifier_env.py` built `build/qvcc-venv313`, and the runtime
+dependencies the subprocess imports (`sympy`, `pint`, `pypdf`, `python-docx`,
+`matplotlib`, `seaborn`, `networkx`, `fastapi`, `uvicorn`, `scikit-learn`,
+`cryptography`, `pandas`) were installed into it. The screen test then runs the
+verifier in that interpreter instead of skipping.
+
+This is a different population from the eighteen-module table above: that table
+includes `tests/test_patent_bulk_sources.py` and the Lean audit pin and excludes
+`tests/test_dyn_blind.py`, so the two counts are reported separately rather than
+summed.
 
 ## One defect this pass found
 

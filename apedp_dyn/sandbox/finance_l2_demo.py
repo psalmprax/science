@@ -11,15 +11,15 @@ Bridges quantitative finance to the APEDP epistemic discovery architecture:
      (HYPOTHESIS_SPACE_LIMITED) or intrinsic lack of market edge
      (MEASUREMENT_NOISE_SWAMPED / INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY).
 3. Factor Collinearity as Persistent Ambiguity:
-      Refuses to arbitrarily concentrate capital on one correlated factor when
-      multiple indicators have kappa >> 10^3. NOTE (observed 2026-09-30): the
-      collinear_trend regime currently returns INSUFFICIENT_EVIDENCE at 0.0
-      allocation (out_of_grammar_or_misspecified), not the 50% diversified
-      sizing described below -- the docstring's 50% path does not fire on
-      present behavior; see epistemic_position_sizing.
+      Refuses to name an arbitrary winner when multiple indicators have
+      kappa >> 10^3. The verdict is only an admissibility gate: the size itself
+      comes from size_positions(), which solves a cost-penalised mean-variance
+      problem over a forecast, a covariance and a fee, and states why it traded
+      or declined to.
 """
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Literal
 
@@ -48,7 +48,7 @@ class FinanceComparisonResult:
     l2_status: EpistemicStatus
     l2_attribution: str
     l2_promoted_expr: str
-    recommended_position_size: float
+    sizing: SizingDecision
     epistemic_insight: str
 
 
@@ -200,30 +200,463 @@ def evaluate_l2_finance_discovery(
     return l2_res
 
 
-def epistemic_position_sizing(status: EpistemicStatus, attribution: str) -> float:
-    """Demo-only / placeholder risk-sizing heuristic mapping epistemic status to allocation.
+@dataclass(frozen=True)
+class SizingDecision:
+    """Outcome of the cost-penalised mean-variance sizing rule.
 
-    NOTE: DEMO-ONLY / PLACEHOLDER WIRING.
-    Excluded from the scientific L2 discovery result. Epistemic support (whether
-    an equation is scientifically identified) is decoupled from portfolio sizing,
-    which requires expected returns, covariance matrices, transaction costs, turnover,
-    and investor utility.
+    ``weights`` are long-only portfolio weights over the forecast assets,
+    ``turnover`` is the L1 distance from the previous weights, ``cost`` is the
+    fee charged on that turnover, and ``cap_binding`` says whether the gross
+    cap, rather than the forecast, set the size.
     """
-    if status == EpistemicStatus.UNIQUE_SUPPORT:
-        return 1.0  # Decisive edge; full risk allocation (demo placeholder)
-    elif status == EpistemicStatus.MULTI_HYPOTHESIS:
-        if attribution == EpistemicAttribution.INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY:
-            return 0.5  # Model ambiguity / factor collinearity; size down and diversify
-        elif attribution == EpistemicAttribution.BOOTSTRAP_INSTABILITY:
-            return 0.0  # Spurious outlier-driven margin; sit out
-        return 0.25
-    elif status == EpistemicStatus.INSUFFICIENT_EVIDENCE:
-        if attribution == EpistemicAttribution.HYPOTHESIS_SPACE_LIMITED:
-            return 0.0  # Model starvation; cash + alert quant to expand factor library
-        elif attribution == EpistemicAttribution.MEASUREMENT_NOISE_SWAMPED:
-            return 0.0  # Efficient market / random walk; cash
-        return 0.0
-    return 0.0
+
+    admitted: bool
+    weights: tuple[float, ...]
+    turnover: float
+    cost: float
+    cap_binding: bool
+    reason: str
+    iterations: int = 0
+    converged: bool = False
+    kkt_residual: float | None = None
+
+    @property
+    def gross_exposure(self) -> float:
+        """Total long exposure, ``sum(weights)``."""
+        return float(sum(self.weights))
+
+
+_REFUSING_STATUSES = frozenset(
+    {
+        EpistemicStatus.INSUFFICIENT_EVIDENCE,
+        EpistemicStatus.NO_VALID_CANDIDATE,
+        EpistemicStatus.EXTRAPOLATION_UNJUSTIFIED,
+    }
+)
+
+
+def _project_capped_simplex(values: np.ndarray, cap: float) -> np.ndarray:
+    """Euclidean projection onto ``{w >= 0, sum(w) <= cap}``."""
+    clipped = np.clip(values, 0.0, None)
+    if clipped.sum() <= cap:
+        return clipped
+    low = float(values.min()) - cap
+    high = float(values.max())
+    for _ in range(200):
+        middle = 0.5 * (low + high)
+        if np.clip(values - middle, 0.0, None).sum() > cap:
+            low = middle
+        else:
+            high = middle
+    return np.clip(values - high, 0.0, None)
+
+
+_KKT_TOLERANCE = 1e-10
+
+
+def _kkt_violation(
+    weights: np.ndarray,
+    mu: np.ndarray,
+    sigma: np.ndarray,
+    risk_aversion: float,
+    cost_rate: float,
+    previous: np.ndarray,
+    gross_cap: float,
+) -> float:
+    """Largest violation of the KKT stationarity/complementarity conditions.
+
+    This is the analytic residual rather than the distance to the proximal
+    fixed point: the latter carries the step size and the projection's
+    bisection error, which at condition number 1e12 masks an otherwise exact
+    vertex.
+    """
+    hessian = risk_aversion * sigma
+    gradient = mu - hessian @ weights
+    active = weights > 1e-9
+    signs = np.sign(weights - previous)
+    kink = np.abs(weights - previous) <= 1e-12
+    signs[kink] = 0.0
+    multiplier = 0.0
+    if active.any() and float(weights.sum()) >= gross_cap - 1e-9:
+        # Kink coordinates only satisfy an interval, so averaging them in
+        # would bias the multiplier away from the value the free coordinates
+        # determine exactly.
+        strict = active & ~kink
+        stationary = gradient[strict] - cost_rate * signs[strict]
+        if stationary.size == 0:
+            stationary = gradient[active] - cost_rate * signs[active]
+        multiplier = float(np.mean(stationary))
+    violation = 0.0
+    for index in range(weights.size):
+        base = gradient[index] - multiplier
+        if active[index]:
+            if kink[index]:
+                violation = max(violation, abs(base) - cost_rate)
+            else:
+                violation = max(
+                    violation, abs(base - cost_rate * signs[index]),
+                )
+        elif previous[index] > 0.0:
+            violation = max(violation, base + cost_rate)
+        else:
+            # w = previous = 0: only increasing w is feasible, so the L1
+            # term costs +c and a negative base is not a violation.
+            violation = max(violation, base - cost_rate)
+    return float(max(violation, 0.0))
+
+
+def _polish_active_set(
+    mu: np.ndarray,
+    sigma: np.ndarray,
+    risk_aversion: float,
+    cost_rate: float,
+    previous: np.ndarray,
+    gross_cap: float,
+    weights: np.ndarray,
+) -> np.ndarray:
+    """Solve the KKT system on the face the proximal step identified.
+
+    The fixed step ``1 / (gamma * lambda_max)`` can need thousands of
+    iterations when the covariance is ill-conditioned even though the active
+    set and the L1 sign pattern have already settled.  Solving the
+    equality-constrained smooth problem on that face is exact, and costs one
+    small dense solve per changed coordinate, so the returned weights satisfy
+    the KKT conditions instead of merely approaching them.
+    """
+    size = weights.size
+    free = [index for index in range(size) if weights[index] > 1e-9]
+    if not free:
+        return weights
+    equality = bool(weights.sum() >= gross_cap - 1e-9)
+    signs = np.sign(weights - previous)
+    signs[np.abs(weights - previous) <= 1e-12] = 0.0
+    hessian = risk_aversion * sigma
+
+    for _ in range(4 * size + 4):
+        linear = mu - cost_rate * signs
+        sub_hessian = hessian[np.ix_(free, free)]
+        multiplier = 0.0
+        if equality:
+            count = len(free)
+            system = np.zeros((count + 1, count + 1))
+            system[:count, :count] = sub_hessian
+            system[:count, count] = 1.0
+            system[count, :count] = 1.0
+            rhs = np.concatenate((linear[free], [gross_cap]))
+            try:
+                solved = np.linalg.solve(system, rhs)
+            except np.linalg.LinAlgError:
+                solved = np.linalg.lstsq(system, rhs, rcond=None)[0]
+            solution = solved[:count]
+            multiplier = float(solved[count])
+        else:
+            try:
+                solution = np.linalg.solve(sub_hessian, linear[free])
+            except np.linalg.LinAlgError:
+                solution = np.linalg.lstsq(sub_hessian, linear[free], rcond=None)[0]
+
+        trial = np.zeros(size)
+        trial[free] = solution
+
+        if np.any(solution < -1e-12):
+            free.pop(int(np.argmin(solution)))
+            if not free:
+                return weights
+            equality = bool(weights.sum() >= gross_cap - 1e-9)
+            continue
+
+        if not equality and float(trial.sum()) > gross_cap + 1e-12:
+            equality = True
+            continue
+
+        base_gradient = mu - hessian @ trial - multiplier
+        # At a kink (w == previous) the L1 term rises in both directions, so
+        # the right derivative costs +c; a plain sign() would miss it and
+        # re-admit a coordinate that costs more to move than it earns.
+        entering_gradient = base_gradient - cost_rate * np.where(
+            np.abs(trial - previous) <= 1e-12, 1.0, signs,
+        )
+        entering = [index for index in range(size)
+                    if index not in free
+                    and entering_gradient[index] > _KKT_TOLERANCE]
+        if entering:
+            free.append(entering[0])
+            continue
+
+        new_signs = np.sign(trial - previous)
+        new_signs[np.abs(trial - previous) <= 1e-12] = 0.0
+        if np.any(new_signs[free] != signs[free]):
+            signs = new_signs
+            continue
+
+        return np.maximum(trial, 0.0)
+    return weights
+
+
+def _snap_to_kinks(
+    mu: np.ndarray,
+    hessian: np.ndarray,
+    cost_rate: float,
+    previous: np.ndarray,
+    gross_cap: float,
+    weights: np.ndarray,
+    kink_tolerance: float = 1e-6,
+) -> np.ndarray:
+    """Re-solve the KKT system with coordinates found at a kink pinned.
+
+    A coordinate sitting at its previous weight only satisfies an interval of
+    stationarity conditions, which a smooth solve represents poorly.  Pinning
+    it at ``previous`` and solving the remaining free system removes the
+    oscillation between the two sign patterns that a sign-flipping loop
+    otherwise cycles through.
+    """
+    size = weights.size
+    zero = weights <= 1e-9
+    kink = (~zero) & (np.abs(weights - previous) <= kink_tolerance)
+    free = [index for index in range(size) if not zero[index] and not kink[index]]
+    fixed = [index for index in range(size) if kink[index]]
+    if not free:
+        return weights
+    signs = np.sign(weights - previous)
+    right = mu[free] - cost_rate * signs[free]
+    if fixed:
+        right = right - hessian[np.ix_(free, fixed)] @ previous[fixed]
+    free_cap = gross_cap - float(previous[fixed].sum())
+    count = len(free)
+    system = np.zeros((count + 1, count + 1))
+    system[:count, :count] = hessian[np.ix_(free, free)]
+    system[:count, count] = 1.0
+    system[count, :count] = 1.0
+    try:
+        solved = np.linalg.solve(system, np.concatenate((right, [free_cap])))
+    except np.linalg.LinAlgError:
+        return weights
+    candidate = np.zeros(size)
+    candidate[free] = solved[:count]
+    candidate[fixed] = previous[fixed]
+    if np.any(candidate[free] < -1e-12):
+        return weights
+    if np.any(np.sign(candidate[free] - previous[free]) != signs[free]):
+        return weights
+    return np.maximum(candidate, 0.0)
+
+
+def _polish_by_qp(
+    mu: np.ndarray,
+    sigma: np.ndarray,
+    risk_aversion: float,
+    cost_rate: float,
+    previous: np.ndarray,
+    gross_cap: float,
+    weights: np.ndarray,
+) -> np.ndarray:
+    """Solve the L1 problem through its smooth ``t >= |w - previous|`` form.
+
+    Used only when the gradient and active-set passes have not met the KKT
+    tolerance: a convex QP with explicit auxiliary variables cannot cycle on
+    the L1 kinks, and the result is snapped back onto any kink it finds so the
+    returned weights satisfy stationarity exactly.
+    """
+    from scipy.optimize import minimize
+
+    size = mu.size
+    hessian = risk_aversion * sigma
+
+    def objective(values: np.ndarray) -> float:
+        w = values[:size]
+        return float(0.5 * w @ hessian @ w - mu @ w
+                     + cost_rate * values[size:].sum())
+
+    def gradient(values: np.ndarray) -> np.ndarray:
+        return np.concatenate(
+            (hessian @ values[:size] - mu, cost_rate * np.ones(size)),
+        )
+
+    identity = np.eye(size)
+    constraints = [
+        {"type": "ineq", "fun": lambda values: gross_cap - values[:size].sum(),
+         "jac": lambda values: np.concatenate(
+             (-np.ones(size), np.zeros(size)))},
+        {"type": "ineq", "fun": lambda values: values[size:] - values[:size] + previous,
+         "jac": lambda values: np.hstack((-identity, identity))},
+        {"type": "ineq", "fun": lambda values: values[size:] + values[:size] - previous,
+         "jac": lambda values: np.hstack((identity, identity))},
+    ]
+    start = np.concatenate((weights, np.abs(weights - previous)))
+    result = minimize(
+        objective,
+        start,
+        jac=gradient,
+        method="SLSQP",
+        bounds=[(0.0, None)] * (2 * size),
+        constraints=constraints,
+        options={"ftol": 1e-12, "maxiter": 2_000},
+    )
+    candidate = np.clip(np.asarray(result.x[:size], dtype=float), 0.0, None)
+    return _snap_to_kinks(mu, hessian, cost_rate, previous, gross_cap, candidate)
+
+
+def size_positions(
+    forecast: Sequence[float],
+    covariance: Sequence[Sequence[float]],
+    *,
+    fee_bps: float = 5.0,
+    risk_aversion: float = 1.0,
+    gross_cap: float = 1.0,
+    previous_weights: Sequence[float] | None = None,
+    max_iterations: int = 4_000,
+    tolerance: float = 1e-12,
+) -> SizingDecision:
+    """Size a long-only book from a forecast, its covariance and a fee.
+
+    Solves ``max w'mu - (gamma/2) w'Sw - c|w - w_prev|_1`` on
+    ``{w >= 0, sum(w) <= gross_cap}`` by proximal gradient with an exact
+    capped-simplex projection, where ``c = fee_bps / 1e4`` is charged per unit
+    of turnover. Nothing here depends on an epistemic verdict: the caller
+    decides admissibility, and this rule reports what the inputs imply.
+
+    A forecast thinner than the fee yields no trade (turnover 0, cost 0)
+    rather than a smaller position, because that is what charging a trade
+    means.
+
+    The returned decision reports ``iterations``, ``converged`` and the KKT
+    residual, so a caller can see whether the step size
+    (``1 / (gamma * lambda_max)``) actually resolved an ill-conditioned
+    covariance instead of trusting a silent stop at ``max_iterations``.  When
+    the loop has not met its tolerance, the face it identified is polished by
+    an exact active-set solve; if that still does not meet the tolerance, the
+    L1 problem is solved through its smooth auxiliary-variable form and snapped
+    onto any kink.  ``converged`` is decided from the analytic KKT violation
+    (``<= 1e-10``).
+    """
+    mu = np.asarray(forecast, dtype=float).ravel()
+    sigma = np.asarray(covariance, dtype=float)
+    if mu.size == 0:
+        raise ValueError("forecast must not be empty")
+    if sigma.shape != (mu.size, mu.size):
+        raise ValueError("covariance must be a square matrix matching the forecast")
+    if not np.all(np.isfinite(mu)) or not np.all(np.isfinite(sigma)):
+        raise ValueError("forecast and covariance must be finite")
+    if float(np.max(np.abs(sigma - sigma.T))) > 1e-10:
+        raise ValueError("covariance must be symmetric")
+    eigenvalues = np.linalg.eigvalsh(sigma)
+    if float(eigenvalues[0]) < -1e-10:
+        raise ValueError("covariance must be positive semidefinite")
+    if fee_bps < 0.0:
+        raise ValueError("fee_bps must be non-negative")
+    if risk_aversion <= 0.0:
+        raise ValueError("risk_aversion must be positive")
+    if gross_cap <= 0.0:
+        raise ValueError("gross_cap must be positive")
+
+    previous = (
+        np.zeros(mu.size, dtype=float)
+        if previous_weights is None
+        else np.asarray(previous_weights, dtype=float).ravel()
+    )
+    if previous.size != mu.size:
+        raise ValueError("previous_weights must match the forecast length")
+
+    cost_rate = fee_bps / 10_000.0
+    step = 1.0 / (risk_aversion * max(float(eigenvalues[-1]), 1e-12))
+    weights = _project_capped_simplex(previous, gross_cap)
+    iterations = 0
+    converged = False
+    for iteration in range(1, max_iterations + 1):
+        gradient = mu - risk_aversion * (sigma @ weights)
+        moved = weights + step * gradient - previous
+        shrinkage = step * cost_rate
+        candidate = _project_capped_simplex(
+            previous + np.sign(moved) * np.maximum(np.abs(moved) - shrinkage, 0.0),
+            gross_cap,
+        )
+        change = float(np.max(np.abs(candidate - weights)))
+        weights = candidate
+        iterations = iteration
+        if change <= tolerance:
+            converged = True
+            break
+
+    # Fixed-point residual of the same map, reported so a stop at
+    # max_iterations is visible rather than mistaken for convergence.
+    kkt_residual = _kkt_violation(
+        weights, mu, sigma, risk_aversion, cost_rate, previous, gross_cap,
+    )
+    if not converged or kkt_residual > _KKT_TOLERANCE:
+        polished = _polish_active_set(
+            mu, sigma, risk_aversion, cost_rate, previous, gross_cap, weights,
+        )
+        polished_residual = _kkt_violation(
+            polished, mu, sigma, risk_aversion, cost_rate, previous, gross_cap,
+        )
+        if polished_residual < kkt_residual:
+            weights = polished
+            kkt_residual = polished_residual
+    if kkt_residual > _KKT_TOLERANCE:
+        qp_weights = _polish_by_qp(
+            mu, sigma, risk_aversion, cost_rate, previous, gross_cap, weights,
+        )
+        qp_residual = _kkt_violation(
+            qp_weights, mu, sigma, risk_aversion, cost_rate, previous, gross_cap,
+        )
+        if qp_residual < kkt_residual:
+            weights = qp_weights
+            kkt_residual = qp_residual
+    converged = kkt_residual <= _KKT_TOLERANCE
+
+    turnover = float(np.abs(weights - previous).sum())
+    cost = cost_rate * turnover
+    cap_binding = bool(weights.sum() >= gross_cap - 1e-9)
+    if turnover == 0.0:
+        reason = (
+            f"no trade: the {fee_bps:g} bps fee exceeds the forecast edge at every "
+            f"candidate weight (forecast {np.round(mu, 6).tolist()})"
+        )
+    else:
+        reason = (
+            f"traded {turnover:.4f} at {fee_bps:g} bps; "
+            f"{'gross cap binds' if cap_binding else 'forecast sets the size'}"
+        )
+    return SizingDecision(
+        admitted=True,
+        weights=tuple(float(weight) for weight in weights),
+        turnover=turnover,
+        cost=cost,
+        cap_binding=cap_binding,
+        reason=reason,
+        iterations=iterations,
+        converged=converged,
+        kkt_residual=kkt_residual,
+    )
+
+
+def sizing_from_adjudication(
+    status: EpistemicStatus,
+    attribution: str,
+    forecast: Sequence[float],
+    covariance: Sequence[Sequence[float]],
+    *,
+    fee_bps: float = 5.0,
+) -> SizingDecision:
+    """Gate sizing on the verdict, then size on the forecast, not the verdict.
+
+    No identified edge means there is nothing to size, and a sign that flips
+    under resampling is refused even under ``MULTI_HYPOTHESIS``. Every other
+    verdict is admitted to the sizing rule, which may still decline to trade.
+    """
+    if status in _REFUSING_STATUSES or (
+        status == EpistemicStatus.MULTI_HYPOTHESIS
+        and attribution == EpistemicAttribution.BOOTSTRAP_INSTABILITY
+    ):
+        return SizingDecision(
+            admitted=False,
+            weights=tuple(0.0 for _ in forecast),
+            turnover=0.0,
+            cost=0.0,
+            cap_binding=False,
+            reason=f"verdict {status.value} / {attribution} admits no position",
+        )
+    return size_positions(forecast, covariance, fee_bps=fee_bps)
 
 
 def run_finance_l2_comparison(
@@ -250,23 +683,33 @@ def run_finance_l2_comparison(
             or best_cand.candidate.candidate_id
         )
 
-    pos_size = epistemic_position_sizing(l2_adj.status, l2_adj.epistemic_attribution)
+    # Sizing uses the holdout slice only: the forecast is its mean return and
+    # the covariance is its variance, both in return units.
+    y_holdout = returns[1:][int(len(returns[1:]) * 0.6):]
+    sizing = sizing_from_adjudication(
+        l2_adj.status,
+        l2_adj.epistemic_attribution,
+        [float(np.mean(y_holdout))],
+        [[float(np.var(y_holdout))]],
+    )
 
     if regime == "volatility_scaled_momentum":
         insight = (
-            "L0 linear candidates suffered hypothesis-space starvation; "
-            "L2 autonomous discovery invented volatility-scaled momentum (r_prev / vol), "
-            "converting an abstention into UNIQUE_SUPPORT."
+            "L0 and L2 both promote linear-looking dynamics here; the verdict says "
+            "the form is identified, not that holding it pays. "
+            f"Sizing: {sizing.reason}."
         )
     elif regime == "collinear_trend":
         insight = (
             "Trending AR(1) regime: linear candidate recovered with UNIQUE_SUPPORT; "
-            "for observational collinearity and persistent ambiguity, see run_factor_collinearity_experiment()."
+            "for observational collinearity and persistent ambiguity, see "
+            f"run_factor_collinearity_experiment(). Sizing: {sizing.reason}."
         )
     else:
         insight = (
-            "Efficient market regime: despite evaluating hundreds of non-linear factor combinations, "
-            "epistemic guards rejected spurious overfits, maintaining 0% allocation."
+            "Efficient market regime: despite evaluating hundreds of non-linear "
+            "factor combinations, epistemic guards rejected spurious overfits. "
+            f"Sizing: {sizing.reason}."
         )
 
     return FinanceComparisonResult(
@@ -276,7 +719,7 @@ def run_finance_l2_comparison(
         l2_status=l2_adj.status,
         l2_attribution=l2_adj.epistemic_attribution,
         l2_promoted_expr=l2_expr,
-        recommended_position_size=pos_size,
+        sizing=sizing,
         epistemic_insight=insight,
     )
 
@@ -286,8 +729,10 @@ def run_factor_collinearity_experiment(seed: int = 42) -> FinanceComparisonResul
 
     Two competing technical factors (e.g. 5-day momentum f1_mom and EMA spread f2_spread)
     are observationally collinear (correlation > 0.999, kappa >> 10^3).
-    APEDP refuses to concentrate capital on an arbitrary winner, returning MULTI_HYPOTHESIS
-    with INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY and reducing position size to 50%.
+    APEDP refuses to name an arbitrary winner, returning MULTI_HYPOTHESIS with
+    INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY; the sizing rule then puts the
+    position in a corner rather than inventing a split between near-identical
+    assets.
     """
     rng = np.random.default_rng(seed)
     n = 120
@@ -313,8 +758,23 @@ def run_factor_collinearity_experiment(seed: int = 42) -> FinanceComparisonResul
         seed=seed,
     )
     l2_adj = l2_res.adjudication
-    pos_size = epistemic_position_sizing(l2_adj.status, l2_adj.epistemic_attribution)
 
+    # Long-only expected contribution of each factor on the holdout slice: the
+    # training-slice slope times the holdout mean factor value. The covariance
+    # is the factors' holdout covariance.
+    n_train = int(n * 0.6)
+    design = np.column_stack([np.ones(n_train), f1[:n_train], f2[:n_train]])
+    coefficients, *_ = np.linalg.lstsq(design, y[:n_train], rcond=None)
+    factors_holdout = np.column_stack([f1[n_train:], f2[n_train:]])
+    forecast = coefficients[1:] * factors_holdout.mean(axis=0)
+    sizing = sizing_from_adjudication(
+        l2_adj.status,
+        l2_adj.epistemic_attribution,
+        forecast,
+        np.cov(factors_holdout, rowvar=False),
+    )
+
+    dominant = int(np.argmax(sizing.weights))
     return FinanceComparisonResult(
         regime="factor_collinearity",
         l0_status=EpistemicStatus.MULTI_HYPOTHESIS,
@@ -322,10 +782,12 @@ def run_factor_collinearity_experiment(seed: int = 42) -> FinanceComparisonResul
         l2_status=l2_adj.status,
         l2_attribution=l2_adj.epistemic_attribution,
         l2_promoted_expr="",
-        recommended_position_size=pos_size,
+        sizing=sizing,
         epistemic_insight=(
-            "Factor collinearity detected (correlation > 0.999). Both f1_mom and f2_spread fit equally well. "
-            "APEDP avoids spurious single-factor concentration, preserving MULTI_HYPOTHESIS "
-            "and reducing position size to 50%."
+            "Factor collinearity detected (correlation > 0.999). Both f1_mom and "
+            "f2_spread fit equally well, so the referee preserves MULTI_HYPOTHESIS. "
+            f"The sizing rule puts the position in a corner (factor {dominant}: "
+            f"{sizing.weights[dominant]:.2f} of {sizing.gross_exposure:.2f} gross) "
+            f"rather than inventing a split; reason: {sizing.reason}."
         ),
     )
