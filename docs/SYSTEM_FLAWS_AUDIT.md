@@ -275,8 +275,9 @@ Basis: code + test execution only. No documentation was used as an evaluation so
 > added.
 >
 > The CI gate has also been corrected as of 2026-09-23: `.github/workflows/test.yml`
-> now triggers on `master` (plus `main`/`develop`) instead of a branch that does
-> not exist, so the `pytest`/`ruff`/`mypy`/`bandit` steps can actually fire.
+> now triggers on every branch (`branches: ['**']`, widened again after this note
+> was written) instead of a branch that does not exist, so the
+> `pytest`/`ruff`/`mypy`/`bandit` steps can actually fire.
 > Full analysis: `docs/INDEPENDENT_REVIEW_2026-09-23.md` §2.
 - Frozen benchmark metrics are **unchanged by both passes**: 25-case suite
   detection `1.000`, refusal `0.5833`, repair success `0.9231`, false repair

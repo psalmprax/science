@@ -42,4 +42,12 @@ at their stated size, and the collection bottleneck does.
    cases green. That rule is broader than one directory, so it is worth re-checking
    whenever a sandbox vendors another tree.
 
+## 2026-11-07 re-check
+
+`pytest tests --collect-only -q` now collects **5,657 tests in 48.66 s** with no
+collection errors. The 53.3 s figure above was measured on 2026-11-02; the
+difference is small enough that the 7.2 score is unchanged, and the remaining
+deduction (collection latency) still stands. The full regression result is
+recorded in `docs/TEST_SUITE_RUN_2026-11-07.md`.
+
 Status: audit-only.

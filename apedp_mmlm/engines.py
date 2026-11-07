@@ -4,7 +4,8 @@ Status: experimental
 
 Implements:
   - **Specification & Tokenization**: `MMLMResearchSpecification`, frozen falsifiable
-    hypotheses `H1`–`H5`, and deterministic word/subword/circuit/AST `MMLMTokenizer`.
+    hypotheses `H1`–`H5`, deterministic word/subword/circuit/AST `MMLMTokenizer`,
+    and byte-level `BPEMMLMTokenizer` with UTF-8 byte fallback.
   - **Engine 1 (Probabilistic Language Engine)**:
     - `WeightedAutomatonEngine`: Variable-order Markov / Weighted Finite-State Automaton
       with Kneser-Ney continuation backoff over $P(x_t \mid x_{1}, \dots, x_{t-1})$ up to order 5.
@@ -196,6 +197,155 @@ class MMLMTokenizer:
         special = {0, 1, 2, 3} if skip_special_tokens else set()
         tokens = [self.id_to_token.get(int(i), self.UNK_TOKEN) for i in token_ids if int(i) not in special]
         return " ".join(tokens)
+
+
+class BPEMMLMTokenizer:
+    """Deterministic byte-pair-encoding tokenizer with UTF-8 byte fallback.
+
+    Status: experimental.
+
+    ``fit`` learns merges over the characters present in the corpus, up to
+    ``max_vocab_size`` and only for pairs seen at least ``min_frequency`` times.
+    A character unseen during fitting is encoded as one ``<0xNN>`` token per
+    UTF-8 byte and reassembled by ``decode``, so an out-of-vocabulary codepoint
+    is never silently mapped to ``<unk>``.
+    """
+
+    PAD_TOKEN = "<pad>"  # noqa: S105
+    UNK_TOKEN = "<unk>"  # noqa: S105
+    BOS_TOKEN = "<bos>"  # noqa: S105
+    EOS_TOKEN = "<eos>"  # noqa: S105
+
+    def __init__(self, max_vocab_size: int = 2048, min_frequency: int = 2) -> None:
+        self.max_vocab_size = max(16, int(max_vocab_size))
+        self.min_frequency = max(1, int(min_frequency))
+        self.token_to_id: dict[str, int] = {
+            self.PAD_TOKEN: 0,
+            self.UNK_TOKEN: 1,
+            self.BOS_TOKEN: 2,
+            self.EOS_TOKEN: 3,
+        }
+        self.id_to_token: dict[int, str] = {v: k for k, v in self.token_to_id.items()}
+        self.merges: dict[tuple[str, str], str] = {}
+        self._merge_ranks: dict[tuple[str, str], int] = {}
+        self._fitted = False
+
+    @property
+    def vocab_size(self) -> int:
+        return len(self.token_to_id)
+
+    def _register(self, token: str) -> int:
+        if token not in self.token_to_id:
+            idx = len(self.token_to_id)
+            self.token_to_id[token] = idx
+            self.id_to_token[idx] = token
+        return self.token_to_id[token]
+
+    def fit(self, texts: Sequence[str]) -> BPEMMLMTokenizer:
+        """Learn character merges from ``texts``, most frequent pair first."""
+        for text in texts:
+            for ch in text:
+                self._register(ch)
+        sequences = [list(text) for text in texts]
+
+        while len(self.token_to_id) < self.max_vocab_size:
+            counts: Counter[tuple[str, str]] = Counter()
+            for seq in sequences:
+                counts.update(pairwise(seq))
+            if not counts:
+                break
+            pair, frequency = counts.most_common(1)[0]
+            if frequency < self.min_frequency:
+                break
+            self.merges[pair] = pair[0] + pair[1]
+            self._merge_ranks[pair] = len(self.merges) - 1
+            self._register(self.merges[pair])
+            sequences = [self._merge_pair(seq, pair) for seq in sequences]
+
+        self._fitted = True
+        return self
+
+    @staticmethod
+    def _merge_pair(tokens: list[str], pair: tuple[str, str]) -> list[str]:
+        merged: list[str] = []
+        i = 0
+        while i < len(tokens):
+            if i + 1 < len(tokens) and tokens[i] == pair[0] and tokens[i + 1] == pair[1]:
+                merged.append(pair[0] + pair[1])
+                i += 2
+            else:
+                merged.append(tokens[i])
+                i += 1
+        return merged
+
+    def _apply_merges(self, tokens: list[str]) -> list[str]:
+        while len(tokens) > 1:
+            best_rank: int | None = None
+            best_index = -1
+            for i in range(len(tokens) - 1):
+                rank = self._merge_ranks.get((tokens[i], tokens[i + 1]))
+                if rank is not None and (best_rank is None or rank < best_rank):
+                    best_rank = rank
+                    best_index = i
+            if best_rank is None:
+                break
+            tokens = [
+                *tokens[:best_index],
+                self.merges[(tokens[best_index], tokens[best_index + 1])],
+                *tokens[best_index + 2 :],
+            ]
+        return tokens
+
+    def _byte_tokens(self, ch: str) -> list[str]:
+        tokens: list[str] = []
+        for byte in ch.encode("utf-8"):
+            token = f"<0x{byte:02x}>"
+            self._register(token)
+            tokens.append(token)
+        return tokens
+
+    def encode(self, text: str, add_special_tokens: bool = True) -> list[int]:
+        tokens: list[str] = []
+        for ch in text:
+            if ch in self.token_to_id:
+                tokens.append(ch)
+            else:
+                tokens.extend(self._byte_tokens(ch))
+        ids = [self.token_to_id[token] for token in self._apply_merges(tokens)]
+        if add_special_tokens:
+            return [self.token_to_id[self.BOS_TOKEN], *ids, self.token_to_id[self.EOS_TOKEN]]
+        return ids
+
+    def decode(self, token_ids: Sequence[int], skip_special_tokens: bool = True) -> str:
+        special = (
+            {
+                self.token_to_id[self.PAD_TOKEN],
+                self.token_to_id[self.UNK_TOKEN],
+                self.token_to_id[self.BOS_TOKEN],
+                self.token_to_id[self.EOS_TOKEN],
+            }
+            if skip_special_tokens
+            else set()
+        )
+        parts: list[str] = []
+        pending = bytearray()
+
+        def flush() -> None:
+            if pending:
+                parts.append(bytes(pending).decode("utf-8", errors="replace"))
+                pending.clear()
+
+        for token_id in token_ids:
+            if int(token_id) in special:
+                continue
+            token = self.id_to_token.get(int(token_id), self.UNK_TOKEN)
+            if len(token) == 6 and token.startswith("<0x") and token.endswith(">"):
+                pending.append(int(token[3:5], 16))
+            else:
+                flush()
+                parts.append(token)
+        flush()
+        return "".join(parts)
 
 
 # ============================================================================
@@ -467,6 +617,70 @@ class TensorTrainMemoryEngine:
                 norm = float(np.linalg.norm(state))
                 if norm > 1e-9:
                     state /= norm
+
+    def dmrg_two_site_sweep(
+        self,
+        sequences: Sequence[Sequence[int]],
+        n_sweeps: int = 2,
+        max_bond_dim: int | None = None,
+        cutoff: float = 1e-8,
+    ) -> dict[str, object]:
+        """Two-site SVD sweep over adjacent token cores, with Schmidt diagnostics.
+
+        Each token owns one bond-space matrix, so the sweep factorizes the
+        product ``cores[a] @ cores[b]`` and splits it back across the pair. The
+        singular values are the operator-Schmidt coefficients of that cut; their
+        normalized squares give the reported entanglement entropy. This is a
+        compression sweep, not a variational ground-state solver: it preserves
+        the pair product (up to ``cutoff``/``max_bond_dim`` truncation) and does
+        not optimize a likelihood objective.
+        """
+        rank_cap = self.bond_dim if max_bond_dim is None else max(1, int(max_bond_dim))
+        rank_cap = min(rank_cap, self.bond_dim)
+        entropies: list[float] = []
+        spectra: list[float] = []
+
+        for _ in range(max(0, int(n_sweeps))):
+            for seq in sequences:
+                ids = [int(tok) % self.vocab_size for tok in seq]
+                for i in range(len(ids) - 1):
+                    left_id, right_id = ids[i], ids[i + 1]
+                    two_site = self.cores[left_id] @ self.cores[right_id]
+                    u, singular, vt = np.linalg.svd(two_site, full_matrices=False)
+                    total = float(np.sum(singular**2))
+                    if total <= 1e-18:
+                        continue
+
+                    keep = int(np.sum(singular > cutoff))
+                    keep = max(1, min(keep, rank_cap))
+                    root = np.sqrt(np.maximum(singular[:keep], 0.0))
+
+                    # Keep the cores square (bond_dim x bond_dim) so later
+                    # contractions keep their shape; unused singular directions
+                    # are zero-padded rather than changing the layout.
+                    left_core = np.zeros_like(self.cores[left_id])
+                    right_core = np.zeros_like(self.cores[right_id])
+                    left_core[:, :keep] = u[:, :keep] * root
+                    right_core[:keep, :] = root[:, None] * vt[:keep, :]
+
+                    for token_id, core in ((left_id, left_core), (right_id, right_core)):
+                        frob = float(np.linalg.norm(core, ord="fro"))
+                        cap = math.sqrt(self.bond_dim) * 1.15
+                        if frob > cap:
+                            core *= cap / frob
+                        self.cores[token_id] = core
+
+                    probs = singular[:keep] ** 2 / total
+                    entropy = float(-np.sum(probs * np.log(np.maximum(probs, 1e-300))))
+                    entropies.append(entropy)
+                    spectra.extend(float(x) for x in np.sqrt(probs))
+
+        return {
+            "mean_entanglement_entropy": float(np.mean(entropies)) if entropies else 0.0,
+            "max_entanglement_entropy": float(np.max(entropies)) if entropies else 0.0,
+            "top_schmidt_spectrum": sorted(spectra, reverse=True)[:16],
+            "sweeps_completed": max(0, int(n_sweeps)),
+        }
 
     def contract_context(self, context: Sequence[int]) -> np.ndarray:
         """Contract $G_1[x_1] G_2[x_2] \\cdots G_t[x_t]$ along the 1D chain."""

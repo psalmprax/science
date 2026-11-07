@@ -1,5 +1,11 @@
 # APEDP — Project Understanding and Flaw Assessment
 
+> **Historical snapshot (pre-2026-10).** Several findings below were remediated
+> after this assessment was written; see `docs/GAP_ANALYSIS.md` (2026-11-06) and
+> `docs/SYSTEM_FLAWS_AUDIT.md` for the current register. In particular, "No
+> version control" is no longer true: this is a git repository on branch
+> `stage`. The assessment is retained as a dated record rather than rewritten.
+
 ## Current assessment
 
 APEDP is best characterized as a **domain-general scientific evidence and
