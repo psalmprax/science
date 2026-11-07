@@ -276,33 +276,52 @@ def _kkt_violation(
     signs = np.sign(weights - previous)
     kink = np.abs(weights - previous) <= 1e-12
     signs[kink] = 0.0
-    multiplier = 0.0
-    if active.any() and float(weights.sum()) >= gross_cap - 1e-9:
-        # Kink coordinates only satisfy an interval, so averaging them in
-        # would bias the multiplier away from the value the free coordinates
-        # determine exactly.
-        strict = active & ~kink
-        stationary = gradient[strict] - cost_rate * signs[strict]
-        if stationary.size == 0:
-            stationary = gradient[active] - cost_rate * signs[active]
-        multiplier = float(np.mean(stationary))
-    violation = 0.0
-    for index in range(weights.size):
-        base = gradient[index] - multiplier
-        if active[index]:
-            if kink[index]:
-                violation = max(violation, abs(base) - cost_rate)
+
+    def residual(multiplier: float) -> float:
+        violation = 0.0
+        for index in range(weights.size):
+            base = gradient[index] - multiplier
+            if active[index]:
+                if kink[index]:
+                    violation = max(violation, abs(base) - cost_rate)
+                else:
+                    violation = max(
+                        violation, abs(base - cost_rate * signs[index]),
+                    )
+            elif previous[index] > 1e-12:
+                # Sub-tolerance previous weight is numerical dust from a prior
+                # solve, not a position: re-entering it is not a sale, so the
+                # sold-out rule (which credits the saved fee) does not apply.
+                violation = max(violation, base + cost_rate)
             else:
-                violation = max(
-                    violation, abs(base - cost_rate * signs[index]),
+                # w = previous = 0: only increasing w is feasible, so the L1
+                # term costs +c and a negative base is not a violation.
+                violation = max(violation, base - cost_rate)
+        return float(max(violation, 0.0))
+
+    if not float(weights.sum()) >= gross_cap - 1e-9:
+        return float(residual(0.0))
+
+    # The cap multiplier is only unique where a non-kink coordinate
+    # determines it.  When every active coordinate is at a kink it is any
+    # value in an interval, and when several non-kink coordinates disagree
+    # there is no exact multiplier.  The KKT residual is the smallest
+    # violation any feasible multiplier can achieve, not the violation at an
+    # arbitrary average of the candidates.
+    candidates = [0.0]
+    for index in range(weights.size):
+        if active[index]:
+            candidates.append(gradient[index] - cost_rate * signs[index])
+            if kink[index]:
+                candidates.extend(
+                    (gradient[index] - cost_rate,
+                     gradient[index] + cost_rate),
                 )
-        elif previous[index] > 0.0:
-            violation = max(violation, base + cost_rate)
+        elif previous[index] > 1e-12:
+            candidates.extend((gradient[index] + cost_rate, gradient[index]))
         else:
-            # w = previous = 0: only increasing w is feasible, so the L1
-            # term costs +c and a negative base is not a violation.
-            violation = max(violation, base - cost_rate)
-    return float(max(violation, 0.0))
+            candidates.extend((gradient[index] - cost_rate, gradient[index]))
+    return float(min(residual(max(multiplier, 0.0)) for multiplier in candidates))
 
 
 def _polish_active_set(
@@ -602,9 +621,36 @@ def size_positions(
         if qp_residual < kkt_residual:
             weights = qp_weights
             kkt_residual = qp_residual
-    converged = kkt_residual <= _KKT_TOLERANCE
+
+    # Holding the previous book is always feasible unless the caller lowered
+    # the cap.  A partial trade can be worse than no trade when the fee
+    # exceeds the edge, and the sequential polishes can stop inside such a
+    # split, so compare the two objectives explicitly rather than trusting
+    # the last candidate.
+    if (
+        np.all(np.isfinite(previous))
+        and np.all(previous >= 0.0)
+        and float(previous.sum()) <= gross_cap + 1e-12
+    ):
+        candidate_utility = float(
+            mu @ weights
+            - 0.5 * risk_aversion * weights @ sigma @ weights
+            - cost_rate * float(np.abs(weights - previous).sum())
+        )
+        previous_utility = float(
+            mu @ previous - 0.5 * risk_aversion * previous @ sigma @ previous,
+        )
+        if previous_utility >= candidate_utility - 1e-15:
+            weights = previous.copy()
+            kkt_residual = _kkt_violation(
+                weights, mu, sigma, risk_aversion, cost_rate, previous,
+                gross_cap,
+            )
+    converged = bool(kkt_residual <= _KKT_TOLERANCE)
 
     turnover = float(np.abs(weights - previous).sum())
+    if turnover <= 1e-12:
+        turnover = 0.0
     cost = cost_rate * turnover
     cap_binding = bool(weights.sum() >= gross_cap - 1e-9)
     if turnover == 0.0:

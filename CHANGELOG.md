@@ -18,8 +18,9 @@ inferred releases.
 - Security reporting policy, dependency-update automation, and CodeQL analysis.
 - Validated BH/BY/Holm p-value adjustment with caller-supplied alpha, ordered results, and effective rejection threshold.
 - Explicit biopharma scope documentation and regression tests for evidence labels and unsupported omics inputs.
-- Sizing convergence diagnostics: `SizingDecision` reports `iterations`, `converged` and an analytic `kkt_residual` instead of stopping silently at `max_iterations`, and a non-converged case is polished by an active-set solve with a smooth-QP/kink-snap fallback. All 36 audit cases converge; the worst residual is 9.9e-13.
+- Sizing convergence diagnostics: `SizingDecision` reports `iterations`, `converged` and an analytic `kkt_residual` instead of stopping silently at `max_iterations`, and a non-converged case is polished by an active-set solve with a smooth-QP/kink-snap fallback. All 36 audit cases converge; the worst residual is 2.0e-12.
 - `scripts/audit_sizing_solver_convergence.py` and `benchmarks/sizing_solver_convergence.json` measure the sizing solver on ill-conditioned covariances (36 cases, `n = 2, 4, 8`, `κ = 10²…10¹²`), documented in `docs/SIZING_SOLVER_CONVERGENCE.md`.
+- `scripts/audit_sizing_real_market.py` and `benchmarks/sizing_real_market.json` walk the sizing rule forward over the repository's real equity and crypto panels (126-day lookback, 5-day rebalance, 0/5/20 bps). All six runs converge (0 unconverged, worst KKT 1.4e-13); documented in `docs/SIZING_SOLVER_CONVERGENCE.md`.
 
 ### Changed
 - Biopharma heuristics now identify their evidence tier and unsupported outputs; target discovery refuses ignored omics input, and unsupported biomarker measurements are reported as not assessed.
@@ -31,6 +32,10 @@ inferred releases.
 
 - Reject nonfinite or invalid inputs in biomarker and ADMET rule screens.
 - `embed_conformer_3d` passed `chirality_terms`/`chirality_strength` to `MolecularForceField`, which is distance-only and therefore achiral by construction, so every pocket relaxation of a chiral ligand raised `TypeError` before it started. The embedding now relaxes bonds and soft repulsion only, and says so; chirality is enforced by `PocketConditionedForceField`, which `build_pocket_force_field` derives from the same graph and which the pocket relaxation evaluates every step.
+
+### Fixed
+- The sizing KKT residual now minimizes over the feasible cap multiplier instead of averaging kink-only active coordinates, and treats previous weights below `1e-12` as zero. Real-panel books no longer report false violations from an arbitrary multiplier or from floating-point dust left by an earlier solve.
+- `size_positions` compares the utility of holding the previous book with the polished candidate and keeps the previous book when it is at least as good, so a fee-driven no-trade decision is not replaced by a worse partial trade.
 
 ### Security
 - _Record security-related changes here._

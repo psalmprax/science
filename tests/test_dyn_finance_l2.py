@@ -134,6 +134,39 @@ class TestFinanceL2Sandbox:
             assert min(decision.weights) >= 0.0
             assert decision.gross_exposure <= 1.0 + 1e-9
 
+    def test_previous_weight_dust_is_not_treated_as_a_held_position(self):
+        """A 1e-18 previous weight must not fake a fee-driven KKT violation.
+
+        Found on the real equity panel: a coordinate sold to zero in an earlier
+        solve retained ~1e-18, and the sold-out KKT rule charged the full fee
+        for re-entering it, so optimal books were reported unconverged.
+        """
+        decision = size_positions(
+            [0.5, 0.5, 0.0],
+            np.eye(3),
+            fee_bps=5.0,
+            previous_weights=[0.5, 0.5, 1e-18],
+        )
+
+        assert decision.converged is True
+        assert decision.kkt_residual is not None
+        assert decision.kkt_residual <= 1e-10
+        assert decision.turnover == 0.0
+        assert decision.cost == 0.0
+
+    def test_unconstrained_size_reports_native_scalars(self):
+        """A non-cap solve must not leak numpy scalars into the decision.
+
+        The KKT check's early return skipped the float conversion, so a
+        converged decision carried ``numpy.bool_`` and the audit record could
+        not be serialized to JSON.
+        """
+        decision = size_positions([1e-3], [[1e-2]], fee_bps=0.0)
+
+        assert decision.gross_exposure < 1.0
+        assert isinstance(decision.kkt_residual, float)
+        assert isinstance(decision.converged, bool)
+
     def test_bootstrap_instability_is_refused_even_under_multi_hypothesis(self):
         """A sign that flips under resampling is not a direction to size."""
         from apedp_dyn.sandbox.finance_l2_demo import sizing_from_adjudication
