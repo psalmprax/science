@@ -195,7 +195,7 @@ def make_domain_set(
     w: int = 64,
 ) -> dict[str, np.ndarray]:
     """Deterministic domain clips keyed by the manifest ids (holdout exclusive)."""
-    clips: dict[str, np.ndarray] = {}
+    clips: dict[str, np.ndarray | tuple[np.ndarray, dict[str, Any]]] = {}
     for cid in tuple(train_ids) + tuple(holdout_ids):
         seed = int(cid.replace("collision_clip_", ""), 10)
         clips[cid] = make_collision_clip(seed, t=t, h=h, w=w)

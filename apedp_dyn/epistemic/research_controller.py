@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -239,7 +240,7 @@ class ResearchController:
     def run_investigation(
         self,
         frame: pd.DataFrame,
-        hypotheses: dict[str, object] | None = None,
+        hypotheses: Mapping[str, Callable[[float], float]] | None = None,
         *,
         domain: tuple[float, float] | None = None,
         sigma_noise: float | None = None,

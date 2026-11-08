@@ -1,6 +1,12 @@
 """Unified dispatch and functional API for continuous ODE discovery."""
 from __future__ import annotations
 
+__all__ = [
+    "CoupledSystemDiscoveryResult",
+    "discover_coupled_system",
+]
+
+
 import json
 from collections.abc import Mapping, Sequence
 from typing import Any

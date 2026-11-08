@@ -159,7 +159,7 @@ def verify_protected_files(root: Path, items: list[dict[str, str]]) -> list[dict
 
 def run_plan(plan_path: Path, only: set[str] | None = None) -> int:
     plan_path = plan_path.resolve()
-    plan = load_json(plan_path)
+    plan: dict[str, Any] = load_json(plan_path)
     if plan.get("schema_version") != 1:
         raise ValueError("plan schema_version must be 1")
     plan_dir = plan_path.parent
@@ -211,7 +211,7 @@ def run_plan(plan_path: Path, only: set[str] | None = None) -> int:
         )
         return 2
 
-    execution = {
+    execution: dict[str, Any] = {
         "schema_version": 1,
         "run_id": run_id,
         "started_utc": dt.datetime.now(dt.timezone.utc).isoformat(),

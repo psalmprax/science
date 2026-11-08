@@ -38,7 +38,7 @@ from apedp_dyn import (
     prune_admissible,
 )
 from apedp_dyn.epistemic.adjudicate import EpistemicStatus
-from apedp_dyn.grammar.candidate_ir import SystemCandidate
+from apedp_dyn.grammar.candidate_ir import CandidateDynamics, SystemCandidate
 from apedp_dyn.problems import coupled, duffing
 from apedp_dyn.problems.base import finalize
 
@@ -78,7 +78,7 @@ def _duff_stab_base(stab: bool) -> Any:
 
 def _duff_slate(prob: Any) -> Any:
     cands = enumerate_candidates(required=("u",), optional=("x", "x3", "v"), max_terms=4)
-    kept = {tuple(sorted(cast(SystemCandidate, s.candidate).term_set())): s for s in prune_admissible(prob, cands)}
+    kept = {tuple(sorted(cast(CandidateDynamics, s.candidate).term_set())): s for s in prune_admissible(prob, cands)}
     return kept[("u", "v", "x", "x3")].candidate, kept[("u", "v", "x")].candidate
 
 

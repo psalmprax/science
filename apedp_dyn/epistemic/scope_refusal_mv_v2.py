@@ -52,7 +52,7 @@ def _search_frequency_v2(
     C0 = (1.0, 1.5, 2.0, 3.0, 4.0)
 
     def _eval(cs: Any) -> Any:
-        best = (float("inf"), None, float("nan"))
+        best: tuple[float, np.ndarray | None, float] = (float("inf"), None, float("nan"))
         for c in cs:
             if c < min_c:
                 continue

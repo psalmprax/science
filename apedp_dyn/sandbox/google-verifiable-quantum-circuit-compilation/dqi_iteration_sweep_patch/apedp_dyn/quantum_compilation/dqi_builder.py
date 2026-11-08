@@ -28,7 +28,7 @@ def build_candidate(*, n_iters: int) -> Any:
     # Prefer the project's own reference generator when it exists. The fallback
     # supports checkouts where the generator is supplied by the official bundle.
     try:
-        from apedp_dyn.quantum_compilation import dqi_reference_circuit as DR
+        import apedp_dyn.quantum_compilation.dqi_reference_circuit as DR
     except ModuleNotFoundError as exc:
         if exc.name not in {
             "apedp_dyn.quantum_compilation.dqi_reference_circuit",

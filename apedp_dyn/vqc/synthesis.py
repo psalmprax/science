@@ -91,12 +91,16 @@ __all__ = [
     "SYNTHESIS_GRAPH_TARGETS",
     "Construction",
     "DenseTierCost",
+    "I",
     "RefereeAgreement",
     "SpecificationCandidate",
     "SpecificationReport",
     "SynthesisError",
     "SynthesisOutcome",
     "TargetSpecification",
+    "X",
+    "Y",
+    "Z",
     "adjudicate_specification",
     "adjudicate_specification_candidate",
     "build",
@@ -1304,15 +1308,15 @@ def adjudicate_specification(circuit: Circuit, target: TargetSpecification, *,
         tier = "dense"
         actual = _prepare_dense(circuit)
         expected = specification_state_vector(target)
-        distance, phase = _phase_free_distance(actual, expected)
+        dist_value, phase = _phase_free_distance(actual, expected)
         checks.append(Check(
             name="the prepared amplitudes are the specification, up to one global phase",
             requirement=(f"min_phi ||psi_c - e^(i phi) psi_s|| / sqrt(2**n) <= "
                          f"{DENSE_TOLERANCE:g} against the state projected out of the "
                          f"specification's stabilizers"),
-            measured={"distance": distance, "phi": phase, "tier": "dense",
+            measured={"dist_value": dist_value, "phi": phase, "tier": "dense",
                       "relative_phase_sensitive": True},
-            passed=bool(distance <= DENSE_TOLERANCE)))
+            passed=bool(dist_value <= DENSE_TOLERANCE)))
     else:
         tier = "none"
         reason = (

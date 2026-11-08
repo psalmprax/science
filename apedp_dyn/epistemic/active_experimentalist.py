@@ -135,7 +135,7 @@ def design_experiment_orders(
 
 
 def record_order_results(
-    order: DataAcquisitionOrder,
+    order: ExperimentOrder | DataAcquisitionOrder,
     x_new: np.ndarray,
     y_new: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray, int, int]:
@@ -222,7 +222,7 @@ def closed_loop_order(
         # only, which is proposer-side information.
         xs_used.append(x_ok)
         ys_used.append(y_ok)
-        survived = hypotheses  # frozen: re-scoring happens through the referee
+        survived = dict(hypotheses)  # frozen: re-scoring happens through the referee
     handoff = referee_handoff(hypotheses, np.concatenate(xs_used) if xs_used else np.array([]),
                               np.concatenate(ys_used) if ys_used else np.array([]))
     return OrderRoundResult(rounds=len(orders_all), orders=tuple(orders_all),
@@ -331,7 +331,7 @@ def design_information_orders(
     if not np.isfinite(utility[x_star]) or mi[x_star] <= INFO_GAIN_STOP_EPS:
         return ()
     names = tuple(hypotheses)
-    preds = {n: float(np.ravel(hypotheses[n](grid[x_star]))[0]) for n in names}
+    preds = {n: float(np.ravel(hypotheses[n](float(np.ravel(grid)[x_star])))[0]) for n in names}
     gaps = max(abs(preds[a] - preds[b]) for i, a in enumerate(names) for b in names[i + 1:])
     precision = gaps / DEFAULT_DETECTABILITY_K if gaps > 0 else sigma_noise
     # Cluster feasible points with information near the optimum into ranges.
@@ -355,7 +355,7 @@ def design_information_orders(
             predicted_outcomes=preds,
             expected_information_gain=float(mi[x_star]),
             measurement_precision=float(precision),
-            cost=float(np.ravel(cost_model(grid[x_star]))[0]) if cost_model else 0.0,
+            cost=float(np.ravel(cost_model(float(np.ravel(grid)[x_star])))[0]) if cost_model else 0.0,
             decision_criterion=("acquire until the referee pair on the incoming residuals "
                                  f"leaves a unique survivor, or the acquisition budget ends; "
                                  f"stop honestly if realized gain < {INFO_GAIN_STOP_EPS} nats"),

@@ -54,6 +54,7 @@ import numpy as np
 
 from apedp_dyn.conf.dimensionless import D5_CONF_VERSION
 from apedp_dyn.epistemic.adjudicate import EpistemicStatus, adjudicate
+from apedp_dyn.fitting.parameter_fit import fit_candidate
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
 
 V2_VERSION = "2.0.0-collinear-misspec-noiseceilings-tournament"
@@ -418,8 +419,8 @@ def _coup_tournament_cell(rep: int, pct: float) -> dict[str, Any]:
     truth = slate['COPP']['truth']
     rival = slate['COUP']['rival']
     
-    rt = ds.fit_candidate(prob, truth)
-    rr = ds.fit_candidate(prob, rival)
+    rt = fit_candidate(prob, truth)
+    rr = fit_candidate(prob, rival)
     
     # Simplified: run adjudication on the two
     adj = adjudicate([rt, rr])
@@ -450,8 +451,8 @@ def _stab_tournament_cell(rep: int, pct: float) -> dict[str, Any]:
     truth = slate['STAB']['truth']
     rival = slate['STAB']['rival']
     
-    rt = ds.fit_candidate(prob, truth)
-    rr = ds.fit_candidate(prob, rival)
+    rt = fit_candidate(prob, truth)
+    rr = fit_candidate(prob, rival)
     
     adj = adjudicate([rt, rr])
     

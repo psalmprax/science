@@ -9,6 +9,11 @@ Architectural Rule:
 """
 from __future__ import annotations
 
+__all__ = [
+    "compute_dataset_hash",
+]
+
+
 import hashlib
 import json
 import random

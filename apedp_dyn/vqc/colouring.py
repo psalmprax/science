@@ -561,7 +561,7 @@ def minimum_edge_colouring(edges: Sequence[tuple[int, int]], *,
                         f"({error}); the greedy peel is reported as a schedule"),
                 lower_bound=delta + 1)
             return _out
-        _out: EdgeColouring = result(
+        _out = result(
             constructed, optimal=True, delta_refuted=True, nodes=0,
             status="delta_refuted_by_layer_capacity",
             reason=(f"no Delta = {delta} colouring can exist: every layer is a matching "
@@ -576,7 +576,7 @@ def minimum_edge_colouring(edges: Sequence[tuple[int, int]], *,
     assignment, nodes, exhausted = _search(graph, vertices, delta, budget)
     if assignment is not None:
         layers = _layers_from(graph, assignment, delta)
-        _out: EdgeColouring = result(
+        _out = result(
             layers, optimal=True, delta_refuted=False, nodes=nodes,
             status="delta_colouring_found",
             reason=(f"a Delta = {delta} colouring exists, searched in {nodes} nodes; "
@@ -591,7 +591,7 @@ def minimum_edge_colouring(edges: Sequence[tuple[int, int]], *,
     try:
         constructed = vizing_colouring(graph, num_nodes=vertices)
     except ColouringConstructionError as error:
-        _out: EdgeColouring = result(
+        _out = result(
             peel, optimal=False, delta_refuted=exhausted, nodes=nodes,
             status="construction_refused",
             reason=(f"the Delta + 1 construction failed its own verification "
@@ -604,7 +604,7 @@ def minimum_edge_colouring(edges: Sequence[tuple[int, int]], *,
         # Which of Delta and Delta + 1 is chi' was not decided. The construction is at
         # most one layer above the minimum and is reported as exactly that, never as a
         # minimum.
-        _out: EdgeColouring = result(
+        _out = result(
             constructed, optimal=False, delta_refuted=False, nodes=nodes,
             status="delta_undecided_within_one",
             reason=(f"the Delta = {delta} search hit its {budget}-node budget without "

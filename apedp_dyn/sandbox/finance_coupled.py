@@ -19,14 +19,13 @@ from typing import Any, cast
 
 import numpy as np
 
-from apedp_dyn.grammar.candidate_ir import CandidateDynamics
-
 _REPO_ROOT = str(Path(__file__).resolve().parents[2])
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
 from apedp_dyn.epistemic.adjudicate import adjudicate
 from apedp_dyn.fitting.parameter_fit import fit_candidate
+from apedp_dyn.grammar.candidate_ir import SystemCandidate
 from apedp_dyn.grammar.coupled import enumerate_coupled
 from apedp_dyn.grammar.mechanical_grammar import prune_admissible
 from apedp_dyn.model import (
@@ -125,12 +124,12 @@ def run_coupled() -> Any:
     print(f"verdict: {adj.status.value} "
           f"contract={getattr(adj, 'contract', '')}")
     if adj.promoted is not None:
-        for i, eq in enumerate(adj.promoted.candidate.equations):
+        for i, eq in enumerate(cast(SystemCandidate, adj.promoted.candidate).equations):
             print(f"  promoted eq{i}: {eq}")
     print("reason:", adj.reason[:150])
     # Coupling census regardless of verdict: how many survivors use xr?
     xr_n = sum(1 for s in g4
-               if any("xr" in t.name for e in cast(CandidateDynamics, s.candidate).equations
+               if any("xr" in t.name for e in cast(SystemCandidate, s.candidate).equations
                       for t in e.terms))
     print(f"coupled (xr-bearing) survivors: {xr_n} / {len(g4)}")
     return adj

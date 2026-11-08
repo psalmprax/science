@@ -34,8 +34,8 @@ class BayesianActiveLearner:
             self.X_observed = np.vstack([self.X_observed, X])
             self.y_observed = np.concatenate([self.y_observed, y])
         else:
-            self.X_observed = X
-            self.y_observed = y
+            self.X_observed = np.asarray(X)
+            self.y_observed = np.asarray(y)
         self.gp.fit(np.asarray(self.X_observed), np.asarray(self.y_observed))
         return self
 

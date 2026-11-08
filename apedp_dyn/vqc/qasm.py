@@ -214,13 +214,13 @@ def from_qasm(text: str) -> Circuit:
 
         condition: tuple[tuple[int, bool], ...] = ()
         if condition_value is not None:
-            value = int(condition_value)
+            bit_value = int(condition_value)
             if num_bits == 0:
                 raise QasmUnsupportedError("conditional operation without a classical register")
-            if value >= 1 << num_bits:
+            if bit_value >= 1 << num_bits:
                 raise QasmUnsupportedError(
-                    f"condition c=={value} does not fit in {num_bits} bits")
-            condition = tuple((bit, bool((value >> bit) & 1)) for bit in range(num_bits))
+                    f"condition c=={bit_value} does not fit in {num_bits} bits")
+            condition = tuple((bit, bool((bit_value >> bit) & 1)) for bit in range(num_bits))
 
         if name == "measure":
             if "->" not in targets:

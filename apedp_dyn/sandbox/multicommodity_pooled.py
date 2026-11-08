@@ -89,7 +89,7 @@ def run_pooled() -> tuple[Any, dict[str, dict[str, tuple[float | None, bool]]]]:
                                  max_terms=2, id_prefix="fin")
     kept = prune_admissible(probs["SPX"], slate)  # gates 1-2 structural
     structs = [(s.candidate.candidate_id,
-                tuple(t.name for t in cast(SystemCandidate, s.candidate).terms)) for s in kept]
+                tuple(t.name for e in cast(SystemCandidate, s.candidate).equations for t in e.terms)) for s in kept]
     mat: dict[str, dict[str, tuple[float | None, bool]]] = {}
     pooled: dict[str, tuple[float, tuple[str, ...]]] = {}
     for cid, tnames in structs:

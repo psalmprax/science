@@ -307,7 +307,7 @@ def parse_smiles(smiles: str) -> MolecularGraph:
     atoms: list[AtomNode] = []
     bonds: list[BondEdge] = []
     stack: list[int] = []
-    ring_closures: dict[int, tuple[int, float]] = {}
+    ring_closures: dict[int, tuple[int, float | None]] = {}
 
     prev_atom: int | None = None
     pending_bond_order: float | None = None

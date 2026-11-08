@@ -279,7 +279,7 @@ def deflate_sharpe(sharpe: float, *, n_bars: int, skewness: float, kurtosis: flo
         annualization_factor=annualization)
 
 
-def deflated_summary(rows: Sequence[dict[str, float]], *, n_trials: int,
+def deflated_summary(rows: Sequence[dict[str, Any]], *, n_trials: int,
                      var_trials: float, annualization: float = 365.0) -> dict[str, Any]:
     """The ledger summary plus the Deflated Sharpe Ratio for the disclosed trials."""
     summary = ledger_summary(rows, annualization=annualization)

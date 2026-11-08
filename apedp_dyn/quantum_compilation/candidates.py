@@ -74,7 +74,7 @@ class EvidenceIncompleteError(RuntimeError):
 #: What each benchmark's verifier can actually establish about correctness. A verifier
 #: that simulates the circuit per shot can supply value/phase evidence; one that only
 #: prices it cannot, and says so rather than leaving the checks silently absent.
-BENCHMARK_EVIDENCE_MODEL: dict[str, str] = {
+BENCHMARK_EVIDENCE_MODEL: dict[str, str | None] = {
     "dqi": "per-shot",
     "invsqrt": "cost-model-only",
     "dfthcsos": "cost-model-only",
@@ -158,7 +158,7 @@ def normalise_correctness_evidence(evidence: dict[str, Any] | None, *,
                 f"{check!r} evidence must be measured, covered_by or not_applicable"
             )
     for check, entry in normalised.items():
-        covering = entry.get("covered_by")
+        covering = str(entry.get("covered_by") or "") or None
         if covering is None:
             continue
         target = normalised[covering]

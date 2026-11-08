@@ -42,6 +42,7 @@ def main() -> int:
         formula_status = "MISSING_FIELDS"
         if all(isinstance(x, (int, float)) for x in (q, t_mean, rep, score)):
             assert isinstance(q, (int, float)) and isinstance(t_mean, (int, float))
+            assert isinstance(rep, (int, float)) and isinstance(score, (int, float))
             recomputed = float(rep) * (int(q) ** 2) * float(t_mean)
             formula_status = "PASS" if close_enough(float(score), recomputed) else f"MISMATCH({recomputed:.12g})"
         sha = row.get("artifact_sha256", "")

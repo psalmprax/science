@@ -36,10 +36,10 @@ class GaussianProcessRegressor:
     def __init__(self, kernel: RBFKernel | None = None, sigma_n: float = 1e-6):
         self.kernel = kernel or RBFKernel()
         self.sigma_n = sigma_n
-        self.X_train = None
-        self.y_train = None
-        self.L = None
-        self.alpha = None
+        self.X_train: np.ndarray | None = None
+        self.y_train: np.ndarray | None = None
+        self.L: np.ndarray | None = None
+        self.alpha: np.ndarray | None = None
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> Any:
         X = np.atleast_2d(X)
@@ -56,6 +56,8 @@ class GaussianProcessRegressor:
         X = np.atleast_2d(X)
         assert self.X_train is not None  # fit() ran before predict()
         K_s = self.kernel(self.X_train, X)
+        assert self.alpha is not None  # fit() solved for alpha
+        assert self.X_train is not None  # fit() ran before predict()
         mu_s = K_s.T @ self.alpha
         if return_std:
             v = np.linalg.solve(self.L, K_s)
@@ -72,6 +74,7 @@ class GaussianProcessRegressor:
         if self.L is None:
             return -np.inf
         y = self.y_train
+        assert self.alpha is not None and self.L is not None  # fit() ran
         return -0.5 * y @ self.alpha - np.sum(np.log(np.diag(self.L))) - 0.5 * len(y) * np.log(2 * np.pi)
 
 

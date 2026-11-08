@@ -150,7 +150,7 @@ class DistributedLagInteractionProposer(ProposerBase):
             # — snapshotting the pre-call value — and written once per (call,
             # base column), after the term that first touches it.
             seen_base: set[str] = set()
-            call_buffers: dict[str, np.ndarray] = {}
+            call_buffers: dict[str, np.ndarray | None] = {}
             for name, w in raw_weights.items():
                 spec = column_spec[name]
                 if spec[0] == "interaction":

@@ -337,7 +337,7 @@ def dimension_report(num_qubits: int, *, bytes_per_amplitude: int = 16) -> dict[
     of amplitudes, not that it has a value.
     """
     log10_amplitudes = num_qubits * math.log10(2.0)
-    report = {
+    report: dict[str, Any] = {
         "num_qubits": int(num_qubits),
         "log10_amplitudes": log10_amplitudes,
         "log10_bytes_at_16_per_amplitude": log10_amplitudes + math.log10(bytes_per_amplitude),

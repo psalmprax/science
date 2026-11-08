@@ -128,7 +128,8 @@ def _diagnostics(
                  if len(d) > 4 and var_d > 0 else 0.0)
         return {"time_axis": 1.0, "fano": fano, "inter_arrival_acorr": acorr}
 
-    vals, time_name = _numeric_time_axis(frame)
+    vals, _time_name_raw = _numeric_time_axis(frame)
+    time_name: str | None = _time_name_raw
     # The sieve sentinel for "no isochronous axis" is an EMPTY string (plus a
     # None array); treating "" as a found axis stamped time_axis=1.0 onto pure
     # value-value frames (isotherms routed to ode_kinetic — the defect the

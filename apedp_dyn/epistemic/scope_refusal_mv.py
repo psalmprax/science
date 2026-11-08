@@ -52,7 +52,7 @@ def _search_frequency(fit_at: Callable[[float], tuple[np.ndarray | None, float]]
                       ) -> tuple[float, np.ndarray | None, float]:
     """Deterministic coarse-to-fine frequency search (prereg: C0, then two passes)."""
     def _eval(cs: Any) -> tuple[float, np.ndarray | None, float]:
-        best = (float("inf"), None, float("nan"))
+        best: tuple[float, np.ndarray | None, float] = (float("inf"), None, float("nan"))
         for c in cs:
             if c <= 0.0:
                 continue

@@ -440,7 +440,7 @@ class WSPLayer:
     4. Explore rank-performance tradeoffs
     """
 
-    def __init__(self, config: WSPConfig = None):
+    def __init__(self, config: WSPConfig | None = None):
         self.config = config or WSPConfig()
 
     def apply_wsp(self, decomp: TensorDecomposition, tensor: np.ndarray) -> tuple[TensorDecomposition, dict[str, Any]]:
@@ -690,8 +690,8 @@ class MMLMMultiplier:
 
     def __init__(
         self,
-        field_config: GF2FieldConfig = None,
-        wsp_config: WSPConfig = None,
+        field_config: GF2FieldConfig | None = None,
+        wsp_config: WSPConfig | None = None,
         degree: int = 12,
         seed: int = 42,
     ):
@@ -1022,7 +1022,7 @@ class MMLMMultiplier:
         self,
         target_rank: int | None = None,
         max_k: int = 3,
-        start_decomp: TensorDecomposition = None,
+        start_decomp: TensorDecomposition | None = None,
         time_limit_sec: float = 2.0,
         seed: int = 42,
     ) -> dict[str, Any]:

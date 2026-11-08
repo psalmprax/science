@@ -45,10 +45,11 @@ Decoded Quantum Interferometry (DQI) Reed-Solomon MBUC syndrome decoder:
 from __future__ import annotations
 
 import dataclasses
+import importlib
 import json
 import pathlib
 from collections.abc import Mapping, Sequence
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 
@@ -517,9 +518,9 @@ def _load_reference_decoder() -> Any:
     accepted so the adapter works in either environment.
     """
     try:
-        from apedp_dyn.quantum_compilation import dqi_reference_circuit as DR
+        DR: Any = importlib.import_module("apedp_dyn.quantum_compilation.dqi_reference_circuit")
     except (ImportError, ModuleNotFoundError):
-        from dqi import dqi_reference_circuit as DR
+        DR = importlib.import_module("dqi.dqi_reference_circuit")
     return DR
 
 
@@ -1495,7 +1496,7 @@ def _recycled_flag_decoder_class() -> Any:
     if cached is not None:
         return cached
 
-    class RecycledUpdateFlagDecoder(DR.ProosAndZalkaDecoder):
+    class RecycledUpdateFlagDecoder(cast(type[Any], DR.ProosAndZalkaDecoder)):
         """`n_a == n_b` read as `n_A == n + 1 - n_b`, using the cursor the pass already runs.
 
         The value is produced at the read instead of carried, which is the whole substitution:

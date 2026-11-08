@@ -1175,6 +1175,7 @@ def truth_table_check(max_width: int=6, borrowed_count: int=0) -> Any:
                             target = b.alloc_qubits(n)
                             cin = b.alloc_qubits(1)[0] if cin_value is not None else None
                             if cin is not None:
+                                assert cin_value is not None
                                 b.v[cin] = cin_value
                             b.put(areg, a)
                             b.put(target, value)

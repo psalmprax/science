@@ -44,13 +44,13 @@ import math
 from collections.abc import Mapping
 from decimal import Decimal, localcontext
 from operator import index
-from typing import Any
+from typing import Any, TypeAlias
 
 import numpy as np
 import numpy.typing as npt
 from scipy.optimize import linear_sum_assignment
 
-FloatArray = npt.NDArray[np.float64]
+FloatArray: TypeAlias = npt.NDArray[np.float64]
 
 
 # ---------------------------------------------------------------------------

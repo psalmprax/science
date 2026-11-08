@@ -174,7 +174,7 @@ def make_domain_set(
 ) -> dict[str, np.ndarray]:
     """Deterministic domain clips keyed by the manifest ids: holdout ids stay
     exclusive resources (same burnable-holdout discipline as the RIME stack)."""
-    clips: dict[str, np.ndarray] = {}
+    clips: dict[str, np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
     for cid in tuple(train_ids) + tuple(holdout_ids):
         seed = int(cid.replace("fluid_clip_", ""), 10)
         clips[cid] = make_fluid_clip(seed, t=t, h=h, w=w)
