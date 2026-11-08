@@ -32,6 +32,7 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 from apedp_dyn.vqc.backends import RunResult, StatevectorBackend
 from apedp_dyn.vqc.circuit import Circuit, Gate, Measure, Noise
@@ -77,7 +78,7 @@ def phase_flip_code_circuit(*, prepare_logical_one: bool = False,
     the same decoder and the same exact prediction apply: single `Z` errors are
     corrected, a pair is miscorrected, and the failure rate is `3p^2 - 2p^3`.
     """
-    ops: list = [Gate("x", (0,))] if prepare_logical_one else []
+    ops: list[Any] = [Gate("x", (0,))] if prepare_logical_one else []
     # The bit-flip encoder, then `H` on all three: `|000>` becomes `|+++>` and
     # `|111>` becomes `|--->`. (`H` on the input as well would encode `|+>` instead
     # of `|0>` -- the conjugation is on the output side only.)
@@ -119,7 +120,7 @@ def bit_flip_code_circuit(*, prepare_logical_one: bool = False,
     syndrome tests); `error_probability` puts a `bit_flip` noise op on every data
     qubit instead, so a noisy run is the same circuit with a different parameter.
     """
-    ops: list = [Gate("x", (0,))] if prepare_logical_one else []
+    ops: list[Any] = [Gate("x", (0,))] if prepare_logical_one else []
     ops += [Gate("cx", (0, 1)), Gate("cx", (0, 2))]
     ops += [Gate("x", (qubit,)) for qubit in injected_errors]
     if error_probability > 0.0:
@@ -193,7 +194,7 @@ class RepetitionCodeRun:
         """The same physical error rate with no encoding at all."""
         return self.probability
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "code": self.code,
             "distance": DISTANCE,
@@ -294,7 +295,7 @@ def repetition_code_circuit(distance: int, *, code: str = "bit_flip",
 
     data_gate = "x" if code == "bit_flip" else "z"
 
-    ops: list = []
+    ops: list[Any] = []
     if prepare_logical_one:
         ops.append(Gate("x", (0,)))
     ops += [Gate("cx", (0, qubit)) for qubit in range(1, distance)]
@@ -417,7 +418,7 @@ class RepetitionRun:
     def uncorrected(self) -> float:
         return self.probability
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "code": f"repetition-{self.distance}-{self.code}",
             "distance": self.distance,

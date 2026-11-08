@@ -191,7 +191,8 @@ class NCMStructuralProposer(ProposerBase):
                     return np.zeros(len(frame))
                 x0 = np.nan_to_num(frame[feature_names[0]].to_numpy(dtype=float))
                 dx = np.gradient(x0)
-                return np.column_stack([x0, dx]) @ pruned_coef
+                _out: np.ndarray = np.column_stack([x0, dx]) @ pruned_coef
+                return _out
 
             return CandidateProposal(
                 proposer_id=self.proposer_id,
@@ -243,7 +244,8 @@ class NCMStructuralProposer(ProposerBase):
                 g2 = np.gradient(g1, axis=0)
                 design = (np.column_stack([xf, g1[:, :2], g2[:, :2]])
                           if xf.shape[1] >= 2 else np.column_stack([xf, g1, g2]))
-                return design @ pruned_coef
+                _out: np.ndarray = design @ pruned_coef
+                return _out
 
             return CandidateProposal(
                 proposer_id=self.proposer_id,
@@ -293,7 +295,8 @@ class NCMStructuralProposer(ProposerBase):
                 t_frame = np.linspace(0.0, 4.0 * np.pi, n_frame)
                 xf = np.nan_to_num(frame[feature_names[0]].to_numpy(dtype=float))
                 design = np.column_stack([np.sin(t_frame), np.cos(t_frame), xf])
-                return design @ pruned_coef
+                _out: np.ndarray = design @ pruned_coef
+                return _out
 
             return CandidateProposal(
                 proposer_id=self.proposer_id,

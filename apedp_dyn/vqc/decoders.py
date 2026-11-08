@@ -43,7 +43,7 @@ from __future__ import annotations
 import dataclasses
 import heapq
 from collections.abc import Mapping, Sequence
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 __all__ = [
     "Correction",
@@ -80,7 +80,7 @@ class Correction:
     def pauli_weight(self) -> int:
         return len(self.support)
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "pauli": self.pauli,
             "pauli_weight": self.pauli_weight,
@@ -175,7 +175,7 @@ class MatchingGraph:
             labels.update((first, second))
         return tuple(sorted(labels))
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "syndrome_bits": self.syndrome_bits,
             "nodes": list(self.nodes()),

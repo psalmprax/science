@@ -29,6 +29,7 @@ from __future__ import annotations
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 
@@ -59,13 +60,13 @@ class ArmResult:
     evaluations: int
     budget: int
     seconds: float
-    detail: dict = field(default_factory=dict)
+    detail: dict[str, Any] = field(default_factory=dict)
 
     @property
     def searched(self) -> bool:
         return self.status == SEARCHED
 
-    def as_dict(self, library: TermLibrary) -> dict:
+    def as_dict(self, library: TermLibrary) -> dict[str, Any]:
         names = library.names
         return {
             "arm": self.arm,
@@ -100,7 +101,7 @@ def _flip(support: Sequence[int], index: int) -> tuple[int, ...]:
 # --------------------------------------------------------------------------- #
 
 
-def random_restart(objective: SupportObjective, rng: np.random.Generator, *, restarts: int = 12) -> dict:
+def random_restart(objective: SupportObjective, rng: np.random.Generator, *, restarts: int = 12) -> dict[str, Any]:
     m = objective.m
     accepted = 0
     starts = 0
@@ -134,7 +135,7 @@ def simulated_annealing(
     restarts: int = 4,
     start_temperature: float = 0.02,
     end_temperature: float = 1e-5,
-) -> dict:
+) -> dict[str, Any]:
     m = objective.m
     moves = 0
     accepted = 0
@@ -165,7 +166,7 @@ def genetic_algorithm(
     tournament: int = 3,
     mutation_rate: float = 0.15,
     max_generations: int = 400,
-) -> dict:
+) -> dict[str, Any]:
     m = objective.m
     pool: dict[tuple[int, ...], Fit] = {}
 
@@ -272,7 +273,8 @@ def _gp_replace(node: GpNode, path: tuple[int, ...], replacement: GpNode) -> GpN
 
 def _gp_render(node: GpNode, names: Sequence[str]) -> str:
     if node[0] == "term":
-        return names[node[1]]
+        _out: str = names[node[1]]
+        return _out
     return f"({_gp_render(node[1], names)} {node[0]} {_gp_render(node[2], names)})"
 
 
@@ -284,7 +286,7 @@ def boolean_gp(
     tournament: int = 3,
     mutation_rate: float = 0.2,
     max_generations: int = 400,
-) -> dict:
+) -> dict[str, Any]:
     m = objective.m
     names = objective.library.names
     individuals: dict[frozenset[int], tuple[GpNode, Fit]] = {}
@@ -361,7 +363,7 @@ def rime_relaxed(
     population: int = 8,
     iterations: int = 60,
     reinitialise_every: int = 15,
-) -> dict:
+) -> dict[str, Any]:
     """Soft and hard RIME on a relaxed selection vector in ``[0, 1]``.
 
     The objective is binary-valued, so the relaxation has to be hardened before
@@ -423,7 +425,7 @@ def qaoa_surrogate(
     depth: int = 2,
     shots: int = 512,
     restarts: int = 3,
-) -> dict:
+) -> dict[str, Any]:
     m = objective.m
     needed = m * (m + 1) // 2 + 1
     try:
@@ -478,7 +480,7 @@ def qaoa_surrogate(
     }
 
 
-ARMS: dict[str, Callable[..., dict]] = {
+ARMS: dict[str, Callable[..., dict[str, Any]]] = {
     "random_restart": random_restart,
     "simulated_annealing": simulated_annealing,
     "genetic_algorithm": genetic_algorithm,
@@ -502,7 +504,7 @@ def run_arm(name: str, task, *, seed: int) -> ArmResult:
     rng = np.random.default_rng(seed)
     status = SEARCHED
     reason = ""
-    detail: dict = {}
+    detail: dict[str, Any] = {}
     declared = None
     started = time.perf_counter()
     try:

@@ -75,14 +75,16 @@ class BindingPocket:
     clash_distance_threshold: float = 1.75  # Angstroms
 
     def coordinates(self) -> np.ndarray:
-        return np.array([a.position for a in self.atoms], dtype=np.float64)
+        _out: np.ndarray = np.array([a.position for a in self.atoms], dtype=np.float64)
+        return _out
 
     def charges(self) -> np.ndarray:
-        return np.array([a.partial_charge for a in self.atoms], dtype=np.float64)
+        _out: np.ndarray = np.array([a.partial_charge for a in self.atoms], dtype=np.float64)
+        return _out
 
     def lj_arrays(self) -> tuple[np.ndarray, np.ndarray]:
-        sigmas = np.empty(len(self.atoms), dtype=np.float64)
-        epsilons = np.empty(len(self.atoms), dtype=np.float64)
+        sigmas: np.ndarray = np.empty(len(self.atoms), dtype=np.float64)
+        epsilons: np.ndarray = np.empty(len(self.atoms), dtype=np.float64)
         for i, a in enumerate(self.atoms):
             sigmas[i], epsilons[i] = _lj_parameters(a.element)
         return sigmas, epsilons
@@ -356,7 +358,8 @@ def pocket_velocity_field(
     """Equivariant drift $v_L(X_L, X_P) = -\\nabla_{X_L} (E_{\\text{intra}} + E_{\\text{inter}})$."""
     _, grad_intra = intramolecular_energy_and_grad(ligand_coords, ff)
     _, grad_inter = intermolecular_energy_and_grad(ligand_coords, ff, pocket)
-    return -(grad_intra + grad_inter)
+    _out: np.ndarray = -(grad_intra + grad_inter)
+    return _out
 
 
 def pocket_equivariance_error(

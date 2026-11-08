@@ -97,4 +97,5 @@ def compute_fisher_information_matrix(
     FIM = J^T * J / sigma^2
     """
     J = jacobian_fn(params)
-    return np.asarray((J.T @ J) / max(noise_sigma**2, 1e-12))
+    _out: np.ndarray = np.asarray((J.T @ J) / max(noise_sigma**2, 1e-12))
+    return _out

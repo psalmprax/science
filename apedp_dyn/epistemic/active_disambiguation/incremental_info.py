@@ -16,6 +16,7 @@ DEFERRED (not run here).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 import numpy.linalg as la
@@ -53,7 +54,8 @@ def _qvec(y: np.ndarray, pred: np.ndarray) -> np.ndarray:
     y = np.maximum(np.asarray(y, dtype=float), 1e-8)
     p = np.maximum(np.asarray(pred, dtype=float), 1e-8)
     r = y / p
-    return np.asarray(r - np.log(r) - 1.0)
+    _out: np.ndarray = np.asarray(r - np.log(r) - 1.0)
+    return _out
 
 
 def _dm_hac4(d: np.ndarray) -> tuple[float, float]:
@@ -86,15 +88,15 @@ def _dm_hac4(d: np.ndarray) -> tuple[float, float]:
 @dataclass
 class AssetBattery:
     asset: str
-    qlike: dict = field(default_factory=dict)  # pooled forward QLIKE per combo
-    r2: dict = field(default_factory=dict)  # pooled forward R2 per combo
-    contrast_q: dict = field(default_factory=dict)  # A|P, A|P,RV, RV|P,A (QLIKE diffs)
-    contrast_r2: dict = field(default_factory=dict)
-    wins: dict = field(default_factory=dict)  # per-origin pooled-loss wins per combo
-    beta_traj: dict = field(default_factory=dict)  # combo -> list of dicts per origin
-    sign_flip: dict = field(default_factory=dict)  # fraction of origins with beta<0 per term (full model)
-    near_zero: dict = field(default_factory=dict)  # fraction |t|<1 per term (full model)
-    corr_pred: dict = field(default_factory=dict)  # pairwise forecast correlations
+    qlike: dict[str, Any] = field(default_factory=dict)  # pooled forward QLIKE per combo
+    r2: dict[str, Any] = field(default_factory=dict)  # pooled forward R2 per combo
+    contrast_q: dict[str, Any] = field(default_factory=dict)  # A|P, A|P,RV, RV|P,A (QLIKE diffs)
+    contrast_r2: dict[str, Any] = field(default_factory=dict)
+    wins: dict[str, Any] = field(default_factory=dict)  # per-origin pooled-loss wins per combo
+    beta_traj: dict[str, Any] = field(default_factory=dict)  # combo -> list of dicts per origin
+    sign_flip: dict[str, Any] = field(default_factory=dict)  # fraction of origins with beta<0 per term (full model)
+    near_zero: dict[str, Any] = field(default_factory=dict)  # fraction |t|<1 per term (full model)
+    corr_pred: dict[str, Any] = field(default_factory=dict)  # pairwise forecast correlations
     corr_incr: float = float("nan")  # incremental-signal correlation
     dm_t: float = float("nan")
     dm_p: float = float("nan")
@@ -125,8 +127,8 @@ def run_asset(panels: dict[str, pd.DataFrame], asset: str) -> AssetBattery:
     sse = dict.fromkeys(COMBOS, 0.0)
     sst = 0.0
     wins = dict.fromkeys(COMBOS, 0)
-    betas: dict[str, list] = {c: [] for c in COMBOS}
-    preds_all: dict[str, list] = {c: [] for c in ("P", "RV", "A", "P+RV", "P+A", "P+RV+A")}
+    betas: dict[str, list[Any]] = {c: [] for c in COMBOS}
+    preds_all: dict[str, list[Any]] = {c: [] for c in ("P", "RV", "A", "P+RV", "P+A", "P+RV+A")}
     d_head: list[float] = []  # headline QLIKE differential M3 - M(P+RV), forward blocks
     ha_t: list[float] = []
     for origin in ORIGINS:

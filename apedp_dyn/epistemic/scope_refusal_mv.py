@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from itertools import combinations, combinations_with_replacement
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -120,7 +121,7 @@ def _select_am_product(Xd: np.ndarray, y: np.ndarray):
     return best
 
 
-def _predict_factory(kind: str, key: tuple, w: np.ndarray, feats: list[str],
+def _predict_factory(kind: str, key: tuple[Any, ...], w: np.ndarray, feats: list[str],
                      target_col: str) -> Callable[[pd.DataFrame], np.ndarray]:
     def predict(fd: pd.DataFrame) -> np.ndarray:
         X = fd[feats].to_numpy(dtype=float)
@@ -137,7 +138,8 @@ def _predict_factory(kind: str, key: tuple, w: np.ndarray, feats: list[str],
             _, j, k, c = key
             xj, xk = X[:, j], X[:, k]
             Z = np.column_stack([np.sin(c * xj) * xk, np.cos(c * xj) * xk, X, np.ones(n)])
-        return np.asarray(Z @ w, dtype=float)
+        _out: np.ndarray = np.asarray(Z @ w, dtype=float)
+        return _out
     return predict
 
 

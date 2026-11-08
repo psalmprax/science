@@ -82,7 +82,7 @@ def qrom_screen_precision(
     n_p = int(contract.constants["N_P"])
     max_x = int(3 * (2**n_p - 2) ** 2)
     if xs is None:
-        xs_arr = np.arange(1, max_x + 1, dtype=np.int64)
+        xs_arr: np.ndarray = np.arange(1, max_x + 1, dtype=np.int64)
     else:
         xs_arr = np.asarray(xs, dtype=np.int64)
     domain_kind = "full-domain" if xs_arr.size >= max_x else "subset"

@@ -28,7 +28,8 @@ def extract_j4_batch_xor_words(submission_npz: Path | str) -> np.ndarray:
     batches = padded.reshape(num_vectors, num_batches, 4).transpose(1, 0, 2)
     deltas = batches.copy()
     deltas[1:] ^= batches[:-1]
-    return deltas.astype(np.uint16)
+    _out: np.ndarray = deltas.astype(np.uint16)
+    return _out
 
 
 def extract_j3_signed_words(
@@ -60,5 +61,6 @@ def extract_j3_signed_words(
 
     num_batches = 25
     batches = words.reshape(num_vectors, num_batches, 3).transpose(1, 0, 2)
-    return batches.astype(np.uint16)
+    _out: np.ndarray = batches.astype(np.uint16)
+    return _out
 

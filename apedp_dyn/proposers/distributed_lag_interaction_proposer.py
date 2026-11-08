@@ -10,6 +10,8 @@ Emits standardized CandidateProposal instances conforming to ProposerBase.
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import ElasticNetCV
@@ -59,7 +61,7 @@ class DistributedLagInteractionProposer(ProposerBase):
         # never has to re-parse names by substring (feature names may themselves
         # contain "_X_" / "_lag").
         feature_matrix: dict[str, np.ndarray] = {}
-        column_spec: dict[str, tuple] = {}
+        column_spec: dict[str, tuple[Any, ...]] = {}
         for col in feature_cols:
             if col not in df.columns:
                 continue
@@ -138,7 +140,7 @@ class DistributedLagInteractionProposer(ProposerBase):
         lag_state: dict[str, dict[str, np.ndarray]] = {"buffers": {}}
 
         def compute_score(d: pd.DataFrame) -> np.ndarray:
-            sig = np.full(len(d), bias, dtype=float)
+            sig: np.ndarray = np.full(len(d), bias, dtype=float)
             # FLAW-A09 (2026-10-21 external audit): the persistent buffer used
             # to be WRITTEN by the first lag term of a call, so a SECOND lag
             # term on the same base column (e.g. lag_1_x and lag_2_x both
@@ -171,7 +173,7 @@ class DistributedLagInteractionProposer(ProposerBase):
                             l_prev = 0
                         # lagged[t] = series value lag_n steps before frame position t.
                         # Rows whose predecessor lies before available history stay NaN.
-                        lagged = np.full(len(s_raw), np.nan, dtype=float)
+                        lagged: np.ndarray = np.full(len(s_raw), np.nan, dtype=float)
                         shift_pos = l_prev - lag_n
                         if shift_pos >= 0:
                             lagged[:] = history[shift_pos : shift_pos + len(s_raw)]

@@ -76,12 +76,15 @@ def compute_psnr(original_rgb: np.ndarray, reconstructed_rgb: np.ndarray) -> flo
 
 def _grayscale(frame: np.ndarray) -> np.ndarray:
     if frame.ndim == 2:
-        return np.asarray(frame, dtype=np.float64)
+        _out: np.ndarray = np.asarray(frame, dtype=np.float64)
+        return _out
     if frame.ndim == 3 and frame.shape[0] == 3:
         # (3, H, W) RGB -> ITU-R BT.601 luma
-        return np.asarray(np.asarray(np.asarray((0.299 * frame[0] + 0.587 * frame[1] + 0.114 * frame[2]).astype(np.float64))))
+        _out = np.asarray(np.asarray(np.asarray((0.299 * frame[0] + 0.587 * frame[1] + 0.114 * frame[2]).astype(np.float64))))
+        return _out
     if frame.ndim == 3 and frame.shape[-1] == 3:
-        return (0.299 * frame[..., 0] + 0.587 * frame[..., 1] + 0.114 * frame[..., 2]).astype(np.float64)
+        _out = (0.299 * frame[..., 0] + 0.587 * frame[..., 1] + 0.114 * frame[..., 2]).astype(np.float64)
+        return _out
     raise ValueError(f"Unsupported frame shape {frame.shape}")
 
 
@@ -159,7 +162,7 @@ class _FrozenFrameFeaturizer:
     @staticmethod
     def _down64(gray: np.ndarray) -> np.ndarray:
         """Deterministic crop-or-pad to exactly 64x64 (resolution-independent)."""
-        g = np.zeros((64, 64), dtype=np.float64)
+        g: np.ndarray = np.zeros((64, 64), dtype=np.float64)
         h_min = min(gray.shape[0], 64)
         w_min = min(gray.shape[1], 64)
         g[:h_min, :w_min] = gray[:h_min, :w_min]
@@ -177,7 +180,8 @@ class _FrozenFrameFeaturizer:
         else:
             motion = np.zeros_like(g)
         blocks = np.concatenate([g.ravel(), xg.ravel(), yg.ravel(), motion.ravel()])
-        return blocks @ self.proj
+        _out: np.ndarray = blocks @ self.proj
+        return _out
 
     def features(self, videos: Sequence[np.ndarray]) -> np.ndarray:
         """Per-frame features over a set of videos; shape (n_frames_total, feature_dim)."""
@@ -190,7 +194,8 @@ class _FrozenFrameFeaturizer:
             for t in range(arr.shape[0]):
                 feats.append(self._frame_feature(arr[t], prev))
                 prev = arr[t]
-        return np.asarray(feats, dtype=np.float64)
+        _out: np.ndarray = np.asarray(feats, dtype=np.float64)
+        return _out
 
 
 def sliced_wasserstein(x: np.ndarray, y: np.ndarray, n_projections: int = 128,

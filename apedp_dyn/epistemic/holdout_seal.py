@@ -37,6 +37,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 SEAL_VERSION = 1
 #: Domain-separated genesis block, so an empty registry has a defined chain head
@@ -57,7 +58,7 @@ class Seal:
     byte_length: int
     chain_sha256: str
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "seal_version": SEAL_VERSION,
             "artifact": self.artifact,

@@ -139,9 +139,9 @@ def _init_tables(model: GF2FieldModel):
             "it must be a nonzero element other than 1"
         )
 
-    exp_table = np.zeros(order * 2, dtype=np.int64)
-    log_table = np.zeros(1 << degree, dtype=np.int64)
-    seen = np.zeros(1 << degree, dtype=bool)
+    exp_table: np.ndarray = np.zeros(order * 2, dtype=np.int64)
+    log_table: np.ndarray = np.zeros(1 << degree, dtype=np.int64)
+    seen: np.ndarray = np.zeros(1 << degree, dtype=bool)
 
     x = 1
     for i in range(order):
@@ -179,7 +179,7 @@ def build_multiplication_tensor(degree: int = 12, modulus_int: int = 0x1053) -> 
     Returns:
         T: (degree, degree, degree) binary tensor where T[i,j,k] = 1 iff (α^i * α^j) has α^k component
     """
-    T = np.zeros((degree, degree, degree), dtype=np.uint8)
+    T: np.ndarray = np.zeros((degree, degree, degree), dtype=np.uint8)
     for i in range(degree):
         ei = 1 << i
         for j in range(degree):
@@ -266,9 +266,9 @@ def build_schoolbook_decomposition(
     Rank = degree^2 = 144 for GF(2^12)
     """
     rank = degree * degree
-    U = np.zeros((rank, degree), dtype=np.uint8)
-    V = np.zeros((rank, degree), dtype=np.uint8)
-    W = np.zeros((rank, degree), dtype=np.uint8)
+    U: np.ndarray = np.zeros((rank, degree), dtype=np.uint8)
+    V: np.ndarray = np.zeros((rank, degree), dtype=np.uint8)
+    W: np.ndarray = np.zeros((rank, degree), dtype=np.uint8)
 
     r = 0
     for i in range(degree):
@@ -345,9 +345,9 @@ def build_karatsuba_polynomial_decomposition(
         for (left_mask, right_mask), output_mask in sorted(folded_atoms.items())
         if output_mask
     ]
-    U = np.zeros((len(terms), degree), dtype=np.uint8)
-    V = np.zeros((len(terms), degree), dtype=np.uint8)
-    W = np.zeros((len(terms), degree), dtype=np.uint8)
+    U: np.ndarray = np.zeros((len(terms), degree), dtype=np.uint8)
+    V: np.ndarray = np.zeros((len(terms), degree), dtype=np.uint8)
+    W: np.ndarray = np.zeros((len(terms), degree), dtype=np.uint8)
     for row, (left_mask, right_mask, output_mask) in enumerate(terms):
         for bit in range(degree):
             U[row, bit] = (left_mask >> bit) & 1
@@ -672,7 +672,8 @@ class WSPLayer:
             for row in range(size):
                 if row != col and augmented[row, col]:
                     augmented[row] ^= augmented[col]
-        return augmented[:, size:]
+        _out: np.ndarray | None = augmented[:, size:]
+        return _out
 
 # ============================================================================
 # MMLM Integration
@@ -793,13 +794,15 @@ class MMLMMultiplier:
                 raise ValueError(
                     f"operand {value} does not fit in the {width} bits of GF(2^{width})"
                 )
-            return np.array([(value >> bit) & 1 for bit in range(width)], dtype=np.uint8)
+            _out: np.ndarray = np.array([(value >> bit) & 1 for bit in range(width)], dtype=np.uint8)
+            return _out
         array = np.asarray(operand).ravel()
         if array.size < width:
             raise ValueError(
                 f"operand needs at least {width} bit entries, got {array.size}"
             )
-        return (array[:width].astype(np.int64) & 1).astype(np.uint8)
+        _out = (array[:width].astype(np.int64) & 1).astype(np.uint8)
+        return _out
 
     @staticmethod
     def _bits_to_int(bits: np.ndarray) -> int:
@@ -811,7 +814,8 @@ class MMLMMultiplier:
     def _project(self, factors: np.ndarray, operand: Any) -> np.ndarray:
         """``<factors[r], operand>`` over GF(2) for every atom ``r``."""
         bits = self._as_bits(operand, int(factors.shape[1]))
-        return (factors.astype(np.uint8) @ bits) & 1
+        _out: np.ndarray = (factors.astype(np.uint8) @ bits) & 1
+        return _out
 
     def bilinear_multiply(
         self,
@@ -846,7 +850,8 @@ class MMLMMultiplier:
         rows = [self._as_bits(int(value), self.degree) for value in operands]
         if not rows:
             return np.zeros((0, self.degree), dtype=np.uint8)
-        return np.asarray(rows, dtype=np.uint8)
+        _out: np.ndarray = np.asarray(rows, dtype=np.uint8)
+        return _out
 
     def _multiply_bits_batch(
         self, left_bits: np.ndarray, right_bits: np.ndarray, decomp: TensorDecomposition
@@ -1261,7 +1266,8 @@ class MMLMTrackB(MMLMMultiplier):
         """Least-squares reduction weights for the real-valued path (deterministic)."""
         cached = getattr(self, "_float_model_cache", None)
         if cached is not None and cached[0] is decomp:
-            return cached[1:]
+            _out: tuple[np.ndarray, np.ndarray, np.ndarray, int] = cached[1:]
+            return _out
 
         U = np.asarray(decomp.U, dtype=float)
         V = np.asarray(decomp.V, dtype=float)

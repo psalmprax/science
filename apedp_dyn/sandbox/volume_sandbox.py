@@ -83,7 +83,8 @@ def trailing_rank(x: np.ndarray, window: int = 252) -> np.ndarray:
         w = w[np.isfinite(w)]
         if len(w) > 60 and np.isfinite(x[t]):
             out[t] = float((w < x[t]).mean())
-    return out
+    _out: np.ndarray = out
+    return _out
 
 
 def frozen_ols(Xtr: np.ndarray, ytr: np.ndarray) -> np.ndarray:
@@ -252,7 +253,8 @@ def _holdout_target(frame: VolumeFrame) -> np.ndarray:
     f = causal_features(frame)
     y, dd = f["tgt"], frame.dates
     m = np.isfinite(y) & (dd >= "2023-01-01")
-    return y[m]
+    _out: np.ndarray = y[m]
+    return _out
 
 
 if __name__ == "__main__":

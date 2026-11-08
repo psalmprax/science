@@ -150,7 +150,7 @@ def record_order_results(
     y_new = np.asarray(y_new, dtype=float)
     if x_new.shape != y_new.shape:
         raise ValueError("x_new and y_new shapes differ")
-    in_band = np.zeros(len(x_new), dtype=bool)
+    in_band: np.ndarray = np.zeros(len(x_new), dtype=bool)
     for r_lo, r_hi in order.target_ranges:
         in_band |= (x_new >= r_lo) & (x_new <= r_hi)
     ok = in_band & np.isfinite(x_new) & np.isfinite(y_new)
@@ -174,7 +174,7 @@ def referee_handoff(
         "observations": {"x_eval": x_eval, "y_obs": y_obs}
     }
     for name, fn in hypotheses.items():
-        pred = np.asarray([fn(v) for v in x_eval], dtype=float)
+        pred: np.ndarray = np.asarray([fn(v) for v in x_eval], dtype=float)
         out[name] = {"residuals": y_obs - pred, "predictions": pred}
     return out
 

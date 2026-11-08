@@ -211,7 +211,8 @@ def mass_normalized_energy(law: EnergyLaw, Y: np.ndarray) -> np.ndarray:
         f = sp.lambdify(list(law.position_symbols), law.potential, modules=["numpy"])
         cols = [Y[:, i] for i in law.position_indices]
         E = E + np.asarray(f(*cols), dtype=float)
-    return np.atleast_1d(np.asarray(E, dtype=float))
+    _out: np.ndarray = np.atleast_1d(np.asarray(E, dtype=float))
+    return _out
 
 
 total_energy = mass_normalized_energy
@@ -232,9 +233,9 @@ def _relative_drift(E: np.ndarray) -> float:
 
 
 def _dissipation_verdict(E: np.ndarray, min_decay_fraction: float,
-                         slack: float) -> tuple[bool, dict]:
+                         slack: float) -> tuple[bool, dict[str, Any]]:
     """Monotone non-increase plus real decay, for an unforced interval."""
-    info: dict = {"decay_fraction": 1.0 - float(E[-1]) / float(E[0])}
+    info: dict[str, Any] = {"decay_fraction": 1.0 - float(E[-1]) / float(E[0])}
     if np.any(np.diff(E) > slack * float(np.max(np.abs(E)))):
         return False, {**info, "reason": "energy increased in unforced interval"}
     if info["decay_fraction"] <= min_decay_fraction:
@@ -262,7 +263,8 @@ def simulate_trajectory(model, t: np.ndarray, u_of_t, x0,
                    rtol=rtol, atol=atol)
     if not res.success:
         raise ValueError(f"conservation sim failed: {res.detail}")
-    return np.asarray(res.y.T, dtype=float)
+    _out: np.ndarray = np.asarray(res.y.T, dtype=float)
+    return _out
 
 
 def check_conservative(model, Y: np.ndarray,
@@ -280,7 +282,7 @@ def check_conservative(model, Y: np.ndarray,
 
 
 def check_dissipative(model, Y: np.ndarray, min_decay_fraction: float = 0.3,
-                      slack: float = 0.02) -> tuple[bool, dict]:
+                      slack: float = 0.02) -> tuple[bool, dict[str, Any]]:
     """Unforced dissipative interval: monotone non-increase + real decay."""
     law = derive_energy_law(model)
     if not law.conservative:
@@ -294,7 +296,8 @@ def check_dissipative(model, Y: np.ndarray, min_decay_fraction: float = 0.3,
 
 def mechanical_energy(x: np.ndarray, v: np.ndarray, m: float, k: float) -> np.ndarray:
     """E = m v^2/2 + k x^2/2."""
-    return 0.5 * m * np.asarray(v, dtype=float) ** 2 + 0.5 * k * np.asarray(x, dtype=float) ** 2
+    _out: np.ndarray = 0.5 * m * np.asarray(v, dtype=float) ** 2 + 0.5 * k * np.asarray(x, dtype=float) ** 2
+    return _out
 
 
 def energy_drift(x: np.ndarray, v: np.ndarray, m: float, k: float) -> float:
@@ -322,7 +325,7 @@ def check_conservative_core(x: np.ndarray, v: np.ndarray, m: float, k: float,
 
 def check_damped_decay(x: np.ndarray, v: np.ndarray, m: float, k: float,
                        min_decay_fraction: float = 0.3,
-                       slack: float = 0.02) -> tuple[bool, dict]:
+                       slack: float = 0.02) -> tuple[bool, dict[str, Any]]:
     """Unforced dissipative interval: monotone non-increase + real decay."""
     return _dissipation_verdict(mechanical_energy(x, v, m, k),
                                 min_decay_fraction, slack)

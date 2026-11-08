@@ -84,7 +84,8 @@ def fixed_point_model(n_p: int, prec: Precision, xs: np.ndarray) -> np.ndarray:
         raise ValueError('x must lie in [1, 2^(width - 1)).')
 
     def bit(v: np.ndarray, i: int) -> np.ndarray:
-        return (v >> i) & 1
+        _out: np.ndarray = (v >> i) & 1
+        return _out
 
     def product(rows: list[tuple[np.ndarray, int]], operand: np.ndarray, out_bits: int,
                 operand_bits: int, limit: int) -> np.ndarray:
@@ -95,7 +96,8 @@ def fixed_point_model(n_p: int, prec: Precision, xs: np.ndarray) -> np.ndarray:
             acc += ctl * (operand << e if e >= 0 else operand >> -e)
         if (acc >= 2**limit).any():
             raise OverflowError('Intermediate register overflow.')
-        return acc
+        _out: np.ndarray = acc
+        return _out
 
     # 1. Normalize: s leading zero pairs, M = x_norm / 2^(width - 2) in [1, 4).
     s = (width - (np.floor(np.log2(xs)).astype(np.int64) + 1)) // 2
@@ -125,14 +127,16 @@ def fixed_point_model(n_p: int, prec: Precision, xs: np.ndarray) -> np.ndarray:
     z = product(m_rows, square, wz, wsq, wz + 2)
     correction = (3 << wz) - z
     p = product([(y[k], -k) for k in range(1, wc + 1)], correction, wp, wz, wp + 1)
-    return p << s
+    _out: np.ndarray = p << s
+    return _out
 
 
 def relative_error(n_p: int, prec: Precision, xs: np.ndarray) -> np.ndarray:
     """`|y1 / 2^F - 1 / sqrt(x)| sqrt(x)` of the model for each `x` in `xs`."""
     exact = 1 / np.sqrt(np.asarray(xs, dtype=np.float64))
     approx = fixed_point_model(n_p, prec, xs) / 2.0**prec.output_bits(n_p)
-    return np.abs(approx - exact) / exact
+    _out: np.ndarray = np.abs(approx - exact) / exact
+    return _out
 
 
 # Circuit construction. Each stage takes `inverse` and emits its own uncomputation:

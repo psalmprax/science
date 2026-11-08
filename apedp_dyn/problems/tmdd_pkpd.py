@@ -93,7 +93,7 @@ def simulate_tmdd_trajectory(
         raise ValueError("dose_nmol_l must be non-negative")
     dt = t_hours / max(1, n_steps)
     t_grid = np.linspace(0.0, t_hours, n_steps + 1)
-    y = np.zeros((n_steps + 1, 4), dtype=np.float64)
+    y: np.ndarray = np.zeros((n_steps + 1, 4), dtype=np.float64)
     y[0] = np.array([dose_nmol_l, 0.0, r_total, 0.0], dtype=np.float64)
 
     def rhs(state: np.ndarray) -> np.ndarray:
@@ -103,7 +103,8 @@ def simulate_tmdd_trajectory(
         dct = k12 * cp - k21 * ct
         dr = -binding
         dcr = binding
-        return np.array([dcp, dct, dr, dcr], dtype=np.float64)
+        _out: np.ndarray = np.array([dcp, dct, dr, dcr], dtype=np.float64)
+        return _out
 
     for idx in range(n_steps):
         cur = y[idx]

@@ -145,7 +145,8 @@ def energy_gradient(coords: np.ndarray, force_field: MolecularForceField) -> np.
         contribution = -coefficient * deltas[i, j] / r_eff ** (power + 2)
         gradient[i] += contribution
         gradient[j] -= contribution
-    return gradient
+    _out: np.ndarray = gradient
+    return _out
 
 
 def velocity_field(coords: np.ndarray, force_field: MolecularForceField) -> np.ndarray:
@@ -178,7 +179,8 @@ def rigid_transform(coords: np.ndarray, rotation: np.ndarray, translation: np.nd
     coords = np.asarray(coords, dtype=np.float64)
     rotation = np.asarray(rotation, dtype=np.float64)
     translation = np.asarray(translation, dtype=np.float64)
-    return coords @ rotation.T + translation
+    _out: np.ndarray = coords @ rotation.T + translation
+    return _out
 
 
 def random_rotation(rng: np.random.Generator) -> np.ndarray:
@@ -187,7 +189,8 @@ def random_rotation(rng: np.random.Generator) -> np.ndarray:
     q = q @ np.diag(np.sign(np.diag(r)))
     if np.linalg.det(q) < 0:
         q[:, 0] = -q[:, 0]
-    return q
+    _out: np.ndarray = q
+    return _out
 
 
 def reflection_matrix() -> np.ndarray:
@@ -196,12 +199,14 @@ def reflection_matrix() -> np.ndarray:
 
 
 def center_of_mass(coords: np.ndarray) -> np.ndarray:
-    return np.asarray(coords, dtype=np.float64).mean(axis=0)
+    _out: np.ndarray = np.asarray(coords, dtype=np.float64).mean(axis=0)
+    return _out
 
 
 def bond_lengths(coords: np.ndarray, bonds: tuple[tuple[int, int], ...]) -> np.ndarray:
     coords = np.asarray(coords, dtype=np.float64)
-    return np.array([np.linalg.norm(coords[i] - coords[j]) for i, j in bonds])
+    _out: np.ndarray = np.array([np.linalg.norm(coords[i] - coords[j]) for i, j in bonds])
+    return _out
 
 
 def relax(

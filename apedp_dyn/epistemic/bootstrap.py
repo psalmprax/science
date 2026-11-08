@@ -27,6 +27,8 @@ hardening (sole-survivor absolute-fit rule) is the next target.
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 N_BOOT_DEFAULT = 2000
@@ -250,7 +252,7 @@ def tiebreak(
     resid_rival: np.ndarray,
     n_boot: int = N_BOOT_DEFAULT,
     seed: int = 0,
-) -> dict:
+) -> dict[str, Any]:
     """Bootstrap tiebreak for a would-be UNIQUE_SUPPORT decision.
 
     resid_top / resid_rival: per-timepoint squared errors (mean over channels)

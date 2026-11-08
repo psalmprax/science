@@ -153,7 +153,7 @@ MULTISTART_SCALES = (1.0, 0.5, 2.0, 0.25, -0.5)
 
 
 def fit_candidate_multistart(problem, candidate, n_starts: int = 5,
-                             max_nfev: int = 300) -> tuple[ScoredCandidate, dict]:
+                             max_nfev: int = 300) -> tuple[ScoredCandidate, dict[str, Any]]:
     """Refit from deterministic warm-start perturbations; keep the best.
 
     Separates optimizer-luck failures from structural failures: if the

@@ -28,6 +28,7 @@ from __future__ import annotations
 import ast
 import math
 import re
+from typing import Any
 
 from apedp_dyn.vqc.circuit import (
     SCHEMA_VERSION,
@@ -153,7 +154,7 @@ def from_qasm(text: str) -> Circuit:
     """Parse an OpenQASM 2 program into the IR, refusing anything not exactly mappable."""
     registers: dict[str, tuple[str, int]] = {}
     offsets = {"q": 0, "c": 0}
-    ops: list = []
+    ops: list[Any] = []
     ancillas: tuple[int, ...] = ()
     metadata: dict[str, str] = {}
     seen_header = False

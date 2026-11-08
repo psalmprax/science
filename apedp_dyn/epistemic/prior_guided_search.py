@@ -104,15 +104,16 @@ def _sign_basis_candidate(
     feature_name: str,
 ) -> tuple[CandidateProposal, str, float]:
     """Dev-exact sign-step proposal. Exact on dev by construction; NOT holdout-capable."""
-    beta = np.asarray(seeds.coefficients, dtype=float)
-    thr = np.asarray(seeds.thresholds, dtype=float)
+    beta: np.ndarray = np.asarray(seeds.coefficients, dtype=float)
+    thr: np.ndarray = np.asarray(seeds.thresholds, dtype=float)
 
     def _scorer(df: pd.DataFrame) -> np.ndarray:
         xv = np.asarray(df[feature_name], dtype=float).ravel()
         out = np.full_like(xv, beta[0])
         for c, t in zip(beta[1:], thr, strict=False):
             out = out + c * np.where(xv >= t, 1.0, -1.0)
-        return out
+        _out: np.ndarray = out
+        return _out
 
     terms = " + ".join(f"{c:.6g}*(sign({feature_name}-{t:.6g}))" for c, t in zip(beta[1:], thr, strict=False))
     formula = f"{beta[0]:.6g} + {terms}" if terms else f"{beta[0]:.6g}"

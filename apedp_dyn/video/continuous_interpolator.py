@@ -45,7 +45,7 @@ class ContinuousTemporalInterpolator:
         if len(timestamps) == 0:
             raise ValueError("timestamps list cannot be empty")
 
-        taus = np.clip(np.asarray(timestamps, dtype=np.float64), 0.0, 1.0)
+        taus: np.ndarray = np.clip(np.asarray(timestamps, dtype=np.float64), 0.0, 1.0)
         if self._spline is not None:
             g0_taus = self._spline(taus)  # (N_out, R1)
         else:
@@ -59,7 +59,8 @@ class ContinuousTemporalInterpolator:
         tc_r2 = np.tensordot(g0_taus, self.tt_video.core_c, axes=([1], [0]))
         tch_r3 = np.tensordot(tc_r2, self.tt_video.core_h, axes=([2], [0]))
         g3 = self.tt_video.core_w.reshape(r3, w_dim)
-        return np.tensordot(tch_r3, g3, axes=([3], [0]))
+        _out: np.ndarray = np.tensordot(tch_r3, g3, axes=([3], [0]))
+        return _out
 
     def resample_to_fps(
         self,

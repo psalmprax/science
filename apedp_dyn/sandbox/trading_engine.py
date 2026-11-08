@@ -37,7 +37,7 @@ def fit_candidates(prices: np.ndarray, noise_sigma: float = 0.02) -> list[Scored
     n = len(prices)
     y = prices[1:]
     x_lag = prices[:-1]
-    t_idx = np.arange(1, n, dtype=float)
+    t_idx: np.ndarray = np.arange(1, n, dtype=float)
 
     n_samples = len(y)
     n_train = n_samples // 2

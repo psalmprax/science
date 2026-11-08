@@ -32,7 +32,8 @@ __all__ = [
 ]
 
 def _dagger(matrix: np.ndarray) -> np.ndarray:
-    return np.conjugate(np.transpose(matrix))
+    _out: np.ndarray = np.conjugate(np.transpose(matrix))
+    return _out
 
 
 def _rz(theta: float) -> np.ndarray:
@@ -55,9 +56,11 @@ _FIXED["tdg"] = _dagger(_FIXED["t"])
 def _rotation(axis: str, theta: float) -> np.ndarray:
     c, s = math.cos(theta / 2.0), math.sin(theta / 2.0)
     if axis == "x":
-        return np.array([[c, -1.0j * s], [-1.0j * s, c]], dtype=np.complex128)
+        _out: np.ndarray = np.array([[c, -1.0j * s], [-1.0j * s, c]], dtype=np.complex128)
+        return _out
     if axis == "y":
-        return np.array([[c, -s], [s, c]], dtype=np.complex128)
+        _out = np.array([[c, -s], [s, c]], dtype=np.complex128)
+        return _out
     return _rz(theta)
 
 
@@ -109,7 +112,8 @@ def matrix_for(name: str, params: tuple[float, ...] = ()) -> np.ndarray:
             return np.array([[1.0, 0.0], [0.0, np.exp(1j * float(params[0]))]],
                             dtype=np.complex128)
         return _rotation(spec.symbols[0], float(params[0]))
-    return _FIXED[name]
+    _out: np.ndarray = _FIXED[name]
+    return _out
 
 
 def apply_gate(sim, name: str, targets: tuple[int, ...],

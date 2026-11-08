@@ -102,7 +102,7 @@ def _evaluate_rhs(
     y: np.ndarray,
     name_to_index: dict[str, int],
 ) -> np.ndarray:
-    out = np.zeros(len(rhs_terms), dtype=float)
+    out: np.ndarray = np.zeros(len(rhs_terms), dtype=float)
     for i, (_, terms) in enumerate(rhs_terms):
         acc = 0.0
         for factors, coeff in terms:
@@ -127,7 +127,7 @@ def _rk4_rollout(
     n_steps: int,
 ) -> tuple[np.ndarray, bool]:
     """Fixed-step RK4 rollout of the discovered system from the holdout IC."""
-    sim = np.empty((n_steps + 1, len(y0)), dtype=float)
+    sim: np.ndarray = np.empty((n_steps + 1, len(y0)), dtype=float)
     sim[0] = y0
     y = np.array(y0, dtype=float)
     for k in range(n_steps):

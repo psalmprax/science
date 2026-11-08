@@ -133,7 +133,7 @@ def fit_polynomials(n_p: int, prec: PolyPrecision) -> list[list[int]]:
     sample_low = np.unique(
         np.linspace(0, max(0, (1 << low_width) - 1), 129, dtype=np.int64)
     )
-    cheb_j = np.arange(3, dtype=np.float64)
+    cheb_j: np.ndarray = np.arange(3, dtype=np.float64)
     cheb_unit = 0.5 * (1.0 - np.cos((2.0 * cheb_j + 1.0) * np.pi / 6.0))
 
     table: list[list[int]] = []
@@ -208,7 +208,7 @@ def direct_poly_model(n_p: int, prec: PolyPrecision, xs: np.ndarray) -> np.ndarr
 
     # 2. Power-of-two interval bit-slicing: idx = x_norm >> (width - k).
     idx = x_norm >> (width - k)
-    table = np.asarray(_poly_table(n_p, prec), dtype=np.int64)
+    table: np.ndarray = np.asarray(_poly_table(n_p, prec), dtype=np.int64)
     c0 = table[idx, 0]
     c1 = table[idx, 1]
     c2 = table[idx, 2]
@@ -253,7 +253,7 @@ def _evaluate_direct_poly_array(
 ) -> tuple[bool, str | None, dict[str, Any]]:
     max_x = _max_x(n_p)
     if xs is None:
-        xs_arr = np.arange(1, max_x + 1, dtype=np.int64)
+        xs_arr: np.ndarray = np.arange(1, max_x + 1, dtype=np.int64)
         domain_kind = "full-domain"
     else:
         xs_arr = np.asarray(xs, dtype=np.int64)

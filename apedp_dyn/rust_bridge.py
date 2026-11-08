@@ -779,7 +779,8 @@ class RustKernelBridge:
                 )
                 self._tally(_KERNEL_PATH_RUST)
                 res = np.asarray(out, dtype=np.float64).reshape(c, h, w)
-                return res[0] if is_2d else res
+                _out: np.ndarray = res[0] if is_2d else res
+                return _out
             except Exception as e:  # noqa: BLE001
                 logger.debug("Rust video_warp_bilinear_2d failed (%s), falling back to NumPy.", e)
 
@@ -816,7 +817,8 @@ class RustKernelBridge:
             top = plane[y0, x0] * (1.0 - wx) + plane[y0, x1] * wx
             bottom = plane[y1, x0] * (1.0 - wx) + plane[y1, x1] * wx
             warped[ch] = top * (1.0 - wy) + bottom * wy
-        return warped[0] if is_2d else warped
+        _out = warped[0] if is_2d else warped
+        return _out
 
     def video_optical_flow_divergence(
         self,
@@ -854,14 +856,16 @@ class RustKernelBridge:
                     h, w, dx, dy,
                 )
                 self._tally(_KERNEL_PATH_RUST)
-                return np.asarray(out, dtype=np.float64).reshape(h, w)
+                _out: np.ndarray = np.asarray(out, dtype=np.float64).reshape(h, w)
+                return _out
             except Exception as e:  # noqa: BLE001
                 logger.debug("Rust video_compute_optical_flow_divergence failed (%s), falling back to NumPy.", e)
 
         self._tally(_KERNEL_PATH_FALLBACK)
         dvx_dx = np.gradient(vx_arr, dx, axis=1)
         dvy_dy = np.gradient(vy_arr, dy, axis=0)
-        return dvx_dx + dvy_dy
+        _out = dvx_dx + dvy_dy
+        return _out
 
     def video_disocclusion_mask(
         self,
@@ -887,12 +891,14 @@ class RustKernelBridge:
                     divergence_threshold,
                 )
                 self._tally(_KERNEL_PATH_RUST)
-                return np.asarray(out, dtype=np.float64).reshape(orig_shape)
+                _out: np.ndarray = np.asarray(out, dtype=np.float64).reshape(orig_shape)
+                return _out
             except Exception as e:  # noqa: BLE001
                 logger.debug("Rust video_detect_disocclusion_mask failed (%s), falling back to NumPy.", e)
 
         self._tally(_KERNEL_PATH_FALLBACK)
-        return np.clip(np.maximum(0.0, div_arr - divergence_threshold), 0.0, 1.0)
+        _out = np.clip(np.maximum(0.0, div_arr - divergence_threshold), 0.0, 1.0)
+        return _out
 
     # ------------------ Fallback Pure-Python Implementations ------------------
 
@@ -929,7 +935,8 @@ class RustKernelBridge:
                 expr = safe_parse_expr(expr_str)
             except (TypeError, ValueError) as e:
                 logger.debug("Rejected expression %r in Python fallback (%s).", expr_str, e)
-                return nan_result()
+                _out: np.ndarray = nan_result()
+                return _out
 
             # ``lambdify`` builds a signature from the expression's free symbols
             # only, so pass exactly those; ``pi``/``e`` are already substituted
@@ -958,15 +965,18 @@ class RustKernelBridge:
         try:
             res = func(*(env[name] for name in argnames))
             if np.isscalar(res):
-                return np.full(shape, float(cast(Any, res)), dtype=np.float64)
+                _out = np.full(shape, float(cast(Any, res)), dtype=np.float64)
+                return _out
             arr = np.asarray(res, dtype=np.float64)
             # ``lambdify`` broadcasts constants; broadcast to the caller's shape
             # so downstream ``invalid_mask`` arithmetic stays aligned.
             if arr.shape != shape:
                 arr = np.broadcast_to(arr, shape)
-            return np.ascontiguousarray(arr)
+            _out = np.ascontiguousarray(arr)
+            return _out
         except Exception:  # noqa: BLE001 - best-effort probe must not crash
-            return nan_result()
+            _out = nan_result()
+            return _out
 
     def _fallback_metrics(self, y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, Any]:
         """Pure-Python / NumPy reference metrics."""
@@ -1023,7 +1033,7 @@ class RustKernelBridge:
             }
 
         min_x, max_x = domain_bounds[0]
-        grid = np.linspace(min_x, max_x, num_grid_points + 1, dtype=np.float64)
+        grid: np.ndarray = np.linspace(min_x, max_x, num_grid_points + 1, dtype=np.float64)
         step = (max_x - min_x) / max(num_grid_points, 1)
 
         data = [grid]

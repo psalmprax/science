@@ -283,7 +283,8 @@ def run_physics_discovery(req: Any) -> dict[str, Any]:
             return None
         if out.ndim == 0 or not np.all(np.isfinite(out)):
             return None
-        return out
+        _out: np.ndarray | None = out
+        return _out
 
     if top_cand is not None:
         if top_cand.fit and top_cand.fit.param_values:

@@ -939,7 +939,8 @@ def model_data_path_floor() -> dict[str, Any]:
 def _widest_measured_arm_qubits() -> int | None:
     """The widest circuit the verifier has scored, if the arm records are readable."""
     try:
-        return max(arm["qubits"] for arm in load_measured_dqi_arms())
+        _out: int | None = max(arm["qubits"] for arm in load_measured_dqi_arms())
+        return _out
     except (DqiRecordError, ValueError):
         return None
 

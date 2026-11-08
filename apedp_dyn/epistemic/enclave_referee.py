@@ -210,7 +210,7 @@ def run_enclave_adjudication(
         raise EnclaveAttestationError(
             f"referee pair semantics: exactly 2 residual series required, got {len(residuals)}")
     for name, series in residuals.items():
-        arr = np.asarray(series, dtype=float)
+        arr: np.ndarray = np.asarray(series, dtype=float)
         if arr.size < 4:
             raise EnclaveAttestationError(f"residual series {name!r} too short for adjudication")
 

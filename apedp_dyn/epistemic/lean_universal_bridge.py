@@ -148,7 +148,7 @@ _AST_FUNCTION_NAMES = frozenset({
     "log", "sqrt", "Abs", "Min", "Max", "erf", "erfc", "zeta",
 })
 
-def _ast_symbol_locals(text: str) -> dict:
+def _ast_symbol_locals(text: str) -> dict[str, Any]:
     """sympify locals mapping every non-function word to a fresh Symbol.
 
     Prevents sympy name collisions (``gamma`` resolves to the gamma
@@ -156,7 +156,7 @@ def _ast_symbol_locals(text: str) -> dict:
     used by damping/degree detection native.
     """
     import re as _re
-    locals_map: dict = {}
+    locals_map: dict[str, Any] = {}
     for token in _re.findall(r"[A-Za-z_][A-Za-z_0-9]*", text):
         if token in _AST_FUNCTION_NAMES or token in ("pi", "E", "oo", "zoo", "I"):
             continue

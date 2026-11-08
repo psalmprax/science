@@ -17,7 +17,7 @@ import numpy as np
 try:  # pragma: no cover - exercised only on kernel-less installs
     import apedp_kernel as ak
 except ImportError:  # kernel-only engine: fails at call time with an actionable error
-    from apedp_dyn.kernel_shim import missing_kernel as ak  # type: ignore[assignment]
+    from apedp_dyn.kernel_shim import missing_kernel as ak
 
 
 @dataclass(frozen=True)
@@ -50,7 +50,7 @@ def _fornberg_centered_weights(x_sub: Sequence[float], z: float, m_max: int) -> 
     """
     x = [float(v) for v in x_sub]
     n = len(x) - 1
-    c = np.zeros((m_max + 1, n + 1, n + 1), dtype=float)
+    c: np.ndarray = np.zeros((m_max + 1, n + 1, n + 1), dtype=float)
     c[0, 0, 0] = 1.0
     c1 = 1.0
 
@@ -69,7 +69,7 @@ def _fornberg_centered_weights(x_sub: Sequence[float], z: float, m_max: int) -> 
             c[m, i, i] = (c1 / c2) * (term2 - term1)
         c1 = c2
 
-    res = np.zeros((m_max + 1, n + 1), dtype=float)
+    res: np.ndarray = np.zeros((m_max + 1, n + 1), dtype=float)
     for m in range(m_max + 1):
         for j in range(n + 1):
             res[m, j] = c[m, n, j]
@@ -135,7 +135,7 @@ def _eval_frozen_1d_library(
             ux.append((-u_grid[i][j + 2] + 8.0 * u_grid[i][j + 1] - 8.0 * u_grid[i][j - 1] + u_grid[i][j - 2]) / (12.0 * dx))
             uxx.append((-u_grid[i][j + 2] + 16.0 * u_grid[i][j + 1] - 30.0 * u_grid[i][j]
                         + 16.0 * u_grid[i][j - 1] - u_grid[i][j - 2]) / (12.0 * dx * dx))
-    ut = np.asarray(ut_a, dtype=float)
+    ut: np.ndarray = np.asarray(ut_a, dtype=float)
     columns: dict[str, np.ndarray] = {}
     columns["u"] = np.asarray(u_vals, dtype=float)
     if max_polynomial_degree >= 2:
@@ -188,7 +188,7 @@ def _eval_frozen_2d_library(
                               + 16.0 * u_arr[t][x - 1][y] - u_arr[t][x - 2][y]) / (12.0 * dx * dx))
                 uyy_a.append((-u_arr[t][x][y + 2] + 16.0 * u_arr[t][x][y + 1] - 30.0 * u_arr[t][x][y]
                               + 16.0 * u_arr[t][x][y - 1] - u_arr[t][x][y - 2]) / (12.0 * dy * dy))
-    ut = np.asarray(ut_a, dtype=float)
+    ut: np.ndarray = np.asarray(ut_a, dtype=float)
     columns: dict[str, np.ndarray] = {}
     columns["u"] = np.asarray(u_vals, dtype=float)
     if max_polynomial_degree >= 2:
@@ -197,8 +197,8 @@ def _eval_frozen_2d_library(
         columns["u^3"] = columns["u"] ** 3
     columns["u_x"] = np.asarray(ux_a, dtype=float)
     columns["u_y"] = np.asarray(uy_a, dtype=float)
-    u_xx = np.asarray(uxx_a, dtype=float)
-    u_yy = np.asarray(uyy_a, dtype=float)
+    u_xx: np.ndarray = np.asarray(uxx_a, dtype=float)
+    u_yy: np.ndarray = np.asarray(uyy_a, dtype=float)
     columns["laplacian(u)"] = u_xx + u_yy
     columns["u_xx"] = u_xx
     columns["u_yy"] = u_yy

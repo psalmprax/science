@@ -191,7 +191,7 @@ def load_reference(fcidump: str | Path) -> dict[str, Any]:
 
         num_pairs = num_orbitals * (num_orbitals + 1) // 2
         oei = np.zeros((num_orbitals, num_orbitals))
-        h2_lower = np.zeros((num_pairs, num_pairs), dtype=np.float32)
+        h2_lower: np.ndarray = np.zeros((num_pairs, num_pairs), dtype=np.float32)
         ecore = 0.0
         for line in stream:
             tokens = line.split()

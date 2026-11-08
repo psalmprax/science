@@ -141,7 +141,8 @@ def solve_cbf_qp(
     if n > assumptions.max_agents:
         raise CertificateViolation(f"assumption scope: {n} agents > max_agents {assumptions.max_agents}")
     if n < 2:
-        return v
+        _out: np.ndarray = v
+        return _out
     bar = _pair_barriers(p, assumptions.r_safe)
 
     idx_i, idx_j = np.triu_indices(n, k=1)
@@ -193,7 +194,8 @@ def solve_cbf_qp(
         v *= scale
 
         def _budget(v_dot_d: np.ndarray, nrm: np.ndarray) -> np.ndarray:
-            return -v_dot_d + np.sqrt(np.maximum(v_dot_d ** 2 - (nrm ** 2 - box ** 2), 0.0))
+            _out: np.ndarray = -v_dot_d + np.sqrt(np.maximum(v_dot_d ** 2 - (nrm ** 2 - box ** 2), 0.0))
+            return _out
 
         for _pass in range(4):
             lhs = np.einsum("pk,pk->p", a_ij, v[idx_i] - v[idx_j])
@@ -234,7 +236,8 @@ def solve_cbf_qp(
         )
     if float(np.max(np.abs(v))) > box + assumptions.tol:
         raise CertificateViolation("CBF-QP failed the box constraint (A1)")
-    return v
+    _out = v
+    return _out
 
 
 def discrete_invariance_bound(h0: float, assumptions: CBFQPCertificateAssumptions) -> float:

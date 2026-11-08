@@ -48,6 +48,7 @@ Tournament harnesses (v2d): DUFF/COUP/STAB noise-sweep contracts.
 from __future__ import annotations
 
 import time
+from typing import Any
 
 import numpy as np
 
@@ -191,10 +192,10 @@ def _score_structures(
     Xtr: np.ndarray, ytr: np.ndarray, Xho: np.ndarray, yho: np.ndarray,
     structures: dict[str, tuple[int, ...]], terms: dict[str, tuple[str, ...]],
     sigma: float, prefix: str,
-) -> tuple[list[ScoredCandidate], dict]:
+) -> tuple[list[ScoredCandidate], dict[str, Any]]:
     obs_rms = float(np.sqrt(np.mean(yho ** 2)))
     scored: list[ScoredCandidate] = []
-    fits: dict[str, dict] = {}
+    fits: dict[str, dict[str, Any]] = {}
     for name, idx in structures.items():
         coef, se = _ols(Xtr[:, list(idx)], ytr)
         Aho = np.column_stack([np.ones(len(Xho)), Xho[:, list(idx)]])
@@ -212,7 +213,7 @@ def _score_structures(
     return scored, fits
 
 
-def run_ladder_cell(seed: int, kappa_target: float) -> dict:
+def run_ladder_cell(seed: int, kappa_target: float) -> dict[str, Any]:
     """One collinearity-ladder cell: fixed noise, varying predictor correlation."""
     t0 = time.perf_counter()
     X = _design_exact_kappa(seed, kappa_target)
@@ -261,9 +262,9 @@ def run_ladder_cell(seed: int, kappa_target: float) -> dict:
 def run_ladder(
     seeds: tuple[int, ...] = LADDER_SEEDS,
     kappas: tuple[float, ...] = LADDER_KAPPAS,
-) -> dict:
+) -> dict[str, Any]:
     cells = [run_ladder_cell(s, k) for s in seeds for k in kappas]
-    by_rung: dict[str, dict] = {}
+    by_rung: dict[str, dict[str, Any]] = {}
     for k in kappas:
         sub = [c for c in cells if c["kappa_target"] == k]
         by_rung[str(k)] = {
@@ -280,7 +281,7 @@ def run_ladder(
             "cells": cells, "by_rung": by_rung}
 
 
-def generate_misspec(seed: int, n: int = 200) -> dict:
+def generate_misspec(seed: int, n: int = 200) -> dict[str, Any]:
     """Radiation-loss truth with an OOD high-loss-fraction slice."""
     rng = np.random.default_rng(9000 + seed)
     R = MISSPEC_RANGES
@@ -301,12 +302,12 @@ def generate_misspec(seed: int, n: int = 200) -> dict:
             "train_mask": tr, "cut": cut}
 
 
-def run_misspec_cell(seed: int) -> dict:
+def run_misspec_cell(seed: int) -> dict[str, Any]:
     t0 = time.perf_counter()
     g = generate_misspec(seed)
     F, tau, lf, tr = g["feats"], g["tau"], g["loss_frac"], g["train_mask"]
     logtau = np.log(tau)
-    outs: dict[str, dict] = {}
+    outs: dict[str, dict[str, Any]] = {}
     scored: list[ScoredCandidate] = []
     for name, cols in MISSPEC_STRUCTURES.items():
         X = np.column_stack([np.log(F[c]) for c in cols])
@@ -344,7 +345,7 @@ def run_misspec_cell(seed: int) -> dict:
     }
 
 
-def run_misspec(seeds: tuple[int, ...] = MISSPEC_SEEDS) -> dict:
+def run_misspec(seeds: tuple[int, ...] = MISSPEC_SEEDS) -> dict[str, Any]:
     cells = [run_misspec_cell(s) for s in seeds]
     return {"v2_version": V2_VERSION, "cells": cells,
             "misspec_rate": sum(c["misspecification"] for c in cells) / len(cells),
@@ -352,7 +353,7 @@ def run_misspec(seeds: tuple[int, ...] = MISSPEC_SEEDS) -> dict:
 
 
 def followup_collinear(seed: int, kappa_from: float = 1e5,
-                       kappa_to: float = 10.0) -> dict:
+                       kappa_to: float = 10.0) -> dict[str, Any]:
     """Execute a collinearity-pointer recommendation in the static domain.
 
     Takes a high-kappa MULTI cell and re-runs the identical law/noise with a
@@ -385,7 +386,7 @@ def followup_collinear(seed: int, kappa_from: float = 1e5,
     }
 
 
-def _duff_tournament_cell(rep: int, pct: float) -> dict:
+def _duff_tournament_cell(rep: int, pct: float) -> dict[str, Any]:
     """One DUFF 3% refusal tournament cell.
     
     Expected results (from benchmark_v2 constants):
@@ -400,7 +401,7 @@ def _duff_tournament_cell(rep: int, pct: float) -> dict:
     return run_rep(rep)
 
 
-def _coup_tournament_cell(rep: int, pct: float) -> dict:
+def _coup_tournament_cell(rep: int, pct: float) -> dict[str, Any]:
     """One COUP robust tournament cell at noise pct.
     
     Expected results:
@@ -430,7 +431,7 @@ def _coup_tournament_cell(rep: int, pct: float) -> dict:
     }
 
 
-def _stab_tournament_cell(rep: int, pct: float) -> dict:
+def _stab_tournament_cell(rep: int, pct: float) -> dict[str, Any]:
     """One STAB degradation tournament cell.
     
     Expected: 1.0→0→33→33% with increasing noise
@@ -462,7 +463,7 @@ def _stab_tournament_cell(rep: int, pct: float) -> dict:
 
 
 def run_duff_tournament(reps: tuple[int, ...] = (0, 1, 2),
-                       pcts: tuple[float, ...] = (3.0,)) -> dict:
+                       pcts: tuple[float, ...] = (3.0,)) -> dict[str, Any]:
     """Run DUFF 3% refusal tournament.
     
     Returns per-rep results matching the contract:
@@ -488,7 +489,7 @@ def run_duff_tournament(reps: tuple[int, ...] = (0, 1, 2),
 
 
 def run_coup_tournament(reps: tuple[int, ...] = (0, 1, 2),
-                       pcts: tuple[float, ...] = (1.0, 5.0, 10.0)) -> dict:
+                       pcts: tuple[float, ...] = (1.0, 5.0, 10.0)) -> dict[str, Any]:
     """Run COUP robust tournament at specified noise percentages.
     
     Expected:
@@ -516,7 +517,7 @@ def run_coup_tournament(reps: tuple[int, ...] = (0, 1, 2),
 
 
 def run_stab_tournament(reps: tuple[int, ...] = (0, 1, 2),
-                       pcts: tuple[float, ...] = (1.0, 3.0, 5.0, 10.0)) -> dict:
+                       pcts: tuple[float, ...] = (1.0, 3.0, 5.0, 10.0)) -> dict[str, Any]:
     """Run STAB degradation tournament at specified noise percentages.
     
     Expected degradation: 1.0→0→33→33% with noise

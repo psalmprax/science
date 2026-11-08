@@ -26,7 +26,8 @@ from apedp_dyn.grammar.proposer_interface import (
 
 
 def _exp_decay(k: np.ndarray, beta: float, gamma: float) -> np.ndarray:
-    return beta * np.exp(-gamma * k)
+    _out: np.ndarray = beta * np.exp(-gamma * k)
+    return _out
 
 
 class OrderBookResiliencyProposer(ProposerBase):
@@ -75,7 +76,7 @@ class OrderBookResiliencyProposer(ProposerBase):
         else:
             rec_mat = np.array(recoveries)
             mean_traj = np.mean(rec_mat, axis=0)
-            k_steps = np.arange(1, self._max_horizon + 1, dtype=float)
+            k_steps: np.ndarray = np.arange(1, self._max_horizon + 1, dtype=float)
             try:
                 popt, _ = curve_fit(_exp_decay, k_steps, mean_traj, p0=[0.5, 0.5], maxfev=1000)
                 beta_fit, gamma_fit = float(popt[0]), max(float(popt[1]), 0.05)
@@ -93,7 +94,8 @@ class OrderBookResiliencyProposer(ProposerBase):
                 is_shock = np.abs(ret) > (th * sig)
                 # Signal predicts negative of shock sign (mean reversion bounce)
                 signal = np.where(is_shock, -np.sign(ret) * beta * np.exp(-gamma), 0.0)
-                return signal
+                _out: np.ndarray = signal
+                return _out
             return _scorer
 
         proposals.append(

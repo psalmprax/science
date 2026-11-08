@@ -65,7 +65,8 @@ class PhysicalSteeringController:
         grad_y = (np.roll(field, -1, axis=-2) - np.roll(field, 1, axis=-2)) / (2.0 * dy)
 
         advection = c_x * grad_x + c_y * grad_y
-        return np.asarray(field - (dt * advection))
+        _out: np.ndarray = np.asarray(field - (dt * advection))
+        return _out
 
     def apply_viscosity_dissipation(
         self,
@@ -99,7 +100,8 @@ class PhysicalSteeringController:
             field_c = np.ascontiguousarray(field_3d, dtype=np.float64).ravel()
             out_flat = ak.rime_laplacian_dissipation_2d(field_c, h, w, c, nu_val, dt, dx, dy)
             out = np.array(out_flat, dtype=np.float64).reshape(orig_shape)
-            return out
+            _out: np.ndarray = out
+            return _out
 
         # Vectorized NumPy fallback
         dx_sq = dx * dx
@@ -108,7 +110,8 @@ class PhysicalSteeringController:
         d2y = (np.roll(field_3d, -1, axis=-2) - 2.0 * field_3d + np.roll(field_3d, 1, axis=-2)) / dy_sq
         lap = d2x + d2y
         out_3d = field_3d + (dt * nu_val * lap)
-        return np.asarray(out_3d.reshape(orig_shape))
+        _out = np.asarray(out_3d.reshape(orig_shape))
+        return _out
 
     def apply_camera_transform(
         self,
@@ -175,7 +178,8 @@ class PhysicalSteeringController:
             i11 = f[y1_mod, x1_mod]
             transformed[ci] = wy0 * (wx0 * i00 + wx1 * i01) + wy1 * (wx0 * i10 + wx1 * i11)
 
-        return transformed
+        _out: np.ndarray = transformed
+        return _out
 
     def steer_velocity_field(
         self,
@@ -207,4 +211,5 @@ class PhysicalSteeringController:
             dissipative_velocity = nu * (d2x + d2y)
             v_steered += dissipative_velocity
 
-        return v_steered
+        _out: np.ndarray = v_steered
+        return _out

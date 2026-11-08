@@ -117,7 +117,7 @@ def build_field_spec(primitive_element: int = PRIMITIVE_ELEMENT) -> FieldSpec:
 
 def build_multiplication_tensor() -> np.ndarray:
     """Constructs the exact 12x12x12 multiplication tensor over GF(2)."""
-    T = np.zeros((DEGREE, DEGREE, DEGREE), dtype=np.uint8)
+    T: np.ndarray = np.zeros((DEGREE, DEGREE, DEGREE), dtype=np.uint8)
     for i in range(DEGREE):
         ei = 1 << i
         for j in range(DEGREE):
@@ -412,9 +412,9 @@ def diagnose_gf2_bilinear_system(
 def build_schoolbook_reference() -> TensorDecomposition:
     """Constructs the naive 144-product schoolbook bilinear decomposition."""
     rank = DEGREE * DEGREE  # 144
-    U = np.zeros((rank, DEGREE), dtype=np.uint8)
-    V = np.zeros((rank, DEGREE), dtype=np.uint8)
-    W = np.zeros((rank, DEGREE), dtype=np.uint8)
+    U: np.ndarray = np.zeros((rank, DEGREE), dtype=np.uint8)
+    V: np.ndarray = np.zeros((rank, DEGREE), dtype=np.uint8)
+    W: np.ndarray = np.zeros((rank, DEGREE), dtype=np.uint8)
     
     r = 0
     for i in range(DEGREE):
@@ -453,8 +453,8 @@ def _karatsuba_recursive_terms(n: int) -> tuple[list[tuple[np.ndarray, np.ndarra
     
     # Low products: [u_lo, 0], [v_lo, 0]
     for u, v in low_prods:
-        u_full = np.zeros(n, dtype=np.uint8)
-        v_full = np.zeros(n, dtype=np.uint8)
+        u_full: np.ndarray = np.zeros(n, dtype=np.uint8)
+        v_full: np.ndarray = np.zeros(n, dtype=np.uint8)
         u_full[:k] = u
         v_full[:k] = v
         all_prods.append((u_full, v_full))
@@ -505,9 +505,9 @@ def build_karatsuba_reference() -> TensorDecomposition:
     """Generates the 63-product published Karatsuba reference decomposition."""
     prods, poly_map = _karatsuba_recursive_terms(DEGREE)
     rank = len(prods)  # Exactly 63
-    U = np.zeros((rank, DEGREE), dtype=np.uint8)
-    V = np.zeros((rank, DEGREE), dtype=np.uint8)
-    W = np.zeros((rank, DEGREE), dtype=np.uint8)
+    U: np.ndarray = np.zeros((rank, DEGREE), dtype=np.uint8)
+    V: np.ndarray = np.zeros((rank, DEGREE), dtype=np.uint8)
+    W: np.ndarray = np.zeros((rank, DEGREE), dtype=np.uint8)
     
     for r, (u_vec, v_vec) in enumerate(prods):
         U[r, :] = u_vec
@@ -536,9 +536,9 @@ def build_54_reference() -> TensorDecomposition:
     
     prods, poly_map = gf54_terms(tuple(frozenset([i]) for i in range(DEGREE)))
     rank = len(prods)  # Exactly 54
-    U = np.zeros((rank, DEGREE), dtype=np.uint8)
-    V = np.zeros((rank, DEGREE), dtype=np.uint8)
-    W = np.zeros((rank, DEGREE), dtype=np.uint8)
+    U: np.ndarray = np.zeros((rank, DEGREE), dtype=np.uint8)
+    V: np.ndarray = np.zeros((rank, DEGREE), dtype=np.uint8)
+    W: np.ndarray = np.zeros((rank, DEGREE), dtype=np.uint8)
     
     for r, (u_set, v_set) in enumerate(prods):
         for idx in u_set:
@@ -564,9 +564,9 @@ def build_54_reference() -> TensorDecomposition:
 def load_published_51_reference() -> TensorDecomposition:
     """Reproduces the published October 2026 hand-tuned 51-Toffoli incumbent."""
     rank = 51
-    U = np.zeros((rank, DEGREE), dtype=np.uint8)
-    V = np.zeros((rank, DEGREE), dtype=np.uint8)
-    W = np.zeros((rank, DEGREE), dtype=np.uint8)
+    U: np.ndarray = np.zeros((rank, DEGREE), dtype=np.uint8)
+    V: np.ndarray = np.zeros((rank, DEGREE), dtype=np.uint8)
+    W: np.ndarray = np.zeros((rank, DEGREE), dtype=np.uint8)
     
     return TensorDecomposition(
         rank=rank, U=U, V=V, W=W,
@@ -821,7 +821,7 @@ class InvsqrtNumericalModel:
 
         for start in range(1, self.max_x + 1, chunk_size):
             stop = min(start + chunk_size, self.max_x + 1)
-            xs = np.arange(start, stop, dtype=np.uint64)
+            xs: np.ndarray = np.arange(start, stop, dtype=np.uint64)
             candidate_phases = candidate_phase_fn(xs)
             
             for i, x in enumerate(xs):

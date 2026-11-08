@@ -40,7 +40,7 @@ def structural_entropy(structures: list[str]) -> float:
 
 def coefficient_cv(values: list[float]) -> float | None:
     """Coefficient of variation |std/mean|; None when mean ~ 0."""
-    a = np.asarray(values, dtype=float)
+    a: np.ndarray = np.asarray(values, dtype=float)
     m = float(np.mean(a))
     if abs(m) < 1e-12:
         return None
@@ -65,7 +65,7 @@ def variance_split(transfer_matrix: np.ndarray) -> dict[str, float]:
 
 def stability_report(structures: list[str],
                      param_samples: dict[str, list[float]] | None = None,
-                     transfer_matrix=None) -> dict:
+                     transfer_matrix=None) -> dict[str, Any]:
     """One diagnostic block for a multi-seed discovery experiment."""
     rep = {"n_seeds": len(structures),
            "distribution": structural_distribution(structures),

@@ -150,7 +150,7 @@ class SINDyProposer(ProposerBase):
                     if not pairs:
                         return np.full(rows, float(sum(constants)) if constants
                                        else 0.0)
-                    pred = np.zeros(rows, dtype=float)
+                    pred: np.ndarray = np.zeros(rows, dtype=float)
                     for name, weight in pairs:
                         pred += weight * np.asarray(df[name], dtype=float).ravel()
                     return pred
@@ -179,7 +179,7 @@ try:
             self.proposer_id = "sindy-grammar-adapter"
             self._impl = SINDyProposer(degree=degree, threshold=threshold)
 
-        def propose(self, problem) -> list:
+        def propose(self, problem) -> list[Any]:
             # Try to extract data from problem
             try:
                 t = getattr(problem, 'train', {}).get('truth_t')

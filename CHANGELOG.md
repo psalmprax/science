@@ -54,6 +54,11 @@ They were not retrospectively assigned release versions.
 
 ---
 
+### Changed
+- `apedp_dyn/sandbox` now reports zero `no-untyped-def` findings: all 257 sites carry explicit parameter and return types, with numpy-returning expressions routed through ndarray-typed locals rather than widened to `Any`. Four frozen referee guard files drifted by annotation only (`eseds_dynamical.py`, `multi_asset_signals_sandbox.py`, `multi_grammar_sandbox.py`, `trading_signals_sandbox.py`), so the record is re-minted as `APEDPX_FROZEN_v1_14.json`: `blind_benchmark.FROZEN_RECORD` points at it, `ARCHITECTURE.md` names it as the current generation, its `remint_log` records every old/new digest with the rationale, and `verify_referee()` passes all 15 guard files. `tests/test_dyn_blind.py` is green again; before the re-mint it refused to score, which is the guard doing its job.
+- The `type-arg`, `var-annotated`, `no-any-return` and `unused-ignore` mypy families outside the sandbox were burned down without suppressions: bare generics in annotations gained type arguments (`dict[str, Any]`, `Callable[..., Any]`, `tuple[Any, ...]`), empty-container assignments got their declared types, `Any`-returning expressions go through a local declared with the function's own return annotation, and `# type: ignore` comments mypy reports as unused were deleted. mypy over `apedp_dyn` falls 1,611 → 959 (`no-any-return` 379 → 50, `type-arg` 189 → 35, `var-annotated` 233 → 85, `unused-ignore` 21 → 0). Frozen guard files were excluded so the re-mint stayed minimal; `no-untyped-def` (292) and the `no-untyped-call` (170) it implies are the next families.
+- `Makefile`: `PYTHON` defaults to the project virtualenv when `.venv/bin/python` exists, and `lint`, `typecheck`, `test`, `format`, `reproduce` and `vqc-parity` invoke their tools as `$(PYTHON) -m ...`. `make lint` and `make typecheck` no longer need `PYTHON=.venv/bin/python` or a `PATH` containing `ruff`/`mypy`.
+
 ## [Unreleased] — APEDP-Q: verifier-guided quantum-circuit compilation (Milestone 1, Benchmark I) (2026-10-23)
 
 Adds the first APEDP-Q control-plane layer for the Google Quantum AI

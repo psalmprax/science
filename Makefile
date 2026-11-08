@@ -1,8 +1,11 @@
 .PHONY: install test lint typecheck lint-rust format clean clean-cache kernel vqc-native vqc-parity wheel reproduce
 
-# Interpreter used by gates that need one. Override for a venv:
-#   make lint PYTHON=.venv/bin/python
-PYTHON ?= python
+# Interpreter used by every gate. When the project virtualenv exists it is used
+# automatically, so `make lint` / `make typecheck` work without PATH tweaks and
+# without the caller remembering PYTHON=.venv/bin/python. Override explicitly
+# for another environment, e.g. `make lint PYTHON=/usr/bin/python3`.
+VENV_PYTHON := $(firstword $(wildcard .venv/bin/python))
+PYTHON ?= $(if $(VENV_PYTHON),$(VENV_PYTHON),python)
 
 install:
 	pip install -e .
@@ -22,7 +25,7 @@ vqc-native:
 # Re-measure the native core against the Python tier on identical frozen inputs
 # and rewrite benchmarks/quantum_compilation/vqc_native_parity.json.
 vqc-parity: vqc-native
-	python scripts/measure_vqc_rust_parity.py
+	$(PYTHON) scripts/measure_vqc_rust_parity.py
 
 # Build a distributable wheel (rust/apedp-kernel via maturin) into dist/.
 wheel:
@@ -32,7 +35,7 @@ wheel:
 # of the docs would quote: frontier claims integrity, Planck/Riccati claims,
 # canonical ledger, the frozen external round, trig recovery, PDE transfer.
 reproduce: kernel
-	pytest tests/test_dyn_frontier_claims_integrity.py \
+	$(PYTHON) -m pytest tests/test_dyn_frontier_claims_integrity.py \
 	       tests/test_dyn_planck_limitation.py \
 	       tests/test_dyn_canonical_ledger.py \
 	       tests/test_external_benchmarks.py \
@@ -40,21 +43,21 @@ reproduce: kernel
 	       tests/test_dyn_pde_transfer.py -q
 
 test:
-	pytest tests/ -v
+	$(PYTHON) -m pytest tests/ -v
 
 # The full configured ruleset (pyproject [tool.ruff.lint]) on the two trees that
 # are held clean, then the pinned baseline for the trees that are not yet. The
 # old gate ran --select E9,F, which let the configured rule set accumulate
 # findings while reporting success.
 lint:
-	ruff check apedp/ tests/
+	$(PYTHON) -m ruff check apedp/ tests/
 	$(PYTHON) scripts/check_quality_baseline.py --ruff-only
 
 # Strict mypy on the conf/ integrity boundary (pyproject [tool.mypy] `files`),
 # then the pinned full-package baseline. Bare `mypy` alone checks two modules
 # and says nothing about the other ~1,200 files.
 typecheck:
-	mypy
+	$(PYTHON) -m mypy
 	$(PYTHON) scripts/check_quality_baseline.py --mypy-only
 
 lint-rust:
@@ -62,7 +65,7 @@ lint-rust:
 	cargo clippy --workspace --all-targets --locked -- -A clippy::all -W clippy::correctness -D warnings
 
 format:
-	ruff format apedp/ tests/
+	$(PYTHON) -m ruff format apedp/ tests/
 
 clean:
 	find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true

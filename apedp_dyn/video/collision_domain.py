@@ -27,6 +27,8 @@ Physics discipline (same honesty contract as the fluid domain):
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 
@@ -68,7 +70,7 @@ def _render_objects(
             discs.append(intensities[k] * np.exp(-4.0 * d2 / max(1e-9, radii[k] ** 2)))
             bodies.append(discs[k] > 0.1 * intensities[k])
         for k in range(n_obj):
-            hi_mask = np.zeros((h, w), dtype=bool)
+            hi_mask: np.ndarray = np.zeros((h, w), dtype=bool)
             for j in range(n_obj):
                 if j != k and occludes(j, k):
                     hi_mask |= bodies[j]
@@ -86,7 +88,7 @@ def make_collision_clip(
     n_obj: int = 2,
     canvas_margin: float = 0.15,
     return_state: bool = False,
-) -> np.ndarray | tuple[np.ndarray, dict]:
+) -> np.ndarray | tuple[np.ndarray, dict[str, Any]]:
     """Generate one deterministic 2D rigid-body collision/occlusion clip.
 
     Output in [0, 1], float64, (T, 3, H, W). Byte-reproducible (RandomState).
@@ -114,7 +116,7 @@ def make_collision_clip(
 
     # Spawn non-overlapping, inboard.
     margin = float(canvas_margin * min(h, w))
-    positions0 = np.zeros((n_obj, 2), dtype=np.float64)
+    positions0: np.ndarray = np.zeros((n_obj, 2), dtype=np.float64)
     for k in range(n_obj):
         pad = radii[k] + margin
         for _ in range(200):
@@ -139,8 +141,8 @@ def make_collision_clip(
             s1 = float(np.hypot(*velocities[1]))
             velocities[1] = s1 * (rot @ (dirv / dist))
 
-    positions = np.zeros((t, n_obj, 2), dtype=np.float64)
-    velocities_t = np.zeros((t, n_obj, 2), dtype=np.float64)
+    positions: np.ndarray = np.zeros((t, n_obj, 2), dtype=np.float64)
+    velocities_t: np.ndarray = np.zeros((t, n_obj, 2), dtype=np.float64)
     collisions: list[tuple[int, int, int]] = []
     dt = 1.0
     positions[0], velocities_t[0] = positions0.copy(), velocities.copy()

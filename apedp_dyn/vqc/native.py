@@ -177,7 +177,8 @@ def gate_tables() -> dict[str, Any] | None:
     if payload is None:
         return None
     _TALLIES["rust"] += 1
-    return json.loads(payload)
+    _out: dict[str, Any] | None = json.loads(payload)
+    return _out
 
 
 def images(circuit: Circuit) -> tuple[tuple[tuple[int, ...], int], ...] | None:

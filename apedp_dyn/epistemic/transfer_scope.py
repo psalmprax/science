@@ -18,6 +18,7 @@ Statuses:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 
 class TransferStatus(str):
@@ -58,7 +59,7 @@ class TransferScope:
         else:
             object.__setattr__(self, "status", TransferStatus.CROSS_DOMAIN_SUPPORTED)
 
-    def record(self) -> dict:
+    def record(self) -> dict[str, Any]:
         """Serialisable form for artifacts and the structured verdict block."""
         return {
             "structure": {"candidate": self.candidate_id, "rival": self.rival_id},

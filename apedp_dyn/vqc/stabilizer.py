@@ -53,6 +53,7 @@ from __future__ import annotations
 import itertools
 import math
 from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 
@@ -123,7 +124,7 @@ def _single_qubit_rules() -> dict[str, tuple[tuple[int, int], ...]]:
 
 def _two_qubit_matrix(name: str) -> np.ndarray:
     """The 4x4 unitary of a two-qubit gate, first target as the first tensor factor."""
-    matrix = np.zeros((4, 4), dtype=np.complex128)
+    matrix: np.ndarray = np.zeros((4, 4), dtype=np.complex128)
     for first, second in itertools.product((0, 1), repeat=2):
         column = 2 * first + second
         if name == "cx":
@@ -619,7 +620,8 @@ class StabilizerBackend:
         if engine != "python":
             native_result = native.run(circuit, shots=shots, seed=seed)
             if native_result is not None:
-                return native_result
+                _out: RunResult = native_result
+                return _out
             if engine == "rust":
                 # A requested native run that did not happen is a refusal, not a
                 # quiet downgrade: the caller asked for a provenance to cite.
@@ -692,7 +694,7 @@ def ghz_circuit(num_qubits: int, *, measure: bool = True,
         raise ValueError(f"a chain needs at least two qubits, got {num_qubits}")
     if basis not in ("z", "x"):
         raise ValueError(f"basis must be 'z' or 'x', got {basis!r}")
-    ops: list = [Gate("h", (0,))]
+    ops: list[Any] = [Gate("h", (0,))]
     ops.extend(Gate("cx", (qubit - 1, qubit)) for qubit in range(1, num_qubits))
     if basis == "x":
         ops.extend(Gate("h", (qubit,)) for qubit in range(num_qubits))

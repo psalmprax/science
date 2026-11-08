@@ -331,7 +331,7 @@ class S3StorageBackend(BaseStorageBackend):
     def client(self) -> Any:
         if self._client is None:
             try:
-                import boto3  # type: ignore[import-untyped]
+                import boto3
                 kwargs: dict[str, Any] = {}
                 if self.region_name:
                     kwargs["region_name"] = self.region_name
@@ -353,7 +353,8 @@ class S3StorageBackend(BaseStorageBackend):
         full_key = self._full_key(key)
         try:
             resp = self.client.get_object(Bucket=self.bucket, Key=full_key)
-            return resp["Body"].read()
+            _out: bytes = resp["Body"].read()
+            return _out
         except Exception as exc:
             raise FileNotFoundError(f"Key {full_key} not found in bucket {self.bucket}: {exc}") from exc
 
@@ -523,7 +524,7 @@ class GCSStorageBackend(BaseStorageBackend):
     def client(self) -> Any:
         if self._client is None:
             try:
-                from google.cloud import storage  # type: ignore[import-untyped]
+                from google.cloud import storage
                 self._client = storage.Client(project=self.project)
             except ImportError as err:
                 raise ImportError(
@@ -546,7 +547,8 @@ class GCSStorageBackend(BaseStorageBackend):
         blob = self.bucket.blob(self._full_key(key))
         if not blob.exists():
             raise FileNotFoundError(f"Key {key} not found in GCS bucket {self.bucket_name}")
-        return blob.download_as_bytes()
+        _out: bytes = blob.download_as_bytes()
+        return _out
 
     def write_bytes(self, key: str, data: bytes) -> None:
         blob = self.bucket.blob(self._full_key(key))
@@ -554,7 +556,8 @@ class GCSStorageBackend(BaseStorageBackend):
 
     def exists(self, key: str) -> bool:
         blob = self.bucket.blob(self._full_key(key))
-        return blob.exists()
+        _out: bool = blob.exists()
+        return _out
 
     def delete(self, key: str) -> bool:
         blob = self.bucket.blob(self._full_key(key))

@@ -53,6 +53,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 from apedp_dyn.quantum_compilation.local_mr_sim import Field
 
@@ -153,7 +154,7 @@ class DecoderLayout:
         """True when two half-degree polynomials plus one scalar fit ``positions``."""
         return 2 * (self.t + 1) + 1 <= self.positions
 
-    def as_receipt(self) -> dict:
+    def as_receipt(self) -> dict[str, Any]:
         return {
             "n_syndromes": self.n_syndromes,
             "degree": self.degree,
@@ -406,7 +407,7 @@ def syndromes_of(errors: dict[int, int], n_syndromes: int, field: Field) -> list
     return syndrome
 
 
-def check_field(degree: int, n_syndromes: int, trials: int, seed: int) -> dict:
+def check_field(degree: int, n_syndromes: int, trials: int, seed: int) -> dict[str, Any]:
     """Compare the packed decoder against the two-array reference on random patterns.
 
     Errors are planted at random positions with nonzero values, so the planted

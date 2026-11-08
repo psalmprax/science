@@ -17,6 +17,8 @@ and the energies it used, and the caller names them.
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 # A cut is evidence of a boundary only if it stands out from the row-to-row
@@ -55,7 +57,8 @@ def row_texture_energy(latent: np.ndarray) -> np.ndarray:
         raise ValueError("need at least 3 columns to measure a gradient")
     # (C, H, W-1) -> mean over channels and columns leaves one value per row.
     grad = np.abs(np.diff(arr, axis=-1))
-    return grad.mean(axis=(0, 2))
+    _out: np.ndarray = grad.mean(axis=(0, 2))
+    return _out
 
 
 def _describe_order(means: tuple[float, float, float]) -> str:
@@ -90,7 +93,7 @@ def _evidence(
     b2: int,
     smoothing: int,
     min_band_fraction: float,
-) -> dict:
+) -> dict[str, Any]:
     """Measured support for the split, and the reasons to distrust it.
 
     Three things a row split cannot express, each measured rather than assumed:
@@ -158,7 +161,7 @@ def derive_region_masks(
     min_band_fraction: float = 0.15,
     ramp_fraction: float = 0.15,
     require_reliable: bool = False,
-) -> dict:
+) -> dict[str, Any]:
     """Split the frame into three texture bands and build soft masks.
 
     The split maximises the two strongest adjacent-row steps in the smoothed
@@ -200,15 +203,17 @@ def derive_region_masks(
         raise UnusableRegionSplit(
             "no defensible three-band split: " + "; ".join(evidence["reasons"]))
 
-    rows = np.arange(h, dtype=np.float64)
+    rows: np.ndarray = np.arange(h, dtype=np.float64)
     ramp = max(1.0, ramp_fraction * h)
 
     def _down(cut: int) -> np.ndarray:
         # 1 above the cut, 0 below it, ramped over `ramp` rows
-        return np.clip(0.5 + (cut - rows) / ramp, 0.0, 1.0)
+        _out: np.ndarray = np.clip(0.5 + (cut - rows) / ramp, 0.0, 1.0)
+        return _out
 
     def _up(cut: int) -> np.ndarray:
-        return np.clip(0.5 + (rows - cut) / ramp, 0.0, 1.0)
+        _out: np.ndarray = np.clip(0.5 + (rows - cut) / ramp, 0.0, 1.0)
+        return _out
 
     w_upper = _down(b1)
     w_lower = _up(b2)
@@ -219,7 +224,8 @@ def derive_region_masks(
     w = np.asarray(latent).shape[-1]
 
     def _broadcast(weights: np.ndarray) -> np.ndarray:
-        return np.repeat(weights[:, None], w, axis=1)
+        _out: np.ndarray = np.repeat(weights[:, None], w, axis=1)
+        return _out
 
     return {
         "masks": {

@@ -47,7 +47,7 @@ try:
     import apedp_kernel
     _RUST_AVAILABLE = True
 except ImportError:
-    apedp_kernel = None  # type: ignore[assignment]
+    apedp_kernel = None
     _RUST_AVAILABLE = False
 
 

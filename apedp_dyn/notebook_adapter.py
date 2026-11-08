@@ -192,7 +192,7 @@ def detect_platform() -> PlatformType:
 def detect_notebook() -> bool:
     """Return True if executing within an interactive Jupyter or IPython notebook kernel."""
     try:
-        import IPython  # type: ignore[import-untyped]
+        import IPython
         shell = IPython.get_ipython()
         if shell is None:
             return False
@@ -238,7 +238,7 @@ def mount_google_drive(mount_point: str = "/content/drive", force_remount: bool 
         return True
 
     try:
-        from google.colab import drive  # type: ignore[import-untyped]
+        from google.colab import drive
         drive.mount(mount_point, force_remount=force_remount)
         return drive_root.exists()
     except Exception as exc:  # noqa: BLE001 — gdrive mounts raise heterogeneous colab/jupyter errors; bound and reported
@@ -249,7 +249,7 @@ def mount_google_drive(mount_point: str = "/content/drive", force_remount: bool 
 def check_rust_kernel_available() -> bool:
     """Check if the native `apedp_kernel` PyO3 extension is importable."""
     try:
-        import apedp_kernel  # type: ignore[import-not-found]
+        import apedp_kernel
         return bool(apedp_kernel is not None)
     except (ImportError, ModuleNotFoundError):
         return False
@@ -608,7 +608,7 @@ def init_environment(
     # System memory detection
     mem_gb: float | None = None
     try:
-        import psutil  # type: ignore[import-untyped]
+        import psutil
         mem_gb = psutil.virtual_memory().total / (1024 ** 3)
     except Exception as exc:  # noqa: BLE001 — optional psutil; fallback reads /proc/meminfo below
         logger.debug("psutil unavailable (%r); falling back to /proc/meminfo", exc)

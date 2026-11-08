@@ -131,7 +131,8 @@ def verify_cos_positive_invariant(theta_radians: float | np.ndarray) -> np.ndarr
     words = np.rint(turns * (1 << BROT)).astype(np.int64) % (1 << BROT)
     bit9 = (words >> 9) & 1
     bit8 = (words >> 8) & 1
-    return bit9 == bit8
+    _out: np.ndarray = bit9 == bit8
+    return _out
 
 
 def pack_4address_bank(
@@ -165,7 +166,7 @@ def pack_4address_bank(
     base_words = arr[:, 0::BLOCK_SIZE_B, :].copy()  # (25, 994, 3)
 
     # 3 Delta entries: for b in {1, 2, 3}, delta[b-1] = XOR difference with base
-    deltas = np.zeros(
+    deltas: np.ndarray = np.zeros(
         (K_CIRCUITS, BANK_ROWS_PER_BATCH, DELTA_BANK_COUNT, J), dtype=np.uint16
     )
     for b in range(1, BLOCK_SIZE_B):
@@ -201,7 +202,7 @@ def reconstruct_4address_bank(
     if deltas.shape != (K_CIRCUITS, BANK_ROWS_PER_BATCH, DELTA_BANK_COUNT, J):
         raise ValueError(f"Invalid delta_bank shape: {deltas.shape}")
 
-    reconstructed = np.zeros((K_CIRCUITS, ADDRESS_COUNT, J), dtype=np.uint16)
+    reconstructed: np.ndarray = np.zeros((K_CIRCUITS, ADDRESS_COUNT, J), dtype=np.uint16)
     # Row b=0 is base
     reconstructed[:, 0::BLOCK_SIZE_B, :] = base
 
@@ -247,7 +248,7 @@ def build_signed_4bank_angle_circuit(
 
     # Form base words (row b=0) and 9-bit compressed delta entries (b=1, 2, 3)
     base_words = arr[0::BLOCK_SIZE_B, :].copy()  # (994, 3)
-    deltas9 = np.zeros((BANK_ROWS_PER_BATCH, DELTA_BANK_COUNT, batch_size), dtype=np.uint16)
+    deltas9: np.ndarray = np.zeros((BANK_ROWS_PER_BATCH, DELTA_BANK_COUNT, batch_size), dtype=np.uint16)
     for b in range(1, BLOCK_SIZE_B):
         row_b = arr[b::BLOCK_SIZE_B, :]
         xor_diff = np.bitwise_xor(base_words, row_b)

@@ -99,7 +99,7 @@ def _edge_boundary_mask(triangles: np.ndarray, n: int) -> np.ndarray:
         for e in ((a, b), (b, c), (c, a)):
             key = (min(e), max(e))
             counts[key] = counts.get(key, 0) + 1
-    boundary = np.zeros(n, dtype=bool)
+    boundary: np.ndarray = np.zeros(n, dtype=bool)
     for (p, q), c in counts.items():
         if c == 1:
             boundary[p] = True

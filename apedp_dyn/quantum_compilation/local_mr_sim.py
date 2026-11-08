@@ -128,16 +128,19 @@ class Field:
         la = np.where(nz, self._log[np.where(nz, a, 0)], 0)
         lb = np.where(nz, self._log[np.where(nz, b, 0)], 0)
         out[nz] = self._exp[(la[nz] + lb[nz]) % (self.size - 1)]
-        return out
+        _out: np.ndarray = out
+        return _out
 
     def mul_constant(self, constant: int, values: np.ndarray) -> np.ndarray:
         values = np.asarray(values, dtype=np.int64)
         if constant == 0:
-            return np.zeros_like(values)
+            _out: np.ndarray = np.zeros_like(values)
+            return _out
         out = np.zeros_like(values)
         nz = values != 0
         out[nz] = self._exp[(int(self._log[constant]) + self._log[values[nz]]) % (self.size - 1)]
-        return out
+        _out = out
+        return _out
 
     def div_constant(self, constant: int, values: np.ndarray) -> np.ndarray:
         values = np.asarray(values, dtype=np.int64)
@@ -147,17 +150,20 @@ class Field:
         nz = values != 0
         shift = int(self._log[constant])
         out[nz] = self._exp[(self._log[values[nz]] - shift) % (self.size - 1)]
-        return out
+        _out: np.ndarray = out
+        return _out
 
     def inverse_values(self, values: np.ndarray) -> np.ndarray:
         values = np.asarray(values, dtype=np.int64)
         out = np.zeros_like(values)
         nz = values != 0
         out[nz] = self._exp[(self.size - 1 - self._log[values[nz]]) % (self.size - 1)]
-        return out
+        _out: np.ndarray = out
+        return _out
 
     def parity(self, values: np.ndarray) -> np.ndarray:
-        return self._popcount[np.asarray(values, dtype=np.int64)] & 1
+        _out: np.ndarray = self._popcount[np.asarray(values, dtype=np.int64)] & 1
+        return _out
 
 
 class Q:
@@ -546,7 +552,8 @@ class Simulator:
             matched = self._reg_value(cursor.register) == obj.address
             if cursor.control is not True:
                 matched = matched & self._mask(cursor.control)
-            return matched
+            _out: np.ndarray = matched
+            return _out
         if isinstance(obj, Q):
             return self.q[obj.id, :].astype(bool)
         if isinstance(obj, B):
@@ -556,7 +563,7 @@ class Simulator:
         if isinstance(obj, (list, tuple, array)):
             if not obj:
                 return np.ones(self.batch_size, dtype=bool)
-            mask = np.ones(self.batch_size, dtype=bool)
+            mask: np.ndarray = np.ones(self.batch_size, dtype=bool)
             for item in obj:
                 mask &= self._mask(item)
             return mask
@@ -572,7 +579,7 @@ class Simulator:
         """Truth of a register: nonzero (any bit set), as ``bit_store`` control uses."""
         targets = _flatten(obj)
         if targets and isinstance(targets[0], (Q, B)):
-            mask = np.zeros(self.batch_size, dtype=bool)
+            mask: np.ndarray = np.zeros(self.batch_size, dtype=bool)
             for target in targets:
                 mask |= self._mask(target)
             return mask
@@ -581,7 +588,7 @@ class Simulator:
     # -- register values -------------------------------------------------
     def _reg_value(self, register: Sequence[Any]) -> np.ndarray:
         items = _flatten(register)
-        value = np.zeros(self.batch_size, dtype=np.int64)
+        value: np.ndarray = np.zeros(self.batch_size, dtype=np.int64)
         if not items:
             return value
         store = self.q if isinstance(items[0], Q) else self.b
@@ -646,7 +653,7 @@ class Simulator:
         if not targets:
             return
         if len(targets) == 1 and len(sources) >= 1:
-            parity = np.zeros(self.batch_size, dtype=bool)
+            parity: np.ndarray = np.zeros(self.batch_size, dtype=bool)
             for source in sources:
                 parity ^= self._mask(source)
             self.q[targets[0].id, :] ^= (parity & mask).astype(np.uint8)
@@ -791,7 +798,7 @@ class Simulator:
             if len(controls) == 1 and len(targets) > 1:
                 controls.extend(controls * (len(targets) - 1))
         for index, target in enumerate(targets):
-            conjunction = np.ones(self.batch_size, dtype=bool)
+            conjunction: np.ndarray = np.ones(self.batch_size, dtype=bool)
             for controls in control_lists:
                 conjunction &= self._mask(controls[index])
             self.q[target.id, :] ^= (conjunction & mask).astype(np.uint8)

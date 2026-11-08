@@ -252,7 +252,7 @@ def solve_weights(
             lower ^= low
         values[index] = value
 
-    W = np.zeros((rank, degree), dtype=np.uint8)
+    W: np.ndarray = np.zeros((rank, degree), dtype=np.uint8)
     for index, value in values.items():
         for k in range(degree):
             if (value >> k) & 1:
@@ -268,7 +268,7 @@ def reconstruct(U: np.ndarray, V: np.ndarray, W: np.ndarray) -> np.ndarray:
     """Rebuild the tensor from a decomposition, exactly as the verifier does."""
     degree = int(U.shape[1])
     rank = int(U.shape[0])
-    T = np.zeros((degree, degree, degree), dtype=np.uint8)
+    T: np.ndarray = np.zeros((degree, degree, degree), dtype=np.uint8)
     for index in range(rank):
         T ^= np.einsum("i,j,k->ijk", U[index], V[index], W[index]) & 1
     return T
@@ -388,8 +388,8 @@ def _verified(
     """Build ``U``, ``V``, ``W`` for the atoms, or Nones when the reconstruction is not exact."""
     if not atoms:
         return None, None, None
-    U = np.zeros((len(atoms), degree), dtype=np.uint8)
-    V = np.zeros((len(atoms), degree), dtype=np.uint8)
+    U: np.ndarray = np.zeros((len(atoms), degree), dtype=np.uint8)
+    V: np.ndarray = np.zeros((len(atoms), degree), dtype=np.uint8)
     for index, atom in enumerate(atoms):
         if not is_rank_one(atom, degree):
             return None, None, None

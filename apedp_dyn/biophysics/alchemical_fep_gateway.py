@@ -211,8 +211,8 @@ class AlchemicalFEPGateway:
             d_lam = lam_1 - lam_0
 
             # Sample configurations at lambda_0 and lambda_1
-            du_forward = np.empty(self.samples_per_window, dtype=np.float64)
-            du_reverse = np.empty(self.samples_per_window, dtype=np.float64)
+            du_forward: np.ndarray = np.empty(self.samples_per_window, dtype=np.float64)
+            du_reverse: np.ndarray = np.empty(self.samples_per_window, dtype=np.float64)
 
             for s in range(self.samples_per_window):
                 cfg_0 = base_coords + rng.normal(0.0, thermal_sigma, size=base_coords.shape)

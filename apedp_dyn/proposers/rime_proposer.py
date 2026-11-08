@@ -100,71 +100,95 @@ def _apply_transform(kind: str, x: np.ndarray, scale: float = 1.0) -> np.ndarray
     if kind == "raw":
         return x
     if kind == "sq":
-        return np.asarray(np.asarray(np.asarray(x * x)))
+        _out: np.ndarray = np.asarray(np.asarray(np.asarray(x * x)))
+        return _out
     if kind == "cub":
-        return np.asarray(np.asarray(np.asarray(x * x * x)))
+        _out = np.asarray(np.asarray(np.asarray(x * x * x)))
+        return _out
     if kind == "ssqrt":
-        return np.sign(x) * np.sqrt(np.abs(x))
+        _out = np.sign(x) * np.sqrt(np.abs(x))
+        return _out
     if kind == "slog":
-        return np.sign(x) * np.log1p(np.abs(x))
+        _out = np.sign(x) * np.log1p(np.abs(x))
+        return _out
     if kind == "sat":
         ax = np.abs(x)
-        return np.sign(x) * (ax / (1.0 + ax))
+        _out = np.sign(x) * (ax / (1.0 + ax))
+        return _out
     if kind == "sat_sq":
         x2 = x * x
-        return np.asarray(np.asarray(np.asarray(np.sign(x) * (x2 / (1.0 + x2)))))
+        _out = np.asarray(np.asarray(np.asarray(np.sign(x) * (x2 / (1.0 + x2)))))
+        return _out
     if kind == "sat_norm":
         s = scale if (scale > 1e-12 and np.isfinite(scale)) else 1.0
         ax = np.abs(x) / s
-        return np.sign(x) * (ax / (1.0 + ax))
+        _out = np.sign(x) * (ax / (1.0 + ax))
+        return _out
     if kind == "sat_sq_norm":
         s = scale if (scale > 1e-12 and np.isfinite(scale)) else 1.0
         u = (x / s) ** 2
-        return np.sign(x) * (u / (1.0 + u))
+        _out = np.sign(x) * (u / (1.0 + u))
+        return _out
     if kind == "inv":
         ax = np.abs(x)
         safe_x = np.where(ax < 1e-9, 1e-9, ax)
-        return np.sign(x) / safe_x
+        _out = np.sign(x) / safe_x
+        return _out
     if kind == "inv_sq":
         x2 = x * x
         safe_x2 = np.where(x2 < 1e-18, 1e-18, x2)
-        return 1.0 / safe_x2
+        _out = 1.0 / safe_x2
+        return _out
     if kind == "lor_norm":
         s = scale if (scale > 1e-12 and np.isfinite(scale)) else 1.0
         u = (x / s) ** 2
-        return 1.0 / (1.0 + u)
+        _out = 1.0 / (1.0 + u)
+        return _out
     if kind == "floor":
-        return np.floor(x)
+        _out = np.floor(x)
+        return _out
     if kind == "ceil":
-        return np.ceil(x)
+        _out = np.ceil(x)
+        return _out
     if kind == "arrh":
         safe_x = np.where(np.abs(x) < 1e-12, 1e-12, np.abs(x))
-        return np.exp(-np.clip(1.0 / safe_x, -50.0, 50.0))
+        _out = np.exp(-np.clip(1.0 / safe_x, -50.0, 50.0))
+        return _out
     if kind == "bose":
         safe_x = np.where(np.abs(x) < 1e-12, 1e-12, x)
-        return np.where(np.abs(x) < 1e-9, 1.0, safe_x / np.expm1(np.clip(safe_x, -50.0, 50.0)))
+        _out = np.where(np.abs(x) < 1e-9, 1.0, safe_x / np.expm1(np.clip(safe_x, -50.0, 50.0)))
+        return _out
     if kind == "planck":
         safe_x = np.where(np.abs(x) < 1e-12, 1e-12, x)
-        return np.where(np.abs(x) < 1e-9, 0.0, (safe_x**3) / np.expm1(np.clip(safe_x, -50.0, 50.0)))
+        _out = np.where(np.abs(x) < 1e-9, 0.0, (safe_x**3) / np.expm1(np.clip(safe_x, -50.0, 50.0)))
+        return _out
     if kind == "expm1":
-        return np.asarray(np.asarray(np.asarray(np.expm1(np.clip(x, -50.0, 50.0)))))
+        _out = np.asarray(np.asarray(np.asarray(np.expm1(np.clip(x, -50.0, 50.0)))))
+        return _out
     if kind == "sin":
-        return np.sin(x)
+        _out = np.sin(x)
+        return _out
     if kind == "cos":
-        return np.cos(x)
+        _out = np.cos(x)
+        return _out
     if kind == "cos2":
-        return np.cos(2.0 * x)
+        _out = np.cos(2.0 * x)
+        return _out
     if kind == "sin2":
-        return np.sin(2.0 * x)
+        _out = np.sin(2.0 * x)
+        return _out
     if kind == "exp":
-        return np.asarray(np.exp(np.clip(x, -60.0, 60.0)))
+        _out = np.asarray(np.exp(np.clip(x, -60.0, 60.0)))
+        return _out
     if kind == "log":
-        return np.log1p(np.abs(x))
+        _out = np.log1p(np.abs(x))
+        return _out
     if kind == "diff":
         out = np.full_like(x, np.nan, dtype=float)
         if len(x) > 1:
             out[1:] = x[1:] - x[:-1]
-        return out
+        _out = out
+        return _out
     raise ValueError(f"unknown algebraic transform kind: {kind}")
 
 
@@ -463,7 +487,8 @@ class RimeProposer(ProposerBase):
                 for _label, base_name, kind, scale_feat in specs
             ]
             out = np.asarray(apedp_kernel.rime_evaluate_series_json(graph_json, cols), dtype=float)
-            return scale * out + intercept
+            _out: np.ndarray = scale * out + intercept
+            return _out
 
         return compute_score
 

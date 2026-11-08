@@ -261,10 +261,12 @@ def run_persistent_ambiguity_experiment(seed: int = 42) -> PersistentAmbiguityRe
     # -------------------------------------------------------------
     # Construct model prediction functions
     def fn_u(X: dict[str, np.ndarray]) -> np.ndarray:
-        return np.asarray(X["u"] * coef_u[0])
+        _out: np.ndarray = np.asarray(X["u"] * coef_u[0])
+        return _out
 
     def fn_w(X: dict[str, np.ndarray]) -> np.ndarray:
-        return np.asarray(X["w"] * coef_w[0])
+        _out: np.ndarray = np.asarray(X["w"] * coef_w[0])
+        return _out
 
     models: list[tuple[str, Callable[[dict[str, np.ndarray]], np.ndarray]]] = [
         ("mechanism_u", fn_u), ("mechanism_w", fn_w)]

@@ -93,7 +93,8 @@ class ContinuousWaveletVAE:
             pad = np.zeros((self.latent_channels - latent.shape[0], h_prime, w_prime), dtype=latent.dtype)
             latent = np.concatenate([latent, pad], axis=0)
 
-        return latent
+        _out: np.ndarray = latent
+        return _out
 
     def decode_frame(self, latent: np.ndarray, target_shape: tuple[int, int] | None = None) -> np.ndarray:
         """Decode a latent representation (C, H', W') back to an RGB frame (3, H, W)."""
@@ -152,7 +153,8 @@ class ContinuousWaveletVAE:
 
             rgb = np.stack(rgb_channels, axis=0)
 
-        return np.asarray(np.asarray(np.asarray(np.clip(rgb, 0.0, 1.0))))
+        _out: np.ndarray = np.asarray(np.asarray(np.asarray(np.clip(rgb, 0.0, 1.0))))
+        return _out
 
 
 class VideoVAEBridge:
@@ -182,7 +184,8 @@ class VideoVAEBridge:
             raise ValueError(f"Expected 4D video array (T, 3, H, W), got shape {video_rgb.shape}")
         num_frames = video_rgb.shape[0]
         latent_frames = [self.vae.encode_frame(video_rgb[t]) for t in range(num_frames)]
-        return np.stack(latent_frames, axis=0)
+        _out: np.ndarray = np.stack(latent_frames, axis=0)
+        return _out
 
     def decode_latent_to_video(self, latent_video: np.ndarray) -> np.ndarray:
         """Decode dense 4D latent (T, C, H', W') back to RGB video (T, 3, H, W)."""
@@ -190,7 +193,8 @@ class VideoVAEBridge:
             raise ValueError(f"Expected 4D latent array (T, C, H', W'), got shape {latent_video.shape}")
         num_frames = latent_video.shape[0]
         rgb_frames = [self.vae.decode_frame(latent_video[t]) for t in range(num_frames)]
-        return np.stack(rgb_frames, axis=0)
+        _out: np.ndarray = np.stack(rgb_frames, axis=0)
+        return _out
 
     def encode_video_to_tt(
         self,
@@ -295,7 +299,7 @@ class DiffusersVAEBridge:
             else:
                 if not model_id:
                     raise ValueError("provide model_id or config_only=True")
-                vae = AutoencoderKL.from_pretrained(model_id)  # type: ignore[assignment]
+                vae = AutoencoderKL.from_pretrained(model_id)
         vae.eval()
         self.vae = vae
         self.latent_channels = int(vae.config.latent_channels)
@@ -316,7 +320,8 @@ class DiffusersVAEBridge:
             dist = self.vae.encode(x).latent_dist
             z = dist.mode() if hasattr(dist, "mode") else dist
             z = z * self.scaling_factor
-        return np.asarray(z[0].double().numpy())
+        _out: np.ndarray = np.asarray(z[0].double().numpy())
+        return _out
 
     def decode_frame(self, latent: np.ndarray, target_shape: tuple[int, int] | None = None) -> np.ndarray:
         import torch
@@ -331,18 +336,21 @@ class DiffusersVAEBridge:
         with torch.no_grad():
             x = self.vae.decode(z).sample
         rgb = ((x[0] + 1.0) * 0.5).clamp(0.0, 1.0)
-        return np.asarray(rgb.double().numpy())
+        _out: np.ndarray = np.asarray(rgb.double().numpy())
+        return _out
 
     # -- video + TT composition ------------------------------
     def encode_video_to_latent(self, video_rgb: np.ndarray) -> np.ndarray:
         if video_rgb.ndim != 4:
             raise ValueError(f"Expected (T, 3, H, W), got {video_rgb.shape}")
-        return np.stack([self.encode_frame(video_rgb[t]) for t in range(video_rgb.shape[0])], axis=0)
+        _out: np.ndarray = np.stack([self.encode_frame(video_rgb[t]) for t in range(video_rgb.shape[0])], axis=0)
+        return _out
 
     def decode_latent_to_video(self, latent_video: np.ndarray) -> np.ndarray:
         if latent_video.ndim != 4:
             raise ValueError(f"Expected (T, L, H', W'), got {latent_video.shape}")
-        return np.stack([self.decode_frame(latent_video[t]) for t in range(latent_video.shape[0])], axis=0)
+        _out: np.ndarray = np.stack([self.decode_frame(latent_video[t]) for t in range(latent_video.shape[0])], axis=0)
+        return _out
 
     def encode_video_to_tt(self, video_rgb: np.ndarray, bond_ranks: int | tuple[int, int, int] = 16):
         from apedp_dyn.video.tensor_train_video import compress_video_latent

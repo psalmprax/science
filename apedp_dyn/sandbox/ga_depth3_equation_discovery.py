@@ -93,7 +93,8 @@ def causal_standardize(x: np.ndarray, min_history: int = 5) -> np.ndarray:
     sd = s.expanding(min_history).std().ffill().to_numpy()
     sd = np.where(sd < 1e-4, 1.0, sd)
     res = (x - mu) / sd
-    return np.asarray(np.asarray(np.asarray(np.nan_to_num(res, nan=0.0, posinf=0.0, neginf=0.0))))
+    _out: np.ndarray = np.asarray(np.asarray(np.asarray(np.nan_to_num(res, nan=0.0, posinf=0.0, neginf=0.0))))
+    return _out
 
 
 # ── Feature Extraction Helpers ─────────────────────────────────────────────
@@ -352,7 +353,7 @@ def run_depth3_genetic_algorithm(
     # Initial population
     population: list[EvolvedChromosome] = []
     for _i in range(pop_size):
-        mask = np.zeros(K, dtype=bool)
+        mask: np.ndarray = np.zeros(K, dtype=bool)
         # Always pick at least 1 Depth-3 term
         mask[rng.randint(D3_START, K)] = True
         k_terms = rng.randint(min_terms, max_terms + 1)

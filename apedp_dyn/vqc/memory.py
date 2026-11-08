@@ -324,7 +324,8 @@ def _run_child(payload: dict[str, Any], *, timeout_seconds: float) -> dict[str, 
             f"the measurement child exited {completed.returncode}: "
             f"{(completed.stderr or completed.stdout).strip()[-400:]}")
     try:
-        return json.loads(completed.stdout.strip().splitlines()[-1])
+        _out: dict[str, Any] = json.loads(completed.stdout.strip().splitlines()[-1])
+        return _out
     except (IndexError, json.JSONDecodeError) as error:  # pragma: no cover - defensive
         raise MemoryUnavailable(
             f"the measurement child printed nothing readable ({error}): "

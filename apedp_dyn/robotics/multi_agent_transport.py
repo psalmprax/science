@@ -80,7 +80,8 @@ def compute_cbf_repulsive_force(
     dist = float(np.linalg.norm(diff))
     if dist < 1e-9:
         # Avoid division by zero on exact collision
-        return np.array([k_rep, 0.0])
+        _out: np.ndarray = np.array([k_rep, 0.0])
+        return _out
     if dist >= r_warning:
         return np.zeros(2)
 
@@ -99,7 +100,8 @@ def compute_cbf_repulsive_force(
             # the other agent's own heading resolves to the opposite tangential
             # side, so the pair separates rather than both freezing.
             force = force + anti_par * magnitude * perp
-    return force
+    _out = force
+    return _out
 
 
 def pairwise_repulsive_forces(
@@ -157,7 +159,8 @@ def pairwise_repulsive_forces(
 
     # Sum over j != i (masked). Diagonal contributions are always zero:
     # degen/near are both off-diagonal, and far pairs stay zeros.
-    return f.sum(axis=1)
+    _out: np.ndarray = f.sum(axis=1)
+    return _out
 
 
 def multi_agent_step(

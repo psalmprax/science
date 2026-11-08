@@ -40,7 +40,7 @@ from __future__ import annotations
 import dataclasses
 import json
 from collections.abc import Mapping
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from apedp_dyn.vqc.circuit import Circuit, Gate
 from apedp_dyn.vqc.equivalence import (
@@ -77,7 +77,7 @@ class Candidate(Protocol):
     circuit: Circuit
     claims: Mapping[str, int]
 
-    def as_dict(self) -> dict:  # pragma: no cover - structural protocol
+    def as_dict(self) -> dict[str, Any]:  # pragma: no cover - structural protocol
         ...
 
 
@@ -101,7 +101,7 @@ class CircuitCandidate:
     seed: int | None = 0
     metadata: Mapping[str, str] = dataclasses.field(default_factory=dict)
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "candidate_id": self.candidate_id,
             "source": self.source,
@@ -168,7 +168,7 @@ class CandidateVerdict:
         return (self.verdict == "VALID" and self.claim_verdict != "UNMET"
                 and self.evidence == "SUFFICIENT")
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "candidate": self.candidate.as_dict(),
             "tier": self.tier,

@@ -411,8 +411,8 @@ def _calibrate_clocks(
         beta, _, _, covariance = _ols(
             channel.fractional_frequency, design, xtx_inverse
         )
-        chi = np.empty(harmonics, dtype=complex)
-        sigma = np.empty(harmonics, dtype=float)
+        chi: np.ndarray = np.empty(harmonics, dtype=complex)
+        sigma: np.ndarray = np.empty(harmonics, dtype=float)
         for index, (ia, ib) in enumerate(_harmonic_indices(harmonics)):
             chi[index] = float(beta[ia]) - 1j * float(beta[ib])
             variance = float(covariance[ia, ia] + covariance[ib, ib])
@@ -450,7 +450,7 @@ def _confirmation_residuals(
         scale_by_amplitude=False,
     )
     xtx_inverse = np.linalg.pinv(design.T @ design)
-    residuals = np.empty(
+    residuals: np.ndarray = np.empty(
         (len(confirmation.channels), confirmation.time_s.size), dtype=float
     )
     for row, channel in enumerate(confirmation.channels):
@@ -475,7 +475,8 @@ def _project_amplitudes(
     amplitudes = np.empty((residuals.shape[0], harmonics), dtype=complex)
     for index, (ia, ib) in enumerate(_harmonic_indices(harmonics)):
         amplitudes[:, index] = betas[:, ia] - 1j * betas[:, ib]
-    return amplitudes
+    _out: np.ndarray = amplitudes
+    return _out
 
 
 def _fit_confirmation_amplitudes(
@@ -563,7 +564,8 @@ def _surrogate_residuals(
             surrogate[row] += amplitude * np.real(
                 error * np.exp(1j * (index + 1) * theta)
             )
-    return surrogate
+    _out: np.ndarray = surrogate
+    return _out
 
 
 def validate_temporal_rate_pair(
@@ -827,8 +829,8 @@ def adjudicate_temporal_rate_modulation(
         ]
     )
     rng = np.random.default_rng(seed)
-    null_statistics = np.empty(n_surrogates, dtype=float)
-    null_heterogeneities = np.empty(n_surrogates, dtype=float)
+    null_statistics: np.ndarray = np.empty(n_surrogates, dtype=float)
+    null_heterogeneities: np.ndarray = np.empty(n_surrogates, dtype=float)
     for draw in range(n_surrogates):
         surrogate = _surrogate_residuals(
             fit_residuals,

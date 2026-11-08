@@ -38,19 +38,25 @@ def _extract_timestamps(data: Any) -> np.ndarray:
                 ts = _extract_timestamps(v)
                 if len(ts) > 0:
                     all_ts.append(ts)
-        return np.sort(np.concatenate(all_ts)) if all_ts else np.array([], dtype=float)
+        _out: np.ndarray = np.sort(np.concatenate(all_ts)) if all_ts else np.array([], dtype=float)
+        return _out
     if isinstance(data, pd.DataFrame):
         for col in ("timestamp", "t", "time"):
             if col in data.columns:
-                return np.sort(np.asarray(data[col].to_numpy(dtype=float)))
+                _out = np.sort(np.asarray(data[col].to_numpy(dtype=float)))
+                return _out
         if isinstance(data.index, pd.DatetimeIndex):
-            return np.sort(data.index.astype(np.int64).to_numpy() / 1e9)
-        return np.sort(np.asarray(data.index.to_numpy(dtype=float)))
+            _out = np.sort(data.index.astype(np.int64).to_numpy() / 1e9)
+            return _out
+        _out = np.sort(np.asarray(data.index.to_numpy(dtype=float)))
+        return _out
     if isinstance(data, pd.Series):
-        return np.sort(np.asarray(data.to_numpy(dtype=float)))
+        _out = np.sort(np.asarray(data.to_numpy(dtype=float)))
+        return _out
     if isinstance(data, (np.ndarray, list, tuple)):
         return np.sort(np.asarray(data, dtype=float))
-    return np.array([], dtype=float)
+    _out = np.array([], dtype=float)
+    return _out
 
 
 class HawkesOrderFlowProposer(ProposerBase):
@@ -177,7 +183,7 @@ class HawkesOrderFlowProposer(ProposerBase):
 
             # 1. Identify arrival weights / order-flow volume if available
             # Normalized against fit-time distribution or causal expanding mean (no future leak)
-            weights = np.ones(n_samples, dtype=float)
+            weights: np.ndarray = np.ones(n_samples, dtype=float)
             has_vol = False
             for vcol in ("volume", "vol", "size", "trades", "count"):
                 if vcol in df.columns:
@@ -186,7 +192,7 @@ class HawkesOrderFlowProposer(ProposerBase):
                         weights = raw_v / fit_mean_v
                         has_vol = True
                     else:
-                        cum_v = np.cumsum(raw_v)
+                        cum_v: np.ndarray = np.cumsum(raw_v)
                         exp_v = cum_v / np.arange(1, n_samples + 1)
                         weights = np.where(exp_v > 1e-12, raw_v / np.maximum(exp_v, 1e-12), 1.0)
                         has_vol = True
@@ -203,7 +209,7 @@ class HawkesOrderFlowProposer(ProposerBase):
                             weights = abs_dp / fit_mean_dp
                             has_vol = True
                         else:
-                            cum_dp = np.cumsum(abs_dp)
+                            cum_dp: np.ndarray = np.cumsum(abs_dp)
                             exp_dp = cum_dp / np.arange(1, n_samples + 1)
                             weights = np.where(exp_dp > 1e-12, abs_dp / np.maximum(exp_dp, 1e-12), 1.0)
                             has_vol = True
@@ -218,7 +224,7 @@ class HawkesOrderFlowProposer(ProposerBase):
             if ts is None and isinstance(df.index, pd.DatetimeIndex):
                 ts = df.index.astype(np.int64).to_numpy() / 1e9
 
-            sig = np.zeros(n_samples, dtype=float)
+            sig: np.ndarray = np.zeros(n_samples, dtype=float)
             if ts is not None and len(ts) == n_samples:
                 for idx in range(1, n_samples):
                     delta_t = max(ts[idx] - ts[idx - 1], 1e-6)
@@ -235,8 +241,10 @@ class HawkesOrderFlowProposer(ProposerBase):
             # statistics (Finding 10: eval-frame mean/std is full-future leak).
             if not binary_viable:
                 if fit_intens_std > 1e-8:
-                    return (intens - fit_intens_mean) / fit_intens_std
-                return intens - fit_intens_mean
+                    _out: np.ndarray = (intens - fit_intens_mean) / fit_intens_std
+                    return _out
+                _out = intens - fit_intens_mean
+                return _out
             surge = (intens > tau_intensity).astype(float)
             # FLAW-09: an eval-frame collapse (e.g. a low-volatility interval
             # where the surge never binds) used to switch the scorer's return
@@ -247,7 +255,8 @@ class HawkesOrderFlowProposer(ProposerBase):
             # stays constant. The fit-time continuous declaration is the
             # separate, deliberate path (binary_viable=False → the candidate
             # is declared CONTINUOUS_FACTOR above) and is untouched.
-            return surge
+            _out = surge
+            return _out
 
         cand = CandidateProposal(
             proposer_id=self.proposer_id,

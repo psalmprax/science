@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -100,7 +100,7 @@ class RustFlowHeadSpec:
         return n
 
 
-def pack_weights(state_dict: dict) -> np.ndarray:
+def pack_weights(state_dict: dict[str, Any]) -> np.ndarray:
     """Flatten a torch LearnedFlowHead state_dict into the kernel layout.
 
     torch Conv2d weight shape is (out, in, ky, kx) row-major: identical order
@@ -120,13 +120,14 @@ def pack_weights(state_dict: dict) -> np.ndarray:
         weights.append(np.asarray(state_dict[wk], dtype=np.float64).ravel())
         weights.append(np.asarray(state_dict[bk], dtype=np.float64).ravel())
     packed = np.concatenate(weights)
-    return np.ascontiguousarray(packed, dtype=np.float64)
+    _out: np.ndarray = np.ascontiguousarray(packed, dtype=np.float64)
+    return _out
 
 
-def unpack_weights(packed: np.ndarray, spec: RustFlowHeadSpec) -> dict:
+def unpack_weights(packed: np.ndarray, spec: RustFlowHeadSpec) -> dict[str, Any]:
     """Inverse of `pack_weights`: kernel layout -> torch state_dict keys."""
     flat = np.asarray(packed, dtype=np.float64)
-    out: dict = {}
+    out: dict[str, Any] = {}
     pos = 0
     c_prev = spec.context_channels * 2
     for layer in range(spec.n_layers):

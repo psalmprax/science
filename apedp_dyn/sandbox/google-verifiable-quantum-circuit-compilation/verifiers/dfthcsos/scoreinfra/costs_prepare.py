@@ -136,7 +136,8 @@ class SpinFreeData_V1:
         for_qroam_dag = QI_cost + (self.B + 1) + self.N + b2
         uniform_b = 4 * math.ceil(math.log2(self.B + 1))
         uniform_b_dag = uniform_b
-        return for_qroam + for_qroam_dag + uniform_b + uniform_b_dag
+        _out: int = for_qroam + for_qroam_dag + uniform_b + uniform_b_dag
+        return _out
 
     def givens_rotations(self) -> int:
         """Toffolis of the ``N - 1`` Givens rotations across the forward and reverse passes.

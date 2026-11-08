@@ -170,7 +170,8 @@ def build_family_probes_mv_v2(
             X = fd[feats].to_numpy(dtype=float)
             q = (X[:, i] * X[:, j] - mq) / max(sq, 1e-12)
             Z = np.column_stack([np.sin(c * q), np.cos(c * q), X, np.ones(len(q))])
-            return np.asarray(Z @ w, dtype=float)
+            _out: np.ndarray = np.asarray(Z @ w, dtype=float)
+            return _out
 
         probes.append(scored_from_predict(
             PROBE_MV_V2_IDS[0], pred_pq, dev, hold,
@@ -189,7 +190,8 @@ def build_family_probes_mv_v2(
                 X = fd[feats].to_numpy(dtype=float)
                 z = X[:, i] + s * X[:, j]
                 Z = np.column_stack([np.abs(z), X, np.ones(len(z))])
-                return np.asarray(Z @ w, dtype=float)
+                _out: np.ndarray = np.asarray(Z @ w, dtype=float)
+                return _out
 
             probes.append(scored_from_predict(
                 PROBE_MV_V2_IDS[1], pred_abs, dev, hold,
@@ -209,7 +211,8 @@ def build_family_probes_mv_v2(
                 xj = (X[:, j] - mx) / max(sx, 1e-12)
                 xk = X[:, k]
                 Z = np.column_stack([np.sin(c * xj) * xk, np.cos(c * xj) * xk, X, np.ones(len(xj))])
-                return np.asarray(Z @ w, dtype=float)
+                _out: np.ndarray = np.asarray(Z @ w, dtype=float)
+                return _out
 
             probes.append(scored_from_predict(
                 PROBE_MV_V2_IDS[2], pred_am, dev, hold,

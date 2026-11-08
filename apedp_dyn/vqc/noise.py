@@ -21,6 +21,7 @@ and the tests apply every channel on a grid of probabilities.
 from __future__ import annotations
 
 import math
+from typing import Any
 
 import numpy as np
 
@@ -36,7 +37,7 @@ __all__ = [
     "purity_of_bell_after_depolarizing",
 ]
 
-_I = np.eye(2, dtype=np.complex128)
+_I: np.ndarray = np.eye(2, dtype=np.complex128)
 _X = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.complex128)
 _Y = np.array([[0.0, -1.0j], [1.0j, 0.0]], dtype=np.complex128)
 _Z = np.array([[1.0, 0.0], [0.0, -1.0]], dtype=np.complex128)
@@ -199,7 +200,7 @@ class DensityMatrix:
                     and abs(self.trace() - 1.0) <= tolerance
                     and self.min_eigenvalue() >= -tolerance)
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {"trace": self.trace(), "purity": self.purity(),
                 "min_eigenvalue": self.min_eigenvalue(), "num_qubits": self.num_qubits}
 

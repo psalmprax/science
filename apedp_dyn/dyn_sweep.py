@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import dataclasses
 import time
+from typing import Any
 
 import numpy as np
 
@@ -58,7 +59,7 @@ def _with_noise(prob, pct: float, seed: int):
     train = dict(prob.train)
     holdout = dict(prob.holdout)
     for reg in (train, holdout):
-        Y = np.asarray(reg["truth_y"], dtype=float)
+        Y: np.ndarray = np.asarray(reg["truth_y"], dtype=float)
         scale = np.std(Y, axis=0)
         train_noisy = Y + rng.normal(0.0, pct / 100.0 * scale, Y.shape)
         reg["truth_y"] = train_noisy
@@ -167,7 +168,7 @@ def run_cell(problem_name: str, pct: float, rep: int,
     }
 
 
-def build_slates() -> dict[str, dict]:
+def build_slates() -> dict[str, dict[str, Any]]:
     duff = _duff_stab_base(False)
     stab = _duff_stab_base(True)
     coup = coupled.load()
@@ -186,10 +187,10 @@ def build_slates() -> dict[str, dict]:
 
 def run_sweep(problems: tuple[str, ...] = ("DUFF", "COUP", "STAB"),
               pcts: tuple[float, ...] = SIGMA_PCTS,
-              reps: tuple[int, ...] = REPS) -> dict:
+              reps: tuple[int, ...] = REPS) -> dict[str, Any]:
     slate = build_slates()
     cells = [run_cell(p, pct, rep, slate) for p in problems for pct in pcts for rep in reps]
-    curves: dict[str, dict] = {}
+    curves: dict[str, dict[str, Any]] = {}
     for p in problems:
         curves[p] = {}
         for pct in pcts:

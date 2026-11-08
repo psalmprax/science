@@ -114,8 +114,10 @@ def transmute_and_propose(
                 x_val = df[feat].to_numpy(dtype=float) if feat in df.columns else df.iloc[:, 0].to_numpy(dtype=float)
                 safe_x = np.where(x_val > 1e-12, x_val, np.nan)
                 if k_pow == 0.0:
-                    return np.asarray(np.asarray(np.asarray(c_pref * np.exp(-c_bar / safe_x))))
-                return np.asarray(np.asarray(np.asarray(c_pref * (safe_x ** k_pow) * np.exp(-c_bar / safe_x))))
+                    _out: np.ndarray = np.asarray(np.asarray(np.asarray(c_pref * np.exp(-c_bar / safe_x))))
+                    return _out
+                _out = np.asarray(np.asarray(np.asarray(c_pref * (safe_x ** k_pow) * np.exp(-c_bar / safe_x))))
+                return _out
 
             params = {"prefactor": c_prefactor, "power": k_power, "barrier": c_barrier}
             cand = CandidateProposal(
@@ -162,7 +164,8 @@ def transmute_and_propose(
             formula_str = f"{c_prefactor:.6g} * ({feature_name} ** {k_power:.4g})"
             def _power_law_scorer(df: pd.DataFrame, c_pref=c_prefactor, k_pow=k_power, feat=feature_name) -> np.ndarray:
                 x_val = df[feat].to_numpy(dtype=float) if feat in df.columns else df.iloc[:, 0].to_numpy(dtype=float)
-                return np.asarray(np.asarray(np.asarray(c_pref * (x_val ** k_pow))))
+                _out: np.ndarray = np.asarray(np.asarray(np.asarray(c_pref * (x_val ** k_pow))))
+                return _out
 
             params = {"prefactor": c_prefactor, "power": k_power}
             cand = CandidateProposal(
@@ -220,7 +223,8 @@ def transmute_and_propose(
             formula_str = f"{quantum_step:.6g} * floor(({feature_name} - {x_offset:.6g}) / {step_width:.6g})"
             def _quantum_step_scorer(df: pd.DataFrame, q_step=quantum_step, s_width=step_width, x_off=x_offset, feat=feature_name) -> np.ndarray:
                 x_val = df[feat].to_numpy(dtype=float) if feat in df.columns else df.iloc[:, 0].to_numpy(dtype=float)
-                return np.asarray(np.asarray(np.asarray(q_step * np.floor((x_val - x_off) / s_width + 1e-6))))
+                _out: np.ndarray = np.asarray(np.asarray(np.asarray(q_step * np.floor((x_val - x_off) / s_width + 1e-6))))
+                return _out
 
             params = {"quantum_step": quantum_step, "step_width": step_width, "offset": x_offset}
             cand = CandidateProposal(

@@ -29,7 +29,8 @@ def bump(tau: np.ndarray) -> np.ndarray:
     inside = np.abs(tau) < 1.0
     s = tau[inside]
     out[inside] = np.exp(-1.0 / (1.0 - s ** 2))
-    return out
+    _out: np.ndarray = out
+    return _out
 
 
 def bump_deriv(tau: np.ndarray) -> np.ndarray:
@@ -38,7 +39,8 @@ def bump_deriv(tau: np.ndarray) -> np.ndarray:
     inside = np.abs(tau) < 1.0
     s = tau[inside]
     out[inside] = np.exp(-1.0 / (1.0 - s ** 2)) * (-2.0 * s / (1.0 - s ** 2) ** 2)
-    return out
+    _out: np.ndarray = out
+    return _out
 
 
 @dataclass(frozen=True)
@@ -54,7 +56,8 @@ class WeakWindows:
         return bump((np.asarray(t, dtype=float) - self.centers[j]) / self.radius)
 
     def phi_dot(self, t: np.ndarray, j: int) -> np.ndarray:
-        return bump_deriv((np.asarray(t, dtype=float) - self.centers[j]) / self.radius) / self.radius
+        _out: np.ndarray = bump_deriv((np.asarray(t, dtype=float) - self.centers[j]) / self.radius) / self.radius
+        return _out
 
 
 def make_windows(t_span: tuple[float, float], n_windows: int = 32,

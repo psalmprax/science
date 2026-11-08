@@ -65,7 +65,7 @@ import numpy as np
 try:
     import kickmix as km
 except ImportError:
-    km = None  # type: ignore[assignment]
+    km = None
 
 W = 22
 MB = 21
@@ -78,7 +78,8 @@ F2, F1, FYR, GY, DROP2 = 8, 19, 27, 1, (5,)  # precision configuration (verified
 @functools.lru_cache(None)
 def fitc(lo, hi, mid, scale, deg=2, iters=80):
     def f(M: np.ndarray) -> np.ndarray:
-        return scale / np.sqrt(M)
+        _out: np.ndarray = scale / np.sqrt(M)
+        return _out
 
     d = np.linspace(lo - mid, hi - mid, 3001)
     A = np.vander(d, deg + 1, increasing=True)
@@ -130,7 +131,7 @@ MAX_X = 3_133_452
 
 
 def valid_residuals(e, a):
-    d = np.arange(1 << DB, dtype=np.int64)
+    d: np.ndarray = np.arange(1 << DB, dtype=np.int64)
     xn = (1 << MB) + (a << DB) + d
     mask = (d % 2 == 0) if e else ((xn <= MAX_X) | (d % 4 == 0))
     return d[mask]

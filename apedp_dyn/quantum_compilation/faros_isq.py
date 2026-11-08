@@ -413,21 +413,24 @@ class ErrorBudgetEngine:
     def target_phase_turns(xs: np.ndarray) -> np.ndarray:
         """Target phase beta / sqrt(x) mod 1 in turns."""
         xs = np.asarray(xs, dtype=np.float64)
-        return (1.0 / np.sqrt(xs)) % 1.0
+        _out: np.ndarray = (1.0 / np.sqrt(xs)) % 1.0
+        return _out
 
     @staticmethod
     def target_phase_units(xs: np.ndarray) -> np.ndarray:
         """Target phase in official 64-bit uint64 units (units of 2^-64 turns)."""
         xs = np.asarray(xs, dtype=np.float64)
         turns = (1.0 / np.sqrt(xs)) % 1.0
-        return np.floor(turns * (2.0**64)).astype(np.uint64)
+        _out: np.ndarray = np.floor(turns * (2.0**64)).astype(np.uint64)
+        return _out
 
     @staticmethod
     def tolerance_phase_units(xs: np.ndarray) -> np.ndarray:
         """Allowed phase tolerance tol(x) = 2^-24 / sqrt(x) in 2^-64 turn units."""
         xs = np.asarray(xs, dtype=np.float64)
         tol_turns = (2.0**-TOLERANCE_EXPONENT) / np.sqrt(xs)
-        return np.floor(tol_turns * (2.0**64)).astype(np.uint64)
+        _out: np.ndarray = np.floor(tol_turns * (2.0**64)).astype(np.uint64)
+        return _out
 
     @classmethod
     def evaluate_margin(
@@ -499,9 +502,9 @@ def generate_evaluation_subset(
     max_x: int = MAX_X, *, prefix: int = 4096, stride: int = 67
 ) -> np.ndarray:
     """Deterministic, dense-low-x evaluation subset across the 3,133,452 domain."""
-    p_pts = np.arange(1, min(max_x, prefix) + 1, dtype=np.int64)
-    s_pts = np.arange(min(max_x, prefix) + 1, max_x + 1, stride, dtype=np.int64)
-    boundaries = np.asarray(
+    p_pts: np.ndarray = np.arange(1, min(max_x, prefix) + 1, dtype=np.int64)
+    s_pts: np.ndarray = np.arange(min(max_x, prefix) + 1, max_x + 1, stride, dtype=np.int64)
+    boundaries: np.ndarray = np.asarray(
         [1, 2, 3, 4, 5, 6, 7, 8, max_x - 1, max_x]
         + [2**k for k in range(1, 23) if 1 <= 2**k <= max_x]
         + [3 * (2**k) for k in range(1, 21) if 1 <= 3 * (2**k) <= max_x],
@@ -509,7 +512,8 @@ def generate_evaluation_subset(
     )
     all_pts = np.concatenate([p_pts, s_pts, boundaries])
     all_pts = all_pts[(all_pts >= 1) & (all_pts <= max_x)]
-    return np.unique(all_pts)
+    _out: np.ndarray = np.unique(all_pts)
+    return _out
 
 
 def compute_segment_boundaries(
@@ -526,14 +530,16 @@ def compute_segment_boundaries(
         # f'''(M) proportional to M^(-7/2). Optimal interval step h(M) ~ M^(7/6).
         # Integrate M^(-7/6) dM: integral of M^(-1/6) is proportional to M^(5/6)
         u = np.linspace(m_min ** (5.0 / 6.0), m_max ** (5.0 / 6.0), num_segments + 1)
-        return u ** (6.0 / 5.0)
+        _out: np.ndarray = u ** (6.0 / 5.0)
+        return _out
 
     if strategy == SegmentationStrategy.DYADIC_OCTAVE:
         # Finer dyadic split near m_min, coarser near m_max
         t = np.linspace(0, 1, num_segments + 1)
         # Quadratic bias toward m_min
         warped = t**1.5
-        return m_min + (m_max - m_min) * warped
+        _out = m_min + (m_max - m_min) * warped
+        return _out
 
     # Default fallback: uniform
     return np.linspace(m_min, m_max, num_segments + 1)
@@ -562,7 +568,7 @@ def _evaluate_piecewise_chebyshev_minimax(
     )
     quant_step = 2.0 ** -coef_bits
 
-    cheb_j = np.arange(degree + 1, dtype=np.float64)
+    cheb_j: np.ndarray = np.arange(degree + 1, dtype=np.float64)
     nodes_ref = np.cos((2.0 * cheb_j + 1.0) * np.pi / (2.0 * (degree + 1)))
 
     approx = np.zeros_like(m)
@@ -586,7 +592,8 @@ def _evaluate_piecewise_chebyshev_minimax(
     poly_q = np.round(approx / quant_step) * quant_step
     y_val = e_factor * poly_q
     phase_turns = (scale_factor * y_val) % 1.0
-    return np.floor(phase_turns * (2.0**64)).astype(np.uint64)
+    _out: np.ndarray = np.floor(phase_turns * (2.0**64)).astype(np.uint64)
+    return _out
 
 
 # --- R1: Nonuniform Piecewise Minimax Polynomial ---
@@ -1435,7 +1442,7 @@ def exhaustive_integer_certificate(
 
     for start in range(1, MAX_X + 1, chunk_size):
         end = min(start + chunk_size, MAX_X + 1)
-        xs = np.arange(start, end, dtype=np.int64)
+        xs: np.ndarray = np.arange(start, end, dtype=np.int64)
         values = integer_model(xs, cfg, tables).astype(np.uint64)
         phase = values << np.uint64(64 - output_fraction)
         roots = [math.isqrt((1 << 130) // int(x)) for x in xs]

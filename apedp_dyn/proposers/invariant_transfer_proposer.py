@@ -209,7 +209,8 @@ class InvariantTransferProposer(ProposerBase):
                         for c in c_list:
                             out += c * x_pow
                             x_pow *= xv
-                        return np.asarray(np.asarray(np.asarray(out)))
+                        _out: np.ndarray = np.asarray(np.asarray(np.asarray(out)))
+                        return _out
                     return compute_score
 
                 proposals.append(

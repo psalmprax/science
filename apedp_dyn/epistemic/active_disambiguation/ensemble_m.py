@@ -10,6 +10,7 @@ Question: does M3 beat M0 out-of-sample after overlap/complexity? Overlap
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import numpy.linalg as la
@@ -29,7 +30,7 @@ MEMBERS = {"M0": ("sig",), "M1": ("sig", "rankV"), "M2": ("sig", "HA"), "M3": ("
 @dataclass(frozen=True)
 class EnsembleResult:
     asset: str
-    r2: dict
+    r2: dict[str, Any]
     delta_m3_m0: float
     win_rate_m3_m0: float
     n_origins: int

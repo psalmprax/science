@@ -342,7 +342,7 @@ def train_flow_head(model: LearnedFlowHead,
             f"no training windows fit: need at least {k + 2} consecutive frames "
             f"(got t_total={t_total}, rollout_steps={k})"
         )
-    valid_arr = np.asarray(valid_tis, dtype=np.int64)
+    valid_arr: np.ndarray = np.asarray(valid_tis, dtype=np.int64)
     for step in range(steps):
         ti = int(valid_arr[rng.randint(0, valid_arr.shape[0])])
         z_prev = data[ti - 1: ti]
@@ -431,4 +431,5 @@ def rollout_dcstt_head(head: LearnedFlowHead,
         z_prev, z_curr = z_curr, z_state_new[:, ch]
         z_state = z_state_new
         frames.append(z_state.squeeze(0).numpy().copy())
-    return np.stack(frames, axis=0)
+    _out: np.ndarray = np.stack(frames, axis=0)
+    return _out

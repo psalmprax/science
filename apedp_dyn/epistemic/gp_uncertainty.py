@@ -27,7 +27,8 @@ class RBFKernel:
         X2 = np.atleast_2d(X2)
         # compute squared distance
         sqdist = np.sum(X1**2, 1).reshape(-1, 1) + np.sum(X2**2, 1) - 2 * np.dot(X1, X2.T)
-        return self.sigma_f**2 * np.exp(-0.5 / self.length_scale**2 * sqdist)
+        _out: np.ndarray = self.sigma_f**2 * np.exp(-0.5 / self.length_scale**2 * sqdist)
+        return _out
 
 
 class GaussianProcessRegressor:
@@ -88,4 +89,5 @@ class BayesianOptimizer:
             from scipy.stats import norm
             ei = imp * norm.cdf(Z) + sigma * norm.pdf(Z)
             ei[sigma == 0.0] = 0.0
-        return ei
+        _out: np.ndarray = ei
+        return _out

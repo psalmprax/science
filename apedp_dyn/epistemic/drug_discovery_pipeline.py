@@ -224,7 +224,8 @@ class VSASynthonDrugGenerator:
             + size * self.vsa.get_or_create_vector("size")
         )
         norm = float(np.linalg.norm(vec))
-        return vec / norm if norm > 1e-9 else vec
+        _out: np.ndarray = vec / norm if norm > 1e-9 else vec
+        return _out
 
     def generate_proposals_for_pocket(
         self,

@@ -32,7 +32,7 @@ from scipy.sparse.linalg import spsolve
 try:  # pragma: no cover - exercised only on kernel-less installs
     import apedp_kernel as ak
 except ImportError:  # kernel-only engine: fails at call time with an actionable error
-    from apedp_dyn.kernel_shim import missing_kernel as ak  # type: ignore[assignment]
+    from apedp_dyn.kernel_shim import missing_kernel as ak
 
 
 class EpistemicPdeVerdict(str, Enum):
@@ -293,7 +293,8 @@ def tikhonov_smooth_trajectory(arr: np.ndarray, alpha: float = 0.5) -> np.ndarra
     D2 = sparse.diags_array([d0, d1, d2], offsets=[0, 1, 2], shape=(nt - 2, nt), format='csc')
     A = sparse.eye_array(nt, format='csc') + alpha * (D2.T @ D2)
     smoothed = spsolve(A, mat)
-    return np.asarray(smoothed).reshape(orig_shape)
+    _out: np.ndarray = np.asarray(smoothed).reshape(orig_shape)
+    return _out
 
 
 def discover_pde_point_cloud_hd(

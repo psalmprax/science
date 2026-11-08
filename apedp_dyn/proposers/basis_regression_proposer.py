@@ -27,7 +27,7 @@ class BasisRegressionProposer(ProposerBase):
     def proposer_id(self) -> str:
         return f"basis_{self.basis}"
 
-    def build_basis(self, X: np.ndarray) -> tuple[np.ndarray, dict]:
+    def build_basis(self, X: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
         n_samples, n_vars = X.shape
         Phi = [np.ones(n_samples)]
         meta = {"type": self.basis}

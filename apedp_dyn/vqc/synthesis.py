@@ -672,7 +672,8 @@ def _projected_state_vector(target: TargetSpecification, *,
                 f"{pauli_string(labels, phase)} has empty intersection with the "
                 f"previous eigenspaces")
         vector = projected / norm
-    return vector
+    _out: np.ndarray = vector
+    return _out
 
 
 @dataclasses.dataclass(frozen=True)
@@ -1094,7 +1095,8 @@ def build(family: str, target: TargetSpecification, *, seed: int = 0) -> Constru
         raise SynthesisError(
             f"family {family!r} constructs a {targets[0]!r} state, but the target is "
             f"{target.name!r}")
-    return FAMILIES[family][1](target, seed=seed)
+    _out: Construction = FAMILIES[family][1](target, seed=seed)
+    return _out
 
 
 def default_families(target: TargetSpecification) -> tuple[str, ...]:
@@ -1133,7 +1135,8 @@ def _specification_order(raw: np.ndarray, num_qubits: int) -> np.ndarray:
     ``test_the_basis_order_of_the_two_tiers_is_pinned_on_an_asymmetric_state`` pins it.
     """
     order = [int(format(index, f"0{num_qubits}b")[::-1], 2) for index in range(1 << num_qubits)]
-    return np.asarray(raw, dtype=np.complex128)[order]
+    _out: np.ndarray = np.asarray(raw, dtype=np.complex128)[order]
+    return _out
 
 
 def _prepare_dense(circuit: Circuit) -> np.ndarray:

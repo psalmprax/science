@@ -62,7 +62,8 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
     y_holdout = np.sin(t_holdout)
 
     def osc_valid(t: np.ndarray) -> np.ndarray:
-        return np.sin(t)
+        _out: np.ndarray = np.sin(t)
+        return _out
 
     def energy_eval_valid(cand: Any, ds: Any) -> tuple[bool, float, str]:
         # d/dt energy = 0
@@ -110,7 +111,8 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
 
     # Case 2: Physics Energy Leak Trap (High R2 fit, but leaks energy by 18%)
     def osc_leak(t: np.ndarray) -> np.ndarray:
-        return np.sin(t) * np.exp(-0.02 * t)
+        _out: np.ndarray = np.sin(t) * np.exp(-0.02 * t)
+        return _out
 
     def energy_eval_leak(cand: Any, ds: Any) -> tuple[bool, float, str]:
         y = cand.model_callable(ds.X_train)
@@ -244,7 +246,8 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
     y_pop = 100.0 / (1.0 + 9.0 * np.exp(-1.2 * t_pop))
 
     def pop_valid(t: np.ndarray) -> np.ndarray:
-        return 100.0 / (1.0 + 9.0 * np.exp(-1.2 * t))
+        _out: np.ndarray = 100.0 / (1.0 + 9.0 * np.exp(-1.2 * t))
+        return _out
 
     inv_pos_valid = DeclaredInvariant(
         name="population_positivity",
@@ -263,7 +266,8 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
         declared_invariants=[inv_pos_valid],
     )
     def pop_rival(t: np.ndarray) -> np.ndarray:
-        return 10.0 * np.exp(0.3 * t)
+        _out: np.ndarray = 10.0 * np.exp(0.3 * t)
+        return _out
 
     rival_exp = AgnosticCandidateSpecification(
         candidate_id="BIO-05-RIVAL-EXP",
@@ -286,7 +290,8 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
         # Polynomial fit that dips negative for t near 0
         res = 100.0 / (1.0 + 9.0 * np.exp(-1.2 * t))
         res[0:3] = -4.5  # Unphysical negative population
-        return res
+        _out: np.ndarray = res
+        return _out
 
     inv_pos_trap = DeclaredInvariant(
         name="population_positivity",
@@ -318,7 +323,8 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
     y_causal = 2.5 * x_causal + 0.1
 
     def causal_model(x: np.ndarray) -> np.ndarray:
-        return 2.5 * x + 0.1
+        _out: np.ndarray = 2.5 * x + 0.1
+        return _out
 
     def do_x_eval_trap(cand: Any, ds: Any) -> tuple[bool, float, str]:
         # Under intervention do(X = 5), response is decoupled due to hidden confounder U
@@ -357,10 +363,12 @@ def generate_ablation_corpus() -> list[AblationTestCase]:
     y_extrap_test = np.tanh(0.8 * x_extrap_test)
 
     def extrap_valid(x: np.ndarray) -> np.ndarray:
-        return np.tanh(0.8 * x)
+        _out: np.ndarray = np.tanh(0.8 * x)
+        return _out
 
     def extrap_rival(x: np.ndarray) -> np.ndarray:
-        return 0.8 * x
+        _out: np.ndarray = 0.8 * x
+        return _out
 
     inv_extrap_valid = DeclaredInvariant(
         name="asymptotic_saturation_bound",

@@ -304,7 +304,7 @@ def problem_symbol_units(problem) -> dict[str, str]:
     return out
 
 
-def prune_admissible(problem, candidates: list) -> list[ScoredCandidate]:
+def prune_admissible(problem, candidates: list[Any]) -> list[ScoredCandidate]:
     """D1.4 pruning before expensive integration.
 
     materialize -> gate 1 (dimension) -> gate 2 (admissibility) -> dedup.

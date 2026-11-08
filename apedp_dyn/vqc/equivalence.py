@@ -124,7 +124,7 @@ def unitary(circuit: Circuit, *, tolerance_qubits: int = MAX_UNITARY_QUBITS) -> 
             raise NotAUnitaryCircuitError(
                 "a classically conditioned gate makes the circuit a channel")
     dim = 1 << circuit.num_qubits
-    matrix = np.zeros((dim, dim), dtype=np.complex128)
+    matrix: np.ndarray = np.zeros((dim, dim), dtype=np.complex128)
     for column in range(dim):
         sim = StatevectorSimulator(circuit.num_qubits)
         sim.set_basis_state(column)
@@ -237,10 +237,10 @@ def _image_table(circuit: Circuit, *, engine: str = "auto") -> ImageTable:
 
 
 def _differences(reference: Mapping[str, str], candidate: Mapping[str, str], *,
-                 limit: int = 4) -> tuple[list[dict], int]:
+                 limit: int = 4) -> tuple[list[dict[str, Any]], int]:
     """The first few entries where two tables of signed Pauli strings differ."""
     mismatched = 0
-    rows: list[dict] = []
+    rows: list[dict[str, Any]] = []
     for name, expected in reference.items():
         actual = candidate[name]
         if actual == expected:
@@ -305,7 +305,8 @@ def controlled_lift(matrix: np.ndarray) -> np.ndarray:
     lifted = np.zeros((2 * dimension, 2 * dimension), dtype=np.complex128)
     lifted[:dimension, :dimension] = np.eye(dimension, dtype=np.complex128)
     lifted[dimension:, dimension:] = matrix
-    return lifted
+    _out: np.ndarray = lifted
+    return _out
 
 @dataclasses.dataclass(frozen=True)
 class EquivalenceReport:
@@ -342,7 +343,7 @@ class EquivalenceReport:
         """
         return self.verdict == "VALID" and self.claim_verdict != "UNMET"
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "reference_sha256": self.reference_sha256,
             "candidate_sha256": self.candidate_sha256,
@@ -532,7 +533,7 @@ class CliffordEquivalenceReport:
         """Semantically VALID *and* no unmet resource claim (see the dense report)."""
         return self.verdict == "VALID" and self.claim_verdict != "UNMET"
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "tier": "stabilizer",
             "scope": self.scope,

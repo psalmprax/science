@@ -106,7 +106,7 @@ class CoupledOdeProposer(ProposerBase):
                             f"{sorted(set(missing))} absent from eval frame"
                         )
                     rows = eval_df.to_dict(orient="records")
-                    out = np.zeros(len(eval_df), dtype=float)
+                    out: np.ndarray = np.zeros(len(eval_df), dtype=float)
                     for k, row in enumerate(rows):
                         acc = 0.0
                         for term, coeff in active_terms:
@@ -119,7 +119,8 @@ class CoupledOdeProposer(ProposerBase):
                         out[k] = acc
                     # Predict state derivative / forward step (the discovered
                     # d{x_i}/dt = sum(coeff * basis(x)), not x_i itself).
-                    return np.asarray(out)
+                    _out: np.ndarray = np.asarray(out)
+                    return _out
                 return _scorer
 
             proposal = CandidateProposal(

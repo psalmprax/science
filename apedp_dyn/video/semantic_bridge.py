@@ -74,7 +74,8 @@ class SemanticVideoConditioner:
         t_val = float(np.clip(t, 0.0, 1.0))
         angles = t_val * self.freq_scales * 2.0 * np.pi
         fourier = np.concatenate([np.sin(angles), np.cos(angles)])  # shape (2 * n_freq,)
-        return fourier @ self.w_time + self.b_time
+        _out: np.ndarray = fourier @ self.w_time + self.b_time
+        return _out
 
     def embed_text_prompt(self, prompt: str, length: int = 8) -> np.ndarray:
         r"""Create a deterministic, process-stable text embedding from an input prompt string.
@@ -101,7 +102,7 @@ class SemanticVideoConditioner:
         # Sentence-context term: pooled lexical feature of the whole prompt
         context = per_token.mean(axis=0)
 
-        rows = np.zeros((length, self.config.text_dim), dtype=np.float64)
+        rows: np.ndarray = np.zeros((length, self.config.text_dim), dtype=np.float64)
         for j in range(length):
             tok_vec = per_token[j % len(tokens)]
             # Deterministic, process-stable construction: recurring rows cycle
@@ -111,7 +112,8 @@ class SemanticVideoConditioner:
 
         # Normalize across embedding dimension
         norms = np.linalg.norm(rows, axis=-1, keepdims=True)
-        return rows / np.maximum(norms, 1e-8)
+        _out: np.ndarray = rows / np.maximum(norms, 1e-8)
+        return _out
 
     @property
     def embedding_method(self) -> str:
@@ -134,7 +136,7 @@ class SemanticVideoConditioner:
     @classmethod
     def _token_feature(cls, token: str, dim: int) -> np.ndarray:
         r"""Deterministic hashing-trick + semantic concept group feature for one token."""
-        vec = np.zeros(dim, dtype=np.float64)
+        vec: np.ndarray = np.zeros(dim, dtype=np.float64)
         grams = ["w:" + token]
         padded = "|^" + token + "^|"
         grams.extend("t:" + padded[i:i + 3] for i in range(len(padded) - 2))
@@ -195,7 +197,8 @@ class SemanticVideoConditioner:
         out_heads = (attn_weights @ v_b).transpose(1, 0, 2)  # (N, H, d_head)
 
         out_flat = out_heads.reshape(n_spatial, d)
-        return out_flat @ self.w_out
+        _out: np.ndarray = out_flat @ self.w_out
+        return _out
 
     def compute_conditioned_velocity(
         self,
@@ -269,7 +272,8 @@ class SemanticVideoConditioner:
         else:
             v_out = v_tokens.reshape(orig_shape)
 
-        return np.asarray(v_out)
+        _out: np.ndarray = np.asarray(v_out)
+        return _out
 
     def compute_flow_guided_velocity(
         self,

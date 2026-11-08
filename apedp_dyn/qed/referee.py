@@ -39,6 +39,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -70,7 +71,7 @@ class Check:
     requirement: str
     detail: str = ""
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "passed": bool(self.passed),
@@ -90,8 +91,8 @@ class Adjudication:
     holdout_r2: float | None
     companion_r2: float | None
     checks: tuple[Check, ...]
-    ablation: dict
-    interval: dict
+    ablation: dict[str, Any]
+    interval: dict[str, Any]
     stability: float | None
     notes: tuple[str, ...]
 
@@ -99,7 +100,7 @@ class Adjudication:
     def passed(self) -> bool:
         return self.status in (VALID, ALTERNATIVE)
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "arm": self.arm,
             "status": self.status,
@@ -135,7 +136,7 @@ def _fit(task: DiscoveryTask, states: np.ndarray, target: np.ndarray, support: S
 
 def rollout_scores(
     task: DiscoveryTask, support: Sequence[int], coefficients: Sequence[float]
-) -> dict:
+) -> dict[str, Any]:
     """Integrate a candidate from the holdout initial condition and score it.
 
     A diverged rollout scores ``0.0`` and says so in ``diverged``: the number is
@@ -183,7 +184,7 @@ def bootstrap_interval(
     samples: int = BOOTSTRAP_SAMPLES,
     seed: int = 0,
     level: float = 0.95,
-) -> dict:
+) -> dict[str, Any]:
     """Residual bootstrap at the candidate's own support."""
     support = tuple(int(index) for index in support)
     if not support:
@@ -193,7 +194,7 @@ def bootstrap_interval(
     fitted = columns @ np.asarray(coefficients, dtype=float)
     residual = task.dev_target - fitted
     rng = np.random.default_rng(seed)
-    draws = np.empty((samples, len(support)), dtype=float)
+    draws: np.ndarray = np.empty((samples, len(support)), dtype=float)
     for index in range(samples):
         synthetic = fitted + rng.choice(residual, size=residual.size, replace=True)
         drawn, _residuals, _rank, _singular = np.linalg.lstsq(columns, synthetic, rcond=None)
@@ -231,7 +232,7 @@ def parameter_stability(
     support = tuple(int(index) for index in support)
     if not support:
         return 0.0
-    reference = np.asarray(coefficients, dtype=float)
+    reference: np.ndarray = np.asarray(coefficients, dtype=float)
     design = task.library.design_matrix(task.dev_states)
     columns = task.library.select(design, support)
     rng = np.random.default_rng(seed)
@@ -254,7 +255,7 @@ def ablation(
     coefficients: Sequence[float],
     *,
     candidate_r2: float,
-) -> dict:
+) -> dict[str, Any]:
     """Remove one term, add one term, and score each on the holdout rollout."""
     support = tuple(int(index) for index in support)
     removals = []
@@ -299,7 +300,7 @@ def ablation(
     }
 
 
-def reference_scores(task: DiscoveryTask) -> dict:
+def reference_scores(task: DiscoveryTask) -> dict[str, Any]:
     """The truth's own holdout score, for the record and for the tests."""
     scores = rollout_scores(task, task.truth_support, task.truth_coefficients)
     return {

@@ -70,7 +70,7 @@ def simulate_oscillator(
     def acceleration(position: float, velocity: float) -> float:
         return -stiffness * position - damping * velocity
 
-    states = np.empty((steps, 2), dtype=float)
+    states: np.ndarray = np.empty((steps, 2), dtype=float)
     states[0] = (x0, v0)
     for index in range(steps - 1):
         x, v = states[index]
@@ -137,7 +137,8 @@ class DiscoveryTask:
 
     @property
     def width(self) -> int:
-        return self.dev_states.shape[1]
+        _out: int = self.dev_states.shape[1]
+        return _out
 
     def objective(self, *, budget: int | None = None) -> SupportObjective:
         """A fresh budgeted objective over development rows only.
@@ -163,7 +164,7 @@ class DiscoveryTask:
     def derivatives(self, state: np.ndarray, support, coefficients) -> np.ndarray:
         """``d state/dt`` for one sample: the fitted law plus the given identities."""
         state = np.asarray(state, dtype=float).reshape(1, -1)
-        out = np.full(self.width, np.nan, dtype=float)
+        out: np.ndarray = np.full(self.width, np.nan, dtype=float)
         if support:
             columns = self.library.select(self.library.design_matrix(state), support)
             out[self.discovered] = float(columns[0] @ np.asarray(coefficients, dtype=float))
@@ -189,7 +190,7 @@ class DiscoveryTask:
         initial = np.asarray(initial, dtype=float).ravel()
         if initial.shape != (self.width,):
             raise TaskRefusal(f"initial state must have {self.width} entries")
-        states = np.full((steps, self.width), np.nan, dtype=float)
+        states: np.ndarray = np.full((steps, self.width), np.nan, dtype=float)
         states[0] = initial
 
         def rhs(vector: np.ndarray) -> np.ndarray:

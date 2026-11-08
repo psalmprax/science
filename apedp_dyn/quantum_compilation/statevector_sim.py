@@ -49,6 +49,7 @@ from __future__ import annotations
 
 import dataclasses
 import math
+from typing import Any
 
 import numpy as np
 
@@ -71,7 +72,7 @@ class Branch:
     probability: float
     state: np.ndarray
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "bits": [bool(bit) for bit in self.bits],
             "probability": float(self.probability),
@@ -157,7 +158,7 @@ class StatevectorSimulator:
         if control == target:
             raise ValueError("control and target must differ")
         index = np.arange(self.state.size)
-        mask = np.ones(self.state.size, dtype=bool)
+        mask: np.ndarray = np.ones(self.state.size, dtype=bool)
         for group in controls:
             for c in group:
                 mask &= ((index >> c) & 1).astype(bool)
@@ -255,7 +256,7 @@ class StatevectorSimulator:
 
     def branches(self, ops, *, max_branches: int = 64) -> list[Branch]:
         """Every measurement outcome, with its weight and its post-state."""
-        pending: list[tuple[tuple[bool, ...], float, np.ndarray, dict[int, bool], list]] = [
+        pending: list[tuple[tuple[bool, ...], float, np.ndarray, dict[int, bool], list[Any]]] = [
             ((), 1.0, self.state.copy(), dict(self.bits), list(ops))
         ]
         finished: list[Branch] = []
@@ -328,7 +329,7 @@ def fidelity(reference, branches) -> float:
     return float(total)
 
 
-def dimension_report(num_qubits: int, *, bytes_per_amplitude: int = 16) -> dict:
+def dimension_report(num_qubits: int, *, bytes_per_amplitude: int = 16) -> dict[str, Any]:
     """What an amplitude-level treatment of `num_qubits` would cost, in arithmetic.
 
     Reported on a log10 scale as well as a float, because the decoder's 1,913 qubits

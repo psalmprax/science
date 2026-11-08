@@ -28,7 +28,7 @@ from __future__ import annotations
 import dataclasses
 from collections import Counter
 from collections.abc import Sequence
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 import numpy as np
 
@@ -68,7 +68,7 @@ class RunResult:
     #: about it when a report labels it native.
     engine: str = "python"
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "backend": self.backend,
             "engine": self.engine,

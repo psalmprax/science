@@ -67,7 +67,7 @@ def symmetric_from_lower(lower: npt.ArrayLike, num_orbitals: int) -> npt.NDArray
     lower = np.asarray(lower)
     if lower.shape != (n * (n + 1) // 2,):
         raise ValueError(f"packed lower triangle must have shape ({n * (n + 1) // 2},)")
-    matrix = np.zeros((n, n), dtype=np.float32)
+    matrix: np.ndarray = np.zeros((n, n), dtype=np.float32)
     rows, cols = np.tril_indices(n)
     matrix[rows, cols] = lower.astype(np.float32)
     return matrix + matrix.T - np.diag(np.diag(matrix))

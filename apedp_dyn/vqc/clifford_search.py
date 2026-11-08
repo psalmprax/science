@@ -32,6 +32,7 @@ import dataclasses
 import itertools
 import random
 from collections.abc import Iterator, Mapping, Sequence
+from typing import Any
 
 from apedp_dyn.vqc.circuit import Circuit, Gate
 from apedp_dyn.vqc.discovery import (
@@ -215,10 +216,10 @@ class RewriteStep:
     score: tuple[int, int]
     verdict: str
     mismatched: int
-    first_mismatch: Mapping | None
+    first_mismatch: Mapping[str, Any] | None
     accepted: bool
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "rule": self.rule,
             "score": list(self.score),
@@ -246,7 +247,7 @@ class SearchOutcome:
     def accepted(self) -> tuple[RewriteStep, ...]:
         return tuple(step for step in self.steps if step.accepted)
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "reference": self.reference.resources(),
             "best": self.best.resources(),

@@ -21,6 +21,7 @@ import re
 import threading
 import warnings
 from collections.abc import Iterator
+from typing import Any
 
 import sympy as sp
 from sympy.parsing.sympy_parser import convert_xor, standard_transformations
@@ -232,7 +233,7 @@ def safe_parse_expr(
     # Shadow sympy globals (e.g. beta/gamma/zeta functions) with plain
     # Symbols so variable names like ``beta`` parse as symbols, not as
     # sympy special functions. Parser internals must keep resolving.
-    local_dict: dict = dict(_SAFE_FUNCS)
+    local_dict: dict[str, Any] = dict(_SAFE_FUNCS)
     if extra_symbols:
         local_dict.update(extra_symbols)
     for ident in set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", s)):
@@ -276,7 +277,7 @@ def safe_parse_pde(
     undefined function / Derivative / Integral, else ``ValueError``.
     """
     s = _validate_formula_string(formula_str, max_length)
-    local_dict: dict = dict(_SAFE_FUNCS)
+    local_dict: dict[str, Any] = dict(_SAFE_FUNCS)
     local_dict.update({"Derivative": sp.Derivative, "Integral": sp.Integral, "Function": sp.Function})
     called = set(re.findall(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(", s))
     for ident in called:

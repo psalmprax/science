@@ -288,7 +288,7 @@ def _evaluate_qrom_line_array(
 ) -> tuple[bool, str | None, dict[str, Any]]:
     max_x = _max_x(n_p)
     if xs is None:
-        xs_arr = np.arange(1, max_x + 1, dtype=np.int64)
+        xs_arr: np.ndarray = np.arange(1, max_x + 1, dtype=np.int64)
         domain_kind = "full-domain"
     else:
         xs_arr = np.asarray(xs, dtype=np.int64)

@@ -310,7 +310,8 @@ def _svd_nullspace_legacy(D: np.ndarray, tol: float = 1e-12) -> np.ndarray:
     nullity = D.shape[1] - rank
     if nullity <= 0:
         return np.empty((D.shape[1], 0))
-    return vh[rank:].T
+    _out: np.ndarray = vh[rank:].T
+    return _out
 
 
 def discover_pi_groups(
@@ -434,7 +435,7 @@ def build_exponent_matrix(
         {d for v in variables.values() for d in v.keys()}
     )
     m, n = len(all_vars), len(all_dims)
-    D = np.zeros((m, n), dtype=float)
+    D: np.ndarray = np.zeros((m, n), dtype=float)
     for i, var in enumerate(all_vars):
         for j, dim in enumerate(all_dims):
             D[i, j] = float(variables[var].get(dim, 0))

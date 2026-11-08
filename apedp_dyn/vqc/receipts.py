@@ -54,7 +54,7 @@ class Check:
     measured: Mapping[str, Any]
     passed: bool | None
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {"name": self.name, "requirement": self.requirement,
                 "measured": dict(self.measured), "passed": self.passed}
 
@@ -82,7 +82,7 @@ class Receipt:
     def unresolved(self) -> tuple[str, ...]:
         return tuple(check.name for check in self.checks if check.passed is None)
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "identity": dict(self.identity),
             "provenance": dict(self.provenance),
@@ -121,7 +121,7 @@ def _required_shots(expected: Mapping[str, float], *, sigma: float,
 
 def _distribution_check(circuit: Circuit, result: RunResult,
                         expected: Mapping[str, float], *,
-                        sigma: float, min_effect: float) -> tuple[Check, Check, dict]:
+                        sigma: float, min_effect: float) -> tuple[Check, Check, dict[str, Any]]:
     observed = distribution(result)
     strings = sorted(set(expected) | set(observed))
     deviations = {}

@@ -15,7 +15,7 @@ try:
 except ImportError:
     # The optional-import idiom: `None` marks the absent kernel, which callers
     # probe through is_rust_kernel_available().
-    apedp_kernel = None  # type: ignore[assignment]
+    apedp_kernel = None
     _RUST_AVAILABLE = False
 
 
@@ -41,7 +41,7 @@ def _get_cached_rust_system(eqs: tuple[str, ...],
     # `union-attr`: the kernel may be absent (the check above raised).
     # `attr-defined`: the kernel ships as a compiled extension with no stubs, so
     # mypy cannot see CompiledOdeSystem even though the module exports it.
-    return apedp_kernel.CompiledOdeSystem(  # type: ignore[union-attr, attr-defined]
+    return apedp_kernel.CompiledOdeSystem(
         list(eqs), list(states), list(params), list(inputs)
     )
 
@@ -76,14 +76,15 @@ def compile_rhs(model):
         + [sp.Symbol(n) for n in pnames] + [sp.Symbol(n) for n in inames],
         [eq_by_state[n] for n in order], modules=["numpy"])
 
-    def rhs(t: float, x: np.ndarray, u_vec: np.ndarray, pdict: dict) -> np.ndarray:
+    def rhs(t: float, x: np.ndarray, u_vec: np.ndarray, pdict: dict[str, Any]) -> np.ndarray:
         out = np.asarray(f(t, *[float(v) for v in x],
                            *[float(pdict[k]) for k in pnames],
                            *[float(v) for v in np.atleast_1d(u_vec)]),
                           dtype=float).ravel()
         if out.shape != (len(order),) or not np.all(np.isfinite(out)):
             raise ValueError("non-finite compiled RHS")
-        return out
+        _out: np.ndarray = out
+        return _out
 
     # Eager validation: compile errors surface here, not mid-integration.
     # The probe arity must match the declared inputs exactly: padding a
@@ -201,7 +202,8 @@ def simulate(model, t_span: tuple[float, float],
         def _u(t: float) -> np.ndarray:
             if not n_inputs:
                 return np.empty(0)
-            return np.atleast_1d(np.asarray(u_of_t(t), dtype=float))
+            _out: np.ndarray = np.atleast_1d(np.asarray(u_of_t(t), dtype=float))
+            return _out
 
         def drift(t, x):
             return crhs(t, x, _u(t), pdict)

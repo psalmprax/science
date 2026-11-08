@@ -63,8 +63,8 @@ def make_signal(spec: Any) -> Callable[[float], np.ndarray]:
                  for c in spec["components"]]
         return lambda t: np.array([sum(a * np.sin(w * t + ph) for a, w, ph in comps)])
     if kind == "interpolated":
-        t_pts = np.asarray(spec["t"], dtype=float)
-        u_pts = np.asarray(spec["u"], dtype=float)
+        t_pts: np.ndarray = np.asarray(spec["t"], dtype=float)
+        u_pts: np.ndarray = np.asarray(spec["u"], dtype=float)
         if u_pts.ndim == 1:
             return lambda t: np.array([float(np.interp(t, t_pts, u_pts))])
         return lambda t: np.array([float(np.interp(t, t_pts, u_pts[:, i])) for i in range(u_pts.shape[1])])

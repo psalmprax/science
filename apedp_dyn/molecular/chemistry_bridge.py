@@ -660,7 +660,7 @@ def embed_conformer_3d(
 
     # Ideal bond lengths from covalent radii
     adj = graph.adjacency_list()
-    dist_matrix = np.full((n, n), np.inf, dtype=np.float64)
+    dist_matrix: np.ndarray = np.full((n, n), np.inf, dtype=np.float64)
     np.fill_diagonal(dist_matrix, 0.0)
 
     bond_tuples: list[tuple[int, int]] = []
@@ -705,7 +705,7 @@ def embed_conformer_3d(
 
     eigvals, eigvecs = np.linalg.eigh(gram)
     top_indices = np.argsort(eigvals)[::-1][:3]
-    coords = np.zeros((n, 3), dtype=np.float64)
+    coords: np.ndarray = np.zeros((n, 3), dtype=np.float64)
     for dim, eig_idx in enumerate(top_indices):
         val = max(0.0, float(eigvals[eig_idx]))
         coords[:, dim] = eigvecs[:, eig_idx] * math.sqrt(val)

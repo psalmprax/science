@@ -19,6 +19,7 @@ candidate count, runtime.
 from __future__ import annotations
 
 import time
+from typing import Any
 
 import numpy as np
 
@@ -63,7 +64,7 @@ def generate_base_predictors(seed: int) -> tuple[np.ndarray, np.ndarray]:
     return X[:N_TRAIN], X[N_TRAIN:]
 
 
-def synthesize(seed: int, sigma: float) -> dict:
+def synthesize(seed: int, sigma: float) -> dict[str, Any]:
     """Generate one paired (train, holdout) dataset at noise level sigma."""
     Xtr, Xho = generate_base_predictors(seed)
     rng = np.random.default_rng(10_000 * seed + round(sigma * 1000))
@@ -79,7 +80,7 @@ def _fit_ols(X: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.asarray(coef, dtype=float)
 
 
-def run_cell(seed: int, sigma: float) -> dict:
+def run_cell(seed: int, sigma: float) -> dict[str, Any]:
     """Fit all candidate structures on one dataset; adjudicate; score."""
     t0 = time.perf_counter()
     d = synthesize(seed, sigma)
@@ -87,7 +88,7 @@ def run_cell(seed: int, sigma: float) -> dict:
     obs_rms = float(np.sqrt(np.mean(yho**2)))
 
     scored: list[ScoredCandidate] = []
-    fits: dict[str, dict] = {}
+    fits: dict[str, dict[str, Any]] = {}
     for name, idx in CANDIDATE_STRUCTURES.items():
         coef = _fit_ols(Xtr[:, list(idx)], ytr)
         pred_tr = np.column_stack([np.ones(len(Xtr)), Xtr[:, list(idx)]]) @ coef
@@ -155,9 +156,9 @@ def run_cell(seed: int, sigma: float) -> dict:
 def run_sweep(
     seeds: tuple[int, ...] = SEEDS,
     sigmas: tuple[float, ...] = NOISE_SIGMAS,
-) -> dict:
+) -> dict[str, Any]:
     cells = [run_cell(s, sig) for s in seeds for sig in sigmas]
-    by_sigma: dict[str, dict] = {}
+    by_sigma: dict[str, dict[str, Any]] = {}
     for sig in sigmas:
         sub = [c for c in cells if c["sigma"] == sig]
         by_sigma[str(sig)] = {

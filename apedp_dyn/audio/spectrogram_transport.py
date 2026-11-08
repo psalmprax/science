@@ -37,7 +37,8 @@ class ChirpSpec:
 
     def instantaneous_frequency(self, t: np.ndarray) -> np.ndarray:
         t = np.asarray(t, dtype=np.float64)
-        return self.start_freq + self.linear_rate * t + 0.5 * self.quadratic_rate * t * t
+        _out: np.ndarray = self.start_freq + self.linear_rate * t + 0.5 * self.quadratic_rate * t * t
+        return _out
 
     def phase_at(self, t: np.ndarray) -> np.ndarray:
         t = np.asarray(t, dtype=np.float64)
@@ -87,7 +88,7 @@ def stft_magnitude(
 
     window = np.hanning(window_size)
     n_frames = 1 + (signal.size - window_size) // hop
-    magnitude = np.empty((window_size // 2 + 1, n_frames), dtype=np.float64)
+    magnitude: np.ndarray = np.empty((window_size // 2 + 1, n_frames), dtype=np.float64)
     for frame in range(n_frames):
         start = frame * hop
         segment = signal[start : start + window_size] * window
@@ -105,7 +106,8 @@ def _parabolic_peak(values: np.ndarray, index: int) -> float:
     denominator = left - 2.0 * centre + right
     if abs(denominator) < 1e-15:
         return float(index)
-    return float(index) + 0.5 * (left - right) / denominator
+    _out: float = float(index) + 0.5 * (left - right) / denominator
+    return _out
 
 
 def ridge_instantaneous_frequency(magnitude: np.ndarray, frequencies: np.ndarray) -> np.ndarray:
@@ -118,7 +120,8 @@ def ridge_instantaneous_frequency(magnitude: np.ndarray, frequencies: np.ndarray
         peak = int(np.argmax(magnitude[:, frame]))
         refined = _parabolic_peak(magnitude[:, frame], peak)
         ridge[frame] = frequencies[0] + refined * bin_width
-    return ridge
+    _out: np.ndarray = ridge
+    return _out
 
 
 @dataclass
@@ -130,11 +133,13 @@ class InstantaneousFrequencyModel:
 
     def frequency(self, t: float | np.ndarray) -> float | np.ndarray:
         t = np.asarray(t, dtype=np.float64) - self.t_origin
-        return np.polyval(self.coefficients, t)
+        _out: float | np.ndarray = np.polyval(self.coefficients, t)
+        return _out
 
     def velocity(self, t: float | np.ndarray) -> float | np.ndarray:
         t = np.asarray(t, dtype=np.float64) - self.t_origin
-        return np.polyval(np.polyder(self.coefficients), t)
+        _out: float | np.ndarray = np.polyval(np.polyder(self.coefficients), t)
+        return _out
 
 
 def fit_instantaneous_frequency_model(
@@ -157,7 +162,8 @@ def frequency_advection_velocity_fn(
 
     def velocity_fn(z: np.ndarray, t: float) -> np.ndarray:
         gradient = np.gradient(np.asarray(z, dtype=np.float64), frequency_step)
-        return -float(model.velocity(t)) * gradient
+        _out: np.ndarray = -float(model.velocity(t)) * gradient
+        return _out
 
     return velocity_fn
 
@@ -200,7 +206,8 @@ def _upwind_advection_step(
     else:
         # Forward differences need u[i+1]; unavailable at i = n-1 → zero flux.
         slope[:-1] = (u[1:] - u[:-1]) / frequency_step
-    return np.maximum(u - c * dt * slope, 0.0)
+    _out: np.ndarray = np.maximum(u - c * dt * slope, 0.0)
+    return _out
 
 
 def predict_next_frame(

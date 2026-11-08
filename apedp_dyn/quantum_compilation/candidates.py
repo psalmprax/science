@@ -61,7 +61,7 @@ class CandidateStatus(str, Enum):
 CORRECTNESS_CHECKS: tuple[str, ...] = ("value", "junk", "phase")
 
 #: Statuses that assert the circuit is *correct*, not merely built or priced.
-CORRECTNESS_CLAIMING_STATUSES: frozenset = frozenset({
+CORRECTNESS_CLAIMING_STATUSES: frozenset[Any] = frozenset({
     CandidateStatus.VERIFIED_NONIMPROVING,
     CandidateStatus.VERIFIED_IMPROVEMENT,
 })
@@ -97,7 +97,7 @@ def _benchmark_family(benchmark: str) -> str:
 
 
 def normalise_correctness_evidence(evidence: dict[str, Any] | None, *,
-                                   benchmark: str = "") -> dict[str, dict]:
+                                   benchmark: str = "") -> dict[str, dict[str, Any]]:
     """Validate a declared evidence mapping against what the verifier can establish.
 
     Each of :data:`CORRECTNESS_CHECKS` must be accounted for exactly once, as one of:
@@ -122,7 +122,7 @@ def normalise_correctness_evidence(evidence: dict[str, Any] | None, *,
         raise EvidenceIncompleteError(
             f"unknown correctness check(s) {unknown}; expected {list(CORRECTNESS_CHECKS)}"
         )
-    normalised: dict[str, dict] = {}
+    normalised: dict[str, dict[str, Any]] = {}
     for check in CORRECTNESS_CHECKS:
         entry = evidence.get(check)
         if not isinstance(entry, dict):
@@ -195,7 +195,7 @@ def missing_correctness_checks(evidence: dict[str, Any] | None, *,
     return []
 
 
-def evidence_from_receipt(receipt: VerifierReceipt, benchmark: str = "") -> dict[str, dict]:
+def evidence_from_receipt(receipt: VerifierReceipt, benchmark: str = "") -> dict[str, dict[str, Any]]:
     """The correctness evidence a verifier receipt actually carries.
 
     For a per-shot verifier (DQI) the receipt's own error counts are the evidence, and
@@ -206,7 +206,7 @@ def evidence_from_receipt(receipt: VerifierReceipt, benchmark: str = "") -> dict
     """
     metrics = dict(receipt.metrics or {})
     family = _benchmark_family(benchmark)
-    evidence: dict[str, dict] = {}
+    evidence: dict[str, dict[str, Any]] = {}
     if "value_errors" in metrics:
         evidence["value"] = {"measured": True,
                              "passed": metrics["value_errors"] == 0,

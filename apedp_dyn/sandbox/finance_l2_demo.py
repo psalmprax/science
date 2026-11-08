@@ -239,7 +239,8 @@ def _project_capped_simplex(values: np.ndarray, cap: float) -> np.ndarray:
     """Euclidean projection onto ``{w >= 0, sum(w) <= cap}``."""
     clipped = np.clip(values, 0.0, None)
     if clipped.sum() <= cap:
-        return clipped
+        _out: np.ndarray = clipped
+        return _out
     low = float(values.min()) - cap
     high = float(values.max())
     for _ in range(200):
@@ -248,7 +249,8 @@ def _project_capped_simplex(values: np.ndarray, cap: float) -> np.ndarray:
             low = middle
         else:
             high = middle
-    return np.clip(values - high, 0.0, None)
+    _out = np.clip(values - high, 0.0, None)
+    return _out
 
 
 _KKT_TOLERANCE = 1e-10
@@ -408,7 +410,8 @@ def _polish_active_set(
             signs = new_signs
             continue
 
-        return np.maximum(trial, 0.0)
+        _out: np.ndarray = np.maximum(trial, 0.0)
+        return _out
     return weights
 
 
@@ -457,7 +460,8 @@ def _snap_to_kinks(
         return weights
     if np.any(np.sign(candidate[free] - previous[free]) != signs[free]):
         return weights
-    return np.maximum(candidate, 0.0)
+    _out: np.ndarray = np.maximum(candidate, 0.0)
+    return _out
 
 
 def _polish_by_qp(
@@ -549,7 +553,7 @@ def size_positions(
     (``<= 1e-10``).
     """
     mu = np.asarray(forecast, dtype=float).ravel()
-    sigma = np.asarray(covariance, dtype=float)
+    sigma: np.ndarray = np.asarray(covariance, dtype=float)
     if mu.size == 0:
         raise ValueError("forecast must not be empty")
     if sigma.shape != (mu.size, mu.size):

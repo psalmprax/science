@@ -38,7 +38,7 @@ def _vortex_streamfunction(
     h: int, w: int, centers: Sequence[tuple[float, float]], strengths: Sequence[float]
 ) -> np.ndarray:
     yy, xx = np.meshgrid(np.arange(h, dtype=np.float64), np.arange(w, dtype=np.float64), indexing="ij")
-    psi = np.zeros((h, w), dtype=np.float64)
+    psi: np.ndarray = np.zeros((h, w), dtype=np.float64)
     for (cy, cx), s in zip(centers, strengths, strict=False):
         r2 = (yy - cy) ** 2 + (xx - cx) ** 2
         psi += s * np.exp(-r2 / (0.25 * min(h, w) ** 2))
@@ -85,7 +85,7 @@ def make_fluid_clip(
     yy, xx = np.meshgrid(np.arange(h, dtype=np.float64), np.arange(w, dtype=np.float64), indexing="ij")
 
     # Initial dye: 3 independent smooth scalar blobs
-    dye = np.zeros((3, h, w), dtype=np.float64)
+    dye: np.ndarray = np.zeros((3, h, w), dtype=np.float64)
     for ci in range(3):
         n_blobs = 2
         for _ in range(n_blobs):
@@ -94,9 +94,9 @@ def make_fluid_clip(
             dye[ci] += np.exp(-((yy - cy) ** 2 + (xx - cx) ** 2) / (2 * rad ** 2))
     dye /= max(1e-9, dye.max())
 
-    frames = np.zeros((t, 3, h, w), dtype=np.float64)
-    flow_u = np.zeros((t, h, w), dtype=np.float64)
-    flow_v = np.zeros((t, h, w), dtype=np.float64)
+    frames: np.ndarray = np.zeros((t, 3, h, w), dtype=np.float64)
+    flow_u: np.ndarray = np.zeros((t, h, w), dtype=np.float64)
+    flow_v: np.ndarray = np.zeros((t, h, w), dtype=np.float64)
     for ti in range(t):
         phase = 2 * np.pi * ti / max(1, t - 1)
         strengths = base_strength * (0.8 + 0.2 * np.sin(phase + 1.7 * np.arange(n_vortices)))
@@ -163,7 +163,8 @@ def _advect(field: np.ndarray, u: np.ndarray, v: np.ndarray, dt: float) -> np.nd
             (1 - wy) * (1 - wx) * f[y0, x0] + (1 - wy) * wx * f[y0, x1]
             + wy * (1 - wx) * f[y1, x0] + wy * wx * f[y1, x1]
         )
-    return out
+    _out: np.ndarray = out
+    return _out
 
 
 def make_domain_set(

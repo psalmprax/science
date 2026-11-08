@@ -70,11 +70,13 @@ def _adjudicate(scored: list[ScoredCandidate]) -> tuple[str, str | None]:
 
 def _blocks(n: int) -> np.ndarray:
     idx = np.arange(n)
-    return np.asarray(idx[idx % 5 == 0])
+    _out: np.ndarray = np.asarray(idx[idx % 5 == 0])
+    return _out
 
 
 def _d5(sig: np.ndarray) -> np.ndarray:
-    return np.asarray(pd.Series(sig).rolling(5).mean().shift(-5).to_numpy())
+    _out: np.ndarray = np.asarray(pd.Series(sig).rolling(5).mean().shift(-5).to_numpy())
+    return _out
 
 
 def _train_blocks_no_leak(dates, origin: str) -> np.ndarray:

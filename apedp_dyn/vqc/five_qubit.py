@@ -35,6 +35,7 @@ import dataclasses
 import itertools
 import math
 from functools import lru_cache
+from typing import Any
 
 import numpy as np
 
@@ -153,7 +154,7 @@ def _frame_correction(signature: tuple[bool, ...]) -> str:
     return best
 
 
-def _apply_pauli(ops: list, pauli: str, condition=()) -> None:
+def _apply_pauli(ops: list[Any], pauli: str, condition=()) -> None:
     for qubit, letter in enumerate(pauli):
         if letter == "X":
             ops.append(Gate("x", (qubit,), condition=condition))
@@ -164,7 +165,7 @@ def _apply_pauli(ops: list, pauli: str, condition=()) -> None:
             ops.append(Gate("z", (qubit,), condition=condition))
 
 
-def _measure_stabilizer(ops: list, stabilizer: str, ancilla: int, bit: int) -> None:
+def _measure_stabilizer(ops: list[Any], stabilizer: str, ancilla: int, bit: int) -> None:
     """Measure one code stabilizer into `bit` with one ancilla.
 
     Rotate each `X`/`Y` factor to `Z`, CNOT the support into the ancilla, measure
@@ -192,7 +193,7 @@ def _measure_stabilizer(ops: list, stabilizer: str, ancilla: int, bit: int) -> N
 
 def _encoded_amplitudes(prepare_logical_one: bool) -> np.ndarray:
     """`|0_L>` (or `|1_L>`), built by projecting `|00000>` with the stabilizers."""
-    state = np.zeros(1 << DATA, dtype=np.complex128)
+    state: np.ndarray = np.zeros(1 << DATA, dtype=np.complex128)
     state[0] = 1.0
     for stabilizer in FIVE_QUBIT_STABILIZERS:
         projected = state.copy()
@@ -229,7 +230,7 @@ def encoded_state(prepare_logical_one: bool = False) -> np.ndarray:
 def five_qubit_encoder_circuit(*, prepare_logical_one: bool = False,
                                metadata: dict[str, str] | None = None) -> Circuit:
     """The encoder alone: stabilizer projection plus the conditional Pauli frame."""
-    ops: list = []
+    ops: list[Any] = []
     for index, stabilizer in enumerate(FIVE_QUBIT_STABILIZERS):
         _measure_stabilizer(ops, stabilizer, ANCILLAS[index], index)
     for pattern in itertools.product((False, True), repeat=len(FIVE_QUBIT_STABILIZERS)):
@@ -252,7 +253,7 @@ def five_qubit_code_circuit(*, prepare_logical_one: bool = False,
                             injected_errors: tuple[tuple[int, str], ...] = (),
                             metadata: dict[str, str] | None = None) -> Circuit:
     """Encode, corrupt, extract the syndrome, correct, and read the logical `Z`."""
-    ops: list = []
+    ops: list[Any] = []
     # 1. Encode by projection: measure the four stabilizers, then fix the signs.
     for index, stabilizer in enumerate(FIVE_QUBIT_STABILIZERS):
         _measure_stabilizer(ops, stabilizer, ANCILLAS[index], index)
@@ -342,7 +343,7 @@ class FiveQubitRun:
     def exact(self) -> float:
         return exact_failure_probability(self.probability)
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "code": "five-qubit-perfect",
             "distance": 3,

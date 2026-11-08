@@ -25,6 +25,7 @@ import json
 from collections.abc import Sequence
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -82,11 +83,11 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def code_hashes(root: Path, paths: Sequence[str]) -> dict:
+def code_hashes(root: Path, paths: Sequence[str]) -> dict[str, Any]:
     return {path: _sha256(root / path) for path in paths}
 
 
-def oracle_sweep(task: DiscoveryTask) -> dict:
+def oracle_sweep(task: DiscoveryTask) -> dict[str, Any]:
     """Enumerate the whole selection space, outside every search budget.
 
     This is the harness's reference computation, not a competing proposer: it
@@ -121,7 +122,7 @@ def oracle_sweep(task: DiscoveryTask) -> dict:
     }
 
 
-def _task_block(task: DiscoveryTask) -> dict:
+def _task_block(task: DiscoveryTask) -> dict[str, Any]:
     return {
         "name": task.name,
         "derivation": task.derivation,
@@ -143,7 +144,7 @@ def _task_block(task: DiscoveryTask) -> dict:
     }
 
 
-def _arm_rows(task: DiscoveryTask, arms: Sequence[str], seeds: Sequence[int]) -> list[dict]:
+def _arm_rows(task: DiscoveryTask, arms: Sequence[str], seeds: Sequence[int]) -> list[dict[str, Any]]:
     rows = []
     for arm in arms:
         runs = []
@@ -239,7 +240,7 @@ def _comparison(rows: Sequence[dict], oracle: dict) -> dict:
     }
 
 
-def circuit_probe(task: DiscoveryTask, seed: int, *, depth: int = 2, shots: int = 512) -> dict:
+def circuit_probe(task: DiscoveryTask, seed: int, *, depth: int = 2, shots: int = 512) -> dict[str, Any]:
     """Re-run the quantum arm's circuit from its own seed and ask what it believed.
 
     The arm cannot answer this: it does not know the generating support. The
@@ -260,7 +261,7 @@ def circuit_probe(task: DiscoveryTask, seed: int, *, depth: int = 2, shots: int 
     objective = task.objective(budget=len(task.library) * (len(task.library) + 1) // 2 + 1)
     qubo, paid = build_quadratic_surrogate(objective.evaluate, objective.m)
     run = run_qaoa(qubo, depth=depth, shots=shots, rng=np.random.default_rng(seed))
-    probabilities = np.asarray(run.probabilities, dtype=float)
+    probabilities: np.ndarray = np.asarray(run.probabilities, dtype=float)
     truth_mask = support_to_mask(task.truth_support, objective.m)
     top = int(np.argmax(probabilities))
     return {
@@ -353,7 +354,7 @@ def build_condition(
     *,
     arms: Sequence[str] | None = None,
     seeds: Sequence[int] = (11, 12, 13),
-) -> dict:
+) -> dict[str, Any]:
     """One budget condition: the task, the fairness sweep, the rows and the checks."""
     arms = tuple(arms or ARMS)
     unknown = [arm for arm in arms if arm not in ARMS]
@@ -409,7 +410,7 @@ def build_condition(
 
 def cross_condition(conditions: Sequence[dict]) -> dict:
     """The same arms under different budgets, so a tie can be read against a harder one."""
-    table: dict[str, list[dict]] = {}
+    table: dict[str, list[dict[str, Any]]] = {}
     for condition in conditions:
         for row in condition["arms"]:
             table.setdefault(row["arm"], []).append(
@@ -438,12 +439,12 @@ def cross_condition(conditions: Sequence[dict]) -> dict:
 
 
 def build_record(
-    conditions: Sequence[dict],
+    conditions: Sequence[dict[str, Any]],
     *,
     root: Path,
     script: str,
     modules: Sequence[str],
-) -> dict:
+) -> dict[str, Any]:
     if not conditions:
         raise ValueError("a record needs at least one condition")
     cross = cross_condition(conditions)
@@ -494,7 +495,7 @@ def build_record(
     }
 
 
-def write_record(record: dict, path: Path) -> Path:
+def write_record(record: dict[str, Any], path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(record, indent=2, sort_keys=False) + "\n", encoding="utf-8")
     return path

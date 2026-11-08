@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import sympy as sp
@@ -41,7 +42,8 @@ class PhysicalModel:
         return out
 
     def initial_vector(self) -> np.ndarray:
-        return np.array([s.initial for s in self.states], dtype=float)
+        _out: np.ndarray = np.array([s.initial for s in self.states], dtype=float)
+        return _out
 
     def param_values(self) -> dict[str, float]:
         missing = [p.name for p in self.parameters if p.value is None]
@@ -54,7 +56,7 @@ class PhysicalModel:
         order = [s.name for s in self.states]
         eq_by_state = {e.state: e.sympy_expr for e in self.equations}
         u_vec = np.atleast_1d(np.asarray(u_of_t(t), dtype=float))
-        subs: dict = {sp.Symbol(TIME_SYMBOL): t}
+        subs: dict[str, Any] = {sp.Symbol(TIME_SYMBOL): t}
         subs.update({sp.Symbol(n): v for n, v in zip(order, x, strict=True)})
         inames = [u.name for u in self.inputs]
         if inames:

@@ -194,7 +194,7 @@ def _lagged(vals: np.ndarray, lag: int, n_train: int) -> np.ndarray | None:
     """
     if lag < 0 or lag > len(vals) - 1:
         return None
-    lagged = np.zeros(len(vals), dtype=float)
+    lagged: np.ndarray = np.zeros(len(vals), dtype=float)
     lagged[lag:] = vals[:len(vals) - lag]
     return lagged[:n_train]
 

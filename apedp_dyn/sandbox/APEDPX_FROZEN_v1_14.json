@@ -1,0 +1,132 @@
+{
+  "benchmark_hash_note": "B_internal = trap suites as present in the sandbox files hashed below; B_blind must live outside these files (see blind_benchmark.py)",
+  "commit": "1a5f99e65db660c781cddc086e2b72d90e4c632c",
+  "concurrent_drift_noted": [],
+  "env": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "py": "3.12",
+    "pytest": "9.1.1",
+    "scipy": "1.18.1"
+  },
+  "file_hashes_sha256": {
+    "apedp_dyn/epistemic/adjudicate.py": "13691be2e15053658f00f4ba7b925ae5fe29c7f72812b072dcc2964ccce1b931",
+    "apedp_dyn/epistemic/claim_ladder.py": "2e4de9284910f48ea40d38b094c61e3e1d18b4a4fed579d614d2ae2aae10543b",
+    "apedp_dyn/grammar/candidate_ir.py": "4e3c1e3e36412fa2b6938f5b21548bac914a25beec7bb397854cbf706b23b5a1",
+    "apedp_dyn/sandbox/apedp_x_meta_sandbox.py": "3f6e19e1bdb5d33e74e7abbcc893bd5147ea3a51d4753d6add1c4d8ce6bc3b3d",
+    "apedp_dyn/sandbox/causal_discovery_sandbox.py": "d0715324bfeccb1aa1c49eecbbcb50fff3c66ab62744d95fbe766b0061e5a38b",
+    "apedp_dyn/sandbox/eseds_dynamical.py": "1140b5ee22e69307d2103fd4e50b6e091aec670fa3c0e0359c4857e306fe04a6",
+    "apedp_dyn/sandbox/eso_packing.py": "6e19088bd2e621af9f7288fb2e8691cc7698bd5a5520b4b7d6456bcb98a661d0",
+    "apedp_dyn/sandbox/grammar_space.py": "4ff35436beb9b390661db80bbec70fe2c4aa4f2e8110e9e9ef89ab9cb4d90d87",
+    "apedp_dyn/sandbox/multi_asset_signals_sandbox.py": "9f055326ca82575d1eb6a31973e291b199429b2024b64a7a80a3910047ff4141",
+    "apedp_dyn/sandbox/multi_grammar_sandbox.py": "c7c6245f47a1e7e3d4c8f56f3e5de294db3921956e42117c80a1f2c4a5d60b44",
+    "apedp_dyn/sandbox/pde_verification_sandbox.py": "1ea3a4c89800af9f6570723fbcf6ea09e731cccf24a292cc15489bc56fa636a3",
+    "apedp_dyn/sandbox/sphere_packing_sandbox.py": "6a105810b786cddd1435c13c752cddd4ad73182dd841e6677f8667001ec3fd1c",
+    "apedp_dyn/sandbox/trading_signals_sandbox.py": "55850c96a64d3b08fcee6540fc6108a052203a614b0eeaad3b34ccd7a7438827",
+    "apedp_dyn/ui/dashboard.html": "d4b68024609e50789b3794e04705055ad80560f74d50a53813d6524a708595d0",
+    "apedp_dyn/ui/server.py": "39aa285aaedd086df337395602344b77fae818f9e69b5ec141c969e6f8d2f880"
+  },
+  "label": "APEDP-X v1.14-FROZEN",
+  "referee_change": "No referee change. All four drifted guard files changed only through the no-untyped-def annotation pass: signatures gained explicit types, numpy-returning expressions were routed through ndarray-typed locals, and dict/Callable annotations gained type arguments. Arithmetic, branches, thresholds, cohort definitions and adjudication semantics are byte-for-byte equivalent in behaviour; the blind-case expectations are untouched.",
+  "referee_guard_files": [
+    "apedp_dyn/epistemic/adjudicate.py",
+    "apedp_dyn/epistemic/claim_ladder.py",
+    "apedp_dyn/grammar/candidate_ir.py",
+    "apedp_dyn/sandbox/apedp_x_meta_sandbox.py",
+    "apedp_dyn/sandbox/causal_discovery_sandbox.py",
+    "apedp_dyn/sandbox/eseds_dynamical.py",
+    "apedp_dyn/sandbox/eso_packing.py",
+    "apedp_dyn/sandbox/grammar_space.py",
+    "apedp_dyn/sandbox/multi_asset_signals_sandbox.py",
+    "apedp_dyn/sandbox/multi_grammar_sandbox.py",
+    "apedp_dyn/sandbox/pde_verification_sandbox.py",
+    "apedp_dyn/sandbox/sphere_packing_sandbox.py",
+    "apedp_dyn/sandbox/trading_signals_sandbox.py",
+    "apedp_dyn/ui/dashboard.html",
+    "apedp_dyn/ui/server.py"
+  ],
+  "remint_log": [
+    {
+      "file": "apedp_dyn/sandbox/grammar_space.py",
+      "new_sha256": "4ff35436beb9b390661db80bbec70fe2c4aa4f2e8110e9e9ef89ab9cb4d90d87",
+      "old_sha256": "1e348ccfbfb38de76084cc65235ad84d0468c5b0a6dcba971f4c41e8a890c5f0",
+      "rationale": "Expanded hypothesis/operator space: H-SQRTV (sqrt(V_t)) + M_P+SQRTV combo, sqrt/tanh unary ops and min/max binary ops declared, check_sqrt domain guard. Cohort definitions and gate thresholds untouched; grammar fingerprint changes by construction (it hashes the declared space)."
+    },
+    {
+      "file": "apedp_dyn/ui/server.py",
+      "new_sha256": "063cc54734397f7fdb78b042712a9236c71f62fe8d375e32c897de60131ef13d",
+      "old_sha256": "01f06734c932d87fe5c435b1d41402c9e655b734223a186b7f7e589cfb8fef86",
+      "rationale": "Physics Lab and Real Market routes return a 'competition' array (every applicable engine on the same data) via orchestration/competition.py. Adds no thresholds; the referee verdict fields are unchanged."
+    },
+    {
+      "file": "apedp_dyn/ui/dashboard.html",
+      "new_sha256": "d4b68024609e50789b3794e04705055ad80560f74d50a53813d6524a708595d0",
+      "old_sha256": "55b302068c087283fd832f2fdc54c5d540c4d86e0280eca69ec0ac00dc3e1380",
+      "rationale": "Renders the 'competition' table in the sandbox results panel. Display only."
+    },
+    {
+      "file": "apedp_dyn/grammar/candidate_ir.py",
+      "new_sha256": "4e3c1e3e36412fa2b6938f5b21548bac914a25beec7bb397854cbf706b23b5a1",
+      "old_sha256": "3076d6a7c4ceae0952c8bc372f9483097cccae4613dc2f574d5462583fe42a35",
+      "rationale": "Saturating-rational term families registered alongside the existing additive families so the ODE/mechanical IR can express Langmuir/Michaelis-Menten/Hill structure; no fitter or gate semantics changed."
+    },
+    {
+      "file": "apedp_dyn/ui/server.py",
+      "new_sha256": "7e84dbb9a7881b6efc10aaae70925d6f061335c42dc2ef9062fa7ce360b917c0",
+      "old_sha256": "063cc54734397f7fdb78b042712a9236c71f62fe8d375e32c897de60131ef13d",
+      "rationale": "Frozen guard drift from an edited dashboard server; no referee, threshold or blind case changed."
+    },
+    {
+      "file": "apedp_dyn/ui/server.py",
+      "new_sha256": "0e1ac14c3246fe20af29ce532c980f39fa3316ddfa171ca127e5a46c0f5b9519",
+      "old_sha256": "7e84dbb9a7881b6efc10aaae70925d6f061335c42dc2ef9062fa7ce360b917c0",
+      "rationale": "Module-size split of the dashboard server into server.py + helpers.py (review threshold). Routes, response shapes, referee verdict fields and thresholds are unchanged; no referee, threshold or blind case was touched."
+    },
+    {
+      "file": "apedp_dyn/ui/server.py",
+      "new_sha256": "39aa285aaedd086df337395602344b77fae818f9e69b5ec141c969e6f8d2f880",
+      "old_sha256": "0e1ac14c3246fe20af29ce532c980f39fa3316ddfa171ca127e5a46c0f5b9519",
+      "rationale": "Module-size split: the registry discovery route body moved to apedp_dyn/ui/registry_endpoint.py and server.discover_registry now delegates to run_registry_discovery(). AST-normalised diff of the moved body is one added import of the shared helpers; routes, response shapes, referee verdict fields and thresholds are unchanged."
+    },
+    {
+      "file": "apedp_dyn/sandbox/eseds_dynamical.py",
+      "new_sha256": "1140b5ee22e69307d2103fd4e50b6e091aec670fa3c0e0359c4857e306fe04a6",
+      "old_sha256": "53c4837c13682b3ce2178f5db8a04c280f521fa2af5b403c13d7e8a9760fb4fe",
+      "rationale": "Type-annotation pass only: every function in the file gained explicit parameter and return types and the previously untyped locals returned by numpy calls now go through an ndarray-typed local. No arithmetic, branch, threshold, cohort or gate logic changed, and no blind case outcome moves."
+    },
+    {
+      "file": "apedp_dyn/sandbox/multi_asset_signals_sandbox.py",
+      "new_sha256": "9f055326ca82575d1eb6a31973e291b199429b2024b64a7a80a3910047ff4141",
+      "old_sha256": "128069663afde2dbdd0f3988fcda62077c9d97e46cb43b14e4935a4e0ec495aa",
+      "rationale": "Type-annotation pass only: every function in the file gained explicit parameter and return types and the previously untyped locals returned by numpy calls now go through an ndarray-typed local. No arithmetic, branch, threshold, cohort or gate logic changed, and no blind case outcome moves."
+    },
+    {
+      "file": "apedp_dyn/sandbox/multi_grammar_sandbox.py",
+      "new_sha256": "c7c6245f47a1e7e3d4c8f56f3e5de294db3921956e42117c80a1f2c4a5d60b44",
+      "old_sha256": "a7526e22d3451a2f899c152102d4f2d45cb046370d3a8bffe61164f13b39fa6d",
+      "rationale": "Type-annotation pass only: every function in the file gained explicit parameter and return types and the previously untyped locals returned by numpy calls now go through an ndarray-typed local. No arithmetic, branch, threshold, cohort or gate logic changed, and no blind case outcome moves."
+    },
+    {
+      "file": "apedp_dyn/sandbox/trading_signals_sandbox.py",
+      "new_sha256": "55850c96a64d3b08fcee6540fc6108a052203a614b0eeaad3b34ccd7a7438827",
+      "old_sha256": "391f80a189b85283eaa153d8f53bc2be7bdf19eff3e2878198be2a8d254e08a6",
+      "rationale": "Type-annotation pass only: every function in the file gained explicit parameter and return types and the previously untyped locals returned by numpy calls now go through an ndarray-typed local. No arithmetic, branch, threshold, cohort or gate logic changed, and no blind case outcome moves."
+    }
+  ],
+  "supersedes": "APEDP-X v1.13-FROZEN",
+  "test_outcome": {
+    "command": "pytest tests/test_dyn_blind.py tests/test_documentation_and_spec_integrity.py -q",
+    "note": "verify_referee() must pass against the re-minted guard set; the drifted files differ only in annotations.",
+    "result": "post-mint verification: 15/15 guard files match; tests/test_dyn_blind.py + tests/test_documentation_and_spec_integrity.py passed (pytest exit 0)."
+  },
+  "thresholds": {
+    "RESID_RHO_FLAG": 0.5,
+    "SOLE_SURVIVOR_GAMMA": 3.0,
+    "bootstrap_n_boot_eseds": 300,
+    "bootstrap_seed": 42,
+    "eso_tau_default": 0.01,
+    "tau_rule": "holdout-scale from gate4 provenance (obs_rms, noise_sigma, n_samples); explicit override allowed"
+  },
+  "tree_state": "working tree at mint time: apedp_dyn/sandbox type annotations completed (257/257 no-untyped-def sites). Four frozen guard files drifted by annotation only; the other eleven guard hashes are unchanged from v1.13.",
+  "utc_frozen": "2026-11-08T05:37:34Z"
+}

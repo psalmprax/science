@@ -86,11 +86,13 @@ class JetFlowStepper:
 
         t_probe = t + h_eff
         if abs(h_eff) <= 1e-9:
-            return np.zeros_like(v_current)
+            _out: np.ndarray = np.zeros_like(v_current)
+            return _out
 
         z_probe = z + h_eff * v_current
         v_probe = velocity_fn(z_probe, t_probe)
-        return np.asarray((v_probe - v_current) / h_eff)
+        _out = np.asarray((v_probe - v_current) / h_eff)
+        return _out
 
     def step(
         self,

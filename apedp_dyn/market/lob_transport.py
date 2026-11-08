@@ -121,7 +121,7 @@ def _spectral_evolution(
     k = _TWO_PI * np.fft.fftfreq(n_x, d=dx)
     u0_hat = np.fft.fft(u0)
     decay = diffusion * k ** 2 + decay_rate
-    snapshots = np.empty((n_t, n_x), dtype=np.float64)
+    snapshots: np.ndarray = np.empty((n_t, n_x), dtype=np.float64)
     for i in range(n_t):
         t = i * dt
         snapshots[i] = np.real(np.fft.ifft(u0_hat * np.exp(-(decay + 1j * drift_velocity * k) * t)))
@@ -153,9 +153,10 @@ def _rk4_evolution(
     def rhs(u: np.ndarray) -> np.ndarray:
         u_x = (np.roll(u, -1) - np.roll(u, 1)) / (2.0 * dx)
         u_xx = (np.roll(u, -1) - 2.0 * u + np.roll(u, 1)) / (dx * dx)
-        return -drift_velocity * u_x + diffusion * u_xx - decay_rate * u
+        _out: np.ndarray = -drift_velocity * u_x + diffusion * u_xx - decay_rate * u
+        return _out
 
-    snapshots = np.empty((n_t, u0.size), dtype=np.float64)
+    snapshots: np.ndarray = np.empty((n_t, u0.size), dtype=np.float64)
     snapshots[0] = u0
     for i in range(n_t - 1):
         u = snapshots[i]
@@ -261,7 +262,8 @@ def spectral_transport_recovery(
 
 def snapshot_mass(snapshots: np.ndarray, dx: float) -> np.ndarray:
     """Total depth mass ``integral u dx`` per snapshot."""
-    return np.asarray(snapshots, dtype=np.float64).sum(axis=1) * dx
+    _out: np.ndarray = np.asarray(snapshots, dtype=np.float64).sum(axis=1) * dx
+    return _out
 
 
 def snapshot_centre_of_mass(snapshots: np.ndarray, dx: float) -> np.ndarray:
@@ -293,7 +295,8 @@ def snapshot_centre_of_mass(snapshots: np.ndarray, dx: float) -> np.ndarray:
     # honestly with NaN rather than atan2's silent 0/0 -> 0.
     mean_angle[np.abs(total_mass) < 1e-12] = np.nan
     unwrapped = np.unwrap(mean_angle)
-    return unwrapped * domain_length / _TWO_PI
+    _out: np.ndarray = unwrapped * domain_length / _TWO_PI
+    return _out
 
 
 def snapshot_variance(snapshots: np.ndarray, dx: float) -> np.ndarray:
@@ -327,7 +330,8 @@ def snapshot_variance(snapshots: np.ndarray, dx: float) -> np.ndarray:
     var_theta = np.sum(snapshots * deviation ** 2, axis=1) * dx / total_mass
     out = (domain_length / _TWO_PI) ** 2 * var_theta
     out[np.abs(total_mass) < 1e-12] = np.nan
-    return out
+    _out: np.ndarray = out
+    return _out
 
 
 def discover_transport_with_engine(

@@ -75,7 +75,8 @@ def _spectral_derivative_1d(u: np.ndarray, dx: float, order: int, axis: int = -1
     shape = [1] * u.ndim
     shape[axis] = n
     u_hat = np.fft.fft(u, axis=axis)
-    return np.fft.ifft(u_hat * ik_pow.reshape(shape), axis=axis).real
+    _out: np.ndarray = np.fft.ifft(u_hat * ik_pow.reshape(shape), axis=axis).real
+    return _out
 
 
 def _fd_derivative_1d_interior(u: np.ndarray, dx: float, order: int) -> np.ndarray:
@@ -468,7 +469,8 @@ class HigherOrderPdeProposer(ProposerBase):
         def score_fn(eval_df: pd.DataFrame) -> np.ndarray:
             if "u" not in eval_df.columns:
                 return np.zeros(len(eval_df))
-            return np.nan_to_num(eval_df["u"].to_numpy(dtype=np.float64), nan=0.0)
+            _out: np.ndarray = np.nan_to_num(eval_df["u"].to_numpy(dtype=np.float64), nan=0.0)
+            return _out
 
         meta: dict[str, Any] = {
             "temporal_order": res.temporal_order,

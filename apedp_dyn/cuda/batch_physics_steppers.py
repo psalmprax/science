@@ -19,8 +19,8 @@ import torch
 
 # Check for Triton availability
 try:
-    import triton  # type: ignore[import-untyped]  # noqa: F401 (kernel scope, availability probe)
-    import triton.language as tl  # type: ignore[import-untyped]  # noqa: F401 (kernel scope, availability probe)
+    import triton  # noqa: F401 (kernel scope, availability probe)
+    import triton.language as tl  # noqa: F401 (kernel scope, availability probe)
     HAS_TRITON = True
 except ImportError:
     HAS_TRITON = False

@@ -197,7 +197,8 @@ class SubmissionInputs:
     def num_vectors(self) -> int:
         """``N + R*B``: the one-body rows followed by the two-body rows."""
         rank_r, bases_b, _ = self.w.shape
-        return self.num_orbitals + rank_r * bases_b
+        _out: int = self.num_orbitals + rank_r * bases_b
+        return _out
 
 
 def load_inputs(

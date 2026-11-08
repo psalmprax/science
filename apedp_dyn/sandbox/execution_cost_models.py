@@ -72,7 +72,8 @@ class FixedPlusSlippageCostModel(ExecutionCostModelBase):
         sigma_local = pd.Series(ret).rolling(20, min_periods=2).std().ffill().fillna(0.01).to_numpy()
         slippage_drag = self.slippage_coeff * sigma_local * dpos
 
-        return np.asarray(fee_drag + spread_drag + slippage_drag)
+        _out: np.ndarray = np.asarray(fee_drag + spread_drag + slippage_drag)
+        return _out
 
 
 @dataclass
@@ -114,7 +115,8 @@ class AlmgrenChrissImpactCostModel(ExecutionCostModelBase):
         perm_impact = self.gamma_perm * sigma_local * participation * dpos
         fee_drag = (self.exchange_fee_bps / 10000.0) * dpos
 
-        return np.asarray(fee_drag + temp_impact + perm_impact)
+        _out: np.ndarray = np.asarray(fee_drag + temp_impact + perm_impact)
+        return _out
 
 
 @dataclass
@@ -161,4 +163,5 @@ class LimitOrderQueueCostModel(ExecutionCostModelBase):
             adverse_drag = 0.5 * (self.adverse_selection_bps / 10000.0) * dpos
 
         net_drag = adverse_drag - rebate
-        return np.maximum(net_drag, 0.0)
+        _out: np.ndarray = np.maximum(net_drag, 0.0)
+        return _out

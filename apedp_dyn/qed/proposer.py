@@ -124,7 +124,8 @@ class QuantumEquationProposer(ProposerBase):
                 if frame.ndim != 2:
                     raise ValueError("compute_score expects a 2-D frame")
                 design = library.design_matrix(frame)
-                return library.select(design, keep) @ np.asarray(values, dtype=float)
+                _out: np.ndarray = library.select(design, keep) @ np.asarray(values, dtype=float)
+                return _out
 
             return score
 
