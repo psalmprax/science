@@ -1,37 +1,104 @@
 {
-  "note": "Every function in these roots that returns a value read from a module- or class-level container literal. scripts/audit_static_tables.py --check compares the live census against this file and exits 1 when a table appears, disappears or moves, so an unrecorded table cannot reach review. A new row also needs a line in docs/SCAFFOLD_INVENTORY.md; tests/test_scaffold_inventory.py enforces both.",
-  "roots": ["apedp", "apedp_dyn"],
   "excluded": [
     "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation"
   ],
+  "note": "Every function in these roots that returns a value read from a module- or class-level container literal. scripts/audit_static_tables.py --check compares the live census against this file and exits 1 when a table appears, disappears or moves, so an unrecorded table cannot reach review. A new row also needs a line in docs/SCAFFOLD_INVENTORY.md; tests/test_scaffold_inventory.py enforces both.",
   "recorded": {
-    "apedp/applied_materials.py": ["REFERENCE_CANDIDATES"],
-    "apedp/core.py": ["DIM_MAP"],
-    "apedp/discovery/_core.py": ["MECHANISTIC_PRIORS"],
-    "apedp/equations/seeds.py": ["SEED_LAWS"],
-    "apedp/evidence.py": ["_RANK"],
-    "apedp/family_detection.py": ["MECHANISTIC_PRIORS"],
-    "apedp/gated_assurance/checks.py": ["_FINITE_TARGET_WORDS"],
-    "apedp/gated_assurance/contracts.py": ["ADJUDICATION_EVIDENCE_BASIS", "ADJUDICATION_EVIDENCE_TIER"],
-    "apedp/ingestion/external_benchmarks.py": ["CASES"],
-    "apedp/ingestion/ingestion_academic_apis.py": ["INSTITUTIONAL_TARGETS"],
-    "apedp/scientific_layers.py": ["DISCOVERY_TIERS"],
-    "apedp_dyn/conf/benchmark_v2.py": ["KAPPA_BANDS"],
-    "apedp_dyn/epistemic/frozen_spec.py": ["FROZEN_SPEC"],
-    "apedp_dyn/epistemic/multiple_testing.py": ["METHOD_NAMES"],
-    "apedp_dyn/fitting/parameter_fit.py": ["MULTISTART_SCALES"],
-    "apedp_dyn/grammar/candidate_ir.py": ["parent_candidates"],
-    "apedp_dyn/orchestration/modality_sieve.py": ["DYNAMIC_ENGINES", "STATIC_ENGINES"],
-    "apedp_dyn/problems/__init__.py": ["ALL_PROBLEMS"],
-    "apedp_dyn/qed/library.py": ["OSCILLATOR_TERMS"],
-    "apedp_dyn/quantum_compilation/quantum_signal.py": ["CONTINUOUS_STEPS"],
-    "apedp_dyn/sandbox/auto_degradation.py": ["TRUTH"],
-    "apedp_dyn/sandbox/crypto_grammar.py": ["CRYPTO_ASSETS"],
-    "apedp_dyn/sandbox/multi_asset_signals_sandbox.py": ["SIGNAL_NAMES"],
-    "apedp_dyn/ui/server.py": ["SANDBOX_CATALOG"],
-    "apedp_dyn/validation/energy.py": ["RESTORING_FUNCTIONS"],
-    "apedp_dyn/vqc/equivalence_corpus.py": ["SCOPES"],
-    "apedp_dyn/vqc/external.py": ["TOOLS"],
-    "apedp_dyn/vqc/native.py": ["_LAST_FAILURE", "_TALLIES"]
-  }
+    "apedp/applied_materials.py": [
+      "REFERENCE_CANDIDATES"
+    ],
+    "apedp/core.py": [
+      "DIM_MAP"
+    ],
+    "apedp/discovery/_core.py": [
+      "MECHANISTIC_PRIORS"
+    ],
+    "apedp/equations/seeds.py": [
+      "SEED_LAWS"
+    ],
+    "apedp/evidence.py": [
+      "_RANK"
+    ],
+    "apedp/family_detection.py": [
+      "MECHANISTIC_PRIORS"
+    ],
+    "apedp/gated_assurance/checks.py": [
+      "_FINITE_TARGET_WORDS"
+    ],
+    "apedp/gated_assurance/contracts.py": [
+      "ADJUDICATION_EVIDENCE_BASIS",
+      "ADJUDICATION_EVIDENCE_TIER"
+    ],
+    "apedp/ingestion/external_benchmarks.py": [
+      "CASES",
+      "_UNVERIFIED_REASONS"
+    ],
+    "apedp/ingestion/ingestion_academic_apis.py": [
+      "INSTITUTIONAL_TARGETS"
+    ],
+    "apedp/scientific_layers.py": [
+      "DISCOVERY_TIERS"
+    ],
+    "apedp_dyn/conf/benchmark_v2.py": [
+      "KAPPA_BANDS"
+    ],
+    "apedp_dyn/cuda/batch_physics_steppers.py": [
+      "_TRITON_KERNELS"
+    ],
+    "apedp_dyn/epistemic/frozen_spec.py": [
+      "FROZEN_SPEC"
+    ],
+    "apedp_dyn/fitting/parameter_fit.py": [
+      "MULTISTART_SCALES"
+    ],
+    "apedp_dyn/grammar/candidate_ir.py": [
+      "parent_candidates"
+    ],
+    "apedp_dyn/orchestration/modality_sieve.py": [
+      "DYNAMIC_ENGINES",
+      "STATIC_ENGINES"
+    ],
+    "apedp_dyn/problems/__init__.py": [
+      "ALL_PROBLEMS"
+    ],
+    "apedp_dyn/qed/library.py": [
+      "OSCILLATOR_TERMS"
+    ],
+    "apedp_dyn/quantum_compilation/dqi_gluzdov_v6.py": [
+      "RECYCLING_MEASUREMENT",
+      "WIDTH_LEVERS_MEASURED"
+    ],
+    "apedp_dyn/quantum_compilation/faros_isq.py": [
+      "_RESOLVED_PYTHON"
+    ],
+    "apedp_dyn/quantum_compilation/quantum_signal.py": [
+      "CONTINUOUS_STEPS"
+    ],
+    "apedp_dyn/sandbox/crypto_grammar.py": [
+      "CRYPTO_ASSETS"
+    ],
+    "apedp_dyn/sandbox/multi_asset_signals_sandbox.py": [
+      "SIGNAL_NAMES"
+    ],
+    "apedp_dyn/ui/server.py": [
+      "SANDBOX_CATALOG"
+    ],
+    "apedp_dyn/validation/energy.py": [
+      "RESTORING_FUNCTIONS"
+    ],
+    "apedp_dyn/vqc/equivalence_corpus.py": [
+      "SCOPES"
+    ],
+    "apedp_dyn/vqc/external.py": [
+      "TOOLS"
+    ],
+    "apedp_dyn/vqc/native.py": [
+      "_LAST_FAILURE",
+      "_TALLIES"
+    ]
+  },
+  "roots": [
+    "apedp",
+    "apedp_dyn"
+  ]
 }

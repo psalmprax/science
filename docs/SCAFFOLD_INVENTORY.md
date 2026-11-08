@@ -43,7 +43,7 @@ and each tier claim is pinned in
 
 | module | claim a reader might make | what it does |
 |---|---|---|
-| `apedp/ingestion/ingestion_academic_apis.py` | "it integrates NASA ADS, CERN, Wolfram Alpha" | Holds twenty endpoint strings. `CONNECTS_TO_SERVICES = False`; no client, no authentication, no request |
+| `apedp/ingestion/ingestion_academic_apis.py` | "it integrates NASA ADS, CERN, Wolfram Alpha" | Holds twenty-one endpoint strings as configuration. `CONNECTS_TO_SERVICES = False` and `AUTHENTICATION = "none"`: no client or credential exists for any listed target. Crossref is the single implemented route — an anonymous public metadata search — and `describe()` says so rather than implying the other twenty |
 | `apedp/ingestion/ingestion_web_equations.py` | "it harvests equations" | Fetches Wikipedia HTML and extracts formula strings. The displaystyle scan is now **brace-balanced**, so a nested group survives intact; the flat regex it replaced cut the formula at the first inner brace, and an even earlier pattern never matched at all because it was double-escaped. Still lossy where it matters: macros are not expanded and non-displaystyle math is skipped, so `EXTRACTION_IS_LOSSY = True` stands and every returned string must be re-verified |
 | `apedp_dyn/distributed/cluster_launcher.py` | "it launches clusters" | Renders Slurm `#SBATCH` scripts and Kubernetes/KubeRay manifests. `SUBMITS_JOBS = False`; no `sbatch`, no `kubectl`, no credentials |
 | `rust/goldbach_verifier` | "it verifies Goldbach" | Verifies a finite range — 1e7 by default. The conjecture is already verified to 4e18, so this is a sieve-throughput benchmark. The banner now prints that sentence |
@@ -106,7 +106,7 @@ tables. They are listed so that a reader who sees
 | `apedp/evidence.py` | `_RANK` (`rank`) | Ordering of evidence kinds |
 | `apedp/gated_assurance/checks.py` | `_FINITE_TARGET_WORDS` (`_asymptote_target`) | Words that denote a finite asymptote |
 | `apedp/gated_assurance/contracts.py` | `ADJUDICATION_EVIDENCE_TIER`, `ADJUDICATION_EVIDENCE_BASIS` | Which evidence supports which adjudication tier |
-| `apedp/ingestion/external_benchmarks.py` | `CASES` (`list_cases`) | The five AI Feynman cases, each attributed and dimensionally annotated |
+| `apedp/ingestion/external_benchmarks.py` | `CASES` (`list_cases`), `_UNVERIFIED_REASONS` (`provenance`) | The five AI Feynman cases, each attributed and dimensionally annotated; and the recorded reasons the two benchmark tables are not the published numbers |
 | `apedp/ingestion/ingestion_academic_apis.py` | `INSTITUTIONAL_TARGETS` | Endpoint configuration; see the infrastructure table above |
 | `apedp/scientific_layers.py` | `DISCOVERY_TIERS` (`benchmark_tier_summary`) | Tier definitions used to label benchmark results |
 | `apedp/applied_materials.py` | `REFERENCE_CANDIDATES` (`search_candidates`) | The fixed superconductor reference list; see the applied table above |
@@ -167,14 +167,15 @@ refusal, which is the behaviour this repository asks for.
 (`_qualtran_src`, `benchmark_corpus*`, `node_modules`, `__pycache__`, `tests`), so
 the scan reports this repository's code and not another project's.
 
-**Current findings: two.** Both are tables, both recorded in
-`scripts/scope_scan_baseline.json` with a reason, and neither is a fabricated
+**Current findings: three.** All three are tables, all recorded in
+`scripts/scope_scan_baseline.json` with a reason, and none is a fabricated
 number:
 
 | module | function | basis | why it is tolerated |
 |---|---|---|---|
 | `apedp/applied_materials.py` | `search_candidates` | `REFERENCE_CANDIDATES` | A fixed list of four literature superconductors. The name promises a search over candidate space; the return is a citation list, which is why the docstring says "Not a search" and the tier above is `literature_lookup` |
 | `apedp/evidence.py` | `rank` | `_RANK` | A fixed ordering of evidence kinds (`PROVED` 0 … `UNRESOLVED` 3) — a schema decision, not a judgement about the caller's data |
+| `apedp_dyn/quantum_compilation/dqi_gluzdov_v6.py` | `design_projection_dqi_gluzdov_v6` | `RECYCLING_MEASUREMENT` | The return is an analytical projection computed from `GluzdovV6Config`; the table is the measured degree-register recycling record embedded as its stated basis, not the answer the caller reads |
 
 **Exit status is the check**, so it runs as a command as well as from the suite:
 
@@ -277,22 +278,23 @@ subclass, and each subclass implements the terms its own formula has. Reading th
 implementations against their docstring formulas is what turned "unused parameter" into
 "a caller cannot tell which arguments bind".
 
-**Static-table census for `apedp_dyn`.** Seventeen modules outside the vendored
-trees read a container literal on a return path. All are catalogues, registries or
-step ladders, and none answers a question about the world:
+**Static-table census for `apedp_dyn`.** Eighteen modules outside the vendored
+trees read a container literal on a return path. All are catalogues, registries,
+measured records or step ladders, and none answers a question about the world:
 
 | module | table | what it is |
 |---|---|---|
 | `conf/benchmark_v2.py` | `KAPPA_BANDS` | Threshold bands addressed by `run_ladder` |
 | `epistemic/frozen_spec.py` | `FROZEN_SPEC` | The frozen-adjudication constants |
-| `epistemic/multiple_testing.py` | `METHOD_NAMES` | Canonical spellings of the correction methods |
+| `cuda/batch_physics_steppers.py` | `_TRITON_KERNELS` | The explicit (empty) kernel registry the availability check is gated on; see the sweep row above |
+| `quantum_compilation/dqi_gluzdov_v6.py` | `RECYCLING_MEASUREMENT`, `WIDTH_LEVERS_MEASURED` | Measured register-recycling records; the projection's own numbers are computed from `GluzdovV6Config` |
 | `fitting/parameter_fit.py` | `MULTISTART_SCALES` | Scale ladder for the multi-start search |
 | `grammar/candidate_ir.py` | `parent_candidates` | See the false positive below |
 | `orchestration/modality_sieve.py` | `DYNAMIC_ENGINES`, `STATIC_ENGINES` | Which engine a classified modality routes to |
 | `problems/__init__.py` | `ALL_PROBLEMS` | The problem catalogue |
 | `qed/library.py` | `OSCILLATOR_TERMS` | The hypothesis library offered to the search |
+| `quantum_compilation/faros_isq.py` | `_RESOLVED_PYTHON` | Memo of resolved interpreter paths -- a cache the resolver reads back, not a result table |
 | `quantum_compilation/quantum_signal.py` | `CONTINUOUS_STEPS` | The step grid the trial charge is computed from |
-| `sandbox/auto_degradation.py` | `TRUTH` | The trap's own ground truth |
 | `sandbox/crypto_grammar.py` | `CRYPTO_ASSETS` | The asset list |
 | `sandbox/multi_asset_signals_sandbox.py` | `SIGNAL_NAMES` | Disclosure names |
 | `ui/server.py` | `SANDBOX_CATALOG` | The endpoint catalogue |
