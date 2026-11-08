@@ -108,11 +108,20 @@ class CandidatePayload(Protocol):
     without being told that an ungrammatical proposal is a grammar candidate.
     """
 
-    candidate_id: str
-    metadata: dict[str, Any]
-    grammar_version: str
-    generation_seed: int
-    parent_candidates: tuple[str, ...]
+    @property
+    def candidate_id(self) -> str: ...
+
+    @property
+    def metadata(self) -> dict[str, Any]: ...
+
+    @property
+    def grammar_version(self) -> str: ...
+
+    @property
+    def generation_seed(self) -> int: ...
+
+    @property
+    def parent_candidates(self) -> tuple[str, ...]: ...
 
     def parameter_names(self) -> tuple[str, ...]: ...
 
