@@ -1,0 +1,196 @@
+# Governance Re-Signing Package (FLAW-01)
+
+**Audience:** the three registered trustees, then the maintainer who assembles the
+manifest. Trustees need only section 2; the maintainer runs section 4.
+**Status:** OPEN — this package removes every non-trustee step. What remains is
+two signatures over one digest.
+
+## 1. What is being asked, and why
+
+The canonical specification has been revised three times since the 2026-10-18
+certification ceremony (each revision *added* thresholds; no existing value was
+loosened). `apedp_dyn/conf/canonical_spec.py` pins the current file at import
+time, and that pin agrees with the file. The **Ed25519 governance manifest does
+not**: it still seals the genesis digest.
+
+| Item | Value |
+|---|---|
+| Spec file | `specifications/canonical_preregistered_spec_v1.json` |
+| Digest trustees must sign | `dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343` |
+| Digest the manifest currently seals | `a6d026f303a77cbb2f1dd5f8a74c394dd09f8139d811a9bfe4142c82063f6d47` |
+| Python import pin | `dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343` (agrees) |
+| Quorum | **2 of 3** |
+| Request artifact | `specifications/governance_remint_request.json` |
+| Transparency-log head to extend | `12873a9066959ec19bb645e00ec9e91a0fa4b9192f3de17cdb2395762ce9fae9` |
+
+Because the manifest seals a digest the file no longer produces, governance is
+**fail-closed red**: `tests/test_dyn_governance.py` is 4 passed / 1 failed and
+`scripts/check_governance_manifest_drift.py --check` exits 1. That red is the
+system working. It cannot be cleared by code, CI, or an agent — only by the
+registered private keys.
+
+## 2. Trustee instructions
+
+Registered keys, for your own records and self-verification:
+
+| Trustee ID | Role | Ed25519 public key (hex) |
+|---|---|---|
+| `referee_lead_01` | Chief Referee | `9cb876ccb44b63fc8bad3b580ea86a3e14bb81c90361e801ab0a8675a8bf9dfd` |
+| `referee_stat_02` | Statistical Referee | `05fd93155bdf784c5eac8581866521c027cbb9b366c6c52732d42084adae2680` |
+| `auditor_formal_03` | Formal Verification Auditor | `27924bd7c02fd38f738d06ced27f4d95825c3dcf803012d628ea106f760b39e6` |
+
+### Sign exactly this message
+
+The signed message is the **ASCII hex string** of the digest — not the file
+bytes, not the JSON, not a hash of the JSON:
+
+```
+dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343
+```
+
+### Option A — sign with this repository's signer
+
+```bash
+export TRUSTEE_PRIVATE_KEY_HEX='<from your own secret store>'
+python - <<'PY'
+import os
+from apedp_dyn.epistemic.governance import sign_spec_sha256
+digest = "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343"
+print(sign_spec_sha256(os.environ["TRUSTEE_PRIVATE_KEY_HEX"], digest))
+PY
+unset TRUSTEE_PRIVATE_KEY_HEX
+```
+
+### Option B — sign without this repository
+
+Ed25519 is standard; any library produces the same 64-byte signature over the
+UTF-8 bytes of that hex string.
+
+```bash
+pip install cryptography
+python - <<'PY'
+import os
+from cryptography.hazmat.primitives.asymmetric import ed25519
+key = ed25519.Ed25519PrivateKey.from_private_bytes(
+    bytes.fromhex(os.environ["TRUSTEE_PRIVATE_KEY_HEX"]))
+digest = b"dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343"
+print(key.sign(digest).hex())
+PY
+```
+
+### Verify your own signature before sending it
+
+```python
+from apedp_dyn.epistemic.governance import verify_ed25519_signature
+PUBLIC = {
+    "referee_lead_01": "9cb876ccb44b63fc8bad3b580ea86a3e14bb81c90361e801ab0a8675a8bf9dfd",
+    "referee_stat_02": "05fd93155bdf784c5eac8581866521c027cbb9b366c6c52732d42084adae2680",
+    "auditor_formal_03": "27924bd7c02fd38f738d06ced27f4d95825c3dcf803012d628ea106f760b39e6",
+}
+digest = "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343"
+assert verify_ed25519_signature(PUBLIC["<your trustee_id>"], digest,
+                               "<your signature hex>")
+```
+
+### Return exactly three fields
+
+```json
+{
+  "trustee_id": "referee_lead_01",
+  "signature_hex": "<128 lowercase hex characters>",
+  "signed_at": "2026-11-07T14:05:00+00:00"
+}
+```
+
+`signature_hex` must be 128 characters (a 64-byte signature). `signed_at` must
+carry a timezone offset; a naive timestamp is refused at intake because the
+transparency log is append-only and cannot later correct an ambiguous instant.
+
+**Never send the private key.** A signature is the only artifact required, and
+it is not secret — it is published in the manifest and the transparency log.
+
+### Do not
+
+- Do not reuse the 2026-10-18 signatures. They sign `a6d026…` and are invalid
+  for the current digest.
+- Do not sign a different digest, the request JSON, or the spec file bytes; the
+  verifier signs and checks the hex string above.
+- Do not send a key, a seed phrase, or a signed manifest fragment.
+
+## 3. What the request artifact proves
+
+`specifications/governance_remint_request.json` was generated by
+`scripts/run_governance_remint_ceremony.py request`, which fails closed if the
+disk spec and the Python pin disagree. It records:
+
+- the digest to sign and the digest the manifest currently seals;
+- that the prior transparency log is intact;
+- the registered roster and the quorum threshold;
+
+and nothing that authorizes a change to the roster, the quorum, or the spec.
+
+**The request expires the moment the spec file changes.** If the digest in
+section 1 no longer matches `sha256sum specifications/canonical_preregistered_spec_v1.json`,
+the request is stale and a new one must be issued — do not sign a stale digest.
+
+## 4. Maintainer runbook (after signatures arrive)
+
+```bash
+# 4.1 Verify and record each returned signature. Refuses unregistered signers,
+#     wrong keys, malformed hex, naive timestamps, stale requests, duplicates.
+.venv/bin/python scripts/intake_governance_signature.py \
+    --trustee-id referee_lead_01 \
+    --signature-hex <128 hex> \
+    --signed-at 2026-11-07T14:05:00+00:00
+
+.venv/bin/python scripts/intake_governance_signature.py \
+    --trustee-id referee_stat_02 \
+    --signature-hex <128 hex> \
+    --signed-at 2026-11-07T14:12:00+00:00
+
+# 4.2 Rehearse the mint. Re-verifies every signature from scratch, checks the
+#     prior log chain, requires quorum, and prints without writing.
+.venv/bin/python scripts/run_governance_remint_ceremony.py mint --dry-run
+
+# 4.3 Write the re-certified manifest (only after 4.2 says VALIDATES).
+.venv/bin/python scripts/run_governance_remint_ceremony.py mint
+```
+
+The mint carries `spec_id`, the trustee roster, and `quorum_threshold` through
+unchanged, and appends `PREREGISTRATION_RECERTIFICATION` entries to the existing
+chain. It writes nothing if any gate fails.
+
+`--dry-run` is not optional courtesy: it is the last point at which a bad
+signature or a short quorum can be caught before the manifest is replaced.
+
+### Acceptance criteria on the commit that carries the re-signed manifest
+
+```bash
+python scripts/check_governance_manifest_drift.py --check   # exit 0
+.venv/bin/python -m pytest tests/test_dyn_governance.py -q  # 5 passed
+.venv/bin/python -m pytest tests/test_documentation_and_spec_integrity.py -q
+```
+
+The spec file must not change; its digest must still be `dbf67c5a…` afterwards.
+The transparency log must be two entries longer, with both new entries naming
+the new digest.
+
+## 5. Out of scope, permanently
+
+- Editing `specifications/canonical_preregistered_spec_v1.json` to match the old
+  digest.
+- Changing `PINNED_SPEC_SHA256` in `apedp_dyn/conf/canonical_spec.py`.
+- Altering the trustee roster or `quorum_threshold`.
+- Generating keys, or minting a manifest, inside this repository or CI.
+- Committing a manifest with placeholder, replayed, or agent-generated signatures.
+
+## 6. Why this is the only remaining step
+
+Everything on the repository side of FLAW-01 is already pinned by
+`tests/test_dyn_governance_remint_ceremony.py`: the sandbox end-to-end
+re-certification, forged and unregistered refusal, below-quorum refusal, pin-drift
+fail-closed, and a live-repo guard proving this repository cannot be minted
+without real trustees. `scripts/intake_governance_signature.py` closes the last
+manual step — the point at which a maintainer could previously record a
+signature that was never checked against the registered key — and is pinned by
+`tests/test_governance_signature_intake.py`.

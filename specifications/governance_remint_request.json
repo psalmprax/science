@@ -1,0 +1,34 @@
+{
+  "request_kind": "governance_remint_request",
+  "spec_id": "canonical_preregistered_spec_v1",
+  "spec_sha256": "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343",
+  "prior_spec_sha256": "a6d026f303a77cbb2f1dd5f8a74c394dd09f8139d811a9bfe4142c82063f6d47",
+  "prior_manifest_transparency_log_intact": true,
+  "prior_manifest_valid_for_old_spec": true,
+  "prior_manifest_valid_signatures_over_sealed_digest": 2,
+  "quorum_threshold": 2,
+  "trustees": [
+    {
+      "trustee_id": "referee_lead_01",
+      "name": "Lead Epistemic Referee",
+      "public_key_hex": "9cb876ccb44b63fc8bad3b580ea86a3e14bb81c90361e801ab0a8675a8bf9dfd",
+      "role": "Chief Referee"
+    },
+    {
+      "trustee_id": "referee_stat_02",
+      "name": "Statistical Verification Officer",
+      "public_key_hex": "05fd93155bdf784c5eac8581866521c027cbb9b366c6c52732d42084adae2680",
+      "role": "Statistical Referee"
+    },
+    {
+      "trustee_id": "auditor_formal_03",
+      "name": "Mathematical Formalization Auditor",
+      "public_key_hex": "27924bd7c02fd38f738d06ced27f4d95825c3dcf803012d628ea106f760b39e6",
+      "role": "Formal Verification Auditor"
+    }
+  ],
+  "message_trustees_sign": "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343",
+  "rationale": "Spec revised post-certification and re-pinned by canonical_spec.PINNED_SPEC_SHA256 (see CHANGELOG); the manifest quorum must re-seal the current hash.",
+  "created_at": "2026-11-07T22:37:59.968772+00:00",
+  "pinned_sha_source": "apedp_dyn.conf.canonical_spec.PINNED_SPEC_SHA256"
+}
