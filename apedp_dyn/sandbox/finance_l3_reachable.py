@@ -74,6 +74,8 @@ def run_finance_l3() -> tuple[Any, Any]:
     a0, a1 = w_ar1
     rp = np.linspace(-0.06, 0.06, 241)
     vl = np.linspace(0.005, 0.05, 181)
+    Rg: np.ndarray
+    Vg: np.ndarray
     Rg, Vg = np.meshgrid(rp, vl)
     R: np.ndarray = Rg
     V: np.ndarray = Vg

@@ -927,11 +927,15 @@ def _slice_original(partitions: Any) -> Any:
     # No proposer output on this slice: fall back to a mean-prediction fixture
     # so the slice contributes a real, honest candidate to the agreement count.
     mu = float(np.mean(partitions.discovery_y))
+
+    def mean_score(df: Any) -> Any:
+        return np.full(len(df), mu)
+
     return CandidateProposal(
         proposer_id="fixture_mean", candidate_id="mean", formula="mean",
         strategy_archetype=None,
         declared_scale_invariant=False, declared_nominal_dependencies=tuple(feats),
-        compute_score=lambda df, _m=mu: np.full(len(df), _m),
+        compute_score=mean_score,
         parameters={}, metadata={"equation": "mean"})
 
 

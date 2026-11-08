@@ -14,11 +14,13 @@ from types import ModuleType
 
 import numpy as np
 
-ak: ModuleType | None
+ak: ModuleType | None = None
 try:
-    import apedp_kernel as ak
+    import apedp_kernel as _apedp_kernel
 except ImportError:
-    ak = None  # `ak` is Optional-typed; use sites check `ak is not None`
+    pass  # `ak` stays None; use sites check `ak is not None`
+else:
+    ak = _apedp_kernel
 
 
 @dataclass(frozen=True)

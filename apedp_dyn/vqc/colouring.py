@@ -71,7 +71,6 @@ from __future__ import annotations
 
 import dataclasses
 from collections.abc import Sequence
-from typing import Any
 
 __all__ = [
     "ColouringConstructionError",
@@ -515,8 +514,9 @@ def minimum_edge_colouring(edges: Sequence[tuple[int, int]], *,
     delta = max(degree)
     peel = greedy_peel(graph)
 
-    def result(layers: Any, *, optimal: Any, delta_refuted: Any, nodes: Any, status: Any, reason: Any,
-               lower_bound: Any) -> Any:
+    def result(layers: Sequence[Sequence[tuple[int, int]]], *, optimal: bool,
+               delta_refuted: bool, nodes: int, status: str, reason: str,
+               lower_bound: int) -> EdgeColouring:
         return EdgeColouring(
             layers=tuple(tuple(layer) for layer in layers),
             num_colours=len(layers),
@@ -531,7 +531,7 @@ def minimum_edge_colouring(edges: Sequence[tuple[int, int]], *,
         )
 
     if len(peel) == delta:
-        _out: EdgeColouring = result(
+        _out = result(
             peel, optimal=True, delta_refuted=False, nodes=0,
             status="greedy_attained_delta",
             reason=(f"the greedy peel already uses Delta = {delta} layers, and no "
@@ -551,7 +551,7 @@ def minimum_edge_colouring(edges: Sequence[tuple[int, int]], *,
         try:
             constructed = vizing_colouring(graph, num_nodes=vertices)
         except ColouringConstructionError as error:
-            _out: EdgeColouring = result(
+            _out = result(
                 peel, optimal=False, delta_refuted=True, nodes=0,
                 status="construction_refused",
                 reason=(f"a Delta = {delta} colouring cannot exist ({len(graph)} edges "
@@ -617,7 +617,7 @@ def minimum_edge_colouring(edges: Sequence[tuple[int, int]], *,
 
     # The Delta space was exhausted: no Delta-colouring exists, so chi' = Delta + 1 by
     # Vizing's theorem and the constructed colouring is optimal.
-    _out: EdgeColouring = result(
+    _out = result(
         constructed, optimal=True, delta_refuted=True, nodes=nodes,
         status="delta_refuted",
         reason=(f"the Delta = {delta} search exhausted its space without a "

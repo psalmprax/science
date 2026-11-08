@@ -698,7 +698,7 @@ def embed_conformer_3d(
     dist_matrix = np.where(np.isinf(dist_matrix), 4.5, dist_matrix)
 
     # Metric matrix spectral embedding into 3D
-    d2 = dist_matrix**2
+    d2: np.ndarray = dist_matrix**2
     row_means = d2.mean(axis=1, keepdims=True)
     col_means = d2.mean(axis=0, keepdims=True)
     grand_mean = d2.mean()

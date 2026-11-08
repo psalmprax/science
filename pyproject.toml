@@ -226,5 +226,11 @@ exclude = [
 # The web stack ships py.typed; follow it so FastAPI decorators and
 # pydantic models are real types in the UI server instead of Any.
 [[tool.mypy.overrides]]
+# torch ships its own ``py.typed``; following it types ``nn.Module`` so these subclasses
+# are real classes rather than ``Any`` bases.
+module = ["torch", "torch.*"]
+follow_imports = "normal"
+
+[[tool.mypy.overrides]]
 module = ["fastapi.*", "pydantic.*", "starlette.*", "sqlmodel.*"]
 follow_imports = "normal"

@@ -175,6 +175,8 @@ def _mixed_energy_fraction(u: np.ndarray) -> float:
         return 0.0
     kx = np.fft.fftshift(np.fft.fftfreq(u.shape[1]))
     w = np.fft.fftshift(np.fft.fftfreq(u.shape[0]))
+    K: np.ndarray
+    W: np.ndarray
     K, W = np.meshgrid(kx, w)
     moving = spec[(np.abs(K) > 1e-12) & (np.abs(W) > 1e-12)]
     return float(moving.sum()) / total

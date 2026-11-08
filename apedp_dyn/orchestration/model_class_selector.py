@@ -207,6 +207,8 @@ def _diagnostics(
             total = float(spec.sum())
             kx = np.fft.fftshift(np.fft.fftfreq(grid.shape[1]))
             w = np.fft.fftshift(np.fft.fftfreq(grid.shape[0]))
+            K: np.ndarray
+            W: np.ndarray
             K, W = np.meshgrid(kx, w)
             moving = float(spec[(np.abs(K) > 1e-12) & (np.abs(W) > 1e-12)].sum())
             diag["mixed_energy"] = moving / total if total > 0 else 0.0

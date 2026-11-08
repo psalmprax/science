@@ -1496,6 +1496,8 @@ def _recycled_flag_decoder_class() -> Any:
     if cached is not None:
         return cached
 
+    # The reference decoder arrives from the competition bundle at runtime, so mypy
+    # sees an ``Any`` base here; the type is unknowable until that module is loaded.
     class RecycledUpdateFlagDecoder(DR.ProosAndZalkaDecoder):
         """`n_a == n_b` read as `n_A == n + 1 - n_b`, using the cursor the pass already runs.
 

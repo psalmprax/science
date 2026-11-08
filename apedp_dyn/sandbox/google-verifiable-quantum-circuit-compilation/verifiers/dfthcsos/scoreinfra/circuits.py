@@ -116,7 +116,7 @@ def _scan_angle_files(directory: str | Path) -> dict[str, set[str]]:
 def read_kmx_family(directory: str | Path) -> tuple[km.Circuit, ...]:
     """Read ``angle_k_0.kmx``, ``angle_k_1.kmx``, ... from ``directory``."""
     found = _scan_angle_files(directory)["kmx"]
-    circuits = []
+    circuits: list[km.Circuit] = []
     while kmx_path(directory, len(circuits)).is_file():
         circuits.append(read_kmx(kmx_path(directory, len(circuits))))
     if not circuits:
@@ -152,7 +152,7 @@ def read_circuit_family(directory: str | Path, format: str = "auto") -> tuple[km
             )
         format = "kmb" if has_kmb else "kmx"
     path = kmb_path if format == "kmb" else kmx_path
-    circuits = []
+    circuits: list[km.Circuit] = []
     while path(directory, len(circuits)).is_file():
         circuits.append(read_circuit(path(directory, len(circuits)), format=format))
     if not circuits:

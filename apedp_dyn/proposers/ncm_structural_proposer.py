@@ -135,6 +135,19 @@ class NCMStructuralProposer(ProposerBase):
             top_feat_idx = int(np.argmax(np.abs(pruned_coef))) if len(pruned_coef) > 0 else 0
             formula = f"RationalHill({feature_names[top_feat_idx]}, num_scale={pruned_coef[top_feat_idx]:.3f}, denom_sat=0.1)"
 
+            coefs = pruned_coef
+            intercept = float(r_num.intercept_)
+            columns = tuple(feature_names)
+
+            def score(frame: pd.DataFrame) -> np.ndarray:
+                """The fitted rational-hill prediction on a frame, zero where it cannot apply."""
+                if any(c not in frame.columns for c in columns) or len(frame) < 2:
+                    return np.zeros(len(frame))
+                matrix = np.nan_to_num(frame[list(columns)].to_numpy(dtype=float))
+                prediction: np.ndarray = ((matrix @ coefs + intercept)
+                                          / (1.0 + 0.1 * np.mean(np.abs(matrix), axis=1)))
+                return prediction
+
             return CandidateProposal(
                 proposer_id=self.proposer_id,
                 candidate_id=candidate_id,
@@ -142,14 +155,7 @@ class NCMStructuralProposer(ProposerBase):
                 strategy_archetype=StrategyArchetype.CONTINUOUS_FACTOR,
                 declared_scale_invariant=False,
                 declared_nominal_dependencies=tuple(feature_names),
-                compute_score=lambda frame, _coefs=pruned_coef, _intercept=float(
-                    r_num.intercept_
-                ), _cols=tuple(feature_names): (
-                    np.zeros(len(frame))
-                    if any(c not in frame.columns for c in _cols) or len(frame) < 2
-                    else (np.nan_to_num(frame[list(_cols)].to_numpy(dtype=float)) @ _coefs + _intercept)
-                    / (1.0 + 0.1 * np.mean(np.abs(np.nan_to_num(frame[list(_cols)].to_numpy(dtype=float))), axis=1))
-                ),
+                compute_score=score,
                 parameters={
                     "r2": r2,
                     "coefs": pruned_coef.tolist(),

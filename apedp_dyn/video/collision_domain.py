@@ -52,6 +52,8 @@ def _render_objects(
     collisions. Returns frames and per-frame occlusion flags (T, n_obj).
     """
     t_tot, n_obj = positions.shape[0], positions.shape[1]
+    yy: np.ndarray
+    xx: np.ndarray
     yy, xx = np.meshgrid(np.arange(h, dtype=np.float64), np.arange(w, dtype=np.float64), indexing="ij")
     frames = np.zeros((t_tot, 3, h, w), dtype=np.float64)
     occl = np.zeros((t_tot, n_obj), dtype=bool)
@@ -181,6 +183,8 @@ def make_collision_clip(
 
     frames, occl_flags = _render_objects(positions, radii, intensities, layers, h, w)
     for ci in range(3):
+        lo: float
+        hi: float
         lo, hi = frames[:, ci].min(), frames[:, ci].max()
         frames[:, ci] = (frames[:, ci] - lo) / max(1e-9, hi - lo)
     if return_state:
@@ -193,7 +197,7 @@ def make_collision_clip(
 def make_domain_set(
     train_ids: tuple[str, ...], holdout_ids: tuple[str, ...], t: int = 16, h: int = 64,
     w: int = 64,
-) -> dict[str, np.ndarray]:
+) -> dict[str, np.ndarray | tuple[np.ndarray, dict[str, Any]]]:
     """Deterministic domain clips keyed by the manifest ids (holdout exclusive)."""
     clips: dict[str, np.ndarray | tuple[np.ndarray, dict[str, Any]]] = {}
     for cid in tuple(train_ids) + tuple(holdout_ids):

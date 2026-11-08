@@ -786,6 +786,8 @@ class RustKernelBridge:
 
         self._tally(_KERNEL_PATH_FALLBACK)
         # Vectorized NumPy fallback
+        y_grid: np.ndarray
+        x_grid: np.ndarray
         y_grid, x_grid = np.meshgrid(np.arange(h), np.arange(w), indexing="ij")
         if periodic:
             # Generator semantics: floor the backtrace coordinate FIRST, wrap
@@ -924,7 +926,8 @@ class RustKernelBridge:
         """
         shape = data[0].shape
         def nan_result() -> np.ndarray:
-            return np.full(shape, np.nan, dtype=np.float64)
+            blank: np.ndarray = np.full(shape, np.nan, dtype=np.float64)
+            return blank
 
         # The reference engine's own cost was re-parsing + re-lambdifying the
         # same expression on every call. The compiled callable is a pure

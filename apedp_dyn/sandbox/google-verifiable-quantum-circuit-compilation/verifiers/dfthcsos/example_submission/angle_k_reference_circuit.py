@@ -167,7 +167,7 @@ def write_kmx_family(
     family_path = kmb_path if format == "kmb" else kmx_path
     directory = Path(directory)
     paths = [family_path(directory, k) for k in range(len(circuits))]
-    stale = []
+    stale: list[Path] = []
     while family_path(directory, len(paths) + len(stale)).is_file():
         stale.append(family_path(directory, len(paths) + len(stale)))
     existing = [path for path in paths + stale if path.exists()]

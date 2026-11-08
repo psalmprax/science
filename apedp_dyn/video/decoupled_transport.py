@@ -338,8 +338,11 @@ class NeuralTransportFlowNet(nn.Module):
 
         # Heads: 1 channel streamfunction psi, 1 channel potential phi, C channels source s_theta
         self.head = nn.Conv2d(self.hidden_dim, 2 + self.in_channels, kernel_size=3, padding=1)
-        nn.init.zeros_(self.head.weight)
-        nn.init.zeros_(self.head.bias)
+        head_weight, head_bias = self.head.weight, self.head.bias
+        assert head_weight is not None  # a fresh Conv2d always owns its weight
+        assert head_bias is not None
+        nn.init.zeros_(head_weight)
+        nn.init.zeros_(head_bias)
 
     def predict_flow_and_source(
         self,

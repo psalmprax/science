@@ -37,6 +37,8 @@ def _streamfunction_velocity(psi: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 def _vortex_streamfunction(
     h: int, w: int, centers: Sequence[tuple[float, float]], strengths: Sequence[float]
 ) -> np.ndarray:
+    yy: np.ndarray
+    xx: np.ndarray
     yy, xx = np.meshgrid(np.arange(h, dtype=np.float64), np.arange(w, dtype=np.float64), indexing="ij")
     psi: np.ndarray = np.zeros((h, w), dtype=np.float64)
     for (cy, cx), s in zip(centers, strengths, strict=False):
@@ -82,6 +84,8 @@ def make_fluid_clip(
         centers.append((rng.uniform(0.2 * h, 0.8 * h), rng.uniform(0.2 * w, 0.8 * w)))
     base_strength = rng.uniform(3.0, 9.0, size=n_vortices) * rng.choice([-1.0, 1.0], size=n_vortices)
 
+    yy: np.ndarray
+    xx: np.ndarray
     yy, xx = np.meshgrid(np.arange(h, dtype=np.float64), np.arange(w, dtype=np.float64), indexing="ij")
 
     # Initial dye: 3 independent smooth scalar blobs
@@ -130,6 +134,8 @@ def make_fluid_clip(
 
     # Normalize each channel into [0, 1] with the joint per-clip range
     for ci in range(3):
+        lo: float
+        hi: float
         lo, hi = frames[:, ci].min(), frames[:, ci].max()
         frames[:, ci] = (frames[:, ci] - lo) / max(1e-9, hi - lo)
     if return_flow:
@@ -148,6 +154,8 @@ def _curl_from_velocity(u: np.ndarray, v: np.ndarray) -> np.ndarray:
 def _advect(field: np.ndarray, u: np.ndarray, v: np.ndarray, dt: float) -> np.ndarray:
     """Semi-Lagrangian backtrace advection of a (3, H, W) dye field."""
     h, w = field.shape[1], field.shape[2]
+    yy: np.ndarray
+    xx: np.ndarray
     yy, xx = np.meshgrid(np.arange(h, dtype=np.float64), np.arange(w, dtype=np.float64), indexing="ij")
     back_y = yy - dt * u
     back_x = xx - dt * v
@@ -171,7 +179,7 @@ def _advect(field: np.ndarray, u: np.ndarray, v: np.ndarray, dt: float) -> np.nd
 def make_domain_set(
     train_ids: tuple[str, ...], holdout_ids: tuple[str, ...], t: int = 16, h: int = 64,
     w: int = 64,
-) -> dict[str, np.ndarray]:
+) -> dict[str, np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray]]:
     """Deterministic domain clips keyed by the manifest ids: holdout ids stay
     exclusive resources (same burnable-holdout discipline as the RIME stack)."""
     clips: dict[str, np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray]] = {}

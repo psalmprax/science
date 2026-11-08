@@ -165,7 +165,8 @@ def warp_frames(z: torch.Tensor, vx: torch.Tensor, vy: torch.Tensor,
     nx = 2.0 * (xx + 0.5 - dt * vx) / w - 1.0
     ny = 2.0 * (yy + 0.5 - dt * vy) / h - 1.0
     grid = torch.stack([nx, ny], dim=-1)
-    return F.grid_sample(z, grid, mode="bilinear", padding_mode="border", align_corners=False)
+    return torch.as_tensor(
+        F.grid_sample(z, grid, mode="bilinear", padding_mode="border", align_corners=False))
 
 
 def _divergence(v: torch.Tensor) -> torch.Tensor:

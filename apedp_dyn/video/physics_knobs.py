@@ -134,6 +134,8 @@ class PhysicalSteeringController:
 
         # Coordinate grid centered at frame center
         cy, cx = (h - 1.0) * 0.5, (w - 1.0) * 0.5
+        y_coords: np.ndarray
+        x_coords: np.ndarray
         y_coords, x_coords = np.meshgrid(np.arange(h, dtype=np.float64), np.arange(w, dtype=np.float64), indexing='ij')
 
         # Translate to origin

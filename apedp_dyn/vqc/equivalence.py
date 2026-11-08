@@ -631,7 +631,7 @@ def adjudicate_clifford_equivalence(reference: Circuit, candidate: Circuit, *,
         measured={"reference": reference.num_qubits, "candidate": candidate.num_qubits},
         passed=qubits is not None))
 
-    mismatches: list[Mapping[str, Any]] | list[dict[str, Any]] = []
+    mismatches: list[dict[str, Any]] = []
     mismatched = 0
     compared = 0
     reference_images: dict[str, str] | None = None
@@ -668,7 +668,7 @@ def adjudicate_clifford_equivalence(reference: Circuit, candidate: Circuit, *,
             reference_state = _prepared_state(reference)
             candidate_state = _prepared_state(candidate)
             mismatched = 0
-            mismatches: list[dict[str, Any]] = []
+            mismatches = []
             for index, (labels, phase) in enumerate(zip(candidate_state.generators,
                                                         candidate_state.phases, strict=True)):
                 expected = reference_state.phase_of(labels)
