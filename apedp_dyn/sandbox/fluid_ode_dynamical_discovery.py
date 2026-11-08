@@ -268,7 +268,7 @@ def build_unified_feature_panel(
         kalman_res = (spread - sp_mean) / np.maximum(sp_std, 1e-6)
 
         # 8. Delta OFI (time derivative of order flow)
-        d_ofi = np.append(0.0, np.diff(ofi_i))
+        d_ofi: np.ndarray = np.append(0.0, np.diff(ofi_i))
         z_d_ofi = causal_zscore(d_ofi)
 
         all_lead_spill.append(causal_zscore(lead_spill))

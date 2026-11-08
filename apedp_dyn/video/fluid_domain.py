@@ -123,7 +123,7 @@ def make_fluid_clip(
                 )
         dye = advected
         # Renormalize to keep the dye channel statistics stable
-        m = dye.max()
+        m: float = dye.max()
         if m > 1e-9:
             dye = dye / m
         frames[ti, 1:3] = dye[1:3]
@@ -138,10 +138,11 @@ def make_fluid_clip(
 
 
 def _curl_from_velocity(u: np.ndarray, v: np.ndarray) -> np.ndarray:
-    return np.asarray(
+    _out: np.ndarray = np.asarray(
         (np.roll(u, -1, axis=1) - np.roll(u, 1, axis=1)) * 0.5
         - (np.roll(v, -1, axis=0) - np.roll(v, 1, axis=0)) * 0.5
     )
+    return _out
 
 
 def _advect(field: np.ndarray, u: np.ndarray, v: np.ndarray, dt: float) -> np.ndarray:

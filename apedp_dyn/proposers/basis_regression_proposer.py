@@ -72,8 +72,8 @@ class BasisRegressionProposer(ProposerBase):
         formula = f"BasisRegression({self.basis}, n_basis={self.n_basis}, degree={self.degree})"
         _basis_builder = self.build_basis
         _coef = coef.ravel()
-        def make_score(basis_builder=_basis_builder, coef=_coef):
-            def score(df):
+        def make_score(basis_builder:Any=_basis_builder, coef:Any=_coef) -> Any:
+            def score(df: Any) -> Any:
                 Phi_eval, _meta = basis_builder(np.asarray(df.to_numpy(dtype=float)))
                 return (Phi_eval @ coef).ravel()
             return score

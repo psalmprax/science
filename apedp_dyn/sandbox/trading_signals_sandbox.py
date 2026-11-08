@@ -75,7 +75,7 @@ def make_synthetic_dataset(n: int = 600, seed: int = 42) -> pd.DataFrame:
         # Cointegrated second asset with error correction
         pair[t] = 0.5 * p[t] + rng.normal(0, 2.0)
 
-    r = np.append(0.0, np.diff(np.log(p)))
+    r: np.ndarray = np.append(0.0, np.diff(np.log(p)))
     # Estimate High and Low
     high = p * np.exp(np.abs(rng.normal(0, vol, size=n)))
     low = p * np.exp(-np.abs(rng.normal(0, vol, size=n)))
@@ -111,7 +111,7 @@ def load_real_btc_orderflow(limit: int = 600) -> pd.DataFrame:
 
     df = pd.DataFrame(rows[-limit:]).reset_index(drop=True)
     df["close"] = df["price"]
-    r = np.append(0.0, np.diff(np.log(df["price"].to_numpy(float))))
+    r: np.ndarray = np.append(0.0, np.diff(np.log(df["price"].to_numpy(float))))
     df["r"] = r
 
     # Rolling synthetic High/Low from realized range
@@ -142,7 +142,7 @@ def load_real_sp500_dataset(limit: int = 600) -> pd.DataFrame:
 
     p = np.array(px[-limit:])
     n = len(p)
-    r = np.append(0.0, np.diff(np.log(p)))
+    r: np.ndarray = np.append(0.0, np.diff(np.log(p)))
     vol = np.abs(r) * p * 1000.0 + 100.0
     vol_proxy = pd.Series(np.abs(r)).rolling(5, min_periods=1).mean().to_numpy()
 
@@ -364,7 +364,7 @@ def _feat_hurst(p: pd.DataFrame, window: int = 30) -> np.ndarray:
     out = np.full(len(r), np.nan)
     for t in range(window, len(r)):
         sub = r[t - window:t]
-        cum_dev = np.cumsum(sub - np.mean(sub))
+        cum_dev: np.ndarray = np.cumsum(sub - np.mean(sub))
         r_range = np.max(cum_dev) - np.min(cum_dev)
         s_std = np.std(sub)
         if s_std > 1e-9 and r_range > 1e-9:
@@ -430,7 +430,8 @@ def extract_all_22_features(panel: pd.DataFrame) -> np.ndarray:
             # whole 22-feature matrix; the failure IS the fallback.
             arr = np.zeros(len(panel))
         cols.append(np.nan_to_num(arr, nan=0.0))
-    return np.column_stack(cols)
+    _out: np.ndarray = np.column_stack(cols)
+    return _out
 
 
 # ── Backtest Simulator ────────────────────────────────────────────────────
@@ -1097,7 +1098,7 @@ def main() -> None:
     print("=" * 105)
     print("APEDP COMPREHENSIVE 22-SIGNAL UNIVERSE & GENETIC ALGORITHM SYSTEM")
     print(f"Total Registered Trading Signals: {len(SIGNAL_REGISTRY)}")
-    cats = {}
+    cats: dict[str, list[str]] = {}
     for sig_id, name, cat, _ in SIGNAL_REGISTRY:
         cats.setdefault(cat, []).append(f"{sig_id} ({name})")
     for cat, sigs in cats.items():

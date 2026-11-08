@@ -139,7 +139,7 @@ class LLMProposer:
     def proposer_id(self) -> str:
         return self._proposer_id
 
-    def propose(self, problem) -> Sequence[CandidateDynamics | SystemCandidate]:
+    def propose(self, problem: Any) -> Sequence[CandidateDynamics | SystemCandidate]:
         if not self.enabled:
             self.last_outcome = "disabled"
             return []
@@ -160,7 +160,7 @@ class LLMProposer:
         self.last_outcome = f"ok:{len(proposals)}"
         return proposals
 
-    def _propose_via_api(self, problem) -> Sequence[CandidateDynamics]:
+    def _propose_via_api(self, problem: Any) -> Sequence[CandidateDynamics]:
         """Call LLM API to suggest equation structures."""
         try:
             import httpx
@@ -220,7 +220,7 @@ class LLMProposer:
 
         return self._parse_suggestions(content)
 
-    def _build_context(self, problem) -> dict[str, Any]:
+    def _build_context(self, problem: Any) -> dict[str, Any]:
         states = [s.name for s in getattr(problem, "states", [])]
         inputs = [u.name for u in getattr(problem, "inputs", [])]
         return {
@@ -283,6 +283,6 @@ Return as JSON: [{{"terms": ["x", "v"], "rationale": "...", "confidence": 0.8}},
         return candidates
 
 
-def create_llm_proposer(**kwargs) -> LLMProposer:
+def create_llm_proposer(**kwargs: Any) -> LLMProposer:
     """Factory function to create LLM proposer (disabled by default)."""
     return LLMProposer(enabled=False, **kwargs)

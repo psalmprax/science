@@ -1112,6 +1112,7 @@ def _is_unitary(circuit: Circuit) -> bool:
 def _state_of(circuit: Circuit) -> StabilizerState:
     state = StabilizerState(circuit.num_qubits)
     for op in circuit.ops:
+        assert isinstance(op, Gate)  # callers reject non-unitary ops first
         state.apply_gate(op.name, op.targets, op.params)
     return state
 
@@ -1143,6 +1144,7 @@ def _prepare_dense(circuit: Circuit) -> np.ndarray:
     """The prepared amplitudes, in the same basis order as the specification."""
     simulator = StatevectorSimulator(circuit.num_qubits)
     for op in circuit.ops:
+        assert isinstance(op, Gate)  # callers reject non-unitary ops first
         apply_gate(simulator, op.name, op.targets, op.params)
     return _specification_order(np.asarray(simulator.state, dtype=np.complex128),
                                 circuit.num_qubits)

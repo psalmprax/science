@@ -54,13 +54,14 @@ def exact_unicycle_step(pose: np.ndarray, linear_velocity: float, angular_veloci
         return _out
     theta_next = theta + angular_velocity * dt
     radius = linear_velocity / angular_velocity
-    return np.array(
+    _out_57: np.ndarray = np.array(
         [
             x + radius * (np.sin(theta_next) - np.sin(theta)),
             y - radius * (np.cos(theta_next) - np.cos(theta)),
             theta_next,
         ]
     )
+    return _out_57
 
 
 def simulate_unicycle_exact(
@@ -128,13 +129,14 @@ def goal_feedback_velocity_fn(
         linear_velocity = min(linear_gain * rho * np.cos(alpha), max_linear_velocity)
         linear_velocity = max(linear_velocity, 0.0)
         angular_velocity = angular_gain * alpha
-        return np.array(
+        _out: np.ndarray = np.array(
             [
                 linear_velocity * np.cos(z[2]),
                 linear_velocity * np.sin(z[2]),
                 angular_velocity,
             ]
         )
+        return _out
 
     return velocity_fn
 

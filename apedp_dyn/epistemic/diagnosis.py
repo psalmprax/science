@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import Any
 
 
-def diagnose(adjudication, transfer=None) -> dict[str, Any]:
+def diagnose(adjudication: Any, transfer: Any=None) -> dict[str, Any]:
     """Compose a diagnostic block from an Adjudication (+ optional TransferScope)."""
     status = getattr(adjudication.status, "value", str(adjudication.status))
     attribution = str(getattr(adjudication, "epistemic_attribution", "unknown"))
@@ -57,7 +57,7 @@ def diagnose(adjudication, transfer=None) -> dict[str, Any]:
             "reason": getattr(adjudication, "reason", "")}
 
 
-def full_state(adjudication, transfer=None, stability=None) -> dict[str, Any]:
+def full_state(adjudication: Any, transfer: Any=None, stability: Any=None) -> dict[str, Any]:
     """Unified epistemic state: discovery + identification + transfer + promotion.
 
     Merges the diagnostic block with an optional discovery-stability report

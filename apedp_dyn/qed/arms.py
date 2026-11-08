@@ -226,7 +226,7 @@ def genetic_algorithm(
 # --------------------------------------------------------------------------- #
 
 
-GpNode = tuple
+GpNode = tuple[Any, ...]
 
 
 def _gp_leaf(m: int, rng: np.random.Generator) -> GpNode:
@@ -490,7 +490,7 @@ ARMS: dict[str, Callable[..., dict[str, Any]]] = {
 }
 
 
-def run_arm(name: str, task, *, seed: int) -> ArmResult:
+def run_arm(name: str, task: Any, *, seed: int) -> ArmResult:
     """Run one arm on a fresh budgeted objective and seal what it measured.
 
     The arm only ever receives ``task.objective()``, which is built from the

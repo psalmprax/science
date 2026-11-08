@@ -181,7 +181,7 @@ def random_stabilizer_target(num_qubits: int, *, seed: int) -> TargetSpecificati
     to the synthesiser -- there is nothing to hand it to -- so the state is a target,
     not a reference: this is the shape Experiment A was built to accept.
     """
-    ops = []
+    ops: list[tuple[str, tuple[int, ...]]] = []
     rng = random.Random(seed)
     for qubit in range(num_qubits):
         ops.append(("h", (qubit,)))

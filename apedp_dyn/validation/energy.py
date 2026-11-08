@@ -75,7 +75,7 @@ class EnergyLaw:
     position_symbols: tuple[Any, ...] = ()
 
 
-def _pairs(model) -> list[tuple[int, int, sp.Symbol, sp.Symbol]]:
+def _pairs(model: Any) -> list[tuple[int, int, sp.Symbol, sp.Symbol]]:
     """Position/velocity state pairs from kinematic pass-throughs (q' == v)."""
     order = [s.name for s in model.states]
     index = {n: i for i, n in enumerate(order)}
@@ -124,7 +124,7 @@ def _restoring_admissible(expr: Any, qs: tuple[Any, ...]) -> str | None:
     return None
 
 
-def derive_energy_law(model) -> EnergyLaw:
+def derive_energy_law(model: Any) -> EnergyLaw:
     """Derive E = ½ Σ v² + U(q) from the model's own acceleration laws."""
     pairs = _pairs(model)
     if not pairs:
@@ -248,7 +248,7 @@ def energy_drift_from_law(law: EnergyLaw, Y: np.ndarray) -> float:
     return _relative_drift(mass_normalized_energy(law, Y))
 
 
-def simulate_trajectory(model, t: np.ndarray, u_of_t, x0,
+def simulate_trajectory(model: Any, t: np.ndarray, u_of_t: Any, x0: Any,
                         *, rtol: float = 1e-10, atol: float = 1e-12) -> np.ndarray:
     """Simulate a fitted model on a fixed grid; return (samples, states).
 
@@ -267,7 +267,7 @@ def simulate_trajectory(model, t: np.ndarray, u_of_t, x0,
     return _out
 
 
-def check_conservative(model, Y: np.ndarray,
+def check_conservative(model: Any, Y: np.ndarray,
                        tol: float = 1e-6) -> tuple[bool, float]:
     """Unforced, undamped motion must conserve the model's own energy.
 
@@ -281,7 +281,7 @@ def check_conservative(model, Y: np.ndarray,
     return drift <= tol, drift
 
 
-def check_dissipative(model, Y: np.ndarray, min_decay_fraction: float = 0.3,
+def check_dissipative(model: Any, Y: np.ndarray, min_decay_fraction: float = 0.3,
                       slack: float = 0.02) -> tuple[bool, dict[str, Any]]:
     """Unforced dissipative interval: monotone non-increase + real decay."""
     law = derive_energy_law(model)
@@ -305,8 +305,8 @@ def energy_drift(x: np.ndarray, v: np.ndarray, m: float, k: float) -> float:
     return _relative_drift(mechanical_energy(x, v, m, k))
 
 
-def simulate_pair(model, m: float, k: float, t: np.ndarray,
-                  u_of_t, x0) -> tuple[np.ndarray, np.ndarray]:
+def simulate_pair(model: Any, m: float, k: float, t: np.ndarray,
+                  u_of_t: Any, x0: Any) -> tuple[np.ndarray, np.ndarray]:
     """Simulate and return the first two states (legacy 1-DOF helper).
 
     ``m`` and ``k`` are accepted for backward compatibility and unused; use

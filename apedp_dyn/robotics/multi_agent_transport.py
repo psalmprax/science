@@ -134,7 +134,7 @@ def pairwise_repulsive_forces(
     n = p.shape[0]
     diff = p[:, None, :] - p[None, :, :]                     # [N, N, 2]
     dist = np.sqrt((diff * diff).sum(-1))                    # [N, N] (raw)
-    offdiag = ~np.eye(n, dtype=bool)
+    offdiag: np.ndarray = ~np.eye(n, dtype=bool)
     degen = (dist < 1e-9) & offdiag
     near = (dist < r_warning) & offdiag & ~degen
 

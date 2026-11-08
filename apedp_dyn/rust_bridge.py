@@ -923,7 +923,8 @@ class RustKernelBridge:
         expression actually references.
         """
         shape = data[0].shape
-        nan_result = lambda: np.full(shape, np.nan, dtype=np.float64)  # noqa: E731
+        def nan_result() -> np.ndarray:
+            return np.full(shape, np.nan, dtype=np.float64)
 
         # The reference engine's own cost was re-parsing + re-lambdifying the
         # same expression on every call. The compiled callable is a pure

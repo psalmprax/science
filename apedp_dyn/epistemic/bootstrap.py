@@ -85,7 +85,7 @@ def block_bootstrap_ci(
     return lo, hi, mean
 
 
-def rmse_bootstrap_ci(se_series, n_boot: int = 1000, seed: int = 0,
+def rmse_bootstrap_ci(se_series: Any, n_boot: int = 1000, seed: int = 0,
                       ci: float = CI_DEFAULT) -> tuple[float, float, float]:
     """Block-bootstrap CI on the holdout RMSE itself (evaluation uncertainty).
 
@@ -114,7 +114,7 @@ def rmse_bootstrap_ci(se_series, n_boot: int = 1000, seed: int = 0,
             float(_np.quantile(boots, 1.0 - alpha / 2.0)), rmse)
 
 
-def holdout_se_series(problem, candidate_ir, param_values: dict[str, float]):
+def holdout_se_series(problem: Any, candidate_ir: Any, param_values: dict[str, float]) -> Any:
     """Per-timepoint holdout squared-error series for a FITTED candidate.
 
     Materializes the IR, binds fitted values, simulates the holdout regime,
@@ -145,7 +145,7 @@ def holdout_se_series(problem, candidate_ir, param_values: dict[str, float]):
     return np.mean((res.y.T - obs) ** 2, axis=1)
 
 
-def holdout_residual_series(problem, candidate_ir, param_values: dict[str, float]):
+def holdout_residual_series(problem: Any, candidate_ir: Any, param_values: dict[str, float]) -> Any:
     """Per-timepoint SIGNED holdout residual (model - truth), primary channel.
 
     This is what ``adjudicate(resid_best=..., resid_rival=..., resid_sole=...)``
@@ -179,7 +179,7 @@ def holdout_residual_series(problem, candidate_ir, param_values: dict[str, float
     return (res.y.T - obs)[:, 0]
 
 
-def param_bootstrap_ci(problem, candidate_ir, fitted_values: dict[str, float],
+def param_bootstrap_ci(problem: Any, candidate_ir: Any, fitted_values: dict[str, float],
                        n_boot: int = 30, seed: int = 0) -> dict[str, tuple[float, float, float]]:
     """Residual-bootstrap parameter bands (experimental UQ, v1).
 

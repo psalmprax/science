@@ -236,7 +236,7 @@ class AlgebraicFailureDiagnostics:
     is_consistent: bool
     defect_count: int
     unmet_parity_equations: int
-    failing_coordinates: tuple[tuple[int, int, int], ...]
+    failing_coordinates: tuple[tuple[int, ...], ...]
     rank_A: int
     rank_augmented: int
     rank_deficiency: int
@@ -810,7 +810,7 @@ class InvsqrtNumericalModel:
 
     def screen_domain_vectorized(
         self,
-        candidate_phase_fn,
+        candidate_phase_fn: Any,
         chunk_size: int = 262144,
     ) -> dict[str, Any]:
         """Screens candidate phase formula across entire input domain [1, 3,133,452]."""

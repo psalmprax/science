@@ -698,6 +698,7 @@ def qiskit_circuit(circuit: Circuit) -> Any:
     qiskit = importlib.import_module("qiskit")
     qc = qiskit.QuantumCircuit(circuit.num_qubits)
     for op in circuit.ops:
+        assert isinstance(op, Gate)  # the loop above rejected non-gates
         method = getattr(qc, _QISKIT_GATES[op.name])
         method(*op.params, *op.targets)
     return qc

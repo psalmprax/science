@@ -21,6 +21,8 @@ because there is no closed-form truth — the market is the truth.
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 from apedp_dyn.model import DynamicalEquation, InputVariable, StateVariable
@@ -43,8 +45,9 @@ def _estimate_velocity(x: np.ndarray, dt: float = 1.0, smooth: bool = True) -> n
         return _out
     try:
         from scipy.signal import savgol_filter
-        return np.asarray(savgol_filter(
+        _out_47: np.ndarray = np.asarray(savgol_filter(
             x, window_length=w, polyorder=2, deriv=1, delta=dt, mode="interp"))
+        return _out_47
     except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
         # failure (import, window/polyorder bounds, non-finite input) falls back
         # to the raw finite difference, which is always available.
@@ -76,7 +79,7 @@ def spec_from_series(prices: np.ndarray,
     if not np.isfinite(sigma) or sigma <= 0:
         raise ValueError("degenerate train series")
 
-    def standardize(p):
+    def standardize(p: Any) -> Any:
         x = (np.log(np.asarray(p, dtype=float)) - mu) / sigma
         v = _estimate_velocity(x, 1.0, smooth=smooth_derivatives)
         return np.column_stack([x, v])

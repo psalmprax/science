@@ -83,14 +83,14 @@ class QuantumEquationProposer(ProposerBase):
         class _Task:
             """The minimum an arm needs, so the adapter does not leak the task."""
 
-            def __init__(self, library, states, target, penalty, budget):
+            def __init__(self, library: Any, states: Any, target: Any, penalty: Any, budget: Any) -> None:
                 self.library = library
                 self.dev_states = states
                 self.dev_target = target
                 self.penalty = penalty
                 self.budget = budget
 
-            def objective(self):
+            def objective(self) -> Any:
                 from apedp_dyn.qed.objective import SupportObjective
 
                 return SupportObjective(
@@ -118,7 +118,7 @@ class QuantumEquationProposer(ProposerBase):
         coefficients = [float(value) for value in best.coefficients]
         library = self.library
 
-        def make_score(keep: list[int], values: list[float], library=library):
+        def make_score(keep: list[int], values: list[float], library:Any=library) -> Any:
             def score(df: pd.DataFrame) -> np.ndarray:
                 frame = np.asarray(df.to_numpy(dtype=float), dtype=float)
                 if frame.ndim != 2:

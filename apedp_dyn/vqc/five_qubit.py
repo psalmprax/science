@@ -96,7 +96,7 @@ def _anticommutes(left: str, right: str) -> bool:
     return bool(parity)
 
 
-def syndrome_of(pauli: str) -> tuple[bool, bool, bool, bool]:
+def syndrome_of(pauli: str) -> tuple[bool, ...]:
     """The measured syndrome of a Pauli error: bit `i` set iff it anticommutes with `g_i`."""
     if len(pauli) != DATA:
         raise ValueError(f"expected a {DATA}-qubit Pauli string, got {pauli!r}")
@@ -154,7 +154,7 @@ def _frame_correction(signature: tuple[bool, ...]) -> str:
     return best
 
 
-def _apply_pauli(ops: list[Any], pauli: str, condition=()) -> None:
+def _apply_pauli(ops: list[Any], pauli: str, condition: Any=()) -> None:
     for qubit, letter in enumerate(pauli):
         if letter == "X":
             ops.append(Gate("x", (qubit,), condition=condition))
@@ -365,7 +365,7 @@ class FiveQubitRun:
 def five_qubit_logical_error_rate(probability: float, *, shots: int = 2000,
                                   seed: int | None = 0,
                                   prepare_logical_one: bool = False,
-                                  backend=None) -> FiveQubitRun:
+                                  backend: Any=None) -> FiveQubitRun:
     """Run the code under depolarising noise and count logical `Z` failures."""
     if shots < 1:
         raise ValueError(f"shots must be positive, got {shots}")

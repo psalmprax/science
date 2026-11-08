@@ -31,7 +31,7 @@ class GF2FieldConfig:
     irreducible_poly: int | None = None  # If None, uses standard polys: {4:0x13, 8:0x11D, 10:0x409, 12:0x1053}
     modulus_int: int | None = None  # Derived from prim_poly; if None, derived automatically
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.modulus_int is None:
             polys = {4: 0x13, 8: 0x11D, 10: 0x409, 12: 0x1053}
             object.__setattr__(self, 'modulus_int', polys.get(self.degree, 0x1053))
@@ -120,7 +120,7 @@ def _gf2_carryless_mul(a: int, b: int) -> int:
     return result
 
 
-def _init_tables(model: GF2FieldModel):
+def _init_tables(model: GF2FieldModel) -> None:
     """Initialize tables for a GF2FieldModel instance from its generator.
 
     The primitive element decides the whole table layout: ``exp`` walks the
@@ -412,7 +412,7 @@ class WSPConfig:
     rank_tolerance: int = 0
     llm_adjustable_params: dict[str, Any] = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate WSP config parameters at initialization."""
         # Validate weight_scheme
         valid_schemes = {"uniform", "importance", "llm_tuned"}
@@ -709,20 +709,24 @@ class MMLMMultiplier:
             primitive_element=self.field_config.primitive_element,
         )
 
+        modulus_int = self.field_config.modulus_int
+        if modulus_int is None:
+            raise ValueError("a GF(2) field configuration requires a modulus integer")
+
         # Build default tensor
-        self.tensor = build_multiplication_tensor(degree=self.degree, modulus_int=self.field_config.modulus_int)
+        self.tensor = build_multiplication_tensor(degree=self.degree, modulus_int=modulus_int)
 
         # Prefer a recursive polynomial Karatsuba decomposition, then fail safe
         # to schoolbook factors if the exact coefficient screen rejects it.
         proposed_decomp = build_karatsuba_polynomial_decomposition(
-            degree=self.degree, modulus_int=self.field_config.modulus_int
+            degree=self.degree, modulus_int=modulus_int
         )
         proposed_exact, _ = proposed_decomp.reconstruct(self.tensor)
         if proposed_exact:
             self.default_decomp = proposed_decomp
         else:
             self.default_decomp = build_schoolbook_decomposition(
-                degree=self.degree, modulus_int=self.field_config.modulus_int
+                degree=self.degree, modulus_int=modulus_int
             )
             self.default_decomp.metadata["fallback_reason"] = (
                 "proposed Karatsuba factors failed exact tensor reconstruction"
@@ -1100,7 +1104,7 @@ class MMLMTrackA(MMLMMultiplier):
     symbolic rewriting, and energy-guided decoding.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.track = "A_NonNeural"
         self.engine_type = "WeightedAutomatonEngine"
@@ -1158,7 +1162,7 @@ class MMLMTrackB(MMLMMultiplier):
     Network hierarchy only where quantitative ablations prove net benefit.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.track = "B_Hybrid"
         self.engine_type = "HybridAblationConfig"
@@ -1239,8 +1243,8 @@ class MMLMTrackB(MMLMMultiplier):
         comparison.
         """
         U, V, weights, fit_hamming = self._fit_float_model(decomp)
-        left_bits = self._as_bits(left, self.degree).astype(float)
-        right_bits = self._as_bits(right, self.degree).astype(float)
+        left_bits: np.ndarray = self._as_bits(left, self.degree).astype(float)
+        right_bits: np.ndarray = self._as_bits(right, self.degree).astype(float)
         products = (U @ left_bits) * (V @ right_bits)
         approximate = products @ weights
         product_bits = (approximate >= 0.5).astype(np.uint8)
@@ -1278,9 +1282,9 @@ class MMLMTrackB(MMLMMultiplier):
         rows: list[np.ndarray] = []
         targets: list[np.ndarray] = []
         for left in grid:
-            left_bits = self._as_bits(left, self.degree).astype(float)
+            left_bits: np.ndarray = self._as_bits(left, self.degree).astype(float)
             for right in grid:
-                right_bits = self._as_bits(right, self.degree).astype(float)
+                right_bits: np.ndarray = self._as_bits(right, self.degree).astype(float)
                 rows.append((U @ left_bits) * (V @ right_bits))
                 targets.append(
                     self._as_bits(self.gf.mul(left, right), self.degree).astype(float)
@@ -1304,7 +1308,7 @@ class MMLMTrackC(MMLMMultiplier):
     speculative energy rescoring without conventional self-attention.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.track = "C_AttentionFree"
         self.engine_type = "SelectiveStateEngine"
@@ -1426,7 +1430,7 @@ class LLMTunableGF2Multiplier:
     5. MMLM track selection (A, B, or C)
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         # Allow LLM to specify any adjustable parameter
         self.field_config = kwargs.get(
             "field_config",
@@ -1461,7 +1465,7 @@ class LLMTunableGF2Multiplier:
         else:
             raise ValueError(f"Unknown MMLM track: {self.track}")
 
-    def tune(self, **kwargs) -> dict[str, Any]:
+    def tune(self, **kwargs: Any) -> dict[str, Any]:
         """Tune the model with LLM-specified parameters.
 
         LLM can pass any of:
@@ -1561,7 +1565,7 @@ class LLMTunableGF2Multiplier:
 # Demo / Example Usage
 # ============================================================================
 
-def demo_llm_adjustable_multiplier():
+def demo_llm_adjustable_multiplier() -> None:
     """Demonstrate the LLM-adjustable GF(2^12) multiplier."""
 
     print("=" * 70)

@@ -171,6 +171,7 @@ def _prepared_state(circuit: Circuit) -> StabilizerState:
     """The stabilizer state the circuit prepares from ``|0...0>``."""
     state = StabilizerState(circuit.num_qubits)
     for op in circuit.ops:
+        assert isinstance(op, Gate)  # callers reject non-unitary ops first
         state.apply_gate(op.name, op.targets, op.params)
     return state
 

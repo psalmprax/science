@@ -160,7 +160,7 @@ def run_qec_threshold_stage1(noise_sigma: float = 0.02, seed: int = 42,
         resid[cid] = np.asarray(
             sc.provenance["gate4_status"]["holdout_residuals"], dtype=float)
     ranked = sorted([s for s in scored if np.isfinite(s.train_loss)],
-                    key=lambda s: s.train_loss)
+                    key=lambda s: s.train_loss if s.train_loss is not None else float("inf"))
     adj = adjudicate(
         scored, resid_best=ranked[0].provenance["gate4_status"]["holdout_residuals"],
         resid_rival=ranked[1].provenance["gate4_status"]["holdout_residuals"],
@@ -263,7 +263,7 @@ def hello_world() -> None:
     print("QEC THRESHOLD SANDBOX: p_L = C*(p/p_th)^((d+1)/2), d=3")
     print("=" * 64)
     adj, scored = run_qec_threshold_stage1()
-    for s in sorted(scored, key=lambda c: c.holdout_rmse):
+    for s in sorted(scored, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else float("inf")):
         print(f"  {s.candidate.candidate_id:15s} holdout RMSE={s.holdout_rmse:.6f}")
     print(f"  verdict: {adj.status.value} "
           f"promoted={adj.promoted.candidate.candidate_id if adj.promoted else None}")

@@ -15,9 +15,11 @@ from __future__ import annotations
 import csv
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
+
+from apedp_dyn.grammar.candidate_ir import CandidateDynamics
 
 _REPO_ROOT = str(Path(__file__).resolve().parents[2])
 if _REPO_ROOT not in sys.path:
@@ -118,7 +120,7 @@ def run_coupled() -> Any:
     print(f"gate-4 survivors: {len(g4)} / {len(fitted)}")
     ranked = sorted(
         [s for s in g4 if s.train_loss is not None and np.isfinite(s.train_loss)],
-        key=lambda s: float(s.train_loss))
+        key=lambda s: s.train_loss if s.train_loss is not None else float("inf"))
     adj = adjudicate(ranked, bootstrap=False, data_origin="experimental")
     print(f"verdict: {adj.status.value} "
           f"contract={getattr(adj, 'contract', '')}")
@@ -128,7 +130,7 @@ def run_coupled() -> Any:
     print("reason:", adj.reason[:150])
     # Coupling census regardless of verdict: how many survivors use xr?
     xr_n = sum(1 for s in g4
-               if any("xr" in t.name for e in s.candidate.equations
+               if any("xr" in t.name for e in cast(CandidateDynamics, s.candidate).equations
                       for t in e.terms))
     print(f"coupled (xr-bearing) survivors: {xr_n} / {len(g4)}")
     return adj

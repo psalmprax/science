@@ -6,6 +6,7 @@ estimates to distinguish interpolative fits from extrapolative predictions.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -40,7 +41,7 @@ class GaussianProcessRegressor:
         self.L = None
         self.alpha = None
 
-    def fit(self, X: np.ndarray, y: np.ndarray):
+    def fit(self, X: np.ndarray, y: np.ndarray) -> Any:
         X = np.atleast_2d(X)
         y = np.atleast_1d(y)
         self.X_train = X
@@ -53,6 +54,7 @@ class GaussianProcessRegressor:
 
     def predict(self, X: np.ndarray, return_std: bool = True) -> GPPrediction:
         X = np.atleast_2d(X)
+        assert self.X_train is not None  # fit() ran before predict()
         K_s = self.kernel(self.X_train, X)
         mu_s = K_s.T @ self.alpha
         if return_std:

@@ -37,6 +37,7 @@ import hashlib
 import json
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -153,7 +154,7 @@ class ResearchController:
         self.governance_intact &= intact
         return intact
 
-    def propose_protocol_revision(self, revision: dict) -> dict:
+    def propose_protocol_revision(self, revision: dict[str, Any]) -> dict[str, Any]:
         """A protocol change is a VERSIONED PROPOSAL, never an application.
 
         The running session's governance state is frozen; the returned
@@ -242,7 +243,7 @@ class ResearchController:
         *,
         domain: tuple[float, float] | None = None,
         sigma_noise: float | None = None,
-        acquisition=None,
+        acquisition: Any=None,
         x_col: str = "x",
         max_rounds: int = 4,
     ) -> InvestigationReport:

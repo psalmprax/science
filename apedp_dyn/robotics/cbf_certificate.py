@@ -104,7 +104,7 @@ class PairBarriers:
         n = self.positions.shape[0]
         if n < 2:
             return math.inf
-        off = ~np.eye(n, dtype=bool)
+        off: np.ndarray = ~np.eye(n, dtype=bool)
         return float(np.min(self.h[off]))
 
 
@@ -303,7 +303,7 @@ def model_check_unicycle_horizon(
     assumptions: CBFQPCertificateAssumptions,
     steps: int = 200,
     omega_max: float = 2.0,
-    arc_step_fn=None,
+    arc_step_fn: Any=None,
     seed: int = 0,
 ) -> dict[str, Any]:
     """Model-check the UNICYCLE realization through the production batch arc

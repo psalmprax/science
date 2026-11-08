@@ -314,7 +314,7 @@ def design_information_orders(
         raise ValueError(f"invalid domain {domain}")
     grid = np.linspace(lo, hi, grid_n)
     mi = np.asarray([expected_information_gain(hypotheses, float(v), sigma_noise) for v in grid])
-    feasible = np.zeros(len(grid), dtype=bool) if feasible_ranges else np.ones(len(grid), dtype=bool)
+    feasible: np.ndarray = np.zeros(len(grid), dtype=bool) if feasible_ranges else np.ones(len(grid), dtype=bool)
     for f_lo, f_hi in feasible_ranges:
         feasible |= (grid >= f_lo) & (grid <= f_hi)
     if not feasible.any():
@@ -331,7 +331,7 @@ def design_information_orders(
     if not np.isfinite(utility[x_star]) or mi[x_star] <= INFO_GAIN_STOP_EPS:
         return ()
     names = tuple(hypotheses)
-    preds = {n: float(hypotheses[n](grid[x_star])) for n in names}
+    preds = {n: float(np.ravel(hypotheses[n](grid[x_star]))[0]) for n in names}
     gaps = max(abs(preds[a] - preds[b]) for i, a in enumerate(names) for b in names[i + 1:])
     precision = gaps / DEFAULT_DETECTABILITY_K if gaps > 0 else sigma_noise
     # Cluster feasible points with information near the optimum into ranges.
@@ -354,7 +354,8 @@ def design_information_orders(
             variable=variable, target_ranges=((r_lo, r_hi),), hypotheses=names,
             predicted_outcomes=preds,
             expected_information_gain=float(mi[x_star]),
-            measurement_precision=float(precision), cost=float(cost_model(grid[x_star])) if cost_model else 0.0,
+            measurement_precision=float(precision),
+            cost=float(np.ravel(cost_model(grid[x_star]))[0]) if cost_model else 0.0,
             decision_criterion=("acquire until the referee pair on the incoming residuals "
                                  f"leaves a unique survivor, or the acquisition budget ends; "
                                  f"stop honestly if realized gain < {INFO_GAIN_STOP_EPS} nats"),

@@ -102,7 +102,7 @@ def run_form_recovery(game: Mapping[str, float]=PD, game_name: str="PD", noise: 
         sc, _ = _mk(cid, terms, _poly_cols(Xa_tr, deg), Ya_tr,
                     _poly_cols(Xa_ho, deg), Ya_ho, obs_rms, ns)
         scored.append(sc)
-    ranked = sorted([s for s in scored if np.isfinite(s.train_loss)], key=lambda s: s.train_loss)
+    ranked = sorted([s for s in scored if np.isfinite(s.train_loss)], key=lambda s: s.train_loss if s.train_loss is not None else float("inf"))
     adj = adjudicate(scored,
                      resid_best=ranked[0].provenance["gate4_status"]["holdout_residuals"],
                      resid_rival=ranked[1].provenance["gate4_status"]["holdout_residuals"],
@@ -156,12 +156,12 @@ def hello_world() -> None:
     print("GAME THEORY SANDBOX: which game was played?")
     print("=" * 64)
     adj, scored = run_form_recovery()
-    for s in sorted(scored, key=lambda c: c.holdout_rmse):
+    for s in sorted(scored, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else float("inf")):
         print(f"  {s.candidate.candidate_id:10s} holdout RMSE={s.holdout_rmse:.6f}")
     print(f"  A form recovery: {adj.status.value} "
           f"promoted={adj.promoted.candidate.candidate_id if adj.promoted else None}")
     adj2, out = run_game_identification()
-    for s in sorted(out, key=lambda c: c.holdout_rmse):
+    for s in sorted(out, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else float("inf")):
         print(f"  {s.candidate.candidate_id:14s} holdout RMSE={s.holdout_rmse:.6f}")
     print(f"  B game identification: {adj2.status.value} "
           f"promoted={adj2.promoted.candidate.candidate_id if adj2.promoted else None}")

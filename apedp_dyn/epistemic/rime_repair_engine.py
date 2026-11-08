@@ -345,9 +345,9 @@ def _candidate_terms(
     return terms
 
 
-def _rational_power_term_fn(src: str, p: float):
+def _rational_power_term_fn(src: str, p: float) -> Any:
     """Live-frame re-derivation for a rational-power term (causal by construction)."""
-    def fn(df: pd.DataFrame, _d=src, _p=float(p)):
+    def fn(df: pd.DataFrame, _d:Any=src, _p:Any=float(p)) -> Any:
         if _d not in df.columns:
             return np.full(len(df), np.nan)
         return _rational_power(df[_d], _p)
@@ -425,7 +425,7 @@ def _wrap_repaired(
                    # overrides this from its own covariance analysis.
                    "identifiability_status": IDENT_UNRESOLVED})
 
-    def compute_score(df: pd.DataFrame, _p=parent, _fn=term_values_fn) -> np.ndarray:
+    def compute_score(df: pd.DataFrame, _p:Any=parent, _fn:Any=term_values_fn) -> np.ndarray:
         _c = np.asarray(coefs, dtype=float)
         base = np.asarray(_p.compute_score(df), dtype=float)
         if _fn is None:
@@ -499,7 +499,7 @@ def _wrap_pade_repaired(
         "form": "resonance" if resonance else "saturation",
     }
 
-    def compute_score(df: pd.DataFrame, _fn=term_values_fn) -> np.ndarray:
+    def compute_score(df: pd.DataFrame, _fn:Any=term_values_fn) -> np.ndarray:
         _out: np.ndarray = np.asarray(_fn(df), dtype=float)
         return _out
 
@@ -800,7 +800,7 @@ class _InvVerdict:
         self.wins = wins
 
 
-def _invariance_verdict(best, partitions, config, cutoffs) -> _InvVerdict:
+def _invariance_verdict(best: Any, partitions: Any, config: Any, cutoffs: Any) -> _InvVerdict:
     """Run the full pipeline on disjoint dev slices; require the winner repeats.
 
     Cost is K proposer+repair runs on 1/K-sized slices, so it is comparable to
@@ -831,7 +831,7 @@ def _invariance_verdict(best, partitions, config, cutoffs) -> _InvVerdict:
     # lag-family findings and repairs are about, and would fabricate slices from
     # unrelated regimes.
     order = np.arange(len(dev_x))
-    bounds = np.linspace(0, len(dev_x), k + 1).astype(int)
+    bounds: np.ndarray = np.linspace(0, len(dev_x), k + 1).astype(int)
     key_counts: dict[str, int] = {}
     winner_keys: set[str] = set()
     ran = 0
@@ -878,7 +878,7 @@ def _invariance_verdict(best, partitions, config, cutoffs) -> _InvVerdict:
                        f"no structure won >= {min_wins}/{ran} dev-side slices (best {wins}: {top_key[:12]})", ran, wins)
 
 
-def _slice_pair_key(sl_x, sl_y, config, cutoffs) -> str | None:
+def _slice_pair_key(sl_x: Any, sl_y: Any, config: Any, cutoffs: Any) -> str | None:
     """Two-way slice evaluation (pair mode).
 
     The full 4-role pipeline needs slices big enough to support the stability
@@ -914,7 +914,7 @@ def _slice_pair_key(sl_x, sl_y, config, cutoffs) -> str | None:
     return canonical_key(best)
 
 
-def _slice_original(partitions):
+def _slice_original(partitions: Any) -> Any:
     """The proposer's best candidate on a slice's discovery split."""
     from apedp_dyn.proposers.rime_proposer import RimeProposer
 

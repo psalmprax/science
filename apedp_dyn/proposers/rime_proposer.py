@@ -453,7 +453,7 @@ class RimeProposer(ProposerBase):
         graph_json: str,
         scale: float,
         intercept: float,
-    ):
+    ) -> Any:
         def compute_score(df: pd.DataFrame) -> np.ndarray:
             """Evaluate the discovered mechanism on a frame.
 

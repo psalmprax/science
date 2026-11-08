@@ -77,7 +77,7 @@ def run_experiment(name: str, prob: Any) -> Any:
 
     ranked = sorted(
         [s for s in g4 if s.train_loss is not None and np.isfinite(s.train_loss)],
-        key=lambda s: float(s.train_loss))
+        key=lambda s: s.train_loss if s.train_loss is not None else float("inf"))
     se = {id(s): series(s) for s in ranked}
     best_se = se.get(id(ranked[0])) if ranked else None
     rival_se = se.get(id(ranked[1])) if len(ranked) > 1 else None

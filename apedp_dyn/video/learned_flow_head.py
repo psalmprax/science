@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import torch
@@ -179,7 +180,7 @@ def _advance(z_curr: torch.Tensor, v: torch.Tensor,
              dt: float, periodic: bool) -> torch.Tensor:
     """Predicted next frame: warp, then the head's per-channel affine (if any)."""
     z_pred = warp_frames(z_curr, v[:, 0], v[:, 1], dt=dt, periodic=periodic)
-    if s is not None:
+    if s is not None and b is not None:
         z_pred = s.unsqueeze(-1).unsqueeze(-1) * z_pred + b.unsqueeze(-1).unsqueeze(-1)
     return z_pred
 
@@ -293,7 +294,7 @@ def train_flow_head(model: LearnedFlowHead,
     """
     clip_lengths: list[int] | None = None
     if isinstance(clips, dict):
-        vals = [np.asarray(v, np.float64) for v in clips.values()]
+        vals: list[Any] = [np.asarray(v, np.float64) for v in clips.values()]
         clip_lengths = [int(v.shape[0]) for v in vals]
         arr = np.concatenate(vals, axis=0)
     else:
@@ -367,6 +368,7 @@ def train_flow_head(model: LearnedFlowHead,
             if j + 1 < k:
                 # advance with the graph-carrying prediction (computed in flow loss above)
                 z_prev, z_curr = z_curr, z_pred
+        assert total is not None  # the loop assigns it on the first unroll step
         total.backward()
         opt.step()
         losses.append(float(total.item()))
@@ -379,7 +381,7 @@ def train_flow_head(model: LearnedFlowHead,
 
 @torch.no_grad()
 def rollout_dcstt_head(head: LearnedFlowHead,
-                       transport,          # DecoupledSpatioTemporalTransport
+                       transport: Any,          # DecoupledSpatioTemporalTransport
                        context: np.ndarray,
                        horizon: int,
                        dt: float = 1.0,

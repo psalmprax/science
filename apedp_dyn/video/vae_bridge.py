@@ -15,6 +15,7 @@ Tensor-Train spatio-temporal video latents (TensorTrainVideo), providing:
 from __future__ import annotations
 
 import math
+from typing import Any
 
 import numpy as np
 
@@ -265,7 +266,7 @@ class DiffusersVAEBridge:
         self,
         model_id: str | None = None,
         config_only: bool = False,
-        vae=None,
+        vae: Any=None,
         in_channels: int = 3,
         downsample_factor: int = 8,
     ) -> None:
@@ -352,13 +353,13 @@ class DiffusersVAEBridge:
         _out: np.ndarray = np.stack([self.decode_frame(latent_video[t]) for t in range(latent_video.shape[0])], axis=0)
         return _out
 
-    def encode_video_to_tt(self, video_rgb: np.ndarray, bond_ranks: int | tuple[int, int, int] = 16):
+    def encode_video_to_tt(self, video_rgb: np.ndarray, bond_ranks: int | tuple[int, int, int] = 16) -> Any:
         from apedp_dyn.video.tensor_train_video import compress_video_latent
 
         max_r = max(bond_ranks) if isinstance(bond_ranks, (tuple, list)) else int(bond_ranks)
         return compress_video_latent(self.encode_video_to_latent(video_rgb), max_rank=max_r)
 
-    def decode_tt_to_video(self, tt_video) -> np.ndarray:
+    def decode_tt_to_video(self, tt_video: Any) -> np.ndarray:
         from apedp_dyn.video.tensor_train_video import decompress_video_latent
 
         return self.decode_latent_to_video(decompress_video_latent(tt_video))

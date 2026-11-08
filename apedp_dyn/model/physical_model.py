@@ -51,7 +51,7 @@ class PhysicalModel:
             raise ValueError(f"unidentified parameters: {missing}")
         return {p.name: float(p.value) for p in self.parameters}  # type: ignore[arg-type]
 
-    def rhs(self, t: float, x: np.ndarray, u_of_t) -> np.ndarray:
+    def rhs(self, t: float, x: np.ndarray, u_of_t: Any) -> np.ndarray:
         """Right-hand side f(t, x, u). u_of_t: callable t -> array-like per input."""
         order = [s.name for s in self.states]
         eq_by_state = {e.state: e.sympy_expr for e in self.equations}

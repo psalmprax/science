@@ -105,11 +105,11 @@ class DensityMatrix:
                              f"this tier is for demonstrations, not for hardware-sized states")
         self.num_qubits = int(num_qubits)
         dim = 1 << self.num_qubits
-        self.rho = np.zeros((dim, dim), dtype=np.complex128)
+        self.rho: np.ndarray = np.zeros((dim, dim), dtype=np.complex128)
         self.rho[0, 0] = 1.0
 
     # -- construction ------------------------------------------------------
-    def set_pure(self, vector) -> None:
+    def set_pure(self, vector: Any) -> None:
         """Set a pure state from amplitudes, checking normalisation."""
         psi = np.asarray(vector, dtype=np.complex128).reshape(-1)
         if psi.size != self.rho.shape[0]:
@@ -124,7 +124,7 @@ class DensityMatrix:
         self.rho[int(value), int(value)] = 1.0
 
     # -- evolution ---------------------------------------------------------
-    def apply_unitary(self, qubit: int, unitary) -> None:
+    def apply_unitary(self, qubit: int, unitary: Any) -> None:
         """`rho -> U rho U^dagger`, with `U` acting on one qubit."""
         u = np.asarray(unitary, dtype=np.complex128)
         if u.shape != (2, 2):
@@ -132,7 +132,7 @@ class DensityMatrix:
         # A unitary is the single-Kraus case, so there is one code path for both.
         self.apply_kraus(qubit, [u])
 
-    def apply_kraus(self, qubit: int, kraus) -> None:
+    def apply_kraus(self, qubit: int, kraus: Any) -> None:
         """`rho -> sum_k K_k rho K_k^dagger` with every `K_k` acting on `qubit`."""
         dim = self.rho.shape[0]
         hi, lo = dim >> (qubit + 1), 1 << qubit
@@ -166,7 +166,7 @@ class DensityMatrix:
         one = ((index >> qubit) & 1).astype(bool)
         return float(diagonal[~one].sum()), float(diagonal[one].sum())
 
-    def measurement_distribution(self, qubits) -> dict[str, float]:
+    def measurement_distribution(self, qubits: Any) -> dict[str, float]:
         """Z-basis distribution over `qubits`, bit order as given."""
         diagonal = np.real(np.diag(self.rho))
         index = np.arange(diagonal.size)
@@ -188,7 +188,7 @@ class DensityMatrix:
     def min_eigenvalue(self) -> float:
         return float(np.min(np.linalg.eigvalsh(self.rho)))
 
-    def fidelity_with(self, vector) -> float:
+    def fidelity_with(self, vector: Any) -> float:
         """`<psi|rho|psi>` for a pure reference state."""
         psi = np.asarray(vector, dtype=np.complex128).reshape(-1)
         return float(np.real(psi.conj() @ self.rho @ psi))
@@ -205,7 +205,7 @@ class DensityMatrix:
                 "min_eigenvalue": self.min_eigenvalue(), "num_qubits": self.num_qubits}
 
 
-def density_matrix_after(circuit_gates, *, num_qubits: int, channels=()) -> DensityMatrix:
+def density_matrix_after(circuit_gates: Any, *, num_qubits: int, channels: Any=()) -> DensityMatrix:
     """Apply gates then channels, in order, to |0...0>.
 
     `circuit_gates` is a sequence of `(name, targets, params)` handled through

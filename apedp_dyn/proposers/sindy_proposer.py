@@ -136,7 +136,7 @@ class SINDyProposer(ProposerBase):
                     formula_parts.append(f"{c:.6g}*{atom(t)}")
             formula = " + ".join(formula_parts) if formula_parts else "0"
 
-            def make_score(terms=tuple(terms), coeffs=tuple(coeffs)):
+            def make_score(terms:Any=tuple(terms), coeffs:Any=tuple(coeffs)) -> Any:
                 # Bind this candidate's own (term, coefficient) pairs at build
                 # time. The factory used to close over the loop's library names
                 # and use their positions to index the shorter coefficient list,
@@ -145,7 +145,7 @@ class SINDyProposer(ProposerBase):
                 pairs = tuple((t, c) for t, c in zip(terms, coeffs, strict=False) if t != "1")
                 constants = tuple(c for t, c in zip(terms, coeffs, strict=False) if t == "1")
 
-                def score(df):
+                def score(df: Any) -> Any:
                     rows = len(df)
                     if not pairs:
                         return np.full(rows, float(sum(constants)) if constants
@@ -179,7 +179,7 @@ try:
             self.proposer_id = "sindy-grammar-adapter"
             self._impl = SINDyProposer(degree=degree, threshold=threshold)
 
-        def propose(self, problem) -> list[Any]:
+        def propose(self, problem: Any) -> list[Any]:
             # Try to extract data from problem
             try:
                 t = getattr(problem, 'train', {}).get('truth_t')

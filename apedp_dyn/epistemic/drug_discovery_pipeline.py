@@ -436,7 +436,10 @@ class DrugDiscoveryPipelineReferee:
             k_on=k_on,
             k_off=k_off,
         )
-        mean_occ = float(tmdd_sim["mean_receptor_occupancy"])
+        raw_occupancy = tmdd_sim["mean_receptor_occupancy"]
+        if not isinstance(raw_occupancy, (int, float)):
+            raise TypeError("the TMDD trajectory must report a numeric receptor occupancy")
+        mean_occ = float(raw_occupancy)
 
         if not admet_res.passed_gate or mean_occ < self.min_receptor_occupancy:
             admet_reasons = list(admet_res.rejection_reasons)

@@ -24,6 +24,7 @@ Scope & honesty ceiling:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -338,8 +339,8 @@ def discover_transport_with_engine(
     snapshots: np.ndarray,
     dt: float,
     dx: float,
-    **kwargs,
-):
+    **kwargs: Any,
+) -> Any:
     """Run the repository 1D PDE discovery engine on LOB snapshots.
 
     The import is deliberately deferred so that importing

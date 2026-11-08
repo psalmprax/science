@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -91,7 +92,7 @@ class CoupledOdeProposer(ProposerBase):
                     return row[term[:-2]] ** 3
                 return row[term]
 
-            def make_score_fn(eq_info=eq, active_terms=active):
+            def make_score_fn(eq_info:Any=eq, active_terms:Any=active) -> Any:
                 def _scorer(eval_df: pd.DataFrame) -> np.ndarray:
                     if eq_info.state_variable not in eval_df.columns:
                         return np.zeros(len(eval_df))

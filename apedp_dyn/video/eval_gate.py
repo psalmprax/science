@@ -26,11 +26,12 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
 
-def _kernel_video_bridge():
+def _kernel_video_bridge() -> Any:
     """The kernel-backed bridge when the native fast path is usable.
 
     Lazy import (function level) so importing this module never pulls the

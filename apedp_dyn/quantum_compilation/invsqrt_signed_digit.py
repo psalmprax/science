@@ -54,11 +54,11 @@ Design (all arithmetic exactly mirrored by the numpy model below):
      with classically conditioned phase fixups.
 Usage: python signed_digit_lab.py OUT.kmb [--baseline] (requires kickmix and NumPy)
 """
-
 import functools
 import math
 import types
 from fractions import Fraction
+from typing import Any
 
 import numpy as np
 
@@ -76,7 +76,7 @@ F2, F1, FYR, GY, DROP2 = 8, 19, 27, 1, (5,)  # precision configuration (verified
 
 # ----------------------------------------------------------------- numpy model / tables
 @functools.lru_cache(None)
-def fitc(lo, hi, mid, scale, deg=2, iters=80):
+def fitc(lo: Any, hi: Any, mid: Any, scale: Any, deg: int=2, iters: int=80) -> Any:
     def f(M: np.ndarray) -> np.ndarray:
         _out: np.ndarray = scale / np.sqrt(M)
         return _out
@@ -95,7 +95,7 @@ def fitc(lo, hi, mid, scale, deg=2, iters=80):
 
 
 class Cfg:
-    def __init__(self, f2, f1, fyr, gy, drop2=()):
+    def __init__(self, f2: Any, f1: Any, fyr: Any, gy: Any, drop2: Any=()) -> None:
         self.f2, self.f1, self.fyr, self.gy = f2, f1, fyr, gy
         self.fy = fyr + gy
         self.w2 = f2 - 1
@@ -103,11 +103,11 @@ class Cfg:
         self.sh1 = [f1 + 22 - i - self.fy for i in range(DB)]
         self.drop2 = set(drop2)
 
-    def rrow_list(self):
+    def rrow_list(self) -> Any:
         return [i for i in reversed(range(DB)) if i not in self.drop2 and self.sh2[i] < self.w2]
 
 
-def rd(v, s):
+def rd(v: Any, s: Any) -> Any:
     if s < 0:
         return v << (-s)
     r = v >> s
@@ -116,7 +116,7 @@ def rd(v, s):
     return r
 
 
-def pipeline(cfg, K2, K1, d):
+def pipeline(cfg: Any, K2: Any, K1: Any, d: Any) -> Any:
     sig = [2 * ((d >> i) & 1) - 1 for i in range(DB)]
     R = np.full_like(d, K1)
     for i in cfg.rrow_list():
@@ -130,14 +130,14 @@ def pipeline(cfg, K2, K1, d):
 MAX_X = 3_133_452
 
 
-def valid_residuals(e, a):
+def valid_residuals(e: Any, a: Any) -> Any:
     d: np.ndarray = np.arange(1 << DB, dtype=np.int64)
     xn = (1 << MB) + (a << DB) + d
     mask = (d % 2 == 0) if e else ((xn <= MAX_X) | (d % 4 == 0))
     return d[mask]
 
 
-def calibrate_segment(cfg, e, a, c_radius=1, b_radius=3):
+def calibrate_segment(cfg: Any, e: Any, a: Any, c_radius: int=1, b_radius: int=3) -> Any:
     d = valid_residuals(e, a)
     lo = 1 + a * 2.0 ** (DB - MB)
     mid = lo + ((1 << DB) - 1) / 2 ** (MB + 1)
@@ -176,7 +176,7 @@ def calibrate_segment(cfg, e, a, c_radius=1, b_radius=3):
     return best
 
 
-def regenerate_tables_exact(cfg, refine_threshold=0.95):
+def regenerate_tables_exact(cfg: Any, refine_threshold: float=0.95) -> Any:
     tabs = {}
     ratios = []
     for e in (0, 1):
@@ -197,7 +197,7 @@ def regenerate_tables_exact(cfg, refine_threshold=0.95):
     }
 
 
-def build_tables(cfg, search=2):
+def build_tables(cfg: Any, search: int=2) -> Any:
     """Optional credited exact-domain coefficient regeneration.
 
     The radius policy is the published Kozykorpesh calibration, rather than
@@ -208,7 +208,7 @@ def build_tables(cfg, search=2):
     return tables, report["worst_ratio"] / 2**24
 
 
-def layout(cfg, tabs, LB=21, S=20):
+def layout(cfg: Any, tabs: Any, LB: int=21, S: int=20) -> Any:
     d = np.arange(2**DB, dtype=np.int64)
     assert max(t[0] for t in tabs.values()) < (1 << cfg.w2)
     Rmax = 0
@@ -238,7 +238,7 @@ def layout(cfg, tabs, LB=21, S=20):
 
 
 # ----------------------------------------------------------------- circuit pieces
-def and_all_into(b, controls, target):
+def and_all_into(b: Any, controls: Any, target: Any) -> None:
     k = len(controls)
     if k == 1:
         b.cx(controls[0], target)
@@ -257,7 +257,7 @@ def and_all_into(b, controls, target):
     b.free(anc)
 
 
-def phase_all(b, controls):
+def phase_all(b: Any, controls: Any) -> None:
     k = len(controls)
     if k == 1:
         b.z(controls[0])
@@ -279,7 +279,7 @@ def phase_all(b, controls):
 NSTAGES = [(4, 16), (3, 8), (2, 4), (1, 2), (0, 1)]
 
 
-def _baseline_normalize(b, x, f):
+def _baseline_normalize(b: Any, x: Any, f: Any) -> None:
     for k, d in NSTAGES:
         top = x[W - d : W]
         if d == 1:
@@ -293,7 +293,7 @@ def _baseline_normalize(b, x, f):
             b.cswap(f[k], x[i], x[i + d])
 
 
-def _combined_normalize(b, x, f):
+def _combined_normalize(b: Any, x: Any, f: Any) -> None:
     """v3 step 1: f4, f3, f2 (the binary leading-zero count div 4) from one prefix-AND chain on the unshifted x.
     chain[m] = [x[W-m-2:W] == 0] (top m+2 bits zero); p_j = chain[4j-2] = [lz >= 4j].  f4 = p4, f3 = p2 ^ p4,
     f2 = p1 ^ p2 ^ p3 ^ p4 ^ p5 (nested prefixes, so XOR = bit 2 of lz).  19 ANDs instead of 15 + 7 + 3."""
@@ -329,7 +329,7 @@ def _combined_normalize(b, x, f):
 
 # MAX_X < 3*2**20 proves the original two top bits are never both one.
 # After inversion, their AND equals XOR with one, on every promised input.
-def normalize(b, x, f):
+def normalize(b: Any, x: Any, f: Any) -> None:
     """v3 step 1: f4, f3, f2 (the binary leading-zero count div 4) from one prefix-AND chain on the unshifted x.
     chain[m] = [x[W-m-2:W] == 0] (top m+2 bits zero); p_j = chain[4j-2] = [lz >= 4j].  f4 = p4, f3 = p2 ^ p4,
     f2 = p1 ^ p2 ^ p3 ^ p4 ^ p5 (nested prefixes, so XOR = bit 2 of lz).  19 ANDs instead of 15 + 7 + 3."""
@@ -367,7 +367,7 @@ def normalize(b, x, f):
             b.cswap(f[k], x[i], x[i + d])
 
 
-def _baseline_unnormalize(b, x, f):
+def _baseline_unnormalize(b: Any, x: Any, f: Any) -> None:
     for k, d in reversed(NSTAGES):
         for i in range(0, W - d):
             b.cswap(f[k], x[i], x[i + d])
@@ -386,7 +386,7 @@ def _baseline_unnormalize(b, x, f):
             b.free(m)
 
 
-def promise_phase_original_top(b, controls):
+def promise_phase_original_top(b: Any, controls: Any) -> None:
     """Phase the original top16-zero predicate using its promised bit relation."""
     assert len(controls) == 16
     controls = list(reversed(controls))
@@ -406,7 +406,7 @@ def promise_phase_original_top(b, controls):
     b.free(anc)
 
 
-def unnormalize(b, x, f):
+def unnormalize(b: Any, x: Any, f: Any) -> None:
     for k, d in reversed(NSTAGES):
         for i in range(0, W - d):
             b.cswap(f[k], x[i], x[i + d])
@@ -428,7 +428,7 @@ def unnormalize(b, x, f):
             b.free(m)
 
 
-def gadd(b, a, t, cin=None, sub=False):
+def gadd(b: Any, a: Any, t: Any, cin: Any=None, sub: bool=False) -> None:
     """t += a + cin (or t -= a + cin), Gidney adder: len(t)-1 Toffolis, uncompute by HMR."""
     a = list(a)
     t = list(t)
@@ -476,7 +476,7 @@ def gadd(b, a, t, cin=None, sub=False):
         b.x(km.array(t))
 
 
-def _baseline_shift_stages(b, f, reg, L, inverse):
+def _baseline_shift_stages(b: Any, f: Any, reg: Any, L: Any, inverse: Any) -> None:
     stages = [(1, 1), (2, 2), (3, 4), (4, 8)]
     occ = []
     o = L
@@ -496,7 +496,7 @@ def _baseline_shift_stages(b, f, reg, L, inverse):
                     b.cswap(f[k], reg[i], reg[i + d])
 
 
-def shift_stages(b, f, reg, L, inverse):
+def shift_stages(b: Any, f: Any, reg: Any, L: Any, inverse: Any) -> None:
     stages = [(1, 1), (2, 2), (3, 4), (4, 8)]
     occ = []
     o = L
@@ -526,7 +526,7 @@ def shift_stages(b, f, reg, L, inverse):
                     b.cswap(f[k], reg[i], reg[i + d])
 
 
-def build_circuit(cfg, tabs, lay, adder=None):
+def build_circuit(cfg: Any, tabs: Any, lay: Any, adder: Any=None) -> Any:
     # The default preserves the public generator exactly. An injected adder
     # supports isolated, explicitly tested memory experiments.
     if adder is None:
@@ -552,7 +552,7 @@ def build_circuit(cfg, tabs, lay, adder=None):
     addr = km.array([*list(x[14:21]), f[0]])
     delta = x[0:DB]
 
-    def rrows(inverse):
+    def rrows(inverse: Any) -> None:
         seq = cfg.rrow_list()
         if inverse:
             seq = list(reversed(seq))
@@ -570,7 +570,7 @@ def build_circuit(cfg, tabs, lay, adder=None):
             adder(b, off, t, cin, sub=inverse)
             b.cx(delta[i], t)
 
-    def yrows(inverse):
+    def yrows(inverse: Any) -> None:
         seq = list(reversed(range(DB)))
         if inverse:
             seq.reverse()
@@ -609,7 +609,7 @@ def build_circuit(cfg, tabs, lay, adder=None):
     return b.finish_circuit()
 
 
-def main(out):
+def main(out: Any) -> None:
     cfg = Cfg(F2, F1, FYR, GY, DROP2)
     tabs, worst = build_tables(cfg)
     print(f"model worst relative error / 2^-24 = {worst * 2**24:.3f}")
@@ -628,11 +628,11 @@ def main(out):
     print("wrote", out)
 
 
-def selected_cfg():
+def selected_cfg() -> Any:
     return Cfg(F2, F1, FYR, GY, DROP2)
 
 
-def config_record(cfg):
+def config_record(cfg: Any) -> Any:
     return {"f2": cfg.f2, "f1": cfg.f1, "fyr": cfg.fyr, "gy": cfg.gy, "drop2": sorted(cfg.drop2)}
 
 
@@ -896,7 +896,7 @@ _PUBLISHED_COEFFICIENT_ROWS = (
 )
 
 
-def load_or_build_tables(path=None, regenerate=False):
+def load_or_build_tables(path: Any=None, regenerate: bool=False) -> Any:
     """Read explicit public numeric coefficients; optional open regeneration.
 
     No circuit binary is reused. The 256-row table is Kozykorpesh's published
@@ -942,7 +942,7 @@ def load_or_build_tables(path=None, regenerate=False):
     return cfg, tables, worst
 
 
-def integer_model(xs, cfg, tabs):
+def integer_model(xs: Any, cfg: Any, tabs: Any) -> Any:
     """Exact emitted arithmetic in units 2^-(cfg.fy+10) turns, before mod 1."""
     xs = np.asarray(xs, dtype=np.int64)
     if not ((xs >= 1) & (xs <= 3133452)).all():
@@ -969,7 +969,7 @@ def integer_model(xs, cfg, tabs):
     return Y << (shifts >> 1)
 
 
-def exhaustive_certificate(cfg, tabs, chunk_size=131072):
+def exhaustive_certificate(cfg: Any, tabs: Any, chunk_size: int=131072) -> Any:
     """Every promised basis input, exact integer target and tolerance.
 
     This is an arithmetic certificate. Ancillas, restored inputs and phase
@@ -978,7 +978,7 @@ def exhaustive_certificate(cfg, tabs, chunk_size=131072):
     output_fraction = cfg.fy + 10
     worst_ratio, worst_x, min_margin = 0.0, 0, 1 << 64
     for start in range(1, 3133453, chunk_size):
-        xs = np.arange(start, min(start + chunk_size, 3133453), dtype=np.int64)
+        xs: np.ndarray = np.arange(start, min(start + chunk_size, 3133453), dtype=np.int64)
         values = integer_model(xs, cfg, tabs).astype(np.uint64)
         phase = values << np.uint64(64 - output_fraction)
         roots = [math.isqrt((1 << 130) // int(x)) for x in xs]
@@ -1003,7 +1003,7 @@ def exhaustive_certificate(cfg, tabs, chunk_size=131072):
     }
 
 
-def conditional_toffoli_discount(circuit):
+def conditional_toffoli_discount(circuit: Any) -> Any:
     """Mean discount for this emitted family's fair HMR conditional branches."""
     depth = 0
     total = 0
@@ -1024,7 +1024,7 @@ def conditional_toffoli_discount(circuit):
     return discount
 
 
-def estimated_resources(circuit, certificate):
+def estimated_resources(circuit: Any, certificate: Any) -> Any:
     """Model-based cost; full unchanged official verification remains required."""
     assert certificate["pass"] and certificate["min_margin_units"] > 0
     stats = circuit.operation_statistics()
@@ -1053,7 +1053,7 @@ def estimated_resources(circuit, certificate):
 
 
 # ---- Our isolated phase scheduling, folded carry and borrowed workspace ----
-def folded_gadd(b, a, t, cin=None, sub=False, borrowed=()):
+def folded_gadd(b: Any, a: Any, t: Any, cin: Any=None, sub: bool=False, borrowed: Any=()) -> None:
     a, t = list(a), list(t)
     o, n = len(a), len(t)
     assert o <= n and n >= 1
@@ -1126,7 +1126,7 @@ def folded_gadd(b, a, t, cin=None, sub=False, borrowed=()):
             b.x(q)
 
 
-def truth_table_check(max_width=6, borrowed_count=0):
+def truth_table_check(max_width: int=6, borrowed_count: int=0) -> Any:
     class Bits:
         def __init__(self) -> None:
             self.v: list[int] = []
@@ -1190,7 +1190,7 @@ def truth_table_check(max_width=6, borrowed_count=0):
     return count
 
 
-def build_split_circuit(cfg, tabs, lay, adder=None, borrow_top=False):
+def build_split_circuit(cfg: Any, tabs: Any, lay: Any, adder: Any=None, borrow_top: bool=False) -> Any:
     if adder is None:
         adder = gadd
     w2, w1, LB, S, whi = cfg.w2, lay["w1"], lay["LB"], lay["S"], lay["whi"]
@@ -1204,7 +1204,7 @@ def build_split_circuit(cfg, tabs, lay, adder=None, borrow_top=False):
         b.x(x[-1])
         raw_adder = adder
 
-        def adder(builder, a, t, cin=None, sub=False):
+        def adder(builder: Any, a: Any, t: Any, cin: Any=None, sub: bool=False) -> Any:
             return raw_adder(builder, a, t, cin, sub, borrowed=(x[-1],))
 
     c2 = b.alloc_qubits(w2)
@@ -1224,7 +1224,7 @@ def build_split_circuit(cfg, tabs, lay, adder=None, borrow_top=False):
     address = km.array([*list(x[14:21]), flags[0]])
     delta = x[:DB]
 
-    def rrows(inverse):
+    def rrows(inverse: Any) -> None:
         seq = cfg.rrow_list()
         if inverse:
             seq = list(reversed(seq))
@@ -1242,7 +1242,7 @@ def build_split_circuit(cfg, tabs, lay, adder=None, borrow_top=False):
             adder(b, off, t, cin, sub=inverse)
             b.cx(delta[i], t)
 
-    def yrows(inverse):
+    def yrows(inverse: Any) -> None:
         seq = list(reversed(range(DB)))
         if inverse:
             seq.reverse()
@@ -1254,7 +1254,7 @@ def build_split_circuit(cfg, tabs, lay, adder=None, borrow_top=False):
             adder(b, R[sh:w1], Lr, cin, sub=inverse)
             b.cx(delta[i], Lr)
 
-    def phase(reg, base_bit):
+    def phase(reg: Any, base_bit: Any) -> None:
         ext = b.alloc_qubits(10)
         word = km.array(list(reg) + list(ext))
         shift_stages(b, flags, word, len(reg), False)
@@ -1283,7 +1283,7 @@ def build_split_circuit(cfg, tabs, lay, adder=None, borrow_top=False):
     return b.finish_circuit()
 
 
-def build_previous_schedule(cfg, tabs, lay=None):
+def build_previous_schedule(cfg: Any, tabs: Any, lay: Any=None) -> Any:
     """Regenerate 91Q circuit from the explicit model and credited schedules."""
     if lay is None:
         lay = layout(cfg, tabs)
@@ -1301,7 +1301,7 @@ def build_previous_schedule(cfg, tabs, lay=None):
 # The derivative-split version of this API is defined below.
 
 
-def cli():
+def cli() -> None:
     import argparse
     import json
     from pathlib import Path
@@ -1328,7 +1328,7 @@ def cli():
     print(json.dumps(report, indent=2))
 
 
-def _rudra_gadd_top_reused(b, source, target, cin=None, sub=False):
+def _rudra_gadd_top_reused(b: Any, source: Any, target: Any, cin: Any=None, sub: bool=False) -> None:
     """Gidney addition with n-2 clean carries; the last carry targets the MSB."""
     a, t = list(source), list(target)
     n, m = len(t), len(a)
@@ -1378,7 +1378,7 @@ def _rudra_gadd_top_reused(b, source, target, cin=None, sub=False):
         b.x(km.array(t))
 
 
-def prepare_derivative_split(reference, cfg, tables):
+def prepare_derivative_split(reference: Any, cfg: Any, tables: Any) -> Any:
     d = np.arange(1 << reference.DB, dtype=np.int64)
     coarse, residual = {}, {}
     bounds = {
@@ -1407,7 +1407,7 @@ def prepare_derivative_split(reference, cfg, tables):
     return {"coarse": coarse, "residual": residual}, bounds
 
 
-def _build_derivative_circuit(reference, cfg, tables, layout, split, borrow_top=False):
+def _build_derivative_circuit(reference: Any, cfg: Any, tables: Any, layout: Any, split: Any, borrow_top: bool=False) -> Any:
     assert (layout["w1"], layout["LB"], layout["S"], layout["whi"]) == (18, 21, 20, 8)
     b = km.CircuitBuilder()
     x = b.create_quantum_register(22, name="x")
@@ -1417,7 +1417,7 @@ def _build_derivative_circuit(reference, cfg, tables, layout, split, borrow_top=
     if borrow_top:
         b.x(x[-1])
 
-    def adder(builder, a, t, cin=None, sub=False):
+    def adder(builder: Any, a: Any, t: Any, cin: Any=None, sub: bool=False) -> Any:
         if borrow_top:
             return folded_gadd(builder, a, t, cin, sub, borrowed=(x[-1],))
         return _rudra_gadd_top_reused(builder, a, t, cin, sub)
@@ -1437,7 +1437,7 @@ def _build_derivative_circuit(reference, cfg, tables, layout, split, borrow_top=
     address = km.array([*list(x[14:21]), flags[0]])
     delta = x[:14]
 
-    def phase_register(register, low_bit):
+    def phase_register(register: Any, low_bit: Any) -> None:
         ext = b.alloc_qubits(10)
         word = km.array(list(register) + list(ext))
         reference.shift_stages(b, flags, word, len(register), False)
@@ -1448,7 +1448,7 @@ def _build_derivative_circuit(reference, cfg, tables, layout, split, borrow_top=
         reference.shift_stages(b, flags, word, len(register), True)
         b.free(ext)
 
-    def inner(inverse):
+    def inner(inverse: Any) -> None:
         rows = cfg.rrow_list()
         for i in reversed(rows) if inverse else rows:
             shift = cfg.sh2[i]
@@ -1466,7 +1466,7 @@ def _build_derivative_circuit(reference, cfg, tables, layout, split, borrow_top=
             adder(b, addend, target, carry, sub=inverse)
             b.cx(delta[i], target)
 
-    def outer(derivative, inverse):
+    def outer(derivative: Any, inverse: Any) -> None:
         for i in range(14) if inverse else reversed(range(14)):
             shift = cfg.sh1[i]
             carry = derivative[shift - 1] if shift else None
@@ -1501,7 +1501,7 @@ def _build_derivative_circuit(reference, cfg, tables, layout, split, borrow_top=
     return b.finish_circuit()
 
 
-def _derivative_reference(promise):
+def _derivative_reference(promise: Any) -> Any:
     return types.SimpleNamespace(
         **dict(
             globals(),
@@ -1511,7 +1511,7 @@ def _derivative_reference(promise):
     )
 
 
-def _build_derivative_variant(cfg, tabs, lay, borrow, promise):
+def _build_derivative_variant(cfg: Any, tabs: Any, lay: Any, borrow: Any, promise: Any) -> Any:
     if lay is None:
         lay = layout(cfg, tabs)
     reference = _derivative_reference(promise)
@@ -1519,27 +1519,27 @@ def _build_derivative_variant(cfg, tabs, lay, borrow, promise):
     return _build_derivative_circuit(reference, cfg, tabs, lay, split, borrow_top=borrow)
 
 
-def build_selected(cfg, tabs, lay=None):
+def build_selected(cfg: Any, tabs: Any, lay: Any=None) -> Any:
     """Regenerate selected92Q derivative split with borrowed carry and domain rewrite."""
     return _build_derivative_variant(cfg, tabs, lay, borrow=True, promise=True)
 
 
-def build_memory_baseline(cfg, tabs, lay=None):
+def build_memory_baseline(cfg: Any, tabs: Any, lay: Any=None) -> Any:
     """Same Kozykorpesh coefficient model, Rudra/Kirill derivative schedule:93Q."""
     return _build_derivative_variant(cfg, tabs, lay, borrow=False, promise=False)
 
 
-def build_borrowed_baseline(cfg, tabs, lay=None):
+def build_borrowed_baseline(cfg: Any, tabs: Any, lay: Any=None) -> Any:
     """Same derivative schedule with the normalized input bit borrowed:92Q."""
     return _build_derivative_variant(cfg, tabs, lay, borrow=True, promise=False)
 
 
-def build_combined_baseline(cfg, tabs, lay=None):
+def build_combined_baseline(cfg: Any, tabs: Any, lay: Any=None) -> Any:
     """Compatibility alias for the borrowed-carry comparison."""
     return build_borrowed_baseline(cfg, tabs, lay)
 
 
-def comparison_report(cfg, tabs, certificate, lay=None):
+def comparison_report(cfg: Any, tabs: Any, certificate: Any, lay: Any=None) -> Any:
     """One fixed coefficient table: derivative schedule, borrow, domain rewrite."""
     if lay is None:
         lay = layout(cfg, tabs)
@@ -1551,7 +1551,7 @@ def comparison_report(cfg, tabs, certificate, lay=None):
     }
 
 
-def selected_descriptor():
+def selected_descriptor() -> Any:
     return {
         "variant": "kozy_table_rudra_split_alex_schedule_borrow_and_domain",
         "source_author": "Sumit Chongder; Rudra Bhaskar; Alex Chilton; Kozykorpesh; Kirill Tymchishin; anazemcev / Artem1410",

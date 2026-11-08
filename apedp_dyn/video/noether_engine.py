@@ -11,6 +11,7 @@ Enforces physical conservation laws on high-dimensional generative video flows:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -177,7 +178,7 @@ class NoetherConservationEngine:
         q: np.ndarray,
         p: np.ndarray,
         dt: float,
-        potential_grad_fn,
+        potential_grad_fn: Any,
     ) -> tuple[np.ndarray, np.ndarray]:
         """Perform a symplectic Störmer-Verlet / Leapfrog step preserving Hamiltonian energy.
 

@@ -21,6 +21,7 @@ from __future__ import annotations
 import hashlib
 import math
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -161,7 +162,7 @@ class MolecularGraph:
         n = len(self.atoms)
         if n == 0:
             return []
-        adj = {i: [] for i in range(n)}
+        adj: dict[Any, Any] = {i: [] for i in range(n)}
         for b in self.bonds:
             adj[b.u].append(b.v)
             adj[b.v].append(b.u)

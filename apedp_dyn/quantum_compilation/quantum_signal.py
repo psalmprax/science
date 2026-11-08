@@ -86,8 +86,9 @@ RULES = ("symmetric", "long_only", "short_below_zero")
 
 def _ry(angle: float) -> np.ndarray:
     half = angle / 2.0
-    return np.array([[math.cos(half), -math.sin(half)],
+    _out: np.ndarray = np.array([[math.cos(half), -math.sin(half)],
                      [math.sin(half), math.cos(half)]], dtype=np.complex128)
+    return _out
 
 
 def _embed(op: np.ndarray, qubit: int, num_qubits: int) -> np.ndarray:
@@ -467,7 +468,7 @@ class FitResult:
         }
 
 
-def fit_parameterised_map(values, returns: Sequence[float], *,
+def fit_parameterised_map(values: Any, returns: Sequence[float], *,
                           features: Sequence[str], valid: Sequence[bool] | None = None,
                           ledger: CandidateTrialLedger | None = None,
                           search_id: str = "fit",
@@ -557,7 +558,7 @@ def continuous_evaluations() -> int:
     return 1 + len(CONTINUOUS_STEPS) * CONTINUOUS_PASSES * 4
 
 
-def fit_continuous_map(values, returns: Sequence[float], *,
+def fit_continuous_map(values: Any, returns: Sequence[float], *,
                        features: Sequence[str], valid: Sequence[bool] | None = None,
                        ledger: CandidateTrialLedger | None = None,
                        search_id: str = "fit",

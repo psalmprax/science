@@ -74,14 +74,14 @@ class UnavailableGrammarTerm(ValueError):
         self.reason = detail
 
 
-def _unavailable(term: str):
+def _unavailable(term: str) -> Any:
     """Builder for a vocabulary name that refuses instead of returning a value.
 
     The refusal is raised on call, not at import: the slate keeps enumerating
     the name, so counts, canonical forms and candidate ids do not move.
     """
 
-    def build(X, V, U, XR, SX):
+    def build(X: Any, V: Any, U: Any, XR: Any, SX: Any) -> Any:
         raise UnavailableGrammarTerm(term)
 
     build.__doc__ = UNAVAILABLE_TERMS[term]
@@ -244,7 +244,7 @@ def enumerate_candidates(required: tuple[str, ...] = ("u",),
     return out
 
 
-def materialize(problem, candidate: CandidateDynamics) -> PhysicalModel:
+def materialize(problem: Any, candidate: CandidateDynamics) -> PhysicalModel:
     """IR -> executable first-order PhysicalModel (adds the kinematic equation).
 
     Generic grammar symbols map position -> states[0], velocity -> states[1],
@@ -298,13 +298,13 @@ def materialize(problem, candidate: CandidateDynamics) -> PhysicalModel:
     return PhysicalModel(problem.states, problem.inputs, tuple(parameters), equations)
 
 
-def problem_symbol_units(problem) -> dict[str, str]:
+def problem_symbol_units(problem: Any) -> dict[str, str]:
     out = {s.name: s.units for s in problem.states}
     out.update({u.name: u.units for u in problem.inputs})
     return out
 
 
-def prune_admissible(problem, candidates: list[Any]) -> list[ScoredCandidate]:
+def prune_admissible(problem: Any, candidates: list[Any]) -> list[ScoredCandidate]:
     """D1.4 pruning before expensive integration.
 
     materialize -> gate 1 (dimension) -> gate 2 (admissibility) -> dedup.

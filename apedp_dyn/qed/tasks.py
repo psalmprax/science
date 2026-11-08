@@ -21,6 +21,7 @@ is not.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 
@@ -158,10 +159,10 @@ class DiscoveryTask:
     def design_rows(self, states: np.ndarray) -> np.ndarray:
         return self.library.design_matrix(states)
 
-    def render(self, support, coefficients) -> str:
+    def render(self, support: Any, coefficients: Any) -> str:
         return self.library.render(support, coefficients, lhs=f"d state[{self.discovered}]/dt")
 
-    def derivatives(self, state: np.ndarray, support, coefficients) -> np.ndarray:
+    def derivatives(self, state: np.ndarray, support: Any, coefficients: Any) -> np.ndarray:
         """``d state/dt`` for one sample: the fitted law plus the given identities."""
         state = np.asarray(state, dtype=float).reshape(1, -1)
         out: np.ndarray = np.full(self.width, np.nan, dtype=float)
@@ -180,8 +181,8 @@ class DiscoveryTask:
     def rollout(
         self,
         initial: np.ndarray,
-        support,
-        coefficients,
+        support: Any,
+        coefficients: Any,
         *,
         steps: int,
         divergence_limit: float = 1e6,

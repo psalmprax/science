@@ -83,22 +83,24 @@ def _fd_derivative_1d_interior(u: np.ndarray, dx: float, order: int) -> np.ndarr
     """Compute 4th-order-accurate finite-difference derivative on interior grid [3:-3]."""
     if order == 1:
         # 4th-order central: (u_{i-2} - 8 u_{i-1} + 8 u_{i+1} - u_{i+2}) / (12 dx)
-        return (
+        _out: np.ndarray = (
             u[:, 1:-5] - 8.0 * u[:, 2:-4] + 8.0 * u[:, 4:-2] - u[:, 5:-1]
         ) / (12.0 * dx)
+        return _out
     if order == 2:
         # 4th-order central: (-u_{i-2} + 16 u_{i-1} - 30 u_i + 16 u_{i+1} - u_{i+2}) / (12 dx^2)
-        return (
+        _out: np.ndarray = (
             -u[:, 1:-5]
             + 16.0 * u[:, 2:-4]
             - 30.0 * u[:, 3:-3]
             + 16.0 * u[:, 4:-2]
             - u[:, 5:-1]
         ) / (12.0 * (dx ** 2))
+        return _out
     if order == 3:
         # 4th-order 7-point central for u_xxx:
         # (u_{i-3} - 8 u_{i-2} + 13 u_{i-1} - 13 u_{i+1} + 8 u_{i+2} - u_{i+3}) / (8 dx^3)
-        return (
+        _out: np.ndarray = (
             u[:, 0:-6]
             - 8.0 * u[:, 1:-5]
             + 13.0 * u[:, 2:-4]
@@ -106,10 +108,11 @@ def _fd_derivative_1d_interior(u: np.ndarray, dx: float, order: int) -> np.ndarr
             + 8.0 * u[:, 5:-1]
             - u[:, 6:]
         ) / (8.0 * (dx ** 3))
+        return _out
     if order == 4:
         # 4th-order 7-point central for u_xxxx:
         # (-u_{i-3} + 12 u_{i-2} - 39 u_{i-1} + 56 u_i - 39 u_{i+1} + 12 u_{i+2} - u_{i+3}) / (6 dx^4)
-        return (
+        _out: np.ndarray = (
             -u[:, 0:-6]
             + 12.0 * u[:, 1:-5]
             - 39.0 * u[:, 2:-4]
@@ -118,6 +121,7 @@ def _fd_derivative_1d_interior(u: np.ndarray, dx: float, order: int) -> np.ndarr
             + 12.0 * u[:, 5:-1]
             - u[:, 6:]
         ) / (6.0 * (dx ** 4))
+        return _out
     raise ValueError(f"Unsupported spatial derivative order {order}")
 
 

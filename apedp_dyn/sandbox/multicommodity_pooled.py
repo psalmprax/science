@@ -18,7 +18,7 @@ import csv
 import json
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 
@@ -31,6 +31,7 @@ from apedp_dyn.fitting.parameter_fit import fit_candidate
 from apedp_dyn.grammar.candidate_ir import (
     CandidateDynamics,
     ScoredCandidate,
+    SystemCandidate,
     Term,
 )
 from apedp_dyn.grammar.mechanical_grammar import (
@@ -88,7 +89,7 @@ def run_pooled() -> tuple[Any, dict[str, dict[str, tuple[float | None, bool]]]]:
                                  max_terms=2, id_prefix="fin")
     kept = prune_admissible(probs["SPX"], slate)  # gates 1-2 structural
     structs = [(s.candidate.candidate_id,
-                tuple(t.name for t in s.candidate.terms)) for s in kept]
+                tuple(t.name for t in cast(SystemCandidate, s.candidate).terms)) for s in kept]
     mat: dict[str, dict[str, tuple[float | None, bool]]] = {}
     pooled: dict[str, tuple[float, tuple[str, ...]]] = {}
     for cid, tnames in structs:
@@ -135,10 +136,10 @@ def run_pooled() -> tuple[Any, dict[str, dict[str, tuple[float | None, bool]]]]:
         print("PROMOTED:", adj.promoted.candidate.candidate_id,
               f"pooled RMSE={adj.promoted.holdout_rmse:.3f}")
     print("reason:", adj.reason[:140])
-    with open("outputs/multicommodity_pooled.json", "w") as f:
+    with open("outputs/multicommodity_pooled.json", "w") as fh:
         json.dump({"pooled": {c: {"rmse": pooled[c][0], "terms": list(pooled[c][1])}
                               for c in pooled},
-                   "verdict": adj.status.value}, f, indent=1)
+                   "verdict": adj.status.value}, fh, indent=1)
     print("saved outputs/multicommodity_pooled.json")
     return adj, mat
 

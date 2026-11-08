@@ -104,7 +104,7 @@ def sample_bits(circuit: Circuit, *, shots: int, seed: int | None = None,
     return (backend or StatevectorBackend()).run(circuit, shots=shots, seed=seed)
 
 
-def _condition_holds(condition, bits: dict[int, bool]) -> bool:
+def _condition_holds(condition: Any, bits: dict[int, bool]) -> bool:
     return all(bits.get(bit, False) is value for bit, value in condition)
 
 

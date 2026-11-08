@@ -100,7 +100,7 @@ class HawkesOrderFlowProposer(ProposerBase):
         # Negative log-likelihood function with fixed beta
         beta = self.decay_beta
 
-        def neg_log_lik(params):
+        def neg_log_lik(params: Any) -> Any:
             mu, alpha = params[0], params[1]
             if mu <= 1e-5 or alpha <= 1e-5 or alpha >= beta:
                 return 1e9

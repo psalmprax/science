@@ -19,6 +19,7 @@ July-2022 smoke origin discarded, origins start 2022-08-01):
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import numpy.linalg as la
@@ -79,7 +80,7 @@ def _d5(sig: np.ndarray) -> np.ndarray:
     return _out
 
 
-def _train_blocks_no_leak(dates, origin: str) -> np.ndarray:
+def _train_blocks_no_leak(dates: Any, origin: str) -> np.ndarray:
     """FLAW-A01 (2026-10-21 external audit): train blocks with the 5-day
     boundary excluded.
 
@@ -212,7 +213,7 @@ def run_origin(panels: dict[str, pd.DataFrame], origin: str, policy: str, seed: 
     return OriginResult(origin, pre_status, policy, mid, float(d), post_status, winner)
 
 
-def _forward_rms(panels, coefs, mid, fw_idx, hi_cut, lo_cut, vr_cut):
+def _forward_rms(panels: Any, coefs: Any, mid: Any, fw_idx: Any, hi_cut: Any, lo_cut: Any, vr_cut: Any) -> Any:
     rms, fwd = {}, {}
     if mid in ("m6", "m7"):
         asset = "ETH" if mid == "m6" else "SOL"

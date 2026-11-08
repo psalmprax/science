@@ -93,7 +93,7 @@ def run_sir_forms(noise: float=0.02, seed: int=42) -> tuple[Any, list[ScoredCand
         X_tr = np.column_stack([o(Str), ftr]) if ftr is not None else o(Str)[:, None]
         X_ho = np.column_stack([o(Sho), fho]) if fho is not None else o(Sho)[:, None]
         scored.append(_mk(cid, terms, X_tr, ytr, X_ho, yho, obs_rms, ns))
-    ranked = sorted([s for s in scored if np.isfinite(s.train_loss)], key=lambda s: s.train_loss)
+    ranked = sorted([s for s in scored if np.isfinite(s.train_loss)], key=lambda s: s.train_loss if s.train_loss is not None else float("inf"))
     adj = adjudicate(
         scored, resid_best=ranked[0].provenance["gate4_status"]["holdout_residuals"],
         resid_rival=ranked[1].provenance["gate4_status"]["holdout_residuals"],
@@ -128,7 +128,7 @@ def hello_world() -> None:
     print("SIR SANDBOX: R0=2.5 outbreak, vaccination cuts beta 70% at t=60")
     print("=" * 64)
     adj, scored = run_sir_forms()
-    for s in sorted(scored, key=lambda c: c.holdout_rmse):
+    for s in sorted(scored, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else float("inf")):
         print(f"  {s.candidate.candidate_id:14s} holdout RMSE={s.holdout_rmse:.6f}")
     print(f"  A forms: {adj.status.value} "
           f"promoted={adj.promoted.candidate.candidate_id if adj.promoted else None}")

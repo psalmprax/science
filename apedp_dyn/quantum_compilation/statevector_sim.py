@@ -91,7 +91,7 @@ class StatevectorSimulator:
                 f"this tier is for gadgets, not for the decoder"
             )
         self.num_qubits = int(num_qubits)
-        self.state = np.zeros(1 << self.num_qubits, dtype=np.complex128)
+        self.state: np.ndarray = np.zeros(1 << self.num_qubits, dtype=np.complex128)
         self.state[0] = 1.0
         self.bits: dict[int, bool] = {}
 
@@ -106,7 +106,7 @@ class StatevectorSimulator:
         self.state[:] = 0.0
         self.state[int(value)] = 1.0
 
-    def set_state(self, amplitudes) -> None:
+    def set_state(self, amplitudes: Any) -> None:
         vector = np.asarray(amplitudes, dtype=np.complex128).reshape(-1)
         if vector.size != self.state.size:
             raise ValueError(f"expected {self.state.size} amplitudes, got {vector.size}")
@@ -116,7 +116,7 @@ class StatevectorSimulator:
         self.state[:] = vector
 
     # -- one-qubit and two-qubit gates ------------------------------------
-    def _axis(self, qubit: int):
+    def _axis(self, qubit: int) -> Any:
         """The state as ``(higher qubits, this qubit, lower qubits)``.
 
         The basis index is ``sum(bit_i << i)``, so qubit ``q`` is the middle axis of
@@ -124,7 +124,7 @@ class StatevectorSimulator:
         """
         return self.state.reshape(self.state.size >> (qubit + 1), 2, 1 << qubit)
 
-    def apply_matrix(self, qubit: int, matrix) -> None:
+    def apply_matrix(self, qubit: int, matrix: Any) -> None:
         """Apply a 2x2 unitary to `qubit`."""
         if not 0 <= qubit < self.num_qubits:
             raise IndexError(f"qubit {qubit} out of range")
@@ -154,7 +154,7 @@ class StatevectorSimulator:
     def ccx(self, control0: int, control1: int, target: int) -> None:
         self._xor_into(control0, target, [(control0, control1)])
 
-    def _xor_into(self, control: int, target: int, controls) -> None:
+    def _xor_into(self, control: int, target: int, controls: Any) -> None:
         if control == target:
             raise ValueError("control and target must differ")
         index = np.arange(self.state.size)
@@ -226,7 +226,7 @@ class StatevectorSimulator:
         return bool(outcome)
 
     # -- op-list execution with exact branching ---------------------------
-    def apply_op(self, op) -> bool | None:
+    def apply_op(self, op: Any) -> bool | None:
         """Apply one op; return the measurement outcome if it measured."""
         kind = op[0]
         if kind == "gate":
@@ -254,7 +254,7 @@ class StatevectorSimulator:
             return None
         raise ValueError(f"unknown op {kind!r}")
 
-    def branches(self, ops, *, max_branches: int = 64) -> list[Branch]:
+    def branches(self, ops: Any, *, max_branches: int = 64) -> list[Branch]:
         """Every measurement outcome, with its weight and its post-state."""
         pending: list[tuple[tuple[bool, ...], float, np.ndarray, dict[int, bool], list[Any]]] = [
             ((), 1.0, self.state.copy(), dict(self.bits), list(ops))
@@ -300,7 +300,7 @@ class StatevectorSimulator:
         return finished
 
 
-def global_phase_free_equality(left, right, *, tolerance: float = 1e-9) -> bool:
+def global_phase_free_equality(left: Any, right: Any, *, tolerance: float = 1e-9) -> bool:
     """Whether two statevectors are equal up to one global phase."""
     a = np.asarray(left, dtype=np.complex128).reshape(-1)
     b = np.asarray(right, dtype=np.complex128).reshape(-1)
@@ -313,7 +313,7 @@ def global_phase_free_equality(left, right, *, tolerance: float = 1e-9) -> bool:
     return bool(np.allclose(b, overlap / magnitude * a, atol=tolerance, rtol=0.0))
 
 
-def fidelity(reference, branches) -> float:
+def fidelity(reference: Any, branches: Any) -> float:
     """``sum_i p_i * |<reference|psi_i>|^2``: how much of `reference` the mixture keeps.
 
     The gated circuit is a channel, not a unitary: a measurement makes it a

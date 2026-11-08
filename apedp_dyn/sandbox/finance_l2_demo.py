@@ -491,9 +491,10 @@ def _polish_by_qp(
                      + cost_rate * values[size:].sum())
 
     def gradient(values: np.ndarray) -> np.ndarray:
-        return np.concatenate(
+        _out: np.ndarray = np.concatenate(
             (hessian @ values[:size] - mu, cost_rate * np.ones(size)),
         )
+        return _out
 
     identity = np.eye(size)
     constraints = [
@@ -552,7 +553,7 @@ def size_positions(
     onto any kink.  ``converged`` is decided from the analytic KKT violation
     (``<= 1e-10``).
     """
-    mu = np.asarray(forecast, dtype=float).ravel()
+    mu: np.ndarray = np.asarray(forecast, dtype=float).ravel()
     sigma: np.ndarray = np.asarray(covariance, dtype=float)
     if mu.size == 0:
         raise ValueError("forecast must not be empty")
@@ -572,7 +573,7 @@ def size_positions(
     if gross_cap <= 0.0:
         raise ValueError("gross_cap must be positive")
 
-    previous = (
+    previous: np.ndarray = (
         np.zeros(mu.size, dtype=float)
         if previous_weights is None
         else np.asarray(previous_weights, dtype=float).ravel()

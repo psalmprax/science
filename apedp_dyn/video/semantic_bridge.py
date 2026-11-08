@@ -48,16 +48,16 @@ class SemanticVideoConditioner:
 
         # Time projection: maps 2 * n_freq -> d
         self.w_time = rng.normal(0, np.sqrt(2.0 / (2 * n_freq)), size=(2 * n_freq, d))
-        self.b_time = np.zeros(d, dtype=np.float64)
+        self.b_time: np.ndarray = np.zeros(d, dtype=np.float64)
 
         # Text pooled projection: maps d_txt -> d
         self.w_text = rng.normal(0, np.sqrt(2.0 / d_txt), size=(d_txt, d))
-        self.b_text = np.zeros(d, dtype=np.float64)
+        self.b_text: np.ndarray = np.zeros(d, dtype=np.float64)
 
         # AdaLN-Zero projection: maps d -> 6 * d (scale1, shift1, gate1, scale2, shift2, gate2)
         # Initialized with zero weights on gates to ensure identity mapping at initialization
         self.w_adaln = rng.normal(0, 0.02, size=(d, 6 * d))
-        self.b_adaln = np.zeros(6 * d, dtype=np.float64)
+        self.b_adaln: np.ndarray = np.zeros(6 * d, dtype=np.float64)
 
         # Multi-Head Cross-Attention projections
         self.w_q = rng.normal(0, np.sqrt(2.0 / d), size=(d, d))

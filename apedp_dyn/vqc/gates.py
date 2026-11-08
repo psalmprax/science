@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import dataclasses
 import math
+from typing import Any
 
 import numpy as np
 
@@ -37,8 +38,9 @@ def _dagger(matrix: np.ndarray) -> np.ndarray:
 
 
 def _rz(theta: float) -> np.ndarray:
-    return np.array([[np.exp(-0.5j * theta), 0.0],
+    _out: np.ndarray = np.array([[np.exp(-0.5j * theta), 0.0],
                      [0.0, np.exp(0.5j * theta)]], dtype=np.complex128)
+    return _out
 
 
 _FIXED = {
@@ -109,14 +111,15 @@ def matrix_for(name: str, params: tuple[float, ...] = ()) -> np.ndarray:
         if len(params) != spec.num_params:
             raise ValueError(f"expected {spec.num_params} parameters, got {len(params)}")
         if spec.symbols == ("phase",):
-            return np.array([[1.0, 0.0], [0.0, np.exp(1j * float(params[0]))]],
+            _out_113: np.ndarray = np.array([[1.0, 0.0], [0.0, np.exp(1j * float(params[0]))]],
                             dtype=np.complex128)
+            return _out_113
         return _rotation(spec.symbols[0], float(params[0]))
     _out: np.ndarray = _FIXED[name]
     return _out
 
 
-def apply_gate(sim, name: str, targets: tuple[int, ...],
+def apply_gate(sim: Any, name: str, targets: tuple[int, ...],
                params: tuple[float, ...] = ()) -> None:
     """Apply `name` to a `StatevectorSimulator`, by the IR's control convention."""
     spec = GATE_SPECS.get(name)

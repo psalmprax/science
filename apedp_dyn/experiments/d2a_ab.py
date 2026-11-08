@@ -62,7 +62,7 @@ def _template(problem_id: str) -> CandidateDynamics:
         generation_seed=SEED)
 
 
-def _truth_candidate(problem, problem_id: str):
+def _truth_candidate(problem: Any, problem_id: str) -> Any:
     names = sorted(TRUTH[problem_id][1])
     pool = enumerate_candidates(required=(), optional=tuple(names),
                                 max_terms=len(names), id_prefix="d2a")
@@ -73,7 +73,7 @@ def _truth_candidate(problem, problem_id: str):
     return kept[0].candidate
 
 
-def _observe(Y: np.ndarray, pct: float):
+def _observe(Y: np.ndarray, pct: float) -> Any:
     if pct == 0.0:
         return Y
     rng = np.random.default_rng(SEED)
@@ -85,7 +85,7 @@ def _max_rel_error(est: dict[str, float], true: dict[str, float]) -> float:
                for k, v in true.items() if k in est)
 
 
-def _term_columns(problem, candidate, t: np.ndarray, Y: np.ndarray,
+def _term_columns(problem: Any, candidate: Any, t: np.ndarray, Y: np.ndarray,
                   U: np.ndarray) -> tuple[list[str], np.ndarray]:
     """Materialized term columns for normalized (variance-aware) thresholding."""
     import sympy as sp
@@ -198,7 +198,7 @@ def run() -> dict[str, Any]:
     return report
 
 
-def _true_by_pname(prob, problem_id: str, truth_cand) -> dict[str, Any]:
+def _true_by_pname(prob: Any, problem_id: str, truth_cand: Any) -> dict[str, Any]:
     _, true_vals = TRUTH[problem_id]
     mapping = {t.name: t.parameter for t in truth_cand.terms}
     return {mapping[t]: v for t, v in true_vals.items() if t in mapping}

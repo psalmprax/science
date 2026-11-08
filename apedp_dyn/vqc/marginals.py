@@ -298,7 +298,7 @@ def exact_marginal(target: TargetSpecification, subset: Sequence[int], *,
     )
 
 
-def marginal_counts(counts: Mapping[Sequence[bool], int],
+def marginal_counts(counts: Mapping[Any, int],
                     subset: Sequence[int]) -> dict[tuple[bool, ...], int]:
     """Project a sample table onto `subset`, keeping the subset's wire order."""
     wires = tuple(int(wire) for wire in subset)

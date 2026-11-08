@@ -682,14 +682,14 @@ def sandbox_list() -> list[dict[str, Any]]:
     return SANDBOX_CATALOG
 
 
-def _game_series():
+def _game_series() -> Any:
     from apedp_dyn.sandbox.game_theory import simulate_game
     _, x = simulate_game({"R": 3.0, "S": 0.0, "T": 5.0, "P": 1.0},
                          0.5, noise=0.005, seed=42)
     return {"x": list(range(len(x))), "actual": [float(v) for v in x],
             "x_label": "PD cooperator fraction from x0=0.5"}
 
-def _qec_series():
+def _qec_series() -> Any:
     from apedp_dyn.sandbox.qec_threshold import generate_qec_threshold_data
     p_, o_ = generate_qec_threshold_data(seed=42)[:2]
     return {"x": [float(v) for v in p_], "actual": [float(v) for v in o_],
@@ -1092,7 +1092,7 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
                 except ValueError:
                     pass
         import numpy as _np
-        px = _np.asarray(raw_px, dtype=float)
+        px: Any = _np.asarray(raw_px, dtype=float)
         idx = {d: i for i, d in enumerate(dates)}
         prob = spec_from_series(px, (idx["2019-01-02"], idx["2019-12-31"]),
                                 (idx["2020-02-19"], idx["2020-03-23"]),
@@ -1425,7 +1425,8 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
 
 
 
-def _volume_gate_breakdown(extra: dict, scored: list, y_actual: list | None = None) -> list[dict]:
+def _volume_gate_breakdown(extra: dict[str, Any], scored: list[Any],
+                          y_actual: list[Any] | None = None) -> list[dict[str, Any]]:
     """Explicit promotion-gate table for the volume benchmark (auditable)."""
     rows = scored or []
     # Best challenger = lowest holdout RMSE among non-baseline rows; never
@@ -1475,7 +1476,8 @@ def _volume_gate_breakdown(extra: dict, scored: list, y_actual: list | None = No
 def sandbox_upload(req: SandboxRequest) -> dict[str, Any]:
     """Execute autonomous open equation discovery on uploaded custom CSV data."""
     req.sandbox_id = "custom_upload"
-    return sandbox_run(req)
+    _out: dict[str, Any] = sandbox_run(req)
+    return _out
 
 
 @app.get("/api/audit/recent", dependencies=[Depends(_require_api_key)])

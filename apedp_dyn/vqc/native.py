@@ -49,7 +49,7 @@ from typing import Any
 # `stabilizer` imports this module, so the only imports here are the ones that
 # cannot close a cycle: `Circuit` for a type hint, and `StabilizerState` inside
 # `assert_parity` where it is actually needed.
-from apedp_dyn.vqc.circuit import Circuit
+from apedp_dyn.vqc.circuit import Circuit, Gate
 
 __all__ = [
     "ENGINE",
@@ -228,7 +228,7 @@ def expectation(circuit: Circuit, labels: str) -> float | None:
     return float(value)
 
 
-def run(circuit: Circuit, *, shots: int, seed: int | None = None):
+def run(circuit: Circuit, *, shots: int, seed: int | None = None) -> Any:
     """Execute a circuit on the fast path; ``None`` means "use the Python tier".
 
     The returned :class:`~apedp_dyn.vqc.backends.RunResult` names the engine it
@@ -301,7 +301,7 @@ def assert_parity(circuit: Circuit) -> dict[str, Any]:
 
     state = StabilizerState(circuit.num_qubits)
     for op in circuit.ops:
-        if hasattr(op, "name"):  # a Gate
+        if isinstance(op, Gate):
             state.apply_gate(op.name, op.targets, op.params)
     native_generators = generators(circuit)
     if native_generators is not None and native_generators != state.generator_strings():

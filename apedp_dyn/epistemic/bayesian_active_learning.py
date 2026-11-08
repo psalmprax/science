@@ -5,6 +5,7 @@ Uses GP uncertainty + acquisition functions to prioritize experiments/candidates
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -26,7 +27,7 @@ class BayesianActiveLearner:
         self.X_observed = []
         self.y_observed = []
 
-    def update(self, X: np.ndarray, y: np.ndarray):
+    def update(self, X: np.ndarray, y: np.ndarray) -> Any:
         X = np.atleast_2d(X)
         y = np.atleast_1d(y)
         if self.X_observed:
@@ -35,7 +36,7 @@ class BayesianActiveLearner:
         else:
             self.X_observed = X
             self.y_observed = y
-        self.gp.fit(self.X_observed, self.y_observed)
+        self.gp.fit(np.asarray(self.X_observed), np.asarray(self.y_observed))
         return self
 
     def suggest_next(self, n_points: int = 1, acquisition: str = "ei") -> list[ActiveLearningSuggestion]:

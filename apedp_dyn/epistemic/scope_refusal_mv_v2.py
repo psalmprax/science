@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from itertools import combinations, combinations_with_replacement
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -50,7 +51,7 @@ def _search_frequency_v2(
     """Coarse-to-fine frequency search enforcing minimum phase curvature c >= min_c."""
     C0 = (1.0, 1.5, 2.0, 3.0, 4.0)
 
-    def _eval(cs):
+    def _eval(cs: Any) -> Any:
         best = (float("inf"), None, float("nan"))
         for c in cs:
             if c < min_c:
@@ -73,7 +74,7 @@ def _search_frequency_v2(
     return c, w, mse
 
 
-def _select_periodic_quadratic_v2(Xd: np.ndarray, y: np.ndarray):
+def _select_periodic_quadratic_v2(Xd: np.ndarray, y: np.ndarray) -> Any:
     F = Xd.shape[1]
     best = None
     for i, j in combinations_with_replacement(range(F), 2):
@@ -85,7 +86,7 @@ def _select_periodic_quadratic_v2(Xd: np.ndarray, y: np.ndarray):
             continue
         q = (q_raw - mq) / max(sq, 1e-12)
 
-        def fit_at(c, q=q):
+        def fit_at(c: Any, q:Any=q) -> Any:
             Z = np.column_stack([np.sin(c * q), np.cos(c * q), Xd, np.ones(len(q))])
             return _lsq(Z, y)
 
@@ -95,7 +96,7 @@ def _select_periodic_quadratic_v2(Xd: np.ndarray, y: np.ndarray):
     return best
 
 
-def _select_abs_linear2_v2(Xd: np.ndarray, y: np.ndarray):
+def _select_abs_linear2_v2(Xd: np.ndarray, y: np.ndarray) -> Any:
     F = Xd.shape[1]
     best = None
     for i, j in combinations(range(F), 2):
@@ -108,7 +109,7 @@ def _select_abs_linear2_v2(Xd: np.ndarray, y: np.ndarray):
     return best
 
 
-def _select_am_product_v2(Xd: np.ndarray, y: np.ndarray):
+def _select_am_product_v2(Xd: np.ndarray, y: np.ndarray) -> Any:
     F = Xd.shape[1]
     best = None
     for j, k in [(j, k) for j in range(F) for k in range(F) if j != k]:
@@ -119,7 +120,7 @@ def _select_am_product_v2(Xd: np.ndarray, y: np.ndarray):
             continue
         xj = (xj_raw - mx) / max(sx, 1e-12)
 
-        def fit_at(c, xj=xj, xk=xk):
+        def fit_at(c: Any, xj:Any=xj, xk:Any=xk) -> Any:
             Z = np.column_stack([
                 np.sin(c * xj) * xk, np.cos(c * xj) * xk, Xd, np.ones(len(xj)),
             ])

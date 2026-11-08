@@ -16,10 +16,12 @@ ill-conditioned design returns inf cond (caller decides).
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 
-def square_window_coefficients(problem, candidate, t: np.ndarray, Y: np.ndarray,
+def square_window_coefficients(problem: Any, candidate: Any, t: np.ndarray, Y: np.ndarray,
                                U: np.ndarray, n_integral: int = 20,
                                decimate: int = 1,
                                prefilter_seconds: float = 0.4) -> dict[str, float]:

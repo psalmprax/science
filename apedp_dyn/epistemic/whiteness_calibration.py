@@ -284,7 +284,7 @@ def _structured_null(n: int, seed: int) -> tuple[np.ndarray, np.ndarray]:
     return x, y
 
 
-def _as_frame(x: np.ndarray, y: np.ndarray):
+def _as_frame(x: np.ndarray, y: np.ndarray) -> Any:
     import pandas as pd
 
     return pd.DataFrame({"x": x, "target": y})

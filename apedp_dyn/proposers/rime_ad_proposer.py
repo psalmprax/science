@@ -200,7 +200,7 @@ class RimeAdProposer(ProposerBase):
                     score = n_samples * np.log(max(sse / n_samples, 1e-18)) \
                         + k_params * np.log(n_samples)
                 else:
-                    fold_ids = np.arange(n_samples) % k_folds
+                    fold_ids: np.ndarray = np.arange(n_samples) % k_folds
                     fold_bics: list[float] = []
                     for f in range(k_folds):
                         fm = mask & (fold_ids == f)

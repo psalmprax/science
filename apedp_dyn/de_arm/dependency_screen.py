@@ -36,6 +36,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from itertools import pairwise
+from typing import Any
 
 import numpy as np
 
@@ -141,7 +142,7 @@ def granger_screen(
             "dependency screening is a COUPLED-system pass; fewer than two "
             "states is a single-series route (static/ODE path)")
     names = sorted(series)
-    arr = {k: np.asarray(v, dtype=float) for k, v in series.items()}
+    arr: dict[Any, Any] = {k: np.asarray(v, dtype=float) for k, v in series.items()}
     lens = {len(arr[k]) for k in names}
     if len(lens) != 1:
         raise ValueError("state series must share one time axis (equal length)")
@@ -228,7 +229,7 @@ def discover_ode_system(
         raise ValueError("declared state labels count ≠ series count")
     if labels is None:
         state_labels = [str(k) for k in series]
-        state_data = {k: np.asarray(v, dtype=float) for k, v in series.items()}
+        state_data: dict[Any, Any] = {k: np.asarray(v, dtype=float) for k, v in series.items()}
     else:
         state_labels = [str(k) for k in labels]
         state_data = {}
@@ -251,7 +252,8 @@ def discover_ode_system(
         sparsity_threshold=sparsity_threshold,
         ridge_alpha=ridge_alpha,
     )
-    ranking = granger_screen(state_data, float(dt), top_k=top_k,
+    state_series = {k: [float(v) for v in arr] for k, arr in state_data.items()}
+    ranking = granger_screen(state_series, float(dt), top_k=top_k,
                              max_lag=max_lag, train_fraction=train_fraction)
 
     n = next(iter(lens))

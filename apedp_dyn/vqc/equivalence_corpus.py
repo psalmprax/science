@@ -348,7 +348,7 @@ def equivalence_pairs() -> tuple[EquivalencePair, ...]:
 
 
 # --------------------------------------------------------------- our verdicts
-def _refusal(report) -> str | None:
+def _refusal(report: Any) -> str | None:
     """The reason a stabilizer report refused, or None if it decided.
 
     `adjudicate_clifford_equivalence` reports a non-Clifford circuit as a failed
@@ -362,7 +362,7 @@ def _refusal(report) -> str | None:
     return None
 
 
-def _from_dense(scope: str, report, seconds: float,
+def _from_dense(scope: str, report: Any, seconds: float,
                 tolerance: float) -> ScopeVerdict:
     reason = None
     if report.verdict == "UNRESOLVED":
@@ -382,7 +382,7 @@ def _from_dense(scope: str, report, seconds: float,
     )
 
 
-def _from_clifford(scope: str, report, seconds: float) -> ScopeVerdict:
+def _from_clifford(scope: str, report: Any, seconds: float) -> ScopeVerdict:
     refusal = _refusal(report)
     return ScopeVerdict(
         scope=scope,
@@ -597,7 +597,7 @@ def summarise(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
                                      "expected": expected,
                                      "verdict": row["ours"][scope]["verdict"]})
 
-    def _count(predicate) -> int:
+    def _count(predicate: Any) -> int:
         return sum(1 for row in rows if predicate(row))
 
     return {

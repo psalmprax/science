@@ -42,7 +42,7 @@ from __future__ import annotations
 
 import contextlib
 from collections import Counter
-from collections.abc import Iterable, Sequence
+from collections.abc import Generator, Iterable, Sequence
 from typing import Any, ClassVar
 
 import numpy as np
@@ -60,7 +60,7 @@ class Field:
 
     _cache: ClassVar[dict[int, Field]] = {}
 
-    def __new__(cls, degree: int):
+    def __new__(cls, degree: int) -> Any:
         cached = cls._cache.get(degree)
         if cached is not None:
             return cached
@@ -81,8 +81,8 @@ class Field:
         self.primitive_element = 2
         poly = _PRIMITIVE_POLYNOMIALS[degree]
         order = self.size - 1
-        self._exp = np.zeros(2 * order, dtype=np.int64)
-        self._log = np.zeros(self.size, dtype=np.int64)
+        self._exp: np.ndarray = np.zeros(2 * order, dtype=np.int64)
+        self._log: np.ndarray = np.zeros(self.size, dtype=np.int64)
         value = 1
         for exponent in range(order):
             self._exp[exponent] = value
@@ -192,7 +192,7 @@ class B:
         return f"b{self.id}"
 
 
-class array(list):
+class array(list[Any]):
     """List of qubits or bits, matching ``kickmix.array``'s role."""
 
     def __init__(self, values: Iterable[Any] = ()):
@@ -269,7 +269,7 @@ class _Mark:
 class Op:
     __slots__ = ("args", "cond", "name")
 
-    def __init__(self, name: str, args: tuple, cond: tuple):
+    def __init__(self, name: str, args: tuple[Any, ...], cond: tuple[Any, ...]):
         self.name = name
         self.args = args
         self.cond = cond
@@ -283,7 +283,7 @@ class Circuit:
         self.num_qubits = num_qubits
         self.num_bits = num_bits
 
-    def operation_counts(self) -> Counter:
+    def operation_counts(self) -> Counter[str]:
         """Instructions by name.
 
         This is **not** the competition's Toffoli accounting: a high-level op here
@@ -299,7 +299,7 @@ class Circuit:
 class Builder:
     """Records the subset of ``kickmix.CircuitBuilder`` the DQI decoder uses, plus ``mr``."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._ops: list[Op] = []
         self._next_qubit = 0
         self._next_bit = 0
@@ -340,7 +340,7 @@ class Builder:
         return _Mark(name)
 
     @contextlib.contextmanager
-    def unary_iteration(self, register: Sequence[Q], control: Any = True):
+    def unary_iteration(self, register: Sequence[Q], control: Any = True) -> Generator[Any, None, None]:
         cursor = Cursor(register, control)
         cursor.active = True
         self._cursors.append(cursor)
@@ -506,9 +506,9 @@ class Simulator:
         self._reset_state()
 
     def _reset_state(self) -> None:
-        self.q = np.zeros((self._num_qubits, self.batch_size), dtype=np.uint8)
-        self.b = np.zeros((self._num_bits, self.batch_size), dtype=np.uint8)
-        self.phase = np.zeros(self.batch_size, dtype=np.uint8)
+        self.q: np.ndarray = np.zeros((self._num_qubits, self.batch_size), dtype=np.uint8)
+        self.b: np.ndarray = np.zeros((self._num_bits, self.batch_size), dtype=np.uint8)
+        self.phase: np.ndarray = np.zeros(self.batch_size, dtype=np.uint8)
 
     def use_same_registers_as(self, circuit: Circuit) -> None:
         self._circuits.append(circuit)
@@ -702,7 +702,7 @@ class Simulator:
         qubits, bits = _flatten(target), _flatten(output)
         mask = self._cond_mask(op)
         for qubit, bit in zip(qubits, bits, strict=False):
-            value = self.q[qubit.id, :].astype(bool)
+            value: np.ndarray = self.q[qubit.id, :].astype(bool)
             outcome = value & (self._rng.random(self.batch_size) < 0.5)
             self._write_bit(bit, outcome.astype(np.uint8), mask)
             self.q[qubit.id, :] = np.where(mask, 0, self.q[qubit.id, :]).astype(np.uint8)

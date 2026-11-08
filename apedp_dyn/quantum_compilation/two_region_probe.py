@@ -26,6 +26,7 @@ import dataclasses
 import enum
 import math
 from collections.abc import Callable
+from typing import Any
 
 CHAMPION_90Q_COST: float = 157752.008809
 CHAMPION_QUBITS: int = 90
@@ -162,10 +163,10 @@ def probe_two_region_partition(
     ancilla_safe = ledger.verify_all_safe()
 
     # 2. Discrete integer boundary check (mocked polynomials within tolerance)
-    def left_fn(x):
+    def left_fn(x: Any) -> Any:
         return 1.0 / math.sqrt(x)
 
-    def right_fn(x):
+    def right_fn(x: Any) -> Any:
         return 1.0 / math.sqrt(x)
     boundary_ok = evaluate_discrete_boundary_margin(split_point, left_fn, right_fn)
 

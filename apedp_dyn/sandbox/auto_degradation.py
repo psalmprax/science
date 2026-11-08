@@ -165,7 +165,7 @@ def hello_world() -> None:
     print("AD-CAB STAGE A: brake-pad wear D=k0*t^1.35*exp(-Ea/RT), hot extrap")
     print("=" * 64)
     adj, scored, scope = run_adcab_stage_a()
-    for s in sorted(scored, key=lambda c: c.holdout_rmse):
+    for s in sorted(scored, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else float("inf")):
         print(f"  {s.candidate.candidate_id:14s} interp RMSE={s.holdout_rmse:.4g}")
     print(f"  verdict: {adj.status.value} "
           f"promoted={adj.promoted.candidate.candidate_id if adj.promoted else None}")

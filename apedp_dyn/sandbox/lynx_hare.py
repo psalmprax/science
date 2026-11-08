@@ -118,7 +118,7 @@ def run_lynx(split_year: float = 1878.0, bootstrap: bool = True) -> tuple[Any, l
     scored.append(ScoredCandidate(ct, {"gate4_status": g4t, "data_origin": DataOrigin.REAL_OBSERVATIONAL},
                                   train_loss=float(np.mean((y_tr - Xt_tr @ wt) ** 2)),
                                   holdout_rmse=float(np.sqrt(np.mean(rht ** 2)))))
-    ranked = sorted([s for s in scored if np.isfinite(s.train_loss)], key=lambda s: s.train_loss)
+    ranked = sorted([s for s in scored if np.isfinite(s.train_loss)], key=lambda s: s.train_loss if s.train_loss is not None else float("inf"))
     # Align residual lengths (AR(1) lag drops one holdout point)
     n_min = min(len(s.provenance["gate4_status"]["holdout_residuals"]) for s in ranked[:2])
     r_best = ranked[0].provenance["gate4_status"]["holdout_residuals"][-n_min:]
@@ -137,7 +137,7 @@ def hello_world() -> None:
     print("LYNX SANDBOX (REAL DATA 1821-1934): cycle discovery, split 1878")
     print("=" * 64)
     adj, scored = run_lynx()
-    for s in sorted(scored, key=lambda c: c.holdout_rmse):
+    for s in sorted(scored, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else float("inf")):
         print(f"  {s.candidate.candidate_id:10s} holdout RMSE={s.holdout_rmse:.4f}")
     print(f"  verdict: {adj.status.value} "
           f"promoted={adj.promoted.candidate.candidate_id if adj.promoted else None} "

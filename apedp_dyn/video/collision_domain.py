@@ -112,7 +112,7 @@ def make_collision_clip(
     # collisions; cross-layer clips (~50%) produce genuine pass-through
     # occlusion. Both worlds are exercised across the manifest family.
     cross_layer = bool(rng.uniform() < 0.5)
-    layers = np.arange(n_obj, dtype=np.int64) if cross_layer else np.zeros(n_obj, dtype=np.int64)
+    layers: np.ndarray = np.arange(n_obj, dtype=np.int64) if cross_layer else np.zeros(n_obj, dtype=np.int64)
 
     # Spawn non-overlapping, inboard.
     margin = float(canvas_margin * min(h, w))

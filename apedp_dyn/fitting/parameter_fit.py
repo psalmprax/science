@@ -73,13 +73,13 @@ def _bind(names: Sequence[str],
     return {n: float(v) for n, v in zip(names, values, strict=True)}
 
 
-def _with_values(model, values: dict[str, float]):
+def _with_values(model: Any, values: dict[str, float]) -> Any:
     params = tuple(dataclasses.replace(p, value=float(values[p.name]))
                    for p in model.parameters)
     return dataclasses.replace(model, parameters=params)
 
 
-def _train_arrays(problem):
+def _train_arrays(problem: Any) -> Any:
     reg = problem.train
     t = np.asarray(reg["truth_t"], dtype=float)
     Y = np.asarray(reg["truth_y"], dtype=float)
@@ -87,7 +87,7 @@ def _train_arrays(problem):
     return reg, t, Y, U
 
 
-def _warm_start(problem, model0):
+def _warm_start(problem: Any, model0: Any) -> Any:
     """Derivative least-squares initialization for a FIXED structure.
 
     Numeric initialization only: the term set comes solely from the IR.
@@ -152,7 +152,7 @@ MULTISTART_SCALES = (1.0, 0.5, 2.0, 0.25, -0.5)
 """Frozen deterministic warm-start perturbations for multi-start refits."""
 
 
-def fit_candidate_multistart(problem, candidate, n_starts: int = 5,
+def fit_candidate_multistart(problem: Any, candidate: Any, n_starts: int = 5,
                              max_nfev: int = 300) -> tuple[ScoredCandidate, dict[str, Any]]:
     """Refit from deterministic warm-start perturbations; keep the best.
 
@@ -190,7 +190,7 @@ def fit_candidate_multistart(problem, candidate, n_starts: int = 5,
                   "best_train_loss": best.train_loss}
 
 
-def fit_candidate(problem, candidate,
+def fit_candidate(problem: Any, candidate: Any,
                   x0: np.ndarray | None = None,
                   max_nfev: int = 300) -> ScoredCandidate:
     """Fit IR parameters on train trajectories; run gates 3-4 on the result."""
@@ -252,7 +252,7 @@ def fit_candidate(problem, candidate,
     lo = np.array([b[0] for b in bounds], dtype=float)
     hi = np.array([b[1] for b in bounds], dtype=float)
 
-    def residuals(p):
+    def residuals(p: Any) -> Any:
         m = _with_values(model0, _bind(names, p))
         res = simulate(m, reg["t_span"], reg["u_of_t"],
                        np.asarray(reg["x0"], dtype=float), n_eval=len(t_eval))

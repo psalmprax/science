@@ -221,7 +221,7 @@ class JetFlowVideoModel:
             z_next, _, _ = self.stepper.step(
                 velocity_fn=velocity_eval,
                 z_t=z_curr,
-                t=t_curr,
+                t=float(t_curr),
                 dt=dt,
             )
             z_curr = z_next

@@ -199,7 +199,7 @@ class InvariantTransferProposer(ProposerBase):
                 captured_coeffs = list(coeffs)
                 captured_feat = feat
 
-                def _make_scorer(c_list: list[float], f_name: str):
+                def _make_scorer(c_list: list[float], f_name: str) -> Any:
                     def compute_score(frame: pd.DataFrame) -> np.ndarray:
                         if f_name not in frame.columns:
                             return np.zeros(len(frame))

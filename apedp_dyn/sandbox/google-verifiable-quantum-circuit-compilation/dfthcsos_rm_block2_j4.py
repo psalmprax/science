@@ -143,7 +143,7 @@ def reconstruct_addresses(packed: np.ndarray) -> np.ndarray:
 
 def _popcount12(values: np.ndarray) -> np.ndarray:
     # Vectorized table-size is small enough that a short Python-free 12-bit loop is fine.
-    v = values.astype(np.uint16, copy=True)
+    v: np.ndarray = values.astype(np.uint16, copy=True)
     count = np.zeros(v.shape, dtype=np.uint8)
     for _ in range(WORD_BITS):
         count += (v & 1).astype(np.uint8)

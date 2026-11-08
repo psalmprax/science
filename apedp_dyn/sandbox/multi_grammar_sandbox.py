@@ -82,7 +82,8 @@ def _make_prices(n: int = 400, seed: int = 42) -> np.ndarray:
 def _make_returns(prices: np.ndarray) -> np.ndarray:
     """Compute log-returns; prepend 0.0 to match diff output length."""
     if len(prices) < 2:
-        return np.array([0.0])
+        _out: np.ndarray = np.array([0.0])
+        return _out
     return np.append(0.0, np.diff(np.log(prices)))
 
 
@@ -659,7 +660,7 @@ def main() -> None:
         print(f"\nCANDIDATE LEADERBOARD (Ranked by Pooled Holdout RMSE across {u_label}):")
         print(f"{'Rank':<5} {'Candidate ID':<26} {'Holdout RMSE':<14} {'Holdout R²':<12} {'Train Loss':<12} {'Rho1'}")
         print("-" * 82)
-        sorted_cands = sorted(cands, key=lambda c: c.holdout_rmse)
+        sorted_cands = sorted(cands, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else float("inf"))
         for idx, c in enumerate(sorted_cands, 1):
             g4 = c.provenance.get("gate4_status", {})
             r2 = g4.get("r2", float("nan"))
@@ -703,7 +704,7 @@ def main() -> None:
     print("\nCANDIDATE LEADERBOARD (Ranked by Holdout RMSE):")
     print(f"{'Rank':<5} {'Candidate ID':<24} {'Holdout RMSE':<14} {'Holdout R²':<12} {'Train Loss':<12} {'Rho1'}")
     print("-" * 82)
-    sorted_cands = sorted(cands, key=lambda c: c.holdout_rmse)
+    sorted_cands = sorted(cands, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else float("inf"))
     for idx, c in enumerate(sorted_cands, 1):
         g4 = c.provenance.get("gate4_status", {})
         r2 = g4.get("r2", float("nan"))

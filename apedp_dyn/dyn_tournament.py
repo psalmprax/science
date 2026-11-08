@@ -86,7 +86,7 @@ def _make_ir(cid: str) -> CandidateDynamics:
                              parameter_bounds=dict(bounds))
 
 
-def _attribute_prune_reject(clean, ir: CandidateDynamics) -> tuple[str, str]:
+def _attribute_prune_reject(clean: Any, ir: CandidateDynamics) -> tuple[str, str]:
     try:
         model = materialize(clean, ir)
     except (TypeError, ValueError) as e:
@@ -97,7 +97,7 @@ def _attribute_prune_reject(clean, ir: CandidateDynamics) -> tuple[str, str]:
     return "gate2", "pruned at admissibility (see gate2 detail)"
 
 
-def _big_train_variant():
+def _big_train_variant() -> Any:
     base = duffing.spec()
     tr = dict(base.train)
     tr["u_of_t"] = make_signal({"kind": "sine", "amplitude": 2.5, "frequency": 1.0})

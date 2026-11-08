@@ -147,9 +147,11 @@ def _enclave_worker_main(request_path: str, out_path: str, key_path: str) -> Non
                      bootstrap=bool(req["bootstrap"]),
                      data_origin=str(req["data_origin"]))
     verdict = str(getattr(adj, "status", adj))
+    best_rmse = scored[0].holdout_rmse
+    rival_rmse = scored[1].holdout_rmse
     aggregates = {
-        "best_holdout_rmse": float(scored[0].holdout_rmse),
-        "rival_holdout_rmse": float(scored[1].holdout_rmse),
+        "best_holdout_rmse": float(best_rmse) if best_rmse is not None else float("nan"),
+        "rival_holdout_rmse": float(rival_rmse) if rival_rmse is not None else float("nan"),
         "n_best": float(len(resid_best)),
         "n_rival": float(len(resid_rival)),
     }

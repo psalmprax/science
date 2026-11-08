@@ -6,6 +6,7 @@ over strictly causal order flow and liquidity features.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -113,7 +114,7 @@ class SparseMicrostructureProposer(ProposerBase):
                 cand_idx += 1
 
                 # Closure for score computation
-                def _make_scorer(weights: dict[str, float]):
+                def _make_scorer(weights: dict[str, float]) -> Any:
                     def _score_fn(df: pd.DataFrame) -> np.ndarray:
                         X_sub, _ = extract_microstructure_features(df)
                         score = np.zeros(len(df))

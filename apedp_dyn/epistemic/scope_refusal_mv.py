@@ -51,7 +51,7 @@ def _lsq(Z: np.ndarray, y: np.ndarray) -> tuple[np.ndarray | None, float]:
 def _search_frequency(fit_at: Callable[[float], tuple[np.ndarray | None, float]]
                       ) -> tuple[float, np.ndarray | None, float]:
     """Deterministic coarse-to-fine frequency search (prereg: C0, then two passes)."""
-    def _eval(cs) -> tuple[float, np.ndarray | None, float]:
+    def _eval(cs: Any) -> tuple[float, np.ndarray | None, float]:
         best = (float("inf"), None, float("nan"))
         for c in cs:
             if c <= 0.0:
@@ -72,7 +72,7 @@ def _search_frequency(fit_at: Callable[[float], tuple[np.ndarray | None, float]]
     return c, w, mse
 
 
-def _select_periodic_quadratic(Xd: np.ndarray, y: np.ndarray):
+def _select_periodic_quadratic(Xd: np.ndarray, y: np.ndarray) -> Any:
     F = Xd.shape[1]
     best = None
     for i, j in combinations_with_replacement(range(F), 2):
@@ -80,7 +80,7 @@ def _select_periodic_quadratic(Xd: np.ndarray, y: np.ndarray):
         if not np.isfinite(q).all() or float(np.var(q)) <= 1e-12:
             continue
 
-        def fit_at(c, q=q):
+        def fit_at(c: Any, q:Any=q) -> Any:
             Z = np.column_stack([np.sin(c * q), np.cos(c * q), Xd, np.ones(len(q))])
             return _lsq(Z, y)
 
@@ -90,7 +90,7 @@ def _select_periodic_quadratic(Xd: np.ndarray, y: np.ndarray):
     return best
 
 
-def _select_abs_linear2(Xd: np.ndarray, y: np.ndarray):
+def _select_abs_linear2(Xd: np.ndarray, y: np.ndarray) -> Any:
     F = Xd.shape[1]
     best = None
     for i, j in combinations(range(F), 2):
@@ -103,13 +103,13 @@ def _select_abs_linear2(Xd: np.ndarray, y: np.ndarray):
     return best
 
 
-def _select_am_product(Xd: np.ndarray, y: np.ndarray):
+def _select_am_product(Xd: np.ndarray, y: np.ndarray) -> Any:
     F = Xd.shape[1]
     best = None
     for j, k in [(j, k) for j in range(F) for k in range(F) if j != k]:
         xj, xk = Xd[:, j], Xd[:, k]
 
-        def fit_at(c, xj=xj, xk=xk):
+        def fit_at(c: Any, xj:Any=xj, xk:Any=xk) -> Any:
             Z = np.column_stack([
                 np.sin(c * xj) * xk, np.cos(c * xj) * xk, Xd, np.ones(len(xj)),
             ])

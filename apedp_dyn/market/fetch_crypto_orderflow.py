@@ -81,7 +81,7 @@ def fetch_symbol_klines(symbol: str, start_dt: str = "2021-01-01", end_dt: str =
     return out
 
 
-def main():
+def main() -> None:
     print(f"Fetching Binance order flow for {len(CRYPTO_ASSETS)} assets...")
     asset_data: dict[str, dict[str, dict[str, float]]] = {}
     for sym in CRYPTO_ASSETS:

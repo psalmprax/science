@@ -301,10 +301,10 @@ def search(reference: Circuit, *, max_steps: int = 64, mutations: int = 4,
     steps: list[RewriteStep] = []
     for _ in range(max_steps):
         best: tuple[tuple[int, int], str, Circuit] | None = None
-        for rule, candidate in propose_rewrites(current):
-            score = resource_score(candidate)
+        for rule, proposal in propose_rewrites(current):
+            score = resource_score(proposal)
             if best is None or score < best[0]:
-                best = (score, rule, candidate)
+                best = (score, rule, proposal)
         if best is None:
             break
         _report, step = _certify(reference, best[2], best[1])
@@ -316,8 +316,8 @@ def search(reference: Circuit, *, max_steps: int = 64, mutations: int = 4,
         current = step.circuit
 
     mutation_steps: list[RewriteStep] = []
-    for rule, candidate in propose_mutations(current, seed=seed, count=mutations):
-        _report, step = _certify(reference, candidate, rule)
+    for rule, mutant in propose_mutations(current, seed=seed, count=mutations):
+        _report, step = _certify(reference, mutant, rule)
         # A mutation that happens to be semantics-preserving is a rewrite in disguise;
         # it is recorded as such and not counted as a refusal.
         mutation_steps.append(step)

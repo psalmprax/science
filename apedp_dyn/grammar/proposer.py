@@ -12,7 +12,7 @@ into IR terms; untranslatable constructs must raise rather than approximate.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 import numpy as np
 
@@ -38,16 +38,16 @@ class CandidateProposer(Protocol):
     def proposer_id(self) -> str:
         ...
 
-    def propose(self, problem) -> Sequence[CandidateIR]:
+    def propose(self, problem: Any) -> Sequence[CandidateIR]:
         ...
 
 
 class GrammarProposer:
     """Reference implementation: APEDP's own controlled enumeration."""
 
-    def __init__(self, required=("u",), optional=("x", "x3", "v"),
+    def __init__(self, required:tuple[str, ...]=("u",), optional:tuple[str, ...]=("x", "x3", "v"),
                  max_terms: int = 4, coupled: bool = False,
-                 proposer_id: str = "grammar-v1"):
+                 proposer_id: str = "grammar-v1") -> None:
         self._required = tuple(required)
         self._optional = tuple(optional)
         self._max_terms = max_terms
@@ -58,7 +58,7 @@ class GrammarProposer:
     def proposer_id(self) -> str:
         return self._proposer_id
 
-    def propose(self, problem) -> Sequence[CandidateIR]:
+    def propose(self, problem: Any) -> Sequence[CandidateIR]:
         if self._coupled:
             return enumerate_coupled(required=self._required,
                                      optional=self._optional,
@@ -68,7 +68,7 @@ class GrammarProposer:
                                     max_terms=self._max_terms)
 
 
-def _library_matrix(problem, term_names: Sequence[str]):
+def _library_matrix(problem: Any, term_names: Sequence[str]) -> Any:
     """Numeric library columns for grammar terms on train data.
 
     Single-DOF only; terms needing the remote symbol are skipped (reported).
@@ -157,7 +157,7 @@ class LibraryProposer:
     def proposer_id(self) -> str:
         return self._proposer_id
 
-    def propose(self, problem) -> Sequence[CandidateIR]:
+    def propose(self, problem: Any) -> Sequence[CandidateIR]:
         cols, target, _ = _library_matrix(problem, self._vocabulary)
         names = list(cols)
         A = np.column_stack([cols[n] for n in names])

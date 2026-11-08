@@ -84,7 +84,7 @@ _LABELS = "IXYZ"
 #: The gate names this tier executes. Anything else is refused by name.
 CLIFFORD_GATES = frozenset({"h", "x", "y", "z", "s", "sdg", "cx", "cz", "swap"})
 
-_PAULI_MATRICES = (
+_PAULI_MATRICES: tuple[np.ndarray, ...] = (
     np.eye(2, dtype=np.complex128),
     np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.complex128),
     np.array([[0.0, -1.0j], [1.0j, 0.0]], dtype=np.complex128),

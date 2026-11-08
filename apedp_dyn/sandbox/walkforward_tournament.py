@@ -129,7 +129,7 @@ def run_tournament() -> list[dict[str, Any]]:
             resid = yy - pred
             cands.append(_mk(cid, terms, rm, resid, float(np.sqrt(np.mean(yy ** 2))),
                              float(np.std(resid)), len(yy)))
-        ranked = sorted([s for s in cands if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)], key=lambda s: s.holdout_rmse)
+        ranked = sorted([s for s in cands if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)], key=lambda s: s.holdout_rmse if s.holdout_rmse is not None else float("inf"))
         adj = adjudicate(
             cands, resid_best=ranked[0].provenance["gate4_status"]["holdout_residuals"],
             resid_rival=ranked[1].provenance["gate4_status"]["holdout_residuals"],
@@ -151,7 +151,7 @@ def run_tournament() -> list[dict[str, Any]]:
                 p0 = np.full_like(r_va, w0[0])
                 yy0 = r_va
             rm0 = float(np.sqrt(np.mean((yy0 - p0) ** 2)))
-            cur_best = min(float(s.holdout_rmse) for s in cands)
+            cur_best = min(s.holdout_rmse if s.holdout_rmse is not None else float("inf") for s in cands)
             transfer = "PASS" if rm0 <= 1.5 * cur_best else "FAIL"
         # blind forward scoring with FROZEN structures
         fw = {}
@@ -160,9 +160,13 @@ def run_tournament() -> list[dict[str, Any]]:
                               for k in range(len(r_fw))])
             fw[cid] = (float(np.sqrt(np.mean((r_fw - preds) ** 2))),
                        float(np.mean(np.sign(r_fw) == np.sign(preds))))
-        best_cid = min(structs, key=lambda c: next(
-            s.holdout_rmse for s in cands
-            if s.candidate.candidate_id == c))
+        rmse_by_cid: dict[str, float] = {}
+        for s in cands:
+            if s.holdout_rmse is not None:
+                cid = s.candidate.candidate_id
+                rmse_by_cid[cid] = min(rmse_by_cid.get(cid, float("inf")),
+                                       float(s.holdout_rmse))
+        best_cid = min(structs, key=lambda c: rmse_by_cid.get(c, float("inf")))
         prev_winner = best_cid
         # agreement among the three frozen forward predictions
         signs = []

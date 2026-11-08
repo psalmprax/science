@@ -13,6 +13,7 @@ must demonstrate incremental predictive power and structural novelty.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -85,7 +86,7 @@ class OrderBookResiliencyProposer(ProposerBase):
 
         formula_str = f"Shock_t * {beta_fit:.4f} * exp(-{gamma_fit:.4f} * k)"
 
-        def _make_resiliency_scorer(th: float, beta: float, gamma: float):
+        def _make_resiliency_scorer(th: float, beta: float, gamma: float) -> Any:
             def _scorer(df: pd.DataFrame) -> np.ndarray:
                 p_arr = df["price"].to_numpy(dtype=float) if "price" in df.columns else df["close"].to_numpy(dtype=float)
                 ret = np.zeros(len(p_arr))

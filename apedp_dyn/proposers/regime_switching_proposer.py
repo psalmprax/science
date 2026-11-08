@@ -9,6 +9,8 @@ Emits standardized CandidateProposal instances conforming to ProposerBase.
 """
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
@@ -75,7 +77,7 @@ class RegimeSwitchingProposer(ProposerBase):
             return proposals
 
         # Fit OLS in each regime with ridge regularization
-        def fit_ridge(X_sub, y_sub, lam=1.0):
+        def fit_ridge(X_sub: Any, y_sub: Any, lam: float=1.0) -> Any:
             XtX = X_sub.T @ X_sub + lam * np.eye(X_sub.shape[1])
             return np.linalg.solve(XtX, X_sub.T @ y_sub)
 

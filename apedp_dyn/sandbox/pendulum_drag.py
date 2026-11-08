@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 
@@ -24,7 +24,7 @@ if _REPO_ROOT not in sys.path:
 
 from apedp_dyn.epistemic.adjudicate import adjudicate
 from apedp_dyn.fitting.parameter_fit import fit_candidate
-from apedp_dyn.grammar.candidate_ir import ScoredCandidate
+from apedp_dyn.grammar.candidate_ir import ScoredCandidate, SystemCandidate
 from apedp_dyn.grammar.mechanical_grammar import (
     enumerate_candidates,
     prune_admissible,
@@ -101,12 +101,13 @@ def run_pendulum(noise: float=0.01) -> tuple[Any, list[ScoredCandidate]]:
     print(f"gate-4 survivors: {len(g4)} / {len(fitted)}")
     ranked = sorted(
         [s for s in g4 if s.train_loss is not None and np.isfinite(s.train_loss)],
-        key=lambda s: float(s.train_loss))
+        key=lambda s: s.train_loss if s.train_loss is not None else float("inf"))
     adj = adjudicate(ranked, bootstrap=False, data_origin="simulation")
     print(f"verdict: {adj.status.value} "
           f"promoted={adj.promoted.candidate.candidate_id if adj.promoted else None}")
     for s in sorted(g4, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else 1e18)[:6]:
-        terms = "+".join(t.name for t in s.candidate.terms)
+        cand = cast(SystemCandidate, s.candidate)
+        terms = "+".join(t.name for t in cand.terms)
         print(f"  {s.candidate.candidate_id} {terms:18s} holdout RMSE={s.holdout_rmse:.4f}")
     print("reason:", adj.reason[:130])
     return adj, g4

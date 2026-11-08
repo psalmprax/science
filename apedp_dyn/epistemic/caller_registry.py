@@ -216,6 +216,8 @@ def publish_compliance_record(
     """
     reg = caller_registration(caller_id)
     ds_id = dataset_id or reg.dataset_family
+    if ledger is None:
+        raise ValueError("a REG-F14b record is ledger-derived; a ledger is required")
     n_variants = derive_nominal_variants(ledger, ds_id) if nominal_variants is None else int(nominal_variants)
     multiplicity = multiplicity_from_ledger(
         ledger=ledger,
@@ -395,7 +397,7 @@ def census_is_compliant(records: Iterable[dict[str, Any]]) -> bool:
     return all(ok for ok, _ in validate_census_compliance(records).values())
 
 
-def module_publisher(registration: CallerRegistration):
+def module_publisher(registration: CallerRegistration) -> Any:
     """Import-time helper for pins: fetch the wired publisher from the caller module."""
     mod = import_module(registration.module)
     publisher = getattr(mod, "publish_caller_compliance_record", None)

@@ -220,7 +220,7 @@ def canonical_system(candidate: SystemCandidate) -> str:
     return "sys[" + "|".join(parts) + "]"
 
 
-def materialize_system(problem, candidate: SystemCandidate) -> PhysicalModel:
+def materialize_system(problem: Any, candidate: SystemCandidate) -> PhysicalModel:
     """System IR -> executable PhysicalModel.
 
     Handles three DAE modes:
@@ -249,7 +249,7 @@ def materialize_system(problem, candidate: SystemCandidate) -> PhysicalModel:
     raise ValueError(f"unknown dae_mode {dae_mode!r}")
 
 
-def _materialize_ode(problem, candidate: SystemCandidate) -> PhysicalModel:
+def _materialize_ode(problem: Any, candidate: SystemCandidate) -> PhysicalModel:
     """Pure ODE materialization: D2b behavior, 4-state first-order system."""
     if len(problem.states) != 4:
         raise ValueError("ODE materialization requires 4 states")
@@ -308,7 +308,7 @@ def _materialize_ode(problem, candidate: SystemCandidate) -> PhysicalModel:
                          tuple(parameters), tuple(equations))
 
 
-def _materialize_constrained(problem, candidate: SystemCandidate) -> PhysicalModel:
+def _materialize_constrained(problem: Any, candidate: SystemCandidate) -> PhysicalModel:
     """Constrained DAE materialization.
 
     Algebraic constraint terms (named "c1", "c2") enforce relationships
@@ -408,7 +408,7 @@ def _materialize_constrained(problem, candidate: SystemCandidate) -> PhysicalMod
                          dae_constraint_params=tuple(sorted(constraint_params)))
 
 
-def _materialize_multiscale(problem, candidate: SystemCandidate,
+def _materialize_multiscale(problem: Any, candidate: SystemCandidate,
                             timescales: tuple[str, ...]) -> PhysicalModel:
     """Multi-timescale materialization.
 

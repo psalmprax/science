@@ -264,7 +264,7 @@ class Adjudication:
     status: EpistemicStatus
     promoted: Any = None
     rival: Any = None
-    ranking: tuple = ()
+    ranking: tuple[Any, ...] = ()
     best_rmse: float | None = None
     second_rmse: float | None = None
     delta_rmse: float | None = None
@@ -281,7 +281,7 @@ class Adjudication:
     benchmark_level: str = "unknown"
     epistemic_attribution: str = "unknown"
     promotion_confidence: str = ""
-    diagnostic_flags: tuple = ()
+    diagnostic_flags: tuple[Any, ...] = ()
     admissible_equivalence_class: tuple[str, ...] = ()
     reason: str = ""
 
@@ -298,7 +298,7 @@ def scale_from_observations(obs: np.ndarray) -> dict[str, Any]:
     return observation_scale(obs)
 
 
-def _identity(sc) -> Any:
+def _identity(sc: Any) -> Any:
     """Structural identity: canonical form + parameter-binding signature.
 
     Same term sets with different sharing (reciprocal kc vs independent
@@ -325,7 +325,7 @@ def _identity(sc) -> Any:
             tuple(sorted((t.name, t.parameter) for t in c.terms)))
 
 
-def _sole_survivor_fidelity(best, scale: dict[str, Any] | None,
+def _sole_survivor_fidelity(best: Any, scale: dict[str, Any] | None,
                             gamma: float) -> tuple[bool, str]:
     """Guard 1: absolute holdout-fidelity ceiling for a sole numerical survivor.
 
@@ -519,7 +519,7 @@ def _winner_structure_note(resid: Any, threshold: float) -> str:
             "distinct rival was separated on this holdout")
 
 
-def _bootstrap_refusal_detail(tb: dict) -> str:
+def _bootstrap_refusal_detail(tb: dict[str, Any]) -> str:
     """Reason detail for a bootstrap overturn, by branch.
 
     A 'multi' CI straddles zero (no separation); a 'rival-favored' CI lies
@@ -537,7 +537,7 @@ def _bootstrap_refusal_detail(tb: dict) -> str:
             f"not separate the two structures")
 
 
-def adjudicate(fitted: list,
+def adjudicate(fitted: list[Any],
                tau_epi: float | None = None,
                holdout_noise_scale: float | None = None,
                holdout_scale: dict[str, Any] | None = None,
@@ -608,8 +608,8 @@ def adjudicate(fitted: list,
     # distinct) and keep the best-fitting instance per group. Uniqueness
     # is assessed over canonical hypotheses only; dropped duplicates can
     # neither promote nor serve as rivals.
-    canonical: list = []
-    seen: dict = {}
+    canonical: list[Any] = []
+    seen: dict[str, Any] = {}
     dropped_duplicate_ids: list[str] = []
     for s in ranked:
         try:

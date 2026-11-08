@@ -219,7 +219,7 @@ def _run(circuit: Circuit, *, shots: int, seed: int | None) -> RunResult:
 
 def logical_error_rate(probability: float, *, shots: int = 4000, seed: int | None = 0,
                        prepare_logical_one: bool = False, code: str = "bit_flip",
-                       backend=None) -> RepetitionCodeRun:
+                       backend: Any=None) -> RepetitionCodeRun:
     """Measure the logical failure rate of a distance-3 repetition code.
 
     `code` selects which error the code is built for: `"bit_flip"` protects `|0>`,
@@ -253,7 +253,7 @@ def logical_error_rate(probability: float, *, shots: int = 4000, seed: int | Non
 
 
 # ------------------------------------------------- repetition codes at any distance
-def _repetition_decoder(distance: int, code: str, decoder):
+def _repetition_decoder(distance: int, code: str, decoder: Any) -> Any:
     """The decoder object for a run: an instance if given, else the matching decoder."""
     from apedp_dyn.vqc.decoders import repetition_mwpm_decoder
 
@@ -272,7 +272,7 @@ def repetition_code_circuit(distance: int, *, code: str = "bit_flip",
                             prepare_logical_one: bool = False,
                             injected_errors: Sequence[int] = (),
                             error_probability: float = 0.0,
-                            decoder=None,
+                            decoder: Any=None,
                             metadata: dict[str, str] | None = None) -> Circuit:
     """A distance-`distance` repetition code whose correction gates come from `decoder`.
 
@@ -346,7 +346,7 @@ def repetition_code_circuit(distance: int, *, code: str = "bit_flip",
 
 def repetition_exact_failure_probability(distance: int, probability: float, *,
                                          code: str = "bit_flip",
-                                         decoder=None) -> float:
+                                         decoder: Any=None) -> float:
     """Exact `P(logical flip)` by enumerating all `2**distance` error patterns.
 
     This never runs the circuit: it applies the decoder to each pattern of
@@ -439,8 +439,8 @@ class RepetitionRun:
 
 def repetition_logical_error_rate(distance: int, probability: float, *, shots: int = 2000,
                                   seed: int | None = 0, code: str = "bit_flip",
-                                  decoder=None, prepare_logical_one: bool = False,
-                                  backend=None) -> RepetitionRun:
+                                  decoder: Any=None, prepare_logical_one: bool = False,
+                                  backend: Any=None) -> RepetitionRun:
     """Run a repetition code of any odd distance and count logical failures."""
     if shots < 1:
         raise ValueError(f"shots must be positive, got {shots}")

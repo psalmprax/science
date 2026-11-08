@@ -91,7 +91,7 @@ def run_kuramoto(K_tr: np.ndarray | None=None, K_ho: np.ndarray | None=None, N: 
     scored.append(ScoredCandidate(cc, {"gate4_status": g4c, "data_origin": DataOrigin.SIMULATION},
                                   train_loss=float(np.mean((r_tr - Xc_tr @ wc) ** 2)),
                                   holdout_rmse=float(np.sqrt(np.mean(rhc ** 2)))))
-    ranked = sorted([s for s in scored if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)], key=lambda s: s.holdout_rmse)
+    ranked = sorted([s for s in scored if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)], key=lambda s: s.holdout_rmse if s.holdout_rmse is not None else float("inf"))
     adj = adjudicate(
         scored, resid_best=ranked[0].provenance["gate4_status"]["holdout_residuals"],
         resid_rival=ranked[1].provenance["gate4_status"]["holdout_residuals"],
@@ -106,7 +106,7 @@ def hello_world() -> None:
     print("KURAMOTO SANDBOX: sync transition r(K), train K<=2.5, holdout K>=3")
     print("=" * 64)
     adj, scored, _ = run_kuramoto()
-    for s in sorted(scored, key=lambda c: c.holdout_rmse):
+    for s in sorted(scored, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else float("inf")):
         print(f"  {s.candidate.candidate_id:10s} holdout RMSE={s.holdout_rmse:.4f}")
     print(f"  verdict: {adj.status.value} "
           f"promoted={adj.promoted.candidate.candidate_id if adj.promoted else None}")

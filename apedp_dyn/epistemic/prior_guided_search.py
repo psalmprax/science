@@ -164,8 +164,8 @@ def propose_unsolicited(
     `shape_kwargs` carries the caller's explicit cutoffs for the prior (see
     `shape_inference.infer_shape_prior`); this adapter defines none of its own.
     """
-    xs = np.asarray(x_dev, dtype=float).ravel()
-    ys = np.asarray(y_dev, dtype=float).ravel()
+    xs: np.ndarray = np.asarray(x_dev, dtype=float).ravel()
+    ys: np.ndarray = np.asarray(y_dev, dtype=float).ravel()
     if xs.size < min_rows:
         return GuidedProposal(PATH_ABSTAIN, "absent", None, (), "", {}, (), float("nan"),
                               "too few dev rows for a prior", True,
@@ -232,8 +232,8 @@ def score_on_holdout(
     feature_name: str,
 ) -> dict[str, float]:
     """Score a proposal on holdout rows. No refit. Caller-owned split discipline."""
-    xh = np.asarray(x_hold, dtype=float).ravel()
-    yh = np.asarray(y_hold, dtype=float).ravel()
+    xh: np.ndarray = np.asarray(x_hold, dtype=float).ravel()
+    yh: np.ndarray = np.asarray(y_hold, dtype=float).ravel()
     pred = np.asarray(candidate.compute_score(pd.DataFrame({feature_name: xh})),
                       dtype=float).ravel()
     ss_res = float(np.sum((yh - pred) ** 2))

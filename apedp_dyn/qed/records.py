@@ -186,7 +186,7 @@ def _arm_rows(task: DiscoveryTask, arms: Sequence[str], seeds: Sequence[int]) ->
     return rows
 
 
-def _comparison(rows: Sequence[dict], oracle: dict) -> dict:
+def _comparison(rows: Sequence[dict[str, Any]], oracle: dict[str, Any]) -> dict[str, Any]:
     oracle_objective = float(oracle["best"]["objective"])
     hits = {
         row["arm"]: sum(
@@ -280,7 +280,7 @@ def circuit_probe(task: DiscoveryTask, seed: int, *, depth: int = 2, shots: int 
     }
 
 
-def _surrogate_block(rows: Sequence[dict], task: DiscoveryTask) -> dict | None:
+def _surrogate_block(rows: Sequence[dict[str, Any]], task: DiscoveryTask) -> dict[str, Any] | None:
     """What the quantum arm's approximation actually optimised.
 
     The surrogate is quadratic and ``J`` is not, so the interesting question is
@@ -408,7 +408,7 @@ def build_condition(
     }
 
 
-def cross_condition(conditions: Sequence[dict]) -> dict:
+def cross_condition(conditions: Sequence[dict[str, Any]]) -> dict[str, Any]:
     """The same arms under different budgets, so a tie can be read against a harder one."""
     table: dict[str, list[dict[str, Any]]] = {}
     for condition in conditions:

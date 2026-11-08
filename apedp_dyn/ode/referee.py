@@ -120,7 +120,7 @@ def _evaluate_rhs(
 
 
 def _rk4_rollout(
-    rhs_terms: list[tuple[str, list[tuple[list[str], float]]]],
+    rhs_terms: list[tuple[str, list[tuple[list[tuple[str, int]], float]]]],
     name_to_index: dict[str, int],
     y0: np.ndarray,
     dt: float,

@@ -125,7 +125,7 @@ def _r2(observed: np.ndarray, predicted: np.ndarray) -> float:
     return 1.0 - residual / spread
 
 
-def _fit(task: DiscoveryTask, states: np.ndarray, target: np.ndarray, support: Sequence[int]):
+def _fit(task: DiscoveryTask, states: np.ndarray, target: np.ndarray, support: Sequence[int]) -> Any:
     design = task.library.design_matrix(states)
     columns = task.library.select(design, support)
     if columns.shape[1] == 0:
@@ -312,7 +312,7 @@ def reference_scores(task: DiscoveryTask) -> dict[str, Any]:
 
 def adjudicate(
     task: DiscoveryTask,
-    result,
+    result: Any,
     *,
     seed: int = 0,
     bootstrap_samples: int = BOOTSTRAP_SAMPLES,

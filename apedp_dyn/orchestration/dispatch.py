@@ -288,8 +288,8 @@ def _finite_rows(frame: pd.DataFrame, cols: list[str]) -> np.ndarray:
     return np.isfinite(values).all(axis=1) if values.size else np.zeros(len(frame), bool)
 
 
-def _run_static(value_cols, coord_col):
-    def run():
+def _run_static(value_cols: Any, coord_col: Any) -> Any:
+    def run() -> Any:
         from apedp_dyn.discovery_l2.dimensional_types import Dimension
         from apedp_dyn.discovery_l2.l2_engine import L2DiscoveryEngine
 
@@ -322,8 +322,8 @@ def _run_static(value_cols, coord_col):
     return run
 
 
-def _run_ode(value_cols, time_col):
-    def run():
+def _run_ode(value_cols: Any, time_col: Any) -> Any:
+    def run() -> Any:
         from apedp_dyn.de_arm.dependency_screen import discover_ode_system
         from apedp_dyn.ode.dispatch import discover_ode
 
@@ -362,8 +362,8 @@ def _run_ode(value_cols, time_col):
     return run
 
 
-def _run_pde(value_cols, time_col, coord_col):
-    def run():
+def _run_pde(value_cols: Any, time_col: Any, coord_col: Any) -> Any:
+    def run() -> Any:
         from apedp_dyn.epistemic.pde_discovery import discover_pde
 
         frame = _frame_or_raise()
@@ -396,8 +396,8 @@ def _run_pde(value_cols, time_col, coord_col):
     return run
 
 
-def _run_hawkes(stamp_col, time_col):
-    def run():
+def _run_hawkes(stamp_col: Any, time_col: Any) -> Any:
+    def run() -> Any:
         from apedp_dyn.proposers.hawkes_orderflow_proposer import (
             HawkesOrderFlowProposer,
         )

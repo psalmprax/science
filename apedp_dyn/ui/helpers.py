@@ -206,14 +206,14 @@ def _market_competition(asset: str, window: Any) -> list[dict[str, Any]]:
 
 
 
-def _game_series():
+def _game_series() -> Any:
     from apedp_dyn.sandbox.game_theory import simulate_game
     _, x = simulate_game({"R": 3.0, "S": 0.0, "T": 5.0, "P": 1.0},
                          0.5, noise=0.005, seed=42)
     return {"x": list(range(len(x))), "actual": [float(v) for v in x],
             "x_label": "PD cooperator fraction from x0=0.5"}
 
-def _qec_series():
+def _qec_series() -> Any:
     from apedp_dyn.sandbox.qec_threshold import generate_qec_threshold_data
     p_, o_ = generate_qec_threshold_data(seed=42)[:2]
     return {"x": [float(v) for v in p_], "actual": [float(v) for v in o_],
@@ -505,7 +505,8 @@ def _format_sandbox_adjudication(
 
 
 
-def _volume_gate_breakdown(extra: dict, scored: list, y_actual: list | None = None) -> list[dict]:
+def _volume_gate_breakdown(extra: dict[str, Any], scored: list[Any],
+                          y_actual: list[Any] | None = None) -> list[dict[str, Any]]:
     """Explicit promotion-gate table for the volume benchmark (auditable)."""
     rows = scored or []
     # Best challenger = lowest holdout RMSE among non-baseline rows; never

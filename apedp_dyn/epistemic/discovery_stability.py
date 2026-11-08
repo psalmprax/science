@@ -65,7 +65,7 @@ def variance_split(transfer_matrix: np.ndarray) -> dict[str, float]:
 
 def stability_report(structures: list[str],
                      param_samples: dict[str, list[float]] | None = None,
-                     transfer_matrix=None) -> dict[str, Any]:
+                     transfer_matrix: Any=None) -> dict[str, Any]:
     """One diagnostic block for a multi-seed discovery experiment."""
     rep = {"n_seeds": len(structures),
            "distribution": structural_distribution(structures),

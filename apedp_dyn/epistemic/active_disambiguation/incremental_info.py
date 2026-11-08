@@ -104,7 +104,7 @@ class AssetBattery:
     ha_perp_t: float = float("nan")  # mean t of c in y = a+b|r|+c HA-perp
 
 
-def _origin_data(a: pd.DataFrame, tgt: np.ndarray, dates: pd.Series, origin: str):
+def _origin_data(a: pd.DataFrame, tgt: np.ndarray, dates: pd.Series, origin: str) -> Any:
     nxt = str(pd.Timestamp(origin) + pd.offsets.MonthBegin(1))
     fw = np.where((dates >= origin).to_numpy() & (dates < nxt).to_numpy())[0]
     # FLAW-A01: d5 carries a forward 5-day span; train blocks within 5 days

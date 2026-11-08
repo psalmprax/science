@@ -37,7 +37,7 @@ class SimulateResult:
 def _get_cached_rust_system(eqs: tuple[str, ...],
                             states: tuple[str, ...],
                             params: tuple[str, ...],
-                            inputs: tuple[str, ...]):
+                            inputs: tuple[str, ...]) -> Any:
     # `union-attr`: the kernel may be absent (the check above raised).
     # `attr-defined`: the kernel ships as a compiled extension with no stubs, so
     # mypy cannot see CompiledOdeSystem even though the module exports it.
@@ -46,7 +46,7 @@ def _get_cached_rust_system(eqs: tuple[str, ...],
     )
 
 
-def compile_rust_ode(model):
+def compile_rust_ode(model: Any) -> Any:
     """Compile a PhysicalModel to a native apedp_kernel.CompiledOdeSystem."""
     if not _RUST_AVAILABLE:
         return None
@@ -58,7 +58,7 @@ def compile_rust_ode(model):
     return _get_cached_rust_system(eqs, states, params, inputs)
 
 
-def compile_rhs(model):
+def compile_rhs(model: Any) -> Any:
     """Compile a model to a fast vector RHS (ported from apedp/dyn simulator).
 
     Single lambdified f(t, x, params, inputs); identical trajectories to
@@ -95,7 +95,7 @@ def compile_rhs(model):
     return rhs
 
 
-def simulate(model, t_span: tuple[float, float],
+def simulate(model: Any, t_span: tuple[float, float],
              u_of_t: Callable[[float], np.ndarray], x0: np.ndarray,
              n_eval: int = 400, rtol: float = 1e-3, atol: float = 1e-6,
              backend: str = "auto") -> SimulateResult:
@@ -205,11 +205,11 @@ def simulate(model, t_span: tuple[float, float],
             _out: np.ndarray = np.atleast_1d(np.asarray(u_of_t(t), dtype=float))
             return _out
 
-        def drift(t, x):
+        def drift(t: Any, x: Any) -> Any:
             return crhs(t, x, _u(t), pdict)
     except (ArithmeticError, ValueError, TypeError) as e:
         metrics["rhs_path"] = f"interpreted ({type(e).__name__})"
-        def drift(t, x):
+        def drift(t: Any, x: Any) -> Any:
             return model.rhs(t, x, u_of_t)
     try:
         sol = solve_ivp(drift, t_span, np.asarray(x0, dtype=float),

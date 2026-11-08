@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -131,7 +132,7 @@ def _eval_frozen_1d_library(
     for i in range(1, m - 1):
         for j in range(2, n - 2):
             ut_a.append((u_grid[i + 1][j] - u_grid[i - 1][j]) / (2.0 * dt))
-            u_vals.append(u_grid[i][j])
+            u_vals.append(float(u_grid[i][j]))
             ux.append((-u_grid[i][j + 2] + 8.0 * u_grid[i][j + 1] - 8.0 * u_grid[i][j - 1] + u_grid[i][j - 2]) / (12.0 * dx))
             uxx.append((-u_grid[i][j + 2] + 16.0 * u_grid[i][j + 1] - 30.0 * u_grid[i][j]
                         + 16.0 * u_grid[i][j - 1] - u_grid[i][j - 2]) / (12.0 * dx * dx))
@@ -181,7 +182,7 @@ def _eval_frozen_2d_library(
         for x in range(2, nx - 2):
             for y in range(2, ny - 2):
                 ut_a.append((u_arr[t + 1][x][y] - u_arr[t - 1][x][y]) / (2.0 * dt))
-                u_vals.append(u_arr[t][x][y])
+                u_vals.append(float(u_arr[t][x][y]))
                 ux_a.append((-u_arr[t][x + 2][y] + 8.0 * u_arr[t][x + 1][y] - 8.0 * u_arr[t][x - 1][y] + u_arr[t][x - 2][y]) / (12.0 * dx))
                 uy_a.append((-u_arr[t][x][y + 2] + 8.0 * u_arr[t][x][y + 1] - 8.0 * u_arr[t][x][y - 1] + u_arr[t][x][y - 2]) / (12.0 * dy))
                 uxx_a.append((-u_arr[t][x + 2][y] + 16.0 * u_arr[t][x + 1][y] - 30.0 * u_arr[t][x][y]
@@ -432,7 +433,7 @@ def discover_pde_nonuniform(
             col_uxx.append(w_x[2] @ u_hold[i][j - 2: j + 3])
             if max_spatial_order >= 3:
                 col_uxxx.append(w_x[3] @ u_hold[i][j - 2: j + 3])
-    columns_by_name = {
+    columns_by_name: dict[str, Any] = {
         "u": np.asarray(col_u, dtype=float),
         "u_x": np.asarray(col_ux, dtype=float),
     }

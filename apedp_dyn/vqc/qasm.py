@@ -55,7 +55,7 @@ class QasmUnsupportedError(ValueError):
 
 
 # --------------------------------------------------------------------- export
-def _condition_constant(condition) -> int:
+def _condition_constant(condition: Any) -> int:
     bits = {bit for bit, _value in condition}
     if not bits:
         return 0
@@ -66,7 +66,7 @@ def _condition_constant(condition) -> int:
     return value
 
 
-def _format_condition(condition, num_bits: int) -> str:
+def _format_condition(condition: Any, num_bits: int) -> str:
     tested = {bit for bit, _value in condition}
     if tested != set(range(num_bits)):
         raise QasmUnsupportedError(

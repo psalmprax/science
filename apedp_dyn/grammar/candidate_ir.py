@@ -104,7 +104,7 @@ class ScoredCandidate:
 
     candidate: CandidateDynamics | SystemCandidate
     provenance: dict[str, Any] = field(default_factory=dict)
-    gates: tuple = ()
+    gates: tuple[Any, ...] = ()
     fit: Any = None
     train_loss: float | None = None
     holdout_rmse: float | None = None

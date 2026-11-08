@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -157,7 +158,7 @@ def fit_instantaneous_frequency_model(
 def frequency_advection_velocity_fn(
     model: InstantaneousFrequencyModel,
     frequency_step: float,
-):
+) -> Any:
     """Velocity field ``-c(t) * d/d_f`` for spectrogram transport via JetFlowStepper."""
 
     def velocity_fn(z: np.ndarray, t: float) -> np.ndarray:
@@ -217,7 +218,7 @@ def predict_next_frame(
     model: InstantaneousFrequencyModel,
     frequency_step: float,
     order: int = 2,
-):
+) -> Any:
     """Transport-predict frame ``frame_index + 1`` from ``frame_index``.
 
     The spectral advection problem ``S_t = -c(t) S_f`` is integrated with a

@@ -67,8 +67,8 @@ class ReservoirProposer(ProposerBase):
         _W_in = W_in
         _W = W
         _W_out = W_out.ravel()
-        def make_score(n_vars=_n_vars, reservoir_size=_reservoir_size, W_in=_W_in, W=_W, W_out=_W_out):
-            def score(df):
+        def make_score(n_vars:Any=_n_vars, reservoir_size:Any=_reservoir_size, W_in:Any=_W_in, W:Any=_W, W_out:Any=_W_out) -> Any:
+            def score(df: Any) -> Any:
                 X_eval = np.asarray(df.to_numpy(dtype=float))
                 n_samples_eval = X_eval.shape[0]
                 if W_out.size == 0:

@@ -25,7 +25,7 @@ from apedp_dyn.problems.base import finalize
 FOLLOWUP_VERSION = "1.0.0-escalate"
 
 
-def escalate_holdout(problem, factor: float):
+def escalate_holdout(problem: Any, factor: float) -> Any:
     """Rebuild a problem with the holdout drive scaled by factor.
 
     Train regime, splits, thresholds, and ICs are untouched; ground truth is
@@ -41,7 +41,7 @@ def escalate_holdout(problem, factor: float):
     return finalize(dataclasses.replace(problem, holdout=holdout))
 
 
-def followup_weak_intervention(problem, truth_ir, rival_ir, rec: Recommendation,
+def followup_weak_intervention(problem: Any, truth_ir: Any, rival_ir: Any, rec: Recommendation,
                                factor: float) -> dict[str, Any]:
     """Execute a weak-intervention recommendation and re-adjudicate."""
     if rec.evidence_deficit != "weak_intervention":
