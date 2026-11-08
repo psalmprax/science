@@ -15,6 +15,7 @@ from __future__ import annotations
 import csv
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -36,7 +37,7 @@ from apedp_dyn.problems.base import DynProblem, make_signal
 COUP_TERMS = ("x", "v", "xr")
 
 
-def load(path, col):
+def load(path: str, col: str) -> tuple[list[str], np.ndarray]:
     dates, px = [], []
     with open(path) as f:
         for row in csv.DictReader(f):
@@ -50,15 +51,16 @@ def load(path, col):
     return dates, np.array(px)
 
 
-def _standardize(tr, ho):
+def _standardize(tr: np.ndarray, ho: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     mu, sg = float(np.log(tr).mean()), float(np.log(tr).std())
-    def conv(p):
+    def conv(p: np.ndarray) -> np.ndarray:
         x = (np.log(np.asarray(p, dtype=float)) - mu) / sg
-        return np.column_stack([x, np.gradient(x, 1.0)])
+        out: np.ndarray = np.column_stack([x, np.gradient(x, 1.0)])
+        return out
     return conv(tr), conv(ho)
 
 
-def build_joint_problem(px_s, px_n, tr, ho, problem_id="FIN-COUPLED"):
+def build_joint_problem(px_s: np.ndarray, px_n: np.ndarray, tr: tuple[int, int], ho: tuple[int, int], problem_id: str="FIN-COUPLED") -> DynProblem:
     """Joint 4-state problem: (x_s, v_s, x_n, v_n), two zero drives."""
     Ys_tr, Ys_ho = _standardize(px_s[tr[0]:tr[1]], px_s[ho[0]:ho[1]])
     Yn_tr, Yn_ho = _standardize(px_n[tr[0]:tr[1]], px_n[ho[0]:ho[1]],
@@ -91,7 +93,7 @@ def build_joint_problem(px_s, px_n, tr, ho, problem_id="FIN-COUPLED"):
                       (), truth, train, holdout)
 
 
-def run_coupled():
+def run_coupled() -> Any:
     import tempfile
     cache = tempfile.gettempdir()
     ds, px_s = load(f"{cache}/sp500.csv", "SP500")

@@ -20,12 +20,12 @@ from scipy.optimize import curve_fit
 TM = float(np.mean(LAGS))
 
 
-def ols_ci(lags, y):
+def ols_ci(lags: np.ndarray, y: np.ndarray) -> tuple[float, float, float]:
     s, se = slope_ols(lags, y)
     return s, s - 1.96 * se, s + 1.96 * se
 
 
-def model_ci(lags, y, seed, B=50):
+def model_ci(lags: np.ndarray, y: np.ndarray, seed: int, B: int=50) -> tuple[float, float, float]:
     ly = np.log(y)
     pp, _ = curve_fit(lambda t, lA, a, tt: lA - a * np.log(t + tt),
                       lags, ly, p0=(np.log(0.05), 1.0, 8.0), maxfev=50000)
@@ -47,16 +47,16 @@ def model_ci(lags, y, seed, B=50):
     return pt, 9.0, -9.0
 
 
-def run():
+def run() -> None:
     print("v0.10b: transfer (a,t0) x noise x rho; OLS vs MODEL; seeds 4000+")
     print("cond | OLS bias rmse cov width | MODEL bias rmse cov width | n")
     sd = 4000
     for a, t0, nl, rho in itertools.product((0.8, 1.2, 1.8), (2.0, 8.0, 30.0),
                                             (0.1, 0.3), (0.0, 0.5)):
         truth = float(a * TM / (TM + t0))
-        stats = {"ols": [], "mod": []}
+        stats: dict[str, list[float]] = {"ols": [], "mod": []}
         cov = {"ols": 0, "mod": 0}
-        wid = {"ols": [], "mod": []}
+        wid: dict[str, list[float]] = {"ols": [], "mod": []}
         n = 0
         for _ in range(20):
             _, yfull = gen("power", nl, sd, t0=t0, a=a, rho=rho)

@@ -584,7 +584,7 @@ def run_ablation_experiment() -> dict[str, Any]:
     }
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="APEDP-X Agnostic Domain Adapter Ablation Runner")
     parser.add_argument("--json", action="store_true", help="Emit JSON report to stdout")
     args = parser.parse_args()

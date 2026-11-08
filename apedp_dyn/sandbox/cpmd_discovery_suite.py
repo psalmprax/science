@@ -5,6 +5,7 @@ Prediction-only stage: IC + shift null + MSE-vs-zero. No trading.
 """
 import sys
 import warnings
+from collections.abc import Callable, Iterable
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
@@ -16,22 +17,24 @@ K, M, KK = 20, 5, 20
 EPS = 1e-8
 
 
-def rolling_std(r, w=20):
-    return np.array([float(np.std(r[max(0, t - w + 1):t + 1]) + EPS)
-                     for t in range(len(r))])
+def rolling_std(r: np.ndarray, w: int=20) -> np.ndarray:
+    out: np.ndarray = np.array([float(np.std(r[max(0, t - w + 1):t + 1]) + EPS)
+                                for t in range(len(r))])
+    return out
 
 
-def gen_B(seed, n=3000):
+def gen_B(seed: int, n: int=3000) -> np.ndarray:
     rng = np.random.RandomState(int(seed))
-    hiv = np.zeros(n, dtype=int)
+    hiv: np.ndarray = np.zeros(n, dtype=int)
     hiv[0] = 0
     for t in range(1, n):
         hiv[t] = hiv[t - 1] if rng.rand() < 0.97 else 1 - hiv[t - 1]
     sig = np.where(hiv == 0, 0.005, 0.02)
-    return sig * rng.normal(0, 1, n)
+    out: np.ndarray = sig * rng.normal(0, 1, n)
+    return out
 
 
-def forecasts(ret):
+def forecasts(ret: np.ndarray) -> dict[str, np.ndarray]:
     n = len(ret)
     sig = rolling_std(ret)
     z = ret / (sig + EPS)
@@ -53,7 +56,7 @@ def forecasts(ret):
     return f
 
 
-def ic_null(fc, actual, seed, nshift=200):
+def ic_null(fc: np.ndarray, actual: np.ndarray, seed: int, nshift: int=200) -> tuple[float, float, float]:
     ok = np.isfinite(fc) & np.isfinite(actual)
     fc, ac = fc[ok], actual[ok]
     if len(fc) < 50:
@@ -71,7 +74,7 @@ def ic_null(fc, actual, seed, nshift=200):
     return obs, float(cnt / nshift), mse0 / base
 
 
-def stage(tag, seeds, genfn):
+def stage(tag: str, seeds: Iterable[int], genfn: Callable[[int], np.ndarray]) -> dict[str, tuple[float, float, float]]:
     print(f"--- {tag} ---")
     res = {}
     for name in ("ctp", "ser", "sac"):
@@ -91,9 +94,10 @@ def stage(tag, seeds, genfn):
     return res
 
 
-def run():
-    def A(sd):
-        return one_path(sd)[0]
+def run() -> None:
+    def A(sd: int) -> np.ndarray:
+        path: np.ndarray = one_path(sd)[0]
+        return path
     r1 = stage("Stage 1 discovery gen-A (50000+)", range(50000, 50020), A)
     r2 = stage("Stage 1 discovery gen-B (51000+)", range(51000, 51020), gen_B)
     surv = [k for k in ("ctp", "ser", "sac")

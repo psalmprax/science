@@ -92,7 +92,7 @@ def score_paths(which, A, seeds):
     return rows, paths
 
 
-def run():
+def run() -> None:
     # one-shot amplitude check: SINGLE amplitude A=2.0 per prereg (no search).
     # Recorded whatever it yields; discovery proceeds regardless.
     A_IN = A_OUT = 2.0

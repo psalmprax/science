@@ -18,6 +18,7 @@ import csv
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -39,7 +40,7 @@ from apedp_dyn.grammar.mechanical_grammar import (
 from apedp_dyn.problems.finance import spec_from_series
 
 FIN_TERMS = ("one", "x", "x3", "v", "abs_v_v", "sin_x")
-def _cache(name):
+def _cache(name: str) -> str:
     import tempfile
     return f"{tempfile.gettempdir()}/{name}"
 
@@ -53,7 +54,7 @@ TR = ("2019-01-02", "2019-12-31")
 HO = ("2020-02-19", "2020-03-23")
 
 
-def load(path, col):
+def load(path: str, col: str) -> tuple[list[str], np.ndarray]:
     dates, px = [], []
     with open(path) as f:
         for row in csv.DictReader(f):
@@ -67,7 +68,7 @@ def load(path, col):
     return dates, np.array(px)
 
 
-def at_idx(dates, day, first=True):
+def at_idx(dates: list[str], day: str, first: bool=True) -> int:
     idx = {d: i for i, d in enumerate(dates)}
     if day in idx:
         return idx[day]
@@ -75,7 +76,7 @@ def at_idx(dates, day, first=True):
     return next(i for i, d in seq if (d >= day if first else d <= day))
 
 
-def run_pooled():
+def run_pooled() -> tuple[Any, dict[str, dict[str, tuple[float | None, bool]]]]:
     probs = {}
     for asset, (path, col) in ASSETS.items():
         dates, px = load(path, col)
@@ -88,7 +89,8 @@ def run_pooled():
     kept = prune_admissible(probs["SPX"], slate)  # gates 1-2 structural
     structs = [(s.candidate.candidate_id,
                 tuple(t.name for t in s.candidate.terms)) for s in kept]
-    mat, pooled = {}, {}
+    mat: dict[str, dict[str, tuple[float | None, bool]]] = {}
+    pooled: dict[str, tuple[float, tuple[str, ...]]] = {}
     for cid, tnames in structs:
         mat[cid] = {}
         for asset in ASSETS:

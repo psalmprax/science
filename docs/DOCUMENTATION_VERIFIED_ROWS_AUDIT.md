@@ -1,7 +1,7 @@
 # Documentation "Verified (N/N)" rows — execution audit
 
-Generated: 2026-11-08 05:43:17 CET
-Harness: `scripts/audit_documentation_verified_rows.py` (audit-only; executions took 727.6s)
+Generated: 2026-11-08 06:13:51 CET
+Harness: `scripts/audit_documentation_verified_rows.py` (audit-only; executions took 727.5s)
 Registry: `docs/DOCUMENTATION.md` — **46 rows**, **58 distinct cited files**
 
 Every cited file was executed with `pytest -q`. A row is `MATCH` only when
@@ -13,8 +13,8 @@ as unmeasurable rather than assumed correct.
 
 | Verdict | Rows |
 |---|---|
-| `MATCH` | 26 |
-| `PARTIAL_MATCH` | 11 |
+| `MATCH` | 30 |
+| `PARTIAL_MATCH` | 7 |
 | `UNCOUNTED_CLAIM` | 5 |
 | `MANUAL_REVIEW` | 2 |
 | `NOT_AUTOMATED` | 2 |
@@ -128,10 +128,10 @@ as unmeasurable rather than assumed correct.
 | 2221 | `MATCH` | 6/6 | claimed 6/6, measured 6 passed (`tests/test_dyn_multi_agent_robotics.py`) |
 | 2222 | `MATCH` | 5/5 | claimed 5/5, measured 5 passed (`tests/test_dyn_ncm_proposer.py`) |
 | 2223 | `NOT_AUTOMATED` | 24/24, 12/12, 186/186 | row also cites `cargo test`, which this harness does not run (`benchmarks/run_rime_microsample_adjudication.py`, `tests/test_dyn_rime_microsample_adjudication.py`) |
-| 2224 | `PARTIAL_MATCH` | 24/24, 11/11, 12/12 | claimed 24/24; per-file passes {'benchmarks/run_rime_microsample_adjudication.py': 0, 'tests/test_dyn_rime_microsample_adjudication.py': 24}, aggregate 24 — the claim does not name which file it counts (`benchmarks/run_rime_microsample_adjudication.py`, `tests/test_dyn_rime_microsample_adjudication.py`) |
-| 2225 | `PARTIAL_MATCH` | 24/24, 11/11, 0/11 | claimed 24/24; per-file passes {'benchmarks/run_rime_microsample_adjudication.py': 0, 'tests/test_dyn_rime_microsample_adjudication.py': 24}, aggregate 24 — the claim does not name which file it counts (`benchmarks/run_rime_microsample_adjudication.py`, `tests/test_dyn_rime_microsample_adjudication.py`) |
-| 2226 | `PARTIAL_MATCH` | 24/24, 11/11, 11/11 | claimed 24/24; per-file passes {'benchmarks/run_rime_microsample_adjudication.py': 0, 'tests/test_dyn_rime_microsample_adjudication.py': 24}, aggregate 24 — the claim does not name which file it counts (`benchmarks/run_rime_microsample_adjudication.py`, `tests/test_dyn_rime_microsample_adjudication.py`) |
-| 2227 | `PARTIAL_MATCH` | 24/24, 12/12, 12/12 | claimed 24/24; per-file passes {'benchmarks/run_rime_microsample_adjudication.py': 0, 'tests/test_dyn_rime_microsample_adjudication.py': 24}, aggregate 24 — the claim does not name which file it counts (`benchmarks/run_rime_microsample_adjudication.py`, `tests/test_dyn_rime_microsample_adjudication.py`) |
+| 2224 | `MATCH` | 24/24, 11/11, 12/12 | claimed 24/24, measured 24 passed (`tests/test_dyn_rime_microsample_adjudication.py`) |
+| 2225 | `MATCH` | 24/24, 11/11, 0/11 | claimed 24/24, measured 24 passed (`tests/test_dyn_rime_microsample_adjudication.py`) |
+| 2226 | `MATCH` | 24/24, 11/11, 11/11 | claimed 24/24, measured 24 passed (`tests/test_dyn_rime_microsample_adjudication.py`) |
+| 2227 | `MATCH` | 24/24, 12/12, 12/12 | claimed 24/24, measured 24 passed (`tests/test_dyn_rime_microsample_adjudication.py`) |
 
 ## How to read this
 

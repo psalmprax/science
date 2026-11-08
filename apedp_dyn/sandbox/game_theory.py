@@ -147,7 +147,7 @@ def run_game_identification(noise=0.005, seed=42):
     return adj, out
 
 
-def hello_world():
+def hello_world() -> None:
     print("=" * 64)
     print("GAME THEORY SANDBOX: which game was played?")
     print("=" * 64)

@@ -625,7 +625,7 @@ def run_pooled_multi_asset_discovery(
 
 
 # ── CLI Interface ─────────────────────────────────────────────────────────
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="APEDP Multi-Grammar Tournament & Adjudication")
     parser.add_argument("--asset", type=str, default="BTC", help="Asset symbol, 'POOLED' for all assets at once, or 'ALL' for per-asset loop")
     parser.add_argument("--pooled", action="store_true", help="Run on pooled multi-asset dataset simultaneously")

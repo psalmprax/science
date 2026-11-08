@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -36,7 +37,7 @@ from apedp_dyn.sandbox.finance_l2_demo import (
 MAX_SIGNAL = 0.05  # reachability: per-step drift bounded (no explosive corners)
 
 
-def _mk(cid, terms, rmse, resid, obs_rms, ns):
+def _mk(cid: str, terms: tuple[str, ...], rmse: float, resid: np.ndarray, obs_rms: float, ns: float) -> ScoredCandidate:
     g4 = {"passed": True, "holdout_obs_rms": obs_rms,
           "holdout_noise_sigma": float(np.std(resid)),
           "holdout_n_samples": len(resid),
@@ -48,7 +49,7 @@ def _mk(cid, terms, rmse, resid, obs_rms, ns):
                            train_loss=rmse, holdout_rmse=rmse)
 
 
-def run_finance_l3():
+def run_finance_l3() -> tuple[Any, Any]:
     _, returns = generate_market_regime_data(n_points=150,
                                              regime="volatility_scaled_momentum",
                                              seed=42)
@@ -73,7 +74,9 @@ def run_finance_l3():
     a0, a1 = w_ar1
     rp = np.linspace(-0.06, 0.06, 241)
     vl = np.linspace(0.005, 0.05, 181)
-    R, V = np.meshgrid(rp, vl)
+    Rg, Vg = np.meshgrid(rp, vl)
+    R: np.ndarray = Rg
+    V: np.ndarray = Vg
     reachable = np.abs(0.015 * R / np.maximum(V, 1e-9)) <= MAX_SIGNAL
     D = np.where(reachable, np.abs(a0 + a1 * R - w_c), -np.inf)
     i, j = np.unravel_index(np.argmax(D), D.shape)

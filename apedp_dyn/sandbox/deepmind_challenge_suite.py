@@ -459,7 +459,7 @@ def run_deepmind_challenge_benchmark() -> dict[str, Any]:
     }
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="APEDP-X DeepMind Hypothesis Challenge Benchmark Runner")
     parser.add_argument("--json", action="store_true", help="Emit JSON report to stdout")
     args = parser.parse_args()

@@ -869,7 +869,7 @@ def run_15_asset_universe_tournament(initial_capital: float = 100000.0, universe
     return run_multi_asset_universe_tournament(initial_capital=initial_capital, universe_type=universe_type)
 
 
-def run_multi_asset_universe_tournament(initial_capital: float = 100000.0, universe_type: str = "crypto"):
+def run_multi_asset_universe_tournament(initial_capital: float = 100000.0, universe_type: str = "crypto") -> None:
     """Run full multi-asset tournament testing crypto (15), equity (15), or unified multi-asset (30) with Risk Parity & Non-Linear GA."""
     u_type = universe_type.lower()
     universe, symbols = load_universe(u_type)
@@ -1148,7 +1148,7 @@ def run_30_asset_two_tier_analysis(
     generations: int = 35,
     seed: int = 42,
     use_pinned: bool = False,
-):
+) -> None:
     """Run empirical two-tier cross-asset backtest and forensic analysis of the 30-asset unified universe."""
     print("\n" + "=" * 125)
     print("30-ASSET POOLED COMPOSITE CANDIDATE: DYNAMIC IN-SAMPLE DISCOVERY & TWO-TIER RISK ALLOCATION")
@@ -1665,7 +1665,7 @@ def run_epistemic_90_asset_adjudication(
     )
 
 
-def run_single_asset_forensic(initial_capital: float = 100000.0):
+def run_single_asset_forensic(initial_capital: float = 100000.0) -> None:
     """Forensic investigation of why cross-sectional factor weights fail when traded directionally on single-asset BTC,
     and how Sign-Conditioned Volume, H-P Volatility Gating, and Squeeze Trend fix the breakdown.
     """

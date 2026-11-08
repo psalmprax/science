@@ -169,7 +169,7 @@ def run_apedp_discovery(observations: np.ndarray,
     return adj
 
 
-def main():
+def main() -> None:
     print("=" * 65)
     print("APEDP Tokamak Plasma Confinement & Scaling Discovery Demo")
     print("=" * 65)

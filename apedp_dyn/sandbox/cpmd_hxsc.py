@@ -5,6 +5,7 @@ Risk-state test only; no trading. Block bootstrap (len 20, 500 reps).
 """
 import sys
 import warnings
+from collections.abc import Sequence
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
@@ -16,15 +17,16 @@ SW, EPS, NB = 20, 1e-8, 500
 BL = 20
 
 
-def load(path, suf, exc):
+def load(path: str, suf: str, exc: Sequence[str]) -> np.ndarray:
     df = pd.read_csv(path)
     cols = [c for c in df.columns if c.endswith(suf)
             and c.replace(suf, "") not in exc]
-    P = df[cols].to_numpy(dtype=float)
-    return np.diff(np.log(P), axis=0)
+    P: np.ndarray = df[cols].to_numpy(dtype=float)
+    returns: np.ndarray = np.diff(np.log(P), axis=0)
+    return returns
 
 
-def features(R):
+def features(R: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     n, N = R.shape
     sig = np.array([[float(np.std(R[max(0, t - SW + 1):t + 1, i]) + EPS)
                      for i in range(N)] for t in range(n)])
@@ -41,12 +43,12 @@ def features(R):
     return H, D5, Dcur, np.abs(m), vol
 
 
-def fit_t(X, y):
-    beta, *_ = np.linalg.lstsq(X, y, rcond=None)
+def fit_t(X: np.ndarray, y: np.ndarray) -> np.ndarray:
+    beta: np.ndarray = np.linalg.lstsq(X, y, rcond=None)[0]
     return beta
 
 
-def stage(tag, R, lo, hi):
+def stage(tag: str, R: np.ndarray, lo: int, hi: int) -> float:
     H, D5, Dc, am, vol = features(R)
     idx = np.arange(max(lo, 220), min(hi, len(R) - 5))
     y = D5[idx]
@@ -77,7 +79,7 @@ def stage(tag, R, lo, hi):
     return p
 
 
-def run():
+def run() -> None:
     panels = {
         "EQUITY": load("data/market/equity_top15.csv", "_CLOSE", ("SPY",)),
         "CRYPTO": load("data/market/crypto_top15.csv", "",

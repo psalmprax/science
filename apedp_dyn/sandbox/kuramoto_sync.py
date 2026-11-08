@@ -100,7 +100,7 @@ def run_kuramoto(K_tr=None, K_ho=None, N=40, seed=42):
     return adj, scored, (K_tr, r_tr, K_ho, r_ho)
 
 
-def hello_world():
+def hello_world() -> None:
     print("=" * 64)
     print("KURAMOTO SANDBOX: sync transition r(K), train K<=2.5, holdout K>=3")
     print("=" * 64)

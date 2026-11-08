@@ -16,7 +16,7 @@ from cpmd_discovery_suite import EPS, KK, K, M, ic_null, rolling_std
 SIG = 0.01
 
 
-def gen_ladder(seed, c, n=3000):
+def gen_ladder(seed: int, c: float, n: int=3000) -> np.ndarray:
     rng = np.random.RandomState(int(seed))
     ret = np.zeros(n)
     for t in range(10, n - 1):
@@ -25,21 +25,21 @@ def gen_ladder(seed, c, n=3000):
     return ret
 
 
-def control_pred(ret):
+def control_pred(ret: np.ndarray) -> np.ndarray:
     n = len(ret)
     sig = rolling_std(ret)
-    fc = np.full(n, np.nan)
+    fc: np.ndarray = np.full(n, np.nan)
     for t in range(10, n - 1):
         m = float(np.mean(ret[t - 9:t + 1]))
         fc[t] = (1.0 if m > 0 else -1.0) * sig[t]
     return fc
 
 
-def gen_C(seed, n=3000):
+def gen_C(seed: int, n: int=3000) -> np.ndarray:
     # O(n) causal version: incremental window stats, identical math to the
     # O(n^2) draft (same windows, same formulas); draft was too slow to run.
     rng = np.random.RandomState(int(seed))
-    out = rng.normal(0, SIG, n)
+    out: np.ndarray = rng.normal(0, SIG, n)
     buf = list(out[:K])
     for t in range(K, n - 1):
         zwin = np.array(buf[-K:])
@@ -53,7 +53,7 @@ def gen_C(seed, n=3000):
     return out
 
 
-def feats(ret):
+def feats(ret: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     n = len(ret)
     sig = rolling_std(ret)
     z = ret / (sig + EPS)
@@ -71,10 +71,10 @@ def feats(ret):
     return sig, C, Q, V, Mt
 
 
-def cand_fc(name, ret):
+def cand_fc(name: str, ret: np.ndarray) -> np.ndarray:
     n = len(ret)
     sig, C, Q, V, Mt = feats(ret)
-    fc = np.full(n, np.nan)
+    fc: np.ndarray = np.full(n, np.nan)
     for t in range(K, n - 1):
         if name == "ctp":
             fc[t] = sig[t] * (1.0 if C[t] >= 0 else -1.0) * (abs(C[t]) - abs(C[t - 1]))
@@ -85,7 +85,7 @@ def cand_fc(name, ret):
     return fc
 
 
-def run():
+def run() -> None:
     print("== 1. strength ladder (oracle IC + harness p + IC coverage) ==")
     for c in (0.0, 0.1, 0.5, 2.0):
         oics, ps, _cov = [], [], 0

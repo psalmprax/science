@@ -218,7 +218,7 @@ def trading_strategy(prices, initial_capital=100.0, risk_per_trade=0.02,
         'num_trades': len([t for t in trades if t['type'] in ('long','short')]),
         'equity_curve': equity_curve}
 
-def hello_world():
+def hello_world() -> None:
     print("=" * 60)
     print("APEDP TRADING ENGINE: Momentum Detection")
     print("=" * 60)

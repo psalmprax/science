@@ -260,7 +260,6 @@ def main(argv: list[str] | None = None) -> int:
             if path not in files and (args.only is None or args.only in path):
                 files.append(path)
 
-    started = time.monotonic()
     results: dict[str, FileResult] = {}
     # Resumable: a long registry audit outlives one process. Each completed file
     # is written to the JSON cache immediately, so a killed run loses at most the
@@ -302,7 +301,11 @@ def main(argv: list[str] | None = None) -> int:
         _flush()
 
     verdicts = [judge(row, results) for row in rows]
-    report = render(rows, results, verdicts, time.monotonic() - started)
+    # Total time the harness actually spent executing pytest, including results
+    # restored from the resumable cache. Replaying from cache must not report
+    # the (near-zero) wall clock of the replay as the execution cost.
+    executed = sum(r.seconds for r in results.values())
+    report = render(rows, results, verdicts, executed)
     Path(args.out).write_text(report, encoding="utf-8")
     print(f"[audit] report written: {args.out}", file=sys.stderr)
 

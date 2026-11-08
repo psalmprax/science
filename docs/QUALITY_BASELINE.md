@@ -23,7 +23,7 @@ pass:
 |---|---:|---:|---|
 | `apedp/` | **0** | 938 | ruff clean; types pinned |
 | `tests/` | **0** | — | ruff clean |
-| `apedp_dyn/` | **0** | 2,250 | ruff clean; types burned down 2026-11-08 |
+| `apedp_dyn/` | **0** | 1,804 | ruff clean; types burned down 2026-11-08 |
 | `scripts/` | 604 | — | pinned |
 | `benchmarks/` | 217 | — | pinned |
 

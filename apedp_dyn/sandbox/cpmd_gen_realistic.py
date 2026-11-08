@@ -10,9 +10,11 @@ Model: 1-factor + GARCH(1,1)-t vols + segment vol multipliers + t shocks.
 This is INFRASTRUCTURE (calibration iteration legitimate); no candidate
 evaluation happens here.
 """
+from typing import Any
+
 import numpy as np
 
-PARAMS = {
+PARAMS: dict[str, dict[str, Any]] = {
     # (a,b,c): market / block / idio loadings, a^2+b^2+c^2=1
     "equity": {"n": 14, "vol": 0.0200, "df": 4.3, "alpha": 0.08,
                "abc": (0.50, 0.60, 0.62), "seg": (1.00, 1.30, 1.02), "beta_g": 0.88, "jump": 0.008},
@@ -21,7 +23,7 @@ PARAMS = {
 }
 
 
-def _garch_t(rng, n, alpha, beta_g, df, seed_var):
+def _garch_t(rng: np.random.RandomState, n: int, alpha: float, beta_g: float, df: float, seed_var: float) -> np.ndarray:
     vol = np.zeros(n)
     vol[0] = seed_var
     shocks = rng.standard_t(df, n) / np.sqrt(df / (df - 2))
@@ -33,7 +35,7 @@ def _garch_t(rng, n, alpha, beta_g, df, seed_var):
     return r
 
 
-def gen_R(seed, kind="equity", n=900):
+def gen_R(seed: int, kind: str="equity", n: int=900) -> np.ndarray:
     p = PARAMS[kind]
     rng = np.random.RandomState(int(seed))
     N = p["n"]
@@ -58,13 +60,14 @@ def gen_R(seed, kind="equity", n=900):
     R[2 * t:] *= p["seg"][2]
     # renormalize to target vol
     R = (R - R.mean(0)) / R.std(0) * p["vol"]
-    return R
+    out: np.ndarray = R
+    return out
 
 
-def panel_stats(R):
+def panel_stats(R: np.ndarray) -> dict[str, Any]:
     _n, N = R.shape
     kurt = float(np.mean(((R - R.mean(0)) / R.std(0)) ** 4, axis=0).mean())
-    sq = R ** 2
+    sq: np.ndarray = R ** 2
     ac1 = float(np.mean([np.corrcoef(sq[:-1, i], sq[1:, i])[0, 1] for i in range(N)]))
     C = np.corrcoef(R.T)
     iu = C[np.triu_indices(N, 1)]

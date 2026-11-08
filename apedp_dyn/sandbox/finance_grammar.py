@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import csv
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -30,7 +31,7 @@ FIN_TERMS = ("one", "x", "x3", "v", "abs_v_v", "sin_x")
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "market"
 
 
-def load_sp500(path: str | Path = DATA_DIR / "sp500.csv"):
+def load_sp500(path: str | Path = DATA_DIR / "sp500.csv") -> tuple[list[str], np.ndarray]:
     dates, px = [], []
     with open(path) as f:
         for row in csv.DictReader(f):
@@ -44,7 +45,7 @@ def load_sp500(path: str | Path = DATA_DIR / "sp500.csv"):
     return dates, np.array(px)
 
 
-def run_experiment(name, prob):
+def run_experiment(name: str, prob: Any) -> Any:
     print(f"--- Experiment {name} ---")
     cands = enumerate_candidates(required=(), optional=FIN_TERMS,
                                  max_terms=2, id_prefix="fin")
@@ -64,11 +65,13 @@ def run_experiment(name, prob):
           if s.provenance.get("gate4_status", {}).get("passed", False)]
     print(f"  gate-4 survivors: {len(g4)} / {len(fitted)} fitted")
 
-    def series(sc):
+    def series(sc: Any) -> np.ndarray | None:
         try:
             if sc.fit is None:
                 return None
-            return holdout_se_series(prob, sc.candidate, sc.fit.param_values)
+            resid: np.ndarray = holdout_se_series(prob, sc.candidate,
+                                                 sc.fit.param_values)
+            return resid
         except (RuntimeError, ValueError, TypeError):
             return None
 
@@ -98,7 +101,7 @@ def run_experiment(name, prob):
     return adj
 
 
-def main():
+def main() -> None:
     dates, px = load_sp500()
     idx = {d: i for i, d in enumerate(dates)}
     print(f"S&P 500 real: {len(px)} closes {dates[0]}..{dates[-1]}")

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -37,7 +38,7 @@ CREEP_N = 4.5
 
 def generate_creep_data(n_points: int = 40, noise_sigma: float = 0.03,
                         s_min: float = 50.0, s_max: float = 300.0,
-                        seed: int = 42):
+                        seed: int = 42) -> tuple[np.ndarray, np.ndarray]:
     """Steady-state creep rates over engineering stress range (MPa)."""
     rng = np.random.default_rng(seed)
     sigma = np.logspace(np.log10(s_min), np.log10(s_max), n_points)
@@ -51,14 +52,14 @@ def generate_creep_data(n_points: int = 40, noise_sigma: float = 0.03,
 
 
 def run_creep(noise_sigma: float = 0.03, n_train: int = 24,
-              bootstrap: bool = True, seed: int = 42):
+              bootstrap: bool = True, seed: int = 42) -> tuple[Any, list[ScoredCandidate], float]:
     sigma, obs = generate_creep_data(noise_sigma=noise_sigma, seed=seed)
     s_tr, y_tr, s_ho, y_ho = sigma[:n_train], obs[:n_train], sigma[n_train:], obs[n_train:]
     obs_rms = float(np.sqrt(np.mean(y_ho ** 2)))
     ns = float(noise_sigma * obs_rms + 1e-18)
     o = np.ones_like
 
-    def mk(cid, terms, X_tr, X_ho):
+    def mk(cid: str, terms: tuple[str, ...], X_tr: np.ndarray, X_ho: np.ndarray) -> ScoredCandidate:
         w, *_ = np.linalg.lstsq(X_tr, y_tr, rcond=None)
         rh = y_ho - X_ho @ w
         rm = float(np.sqrt(np.mean(rh ** 2)))
@@ -111,7 +112,7 @@ def run_creep(noise_sigma: float = 0.03, n_train: int = 24,
     return adj, scored, float(wl[1])
 
 
-def hello_world():
+def hello_world() -> None:
     print("=" * 64)
     print("CREEP SANDBOX: Norton law eps=A*s^n (A=1e-9, n=4.5), extrapolate high-S")
     print("=" * 64)

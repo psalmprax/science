@@ -4,6 +4,8 @@ Prereg: docs/CPMD_PREREGISTRATION_v013.md (frozen before run).
 """
 import sys
 import warnings
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
@@ -21,7 +23,7 @@ T_CRIT = 2.3646  # t_{0.975, df=7}
 RBOOT_B = 500
 
 
-def ols_parts(y):
+def ols_parts(y: np.ndarray) -> tuple[float, np.ndarray, float]:
     ly = np.log(y)
     s = -float(np.sum(XC * ly) / DENOM)
     r = ly - ly.mean() + s * XC
@@ -29,7 +31,7 @@ def ols_parts(y):
     return s, r, se
 
 
-def rboot_ci(y, seed):
+def rboot_ci(y: np.ndarray, seed: int) -> tuple[float, float, float]:
     s, r, _ = ols_parts(y)
     rng = np.random.RandomState(int(seed))
     ly = np.log(y)
@@ -43,8 +45,9 @@ def rboot_ci(y, seed):
     return s, float(np.percentile(b, 2.5)), float(np.percentile(b, 97.5))
 
 
-def run_cell(nl, methods, seed0=7000, n=200):
-    out = {m: {"cov": 0, "w": [], "e": []} for m in methods}
+def run_cell(nl: float, methods: Sequence[str], seed0: int=7000, n: int=200) -> dict[str, dict[str, Any]]:
+    out: dict[str, dict[str, Any]] = {m: {"cov": 0, "w": [], "e": []}
+                                       for m in methods}
     for k in range(n):
         _, yf = gen("power", nl, seed0 + k, t0=8.0, a=1.2)
         ar = np.arange(2, 14)
@@ -66,14 +69,14 @@ def run_cell(nl, methods, seed0=7000, n=200):
     return out
 
 
-def verdict(d):
+def verdict(d: Mapping[str, Any]) -> str:
     e = np.array(d["e"])
     ok = (d["cov"] >= 184 and np.median(d["w"]) <= 1.0
           and abs(np.mean(e)) <= 0.1 and np.sqrt(np.mean(e ** 2)) <= 0.3)
     return ("PASS" if ok else "fail")
 
 
-def run():
+def run() -> None:
     print("Direction A: envelope (OLS-N), truth=0.5619")
     for nl in (0.05, 0.10, 0.15, 0.20, 0.25, 0.30):
         d = run_cell(nl, ("OLS-N",))["OLS-N"]

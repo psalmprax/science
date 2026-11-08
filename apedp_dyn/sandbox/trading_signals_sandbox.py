@@ -677,7 +677,7 @@ def run_genetic_algorithm(
 
 
 # ── Full Tournament & Out-of-Sample Evaluation ────────────────────────────
-def run_all_signals_experiment(panel: pd.DataFrame, dataset_name: str, initial_capital: float = 10000.0):
+def run_all_signals_experiment(panel: pd.DataFrame, dataset_name: str, initial_capital: float = 10000.0) -> None:
     """Run full 22-signal standalone vs combination tournament on out-of-sample data."""
     n = len(panel)
     n_train = n // 2
@@ -1093,7 +1093,7 @@ def run_epistemic_trading_adjudication(
 
 # ── CLI Entrypoint ────────────────────────────────────────────────────────
 
-def main():
+def main() -> None:
     print("=" * 105)
     print("APEDP COMPREHENSIVE 22-SIGNAL UNIVERSE & GENETIC ALGORITHM SYSTEM")
     print(f"Total Registered Trading Signals: {len(SIGNAL_REGISTRY)}")

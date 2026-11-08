@@ -17,25 +17,25 @@ TM = float(np.mean(LAGS))
 A_TRUE, T0_TRUE = 1.2, 8.0
 
 
-def pointwise_truth(a=A_TRUE, t0=T0_TRUE, tau=8.0):
+def pointwise_truth(a: float=A_TRUE, t0: float=T0_TRUE, tau: float=8.0) -> float:
     return float(a * tau / (tau + t0))
 
 
-def finite_window_truth(a=A_TRUE, t0=T0_TRUE):
+def finite_window_truth(a: float=A_TRUE, t0: float=T0_TRUE) -> float:
     lx = np.log(LAGS)
     ly = np.log(0.05 * (LAGS + t0) ** (-a))  # exact noiseless curve
     xc = lx - lx.mean()
     return float(-np.sum(xc * ly) / np.sum(xc ** 2))
 
 
-def local3(y):
+def local3(y: np.ndarray) -> float:
     lx, ly = np.log(LAGS), np.log(y)
     mid = len(lx) // 2
     sl = (ly[mid + 1] - ly[mid - 1]) / (lx[mid + 1] - lx[mid - 1])
     return -float(sl)
 
 
-def run():
+def run() -> None:
     pt = pointwise_truth()
     fw = finite_window_truth()
     print(f"Test A: pointwise truth={pt:.4f} finite-window truth={pt - fw:+.4f} "

@@ -256,7 +256,7 @@ def recover_exponent_per_distance(distances=(3, 5, 7), seeds=(11, 22, 33, 44, 55
     return out
 
 
-def hello_world():
+def hello_world() -> None:
     print("=" * 64)
     print("QEC THRESHOLD SANDBOX: p_L = C*(p/p_th)^((d+1)/2), d=3")
     print("=" * 64)

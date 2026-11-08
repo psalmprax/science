@@ -27,7 +27,7 @@ CELLS = [
 ]
 
 
-def run():
+def run() -> None:
     ok = 0
     for name, lags, tc, wide, nl, seed0 in CELLS:
         truth = finwin_truth(lags, "power")

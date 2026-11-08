@@ -122,7 +122,7 @@ def run_r0_threshold(noise=0.02, seed=42):
             "est_range": (float(ests.min()), float(ests.max()))}
 
 
-def hello_world():
+def hello_world() -> None:
     print("=" * 64)
     print("SIR SANDBOX: R0=2.5 outbreak, vaccination cuts beta 70% at t=60")
     print("=" * 64)

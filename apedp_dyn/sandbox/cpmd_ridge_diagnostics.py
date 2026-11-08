@@ -26,11 +26,11 @@ from scipy.optimize import curve_fit
 TRUTH = {"a": 1.2, "t0": 8.0, "seed": 2001, "noise": 0.1}
 
 
-def main():
+def main() -> None:
     lags, y = gen("power", TRUTH["noise"], TRUTH["seed"])
     ly = np.log(y)
 
-    def ssr(lA, a, t0):
+    def ssr(lA: float, a: float, t0: float) -> float:
         return float(np.sum((ly - (lA - a * np.log(lags + t0))) ** 2))
 
     surface = {}

@@ -5,6 +5,7 @@ Step 1 oracle bounds, Step 2 harness calibration, Step 3 H-CMD candidate.
 """
 import sys
 import warnings
+from collections.abc import Callable, Iterable
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
@@ -17,7 +18,7 @@ ALPHA_HARNESS = 0.05 / 2
 ALPHA_CMD = 0.025
 
 
-def oracle_genA(seed):
+def oracle_genA(seed: int) -> tuple[np.ndarray, np.ndarray]:
     ret, _, state = one_path(seed)
     pos = np.zeros(len(ret))
     for t in range(5, len(ret) - 1):
@@ -28,7 +29,7 @@ def oracle_genA(seed):
     return p, r
 
 
-def gen_C(seed, n=3000, sig=0.01):
+def gen_C(seed: int, n: int=3000, sig: float=0.01) -> np.ndarray:
     rng = np.random.RandomState(int(seed))
     ret = np.zeros(n)
     for t in range(10, n - 1):
@@ -37,7 +38,7 @@ def gen_C(seed, n=3000, sig=0.01):
     return ret
 
 
-def control_genC(ret):
+def control_genC(ret: np.ndarray) -> np.ndarray:
     n = len(ret)
     sig = rolling_std(ret)
     fc = np.full(n, np.nan)
@@ -47,7 +48,7 @@ def control_genC(ret):
     return fc
 
 
-def hcmd(ret):
+def hcmd(ret: np.ndarray) -> np.ndarray:
     n = len(ret)
     sig = rolling_std(ret)
     z = ret / (sig + EPS)
@@ -62,7 +63,7 @@ def hcmd(ret):
     return fc
 
 
-def eval_fc(fc_fn, genfn, seeds, label):
+def eval_fc(fc_fn: Callable[[np.ndarray], np.ndarray], genfn: Callable[[int], np.ndarray], seeds: Iterable[int], label: str) -> tuple[float, float]:
     ics, ps = [], []
     for sd in seeds:
         ret = genfn(sd)
@@ -76,7 +77,7 @@ def eval_fc(fc_fn, genfn, seeds, label):
     return float(np.mean(ics)), float(np.median(ps))
 
 
-def run():
+def run() -> None:
     print("== Step 1: oracle bounds ==")
     ics = []
     for sd in range(20000, 20030):

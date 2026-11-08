@@ -276,7 +276,7 @@ def run_crypto_experiment(
     return adj, prob, series_info
 
 
-def main():
+def main() -> None:
     """Run CLI benchmark across composite basket and top assets."""
     print(f"Loaded crypto 15-asset dataset from {CRYPTO_DATA_FILE}")
     adj, _prob, _info = run_crypto_experiment("COMPOSITE_TOP15")

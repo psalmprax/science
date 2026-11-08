@@ -252,7 +252,7 @@ def run_m4_l3_pairwise(noise_sigma: float = 0.02, seed: int = 42,
             "divergence_mpa": float(np.max(np.abs(f_pw - f_hp)))}, adj, [s1, s2]
 
 
-def hello_world():
+def hello_world() -> None:
     print("=" * 64)
     print("M4 NANOSCALE CROSSOVER: classical HP vs inverse softening (dc=15nm)")
     print("=" * 64)

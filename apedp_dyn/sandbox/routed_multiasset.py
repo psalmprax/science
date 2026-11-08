@@ -30,7 +30,7 @@ FORMS = {"fin-0007": ("one", "x"), "fin-0017": ("x3", "abs_v_v")}
 NTR, NHO, STEP = 60, 20, 20
 
 
-def load(name):
+def load(name: str) -> tuple[list[str], np.ndarray]:
     import tempfile
     files = {"SPX": "sp500", "NDX": "nasdaq100", "WTI": "oil",
              "DGS10": "dgs10", "BTC": "btc"}
@@ -49,18 +49,18 @@ def load(name):
     return dates, np.array(px)
 
 
-def ok(x):
+def ok(x: float | None) -> bool:
     return x is not None and np.isfinite(x)
 
 
-def run_asset(name):
+def run_asset(name: str) -> tuple[float, dict[str, int], dict[str, list[float]]]:
     dates, px = load(name)
     rets = np.diff(np.log(px))
     vols = np.array([rets[max(0, i - 20):i].std() if i >= 2 else np.nan
                      for i in range(len(rets))])
     m18 = np.array([d.startswith("2018") for d in dates[1:]])
     TH = float(np.quantile(vols[m18][np.isfinite(vols[m18])], 0.80))
-    res = {"routed": [], "007": [], "017": []}
+    res: dict[str, list[float]] = {"routed": [], "007": [], "017": []}
     n_route = {"fin-0007": 0, "fin-0017": 0}
     i = next(i for i, d in enumerate(dates) if d >= "2019-01-01")
     while i + NTR + NHO <= len(px):
@@ -89,7 +89,7 @@ def run_asset(name):
     return TH, n_route, res
 
 
-def main():
+def main() -> None:
     print(f"  {'asset':6s} {'n':>3s} {'to007':>5s} "
           f"{'routed':>7s} {'007':>7s} {'017':>7s}  (mean holdout RMSE)")
     for asset in ASSETS:

@@ -5,6 +5,7 @@ Phase 1: seeds 20000+ (ST1 paths). Phase 2: seeds 30000+ (fresh).
 """
 import sys
 import warnings
+from collections.abc import Iterable, Sequence
 
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
@@ -15,11 +16,11 @@ from cpmd_synth_trading import COST, decay_curve, ols_slope_width, one_path
 WINDOWS = (25, 50, 100, 200)
 
 
-def run_path(seed, windows):
+def run_path(seed: int, windows: Sequence[int]) -> tuple[dict[str, dict[str, float]], dict[int, float]]:
     ret, _px, state = one_path(seed)
     W = max(windows)
     burn = 200
-    med = {}
+    med: dict[int, float] = {}
     for w in windows:
         thr = []
         for t in range(W, W + burn):
@@ -32,7 +33,7 @@ def run_path(seed, windows):
     pos.update({k: np.zeros(len(ret)) for k in ("mom5", "mom20", "bh", "rev", "rnd")})
     pos["bh"][:] = 1.0
     rr = np.random.RandomState(seed + 1)
-    cls = {w: np.zeros(len(ret), dtype=int) for w in windows}
+    cls: dict[int, np.ndarray] = {w: np.zeros(len(ret), dtype=int) for w in windows}
     for t in range(t0, len(ret) - 1):
         m5 = float(np.sum(ret[t - 5:t]))
         m20 = float(np.sum(ret[t - 20:t]))
@@ -48,21 +49,21 @@ def run_path(seed, windows):
             cls[w][t] = 0 if est_persist else 1
             if wd <= 1.0:
                 pos[f"ols{w}"][t] = sig5 if est_persist else -sig5
-    out = {}
+    out: dict[str, dict[str, float]] = {}
     for k, p in pos.items():
         p = p[t0:-1]
         r = ret[t0 + 1:]
         chg = np.abs(np.diff(np.concatenate([[0.0], p])))
         netrets = p * r - chg * COST
-        nav = np.cumsum(netrets)
+        nav: np.ndarray = np.cumsum(netrets)
         dd = float(np.max(np.maximum.accumulate(nav) - nav))
         sharpe = float(np.mean(netrets) / (np.std(netrets) + 1e-12) * np.sqrt(252))
         out[k] = {"sharpe": sharpe, "net": float(np.sum(netrets)), "dd": dd,
                   "turn": float(np.sum(chg))}
     # regime-detection delay per window
-    delays = {}
+    delays: dict[int, float] = {}
     for w in windows:
-        d = []
+        d: list[float] = []
         t = t0 + 1
         while t < len(ret) - 1:
             if state[t] != state[t - 1]:
@@ -77,9 +78,10 @@ def run_path(seed, windows):
     return out, delays
 
 
-def phase(seeds, rules):
-    acc = {k: {"sharpe": [], "net": [], "dd": [], "turn": []} for k in rules}
-    dly = {w: [] for w in WINDOWS}
+def phase(seeds: Iterable[int], rules: Sequence[str]) -> tuple[dict[str, dict[str, list[float]]], dict[int, list[float]]]:
+    acc: dict[str, dict[str, list[float]]] = {
+        k: {"sharpe": [], "net": [], "dd": [], "turn": []} for k in rules}
+    dly: dict[int, list[float]] = {w: [] for w in WINDOWS}
     for sd in seeds:
         o, dl = run_path(sd, WINDOWS)
         for k in rules:
@@ -90,7 +92,7 @@ def phase(seeds, rules):
     return acc, dly
 
 
-def show(acc, dly, tag):
+def show(acc: dict[str, dict[str, list[float]]], dly: dict[int, list[float]], tag: str) -> None:
     print(f"--- {tag} ---")
     for k, d in acc.items():
         print(f"{k}: sharpe={np.mean(d['sharpe']):+.3f} net={np.mean(d['net']):+.4f} "
@@ -99,7 +101,7 @@ def show(acc, dly, tag):
         print(f"delay ols{w}: median {np.nanmedian(dly[w]):.0f} steps")
 
 
-def run():
+def run() -> None:
     from scipy.stats import wilcoxon
     rules1 = [f"ols{w}" for w in WINDOWS] + ["mom5", "mom20", "bh", "rev", "rnd"]
     acc1, dly1 = phase(range(20000, 20030), rules1)

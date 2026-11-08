@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -42,17 +43,19 @@ TRUTH = {"k0": 2e-4, "alpha": 1.35, "Ea": 4.0e4}
 
 
 def generate_degradation(n_per_regime: int = 40, noise_sigma: float = 0.03,
-                         seed: int = 42):
+                         seed: int = 42) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
     """Wear grids: train/interp envelope vs hot extrapolation envelope."""
     rng = np.random.default_rng(seed)
 
-    def grid(t_lo, t_hi, T_lo, T_hi, n):
+    def grid(t_lo: float, t_hi: float, T_lo: float, T_hi: float, n: int) -> tuple[np.ndarray, np.ndarray]:
         t = np.linspace(t_lo, t_hi, n)
         T = np.linspace(T_lo, T_hi, n) + 273.15
         return t, T
 
-    def truth(t, T):
-        return TRUTH["k0"] * t ** TRUTH["alpha"] * np.exp(-TRUTH["Ea"] / (R_GAS * T))
+    def truth(t: np.ndarray, T: np.ndarray) -> np.ndarray:
+        wear: np.ndarray = (TRUTH["k0"] * t ** TRUTH["alpha"]
+                            * np.exp(-TRUTH["Ea"] / (R_GAS * T)))
+        return wear
 
     out = {}
     for name, (t_lo, t_hi, T_lo, T_hi) in {
@@ -66,25 +69,29 @@ def generate_degradation(n_per_regime: int = 40, noise_sigma: float = 0.03,
     return out
 
 
-def _feats(kind, t, T):
+def _feats(kind: str, t: np.ndarray, T: np.ndarray) -> np.ndarray:
     o = np.ones_like(t)
+    out: np.ndarray
     if kind == "power":
-        return np.column_stack([o, np.log(np.maximum(t, 1e-9))])
-    if kind == "linear":
-        return np.column_stack([o, t])
-    if kind == "logt":
-        return np.column_stack([o, np.log1p(t)])
-    if kind == "satexp":
-        return np.column_stack([o, 1 - np.exp(-t / 400.0)])
-    if kind == "arrhenius":
-        return np.column_stack([o, np.log(np.maximum(t, 1e-9)), -1.0 / (R_GAS * T)])
-    if kind == "const":
-        return o[:, None]
-    raise ValueError(kind)
+        out = np.column_stack([o, np.log(np.maximum(t, 1e-9))])
+    elif kind == "linear":
+        out = np.column_stack([o, t])
+    elif kind == "logt":
+        out = np.column_stack([o, np.log1p(t)])
+    elif kind == "satexp":
+        out = np.column_stack([o, 1 - np.exp(-t / 400.0)])
+    elif kind == "arrhenius":
+        out = np.column_stack([o, np.log(np.maximum(t, 1e-9)),
+                               -1.0 / (R_GAS * T)])
+    elif kind == "const":
+        out = o[:, None]
+    else:
+        raise ValueError(kind)
+    return out
 
 
 def run_adcab_stage_a(noise_sigma: float = 0.03, seed: int = 42,
-                      bootstrap: bool = True):
+                      bootstrap: bool = True) -> tuple[Any, list[ScoredCandidate], TransferScope]:
     data = generate_degradation(noise_sigma=noise_sigma, seed=seed)
     (t_tr, T_tr, y_tr), (t_ie, T_ie, y_ie), (t_ee, T_ee, y_ee) = (
         data["train"], data["interp"], data["extra"])
@@ -153,7 +160,7 @@ def run_adcab_stage_a(noise_sigma: float = 0.03, seed: int = 42,
     return adj, scored, scope
 
 
-def hello_world():
+def hello_world() -> None:
     print("=" * 64)
     print("AD-CAB STAGE A: brake-pad wear D=k0*t^1.35*exp(-Ea/RT), hot extrap")
     print("=" * 64)
