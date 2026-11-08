@@ -43,9 +43,9 @@ Source: `benchmarks/formal/lean_axiom_audit.json`, `docs/LEAN_FORMAL_STATUS.md`.
 |---|---|
 | `.lean` files | 557 |
 | files classified `checked` from Lean's foundations | 0 |
-| files classified `axiom_injected` | 297 |
-| files containing `sorry`/`admit` | 259 |
-| theorems proved by rewriting a local axiom | 0 (the 94 were rewritten to `sorry`) |
+| files classified `axiom_injected` | 360 |
+| files containing `sorry`/`admit` | 196 |
+| theorems proved by rewriting a local axiom | 94 (still emitted by `lean_universal_bridge.py`; the earlier `0 (the 94 were rewritten to `sorry`)` described no committed tree) |
 
 No claim in this repository is formally verified. The Lean files are transcriptions whose
 statements are assumed; `scripts/audit_lean_formal_layer.py --check` exits 1 by design until

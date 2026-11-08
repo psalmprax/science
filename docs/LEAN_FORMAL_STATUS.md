@@ -11,11 +11,11 @@ claims and the report disagree.
 | of those, under `apedp_dyn/lean_formal/` | 366 |
 | `axiom` declarations | 12,470 |
 | `theorem`/`lemma` statements | 1,054 |
-| `sorry` / `admit` occurrences | 345 |
-| theorems proved by rewriting a *local* axiom | 0 |
+| `sorry` / `admit` occurrences | 251 |
+| theorems proved by rewriting a *local* axiom | 94 |
 | files classified `checked` (no axiom, no `sorry`) | **0** |
-| files classified `axiom_injected` | 297 |
-| files classified `incomplete` | 259 |
+| files classified `axiom_injected` | 360 |
+| files classified `incomplete` | 196 |
 | files classified `declaration_only` | 1 |
 | machine-checked fraction | **0.0** |
 
@@ -30,15 +30,21 @@ theorem ... (x : R) : (-x) * (-x) * (-x) = - (x * x * x) := by rw [cube_neg x]
 ```
 
 The theorem is true *given the axiom*, and the axiom is exactly the theorem's statement, so
-nothing is established. That shape has now been removed from the tree: the generator
-refuses to emit a proof that rewrites a local axiom, and the 94 theorems that did are
-emitted as statements with `sorry`, so `theorems proved by rewriting a local axiom` is 0
-and every rewritten file still compiles under the local Lean binary (exit 0, `sorry`
-warnings only). What remains is 297 `axiom_injected` files that declare axioms without
-closing that loop, and 259 `incomplete` files that admit their statements outright;
-neither is evidence, because an assumed lemma is not a proof of anything it is used for.
-Removing the circularity does not create a proof — it stops the file from presenting the
-premise as the conclusion.
+nothing is established. That shape is still in the tree. `apedp_dyn/epistemic/lean_universal_bridge.py` emits those
+four rewrite-with-a-local-axiom proofs (`abs_mul`, `tanh_odd`, `cube_neg`, `neg_mul_neg`), so
+the audit measures 94 theorems across 63 files whose only justification is
+the axiom they restate. An earlier version of this page claimed the shape had been removed and
+that the count was zero; that was never true of any committed tree. At `53b574f6`, the commit
+that first wrote this report, the same theorem already read `rw [abs_mul c (tanh v)]`, so the
+report recorded an aspiration rather than a measurement. What the layer contains is
+360 `axiom_injected` files that declare axioms without closing that loop, and
+196 `incomplete` files that admit their statements outright. Correcting the count does
+not create a proof -- it stops the page from claiming a repair that never happened.
+
+The bridge marks these theorems `syntactic_schema_check::axiomatic_*` and says in the diagnostic
+that the conclusion is embedded in the premises, which is why the P2 ledger counts them while
+this audit refuses to. The two records disagree on purpose: P2 means the kernel ran over the
+module, and this page means the statement was proved. Only the second is verification.
 
 ## The rule this document sets
 

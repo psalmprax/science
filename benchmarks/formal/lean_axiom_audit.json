@@ -5,13 +5,13 @@
     "files": 557,
     "axioms": 12470,
     "theorems": 1054,
-    "sorry": 345,
-    "theorems_rewriting_a_local_axiom": 0
+    "sorry": 251,
+    "theorems_rewriting_a_local_axiom": 94
   },
   "classification": {
     "checked": 0,
-    "axiom_injected": 297,
-    "incomplete": 259,
+    "axiom_injected": 360,
+    "incomplete": 196,
     "declaration_only": 1
   },
   "checked_fraction": 0.0,
@@ -21,7 +21,7 @@
       "files": 366,
       "axioms": 12435,
       "theorems": 729,
-      "incomplete": 71
+      "incomplete": 8
     },
     "benchmarks": {
       "files": 189,
