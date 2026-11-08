@@ -13,6 +13,12 @@
       "function": "rank",
       "bases": ["table:_RANK"],
       "why": "EvidenceTier.rank is a property indexing the fixed ordering _RANK (PROVED 0 .. UNRESOLVED 3). The ordering is a schema decision about evidence kinds, not a judgement passed on the caller's data, so the lookup is the intended behaviour."
+    },
+    {
+      "module": "apedp_dyn/quantum_compilation/dqi_gluzdov_v6.py",
+      "function": "design_projection_dqi_gluzdov_v6",
+      "bases": ["table:RECYCLING_MEASUREMENT"],
+      "why": "The return is an analytical projection whose score is computed from GluzdovV6Config; RECYCLING_MEASUREMENT is the measured degree-register recycling record embedded as its stated basis, not the answer the caller reads."
     }
   ]
 }

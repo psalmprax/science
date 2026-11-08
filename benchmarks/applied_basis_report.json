@@ -43,15 +43,13 @@
           "function": "simulate_repuposing_efficacy",
           "dict_returns": 1,
           "labelled": 1
-        },
-        {
-          "function": "screen",
-          "dict_returns": 1,
-          "labelled": 1
         }
       ],
       "unlabelled": [],
-      "constant_returns": []
+      "constant_returns": [
+        "_is_finite_number: returns the constant False",
+        "_is_finite_number: returns the constant False"
+      ]
     },
     {
       "module": "apedp/applied_climate.py",
@@ -264,12 +262,17 @@
       "module": "apedp/applied_synthetic_bio.py",
       "functions": [
         {
-          "function": "design_guide_rna",
+          "function": "_ranking_comparison",
           "dict_returns": 1,
           "labelled": 1
         },
         {
-          "function": "predict_off_targets",
+          "function": "_scan",
+          "dict_returns": 1,
+          "labelled": 1
+        },
+        {
+          "function": "design_guide_rna",
           "dict_returns": 1,
           "labelled": 1
         },
@@ -285,10 +288,7 @@
         }
       ],
       "unlabelled": [],
-      "constant_returns": [
-        "_pam_matches: returns the constant True",
-        "_pam_matches: returns the constant False"
-      ]
+      "constant_returns": []
     }
   ],
   "totals": {
