@@ -43,7 +43,7 @@ import math
 import multiprocessing as mp
 import os
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Any
 
 import numpy as np
@@ -151,7 +151,7 @@ def clopper_pearson_upper_bound(
     log_delta = log2_delta * math.log(2.0)
     if k == 0:
         return -math.expm1(log_delta / n)
-    j = np.arange(k + 1, dtype=np.float64)
+    j: np.ndarray = np.arange(k + 1, dtype=np.float64)
     log_comb = np.r_[0.0, np.cumsum(np.log(n - j[1:] + 1.0) - np.log(j[1:]))]
 
     def log_tail(p: float) -> float:
@@ -177,12 +177,13 @@ def optimal_dqi_weights(m: int, max_errors: int, degree: int, r: int) -> np.ndar
     q = 1 << degree
     if not (0 <= max_errors <= m and 0 < r < q):
         raise ValueError(f'Invalid (max_errors={max_errors}, r={r}) for m={m}, q={q}.')
-    k = np.arange(max_errors + 1, dtype=np.float64)
+    k: np.ndarray = np.arange(max_errors + 1, dtype=np.float64)
     off = np.sqrt(k[1:] * (m - k[1:] + 1))
     d = (q - 2 * r) / math.sqrt(r * (q - r))
     _, vecs = np.linalg.eigh(np.diag(k * d) + np.diag(off, 1) + np.diag(off, -1))
     w = np.abs(vecs[:, -1])
-    return w / np.linalg.norm(w)
+    _out: np.ndarray = w / np.linalg.norm(w)
+    return _out
 
 
 def sample_error(m: int, max_value: int, weight_probs: Sequence[float],
@@ -197,7 +198,8 @@ def sample_error(m: int, max_value: int, weight_probs: Sequence[float],
 def to_bits(values: np.ndarray, degree: int) -> np.ndarray:
     """Unpacks `(batch, num_regs)` field elements into `(num_regs * degree, batch)` booleans."""
     bits = (values[:, :, None] >> np.arange(degree)) & 1 == 1
-    return bits.transpose(1, 2, 0).reshape(-1, len(values))
+    _out: np.ndarray = bits.transpose(1, 2, 0).reshape(-1, len(values))
+    return _out
 
 
 # Register validation.
@@ -213,7 +215,7 @@ def validate_registers(
     if len(registers) != circuit.num_registers or set(registers) != set(s_names) | set(e_names):
         raise ValueError('Registers must be exactly S0..S{n-1} and E0..E{m-1}.')
 
-    def collect(names: list[str], kind: type, label: str) -> list:
+    def collect(names: list[str], kind: type, label: str) -> list[Any]:
         out = []
         for name in names:
             reg = list(registers[name])
@@ -239,7 +241,7 @@ def sample_shots(
     tables: FieldTables,
     rng: np.random.Generator,
     num_shots: int,
-    weight_probs: Sequence[float] | None = None,
+    weight_probs: Sequence[float] | np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Returns `(syndromes, mbuc, phases)` for `num_shots` DQI test cases drawn from `rng`."""
     if weight_probs is None:
@@ -247,9 +249,9 @@ def sample_shots(
     max_value = (1 << tables.degree) - 1
     weights = rng.choice(len(weight_probs), size=num_shots, p=weight_probs)
     mbuc = rng.integers(0, max_value, size=(num_shots, spec.m), endpoint=True, dtype=np.int64)
-    syndromes = np.zeros((num_shots, spec.n), dtype=np.int64)
-    phases = np.zeros(num_shots, dtype=bool)
-    rows = np.arange(1, spec.n + 1, dtype=np.int64)[:, None]
+    syndromes: np.ndarray = np.zeros((num_shots, spec.n), dtype=np.int64)
+    phases: np.ndarray = np.zeros(num_shots, dtype=bool)
+    rows: np.ndarray = np.arange(1, spec.n + 1, dtype=np.int64)[:, None]
 
     for shot in np.flatnonzero(weights):
         k = int(weights[shot])
@@ -305,14 +307,17 @@ def _initial_seed(circuit_hash: str, salt: str) -> int:
     return int(hashlib.sha256(f'{circuit_hash}{salt}'.encode()).hexdigest(), 16)
 
 
-_WORKER_FN = None
+_WORKER_FN: Callable[[Any], Any] | None = None
 
 
-def _call_worker(task):
+def _call_worker(task: Any) -> Any:
+    if _WORKER_FN is None:
+        raise RuntimeError('worker function not initialised')
     return _WORKER_FN(task)
 
 
-def _run_parallel(fn, tasks: list, max_workers: int | None) -> list:
+def _run_parallel(fn: Callable[[Any], Any], tasks: list[Any],
+                  max_workers: int | None) -> list[Any]:
     global _WORKER_FN
     if max_workers is not None and max_workers <= 0:
         raise ValueError(f'max_workers must be positive, got {max_workers}.')
@@ -354,7 +359,8 @@ def verify(
     syndrome_qubits, mbuc_bits, ancilla_qubits = validate_registers(circuit, spec)
     syndrome_array, mbuc_array = km.array(syndrome_qubits), km.array(mbuc_bits)
 
-    weight_probs = optimal_dqi_weights(spec.m, spec.max_errors, spec.degree, spec.r) ** 2
+    weight_probs: np.ndarray = optimal_dqi_weights(
+        spec.m, spec.max_errors, spec.degree, spec.r) ** 2
     tables = FieldTables(km.GF2Field(spec.degree))
     base_seed = _initial_seed(circuit_hash, salt) if seed is None else int(seed)
 

@@ -20,7 +20,9 @@ with residuals, bootstrap tiebreak, native data_origin labeling.
 from __future__ import annotations
 
 import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -118,8 +120,8 @@ def generate_qec_saturating_data(
     return p, obs
 
 
-def _mk(cid, terms, X_tr, y_tr, X_ho, y_ho, obs_rms, noise_est,
-        data_origin=DataOrigin.SIMULATION):
+def _mk(cid: str, terms: tuple[str, ...], X_tr: np.ndarray, y_tr: np.ndarray, X_ho: np.ndarray, y_ho: np.ndarray, obs_rms: float, noise_est: float,
+        data_origin: str=DataOrigin.SIMULATION) -> ScoredCandidate:
     w, *_ = np.linalg.lstsq(X_tr, y_tr, rcond=None)
     resid = y_ho - X_ho @ w
     rmse = float(np.sqrt(np.mean(resid ** 2)))
@@ -135,7 +137,7 @@ def _mk(cid, terms, X_tr, y_tr, X_ho, y_ho, obs_rms, noise_est,
 
 
 def run_qec_threshold_stage1(noise_sigma: float = 0.02, seed: int = 42,
-                             bootstrap: bool = True):
+                             bootstrap: bool = True) -> tuple[Any, list[ScoredCandidate]]:
     """Stage 1: four fixed forms on threshold-spanning data."""
     p, obs = generate_qec_threshold_data(noise_sigma=noise_sigma, seed=seed)
     ntr = len(p) // 2
@@ -168,7 +170,7 @@ def run_qec_threshold_stage1(noise_sigma: float = 0.02, seed: int = 42,
     return adj, scored
 
 
-def run_qec_l3(seed: int = 42, probe_seed: int = 777):
+def run_qec_l3(seed: int = 42, probe_seed: int = 777) -> tuple[dict[str, float], Any, list[ScoredCandidate]]:
     """L3: probe threshold-power vs linear over reachable p, fresh data, frozen fits."""
     p, obs = generate_qec_threshold_data(seed=seed)
     ntr = len(p) // 2
@@ -190,7 +192,7 @@ def run_qec_l3(seed: int = 42, probe_seed: int = 777):
     op = tp + rng.normal(0, 0.02 * np.sqrt(np.mean(tp ** 2)), 30)
     o_rms = float(np.sqrt(np.mean(op ** 2)))
 
-    def frozen(cid, terms, w, feat):
+    def frozen(cid: str, terms: tuple[str, ...], w: np.ndarray, feat: Callable[[np.ndarray], np.ndarray]) -> tuple[ScoredCandidate, np.ndarray]:
         pred = w[0] + w[1] * feat(pp)
         rm = float(np.sqrt(np.mean((op - pred) ** 2)))
         g4 = {"passed": True, "holdout_obs_rms": o_rms,
@@ -223,7 +225,7 @@ def run_qec_l3(seed: int = 42, probe_seed: int = 777):
     return {"p_star": p_star, "divergence": float(div.max())}, adj, [s1, s2]
 
 
-def recover_exponent_per_distance(distances=(3, 5, 7), seeds=(11, 22, 33, 44, 55)):
+def recover_exponent_per_distance(distances: tuple[int, ...]=(3, 5, 7), seeds: tuple[int, ...]=(11, 22, 33, 44, 55)) -> dict[int, dict[str, float]]:
     """Valid scalability estimator: saturating form, linear-space weighted fit.
 
     NOTE: the naive log-log polyfit is biased by the noise floor and must NOT
@@ -250,9 +252,9 @@ def recover_exponent_per_distance(distances=(3, 5, 7), seeds=(11, 22, 33, 44, 55
                 ests.append(float(popt[0]))
             except RuntimeError:
                 ests.append(float("nan"))
-        ests = np.asarray(ests)
-        out[dd] = {"true": e_true, "mean": float(np.nanmean(ests)),
-                   "std": float(np.nanstd(ests))}
+        ests_arr: np.ndarray = np.asarray(ests)
+        out[dd] = {"true": e_true, "mean": float(np.nanmean(ests_arr)),
+                   "std": float(np.nanstd(ests_arr))}
     return out
 
 

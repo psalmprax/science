@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -23,6 +24,7 @@ if _REPO_ROOT not in sys.path:
 
 from apedp_dyn.epistemic.adjudicate import adjudicate
 from apedp_dyn.fitting.parameter_fit import fit_candidate
+from apedp_dyn.grammar.candidate_ir import ScoredCandidate
 from apedp_dyn.grammar.mechanical_grammar import (
     enumerate_candidates,
     prune_admissible,
@@ -38,7 +40,7 @@ G, L, DRAG = 9.81, 1.0, 0.6
 PEND_TERMS = ("one", "x", "x3", "v", "abs_v_v", "sin_x")
 
 
-def simulate_pendulum(theta0, t_end=10.0, dt=0.02, noise=0.0, seed=0):
+def simulate_pendulum(theta0: float, t_end: float=10.0, dt: float=0.02, noise: float=0.0, seed: int=0) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     rng = np.random.default_rng(seed)
     n = int(t_end / dt) + 1
     th = np.empty(n)
@@ -54,7 +56,7 @@ def simulate_pendulum(theta0, t_end=10.0, dt=0.02, noise=0.0, seed=0):
     return np.arange(n) * dt, th, om
 
 
-def build_problem(dt=0.02, noise=0.01, tr_amp=0.7, ho_amp=0.6, problem_id="PEND-DRAG"):
+def build_problem(dt: float=0.02, noise: float=0.01, tr_amp: float=0.7, ho_amp: float=0.6, problem_id: str="PEND-DRAG") -> DynProblem:
     t_tr, th_tr, om_tr = simulate_pendulum(tr_amp, t_end=10.0, dt=dt, noise=noise, seed=11)
     t_ho, th_ho, om_ho = simulate_pendulum(ho_amp, t_end=10.0, dt=dt, noise=noise, seed=23)
     Ytr = np.column_stack([th_tr, om_tr])
@@ -82,7 +84,7 @@ def build_problem(dt=0.02, noise=0.01, tr_amp=0.7, ho_amp=0.6, problem_id="PEND-
                       (), truth, train, holdout)
 
 
-def run_pendulum(noise=0.01):
+def run_pendulum(noise: float=0.01) -> tuple[Any, list[ScoredCandidate]]:
     prob = build_problem(dt=0.02, noise=noise, tr_amp=0.7, ho_amp=0.6)
     slate = enumerate_candidates(required=(), optional=PEND_TERMS,
                                  max_terms=2, id_prefix="pd")

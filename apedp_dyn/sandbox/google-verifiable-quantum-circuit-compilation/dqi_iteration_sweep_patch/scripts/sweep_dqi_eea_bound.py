@@ -16,6 +16,7 @@ import os
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 
 def sha256(path: Path) -> str:
@@ -26,7 +27,7 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def load_callable(spec: str):
+def load_callable(spec: str) -> Any:
     if ':' not in spec:
         raise ValueError('--builder must be module:function')
     module_name, func_name = spec.split(':', 1)

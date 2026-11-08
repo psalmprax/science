@@ -207,11 +207,12 @@ def run_crypto_experiment(
     g4 = [s for s in fitted if s.provenance.get("gate4_status", {}).get("passed", False)]
     print(f"  gate-4 survivors: {len(g4)} / {len(fitted)} fitted")
 
-    def series(sc):
+    def series(sc: Any) -> np.ndarray | None:
         try:
             if sc.fit is None:
                 return None
-            return holdout_residual_series(prob, sc.candidate, sc.fit.param_values)
+            _out: np.ndarray | None = holdout_residual_series(prob, sc.candidate, sc.fit.param_values)
+            return _out
         except (RuntimeError, ValueError, TypeError):
             return None
 

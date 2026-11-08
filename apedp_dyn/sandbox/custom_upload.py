@@ -205,11 +205,12 @@ def _run_1d_series_discovery(
 
     g4 = [s for s in fitted if s.provenance.get("gate4_status", {}).get("passed", False)]
 
-    def _se_series(sc):
+    def _se_series(sc: Any) -> np.ndarray | None:
         try:
             if sc.fit is None:
                 return None
-            return holdout_residual_series(prob, sc.candidate, sc.fit.param_values)
+            _out: np.ndarray | None = holdout_residual_series(prob, sc.candidate, sc.fit.param_values)
+            return _out
         except (ValueError, TypeError, ArithmeticError, KeyError, IndexError, RuntimeError) as exc:
             _LOG.debug("holdout residual series unavailable: %s", exc)
             return None

@@ -134,7 +134,7 @@ def load_universe(universe_type: str = "crypto") -> tuple[dict[str, pd.DataFrame
         v = df[f"{sym}_VOL"].to_numpy(float)
         tb = df[f"{sym}_TAKER_BUY"].to_numpy(float) if f"{sym}_TAKER_BUY" in df.columns else v * 0.5
         ofi = df[f"{sym}_OFI"].to_numpy(float) if f"{sym}_OFI" in df.columns else np.zeros(len(p))
-        r = np.append(0.0, np.diff(np.log(p)))
+        r: np.ndarray = np.append(0.0, np.diff(np.log(p)))
 
         if f"{sym}_HIGH" in df.columns and f"{sym}_LOW" in df.columns:
             h = df[f"{sym}_HIGH"].to_numpy(float)
@@ -240,7 +240,7 @@ def calc_signals_for_asset(df: pd.DataFrame, cross_ret_median: np.ndarray) -> np
     hurst = np.full(len(r), np.nan)
     for t in range(30, len(r)):
         sub = r[t - 30:t]
-        cum_dev = np.cumsum(sub - np.mean(sub))
+        cum_dev: np.ndarray = np.cumsum(sub - np.mean(sub))
         r_range = np.max(cum_dev) - np.min(cum_dev)
         s_std = np.std(sub)
         if s_std > 1e-9 and r_range > 1e-9:
@@ -278,7 +278,8 @@ def calc_signals_for_asset(df: pd.DataFrame, cross_ret_median: np.ndarray) -> np
         s_bb, s_mom, s_stoch, s_rv, s_ha, s_logv, s_mfi, s_obv, s_hurst, s_cross_mom,
         s_nl_vol_mom, s_nl_sqz_trend, s_nl_risk_mom, s_nl_ofi_rev, s_nl_hurst_adapt, s_nl_taker_mom, s_nl_master_snr,
     ]
-    return np.column_stack([np.nan_to_num(f, nan=0.0) for f in feats])
+    _out: np.ndarray = np.column_stack([np.nan_to_num(f, nan=0.0) for f in feats])
+    return _out
 
 
 SIGNAL_NAMES = [
@@ -426,7 +427,8 @@ def calc_expanded_signals_for_asset(df: pd.DataFrame, cross_ret_median: np.ndarr
         s_bb_width, s_kc_width, s_breakout, s_sv_mom, s_cmf, s_bb_taker,
     ]
     new_cols = np.column_stack([np.nan_to_num(f, nan=0.0) for f in new_feats])
-    return np.hstack([base_signals, new_cols])
+    _out: np.ndarray = np.hstack([base_signals, new_cols])
+    return _out
 
 
 
@@ -604,8 +606,8 @@ def combine_two_tier_portfolios(
     eq_combined : np.ndarray
         Full daily joint equity trajectory
     """
-    eq_c_arr = np.asarray(eq_c, dtype=float)
-    eq_e_arr = np.asarray(eq_e, dtype=float)
+    eq_c_arr: np.ndarray = np.asarray(eq_c, dtype=float)
+    eq_e_arr: np.ndarray = np.asarray(eq_e, dtype=float)
     eq_combined = eq_c_arr + eq_e_arr
     pnl = float(eq_combined[-1] - initial_capital)
     tot_ret = float(pnl / initial_capital * 100.0)
@@ -656,7 +658,7 @@ class MultiAssetChromosome:
 # ── PINNED CANONICAL CHROMOSOMES (Bit-Exact Reproducibility Fixtures) ─────
 def _make_pinned_chromosome(active_indices: list[int], weights_list: list[float], threshold: float) -> MultiAssetChromosome:
     K = len(SIGNAL_NAMES)
-    mask = np.zeros(K, dtype=bool)
+    mask: np.ndarray = np.zeros(K, dtype=bool)
     mask[active_indices] = True
     weights = np.array(weights_list, dtype=float)
     return MultiAssetChromosome(mask=mask, weights=weights, threshold=float(threshold))
@@ -864,7 +866,8 @@ def run_multi_asset_genetic_algorithm(
 
 
 # ── Main Multi-Asset Execution Runner ─────────────────────────────────────
-def run_15_asset_universe_tournament(initial_capital: float = 100000.0, universe_type: str = "crypto"):
+def run_15_asset_universe_tournament(initial_capital: float = 100000.0,
+                                      universe_type: str = "crypto") -> None:
     """Backward-compatible wrapper for multi-asset universe tournament."""
     return run_multi_asset_universe_tournament(initial_capital=initial_capital, universe_type=universe_type)
 
@@ -1408,7 +1411,10 @@ def run_epistemic_multi_asset_adjudication(
         sim_fn = simulate_multi_asset_portfolio
         sim_mode = "directional"
     else:
-        def two_tier_sim_fn(s, r, v, mode="two_tier", sizing="risk_parity", threshold=thr_n, fee_bps=5.0, initial_capital=initial_capital):
+        def two_tier_sim_fn(s: np.ndarray, r: np.ndarray, v: np.ndarray,
+                            mode: str = "two_tier", sizing: str = "risk_parity",
+                            threshold: float = thr_n, fee_bps: float = 5.0,
+                            initial_capital: float = initial_capital) -> tuple[Any, ...]:
             half = initial_capital / 2.0
             s_c, r_c, v_c = s[:, :half_idx], r[:, :half_idx], v[:, :half_idx]
             s_e, r_e, v_e = s[:, half_idx:], r[:, half_idx:], v[:, half_idx:]
@@ -2051,11 +2057,11 @@ if __name__ == "__main__":
 # apedp_dyn/epistemic/caller_registry.py for the census and discipline.
 # --------------------------------------------------------------------------
 def publish_caller_compliance_record(
-    ledger=None,
+    ledger: Any=None,
     candidate_id: str = "",
-    dataset_id: str = None,
-    nominal_variants: int = None,
-):
+    dataset_id: str | None = None,
+    nominal_variants: int | None = None,
+) -> Any:
     "Publish this caller's REG-F14b mode-(b) compliance record."
     from apedp_dyn.epistemic.caller_registry import publish_compliance_record
 

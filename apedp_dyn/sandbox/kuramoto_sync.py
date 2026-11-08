@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -37,7 +38,7 @@ from apedp_dyn.grammar.candidate_ir import (
 )
 
 
-def order_param(K, N=40, T=40.0, dt=0.05, seed=0):
+def order_param(K: float, N: int=40, T: float=40.0, dt: float=0.05, seed: int=0) -> float:
     rng = np.random.default_rng(seed)
     w = rng.normal(0.0, 1.0, N)
     th = rng.uniform(-np.pi, np.pi, N)
@@ -48,7 +49,7 @@ def order_param(K, N=40, T=40.0, dt=0.05, seed=0):
     return r
 
 
-def run_kuramoto(K_tr=None, K_ho=None, N=40, seed=42):
+def run_kuramoto(K_tr: np.ndarray | None=None, K_ho: np.ndarray | None=None, N: int=40, seed: int=42) -> tuple[Any, list[ScoredCandidate], tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]]:
     K_tr = np.linspace(0.5, 2.5, 9) if K_tr is None else np.asarray(K_tr)
     K_ho = np.linspace(3.0, 5.0, 6) if K_ho is None else np.asarray(K_ho)
     r_tr = np.array([order_param(K, N=N, seed=seed) for K in K_tr])
@@ -57,7 +58,7 @@ def run_kuramoto(K_tr=None, K_ho=None, N=40, seed=42):
     ns = float(0.02 * obs_rms + 1e-9)
     o = np.ones_like
 
-    def mk(cid, terms, ftr, fho):
+    def mk(cid: str, terms: tuple[str, ...], ftr: np.ndarray, fho: np.ndarray) -> ScoredCandidate:
         X_tr = np.column_stack([o(K_tr), ftr])
         X_ho = np.column_stack([o(K_ho), fho])
         w, *_ = np.linalg.lstsq(X_tr, r_tr, rcond=None)

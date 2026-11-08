@@ -24,6 +24,7 @@ APEDP observes noisy measurements of the system response.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -54,7 +55,7 @@ class PlasmaConfig:
     dt: float       # timestep [s]
     noise_sigma: float = 0.05  # measurement noise level (relative)
 
-def _P_loss(T: float, n: float, **kwargs) -> float:
+def _P_loss(T: float, n: float, **kwargs: float) -> float:
     """True power loss (hidden from APEDP).
     
     P_loss = ALPHA * T^(gamma_T) / (n * tau_E)
@@ -63,11 +64,11 @@ def _P_loss(T: float, n: float, **kwargs) -> float:
     tau_E = TAU0 * (T/T0)**1.5 * (N0/n)**0.5 * (B0/kwargs.get('B', B0))**(-1)
     return float(ALPHA * T**GAMMA_T / (n * tau_E))
 
-def _dTdt(T: float, n: float, P_heat: float, **kwargs) -> float:
+def _dTdt(T: float, n: float, P_heat: float, **kwargs: float) -> float:
     """Temperature derivative per the true model."""
     return P_heat - _P_loss(T, n, **kwargs)
 
-def _dn_dt(T: float, n: float, **kwargs) -> float:
+def _dn_dt(T: float, n: float, **kwargs: float) -> float:
     """Density derivative (simplified fueling/loss)."""
     # Simple fueling balanced by thermal loss
     S_fuel = 0.1 * N0 / 10.0  # slow fueling
@@ -123,7 +124,7 @@ def simulate_plasma(config: PlasmaConfig,
     return states, observations
 
 def generate_synthetic_dataset(n_conditions: int = 20,
-                              noise_levels: tuple[float, ...] = (0.03, 0.05, 0.10)) -> dict:
+                              noise_levels: tuple[float, ...] = (0.03, 0.05, 0.10)) -> dict[str, Any]:
     """Generate multiple synthetic datasets with varying noise levels."""
     datasets = {}
     

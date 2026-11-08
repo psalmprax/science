@@ -9,8 +9,10 @@ competition verifier directory exposed by scripts/sweep_dqi_eea_bound.py.
 """
 from __future__ import annotations
 
+from typing import Any
 
-def build_candidate(*, n_iters: int):
+
+def build_candidate(*, n_iters: int) -> Any:
     """Build a DQI circuit for the requested EEA iteration cap.
 
     The 70 syndrome registers and 4,095 error-mask registers match the benchmark

@@ -19,7 +19,9 @@ adjudication with bootstrap tiebreak and native data_origin labeling.
 from __future__ import annotations
 
 import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -62,7 +64,7 @@ def generate_m4_data(n_points: int = 60,
     return d, sigma_obs
 
 
-def _fit_pair(X_tr, y_tr, X_ho, y_ho):
+def _fit_pair(X_tr: np.ndarray, y_tr: np.ndarray, X_ho: np.ndarray, y_ho: np.ndarray) -> tuple[np.ndarray, float, float, np.ndarray]:
     w, *_ = np.linalg.lstsq(X_tr, y_tr, rcond=None)
     resid_ho = y_ho - X_ho @ w
     return w, float(np.mean((y_tr - X_tr @ w) ** 2)), float(np.sqrt(np.mean(resid_ho ** 2))), resid_ho
@@ -73,7 +75,7 @@ def fit_m4_nano_candidates(d: np.ndarray,
                            n_train: int = 30,
                            noise_sigma: float = 0.02,
                            data_origin: str = DataOrigin.SIMULATION,
-                           ) -> tuple[list[ScoredCandidate], dict]:
+                           ) -> tuple[list[ScoredCandidate], dict[str, Any]]:
     """Fit global single-law candidates plus a threshold-scanned piecewise law.
 
     Returns (candidates, info) where info carries the dc scan table and the
@@ -85,7 +87,7 @@ def fit_m4_nano_candidates(d: np.ndarray,
     noise_est = float(noise_sigma * obs_rms)
     ones_tr, ones_ho = np.ones_like(d_tr), np.ones_like(d_ho)
 
-    def make(cid, terms, X_tr, X_ho, extra_prov=None):
+    def make(cid: str, terms: tuple[Term, ...], X_tr: np.ndarray, X_ho: np.ndarray, extra_prov: dict[str, Any] | None=None) -> tuple[ScoredCandidate, np.ndarray]:
         w, loss_tr, rmse_ho, resid_ho = _fit_pair(X_tr, y_tr, X_ho, y_ho)
         prov = {"data_origin": data_origin,
                 "benchmark_level": BenchmarkLevel.L1_CONSTRAINED_DISCOVERY,
@@ -168,7 +170,7 @@ def run_m4_nano_benchmark(noise_sigma: float = 0.02,
                           n_train: int = 30,
                           bootstrap: bool = True,
                           data_origin: str = DataOrigin.SIMULATION,
-                          seed: int = 42):
+                          seed: int = 42) -> tuple[Any, list[ScoredCandidate], dict[str, Any]]:
     """Execute M4: global laws vs threshold piecewise on crossover data."""
     d, sigma_obs = generate_m4_data(n_points=n_points, noise_sigma=noise_sigma, seed=seed)
     candidates, info = fit_m4_nano_candidates(d, sigma_obs, n_train=n_train,
@@ -192,7 +194,7 @@ def run_m4_nano_benchmark(noise_sigma: float = 0.02,
 
 
 def run_m4_l3_pairwise(noise_sigma: float = 0.02, seed: int = 42,
-                       probe_seed: int = 777):
+                       probe_seed: int = 777) -> tuple[dict[str, float], Any, list[ScoredCandidate]]:
     """L3: pairwise probe (piecewise vs global-HP), fresh data, frozen fits.
 
     The three-way min-divergence probe lands on a compromise point; the
@@ -228,7 +230,7 @@ def run_m4_l3_pairwise(noise_sigma: float = 0.02, seed: int = 42,
     op = tp + rng.normal(0, noise_sigma * np.sqrt(np.mean(tp ** 2)), 30)
     obs_rms = float(np.sqrt(np.mean(op ** 2)))
 
-    def frozen(cid, terms, w, feat):
+    def frozen(cid: str, terms: tuple[str, ...], w: np.ndarray, feat: Callable[[np.ndarray, np.ndarray], np.ndarray]) -> tuple[ScoredCandidate, np.ndarray]:
         pred = feat(dp, w)
         rmse = float(np.sqrt(np.mean((op - pred) ** 2)))
         se = (op - pred) ** 2

@@ -18,7 +18,9 @@ Two questions:
 from __future__ import annotations
 
 import sys
+from collections.abc import Mapping
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -41,14 +43,15 @@ PD = {"R": 3.0, "S": 0.0, "T": 5.0, "P": 1.0}
 SH = {"R": 4.0, "S": 0.0, "T": 3.0, "P": 2.0}
 
 
-def replicator_rhs(x, game):
+def replicator_rhs(x: np.ndarray, game: Mapping[str, float]) -> np.ndarray:
     """dx/dt for cooperator fraction x under game payoffs."""
     fC = game["R"] * x + game["S"] * (1 - x)
     fD = game["T"] * x + game["P"] * (1 - x)
-    return x * (1 - x) * (fC - fD)
+    rhs: np.ndarray = x * (1 - x) * (fC - fD)
+    return rhs
 
 
-def simulate_game(game, x0, t_end=20.0, dt=0.1, noise=0.0, seed=0):
+def simulate_game(game: Mapping[str, float], x0: float, t_end: float=20.0, dt: float=0.1, noise: float=0.0, seed: int=0) -> tuple[np.ndarray, np.ndarray]:
     rng = np.random.default_rng(seed)
     n = int(t_end / dt) + 1
     x = np.empty(n)
@@ -60,7 +63,7 @@ def simulate_game(game, x0, t_end=20.0, dt=0.1, noise=0.0, seed=0):
     return np.arange(n) * dt, x
 
 
-def _mk(cid, terms, X_tr, y_tr, X_ho, y_ho, obs_rms, ns):
+def _mk(cid: str, terms: tuple[str, ...], X_tr: np.ndarray, y_tr: np.ndarray, X_ho: np.ndarray, y_ho: np.ndarray, obs_rms: float, ns: float) -> tuple[ScoredCandidate, np.ndarray]:
     w, *_ = np.linalg.lstsq(X_tr, y_tr, rcond=None)
     rh = y_ho - X_ho @ w
     rm = float(np.sqrt(np.mean(rh ** 2)))
@@ -75,11 +78,12 @@ def _mk(cid, terms, X_tr, y_tr, X_ho, y_ho, obs_rms, ns):
                            holdout_rmse=rm), rh
 
 
-def _poly_cols(x, degree):
-    return np.column_stack([x ** k for k in range(degree + 1)])
+def _poly_cols(x: np.ndarray, degree: int) -> np.ndarray:
+    cols: np.ndarray = np.column_stack([x ** k for k in range(degree + 1)])
+    return cols
 
 
-def run_form_recovery(game=PD, game_name="PD", noise=0.005, seed=42):
+def run_form_recovery(game: Mapping[str, float]=PD, game_name: str="PD", noise: float=0.005, seed: int=42) -> tuple[Any, list[ScoredCandidate]]:
     """A: cubic form vs lower orders, unseen initial conditions at holdout."""
     tr_ics = (0.2, 0.4, 0.6, 0.8)
     ho_ics = (0.1, 0.3, 0.5, 0.7, 0.9)
@@ -108,7 +112,7 @@ def run_form_recovery(game=PD, game_name="PD", noise=0.005, seed=42):
     return adj, scored
 
 
-def run_game_identification(noise=0.005, seed=42):
+def run_game_identification(noise: float=0.005, seed: int=42) -> tuple[Any, list[ScoredCandidate]]:
     """B: PD-fitted cubic vs SH-fitted cubic, scored on PD holdout (unseen ICs)."""
     ho_ics = (0.15, 0.35, 0.55, 0.75, 0.95)
     tr_ics = (0.2, 0.4, 0.6, 0.8)

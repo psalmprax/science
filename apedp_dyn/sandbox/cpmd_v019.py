@@ -11,6 +11,9 @@ import warnings
 warnings.filterwarnings("ignore")
 sys.path.insert(0, "apedp_dyn/sandbox")
 
+from collections.abc import Callable, Iterable
+from typing import Any
+
 import numpy as np
 from cpmd_discovery_suite import EPS, KK, K, M, ic_null
 from cpmd_v018 import feats
@@ -19,7 +22,7 @@ SIG = 0.01
 ALPHA_GRAMMAR = 0.05 / 60
 
 
-def gen_truth(seed, which, A, n=3000):
+def gen_truth(seed: int, which: str, A: float, n: int=3000) -> np.ndarray:
     rng = np.random.RandomState(int(seed))
     base = rng.normal(0, SIG, n)
     out = base.copy()
@@ -37,10 +40,11 @@ def gen_truth(seed, which, A, n=3000):
         else:
             out[t + 1] = A * sigt * np.sin(3 * Q) * Mt + rng.normal(0, SIG)
         buf.append(out[t + 1])
-    return out
+    _out: np.ndarray = out
+    return _out
 
 
-def grammar_forms():
+def grammar_forms() -> dict[str, Callable[..., float]]:
     # (name, fn(sig,C,Q,V,M,dC,tQ,tC)) — 30 base forms; σ-scaling variants
     # counted inside (each form tested raw AND ×σ). Total ≤ 60.
     return {
@@ -62,7 +66,7 @@ def grammar_forms():
     }
 
 
-def eval_form(fn, ret, seed, scaled):
+def eval_form(fn: Callable[..., float], ret: np.ndarray, seed: int, scaled: bool) -> tuple[float, float, Any]:
     n = len(ret)
     sig, C, Q, V, Mt = feats(ret)
     fc = np.full(n, np.nan)
@@ -72,10 +76,11 @@ def eval_form(fn, ret, seed, scaled):
                abs(C[t]) - abs(Cprev), np.tanh(Q[t]), np.tanh(C[t]))
         fc[t] = (sig[t] * v) if scaled else v
         Cprev = C[t]
-    return ic_null(fc[:-1], ret[1:len(fc)], seed)
+    _out: tuple[float, float, Any] = ic_null(fc[:-1], ret[1:len(fc)], seed)
+    return _out
 
 
-def score_paths(which, A, seeds):
+def score_paths(which: str, A: float, seeds: Iterable[int]) -> tuple[list[tuple[str, float, float]], list[np.ndarray]]:
     paths = [gen_truth(sd, which, A) for sd in seeds]
     forms = grammar_forms()
     rows = []

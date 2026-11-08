@@ -9,6 +9,7 @@ Implements the reviewer's architecture separating discovery power from referee d
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -57,7 +58,7 @@ class RefereeBenchmarkReport:
 
 
 def run_calibrated_referee_benchmark(
-    referee_adjudicator_fn,
+    referee_adjudicator_fn: Callable[..., Any],
     n_trials: int = 40,
     seed: int = 42,
 ) -> RefereeBenchmarkReport:
@@ -140,7 +141,7 @@ class DiscoveryBenchmarkSuiteReport:
 
 
 def run_calibrated_discovery_benchmark(
-    proposer_discovery_fn,
+    proposer_discovery_fn: Callable[..., Any],
     trials_per_condition: int = 15,
     seed: int = 42,
 ) -> DiscoveryBenchmarkSuiteReport:
@@ -225,7 +226,7 @@ class TransferBenchmarkReport:
 
 
 def run_transfer_benchmark(
-    discovered_model_eval_fn,
+    discovered_model_eval_fn: Callable[..., Any],
     test_environments: dict[str, tuple[np.ndarray, np.ndarray]],
 ) -> TransferBenchmarkReport:
     """Evaluate surviving models across unseen OOD environments."""
@@ -270,7 +271,7 @@ def compute_theoretical_gaussian_power(n: int, ic: float, alpha: float = 0.05) -
 
 
 def generate_power_curve_matrix(
-    proposer_discovery_fn,
+    proposer_discovery_fn: Callable[..., Any],
     sample_sizes: list[int] | None = None,
     target_ics: list[float] | None = None,
     trials_per_cell: int = 10,
@@ -334,11 +335,11 @@ def generate_power_curve_matrix(
 # apedp_dyn/epistemic/caller_registry.py for the census and discipline.
 # --------------------------------------------------------------------------
 def publish_caller_compliance_record(
-    ledger=None,
+    ledger: Any=None,
     candidate_id: str = "",
     dataset_id: str | None = None,
     nominal_variants: int | None = None,
-):
+) -> Any:
     "Publish this caller's REG-F14b mode-(b) compliance record."
     from apedp_dyn.epistemic.caller_registry import publish_compliance_record
 
