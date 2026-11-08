@@ -1009,11 +1009,17 @@ def test_dyn_dead_knobs_are_measured_where_they_can_be_reached():
 
 
 def test_every_census_module_in_apedp_dyn_is_named_in_the_inventory():
-    """Twenty-two modules, twenty-two names: seventeen gated, five excluded by record.
+    """Every vendored table a checkout can hold is named, and the tracked set is pinned.
 
-    The vendored five are not this repository's tables, so the gate leaves them
-    out. They are still written down, because an exclusion nobody can audit is
-    indistinguishable from an omission — and a sixth one now fails this test.
+    The vendored modules are not this repository's tables, so the gate leaves them
+    out, and they are written down because an exclusion nobody can audit is
+    indistinguishable from an omission. What changed: `_qualtran_src` was recorded
+    as a gitlink to https://github.com/kickmix/kickmix.git, which returns
+    "Repository not found", so the four Qualtran source files this test used to
+    count could only ever exist in a working tree that already had the vendored
+    copy. The link is removed and the copy is ignored residue, which leaves exactly
+    one vendored module the repository ships; the other four stay named in the
+    inventory so a local vendored copy cannot hide a new table from the review.
     """
     import importlib.util
 
@@ -1037,7 +1043,17 @@ def test_every_census_module_in_apedp_dyn_is_named_in_the_inventory():
         if relative.startswith(vendored):
             reported.append(relative)
     reported.sort()
-    assert len(reported) == 5, reported
+
+    import subprocess
+
+    tracked = set(
+        subprocess.run(
+            ["git", "ls-files", vendored],
+            cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+        ).stdout.split()
+    )
+    shipped = [path for path in reported if path in tracked]
+    assert shipped == [f"{vendored}/verifiers/dfthcsos/scoreinfra/reference.py"], shipped
     for path in reported:
         assert path in text, path
         assert path not in recorded, path

@@ -95,3 +95,6 @@ artifacts/quantum_compilation/dqi/iteration_sweep_receipts/dqi_niters_222.kmb
 
 # Local audit output: mypy/ruff/pytest logs from agent sessions
 .artifacts/
+
+# Vendored Qualtran source: gitlink removed (its remote 404s), local copy is residue
+apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src/

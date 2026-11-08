@@ -318,7 +318,7 @@ call site — and the vendored harness under
 with its own tables and its own `_qualtran_src` tree. Both are named here instead of
 being counted.
 
-**The five vendored modules the census finds, named instead of dropped.** Run
+**The vendored modules the census finds, named instead of dropped.** Run
 without the record's exclusion, the census reports 22 modules under `apedp_dyn`:
 the seventeen above, and five inside the third-party harness. They are not this
 repository's tables, so `scripts/static_table_census.json` leaves them out of the
@@ -332,11 +332,20 @@ gate — but an exclusion is only honest if the set it hides is written down:
 | `apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src/qualtran/surface_code/ui.py` | `_MAGIC_FACTORIES`, `_QEC_SCHEMES`, `_SUPPORTED_ESTIMATION_MODELS` | `input_components`, `qec_summary_components`, `_MAGIC_FACTORIES_components` |
 | `apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/verifiers/dfthcsos/scoreinfra/reference.py` | `FIXED_SHIFTS_KEYS` | `load_fixed_shifts` |
 
-Three of the five are Qualtran's own source tree (`_qualtran_src`), and two are
-harness code that came with it. A change to any of them is a change to vendored
-code, so the pre-commit gate stays silent by design and the reviewer reads it in
-the diff. The set itself is pinned by the suite, so the exclusion cannot quietly
-grow: a sixth vendored module has to be named here before it can be ignored.
+Four of the five are Qualtran's own source tree (`_qualtran_src`), which this
+repository does not track. `5e09d51d` recorded the tree as a gitlink to
+https://github.com/kickmix/kickmix.git; that remote returns `Repository not found`,
+so no checkout could ever materialise it and the four rows above described a
+working tree rather than the repository. The dead link is removed and the local
+32 MB copy is ignored residue (`docs/REPOSITORY_RESIDUE.md`), which leaves one
+vendored module a clone actually holds: the harness's `scoreinfra/reference.py`.
+
+The four rows stay, and the names are not decoration: a working tree that does hold
+the vendored copy exposes those tables to the census, and they have to be findable
+here rather than silently dropped. What the suite pins is the tracked set — exactly
+one vendored module — so a sixth *tracked* vendored table fails this page's check
+until it is named. A change to any of the five is a change to vendored code, so the
+pre-commit gate stays silent by design and the reviewer reads it in the diff.
 
 ## Negative demonstrations, recorded rather than narrated
 

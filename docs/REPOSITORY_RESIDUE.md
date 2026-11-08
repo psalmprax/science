@@ -13,7 +13,7 @@ the next sweep starts from this table instead of from `git status`.
 
 | path | size | files | why |
 |---|---|---|---|
-| `apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src/` | 32 MB | 1,563 | Vendored third-party Qualtran source, not this repository's code. `docs/SCAFFOLD_INVENTORY.md` already names the five modules inside it that the static-table census would otherwise report. |
+| `apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src/` | 32 MB | 1,563 | Vendored third-party Qualtran source, not this repository's code. It was tracked as a gitlink to `https://github.com/kickmix/kickmix.git`, which returns `Repository not found`, so no clone could materialise it and `test_every_census_module_in_apedp_dyn_is_named_in_the_inventory` counted five vendored modules that only one working tree had. The gitlink is removed and the path ignored; nothing tracked imports `qualtran`. `docs/SCAFFOLD_INVENTORY.md` still names the four modules inside it, so a local vendored copy cannot hide a table. |
 | `submission/` | 19 MB | 9 | Generated submission archives, not source. The scripts that produce them (`scripts/build_packed_decoder_submission.py`, `scripts/assemble_packed_decoder.py`) are tracked, so the artifacts stay derivable rather than authoritative. |
 | `unused/` | 24 KB | 1 | Not imported by any tracked module, which is what `tests/test_tracked_import_closure.py` checks. Keeping it out of the index keeps it out of the import graph. |
 | `data/skills/` | — | 0 | Empty directory. Nothing to track; git does not store empty directories anyway. |
