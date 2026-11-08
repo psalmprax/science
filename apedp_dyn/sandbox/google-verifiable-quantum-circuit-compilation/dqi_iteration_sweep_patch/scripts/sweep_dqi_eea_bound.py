@@ -7,7 +7,14 @@ Circuit. The official verifier's measured cost (including R(epsilon+)) decides w
 iteration schedule is actually better.
 """
 from __future__ import annotations
-import argparse, hashlib, importlib, json, os, sys, time
+
+import argparse
+import hashlib
+import importlib
+import json
+import os
+import sys
+import time
 from pathlib import Path
 
 
@@ -44,10 +51,10 @@ def main() -> int:
         p.error('iteration caps must be positive')
     root = a.competition_root.resolve()
     sys.path[:0] = [str(root / 'kickmix'), str(root / 'verifiers')]
-    import kickmix as km
     from dqi import verify_submission_dqi as dv
     builder = load_callable(a.builder)
-    out = a.output.resolve(); out.mkdir(parents=True, exist_ok=True)
+    out = a.output.resolve()
+    out.mkdir(parents=True, exist_ok=True)
     spec = dv.ProblemSpecDQI.benchmark_instance(num_shots=a.shots)
     rows = []
     for n_iters in a.iterations:
@@ -64,7 +71,7 @@ def main() -> int:
             row['verification'] = dict(report)
             row['status'] = 'VERIFIED' if report.get('status') == 'PASS' else 'REJECTED'
             row['measured_cost'] = report.get('score')
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - a failed iteration is recorded in the row and the sweep continues
             row.update({'status': 'ERROR', 'error': repr(exc)})
         row['seconds'] = time.monotonic() - started
         rows.append(row)

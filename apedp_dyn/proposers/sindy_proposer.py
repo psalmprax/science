@@ -15,18 +15,18 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+from apedp_dyn.grammar.proposer_interface import (  # noqa: E402 - must follow the logger definition; the native-extension probe below is not an import error risk
+    CandidateProposal,
+    ProposerBase,
+    StrategyArchetype,
+)
+
 try:
     import apedp_kernel
     RUST_AVAILABLE = hasattr(apedp_kernel, 'compute_metrics')
 except Exception:  # noqa: BLE001 - the native extension is optional: a broken or half-installed .so raises OSError/AttributeError at import, not only ImportError; RUST_AVAILABLE records the outcome
     apedp_kernel = None
     RUST_AVAILABLE = False
-
-from apedp_dyn.grammar.proposer_interface import (
-    CandidateProposal,
-    ProposerBase,
-    StrategyArchetype,
-)
 
 
 class SINDyProposer(ProposerBase):
@@ -127,7 +127,7 @@ class SINDyProposer(ProposerBase):
                 continue
             formula_parts = []
             from apedp_dyn.grammar.term_format import atom
-            for c, t in zip(coeffs, terms):
+            for c, t in zip(coeffs, terms, strict=False):
                 if t == "1":
                     formula_parts.append(f"{c:.6g}")
                 elif t.startswith("x"):
@@ -142,8 +142,8 @@ class SINDyProposer(ProposerBase):
                 # and use their positions to index the shorter coefficient list,
                 # so a later candidate scored an earlier one's terms -- or, when
                 # the first term was not in the library's first column, raised.
-                pairs = tuple((t, c) for t, c in zip(terms, coeffs) if t != "1")
-                constants = tuple(c for t, c in zip(terms, coeffs) if t == "1")
+                pairs = tuple((t, c) for t, c in zip(terms, coeffs, strict=False) if t != "1")
+                constants = tuple(c for t, c in zip(terms, coeffs, strict=False) if t == "1")
 
                 def score(df):
                     rows = len(df)
@@ -197,9 +197,10 @@ try:
                         # try to parse simple formula
                         results.append(p.formula)
                     except Exception:  # noqa: BLE001 - the grammar adapter is optional glue over a problem object whose shape is not contractual; a problem without truth_t/truth_y yields no candidate
+                        logger.debug("sindy adapter skipped an unrenderable formula", exc_info=True)
                         continue
                 return results
             except Exception:  # noqa: BLE001 - a proposal with no renderable formula contributes no string; the remaining proposals are still returned
                 return []
 except Exception:  # noqa: BLE001 - the outer failure yields no candidate from this adapter and is now logged with exc_info, so an unparseable problem is not mistaken for an empty search
-    pass
+    logger.debug("sindy grammar adapter unavailable", exc_info=True)

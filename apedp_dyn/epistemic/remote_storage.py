@@ -257,7 +257,7 @@ class LocalStorageBackend(BaseStorageBackend):
 class MemoryStorageBackend(BaseStorageBackend):
     """In-memory thread-safe storage backend ideal for testing and ephemeral scoping."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._data: dict[str, bytes] = {}
         self._locks: dict[str, str] = {}  # key -> token
         self._lock = threading.RLock()

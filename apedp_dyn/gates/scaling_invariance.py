@@ -130,7 +130,7 @@ class ScalingInvarianceGate:
         # Index by name for fast lookup
         self._regime_by_name = {r.name: r for r in regimes}
 
-    def add_regime(self, regime: ScalingRegime):
+    def add_regime(self, regime: ScalingRegime) -> None:
         """Add a scaling regime to the gate's registry."""
         object.__setattr__(self, '_regimes', (*self._regimes, regime))
         object.__setattr__(self, '_regime_by_name', {

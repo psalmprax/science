@@ -75,7 +75,8 @@ class AppliedPhysicsDefectAuditor:
             'regularized_cp': cp_soft,
             'distortion_at_m08': distortion_m08,
             'distortion_at_m09': distortion_m09,
-            'recommended_regularization': 'Van Dyke Transonic Softening: Cp = Cp_0 / ((1 - M^2)^2 + eps^2)^(1/4)'
+            'recommended_regularization': 'Van Dyke Transonic Softening: Cp = Cp_0 / ((1 - M^2)^2 + eps^2)^(1/4)',
+            'basis': 'closed_form',
         }
 
     @staticmethod
@@ -118,7 +119,8 @@ class AppliedPhysicsDefectAuditor:
             'defect_detected': not is_continuum_valid,
             'defects': defects,
             'regime': 'Continuum' if is_continuum_valid else ('Slip Flow' if is_slip_flow else 'Transitional/Ballistic'),
-            'poiseuille_permeability_correction': poiseuille_permeability_correction
+            'poiseuille_permeability_correction': poiseuille_permeability_correction,
+            'basis': 'closed_form',
         }
 
 
@@ -172,7 +174,8 @@ class AppliedChemistryDefectAuditor:
             'defect_detected': exceeds_mass_transfer,
             'defects': defects,
             'regularized_current_density_a_m2': j_soft,
-            'recommended_regularization': 'Koutecky-Levich Mass Transfer Saturation: j = (j_BV * j_lim) / (j_lim + |j_BV|)'
+            'recommended_regularization': 'Koutecky-Levich Mass Transfer Saturation: j = (j_BV * j_lim) / (j_lim + |j_BV|)',
+            'basis': 'closed_form',
         }
 
     @staticmethod
@@ -222,7 +225,8 @@ class AppliedChemistryDefectAuditor:
             'defect_detected': is_thermal_runaway,
             'defects': defects,
             'critical_temperature_rise_k': delta_t_crit,
-            'recommended_remediation': 'Limit feed rate, increase cooling UA, or operate below Semenov critical temperature.'
+            'recommended_remediation': 'Limit feed rate, increase cooling UA, or operate below Semenov critical temperature.',
+            'basis': 'closed_form',
         }
 
 
@@ -312,7 +316,8 @@ class AppliedMaterialScienceDefectAuditor:
             'defects': defects,
             'regularized_yield_stress_pa': sigma_bounded,
             'theoretical_limit_respected': sigma_bounded <= theoretical_shear_strength_pa,
-            'recommended_regularization': 'Constitutive Inverse Hall-Petch Transition: sigma = sigma_0 + (k / sqrt(d)) * [1 / (1 + (dc/d)^2)]'
+            'recommended_regularization': 'Constitutive Inverse Hall-Petch Transition: sigma = sigma_0 + (k / sqrt(d)) * [1 / (1 + (dc/d)^2)]',
+            'basis': 'closed_form',
         }
 
     @staticmethod
@@ -354,7 +359,8 @@ class AppliedMaterialScienceDefectAuditor:
             'defect_detected': exceeds_yield,
             'defects': defects,
             'regularized_stress_pa': sigma_soft,
-            'recommended_regularization': 'Irwin/Dugdale Cohesive Zone Regularization: sigma = min(K_I / sqrt(2*pi*r), sigma_yield)'
+            'recommended_regularization': 'Irwin/Dugdale Cohesive Zone Regularization: sigma = min(K_I / sqrt(2*pi*r), sigma_yield)',
+            'basis': 'closed_form',
         }
 
 
@@ -408,7 +414,8 @@ class AppliedNanotechnologyDefectAuditor:
             'defect_detected': len(defects) > 0,
             'defects': defects,
             'regularized_melting_temp_k': predicted_tm_soft,
-            'recommended_regularization': 'Atomic Shell Cluster Exponential Envelope: T_m = T_m0 * exp(-C / (r + r0))'
+            'recommended_regularization': 'Atomic Shell Cluster Exponential Envelope: T_m = T_m0 * exp(-C / (r + r0))',
+            'basis': 'closed_form',
         }
 
     @staticmethod
@@ -470,7 +477,8 @@ class AppliedNanotechnologyDefectAuditor:
             'contact_stiffness_n_per_m': k_eff_contact,
             'potential_curvature_d2u_dz2': k_eff_contact,
             'contact_mechanical_stability': is_contact_stable,
-            'recommended_regularization': 'Bounded short-range continuation: F_attract = [A_H * Area / (6 * pi * (z + z0)^3)] * [1 - (z0 / (z + z0))^6]'
+            'recommended_regularization': 'Bounded short-range continuation: F_attract = [A_H * Area / (6 * pi * (z + z0)^3)] * [1 - (z0 / (z + z0))^6]',
+            'basis': 'closed_form',
         }
 
 

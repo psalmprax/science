@@ -168,6 +168,7 @@ def ensure_runtime(contract: VerifierContract) -> tuple[Any, Any]:
             sys.path.insert(0, path)
     import invsqrt.nr_reference_circuit as nr_reference_circuit
     import invsqrt.verify_submission_invsqrt as verify_submission_invsqrt
+
     import kickmix  # noqa: F401 - import is the capability check
 
     expected = contract.verifier_root.resolve()
@@ -358,6 +359,7 @@ def evaluate_qrom_line_model(
 def build_qrom_line_circuit(n_p: int, prec: QPrecision) -> Any:
     """Build the exact Kickmix circuit for one QPrecision point."""
     import invsqrt.nr_reference_circuit as ref
+
     import kickmix as km
 
     width = 2 * n_p + 2

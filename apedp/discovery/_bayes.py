@@ -12,10 +12,11 @@ apedp.discovery._bayes.BayesianRefinementEngine``).
 """
 from __future__ import annotations
 
-import numpy as np
-import sympy as sp
 from collections.abc import Callable
 from dataclasses import dataclass
+
+import numpy as np
+import sympy as sp
 
 STANDARD_RATIONALS: list[tuple[float, sp.Expr]] = [
     (0.5, sp.Rational(1, 2)),

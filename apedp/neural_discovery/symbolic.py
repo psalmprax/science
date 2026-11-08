@@ -17,7 +17,7 @@ import numpy as np
 import optax
 import sympy as _sp
 from flax import linen as nn
-from jax import grad, jit, random
+from jax import grad, random
 
 from apedp.discovery import bic_forward_select
 from apedp.neural_discovery.architectures import (

@@ -109,12 +109,12 @@ def test_a_claim_with_no_gate_is_refused():
     ["domain", "measurement", "acceptance", "why_not_available_here"],
 )
 def test_the_external_request_must_be_fully_stated(field):
-    kwargs = dict(
-        domain="chemistry",
-        measurement="assay the compound",
-        acceptance="Kd below 250 nM",
-        why_not_available_here="no wet lab",
-    )
+    kwargs = {
+        "domain": "chemistry",
+        "measurement": "assay the compound",
+        "acceptance": "Kd below 250 nM",
+        "why_not_available_here": "no wet lab",
+    }
     kwargs[field] = "   "
     with pytest.raises(IncompleteDiscoveryClaimError):
         ExternalVerificationRequest(**kwargs)

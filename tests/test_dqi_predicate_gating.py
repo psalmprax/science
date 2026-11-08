@@ -185,7 +185,8 @@ def test_remeasured_small_instance_matches_the_record_when_kickmix_is_importable
     sys.path.insert(0, str(BUNDLE / "verifiers" / "dqi"))
     try:
         import kickmix  # noqa: F401
-    except Exception as exc:  # built for a different interpreter
+    except Exception as exc:  # noqa: BLE001 - any import failure of this
+        # extension means "not importable in this interpreter".
         pytest.skip(f"kickmix not importable here: {exc}")
 
     sys.path.insert(0, str(ROOT / "scripts"))

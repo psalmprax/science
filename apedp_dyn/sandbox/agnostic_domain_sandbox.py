@@ -29,6 +29,7 @@ from apedp_dyn.epistemic.agnostic_adapter import (
     InvariantKind,
 )
 from apedp_dyn.epistemic.claim_ladder import (
+    CLAIM_EVIDENCE_MAP,
     ClaimLevel,
     EpistemicAdjudicationVerdict,
     EvidenceBundle,
@@ -422,6 +423,7 @@ def run_arm_a_specialized(case: AblationTestCase) -> dict[str, Any]:
         bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
         bundle.add(EvidenceRequirement.REGIME_TRANSFER_EXTRAPOLATION)
         bundle.add(EvidenceRequirement.NUMERICAL_CFL_STABILITY)
+        bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
         if case.candidate.metadata.get("dual_bound_certified", False):
             bundle.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
 
@@ -449,22 +451,11 @@ def run_arm_b_core_only(case: AblationTestCase) -> dict[str, Any]:
     bundle = EvidenceBundle(metrics=metrics)
     bundle.add(EvidenceRequirement.IN_SAMPLE_CONVERGENCE)
     bundle.add(EvidenceRequirement.OUT_OF_SAMPLE_HOLDOUT)
-    # Lacks domain invariant checkers, but naive proposer claims full tier!
-    # Without domain invariant checkers, naive empirical systems falsely promote high-R2 models:
-    if case.candidate.proposed_claim == ClaimLevel.C6_FORMALLY_VERIFIED:
-        # Naive empirical system pretends R2 = 0.98 means formally verified!
-        bundle.add(EvidenceRequirement.PHYSICAL_CONSERVATION)
-        bundle.add(EvidenceRequirement.DUAL_BOUND_CERTIFICATE)
-        bundle.add(EvidenceRequirement.NUMERICAL_CFL_STABILITY)
-    elif case.candidate.proposed_claim == ClaimLevel.C4_CAUSAL_MECHANISTIC:
-        # Naive system assumes correlation == causation!
-        bundle.add(EvidenceRequirement.INTERVENTIONAL_INVARIANCE)
-        bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
-    elif case.candidate.proposed_claim == ClaimLevel.C3_STRUCTURAL:
-        bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
-    elif case.candidate.proposed_claim == ClaimLevel.C5_EXTRAPOLATIVE:
-        bundle.add(EvidenceRequirement.REGIME_TRANSFER_EXTRAPOLATION)
-        bundle.add(EvidenceRequirement.EQUIVALENCE_RIVALS_REJECTED)
+    # This arm assumes empirical fit is sufficient for the requested tier and
+    # therefore credits every requirement that tier names. That is its intended
+    # failure mode: it has no independent check that any of them actually hold.
+    bundle.verified_evidence.update(
+        CLAIM_EVIDENCE_MAP[case.candidate.proposed_claim])
 
     adj = adjudicate_scientific_claim(
         candidate_id=case.candidate.candidate_id,

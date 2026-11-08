@@ -5,7 +5,7 @@ import pytest
 import torch
 
 apedp_kernel = pytest.importorskip("apedp_kernel")
-from jetflow_video import stepper, tensor_train  # noqa: E402
+from jetflow_video import stepper, tensor_train
 
 pytestmark = pytest.mark.skipif(
     not (

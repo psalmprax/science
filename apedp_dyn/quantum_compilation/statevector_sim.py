@@ -278,7 +278,7 @@ class StatevectorSimulator:
                         child.measure_and_reset(qubit, outcome=outcome)
                         child.bits[bit_index] = outcome
                         rest = remaining[position + 1:]
-                        pending.append((bits + (outcome,), probability * weight,
+                        pending.append(((*bits, outcome), probability * weight,
                                         child.state.copy(), dict(child.bits),
                                         list(rest)))
                         if len(pending) + len(finished) > max_branches:

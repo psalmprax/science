@@ -40,9 +40,9 @@ but ``lambda_eff`` is NaN.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 from decimal import Decimal, localcontext
-import math
 from operator import index
 from typing import Any
 

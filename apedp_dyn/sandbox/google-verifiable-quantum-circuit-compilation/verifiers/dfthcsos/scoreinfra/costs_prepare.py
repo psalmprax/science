@@ -25,8 +25,8 @@ repository, in three places:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -60,7 +60,7 @@ def QI(L: int) -> tuple[int, int]:
 
 
 @dataclass(frozen=True)
-class SpinFreeData_V1:  # noqa: N801 (name kept from the cost-model source)
+class SpinFreeData_V1:
     """Outer and inner state-preparation costs of the spin-free block encoding.
 
     Args:
@@ -122,7 +122,7 @@ class SpinFreeData_V1:  # noqa: N801 (name kept from the cost-model source)
             k2_opt = self.find_qroam_size_to_minimize_global_temp_ancilla(b2)
 
         if self.B < 2**k2_opt:
-            for ii in range(k2_opt):
+            for _ii in range(k2_opt):
                 k2_opt -= 1
                 if self.B >= 2**k2_opt:
                     break
@@ -132,7 +132,7 @@ class SpinFreeData_V1:  # noqa: N801 (name kept from the cost-model source)
         for_qroam = RC * math.ceil((self.B + 1) / (2**k2_opt)) + (2**k2_opt) * b2
 
         # QR gives ceil(RC / 2^k) + (2^k - 1) (B + 1), so B is added below.
-        k4_opt, QI_cost = QR(self.R * self.C, self.B + 1)
+        _k4_opt, QI_cost = QR(self.R * self.C, self.B + 1)
         for_qroam_dag = QI_cost + (self.B + 1) + self.N + b2
         uniform_b = 4 * math.ceil(math.log2(self.B + 1))
         uniform_b_dag = uniform_b

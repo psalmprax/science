@@ -181,7 +181,7 @@ class DagNode:
 
 
 class ExpressionDag:
-    """DAG representation of expressions with Rust acceleration."""
+    """DAG representation of expressions built node by node."""
 
     def __init__(self, variables: list[str]):
         self.variables = variables
@@ -202,11 +202,6 @@ class ExpressionDag:
         return node_id
 
     def to_string(self, node_id: int | None = None) -> str:
-        if self._rust is not None and not self._use_python and len(self.nodes) == 0:
-            try:
-                return self._rust.canonicalize()
-            except Exception:  # noqa: BLE001,S110
-                pass
         nid = node_id if node_id is not None else self.root
         if nid >= len(self.nodes):
             return "0"
@@ -245,11 +240,6 @@ class ExpressionDag:
             return "0"
 
     def canonicalize(self) -> str:
-        if self._rust is not None and not self._use_python and len(self.nodes) == 0:
-            try:
-                return self._rust.canonicalize()
-            except Exception:  # noqa: BLE001,S110
-                pass
         return self.to_string()
 
     @property

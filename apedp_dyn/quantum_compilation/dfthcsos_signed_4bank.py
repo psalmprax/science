@@ -38,9 +38,9 @@ for the Google Verifiable Quantum Circuit Compilation competition:
 from __future__ import annotations
 
 import json
-import math
 from pathlib import Path
 from typing import Any
+
 import numpy as np
 
 try:
@@ -345,7 +345,7 @@ def compile_all_25_angle_circuits(
             if "angle_words" in data:
                 raw_words = data["angle_words"]
                 # Form J=3 batches of 10-bit words
-                num_v, num_a = raw_words.shape
+                num_v, _num_a = raw_words.shape
                 batch_words = raw_words.reshape(num_v, K_CIRCUITS, J).transpose(1, 0, 2)
             elif "batch_words" in data:
                 batch_words = data["batch_words"]

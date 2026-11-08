@@ -37,19 +37,19 @@ Multi-Fidelity Pareto Tournament:
 from __future__ import annotations
 
 import dataclasses
-from enum import Enum
 import json
 import math
 import os
-from pathlib import Path
 import shutil
 import subprocess
-from typing import Any, Callable
+import sys
+from enum import Enum
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 
 from apedp_dyn.quantum_compilation.candidates import (
-    CandidateStatus,
     CircuitCandidate,
     VerifierReceipt,
     candidate_id_for,
@@ -64,33 +64,109 @@ from apedp_dyn.quantum_compilation.experiment import (
 )
 from apedp_dyn.quantum_compilation.invsqrt_signed_digit import (
     Cfg,
-    _PUBLISHED_COEFFICIENT_ROWS,
-    build_tables,
-    calibrate_segment,
-    fitc,
     integer_model,
-    layout as compute_signed_digit_layout,
     load_or_build_tables,
-    pipeline,
-    rd,
     regenerate_tables_exact,
 )
 from apedp_dyn.quantum_compilation.ledger import QuantumCandidateLedger
 from apedp_dyn.quantum_compilation.referee import run_invsqrt_verifier
 
+# The circuit builder runs in a separate CPython 3.13 process because the shipped
+# `kickmix.so` is built for that ABI. `build/qvcc-venv313` is the runtime this
+# repository provisions (scripts/setup_verifier_env.py); the hardcoded
+# `/dev/shm/qvcc-venv313` path that used to be the default existed on one machine.
+_KICKMIX_PYTHON_ENV = "APEDP_Q_KICKMIX_PYTHON"
+_LEGACY_PYTHON_ENV = "APEDP_Q_PYTHON"
+_RESOLVED_PYTHON: dict[str, str] = {}
+
+
+def _builder_runtime_probe(executable: str) -> tuple[bool, str]:
+    """Return whether ``executable`` can build a circuit, and why it cannot."""
+    kickmix_dir = (
+        Path(__file__).resolve().parent.parent
+        / "sandbox"
+        / "google-verifiable-quantum-circuit-compilation"
+        / "kickmix"
+    )
+    probe = (
+        "import sys\n"
+        f"sys.path.insert(0, {str(kickmix_dir)!r})\n"
+        "import numpy, scipy, kickmix\n"
+    )
+    try:
+        proc = subprocess.run(  # noqa: S603 - fixed argv, repository-owned probe
+            [executable, "-c", probe],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return False, f"{executable}: {exc}"
+    if proc.returncode == 0:
+        return True, ""
+    lines = (proc.stderr or "").strip().splitlines()
+    return False, f"{executable}: {lines[-1] if lines else f'exit {proc.returncode}'}"
+
+
+def resolve_builder_python(explicit: str | None = None) -> str:
+    """Resolve the interpreter that can import numpy, scipy and kickmix.
+
+    Probed in order: the caller's argument, ``APEDP_Q_KICKMIX_PYTHON``, the
+    legacy ``APEDP_Q_PYTHON``, the repository runtime ``build/qvcc-venv313``,
+    and the current interpreter. A machine-local ``/dev/shm`` default used to
+    make every caller elsewhere fail with no diagnosis.
+    """
+    repo_root = Path(__file__).resolve().parent.parent.parent
+    candidates = [
+        explicit,
+        os.environ.get(_KICKMIX_PYTHON_ENV),
+        os.environ.get(_LEGACY_PYTHON_ENV),
+        str(repo_root / "build/qvcc-venv313/bin/python"),
+        sys.executable,
+    ]
+    probed: list[str] = []
+    reasons: list[str] = []
+    for candidate in candidates:
+        if not candidate or candidate in probed:
+            continue
+        probed.append(candidate)
+        if candidate in _RESOLVED_PYTHON:
+            return _RESOLVED_PYTHON[candidate]
+        ok, reason = _builder_runtime_probe(candidate)
+        if ok:
+            _RESOLVED_PYTHON[candidate] = candidate
+            return candidate
+        reasons.append(reason)
+    raise RuntimeError(
+        "no interpreter can run the KickMix circuit builder (needs CPython 3.13 with "
+        f"numpy, scipy and kickmix). Set {_KICKMIX_PYTHON_ENV} to one. "
+        "Probed: " + "; ".join(reasons)
+    )
+
+
+def _child_failure_detail(exc: BaseException) -> str:
+    """Carry the child process's stderr into our error message."""
+    if isinstance(exc, subprocess.CalledProcessError):
+        lines = (exc.stderr or "").strip().splitlines()
+        if lines:
+            return f" Child stderr: {lines[-1]}"
+    return ""
+
+
 __all__ = [
+    "R1_NONUNIFORM_CONFIGS",
+    "R2_PREFIX_RESIDUAL_CONFIGS",
+    "REFERENCE_COST_90Q",
+    "REFERENCE_COST_90Q_AFFINE_OPT",
+    "SABLE_90_BASELINE",
     "ArithmeticForm",
     "ErrorBudgetEngine",
     "FarosCandidateConfig",
     "FarosIsqProposer",
     "FarosParetoTournament",
     "FidelityLevel",
-    "REFERENCE_COST_90Q",
-    "REFERENCE_COST_90Q_AFFINE_OPT",
-    "R1_NONUNIFORM_CONFIGS",
-    "R2_PREFIX_RESIDUAL_CONFIGS",
     "RepresentationType",
-    "SABLE_90_BASELINE",
     "Sable90Profiler",
     "SegmentationStrategy",
     "TournamentCandidate",
@@ -999,8 +1075,8 @@ class FarosParetoTournament:
         c1_vals = [float(c1.get(k, float("inf"))) for k in keys]
         c2_vals = [float(c2.get(k, float("inf"))) for k in keys]
 
-        weakly_better = all(v1 <= v2 for v1, v2 in zip(c1_vals, c2_vals))
-        strictly_better = any(v1 < v2 for v1, v2 in zip(c1_vals, c2_vals))
+        weakly_better = all(v1 <= v2 for v1, v2 in zip(c1_vals, c2_vals, strict=False))
+        strictly_better = any(v1 < v2 for v1, v2 in zip(c1_vals, c2_vals, strict=False))
         return weakly_better and strictly_better
 
     @classmethod
@@ -1424,10 +1500,7 @@ def materialize_faros_circuit(
     out_file = Path(output_path) if output_path else default_out
     out_file.parent.mkdir(parents=True, exist_ok=True)
 
-    py_bin = (
-        python_executable
-        or os.environ.get("APEDP_Q_PYTHON", "/dev/shm/qvcc-venv313/bin/python")
-    )
+    py_bin = resolve_builder_python(python_executable)
 
     should_build = force_rebuild or not out_file.exists()
 
@@ -1439,7 +1512,7 @@ def materialize_faros_circuit(
             builder_script = f"""
 import sys
 from pathlib import Path
-repo_root = Path({repr(str(repo_root))})
+repo_root = Path({str(repo_root)!r})
 sys.path.insert(0, str(repo_root / 'src'))
 sys.path.insert(0, str(repo_root / 'apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix'))
 import json
@@ -1466,7 +1539,7 @@ dropped = set(fixed_deltas.get('droppedOriginalRotationIndices', [18]))
 rep_text = uf.rewrite(lines, rots, {{j: int(v) for j, v in enumerate(values) if j not in dropped}}, dropped)
 final_circuit = km.Circuit(rep_text)
 
-out_path = Path({repr(str(out_file))})
+out_path = Path({str(out_file)!r})
 final_circuit.to_file(str(out_path), format='kmb')
 stats = final_circuit.operation_statistics()
 res = {{
@@ -1480,7 +1553,7 @@ res = {{
 print(json.dumps(res))
 """
             try:
-                subprocess.run(
+                subprocess.run(  # noqa: S603 - fixed argv, script assembled in this module
                     [py_bin, "-c", builder_script],
                     capture_output=True,
                     text=True,
@@ -1491,17 +1564,18 @@ print(json.dumps(res))
                     f"Circuit builder subprocess failed for {candidate_id}. "
                     "Silent fallback copying of 90Q champion is permanently prohibited "
                     "by MOSAIC-2 Evidence Integrity rules."
+                    + _child_failure_detail(exc)
                 ) from exc
 
     # Query operational statistics directly from the verified circuit
     stats_script = f"""
 import sys
 from pathlib import Path
-repo_root = Path({repr(str(repo_root))})
+repo_root = Path({str(repo_root)!r})
 sys.path.insert(0, str(repo_root / 'apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix'))
 import json
 import kickmix as km
-circuit_file = Path({repr(str(out_file))})
+circuit_file = Path({str(out_file)!r})
 circuit = km.Circuit.from_file(str(circuit_file))
 stats = circuit.operation_statistics()
 res = {{
@@ -1513,7 +1587,7 @@ res = {{
 print(json.dumps(res))
 """
     try:
-        proc = subprocess.run(
+        proc = subprocess.run(  # noqa: S603 - fixed argv, script assembled in this module
             [py_bin, "-c", stats_script],
             capture_output=True,
             text=True,
@@ -1574,10 +1648,7 @@ def calibrate_faros_circuit(
         raise FileNotFoundError(f"Circuit artifact not found: {c_path}")
 
     out_file = Path(output_path) if output_path else c_path
-    py_bin = (
-        python_executable
-        or os.environ.get("APEDP_Q_PYTHON", "/dev/shm/qvcc-venv313/bin/python")
-    )
+    py_bin = resolve_builder_python(python_executable)
 
     if fixed_deltas is None:
         cal_path = repo_root / "src/invsqrt_calibration.json"
@@ -1591,7 +1662,7 @@ def calibrate_faros_circuit(
     cal_script = f"""
 import sys
 from pathlib import Path
-repo_root = Path({repr(str(repo_root))})
+repo_root = Path({str(repo_root)!r})
 sys.path.insert(0, str(repo_root / 'src'))
 sys.path.insert(0, str(repo_root / 'apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix'))
 import json
@@ -1600,8 +1671,8 @@ import kickmix as km
 import portable_calibration as cal
 import upstream_functions as uf
 
-circuit_in = Path({repr(str(c_path))})
-circuit_out = Path({repr(str(out_file))})
+circuit_in = Path({str(c_path)!r})
+circuit_out = Path({str(out_file)!r})
 circuit = km.Circuit.from_file(str(circuit_in))
 stats = circuit.operation_statistics()
 rot_count = int(stats.num_z_pow(min_clifford_hierarchy_level=4))
@@ -1629,7 +1700,7 @@ print(json.dumps({{
 }}))
 """
     try:
-        proc = subprocess.run(
+        proc = subprocess.run(  # noqa: S603 - fixed argv, script assembled in this module
             [py_bin, "-c", cal_script],
             capture_output=True,
             text=True,
@@ -1643,6 +1714,7 @@ print(json.dumps({{
             f"Phase calibration subprocess failed for {c_path}. "
             "Silent fallback copying of input circuit is permanently prohibited "
             "by MOSAIC-2 Evidence Integrity rules."
+            + _child_failure_detail(exc)
         ) from exc
 
     report = {
@@ -1679,10 +1751,7 @@ def verify_faros_candidate(
         contract = load_contract("invsqrt")
     contract.assert_locked()
 
-    py_bin = (
-        python_executable
-        or os.environ.get("APEDP_Q_PYTHON", "/dev/shm/qvcc-venv313/bin/python")
-    )
+    py_bin = resolve_builder_python(python_executable)
     art_path = Path(artifact_path)
     if not art_path.exists():
         raise FileNotFoundError(f"Artifact not found: {art_path}")

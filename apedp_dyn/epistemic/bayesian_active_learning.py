@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .gp_uncertainty import GaussianProcessRegressor, BayesianOptimizer
+from .gp_uncertainty import BayesianOptimizer, GaussianProcessRegressor
 
 
 @dataclass

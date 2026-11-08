@@ -36,6 +36,7 @@ class PlasmaPhysicsAnalyzer:
             "ignition_reference_m3_keV_s": threshold,
             "meets_ignition_reference": triple_product >= threshold,
             "margin": triple_product / threshold,
+            "basis": "closed_form",
         }
 
     @staticmethod
@@ -53,6 +54,7 @@ class PlasmaPhysicsAnalyzer:
             "troyon_limit_reference": troyon_limit,
             "within_reference_limit": beta < troyon_limit,
             "margin_to_reference": (troyon_limit - beta) / troyon_limit,
+            "basis": "closed_form",
         }
 
     @staticmethod
@@ -104,6 +106,7 @@ class FusionReactorDesigner:
             'fuel': 'D-T',
             'tritium_breeding_required': True,
             'note': 'Power-balance ratio only; no plasma transport or engineering model.',
+            'basis': 'closed_form',
         }
 
     @classmethod
@@ -128,6 +131,7 @@ class FusionFuelCycle:
             'self_sufficient_reference': tbr > 1.0,
             'margin': tbr - 1.0,
             'source': 'literature-typical value, not computed',
+            'basis': 'literature_lookup',
         }
 
     @staticmethod
@@ -137,6 +141,7 @@ class FusionFuelCycle:
         return {
             'source': 'Seawater (heavy water)',
             'd_to_h_atom_ratio': ratio,
+            'basis': 'literature_lookup',
         }
 
 
@@ -154,4 +159,5 @@ class FusionMaterials:
     def evaluate_pfm(cls, material: str = 'tungsten') -> dict[str, Any]:
         if material not in cls.MATERIALS_DB:
             raise ValueError(f"no reference data for material: {material}")
-        return {'material': material, **cls.MATERIALS_DB[material], 'source': 'literature-typical values'}
+        return {'material': material, **cls.MATERIALS_DB[material],
+                'source': 'literature-typical values', 'basis': 'literature_lookup'}

@@ -375,10 +375,10 @@ def select_by_train_loss(fitted: list[ScoredCandidate]) -> ScoredCandidate:
 
 
 __all__ = [
-    "UNAVAILABLE_TERMS",
-    "UnavailableGrammarTerm",
     "DEFAULT_BOUNDS",
     "DEFAULT_TOPOLOGY",
+    "UNAVAILABLE_TERMS",
+    "UnavailableGrammarTerm",
     "deduplicate",
     "enumerate_candidates",
     "full_topology_candidate",

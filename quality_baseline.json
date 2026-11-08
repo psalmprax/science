@@ -1,0 +1,19 @@
+{
+  "measured_at": "2026-11-08",
+  "policy": "Counts may only move down. Raising a limit requires a written reason in docs/QUALITY_BASELINE.md first.",
+  "commands": {
+    "ruff": "python -m ruff check <path> --output-format json",
+    "mypy": "python -m mypy <path> --ignore-missing-imports"
+  },
+  "ruff": {
+    "apedp": 0,
+    "tests": 0,
+    "apedp_dyn": 0,
+    "scripts": 604,
+    "benchmarks": 217
+  },
+  "mypy": {
+    "apedp": 938,
+    "apedp_dyn": 2250
+  }
+}

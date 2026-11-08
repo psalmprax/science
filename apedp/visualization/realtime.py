@@ -31,8 +31,9 @@ class SearchProcessVisualizer:
         self.exploration_rate = deque(maxlen=max_points)
         self.start_time = time.time()
     
-    def update(self, iteration: int, best: float, avg: float, 
-               diversity: float = None, exploration: float = None):
+    def update(self, iteration: int, best: float, avg: float,
+               diversity: float | None = None,
+               exploration: float | None = None):
         """Update with current search state."""
         self.iterations.append(iteration)
         self.best_fitness.append(best)
@@ -109,24 +110,23 @@ class SearchProcessVisualizer:
         if iters:
             fig.add_trace(go.Scatter(x=iters, y=list(self.best_fitness), 
                                     mode='lines', name='Best', 
-                                    line=dict(color='blue', width=3)), row=1, col=1)
+                                    line={"color": "blue", "width": 3}), row=1, col=1)
             fig.add_trace(go.Scatter(x=iters, y=list(self.avg_fitness),
                                     mode='lines', name='Average',
-                                    line=dict(color='green', width=2)), row=1, col=1)
+                                    line={"color": "green", "width": 2}), row=1, col=1)
             
             # Convergence rate
             if len(self.best_fitness) > 1:
                 conv = np.diff(list(self.best_fitness))
                 fig.add_trace(go.Scatter(x=iters[1:], y=conv, mode='lines',
-                                        name='Improvement', line=dict(color='orange')),
+                                        name='Improvement', line={"color": "orange"}),
                              row=1, col=2)
         
         if self.diversity:
             fig.add_trace(go.Scatter(x=iters[-len(self.diversity):], 
                                     y=list(self.diversity), mode='lines',
-                                    name='Diversity', line=dict(color='red')), row=2, col=1)
+                                    name='Diversity', line={"color": "red"}), row=2, col=1)
         
-        elapsed = time.time() - self.start_time
         fig.add_trace(go.Indicator(
             mode="number+gauge",
             value=len(self.iterations),
@@ -185,7 +185,7 @@ class ProcessMonitor:
         ax.set_xticks([])
         
         # Add status labels
-        for i, (stage, status) in enumerate(zip(self.stages, self.status)):
+        for i, status in enumerate(self.status):
             ax.text(0.5, i, status.upper(), ha='center', va='center', 
                    fontweight='bold', color='white')
         
@@ -202,7 +202,7 @@ def plot_search_trajectory(
 ) -> str:
     """Plot 2D search trajectory."""
     fig, ax = plt.subplots(figsize=(12, 10))
-    x, y = zip(*positions)
+    x, y = zip(*positions, strict=False)
     
     scatter = ax.scatter(x, y, c=fitness, s=80, cmap='plasma', alpha=0.7)
     ax.plot(x, y, '--', alpha=0.4, color='gray')

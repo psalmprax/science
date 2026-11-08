@@ -38,20 +38,21 @@ are rejected; passing does not establish correctness on unsampled branches.
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
 import hashlib
 import io
+import re
+import zipfile
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from math import ceil
 from operator import index
 from pathlib import Path
-import re
 from typing import Any
-import zipfile
 
-import kickmix as km
 import numpy as np
 import numpy.typing as npt
+
+import kickmix as km
 
 FORMATS = ("auto", "kmb", "kmx")
 SELECTION_REGISTER = "selection"
@@ -273,7 +274,7 @@ def initial_seed(digest_hex: str, salt: str = "") -> int:
     """The simulator seed for a SHA-256 hex digest, mixed with an optional ``salt``."""
     if not salt:
         return int(digest_hex, 16)
-    return int(hashlib.sha256(f"{digest_hex}{salt}".encode("utf-8")).hexdigest(), 16)
+    return int(hashlib.sha256(f"{digest_hex}{salt}".encode()).hexdigest(), 16)
 
 
 # ---------------------------------------------------------------------------
@@ -560,11 +561,11 @@ def recover_words_from_circuits(
 __all__ = [
     "FORMATS",
     "HASHED_NPZ_KEYS",
-    "InvalidCircuits",
-    "RegisterLayout",
     "SELECTION_REGISTER",
     "SHOTS_PER_ADDRESS",
     "WORD_REGISTER_PREFIX",
+    "InvalidCircuits",
+    "RegisterLayout",
     "circuit_costs",
     "initial_seed",
     "kmb_path",

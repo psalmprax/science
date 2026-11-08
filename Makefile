@@ -1,5 +1,9 @@
 .PHONY: install test lint typecheck lint-rust format clean clean-cache kernel vqc-native vqc-parity wheel reproduce
 
+# Interpreter used by gates that need one. Override for a venv:
+#   make lint PYTHON=.venv/bin/python
+PYTHON ?= python
+
 install:
 	pip install -e .
 
@@ -38,12 +42,20 @@ reproduce: kernel
 test:
 	pytest tests/ -v
 
+# The full configured ruleset (pyproject [tool.ruff.lint]) on the two trees that
+# are held clean, then the pinned baseline for the trees that are not yet. The
+# old gate ran --select E9,F, which let the configured rule set accumulate
+# findings while reporting success.
 lint:
-	ruff check apedp/ apedp_dyn/ tests/ --select E9,F
-	ruff check apedp_dyn/conf/
+	ruff check apedp/ tests/
+	$(PYTHON) scripts/check_quality_baseline.py --ruff-only
 
+# Strict mypy on the conf/ integrity boundary (pyproject [tool.mypy] `files`),
+# then the pinned full-package baseline. Bare `mypy` alone checks two modules
+# and says nothing about the other ~1,200 files.
 typecheck:
 	mypy
+	$(PYTHON) scripts/check_quality_baseline.py --mypy-only
 
 lint-rust:
 	cargo fmt --all --check

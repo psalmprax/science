@@ -43,7 +43,8 @@ import math
 import multiprocessing as mp
 import os
 import sys
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 
@@ -190,7 +191,7 @@ def sample_error(m: int, max_value: int, weight_probs: Sequence[float],
     k = int(rng.choice(len(weight_probs), p=weight_probs))
     positions = rng.choice(m, size=k, replace=False).tolist()
     values = rng.integers(1, max_value, size=k, endpoint=True).tolist()
-    return dict(zip(positions, values))
+    return dict(zip(positions, values, strict=False))
 
 
 def to_bits(values: np.ndarray, degree: int) -> np.ndarray:
@@ -301,7 +302,7 @@ def _initial_seed(circuit_hash: str, salt: str) -> int:
     """Computes the initial RNG seed from `circuit_hash` and optional `salt`."""
     if not salt:
         return int(circuit_hash, 16)
-    return int(hashlib.sha256(f'{circuit_hash}{salt}'.encode('utf-8')).hexdigest(), 16)
+    return int(hashlib.sha256(f'{circuit_hash}{salt}'.encode()).hexdigest(), 16)
 
 
 _WORKER_FN = None

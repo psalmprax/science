@@ -97,7 +97,9 @@ async def visualize_regression(req: RegressionFitnessRequest) -> dict[str, Any]:
         path = visualization.plot_regression_fitness(req.complexity, req.r_squared, out)
         return {"status": "success", "output_path": path}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Plotting backends raise arbitrary third-party exceptions; the HTTP
+        # boundary converts any of them into a 500 response.
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/uncertainty")
@@ -109,7 +111,9 @@ async def visualize_uncertainty(req: UncertaintyRequest) -> dict[str, Any]:
         )
         return {"status": "success", "output_path": path}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Plotting backends raise arbitrary third-party exceptions; the HTTP
+        # boundary converts any of them into a 500 response.
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/calibration")
@@ -121,7 +125,9 @@ async def visualize_calibration(req: CalibrationRequest) -> dict[str, Any]:
         )
         return {"status": "success", "output_path": path}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Plotting backends raise arbitrary third-party exceptions; the HTTP
+        # boundary converts any of them into a 500 response.
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/heatmap")
@@ -133,7 +139,9 @@ async def visualize_heatmap(req: HeatmapRequest) -> dict[str, Any]:
         )
         return {"status": "success", "output_path": path}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Plotting backends raise arbitrary third-party exceptions; the HTTP
+        # boundary converts any of them into a 500 response.
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/pareto")
@@ -145,7 +153,9 @@ async def visualize_pareto(req: ParetoRequest) -> dict[str, Any]:
         )
         return {"status": "success", "output_path": path}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Plotting backends raise arbitrary third-party exceptions; the HTTP
+        # boundary converts any of them into a 500 response.
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/violin")
@@ -155,12 +165,15 @@ async def visualize_violin(req: ViolinRequest) -> dict[str, Any]:
         path = visualization.plot_violin_distribution(req.data, req.title, out)
         return {"status": "success", "output_path": path}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Plotting backends raise arbitrary third-party exceptions; the HTTP
+        # boundary converts any of them into a 500 response.
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 def _search_visualizer(req: SearchProgressRequest) -> Any:
     viz = visualization.SearchProcessVisualizer()
-    for i, (it, bf, af) in enumerate(zip(req.iterations, req.best_fitness, req.avg_fitness)):
+    for i, (it, bf, af) in enumerate(
+            zip(req.iterations, req.best_fitness, req.avg_fitness, strict=False)):
         div = req.diversity[i] if req.diversity and i < len(req.diversity) else None
         exp = req.exploration_rate[i] if req.exploration_rate and i < len(req.exploration_rate) else None
         viz.update(it, bf, af, div, exp)
@@ -174,7 +187,9 @@ async def visualize_search_progress(req: SearchProgressRequest) -> dict[str, Any
         path = _search_visualizer(req).plot_search_progress(out)
         return {"status": "success", "output_path": path}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Plotting backends raise arbitrary third-party exceptions; the HTTP
+        # boundary converts any of them into a 500 response.
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/search/dashboard")
@@ -184,7 +199,9 @@ async def visualize_search_dashboard(req: SearchProgressRequest) -> dict[str, An
         path = _search_visualizer(req).create_live_dashboard_html(out)
         return {"status": "success", "output_path": path}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Plotting backends raise arbitrary third-party exceptions; the HTTP
+        # boundary converts any of them into a 500 response.
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/download/{filename}")

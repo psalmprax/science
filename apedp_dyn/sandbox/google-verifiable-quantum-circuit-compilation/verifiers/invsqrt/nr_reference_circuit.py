@@ -30,8 +30,9 @@ import dataclasses
 import math
 from fractions import Fraction
 
-import kickmix as km
 import numpy as np
+
+import kickmix as km
 
 # Cubic coefficients of the paper for 1/sqrt(x) on [1, 1.5] (`A`, around 1) and
 # [1.5, 2] (`B`, around 1.5), with alternating signs supplied by the circuit.
@@ -117,9 +118,9 @@ def fixed_point_model(n_p: int, prec: Precision, xs: np.ndarray) -> np.ndarray:
     for k in range(1, wc + 1):
         if 2 * k <= wsq:
             square += y[k] << (wsq - 2 * k)
-        for l in range(k + 1, wc + 1):
-            if k + l - 1 <= wsq:
-                square += (y[k] & y[l]) << (wsq - (k + l - 1))
+        for m in range(k + 1, wc + 1):
+            if k + m - 1 <= wsq:
+                square += (y[k] & y[m]) << (wsq - (k + m - 1))
     m_rows = [(bit(x_norm, i), i - width + 2) for i in range(width)]
     z = product(m_rows, square, wz, wsq, wz + 2)
     correction = (3 << wz) - z
@@ -247,7 +248,7 @@ def _square(builder: km.CircuitBuilder, inverse: bool, y0: km.array, square: km.
     if not inverse:
         builder.cx(controls, targets)
     for k in range(1, wc + 1):
-        terms = [(y[l], wsq - (k + l - 1)) for l in range(k + 1, wc + 1) if k + l - 1 <= wsq]
+        terms = [(y[m], wsq - (k + m - 1)) for m in range(k + 1, wc + 1) if k + m - 1 <= wsq]
         if terms:
             _add_row(builder, inverse, y[k], terms, square, scratch)
     if inverse:
@@ -348,7 +349,10 @@ def _phase_by_bits(builder: km.CircuitBuilder, y: km.array) -> None:
             builder.z_pow(y[j], Fraction(2) ** (j - f + 1))  # 2^(j - f) turns.
 
 
-def build_nr_circuit(n_p: int, *, prec: Precision = Precision(),
+_DEFAULT_PRECISION = Precision()
+
+
+def build_nr_circuit(n_p: int, *, prec: Precision = _DEFAULT_PRECISION,
                      compute_only: bool = False) -> km.Circuit:
     """The reference circuit; `compute_only` stops after step 3 with `y1` named (for tests)."""
     if n_p < 1:

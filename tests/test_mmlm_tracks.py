@@ -109,7 +109,7 @@ def test_batch_path_agrees_with_the_scalar_path():
     )
     assert batch["pairs"] == len(pairs)
     for (left, right), product, exact in zip(
-        pairs, batch["products"], batch["exact"]
+        pairs, batch["products"], batch["exact"], strict=True
     ):
         scalar = multiplier.bilinear_multiply(left, right)
         assert product == scalar["product"], (left, right)
@@ -149,9 +149,9 @@ def test_matvec_composes_products_and_matches_the_field_model(track_cls):
     assert out["entries"] == 54
     assert out["products"] == int(np.count_nonzero(matrix))
     assert out["products"] + out["zero_products_skipped"] == out["entries"]
-    for row, value in zip(matrix, out["result"]):
+    for row, value in zip(matrix, out["result"], strict=True):
         total = 0
-        for entry, element in zip(row, vector):
+        for entry, element in zip(row, vector, strict=True):
             total ^= track.gf.mul(int(entry), int(element))
         assert value == total
 

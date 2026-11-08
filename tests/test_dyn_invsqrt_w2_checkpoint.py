@@ -28,7 +28,6 @@ The kickmix-dependent tests are opt-in, following the convention of
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import subprocess
@@ -108,7 +107,9 @@ def test_curve_checkpoint_values_tracks_w2() -> None:
         timeout=900,
     )
     assert result.returncode == 0, result.stderr[-4000:]
-    plans = eval(result.stdout.strip().splitlines()[-1])
+    import ast
+
+    plans = ast.literal_eval(result.stdout.strip().splitlines()[-1])
     assert plans[8] == ["curve4", "curve5", "curve6"], plans
     assert plans[9] == ["curve5", "curve6", "curve7"], plans
     assert plans[10] == ["curve6", "curve7", "curve8"], plans

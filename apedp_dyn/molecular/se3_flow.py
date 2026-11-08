@@ -154,11 +154,11 @@ def velocity_field(coords: np.ndarray, force_field: MolecularForceField) -> np.n
 
 
 def signed_volume(
-    coords: np.ndarray, i: int, j: int, k: int, l: int
+    coords: np.ndarray, i: int, j: int, k: int, m: int
 ) -> float:
-    """Signed triple product of the vectors from atom ``i`` to ``j``, ``k``, ``l``.
+    """Signed triple product of the vectors from atom ``i`` to ``j``, ``k``, ``m``.
 
-    ``det([x_j - x_i, x_k - x_i, x_l - x_i])`` is **six times** the tetrahedron volume,
+    ``det([x_j - x_i, x_k - x_i, x_m - x_i])`` is **six times** the tetrahedron volume,
     which is the unnormalised form the gradient needs: its sign is the handedness of the
     quartet, and it flips under an improper transform, which is why a distance-only
     energy cannot see chirality.  The gradient of ``0.5 * w * (v - target)**2`` is
@@ -169,7 +169,7 @@ def signed_volume(
     points = np.asarray(coords, dtype=np.float64)
     a = points[j] - points[i]
     b = points[k] - points[i]
-    c = points[l] - points[i]
+    c = points[m] - points[i]
     return float(np.dot(np.cross(b, c), a))
 
 

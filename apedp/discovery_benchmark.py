@@ -285,14 +285,14 @@ def fixed_basis_recover(law_id: str, seeds=(7, 42, 123)) -> dict:
     law = next(law for law in RECOVERY_LAWS if law["id"] == law_id)
     results = []
     for seed in seeds:
-        x_tr, y_tr, x_te, y_te, variables, _ = make_synthetic(law_id, seed=seed)
+        x_tr, y_tr, _x_te, _y_te, variables, _ = make_synthetic(law_id, seed=seed)
         names = list(variables)
         syms = {v: sp.Symbol(v) for v in names}
         monos = []
         for exps in itertools.product(range(5), repeat=len(names)):
             if sum(exps) > 0:
                 monos.append(sp.Mul(*[syms[v] ** e for v, e in
-                                      zip(names, exps)]))
+                                      zip(names, exps, strict=True)]))
         terms = {}
         for m in monos:
             terms[str(m)] = m
@@ -303,7 +303,9 @@ def fixed_basis_recover(law_id: str, seeds=(7, 42, 123)) -> dict:
         fns = {k: sp.lambdify(tuple(syms[v] for v in names), terms[k], "numpy")
                for k in keys}
 
-        def design(data, cols):
+        def design(data, cols, names=names, fns=fns):
+            # names/fns are bound per iteration: the search below evaluates only
+            # this iteration's library, never the last loop's.
             args = [np.asarray(data[v], dtype=float) for v in names]
             return np.column_stack(
                 [np.asarray(fns[c](*args), dtype=float)
@@ -328,7 +330,7 @@ def fixed_basis_recover(law_id: str, seeds=(7, 42, 123)) -> dict:
             A_tr = design(x_tr, best_cols)
             coef, *_ = np.linalg.lstsq(A_tr, y_tr, rcond=None)
             expr = " + ".join(f"{c:.6g}*({t})" for c, t in
-                              zip(coef, best_cols))
+                              zip(coef, best_cols, strict=True))
             with np.errstate(invalid="ignore", divide="ignore", over="ignore"):
                 recovered = bool(same_relationship(expr, law["expr"]))
         results.append({"seed": seed, "best": expr,

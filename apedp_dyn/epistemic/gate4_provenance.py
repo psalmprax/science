@@ -107,7 +107,7 @@ def measure_proposal(
     y = np.asarray(y_true, dtype=float).ravel()
     try:
         pred = np.asarray(proposal.compute_score(frame), dtype=float).ravel()
-    except Exception as exc:  # noqa: BLE001 - reframed as a typed refusal below
+    except Exception as exc:
         raise ProposalNotEvaluableError(
             f"{proposal.candidate_id}: compute_score raised "
             f"{type(exc).__name__}: {exc}") from exc

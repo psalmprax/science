@@ -12,7 +12,6 @@ import pytest
 
 from apedp_dyn.quantum_compilation.inplace_bm import (
     DecoderLayout,
-    PackingOverflow,
     check_field,
     error_positions,
     inplace_berlekamp_massey,

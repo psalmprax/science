@@ -34,6 +34,7 @@ class SuperconductorDiscovery:
             'above_liquid_nitrogen_77K': critical_temp_K > 77,
             'above_room_temperature_reference': critical_temp_K > ROOM_TEMP_K,
             'cooper_pair_mechanism_reference': 'BCS' if type_sc == 'conventional' else 'unconventional',
+            'basis': 'rule_screen',
         }
 
     @classmethod
@@ -64,6 +65,7 @@ class CatalystDiscovery:
             'target_activity': target_activity,
             'cost_flag_precious_metal': any(m.startswith(('Pt', 'Ir', 'Ru', 'Au', 'Ag')) for m in materials),
             'source': 'literature reference list, not computed',
+            'basis': 'literature_lookup',
         }
 
 
@@ -88,6 +90,7 @@ class EnergyStorageMaterials:
             'cathode_energy_Wh_kg': round(energy_wh_kg, 3),
             'cycle_life_input': cycle_life,
             'note': 'Active-material energy only; excludes packaging and electrolyte.',
+            'basis': 'closed_form',
         }
 
 
@@ -107,4 +110,5 @@ class MetamaterialDesigner:
             'wavelength_m': wavelength,
             'diameter_over_wavelength': diameter_m / wavelength,
             'note': 'Geometric ratio only; cloaking performance is not modelled.',
+            'basis': 'closed_form',
         }

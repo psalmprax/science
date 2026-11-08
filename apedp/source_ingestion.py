@@ -58,7 +58,17 @@ class PublicationText:
 
     @property
     def ready_for_discovery(self) -> bool:
+        """Always ``False``: extracted prose is not a measured dataset."""
         return False
+
+    @property
+    def readiness_reason(self) -> str:
+        """Why the gate never opens, so the constant cannot read as a check result."""
+        return (
+            "PDF text is unverified: equations, units, OCR output and the "
+            "measured/simulated status of the numbers require human verification "
+            "before discovery; convert and audit a structured table first."
+        )
 
 
 def _file_hash(path: Path) -> str:

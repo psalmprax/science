@@ -26,9 +26,9 @@ __all__ = [
     "EvidenceIncompleteError",
     "VerifierReceipt",
     "candidate_id_for",
+    "compute_provenance_fingerprint",
     "compute_spec_fingerprint",
     "compute_structural_fingerprint",
-    "compute_provenance_fingerprint",
     "evidence_from_receipt",
     "missing_correctness_checks",
     "normalise_correctness_evidence",
@@ -195,7 +195,7 @@ def missing_correctness_checks(evidence: dict[str, Any] | None, *,
     return []
 
 
-def evidence_from_receipt(receipt: "VerifierReceipt", benchmark: str = "") -> dict[str, dict]:
+def evidence_from_receipt(receipt: VerifierReceipt, benchmark: str = "") -> dict[str, dict]:
     """The correctness evidence a verifier receipt actually carries.
 
     For a per-shot verifier (DQI) the receipt's own error counts are the evidence, and

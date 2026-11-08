@@ -19,33 +19,27 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import pytest
+
 import numpy as np
+import pytest
 
 from apedp_dyn.quantum_compilation.contracts import load_contract
-from apedp_dyn.quantum_compilation.experiment import (
-    Candidate,
-    CandidateArtifact,
-    CandidateScreen,
-    ExperimentRunner,
-)
 from apedp_dyn.quantum_compilation.faros_isq import (
+    ALL_FAROS_PORTFOLIO_CONFIGS,
+    R1_NONUNIFORM_CONFIGS,
+    R2_PREFIX_RESIDUAL_CONFIGS,
+    R3_DIRECT_PHASE_CONFIGS,
+    R4_ALT_ARITHMETIC_CONFIGS,
+    R5_HYBRID_CONFIGS,
+    REFERENCE_COST_90Q,
+    REFERENCE_COST_90Q_AFFINE_OPT,
     ArithmeticForm,
     ErrorBudgetEngine,
     FarosCandidateConfig,
     FarosIsqProposer,
     FarosParetoTournament,
     FidelityLevel,
-    R1_NONUNIFORM_CONFIGS,
-    R2_PREFIX_RESIDUAL_CONFIGS,
-    R3_DIRECT_PHASE_CONFIGS,
-    R4_ALT_ARITHMETIC_CONFIGS,
-    R5_HYBRID_CONFIGS,
-    ALL_FAROS_PORTFOLIO_CONFIGS,
-    REFERENCE_COST_90Q,
-    REFERENCE_COST_90Q_AFFINE_OPT,
     RepresentationType,
-    SABLE_90_BASELINE,
     Sable90Profiler,
     SegmentationStrategy,
     calibrate_faros_circuit,
@@ -56,12 +50,10 @@ from apedp_dyn.quantum_compilation.faros_isq import (
     evaluate_r4_alt_arithmetic,
     evaluate_r5_hybrid,
     exhaustive_integer_certificate,
-    generate_chebyshev_minimax_tables,
     generate_evaluation_subset,
     load_chebyshev_minimax_tables,
     materialize_faros_circuit,
     run_faros_isq_search,
-    verify_faros_candidate,
 )
 from apedp_dyn.quantum_compilation.ledger import QuantumCandidateLedger
 
@@ -104,7 +96,7 @@ def test_error_budget_engine_margin_and_tolerance():
     assert (tol > 0).all()
 
     # Exact model matches target -> 0 error -> max margin
-    min_margin, worst_ratio, worst_x = ErrorBudgetEngine.evaluate_margin(target, xs)
+    min_margin, worst_ratio, _worst_x = ErrorBudgetEngine.evaluate_margin(target, xs)
     assert min_margin > 0
     assert worst_ratio == pytest.approx(0.0)
 
@@ -181,14 +173,18 @@ def test_r4_alternative_arithmetic_forms():
     xs = generate_evaluation_subset(max_x=1024)
 
     # Estrin tree
-    estrin_cfg = [c for c in R4_ALT_ARITHMETIC_CONFIGS if c.arithmetic_form == ArithmeticForm.ESTRIN_TREE][0]
+    estrin_cfg = next(
+        c for c in R4_ALT_ARITHMETIC_CONFIGS
+        if c.arithmetic_form == ArithmeticForm.ESTRIN_TREE)
     p_estrin, _, m_estrin = evaluate_r4_alt_arithmetic(estrin_cfg, xs)
     assert p_estrin is True
     assert m_estrin["cost_evaluation"]["num_qubits"] == 86
     assert m_estrin["cost_evaluation"]["strictly_below_affine_opt"] is True
 
     # Bit-serial
-    serial_cfg = [c for c in R4_ALT_ARITHMETIC_CONFIGS if c.arithmetic_form == ArithmeticForm.BIT_SERIAL][0]
+    serial_cfg = next(
+        c for c in R4_ALT_ARITHMETIC_CONFIGS
+        if c.arithmetic_form == ArithmeticForm.BIT_SERIAL)
     p_serial, _, m_serial = evaluate_r4_alt_arithmetic(serial_cfg, xs)
     assert p_serial is True
     assert m_serial["cost_evaluation"]["num_qubits"] == 78
@@ -246,7 +242,7 @@ def test_multi_fidelity_pareto_tournament_execution():
 def test_faros_isq_proposer_and_experiment_runner(tmp_path):
     """Verify FarosIsqProposer integration with ExperimentRunner and ledger."""
     contract = load_contract("invsqrt")
-    ledger = QuantumCandidateLedger(tmp_path / "faros_test_ledger.jsonl")
+    QuantumCandidateLedger(tmp_path / "faros_test_ledger.jsonl")  # constructed for its file
 
     proposer = FarosIsqProposer(portfolio=R2_PREFIX_RESIDUAL_CONFIGS[:2])
     candidates = proposer.generate(contract, incumbent=None, budget=2)
@@ -349,7 +345,7 @@ def test_chebyshev_minimax_table_generation_and_loading():
     assert worst * (2**24) < 1.0  # Normalized continuous minimax ratio < 1.0
 
     # Every triple (K2, K1, K0) must be positive and within bit bounds
-    for key, (k2, k1, k0) in tables.items():
+    for k2, k1, k0 in tables.values():
         assert 0 <= k2 < (1 << cfg.w2)
         assert k1 > 0
         assert k0 > 0

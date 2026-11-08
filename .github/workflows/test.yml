@@ -55,6 +55,22 @@ jobs:
       - name: Rust kernel unit tests
         run: cargo test --workspace --locked
 
+  governance-manifest:
+    name: Governance manifest covers the spec pin
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      # `canonical_spec` imports only the standard library, so this gate needs
+      # no install step: the checkout and the interpreter are the environment.
+      # It is a separate job because the Python pin passing is not the same
+      # claim as the signed manifest covering the revision (FLAW-01).
+      - name: Fail if the signed manifest lags the canonical-spec pin
+        run: python scripts/check_governance_manifest_drift.py --check
+
   test:
     needs: [python-quality, rust-quality]
     runs-on: ubuntu-latest

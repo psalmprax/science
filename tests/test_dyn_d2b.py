@@ -85,9 +85,15 @@ def test_coupled_enumeration_and_prune():
     assert len(allc) == per_dof ** 2
 
     kept = prune_admissible(prob, allc)
-    # Measured 2026-09-28 against the D3-widened grammar (optional gained
-    # c1/c2): 676 of the 1764 survive dimensional + admissibility pruning.
-    assert len(kept) == 676
+    # Measured 2026-11-07 against the D3-widened grammar: 225 of the 1764
+    # survive. The 1539 constraint-bearing candidates are refused at gate 1
+    # because the c1/c2 basis has no index-1 reduction, so every survivor is
+    # constraint-free.
+    assert len(kept) == 225
+    assert all(
+        not ({"c1", "c2"} & set().union(*(set(e) for e in s.candidate.term_sets())))
+        for s in kept
+    )
     keys = [canonical_system(s.candidate) for s in kept]
     assert len(set(keys)) == len(keys)  # pruning keeps distinct hypotheses only
     # DOF-labeled canonicals: a swapped pair are distinct hypotheses, both kept.

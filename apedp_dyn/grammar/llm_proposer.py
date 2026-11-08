@@ -153,7 +153,7 @@ class LLMProposer:
             proposals = self._propose_via_api(problem)
         except LLMProposerUnavailable:
             raise
-        except Exception as exc:  # noqa: BLE001 - re-raised with context
+        except Exception as exc:
             self.last_outcome = f"failed:{type(exc).__name__}"
             raise LLMProposerUnavailable(
                 f"LLM request to {self.api_base!r} failed: {exc}") from exc
@@ -213,7 +213,7 @@ class LLMProposer:
             resp.raise_for_status()
             data = resp.json()
             content = data["choices"][0]["message"]["content"]
-        except Exception as exc:  # noqa: BLE001 - transport and schema alike
+        except Exception as exc:
             self.last_outcome = f"failed:{type(exc).__name__}"
             raise LLMProposerUnavailable(
                 f"LLM request to {self.api_base!r} failed: {exc}") from exc

@@ -323,6 +323,7 @@ def evaluate_direct_poly_model(
 def build_direct_poly_circuit(n_p: int, prec: PolyPrecision) -> Any:
     """Build the exact Kickmix circuit for direct degree-2 polynomial compilation."""
     import invsqrt.nr_reference_circuit as ref
+
     import kickmix as km
 
     width = 2 * n_p + 2
@@ -584,6 +585,7 @@ def ensure_runtime(contract: VerifierContract) -> tuple[Any, Any]:
             sys.path.insert(0, path)
     import invsqrt.nr_reference_circuit as nr_reference_circuit
     import invsqrt.verify_submission_invsqrt as verify_submission_invsqrt
+
     import kickmix  # noqa: F401
 
     expected = contract.verifier_root.resolve()

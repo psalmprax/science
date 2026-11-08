@@ -248,7 +248,7 @@ def test_dataset_3_real_market_noise_refusal_and_zero_fpr():
         bootstrap=False,
     )
     assert rep_sp.adjudication_status == EpistemicStatus.INSUFFICIENT_EVIDENCE
-    assert rep_sp.position_size == 0.0, "Must allocate 0.0% capital on noise"
+    assert rep_sp.sizing.gross_exposure == 0.0, "Must allocate 0.0% capital on noise"
     assert rep_sp.promoted_expression == "", "Must promote zero equations on noise"
     assert rep_sp.epistemic_attribution in (
         EpistemicAttribution.OUT_OF_GRAMMAR_OR_MISSPECIFIED.value,
@@ -263,5 +263,5 @@ def test_dataset_3_real_market_noise_refusal_and_zero_fpr():
         bootstrap=False,
     )
     assert rep_nq.adjudication_status == EpistemicStatus.INSUFFICIENT_EVIDENCE
-    assert rep_nq.position_size == 0.0
+    assert rep_nq.sizing.gross_exposure == 0.0
     assert rep_nq.promoted_expression == ""

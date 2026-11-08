@@ -22,12 +22,13 @@ import math
 import pathlib
 import re
 import sys
+from itertools import pairwise
 
 import pytest
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
 GATE_JSON = REPO_ROOT / "benchmarks" / "quantum_compilation" / "dfthcsos_precision_gate.json"
-FCIDUMP = pathlib.Path("/tmp/qcc/verifiers/dfthcsos/FeMoCo76o113e.fcidump")
+FCIDUMP = pathlib.Path("/tmp/qcc/verifiers/dfthcsos/FeMoCo76o113e.fcidump")  # noqa: S108 - an input path the verifier is given, never created here
 VERIFIERS = (REPO_ROOT / "apedp_dyn" / "sandbox"
              / "google-verifiable-quantum-circuit-compilation" / "verifiers")
 VERIFY_SOURCE = VERIFIERS / "dfthcsos" / "verify.py"
@@ -92,7 +93,7 @@ def test_the_cheapest_family_is_the_rejected_one():
 
 def test_both_residuals_grow_as_the_grid_coarsens():
     rows = gate()["rows"]
-    for row, coarser in zip(rows, rows[1:]):
+    for row, coarser in pairwise(rows):
         assert coarser["error_1"] > row["error_1"]
         assert coarser["error_2"] > row["error_2"]
 
@@ -107,7 +108,6 @@ def test_the_verifier_still_enforces_the_gate_these_rows_were_judged_against():
 @pytest.mark.skipif(not FCIDUMP.is_file(), reason="pinned FCIDUMP is competition data, not in this checkout")
 def test_the_recorded_residuals_reproduce_from_the_verifier_math():
     """Re-derive every row without building a circuit; takes about a minute."""
-    import sys
 
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
     sys.path.insert(0, str(

@@ -51,8 +51,8 @@ Status: audit-only
 """
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from apedp_dyn.quantum_compilation.local_mr_sim import Field
 

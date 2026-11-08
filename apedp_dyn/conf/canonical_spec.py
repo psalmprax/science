@@ -11,10 +11,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import warnings
 from pathlib import Path
 from typing import Any
 
 SPEC_PATH = Path(__file__).resolve().parent.parent.parent / "specifications" / "canonical_preregistered_spec_v1.json"
+MANIFEST_PATH = SPEC_PATH.parent / "governance_manifest.json"
 PINNED_SPEC_SHA256 = "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343"
 # Pin history (AGENTS.md §1.3 re-certification trail, stored in-code next to the
 # pin):
@@ -65,9 +67,50 @@ def load_and_verify_canonical_spec(enforce_hash: bool = True) -> dict[str, Any]:
     return loaded
 
 
+def governance_manifest_status() -> dict[str, Any]:
+    """Report whether the signed governance manifest covers this spec revision.
+
+    The hash check above proves the disk file matches this module's pin. It says
+    nothing about the Ed25519 governance manifest, which seals the hash the
+    trustees signed. The two are allowed to disagree — they do (FLAW-01) — and
+    when they do the Python pin is green while the signed certification is
+    stale. That disagreement is returned here instead of being left to a test a
+    reader has to know to run.
+    """
+    sealed: str | None = None
+    try:
+        payload = json.loads(MANIFEST_PATH.read_bytes().decode("utf-8"))
+        raw = payload.get("spec_sha256") if isinstance(payload, dict) else None
+        sealed = raw if isinstance(raw, str) else None
+    except (OSError, ValueError):
+        sealed = None
+    return {
+        "manifest_path": str(MANIFEST_PATH),
+        "manifest_present": sealed is not None,
+        "sealed_sha256": sealed,
+        "disk_sha256": PINNED_SPEC_SHA256,
+        "drift": sealed is not None and sealed != PINNED_SPEC_SHA256,
+    }
+
+
 # Load on module import
 _SPEC = load_and_verify_canonical_spec(enforce_hash=True)
 _THRESHOLDS = _SPEC["thresholds"]
+
+GOVERNANCE_STATUS: dict[str, Any] = governance_manifest_status()
+GOVERNANCE_SPEC_SHA256: str | None = GOVERNANCE_STATUS["sealed_sha256"]
+GOVERNANCE_DRIFT: bool = bool(GOVERNANCE_STATUS["drift"])
+
+if GOVERNANCE_DRIFT:
+    warnings.warn(
+        "Governance manifest is sealed to a different canonical-spec hash "
+        f"({str(GOVERNANCE_SPEC_SHA256)[:12]}…) than the one on disk "
+        f"({PINNED_SPEC_SHA256[:12]}…). The Python pin passes, but the signed "
+        "certification does not cover this spec revision; re-signing requires "
+        "the registered trustees (AGENTS.md §1.3, FLAW-01).",
+        RuntimeWarning,
+        stacklevel=2,
+    )
 
 # Authoritative Runtime Constants
 TACTICAL_ACTIVE_MIN: float = float(_THRESHOLDS["tactical_active_fraction_min"])

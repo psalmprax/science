@@ -16,8 +16,47 @@ from dataclasses import dataclass
 from enum import Enum
 
 import numpy as np
+import sympy as sp
 
 logger = logging.getLogger(__name__)
+
+
+def separable_seed(
+    group: list[str],
+    arrays: dict[str, np.ndarray],
+    target: np.ndarray,
+    max_degree: int,
+) -> sp.Expr | None:
+    """Least-squares additive block for one separable group of variables.
+
+    Fits ``1 + sum_d sum_{s in group} c * s**d`` over the observed rows and
+    returns it as an explicit numeric expression. Numeric coefficients keep the
+    result directly evaluable, so a separable seed enters the population as a
+    scored candidate rather than as an unevaluated skeleton.
+    """
+    columns = [np.ones(len(target))]
+    powers: list[tuple[sp.Symbol, int]] = []
+    for name in group:
+        values = np.asarray(arrays[name], dtype=float).reshape(-1)
+        if values.size != target.shape[0]:
+            return None
+        for degree in range(1, max_degree + 1):
+            columns.append(values ** degree)
+            powers.append((sp.Symbol(name), degree))
+    if len(columns) == 1:
+        return None
+    design = np.column_stack(columns)
+    try:
+        coefficients, *_ = np.linalg.lstsq(design, target, rcond=None)
+    except np.linalg.LinAlgError:
+        return None
+    if not np.all(np.isfinite(coefficients)):
+        return None
+    expression = sp.Float(float(coefficients[0]))
+    for (symbol, degree), coefficient in zip(powers, coefficients[1:],
+                                             strict=False):
+        expression = expression + sp.Float(float(coefficient)) * symbol ** degree
+    return sp.expand(expression)
 
 
 class SeparabilityType(str, Enum):

@@ -11,6 +11,7 @@ Verifies:
 from __future__ import annotations
 
 import datetime
+import json
 import tempfile
 from pathlib import Path
 
@@ -146,6 +147,22 @@ def test_enforce_preregistration_governance_raises_on_violation():
             enforce_preregistration_governance(spec_path, manifest_path)
 
         assert "EPISTEMIC GOVERNANCE VIOLATION" in str(exc_info.value)
+
+
+def test_canonical_spec_reports_governance_manifest_drift():
+    """The Python pin passing is not the same as the manifest covering it."""
+    from apedp_dyn.conf import canonical_spec as spec
+
+    status = spec.governance_manifest_status()
+    assert Path(status["manifest_path"]).name == "governance_manifest.json"
+    sealed = json.loads(
+        Path(status["manifest_path"]).read_text(encoding="utf-8")
+    )["spec_sha256"]
+    assert status["sealed_sha256"] == sealed
+    assert status["disk_sha256"] == spec.PINNED_SPEC_SHA256
+    assert status["drift"] == (sealed != spec.PINNED_SPEC_SHA256)
+    assert spec.GOVERNANCE_DRIFT == status["drift"]
+    assert spec.GOVERNANCE_SPEC_SHA256 == sealed
 
 
 def test_canonical_repository_governance_manifest_valid():

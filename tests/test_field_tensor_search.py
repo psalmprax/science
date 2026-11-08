@@ -3,16 +3,10 @@
 Verifies mathematical invariants, 4-tier baseline hierarchy, tensor verification,
 quantum resource metrics, reproducibility manifests, and invsqrt screening.
 """
-from fractions import Fraction
 import numpy as np
-import pytest
 
 from apedp_dyn.quantum.field_tensor_search import (
     DEGREE,
-    FIELD_ORDER,
-    MODULUS_INT,
-    MODULUS_POLY,
-    PRIMITIVE_ELEMENT,
     InvsqrtNumericalModel,
     build_54_reference,
     build_field_spec,
@@ -22,10 +16,7 @@ from apedp_dyn.quantum.field_tensor_search import (
     compile_reversible_multiplier,
     evaluate_multiplier,
     generate_reproducibility_manifest,
-    gf_mul,
-    gf_pow,
     load_published_51_reference,
-    search_flip_graph,
     verify_tensor_decomposition,
 )
 
@@ -134,7 +125,7 @@ def test_invsqrt_numerical_model_correction_d():
     
     # Test point evaluation with exact target phase
     for x in (1, 16, 256, 1000):
-        target, tol = model.reference_values_point(x)
+        target, _tol = model.reference_values_point(x)
         passed, ratio, margin = model.evaluate_candidate_point(x, target)
         assert passed
         assert ratio <= 1.0
@@ -173,7 +164,7 @@ def test_algebraic_failure_diagnostics_consistent_and_inconsistent():
     rng = np.random.default_rng(42)
     U_bad = rng.integers(0, 2, size=(10, DEGREE), dtype=np.uint8)
     V_bad = rng.integers(0, 2, size=(10, DEGREE), dtype=np.uint8)
-    diag_bad, W_bad = diagnose_gf2_bilinear_system(U_bad, V_bad, T)
+    diag_bad, _W_bad = diagnose_gf2_bilinear_system(U_bad, V_bad, T)
     assert not diag_bad.is_consistent
     assert diag_bad.defect_count > 0
     assert diag_bad.unmet_parity_equations > 0

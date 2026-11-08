@@ -51,7 +51,7 @@ def test_the_mr_pin_names_the_commit_and_patch_it_was_built_from():
     """A pin without its inputs cannot be reproduced; the inputs are pinned too."""
     assert pins.sha256_file(PATCH) == pins.MR_BUILD.provenance["patch_sha256"]
     if shutil.which("git") and (VENDOR_TREE / ".git").exists():
-        head = subprocess.run(  # noqa: S603 - fixed argv, no shell
+        head = subprocess.run(
             ["git", "-C", str(VENDOR_TREE), "rev-parse", "HEAD"],
             capture_output=True, text=True, check=True).stdout.strip()
         assert head == pins.MR_BUILD.provenance["source_commit"]

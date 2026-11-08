@@ -456,12 +456,12 @@ def map_reference_workload(*, code_distance: int = DEFAULT_CODE_DISTANCE) -> dic
 
 __all__ = [
     "DEFAULT_CODE_DISTANCE",
-    "REFERENCE_LOGICAL_ERROR_RATE",
-    "DQIWorkload",
-    "DQI_REFERENCE_WORKLOAD",
     "DQI_GLUZDOV_V6_TARGET_WORKLOAD",
+    "DQI_REFERENCE_WORKLOAD",
+    "REFERENCE_LOGICAL_ERROR_RATE",
     "DQIPhotonicMappingAssumptions",
     "DQIPhotonicResourceMapper",
+    "DQIWorkload",
     "SuperconductingBaseline",
     "map_reference_workload",
 ]

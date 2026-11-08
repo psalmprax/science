@@ -17,38 +17,25 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-import pytest
-import numpy as np
 
+import numpy as np
+import pytest
+
+from apedp_dyn.quantum_compilation.dfthcsos_adapter import (
+    extract_j3_signed_words,
+)
 from apedp_dyn.quantum_compilation.dfthcsos_signed_4bank import (
     ADDRESS_COUNT,
-    ANGLE_TOFFOLIS_TOTAL,
-    BANK_ROWS_PER_BATCH,
     BASE_WORD_BITS,
-    BLOCK_SIZE_B,
-    BROT,
-    CLAIMED_CHEMISTRY_COST,
-    CLAIMED_T_TOTAL,
     COMPRESSED_DELTA_BITS_PER_ROW,
-    DELTA_BANK_COUNT,
     HEADROOM,
-    J,
     K_CIRCUITS,
-    LAMBDA_EFF,
-    LITERAL_CHEMISTRY_COST,
-    LITERAL_T_TOTAL,
-    NON_ANGLE_TOFFOLIS,
-    PASSES,
     PEAK_ANGLE_QUBITS,
     PROMOTION_STATUS_HOLD,
-    Q_TOTAL,
     QUBIT_CAP,
-    REFERENCE_CHEMISTRY_COST,
     SCRATCH_QUBITS,
     SELECTION_QUBITS,
-    T_FORMULA_MINUS_CLAIM,
-    TOFFOLIS_PER_ANGLE_CIRCUIT_PASS,
-    build_signed_4bank_angle_circuit,
+    J,
     compile_all_25_angle_circuits,
     compress_signed_word,
     decompress_signed_word,
@@ -58,9 +45,6 @@ from apedp_dyn.quantum_compilation.dfthcsos_signed_4bank import (
     resolve_4363_discrepancy,
     validate_signed_angle_word,
     verify_cos_positive_invariant,
-)
-from apedp_dyn.quantum_compilation.dfthcsos_adapter import (
-    extract_j3_signed_words,
 )
 
 
@@ -85,10 +69,10 @@ def test_signed_givens_invariant_mathematical_proof():
     assert verify_cos_positive_invariant(0.0)[0] is np.True_
 
     # Out of domain: angles with cos(theta) <= 0 must raise ValueError
-    with pytest.raises(ValueError, match="cos.*strictly positive"):
+    with pytest.raises(ValueError, match=r"cos.*strictly positive"):
         verify_cos_positive_invariant(1.6)
 
-    with pytest.raises(ValueError, match="cos.*strictly positive"):
+    with pytest.raises(ValueError, match=r"cos.*strictly positive"):
         verify_cos_positive_invariant(np.pi)
 
 
@@ -213,7 +197,6 @@ def test_design_projection_signed_4bank():
 
 def test_dfthcsos_adapter_quantization():
     """Verify extract_j3_signed_words with bit-width quantization on real competition data."""
-    from apedp_dyn.quantum_compilation.dfthcsos_adapter import extract_j3_signed_words
     npz_path = Path("apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/sample_submission/dfthcsos/submission.npz")
     if not npz_path.exists():
         pytest.skip("sample_submission/dfthcsos/submission.npz not present")

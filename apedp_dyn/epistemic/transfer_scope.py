@@ -46,7 +46,7 @@ class TransferScope:
     error_blowup: float = field(init=False)
     status: str = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         # NOTE: dataclass is frozen; use object.__setattr__ for derived fields.
         object.__setattr__(self, "leadership_reversed",
                            bool(self.extra_rmse_rival < self.extra_rmse_best))

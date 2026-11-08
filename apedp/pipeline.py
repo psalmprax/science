@@ -71,28 +71,6 @@ DEFAULT_MAX_BAD_ROW_FRACTION = 0.2
 VALID_BACKENDS = frozenset({"auto", "python", "rust"})
 
 
-def _dense_domain_audit(
-    expr: sp.Expr,
-    subs: Mapping[sp.Symbol, np.ndarray],
-    observed_scale: float,
-    grid_points: int = 2001,
-    spike_factor: float = 10.0,
-) -> str | None:
-    """Thin wrapper over the shared pole scan.
-
-    The implementation lives in ``apedp.scientific_layers.interior_pole_scan``
-    so the benchmark pipeline and the evolutionary birth gate apply exactly the
-    same rule; a candidate that is admissible in one path must be admissible in
-    the other.
-    """
-    observed = {str(sym): np.asarray(values, dtype=float)
-                for sym, values in subs.items()}
-    return interior_pole_scan(
-        expr, observed,
-        grid_points=grid_points, spike_factor=spike_factor,
-    )
-
-
 class DiscoveryPipeline:
     """End-to-end scientific discovery pipeline.
 
@@ -516,8 +494,10 @@ class DiscoveryPipeline:
             # Interior-pole audit. The sampled inputs can sit clear of a pole
             # that lives inside the domain, so the form is scanned densely
             # before it is allowed to compete on error alone.
-            observed_scale = float(np.max(np.abs(design[ok])))
-            pole_reason = _dense_domain_audit(expr, subs, observed_scale)
+            pole_reason = interior_pole_scan(
+                expr,
+                {str(sym): np.asarray(values, dtype=float) for sym, values in subs.items()},
+            )
             if pole_reason is not None:
                 profiles.append(CandidateProfile(
                     candidate_id=cid, expression=text, math_sound=False,

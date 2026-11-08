@@ -1,10 +1,16 @@
 """Gate 4 — discrimination/intervention: the held-out experiment decides."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from apedp_dyn.gates.dimensional import GateResult
 from apedp_dyn.simulation import simulate
+
+if TYPE_CHECKING:
+    from apedp_dyn.model.physical_model import PhysicalModel
+    from apedp_dyn.problems.base import DynProblem
 
 
 def observation_scale(obs: np.ndarray) -> dict[str, float]:
@@ -62,7 +68,7 @@ def auto_tolerance(obs: np.ndarray) -> float:
     return max(0.10 * s["obs_rms"], 1.5 * s["noise_sigma"])
 
 
-def intervention_holdout(model, problem) -> GateResult:
+def intervention_holdout(model: PhysicalModel, problem: DynProblem) -> GateResult:
     """Gate 4: under the held-out intervention, simulation matches truth."""
     h = problem.holdout
     n_eval = len(h["truth_t"])

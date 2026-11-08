@@ -13,6 +13,7 @@ from fastapi import HTTPException
 from apedp_dyn.discovery_l2.l2_engine import L2DiscoveryResult
 from apedp_dyn.discovery_l2.multiterm_engine import MultiTermDiscoveryResult, MultiTermL2Engine
 
+
 def run_registry_discovery(req: Any) -> dict[str, Any]:
     """Generic L2 discovery on any registered problem module.
 
@@ -22,9 +23,9 @@ def run_registry_discovery(req: Any) -> dict[str, Any]:
     Same guards, same adjudication, same audit as the demo systems.
     """
     from apedp_dyn.discovery_l2.dimensional_types import Dimension
-    from apedp_dyn.ui.server import _LOG, _audit, _json_obj, _opt_float, _problem_modules
     from apedp_dyn.discovery_l2.l2_engine import L2DiscoveryEngine
     from apedp_dyn.problems.base import finalize
+    from apedp_dyn.ui.server import _LOG, _audit, _json_obj, _opt_float, _problem_modules
 
     modname = str(req.get("system", ""))
     mods = _problem_modules()

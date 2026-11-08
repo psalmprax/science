@@ -883,11 +883,11 @@ class MMLMMultiplier:
             decomposition,
         )
         results = [self._bits_to_int(row) for row in output_bits]
-        expected = [self.gf.mul(left, right) for left, right in zip(left_values, right_values)]
+        expected = [self.gf.mul(left, right) for left, right in zip(left_values, right_values, strict=False)]
         return {
             "products": results,
             "expected": expected,
-            "exact": [result == want for result, want in zip(results, expected)],
+            "exact": [result == want for result, want in zip(results, expected, strict=False)],
             "bits": output_bits,
             "state_bits": products,
             "pairs": len(results),
@@ -932,7 +932,7 @@ class MMLMMultiplier:
                 accumulator, _ = self._multiply_bits_batch(accumulator, bits, decomposition)
                 multiplications += 1
         inverses = [self._bits_to_int(row) for row in accumulator]
-        checks = [self.gf.mul(value, inverse) for value, inverse in zip(values, inverses)]
+        checks = [self.gf.mul(value, inverse) for value, inverse in zip(values, inverses, strict=False)]
         products_per_element = squarings + multiplications
         return {
             "inverses": inverses,
@@ -969,7 +969,7 @@ class MMLMMultiplier:
         zeros_skipped = 0
         for row in rows:
             accumulator = 0
-            for entry, value in zip(row, values):
+            for entry, value in zip(row, values, strict=False):
                 if entry == 0 or value == 0:
                     zeros_skipped += 1
                     continue
@@ -980,7 +980,7 @@ class MMLMMultiplier:
         expected: list[int] = []
         for row in rows:
             total = 0
-            for entry, value in zip(row, values):
+            for entry, value in zip(row, values, strict=False):
                 total ^= self.gf.mul(entry, value)
             expected.append(total)
         return {

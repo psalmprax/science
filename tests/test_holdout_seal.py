@@ -67,7 +67,7 @@ def test_truncation_is_detected(tmp_path):
     copy.write_text("".join(lines[:-1]), encoding="utf-8")
     write_seal(copy)  # seal the truncated file, so only the chain can object
     copy.write_text("".join(lines[:-2]), encoding="utf-8")
-    with pytest.raises(HoldoutSealError, match="fewer lines|does not match"):
+    with pytest.raises(HoldoutSealError, match=r"fewer lines|does not match"):
         verify_seal(copy)
 
 
@@ -81,7 +81,7 @@ def test_an_edited_burn_is_detected(tmp_path):
     payload = json.loads(lines[0])
     mutated = json.dumps({**payload, "injected": True}) + "\n"
     copy.write_text(mutated + "".join(lines[1:]), encoding="utf-8")
-    with pytest.raises(HoldoutSealError, match="does not match|bytes"):
+    with pytest.raises(HoldoutSealError, match=r"does not match|bytes"):
         verify_seal(copy)
 
 
@@ -95,7 +95,7 @@ def test_a_rewind_is_detected(tmp_path):
                     "lines": PINNED_LINES, "byte_length": PINNED_BYTE_LENGTH,
                     "chain_sha256": PINNED_CHAIN_SHA256}, indent=2) + "\n",
         encoding="utf-8")
-    with pytest.raises(HoldoutSealError, match="fewer lines|bytes|does not match"):
+    with pytest.raises(HoldoutSealError, match=r"fewer lines|bytes|does not match"):
         verify_seal(copy)
 
 

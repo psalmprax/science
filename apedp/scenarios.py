@@ -462,9 +462,18 @@ class APEDPScenarioSuite:
             }
 
         # Dataset 2 has distinct non-zero curvature despite identical linear moments
-        if not abs(stats['dataset_2']['curvature_a']) > 0.05:
+        threshold = 0.05
+        curvature = {name: float(values['curvature_a']) for name, values in stats.items()}
+        distinguishing = [name for name, value in curvature.items() if abs(value) > threshold]
+        if 'dataset_2' not in distinguishing:
             raise AssertionError("Dataset 2 shows no distinguishing curvature")
-        return {'anscombe_disambiguation': 'Orthogonal curvature audit distinguishes datasets'}
+        return {
+            'anscombe_disambiguation': 'Orthogonal curvature audit distinguishes datasets',
+            'curvature_a_by_dataset': curvature,
+            'distinguishing_curvature_threshold': threshold,
+            'distinguishing_datasets': distinguishing,
+            'statistics': stats,
+        }
 
     # 21. High-Volume Vectorized Permutation Sweep
     def scenario_21_high_volume_permutations(self) -> dict[str, Any]:

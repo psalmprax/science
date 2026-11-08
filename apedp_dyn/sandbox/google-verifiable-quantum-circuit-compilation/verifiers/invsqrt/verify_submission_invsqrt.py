@@ -160,7 +160,7 @@ def _initial_seed(circuit_hash: str, salt: str) -> int:
     """Computes the initial RNG seed from `circuit_hash` and optional `salt`."""
     if not salt:
         return int(circuit_hash, 16)
-    return int(hashlib.sha256(f'{circuit_hash}{salt}'.encode('utf-8')).hexdigest(), 16)
+    return int(hashlib.sha256(f'{circuit_hash}{salt}'.encode()).hexdigest(), 16)
 
 
 

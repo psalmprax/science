@@ -9,13 +9,14 @@ Key Benchmarks:
      On noisy daily returns across calm and turbulent regimes, open AST exploration
      proposes hundreds of non-linear factor interactions, but epistemic gates
      (Guard 1 ceiling, Guard 2 whiteness, predictive holdout ceiling) reject all spurious
-     correlations, attributing to OUT_OF_GRAMMAR_OR_MISSPECIFIED or MEASUREMENT_NOISE_SWAMPED
-     and sizing down to 0% capital allocation.
+     correlations, attributing to OUT_OF_GRAMMAR_OR_MISSPECIFIED or MEASUREMENT_NOISE_SWAMPED.
+     A refusing verdict admits no position, so the sizing rule reports 0% exposure.
   2. 2022 Bear Market Price Dynamics:
      On price levels, competing autoregressive and trend formulations face scale-free
      resolution floor tau_epi and block-bootstrap adjudication. In borderline regimes,
      the adjudicator refuses false UNIQUE promotion, returning MULTI_HYPOTHESIS with
-     INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY and downsizing risk to 50%.
+     INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY; admissibility does not force a trade,
+     and the sizing rule may still decline one.
   3. Demystifying Market Silence:
      Explains why the referee sits out 74 out of 75 months: abstention is an epistemic
      guarantee protecting capital from noise, not an engine failure.
@@ -39,7 +40,7 @@ from apedp_dyn.epistemic.adjudicate import (
 )
 from apedp_dyn.fitting.parameter_fit import FitResult
 from apedp_dyn.grammar.candidate_ir import CandidateDynamics, ScoredCandidate, Term
-from apedp_dyn.sandbox.finance_l2_demo import epistemic_position_sizing
+from apedp_dyn.sandbox.finance_l2_demo import SizingDecision, sizing_from_adjudication
 
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "market"
 
@@ -55,7 +56,7 @@ class RealMarketDiscoveryReport:
     adjudication_status: EpistemicStatus
     epistemic_attribution: str
     promoted_expression: str
-    position_size: float
+    sizing: SizingDecision
     epistemic_rationale: str
 
 
@@ -144,7 +145,13 @@ def evaluate_real_market_return_discovery(
             or best_cand.candidate.candidate_id
         )
 
-    pos_size = epistemic_position_sizing(adj.status, adj.epistemic_attribution)
+    holdout_returns = y[int(len(y) * 0.6):]
+    sizing = sizing_from_adjudication(
+        adj.status,
+        adj.epistemic_attribution,
+        [float(np.mean(holdout_returns))],
+        [[float(np.var(holdout_returns))]],
+    )
 
     return RealMarketDiscoveryReport(
         asset=asset,
@@ -154,7 +161,7 @@ def evaluate_real_market_return_discovery(
         adjudication_status=adj.status,
         epistemic_attribution=adj.epistemic_attribution,
         promoted_expression=promoted,
-        position_size=pos_size,
+        sizing=sizing,
         epistemic_rationale=adj.reason,
     )
 
@@ -235,7 +242,16 @@ def evaluate_real_market_price_collinearity(
         benchmark_level=BenchmarkLevel.L0_SELECTION,
     )
 
-    pos_size = epistemic_position_sizing(adj.status, adj.epistemic_attribution)
+    # The position is held over the holdout interval, so it is sized on holdout
+    # returns: sizing price levels would mix units (currency per share, not a
+    # return).
+    holdout_returns = np.diff(np.log(y_ho))
+    sizing = sizing_from_adjudication(
+        adj.status,
+        adj.epistemic_attribution,
+        [float(np.mean(holdout_returns))],
+        [[float(np.var(holdout_returns))]],
+    )
     promoted = adj.promoted.candidate.candidate_id if adj.promoted is not None else ""
 
     return RealMarketDiscoveryReport(
@@ -246,6 +262,6 @@ def evaluate_real_market_price_collinearity(
         adjudication_status=adj.status,
         epistemic_attribution=adj.epistemic_attribution,
         promoted_expression=promoted,
-        position_size=pos_size,
+        sizing=sizing,
         epistemic_rationale=adj.reason,
     )

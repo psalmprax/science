@@ -126,7 +126,9 @@ class UniversalDrugTargetDiscovery:
             'repurposing_potential': 'moderate',
             'evidence_level': 'preclinical',
             'mechanism_rationale': 'Shared pathway analysis suggests potential efficacy',
-            'clinical_trial_opportunities': ['Phase II feasibility study recommended']
+            'clinical_trial_opportunities': ['Phase II feasibility study recommended'],
+            'evidence': 'static_example',
+            'not_modelled': ['efficacy', 'safety', 'dose'],
         }
 
 
@@ -140,7 +142,12 @@ class LeadOptimizer:
             suggestions.append({'issue': 'high_mw', 'fix': 'Reduce molecular weight via scaffold hopping'})
         if logp > 4.5:
             suggestions.append({'issue': 'high_logp', 'fix': 'Add polar groups to reduce lipophilicity'})
-        return {'original': compound, 'optimization_suggestions': suggestions}
+        return {
+            'original': compound,
+            'optimization_suggestions': suggestions,
+            'evidence': 'rule_screen',
+            'not_modelled': ['admet', 'synthesis_route', 'potency'],
+        }
 
 
 class ADMETPredictor:
@@ -200,7 +207,9 @@ class ClinicalTrialDesigner:
             'sample_size_estimate': 200 if phase == 'Phase II' else 500,
             'duration_months': 6 if phase == 'Phase II' else 12,
             'biomarker_stratification': True,
-            'adaptive_features': ['Sample size re-estimation', 'Early futility stopping']
+            'adaptive_features': ['Sample size re-estimation', 'Early futility stopping'],
+            'evidence': 'planning_template',
+            'not_modelled': ['power_calculation', 'efficacy', 'randomisation'],
         }
 
 
@@ -248,7 +257,9 @@ class DrugRepurposingEngine:
             'design': 'factorial_or_platform_trial', 'arms': len(combinations) + 1,
             'sample_size': 300, 'duration_months': 12,
             'biomarker_stratification': True, 'adaptive_design': True,
-            'considerations': ['Drug-drug interactions', 'Additive toxicity']
+            'considerations': ['Drug-drug interactions', 'Additive toxicity'],
+            'evidence': 'planning_template',
+            'not_modelled': ['power_calculation', 'efficacy'],
         }
 
 
@@ -281,6 +292,8 @@ class CombinationTrialSimulator:
             },
             'conclusion': 'Candidate for confirmatory trial' if effect_size > 0.1 else 'Inconclusive',
             'note': 'Planning estimate only; requires a powered statistical analysis.',
+            'evidence': 'assumed_response_rates',
+            'not_modelled': ['p_value', 'power', 'randomisation'],
         }
 
     @staticmethod
@@ -296,6 +309,8 @@ class CombinationTrialSimulator:
             'confidence_interval': [round(max(0.0, base_efficacy - 0.15), 3), round(min(1.0, base_efficacy + 0.15), 3)],
             'translational_probability': round(mechanism_match * 0.7, 3),
             'recommendation': 'Promising for repurposing' if base_efficacy > 0.5 else 'Low priority',
+            'evidence': 'assumed_response_rates',
+            'not_modelled': ['clinical_outcome', 'p_value'],
         }
 
 

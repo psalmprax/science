@@ -1,4 +1,9 @@
-"""APEDP Applied Climate Science & Carbon Capture Module."""
+"""APEDP Applied Climate Science & Carbon Capture Module.
+
+Every number here is a published central estimate or an explicitly assumed
+scaling; nothing is a climate or cost model. The return records say which key is
+which, so a reference figure cannot be read as a projection.
+"""
 
 from __future__ import annotations
 
@@ -22,7 +27,15 @@ class DirectAirCapture:
             "technology_readiness_level": info["maturity"],
             "scalability": "high" if info["maturity"] == "commercial" else "medium",
             "path_to_cost_parity": "2030-2035" if info["cost_usd_tco2"] < 500 else "2035-2040",
-            "co2_removal_potential_gigatons_yr": 10,
+            "co2_removal_potential_reference_gigatons_yr": 10,
+            "co2_removal_potential_is_computed": False,
+            "evidence": "reference_spec",
+            "not_modelled": [
+                "lifecycle_assessment",
+                "cost_curve",
+                "deployment_rate",
+                "co2_removal_potential",
+            ],
         }
 
 
@@ -42,8 +55,16 @@ class CarbonMineralization:
             "global_availability": info["availability"],
             "permanence": "permanent",
             "energy_requirement": "low",
-            "cost_usd_tco2": 50,
+            "cost_usd_tco2_reference": 50,
+            "cost_usd_tco2_is_computed": False,
             "scale_potential_gigatons_yr": 2,
+            "evidence": "literature_lookup",
+            "not_modelled": [
+                "cost_usd_tco2",
+                "reaction_kinetics",
+                "lifecycle_assessment",
+                "scale_potential",
+            ],
         }
 
 
@@ -58,10 +79,23 @@ class ClimateModeling:
             "ssp585": {"2100_temp_increase_c": 4.4, "description": "Very high emissions"},
         }
         info = projections.get(scenario, projections["ssp245"])
+        warming = info["2100_temp_increase_c"]
         return {
             "scenario": scenario,
             **info,
-            "sea_level_rise_m": info["2100_temp_increase_c"] * 0.2,
-            "risk_level": "low" if info["2100_temp_increase_c"] < 2 else "medium" if info["2100_temp_increase_c"] < 3 else "high",
-            "tipping_points_at_risk": info["2100_temp_increase_c"] > 1.5,
+            "sea_level_rise_assumed_m": warming * 0.2,
+            "sea_level_rise_is_modelled": False,
+            "sea_level_rise_basis": (
+                "assumed linear scaling of 0.2 m per degree of 2100 warming; "
+                "not a calibrated ice-sheet model"
+            ),
+            "risk_level": "low" if warming < 2 else "medium" if warming < 3 else "high",
+            "tipping_points_at_risk": warming > 1.5,
+            "evidence": "literature_lookup",
+            "not_modelled": [
+                "sea_level",
+                "ice_sheet_dynamics",
+                "regional_patterns",
+                "carbon_cycle_feedback",
+            ],
         }

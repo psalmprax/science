@@ -7,8 +7,8 @@ and epistemic gate auditing.
 import json
 import pathlib
 import tempfile
+
 import numpy as np
-import pytest
 
 from apedp_dyn.quantum.field_tensor_search import (
     DEGREE,
@@ -20,9 +20,6 @@ from apedp_dyn.quantum.field_tensor_search import (
 from scripts.run_mmlm_poc_001 import (
     BudgetAccountant,
     audit_epistemic_launch_gates,
-    run_arm_a_conventional,
-    run_arm_b_mmlm,
-    run_arm_c_algebraic,
     run_mmlm_poc_001_matched_benchmark,
 )
 

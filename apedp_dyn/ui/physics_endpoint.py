@@ -31,6 +31,7 @@ from apedp_dyn.epistemic.claim_ladder import (
 from apedp_dyn.harness import AEH
 from apedp_dyn.orchestration.competition import competition_records
 
+
 def run_physics_discovery(req: Any) -> dict[str, Any]:
     """Execute autonomous open discovery on physical dynamical systems."""
     rng = np.random.default_rng(42)

@@ -38,13 +38,13 @@ are ignored.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 import hashlib
 import io
 import os
+import zipfile
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
-import zipfile
 
 import numpy as np
 import numpy.typing as npt
@@ -198,7 +198,7 @@ def load_reference(fcidump: str | Path) -> dict[str, Any]:
             if not tokens:
                 continue
             coefficient = float(tokens[0])
-            indices = [int(token) - 1 for token in tokens[1:] if token != "0"]
+            indices = [int(field) - 1 for field in tokens[1:] if field != "0"]
             if len(indices) == 2:
                 i, j = sorted(indices)
                 oei[i, j] = coefficient
@@ -206,12 +206,12 @@ def load_reference(fcidump: str | Path) -> dict[str, Any]:
             elif len(indices) == 4:
                 # Mulliken (ij|kl) to Dirac order, then the canonical member of
                 # the eightfold permutation group.
-                i, j, k, l = indices[0], indices[2], indices[3], indices[1]
-                i, j, k, l = min(
-                    [i, j, k, l], [j, i, l, k], [k, l, i, j], [l, k, j, i],
-                    [i, k, j, l], [k, i, l, j], [j, l, i, k], [l, j, k, i],
+                i, j, k, m = indices[0], indices[2], indices[3], indices[1]
+                i, j, k, m = min(
+                    [i, j, k, m], [j, i, m, k], [k, m, i, j], [m, k, j, i],
+                    [i, k, j, m], [k, i, m, j], [j, m, i, k], [m, j, k, i],
                 )
-                ii, jj = _pair_index(i, l), _pair_index(j, k)
+                ii, jj = _pair_index(i, m), _pair_index(j, k)
                 h2_lower[ii, jj] = coefficient
                 h2_lower[jj, ii] = coefficient
             elif not indices:

@@ -1,4 +1,9 @@
-"""APEDP Applied Neuromorphic Computing Module."""
+"""APEDP Applied Neuromorphic Computing Module.
+
+Device counts, power figures and accuracy estimates are reference specifications,
+not measurements: each return says so, and the "1000x" figure is carried as
+``claimed_advantage`` rather than as a property of the design.
+"""
 
 from __future__ import annotations
 
@@ -19,7 +24,16 @@ class NeuromorphicChipDesigner:
             **info,
             "energy_per_synaptic_event_fj": 10,
             "applications": ["Edge AI", "Sensor processing", "Robotics"],
-            "advantage_over_gpu": "1000x energy efficiency"
+            # Reported as a claim: no benchmark against a GPU was run here.
+            "claimed_advantage": "1000x energy efficiency",
+            "advantage_measured": False,
+            "measured": False,
+            "evidence": "reference_spec",
+            "not_modelled": [
+                "energy_per_synaptic_event",
+                "throughput",
+                "advantage_over_gpu",
+            ],
         }
 
 
@@ -33,7 +47,10 @@ class SpikingNeuralNetworkDesigner:
             "neurons": 10000,
             "layers": 3,
             "simulation_time_ms": 100,
-            "accuracy_estimate": 0.92
+            "accuracy_estimate": 0.92,
+            "measured": False,
+            "evidence": "reference_spec",
+            "not_modelled": ["accuracy", "spike_dynamics", "training"],
         }
 
 
@@ -46,7 +63,10 @@ class MemristorDesigner:
             "switching_speed_ns": 10,
             "endurance_cycles": 1e9,
             "retention_years": 10,
-            "suitability": "excellent_for_crossbar_arrays"
+            "suitability": "excellent_for_crossbar_arrays",
+            "measured": False,
+            "evidence": "reference_spec",
+            "not_modelled": ["switching_measurements", "endurance_measurements", "device_yield"],
         }
 
 
@@ -59,7 +79,10 @@ class BrainComputerInterface:
             "bandwidth_kbps": 1000,
             "latency_ms": 10,
             "applications": ["Prosthetics", "Communication", "Neurorehabilitation"],
-            "safety_rating": "high_with_proper_protocols"
+            "safety_rating": "high_with_proper_protocols",
+            "measured": False,
+            "evidence": "reference_spec",
+            "not_modelled": ["clinical_safety", "signal_quality", "tissue_response"],
         }
 
 
@@ -70,24 +93,41 @@ class NeuromorphicAlgorithms:
             "vision": "Convolutional Spiking Networks",
             "speech": "Liquid State Machines",
             "control": "Reservoir Computing",
-            "anomaly_detection": "Spiking Autoencoders"
+            "anomaly_detection": "Spiking Autoencoders",
         }
         return {
             "task": task,
             "recommended_algorithm": algos.get(task, "Convolutional Spiking Networks"),
             "advantages": ["low_power", "temporal_processing", "event_driven"],
-            "implementation_complexity": "moderate"
+            "implementation_complexity": "moderate",
+            "evidence": "planning_template",
+            "not_modelled": ["benchmark", "accuracy", "training_cost"],
         }
 
 
 class NeuromorphicArchitect:
     @staticmethod
     def design_system(requirements: dict[str, Any]) -> dict[str, Any]:
+        # The requirements are echoed verbatim and reported as unused: no part of
+        # this template is sized from them, and dropping them silently was the
+        # regression this record prevents.
         return {
+            "requirements_echo": requirements,
+            "requirements_used": [],
             "chip_design": NeuromorphicChipDesigner.design_chip(),
             "snn_design": SpikingNeuralNetworkDesigner.design_snn(),
             "memristors": MemristorDesigner.design_memristor(),
             "power_budget_mw": 5,
             "throughput": "10^12 synaptic_ops_s",
-            "recommendations": ["Use event-driven processing", "Optimize spike routing", "Implement on-chip learning"]
+            "recommendations": [
+                "Use event-driven processing",
+                "Optimize spike routing",
+                "Implement on-chip learning",
+            ],
+            "evidence": "reference_spec",
+            "not_modelled": [
+                "requirement_satisfaction",
+                "power_budget",
+                "throughput",
+            ],
         }

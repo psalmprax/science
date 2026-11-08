@@ -2,11 +2,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import sympy as sp
 from pint import UnitRegistry
 from pint.errors import PintError
+
+if TYPE_CHECKING:
+    from apedp_dyn.model.physical_model import PhysicalModel
 
 _ureg = UnitRegistry()
 
@@ -77,7 +80,7 @@ def _dims_of(expr: sp.Basic, units: dict[str, str]) -> Any:
     return _unit_of(expr, units).dimensionality
 
 
-def dimensional_validity(model) -> GateResult:
+def dimensional_validity(model: PhysicalModel) -> GateResult:
     """Gate 1: RHS units must equal state_units / t_units for every state."""
     units = model.symbol_units()
     state_units = {s.name: s.units for s in model.states}
@@ -99,7 +102,7 @@ def dimensional_validity(model) -> GateResult:
                       f"{len(model.equations)} equations dimensionally consistent")
 
 
-def dao_validity(model) -> GateResult:
+def dao_validity(model: PhysicalModel) -> GateResult:
     """Gate 1.5: DAE validity check.
 
     Checks:
@@ -123,7 +126,7 @@ def dao_validity(model) -> GateResult:
                       f"unknown dae_mode {dae_mode!r}")
 
 
-def _dao_constrained_validity(model) -> GateResult:
+def _dao_constrained_validity(model: PhysicalModel) -> GateResult:
     """Check constraint term dimensionality for constrained DAE mode.
 
     A constrained-DAE candidate is one whose hypothesis is that the states
@@ -189,7 +192,7 @@ def _units_parse(units: str) -> bool:
     return True
 
 
-def _dao_multiscale_validity(model) -> GateResult:
+def _dao_multiscale_validity(model: PhysicalModel) -> GateResult:
     """Check multi-timescale mode: tau_fast and tau_slow have seconds units."""
     # Check that tau parameters exist and have seconds units
     tau_fast_ok = False

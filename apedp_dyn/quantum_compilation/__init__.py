@@ -29,6 +29,16 @@ from apedp_dyn.quantum_compilation.contracts import (
     load_contract,
     sha256_tree,
 )
+from apedp_dyn.quantum_compilation.dfthcsos_signed_4bank import (
+    compile_all_25_angle_circuits,
+    design_projection_signed_4bank,
+    resolve_4363_discrepancy,
+)
+from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import (
+    GluzdovV6Config,
+    GluzdovV6Decoder,
+    design_projection_dqi_gluzdov_v6,
+)
 from apedp_dyn.quantum_compilation.experiment import (
     Candidate,
     CandidateArtifact,
@@ -42,16 +52,16 @@ from apedp_dyn.quantum_compilation.experiment import (
     run_reference_control,
 )
 from apedp_dyn.quantum_compilation.faros_isq import (
+    REFERENCE_COST_90Q,
+    REFERENCE_COST_90Q_AFFINE_OPT,
+    SABLE_90_BASELINE,
     ArithmeticForm,
     ErrorBudgetEngine,
     FarosCandidateConfig,
     FarosIsqProposer,
     FarosParetoTournament,
     FidelityLevel,
-    REFERENCE_COST_90Q,
-    REFERENCE_COST_90Q_AFFINE_OPT,
     RepresentationType,
-    SABLE_90_BASELINE,
     Sable90Profiler,
     SegmentationStrategy,
     TournamentCandidate,
@@ -69,16 +79,6 @@ from apedp_dyn.quantum_compilation.invsqrt_direct_poly import (
     PolyPrecision,
 )
 from apedp_dyn.quantum_compilation.invsqrt_qrom_line import QPrecision, QromLineProposer
-from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import (
-    GluzdovV6Config,
-    GluzdovV6Decoder,
-    design_projection_dqi_gluzdov_v6,
-)
-from apedp_dyn.quantum_compilation.dfthcsos_signed_4bank import (
-    compile_all_25_angle_circuits,
-    design_projection_signed_4bank,
-    resolve_4363_discrepancy,
-)
 from apedp_dyn.quantum_compilation.ledger import (
     BENCHMARK_ORDER,
     REFERENCE_COSTS,
@@ -126,23 +126,13 @@ from apedp_dyn.quantum_compilation.two_region_probe import (
 )
 
 __all__ = [
-    "ArithmeticForm",
     "BENCHMARK_ORDER",
     "DEFAULT_DFTHCSOS_SHOTS_PER_ADDRESS",
-    "ErrorBudgetEngine",
-    "FarosCandidateConfig",
-    "FarosIsqProposer",
-    "FarosParetoTournament",
-    "FidelityLevel",
     "REFERENCE_COSTS",
     "REFERENCE_COST_90Q",
     "REFERENCE_COST_90Q_AFFINE_OPT",
-    "RepresentationType",
     "SABLE_90_BASELINE",
-    "Sable90Profiler",
-    "SegmentationStrategy",
-    "TournamentCandidate",
-    "TournamentReport",
+    "ArithmeticForm",
     "Candidate",
     "CandidateArtifact",
     "CandidateScreen",
@@ -152,9 +142,14 @@ __all__ = [
     "DfthcsosProposer",
     "DirectPolyProposer",
     "DqiProposer",
+    "ErrorBudgetEngine",
     "ExperimentOutcome",
     "ExperimentResult",
     "ExperimentRunner",
+    "FarosCandidateConfig",
+    "FarosIsqProposer",
+    "FarosParetoTournament",
+    "FidelityLevel",
     "GluzdovV6Config",
     "GluzdovV6Decoder",
     "OfficialVerifierResult",
@@ -167,9 +162,14 @@ __all__ = [
     "QromLineProposer",
     "QuantumCandidateLedger",
     "ReceiptArtifactHashMismatchError",
+    "RepresentationType",
+    "Sable90Profiler",
+    "SegmentationStrategy",
     "StructuralEquivalenceError",
     "StructureAuditReport",
     "SymbolicAncillaLedger",
+    "TournamentCandidate",
+    "TournamentReport",
     "TwoRegionProbeResult",
     "VerifierContract",
     "VerifierReceipt",

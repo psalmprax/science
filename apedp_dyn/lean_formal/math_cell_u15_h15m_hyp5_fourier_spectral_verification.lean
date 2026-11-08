@@ -62,7 +62,4 @@ axiom abs_le_self (x : R) : |x| ≤ |x|
 theorem math_cell_u15_h15m_hyp5_fourier_spectral_parseval_energy_partition (p_low : R) : p_low + ((1 : R) - p_low) = (1 : R) :=
   by exact parseval_partition p_low
 
--- spectral_power_nonnegativity remains unverified: this abstract R interface
--- does not define real spectral power or provide the real-order proof needed.
-
 end APEDP_math_cell_u15_h15m_hyp5_fourier_spectral

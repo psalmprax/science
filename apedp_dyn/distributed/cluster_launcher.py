@@ -13,12 +13,27 @@ from __future__ import annotations
 import enum
 from dataclasses import dataclass
 
+#: This module renders scheduler manifests; it never submits them. Declared so
+#: a reader of ``generate_slurm_script`` cannot mistake a rendered script for a
+#: queued job (``docs/SCAFFOLD_INVENTORY.md``, "Infrastructure that does not do
+#: what its name suggests").
+SUBMITS_JOBS = False
+
 
 class ClusterScheduler(str, enum.Enum):
     """Supported multi-node cluster schedulers."""
     SLURM = "slurm"
     KUBERNETES = "kubernetes"
     RAY = "ray"
+
+
+def describe() -> dict[str, object]:
+    """What this module does and does not do, without reading the source."""
+    return {
+        "submits_jobs": SUBMITS_JOBS,
+        "network_access": False,
+        "schedulers": [scheduler.value for scheduler in ClusterScheduler],
+    }
 
 
 @dataclass

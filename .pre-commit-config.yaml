@@ -29,6 +29,13 @@ repos:
         pass_filenames: false
         always_run: true
 
+      - id: static-table-census
+        name: static-table census (scripts/audit_static_tables.py --check)
+        entry: .venv/bin/python scripts/audit_static_tables.py --check
+        language: system
+        pass_filenames: false
+        always_run: true
+
       - id: docs-and-audit-guards
         name: documentation integrity + audit recurrence guards
         entry: .venv/bin/python -m pytest

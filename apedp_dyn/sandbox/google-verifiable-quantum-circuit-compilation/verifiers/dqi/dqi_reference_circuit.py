@@ -25,7 +25,8 @@ Usage (writes a Benchmark II submission for `verify_submission_dqi.py`):
 from __future__ import annotations
 
 import argparse
-from typing import Sequence
+import functools
+from collections.abc import Sequence
 
 import kickmix as km
 
@@ -186,18 +187,20 @@ class ProosAndZalkaDecoder:
                 builder.flip_if_equal(halting_counter, 0, target=is_hc_zero)
                 ctrl = self._counter_controls(builder, counter, is_c3, is_hc_zero)
 
+                # functools.partial, not a lambda: each step must bind THIS
+                # iteration's ctrl/it, and a lambda with default arguments
+                # hides the binding from the type checker.
                 steps = [
-                    lambda: self._update_flag(builder, reg_b, n_A, n_B, n_a, n_b, n_q,
-                                              flag, ctrl),
-                    lambda: self._multiply_and_add_or_sub(builder, reg_a, reg_b, n_A, n_a,
-                                                          n_q, ctrl, it,
-                                                          is_adjoint=is_adjoint),
-                    lambda: self._shift_b_array_right(builder, reg_b, n_B, n_b, flag, ctrl,
-                                                      it, is_adjoint=is_adjoint),
-                    lambda: self._update_metadata(builder, n_B, n_b, n_q, flag, ctrl,
-                                                  is_adjoint=is_adjoint),
-                    lambda: self._swap_a_and_b(builder, reg_a, reg_b, n_A, n_B, n_a, n_b,
-                                               flag, ctrl),
+                    functools.partial(self._update_flag, builder, reg_b, n_A, n_B, n_a, n_b,
+                                      n_q, flag, ctrl),
+                    functools.partial(self._multiply_and_add_or_sub, builder, reg_a, reg_b,
+                                      n_A, n_a, n_q, ctrl, it, is_adjoint=is_adjoint),
+                    functools.partial(self._shift_b_array_right, builder, reg_b, n_B, n_b, flag,
+                                      ctrl, it, is_adjoint=is_adjoint),
+                    functools.partial(self._update_metadata, builder, n_B, n_b, n_q, flag, ctrl,
+                                      is_adjoint=is_adjoint),
+                    functools.partial(self._swap_a_and_b, builder, reg_a, reg_b, n_A, n_B,
+                                      n_a, n_b, flag, ctrl),
                 ]
                 for step in (reversed(steps) if is_adjoint else steps):
                     step()
