@@ -96,11 +96,12 @@ def _anticommutes(left: str, right: str) -> bool:
     return bool(parity)
 
 
-def syndrome_of(pauli: str) -> tuple[bool, ...]:
+def syndrome_of(pauli: str) -> tuple[bool, bool, bool, bool]:
     """The measured syndrome of a Pauli error: bit `i` set iff it anticommutes with `g_i`."""
     if len(pauli) != DATA:
         raise ValueError(f"expected a {DATA}-qubit Pauli string, got {pauli!r}")
-    return tuple(_anticommutes(pauli, stabilizer) for stabilizer in FIVE_QUBIT_STABILIZERS)
+    bits = [_anticommutes(pauli, stabilizer) for stabilizer in FIVE_QUBIT_STABILIZERS]
+    return (bits[0], bits[1], bits[2], bits[3])
 
 
 def _single_qubit_classes() -> dict[tuple[bool, bool, bool, bool], str]:
@@ -135,9 +136,10 @@ def _frame_correction(signature: tuple[bool, ...]) -> str:
     that returns it to the `+1` eigenspace without changing the logical value (it
     must commute with `Z_L`, or a logical flip would be introduced silently).
     """
-    signature = tuple(bool(bit) for bit in signature)
-    if len(signature) != len(FIVE_QUBIT_STABILIZERS):
-        raise ValueError(f"expected {len(FIVE_QUBIT_STABILIZERS)} signs, got {len(signature)}")
+    bits = [bool(bit) for bit in signature]
+    if len(bits) != len(FIVE_QUBIT_STABILIZERS):
+        raise ValueError(f"expected {len(FIVE_QUBIT_STABILIZERS)} signs, got {len(bits)}")
+    signature = (bits[0], bits[1], bits[2], bits[3])
     best: str | None = None
     for candidate in map("".join, itertools.product("IXYZ", repeat=DATA)):
         if syndrome_of(candidate) != signature:
@@ -234,7 +236,8 @@ def five_qubit_encoder_circuit(*, prepare_logical_one: bool = False,
     for index, stabilizer in enumerate(FIVE_QUBIT_STABILIZERS):
         _measure_stabilizer(ops, stabilizer, ANCILLAS[index], index)
     for pattern in itertools.product((False, True), repeat=len(FIVE_QUBIT_STABILIZERS)):
-        signature = tuple(bool(bit) for bit in pattern)
+        bits = [bool(bit) for bit in pattern]
+        signature = (bits[0], bits[1], bits[2], bits[3])
         if not any(signature):
             continue
         condition = tuple((bit, bool(value)) for bit, value in enumerate(signature))
@@ -258,7 +261,8 @@ def five_qubit_code_circuit(*, prepare_logical_one: bool = False,
     for index, stabilizer in enumerate(FIVE_QUBIT_STABILIZERS):
         _measure_stabilizer(ops, stabilizer, ANCILLAS[index], index)
     for pattern in itertools.product((False, True), repeat=len(FIVE_QUBIT_STABILIZERS)):
-        signature = tuple(bool(bit) for bit in pattern)
+        bits = [bool(bit) for bit in pattern]
+        signature = (bits[0], bits[1], bits[2], bits[3])
         if not any(signature):
             continue
         condition = tuple((bit, bool(value)) for bit, value in enumerate(signature))
@@ -276,7 +280,8 @@ def five_qubit_code_circuit(*, prepare_logical_one: bool = False,
     for index, stabilizer in enumerate(FIVE_QUBIT_STABILIZERS):
         _measure_stabilizer(ops, stabilizer, ANCILLAS[index], SYNDROME_BITS[index])
     for pattern in itertools.product((False, True), repeat=len(FIVE_QUBIT_STABILIZERS)):
-        signature = tuple(bool(bit) for bit in pattern)
+        bits = [bool(bit) for bit in pattern]
+        signature = (bits[0], bits[1], bits[2], bits[3])
         correction = DECODER[signature]
         if correction == "I" * DATA:
             continue

@@ -379,16 +379,17 @@ def validate_census_compliance(records: Iterable[dict[str, Any]]) -> dict[str, t
         by_id[cid] = rec
     verdicts: dict[str, tuple[bool, str]] = {}
     for reg in PRODUCTION_CALLERS:
-        rec = by_id.get(reg.caller_id)
-        if rec is None:
+        published = by_id.get(reg.caller_id)
+        if published is None:
             verdicts[reg.caller_id] = (
                 False,
                 "no published compliance record — REG-F14b requires every production "
                 "caller to certify mode (a) or (b)",
             )
             continue
-        ok, why = validate_caller_compliance(rec)
-        verdicts[reg.caller_id] = (ok, f"{why} (dataset family {rec.get('dataset_id', '?')})")
+        ok, why = validate_caller_compliance(published)
+        verdicts[reg.caller_id] = (
+            ok, f"{why} (dataset family {published.get('dataset_id', '?')})")
     return verdicts
 
 

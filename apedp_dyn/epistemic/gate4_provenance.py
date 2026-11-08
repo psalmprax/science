@@ -38,7 +38,7 @@ Honest boundaries (no silent upgrades):
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
@@ -229,17 +229,27 @@ def gate4_status(
 
 @dataclass(frozen=True)
 class _ProposalReference:
-    """Minimal stand-in for the referee's typed candidate IR.
+    """A free-form proposal's identity, in the scorer's payload protocol.
 
     Carries what ``_identity`` needs to fall back on (a stable ``candidate_id``)
-    and what provenance writers read. Deliberately NOT a ``CandidateDynamics``:
-    a free-form proposal cannot be expressed in the closed grammar vocabulary,
-    and pretending otherwise would let the referee "canonicalise" a term set the
+    and what provenance writers read. It satisfies
+    :class:`apedp_dyn.grammar.candidate_ir.CandidatePayload` -- identity, metadata,
+    an empty parameter surface -- but deliberately NOT ``CandidateDynamics``: a
+    free-form proposal cannot be expressed in the closed grammar vocabulary, and
+    pretending otherwise would let the referee "canonicalise" a term set the
     proposal never had.
     """
 
     candidate_id: str
     formula: str
+    metadata: dict[str, Any] = field(default_factory=dict)
+    grammar_version: str = ""
+    generation_seed: int = 0
+    parent_candidates: tuple[str, ...] = ()
+
+    def parameter_names(self) -> tuple[str, ...]:
+        """No fitted parameters: the proposal declares a form, not a grammar."""
+        return ()
 
 
 def scored_candidate(

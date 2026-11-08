@@ -140,7 +140,7 @@ def run_trial(
                                    "INSUFFICIENT_DISCRIMINATION", None, round_ - 1)
             m = sel.selected
         elif policy == "random":
-            m = by_id[rng.choice(order)]
+            m = by_id[order[int(rng.integers(0, len(order)))]]
         elif policy == "worst":
             m = by_id[order[-1]]
         elif policy == "oracle":

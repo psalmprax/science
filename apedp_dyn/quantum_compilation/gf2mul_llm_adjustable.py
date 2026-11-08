@@ -1443,7 +1443,10 @@ class LLMTunableGF2Multiplier:
         self.track = kwargs.get("track", "A")  # A, B, or C
         self.degree = kwargs.get("degree", 12)
 
-        # Initialize based on track
+        # Retuning may swap A, B and C. Each track implements the same
+        # ``process_with_tensor`` surface, which the shared base does not declare, so
+        # the attribute is typed as the union of the three concrete tracks.
+        self.mmlm_model: MMLMTrackA | MMLMTrackB | MMLMTrackC
         if self.track == "A":
             self.mmlm_model = MMLMTrackA(
                 field_config=self.field_config,

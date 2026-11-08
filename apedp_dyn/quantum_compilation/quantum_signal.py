@@ -232,9 +232,9 @@ def execute_signal(score: Sequence[float], returns: Sequence[float], *,
     return rows
 
 
-def ledger_summary(rows: Sequence[dict[str, float]], *,
+def ledger_summary(rows: Sequence[dict[str, Any]], *,
                    annualization: float = 365.0,
-                   risk_free: float = 0.0) -> dict[str, float]:
+                   risk_free: float = 0.0) -> dict[str, Any]:
     """The aggregates the ledger reports, over the executed rows."""
     net = np.array([row["net"] for row in rows], dtype=float)
     count = len(net)

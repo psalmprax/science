@@ -73,9 +73,11 @@ class GaussianProcessRegressor:
     def log_marginal_likelihood(self) -> float:
         if self.L is None:
             return -np.inf
+        assert (self.alpha is not None and self.L is not None
+                and self.y_train is not None)  # fit() ran
         y = self.y_train
-        assert self.alpha is not None and self.L is not None  # fit() ran
-        return -0.5 * y @ self.alpha - np.sum(np.log(np.diag(self.L))) - 0.5 * len(y) * np.log(2 * np.pi)
+        return float(-0.5 * y @ self.alpha - np.sum(np.log(np.diag(self.L)))
+                     - 0.5 * len(y) * np.log(2 * np.pi))
 
 
 class BayesianOptimizer:

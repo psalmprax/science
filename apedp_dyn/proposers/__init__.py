@@ -14,6 +14,8 @@ Provides diverse, independent hypothesis generators for the APEDP-X discovery pi
 """
 from __future__ import annotations
 
+from typing import Any
+
 from apedp_dyn.grammar.proposer_interface import (
     CandidateProposal,
     ProposerBase,
@@ -40,10 +42,13 @@ from apedp_dyn.proposers.stem_proposers import (
     SolenoidalFluidProposer,
 )
 
+RIMEAdaptiveProposer: type[Any] | None = None
 try:
-    from apedp_dyn.proposers.rime_ad_proposer import RimeAdProposer as RIMEAdaptiveProposer
-except ImportError:
-    RIMEAdaptiveProposer = None  # type: ignore[assignment]
+    from apedp_dyn.proposers.rime_ad_proposer import RimeAdProposer
+except ImportError:  # the RIME extension is optional; the name stays None
+    pass
+else:
+    RIMEAdaptiveProposer = RimeAdProposer
 
 __all__ = [
     "BasisRegressionProposer",

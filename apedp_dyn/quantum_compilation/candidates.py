@@ -158,14 +158,14 @@ def normalise_correctness_evidence(evidence: dict[str, Any] | None, *,
                 f"{check!r} evidence must be measured, covered_by or not_applicable"
             )
     for check, entry in normalised.items():
-        covering = str(entry.get("covered_by") or "") or None
-        if covering is None:
+        covered_by_id = str(entry.get("covered_by") or "") or None
+        if covered_by_id is None:
             continue
-        target = normalised[covering]
+        target = normalised[covered_by_id]
         if not target.get("measured") or not target.get("passed"):
             raise EvidenceIncompleteError(
-                f"{check!r} is covered by {covering!r}, which is not a passed measurement "
-                f"({target})"
+                f"{check!r} is covered by {covered_by_id!r}, which is not a passed "
+                f"measurement ({target})"
             )
         if not entry["reason"]:
             raise EvidenceIncompleteError(f"{check!r}: covering needs a reason")

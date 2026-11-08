@@ -145,9 +145,9 @@ def _task_block(task: DiscoveryTask) -> dict[str, Any]:
 
 
 def _arm_rows(task: DiscoveryTask, arms: Sequence[str], seeds: Sequence[int]) -> list[dict[str, Any]]:
-    rows = []
+    rows: list[dict[str, Any]] = []
     for arm in arms:
-        runs = []
+        runs: list[dict[str, Any]] = []
         for seed in seeds:
             result = run_arm(arm, task, seed=seed)
             verdict = adjudicate(task, result, seed=seed)
@@ -212,6 +212,7 @@ def _comparison(rows: Sequence[dict[str, Any]], oracle: dict[str, Any]) -> dict[
             "reason": "the quantum arm or every classical arm produced no candidate",
         }
     else:
+        assert quantum is not None  # a quantum best objective implies the arm ran
         advantage = {
             "claimed": False,
             "quantum_best_objective": float(quantum_best),

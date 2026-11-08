@@ -1308,13 +1308,13 @@ def adjudicate_specification(circuit: Circuit, target: TargetSpecification, *,
         tier = "dense"
         actual = _prepare_dense(circuit)
         expected = specification_state_vector(target)
-        dist_value, phase = _phase_free_distance(actual, expected)
+        dist_value, phase_angle = _phase_free_distance(actual, expected)
         checks.append(Check(
             name="the prepared amplitudes are the specification, up to one global phase",
             requirement=(f"min_phi ||psi_c - e^(i phi) psi_s|| / sqrt(2**n) <= "
                          f"{DENSE_TOLERANCE:g} against the state projected out of the "
                          f"specification's stabilizers"),
-            measured={"dist_value": dist_value, "phi": phase, "tier": "dense",
+            measured={"dist_value": dist_value, "phi": phase_angle, "tier": "dense",
                       "relative_phase_sensitive": True},
             passed=bool(dist_value <= DENSE_TOLERANCE)))
     else:

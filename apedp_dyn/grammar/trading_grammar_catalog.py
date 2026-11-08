@@ -583,14 +583,14 @@ def op_cooldown(signal: np.ndarray, cooldown_bars: int) -> np.ndarray:
             cooldown_left -= 1
             prev_pos = 0.0
             continue
-        cur = sig[t]
+        cur = float(sig[t])
         if prev_pos != 0.0 and cur == 0.0:
             # Trigger cooldown on position close
             cooldown_left = cooldown_bars
             out[t] = 0.0
         else:
             out[t] = cur
-        prev_pos = out[t]
+        prev_pos = float(out[t])
     return out
 
 

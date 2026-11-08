@@ -77,15 +77,21 @@ def check_comparison(actual: Any, rule: dict[str, Any]) -> tuple[bool, str]:
     op, expected = rule.get("op", "eq"), rule.get("value")
     if op == "eq":
         ok = actual == expected
-    elif op == "ge":
-        ok = isinstance(actual, (int, float)) and actual >= expected
-    elif op == "gt":
-        ok = isinstance(actual, (int, float)) and actual > expected
-    elif op == "le":
-        ok = isinstance(actual, (int, float)) and actual <= expected
-    elif op == "lt":
-        ok = isinstance(actual, (int, float)) and actual < expected
+    elif op in ("ge", "gt", "le", "lt"):
+        if not (isinstance(actual, (int, float))
+                and isinstance(expected, (int, float))):
+            return False, f"{op} compares numbers; got {actual!r} and {expected!r}"
+        if op == "ge":
+            ok = actual >= expected
+        elif op == "gt":
+            ok = actual > expected
+        elif op == "le":
+            ok = actual <= expected
+        else:
+            ok = actual < expected
     elif op == "in":
+        if not isinstance(expected, (list, tuple, set, frozenset, dict, str)):
+            return False, f"'in' needs a container; got {expected!r}"
         ok = actual in expected
     elif op == "truthy":
         ok = bool(actual)

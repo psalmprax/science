@@ -49,7 +49,7 @@ import importlib
 import json
 import pathlib
 from collections.abc import Mapping, Sequence
-from typing import Any, cast
+from typing import Any
 
 import numpy as np
 
@@ -1496,7 +1496,7 @@ def _recycled_flag_decoder_class() -> Any:
     if cached is not None:
         return cached
 
-    class RecycledUpdateFlagDecoder(cast(type[Any], DR.ProosAndZalkaDecoder)):
+    class RecycledUpdateFlagDecoder(DR.ProosAndZalkaDecoder):
         """`n_a == n_b` read as `n_A == n + 1 - n_b`, using the cursor the pass already runs.
 
         The value is produced at the read instead of carried, which is the whole substitution:

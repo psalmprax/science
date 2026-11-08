@@ -374,20 +374,21 @@ class RimeAdProposer(ProposerBase):
                 else:
                     w = 1.0
                     off = 0.0
-                q0 = step
+                q0_step = float(step)
                 b = float(y[0])
-                y_jump = q0 * np.floor((x - off) / w) + b
+                y_jump = q0_step * np.floor((x - off) / w) + b
                 y_smooth = y - y_jump
                 var_smooth = float(np.var(y_smooth))
-                var_y = float(np.var(y))
-                if 1e-4 < var_smooth < var_y:
+                var_y_tv = float(np.var(y))
+                if 1e-4 < var_smooth < var_y_tv:
                     X_poly = np.column_stack([np.ones_like(x), x, x ** 2])
                     c_poly, _, _, _ = np.linalg.lstsq(X_poly, y_smooth, rcond=None)
                     y_pred = y_jump + (X_poly @ c_poly)
-                    r2_comp = 1.0 - (float(np.mean((y - y_pred) ** 2)) / var_y)
+                    r2_comp = 1.0 - (float(np.mean((y - y_pred) ** 2)) / var_y_tv)
                     if r2_comp > 0.95:
                         cand = self._make_tv_composite_candidate(
-                            q0, w, off, b + float(c_poly[0]), c_poly[1:], feat_name, r2_comp
+                            q0_step, w, off, b + float(c_poly[0]), c_poly[1:], feat_name,
+                            r2_comp
                         )
                         if cand is not None:
                             candidates.append(cand)

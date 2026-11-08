@@ -425,7 +425,7 @@ def rollout_dcstt_head(head: LearnedFlowHead,
         z_np, _ = transport.transport_step(z_state.squeeze(0).numpy(),
                                            v[0, 0].numpy(), v[0, 1].numpy(), dt=dt)
         z_state_new = torch.from_numpy(z_np).unsqueeze(0)
-        if s is not None:
+        if s is not None and b is not None:
             z_state_new[:, ch] = (s[:, :, None, None] * z_state_new[:, ch]
                                   + b[:, :, None, None])
         if ch0_policy == "persist":

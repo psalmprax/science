@@ -25,7 +25,7 @@ PROPOSER_VERSION = "1.1.0-llm"
 
 
 # Provider defaults
-_PROVIDER_DEFAULTS = {
+_PROVIDER_DEFAULTS: dict[str, dict[str, Any]] = {
     "openrouter": {
         "base": "https://openrouter.ai/api/v1/chat/completions",
         "key_env": ["OPENROUTER_API_KEY", "APEDP_LLM_KEY"],
@@ -96,6 +96,9 @@ class LLMProposer:
         enabled: bool = False,
         headers: dict[str, str] | None = None,
     ):
+        self.model: str | None = None
+        self.api_base: str | None = None
+        self.api_key: str | None = None
         provider = provider.lower()
         self.provider = provider
         defaults = _PROVIDER_DEFAULTS.get(provider, _PROVIDER_DEFAULTS["custom"])
