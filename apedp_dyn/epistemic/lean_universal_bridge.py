@@ -24,12 +24,12 @@ Core Architecture:
 """
 from __future__ import annotations
 
+import itertools
 import logging
 import os
 import re
 import shutil
 import subprocess
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -37,11 +37,6 @@ from typing import Any
 import numpy as np
 import sympy as sp
 
-sys.path.insert(0, ".")
-
-from apedp.mathematical.mathematical_layer import (
-    ProofClaimStatus,
-)
 from apedp.safety import safe_parse_expr
 from apedp_dyn.epistemic.agnostic_adapter import (
     AgnosticCandidateSpecification,
@@ -54,8 +49,20 @@ from apedp_dyn.epistemic.claim_ladder import (
     EvidenceBundle,
     adjudicate_scientific_claim,
 )
+from apedp_dyn.epistemic.proof_claim import ProofClaimStatus
 
 logger = logging.getLogger(__name__)
+
+#: A module that declares its own `axiom`s cannot carry P2. The kernel checks a
+#: theorem against those declarations, not against Lean's foundations, so the
+#: accepted statement is a consistency result about the premises the module
+#: itself asserts. `lean_formal/` is built this way (Option 2, no Mathlib).
+DECLARED_AXIOM = re.compile(r"^\s*axiom\s+\w+", re.M)
+
+
+def _declares_axioms(lean_code: str) -> bool:
+    """Whether the generated module introduces axioms of its own."""
+    return bool(DECLARED_AXIOM.search(lean_code))
 
 
 # ── Formal Verification Outcome Data Structures ───────────────────────────
@@ -70,6 +77,10 @@ class LeanTheoremVerification:
     is_formally_proven: bool
     proof_method: str  # e.g., "lean4_kernel", "symbolic_deduction", "counterexample_refuted"
     diagnostic_message: str
+    # True when the proof is discharged against an axiom this module declared.
+    # Such a record is a schema check, never an independent derivation, and the
+    # verifier caps the candidate at P1 whenever one is present.
+    axiom_dependent: bool = False
 
 
 @dataclass
@@ -98,6 +109,7 @@ class LeanVerificationResult:
                     "lean_statement": t.lean_theorem_statement,
                     "proof_method": t.proof_method,
                     "is_formally_proven": t.is_formally_proven,
+                    "axiom_dependent": t.axiom_dependent,
                     "diagnostic": t.diagnostic_message,
                 }
                 for t in self.theorems
@@ -203,9 +215,12 @@ def _ast_detect_damping_factor(expr: sp.Expr) -> str | None:
         if not isinstance(node, sp.exp):
             continue
         arg = node.args[0]
-        if isinstance(arg, sp.Mul) and len(arg.args) == 2:
+        if isinstance(arg, sp.Mul) and len(arg.args) >= 2:
             m = arg.match(-c * s)
             if m is not None and m.get(s) is not None:
+                return str(-arg)
+            coeff, rest = arg.as_coeff_Mul()
+            if coeff.is_number and coeff.is_negative and rest != sp.S.One:
                 return str(-arg)
         elif arg.is_number and arg.is_negative:
             return str(-arg)
@@ -295,9 +310,12 @@ class LeanUniversalBridge:
     def infer_invariants(self, candidate_id: str, formula: str, meta: str = "") -> list[DeclaredInvariant]:
         """Deterministically infer mathematically justified invariants from equation operators."""
         full_text = f"{candidate_id} {formula} {meta}".lower()
+        tokens = set(re.findall(r"[a-zA-Z_][a-zA-Z0-9_]*", full_text))
+        subtokens = set(re.findall(r"[a-zA-Z][a-zA-Z0-9]*", full_text))
+        all_tokens = tokens | subtokens
         invariants: list[DeclaredInvariant] = []
 
-        if "runaway" in full_text:
+        if "runaway" in all_tokens:
             invariants.append(
                 DeclaredInvariant(
                     name="asymptotic_saturation",
@@ -307,7 +325,7 @@ class LeanUniversalBridge:
                 )
             )
             return invariants
-        elif "leak" in full_text or "dissipat" in full_text:
+        elif "leak" in all_tokens or any(t.startswith("dissipat") for t in all_tokens):
             invariants.append(
                 DeclaredInvariant(
                     name="energy_conservation",
@@ -318,8 +336,8 @@ class LeanUniversalBridge:
             )
             return invariants
 
-        if "tanh" in full_text or "saturation" in full_text:
-            if "nested" in full_text or "spread_3w" in full_text:
+        if "tanh" in all_tokens or "saturation" in all_tokens:
+            if "nested" in all_tokens or "spread_3w" in tokens:
                 invariants.append(
                     DeclaredInvariant(
                         name="nested_asymptotic_saturation",
@@ -336,7 +354,7 @@ class LeanUniversalBridge:
                         required_for_tier=ClaimLevel.C3_STRUCTURAL,
                     )
                 )
-            elif "spill" in full_text or "lead_disp_ofi" in full_text:
+            elif any(t.startswith("spill") for t in all_tokens) or "lead_disp_ofi" in tokens:
                 invariants.append(
                     DeclaredInvariant(
                         name="saturated_spillover_bound",
@@ -370,7 +388,7 @@ class LeanUniversalBridge:
                         required_for_tier=ClaimLevel.C3_STRUCTURAL,
                     )
                 )
-        elif "damped" in full_text or "inv_damp" in full_text or "ratio" in full_text:
+        elif "damped" in all_tokens or "inv_damp" in tokens or "ratio" in all_tokens:
             invariants.append(
                 DeclaredInvariant(
                     name="damping_contraction_bound",
@@ -387,7 +405,7 @@ class LeanUniversalBridge:
                     required_for_tier=ClaimLevel.C3_STRUCTURAL,
                 )
             )
-        elif "squeeze" in full_text or "exp(-" in full_text or "tight_gate" in full_text:
+        elif "squeeze" in all_tokens or "exp(-" in full_text or "tight_gate" in tokens:
             invariants.append(
                 DeclaredInvariant(
                     name="exponential_damping_bound",
@@ -404,7 +422,7 @@ class LeanUniversalBridge:
                     required_for_tier=ClaimLevel.C3_STRUCTURAL,
                 )
             )
-        elif "gate" in full_text or "downside" in full_text:
+        elif "gate" in all_tokens or "downside" in all_tokens:
             invariants.append(
                 DeclaredInvariant(
                     name="gating_indicator_boundedness",
@@ -421,7 +439,7 @@ class LeanUniversalBridge:
                     required_for_tier=ClaimLevel.C3_STRUCTURAL,
                 )
             )
-        elif "parseval" in full_text or "fourier" in full_text or "spectral" in full_text:
+        elif "parseval" in all_tokens or "fourier" in all_tokens or "spectral" in all_tokens:
             invariants.append(
                 DeclaredInvariant(
                     name="parseval_energy_partition",
@@ -438,7 +456,7 @@ class LeanUniversalBridge:
                     required_for_tier=ClaimLevel.C3_STRUCTURAL,
                 )
             )
-        elif "cube" in full_text or "spread^3" in full_text or "lienard" in full_text:
+        elif "cube" in all_tokens or "spread^3" in full_text or "lienard" in all_tokens:
             invariants.append(
                 DeclaredInvariant(
                     name="cubic_odd_reflection_symmetry",
@@ -455,7 +473,7 @@ class LeanUniversalBridge:
                     required_for_tier=ClaimLevel.C3_STRUCTURAL,
                 )
             )
-        elif "kalman" in full_text or "res" in full_text:
+        elif "kalman" in all_tokens or "res" in all_tokens:
             invariants.append(
                 DeclaredInvariant(
                     name="kalman_innovation_zero_mean",
@@ -472,7 +490,7 @@ class LeanUniversalBridge:
                     required_for_tier=ClaimLevel.C3_STRUCTURAL,
                 )
             )
-        elif "incompressible" in full_text or "divergence" in full_text or "euler" in full_text:
+        elif "incompressible" in all_tokens or "divergence" in all_tokens or "euler" in all_tokens:
             invariants.append(
                 DeclaredInvariant(
                     name="solenoidal_divergence_free",
@@ -489,7 +507,7 @@ class LeanUniversalBridge:
                     required_for_tier=ClaimLevel.C3_STRUCTURAL,
                 )
             )
-        elif "entropy" in full_text or "cert" in full_text:
+        elif "entropy" in all_tokens or "cert" in all_tokens:
             invariants.append(
                 DeclaredInvariant(
                     name="entropy_certainty_interval_bound",
@@ -506,7 +524,7 @@ class LeanUniversalBridge:
                     required_for_tier=ClaimLevel.C3_STRUCTURAL,
                 )
             )
-        elif "rank" in full_text:
+        elif "rank" in all_tokens:
             invariants.append(
                 DeclaredInvariant(
                     name="rank_boundedness_interval",
@@ -523,7 +541,7 @@ class LeanUniversalBridge:
                     required_for_tier=ClaimLevel.C3_STRUCTURAL,
                 )
             )
-        elif "vol" in full_text or "variance" in full_text:
+        elif "vol" in all_tokens or "variance" in all_tokens:
             invariants.append(
                 DeclaredInvariant(
                     name="variance_nonnegativity",
@@ -670,6 +688,7 @@ class LeanUniversalBridge:
             # run over that module, but the conclusion is embedded in the
             # premises: this is a SYNTACTIC_SCHEMA_CHECK, not an independent
             # FORMAL_PROOF, and downstream reports must say so.
+            axiom_dependent = False
             if use_core and is_provable and (
                 method == "lean_ring_tactic" or method.startswith("axiomatic_")
             ):
@@ -678,6 +697,7 @@ class LeanUniversalBridge:
                     "[syntactic_schema_check — core axiomatic mode relies on "
                     "injected axioms, no Mathlib-independent proof] " + diag
                 )
+                axiom_dependent = True
 
             thm_record = LeanTheoremVerification(
                 invariant_name=inv.name,
@@ -688,6 +708,7 @@ class LeanUniversalBridge:
                 is_formally_proven=is_provable,
                 proof_method=method,
                 diagnostic_message=diag,
+                axiom_dependent=axiom_dependent,
             )
             theorems.append(thm_record)
 
@@ -919,15 +940,20 @@ class LeanUniversalBridge:
             # Analyze formula for non-negativity
             if sym_expr is not None:
                 # E.g. x^2, exp(x), 1 + |x|, norm, etc.
-                is_pos = True
+                is_pos = False
                 try:
-                    # Test whether minimum over domain is non-negative
-                    test_pts = np.linspace(-10, 10, 50)
-                    f_lamb = sp.lambdify(var_symbols[0] if var_symbols else sp.Symbol("x"), sym_expr, "numpy")
-                    vals = f_lamb(test_pts)
-                    is_pos = bool(np.all(vals >= -invariant.tolerance))
-                except Exception:  # noqa: BLE001 - deliberate catch-all: best-effort probe path reports or skips the failure, never crashes
-                    is_pos = True
+                    syms = sorted(var_symbols, key=lambda s: s.name) if var_symbols else [sp.Symbol("x")]
+                    f_lamb = sp.lambdify(syms, sym_expr, "numpy")
+                    grid_1d = np.linspace(-10.0, 10.0, 21 if len(syms) > 1 else 50)
+                    if len(syms) == 1:
+                        vals = np.asarray(f_lamb(grid_1d), dtype=float)
+                    else:
+                        pts = list(itertools.product(grid_1d, repeat=min(len(syms), 3)))
+                        cols = [np.array([p[min(i, len(p) - 1)] for p in pts], dtype=float) for i in range(len(syms))]
+                        vals = np.asarray(f_lamb(*cols), dtype=float)
+                    is_pos = bool(np.all(np.isfinite(vals)) and np.all(vals >= -invariant.tolerance))
+                except Exception:  # noqa: BLE001 - fail closed when numerical positivity probe raises
+                    is_pos = False
 
                 if is_pos:
                     thm_stmt = "(x : ℝ) (h : 0 ≤ x) : 0 ≤ x^2"
@@ -1167,12 +1193,29 @@ class LeanUniversalBridge:
         )
 
         stream_tag = " (in-memory stdin streaming, 0 disk files created)" if in_memory else ""
+        declares_axioms = _declares_axioms(lean_code) or any(
+            t.axiom_dependent for t in theorems
+        )
 
         if has_generator_refutation or (has_sorry_warning and (kernel_exit == 0 or kernel_exit is not None)):
             # Refuted by counterexample, dissipative leak, or cubic runaway
             proof_status = ProofClaimStatus.P0_NO_PROOF
             all_proven = False
             notes = f"Proof rejected (P0): Invariant refuted by counterexample or relies on placeholder sorry.{stream_tag}"
+        elif kernel_exit == 0 and not has_sorry_warning and declares_axioms:
+            # Exit code 0 over a module that declares its own axioms is a
+            # consistency check against the premises the module asserts, not a
+            # derivation from Lean's foundations. Before this cap, the 94
+            # theorems in `lean_formal/` that restate a local axiom were
+            # reported as P2.
+            proof_status = ProofClaimStatus.P1_CANDIDATE
+            all_proven = False
+            notes = (
+                "Kernel-checked against locally declared axioms (P1, not P2): the "
+                "module declares the property it proves, so exit code 0 establishes "
+                "consistency with the injected premises, not an independent "
+                f"derivation (AGENTS.md §1.3).{stream_tag}"
+            )
         elif kernel_exit == 0 and not has_sorry_warning:
             # Genuine P2: Lean 4 compiler executed, parsed the AST, verified all proof terms, and exited with 0!
             proof_status = ProofClaimStatus.P2_VERIFIED
@@ -1308,10 +1351,18 @@ class LeanUniversalBridge:
             or "by sorry" in lean_code.lower()
         )
 
-        if kernel_exit == 0 and not has_sorry_warning:
+        if kernel_exit == 0 and not has_sorry_warning and not _declares_axioms(lean_code):
             status = ProofClaimStatus.P2_VERIFIED
             proven = True
             notes = f"In-memory verification succeeded (P2) via Lean 4 kernel ({self.lean_version_string}, exit code 0, 0 disk files)."
+        elif kernel_exit == 0 and not has_sorry_warning:
+            status = ProofClaimStatus.P1_CANDIDATE
+            proven = False
+            notes = (
+                "In-memory code declares its own axioms (P1, not P2): the kernel checked "
+                "it against those declarations, not against Lean's foundations "
+                "(AGENTS.md §1.3, exit code 0, 0 disk files)."
+            )
         elif kernel_exit != 0 or has_sorry_warning:
             status = ProofClaimStatus.P0_NO_PROOF
             proven = False

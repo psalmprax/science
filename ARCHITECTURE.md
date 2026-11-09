@@ -74,7 +74,7 @@ To prevent holdout contamination:
 Preregistered settings cannot be scattered as independent literals across code and documentation. 
 
 - **Canonical Specification:** Stored at `specifications/canonical_preregistered_spec_v1.json`.
-- **Runtime Guard:** `apedp_dyn.conf.canonical_spec` computes the SHA-256 hash of the JSON file upon import. If the hash does not match `a6d026f303a77cbb2f1dd5f8a74c394dd09f8139d811a9bfe4142c82063f6d47`, import halts with `SpecificationIntegrityError`.
+- **Runtime Guard:** `apedp_dyn.conf.canonical_spec` computes the SHA-256 hash of the JSON file upon import. If the hash does not match `dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343`, import halts with `SpecificationIntegrityError`.
 - **Consumption:**
   - `canonical_ledger.py` consumes `TACTICAL_ACTIVE_MIN` (5%) and `TACTICAL_ACTIVE_MAX` (90%), `CONTINUOUS_FACTOR_ACTIVE_MIN` (85%), `TAIL_RISK_MIN_EVENTS` (30).
   - `trial_ledger.py` consumes `DSR_THRESHOLD`.

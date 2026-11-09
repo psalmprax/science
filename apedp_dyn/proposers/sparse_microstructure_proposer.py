@@ -19,9 +19,17 @@ from apedp_dyn.grammar.proposer_interface import (
 )
 
 
-def extract_microstructure_features(df: pd.DataFrame) -> tuple[pd.DataFrame, np.ndarray]:
+def extract_microstructure_features(
+    df: pd.DataFrame,
+    target_col: str = "price",
+) -> tuple[pd.DataFrame, np.ndarray]:
     """Extract causal microstructure features and forward 1-period returns from bar dataframe."""
-    p = df["price"].to_numpy(dtype=float) if "price" in df.columns else df["close"].to_numpy(dtype=float)
+    if target_col in df.columns:
+        p = df[target_col].to_numpy(dtype=float)
+    elif "price" in df.columns:
+        p = df["price"].to_numpy(dtype=float)
+    else:
+        p = df["close"].to_numpy(dtype=float)
     v = df["V"].to_numpy(dtype=float) if "V" in df.columns else df["vol"].to_numpy(dtype=float)
     tb = df["taker_buy"].to_numpy(dtype=float) if "taker_buy" in df.columns else v * 0.5
 
@@ -77,7 +85,7 @@ class SparseMicrostructureProposer(ProposerBase):
         for _, df in train_data.items():
             if len(df) < 30:
                 continue
-            X, y = extract_microstructure_features(df)
+            X, y = extract_microstructure_features(df, target_col=target_col)
             valid = np.isfinite(y) & np.all(np.isfinite(X.to_numpy()), axis=1)
             all_X.append(X[valid].iloc[25:])
             all_y.append(y[valid][25:])
@@ -102,6 +110,7 @@ class SparseMicrostructureProposer(ProposerBase):
                 model.fit(X_norm.to_numpy(), y_vec)
                 # Unstandardize coefficients back to natural feature units
                 raw_coefs = model.coef_ / stds.to_numpy()
+                raw_intercept = float(model.intercept_ - np.dot(raw_coefs, means.to_numpy()))
                 coefs = dict(zip(feat_names, raw_coefs, strict=True))
                 active_terms = {k: float(v) for k, v in coefs.items() if abs(v) > 1e-6}
                 if not active_terms:
@@ -114,10 +123,10 @@ class SparseMicrostructureProposer(ProposerBase):
                 cand_idx += 1
 
                 # Closure for score computation
-                def _make_scorer(weights: dict[str, float]) -> Any:
+                def _make_scorer(weights: dict[str, float], intercept: float, t_col: str) -> Any:
                     def _score_fn(df: pd.DataFrame) -> np.ndarray:
-                        X_sub, _ = extract_microstructure_features(df)
-                        score = np.zeros(len(df))
+                        X_sub, _ = extract_microstructure_features(df, target_col=t_col)
+                        score: np.ndarray = np.full(len(df), intercept, dtype=float)
                         for k, w in weights.items():
                             if k in X_sub.columns:
                                 score += w * X_sub[k].to_numpy()
@@ -131,12 +140,14 @@ class SparseMicrostructureProposer(ProposerBase):
                         formula=formula_str,
                         strategy_archetype=StrategyArchetype.CONTINUOUS_FACTOR,
                         declared_scale_invariant=True,
-                        compute_score=_make_scorer(active_terms),
+                        compute_score=_make_scorer(active_terms, raw_intercept, target_col),
                         parameters=active_terms,
                         metadata={
                             "alpha": alpha,
                             "l1_ratio": l1_ratio,
                             "intercept": float(model.intercept_),
+                            "raw_intercept": raw_intercept,
+                            "target_col": target_col,
                             "n_active_features": len(active_terms),
                         },
                     )

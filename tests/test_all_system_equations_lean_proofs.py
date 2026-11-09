@@ -131,5 +131,11 @@ def test_spot_check_lean_kernel_compilation():
     for spec in target_specs:
         res = bridge.verify_candidate_formally(spec, standalone_core=True)
         assert res.kernel_exit_code == 0
-        assert res.proof_claim_status == ProofClaimStatus.P2_VERIFIED
-        assert res.all_theorems_proven is True
+        # Standalone core declares the axioms it proves against, so the kernel
+        # accepting the file is a consistency check, not a P2 derivation. The
+        # per-theorem flag is not uniform: an `omega` theorem depends on the
+        # declared `R`/`Int` scaffolding rather than on one rewritten axiom, so
+        # the cap is carried by the module, not by every record.
+        assert res.proof_claim_status == ProofClaimStatus.P1_CANDIDATE
+        assert res.all_theorems_proven is False
+        assert "locally declared axioms" in res.notes

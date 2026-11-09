@@ -115,6 +115,21 @@ class FullLineageExperimentLedger:
         if self._persistence_path and self._persistence_path.is_file():
             self._load_from_disk()
 
+    def flush(self) -> None:
+        """Flush any pending amortized remote synchronization operations."""
+        if self._auto_sync and self._storage_backend and self._remote_ops_pending > 0:
+            self.sync_to_remote()
+
+    def close(self) -> None:
+        """Flush pending remote syncs on ledger shutdown."""
+        self.flush()
+
+    def __enter__(self) -> FullLineageExperimentLedger:
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        self.close()
+
     @classmethod
     def from_env(
         cls,
@@ -191,8 +206,6 @@ class FullLineageExperimentLedger:
                     f"was previously burned by failing candidate '{failing_cand}'. "
                     f"Confirmation holdouts may not be reused for replacement hypotheses."
                 )
-            if outcome_status == "FAILED":
-                self._burned_holdouts[holdout_key] = candidate_id
 
         exposure = DatasetExposureRecord(
             candidate_id=candidate_id,
@@ -206,7 +219,20 @@ class FullLineageExperimentLedger:
         node = self._nodes[candidate_id]
         node.data_exposures.append(exposure)
         node.updated_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        self._persist_append(node)
+        burn_key = holdout_key if role == DatasetRole.CONFIRMATION_HOLDOUT else None
+        burn_now = (role == DatasetRole.CONFIRMATION_HOLDOUT and outcome_status == "FAILED")
+        try:
+            self._persist_append(
+                node,
+                check_holdout_key=burn_key,
+                burn_holdout_for=candidate_id if burn_now else None,
+                force_remote_sync=burn_now,
+            )
+        except HoldoutContaminationError:
+            node.data_exposures.pop()
+            raise
+        if burn_now:
+            self._burned_holdouts[holdout_key] = candidate_id
         return exposure
 
     def update_lifecycle_state(
@@ -235,12 +261,14 @@ class FullLineageExperimentLedger:
             CandidateLifecycleState.PRE_SCREEN_REJECTED,
             CandidateLifecycleState.UNRESOLVED,
         )
+        burned_any = False
         if new_state in terminal_failure_states:
             for exp in node.data_exposures:
                 if exp.role == DatasetRole.CONFIRMATION_HOLDOUT:
                     self._burned_holdouts[(exp.dataset_id, exp.slice_identifier)] = candidate_id
+                    burned_any = True
 
-        self._persist_append(node)
+        self._persist_append(node, force_remote_sync=burned_any)
         return node
 
     def get_candidate(self, candidate_id: str) -> CandidateExperimentNode:
@@ -302,8 +330,17 @@ class FullLineageExperimentLedger:
         else:
             raise RuntimeError("Cannot export snapshot: ledger has no persistence path or data on disk.")
 
-    def _persist_append(self, node: CandidateExperimentNode) -> None:
+    def _persist_append(
+        self,
+        node: CandidateExperimentNode,
+        *,
+        check_holdout_key: tuple[str, str] | None = None,
+        burn_holdout_for: str | None = None,
+        force_remote_sync: bool = False,
+    ) -> None:
         if self._persistence_path:
+            import os
+
             self._persistence_path.parent.mkdir(parents=True, exist_ok=True)
             # FLAW-18 (part 1): an OS advisory lock wraps the append so that
             # parallel discovery workers cannot interleave partial JSONL
@@ -316,26 +353,63 @@ class FullLineageExperimentLedger:
                 assert fcntl.flock is not None  # resolved only to assert availability
             except ImportError:  # pragma: no cover - Windows-only path
                 fcntl = None  # type: ignore[assignment]
-            with open(self._persistence_path, "a", encoding="utf-8") as f:
+            with open(self._persistence_path, "a+", encoding="utf-8") as f:
                 if fcntl is not None:
                     fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                    try:
-                        f.write(json.dumps(node.to_dict()) + "\n")
-                        f.flush()
-                    finally:
-                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-                else:
+                try:
+                    if check_holdout_key is not None:
+                        self._refresh_burned_holdouts_locked(f)
+                        if check_holdout_key in self._burned_holdouts:
+                            failing_cand = self._burned_holdouts[check_holdout_key]
+                            raise HoldoutContaminationError(
+                                f"DATA SNOOPING VIOLATION: Dataset slice '{check_holdout_key[0]}:{check_holdout_key[1]}' "
+                                f"was previously burned by failing candidate '{failing_cand}'. "
+                                f"Confirmation holdouts may not be reused for replacement hypotheses."
+                            )
+                        if burn_holdout_for is not None:
+                            self._burned_holdouts[check_holdout_key] = burn_holdout_for
+                    f.seek(0, os.SEEK_END)
                     f.write(json.dumps(node.to_dict()) + "\n")
+                    f.flush()
+                    os.fsync(f.fileno())
+                finally:
+                    if fcntl is not None:
+                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
             # FLAW-18 (part 2): full-ledger re-upload after EVERY append is
             # O(N²) network traffic on parallel discovery runs. Remote sync
             # is now amortized: pending appends accumulate locally (each one
             # is still durably journaled on disk first) and flush to remote
-            # in batches, or immediately on context close / explicit sync.
+            # in batches, or immediately on holdout burn / context close / explicit sync.
             if self._auto_sync and self._storage_backend:
                 self._remote_ops_pending = getattr(self, "_remote_ops_pending", 0) + 1
-                if self._remote_ops_pending >= self._auto_sync_batch:
+                if force_remote_sync or self._remote_ops_pending >= self._auto_sync_batch:
                     self.sync_to_remote()
                     self._remote_ops_pending = 0
+
+    def _refresh_burned_holdouts_locked(self, file_obj: Any) -> None:
+        """Refresh burned holdout state while holding the exclusive file lock."""
+        terminal_failure_states = {
+            CandidateLifecycleState.CONFIRMATION_REJECTED.value,
+            CandidateLifecycleState.ECONOMIC_EVALUATION_FAILED.value,
+            CandidateLifecycleState.CALIBRATION_FAILED.value,
+            CandidateLifecycleState.PRE_SCREEN_REJECTED.value,
+            CandidateLifecycleState.UNRESOLVED.value,
+        }
+        file_obj.seek(0)
+        for line in file_obj:
+            if not line.strip():
+                continue
+            try:
+                d = json.loads(line)
+            except ValueError:
+                continue
+            cid = d.get("candidate_id", "")
+            state_val = d.get("state", "")
+            is_terminal_fail = state_val in terminal_failure_states
+            for exp in d.get("data_exposures", []):
+                if exp.get("role") == DatasetRole.CONFIRMATION_HOLDOUT.value:
+                    if exp.get("result_status") == "FAILED" or is_terminal_fail:
+                        self._burned_holdouts[(exp["dataset_id"], exp["slice_identifier"])] = cid
 
     def _load_from_disk(self) -> None:
         assert self._persistence_path is not None

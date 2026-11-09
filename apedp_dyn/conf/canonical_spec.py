@@ -125,6 +125,12 @@ MAX_LITERATURE_R2: float = float(_THRESHOLDS["max_literature_r2"])
 
 MIN_OOS_TRANSFER_RETENTION: float = float(_THRESHOLDS["min_oos_transfer_retention"])
 MIN_NET_SHARPE: float = float(_THRESHOLDS["min_net_sharpe"])
+STAGE2_MIN_IC: float = float(_THRESHOLDS.get("stage2_min_ic", 0.02))
+STAGE4_MIN_OOS_IC: float = float(_THRESHOLDS.get("stage4_min_oos_ic", 0.015))
+STAGE4_OOS_ALPHA: float = float(_THRESHOLDS.get("stage4_oos_alpha", 0.05))
+STAGE5_MIN_FEE_BPS: float = float(_THRESHOLDS.get("stage5_min_fee_bps", 3.0))
+STAGE6_PROSPECTIVE_SHARPE_HURDLE: float = float(_THRESHOLDS.get("stage6_prospective_sharpe_hurdle", 0.70))
+STAGE6_MAX_DRAWDOWN_CEILING: float = float(_THRESHOLDS.get("stage6_max_drawdown_ceiling", 0.25))
 
 REFEREE_MAX_FPR: float = float(_THRESHOLDS["referee_max_fpr"])
 REFEREE_MIN_CAR: float = float(_THRESHOLDS["referee_min_car"])

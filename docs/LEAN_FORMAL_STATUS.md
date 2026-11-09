@@ -42,9 +42,10 @@ report recorded an aspiration rather than a measurement. What the layer contains
 not create a proof -- it stops the page from claiming a repair that never happened.
 
 The bridge marks these theorems `syntactic_schema_check::axiomatic_*` and says in the diagnostic
-that the conclusion is embedded in the premises, which is why the P2 ledger counts them while
-this audit refuses to. The two records disagree on purpose: P2 means the kernel ran over the
-module, and this page means the statement was proved. Only the second is verification.
+that the conclusion is embedded in the premises. It now enforces that too: a candidate whose
+module declares its own axioms is capped at `P1_CANDIDATE`, with `axiom_dependent` recorded per
+theorem, so the P2 ledger and this audit no longer disagree — both refuse the claim. P2 is
+reserved for a module that imports its foundations rather than declaring them.
 
 ## The rule this document sets
 

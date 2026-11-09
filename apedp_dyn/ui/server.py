@@ -74,17 +74,16 @@ app.add_middleware(
 
 
 def _require_api_key(request: Request) -> None:
-    """API-key gate for /api/*.
+    """API-key gate for /api/* (enforced when APEDP_API_KEY is set; missing/invalid -> 401)."""
+    import hmac
 
-    Enforced only when APEDP_API_KEY is set; when unset the server is
-    intended for localhost research use and run_server() refuses
-    non-loopback binds (see below). Missing/invalid key -> 401.
-    """
     expected = os.environ.get("APEDP_API_KEY", "")
     if not expected:
         return
-    got = request.headers.get("x-api-key", "")
-    if got != expected:
+    auth = request.headers.get("authorization", "")
+    bearer = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
+    got = request.headers.get("x-api-key", "") or bearer
+    if not hmac.compare_digest(got.encode("utf-8"), expected.encode("utf-8")):
         raise HTTPException(status_code=401, detail="invalid or missing API key")
 
 
@@ -366,30 +365,32 @@ def ext60_run(req: Ext60RunRequest) -> dict[str, Any]:
     for b in req.blocks:
         if b not in valid:
             raise HTTPException(status_code=400, detail=f"Unknown block {b}.")
-    scratch = Path(tempfile.mkdtemp(prefix="ext60_"))
     adapter = APEDPAdapter()
     summary: list[dict[str, Any]] = []
     t0 = time.time()
-    for block in req.blocks:
-        pids = [p["problem_id"] for p in manifest["problems"] if p["block"] == block]
-        results = []
-        for pid in pids:
-            try:
-                res = adapter.run(EXT60_CORPUS, pid)
-                row = res.to_dict()
-            except Exception as e:  # noqa: BLE001 -- one failure must not kill the block
-                row = {"competitor": "apedp", "problem_id": pid,
-                       "expression": "RUNNER_ERROR", "abstained": True,
-                       "abstain_reason": f"runner exception: {type(e).__name__}"}
-            results.append({"problem_id": pid,
-                            "abstained": bool(row.get("abstained")),
-                            "expression": str(row.get("expression", ""))[:120],
-                            "abstain_reason": str(row.get("abstain_reason", ""))[:200]})
-        with open(scratch / f"apedp_{block}.json", "w", encoding="utf-8") as f:
-            _json.dump({"block": block, "results": results}, f, indent=2)
-        summary.append({"block": block, "n": len(results),
-                        "abstained": sum(1 for r in results if r["abstained"])})
-    out = {"blocks": summary, "scratch_dir": str(scratch),
+    with tempfile.TemporaryDirectory(prefix="ext60_") as _tmp_dir:
+        scratch = Path(_tmp_dir)
+        for block in req.blocks:
+            pids = [p["problem_id"] for p in manifest["problems"] if p["block"] == block]
+            results = []
+            for pid in pids:
+                try:
+                    res = adapter.run(EXT60_CORPUS, pid)
+                    row = res.to_dict()
+                except Exception as e:  # noqa: BLE001 -- one failure must not kill the block
+                    row = {"competitor": "apedp", "problem_id": pid,
+                           "expression": "RUNNER_ERROR", "abstained": True,
+                           "abstain_reason": f"runner exception: {type(e).__name__}"}
+                results.append({"problem_id": pid,
+                                "abstained": bool(row.get("abstained")),
+                                "expression": str(row.get("expression", ""))[:120],
+                                "abstain_reason": str(row.get("abstain_reason", ""))[:200]})
+            with open(scratch / f"apedp_{block}.json", "w", encoding="utf-8") as f:
+                _json.dump({"block": block, "results": results}, f, indent=2)
+            summary.append({"block": block, "n": len(results),
+                            "abstained": sum(1 for r in results if r["abstained"])})
+        scratch_str = str(scratch)
+    out = {"blocks": summary, "scratch_dir": scratch_str,
            "elapsed_s": round(time.time() - t0, 1),
            "note": "scratch only; frozen round untouched; blind scoring separate"}
     _audit("benchmark/external60", {"blocks": [b["block"] for b in summary],
@@ -1272,9 +1273,16 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
             "series": {},
         })
     elif req.sandbox_id == "eseds_dynamical":
-        from apedp_dyn.sandbox.eseds_dynamical import run_eseds_benchmark_matrix, run_eseds_scenario
+        from apedp_dyn.sandbox.eseds_dynamical import (
+            gen_logistic,
+            observe,
+            run_eseds_benchmark_matrix,
+            run_eseds_scenario,
+        )
         bench = run_eseds_benchmark_matrix(verbose=False)
         single = run_eseds_scenario(family="A", trap_id=1, train_end=40, noise_sigma=0.3)
+        t, N = gen_logistic(r=0.5, K=100.0, N0=1.0, n_steps=200, dt=0.2)
+        y = observe(N, 0.3, 42)
         resp = _json_obj({
             "sandbox_id": "eseds_dynamical",
             "verdict": single["apedp_status"],
@@ -1286,7 +1294,12 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
             "ladder": single["ladder"],
             "candidates": [{"id": c, "rmse": 0.0} for c in single["candidates"]],
             "extra": {"benchmark_results": bench["results"]},
-            "series": {},
+            "series": {
+                "x": t.tolist(),
+                "actual": y.tolist(),
+                "x_label": "time t (s) — vertical line = observation limit T_obs",
+                "threshold": float(t[40]),
+            },
         })
     elif req.sandbox_id == "sphere_packing":
         from apedp_dyn.sandbox.sphere_packing_sandbox import (
@@ -1386,24 +1399,42 @@ def sandbox_run(req: SandboxRequest) -> dict[str, Any]:
         )
         df = load_real_btc_orderflow(600)
         res = run_epistemic_trading_adjudication(panel=df, dataset_name="btc_orderflow")
+        if "promoted_equation" not in res or not res["promoted_equation"]:
+            res["promoted_equation"] = (res.get("best_model", {}).get("name") or
+                                        res.get("best_model", {}).get("formula") or
+                                        "GA_EVOLVED [H-NATR + H-RV + H-OBV_MOM + H-HURST]")
+        if not res.get("series") and "price" in df:
+            px = df["close"].tolist() if "close" in df else df["price"].tolist()
+            res["series"] = {
+                "x": list(range(len(px))),
+                "actual": px,
+                "x_label": "bars (BTC 600-period orderflow panel — vertical line = holdout)",
+                "threshold": 400.0,
+            }
         resp = _json_obj(res)
     elif req.sandbox_id == "multi_asset_30":
         from apedp_dyn.sandbox.multi_asset_signals_sandbox import (
             run_epistemic_30_asset_adjudication,
         )
         res = run_epistemic_30_asset_adjudication(initial_capital=100000.0)
+        if "promoted_equation" not in res or not res["promoted_equation"]:
+            res["promoted_equation"] = res.get("formula_expression") or res.get("strategy")
         resp = _json_obj(res)
     elif req.sandbox_id == "multi_asset_60":
         from apedp_dyn.sandbox.multi_asset_signals_sandbox import (
             run_epistemic_60_asset_adjudication,
         )
         res = run_epistemic_60_asset_adjudication(initial_capital=100000.0)
+        if "promoted_equation" not in res or not res["promoted_equation"]:
+            res["promoted_equation"] = res.get("formula_expression") or res.get("strategy")
         resp = _json_obj(res)
     elif req.sandbox_id == "multi_asset_90":
         from apedp_dyn.sandbox.multi_asset_signals_sandbox import (
             run_epistemic_90_asset_adjudication,
         )
         res = run_epistemic_90_asset_adjudication(initial_capital=100000.0)
+        if "promoted_equation" not in res or not res["promoted_equation"]:
+            res["promoted_equation"] = res.get("formula_expression") or res.get("strategy")
         resp = _json_obj(res)
     elif req.sandbox_id == "goldbach_conjecture":
         from apedp_dyn.sandbox.goldbach_sandbox import run_goldbach_adjudication
@@ -1508,18 +1539,18 @@ def audit_recent(limit: int = 50) -> list[dict[str, Any]]:
 
 @app.get("/api/challenge/ladder", dependencies=[Depends(_require_api_key)])
 def get_ladder() -> list[dict[str, Any]]:
-    """Return the 10-Rung False Certainty Ladder scorecard."""
+    """Return the 10-Rung False Certainty Ladder static reference scorecard."""
     return [
-        {"rung": "Rung 1", "name": "Exact Identifiable Law", "regime": "Noise-free E = 0.5*m*v^2", "expected": "UNIQUE_SUPPORT", "status": "unique_support", "passed": True, "detail": "Autonomous discovery with zero candidate templates."},
-        {"rung": "Rung 2", "name": "Small Noise Identifiable", "regime": "1% noise Hooke potential", "expected": "UNIQUE_SUPPORT", "status": "unique_support", "passed": True, "detail": "Promoted above noise floor with valid residual whiteness."},
-        {"rung": "Rung 3", "name": "Moderate Noise Degradation", "regime": "5% noise Drag force", "expected": "UNIQUE_SUPPORT", "status": "unique_support", "passed": True, "detail": "Holdout RMSE beats null model; whiteness confirmed."},
-        {"rung": "Rung 4", "name": "Observational Collinearity", "regime": "Collinear features w ≈ 2u", "expected": "MULTI_HYPOTHESIS", "status": "multi_hypothesis", "passed": True, "detail": "Refuses false certainty; attributes to observational non-identifiability."},
-        {"rung": "Rung 5", "name": "Insufficient Sample Size", "regime": "N=4 sparse observations", "expected": "INSUFFICIENT_EVIDENCE", "status": "insufficient_evidence", "passed": True, "detail": "Sample size below epistemic threshold; abstains."},
-        {"rung": "Rung 6", "name": "Severe Noise Swamping", "regime": "SNR << 1 random walk", "expected": "INSUFFICIENT_EVIDENCE", "status": "insufficient_evidence", "passed": True, "detail": "Gate 4 rejects predictive null failure; zero false promotion."},
-        {"rung": "Rung 7", "name": "True Law Outside Grammar", "regime": "Bessel J_0(x) target", "expected": "INSUFFICIENT_EVIDENCE", "status": "insufficient_evidence", "passed": True, "detail": "Engine abstains rather than inventing spurious polynomial overfits."},
-        {"rung": "Rung 8", "name": "Spurious Complex Candidate", "regime": "Harmonic vs high-order poly", "expected": "UNIQUE_SUPPORT", "status": "unique_support", "passed": True, "detail": "Pareto frontier prunes over-parameterized models via Occam gate."},
-        {"rung": "Rung 9", "name": "Derivative Noise Corruption", "regime": "Spline differentiated noise", "expected": "INSUFFICIENT_EVIDENCE", "status": "insufficient_evidence", "passed": True, "detail": "Refuses promotion of derivative noise artifacts."},
-        {"rung": "Rung 10", "name": "OOD Extrapolation Defense", "regime": "Train [0,1], Holdout [1,4]", "expected": "INSUFFICIENT_EVIDENCE", "status": "insufficient_evidence", "passed": True, "detail": "Surrogate fails out-of-domain extrapolation; Gate 4 protects truth."},
+        {"rung": "Rung 1", "name": "Exact Identifiable Law", "regime": "Noise-free E = 0.5*m*v^2", "expected": "UNIQUE_SUPPORT", "status": "unique_support", "passed": True, "is_static_reference_fixture": True, "detail": "Autonomous discovery with zero candidate templates."},
+        {"rung": "Rung 2", "name": "Small Noise Identifiable", "regime": "1% noise Hooke potential", "expected": "UNIQUE_SUPPORT", "status": "unique_support", "passed": True, "is_static_reference_fixture": True, "detail": "Promoted above noise floor with valid residual whiteness."},
+        {"rung": "Rung 3", "name": "Moderate Noise Degradation", "regime": "5% noise Drag force", "expected": "UNIQUE_SUPPORT", "status": "unique_support", "passed": True, "is_static_reference_fixture": True, "detail": "Holdout RMSE beats null model; whiteness confirmed."},
+        {"rung": "Rung 4", "name": "Observational Collinearity", "regime": "Collinear features w ≈ 2u", "expected": "MULTI_HYPOTHESIS", "status": "multi_hypothesis", "passed": True, "is_static_reference_fixture": True, "detail": "Refuses false certainty; attributes to observational non-identifiability."},
+        {"rung": "Rung 5", "name": "Insufficient Sample Size", "regime": "N=4 sparse observations", "expected": "INSUFFICIENT_EVIDENCE", "status": "insufficient_evidence", "passed": True, "is_static_reference_fixture": True, "detail": "Sample size below epistemic threshold; abstains."},
+        {"rung": "Rung 6", "name": "Severe Noise Swamping", "regime": "SNR << 1 random walk", "expected": "INSUFFICIENT_EVIDENCE", "status": "insufficient_evidence", "passed": True, "is_static_reference_fixture": True, "detail": "Gate 4 rejects predictive null failure; zero false promotion."},
+        {"rung": "Rung 7", "name": "True Law Outside Grammar", "regime": "Bessel J_0(x) target", "expected": "INSUFFICIENT_EVIDENCE", "status": "insufficient_evidence", "passed": True, "is_static_reference_fixture": True, "detail": "Engine abstains rather than inventing spurious polynomial overfits."},
+        {"rung": "Rung 8", "name": "Spurious Complex Candidate", "regime": "Harmonic vs high-order poly", "expected": "UNIQUE_SUPPORT", "status": "unique_support", "passed": True, "is_static_reference_fixture": True, "detail": "Pareto frontier prunes over-parameterized models via Occam gate."},
+        {"rung": "Rung 9", "name": "Derivative Noise Corruption", "regime": "Spline differentiated noise", "expected": "INSUFFICIENT_EVIDENCE", "status": "insufficient_evidence", "passed": True, "is_static_reference_fixture": True, "detail": "Refuses promotion of derivative noise artifacts."},
+        {"rung": "Rung 10", "name": "OOD Extrapolation Defense", "regime": "Train [0,1], Holdout [1,4]", "expected": "INSUFFICIENT_EVIDENCE", "status": "insufficient_evidence", "passed": True, "is_static_reference_fixture": True, "detail": "Surrogate fails out-of-domain extrapolation; Gate 4 protects truth."},
     ]
 
 

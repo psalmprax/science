@@ -100,9 +100,24 @@ class CandidateTrialLedger:
         self._records.append(record)
 
         if self._persistence_path:
+            import os
+
             self._persistence_path.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                import fcntl
+                assert fcntl.flock is not None
+            except ImportError:  # pragma: no cover - Windows-only path
+                fcntl = None  # type: ignore[assignment]
             with open(self._persistence_path, "a", encoding="utf-8") as f:
-                f.write(json.dumps(asdict(record)) + "\n")
+                if fcntl is not None:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                try:
+                    f.write(json.dumps(asdict(record)) + "\n")
+                    f.flush()
+                    os.fsync(f.fileno())
+                finally:
+                    if fcntl is not None:
+                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
         return record
 
@@ -191,13 +206,39 @@ class CandidateTrialLedger:
         return list(self._records)
 
     def get_sharpe_distribution(self) -> tuple[float, float]:
-        """Compute (mean, variance) of Sharpe ratios across all tested candidates."""
+        """Compute (mean, variance) of Sharpe ratios across strategy candidates."""
         if not self._records:
             return 0.0, 0.0
-        srs = np.array([r.in_sample_sharpe for r in self._records], dtype=float)
+        vals = [
+            float(r.in_sample_sharpe)
+            for r in self._records
+            if np.isfinite(r.in_sample_sharpe)
+            and not (
+                r.selection_statistic is not None
+                and r.in_sample_sharpe == 0.0
+                and ("selection_metric" in r.metadata or r.strategy_archetype == "equation_discovery")
+            )
+        ]
+        if not vals:
+            return 0.0, 0.0
+        srs = np.array(vals, dtype=float)
         mean_sr = float(np.mean(srs))
         var_sr = float(np.var(srs, ddof=1)) if len(srs) > 1 else 0.0
         return mean_sr, var_sr
+
+    def get_selection_distribution(self) -> tuple[float, float]:
+        """Compute (mean, variance) of selection_statistic across equation-discovery records."""
+        vals = [
+            float(r.selection_statistic)
+            for r in self._records
+            if r.selection_statistic is not None and np.isfinite(r.selection_statistic)
+        ]
+        if not vals:
+            return 0.0, 0.0
+        arr = np.array(vals, dtype=float)
+        mean_s = float(np.mean(arr))
+        var_s = float(np.var(arr, ddof=1)) if len(arr) > 1 else 0.0
+        return mean_s, var_s
 
     def _load_from_disk(self) -> None:
         assert self._persistence_path is not None
@@ -217,6 +258,9 @@ def compute_expected_max_sharpe(n_trials: int, var_trials: float, min_var: float
     """
     if n_trials <= 1:
         return 0.0
+
+    if not np.isfinite(var_trials) or var_trials < 0.0:
+        var_trials = 0.0
 
     # Ensure trial multiplicity is not bypassed when identical/constant trials are submitted
     effective_var = max(var_trials, min_var) if min_var > 0 else var_trials

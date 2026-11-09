@@ -36,6 +36,13 @@ repos:
         pass_filenames: false
         always_run: true
 
+      - id: audit-artifact-drift
+        name: generated audit artefacts match the tree
+        entry: .venv/bin/python scripts/check_audit_artifact_drift.py --check
+        language: system
+        pass_filenames: false
+        always_run: true
+
       - id: docs-and-audit-guards
         name: documentation integrity + audit recurrence guards
         entry: .venv/bin/python -m pytest

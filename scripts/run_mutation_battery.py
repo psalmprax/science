@@ -645,6 +645,10 @@ def _toolchain_fingerprint() -> str:
 
 def _cache_key(m: dict, pristine: str, mutated: str, pin_argv: list[list[str]],
                inputs_fp: str, toolchain: str) -> str:
+    norm_argv = [
+        ["python", *cmd[1:]] if cmd and cmd[0] != "cargo" else list(cmd)
+        for cmd in pin_argv
+    ]
     payload = {
         "schema": CACHE_SCHEMA,
         "id": m["id"],
@@ -652,7 +656,7 @@ def _cache_key(m: dict, pristine: str, mutated: str, pin_argv: list[list[str]],
         "description": m["description"],
         "pristine_sha256": _sha256_text(pristine),
         "mutated_sha256": _sha256_text(mutated),
-        "pin_argv": pin_argv,
+        "pin_argv": norm_argv,
         "pin_inputs_sha256": inputs_fp,
         "toolchain": toolchain,
     }
@@ -701,7 +705,8 @@ def main(argv: list[str] | None = None) -> int:
         # 0) pristine sanity run per pin group (a pin failing pristine means
         #    the battery is misconfigured, NOT a strong referee).
         sanity: dict[str, dict] = {}
-        for group_key, group in (("round2", PIN_ROUND2), ("hawkes", PIN_HAWKES),
+        for group_key, group in (("round2", PIN_ROUND2), ("round3", PIN_ROUND3),
+                                 ("hawkes", PIN_HAWKES),
                                  ("hawkes_sharp", PIN_HAWKES_SHARP),
                                  ("ehi_pillars", PIN_EHI_PILLARS),
                                  ("dispatch_wiring", PIN_DISPATCH_WIRING),

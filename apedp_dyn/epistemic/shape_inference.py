@@ -328,8 +328,7 @@ def infer_shape_prior(
 
     # Piecewise-constant DP.
     cap = int(min(max_segments, max(1, len(xs) // max(min_segment_len, 1))))
-    _prefix_sums(ys)[1]
-    cost = _dp_segment(ys, cap, min_segment_len)[0]
+    cost, _, boundaries = _dp_segment(ys, cap, min_segment_len)
     best_k, best_bic = 1, float("inf")
     for k in range(1, cap + 1):
         sse = cost[k][len(ys)]
@@ -360,8 +359,6 @@ def infer_shape_prior(
                                 if np.isfinite(cost[k][len(ys)]))) / tss
     target = max(achievable * (1.0 - sse_target), 1e-12)
     k_target = _segments_to_reach(cost, len(ys), tss, target, cap)
-
-    _flat_run_stats(ys, flat_tol)
 
     # Recorded, measured failures of four earlier discriminators (see
     # CHANGELOG): (a) "piecewise-constant beats a line" flags noise and a
@@ -420,7 +417,6 @@ def infer_shape_prior(
 
     cps: list[float] = []
     if family == FAMILY_PIECEWISE_CONSTANT:
-        boundaries = _dp_segment(ys, cap, min_segment_len)[2]
         for j in boundaries.get(best_k, []):
             if 0 < j < len(xs):
                 cps.append(float((xs[j - 1] + xs[j]) / 2.0))

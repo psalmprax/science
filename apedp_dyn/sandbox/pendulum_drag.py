@@ -107,7 +107,10 @@ def run_pendulum(noise: float=0.01) -> tuple[Any, list[ScoredCandidate]]:
           f"promoted={adj.promoted.candidate.candidate_id if adj.promoted else None}")
     for s in sorted(g4, key=lambda c: c.holdout_rmse if c.holdout_rmse is not None else 1e18)[:6]:
         cand = cast(SystemCandidate, s.candidate)
-        terms = "+".join(t.name for e in cand.equations for t in e.terms)
+        if hasattr(cand, "equations"):
+            terms = "+".join(t.name for e in cand.equations for t in e.terms)
+        else:
+            terms = str(getattr(cand, "formula", getattr(cand, "candidate_id", "")))
         print(f"  {s.candidate.candidate_id} {terms:18s} holdout RMSE={s.holdout_rmse:.4f}")
     print("reason:", adj.reason[:130])
     return adj, g4

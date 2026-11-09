@@ -10,10 +10,12 @@ Emits standardized CandidateProposal instances conforming to ProposerBase.
 """
 from __future__ import annotations
 
+import warnings
 from typing import Any
 
 import numpy as np
 import pandas as pd
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import ElasticNetCV
 from sklearn.model_selection import TimeSeriesSplit
 
@@ -113,9 +115,12 @@ class DistributedLagInteractionProposer(ProposerBase):
             l1_ratio=[0.2, 0.5, 0.8],
             cv=TimeSeriesSplit(n_splits=self.cv_folds),
             random_state=self.random_seed,
-            max_iter=1000,
+            max_iter=5000,
+            tol=1e-3,
         )
-        model.fit(X_norm, y_clean)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=ConvergenceWarning)
+            model.fit(X_norm, y_clean)
 
         coefs = model.coef_
         non_zero_idx = np.where(np.abs(coefs) > 1e-4)[0]

@@ -61,34 +61,48 @@ class ReservoirProposer(ProposerBase):
             W_out = np.linalg.pinv(S.T @ S + 1e-6 * np.eye(S.shape[1])) @ S.T @ dX
         except Exception:  # noqa: BLE001 - pinv of a singular Gram matrix raises LinAlgError, and degenerate input adds shape/dtype errors; lstsq is the documented fallback for the same ridge solve
             W_out = np.linalg.lstsq(S, dX, rcond=None)[0]
-        formula = f"ESN(reservoir={self.reservoir_size}, spectral_radius={self.spectral_radius})"
-        _n_vars = n_vars
-        _reservoir_size = self.reservoir_size
-        _W_in = W_in
-        _W = W
-        _W_out = W_out.ravel()
-        def make_score(n_vars:Any=_n_vars, reservoir_size:Any=_reservoir_size, W_in:Any=_W_in, W:Any=_W, W_out:Any=_W_out) -> Any:
-            def score(df: Any) -> Any:
-                X_eval = np.asarray(df.to_numpy(dtype=float))
-                n_samples_eval = X_eval.shape[0]
-                if W_out.size == 0:
-                    return np.zeros(n_samples_eval)
-                states_eval = np.zeros((n_samples_eval, reservoir_size))
-                for t in range(1, n_samples_eval):
-                    states_eval[t] = np.tanh(W_in @ X_eval[t] + W @ states_eval[t-1])
-                S_eval = np.hstack([np.ones((n_samples_eval, 1)), X_eval, states_eval])
-                pred = S_eval @ W_out
-                return pred.ravel()
-            return score
-        proposals = [CandidateProposal(
-            proposer_id=self.proposer_id,
-            candidate_id=f"esn_{zlib.crc32(formula.encode()) % 10**8}",
-            formula=formula,
-            strategy_archetype=StrategyArchetype.DYNAMICAL_SYSTEM,
-            declared_scale_invariant=False,
-            declared_nominal_dependencies=tuple(variable_names),
-            compute_score=make_score(),
-            parameters={"W_out_shape": W_out.shape},
-            metadata={"method": "reservoir_computing", "reservoir_size": self.reservoir_size},
-        )]
+        # One readout column per target. The readout was flattened with
+        # ``W_out.ravel()``, which is correct only for a single target: on a
+        # two-variable input the scorer then failed with "matmul: core
+        # dimension 0 ... size 46 is different from 23", because the candidate
+        # contract is one scalar prediction per row, not a vector field. Each
+        # target now gets its own proposal and its own column.
+        n_targets = dX.shape[1]
+        base_formula = (f"ESN(reservoir={self.reservoir_size}, "
+                        f"spectral_radius={self.spectral_radius})")
+        reservoir_size = self.reservoir_size
+        proposals: list[CandidateProposal] = []
+        for col in range(n_targets):
+            target = variable_names[col] if col < len(variable_names) else f"x{col}"
+            formula = base_formula if n_targets == 1 else f"d({target})/dt = {base_formula}"
+            readout = W_out[:, col].copy()
+
+            def make_score(W_in: Any = W_in, W: Any = W, readout: Any = readout,
+                           reservoir_size: Any = reservoir_size) -> Any:
+                def score(df: Any) -> Any:
+                    X_eval = np.asarray(df.to_numpy(dtype=float))
+                    n_samples_eval = X_eval.shape[0]
+                    if readout.size == 0:
+                        return np.zeros(n_samples_eval)
+                    states_eval = np.zeros((n_samples_eval, reservoir_size))
+                    for t in range(1, n_samples_eval):
+                        states_eval[t] = np.tanh(W_in @ X_eval[t] + W @ states_eval[t-1])
+                    S_eval = np.hstack([np.ones((n_samples_eval, 1)), X_eval, states_eval])
+                    pred = S_eval @ readout
+                    return pred.ravel()
+                return score
+
+            proposals.append(CandidateProposal(
+                proposer_id=self.proposer_id,
+                candidate_id=f"esn_{zlib.crc32(formula.encode()) % 10**8}",
+                formula=formula,
+                strategy_archetype=StrategyArchetype.DYNAMICAL_SYSTEM,
+                declared_scale_invariant=False,
+                declared_nominal_dependencies=tuple(variable_names),
+                compute_score=make_score(),
+                parameters={"W_out_shape": readout.shape},
+                metadata={"method": "reservoir_computing",
+                          "reservoir_size": self.reservoir_size,
+                          "target": target},
+            ))
         return proposals

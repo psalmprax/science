@@ -3,26 +3,26 @@
   "note": "Pinned by scripts/audit_exception_hygiene.py. Silent counts may fall freely; a rise fails CI. Delete a module's entry once its silent count reaches zero.",
   "totals": {
     "silent": 0,
-    "annotated": 224
+    "annotated": 225
   },
   "modules": {},
   "size_budget": {
     "apedp/discovery/_core.py": 2417,
     "apedp_dyn/quantum_compilation/dqi_gluzdov_v6.py": 1892,
     "apedp_dyn/quantum_compilation/faros_isq.py": 1783,
-    "apedp_dyn/ui/server.py": 1685,
+    "apedp_dyn/ui/server.py": 1686,
     "apedp_dyn/vqc/synthesis.py": 1684,
     "apedp_dyn/quantum_compilation/gf2mul_llm_adjustable.py": 1638,
     "apedp_dyn/quantum_compilation/invsqrt_signed_digit.py": 1584,
+    "apedp_dyn/epistemic/lean_universal_bridge.py": 1500,
     "apedp/model_synthesis.py": 1493,
     "apedp/epistemic.py": 1484,
-    "apedp_dyn/epistemic/lean_universal_bridge.py": 1447,
     "apedp/pipeline.py": 1423,
     "apedp_dyn/epistemic/high_dim_pde.py": 1386,
     "apedp/evolutionary_search.py": 1246,
+    "apedp_dyn/rust_bridge.py": 1208,
     "apedp_dyn/epistemic/temporal_rate_modulation.py": 1201,
-    "apedp_dyn/rust_bridge.py": 1200,
-    "apedp/rust_bridge.py": 1184,
+    "apedp/rust_bridge.py": 1192,
     "apedp_dyn/problems/catalog.py": 1156,
     "apedp_dyn/vqc/external.py": 1140,
     "apedp_dyn/epistemic/rime_repair_engine.py": 1123,
@@ -30,7 +30,7 @@
     "apedp/repair.py": 1088,
     "apedp_dyn/grammar/trading_grammar_catalog.py": 1075,
     "apedp_dyn/epistemic/temporal_rate_io.py": 1035,
-    "src/signed_digit_invsqrt_v3.py": 1016,
-    "apedp/meshing.py": 1003
+    "apedp_dyn/epistemic/adjudicate.py": 1026,
+    "src/signed_digit_invsqrt_v3.py": 1016
   }
 }

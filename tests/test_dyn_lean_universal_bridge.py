@@ -67,8 +67,14 @@ def test_mathlib_candidate_uncompiled_reports_p1_candidate(bridge):
     assert "import Mathlib.Data.Real.Basic" in res.lean_source_code
 
 
-def test_core_lean4_kernel_execution_achieves_p2_verified(bridge):
-    """Case 2: Pure Core Lean 4 module executed by compiler kernel achieves genuine P2_VERIFIED."""
+def test_core_lean4_kernel_execution_is_capped_at_p1(bridge):
+    """Case 2: a standalone-core module compiles, but it declares the axiom it proves.
+
+    The kernel accepting the file is not the same claim as a proof from Lean's
+    foundations: this mode emits `axiom R`, `axiom abs_mul`, `axiom sin`, ... into
+    the module and discharges the theorem against them. The status is therefore
+    P1_CANDIDATE with the reason recorded, never P2.
+    """
     inv_energy = DeclaredInvariant(
         name="discrete_algebraic_conservation",
         kind=InvariantKind.CONSERVATION_LAW,
@@ -93,11 +99,11 @@ def test_core_lean4_kernel_execution_achieves_p2_verified(bridge):
     res = bridge.verify_candidate_formally(spec, standalone_core=True)
 
     if bridge.is_lean_compiler_available:
-        # Compiler genuinely ran and accepted the proof!
+        # The compiler ran and accepted the module -- against its own axioms.
         assert res.kernel_exit_code == 0
-        assert res.proof_claim_status == ProofClaimStatus.P2_VERIFIED
-        assert res.all_theorems_proven is True
-        assert "exit code 0" in res.notes
+        assert res.proof_claim_status == ProofClaimStatus.P1_CANDIDATE
+        assert res.all_theorems_proven is False
+        assert "locally declared axioms" in res.notes
     else:
         # If compiler binary was absent, must be P1, NEVER P2
         assert res.proof_claim_status == ProofClaimStatus.P1_CANDIDATE
@@ -148,8 +154,8 @@ def test_finance_cubic_runaway_refuted(bridge):
     assert "FALSIFIED" in res.theorems[0].lean_proof_script
 
 
-def test_joint_epistemic_adjudication_candidate_vs_verified(bridge):
-    """Case 5: Joint referee distinguishes between P1_CANDIDATE (unverified by kernel) and P2_VERIFIED."""
+def test_joint_epistemic_adjudication_never_certifies_axiom_injected_core(bridge):
+    """Case 5: neither an uncompiled module nor a compiled self-axiomatised one certifies."""
     inv_cons = DeclaredInvariant(
         name="conservation",
         kind=InvariantKind.CONSERVATION_LAW,
@@ -189,14 +195,13 @@ def test_joint_epistemic_adjudication_candidate_vs_verified(bridge):
     assert cert_p1.joint_epistemic_label == "(C3_STRUCTURAL, P1_CANDIDATE)"
     assert "pending compiler kernel verification" in cert_p1.epistemic_synthesis_summary
 
-    # 2. Kernel-compiled Core Lean 4 module -> P2_VERIFIED
+    # 2. Kernel-compiled Core Lean 4 module -> P1, because it declared its axioms.
     if bridge.is_lean_compiler_available:
-        cert_p2 = bridge.adjudicate_joint_scientific_claim(spec, ds, bundle, standalone_core=True)
-        assert cert_p2.empirical_claim_level == ClaimLevel.C3_STRUCTURAL
-        assert cert_p2.formal_proof_status == ProofClaimStatus.P2_VERIFIED
-        assert cert_p2.is_fully_certified is True
-        assert cert_p2.joint_epistemic_label == "(C3_STRUCTURAL, P2_VERIFIED)"
-        assert "FULLY CERTIFIED SCIENTIFIC DISCOVERY" in cert_p2.epistemic_synthesis_summary
+        cert_core = bridge.adjudicate_joint_scientific_claim(spec, ds, bundle, standalone_core=True)
+        assert cert_core.empirical_claim_level == ClaimLevel.C3_STRUCTURAL
+        assert cert_core.formal_proof_status == ProofClaimStatus.P1_CANDIDATE
+        assert cert_core.is_fully_certified is False
+        assert cert_core.joint_epistemic_label == "(C3_STRUCTURAL, P1_CANDIDATE)"
 
 
 def test_joint_epistemic_adjudication_empirical_failure(bridge):
@@ -237,8 +242,13 @@ def test_joint_epistemic_adjudication_empirical_failure(bridge):
     assert "DOWNGRADED/REFUSED" in cert.epistemic_synthesis_summary
 
 
-def test_option2_axiomatic_core_continuous_models_achieve_p2(bridge):
-    """Option 2: Continuous models verified via lightweight axiomatic signatures in Core Lean 4 achieve P2."""
+def test_option2_axiomatic_core_continuous_models_are_schema_checks_not_p2(bridge):
+    """Option 2: continuous models are checked against axioms the module declares.
+
+    The generated module carries `axiom R`, `axiom tanh`, `axiom abs_mul`,
+    `axiom abs_tanh_le_one`, ... and the theorem is a rewrite through them. The
+    kernel accepts it; the statement is one of the premises. Status is P1.
+    """
     fin_spec = AgnosticCandidateSpecification(
         candidate_id="FIN-SATURATED-OFI-IMPACT",
         proposed_claim=ClaimLevel.C3_STRUCTURAL,
@@ -262,9 +272,11 @@ def test_option2_axiomatic_core_continuous_models_achieve_p2(bridge):
     res = bridge.verify_candidate_formally(fin_spec, standalone_core=True)
     if bridge.is_lean_compiler_available:
         assert res.kernel_exit_code == 0
-        assert res.proof_claim_status == ProofClaimStatus.P2_VERIFIED
-        assert res.all_theorems_proven is True
+        assert res.proof_claim_status == ProofClaimStatus.P1_CANDIDATE
+        assert res.all_theorems_proven is False
         assert "Option 2: Pure Core Lean 4 Axiomatic Infrastructure" in res.lean_source_code
+        assert res.theorems and all(t.axiom_dependent for t in res.theorems)
+        assert "locally declared axioms" in res.notes
 
 
 def test_option1_docker_mathlib_execution(tmp_path):
@@ -313,28 +325,31 @@ def test_option1_docker_mathlib_execution(tmp_path):
 
     res = bridge_docker.verify_candidate_formally(spec, standalone_core=True)
     assert res.kernel_exit_code == 0
-    assert res.proof_claim_status == ProofClaimStatus.P2_VERIFIED
-    assert res.all_theorems_proven is True
-    assert "inside Docker container" in res.notes
+    # The container runs the same standalone-core module, axioms and all.
+    assert res.proof_claim_status == ProofClaimStatus.P1_CANDIDATE
+    assert res.all_theorems_proven is False
+    assert "locally declared axioms" in res.notes
 
 
 def test_in_memory_equation_verification_zero_disk_files():
     """Verify arbitrary equations directly in memory without writing any files to disk."""
     from apedp_dyn.epistemic.lean_universal_bridge import verify_equation_in_memory
 
-    # Test 1: Saturated market impact equation
+    # Test 1: Saturated market impact equation. The module compiles, but it
+    # declares the saturation axioms it proves against, so the status is P1.
     res_tanh = verify_equation_in_memory("y = c * tanh(velocity)", candidate_id="SATURATED_FLOW")
-    assert res_tanh.proof_claim_status == ProofClaimStatus.P2_VERIFIED
-    assert res_tanh.all_theorems_proven is True
+    assert res_tanh.proof_claim_status == ProofClaimStatus.P1_CANDIDATE
+    assert res_tanh.all_theorems_proven is False
     assert res_tanh.kernel_exit_code == 0
     assert res_tanh.lean_file_path is None
     assert "in-memory stdin streaming" in res_tanh.notes
+    assert "locally declared axioms" in res_tanh.notes
     assert len(res_tanh.theorems) == 2
 
-    # Test 2: Linear superposition flux balance
+    # Test 2: Linear superposition flux balance -- same rule.
     res_lin = verify_equation_in_memory("dx_dt = -gamma * x", candidate_id="LINEAR_SUPERPOSITION_BALANCE")
-    assert res_lin.proof_claim_status == ProofClaimStatus.P2_VERIFIED
-    assert res_lin.all_theorems_proven is True
+    assert res_lin.proof_claim_status == ProofClaimStatus.P1_CANDIDATE
+    assert res_lin.all_theorems_proven is False
     assert res_lin.kernel_exit_code == 0
     assert res_lin.lean_file_path is None
 

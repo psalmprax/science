@@ -54,14 +54,23 @@ class RegressionRequest(BaseModel):
     )
 
 
+def _finite_or_none(val: object) -> float | None:
+    """Convert non-finite (NaN / ±Inf) floats to None so JSONResponse never crashes."""
+    try:
+        f = float(val)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+    return f if np.isfinite(f) else None
+
+
 class RegressionResponse(BaseModel):
     best_expression: str
     best_score: float
     score_semantics: str = "penalized MSE (lower is better); not R²"
     generations_run: int
-    r_squared: float = float("nan")
-    bic: float = float("inf")
-    aic: float = float("inf")
+    r_squared: float | None = None
+    bic: float | None = None
+    aic: float | None = None
     degenerate: bool = False
     degenerate_reason: str = ""
     data_adequacy: dict = Field(default_factory=dict)
@@ -184,9 +193,9 @@ async def symbolic_regression(req: RegressionRequest) -> RegressionResponse:
         best_expression=str(best_expr),
         best_score=float(best_score),
         generations_run=len(history),
-        r_squared=float(scored.get("r_squared", float("nan"))),
-        bic=float(scored.get("bic", float("inf"))),
-        aic=float(scored.get("aic", float("inf"))),
+        r_squared=_finite_or_none(scored.get("r_squared")),
+        bic=_finite_or_none(scored.get("bic")),
+        aic=_finite_or_none(scored.get("aic")),
         degenerate=False,
         degenerate_reason=reason,
         data_adequacy=adequacy,
@@ -205,9 +214,9 @@ async def bayesian_comparison(req: BayesRequest) -> dict:
         )
         return {
             "quantity": "bayes_factor",
-            "bayes_factor": bf,
+            "bayes_factor": _finite_or_none(bf),
             "verdict": verdict,
-            "log10_bayes_factor": log_bf,
+            "log10_bayes_factor": _finite_or_none(log_bf),
             "evidence_method": req.evidence_method,
         }
 
@@ -229,7 +238,7 @@ async def bayesian_comparison(req: BayesRequest) -> dict:
         raise HTTPException(status_code=422, detail=str(e)) from e
     return {
         "quantity": "likelihood_ratio",
-        "likelihood_ratio": ratio,
+        "likelihood_ratio": _finite_or_none(ratio),
         "verdict": description,
-        "log10_likelihood_ratio": log_ratio,
+        "log10_likelihood_ratio": _finite_or_none(log_ratio),
     }

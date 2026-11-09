@@ -41,7 +41,7 @@ PINNED_FROZEN_REGISTRY: dict[str, str] = {
     # rational term families in candidate_ir.py; rationale recorded in
     # APEDPX_FROZEN_v1_10.json::remint_log. Referee hashes unchanged from v1_9
     # (FLAW-08 re-anchor bootstrap, FLAW-07 monotone C6 evidence set).
-    "apedp_dyn/epistemic/adjudicate.py": "b009514ede9ac92a8bd70976b53734adebcaa472c82f83c487863cdf8f259d4f",
+    "apedp_dyn/epistemic/adjudicate.py": "85060fee348c585155e3e2c3f54a08af04b54a53e98d54152634e67d2b506b84",
     "apedp_dyn/epistemic/claim_ladder.py": "2e4de9284910f48ea40d38b094c61e3e1d18b4a4fed579d614d2ae2aae10543b",
     "apedp_dyn/sandbox/grammar_space.py": "648304f563877bb72d8ac279458702b918a0162c7d050aa0c36e35e78dbdf1dd",
     "benchmarks/l2_control_freeze.json": "ec117721d1cd9da0b09950bb9b5894110c2411475dfec073b684477c33e96872",

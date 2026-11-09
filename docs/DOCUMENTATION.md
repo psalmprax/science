@@ -1472,6 +1472,35 @@ services:
 
 ## 12. Testing & CI/CD
 
+### Generated-artefact drift gate
+
+Every committed audit artefact is rebuilt by `scripts/check_audit_artifact_drift.py`, which
+fails on any difference from the file on disk: `benchmarks/formal/lean_axiom_audit.json`,
+`benchmarks/applied_basis_report.json`, `benchmarks/untested_modules_register.json`, and the
+`scripts/audit_static_tables.py --check` census. CI runs it as the `audit-artifact-drift` job
+and `.pre-commit-config.yaml` runs it locally, so a report cannot be hand-edited past review;
+regeneration is `--write` and appears in the diff. This exists because the Lean audit once
+reported 0 circular proofs while the tree held 94.
+
+### Unreferenced-module register
+
+`scripts/audit_untested_modules.py` lists the `apedp_dyn` modules no test names, and
+`tests/test_untested_module_register.py` fails when a module is added that nothing references.
+A module counts as referenced only by its dotted path, `import <dotted>`, or
+`from <package> import <name>` — including a names list that continues across lines inside
+parentheses, which the first version of the rule missed. `tests/test_smoke_imports.py` proves
+modules import, which is a weaker claim and is deliberately not counted as coverage here.
+
+The census currently lists 71 of 391 modules, down from 94. None of the 94 was dead code: each
+is imported by a package `__init__` or `ui/server.py`, or cited by a preregistration document
+under `docs/`, so deleting them would have removed documented replication artefacts rather than
+debris. `tests/test_dyn_unregistered_module_behaviour.py` instead exercises 23 of them against
+their own predictions — the PS20 problems (mass conservation, monotone energy decay, terminal
+velocity), the model layer, the dimensional/admissibility/simulation gates, the AD service, the
+structure audit, active intervention, GP uncertainty and active learning, the proof-claim tier,
+the native-search contract and the reservoir proposer. The remaining 71 are a gated work list,
+not a claim of coverage.
+
 ### Running Tests
 
 ```bash

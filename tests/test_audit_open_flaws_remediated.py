@@ -395,3 +395,175 @@ def test_no_host_specific_home_paths_in_runtime_code():
         "host-specific home path literal in runtime code (use apedp_dyn.conf.paths): "
         + "; ".join(offenders)
     )
+
+
+# ── 2026-11-08 Deep Remediation Regression Pins (Categories 1–5) ────────────
+
+
+def test_adjudicate_identity_canonicalizes_proposal_reference():
+    """Equivalent formulas wrapped in proposal reference objects must map to identical _identity keys."""
+    import types
+
+    from apedp_dyn.epistemic.adjudicate import _identity
+
+    ref_a = types.SimpleNamespace(candidate_id="c1", proposer_id="p1", formula="x + x")
+    ref_b = types.SimpleNamespace(candidate_id="c2", proposer_id="p1", formula="2*x")
+    sc_a = types.SimpleNamespace(candidate=ref_a)
+    sc_b = types.SimpleNamespace(candidate=ref_b)
+    assert _identity(sc_a) == _identity(sc_b)
+
+
+def test_caller_data_protocol_burns_holdout_on_failed_verdict(tmp_path):
+    """SealedConfirmationSlice.consume must burn the confirmation slice when the referee rejects."""
+    from apedp_dyn.epistemic.caller_data_protocol import (
+        CallerSplit,
+        ConfirmationVerdict,
+        SealedConfirmationSlice,
+    )
+    from apedp_dyn.epistemic.experiment_ledger import (
+        DatasetRole,
+        FullLineageExperimentLedger,
+        HoldoutContaminationError,
+    )
+
+    ledger = FullLineageExperimentLedger(persistence_path=tmp_path / "ledger.jsonl")
+    ledger.register_candidate(candidate_id="cand_fail", proposer_id="prop_1", formula="x")
+    ledger.register_candidate(candidate_id="cand_retry", proposer_id="prop_1", formula="2*x")
+
+    split = CallerSplit(
+        caller_id="caller_1",
+        dataset_id="ds_burn_test",
+        selection_ids=("sel_1",),
+        confirmation_ids=("conf_1",),
+    )
+    sealed = SealedConfirmationSlice(split=split, ledger=ledger)
+
+    res = sealed.consume(
+        candidate_id="cand_fail",
+        evaluate=lambda **_kw: ConfirmationVerdict(
+            caller_id="caller_1",
+            candidate_id="cand_fail",
+            verdict="REJECTED",
+        ),
+    )
+    assert res.verdict == "REJECTED"
+
+    # Attempting to expose another candidate to the burned confirmation slice must raise HoldoutContaminationError
+    with pytest.raises(HoldoutContaminationError):
+        ledger.record_data_exposure(
+            candidate_id="cand_retry",
+            dataset_id="ds_burn_test",
+            slice_identifier="conf_1",
+            role=DatasetRole.CONFIRMATION_HOLDOUT,
+        )
+
+
+def test_trial_ledger_excludes_equation_discovery_zero_sharpe_dummies(tmp_path):
+    """Equation-discovery records with selection_statistic and dummy 0.0 Sharpe must not pollute Sharpe DSR."""
+    from apedp_dyn.epistemic.trial_ledger import CandidateTrialLedger
+
+    ledger = CandidateTrialLedger(persistence_path=tmp_path / "trials.jsonl")
+    ledger.record_trial(
+        proposer_id="p_fin",
+        candidate_id="c_fin",
+        formula="x",
+        strategy_archetype="tactical_cash",
+        in_sample_sharpe=1.25,
+        n_bars=100,
+    )
+    ledger.record_trial(
+        proposer_id="p_eq",
+        candidate_id="c_eq",
+        formula="y",
+        strategy_archetype="equation_discovery",
+        in_sample_sharpe=0.0,
+        n_bars=100,
+        selection_statistic=0.99,
+        metadata={"selection_metric": "r2"},
+    )
+    mean_sr, var_sr = ledger.get_sharpe_distribution()
+    assert np.isclose(mean_sr, 1.25)
+    assert np.isclose(var_sr, 0.0)
+    mean_sel, _var_sel = ledger.get_selection_distribution()
+    assert np.isclose(mean_sel, 0.99)
+
+
+def test_promotion_stage4_prevents_in_sample_ic_deflation_spoofing():
+    """Stage 4 must reject a spoofed lower in_sample_ic than recorded in Stage 2."""
+    from apedp_dyn.epistemic.promotion_lifecycle import (
+        PromotionTracker,
+        PromotionViolationError,
+    )
+
+    tracker = PromotionTracker(candidate_id="cand_spoof")
+    tracker.verify_stage_1(lean_status="P2_VERIFIED", dimensions_consistent=True, bounded=True)
+    tracker.verify_stage_2(in_sample_ic=0.10, cv_stable=True)
+    tracker.verify_stage_3(dm_p_value=0.001, max_literature_r2=0.2)
+
+    with pytest.raises(PromotionViolationError, match="cannot deflate in-sample baseline"):
+        tracker.verify_stage_4(oos_ic=0.03, oos_p_value=0.001, in_sample_ic=0.04)
+
+
+def test_lean_bridge_nary_damping_and_tokenized_invariants():
+    """LeanUniversalBridge must detect 3-factor exp(-a*b*t) damping and tokenize identifier keywords."""
+    import sympy as sp
+
+    from apedp_dyn.epistemic.lean_universal_bridge import (
+        LeanUniversalBridge,
+        _ast_detect_damping_factor,
+    )
+
+    a, b = sp.symbols("a b", positive=True)
+    t = sp.Symbol("t", real=True)
+    expr = sp.exp(-2 * a * b * t)
+    assert _ast_detect_damping_factor(expr) is not None
+
+    bridge = LeanUniversalBridge()
+    # "result" and "convolution" must not trigger "res" (kalman) or "vol" (variance)
+    invs = bridge.infer_invariants("cand_result", "convolution + 1", meta="uncertain delegate")
+    names = {inv.name for inv in invs}
+    assert "kalman_innovation_zero_mean" not in names
+    assert "variance_nonnegativity" not in names
+
+
+def test_rust_bridge_enforce_native_search_synchronizes_both_modules():
+    """enforce_native_search must synchronize _ENFORCE_NATIVE_SEARCH across apedp and apedp_dyn."""
+    import apedp.rust_bridge as rb1
+    import apedp_dyn.rust_bridge as rb2
+
+    try:
+        rb1.enforce_native_search(True)
+        assert rb1.native_search_enforced() is True
+        assert rb2.native_search_enforced() is True
+        rb2.enforce_native_search(False)
+        assert rb1.native_search_enforced() is False
+        assert rb2.native_search_enforced() is False
+    finally:
+        rb1.enforce_native_search(False)
+
+
+def test_sparse_microstructure_proposer_includes_raw_intercept_and_target_col():
+    """SparseMicrostructureProposer must honor target_col and include raw_intercept in score."""
+    from apedp_dyn.proposers.sparse_microstructure_proposer import (
+        SparseMicrostructureProposer,
+        extract_microstructure_features,
+    )
+
+    rng = np.random.default_rng(7)
+    n = 80
+    df = pd.DataFrame({
+        "custom_px": 100.0 + np.cumsum(rng.normal(0.05, 0.5, n)),
+        "V": rng.uniform(100.0, 500.0, n),
+        "taker_buy": rng.uniform(50.0, 250.0, n),
+    })
+    proposer = SparseMicrostructureProposer(l1_ratios=(0.5,), alphas=(1e-4,))
+    props = proposer.fit_and_propose({"SYM": df}, target_col="custom_px")
+    assert len(props) >= 1
+    cand = props[0]
+    assert "raw_intercept" in cand.metadata
+    X_sub, _ = extract_microstructure_features(df, target_col="custom_px")
+    manual = np.full(len(df), cand.metadata["raw_intercept"], dtype=float)
+    for k, w in cand.parameters.items():
+        manual += w * X_sub[k].to_numpy()
+    assert np.allclose(cand.compute_score(df), manual)
+

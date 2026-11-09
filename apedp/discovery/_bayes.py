@@ -482,7 +482,16 @@ class BayesianRefinementEngine:
         y_pred = np.asarray(y_pred, dtype=float)
         if num_params is None:
             try:
-                num_params = len(set(expression.free_symbols))
+                num_constants = [
+                    n
+                    for n in expression.atoms(sp.Number)
+                    if n not in (sp.S.Zero, sp.S.One, sp.S.NegativeOne)
+                ]
+                num_params = (
+                    len(num_constants)
+                    if num_constants
+                    else len(set(expression.free_symbols))
+                )
             except AttributeError:
                 # Not a SymPy expression (a raw string or array was passed): fall
                 # back to the minimal complexity proxy rather than failing.

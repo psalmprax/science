@@ -1,10 +1,42 @@
 # APEDP System Flaws Audit
 
-Date: 2026-10-21 (external adversarial audit, round 3 — 19 findings)
+Date: 2026-11-08 (deep architectural & code remediation round — Categories 1–5)
 Basis: independent adversarial audit over the epistemic referee layers,
 proposers, discovery engines, the Rust kernel (`apedp-kernel`), formal
-verification bridges, ledgers, and physics/robotics modules, verified by
-execution. Remediation performed the same day, also execution-verified.
+verification bridges, ledgers, API/UI trust boundaries, CI/Docker packaging,
+and physics/robotics modules, verified by execution.
+
+## 2026-11-08 round — status matrix (Categories 1–5)
+
+- **Category 1 (Governance & Spec Synchronization):**
+  - `ARCHITECTURE.md` stale SHA-256 reference updated from `a6d026f3…` to canonical `dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343`.
+  - `specifications/governance_manifest.json` remains fail-closed pending external trustee Ed25519 signature ceremony via `scripts/run_governance_remint_ceremony.py` (never forged locally per `AGENTS.md` §1.3).
+- **Category 2 (Epistemic Referee, Holdout & Ledger Integrity):**
+  - `apedp_dyn/epistemic/adjudicate.py`: `_identity(sc)` now canonicalizes `_ProposalReference` and duck-typed proposal objects via SymPy (`_canon_expr`); holdout re-anchor selects the best distinct holdout rival (`min(_rivals_ho, key=lambda s: s.holdout_rmse)`); `equiv` in the bootstrap `MULTI_HYPOTHESIS` branch anchors on `best_rmse`; `selection_reuse_flag` is attached across all post-selection pair verdicts.
+  - `apedp_dyn/epistemic/caller_data_protocol.py`: `SealedConfirmationSlice.consume()` now derives `outcome_status` (`"PASSED"` vs `"FAILED"`) from the referee verdict so rejected confirmation slices are permanently burned.
+  - `apedp_dyn/epistemic/experiment_ledger.py`: `_persist_append` holds `fcntl.flock(LOCK_EX)` across `_refresh_burned_holdouts_locked`, holdout contamination check, JSONL write, `flush()`, and `os.fsync()`, and forces immediate `sync_to_remote()` on holdout burn; added `flush()`, `close()`, and context-manager protocol.
+  - `apedp_dyn/epistemic/trial_ledger.py`: `record_trial` uses `fcntl.flock(LOCK_EX)` + `os.fsync()`; `get_sharpe_distribution()` filters non-finite values and excludes equation-discovery dummy `0.0` Sharpe records; added `get_selection_distribution()` and guarded negative/non-finite variance in `compute_expected_max_sharpe`.
+  - `apedp_dyn/epistemic/promotion_lifecycle.py` & `apedp_dyn/conf/canonical_spec.py`: Stage 2/4/5/6 thresholds exported from `canonical_spec.py`; `verify_stage_4` enforces Stage 2 `in_sample_ic` lower bound (`PromotionViolationError` on deflation spoofing) and rejects non-positive/non-finite `in_sample_ic`; `verify_stage_6` bounds `0.0 <= max_drawdown <= max_dd_ceiling`.
+  - `apedp_dyn/epistemic/lean_universal_bridge.py`: removed top-level `sys.path.insert(0, ".")`; `_ast_detect_damping_factor` detects N-ary `sp.Mul` damping factors; `infer_invariants` uses identifier tokenization; `BOUND_POSITIVITY` numerical probe evaluates over all free variables on a multi-dimensional grid and fails closed on exception.
+- **Category 3 (API, UI Server & Security Hardening):**
+  - `apedp/api/__init__.py`: `_trust_boundary` authenticates `X-API-Key` before rate-limiting, exempts `AUTH_EXEMPT_PATHS` from rate-limiting, evicts stale IP deques in `_ClientRateLimiter`, and enforces `MAX_REQUEST_BODY_SIZE` on streaming request chunks.
+  - `apedp/api/routes/pipeline.py`: `_validate_safe_pipeline_path` blocks path traversal (`..`) and restricts `csv_path`/`output_dir` to allowed roots.
+  - `apedp/api/routes/discovery.py`: `_finite_or_none` sanitizes `NaN`/`±Inf` in `symbolic_regression` and `bayesian_comparison`.
+  - `apedp_dyn/ui/server.py`: `_require_api_key` uses `hmac.compare_digest` and supports `Authorization: Bearer`; `ext60_run` uses `tempfile.TemporaryDirectory`; `get_ladder` marks static reference rows with `"is_static_reference_fixture": True`.
+- **Category 4 (Build, Packaging, Docker & CI Parity):**
+  - `Dockerfile`: multi-stage build compiling `rust/apedp-kernel` wheel, copying `apedp/`, `apedp_dyn/`, and `specifications/`, running as non-root `appuser`.
+  - `pyproject.toml`: aligned `maturin>=1.7,<2.0`, `torch>=2.5`, and removed non-existent `optax-contrib>=0.1`.
+  - `.github/workflows/test.yml`: expanded Bandit scan to `apedp/` and `apedp_dyn/`, and added Rust toolchain `1.99.0` + `maturin develop --locked` to `mutation-battery`.
+  - `scripts/run_mutation_battery.py`: normalized `pin_argv[0]` in `_cache_key()` and added `("round3", PIN_ROUND3)` to the pristine sanity check.
+- **Category 5 (Scientific & Algorithmic Module Correctness):**
+  - `apedp/discovery/_bayes.py`: `score_candidate` counts non-trivial numeric constant atoms in SymPy expressions when `num_params is None`.
+  - `apedp/rust_bridge.py` & `apedp_dyn/rust_bridge.py`: `enforce_native_search` synchronizes `_ENFORCE_NATIVE_SEARCH` across both modules, exports `is_native_search_enforced`, and routes `score_candidates_batch` through `self._kernel_compile`.
+  - `apedp_dyn/proposers/sparse_microstructure_proposer.py`: respects `target_col` and includes unstandardized `raw_intercept` in `_score_fn`.
+  - `apedp_dyn/gates/scaling_invariance.py`: `check_with_pi_groups` validates `pi_groups` exponent dimensions against `alpha`.
+  - `apedp_dyn/epistemic/shape_inference.py`: removed dead `_prefix_sums`/`_flat_run_stats` calls and duplicate `_dp_segment` invocation.
+  - `apedp_dyn/robotics/cbf_certificate.py`: `unicycle_commands_from_certified` and `model_check_unicycle_horizon` perform heading-aware pairwise barrier braking and accept `nominal_velocities`.
+
+---
 
 ## 2026-10-21 round — status matrix
 

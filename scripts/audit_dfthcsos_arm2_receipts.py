@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Audit Arm 2 metadata plus official DFTHCSOS score receipts; does not verify circuits."""
 from __future__ import annotations
+
 import argparse
 import json
 import math
@@ -51,9 +52,8 @@ def check_receipt(w: dict[str, Any], label: str, *, expected_arm: str = ARM2,
     if m.get("arm") != expected_arm:
         raise ValueError(f"{label}: manifest arm must be {expected_arm}")
     if m.get("arm1_selectswap_enabled") is not arm1_expected:
-        raise ValueError(
-            f"{label}: arm1_selectswap_enabled must be "
-            f"{str(arm1_expected).lower()} for this arm")
+        expected_literal = f"arm1_selectswap_enabled={str(arm1_expected).lower()}"
+        raise ValueError(f"{label}: {expected_literal} is required for this arm")
     if m.get("input_npz_unchanged") is not True:
         raise ValueError(f"{label}: input_npz_unchanged must be true")
     if m.get("lookup_semantics_pass") is not True or m.get("phase_semantics_pass") is not True:

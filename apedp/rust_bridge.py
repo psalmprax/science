@@ -80,11 +80,19 @@ def enforce_native_search(enabled: bool = True) -> None:
     """
     global _ENFORCE_NATIVE_SEARCH
     _ENFORCE_NATIVE_SEARCH = bool(enabled)
+    import sys as _sys
+
+    _peer = _sys.modules.get("apedp_dyn.rust_bridge")
+    if _peer is not None:
+        _peer._ENFORCE_NATIVE_SEARCH = bool(enabled)  # type: ignore[attr-defined]
 
 
 def native_search_enforced() -> bool:
     """Whether :func:`enforce_native_search` is currently on."""
     return _ENFORCE_NATIVE_SEARCH
+
+
+is_native_search_enforced = native_search_enforced
 
 
 class _RustKernel(Protocol):
@@ -309,7 +317,7 @@ class RustKernelBridge:
                 valid_indices = []
                 for idx, expr_str in enumerate(candidate_exprs):
                     try:
-                        c = cast(Any, apedp_kernel).compile(expr_str, list(variable_names))
+                        c = self._kernel_compile(cast(Any, apedp_kernel), expr_str, list(variable_names))
                         compiled_list.append(c)
                         valid_indices.append(idx)
                     except Exception:  # noqa: BLE001 - the kernel refusing to compile one expression is a fallback to the NumPy path for that candidate, not a verdict; the remaining candidates still score (see the block comment above)

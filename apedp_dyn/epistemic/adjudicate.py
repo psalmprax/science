@@ -298,6 +298,23 @@ def scale_from_observations(obs: np.ndarray) -> dict[str, Any]:
     return observation_scale(obs)
 
 
+def _canon_expr(formula: str) -> str:
+    """Canonicalize a free-form formula string for structural identity deduplication."""
+    raw = formula.strip()
+    if not raw:
+        return ""
+    rhs = raw.split("=", 1)[-1].strip() if "=" in raw else raw
+    try:
+        import sympy as sp
+
+        from apedp.safety import safe_parse_expr
+
+        expr = safe_parse_expr(rhs.replace("^", "**"))
+        return str(sp.expand(expr))
+    except Exception:  # noqa: BLE001 - non-sympy prose/DSL formulas fall back to whitespace-normalized text
+        return " ".join(rhs.split())
+
+
 def _identity(sc: Any) -> Any:
     """Structural identity: canonical form + parameter-binding signature.
 
@@ -319,10 +336,15 @@ def _identity(sc: Any) -> Any:
             (i, t.name, t.parameter) for i, e in enumerate(c.equations)
             for t in e.terms))
         return (canonical_system(c), sharing)
-    if not isinstance(c, CandidateDynamics):
-        raise TypeError(f"unknown candidate IR type: {type(c).__name__}")
-    return (canonical_form(c),
-            tuple(sorted((t.name, t.parameter) for t in c.terms)))
+    if isinstance(c, CandidateDynamics):
+        return (canonical_form(c),
+                tuple(sorted((t.name, t.parameter) for t in c.terms)))
+    if hasattr(c, "formula") and hasattr(c, "candidate_id") and isinstance(getattr(c, "formula", None), str):
+        canon = _canon_expr(c.formula)
+        if canon:
+            return ("proposal_formula", canon)
+        return ("proposal_id", str(c.candidate_id))
+    raise TypeError(f"unknown candidate IR type: {type(c).__name__}")
 
 
 def _sole_survivor_fidelity(best: Any, scale: dict[str, Any] | None,
@@ -734,12 +756,15 @@ def adjudicate(fitted: list[Any],
             best = ho_head
             ranked = [ho_head] + [s for s in ranked if s is not ho_head]
             _anchor_resid = _residual_series(best)
-            _runner = next((s for s in ranked[1:]
-                            if s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)), None)
+            _rivals_ho = [s for s in ranked[1:]
+                          if _identity(s) != _identity(best)
+                          and s.holdout_rmse is not None and np.isfinite(s.holdout_rmse)]
+            _runner = min(_rivals_ho, key=lambda s: s.holdout_rmse) if _rivals_ho else None
             _runner_resid = _residual_series(_runner) if _runner is not None else None
             if (_anchor_resid is not None and _runner_resid is not None
                     and len(_anchor_resid) == len(_runner_resid)
-                    and len(_anchor_resid) > 1):
+                    and len(_anchor_resid) > 1
+                    and bootstrap_available()):
                 resid_best = np.asarray(_anchor_resid, dtype=float)
                 resid_rival = np.asarray(_runner_resid, dtype=float)
                 bootstrap = True
@@ -876,6 +901,7 @@ def adjudicate(fitted: list[Any],
             benchmark_level=benchmark_level,
             epistemic_attribution=attr,
             admissible_equivalence_class=equiv,
+            diagnostic_flags=dup_flags + ((selection_reuse_flag,) if selection_reuse_flag else ()),
             reason=f"nearest distinct rival {second.candidate.candidate_id} within τ "
                    f"(Δ={delta:.3g} ≤ τ={tau:.3g} [{tau_source}] on holdout RMSE); "
                    "observationally indistinguishable under the prespecified APEDP "
@@ -903,10 +929,9 @@ def adjudicate(fitted: list[Any],
         if tb.get("branch") in ("multi", "rival-favored"):
             attr = (epistemic_attribution if epistemic_attribution != "unknown"
                     else EpistemicAttribution.BOOTSTRAP_INSTABILITY.value)
-            min_ho_rmse = min((s.holdout_rmse for s in ranked if s.holdout_rmse is not None), default=best_rmse)
             equiv = tuple(
                 s.candidate.candidate_id for s in ranked
-                if s.holdout_rmse is not None and (s.holdout_rmse - min_ho_rmse) <= tau
+                if s.holdout_rmse is not None and (s.holdout_rmse - best_rmse) <= tau
             )
             return Adjudication(
                 EpistemicStatus.MULTI_HYPOTHESIS, rival=second, ranking=tuple(ranked),
@@ -921,6 +946,7 @@ def adjudicate(fitted: list[Any],
                 benchmark_level=benchmark_level,
                 epistemic_attribution=attr,
                 admissible_equivalence_class=equiv,
+                diagnostic_flags=dup_flags + ((selection_reuse_flag,) if selection_reuse_flag else ()),
                 reason=f"point margin over {second.candidate.candidate_id} "
                        f"(Δ={delta:.3g} > τ={tau:.3g}) does not survive the "
                        f"{_bootstrap_refusal_detail(tb)}")
@@ -936,6 +962,7 @@ def adjudicate(fitted: list[Any],
                 data_origin=data_origin,
                 benchmark_level=benchmark_level,
                 epistemic_attribution=EpistemicAttribution.EXTRAPOLATION_DIVERGENCE.value,
+                diagnostic_flags=dup_flags + ((selection_reuse_flag,) if selection_reuse_flag else ()),
                 reason=f"in-sample evidence does not justify extrapolation ({reason_extrap})")
         attr = (epistemic_attribution if epistemic_attribution != "unknown"
                 else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)
@@ -977,6 +1004,8 @@ def adjudicate(fitted: list[Any],
             data_origin=data_origin,
             benchmark_level=benchmark_level,
             epistemic_attribution=EpistemicAttribution.EXTRAPOLATION_DIVERGENCE.value,
+            diagnostic_flags=tuple(diag_flags) + dup_flags
+            + ((selection_reuse_flag,) if selection_reuse_flag else ()),
             reason=f"in-sample evidence does not justify extrapolation ({reason_extrap})")
     attr = (epistemic_attribution if epistemic_attribution != "unknown"
             else EpistemicAttribution.DECISIVE_EVIDENTIAL_SUPPORT.value)

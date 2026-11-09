@@ -29,14 +29,14 @@ dev = [
     "pytest>=8.0",
     "ruff==0.17.3",
     "mypy==2.4.0",
-    "maturin==1.15.0",
+    "maturin>=1.7,<2.0",
     "PyYAML==6.0.3",
     "bandit>=1.7",
     "pytest-xdist>=3.6",
 ]
 test = [
     "pytest>=8.0",
-    "torch==2.14.1",
+    "torch>=2.5",
     "jax>=0.4",
     "flax>=0.8",
     "optax>=0.2",
@@ -56,7 +56,6 @@ neural = [
     "equinox>=0.11",      # PyTree-based models
     "blackjax>=1.0",      # MCMC/SVI
     "jaxopt>=0.8",        # Optimization
-    "optax-contrib>=0.1", # Extra schedulers
     "opendp>=0.1",        # Differential privacy (optional)
     "optuna>=3.5",        # Hyperopt
 ]

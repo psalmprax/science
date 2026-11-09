@@ -43,11 +43,27 @@ class VolumeFrame:
 
 def load_crypto_volume(asset: str, path: Path | None = None) -> VolumeFrame:
     """Load sidecar (date, close, volume) for one crypto asset."""
-    data = json.loads(Path(path or CRYPTO_FILE).read_text())
-    rows = [(d, float(c), float(v)) for d, c, v in data[asset.upper()]]
-    dates = np.array([r[0] for r in rows])
-    return VolumeFrame(dates, np.array([r[1] for r in rows]),
-                       np.array([r[2] for r in rows]))
+    target_path = Path(path or CRYPTO_FILE)
+    if target_path.exists():
+        data = json.loads(target_path.read_text())
+        rows = [(d, float(c), float(v)) for d, c, v in data[asset.upper()]]
+        dates = np.array([r[0] for r in rows])
+        return VolumeFrame(dates, np.array([r[1] for r in rows]),
+                           np.array([r[2] for r in rows]))
+
+    repo_csv = Path(__file__).resolve().parents[2] / "data" / "market" / "crypto_top15_orderflow.csv"
+    if repo_csv.exists():
+        import pandas as pd
+        df = pd.read_csv(repo_csv)
+        tag = asset.upper()
+        col_c = f"{tag}_CLOSE" if f"{tag}_CLOSE" in df.columns else "BTC_CLOSE"
+        col_v = f"{tag}_VOL" if f"{tag}_VOL" in df.columns else "BTC_VOL"
+        dates = df["observation_date"].to_numpy()
+        close = df[col_c].to_numpy(dtype=float)
+        vol = df[col_v].to_numpy(dtype=float)
+        return VolumeFrame(dates, close, vol)
+
+    raise FileNotFoundError(f"Neither sidecar {target_path} nor repo data {repo_csv} found.")
 
 
 def load_equity_volume(asset: str, path: Path | None = None) -> VolumeFrame:
