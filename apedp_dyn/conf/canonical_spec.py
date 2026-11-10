@@ -17,7 +17,7 @@ from typing import Any
 
 SPEC_PATH = Path(__file__).resolve().parent.parent.parent / "specifications" / "canonical_preregistered_spec_v1.json"
 MANIFEST_PATH = SPEC_PATH.parent / "governance_manifest.json"
-PINNED_SPEC_SHA256 = "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343"
+PINNED_SPEC_SHA256 = "a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329"
 # Pin history (AGENTS.md §1.3 re-certification trail, stored in-code next to the
 # pin):
 #   a11fd957c0b787856c62b698a06715e0acf58b393eaa52a70a905d5b0582d141
@@ -38,6 +38,15 @@ PINNED_SPEC_SHA256 = "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b
 #   for two physically distinct compositions is a canonical threshold rather
 #   than a hardcoded literal. No existing threshold changed. The governance
 #   manifest remains un-resigned; FLAW-01 is still OPEN.)
+#   → a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329
+#   (2026-11-09 preregistration of the promotion-lifecycle stage thresholds:
+#   stage2_min_ic=0.02, stage4_min_oos_ic=0.015, stage4_oos_alpha=0.05,
+#   stage5_min_fee_bps=3.0, stage6_prospective_sharpe_hurdle=0.70 and
+#   stage6_max_drawdown_ceiling=0.25 move from promotion_lifecycle caller
+#   defaults into the canonical file, so every threshold a promotion stage
+#   enforces is inside the sealed specification. Values unchanged; the six
+#   reads are now strict subscripts instead of `.get(key, literal)` fallbacks.
+#   The governance manifest remains un-resigned; FLAW-01 is still OPEN.)
 
 
 class SpecificationIntegrityError(RuntimeError):
@@ -125,12 +134,12 @@ MAX_LITERATURE_R2: float = float(_THRESHOLDS["max_literature_r2"])
 
 MIN_OOS_TRANSFER_RETENTION: float = float(_THRESHOLDS["min_oos_transfer_retention"])
 MIN_NET_SHARPE: float = float(_THRESHOLDS["min_net_sharpe"])
-STAGE2_MIN_IC: float = float(_THRESHOLDS.get("stage2_min_ic", 0.02))
-STAGE4_MIN_OOS_IC: float = float(_THRESHOLDS.get("stage4_min_oos_ic", 0.015))
-STAGE4_OOS_ALPHA: float = float(_THRESHOLDS.get("stage4_oos_alpha", 0.05))
-STAGE5_MIN_FEE_BPS: float = float(_THRESHOLDS.get("stage5_min_fee_bps", 3.0))
-STAGE6_PROSPECTIVE_SHARPE_HURDLE: float = float(_THRESHOLDS.get("stage6_prospective_sharpe_hurdle", 0.70))
-STAGE6_MAX_DRAWDOWN_CEILING: float = float(_THRESHOLDS.get("stage6_max_drawdown_ceiling", 0.25))
+STAGE2_MIN_IC: float = float(_THRESHOLDS["stage2_min_ic"])
+STAGE4_MIN_OOS_IC: float = float(_THRESHOLDS["stage4_min_oos_ic"])
+STAGE4_OOS_ALPHA: float = float(_THRESHOLDS["stage4_oos_alpha"])
+STAGE5_MIN_FEE_BPS: float = float(_THRESHOLDS["stage5_min_fee_bps"])
+STAGE6_PROSPECTIVE_SHARPE_HURDLE: float = float(_THRESHOLDS["stage6_prospective_sharpe_hurdle"])
+STAGE6_MAX_DRAWDOWN_CEILING: float = float(_THRESHOLDS["stage6_max_drawdown_ceiling"])
 
 REFEREE_MAX_FPR: float = float(_THRESHOLDS["referee_max_fpr"])
 REFEREE_MIN_CAR: float = float(_THRESHOLDS["referee_min_car"])

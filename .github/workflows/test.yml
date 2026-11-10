@@ -218,7 +218,8 @@ jobs:
       - name: Security scan with bandit
         run: |
           source .venv/bin/activate
-          bandit -r apedp/ apedp_dyn/ -ll || true
+          bandit -r apedp/ apedp_dyn/ -ll \
+            --exclude apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src
 
       - name: Classify test-job failure
         if: failure()

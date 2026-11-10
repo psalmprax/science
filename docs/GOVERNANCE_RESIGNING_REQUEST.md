@@ -11,8 +11,8 @@ revisions:
 
 | Item | SHA-256 |
 |---|---|
-| `specifications/canonical_preregistered_spec_v1.json` on disk | `dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343` |
-| Python pin in `apedp_dyn/conf/canonical_spec.py` | `dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343` |
+| `specifications/canonical_preregistered_spec_v1.json` on disk | `a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329` |
+| Python pin in `apedp_dyn/conf/canonical_spec.py` | `a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329` |
 | `spec_sha256` sealed by `specifications/governance_manifest.json` | `a6d026f303a77cbb2f1dd5f8a74c394dd09f8139d811a9bfe4142c82063f6d47` |
 
 The Python pin and the file agree. The Ed25519 manifest does not cover the file,
@@ -59,7 +59,7 @@ over the new digest.
 Sign the **ASCII hex string** below (not the file bytes, not a JSON fragment):
 
 ```
-dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343
+a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329
 ```
 
 With the repository's own signer:
@@ -71,7 +71,7 @@ from apedp_dyn.epistemic.governance import sign_spec_sha256
 # Read the private key from the trustee's own secret store. Never commit it,
 # never paste it into this repository, and never send it to the maintainer.
 private_key_hex = "<from trustee secret store>"
-new_digest = "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343"
+new_digest = "a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329"
 print(sign_spec_sha256(private_key_hex, new_digest))
 PY
 ```
@@ -116,7 +116,7 @@ from apedp_dyn.epistemic.governance import (
     verify_governance_manifest,
 )
 
-NEW = "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343"
+NEW = "a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329"
 manifest = GovernanceManifest.from_file("specifications/governance_manifest.json")
 
 # 1. New signatures, supplied by the trustees.
@@ -174,7 +174,7 @@ python -m pytest tests/test_documentation_and_spec_integrity.py -q
 
 Expected: the drift script exits 0, and the governance suite is **5 passed**
 instead of 4 passed / 1 failed. The spec file itself must not change; its digest
-must still be `dbf67c5a…` after the ceremony.
+must still be `a8177b25…` after the ceremony.
 
 ## 6. What is explicitly out of scope
 

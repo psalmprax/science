@@ -120,6 +120,43 @@ _TARGET = re.compile(r"\w+\[(\d+)\]")
 _PARAMETER_SAFE = re.compile(r"^[0-9eE+\-*/().\s pi]+$")
 
 
+def _evaluate_parameter_node(node: ast.AST) -> float:
+    """Evaluate a whitelisted QASM parameter node without ``eval``.
+
+    ``_parse_parameter`` has already walked the tree and refused every node
+    outside the arithmetic literal/``pi`` grammar, so this interpreter only has
+    to implement that grammar; anything else raises instead of running code.
+    """
+    if isinstance(node, ast.Expression):
+        return _evaluate_parameter_node(node.body)
+    if isinstance(node, ast.Constant):
+        if isinstance(node.value, bool) or not isinstance(node.value, (int, float)):
+            raise QasmUnsupportedError(f"unsupported parameter constant {node.value!r}")
+        return float(node.value)
+    if isinstance(node, ast.Name):
+        if node.id != "pi":
+            raise QasmUnsupportedError(f"unsupported parameter name {node.id!r}")
+        return math.pi
+    if isinstance(node, ast.UnaryOp):
+        operand = _evaluate_parameter_node(node.operand)
+        if isinstance(node.op, ast.USub):
+            return -operand
+        if isinstance(node.op, ast.UAdd):
+            return operand
+    elif isinstance(node, ast.BinOp):
+        left = _evaluate_parameter_node(node.left)
+        right = _evaluate_parameter_node(node.right)
+        if isinstance(node.op, ast.Add):
+            return left + right
+        if isinstance(node.op, ast.Sub):
+            return left - right
+        if isinstance(node.op, ast.Mult):
+            return left * right
+        if isinstance(node.op, ast.Div):
+            return left / right
+    raise QasmUnsupportedError(f"unsupported parameter expression node {type(node).__name__}")
+
+
 def _parse_parameter(text: str) -> float:
     """A QASM parameter: an arithmetic expression over literals and `pi`."""
     expression = text.strip()
@@ -133,8 +170,7 @@ def _parse_parameter(text: str) -> float:
             continue
         raise QasmUnsupportedError(f"unsupported parameter expression {text!r}")
     try:
-        return float(eval(compile(tree, "<qasm>", "eval"),  # noqa: S307 - whitelisted above
-                          {"__builtins__": {}}, {"pi": math.pi}))
+        return _evaluate_parameter_node(tree)
     except (TypeError, ValueError, ZeroDivisionError) as error:
         raise QasmUnsupportedError(f"bad parameter expression {text!r}: {error}") from error
 

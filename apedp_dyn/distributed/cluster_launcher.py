@@ -11,6 +11,7 @@ shared persistent volumes for holdout ledgers and node-local fast scratch storag
 from __future__ import annotations
 
 import enum
+import tempfile
 from dataclasses import dataclass
 
 #: This module renders scheduler manifests; it never submits them. Declared so
@@ -47,7 +48,7 @@ class ClusterJobSpec:
     gpus_per_worker: int = 0
     walltime_hours: int = 4
     shared_storage_dir: str = "/mnt/apedp_storage"
-    local_scratch_dir: str = "/tmp/scratch"  # noqa: S108 — per-node scratch/config default, never a file write; env override supported
+    local_scratch_dir: str = tempfile.gettempdir() + "/scratch"  # per-node scratch/config default, never a file write; honours TMPDIR
     container_image: str = "ghcr.io/owner/science:latest"
     slurm_partition: str = "compute"
 

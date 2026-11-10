@@ -52,21 +52,15 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
   <style>
     body {
-      background-color: #070b13;
+      background-color: #080c14;
       color: #e2e8f0;
       font-family: 'Inter', system-ui, sans-serif;
     }
-    .glow-emerald {
-      box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.4);
+    .glow-emerald, .glow-amber, .glow-ruby, .glow-accent, .glow-cyan {
+      box-shadow: none;
     }
-    .glow-amber {
-      box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.4);
-    }
-    .glow-ruby {
-      box-shadow: 0 0 25px -5px rgba(239, 68, 68, 0.4);
-    }
-    .glow-accent {
-      box-shadow: 0 0 20px -5px rgba(0, 240, 255, 0.3);
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
     }
     /* Custom Scrollbar */
     ::-webkit-scrollbar {
@@ -117,22 +111,22 @@
       <!-- Navigation Tabs -->
       <nav role="tablist" aria-label="Discovery workspaces" class="flex space-x-1 bg-[#0e1628] p-1 rounded-lg border border-[#1b2640]">
         <button id="tab-physics-btn" role="tab" aria-selected="true" aria-controls="tab-physics" onclick="switchTab('physics')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 transition">
-          ⚛️ Physics Lab
+          Physics Lab <kbd class="ml-1 text-[9px] text-slate-400 font-mono">1</kbd>
         </button>
         <button id="tab-market-btn" role="tab" aria-selected="false" aria-controls="tab-market" onclick="switchTab('market')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
-          📈 Real Market Sweeps
+          Market Sweeps <kbd class="ml-1 text-[9px] text-slate-400 font-mono">2</kbd>
         </button>
         <button id="tab-ladder-btn" role="tab" aria-selected="false" aria-controls="tab-ladder" onclick="switchTab('ladder')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
-          🪜 Certainty Ladder
+          Certainty Ladder <kbd class="ml-1 text-[9px] text-slate-400 font-mono">3</kbd>
         </button>
         <button id="tab-audit-btn" role="tab" aria-selected="false" aria-controls="tab-audit" onclick="switchTab('audit')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
-          📜 Audit Log
+          Audit Log <kbd class="ml-1 text-[9px] text-slate-400 font-mono">4</kbd>
         </button>
         <button id="tab-sandbox-btn" role="tab" aria-selected="false" aria-controls="tab-sandbox" onclick="switchTab('sandbox')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
-          🧪 Sandbox
+          Sandbox <kbd class="ml-1 text-[9px] text-slate-400 font-mono">5</kbd>
         </button>
         <button id="tab-stability-btn" role="tab" aria-selected="false" aria-controls="tab-stability" onclick="switchTab('stability')" class="px-3 py-1.5 text-xs font-mono font-medium rounded-md text-slate-400 hover:text-white transition">
-          ⚖️ Stability & Matrices
+          Stability & Matrices <kbd class="ml-1 text-[9px] text-slate-400 font-mono">6</kbd>
         </button>
       </nav>
 
@@ -221,9 +215,11 @@
           </div>
 
           <!-- Run Discovery Action Button -->
-          <button id="run-phys-btn" onclick="executePhysicsDiscovery()" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-lg shadow-lg glow-accent flex items-center justify-center space-x-2 transition">
-            <span id="run-phys-spinner" class="hidden animate-spin">🌀</span>
-            <span id="run-phys-text">⚡ RUN AUTONOMOUS DISCOVERY</span>
+          <button id="run-phys-btn" onclick="executePhysicsDiscovery()" class="w-full py-2.5 bg-slate-100 hover:bg-white text-slate-950 font-mono font-semibold text-xs rounded-md border border-slate-200 transition shadow-sm flex items-center justify-center space-x-2 cursor-pointer">
+            <span id="run-phys-spinner" class="hidden animate-spin">
+              <svg class="w-3.5 h-3.5 inline-block text-slate-950" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            </span>
+            <span id="run-phys-text">Run Discovery</span>
           </button>
         </div>
 
@@ -233,14 +229,14 @@
             <h2 class="text-sm font-mono font-bold text-white flex items-center space-x-2">
               <span class="text-cyan-400">02 //</span> <span>SOVEREIGN EPISTEMIC ADJUDICATION</span>
             </h2>
-            <div id="verdict-badge" class="px-3 py-1 rounded-md font-mono text-xs font-bold bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 glow-emerald flex items-center space-x-2">
+            <div id="verdict-badge" class="px-3 py-1 rounded-md font-mono text-xs font-bold bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 flex items-center space-x-2">
               <span>●</span> <span id="verdict-text">UNIQUE_SUPPORT</span>
             </div>
           </div>
 
           <!-- Forensic Binding Integrity Alert (Hidden by default, shown on DASHBOARD_INCONSISTENT) -->
           <div id="integrity-alert-banner" class="hidden p-3 bg-rose-500/20 border border-rose-500/50 rounded-lg text-rose-300 font-mono text-xs flex items-center space-x-2">
-            <span class="font-bold">🚨 DASHBOARD_INCONSISTENT:</span>
+            <span class="font-bold text-rose-400">ERR //</span>
             <span id="integrity-alert-text">Forensic binding invariant violated between summary metrics and candidate leaderboard.</span>
           </div>
 
@@ -282,7 +278,7 @@
           <div id="epistemic-tier-card" class="bg-[#070b13] p-4 rounded-xl border border-[#1b2640] space-y-2.5 font-mono text-xs">
             <div class="flex items-center justify-between">
               <span class="text-cyan-400 font-bold uppercase tracking-wider text-[11px] flex items-center space-x-1.5">
-                <span>🪜</span> <span>EPISTEMIC CLAIM LADDER &amp; EEDR STATUS</span>
+                <span class="text-cyan-400">02.1 //</span> <span>EPISTEMIC CLAIM LADDER &amp; EEDR STATUS</span>
               </span>
               <span id="aeh-provenance-tag" class="text-[10px] text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded border border-slate-700">AEH: PROVENANCE LOCKED</span>
             </div>
@@ -309,7 +305,7 @@
           <!-- Multi-Hypothesis Split-Screen (Visible only on MULTI_HYPOTHESIS) -->
           <div id="multi-rivals-box" class="hidden p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-3">
             <div class="flex items-center space-x-2 text-amber-400 font-mono text-xs font-bold">
-              <span>⚠ PERSISTENT OBSERVATIONAL AMBIGUITY (MULTI_HYPOTHESIS)</span>
+              <span class="text-amber-400">AMBIGUITY //</span> <span>PERSISTENT OBSERVATIONAL EQUIVALENCE (MULTI_HYPOTHESIS)</span>
             </div>
             <p id="multi-rivals-desc" class="text-xs text-slate-300">
               The empirical difference between models is smaller than the epistemic resolution floor (<span class="font-mono text-amber-300">Δ ≤ τ_epi</span>). The adjudicator sovereignly refuses to force an unjustified winner:
@@ -435,9 +431,11 @@
             <input type="checkbox" id="market-multiterm-toggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
           </div>
 
-          <button id="run-market-btn" onclick="executeMarketDiscovery()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-lg shadow-lg flex items-center justify-center space-x-2 transition">
-            <span id="run-market-spinner" class="hidden animate-spin">🌀</span>
-            <span id="run-market-text">📊 EVALUATE CAUSAL DISCOVERY</span>
+          <button id="run-market-btn" onclick="executeMarketDiscovery()" class="w-full py-2.5 bg-slate-100 hover:bg-white text-slate-950 font-mono font-semibold text-xs rounded-md border border-slate-200 transition shadow-sm flex items-center justify-center space-x-2 cursor-pointer">
+            <span id="run-market-spinner" class="hidden animate-spin">
+              <svg class="w-3.5 h-3.5 inline-block text-slate-950" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            </span>
+            <span id="run-market-text">Evaluate Discovery</span>
           </button>
         </div>
 
@@ -510,7 +508,7 @@
             <p class="text-xs text-slate-400 mt-1">Exhaustive adversarial stress-test verifying zero false certainty across all epistemic boundaries.</p>
           </div>
           <button onclick="loadLadder()" class="px-3 py-1.5 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 rounded font-mono text-xs border border-cyan-500/40 transition">
-            🔄 Refresh Audit
+            Refresh Audit
           </button>
         </div>
 
@@ -541,7 +539,7 @@
             </div>
             <div class="shrink-0">
               <button onclick="runSandbox()" class="w-full sm:w-auto px-5 py-2 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 rounded font-mono text-xs font-bold border border-cyan-500/40 transition flex items-center justify-center space-x-1.5 shadow-lg shadow-cyan-500/10 cursor-pointer">
-                <span>▶ Run Benchmark</span>
+                <span>Run Benchmark</span>
               </button>
             </div>
           </div>
@@ -549,7 +547,7 @@
           <!-- Secondary Target Asset Selector (Cleanly placed UNDER Grammar Discovery) -->
           <div id="sandbox-crypto-asset-row" class="hidden pt-2.5 border-t border-[#1b2640]/70 flex flex-col sm:flex-row sm:items-center gap-2.5">
             <label for="sandbox-crypto-asset" class="text-[11px] font-mono text-cyan-400 font-semibold whitespace-nowrap flex items-center space-x-1">
-              <span>🪙 Target Universe Asset / Index:</span>
+              <span>Target Asset / Index:</span>
             </label>
             <select id="sandbox-crypto-asset" aria-label="Target Asset" class="flex-1 sm:max-w-md bg-[#0a101d] border border-cyan-500/40 rounded px-3 py-1.5 text-xs font-mono text-cyan-300 focus:border-cyan-400 focus:outline-none">
               <option value="COMPOSITE_TOP15">Combined Basket (15-Asset Index)</option>
@@ -577,7 +575,7 @@
         <div id="sandbox-upload-panel" class="hidden bg-[#070b13] p-4 rounded-xl border border-cyan-500/30 space-y-3">
           <div class="flex items-center justify-between flex-wrap gap-2">
             <div class="text-xs font-mono text-cyan-300 font-bold uppercase tracking-wider flex items-center space-x-2">
-              <span>📂 Universal Dataset Upload (Autonomous Discovery)</span>
+              <span>Dataset Upload (Autonomous Discovery)</span>
             </div>
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="text-[10px] font-mono text-slate-400">Load sample:</span>
@@ -668,7 +666,7 @@
         <div id="sandbox-epistemic-tier-card" class="hidden bg-[#070b13] p-4 rounded-xl border border-[#1b2640] space-y-2.5 font-mono text-xs">
           <div class="flex items-center justify-between">
             <span class="text-cyan-400 font-bold uppercase tracking-wider text-[11px] flex items-center space-x-1.5">
-              <span>🪜</span> <span>EPISTEMIC CLAIM LADDER &amp; EEDR STATUS</span>
+              <span class="text-cyan-400">04.1 //</span> <span>EPISTEMIC CLAIM LADDER &amp; EEDR STATUS</span>
             </span>
             <span id="sandbox-aeh-provenance-tag" class="text-[10px] text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded border border-slate-700">AEH: PROVENANCE LOCKED</span>
           </div>
@@ -700,7 +698,7 @@
         <!-- Multi-Hypothesis Split-Screen (Visible only on MULTI_HYPOTHESIS) -->
         <div id="sandbox-multi-rivals-box" class="hidden p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-3">
           <div class="flex items-center space-x-2 text-amber-400 font-mono text-xs font-bold">
-            <span>⚠ PERSISTENT OBSERVATIONAL AMBIGUITY (MULTI_HYPOTHESIS)</span>
+            <span class="text-amber-400">AMBIGUITY //</span> <span>PERSISTENT OBSERVATIONAL EQUIVALENCE (MULTI_HYPOTHESIS)</span>
           </div>
           <p id="sandbox-multi-rivals-desc" class="text-xs text-slate-300">
             The empirical difference between models is smaller than the epistemic resolution floor (<span class="font-mono text-amber-300">Δ ≤ τ_epi</span>). The adjudicator sovereignly refuses to force an unjustified winner:
@@ -783,7 +781,7 @@
             <p class="text-xs text-slate-400 mt-1">Every discovery response this server produced: endpoint, verdict, promoted equation, evidence origin. Nothing actionable is unlogged.</p>
           </div>
           <button onclick="loadAudit()" class="px-3 py-1.5 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 rounded font-mono text-xs border border-cyan-500/40 transition">
-            🔄 Refresh Audit
+            Refresh Audit
           </button>
         </div>
         <div id="audit-grid" class="space-y-2 font-mono text-xs"></div>
@@ -868,7 +866,7 @@
             </div>
           </div>
           <div class="bg-[#070b13] p-3 rounded border border-[#1b2640] text-[11px] font-mono text-slate-400">
-            🛡️ Epistemic Immunity: Proves that competing autoregressive and moving-average price structures remain indistinguishable within resolution floor tau_epi. Zero capital risked on noise.
+            Epistemic Immunity: Proves that competing autoregressive and moving-average price structures remain indistinguishable within resolution floor tau_epi. Zero capital risked on noise.
           </div>
         </div>
 
@@ -908,7 +906,7 @@
             </div>
           </div>
           <div class="bg-[#070b13] p-3 rounded border border-[#1b2640] text-[11px] font-mono text-slate-400">
-            ⚡ Scientific Insight: 100% stable recovery of the piecewise structure does not grant promotion rights; passive data cannot eliminate rival baseline without L3 active intervention.
+            Scientific Insight: 100% stable recovery of the piecewise structure does not grant promotion rights; passive data cannot eliminate rival baseline without L3 active intervention.
           </div>
         </div>
       </div>
@@ -928,7 +926,7 @@
               <option value="nano_crossover">Nanoscale Crossover [M4 dc=15nm]</option>
             </select>
             <button onclick="runStabilityAuditLive()" id="run-stability-btn" class="px-3.5 py-1.5 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 rounded font-mono text-xs border border-cyan-500/40 transition">
-              ⚡ Execute Stability Audit
+              Execute Stability Audit
             </button>
           </div>
         </div>
@@ -1012,7 +1010,7 @@
       const btn = document.getElementById('run-stability-btn');
       const out = document.getElementById('stability-audit-output');
       btn.disabled = true;
-      btn.innerText = '⚡ Auditing...';
+      btn.innerText = 'Auditing...';
       out.innerHTML = '<span class="text-cyan-400">Executing multi-seed discovery stability audit...</span>';
 
       try {
@@ -1048,7 +1046,7 @@
         out.innerHTML = `<span class="text-ruby-400 font-bold">Audit Error: ${err}</span>`;
       } finally {
         btn.disabled = false;
-        btn.innerText = '⚡ Execute Stability Audit';
+        btn.innerText = 'Execute Stability Audit';
       }
     }
 
@@ -1186,7 +1184,7 @@
         alert('Discovery error: ' + err.message);
       } finally {
         spinner.classList.add('hidden');
-        text.innerText = "⚡ RUN AUTONOMOUS DISCOVERY";
+        text.innerText = "Run Discovery";
         btn.disabled = false;
       }
     }
@@ -1525,7 +1523,7 @@
         console.error(err);
       } finally {
         spinner.classList.add('hidden');
-        text.innerText = "📊 EVALUATE CAUSAL DISCOVERY";
+        text.innerText = "Evaluate Discovery";
         btn.disabled = false;
       }
     }
@@ -2405,13 +2403,57 @@
         const tx = X(series.threshold).toFixed(1);
         thresh = `<line x1="${tx}" y1="${P}" x2="${tx}" y2="${H - P}" stroke="#f59e0b" stroke-dasharray="5,4" stroke-width="1.5"><title>threshold ${series.threshold}</title></line>`;
       }
-      document.getElementById('plot-sandbox').innerHTML =
-        `<svg viewBox="0 0 ${W} ${H}" class="w-full h-64" role="img" aria-label="Observations versus driver">` +
+      const container = document.getElementById('plot-sandbox');
+      container.innerHTML =
+        `<svg id="sandbox-svg" viewBox="0 0 ${W} ${H}" class="w-full h-64 overflow-visible" role="img" aria-label="Observations versus driver">` +
         `<polyline points="${pts}" fill="none" stroke="#22d3ee" stroke-width="1.5" />` +
         thresh +
+        `<line id="sandbox-crosshair-v" x1="${P}" y1="${P}" x2="${P}" y2="${H - P}" stroke="#64748b" stroke-dasharray="3,3" stroke-width="1" style="display:none;" />` +
+        `<line id="sandbox-crosshair-h" x1="${P}" y1="${P}" x2="${W - P}" y2="${P}" stroke="#64748b" stroke-dasharray="3,3" stroke-width="1" style="display:none;" />` +
+        `<circle id="sandbox-hover-dot" cx="0" cy="0" r="3.5" fill="#22d3ee" stroke="#ffffff" stroke-width="1.5" style="display:none;" />` +
+        `<g id="sandbox-tooltip" style="display:none;" pointer-events="none">` +
+          `<rect id="sandbox-tooltip-bg" x="0" y="-12" width="138" height="18" rx="3" fill="#080c14" stroke="#00f0ff" stroke-width="1" fill-opacity="0.95" />` +
+          `<text id="sandbox-tooltip-text" x="6" y="1" fill="#e2e8f0" font-size="10" font-family="monospace"></text>` +
+        `</g>` +
         `<text x="${P}" y="${H - 8}" fill="#64748b" font-size="10" font-family="monospace">${series.x_label || 'x'}</text>` +
         `<text x="4" y="${P - 6}" fill="#64748b" font-size="10" font-family="monospace">observed (n=${ys.length})</text>` +
+        `<rect id="sandbox-hover-overlay" x="${P}" y="${P}" width="${W - 2 * P}" height="${H - 2 * P}" fill="transparent" style="cursor: crosshair;" />` +
         `</svg>`;
+
+      const overlay = container.querySelector('#sandbox-hover-overlay');
+      const vLine = container.querySelector('#sandbox-crosshair-v');
+      const hLine = container.querySelector('#sandbox-crosshair-h');
+      const dot = container.querySelector('#sandbox-hover-dot');
+      const tip = container.querySelector('#sandbox-tooltip');
+      const tipText = container.querySelector('#sandbox-tooltip-text');
+
+      if (overlay && xs.length > 0) {
+        overlay.addEventListener('mousemove', (e) => {
+          const rect = overlay.getBoundingClientRect();
+          const mouseSvgX = P + ((e.clientX - rect.left) / rect.width) * (W - 2 * P);
+          let bestIdx = 0;
+          let minDiff = Infinity;
+          for (let i = 0; i < xs.length; i++) {
+            const diff = Math.abs(X(xs[i]) - mouseSvgX);
+            if (diff < minDiff) { minDiff = diff; bestIdx = i; }
+          }
+          const sx = X(xs[bestIdx]);
+          const sy = Y(ys[bestIdx]);
+          vLine.setAttribute('x1', sx); vLine.setAttribute('x2', sx);
+          hLine.setAttribute('y1', sy); hLine.setAttribute('y2', sy);
+          dot.setAttribute('cx', sx); dot.setAttribute('cy', sy);
+          tipText.textContent = `(x: ${Number(xs[bestIdx]).toFixed(2)}, y: ${Number(ys[bestIdx]).toFixed(2)})`;
+          let tx = sx + 8;
+          let ty = sy - 12;
+          if (tx + 138 > W - P) tx = sx - 146;
+          if (ty < P + 14) ty = sy + 20;
+          tip.setAttribute('transform', `translate(${tx}, ${ty})`);
+          vLine.style.display = ''; hLine.style.display = ''; dot.style.display = ''; tip.style.display = '';
+        });
+        overlay.addEventListener('mouseleave', () => {
+          vLine.style.display = 'none'; hLine.style.display = 'none'; dot.style.display = 'none'; tip.style.display = 'none';
+        });
+      }
     }
 
     async function loadExt60Blocks() {
@@ -2506,6 +2548,16 @@
       loadPhysicsCatalog();
       loadMarketWindows();
       executePhysicsDiscovery();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+      const tabMap = { '1': 'physics', '2': 'market', '3': 'ladder', '4': 'audit', '5': 'sandbox', '6': 'stability' };
+      if (tabMap[e.key]) {
+        e.preventDefault();
+        switchTab(tabMap[e.key]);
+      }
     });
   </script>
   <footer class="border-t border-[#1b2640] text-slate-400 text-xs">

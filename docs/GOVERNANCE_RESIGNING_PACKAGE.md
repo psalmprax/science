@@ -16,9 +16,9 @@ not**: it still seals the genesis digest.
 | Item | Value |
 |---|---|
 | Spec file | `specifications/canonical_preregistered_spec_v1.json` |
-| Digest trustees must sign | `dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343` |
+| Digest trustees must sign | `a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329` |
 | Digest the manifest currently seals | `a6d026f303a77cbb2f1dd5f8a74c394dd09f8139d811a9bfe4142c82063f6d47` |
-| Python import pin | `dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343` (agrees) |
+| Python import pin | `a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329` (agrees) |
 | Quorum | **2 of 3** |
 | Request artifact | `specifications/governance_remint_request.json` |
 | Transparency-log head to extend | `12873a9066959ec19bb645e00ec9e91a0fa4b9192f3de17cdb2395762ce9fae9` |
@@ -45,7 +45,7 @@ The signed message is the **ASCII hex string** of the digest — not the file
 bytes, not the JSON, not a hash of the JSON:
 
 ```
-dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343
+a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329
 ```
 
 ### Option A — sign with this repository's signer
@@ -55,7 +55,7 @@ export TRUSTEE_PRIVATE_KEY_HEX='<from your own secret store>'
 python - <<'PY'
 import os
 from apedp_dyn.epistemic.governance import sign_spec_sha256
-digest = "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343"
+digest = "a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329"
 print(sign_spec_sha256(os.environ["TRUSTEE_PRIVATE_KEY_HEX"], digest))
 PY
 unset TRUSTEE_PRIVATE_KEY_HEX
@@ -73,7 +73,7 @@ import os
 from cryptography.hazmat.primitives.asymmetric import ed25519
 key = ed25519.Ed25519PrivateKey.from_private_bytes(
     bytes.fromhex(os.environ["TRUSTEE_PRIVATE_KEY_HEX"]))
-digest = b"dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343"
+digest = b"a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329"
 print(key.sign(digest).hex())
 PY
 ```
@@ -87,7 +87,7 @@ PUBLIC = {
     "referee_stat_02": "05fd93155bdf784c5eac8581866521c027cbb9b366c6c52732d42084adae2680",
     "auditor_formal_03": "27924bd7c02fd38f738d06ced27f4d95825c3dcf803012d628ea106f760b39e6",
 }
-digest = "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343"
+digest = "a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329"
 assert verify_ed25519_signature(PUBLIC["<your trustee_id>"], digest,
                                "<your signature hex>")
 ```
@@ -171,7 +171,7 @@ python scripts/check_governance_manifest_drift.py --check   # exit 0
 .venv/bin/python -m pytest tests/test_documentation_and_spec_integrity.py -q
 ```
 
-The spec file must not change; its digest must still be `dbf67c5a…` afterwards.
+The spec file must not change; its digest must still be `a8177b25…` afterwards.
 The transparency log must be two entries longer, with both new entries naming
 the new digest.
 

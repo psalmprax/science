@@ -15,13 +15,14 @@ permutation control + quarterly blocks. MATIC series ends 2024-09 (delist).
 from __future__ import annotations
 
 import json
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 
-SIDECAR_DIR = Path("/tmp/ma2024")  # noqa: S108 - documented fixed sidecar dataset location (see module docstring)
+SIDECAR_DIR = Path(tempfile.gettempdir()) / "ma2024"  # the documented sidecar location; tempfile honours TMPDIR instead of assuming /tmp
 CRYPTO_FILE = SIDECAR_DIR / "vol_daily_crypto.json"
 
 QUARTER_BLOCKS = (

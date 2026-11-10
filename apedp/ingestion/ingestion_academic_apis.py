@@ -156,7 +156,7 @@ def search_crossref(
         headers={"User-Agent": "APEDP literature metadata search/1.0"},
     )
     try:
-        with urlopen(request, timeout=timeout) as response:  # noqa: S310 - scheme checked above
+        with urlopen(request, timeout=timeout) as response:  # nosec B310  # noqa: S310 - https scheme checked immediately above
             payload = json.load(response)
     except (HTTPError, URLError, TimeoutError) as exc:
         raise RuntimeError(f"Crossref literature search failed: {exc}") from exc

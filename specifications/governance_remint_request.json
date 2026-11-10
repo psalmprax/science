@@ -1,7 +1,7 @@
 {
   "request_kind": "governance_remint_request",
   "spec_id": "canonical_preregistered_spec_v1",
-  "spec_sha256": "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343",
+  "spec_sha256": "a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329",
   "prior_spec_sha256": "a6d026f303a77cbb2f1dd5f8a74c394dd09f8139d811a9bfe4142c82063f6d47",
   "prior_manifest_transparency_log_intact": true,
   "prior_manifest_valid_for_old_spec": true,
@@ -27,8 +27,8 @@
       "role": "Formal Verification Auditor"
     }
   ],
-  "message_trustees_sign": "dbf67c5ac443073721421eba456519a0eda09ae07680d638c26f1d019b0b2343",
-  "rationale": "Spec revised post-certification and re-pinned by canonical_spec.PINNED_SPEC_SHA256 (see CHANGELOG); the manifest quorum must re-seal the current hash.",
-  "created_at": "2026-11-07T22:37:59.968772+00:00",
+  "message_trustees_sign": "a8177b252d81bf5a60fb58916dc850f323810c11434536dd2c5ab0f2a8f37329",
+  "rationale": "Stage 2/4/5/6 promotion thresholds (stage2_min_ic, stage4_min_oos_ic, stage4_oos_alpha, stage5_min_fee_bps, stage6_prospective_sharpe_hurdle, stage6_max_drawdown_ceiling) moved from promotion_lifecycle caller defaults into the canonical specification with unchanged values; bandit gate restored to blocking (security scan) \u2014 no referee threshold changed. See CHANGELOG.",
+  "created_at": "2026-11-09T21:50:09.847145+00:00",
   "pinned_sha_source": "apedp_dyn.conf.canonical_spec.PINNED_SPEC_SHA256"
 }

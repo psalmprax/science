@@ -88,9 +88,11 @@ class GenomeRegion:
 
 def _http_get(url: str, timeout: float) -> str:
     # The scheme/host are the ENSEMBL_REGION_URL constant; only the region varies.
+    if not url.startswith("https://"):
+        raise ValueError(f"refusing non-https Ensembl endpoint: {url}")
     request = urllib.request.Request(  # noqa: S310 - hardcoded https host
         url, headers={"User-Agent": USER_AGENT, "Content-Type": "application/json"})
-    with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310 - https literal
+    with urllib.request.urlopen(request, timeout=timeout) as response:  # nosec B310  # noqa: S310 - scheme checked immediately above
         return response.read().decode("utf-8")
 
 

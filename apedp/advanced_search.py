@@ -14,6 +14,7 @@ All components have Rust fast paths with Python fallbacks.
 
 from __future__ import annotations
 
+import ast
 import json
 import math
 import random
@@ -555,18 +556,64 @@ _EXPR_FUNCS = {
 }
 
 
+def _eval_node(node: ast.AST, scope: dict[str, Any]) -> Any:
+    """Evaluate one arithmetic AST node against ``scope``.
+
+    This is the expression grammar the evaluator supports: numeric literals,
+    names bound in ``scope``, calls to the functions in ``_EXPR_FUNCS``, and the
+    binary/unary arithmetic operators. Anything else raises instead of running.
+    """
+    if isinstance(node, ast.Expression):
+        return _eval_node(node.body, scope)
+    if isinstance(node, ast.Constant):
+        if isinstance(node.value, bool) or not isinstance(node.value, (int, float)):
+            raise ValueError(f"unsupported literal {node.value!r}")
+        return node.value
+    if isinstance(node, ast.Name):
+        if node.id not in scope:
+            raise NameError(node.id)
+        return scope[node.id]
+    if isinstance(node, ast.UnaryOp):
+        operand = _eval_node(node.operand, scope)
+        if isinstance(node.op, ast.USub):
+            return -operand
+        if isinstance(node.op, ast.UAdd):
+            return operand
+    elif isinstance(node, ast.BinOp):
+        left = _eval_node(node.left, scope)
+        right = _eval_node(node.right, scope)
+        if isinstance(node.op, ast.Add):
+            return left + right
+        if isinstance(node.op, ast.Sub):
+            return left - right
+        if isinstance(node.op, ast.Mult):
+            return left * right
+        if isinstance(node.op, ast.Div):
+            return left / right
+        if isinstance(node.op, ast.Pow):
+            return left**right
+        if isinstance(node.op, ast.Mod):
+            return left % right
+    elif isinstance(node, ast.Call):
+        if isinstance(node.func, ast.Name) and not node.keywords and node.func.id in _EXPR_FUNCS:
+            return _EXPR_FUNCS[node.func.id](*[_eval_node(arg, scope) for arg in node.args])
+        raise NameError(getattr(node.func, "id", "<non-name call>"))
+    raise ValueError(f"unsupported expression node {type(node).__name__}")
+
+
 def _evaluate_expression(expr: str, var_names: list[str], data: list[Any]):
     """Evaluate an expression over the data columns, or return None.
 
     Restricted to the variable names and the math functions in ``_EXPR_FUNCS``;
-    no builtins are reachable from the expression.
+    the expression is interpreted by ``_eval_node`` over that closed scope, so
+    no attribute access, comprehension or builtin is reachable from it.
     """
-    scope = dict(_EXPR_FUNCS)
+    scope: dict[str, Any] = dict(_EXPR_FUNCS)
     for name, column in zip(var_names, data, strict=False):
         scope[name] = np.asarray(column, float)
     try:
         with np.errstate(all="ignore"):
-            value = eval(expr, {"__builtins__": {}}, scope)  # noqa: S307 - closed namespace
+            value = _eval_node(ast.parse(expr, mode="eval"), scope)
     except (SyntaxError, NameError, TypeError, ValueError, ZeroDivisionError, KeyError):
         return None
     try:

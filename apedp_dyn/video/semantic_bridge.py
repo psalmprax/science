@@ -141,7 +141,8 @@ class SemanticVideoConditioner:
         padded = "|^" + token + "^|"
         grams.extend("t:" + padded[i:i + 3] for i in range(len(padded) - 2))
         for g in grams:
-            digest = hashlib.md5(g.encode("utf-8")).hexdigest()  # noqa: S324 - MD5 for process-stable feature-index bucketing (documented); not security-sensitive
+            # usedforsecurity=False: a process-stable bucket key, not a security primitive
+            digest = hashlib.md5(g.encode("utf-8"), usedforsecurity=False).hexdigest()
             idx = int(digest[:8], 16) % dim
             sign = 1.0 if int(digest[8], 16) < 8 else -1.0
             vec[idx] += sign
@@ -150,7 +151,7 @@ class SemanticVideoConditioner:
         for concept_tag, vocab in cls._SEMANTIC_CONCEPT_GROUPS:
             if token in vocab or any(token.startswith(v) for v in vocab if len(v) >= 4):
                 for slot in range(3):
-                    c_digest = hashlib.md5(f"{concept_tag}:{slot}".encode()).hexdigest()  # noqa: S324
+                    c_digest = hashlib.md5(f"{concept_tag}:{slot}".encode(), usedforsecurity=False).hexdigest()
                     c_idx = int(c_digest[:8], 16) % dim
                     c_sign = 1.0 if int(c_digest[8], 16) < 8 else -1.0
                     vec[c_idx] += 2.5 * c_sign
