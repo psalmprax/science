@@ -1,7 +1,7 @@
 {
   "metadata": {
     "title": "RIME-AD Five-Gate Scientific Validation Programme",
-    "timestamp": "2026-11-10T11:17:56Z",
+    "timestamp": "2026-11-10T17:11:17Z",
     "git_workspace": "/home/psalmprax/ALL_PROJECTS/science"
   },
   "gates": {
@@ -61,13 +61,13 @@
         "rime": {
           "r2_holdout": 1.0,
           "r2_train": 1.0,
-          "wall_ms": 104.83287501847371,
+          "wall_ms": 107.5429770280607,
           "formula": "-1.0000 * (cos(t)^2) + 1.0000"
         },
         "ga": {
           "formula": "-0.5000 * cos((t + t)) + 0.5000",
           "r2": 1.0,
-          "wall_ms": 119.65914501342922,
+          "wall_ms": 120.86676899343729,
           "evals": 4175
         }
       },
@@ -76,13 +76,13 @@
           "r2_train": 0.9984139642532619,
           "r2_holdout_single": -34.56794083957014,
           "r2_holdout_multi": 1.0,
-          "wall_ms": 89.86248698784038,
+          "wall_ms": 77.86147797014564,
           "formula": "2.0654 * (1 / (R^2)) + 1.7003"
         },
         "ga": {
           "formula": "2.2676 * (t**-2.2033) + 1.7178",
           "r2": -2.7475914386848483,
-          "wall_ms": 32.12013002485037,
+          "wall_ms": 27.435918047558516,
           "evals": 2408
         }
       }
