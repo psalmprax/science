@@ -152,7 +152,7 @@ environment setup and scope limitations.
 | Native build and smoke | `maturin develop --locked --manifest-path rust/apedp-kernel/Cargo.toml`, bridge availability assertion, `python -m pytest tests/test_smoke_imports.py -q -x`, then test collection | [APEDP CI/CD](.github/workflows/test.yml), `test` (Python 3.10/3.11/3.12) |
 | Scientific evidence | `python benchmarks/check_scientific_drift.py`; `python -m pytest tests/test_scientific_recovery.py tests/test_dyn_rime_known_truth.py -q -m scientific_regression` | [APEDP CI/CD](.github/workflows/test.yml), `test` |
 | Regression/integration | `python -m pytest tests/ -v --tb=short -n auto -x -m "not integration and not scientific_regression"`; separate `-m integration` run with Redis | [APEDP CI/CD](.github/workflows/test.yml), `test` |
-| Security | `bandit -r apedp/ -ll`; CodeQL over detected repository languages | [APEDP CI/CD](.github/workflows/test.yml), `test`; [CodeQL](.github/workflows/codeql.yml), `Analyze` |
+| Security | Bandit medium+ on `apedp/`, high on `apedp_dyn/`; CodeQL over detected repository languages | [APEDP CI/CD](.github/workflows/test.yml), `test`; [CodeQL](.github/workflows/codeql.yml), `Analyze` |
 | Distribution builds | Locked maturin builds for Linux/macOS/Windows; `python -m build` from each `packages/<package>/` | [Cross-Platform Native Wheels](.github/workflows/wheels.yml), `linux-wheels`, `macos-wheels`, `windows-wheels`, `sdist`, `python-packages` |
 
 For pull requests, configure branch protection to require `Python quality`,

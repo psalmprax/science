@@ -162,8 +162,12 @@ against the built kernel, not silently skip.
 - Ruff checks `E9,F` (syntax, undefined names, unused imports/assignments)
   across `apedp/`, `apedp_dyn/`, and `tests/`, retaining existing frozen-file
   exemptions. The full configured rule set gates `apedp_dyn/conf/`.
-- Mypy is **strict** for the repository path resolver and canonical spec
-  loader. Imported legacy packages are opaque (`follow_imports = "skip"`).
+- Mypy is **strict** for the repository path resolver, canonical spec loader,
+  and D5-CONF noise-sweep benchmark. Imported legacy packages are opaque
+  (`follow_imports = "skip"`).
+- Bandit checks medium and higher findings in `apedp/` and high findings in
+  `apedp_dyn/`; the latter scope is narrower until its intentional lower-severity
+  findings are individually assessed.
   Expanding strictness across the full packages needs a separate cleanup:
   the initial baseline found over 600 errors with current dependency stubs.
 - `cargo fmt --all --check` gates the entire active workspace.

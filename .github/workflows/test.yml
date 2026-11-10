@@ -180,6 +180,7 @@ jobs:
         run: |
           source .venv/bin/activate
           bandit -r apedp/ -ll
+          bandit -r apedp_dyn/ -lll
 
       - name: Classify test-job failure
         if: failure()

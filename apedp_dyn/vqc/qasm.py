@@ -114,7 +114,6 @@ def to_qasm(circuit: Circuit) -> str:
 # --------------------------------------------------------------------- import
 _REGISTER = re.compile(r"^(qreg|creg)\s+(\w+)\[(\d+)\];$")
 _OPERATION = re.compile(r"^(?:if\s*\(\s*(c)\s*==\s*(\d+)\s*\)\s*)?([a-z][a-z0-9_]*)(.*)$")
-_CALL = re.compile(r"^\s*(?:\(([^)]*)\))?\s*(.+)$")
 _TARGET = re.compile(r"\w+\[(\d+)\]")
 _PARAMETER_SAFE = re.compile(r"^[0-9eE+\-*/().\s pi]+$")
 
@@ -124,29 +123,86 @@ def _parse_parameter(text: str) -> float:
     expression = text.strip()
     if not expression or not _PARAMETER_SAFE.fullmatch(expression):
         raise QasmUnsupportedError(f"unsupported parameter expression {text!r}")
-    tree = ast.parse(expression, mode="eval")
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.Expression, ast.BinOp, ast.UnaryOp, ast.Constant,
-                             ast.Add, ast.Sub, ast.Mult, ast.Div, ast.USub, ast.UAdd,
-                             ast.Name, ast.Load)):
-            continue
-        raise QasmUnsupportedError(f"unsupported parameter expression {text!r}")
     try:
-        return float(eval(compile(tree, "<qasm>", "eval"),  # noqa: S307 - whitelisted above
-                          {"__builtins__": {}}, {"pi": math.pi}))
-    except (TypeError, ValueError, ZeroDivisionError) as error:
+        tree = ast.parse(expression, mode="eval")
+    except SyntaxError as error:
+        raise QasmUnsupportedError(
+            f"unsupported parameter expression {text!r}"
+        ) from error
+    try:
+        result = _evaluate_parameter(tree.body)
+    except (TypeError, ValueError, ZeroDivisionError, OverflowError) as error:
         raise QasmUnsupportedError(f"bad parameter expression {text!r}: {error}") from error
+    if not math.isfinite(result):
+        raise QasmUnsupportedError(f"non-finite parameter expression {text!r}")
+    return result
+
+
+def _evaluate_parameter(node: ast.expr) -> float:
+    """Evaluate only the arithmetic operations supported by QASM parameters."""
+    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+        if isinstance(node.value, bool):
+            raise TypeError("boolean literals are not supported")
+        return float(node.value)
+    if isinstance(node, ast.Name) and node.id == "pi":
+        return math.pi
+    if isinstance(node, ast.UnaryOp):
+        value = _evaluate_parameter(node.operand)
+        if isinstance(node.op, ast.UAdd):
+            return value
+        if isinstance(node.op, ast.USub):
+            return -value
+    if isinstance(node, ast.BinOp):
+        left = _evaluate_parameter(node.left)
+        right = _evaluate_parameter(node.right)
+        if isinstance(node.op, ast.Add):
+            return left + right
+        if isinstance(node.op, ast.Sub):
+            return left - right
+        if isinstance(node.op, ast.Mult):
+            return left * right
+        if isinstance(node.op, ast.Div):
+            return left / right
+    raise TypeError(f"unsupported parameter syntax: {type(node).__name__}")
 
 
 def _parse_arguments(text: str) -> tuple[tuple[float, ...], str]:
     """Split `(params) targets` into numeric parameters and the remaining text."""
-    match = _CALL.match(text)
-    if match is None:  # pragma: no cover - regex always matches
+    text = text.strip()
+    if not text.startswith("("):
+        return (), text
+
+    depth = 0
+    closing = None
+    for index, char in enumerate(text):
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                closing = index
+                break
+    if closing is None:
         raise QasmUnsupportedError(f"cannot parse {text!r}")
-    parameters, targets = match.groups()
-    if parameters is None:
-        return (), targets.strip()
-    return tuple(_parse_parameter(part) for part in parameters.split(",")), targets.strip()
+
+    raw_parameters = text[1:closing]
+    targets = text[closing + 1:].strip()
+    if not targets:
+        raise QasmUnsupportedError(f"cannot parse {text!r}")
+
+    parameters: list[str] = []
+    start = 0
+    depth = 0
+    for index, char in enumerate(raw_parameters):
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+        elif char == "," and depth == 0:
+            parameters.append(raw_parameters[start:index])
+            start = index + 1
+    parameters.append(raw_parameters[start:])
+    return tuple(_parse_parameter(part) for part in parameters), targets
 
 
 def from_qasm(text: str) -> Circuit:

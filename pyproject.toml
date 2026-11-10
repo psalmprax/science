@@ -205,7 +205,11 @@ python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
-files = ["apedp_dyn/conf/paths.py", "apedp_dyn/conf/canonical_spec.py"]
+files = [
+    "apedp_dyn/conf/paths.py",
+    "apedp_dyn/conf/canonical_spec.py",
+    "apedp_dyn/conf/benchmark.py",
+]
 strict = true
 # Phase 1 checks the path/specification integrity boundary strictly. Keep
 # imported legacy modules opaque until their typing debt is remediated.

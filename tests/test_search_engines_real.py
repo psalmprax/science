@@ -24,6 +24,16 @@ def test_beam_prefers_multi_variable_expressions():
     assert any("x" in e and "y" in e for e in level1)
 
 
+def test_search_expression_evaluator_refuses_python_code_execution():
+    x = np.arange(4.0)
+    assert _evaluate_expression("sin(x0) + x0**2", ["x0"], [x]) == pytest.approx(
+        np.sin(x) + x**2
+    )
+    assert _evaluate_expression(
+        "__import__('os').system('true')", ["x0"], [x]
+    ) is None
+
+
 def test_validator_scores_follow_measured_error_gap():
     from apedp.advanced_search import ValidationPipeline
 

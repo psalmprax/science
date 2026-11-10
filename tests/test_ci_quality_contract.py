@@ -86,6 +86,23 @@ def test_rust_builds_use_the_repository_toolchain_and_locked_dependencies():
                         assert "--locked" in options["args"]
 
 
+def test_security_scans_cover_dynamic_package_for_high_severity_findings():
+    script = "\n".join(
+        step.get("run", "")
+        for step in _workflow("test.yml")["jobs"]["test"]["steps"]
+    )
+    assert "bandit -r apedp/ -ll" in script
+    assert "bandit -r apedp_dyn/ -lll" in script
+
+
+def test_strict_mypy_scope_includes_the_d5_conf_benchmark():
+    project = (ROOT / "pyproject.toml").read_text()
+    files = re.search(r"(?ms)^files = \[(.*?)^\]", project).group(1)
+    assert '"apedp_dyn/conf/paths.py"' in files
+    assert '"apedp_dyn/conf/canonical_spec.py"' in files
+    assert '"apedp_dyn/conf/benchmark.py"' in files
+
+
 def test_workflows_have_no_conflicts_or_job_level_secret_conditions():
     for path in sorted(WORKFLOWS.glob("*.yml")):
         text = path.read_text()

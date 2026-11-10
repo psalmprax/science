@@ -141,12 +141,14 @@ def search_crossref(
     if mailto:
         params["mailto"] = mailto
     request_url = f"{CROSSREF_API_URL}?{urlencode(params)}"
-    request = Request(
+    # The scheme and authority are fixed by CROSSREF_API_URL; all parameters
+    # are encoded as query data, so caller input cannot select a URL scheme.
+    request = Request(  # noqa: S310  # nosec B310
         request_url,
         headers={"User-Agent": "APEDP literature metadata search/1.0"},
     )
     try:
-        with urlopen(request, timeout=timeout) as response:
+        with urlopen(request, timeout=timeout) as response:  # noqa: S310  # nosec B310
             payload = json.load(response)
     except (HTTPError, URLError, TimeoutError) as exc:
         raise RuntimeError(f"Crossref literature search failed: {exc}") from exc
@@ -178,8 +180,8 @@ def list_targets() -> dict[str, str]:
 
 
 __all__ = [
-    "INSTITUTIONAL_TARGETS",
     "CROSSREF_API_URL",
+    "INSTITUTIONAL_TARGETS",
     "LiteratureRecord",
     "LiteratureSearchResult",
     "list_targets",
