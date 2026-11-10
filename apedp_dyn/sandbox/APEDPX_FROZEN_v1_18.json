@@ -15,7 +15,7 @@
     "apedp_dyn/grammar/candidate_ir.py": "3b178e9bea32475ac8ae67572dc584dd203643a990ba291693fb503b07a1561d",
     "apedp_dyn/sandbox/apedp_x_meta_sandbox.py": "3f6e19e1bdb5d33e74e7abbcc893bd5147ea3a51d4753d6add1c4d8ce6bc3b3d",
     "apedp_dyn/sandbox/causal_discovery_sandbox.py": "d0715324bfeccb1aa1c49eecbbcb50fff3c66ab62744d95fbe766b0061e5a38b",
-    "apedp_dyn/sandbox/eseds_dynamical.py": "1140b5ee22e69307d2103fd4e50b6e091aec670fa3c0e0359c4857e306fe04a6",
+    "apedp_dyn/sandbox/eseds_dynamical.py": "3c57edb6a6d58b0c52f87491233995e40f94473fbcf764aa1f74c22e9ed1a8c1",
     "apedp_dyn/sandbox/eso_packing.py": "23cf4673cad337f4cf44b6a2ed1848957725ffc1e4345077cf4d664aeff1e241",
     "apedp_dyn/sandbox/grammar_space.py": "648304f563877bb72d8ac279458702b918a0162c7d050aa0c36e35e78dbdf1dd",
     "apedp_dyn/sandbox/multi_asset_signals_sandbox.py": "d992432f86cbaf03913ae643c3d75cd7e53e66a75f72d34ef6086ee7d5f967bf",
@@ -82,10 +82,16 @@
       "old_sha256": "17234cf0da2ef911d926ed1fd06258a4315302cb9613edf29bac66e79884153f",
       "path": "apedp_dyn/ui/server.py",
       "rationale": "/api/benchmark/external60/run wrote apedp_<block>.json inside a TemporaryDirectory context and then returned that directory's path, so the context removed the only artifact the response pointed at. The run now writes to mkdtemp and keeps the file. Scoring, thresholds and gate decisions are unchanged: the endpoint still writes to scratch only and never touches the frozen tournament round."
+    },
+    {
+      "new_sha256": "3c57edb6a6d58b0c52f87491233995e40f94473fbcf764aa1f74c22e9ed1a8c1",
+      "old_sha256": "1140b5ee22e69307d2103fd4e50b6e091aec670fa3c0e0359c4857e306fe04a6",
+      "path": "apedp_dyn/sandbox/eseds_dynamical.py",
+      "rationale": "Families C and D scored their exact-integration candidate as lambda tt: N[:len(tt)], which slices by length instead of by time: every holdout block was compared against the training prefix, so the true mechanism showed holdout errors of 34-58 against rivals near 1, lost the survivor contest, and a rival was promoted (FPR_promo 0.333). The candidate is now sampled at the requested times. No threshold, metric definition or scenario list changed; only the wrong-window lookup."
     }
   ],
   "supersedes": "APEDP-X v1.17-FROZEN",
-  "test_outcome": "AGENTS.md regression suite: 281 passed, 1 skipped (0 failed), 2026-11-10",
+  "test_outcome": "AGENTS.md regression suite on the working tree: 281 passed, 1 skipped (0 failed), 2026-11-10 (171.96s)",
   "thresholds": {
     "RESID_RHO_FLAG": 0.5,
     "SOLE_SURVIVOR_GAMMA": 3.0,
@@ -95,5 +101,5 @@
     "tau_rule": "holdout-scale from gate4 provenance (obs_rms, noise_sigma, n_samples); explicit override allowed"
   },
   "tree_state": "mypy apedp_dyn: 244 errors after annotation remediation",
-  "utc_frozen": "2026-11-10T15:08:55Z"
+  "utc_frozen": "2026-11-10T17:01:35Z"
 }

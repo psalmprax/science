@@ -531,6 +531,25 @@ def select_baseline_cv_only(candidates: list[ScoredCandidate]) -> str | None:
 # 6. BENCHMARK EXPERIMENT RUNNER & TRAPS MATRIX
 # ═══════════════════════════════════════════════════════════════════════════
 
+def _oracle_fn(t: np.ndarray, series: np.ndarray) -> Callable[[Any], np.ndarray]:
+    """Exact-integration candidate: the clean series sampled at the requested times.
+
+    The scorer hands a candidate the times it must predict, so a closure keyed on
+    ``len(tt)`` slices returned the *training* prefix for every extrapolation block.
+    That is what made the true mechanisms of Families C and D score holdout errors
+    of 34-58 against rivals near 1: the truth candidate was being judged on samples
+    it was never asked about, was eliminated as a survivor, and a rival was promoted
+    in its place (FPR_promo = 0.333 on the benchmark matrix).
+    """
+    grid = np.asarray(t, dtype=float)
+
+    def fn(tt: Any) -> np.ndarray:
+        idx = np.clip(np.searchsorted(grid, np.asarray(tt, dtype=float)), 0, len(series) - 1)
+        return np.asarray(series)[idx]
+
+    return fn
+
+
 def run_eseds_scenario(
     family: str = "A",
     trap_id: int = 1,
@@ -650,7 +669,7 @@ def run_eseds_scenario(
                 "eq": "dN/dt = r*N - a*P",
             }
         fits["LOTKA_VOLTERRA"] = {
-            "fn": lambda tt: N[:len(tt)],  # exact oracle integration
+            "fn": _oracle_fn(t, N),  # exact oracle integration
             "terms": (Term("lotka_volterra", "theta_0"), Term("coupling", "theta_1")),
             "eq": "dN/dt = r*N - a*N*P",
         }
@@ -674,7 +693,7 @@ def run_eseds_scenario(
                 "eq": "dN1/dt = -m*N1",
             }
         fits["TRUE_COMPETITION"] = {
-            "fn": lambda tt: N1[:len(tt)],
+            "fn": _oracle_fn(t, N1),
             "terms": (Term("competition", "theta_0"), Term("interaction", "theta_1")),
             "eq": "dN1/dt = r1*N1*(1 - (N1 + a12*N2)/K1)",
         }

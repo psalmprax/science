@@ -15,6 +15,12 @@ inferred releases.
 
 ### Fixed
 
+- **ESEDS benchmark judges its exact-integration candidates on the window it was
+  asked about.** Families C and D built the truth candidate as `N[:len(tt)]`,
+  slicing by length rather than by time, so each holdout block was compared against
+  the training prefix; the true mechanism was eliminated and a rival promoted
+  (`FPR_promo` 0.333 -> 0.0, `AAR` 0.50 -> 0.64). The freeze record carries the new
+  digest with its `remint_log` rationale; no threshold or scenario changed.
 - **`/api/benchmark/external60/run` keeps its scratch artifacts.** The route wrote
   `apedp_<block>.json` inside a `TemporaryDirectory` context and then returned that
   directory's path, so the directory was deleted before the caller could read it.
