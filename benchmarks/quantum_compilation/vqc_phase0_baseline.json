@@ -4,7 +4,7 @@
   "frozen_on": "2026-10-30",
   "scope": "the DQI records the VQC work must not disturb: official 64-shot candidate, the three 102,400-shot verifier runs, the schedule/movement campaign, the native-opcode and region ledgers, the external-optimizer comparison, the correctness audit, the resource reconciliation, and the amplitude-tier licence boundary",
   "records": {
-    "benchmarks/quantum_compilation/correctness_audit.json": "f34a99b4e168949a8b87600a4a17f595b6688eea603d45984768d6ad2f085b2b",
+    "benchmarks/quantum_compilation/correctness_audit.json": "ed48e940092a804a9a5a5daedc7df4c406a662f15b7437f1ccb3f4c9ffb13f54",
     "benchmarks/quantum_compilation/dqi_arm_submission_score.json": "8e41e3fa7a87b115ef38592a5f520ec03bc19b98bbb31a33b29f3314ed536c66",
     "benchmarks/quantum_compilation/dqi_campaign_arm_submission_score.json": "7e19e63549db93091dd40aa1ca9e85b5912e0abc53f43fda06b1eaa4f3b99560",
     "benchmarks/quantum_compilation/dqi_movement_schedule.json": "6c219912dd833ec7278fd4ec9b1e6e107da301d97239ff529f47a642675b7e53",
@@ -38,6 +38,11 @@
       "date": "2026-10-30",
       "record": "benchmarks/quantum_compilation/correctness_audit.json",
       "why": "regenerated after vqc_external_comparison.json landed, so the audit's scanned set matches the records on disk again (32 records). Only its per-record inventory changed: the new record contributes no candidate rows, so pinned totals are unchanged (checked 12, partial rows 13, resources-only 5, aggregate-only 51), and no DQI record was touched."
+    },
+    {
+      "date": "2026-11-10",
+      "record": "benchmarks/quantum_compilation/correctness_audit.json",
+      "why": "re-run during the 2026-11-10 full-suite repair: the audit had not been regenerated since the VQC records landed, so it scanned 33 records where 72 were on disk. Only its per-record inventory and record count changed; the pinned totals are unchanged (checked 12, partial rows 13, resources-only 5, aggregate-only 51) and no DQI record was read or written. Previous hash f34a99b4e168949a8b87600a4a17f595b6688eea603d45984768d6ad2f085b2b."
     }
   ]
 }

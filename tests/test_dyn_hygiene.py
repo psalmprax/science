@@ -17,9 +17,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DYN = ROOT / "apedp_dyn"
 
+#: Vendored third-party source, checked in verbatim under the sandbox that needs it.
+#: Its `hash()` calls and duplicate definitions are its own upstream's business, and
+#: rewriting them here would make the vendored copy differ from what it claims to be.
+VENDORED = {"_qualtran_src"}
+
 
 def _modules():
-    return sorted(DYN.rglob("*.py")) + sorted(
+    return sorted(
+        p for p in DYN.rglob("*.py")
+        if not VENDORED & set(p.relative_to(DYN).parts)) + sorted(
         p for p in (ROOT / "tests").glob("test_dyn_*.py"))
 
 

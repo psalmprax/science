@@ -120,7 +120,7 @@ def test_sparse_microstructure_binds_a_sum_named_column(monkeypatch):
     feats = panel[[SUM_COLUMN]].copy()
 
     monkeypatch.setattr(module, "extract_microstructure_features",
-                        lambda _df: (feats, y))
+                        lambda _df, target_col="price": (feats, y))
 
     proposals = module.SparseMicrostructureProposer().fit_and_propose(
         {"panel": panel}, target_col="y")
@@ -132,13 +132,15 @@ def test_sparse_microstructure_binds_a_sum_named_column(monkeypatch):
     # The formula must describe the arithmetic: the scorer weights the column by
     # the same coefficient, and the fitted weight is not 1 (which is what the
     # unparenthesised form would have implied for the second addend).
-    parsed = sp.sympify(formula.replace(" ", ""))
+    parsed = sp.sympify(formula.replace(" ", ""), locals={"intercept": sp.Function("intercept")})
     # One coefficient, applied to the whole sum: it is the coefficient of each
     # symbol inside the brackets, and there is no coefficient of its own on the
     # second addend.
     coefficient = float(parsed.coeff(sp.Symbol("a")))
+    # The formula states the model, intercept included; the scorer computes it.
+    intercept = float(parsed.atoms(sp.Function).pop().args[0])
     scored = proposals[0].compute_score(panel)
-    expected = coefficient * panel[SUM_COLUMN].to_numpy(dtype=float)
+    expected = intercept + coefficient * panel[SUM_COLUMN].to_numpy(dtype=float)
     # The formula prints four decimals while the scorer keeps full precision, so
     # this is a structural comparison, not a bit-for-bit one: what it rules out
     # is the unparenthesised form, which would put a coefficient on `a` alone

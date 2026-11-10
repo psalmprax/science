@@ -18,17 +18,17 @@
     "apedp_dyn/sandbox/eseds_dynamical.py": "1140b5ee22e69307d2103fd4e50b6e091aec670fa3c0e0359c4857e306fe04a6",
     "apedp_dyn/sandbox/eso_packing.py": "23cf4673cad337f4cf44b6a2ed1848957725ffc1e4345077cf4d664aeff1e241",
     "apedp_dyn/sandbox/grammar_space.py": "648304f563877bb72d8ac279458702b918a0162c7d050aa0c36e35e78dbdf1dd",
-    "apedp_dyn/sandbox/multi_asset_signals_sandbox.py": "9f055326ca82575d1eb6a31973e291b199429b2024b64a7a80a3910047ff4141",
+    "apedp_dyn/sandbox/multi_asset_signals_sandbox.py": "d992432f86cbaf03913ae643c3d75cd7e53e66a75f72d34ef6086ee7d5f967bf",
     "apedp_dyn/sandbox/multi_grammar_sandbox.py": "e3303e5a16ed2ac269060041c18f02c309d8de501422ad90045907a78909d48d",
     "apedp_dyn/sandbox/pde_verification_sandbox.py": "1ea3a4c89800af9f6570723fbcf6ea09e731cccf24a292cc15489bc56fa636a3",
     "apedp_dyn/sandbox/sphere_packing_sandbox.py": "6a105810b786cddd1435c13c752cddd4ad73182dd841e6677f8667001ec3fd1c",
     "apedp_dyn/sandbox/trading_signals_sandbox.py": "1a67a9515bbc3d4d63c9fcc1cb0e8e9f4e1f7d6e15c14bc275960347531c9426",
     "apedp_dyn/ui/dashboard.html": "69f3352a9d47a881cc91bda2ebb74bc35e637b8fb2599ff227ec6f4ece19567a",
-    "apedp_dyn/ui/server.py": "17234cf0da2ef911d926ed1fd06258a4315302cb9613edf29bac66e79884153f"
+    "apedp_dyn/ui/server.py": "40a525b27fc34335b46195ac169f88a59909fa92fb5bf83f776f3d27b891aef7"
   },
   "label": "APEDP-X v1.18-FROZEN",
-  "minted_at": "2026-11-08",
-  "referee_change": "adjudicate.py: free-form proposal identity plus holdout rival selection that excludes observationally identical duplicates and requires bootstrap availability; no threshold, referee statement or gate decision changed. dashboard.html/server.py: UI Studio payload and metric-card changes only.",
+  "minted_at": "2026-11-10",
+  "referee_change": "adjudicate.py: free-form proposal identity plus holdout rival selection that excludes observationally identical duplicates and requires bootstrap availability; no threshold, referee statement or gate decision changed. dashboard.html/server.py: UI Studio payload and metric-card changes only. multi_asset_signals_sandbox.py: the evaluation index and period label are computed after the volatility warmup truncation instead of before it; no threshold, referee statement or gate decision changed.",
   "referee_guard_files": [
     "apedp_dyn/epistemic/adjudicate.py",
     "apedp_dyn/epistemic/claim_ladder.py",
@@ -70,10 +70,22 @@
       "old_sha256": "f3fff14510b4954c00ac2ef9efd91baa3907f5bd5c191b54fe4a0886dfe7522a",
       "path": "apedp_dyn/ui/server.py",
       "rationale": "Freeze re-mint after `apedp_dyn/ui/server.py` stopped re-inlining the 21 helpers that `apedp_dyn/ui/helpers.py` already holds byte-for-byte (including two 188-line copies of `_format_sandbox_adjudication`); the module is 1,227 lines against the 1,686 ceiling it had been left 30 lines above."
+    },
+    {
+      "new_sha256": "d992432f86cbaf03913ae643c3d75cd7e53e66a75f72d34ef6086ee7d5f967bf",
+      "old_sha256": "9f055326ca82575d1eb6a31973e291b199429b2024b64a7a80a3910047ff4141",
+      "path": "apedp_dyn/sandbox/multi_asset_signals_sandbox.py",
+      "rationale": "eval_idx and period_label are now derived after the volatility warmup truncation: they were computed on the raw frame, before the warmup rows were dropped, so the evaluation index stayed short by the warmup length and ran off the end of every array sliced by it. The audit now reports the span it actually scores. No threshold, referee statement, cohort or blind-case expectation changed."
+    },
+    {
+      "new_sha256": "40a525b27fc34335b46195ac169f88a59909fa92fb5bf83f776f3d27b891aef7",
+      "old_sha256": "17234cf0da2ef911d926ed1fd06258a4315302cb9613edf29bac66e79884153f",
+      "path": "apedp_dyn/ui/server.py",
+      "rationale": "/api/benchmark/external60/run wrote apedp_<block>.json inside a TemporaryDirectory context and then returned that directory's path, so the context removed the only artifact the response pointed at. The run now writes to mkdtemp and keeps the file. Scoring, thresholds and gate decisions are unchanged: the endpoint still writes to scratch only and never touches the frozen tournament round."
     }
   ],
   "supersedes": "APEDP-X v1.17-FROZEN",
-  "test_outcome": "AGENTS.md regression suite: 274 passed, 1 skipped (0 failed)",
+  "test_outcome": "AGENTS.md regression suite: 281 passed, 1 skipped (0 failed), 2026-11-10",
   "thresholds": {
     "RESID_RHO_FLAG": 0.5,
     "SOLE_SURVIVOR_GAMMA": 3.0,
@@ -83,5 +95,5 @@
     "tau_rule": "holdout-scale from gate4 provenance (obs_rms, noise_sigma, n_samples); explicit override allowed"
   },
   "tree_state": "mypy apedp_dyn: 244 errors after annotation remediation",
-  "utc_frozen": "2026-11-08T05:37:34Z"
+  "utc_frozen": "2026-11-10T15:08:55Z"
 }

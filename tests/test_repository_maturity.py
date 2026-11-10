@@ -35,8 +35,11 @@ def test_codeowners_covers_contributor_boundaries() -> None:
         if pattern != "*":
             assert list(ROOT.glob(pattern.lstrip("/"))), pattern
     patterns = {entry[0] for entry in entries}
+    # The Rust sources live under /rust/ in this repository; /crates/ was listed here
+    # and in CODEOWNERS after a layout that no longer exists, so the entry named a
+    # directory nobody could open (checked by the glob above, not by this set).
     assert {
-        "/packages/", "/crates/", "/rust/", "/apedp*", "/docs/",
+        "/packages/", "/rust/", "/apedp*", "/docs/",
         "/specifications/", "/.github/workflows/", "/.github/CODEOWNERS",
     } <= patterns
 

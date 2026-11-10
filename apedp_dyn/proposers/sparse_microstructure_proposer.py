@@ -117,9 +117,14 @@ class SparseMicrostructureProposer(ProposerBase):
                     continue
 
                 from apedp_dyn.grammar.term_format import atom
+                # The scorer below starts from `raw_intercept`, so the formula has to
+                # carry it too. It did not, and the two statements of the same model
+                # disagreed by a constant: the emitted text described a function the
+                # scorer never computed.
                 formula_parts = [f"{v:+.4f}*{atom(k)}"
                                  for k, v in active_terms.items()]
-                formula_str = " ".join(formula_parts)
+                formula_str = (f"intercept({raw_intercept:+.4f}) "
+                               + " ".join(formula_parts))
                 cand_idx += 1
 
                 # Closure for score computation

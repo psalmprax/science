@@ -238,28 +238,31 @@ def ext60_run(req: Ext60RunRequest) -> dict[str, Any]:
     adapter = APEDPAdapter()
     summary: list[dict[str, Any]] = []
     t0 = time.time()
-    with tempfile.TemporaryDirectory(prefix="ext60_") as _tmp_dir:
-        scratch = Path(_tmp_dir)
-        for block in req.blocks:
-            pids = [p["problem_id"] for p in manifest["problems"] if p["block"] == block]
-            results = []
-            for pid in pids:
-                try:
-                    res = adapter.run(EXT60_CORPUS, pid)
-                    row = res.to_dict()
-                except Exception as e:  # noqa: BLE001 -- one failure must not kill the block
-                    row = {"competitor": "apedp", "problem_id": pid,
-                           "expression": "RUNNER_ERROR", "abstained": True,
-                           "abstain_reason": f"runner exception: {type(e).__name__}"}
-                results.append({"problem_id": pid,
-                                "abstained": bool(row.get("abstained")),
-                                "expression": str(row.get("expression", ""))[:120],
-                                "abstain_reason": str(row.get("abstain_reason", ""))[:200]})
-            with open(scratch / f"apedp_{block}.json", "w", encoding="utf-8") as f:
-                _json.dump({"block": block, "results": results}, f, indent=2)
-            summary.append({"block": block, "n": len(results),
-                            "abstained": sum(1 for r in results if r["abstained"])})
-        scratch_str = str(scratch)
+    # `mkdtemp`, not a `TemporaryDirectory` context: the directory is the
+    # endpoint's deliverable, and the response hands its path to the caller. A
+    # context manager removed it on the way out, so `scratch_dir` named a path
+    # that no longer existed and `apedp_<block>.json` could never be read.
+    scratch = Path(tempfile.mkdtemp(prefix="ext60_"))
+    for block in req.blocks:
+        pids = [p["problem_id"] for p in manifest["problems"] if p["block"] == block]
+        results = []
+        for pid in pids:
+            try:
+                res = adapter.run(EXT60_CORPUS, pid)
+                row = res.to_dict()
+            except Exception as e:  # noqa: BLE001 -- one failure must not kill the block
+                row = {"competitor": "apedp", "problem_id": pid,
+                       "expression": "RUNNER_ERROR", "abstained": True,
+                       "abstain_reason": f"runner exception: {type(e).__name__}"}
+            results.append({"problem_id": pid,
+                            "abstained": bool(row.get("abstained")),
+                            "expression": str(row.get("expression", ""))[:120],
+                            "abstain_reason": str(row.get("abstain_reason", ""))[:200]})
+        with open(scratch / f"apedp_{block}.json", "w", encoding="utf-8") as f:
+            _json.dump({"block": block, "results": results}, f, indent=2)
+        summary.append({"block": block, "n": len(results),
+                        "abstained": sum(1 for r in results if r["abstained"])})
+    scratch_str = str(scratch)
     out = {"blocks": summary, "scratch_dir": scratch_str,
            "elapsed_s": round(time.time() - t0, 1),
            "note": "scratch only; frozen round untouched; blind scoring separate"}

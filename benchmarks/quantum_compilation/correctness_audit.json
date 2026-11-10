@@ -1,7 +1,7 @@
 {
   "audit": "candidate rows whose correctness claim rests on an unchecked register",
   "why": "Experiment D's candidate was called correct because its syndromes came back; Experiment D2 measured the phase and found 37 of 64 shots wrong. A record can carry the gap only if something asks for it.",
-  "records_scanned": 33,
+  "records_scanned": 72,
   "totals": {
     "claims_correct_aggregate_only": 51,
     "checked": 12,
@@ -137,7 +137,57 @@
   ],
   "per_record": [
     {
+      "record": "benchmarks/quantum_compilation/archive_overhead_bound.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/assembly_local_mr_verification.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/bm_iteration_toffolis.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/chien_forney_stage.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/chien_variants.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
       "record": "benchmarks/quantum_compilation/designer_directions.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dfth_qrom_shapes.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dfthcsos_archived_artifact_verify.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dfthcsos_load_encoding.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dfthcsos_precision_gate.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_archived_artifact_reverify.json",
       "rows": [],
       "counts": {}
     },
@@ -187,6 +237,21 @@
       }
     },
     {
+      "record": "benchmarks/quantum_compilation/dqi_design_projection.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_division_composition.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_division_granularity.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
       "record": "benchmarks/quantum_compilation/dqi_eea_oracle_ledger.json",
       "rows": [
         {
@@ -214,6 +279,11 @@
     },
     {
       "record": "benchmarks/quantum_compilation/dqi_flag_predicate_reuse.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_full_instance_reverify.json",
       "rows": [],
       "counts": {}
     },
@@ -518,6 +588,26 @@
       "counts": {}
     },
     {
+      "record": "benchmarks/quantum_compilation/dqi_recycled_degrees_window.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_recycled_equivalence.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_recycled_equivalence_bisect.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_recycled_flag_body_build.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
       "record": "benchmarks/quantum_compilation/dqi_region_ledger.json",
       "rows": [
         {
@@ -792,7 +882,27 @@
       "counts": {}
     },
     {
+      "record": "benchmarks/quantum_compilation/dqi_single_array_packing.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_single_array_replay_cost.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
       "record": "benchmarks/quantum_compilation/dqi_submission_score.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/dqi_width_budget.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/gf2_mul_rank_search.json",
       "rows": [],
       "counts": {}
     },
@@ -874,6 +984,36 @@
     },
     {
       "record": "benchmarks/quantum_compilation/gf_mul_external_optimizer.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/gf_mul_per_call_composition.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/gf_product_accumulator_shape.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/inplace_bm_verification.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/invsqrt_62q_full_domain_receipt.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/invsqrt_coarse_accumulator.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/invsqrt_kernel_receipt.json",
       "rows": [],
       "counts": {}
     },
@@ -1021,12 +1161,62 @@
       }
     },
     {
+      "record": "benchmarks/quantum_compilation/kickmix_mr_build.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
       "record": "benchmarks/quantum_compilation/local_mr_arms.json",
       "rows": [],
       "counts": {}
     },
     {
+      "record": "benchmarks/quantum_compilation/packed_decoder_assembly.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/packed_decoder_official_instance.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
       "record": "benchmarks/quantum_compilation/quantum_signal_ledger.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/quantum_signal_ledger_tranche2.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/quantum_signal_ledger_tranche3.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/quantum_signal_ledger_tranche4.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/quantum_signal_ledger_tranche5.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/quantum_signal_power.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/uncompute_pass.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/uncompute_pass_mr.json",
       "rows": [],
       "counts": {}
     },
@@ -1042,6 +1232,11 @@
     },
     {
       "record": "benchmarks/quantum_compilation/vqc_licence_boundary.json",
+      "rows": [],
+      "counts": {}
+    },
+    {
+      "record": "benchmarks/quantum_compilation/vqc_mmlm_graph_state.json",
       "rows": [],
       "counts": {}
     },
@@ -1084,6 +1279,6 @@
   },
   "reproducibility": {
     "script_sha256": "f65711281363cedc61abb58d7afd743b343d547ac2e6f33eee5d747dfafc44a5",
-    "git_rev": "75ef0cc7df415e6bae73c23fadd380348929d3a1"
+    "git_rev": "6d54355156152f206ea280c3acfec06539d60d67"
   }
 }

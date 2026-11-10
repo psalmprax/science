@@ -15,6 +15,18 @@ inferred releases.
 
 ### Fixed
 
+- **`/api/benchmark/external60/run` keeps its scratch artifacts.** The route wrote
+  `apedp_<block>.json` inside a `TemporaryDirectory` context and then returned that
+  directory's path, so the directory was deleted before the caller could read it.
+  The run now writes to a `mkdtemp` directory and leaves it in place; the route
+  still writes to scratch only and never touches the frozen round.
+- **Freeze re-mint for `apedp_dyn/sandbox/multi_asset_signals_sandbox.py`.** The
+  multi-asset grammar audit built `eval_idx` and its period label from the raw
+  frame, before the volatility warmup rows were dropped, so the index stayed short
+  by the warmup length and ran off the end of every array it sliced. Both are now
+  derived after the truncation, and `APEDPX_FROZEN_v1_18.json` carries the new
+  digest with its `remint_log` rationale. No threshold, referee statement, cohort
+  or blind-case expectation changed.
 - **`apedp_dyn/ui/server.py` is 1,227 lines again, under its 1,686-line ceiling.** The module
   had re-inlined 21 helpers that `apedp_dyn/ui/helpers.py` already holds byte-for-byte --
   including two 188-line copies of `_format_sandbox_adjudication` -- which left the size

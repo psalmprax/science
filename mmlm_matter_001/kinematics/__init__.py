@@ -31,6 +31,7 @@ from mmlm_matter_001.kinematics.fourbar import (
     Trace,
     UnreachableError,
     angle_difference_deg,
+    branch_of_theta3,
     circuit_breaks,
     circuit_switches,
     joint_gap_deg,

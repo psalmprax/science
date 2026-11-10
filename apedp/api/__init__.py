@@ -199,7 +199,10 @@ def create_app() -> FastAPI:
                 return JSONResponse({"detail": "Invalid or missing API key"}, status_code=401)
 
         client = request.client.host if request.client else "unknown"
-        if limiter is not None and request.url.path not in AUTH_EXEMPT_PATHS:
+        # The limiter covers the whole surface, liveness and docs included. Those paths
+        # are exempt from *authentication* so a probe needs no credential; an unthrottled
+        # /health is still an amplification target, and a limiter with holes is not one.
+        if limiter is not None:
             retry_after = limiter.check(client, time.monotonic())
             if retry_after is not None:
                 return JSONResponse(

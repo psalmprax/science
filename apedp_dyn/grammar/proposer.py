@@ -78,7 +78,7 @@ def _library_matrix(problem: Any, term_names: Sequence[str]) -> Any:
     import sympy as sp
     from scipy.interpolate import CubicSpline
 
-    from apedp_dyn.grammar.mechanical_grammar import DEFAULT_BOUNDS
+    from apedp_dyn.grammar.mechanical_grammar import DEFAULT_BOUNDS, UnavailableGrammarTerm
 
     t = np.asarray(problem.train["truth_t"], dtype=float)
     Y = np.asarray(problem.train["truth_y"], dtype=float)
@@ -94,7 +94,13 @@ def _library_matrix(problem: Any, term_names: Sequence[str]) -> Any:
     subs = {X: sp.Symbol(order[0]), V: sp.Symbol(order[1]),
             Gu: (sp.Symbol(inames[0]) if inames else Gu)}
     for name in term_names:
-        built = _TERM_BUILDERS[name](X, V, Gu, XR, sp.Symbol("gL"))
+        try:
+            built = _TERM_BUILDERS[name](X, V, Gu, XR, sp.Symbol("gL"))
+        except UnavailableGrammarTerm as error:
+            # A term whose builder refuses (no series to read) is a column this
+            # library cannot carry, not a reason to abandon the whole library.
+            skipped.append(f"{name}: {error}")
+            continue
         if XR in built.atoms(sp.Symbol):
             skipped.append(name)
             continue
@@ -149,8 +155,15 @@ class LibraryProposer:
         # not the default sparse library.
         _composite = ("u_relax", "sat_x", "sat_v", "sat_u", "inv_x2",
                       "langmuir_bind", "hill2_bind")
+        # Terms whose builder declares itself unavailable on single-DOF trajectory
+        # data (no mu_x/x_lag1/x_ma series in a problem): including them in the
+        # default library only produces a refusal after the column was requested.
+        _unavailable = ("zscore_x", "ma_x", "mom_x", "rsi_like", "bollinger",
+                        "macd_like")
         self._vocabulary = tuple(vocabulary) if vocabulary is not None else tuple(
-            k for k in _TERM_BUILDERS if k not in _nontrajectory and k not in _composite)
+            k for k in _TERM_BUILDERS
+            if k not in _nontrajectory and k not in _composite
+            and k not in _unavailable)
         self._proposer_id = proposer_id
 
     @property

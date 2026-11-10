@@ -1821,12 +1821,6 @@ def run_multi_asset_policy_grammar_audit(
     df_90 = pd.read_csv(MULTI_90_FILE)
     date_col = "observation_date" if "observation_date" in df_90.columns else "date"
     dates = df_90[date_col].to_numpy()
-    if holdout_only:
-        eval_idx = np.where(dates >= "2024-01-01")[0]
-        period_label = "Block B (2024-2025 Holdout)"
-    else:
-        eval_idx = np.arange(len(dates))
-        period_label = "Full 5-Year Panel (2021-2025)"
 
     uni_90, syms_90 = load_universe("90")
     rets_full = np.column_stack([uni_90[s]["r"].to_numpy(float) for s in syms_90])
@@ -1842,6 +1836,15 @@ def run_multi_asset_policy_grammar_audit(
     )
     dates = dates[len(dates) - len(rets_full):]
     df_90 = df_90.iloc[len(df_90) - len(rets_full):].reset_index(drop=True)
+    # Indexed only after the volatility warmup has been dropped: the rows it removes
+    # are at the front, so an index taken from the raw frame is short by exactly the
+    # warmup length and runs off the end of every array sliced by it.
+    if holdout_only:
+        eval_idx = np.where(dates >= "2024-01-01")[0]
+        period_label = "Block B (2024-2025 Holdout)"
+    else:
+        eval_idx = np.arange(len(dates))
+        period_label = "Full 5-Year Panel (2021-2025)"
 
     # 4 magnitude-preserving features for Equation A:
     # Index 9: H-BB, Index 16: H-OBV_MOM, Index 24: NL_TAKER_MOM, Index 25: NL_MASTER_SNR

@@ -70,6 +70,10 @@ SKIP_DIRS = frozenset({
     # test imports of those dotted names fail (build/ is not a package).
     # Mirror rationale to .kilo/worktrees: not the tree under test.
     "build", "dist",
+    # Vendored third-party source: ``qualtran`` imported from this copy by an absolute
+    # name only resolves when the copy's root is on sys.path, so its facades cannot be
+    # imported here and are not this repository's to keep in step.
+    "_qualtran_src",
 })
 
 #: A module with fewer executed lines than this is reported but not called

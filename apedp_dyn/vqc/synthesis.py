@@ -1314,7 +1314,7 @@ def adjudicate_specification(circuit: Circuit, target: TargetSpecification, *,
             requirement=(f"min_phi ||psi_c - e^(i phi) psi_s|| / sqrt(2**n) <= "
                          f"{DENSE_TOLERANCE:g} against the state projected out of the "
                          f"specification's stabilizers"),
-            measured={"dist_value": dist_value, "phi": phase_angle, "tier": "dense",
+            measured={"distance": dist_value, "phi": phase_angle, "tier": "dense",
                       "relative_phase_sensitive": True},
             passed=bool(dist_value <= DENSE_TOLERANCE)))
     else:
