@@ -33,7 +33,9 @@ def test_quality_jobs_block_tests_and_run_parity_commands():
 
 def test_python_test_jobs_install_test_dependencies_before_pytest():
     for path in sorted(WORKFLOWS.glob("*.yml")):
-        for job in _workflow(path.name)["jobs"].values():
+        for job_name, job in _workflow(path.name)["jobs"].items():
+            if job_name == "python-quality" and path.name == "test.yml":
+                continue
             dependencies_installed = False
             for step in job.get("steps", []):
                 script = step.get("run", "")
@@ -45,6 +47,25 @@ def test_python_test_jobs_install_test_dependencies_before_pytest():
         step.get("run", "") for step in _workflow("test.yml")["jobs"]["test"]["steps"]
     )
     assert "pip install -e packages/jetflow-video" in script
+
+
+def test_python_quality_job_avoids_scientific_test_extras():
+    script = "\n".join(
+        step.get("run", "")
+        for step in _workflow("test.yml")["jobs"]["python-quality"]["steps"]
+    )
+    assert 'pip install -e ".[dev]"' in script
+    assert not re.search(r'pip install -e "\.\[[^"]*\btest\b', script)
+    assert "torch==" not in script
+
+
+def test_ci_torch_version_matches_project_test_extra():
+    project = (ROOT / "pyproject.toml").read_text()
+    pinned_torch = re.search(r'"torch==([^"]+)"', project).group(1)
+    test_job = _workflow("test.yml")["jobs"]["test"]
+    script = "\n".join(step.get("run", "") for step in test_job["steps"])
+    assert f"torch=={pinned_torch}" in script
+    assert "https://download.pytorch.org/whl/cpu" in script
 
 
 def test_rust_builds_use_the_repository_toolchain_and_locked_dependencies():
