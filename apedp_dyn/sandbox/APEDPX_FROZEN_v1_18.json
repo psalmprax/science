@@ -24,7 +24,7 @@
     "apedp_dyn/sandbox/sphere_packing_sandbox.py": "6a105810b786cddd1435c13c752cddd4ad73182dd841e6677f8667001ec3fd1c",
     "apedp_dyn/sandbox/trading_signals_sandbox.py": "1a67a9515bbc3d4d63c9fcc1cb0e8e9f4e1f7d6e15c14bc275960347531c9426",
     "apedp_dyn/ui/dashboard.html": "69f3352a9d47a881cc91bda2ebb74bc35e637b8fb2599ff227ec6f4ece19567a",
-    "apedp_dyn/ui/server.py": "f053b3a325b9df286ad0ebc885ddde9f67419f0e57cb2086d7a043c3212aa465"
+    "apedp_dyn/ui/server.py": "17234cf0da2ef911d926ed1fd06258a4315302cb9613edf29bac66e79884153f"
   },
   "label": "APEDP-X v1.18-FROZEN",
   "minted_at": "2026-11-08",
@@ -66,10 +66,10 @@
       "rationale": "UI Studio fix for the stray closing brace that left the script block unparsed and broke tab navigation, plus domain-adaptive metric cards and the M0-M5 extrapolation-ladder / EEDR panels. Referee-facing case data, thresholds and gate decisions are unchanged."
     },
     {
-      "new_sha256": "f053b3a325b9df286ad0ebc885ddde9f67419f0e57cb2086d7a043c3212aa465",
+      "new_sha256": "17234cf0da2ef911d926ed1fd06258a4315302cb9613edf29bac66e79884153f",
       "old_sha256": "f3fff14510b4954c00ac2ef9efd91baa3907f5bd5c191b54fe4a0886dfe7522a",
       "path": "apedp_dyn/ui/server.py",
-      "rationale": "UI Studio payload population: series/formula payloads for the trading-signal and ESEDS cards, promoted formulas emitted as booleans instead of their string spelling, and the sandbox-gallery routes wired to the new dashboard cards. No referee statement, threshold or gate decision changed."
+      "rationale": "Freeze re-mint after `apedp_dyn/ui/server.py` stopped re-inlining the 21 helpers that `apedp_dyn/ui/helpers.py` already holds byte-for-byte (including two 188-line copies of `_format_sandbox_adjudication`); the module is 1,227 lines against the 1,686 ceiling it had been left 30 lines above."
     }
   ],
   "supersedes": "APEDP-X v1.17-FROZEN",

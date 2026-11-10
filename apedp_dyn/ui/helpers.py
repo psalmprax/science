@@ -11,6 +11,7 @@ beside ``server.py``, so the resolved location is unchanged.
 """
 from __future__ import annotations
 
+import hmac
 import logging
 import os
 from collections.abc import Sequence
@@ -43,8 +44,10 @@ def _require_api_key(request: Request) -> None:
     expected = os.environ.get("APEDP_API_KEY", "")
     if not expected:
         return
-    got = request.headers.get("x-api-key", "")
-    if got != expected:
+    auth = request.headers.get("authorization", "")
+    bearer = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
+    got = request.headers.get("x-api-key", "") or bearer
+    if not hmac.compare_digest(got.encode("utf-8"), expected.encode("utf-8")):
         raise HTTPException(status_code=401, detail="invalid or missing API key")
 
 

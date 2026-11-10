@@ -14,6 +14,15 @@ inferred releases.
 ## [Unreleased]
 
 ### Fixed
+
+- **`apedp_dyn/ui/server.py` is 1,227 lines again, under its 1,686-line ceiling.** The module
+  had re-inlined 21 helpers that `apedp_dyn/ui/helpers.py` already holds byte-for-byte --
+  including two 188-line copies of `_format_sandbox_adjudication` -- which left the size
+  ratchet pinned 30 lines *below* the file it measures. It imports that surface back
+  (explicit `X as X` re-exports keep `apedp_dyn.ui.server.<name>` resolvable for the
+  endpoint modules and tests that import it), and the two divergent `_require_api_key`
+  copies collapse onto the hardened one: bearer-header support and a constant-time
+  `hmac.compare_digest`, which only the server copy had.
 - `apedp_dyn/ui/dashboard.html`: Complete unslopping and institutional REA pass. Stripped all 24 emojis across tabs, buttons, section headers, spinners and audit controls; eliminated glowing neon drop-shadows; replaced hue-gradient buttons with high-contrast slate action controls; added tabular lining numbers; implemented interactive SVG crosshairs with real-time coordinate tooltip inspection in `renderSandboxSVG`; and wired keyboard navigation hotkeys (1–6) for workspace switching. Synchronized `APEDPX_FROZEN_v1_18.json` checksum.
 - `APEDPX_FROZEN_v1_18.json` re-minted three guard-file hashes (`adjudicate.py`, `dashboard.html`, `server.py`) without a `remint_log` entry, leaving one rationale in the log for four changed digests. Each of the three now has its own entry with the old and new digest and what changed; none of them changes a threshold, referee statement or gate decision.
 - `apedp_dyn/ui/dashboard.html` and `apedp_dyn/ui/server.py`: Fixed stray closing brace in dashboard script block causing syntax errors and broken tab navigation. Wired domain-adaptive metric cards (Sharpe/Return, FPR/CAR/SFCR, packing density, ESEDS holdout), added domain visual cards (M0-M5 Extrapolation Ladder & EEDR Self-Correction, Two-Tier risk parity, causal and PDE invariant scorecards, Kepler packing bound), eliminated boolean string coercion on promoted formulas, and synchronized `APEDPX_FROZEN_v1_18.json` hashes.
