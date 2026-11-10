@@ -13,6 +13,25 @@ inferred releases.
 
 ## [Unreleased]
 
+### Changed
+
+- **A promotion now has to beat the constant/null model by more than `tau_epi`.**
+  The referee compared the holdout-best candidate only against its nearest distinct
+  rival, so a pool whose winner was the null model could still be promoted: at 5%
+  noise in the quantum-vacuum subthreshold window (`E` 0.05-0.25 against
+  `Ec` 1.5) the four saturated residuals separate by only Δ/τ ≈ 1.09 and the
+  holdout-best head is `thermal_constant`, a single fitted level. `adjudicate()` now
+  also requires `rmse_null - rmse_best > tau_epi` whenever the pool contains a
+  constant model, identified structurally (every IR term is the unit term `one`)
+  rather than from a candidate id. A null cannot beat itself, so that margin is
+  exactly zero there and the fixture abstains with `NULL_MODEL_NOT_BEATEN` instead
+  of promoting the constant. No threshold value changed: the rule is the existing
+  resolution criterion applied to the floor hypothesis, so mechanisms that clear
+  the null by more than τ are unaffected (creep still promotes `power_law`, 57.8
+  against τ 3.01). `APEDPX_FROZEN_v1_18.json` is re-minted with the new
+  `adjudicate.py` digest, its `remint_log` rationale and an updated
+  `referee_change`, and `PINNED_FROZEN_REGISTRY` matches the new bytes.
+
 ### Fixed
 
 - **ESEDS benchmark judges its exact-integration candidates on the window it was
@@ -29,11 +48,15 @@ inferred releases.
   made the same mistake for the quantum-vacuum sandbox, which F14 re-anchored onto
   the holdout-best head. Both now pin the agreement the contract promises -- verdict
   and promotion flag agree, a promotion needs `delta_rmse > tau_epi`, only the
-  expected mechanism may win -- and both still refuse a low-confidence promotion
-  that is not labelled `WEAK_PROMOTION_MARGIN`. Neither verdict changed; whether the
-  four saturated subthreshold models are distinguishable is left as the physics
-  claim that `test_subthreshold_regime_resolved_under_f14_referee` already treats it
-  as.
+  expected mechanism may win -- and a low-confidence promotion must still be
+  labelled `WEAK_PROMOTION_MARGIN`. The subthreshold arm then changed in the same
+  pass: the holdout-best candidate in that field window is `thermal_constant`, so
+  the null floor (above) makes it abstain, and both subthreshold tests now pin that
+  abstention -- `test_dyn_quantum_sandbox.py::test_subthreshold_regime_abstains_at_the_null_floor`
+  and its counterpart here -- instead of a promotion the null won against itself.
+  The creep verdict is untouched, and whether the four saturated models are
+  physically distinguishable remains a physics claim for a larger holdout or lower
+  noise.
 - **`/api/benchmark/external60/run` keeps its scratch artifacts.** The route wrote
   `apedp_<block>.json` inside a `TemporaryDirectory` context and then returned that
   directory's path, so the directory was deleted before the caller could read it.

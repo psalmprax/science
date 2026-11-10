@@ -10,7 +10,7 @@
     "scipy": "1.18.1"
   },
   "file_hashes_sha256": {
-    "apedp_dyn/epistemic/adjudicate.py": "85060fee348c585155e3e2c3f54a08af04b54a53e98d54152634e67d2b506b84",
+    "apedp_dyn/epistemic/adjudicate.py": "4f7be188f6dccf7c4d989ecd053c6206f971038c29f3c156a39e95ff453b143a",
     "apedp_dyn/epistemic/claim_ladder.py": "2e4de9284910f48ea40d38b094c61e3e1d18b4a4fed579d614d2ae2aae10543b",
     "apedp_dyn/grammar/candidate_ir.py": "3b178e9bea32475ac8ae67572dc584dd203643a990ba291693fb503b07a1561d",
     "apedp_dyn/sandbox/apedp_x_meta_sandbox.py": "3f6e19e1bdb5d33e74e7abbcc893bd5147ea3a51d4753d6add1c4d8ce6bc3b3d",
@@ -28,7 +28,7 @@
   },
   "label": "APEDP-X v1.18-FROZEN",
   "minted_at": "2026-11-10",
-  "referee_change": "adjudicate.py: free-form proposal identity plus holdout rival selection that excludes observationally identical duplicates and requires bootstrap availability; no threshold, referee statement or gate decision changed. dashboard.html/server.py: UI Studio payload and metric-card changes only. multi_asset_signals_sandbox.py: the evaluation index and period label are computed after the volatility warmup truncation instead of before it; no threshold, referee statement or gate decision changed.",
+  "referee_change": "adjudicate.py: free-form proposal identity plus holdout rival selection that excludes observationally identical duplicates and requires bootstrap availability; no threshold, referee statement or gate decision changed. dashboard.html/server.py: UI Studio payload and metric-card changes only. multi_asset_signals_sandbox.py: the evaluation index and period label are computed after the volatility warmup truncation instead of before it; no threshold, referee statement or gate decision changed. adjudicate.py, 2026-11-10: the null/constant promotion floor is added -- when the pool contains a constant model identified from the IR, promotion additionally requires rmse_null - rmse_best > tau_epi, which abstains in the cases where the null was the holdout-best candidate (a null cannot beat itself) or within tau of it. No threshold value changed; the rule applies the existing resolution criterion to the floor hypothesis, and the quantum-vacuum subthreshold fixture now abstains instead of promoting thermal_constant.",
   "referee_guard_files": [
     "apedp_dyn/epistemic/adjudicate.py",
     "apedp_dyn/epistemic/claim_ladder.py",
@@ -88,10 +88,16 @@
       "old_sha256": "1140b5ee22e69307d2103fd4e50b6e091aec670fa3c0e0359c4857e306fe04a6",
       "path": "apedp_dyn/sandbox/eseds_dynamical.py",
       "rationale": "Families C and D scored their exact-integration candidate as lambda tt: N[:len(tt)], which slices by length instead of by time: every holdout block was compared against the training prefix, so the true mechanism showed holdout errors of 34-58 against rivals near 1, lost the survivor contest, and a rival was promoted (FPR_promo 0.333). The candidate is now sampled at the requested times. No threshold, metric definition or scenario list changed; only the wrong-window lookup."
+    },
+    {
+      "new_sha256": "4f7be188f6dccf7c4d989ecd053c6206f971038c29f3c156a39e95ff453b143a",
+      "old_sha256": "85060fee348c585155e3e2c3f54a08af04b54a53e98d54152634e67d2b506b84",
+      "path": "apedp_dyn/epistemic/adjudicate.py",
+      "rationale": "Null/constant promotion floor: the pair path compared the holdout-best candidate only against its nearest distinct rival, so a pool whose winner was the null model could still be promoted -- at 5% noise in the quantum-vacuum subthreshold window the four saturated residuals separate by delta/tau ~ 1.09 and the holdout-best head is thermal_constant, a single fitted level. adjudicate() now also requires rmse_null - rmse_best > tau_epi whenever the pool holds a constant model (every IR term is the unit term 'one'; identified structurally, not by candidate id), and abstains with NULL_MODEL_NOT_BEATEN when that fails, which includes the degenerate self case where the margin is zero. No threshold value changed: the rule is the existing resolution criterion applied to the floor hypothesis. Verdicts for pools whose winner clears the null by more than tau are unchanged (creep still promotes power_law, 57.8 against tau 3.01)."
     }
   ],
   "supersedes": "APEDP-X v1.17-FROZEN",
-  "test_outcome": "AGENTS.md regression suite on the working tree: 281 passed, 1 skipped (0 failed), 2026-11-10 (171.96s)",
+  "test_outcome": "AGENTS.md regression suite on the working tree: 281 passed, 1 skipped (0 failed), 2026-11-10 (216.26s, with the null/constant promotion floor)",
   "thresholds": {
     "RESID_RHO_FLAG": 0.5,
     "SOLE_SURVIVOR_GAMMA": 3.0,
@@ -101,5 +107,5 @@
     "tau_rule": "holdout-scale from gate4 provenance (obs_rms, noise_sigma, n_samples); explicit override allowed"
   },
   "tree_state": "mypy apedp_dyn: 244 errors after annotation remediation",
-  "utc_frozen": "2026-11-10T17:01:35Z"
+  "utc_frozen": "2026-11-10T21:16:11Z"
 }

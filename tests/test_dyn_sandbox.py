@@ -122,21 +122,18 @@ class TestQuantumVacuumSandboxHonesty:
             rmses.append(adj.best_rmse)
         assert rmses[0] < rmses[1] < rmses[2], f"RMSE did not scale monotonically: {rmses}"
 
-    def test_subthreshold_regime_verdict_agrees_with_its_margin(self):
+    def test_subthreshold_regime_abstains_at_the_null_floor(self):
         """Subthreshold regime: the verdict agrees with its own margin.
 
-        This arm used to pin `MULTI_HYPOTHESIS`. F14 re-anchored the bootstrap
-        pair on the holdout-lowest gate-4-certified head rather than the
-        train-loss winner, and the four saturated residuals do separate at 5%
-        noise (delta/tau ~ 1.09), so the referee reaches `unique_support` for
-        `thermal_constant` and labels the boundary case itself. What is pinned
-        here is the agreement the contract promises -- the promotion flag
-        matches the verdict, a promotion needs delta > tau, only the
-        holdout-best `thermal_constant` may win -- together with the diagnostic
-        a ~9% margin must raise. Whether the four models are physically
-        distinguishable inside this field window is a physics claim to
-        re-establish with a larger holdout or lower noise, not a referee
-        artifact to assert.
+        F14 re-anchored the bootstrap pair on the holdout-lowest gate-4 head,
+        which in this field window is `thermal_constant` -- the null model
+        itself, separated from its rivals by only delta/tau ~ 1.09. The
+        referee's null/constant floor refuses that promotion: winning a
+        comparison whose winner is the constant says nothing about the
+        record's structure, and a null cannot beat itself. What is pinned here
+        is abstention plus the agreement the contract promises -- no promotion,
+        delta <= tau, and the diagnostic raised -- not a physics claim about
+        the four saturated models.
         """
         adj, _, _ = run_quantum_vacuum_discovery(
             noise_sigma=0.05,
@@ -146,18 +143,12 @@ class TestQuantumVacuumSandboxHonesty:
             bootstrap=True,
         )
 
-        promoted = adj.status == EpistemicStatus.UNIQUE_SUPPORT
-        assert (adj.promoted is not None) is promoted
-        if promoted:
-            assert adj.promoted.candidate.candidate_id == "thermal_constant"
-            assert adj.delta_rmse is not None and adj.tau_epi is not None
-            assert adj.delta_rmse > adj.tau_epi
-            # Boundary case: a ~9% margin is a low-confidence promotion and
-            # must be labelled as one rather than reported as a clean win.
-            assert adj.promotion_confidence == "low_confidence"
-            assert "WEAK_PROMOTION_MARGIN" in adj.diagnostic_flags
-        else:
-            assert adj.status == EpistemicStatus.MULTI_HYPOTHESIS
+        assert adj.status == EpistemicStatus.MULTI_HYPOTHESIS
+        assert adj.promoted is None
+        assert adj.promotion_confidence == ""
+        assert adj.delta_rmse is not None and adj.tau_epi is not None
+        assert adj.delta_rmse <= adj.tau_epi
+        assert "NULL_MODEL_NOT_BEATEN" in adj.diagnostic_flags
 
     def test_experimental_data_origin_threading(self):
         """Native data_origin='experimental' threads cleanly through candidate provenance to adjudication."""

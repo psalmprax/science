@@ -35,13 +35,16 @@ GRAMMAR_SPACE_PATH = BASE_DIR / "apedp_dyn" / "sandbox" / "grammar_space.py"
 # v1_15 re-mint (2026-11-08): annotations and import order only — no statement,
 # threshold or control-flow decision changed. Rationale per file is recorded in
 # apedp_dyn/sandbox/APEDPX_FROZEN_v1_15.json::remint_log.
+# 2026-11-10: adjudicate.py re-pinned for the null/constant promotion floor (a
+# referee rule change, not a threshold change); rationale recorded in
+# apedp_dyn/sandbox/APEDPX_FROZEN_v1_18.json::remint_log.
 PINNED_FROZEN_REGISTRY: dict[str, str] = {
     # v1_10 re-mint (2026-10-23): grammar-space expansion — H-SQRTV hypothesis and
     # sqrt/tanh/min/max operator declarations in grammar_space.py, saturating-
     # rational term families in candidate_ir.py; rationale recorded in
     # APEDPX_FROZEN_v1_10.json::remint_log. Referee hashes unchanged from v1_9
     # (FLAW-08 re-anchor bootstrap, FLAW-07 monotone C6 evidence set).
-    "apedp_dyn/epistemic/adjudicate.py": "85060fee348c585155e3e2c3f54a08af04b54a53e98d54152634e67d2b506b84",
+    "apedp_dyn/epistemic/adjudicate.py": "4f7be188f6dccf7c4d989ecd053c6206f971038c29f3c156a39e95ff453b143a",
     "apedp_dyn/epistemic/claim_ladder.py": "2e4de9284910f48ea40d38b094c61e3e1d18b4a4fed579d614d2ae2aae10543b",
     "apedp_dyn/sandbox/grammar_space.py": "648304f563877bb72d8ac279458702b918a0162c7d050aa0c36e35e78dbdf1dd",
     "benchmarks/l2_control_freeze.json": "ec117721d1cd9da0b09950bb9b5894110c2411475dfec073b684477c33e96872",

@@ -12,6 +12,14 @@ Resolution rule (D2, heuristic — recorded, not a universal theorem):
   ΔRMSE = RMSE_2 − RMSE_1 (holdout intervention evidence).
   If ΔRMSE ≤ τ_epi for a structurally distinct rival → MULTI_HYPOTHESIS.
 
+Null floor (same criterion, different rival):
+  If the pool contains a constant/null model, RMSE_null − RMSE_best > τ_epi is
+  also required. Beating the nearest rival is not enough when one fitted level
+  explains the record as well as the proposed mechanism does, and a null cannot
+  beat itself — promoting the constant would report structure that the holdout
+  never showed. The null is recognised from the IR term set, never from a
+  candidate id, so no naming convention has to be trusted.
+
 τ_epi is a RESOLUTION floor derived from the holdout record's own scale and
 noise floor — never from gate 4's ACCEPTANCE tolerance. The two answer
 different questions ("is this model good enough?" vs "can these two be told
@@ -462,6 +470,35 @@ def _note_series(sc: Any, resid_best: Any) -> Any:
     return resid_best if resid_best is not None else _residual_series(sc)
 
 
+def _is_null_model(sc: Any) -> bool:
+    """True when ``sc`` is the constant/null hypothesis, read from the IR.
+
+    The null explains the record with one fitted level and no input dependence,
+    so it is the floor every mechanism has to clear. Identified structurally —
+    every term is the unit term ``one`` — rather than from a candidate id:
+    sandboxes name their null ``thermal_constant``, ``constant_price``,
+    ``constant``, ``constant_baseline``, and the referee should not have to
+    trust any of them. ``Term.family`` is the grammar's own vocabulary map and
+    raises for the sandboxes' problem-specific term names, so the unit term is
+    matched by name here. Free-form proposals carry no term set and are never
+    classified as the null — a guess there would manufacture refusals, and the
+    caller that owns the null can pass it as a scored candidate.
+    """
+    # Imported lazily for the same reason as _identity: the module import order
+    # in this package is deliberate.
+    from apedp_dyn.grammar.candidate_ir import CandidateDynamics, SystemCandidate
+
+    c = sc.candidate
+    if isinstance(c, SystemCandidate):
+        equations = c.equations
+    elif isinstance(c, CandidateDynamics):
+        equations = (c,)
+    else:
+        return False
+    terms = [t for e in equations for t in e.terms]
+    return bool(terms) and all(t.name == "one" for t in terms)
+
+
 def _promotion_diagnostics(
     delta: float,
     tau: float | None,
@@ -593,6 +630,13 @@ def adjudicate(fitted: list[Any],
     bootstrap=True is different in kind: the caller explicitly asked for a
     stronger guarantee, so if the tiebreaker is not compiled in this raises
     :data:`CAPABILITY_ABSENT` rather than quietly returning the weaker verdict.
+
+    Null/constant floor: a promotion must beat the best constant null model in
+    the pool by more than tau. This is the same resolution criterion applied to
+    the floor hypothesis instead of the nearest rival — a mechanism that cannot
+    be told apart from a constant level has not explained the record — and it
+    also refuses the degenerate case of the null winning its own comparison,
+    where the margin is necessarily zero.
 
     data_origin labels the provenance source (e.g. "simulation", "experimental",
     "synthetic", "real_observational"). Can be passed directly or read from candidate provenance.
@@ -778,6 +822,67 @@ def adjudicate(fitted: list[Any],
     rivals = [s for s in ranked[1:]
               if _identity(s) != _identity(best) and s.holdout_rmse is not None
               and np.isfinite(s.holdout_rmse)]
+    # Disclosed on every pair-path verdict below: the winner is chosen on the
+    # holdout slice that later certifies it, so that slice is a selection set.
+    selection_reuse_flag = (
+        f"selection_reused_confirmation_holdout(n_candidates={len(ho_scoring)})"
+        if ho_scoring else "")
+
+    # Null/constant floor. Beating the nearest rival is not evidence of
+    # structure when a single fitted level explains the record as well: the
+    # constant is the hypothesis every mechanism has to improve on. The self
+    # case (the holdout-best candidate IS the null) is the same rule with a
+    # margin of zero, and it is exactly what an unguarded promotion would
+    # report as a discovery. This runs before the sole-survivor guards because
+    # when the pool's head is the constant, the honest verdict is
+    # observational non-identifiability, not "the survivor's fidelity is
+    # unproven".
+    null_sc = next((s for s in ranked if _is_null_model(s)), None)
+    if (null_sc is not None and null_sc.holdout_rmse is not None
+            and np.isfinite(null_sc.holdout_rmse)):
+        null_rmse = float(null_sc.holdout_rmse)
+        null_delta = float(null_rmse - best_rmse)
+        if not null_delta > tau:
+            self_null = null_sc is best
+            attr = (epistemic_attribution if epistemic_attribution != "unknown"
+                    else EpistemicAttribution.INTRINSIC_OBSERVATIONAL_NONIDENTIFIABILITY.value)
+            equiv = tuple(
+                s.candidate.candidate_id for s in ranked
+                if s.holdout_rmse is not None and (s.holdout_rmse - best_rmse) <= tau
+            )
+            if self_null:
+                null_reason = (
+                    f"the holdout-best candidate {best.candidate.candidate_id} is "
+                    f"the constant/null model itself; a promotion must beat the "
+                    f"null by more than τ={tau:.3g} [{tau_source}] and a null "
+                    f"cannot beat itself, so the holdout shows no mechanism beyond "
+                    f"a constant level; APEDP abstains from unique promotion")
+            else:
+                null_reason = (
+                    f"best candidate {best.candidate.candidate_id} does not beat "
+                    f"the constant/null baseline {null_sc.candidate.candidate_id} "
+                    f"by more than τ (Δ_null={null_delta:.3g} ≤ τ={tau:.3g} "
+                    f"[{tau_source}] on holdout RMSE); a constant level explains "
+                    f"the record as well as the proposed mechanism, so no "
+                    f"structure is established; APEDP abstains from unique promotion")
+            return Adjudication(
+                EpistemicStatus.MULTI_HYPOTHESIS,
+                rival=None if self_null else null_sc,
+                ranking=tuple(ranked),
+                best_rmse=best_rmse, second_rmse=null_rmse,
+                delta_rmse=null_delta, tau_epi=tau, tau_epi_source=tau_source,
+                holdout_noise_scale=holdout_noise_scale,
+                holdout_scale_source=scale_source,
+                epistemic_margin=float(null_delta - tau),
+                contract=contract,
+                data_origin=data_origin,
+                benchmark_level=benchmark_level,
+                epistemic_attribution=attr,
+                admissible_equivalence_class=equiv,
+                diagnostic_flags=("NULL_MODEL_NOT_BEATEN",) + dup_flags
+                + ((selection_reuse_flag,) if selection_reuse_flag else ()),
+                reason=null_reason)
+
     if not rivals:
         if sole_survivor_rule:
             # Guard 1: absolute predictive adequacy (ceiling first).
@@ -864,10 +969,6 @@ def adjudicate(fitted: list[Any],
     # correction — see apedp_dyn/epistemic/trial_ledger.py) or obtain an
     # independent confirmation split. FULL contract claims are therefore only
     # valid when the caller's ledger separation is honored.
-    selection_reuse_flag = (
-        f"selection_reused_confirmation_holdout(n_candidates={len(ho_scoring)})"
-        if ho_scoring else "")
-
     second = min(rivals, key=lambda s: s.holdout_rmse)
     # delta is measured against the holdout-anchored head, so a genuinely
     # generalizing candidate now earns a nonnegative separation instead of a

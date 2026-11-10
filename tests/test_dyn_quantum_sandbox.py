@@ -60,25 +60,23 @@ class TestQuantumVacuumSandboxHonesty:
             rmses.append(adj.best_rmse)
         assert rmses[0] < rmses[1] < rmses[2], f"RMSE did not scale monotonically: {rmses}"
 
-    def test_subthreshold_regime_resolved_under_f14_referee(self):
-        """Below pair creation threshold (E << Ec), pair production is exponentially
-        suppressed and all four models predict ~0. The referee still separates
-        their saturated residuals at 5% noise: Δ/τ ≈ 1.09, paired block
-        bootstrap 'confirm' ON THE MATCHED RE-ANCHORED PAIR (orphaned Note: the
-        winner must be the holdout-best candidate), winner carries the
-        RESIDUAL_STRUCTURE_UNRESOLVED diagnostic.
+    def test_subthreshold_regime_abstains_at_the_null_floor(self):
+        """Below pair creation threshold (E << Ec) the constant is the floor.
 
-        Reasoned re-mint (F14, commit 68a3dadb): the previous abstention was a
-        MANUFACTURED refusal — the pre-F14 pair anchor was the train-loss
-        winner (classical_linear, train 5.49e-06) whose holdout RMSE (0.0140)
-        was worse than a generalizing rival (thermal_constant, 0.0108), so
-        delta was negative and trivially <= tau. F14 re-anchors the pair on
-        the holdout-lowest gate-4-certified head, which this fixture now
-        exercises; the residual pair handed to the bootstrap is computed from
-        the same holdout ordering, so the confirmation is attributably to the
-        anchored pair. 'Observational indistinguishability' is now a *physics*
-        claim to re-establish (larger holdout, lower noise), not a referee
-        artifact to assert."""
+        At 5% noise the four saturated residuals still separate by a hair
+        (Δ/τ ≈ 1.09) and F14's re-anchoring correctly picks the holdout-best
+        head — which in this window is `thermal_constant`, the null model
+        itself, carrying RESIDUAL_STRUCTURE_UNRESOLVED. The referee must not
+        promote on that: a promotion has to beat the constant null by more than
+        τ, and a null cannot beat itself, so the margin here is exactly zero.
+
+        Reasoned re-mint. F14 (commit 68a3dadb) removed a manufactured refusal
+        by re-anchoring the pair on the holdout-best head; this arm inherits
+        that anchor and adds the null floor, because the promotion F14 produced
+        rested on the null winning its own comparison. Neither verdict is a
+        referee artifact: whether the four models are physically
+        distinguishable in this field window is a *physics* claim to
+        re-establish with a larger holdout or lower noise."""
         adj, _, _ = run_quantum_vacuum_discovery(
             noise_sigma=0.05,
             E_min=0.05,
@@ -86,14 +84,14 @@ class TestQuantumVacuumSandboxHonesty:
             E_c=1.5,
             bootstrap=True,
         )
-        assert adj.status == EpistemicStatus.UNIQUE_SUPPORT
-        assert adj.promoted is not None
-        assert adj.promoted.candidate.candidate_id == "thermal_constant"
-        # Boundary case: the point margin clears tau by only ~9%. Disclose
-        # the weak-margin diagnostics the referee must have raised.
-        assert adj.delta_rmse is not None and adj.tau_epi is not None
-        assert 1.0 < adj.delta_rmse / adj.tau_epi < 2.0
-        assert "WEAK_PROMOTION_MARGIN" in adj.diagnostic_flags
+        assert adj.status == EpistemicStatus.MULTI_HYPOTHESIS
+        assert adj.promoted is None
+        # The holdout-best candidate IS the null model: the null margin is 0.
+        assert adj.ranking[0].candidate.candidate_id == "thermal_constant"
+        assert adj.delta_rmse == 0.0
+        assert adj.tau_epi is not None and adj.tau_epi > 0.0
+        assert "NULL_MODEL_NOT_BEATEN" in adj.diagnostic_flags
+
 
     def test_asymptotic_saturation_regime_abstains(self):
         """In deep asymptotic field window (E >> Ec), curvature is negligible and linear surrogate
