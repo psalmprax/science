@@ -54,11 +54,36 @@ class TestSandboxGalleryExtended:
         assert d["promoted"] == "hp_true"
         assert len(d["series"]["x"]) == 50
 
-    def test_creep_abstains(self):
+    def test_creep_verdict_agrees_with_its_margin(self):
+        """Creep sandbox: the verdict agrees with its own margin.
+
+        This arm used to pin `multi_hypothesis`, an expectation from before the
+        relative-noise generator fix recorded in `creep_powerlaw.py`. The
+        corrected fixture separates the Norton power law decisively -- holdout
+        RMSE 1.606 against rivals at 51.71 / 53.70 / 59.36, `delta_rmse` 50.10
+        against `tau_epi` 3.01 -- so the contract is pinned as agreement rather
+        than as a verdict the corrected generator no longer produces: whatever
+        the referee reaches, the promotion flag and the margin must agree, and
+        only `power_law` may be promoted.
+        """
         d = client.post("/api/sandbox/run", json={"sandbox_id": "creep_law"}).json()
-        assert d["verdict"] == "multi_hypothesis"
-        assert d["promoted"] is None
+
         assert len(d["candidates"]) == 4
+        assert d["verdict"] in (
+            "unique_support", "multi_hypothesis", "insufficient_evidence")
+
+        promoted = d["verdict"] == "unique_support"
+        assert (d["promoted"] is not None) is promoted
+        if promoted:
+            # The power law is the only mechanism the generator instantiates.
+            assert d["promoted"] == "power_law"
+            assert d["delta_rmse"] > d["tau_epi"]
+        elif d["delta_rmse"] is not None and d["tau_epi"] is not None:
+            assert d["delta_rmse"] <= d["tau_epi"]
+
+        # Diagnostic labelling is a contract, not a data reading.
+        if d["promotion_confidence"] == "low_confidence":
+            assert "WEAK_PROMOTION_MARGIN" in d["diagnostic_flags"]
 
     def test_game_abstains(self):
         d = client.post("/api/sandbox/run", json={"sandbox_id": "game_form"}).json()

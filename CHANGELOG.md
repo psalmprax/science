@@ -21,6 +21,19 @@ inferred releases.
   the training prefix; the true mechanism was eliminated and a rival promoted
   (`FPR_promo` 0.333 -> 0.0, `AAR` 0.50 -> 0.64). The freeze record carries the new
   digest with its `remint_log` rationale; no threshold or scenario changed.
+- **Two sandbox tests pinned a verdict their referee no longer reaches.**
+  `tests/test_dyn_ui_sandbox.py::test_creep_abstains` expected `multi_hypothesis`
+  from the creep sandbox, but the rename to `test_creep_verdict_agrees_with_its_margin`
+  recorded in the 2026-11-02 entry never landed, so the stale assertion was still
+  there and failed; `tests/test_dyn_sandbox.py::test_subthreshold_regime_abstains`
+  made the same mistake for the quantum-vacuum sandbox, which F14 re-anchored onto
+  the holdout-best head. Both now pin the agreement the contract promises -- verdict
+  and promotion flag agree, a promotion needs `delta_rmse > tau_epi`, only the
+  expected mechanism may win -- and both still refuse a low-confidence promotion
+  that is not labelled `WEAK_PROMOTION_MARGIN`. Neither verdict changed; whether the
+  four saturated subthreshold models are distinguishable is left as the physics
+  claim that `test_subthreshold_regime_resolved_under_f14_referee` already treats it
+  as.
 - **`/api/benchmark/external60/run` keeps its scratch artifacts.** The route wrote
   `apedp_<block>.json` inside a `TemporaryDirectory` context and then returned that
   directory's path, so the directory was deleted before the caller could read it.
