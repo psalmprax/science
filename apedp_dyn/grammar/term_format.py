@@ -75,6 +75,27 @@ def powered(operand: str, exponent: str) -> str:
     return f"{atom(operand)}**{exponent}"
 
 
+def harmonic(function: str, frequency: str | float, operand: str) -> str:
+    """``<function>(<frequency>*<operand>)`` -- the canonical harmonic probe.
+
+    A frequency-scaled call has exactly one spelling, and it is defined here.
+    The search emits it, a test identifies a recovered law by it, and a
+    candidate id hashed from the text therefore names the same probe wherever
+    it is recomputed. Writing the f-string at the call site instead is what let
+    the harmonic recovery test drift to ``sin(2.0*(x0))`` while the engine
+    emitted ``sin(2.0*x0)``: the same law under two ids.
+
+    The frequency is rendered as a decimal however the caller holds it, so an
+    int ``2``, a float ``2.0`` and the text ``"2"`` all produce ``2.0``; a
+    symbolic frequency (``"omega"``) is kept verbatim.
+    """
+    try:
+        rate = str(float(frequency))
+    except (TypeError, ValueError):
+        rate = str(frequency)  # symbolic: already text, and not this module's to parse
+    return f"{function}({scaled(rate, operand)})"
+
+
 def over(numerator: str, denominator: str) -> str:
     """``<numerator>/<denominator>`` with both sides bound as units.
 
@@ -85,4 +106,4 @@ def over(numerator: str, denominator: str) -> str:
     return f"{atom(numerator)}/{atom(denominator)}"
 
 
-__all__ = ["atom", "is_atomic", "over", "powered", "scaled"]
+__all__ = ["atom", "harmonic", "is_atomic", "over", "powered", "scaled"]

@@ -405,6 +405,28 @@ def test_the_formatter_leaves_atoms_alone_and_binds_sums():
     assert f"2.0*{atom('a + b')}^2" == "2.0*(a + b)^2"
 
 
+def test_a_harmonic_probe_has_one_canonical_spelling():
+    """`harmonic` is the only place a frequency-scaled call is spelled.
+
+    The engine emits `sin(2.0*x0)` for an atomic seed and `sin(2.0*(x0 + 1))`
+    for a sum. A test or a candidate id that spells either by hand can drift
+    from the engine -- that is how the harmonic recovery test came to expect
+    `sin(2.0*(x0))`, a law the search had stopped emitting.
+    """
+    from apedp_dyn.grammar.term_format import harmonic
+
+    assert harmonic("sin", 2.0, "x0") == "sin(2.0*x0)"
+    assert harmonic("cos", "0.5", "x0") == "cos(0.5*x0)"
+    assert harmonic("sin", 3, "x0 + 1") == "sin(3.0*(x0 + 1))"
+    # A symbolic frequency is already text, and is kept verbatim.
+    assert harmonic("sin", "omega", "t") == "sin(omega*t)"
+    # One law, one id: the caller's numeric type does not change the spelling.
+    for frequency in (2, 2.0, "2", "2.0", "2e0"):
+        assert harmonic("sin", frequency, "x0") == "sin(2.0*x0)", frequency
+    # The argument is bound as a unit, so the frequency applies to the whole seed.
+    assert sp.sympify(harmonic("sin", 2.0, "x0 + 1")) == sp.sin(2.0 * (sp.Symbol("x0") + 1))
+
+
 def test_a_sum_named_library_term_keeps_one_shared_coefficient():
     """`TermLibrary.render` names caller-supplied terms; a term may be a sum."""
     from apedp_dyn.qed.library import TermLibrary

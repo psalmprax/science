@@ -856,9 +856,11 @@ class HierarchicalSearch:
             expr = seed['expression']
             probes = self._expansions(expr, var)
             if self.template_set == "extended":
-                from apedp_dyn.grammar.term_format import atom
-                unit = atom(expr)  # the seed is one operand, not its first addend
-                probes = (*probes, *(f"{fn}({sc}*{unit})" for fn in ("sin", "cos")
+                # `harmonic` owns the spelling: the seed arrives as one operand,
+                # not its first addend, and the emitted text is the one a test or
+                # a candidate id can reproduce without guessing parentheses.
+                from apedp_dyn.grammar.term_format import harmonic
+                probes = (*probes, *(harmonic(fn, sc, expr) for fn in ("sin", "cos")
                                      for sc in _TRIG_FREQUENCY_SCALES))
             for expanded in probes:
                 if expanded in seen:

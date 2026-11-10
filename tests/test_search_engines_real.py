@@ -8,6 +8,7 @@ import pytest
 from apedp.advanced_search import HierarchicalSearch, NGTSSearch, _evaluate_expression
 from apedp.ensemble_search import EnsembleSearcher
 from apedp.feature_selection import beam_search_expressions
+from apedp_dyn.grammar.term_format import harmonic
 
 
 def test_beam_is_deterministic_and_bounded():
@@ -186,7 +187,15 @@ def test_extended_search_recovers_harmonic_on_untouched_holdout():
 
     candidates = HierarchicalSearch().search(
         x_train.reshape(-1, 1), y_train, budget=120, variable_names=["x0"])
-    candidate = next(c for c in candidates if c["expression"] == "sin(2.0*(x0))")
+    # The probe's spelling is defined once by `term_format.harmonic`, which is
+    # what the engine emits through; asking for the same text here is what stops
+    # the two drifting to different spellings of the same law (and different ids).
+    law = harmonic("sin", 2.0, "x0")
+    recovered = [c for c in candidates if c["expression"] == law]
+    assert recovered, [c["expression"] for c in candidates if "sin" in c["expression"]]
+    candidate = recovered[0]
+    assert abs(candidate["fitted_scale"] - 1.0) < 0.05
+    assert abs(candidate["fitted_offset"]) < 0.02
     prediction = _evaluate_expression(candidate["expression"], ["x0"], [x_test])
     assert prediction is not None
     prediction = candidate["fitted_scale"] * prediction + candidate["fitted_offset"]
