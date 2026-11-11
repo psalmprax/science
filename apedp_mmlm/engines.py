@@ -526,6 +526,8 @@ class TensorTrainMemoryEngine:
         self.readout = np.zeros((self.bond_dim, self.vocab_size), dtype=np.float64)
         self.left_boundary = np.zeros(self.bond_dim, dtype=np.float64)
         self.left_boundary[0] = 1.0
+        self.dmrg_tensors: list[np.ndarray] = []
+        self.dmrg_token_ids: tuple[int, ...] = ()
 
     def fit_sequences(
         self,
@@ -578,6 +580,143 @@ class TensorTrainMemoryEngine:
         logits -= float(np.max(logits))
         exp_l = np.exp(logits)
         return exp_l / float(np.sum(exp_l))
+
+    def dmrg_two_site_sweep(
+        self,
+        sequences: Sequence[Sequence[int]],
+        n_sweeps: int = 2,
+        max_bond_dim: int | None = None,
+        cutoff: float = 1e-8,
+    ) -> dict:
+        """Compress an empirical sequence-amplitude tensor by two-site sweeps.
+
+        Equal-length sequences define amplitudes sqrt(frequency / sample count).
+        Canonical environments give exact local least-squares updates, followed
+        by a rank-limited SVD in each direction. This is variational tensor
+        fitting, not a quantum Hamiltonian ground-state calculation. The finite,
+        position-dependent MPS is stored in ``dmrg_tensors`` over the observed
+        ``dmrg_token_ids``; the streaming tied cores/readout are not overwritten.
+        """
+        rank_cap = self.bond_dim if max_bond_dim is None else max_bond_dim
+        if (not isinstance(n_sweeps, (int, np.integer)) or isinstance(n_sweeps, bool)
+                or not isinstance(rank_cap, (int, np.integer)) or isinstance(rank_cap, bool)
+                or n_sweeps < 1 or rank_cap < 1):
+            raise ValueError("n_sweeps and max_bond_dim must be positive integers")
+        if not math.isfinite(cutoff) or not 0 <= cutoff < 1:
+            raise ValueError("cutoff must be finite and in [0, 1)")
+        if not sequences or len(sequences[0]) < 2:
+            raise ValueError("at least one sequence of length >= 2 is required")
+        length = len(sequences[0])
+        if any(len(seq) != length for seq in sequences):
+            raise ValueError("two-site fitting requires equal-length sequences")
+        if any(not isinstance(tok, (int, np.integer)) or not 0 <= tok < self.vocab_size
+               for seq in sequences for tok in seq):
+            raise ValueError("sequence tokens must be integer IDs within the vocabulary")
+        counts = Counter(tuple(int(tok) for tok in seq) for seq in sequences)
+        symbols = tuple(sorted({tok for seq in counts for tok in seq}))
+        symbol_indices = {tok: index for index, tok in enumerate(symbols)}
+        samples = [
+            (tuple(symbol_indices[tok] for tok in seq), math.sqrt(count / len(sequences)))
+            for seq, count in sorted(counts.items())
+        ]
+        physical_dim = len(symbols)
+        bulk = self.cores[list(symbols)].transpose(1, 0, 2)
+        tensors = [bulk.copy() for _ in range(length)]
+        tensors[0] = np.einsum("a,apb->pb", self.left_boundary, bulk)[None, :, :]
+        tensors[-1] = bulk.sum(axis=2, keepdims=True) / math.sqrt(self.bond_dim)
+
+        def right_canonicalize(normalize: bool = False) -> None:
+            for site in range(length - 1, 0, -1):
+                tensor = tensors[site]
+                matrix = tensor.reshape(tensor.shape[0], -1)
+                if normalize:
+                    u, singular, vh = np.linalg.svd(matrix, full_matrices=False)
+                    rank = min(rank_cap, len(singular))
+                    tensors[site] = vh[:rank].reshape(rank, physical_dim, tensor.shape[2])
+                    transfer = u[:, :rank] * singular[:rank]
+                else:
+                    q, r = np.linalg.qr(matrix.T)
+                    tensors[site] = q.T.reshape(q.shape[1], physical_dim, tensor.shape[2])
+                    transfer = r.T
+                tensors[site - 1] = np.tensordot(tensors[site - 1], transfer, axes=([-1], [0]))
+                if normalize:
+                    norm = float(np.linalg.norm(tensors[site - 1]))
+                    if not math.isfinite(norm) or norm == 0:
+                        raise RuntimeError("two-site initialization has invalid amplitude norm")
+                    tensors[site - 1] /= norm
+
+        def amplitude(seq: tuple[int, ...]) -> float:
+            state = np.ones(1)
+            for site, tok in enumerate(seq):
+                state = state @ tensors[site][:, tok, :]
+            return float(state[0])
+
+        def error() -> float:
+            env = np.ones((1, 1))
+            for tensor in tensors:
+                env = np.einsum("ab,apc,bpd->cd", env, tensor, tensor, optimize=True)
+            overlap = sum(weight * amplitude(seq) for seq, weight in samples)
+            return max(0.0, float(env[0, 0]) + 1.0 - 2 * overlap)
+
+        right_canonicalize(normalize=True)
+        errors = [error()]
+        for _ in range(n_sweeps):
+            for forward in (True, False):
+                sites = range(length - 1) if forward else range(length - 2, -1, -1)
+                for site in sites:
+                    dl, dr = tensors[site].shape[0], tensors[site + 1].shape[2]
+                    theta = np.zeros((dl, physical_dim, physical_dim, dr))
+                    for seq, weight in samples:
+                        left, right = np.ones(1), np.ones(1)
+                        for pos in range(site):
+                            left = left @ tensors[pos][:, seq[pos], :]
+                        for pos in range(length - 1, site + 1, -1):
+                            right = tensors[pos][:, seq[pos], :] @ right
+                        theta[:, seq[site], seq[site + 1], :] += weight * np.outer(left, right)
+                    u, singular, vh = np.linalg.svd(
+                        theta.reshape(dl * physical_dim, physical_dim * dr),
+                        full_matrices=False,
+                    )
+                    rank = min(rank_cap, max(1, int(np.count_nonzero(singular > cutoff * singular[0]))))
+                    u, singular, vh = u[:, :rank], singular[:rank], vh[:rank]
+                    tensors[site] = (u if forward else u * singular).reshape(dl, physical_dim, rank)
+                    tensors[site + 1] = ((singular[:, None] * vh) if forward else vh).reshape(
+                        rank, physical_dim, dr
+                    )
+            errors.append(error())
+
+        # A final canonical pass measures Schmidt spectra of the final MPS,
+        # rather than retaining spectra from intermediate optimization steps.
+        right_canonicalize()
+        entropies: list[float] = []
+        spectra: list[list[float]] = []
+        for site in range(length - 1):
+            tensor = tensors[site]
+            u, singular, vh = np.linalg.svd(
+                tensor.reshape(-1, tensor.shape[2]), full_matrices=False
+            )
+            norm = float(np.linalg.norm(singular))
+            if norm == 0:
+                raise RuntimeError("two-site fit produced a zero-amplitude tensor")
+            spectrum = singular / norm
+            probabilities = spectrum[spectrum > 0] ** 2
+            entropies.append(-float(np.sum(probabilities * np.log(probabilities))))
+            spectra.append(spectrum.tolist())
+            tensors[site] = u.reshape(tensor.shape[0], physical_dim, len(singular))
+            tensors[site + 1] = np.tensordot(
+                singular[:, None] * vh, tensors[site + 1], axes=([1], [0])
+            )
+        self.dmrg_tensors = tensors
+        self.dmrg_token_ids = symbols
+        return {
+            "basis": "empirical sequence-amplitude least squares; separate finite MPS",
+            "sweeps_completed": n_sweeps,
+            "squared_error_by_sweep": errors,
+            "mean_entanglement_entropy": float(np.mean(entropies)),
+            "max_entanglement_entropy": max(entropies),
+            "top_schmidt_spectrum": spectra[int(np.argmax(entropies))],
+            "bond_dimensions": [tensor.shape[2] for tensor in tensors[:-1]],
+        }
 
 
 class TreeTensorNetworkMemoryEngine:

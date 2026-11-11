@@ -403,7 +403,7 @@ def test_quantum_discovery_dag_front_layer_lookahead_routing():
 
 
 def test_fault_tolerant_proposers_use_sourced_caps():
-    """Caps come from verifier readings, and every estimate is labelled as one.
+    """Caps come from recorded measurements, and every estimate is labelled as one.
 
     The package shipped with a campaign target (1,789), an unsourced width (85) and a
     competition rule (128). Only the last was sourced, and the first two contradicted the
@@ -422,7 +422,7 @@ def test_fault_tolerant_proposers_use_sourced_caps():
     assert all("heuristic" in s.cost_basis for s in schedules)
 
     dqi_opt = MMLMDQIScheduleOptimizer()
-    # The cap is the verifier's peak, not the 1,885 the recycling hoped for: that build decodes
+    # The cap is the pinned reference's peak, not the 1,885 the recycling hoped for: that build decodes
     # wrongly, so a proposer filtered on it would score designs against a width nothing has.
     assert dqi_opt.qubit_cap == DQI_SOURCED_PEAK_QUBITS == 1893
     assert DQI_MEASURED_REFERENCE_PEAK_QUBITS == 1893
@@ -439,7 +439,7 @@ def test_fault_tolerant_proposers_use_sourced_caps():
         assert deg_B + deg_b <= 63 + 1
     assert "n + 1" in dqi_sched.invariant_basis
     assert "closed" in dqi_sched.invariant_basis
-    # 1,789 stays a campaign target: 104 qubits below the peak a verified circuit has.
+    # 1,789 stays a campaign target: 104 qubits below the measured reference peak.
     assert DQI_SOURCED_PEAK_QUBITS - 1789 == 104
 
     dft_opt = MMLMDfthcsosOptimizer()
@@ -465,11 +465,16 @@ def test_absent_benchmark_artifacts_import_but_refuse_to_guess(tmp_path):
     probe = (
         "from apedp_mmlm.quantum_discovery import INVSQRT_MEASURED_PEAK_QUBITS as cap\n"
         "from apedp_mmlm.quantum_discovery import MMLMInvSqrtProposer, UnsourcedCapError\n"
+        "from apedp_mmlm.quantum_discovery import MMLMDQIScheduleOptimizer\n"
         "print('cap', cap)\n"
         "try:\n"
         "    MMLMInvSqrtProposer().propose_schedules(top_k=1)\n"
         "except UnsourcedCapError:\n"
         "    print('refused')\n"
+        "try:\n"
+        "    MMLMDQIScheduleOptimizer().optimize_eea_schedule()\n"
+        "except UnsourcedCapError as exc:\n"
+        "    print('dqi refused', exc)\n"
     )
     result = subprocess.run(
         [sys.executable, "-c", probe],
@@ -481,23 +486,33 @@ def test_absent_benchmark_artifacts_import_but_refuse_to_guess(tmp_path):
     assert result.returncode == 0, result.stderr
     assert "cap None" in result.stdout
     assert "refused" in result.stdout
+    assert "dqi refused" in result.stdout
+    assert "dqi_official_compatibility.json" in result.stdout
 
     # An explicit cap needs no artifact, which is the supported way to use it elsewhere.
     assert MMLMInvSqrtProposer(qubit_cap=90).propose_schedules(top_k=1)
+    assert MMLMDQIScheduleOptimizer(qubit_cap=1893).optimize_eea_schedule()
 
 
 def test_fault_tolerant_caps_track_the_committed_artifacts():
     """A cap that drifts from its artifact fails here, not in a campaign report."""
     from apedp_dyn.quantum_compilation.dqi_gluzdov_v6 import RECYCLING_MEASUREMENT
+    from apedp_dyn.quantum_compilation.kickmix_builds import SHIPPED_BUILD
 
     root = pathlib.Path(__file__).resolve().parents[1] / "benchmarks" / "quantum_compilation"
     receipt = json.loads((root / "invsqrt_kernel_receipt.json").read_text())["receipt"]
-    reverify = json.loads((root / "dqi_full_instance_reverify.json").read_text())["verified"]
+    compatibility = json.loads((root / "dqi_official_compatibility.json").read_text())
+    reference = compatibility["builds"]["pinned"]["reference"]
     gate = json.loads((root / "dfthcsos_precision_gate.json").read_text())
 
     assert INVSQRT_MEASURED_PEAK_QUBITS == receipt["num_qubits"]
     assert INVSQRT_MEASURED_TOFFOLIS == receipt["max_toffoli_count"]
-    assert DQI_MEASURED_REFERENCE_PEAK_QUBITS == reverify["num_qubits"]
+    assert compatibility["instance"] == {
+        "m": 4095, "n": 70, "degree": 12, "shots": 64, "seed": 20261028,
+    }
+    assert reference["syndromes_restored"] and reference["junk_clean"]
+    assert compatibility["builds"]["pinned"]["extension_sha256"] == SHIPPED_BUILD.sha256
+    assert DQI_MEASURED_REFERENCE_PEAK_QUBITS == reference["qubits"]
     assert DQI_SOURCED_PEAK_QUBITS == DQI_MEASURED_REFERENCE_PEAK_QUBITS
     # The 1,885 the recycling promised is carried only as a closed route.
     assert RECYCLING_MEASUREMENT["supported_peak_qubits"] == 1885
@@ -578,7 +593,7 @@ def test_direction_1_zx_calculus_clifford_plus_t_synthesis_and_equivalence():
 
 
 def test_direction_2_dmrg_two_site_sweep_and_entanglement_entropy():
-    """Verify Direction 2: DMRG two-site variational sweeping, SVD Schmidt spectrum, and entanglement entropy."""
+    """Verify two-site empirical-amplitude fitting and its measured Schmidt diagnostics."""
     engine = TensorTrainMemoryEngine(vocab_size=16, bond_dim=6, seed=42)
     seqs = [
         [2, 4, 7, 9, 3],
@@ -597,6 +612,9 @@ def test_direction_2_dmrg_two_site_sweep_and_entanglement_entropy():
     assert res["sweeps_completed"] == 2
     assert res["mean_entanglement_entropy"] > 0.0, "Entanglement entropy must be positive"
     assert len(res["top_schmidt_spectrum"]) > 0
+    assert res["squared_error_by_sweep"][-1] < 1e-12
+    assert max(res["bond_dimensions"]) <= 4
+    assert "empirical" in res["basis"]
 
     # Ensure Frobenius norm of cores remains well-behaved
     for v in range(engine.vocab_size):

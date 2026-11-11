@@ -2961,15 +2961,33 @@ special tokens and 256 byte tokens, so it must be at least 260 (for example,
 308 allows up to 48 learned tokens). Encoding works before fitting using bytes;
 refitting resets learned merges. The package facade also exports `ZXDiagram`,
 `mmlm_zx_t_count`, and `optimize_clifford_plus_t_zx`.
-The architecture suite still references an unimplemented
-`TensorTrainMemoryEngine.dmrg_two_site_sweep`; that feature is not provided by
-the current tensor-memory implementation. Fault-tolerant cap tests additionally
-require the missing `dqi_full_instance_reverify.json` evidence artifact.
+`TensorTrainMemoryEngine.dmrg_two_site_sweep` fits a finite, position-dependent
+MPS to equal-length sequences with target amplitudes
+`sqrt(sequence frequency / sample count)`. It alternates exact two-site
+least-squares projections in canonical environments and SVD truncation.
+`max_bond_dim` bounds retained ranks; `cutoff` is relative to the largest
+singular value. The report measures squared reconstruction error and final
+normalized Schmidt spectra/entropies (natural logarithms). The fitted cores
+and their compact observed-token alphabet are available as `dmrg_tensors`
+and `dmrg_token_ids`. This is DMRG-style variational tensor fitting, **not**
+a quantum ground-state solver or a replacement for the existing streaming
+tied-core/readout predictor; that predictor is unchanged. Unequal-length
+sequences and invalid token IDs fail explicitly rather than being padded or
+wrapped silently.
+
+The DQI schedule cap now comes from the existing
+`dqi_official_compatibility.json` pinned-build reference measurement
+(`builds.pinned.reference.qubits`), not the absent
+`dqi_full_instance_reverify.json`. Its scope is the full 4,095-position
+instance measured over **64 shots**, with recorded restored syndromes and
+clean junk. This supplies a measured width, **not** a new full-verifier
+receipt or correctness certificate. Missing evidence still raises
+`UnsourcedCapError`; an explicit caller-supplied cap remains supported.
 
 | Module | Purpose | Status |
 |---|---|---|
 | [`apedp_mmlm/__init__.py`](../apedp_mmlm/__init__.py) | Package facade for the three-track Multi-Mathematical Language Model research architecture (`Track A` non-neural, `Track B` ablation-governed hybrid, `Track C` attention-free replacement) and quantum discovery | `experimental` |
-| [`apedp_mmlm/engines.py`](../apedp_mmlm/engines.py) | The five mathematical engines: Engine 1 (Weighted Automata, Decomposable Probabilistic Circuits, Bayesian Dirichlet Engine), Engine 2 (trainable 1D Tensor Train cores & Binary Hierarchical Tree Tensor Network; DMRG sweeping is not implemented), Engine 3 (Streaming Dynamical Systems & EDMD Koopman Operators), Engine 4 (Concept Hypergraphs & FFT Vector Symbolic Architectures), Engine 5 (Global Sequence Energy Evaluator, Polynomial Speculative Energy Decoder, and Epistemic Adjudicator), and Byte-Pair Encoding (`BPEMMLMTokenizer`) with UTF-8 byte fallback | `experimental` |
+| [`apedp_mmlm/engines.py`](../apedp_mmlm/engines.py) | The five mathematical engines: Engine 1 (Weighted Automata, Decomposable Probabilistic Circuits, Bayesian Dirichlet Engine), Engine 2 (trainable 1D Tensor Train streaming cores, separate two-site finite-MPS empirical-amplitude fitting & Binary Hierarchical Tree Tensor Network), Engine 3 (Streaming Dynamical Systems & EDMD Koopman Operators), Engine 4 (Concept Hypergraphs & FFT Vector Symbolic Architectures), Engine 5 (Global Sequence Energy Evaluator, Polynomial Speculative Energy Decoder, and Epistemic Adjudicator), and Byte-Pair Encoding (`BPEMMLMTokenizer`) with UTF-8 byte fallback | `experimental` |
 | [`apedp_mmlm/models.py`](../apedp_mmlm/models.py) | Models `NonNeuralMMLM_A0`, `HybridMMLM_B0` and `AttentionFreeMMLM_C0`, plus small comparison baselines. `Milestone1BenchmarkSuite` defaults to a deterministic synthetic subject-relation-object split (75/25/25), fits its tokenizer on training text only, and accepts an optional train/dev/test corpus carrying source, license, retrieval date, and per-split hashes. Those declarations are not independently verified, no suitable external MMLM corpus is bundled, and fixed retrieval/ListOps probes remain synthetic. H2 is measured as B0 dynamical-only streaming next-token accuracy against the frozen 0.70 threshold; H5 requires B0 or C0 to win both majority-based quality and efficiency axes against each baseline. Results and repeated-seed variability remain descriptive, not significance tests or external validation unless that data is actually supplied and audited. | `experimental` |
 | [`apedp_mmlm/quantum_discovery.py`](../apedp_mmlm/quantum_discovery.py) | Quantum-reach MMLM circuit discovery: Universal ZX-Calculus & Clifford+T synthesis (`ZXSpider`, `ZXDiagram`, `optimize_clifford_plus_t_zx`, `mmlm_zx_t_count`), Local Complementation + symplectic CX graph-state synthesis (`synthesize_graph_state_mmlm`), general stabilizer tableau synthesis (`synthesize_stabilizer_target_mmlm`, `synthesize_any_target_mmlm`), commutation-aware Clifford rewriting (`mmlm_clifford_search`), DAG front-layer lookahead routing (`place_with_dag_lookahead`), fault-tolerant compilation proposers (`MMLMInvSqrtProposer`, `MMLMDQIScheduleOptimizer`, `MMLMDfthcsosOptimizer`), and sparse cubic HUBO + Koopman QAOA equation discovery (`MMLMQEDProposer`). Measured on the corpus's 75 graph states: **54 wins / 21 ties / 0 losses**, **308 two-qubit gates saved** (6,193 $\to$ 5,885) — split by family `random_graph` **25/25 wins, 238 gates**, `regular3` **17/25 wins, 29 gates**, `regular4` **12/25 wins, 41 gates**, and thinning with width on the regular families (`regular4` 0 gates at 32q, `regular3` 3 at 64q), so **77% of the total is one family** — 75/75 certified `VALID` by `adjudicate_specification`, recorded in [`benchmarks/quantum_compilation/vqc_mmlm_graph_state.json`](../benchmarks/quantum_compilation/vqc_mmlm_graph_state.json) and reproduced by [`scripts/measure_vqc_mmlm_graph_states.py`](../scripts/measure_vqc_mmlm_graph_states.py), with one measured negative result attached: a bounded plateau walk (`max_plateau_steps`, up to 8 zero-delta moves past the 2-step lookahead, LC and CX ranked together) reproduces **54 wins / 308 gates exactly**, so the thinning on `regular3`/`regular4` is a limit of the move set rather than of search depth | `experimental` |
 | [`mmlm_matter_001/__init__.py`](../mmlm_matter_001/__init__.py) | MMLM-MATTER-001 package facade: the Phase 1 model-interoperability slice of [`docs/MMLM-MATTER-001_Implementation_Blueprint.md`](MMLM-MATTER-001_Implementation_Blueprint.md). Separate from `apedp_mmlm` (mathematical language models); nothing in the package accepts a candidate, because verification is the referee's. | `experimental` |
