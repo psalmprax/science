@@ -385,14 +385,15 @@ def test_materialize_faros_circuit_execution(tmp_path):
 
 
 def test_calibrate_faros_circuit_execution(tmp_path):
-    """Verify cutting-plane calibration report and rotation angle optimization."""
+    """Verify fixed-delta replay without claiming an LP solver ran."""
     out_kmb = tmp_path / "invsqrt_faros_test_cal.kmb"
     materialize_faros_circuit(output_path=out_kmb)
 
     cal_rep = calibrate_faros_circuit(out_kmb)
     assert cal_rep["calibrated_rotation_count"] == 44
     assert cal_rep["margin_units"] == 73326605
-    assert cal_rep["lp_converged"] is True
+    assert cal_rep["lp_converged"] is None
+    assert cal_rep["margin_verified"] is False
     assert "dropped_original_rotation_indices" in cal_rep
 
 
@@ -407,4 +408,3 @@ def test_verify_faros_candidate_receipt_structure(tmp_path):
     assert data["verified_shots"] >= 200540928
     assert data["worst_error_over_tolerance"] < 1.0
     assert data["circuit_sha256"] == "7bd8955e7bda35382f33ba6df6239c746bcb1adad627f585939db6bc1accc3d0"
-

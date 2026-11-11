@@ -147,7 +147,7 @@ environment setup and scope limitations.
 | Check | Command / scope | Actual workflow and job |
 | --- | --- | --- |
 | Python lint | `make lint`: Ruff `E9,F` on `apedp/`, `apedp_dyn/`, `tests/`; configured rules on `apedp_dyn/conf/` | [APEDP CI/CD](.github/workflows/test.yml), `python-quality` (Python 3.12) |
-| Type checks | `make typecheck`: strict mypy on `apedp_dyn/conf/paths.py`, `canonical_spec.py`, and `benchmark.py`, not the entire repository | [APEDP CI/CD](.github/workflows/test.yml), `python-quality` |
+| Type checks | `make typecheck`: strict mypy on three `apedp_dyn/conf/` modules plus `quantum_compilation/faros_runtime.py` and `kickmix_builds.py`, not the entire repository | [APEDP CI/CD](.github/workflows/test.yml), `python-quality` |
 | Rust quality/unit tests | `make lint-rust`; `cargo test --workspace --locked` | [APEDP CI/CD](.github/workflows/test.yml), `rust-quality` |
 | Native build and smoke | `maturin develop --locked --manifest-path rust/apedp-kernel/Cargo.toml`, bridge availability assertion, `python -m pytest tests/test_smoke_imports.py -q -x`, then test collection | [APEDP CI/CD](.github/workflows/test.yml), `test` (Python 3.10/3.11/3.12) |
 | Scientific evidence | `python benchmarks/check_scientific_drift.py`; `python -m pytest tests/test_scientific_recovery.py tests/test_dyn_rime_known_truth.py -q -m scientific_regression` | [APEDP CI/CD](.github/workflows/test.yml), `test` |

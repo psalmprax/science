@@ -55,8 +55,27 @@ jobs:
       - name: Rust kernel unit tests
         run: cargo test --workspace --locked
 
+  research-models:
+    name: Research model regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-research.lock
+      - name: Install hash-pinned numerical test dependencies
+        run: python -m pip install --require-hashes -r requirements-research.lock
+      - name: Check rounding, normalization, and parity models without native dependencies
+        run: |
+          python -m pytest scripts/check_normalized_invsqrt.py \
+            scripts/check_horner_invsqrt.py scripts/check_parity_phase.py \
+            -k "not native" -q
+
   test:
-    needs: [python-quality, rust-quality]
+    needs: [python-quality, rust-quality, research-models]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     services:
@@ -71,9 +90,6 @@ jobs:
           --health-retries 20
     env:
       APEDP_REDIS_URL: redis://localhost:6379/0
-      # Avoid component conflicts in the hosted runner's preinstalled toolchains.
-      # All Rust steps share this job-local home, including the default toolchain.
-      RUSTUP_HOME: ${{ runner.temp }}/rustup
     strategy:
       fail-fast: true
       matrix:
@@ -81,6 +97,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+
+      - name: Isolate Rust toolchain home
+        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustup" >> "$GITHUB_ENV"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7

@@ -170,7 +170,8 @@ against the built kernel, not silently skip.
   across `apedp/`, `apedp_dyn/`, and `tests/`, retaining existing frozen-file
   exemptions. The full configured rule set gates `apedp_dyn/conf/`.
 - Mypy is **strict** for the repository path resolver, canonical spec loader,
-  and D5-CONF noise-sweep benchmark. Imported legacy packages are opaque
+  D5-CONF noise-sweep benchmark, extracted FAROS runtime boundary, and native
+  build-integrity registry. Imported legacy packages are opaque
   (`follow_imports = "skip"`).
 - Bandit checks medium and higher findings in `apedp/` and high findings in
   `apedp_dyn/`; the latter scope is narrower until its intentional lower-severity
@@ -197,9 +198,18 @@ An arbitrary rebuilt extension is not sufficient: `load_contract` verifies its
 hash against the approved build registry.
 
 Restore the pinned upstream sources with `git submodule update --init`.
-For the verifier interpreter, create a Python 3.13 environment under
-`build/qvcc-venv313` and install NumPy and SciPy, or set `APEDP_Q_PYTHON` to a
-compatible executable. FAROS honors an explicit `python_executable` first,
+Create the pinned native environment and check it explicitly:
+
+```bash
+uv venv --python 3.13.14 build/qvcc-pinned313
+uv pip install --python build/qvcc-pinned313/bin/python --require-hashes -r requirements-native.lock
+python scripts/check_verifier_environment.py --python-executable build/qvcc-pinned313/bin/python
+```
+
+Preflight refuses missing or unapproved binaries before loading them. The
+source build is toolchain-sensitive and is not guaranteed to match the approved
+hash on another machine. Installing the lock does not supply the approved
+binary or historical receipt. FAROS honors an explicit `python_executable` first,
 then `APEDP_Q_PYTHON`, then repository-local `build/qvcc-pinned313` and
 `build/qvcc-venv313` environments. Invalid explicit overrides fail rather than
 being silently replaced. Resource measurement failures also fail rather than
@@ -210,6 +220,29 @@ The historical receipt test additionally requires
 circuit digest. A new run is separate evidence, not a replacement for that
 missing historical artifact. Do not fabricate the receipt or change the binary
 pin simply to make these tests pass.
+
+The manually dispatched `Approved native research checks` workflow accepts an
+artifact run ID and name from this repository, verifies the downloaded binary's
+approved hash and interpreter, and runs native phase regression checks. It is
+not a full-domain correctness certification. No approved binary artifact is
+currently provided by these changes.
+
+The blocking `Research model regressions` job installs
+`requirements-research.lock` and runs numerical normalization, rounded Horner,
+and parity regressions without native dependencies. Its explicit exclusion of
+the native parity check is paired with the separate approved-native workflow,
+not presented as evidence that native tests passed. Regenerate the numerical
+and native locks with `uv pip compile requirements-research.in --python-version 3.12 --generate-hashes --output-file requirements-research.lock`
+and `uv pip compile requirements-native.in --python-version 3.13 --generate-hashes --output-file requirements-native.lock`.
+
+The FAROS builder now runs a fresh verifier when `--verify` is supplied and
+propagates failure; without it, the pipeline status is `built_not_verified`.
+It does not reuse historical receipts or subtract a fixed Toffoli discount.
+Resource statistics are measured from the final circuit, while synthesis cost
+and the historical margin remain explicitly labeled estimates/assumptions.
+Calibration replays fixed deltas and reports `lp_converged: null` and
+`margin_verified: false`; it does not execute or claim convergence of an LP.
+`tests/test_faros_evidence_pipeline.py` checks these reporting contracts.
 
 `scripts/prototype_streamed_invsqrt.py` explores a separate 50-qubit-capped,
 bit-sliced phase lookup. Run it with the KickMix-compatible interpreter and its

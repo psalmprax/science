@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from apedp_dyn.quantum_compilation import faros_isq as faros
+from apedp_dyn.quantum_compilation import faros_runtime as runtime
 
 
 def test_explicit_interpreter_overrides_environment(monkeypatch):
@@ -24,13 +25,13 @@ def test_repository_local_interpreter_is_discovered(monkeypatch):
     monkeypatch.delenv("APEDP_Q_PYTHON", raising=False)
     root = Path(faros.__file__).resolve().parents[2]
     local = str(root / "build/qvcc-venv313/bin/python")
-    monkeypatch.setattr(faros.shutil, "which", lambda path: path if path == local else None)
+    monkeypatch.setattr(runtime.shutil, "which", lambda path: path if path == local else None)
     assert faros._faros_python(None) == local
 
 
 def test_missing_interpreter_explains_setup(monkeypatch):
     monkeypatch.delenv("APEDP_Q_PYTHON", raising=False)
-    monkeypatch.setattr(faros.shutil, "which", lambda path: None)
+    monkeypatch.setattr(runtime.shutil, "which", lambda path: None)
     with pytest.raises(FileNotFoundError, match="Set APEDP_Q_PYTHON"):
         faros._faros_python(None)
 
@@ -56,7 +57,7 @@ def test_resources_use_subprocess_measurements(tmp_path, monkeypatch):
     artifact.write_bytes(b"unit-test artifact; not a real circuit")
     measurements = {"num_qubits": 80, "static_toffoli": 1000, "t_like": 2, "rotations": 30}
     monkeypatch.setattr(
-        faros.subprocess,
+        runtime.subprocess,
         "run",
         lambda *args, **kwargs: subprocess.CompletedProcess(
             args[0], 0, stdout=json.dumps(measurements)
@@ -82,7 +83,7 @@ def test_resource_failure_does_not_write_success_metadata(tmp_path, monkeypatch,
             args[0], 0, stdout="not json" if response == "malformed" else "{}"
         )
 
-    monkeypatch.setattr(faros.subprocess, "run", run)
+    monkeypatch.setattr(runtime.subprocess, "run", run)
     error = {
         "failure": RuntimeError,
         "malformed": json.JSONDecodeError,

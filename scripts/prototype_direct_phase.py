@@ -8,8 +8,6 @@ import json
 from fractions import Fraction
 from pathlib import Path
 
-import kickmix as km
-
 from prototype_streamed_invsqrt import phase_words
 
 
@@ -19,6 +17,8 @@ def build_direct(words: list[int], precision_bits: int):
     Missing table entries receive zero phase, not periodic prefix aliasing.
     All 22 input bits are included in each predicate.
     """
+    import kickmix as km
+
     if not 2 <= len(words) <= 1 << 22:
         raise ValueError("phase table must contain between 2 and 2**22 entries")
     if not 32 <= precision_bits <= 48:
@@ -71,6 +71,7 @@ def main() -> int:
     circuit = build_direct(phase_words(args.max_x, args.precision_bits), args.precision_bits)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     circuit.to_file(str(args.output), format="kmb")
+    import kickmix as km
     stats = circuit.operation_statistics()
     report = {
         "scope": "experimental-prefix-only",

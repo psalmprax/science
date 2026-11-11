@@ -3,7 +3,6 @@
 from fractions import Fraction
 import unittest
 
-import kickmix as km
 import numpy as np
 
 from prototype_parity_phase import audit_terms, build_parity_circuit, sparse_terms, walsh_transform
@@ -30,6 +29,7 @@ class ParityPhaseTests(unittest.TestCase):
         self.assertFalse(audit_terms(indices, weights, reference, 15)["passes_model_tolerance"])
 
     def test_native_phase_matches_selected_model_and_restores_qubits(self):
+        import kickmix as km
         indices = np.array([0, 1, 3, 6])
         weights = np.array([0.125, 0.0625, -0.03125, 0.015625])
         circuit = build_parity_circuit(indices, weights, 3)

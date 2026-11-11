@@ -18,7 +18,7 @@ def _workflow(name: str) -> dict:
 
 def test_quality_jobs_block_tests_and_run_parity_commands():
     jobs = _workflow("test.yml")["jobs"]
-    assert set(jobs["test"]["needs"]) == {"python-quality", "rust-quality"}
+    assert set(jobs["test"]["needs"]) == {"python-quality", "rust-quality", "research-models"}
     for job, commands in (
         ("python-quality", ("make lint", "make typecheck")),
         ("rust-quality", ("make lint-rust", "cargo test --workspace --locked")),
@@ -35,6 +35,8 @@ def test_python_test_jobs_install_test_dependencies_before_pytest():
     for path in sorted(WORKFLOWS.glob("*.yml")):
         for job_name, job in _workflow(path.name)["jobs"].items():
             if job_name == "python-quality" and path.name == "test.yml":
+                continue
+            if job_name == "research-models" and path.name == "test.yml":
                 continue
             dependencies_installed = False
             for step in job.get("steps", []):
@@ -121,6 +123,23 @@ def test_strict_mypy_scope_includes_the_d5_conf_benchmark():
     assert '"apedp_dyn/conf/paths.py"' in files
     assert '"apedp_dyn/conf/canonical_spec.py"' in files
     assert '"apedp_dyn/conf/benchmark.py"' in files
+    assert '"apedp_dyn/quantum_compilation/faros_runtime.py"' in files
+    assert '"apedp_dyn/quantum_compilation/kickmix_builds.py"' in files
+
+
+def test_research_models_are_gated_without_native_runtime():
+    steps = _workflow("test.yml")["jobs"]["research-models"]["steps"]
+    script = "\n".join(step.get("run", "") for step in steps)
+    assert "pip install --require-hashes -r requirements-research.lock" in script
+    for model in ("normalized_invsqrt", "horner_invsqrt", "parity_phase"):
+        assert f"scripts/check_{model}.py" in script
+    assert '-k "not native"' in script
+
+
+def test_rust_home_is_set_in_a_step_not_invalid_job_context():
+    job = _workflow("test.yml")["jobs"]["test"]
+    assert "RUSTUP_HOME" not in job.get("env", {})
+    assert any('RUSTUP_HOME=$RUNNER_TEMP/rustup' in step.get("run", "") for step in job["steps"])
 
 
 def test_workflows_have_no_conflicts_or_job_level_secret_conditions():

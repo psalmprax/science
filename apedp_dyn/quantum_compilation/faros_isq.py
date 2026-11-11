@@ -39,9 +39,7 @@ from __future__ import annotations
 import dataclasses
 import json
 import math
-import os
 import shutil
-import subprocess
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -68,6 +66,10 @@ from apedp_dyn.quantum_compilation.invsqrt_signed_digit import (
     regenerate_tables_exact,
 )
 from apedp_dyn.quantum_compilation.ledger import QuantumCandidateLedger
+from apedp_dyn.quantum_compilation.faros_runtime import (
+    faros_python as _faros_python,
+    run_faros_script as _run_faros_script,
+)
 from apedp_dyn.quantum_compilation.referee import run_invsqrt_verifier
 
 __all__ = [
@@ -1396,37 +1398,6 @@ def exhaustive_integer_certificate(
     return result
 
 
-def _faros_python(python_executable: str | None) -> str:
-    executable = python_executable or os.environ.get("APEDP_Q_PYTHON")
-    if executable:
-        resolved = shutil.which(executable)
-        if resolved is None:
-            raise FileNotFoundError(f"FAROS interpreter not executable: {executable}")
-        return resolved
-    repo_root = Path(__file__).resolve().parent.parent.parent
-    for environment in ("qvcc-pinned313", "qvcc-venv313"):
-        executable = repo_root / "build" / environment / "bin" / "python"
-        resolved = shutil.which(str(executable))
-        if resolved is not None:
-            return resolved
-    raise FileNotFoundError(
-        "FAROS needs the KickMix-compatible Python interpreter. "
-        "Set APEDP_Q_PYTHON or create build/qvcc-venv313 with Python 3.13."
-    )
-
-
-def _run_faros_script(executable: str, script: str, operation: str) -> str:
-    try:
-        result = subprocess.run(
-            [executable, "-c", script], capture_output=True, text=True, check=True
-        )
-    except subprocess.CalledProcessError as exc:
-        raise RuntimeError(
-            f"FAROS {operation} failed (exit {exc.returncode}): {exc.stderr.strip()}"
-        ) from exc
-    return result.stdout
-
-
 def materialize_faros_circuit(
     cfg: Cfg | None = None,
     tables: dict[tuple[int, int], tuple[int, int, int]] | None = None,
@@ -1539,6 +1510,9 @@ print(json.dumps(res))
     )
 
     metadata = {
+        "resource_evidence": "subprocess circuit statistics",
+        "cost_evidence": "static estimate, not executed verifier score",
+        "margin_evidence": "historical assumed margin, not remeasured for this circuit",
         "candidate_id": candidate_id,
         "path": out_file,
         "sha256": digest,
@@ -1575,12 +1549,18 @@ def calibrate_faros_circuit(
 
     if fixed_deltas is None:
         cal_path = repo_root / "src/invsqrt_calibration.json"
-        if cal_path.exists():
-            fixed_deltas = json.loads(cal_path.read_text(encoding="utf-8"))
+        fixed_deltas = json.loads(cal_path.read_text(encoding="utf-8"))
 
-    margin_units = fixed_deltas.get("marginUnits", 73_326_605) if fixed_deltas else 73_326_605
-    dropped = fixed_deltas.get("droppedOriginalRotationIndices", [18]) if fixed_deltas else [18]
-    eps = (math.pi * float(margin_units) / (2.0**64)) / 44.0
+    margin_units = fixed_deltas["marginUnits"]
+    dropped = fixed_deltas["droppedOriginalRotationIndices"]
+    values = fixed_deltas["deltasPhaseUnits"]
+    if (
+        type(margin_units) is not int or margin_units <= 0
+        or not isinstance(dropped, list) or not all(type(v) is int and v >= 0 for v in dropped)
+        or not isinstance(values, list) or not values or not all(type(v) is int for v in values)
+    ):
+        raise ValueError("Calibration requires positive marginUnits and integer phase/index lists")
+    source_digest = sha256_file(c_path)
 
     cal_script = f"""
 import sys
@@ -1600,8 +1580,7 @@ circuit = km.Circuit.from_file(str(circuit_in))
 stats = circuit.operation_statistics()
 rot_count = int(stats.num_z_pow(min_clifford_hierarchy_level=4))
 
-cal_path = repo_root / 'src/invsqrt_calibration.json'
-fixed_deltas = json.loads(cal_path.read_text(encoding='utf-8')) if cal_path.exists() else {{}}
+fixed_deltas = json.loads({json.dumps(fixed_deltas)!r})
 values = fixed_deltas.get('deltasPhaseUnits', [])
 dropped = set(fixed_deltas.get('droppedOriginalRotationIndices', [18]))
 
@@ -1626,19 +1605,23 @@ print(json.dumps({{
     res_info = json.loads(stdout.strip().splitlines()[-1])
     cal_rotations = int(res_info["rotations"])
     cal_sha256 = str(res_info["sha256"])
+    if cal_rotations <= 0:
+        raise ValueError("Calibration produced no non-Clifford rotations")
+    eps = (math.pi * float(margin_units) / (2.0**64)) / cal_rotations
 
     report = {
         "source_circuit": str(c_path),
         "calibrated_circuit": str(out_file),
-        "source_circuit_sha256": sha256_file(c_path),
+        "source_circuit_sha256": source_digest,
         "calibrated_circuit_sha256": cal_sha256,
         "dropped_original_rotation_indices": dropped,
         "calibrated_rotation_count": cal_rotations,
         "margin_units": margin_units,
         "rotation_eps": eps,
         "t_gates_per_rotation": 0.56 * math.log2(1.0 / eps) + 5.3,
-        "calibration_method": "cutting-plane LP on Chebyshev minimax basis phase oracle",
-        "lp_converged": True,
+        "calibration_method": "replay fixed phase deltas; no LP solver executed",
+        "lp_converged": None,
+        "margin_verified": False,
     }
 
     cal_out = out_file.with_suffix(".calibration.json")

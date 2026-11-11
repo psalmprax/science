@@ -9,9 +9,6 @@ import math
 from fractions import Fraction
 from pathlib import Path
 
-import kickmix as km
-
-
 def phase_words(max_x: int, precision_bits: int) -> list[int]:
     """Round phases to fixed point; x=0 is outside the verifier's domain."""
     scale = 1 << precision_bits
@@ -19,6 +16,7 @@ def phase_words(max_x: int, precision_bits: int) -> list[int]:
 
 
 def build_streamed(words: list[int], precision_bits: int, chunk_bits: int):
+    import kickmix as km
     builder = km.CircuitBuilder()
     builder.set_max_qubits(50)
     x = builder.create_quantum_register(22, name="x")
@@ -84,6 +82,7 @@ def main() -> int:
     circuit = build_streamed(words, args.precision_bits, args.chunk_bits)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     circuit.to_file(str(args.output), format="kmb")
+    import kickmix as km
     stats = circuit.operation_statistics()
     report = {
         "scope": "experimental-prefix-only",

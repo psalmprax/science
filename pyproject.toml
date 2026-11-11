@@ -212,6 +212,8 @@ files = [
     "apedp_dyn/conf/paths.py",
     "apedp_dyn/conf/canonical_spec.py",
     "apedp_dyn/conf/benchmark.py",
+    "apedp_dyn/quantum_compilation/faros_runtime.py",
+    "apedp_dyn/quantum_compilation/kickmix_builds.py",
 ]
 strict = true
 # Phase 1 checks the path/specification integrity boundary strictly. Keep
