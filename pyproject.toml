@@ -214,6 +214,8 @@ files = [
     "apedp_dyn/conf/benchmark.py",
     "apedp_dyn/quantum_compilation/faros_runtime.py",
     "apedp_dyn/quantum_compilation/kickmix_builds.py",
+    "scripts/build_faros_candidate.py",
+    "scripts/check_verifier_environment.py",
 ]
 strict = true
 # Phase 1 checks the path/specification integrity boundary strictly. Keep

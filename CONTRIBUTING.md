@@ -98,6 +98,9 @@ make lint-rust
 cargo test --workspace --locked
 python -m pytest tests/test_ci_quality_contract.py -q
 python -m pytest tests/test_smoke_imports.py -q -x
+python -m pytest tests/test_mmlm_bpe_tokenizer.py tests/test_mmlm_two_site_sweep.py \
+  tests/test_apedp_mmlm_architecture.py tests/test_faros_evidence_pipeline.py \
+  tests/test_faros_runtime.py -q -x
 python -m pytest tests/test_expression_evaluator.py --cov --cov-branch --cov-report= -q
 python -m coverage report --include='*/apedp/expression_evaluator.py' --fail-under=95
 python -m pytest tests/ --collect-only -q
@@ -108,6 +111,9 @@ The `python-quality` CI job installs its tools from the hash-pinned
 `requirements-quality.lock`. Regenerate that lock with
 `uv pip compile requirements-quality.in --universal --generate-hashes --output-file requirements-quality.lock`.
 The Python test job installs the development tools through the `dev` extra.
+`make lint` includes the full configured Ruff rules for `apedp_mmlm/`, the
+FAROS builder and preflight, and the mutation runner. Strict mypy covers seven
+core configuration/runtime and evidence entry-point files, not the whole tree.
 
 The `Python quality` and `Rust quality` jobs are blocking dependencies of all
 three Python test jobs. Repository administrators should make these checks,

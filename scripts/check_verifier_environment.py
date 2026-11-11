@@ -6,25 +6,28 @@ import argparse
 import hashlib
 import importlib.util
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
+from types import ModuleType
 
 ROOT = Path(__file__).resolve().parents[1]
 BUNDLE = ROOT / "apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation"
 
 
-def _load_pins():
+def _load_pins() -> ModuleType:
     spec = importlib.util.spec_from_file_location(
         "kickmix_preflight_pins", ROOT / "apedp_dyn/quantum_compilation/kickmix_builds.py"
     )
+    if spec is None or spec.loader is None:
+        raise ImportError("Cannot load KickMix build pins")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 
 
-def check_environment(executable: str, extension: Path) -> dict:
+def check_environment(executable: str, extension: Path) -> dict[str, object]:
     module = _load_pins()
     if not extension.is_file():
         return {"ready": False, "reason": f"Missing approved extension: {extension}"}
@@ -48,7 +51,7 @@ print(json.dumps({
 }))
 """
     try:
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 - explicit interpreter argument, no shell
             [executable, "-c", script, str(extension.resolve().parent)],
             capture_output=True, text=True, check=True,
         )

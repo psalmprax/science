@@ -9,13 +9,13 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from apedp_dyn.quantum_compilation.faros_isq import (
+from apedp_dyn.quantum_compilation.faros_isq import (  # noqa: E402 - standalone script bootstraps repo path
     calibrate_faros_circuit,
     exhaustive_integer_certificate,
     load_chebyshev_minimax_tables,

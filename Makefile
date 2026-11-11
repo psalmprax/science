@@ -41,6 +41,8 @@ test:
 lint:
 	ruff check apedp/ apedp_dyn/ tests/ --select E9,F
 	ruff check apedp_dyn/conf/
+	ruff check apedp_mmlm/
+	ruff check scripts/build_faros_candidate.py scripts/check_verifier_environment.py scripts/run_mutation_battery.py
 
 typecheck:
 	mypy

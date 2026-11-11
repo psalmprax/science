@@ -142,6 +142,14 @@ def test_preflight_refuses_missing_and_unapproved_extension(tmp_path, monkeypatc
     assert report["extension_sha256"] == hashlib.sha256(b"unapproved").hexdigest()
 
 
+@pytest.mark.parametrize("spec", [None, SimpleNamespace(loader=None)])
+def test_preflight_fails_explicitly_if_pin_module_cannot_be_loaded(monkeypatch, spec):
+    module = load_script("check_verifier_environment")
+    monkeypatch.setattr(module.importlib.util, "spec_from_file_location", lambda *a, **k: spec)
+    with pytest.raises(ImportError, match="Cannot load KickMix build pins"):
+        module._load_pins()
+
+
 @pytest.mark.parametrize("runtime_kind", ["ready", "wrong-python", "wrong-extension", "missing-api"])
 def test_preflight_requires_correct_runtime_and_import(tmp_path, monkeypatch, runtime_kind):
     module = load_script("check_verifier_environment")

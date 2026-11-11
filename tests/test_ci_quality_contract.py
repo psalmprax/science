@@ -126,6 +126,32 @@ def test_strict_mypy_scope_includes_the_d5_conf_benchmark():
     assert '"apedp_dyn/conf/benchmark.py"' in files
     assert '"apedp_dyn/quantum_compilation/faros_runtime.py"' in files
     assert '"apedp_dyn/quantum_compilation/kickmix_builds.py"' in files
+    assert '"scripts/build_faros_candidate.py"' in files
+    assert '"scripts/check_verifier_environment.py"' in files
+
+
+def test_lint_covers_mmlm_and_evidence_entrypoints():
+    makefile = (ROOT / "Makefile").read_text()
+    assert "ruff check apedp_mmlm/" in makefile
+    for path in ("scripts/build_faros_candidate.py", "scripts/check_verifier_environment.py",
+                 "scripts/run_mutation_battery.py"):
+        assert path in makefile
+
+
+def test_mmlm_and_evidence_regressions_run_before_full_suite():
+    steps = _workflow("test.yml")["jobs"]["test"]["steps"]
+    scripts = [step.get("run", "") for step in steps]
+    required = (
+        "tests/test_mmlm_bpe_tokenizer.py",
+        "tests/test_mmlm_two_site_sweep.py",
+        "tests/test_apedp_mmlm_architecture.py",
+        "tests/test_faros_evidence_pipeline.py",
+        "tests/test_faros_runtime.py",
+    )
+    index = next(i for i, script in enumerate(scripts) if all(path in script for path in required))
+    full_suite = next(i for i, script in enumerate(scripts) if "pytest tests/ -v" in script)
+    assert index < full_suite
+    assert steps[index].get("continue-on-error", "false") == "false"
 
 
 def test_research_models_are_gated_without_native_runtime():

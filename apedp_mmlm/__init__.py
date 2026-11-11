@@ -81,9 +81,9 @@ from apedp_mmlm.quantum_discovery import (
 __all__ = [
     "AblationComparisonReport",
     "AttentionFreeMMLM_C0",
+    "BPEMMLMTokenizer",
     "BayesianLanguageEngine",
     "BenchmarkMetrics",
-    "BPEMMLMTokenizer",
     "DQIScheduleProposal",
     "DfthcsosBankingProposal",
     "DynamicalContextEngine",
