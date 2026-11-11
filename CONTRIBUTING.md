@@ -228,6 +228,22 @@ cost than the 90-qubit FAROS circuit: fewer rotations do not compensate for
 the repeated lookup work. These results demonstrate the workspace/cost
 tradeoff, not a successful 50-qubit, lower-T benchmark solution.
 
+`scripts/prototype_direct_phase.py` is an independent, shared-predicate phase
+oracle without FAROS coefficient loading or polynomial arithmetic. Its
+reversible input-predicate tree applies rounded phase rotations directly,
+sharing the tree traversal across contributions. It uses all 22 input bits;
+inputs beyond its declared prefix receive zero phase rather than aliasing.
+Run `scripts/check_direct_phase.py` with the same native interpreter and
+`PYTHONPATH` to check exact fixed-point phases, input restoration, clean
+scratch, high-bit/out-of-prefix behavior, and invalid inputs.
+
+For inputs 1–4096, this direct prototype generated 43 qubits, 16,418 static
+Toffolis, and 4,092 non-Clifford rotations. Experimental prefix verification
+passed 262,144 shots with score 1,933,034.64. This improves on the streamed
+lookup's cost but is still much worse than FAROS's measured prefix score
+157,751.58; it does not meet the lower-total-T goal or implement the complete
+benchmark domain. Both measurements use the unapproved local KickMix rebuild.
+
 ## CI troubleshooting
 
 - **No jobs started:** inspect workflow validation diagnostics. `secrets`
