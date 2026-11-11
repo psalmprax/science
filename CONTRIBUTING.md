@@ -282,6 +282,25 @@ fractional bits, those states alone exceed the 28 workspace qubits remaining
 after the 22-bit input in a 50-qubit circuit. A different reversible evaluation
 schedule or representation is still needed, with its gate cost measured.
 
+`scripts/audit_horner_invsqrt.py` tests a single classical accumulator with
+integer, ties-to-even Horner arithmetic. Exponent parity is folded into two
+coefficient rows; mantissa normalization and 48-bit phase scaling use exact
+integer shifts in the model. Coefficient fitting and comparison with the target
+still use float64. Run `scripts/check_horner_invsqrt.py` for independent
+`Fraction`-based rounding and recurrence checks.
+
+All four tested 27-fractional-bit candidates passed the numerical comparison
+over the full domain. Two segments of degree seven had worst error/tolerance
+0.645662; the accumulator's observed signed width was 28 bits. That already
+uses 50 bits together with the input, **before** reversible normalization,
+multiply scratch, coefficient selection, or cleanup. All tested 25- and
+26-fractional-bit candidates failed accuracy. Crucially, rounded Horner updates
+are not injective: at multiplier 1/2, old states 0 and 1 both round to 0.
+A quantum circuit cannot simply overwrite the old accumulator as this classical
+model does. Discarded information must be retained, reversibly recomputed, or
+otherwise handled by a justified circuit construction. No 50-qubit reversible
+implementation or T-cost improvement follows from these arithmetic results.
+
 ## CI troubleshooting
 
 - **No jobs started:** inspect workflow validation diagnostics. `secrets`
