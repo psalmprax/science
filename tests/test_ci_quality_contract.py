@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import runpy
 from pathlib import Path
 
 import yaml
@@ -150,6 +151,14 @@ def test_mutation_battery_installs_its_native_prerequisite():
     assert "python -m pip install wheelhouse/*.whl" in script
     assert "assert is_rust_kernel_available()" in script
     assert any(step.get("uses", "").startswith("actions/download-artifact@") for step in steps)
+
+
+def test_mutation_anchors_match_the_pristine_sources():
+    battery = runpy.run_path(str(ROOT / "scripts" / "run_mutation_battery.py"))
+    for mutant in battery["MUTANTS"]:
+        source = (ROOT / mutant["file"]).read_text()
+        assert source.count(mutant["find"]) == 1, mutant["id"]
+        assert mutant["replace"] != mutant["find"], mutant["id"]
 
 
 def test_workflows_have_no_conflicts_or_job_level_secret_conditions():

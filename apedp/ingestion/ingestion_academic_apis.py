@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -162,7 +162,7 @@ def search_crossref(
     except (KeyError, TypeError, ValueError) as exc:
         raise ValueError("Crossref returned an invalid works response") from exc
 
-    retrieved_at = datetime.now(UTC).isoformat()
+    retrieved_at = datetime.now(timezone.utc).isoformat()
     records = tuple(_to_literature_record(item, retrieved_at) for item in items[:limit])
     return LiteratureSearchResult(
         query=normalized_query,
