@@ -211,6 +211,23 @@ circuit digest. A new run is separate evidence, not a replacement for that
 missing historical artifact. Do not fabricate the receipt or change the binary
 pin simply to make these tests pass.
 
+`scripts/prototype_streamed_invsqrt.py` explores a separate 50-qubit-capped,
+bit-sliced phase lookup. Run it with the KickMix-compatible interpreter and its
+extension directory on `PYTHONPATH`, passing `--output` and optionally
+`--chunk-bits`. It preserves the 22-bit input, computes a phase fragment into
+reusable workspace, applies its rotations, and reversibly clears the fragment.
+It is explicitly a prefix prototype: outside the declared prefix, the lookup
+repeats periodically and is **not** a correct full-domain implementation.
+
+An experimental build with 40-bit phase precision, inputs 1–4095, and 17-bit
+fragments generated 50 qubits, 98,256 static Toffolis, and 37 non-Clifford
+rotations. The verifier passed 1,048,320 prefix shots with score 4,923,955.31
+using the unapproved local KickMix rebuild. Four-bit fragments generated 37
+qubits but 327,520 Toffolis. Both are substantially worse in total non-Clifford
+cost than the 90-qubit FAROS circuit: fewer rotations do not compensate for
+the repeated lookup work. These results demonstrate the workspace/cost
+tradeoff, not a successful 50-qubit, lower-T benchmark solution.
+
 ## CI troubleshooting
 
 - **No jobs started:** inspect workflow validation diagnostics. `secrets`
