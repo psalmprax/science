@@ -107,7 +107,6 @@ def test_the_verifier_still_enforces_the_gate_these_rows_were_judged_against():
 @pytest.mark.skipif(not FCIDUMP.is_file(), reason="pinned FCIDUMP is competition data, not in this checkout")
 def test_the_recorded_residuals_reproduce_from_the_verifier_math():
     """Re-derive every row without building a circuit; takes about a minute."""
-    import sys
 
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
     sys.path.insert(0, str(

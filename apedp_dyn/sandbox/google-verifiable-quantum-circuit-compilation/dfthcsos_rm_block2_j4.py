@@ -18,9 +18,9 @@ import hashlib
 import importlib
 import json
 import math
-import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Any
+from typing import Any
 
 import numpy as np
 

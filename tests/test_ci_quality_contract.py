@@ -54,9 +54,29 @@ def test_python_quality_job_avoids_scientific_test_extras():
         step.get("run", "")
         for step in _workflow("test.yml")["jobs"]["python-quality"]["steps"]
     )
-    assert 'pip install -e ".[dev]"' in script
-    assert not re.search(r'pip install -e "\.\[[^"]*\btest\b', script)
-    assert "torch==" not in script
+    assert "pip install --require-hashes -r requirements-quality.lock" in script
+    assert not re.search(r'pip install -e "\.\[', script)
+
+
+def test_quality_lock_has_pinned_packages_and_hashes():
+    lock = (ROOT / "requirements-quality.lock").read_text()
+    assert "--hash=sha256:" in lock
+    requirements = [
+        line for line in lock.splitlines()
+        if line and not line.startswith(("#", " ", "-"))
+    ]
+    assert requirements
+    assert all("==" in line for line in requirements)
+
+
+def test_expression_evaluator_branch_coverage_is_a_ci_gate():
+    script = "\n".join(
+        step.get("run", "")
+        for step in _workflow("test.yml")["jobs"]["test"]["steps"]
+    )
+    assert "tests/test_expression_evaluator.py" in script
+    assert "--cov-branch" in script
+    assert "--include='*/apedp/expression_evaluator.py' --fail-under=95" in script
 
 
 def test_ci_torch_version_matches_project_test_extra():

@@ -14,7 +14,6 @@ All components have Rust fast paths with Python fallbacks.
 
 from __future__ import annotations
 
-import ast
 import json
 import math
 import random
@@ -24,6 +23,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
+
+from apedp.expression_evaluator import evaluate_expression as _evaluate_expression
 
 # Try to import Rust kernel
 try:
@@ -550,78 +551,6 @@ class ValidationPipeline:
             "generalization_score": 1.0 / (1.0 + max(0.0, gap)),
             "overall": self._overall(cv_mean, cv_std, ood_score, stability_score),
         }
-
-
-_EXPR_FUNCS = {
-    "sin": np.sin, "cos": np.cos, "tan": np.tan, "exp": np.exp,
-    "log": np.log, "sqrt": np.sqrt, "tanh": np.tanh, "abs": np.abs,
-}
-
-
-def _evaluate_expression(expr: str, var_names: list[str], data: list[Any]):
-    """Evaluate an expression over the data columns, or return None.
-
-    Restricted to the variable names and the math functions in ``_EXPR_FUNCS``;
-    no builtins are reachable from the expression.
-    """
-    scope = dict(_EXPR_FUNCS)
-    for name, column in zip(var_names, data, strict=False):
-        scope[name] = np.asarray(column, float)
-    try:
-        tree = ast.parse(expr, mode="eval")
-        with np.errstate(all="ignore"):
-            value = _evaluate_expression_node(tree.body, scope)
-    except (
-        SyntaxError,
-        NameError,
-        TypeError,
-        ValueError,
-        ZeroDivisionError,
-        OverflowError,
-        KeyError,
-    ):
-        return None
-    try:
-        return np.asarray(value, float)
-    except (TypeError, ValueError):
-        return None
-
-
-def _evaluate_expression_node(node: ast.expr, scope: dict[str, Any]) -> Any:
-    """Interpret only the arithmetic and named functions used by search expressions."""
-    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
-        if isinstance(node.value, bool):
-            raise TypeError("boolean literals are not supported")
-        return node.value
-    if isinstance(node, ast.Name):
-        if node.id not in scope:
-            raise NameError(node.id)
-        return scope[node.id]
-    if isinstance(node, ast.UnaryOp):
-        value = _evaluate_expression_node(node.operand, scope)
-        if isinstance(node.op, ast.UAdd):
-            return value
-        if isinstance(node.op, ast.USub):
-            return -value
-    if isinstance(node, ast.BinOp):
-        left = _evaluate_expression_node(node.left, scope)
-        right = _evaluate_expression_node(node.right, scope)
-        if isinstance(node.op, ast.Add):
-            return left + right
-        if isinstance(node.op, ast.Sub):
-            return left - right
-        if isinstance(node.op, ast.Mult):
-            return left * right
-        if isinstance(node.op, ast.Div):
-            return left / right
-        if isinstance(node.op, ast.Pow):
-            return left ** right
-    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
-        function = _EXPR_FUNCS.get(node.func.id)
-        if function is not None and len(node.args) == 1 and not node.keywords:
-            argument = _evaluate_expression_node(node.args[0], scope)
-            return function(argument)
-    raise ValueError(f"unsupported expression syntax: {type(node).__name__}")
 
 
 def _r2_of(expr: str, var_names: list[str], data: list[Any], target: Any) -> float | None:

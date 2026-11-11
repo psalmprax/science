@@ -25,8 +25,9 @@ jobs:
           python-version: '3.12'
           cache: pip
       - name: Install quality tools
+        run: python -m pip install --require-hashes -r requirements-quality.lock
+      - name: Verify quality tool setup
         run: |
-          python -m pip install -e ".[dev]"
           python -m pytest --version
           ruff --version
           mypy --version
@@ -158,6 +159,14 @@ jobs:
         run: |
           source .venv/bin/activate
           python -m pytest tests/test_smoke_imports.py -q -x
+
+      - name: Guard expression evaluator branch coverage
+        run: |
+          source .venv/bin/activate
+          python -m pytest tests/test_expression_evaluator.py \
+            --cov --cov-branch --cov-report= -q
+          python -m coverage report \
+            --include='*/apedp/expression_evaluator.py' --fail-under=95
 
       - name: Collection smoke (import every test module)
         run: |

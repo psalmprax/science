@@ -14,7 +14,6 @@ import json
 import numpy as np
 import pytest
 
-import apedp_kernel as ak
 from apedp_dyn.epistemic.pde_discovery import discover_pde
 
 BASE_CFG = {

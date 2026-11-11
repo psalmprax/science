@@ -75,7 +75,7 @@ python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 # Install CPU Torch first so pip does not pull the CUDA runtime into CI.
-python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
 python -m pip install -e ".[dev,test,orchestration]"
 python -m pip install -e packages/jetflow-video
 rustup show
@@ -98,9 +98,16 @@ make lint-rust
 cargo test --workspace --locked
 python -m pytest tests/test_ci_quality_contract.py -q
 python -m pytest tests/test_smoke_imports.py -q -x
+python -m pytest tests/test_expression_evaluator.py --cov --cov-branch --cov-report= -q
+python -m coverage report --include='*/apedp/expression_evaluator.py' --fail-under=95
 python -m pytest tests/ --collect-only -q
 python -m pytest tests/ -v --tb=short -n auto -x -m "not integration"
 ```
+
+The `python-quality` CI job installs its tools from the hash-pinned
+`requirements-quality.lock`. Regenerate that lock with
+`uv pip compile requirements-quality.in --universal --generate-hashes --output-file requirements-quality.lock`.
+The Python test job installs the development tools through the `dev` extra.
 
 The `Python quality` and `Rust quality` jobs are blocking dependencies of all
 three Python test jobs. Repository administrators should make these checks,

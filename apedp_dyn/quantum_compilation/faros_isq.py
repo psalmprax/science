@@ -37,19 +37,18 @@ Multi-Fidelity Pareto Tournament:
 from __future__ import annotations
 
 import dataclasses
-from enum import Enum
 import json
 import math
 import os
-from pathlib import Path
 import shutil
 import subprocess
-from typing import Any, Callable
+from enum import Enum
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 
 from apedp_dyn.quantum_compilation.candidates import (
-    CandidateStatus,
     CircuitCandidate,
     VerifierReceipt,
     candidate_id_for,
@@ -64,33 +63,26 @@ from apedp_dyn.quantum_compilation.experiment import (
 )
 from apedp_dyn.quantum_compilation.invsqrt_signed_digit import (
     Cfg,
-    _PUBLISHED_COEFFICIENT_ROWS,
-    build_tables,
-    calibrate_segment,
-    fitc,
     integer_model,
-    layout as compute_signed_digit_layout,
     load_or_build_tables,
-    pipeline,
-    rd,
     regenerate_tables_exact,
 )
 from apedp_dyn.quantum_compilation.ledger import QuantumCandidateLedger
 from apedp_dyn.quantum_compilation.referee import run_invsqrt_verifier
 
 __all__ = [
+    "R1_NONUNIFORM_CONFIGS",
+    "R2_PREFIX_RESIDUAL_CONFIGS",
+    "REFERENCE_COST_90Q",
+    "REFERENCE_COST_90Q_AFFINE_OPT",
+    "SABLE_90_BASELINE",
     "ArithmeticForm",
     "ErrorBudgetEngine",
     "FarosCandidateConfig",
     "FarosIsqProposer",
     "FarosParetoTournament",
     "FidelityLevel",
-    "REFERENCE_COST_90Q",
-    "REFERENCE_COST_90Q_AFFINE_OPT",
-    "R1_NONUNIFORM_CONFIGS",
-    "R2_PREFIX_RESIDUAL_CONFIGS",
     "RepresentationType",
-    "SABLE_90_BASELINE",
     "Sable90Profiler",
     "SegmentationStrategy",
     "TournamentCandidate",
@@ -1439,7 +1431,7 @@ def materialize_faros_circuit(
             builder_script = f"""
 import sys
 from pathlib import Path
-repo_root = Path({repr(str(repo_root))})
+repo_root = Path({str(repo_root)!r})
 sys.path.insert(0, str(repo_root / 'src'))
 sys.path.insert(0, str(repo_root / 'apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix'))
 import json
@@ -1466,7 +1458,7 @@ dropped = set(fixed_deltas.get('droppedOriginalRotationIndices', [18]))
 rep_text = uf.rewrite(lines, rots, {{j: int(v) for j, v in enumerate(values) if j not in dropped}}, dropped)
 final_circuit = km.Circuit(rep_text)
 
-out_path = Path({repr(str(out_file))})
+out_path = Path({str(out_file)!r})
 final_circuit.to_file(str(out_path), format='kmb')
 stats = final_circuit.operation_statistics()
 res = {{
@@ -1497,11 +1489,11 @@ print(json.dumps(res))
     stats_script = f"""
 import sys
 from pathlib import Path
-repo_root = Path({repr(str(repo_root))})
+repo_root = Path({str(repo_root)!r})
 sys.path.insert(0, str(repo_root / 'apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix'))
 import json
 import kickmix as km
-circuit_file = Path({repr(str(out_file))})
+circuit_file = Path({str(out_file)!r})
 circuit = km.Circuit.from_file(str(circuit_file))
 stats = circuit.operation_statistics()
 res = {{
@@ -1591,7 +1583,7 @@ def calibrate_faros_circuit(
     cal_script = f"""
 import sys
 from pathlib import Path
-repo_root = Path({repr(str(repo_root))})
+repo_root = Path({str(repo_root)!r})
 sys.path.insert(0, str(repo_root / 'src'))
 sys.path.insert(0, str(repo_root / 'apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix'))
 import json
@@ -1600,8 +1592,8 @@ import kickmix as km
 import portable_calibration as cal
 import upstream_functions as uf
 
-circuit_in = Path({repr(str(c_path))})
-circuit_out = Path({repr(str(out_file))})
+circuit_in = Path({str(c_path)!r})
+circuit_out = Path({str(out_file)!r})
 circuit = km.Circuit.from_file(str(circuit_in))
 stats = circuit.operation_statistics()
 rot_count = int(stats.num_z_pow(min_clifford_hierarchy_level=4))
