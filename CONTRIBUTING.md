@@ -244,6 +244,26 @@ lookup's cost but is still much worse than FAROS's measured prefix score
 157,751.58; it does not meet the lower-total-T goal or implement the complete
 benchmark domain. Both measurements use the unapproved local KickMix rebuild.
 
+`scripts/prototype_parity_phase.py` tests a third approach: retain the
+largest-magnitude Walsh coefficients of a smooth lift of `1/sqrt(x)`, then
+compute each input parity with CNOTs, rotate, and undo the parity. A single
+clean ancilla supplies the state-independent phase offset, which cannot be
+discarded because the verifier checks absolute phase. Run
+`scripts/check_parity_phase.py` to check the transform against explicit
+parities, reconstruction, sparse failure reporting, and exact native phases.
+
+The script audits every one of the 3,133,452 benchmark inputs for each requested
+term budget before generating the selected experimental circuit. Budgets of
+64, 256, 1024, and 4096 terms all failed the numerical tolerance audit. The
+256-term circuit used 23 qubits and zero Toffolis, but failed prefix verification
+at x=1 (phase error 0.01560 turns versus tolerance 5.960e-8).
+These are approximation failures, not simulator failures: native regression
+checks confirm the circuit implements its selected parity model. Largest-term
+truncation optimizes neither relative worst-case error nor rotation-synthesis
+cost; this experiment is not evidence that every possible parity decomposition
+is unsuitable. The audit uses floating-point arithmetic, excludes rotation
+synthesis error, and is not a formal correctness certificate.
+
 ## CI troubleshooting
 
 - **No jobs started:** inspect workflow validation diagnostics. `secrets`
