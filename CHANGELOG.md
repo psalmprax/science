@@ -18,6 +18,7 @@ inferred releases.
 - Security reporting policy, dependency-update automation, and CodeQL analysis.
 - Validated BH/BY/Holm p-value adjustment with caller-supplied alpha, ordered results, and effective rejection threshold.
 - Explicit biopharma scope documentation and regression tests for evidence labels and unsupported omics inputs.
+- Source-linked scaffold inventory with evidence tiers, explicit prediction limits, and a regression guard for its references.
 
 ### Changed
 - Biopharma heuristics now identify their evidence tier and unsupported outputs; target discovery refuses ignored omics input, and unsupported biomarker measurements are reported as not assessed.
