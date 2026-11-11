@@ -244,6 +244,14 @@ Calibration replays fixed deltas and reports `lp_converged: null` and
 `margin_verified: false`; it does not execute or claim convergence of an LP.
 `tests/test_faros_evidence_pipeline.py` checks these reporting contracts.
 
+The Rust `ssm_scan` and `mamba2_selective_scan` exports are unimplemented and
+now raise `NotImplementedError`, rather than returning the input or a scaled
+copy while ignoring recurrence parameters. Their Python keyword signatures
+are preserved. Callers must use a validated reference implementation; this is
+an intentional correctness change, not a new native SSM implementation.
+`tests/test_native_ssm_contract.py` checks the failure contract when the native
+kernel is built (the test job requires that build before running regressions).
+
 `scripts/prototype_streamed_invsqrt.py` explores a separate 50-qubit-capped,
 bit-sliced phase lookup. Run it with the KickMix-compatible interpreter and its
 extension directory on `PYTHONPATH`, passing `--output` and optionally

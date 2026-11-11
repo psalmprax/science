@@ -17,7 +17,10 @@ pub struct Bitset {
 impl Bitset {
     /// `len` zero bits.
     pub fn zeros(len: usize) -> Self {
-        Bitset { words: vec![0u64; len.div_ceil(64)], len }
+        Bitset {
+            words: vec![0u64; len.div_ceil(64)],
+            len,
+        }
     }
 
     /// Build from big-endian-bit order, i.e. `bits[i]` is bit `i`.
@@ -40,7 +43,11 @@ impl Bitset {
     }
 
     pub fn set(&mut self, index: usize) {
-        assert!(index < self.len, "bit {index} outside a {}-bit vector", self.len);
+        assert!(
+            index < self.len,
+            "bit {index} outside a {}-bit vector",
+            self.len
+        );
         self.words[index / 64] |= 1u64 << (index % 64);
     }
 
@@ -64,13 +71,16 @@ impl Bitset {
     /// This is Python's `(mask & -mask).bit_length() - 1`: the pivot column of
     /// the row in the column-echelon basis.
     pub fn lowest(&self) -> Option<usize> {
-        self.words.iter().enumerate().find_map(|(word_index, word)| {
-            if *word == 0 {
-                None
-            } else {
-                Some(word_index * 64 + word.trailing_zeros() as usize)
-            }
-        })
+        self.words
+            .iter()
+            .enumerate()
+            .find_map(|(word_index, word)| {
+                if *word == 0 {
+                    None
+                } else {
+                    Some(word_index * 64 + word.trailing_zeros() as usize)
+                }
+            })
     }
 
     /// `((self & a) ^ (b & c)).count_ones() & 1`, the symplectic parity.

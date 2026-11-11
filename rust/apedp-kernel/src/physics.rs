@@ -3,9 +3,9 @@
 //! Enforces dimensional analysis, symmetries, conservation laws, and
 //! other physical constraints before searching.
 
-use std::collections::{HashMap, HashSet};
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Dimensions {
@@ -21,8 +21,13 @@ pub struct Dimensions {
 impl Dimensions {
     pub fn dimensionless() -> Self {
         Dimensions {
-            mass: 0, length: 0, time: 0, temperature: 0,
-            current: 0, amount: 0, luminosity: 0,
+            mass: 0,
+            length: 0,
+            time: 0,
+            temperature: 0,
+            current: 0,
+            amount: 0,
+            luminosity: 0,
         }
     }
 
@@ -97,13 +102,13 @@ impl PhysicsConstraintEngine {
 
     pub fn check_dimensional_consistency(&self, expr_dims: &Dimensions) -> bool {
         if let Some(ref target) = self.target_dim {
-            expr_dims.mass == target.mass &&
-            expr_dims.length == target.length &&
-            expr_dims.time == target.time &&
-            expr_dims.temperature == target.temperature &&
-            expr_dims.current == target.current &&
-            expr_dims.amount == target.amount &&
-            expr_dims.luminosity == target.luminosity
+            expr_dims.mass == target.mass
+                && expr_dims.length == target.length
+                && expr_dims.time == target.time
+                && expr_dims.temperature == target.temperature
+                && expr_dims.current == target.current
+                && expr_dims.amount == target.amount
+                && expr_dims.luminosity == target.luminosity
         } else {
             true
         }
@@ -117,8 +122,7 @@ impl PhysicsConstraintEngine {
     pub fn dimensional_analysis_score(&self, term_dims: &[Dimensions]) -> Result<f64, String> {
         if term_dims.is_empty() {
             return Err(
-                "dimensional_analysis_score needs the dimensions of the terms to score"
-                    .to_string(),
+                "dimensional_analysis_score needs the dimensions of the terms to score".to_string(),
             );
         }
         let Some(target) = self.target_dim.as_ref() else {
@@ -206,7 +210,9 @@ impl PhysicsConstraintEngine {
         let mut max_dev = 0.0f64;
         for &q in quantities {
             let dev = (q - mean).abs();
-            if dev > max_dev { max_dev = dev; }
+            if dev > max_dev {
+                max_dev = dev;
+            }
         }
         max_dev < 1e-10
     }
@@ -216,8 +222,8 @@ impl PhysicsConstraintEngine {
             return 1.0;
         }
         let mut roughness = 0.0f64;
-        for i in 1..values.len()-1 {
-            let second_diff = (values[i+1] - 2.0*values[i] + values[i-1]).abs();
+        for i in 1..values.len() - 1 {
+            let second_diff = (values[i + 1] - 2.0 * values[i] + values[i - 1]).abs();
             roughness += second_diff;
         }
         1.0 / (1.0 + roughness / values.len() as f64)
@@ -239,13 +245,48 @@ impl PyPhysicsConstraintEngine {
         }
     }
 
-    fn add_variable(&mut self, name: String, mass: i32, length: i32, time: i32, temp: i32, current: i32, amount: i32, lum: i32) {
-        let dims = Dimensions { mass, length, time, temperature: temp, current, amount, luminosity: lum };
+    fn add_variable(
+        &mut self,
+        name: String,
+        mass: i32,
+        length: i32,
+        time: i32,
+        temp: i32,
+        current: i32,
+        amount: i32,
+        lum: i32,
+    ) {
+        let dims = Dimensions {
+            mass,
+            length,
+            time,
+            temperature: temp,
+            current,
+            amount,
+            luminosity: lum,
+        };
         self.engine.add_variable(name, dims);
     }
 
-    fn set_target_dimensions(&mut self, mass: i32, length: i32, time: i32, temp: i32, current: i32, amount: i32, lum: i32) {
-        let dims = Dimensions { mass, length, time, temperature: temp, current, amount, luminosity: lum };
+    fn set_target_dimensions(
+        &mut self,
+        mass: i32,
+        length: i32,
+        time: i32,
+        temp: i32,
+        current: i32,
+        amount: i32,
+        lum: i32,
+    ) {
+        let dims = Dimensions {
+            mass,
+            length,
+            time,
+            temperature: temp,
+            current,
+            amount,
+            luminosity: lum,
+        };
         self.engine.set_target(dims);
     }
 

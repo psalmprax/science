@@ -266,11 +266,17 @@ const GATES_ONE: [Gate1; 6] = [Gate1::H, Gate1::X, Gate1::Y, Gate1::Z, Gate1::S,
 const GATES_TWO: [Gate2; 3] = [Gate2::Cx, Gate2::Cz, Gate2::Swap];
 
 fn gate1_index(gate: Gate1) -> usize {
-    GATES_ONE.iter().position(|candidate| *candidate == gate).expect("known gate")
+    GATES_ONE
+        .iter()
+        .position(|candidate| *candidate == gate)
+        .expect("known gate")
 }
 
 fn gate2_index(gate: Gate2) -> usize {
-    GATES_TWO.iter().position(|candidate| *candidate == gate).expect("known gate")
+    GATES_TWO
+        .iter()
+        .position(|candidate| *candidate == gate)
+        .expect("known gate")
 }
 
 /// The tightest tolerance that still separates two distinct Pauli matrices:
@@ -283,8 +289,7 @@ fn snap(matrix: &Mat) -> (i32, u8) {
         for label in 0..4u8 {
             let candidate = pauli_matrix(label);
             let matches = (0..matrix.dim * matrix.dim).all(|index| {
-                let expected =
-                    scalar.mul(candidate.entries[index]);
+                let expected = scalar.mul(candidate.entries[index]);
                 matrix.entries[index].close_to(expected, TOLERANCE)
             });
             if matches {
@@ -326,14 +331,21 @@ fn build_single() -> [[SingleRule; 4]; 6] {
             if label == I && (delta, new_label) != (0, I) {
                 panic!("{gate:?} does not fix the identity");
             }
-            table[index][label as usize] = SingleRule { delta, label: new_label };
+            table[index][label as usize] = SingleRule {
+                delta,
+                label: new_label,
+            };
         }
     }
     table
 }
 
 fn build_pair() -> [[[PairRule; 4]; 4]; 3] {
-    let mut table = [[[PairRule { delta: 0, first: I, second: I }; 4]; 4]; 3];
+    let mut table = [[[PairRule {
+        delta: 0,
+        first: I,
+        second: I,
+    }; 4]; 4]; 3];
     for (index, gate) in GATES_TWO.iter().enumerate() {
         let unitary = pair_matrix(*gate);
         let dagger = unitary.adjoint();
@@ -342,8 +354,11 @@ fn build_pair() -> [[[PairRule; 4]; 4]; 3] {
                 let operator = pauli_matrix(left).kron(&pauli_matrix(right));
                 let conjugated = unitary.mul(&operator).mul(&dagger);
                 let (delta, new_left, new_right) = snap_pair(&conjugated);
-                table[index][left as usize][right as usize] =
-                    PairRule { delta, first: new_left, second: new_right };
+                table[index][left as usize][right as usize] = PairRule {
+                    delta,
+                    first: new_left,
+                    second: new_right,
+                };
             }
         }
     }
@@ -437,7 +452,10 @@ pub fn format_string(labels: &[u8], phase: i32) -> String {
         2 => "-",
         _ => "-i",
     };
-    let body: String = labels.iter().map(|label| LABEL_CHARS[*label as usize]).collect();
+    let body: String = labels
+        .iter()
+        .map(|label| LABEL_CHARS[*label as usize])
+        .collect();
     format!("{sign}{body}")
 }
 
@@ -469,30 +487,61 @@ mod tests {
     #[test]
     fn ascii_random_gate_tables_are_the_textbook_ones() {
         // H swaps X and Z and flips Y: H Y H = -Y.
-        assert_eq!(conjugate_one(Gate1::H, X), SingleRule { delta: 0, label: Z });
-        assert_eq!(conjugate_one(Gate1::H, Z), SingleRule { delta: 0, label: X });
-        assert_eq!(conjugate_one(Gate1::H, Y), SingleRule { delta: 2, label: Y });
+        assert_eq!(
+            conjugate_one(Gate1::H, X),
+            SingleRule { delta: 0, label: Z }
+        );
+        assert_eq!(
+            conjugate_one(Gate1::H, Z),
+            SingleRule { delta: 0, label: X }
+        );
+        assert_eq!(
+            conjugate_one(Gate1::H, Y),
+            SingleRule { delta: 2, label: Y }
+        );
         // S sends X to Y and Y to -X.
-        assert_eq!(conjugate_one(Gate1::S, X), SingleRule { delta: 0, label: Y });
-        assert_eq!(conjugate_one(Gate1::S, Y), SingleRule { delta: 2, label: X });
+        assert_eq!(
+            conjugate_one(Gate1::S, X),
+            SingleRule { delta: 0, label: Y }
+        );
+        assert_eq!(
+            conjugate_one(Gate1::S, Y),
+            SingleRule { delta: 2, label: X }
+        );
         // CX: X_c -> X_c X_t, Z_t -> Z_c Z_t.
         assert_eq!(
             conjugate_pair(Gate2::Cx, X, I),
-            PairRule { delta: 0, first: X, second: X }
+            PairRule {
+                delta: 0,
+                first: X,
+                second: X
+            }
         );
         assert_eq!(
             conjugate_pair(Gate2::Cx, I, Z),
-            PairRule { delta: 0, first: Z, second: Z }
+            PairRule {
+                delta: 0,
+                first: Z,
+                second: Z
+            }
         );
         // CZ: X_c -> X_c Z_t.
         assert_eq!(
             conjugate_pair(Gate2::Cz, X, I),
-            PairRule { delta: 0, first: X, second: Z }
+            PairRule {
+                delta: 0,
+                first: X,
+                second: Z
+            }
         );
         // SWAP exchanges the labels and nothing else.
         assert_eq!(
             conjugate_pair(Gate2::Swap, X, Z),
-            PairRule { delta: 0, first: Z, second: X }
+            PairRule {
+                delta: 0,
+                first: Z,
+                second: X
+            }
         );
     }
 
@@ -515,7 +564,10 @@ mod tests {
                     count += 1;
                 }
             }
-            assert_eq!(count, 16, "{gate:?} does not act on the 16 two-qubit Paulis");
+            assert_eq!(
+                count, 16,
+                "{gate:?} does not act on the 16 two-qubit Paulis"
+            );
         }
     }
 

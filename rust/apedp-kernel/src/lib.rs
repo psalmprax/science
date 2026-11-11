@@ -12,11 +12,11 @@
 //! "this expression is bad"; the bridge turns it into a per-candidate fallback
 //! and keeps going.
 
-pub mod data;
 pub mod dag;
+pub mod data;
 pub mod flow_head;
-pub mod jetflow;
 pub mod genetic;
+pub mod jetflow;
 pub mod latent;
 pub mod ngts;
 pub mod numeric;
@@ -34,10 +34,10 @@ pub use data::DataCol;
 
 use ndarray::ArrayView1;
 
-use ndarray::{Array2, Array4};
+use ndarray::Array2;
 use numpy::{
-    IntoPyArray, PyArray1, PyArray2, PyArray4, PyReadonlyArray1, PyReadonlyArray2,
-    PyReadonlyArray3, PyReadonlyArray4, PyUntypedArrayMethods,
+    IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArray3,
+    PyUntypedArrayMethods,
 };
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;

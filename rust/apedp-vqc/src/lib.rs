@@ -72,7 +72,12 @@ mod bindings {
         let samples: Vec<String> = report
             .samples
             .iter()
-            .map(|sample| sample.iter().map(|bit| if *bit { '1' } else { '0' }).collect())
+            .map(|sample| {
+                sample
+                    .iter()
+                    .map(|bit| if *bit { '1' } else { '0' })
+                    .collect()
+            })
             .collect();
         Ok(json!({
             "backend": report.backend,
@@ -98,7 +103,10 @@ mod bindings {
                 }
                 json!([
                     equivalence::image_name(index),
-                    labels.iter().map(|label| LABEL_CHARS[*label as usize]).collect::<String>(),
+                    labels
+                        .iter()
+                        .map(|label| LABEL_CHARS[*label as usize])
+                        .collect::<String>(),
                     phase
                 ])
             })
@@ -114,7 +122,13 @@ mod bindings {
         let mut rng = crate::stabilizer::Rng::new(circuit.num_qubits as u64);
         for op in &circuit.ops {
             match op {
-                ir::Op::Gate { gate, name, targets, params, condition } => {
+                ir::Op::Gate {
+                    gate,
+                    name,
+                    targets,
+                    params,
+                    condition,
+                } => {
                     if condition.is_empty() {
                         let gate = ir::executable(gate, name, params)?;
                         state.apply(gate, targets)?;
@@ -143,7 +157,9 @@ mod bindings {
             .iter()
             .map(|(bits, probability)| {
                 json!([
-                    bits.iter().map(|bit| if *bit { '1' } else { '0' }).collect::<String>(),
+                    bits.iter()
+                        .map(|bit| if *bit { '1' } else { '0' })
+                        .collect::<String>(),
                     probability
                 ])
             })
@@ -159,7 +175,13 @@ mod bindings {
         let mut rng = crate::stabilizer::Rng::new(0);
         for op in &circuit.ops {
             match op {
-                ir::Op::Gate { gate, name, targets, params, condition } => {
+                ir::Op::Gate {
+                    gate,
+                    name,
+                    targets,
+                    params,
+                    condition,
+                } => {
                     if condition.is_empty() {
                         state.apply(ir::executable(gate, name, params)?, targets)?;
                     }
@@ -191,7 +213,13 @@ mod bindings {
         let mut rng = crate::stabilizer::Rng::new(0);
         for op in &circuit.ops {
             match op {
-                ir::Op::Gate { gate, name, targets, params, condition } => {
+                ir::Op::Gate {
+                    gate,
+                    name,
+                    targets,
+                    params,
+                    condition,
+                } => {
                     if condition.is_empty() {
                         state.apply(ir::executable(gate, name, params)?, targets)?;
                     }

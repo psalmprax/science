@@ -5,14 +5,18 @@
 //! and passes the probe result here. The arithmetic is done natively.
 
 use numpy::{IntoPyArray, PyArray1, PyArrayDyn, PyReadonlyArray1, PyReadonlyArrayDyn};
-use pyo3::types::PyList;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::types::PyList;
 
 /// Fused directional derivative: a = (v_probe - v_current) / h_eff.
 pub fn acceleration(v_current: &[f64], v_probe: &[f64], h_eff: f64) -> Result<Vec<f64>, String> {
     if v_current.len() != v_probe.len() {
-        return Err(format!("shape mismatch: {} vs {}", v_current.len(), v_probe.len()));
+        return Err(format!(
+            "shape mismatch: {} vs {}",
+            v_current.len(),
+            v_probe.len()
+        ));
     }
     if h_eff.abs() <= 1e-9 {
         return Err("h_eff must be non-zero".to_string());
@@ -52,7 +56,13 @@ pub fn thin_svd(a: &[f64], m: usize, n: usize) -> (Vec<f64>, Vec<f64>, Vec<f64>)
     let mut wc: Vec<Vec<f64>> = (0..cols)
         .map(|j| {
             (0..rows)
-                .map(|i| if transpose { a[j * n + i] } else { a[i * n + j] })
+                .map(|i| {
+                    if transpose {
+                        a[j * n + i]
+                    } else {
+                        a[i * n + j]
+                    }
+                })
                 .collect()
         })
         .collect();
@@ -88,9 +98,16 @@ pub fn thin_svd(a: &[f64], m: usize, n: usize) -> (Vec<f64>, Vec<f64>, Vec<f64>)
         }
     }
 
-    let sv: Vec<f64> = wc.iter().map(|c| c.iter().map(|x| x * x).sum::<f64>().sqrt()).collect();
+    let sv: Vec<f64> = wc
+        .iter()
+        .map(|c| c.iter().map(|x| x * x).sum::<f64>().sqrt())
+        .collect();
     let mut order: Vec<usize> = (0..cols).collect();
-    order.sort_by(|&a, &b| sv[b].partial_cmp(&sv[a]).unwrap_or(std::cmp::Ordering::Equal));
+    order.sort_by(|&a, &b| {
+        sv[b]
+            .partial_cmp(&sv[a])
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     let k = cols;
     let s: Vec<f64> = order.iter().map(|&j| sv[j]).collect();
     let norm_col = |j: usize, i: usize| if sv[j] > 0.0 { wc[j][i] / sv[j] } else { 0.0 };
@@ -194,8 +211,12 @@ pub fn jetflow_compute_acceleration<'py>(
     v_probe: PyReadonlyArray1<'py, f64>,
     h_eff: f64,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
-    let a = acceleration(&v_current.as_array().to_vec(), &v_probe.as_array().to_vec(), h_eff)
-        .map_err(PyValueError::new_err)?;
+    let a = acceleration(
+        &v_current.as_array().to_vec(),
+        &v_probe.as_array().to_vec(),
+        h_eff,
+    )
+    .map_err(PyValueError::new_err)?;
     Ok(a.into_pyarray(py))
 }
 
@@ -276,7 +297,11 @@ fn leray_project_2d(vx: &[f64], vy: &[f64], h: usize, w: usize) -> (Vec<f64>, Ve
     let two_pi = 2.0 * std::f64::consts::PI;
     // Signed FFT frequency index k in (-n/2, n/2]; symbol sin(2*pi*k/n).
     let sym = |k: usize, n: usize| -> f64 {
-        let ks = if k <= n / 2 { k as f64 } else { k as f64 - n as f64 };
+        let ks = if k <= n / 2 {
+            k as f64
+        } else {
+            k as f64 - n as f64
+        };
         (two_pi * ks / n as f64).sin()
     };
     let sxk: Vec<f64> = (0..w).map(|kx| sym(kx, w)).collect();
@@ -289,7 +314,8 @@ fn leray_project_2d(vx: &[f64], vy: &[f64], h: usize, w: usize) -> (Vec<f64>, Ve
                 let (mut a, mut b) = (0.0, 0.0);
                 for y in 0..h {
                     for xx in 0..w {
-                        let ang = -two_pi * ((ky * y) as f64 / h as f64 + (kx * xx) as f64 / w as f64);
+                        let ang =
+                            -two_pi * ((ky * y) as f64 / h as f64 + (kx * xx) as f64 / w as f64);
                         a += x[y * w + xx] * ang.cos();
                         b += x[y * w + xx] * ang.sin();
                     }
@@ -326,7 +352,8 @@ fn leray_project_2d(vx: &[f64], vy: &[f64], h: usize, w: usize) -> (Vec<f64>, Ve
                 for ky in 0..h {
                     for kx in 0..w {
                         let i = ky * w + kx;
-                        let ang = two_pi * ((ky * y) as f64 / h as f64 + (kx * xx) as f64 / w as f64);
+                        let ang =
+                            two_pi * ((ky * y) as f64 / h as f64 + (kx * xx) as f64 / w as f64);
                         acc += re[i] * ang.cos() - im[i] * ang.sin();
                     }
                 }
@@ -371,7 +398,10 @@ mod tests {
     use super::*;
 
     fn max_abs_diff(a: &[f64], b: &[f64]) -> f64 {
-        a.iter().zip(b).map(|(x, y)| (x - y).abs()).fold(0.0, f64::max)
+        a.iter()
+            .zip(b)
+            .map(|(x, y)| (x - y).abs())
+            .fold(0.0, f64::max)
     }
 
     fn reconstruct_svd(u: &[f64], s: &[f64], vt: &[f64], m: usize, n: usize) -> Vec<f64> {
@@ -418,16 +448,26 @@ mod tests {
         let [r1, r2, r3] = ranks;
         let (t, c, h, w) = (dims[0], dims[1], dims[2], dims[3]);
         let mut dense = vec![0.0; t * c * h * w];
-        for ti in 0..t { for ci in 0..c { for hi in 0..h { for wi in 0..w {
-            let mut acc = 0.0;
-            for a in 0..r1 { for b in 0..r2 { for d in 0..r3 {
-                acc += cores[0][ti * r1 + a]
-                    * cores[1][(a * c + ci) * r2 + b]
-                    * cores[2][(b * h + hi) * r3 + d]
-                    * cores[3][d * w + wi];
-            }}}
-            dense[((ti * c + ci) * h + hi) * w + wi] = acc;
-        }}}}
+        for ti in 0..t {
+            for ci in 0..c {
+                for hi in 0..h {
+                    for wi in 0..w {
+                        let mut acc = 0.0;
+                        for a in 0..r1 {
+                            for b in 0..r2 {
+                                for d in 0..r3 {
+                                    acc += cores[0][ti * r1 + a]
+                                        * cores[1][(a * c + ci) * r2 + b]
+                                        * cores[2][(b * h + hi) * r3 + d]
+                                        * cores[3][d * w + wi];
+                                }
+                            }
+                        }
+                        dense[((ti * c + ci) * h + hi) * w + wi] = acc;
+                    }
+                }
+            }
+        }
         assert!(max_abs_diff(&dense, &x) < 1e-8);
     }
 }

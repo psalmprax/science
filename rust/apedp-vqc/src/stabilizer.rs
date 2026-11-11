@@ -196,8 +196,11 @@ impl Stabilizer {
             Clifford::Two(two) => {
                 let (first, second) = (targets[0], targets[1]);
                 for index in 0..self.generators.len() {
-                    let rule =
-                        conjugate_pair(two, self.generators[index][first], self.generators[index][second]);
+                    let rule = conjugate_pair(
+                        two,
+                        self.generators[index][first],
+                        self.generators[index][second],
+                    );
                     self.generators[index][first] = rule.first;
                     self.generators[index][second] = rule.second;
                     self.phases[index] = (self.phases[index] + rule.delta).rem_euclid(4);
@@ -356,7 +359,11 @@ impl Stabilizer {
                 self.phases.len()
             )));
         }
-        let masks: Vec<Bitset> = self.generators.iter().map(|labels| to_mask(labels)).collect();
+        let masks: Vec<Bitset> = self
+            .generators
+            .iter()
+            .map(|labels| to_mask(labels))
+            .collect();
         let low = Bitset::from_bits(&vec![true; n]);
         for first in 0..n {
             for second in (first + 1)..n {
@@ -406,9 +413,13 @@ mod tests {
 
     fn ghz(num_qubits: usize) -> Stabilizer {
         let mut state = Stabilizer::new(num_qubits).unwrap();
-        state.apply(Clifford::from_name("h").unwrap(), &[0]).unwrap();
+        state
+            .apply(Clifford::from_name("h").unwrap(), &[0])
+            .unwrap();
         for qubit in 1..num_qubits {
-            state.apply(Clifford::from_name("cx").unwrap(), &[qubit - 1, qubit]).unwrap();
+            state
+                .apply(Clifford::from_name("cx").unwrap(), &[qubit - 1, qubit])
+                .unwrap();
         }
         state
     }
@@ -469,8 +480,10 @@ mod tests {
         let mut state = Stabilizer::new(2).unwrap();
         let mut rng = Rng::new(1);
         let error = state.measure(0, Some(true), &mut rng).unwrap_err();
-        assert_eq!(error, VqcError::Value(
-            "branch has zero probability; it cannot be executed".to_string()));
+        assert_eq!(
+            error,
+            VqcError::Value("branch has zero probability; it cannot be executed".to_string())
+        );
     }
 
     #[test]

@@ -23,13 +23,17 @@ pub struct RunReport {
 }
 
 fn bitstring(bits: &[bool]) -> String {
-    bits.iter().map(|bit| if *bit { '1' } else { '0' }).collect()
+    bits.iter()
+        .map(|bit| if *bit { '1' } else { '0' })
+        .collect()
 }
 
 /// Execute `circuit` for `shots` shots, seeded deterministically by `seed`.
 pub fn run(circuit: &CircuitIr, shots: usize, seed: u64) -> Result<RunReport, VqcError> {
     if shots < 1 {
-        return Err(VqcError::Value(format!("shots must be positive, got {shots}")));
+        return Err(VqcError::Value(format!(
+            "shots must be positive, got {shots}"
+        )));
     }
     let mut rng = Rng::new(seed);
     let mut counts: Vec<(String, usize)> = Vec::new();
@@ -45,7 +49,13 @@ pub fn run(circuit: &CircuitIr, shots: usize, seed: u64) -> Result<RunReport, Vq
                 continue;
             }
             match op {
-                Op::Gate { gate, name, targets, params, .. } => {
+                Op::Gate {
+                    gate,
+                    name,
+                    targets,
+                    params,
+                    ..
+                } => {
                     let gate = executable(gate, name, params)?;
                     state.apply(gate, targets)?;
                 }
@@ -128,7 +138,10 @@ mod tests {
             {"bit":2,"condition":null,"op":"measure","qubit":0}]}"#;
         let circuit = ir::parse(text).unwrap();
         let report = run(&circuit, 4, 1).unwrap();
-        assert!(report.samples.iter().all(|sample| sample == &vec![false, false, false]));
+        assert!(report
+            .samples
+            .iter()
+            .all(|sample| sample == &vec![false, false, false]));
         assert_eq!(report.counts, vec![("000".to_string(), 4)]);
     }
 
