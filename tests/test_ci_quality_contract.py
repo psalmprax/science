@@ -142,6 +142,16 @@ def test_rust_home_is_set_in_a_step_not_invalid_job_context():
     assert any('RUSTUP_HOME=$RUNNER_TEMP/rustup' in step.get("run", "") for step in job["steps"])
 
 
+def test_mutation_battery_installs_its_native_prerequisite():
+    job = _workflow("test.yml")["jobs"]["mutation-battery"]
+    assert job["needs"] == "build-kernel-wheel"
+    steps = job["steps"]
+    script = "\n".join(step.get("run", "") for step in steps)
+    assert "python -m pip install wheelhouse/*.whl" in script
+    assert "assert is_rust_kernel_available()" in script
+    assert any(step.get("uses", "").startswith("actions/download-artifact@") for step in steps)
+
+
 def test_workflows_have_no_conflicts_or_job_level_secret_conditions():
     for path in sorted(WORKFLOWS.glob("*.yml")):
         text = path.read_text()

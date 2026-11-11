@@ -346,6 +346,7 @@ jobs:
   # mutant FAILS CI — this gate is the mechanism by which the register
   # requirement stays closed-by-evidence rather than closed-by-assertion.
   mutation-battery:
+    needs: build-kernel-wheel
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -357,7 +358,17 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
+          python -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
           pip install -e ".[dev,test]"
+      - name: Download the required native kernel
+        uses: actions/download-artifact@v8
+        with:
+          name: apedp_kernel-wheel-${{ github.sha }}
+          path: wheelhouse
+      - name: Install and require the native kernel
+        run: |
+          python -m pip install wheelhouse/*.whl
+          python -c "import apedp_kernel; from apedp.rust_bridge import is_rust_kernel_available; assert is_rust_kernel_available()"
       - name: Run targeted mutation battery (referee + leakage paths)
         run: python scripts/run_mutation_battery.py
       - name: Upload the mutation-battery report (never hidden)
