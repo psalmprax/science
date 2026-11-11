@@ -187,6 +187,30 @@ against the built kernel, not silently skip.
   further Clippy categories, and validating wheel matrices on hosted runners.
   This pass does not certify an engineering score or erase legacy debt.
 
+### FAROS native tests
+
+`python -m pytest tests/test_faros_isq.py tests/test_faros_runtime.py -q` includes
+numerical tests and native integration tests. Native tests require the approved
+KickMix extension at
+`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/kickmix.so`.
+An arbitrary rebuilt extension is not sufficient: `load_contract` verifies its
+hash against the approved build registry.
+
+Restore the pinned upstream sources with `git submodule update --init`.
+For the verifier interpreter, create a Python 3.13 environment under
+`build/qvcc-venv313` and install NumPy and SciPy, or set `APEDP_Q_PYTHON` to a
+compatible executable. FAROS honors an explicit `python_executable` first,
+then `APEDP_Q_PYTHON`, then repository-local `build/qvcc-pinned313` and
+`build/qvcc-venv313` environments. Invalid explicit overrides fail rather than
+being silently replaced. Resource measurement failures also fail rather than
+producing hard-coded resource counts.
+
+The historical receipt test additionally requires
+`artifacts/quantum_compilation/invsqrt/receipt_faros_r2_86q.json` with its original
+circuit digest. A new run is separate evidence, not a replacement for that
+missing historical artifact. Do not fabricate the receipt or change the binary
+pin simply to make these tests pass.
+
 ## CI troubleshooting
 
 - **No jobs started:** inspect workflow validation diagnostics. `secrets`

@@ -1396,6 +1396,37 @@ def exhaustive_integer_certificate(
     return result
 
 
+def _faros_python(python_executable: str | None) -> str:
+    executable = python_executable or os.environ.get("APEDP_Q_PYTHON")
+    if executable:
+        resolved = shutil.which(executable)
+        if resolved is None:
+            raise FileNotFoundError(f"FAROS interpreter not executable: {executable}")
+        return resolved
+    repo_root = Path(__file__).resolve().parent.parent.parent
+    for environment in ("qvcc-pinned313", "qvcc-venv313"):
+        executable = repo_root / "build" / environment / "bin" / "python"
+        resolved = shutil.which(str(executable))
+        if resolved is not None:
+            return resolved
+    raise FileNotFoundError(
+        "FAROS needs the KickMix-compatible Python interpreter. "
+        "Set APEDP_Q_PYTHON or create build/qvcc-venv313 with Python 3.13."
+    )
+
+
+def _run_faros_script(executable: str, script: str, operation: str) -> str:
+    try:
+        result = subprocess.run(
+            [executable, "-c", script], capture_output=True, text=True, check=True
+        )
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(
+            f"FAROS {operation} failed (exit {exc.returncode}): {exc.stderr.strip()}"
+        ) from exc
+    return result.stdout
+
+
 def materialize_faros_circuit(
     cfg: Cfg | None = None,
     tables: dict[tuple[int, int], tuple[int, int, int]] | None = None,
@@ -1416,10 +1447,7 @@ def materialize_faros_circuit(
     out_file = Path(output_path) if output_path else default_out
     out_file.parent.mkdir(parents=True, exist_ok=True)
 
-    py_bin = (
-        python_executable
-        or os.environ.get("APEDP_Q_PYTHON", "/dev/shm/qvcc-venv313/bin/python")
-    )
+    py_bin = _faros_python(python_executable)
 
     should_build = force_rebuild or not out_file.exists()
 
@@ -1471,19 +1499,7 @@ res = {{
 }}
 print(json.dumps(res))
 """
-            try:
-                subprocess.run(
-                    [py_bin, "-c", builder_script],
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                )
-            except Exception as exc:
-                raise RuntimeError(
-                    f"Circuit builder subprocess failed for {candidate_id}. "
-                    "Silent fallback copying of 90Q champion is permanently prohibited "
-                    "by MOSAIC-2 Evidence Integrity rules."
-                ) from exc
+            _run_faros_script(py_bin, builder_script, f"circuit build for {candidate_id}")
 
     # Query operational statistics directly from the verified circuit
     stats_script = f"""
@@ -1504,23 +1520,12 @@ res = {{
 }}
 print(json.dumps(res))
 """
-    try:
-        proc = subprocess.run(
-            [py_bin, "-c", stats_script],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        circ_stats = json.loads(proc.stdout.strip().splitlines()[-1])
-        num_qubits = int(circ_stats["num_qubits"])
-        static_toffoli = int(circ_stats["static_toffoli"])
-        t_like = int(circ_stats["t_like"])
-        rotations = int(circ_stats["rotations"])
-    except Exception:
-        num_qubits = 90
-        static_toffoli = 1448
-        t_like = 1
-        rotations = 44
+    stdout = _run_faros_script(py_bin, stats_script, f"resource measurement for {candidate_id}")
+    circ_stats = json.loads(stdout.strip().splitlines()[-1])
+    num_qubits = int(circ_stats["num_qubits"])
+    static_toffoli = int(circ_stats["static_toffoli"])
+    t_like = int(circ_stats["t_like"])
+    rotations = int(circ_stats["rotations"])
 
     digest = sha256_file(out_file)
     margin_units = 73_326_605
@@ -1566,10 +1571,7 @@ def calibrate_faros_circuit(
         raise FileNotFoundError(f"Circuit artifact not found: {c_path}")
 
     out_file = Path(output_path) if output_path else c_path
-    py_bin = (
-        python_executable
-        or os.environ.get("APEDP_Q_PYTHON", "/dev/shm/qvcc-venv313/bin/python")
-    )
+    py_bin = _faros_python(python_executable)
 
     if fixed_deltas is None:
         cal_path = repo_root / "src/invsqrt_calibration.json"
@@ -1620,22 +1622,10 @@ print(json.dumps({{
     'sha256': hashlib.sha256(circuit_out.read_bytes()).hexdigest(),
 }}))
 """
-    try:
-        proc = subprocess.run(
-            [py_bin, "-c", cal_script],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        res_info = json.loads(proc.stdout.strip().splitlines()[-1])
-        cal_rotations = int(res_info["rotations"])
-        cal_sha256 = str(res_info["sha256"])
-    except Exception as exc:
-        raise RuntimeError(
-            f"Phase calibration subprocess failed for {c_path}. "
-            "Silent fallback copying of input circuit is permanently prohibited "
-            "by MOSAIC-2 Evidence Integrity rules."
-        ) from exc
+    stdout = _run_faros_script(py_bin, cal_script, f"phase calibration for {c_path}")
+    res_info = json.loads(stdout.strip().splitlines()[-1])
+    cal_rotations = int(res_info["rotations"])
+    cal_sha256 = str(res_info["sha256"])
 
     report = {
         "source_circuit": str(c_path),
@@ -1671,10 +1661,7 @@ def verify_faros_candidate(
         contract = load_contract("invsqrt")
     contract.assert_locked()
 
-    py_bin = (
-        python_executable
-        or os.environ.get("APEDP_Q_PYTHON", "/dev/shm/qvcc-venv313/bin/python")
-    )
+    py_bin = _faros_python(python_executable)
     art_path = Path(artifact_path)
     if not art_path.exists():
         raise FileNotFoundError(f"Artifact not found: {art_path}")
@@ -1696,4 +1683,3 @@ def verify_faros_candidate(
             encoding="utf-8",
         )
     return receipt
-
