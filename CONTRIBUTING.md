@@ -264,6 +264,24 @@ cost; this experiment is not evidence that every possible parity decomposition
 is unsuitable. The audit uses floating-point arithmetic, excludes rotation
 synthesis error, and is not a formal correctness certificate.
 
+`scripts/audit_normalized_invsqrt.py` investigates approximation feasibility
+before attempting another circuit. It audits piecewise Chebyshev approximations
+on normalized mantissas `[1,2)` at every benchmark input, including a separate
+model that rounds coefficients, mantissas, and Clenshaw recurrence operations.
+Run `scripts/check_normalized_invsqrt.py` for boundary and rounding checks.
+
+Four segments with degree five and 28 fractional bits passed the full-domain
+numerical audit with worst error/tolerance 0.392764. One segment with degree
+nine and 28 fractional bits also passed (0.379256). All four tested 24-bit
+rounded candidates failed. These results exclude reversible normalization,
+overflow, reversible rounding/garbage cleanup, and rotation synthesis; exponent
+scaling still uses floating-point arithmetic followed by 48-bit phase rounding.
+They are numerical evidence, not a proof or a measured quantum implementation.
+Straightforward Clenshaw evaluation holds two fractional states: at 28
+fractional bits, those states alone exceed the 28 workspace qubits remaining
+after the 22-bit input in a 50-qubit circuit. A different reversible evaluation
+schedule or representation is still needed, with its gate cost measured.
+
 ## CI troubleshooting
 
 - **No jobs started:** inspect workflow validation diagnostics. `secrets`
