@@ -198,6 +198,99 @@ class MMLMTokenizer:
         return " ".join(tokens)
 
 
+class BPEMMLMTokenizer(MMLMTokenizer):
+    """Deterministic byte-level BPE with lossless UTF-8 fallback.
+
+    The vocabulary cap includes four special tokens and all 256 byte tokens.
+    Training learns frequent adjacent byte sequences without normalizing text.
+    """
+
+    def __init__(self, max_vocab_size: int = 2048, min_frequency: int = 2) -> None:
+        if max_vocab_size < 260:
+            raise ValueError("max_vocab_size must be at least 260 for UTF-8 byte fallback")
+        if min_frequency < 1:
+            raise ValueError("min_frequency must be positive")
+        super().__init__(max_vocab_size=max_vocab_size)
+        self.min_frequency = min_frequency
+        self.merges: list[tuple[bytes, bytes]] = []
+        self._reset_vocabulary()
+
+    def _reset_vocabulary(self) -> None:
+        self.token_to_id = {
+            token: index for index, token in enumerate(
+                (self.PAD_TOKEN, self.UNK_TOKEN, self.BOS_TOKEN, self.EOS_TOKEN)
+            )
+        }
+        self._pieces = {index + 4: bytes([index]) for index in range(256)}
+        self.token_to_id.update(
+            (f"<0x{index:02X}>", index + 4) for index in range(256)
+        )
+        self.id_to_token = {index: token for token, index in self.token_to_id.items()}
+        self._piece_ids = {piece: index for index, piece in self._pieces.items()}
+        self.merges = []
+        self._fitted = False
+
+    @staticmethod
+    def _merge(pieces: list[bytes], pair: tuple[bytes, bytes]) -> list[bytes]:
+        merged: list[bytes] = []
+        index = 0
+        while index < len(pieces):
+            if index + 1 < len(pieces) and (pieces[index], pieces[index + 1]) == pair:
+                merged.append(pair[0] + pair[1])
+                index += 2
+            else:
+                merged.append(pieces[index])
+                index += 1
+        return merged
+
+    def fit(self, texts: Sequence[str]) -> BPEMMLMTokenizer:
+        self._reset_vocabulary()
+        sequences = [[bytes([value]) for value in text.encode("utf-8")] for text in texts]
+        while self.vocab_size < self.max_vocab_size:
+            counts: Counter[tuple[bytes, bytes]] = Counter()
+            for pieces in sequences:
+                counts.update(pairwise(pieces))
+            if not counts:
+                break
+            pair = min(counts, key=lambda candidate: (-counts[candidate], candidate))
+            if counts[pair] < self.min_frequency:
+                break
+            self.merges.append(pair)
+            piece = pair[0] + pair[1]
+            if piece not in self._piece_ids:
+                token_id = self.vocab_size
+                label = f"<bpe:{piece.hex()}>"
+                self.token_to_id[label] = token_id
+                self.id_to_token[token_id] = label
+                self._pieces[token_id] = piece
+                self._piece_ids[piece] = token_id
+            sequences = [self._merge(pieces, pair) for pieces in sequences]
+        self._fitted = True
+        return self
+
+    def encode(self, text: str, add_special_tokens: bool = True) -> list[int]:
+        pieces = [bytes([value]) for value in text.encode("utf-8")]
+        for pair in self.merges:
+            pieces = self._merge(pieces, pair)
+        ids = [self._piece_ids[piece] for piece in pieces]
+        if add_special_tokens:
+            return [self.token_to_id[self.BOS_TOKEN], *ids, self.token_to_id[self.EOS_TOKEN]]
+        return ids
+
+    def decode(self, token_ids: Sequence[int], skip_special_tokens: bool = True) -> str:
+        chunks: list[bytes] = []
+        for value in token_ids:
+            token_id = int(value)
+            if token_id not in self.id_to_token:
+                raise ValueError(f"Unknown token ID: {token_id}")
+            if token_id < 4:
+                if not skip_special_tokens:
+                    chunks.append(self.id_to_token[token_id].encode("utf-8"))
+            else:
+                chunks.append(self._pieces[token_id])
+        return b"".join(chunks).decode("utf-8")
+
+
 # ============================================================================
 # ENGINE 1: PROBABILISTIC LANGUAGE ENGINE
 # ============================================================================

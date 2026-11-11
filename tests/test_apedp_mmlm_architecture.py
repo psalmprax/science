@@ -611,10 +611,10 @@ def test_direction_4_bpe_mmlm_tokenizer_subwords_and_byte_fallback():
         "quantum circuits optimize t gate count and phase polynomials",
         "tensor train memory factors quantum state representations",
     ]
-    bpe = BPEMMLMTokenizer(max_vocab_size=48, min_frequency=2)
+    bpe = BPEMMLMTokenizer(max_vocab_size=308, min_frequency=2)
     bpe.fit(corpus)
 
-    assert bpe.vocab_size > 20
+    assert 260 < bpe.vocab_size <= 308
     assert len(bpe.merges) > 5
 
     # Encode regular text with subwords
@@ -630,4 +630,4 @@ def test_direction_4_bpe_mmlm_tokenizer_subwords_and_byte_fallback():
 
     # Decoding reconstructs characters
     decoded = bpe.decode(exotic_enc)
-    assert "<0x" not in decoded or "Ψ" in decoded or len(decoded) > 0
+    assert decoded == exotic_text
