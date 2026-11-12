@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 __all__ = [
     "MAX_FORMULA_LENGTH",
+    "FormulaResourceError",
     "LimitTimeout",
     "limit_with_timeout",
     "quiet_float_warnings",
@@ -215,6 +216,95 @@ def _validate_formula_string(formula_str: str, max_length: int) -> str:
     return s
 
 
+#: Bounds on what the parser is allowed to *evaluate*. SymPy folds numeric
+#: sub-expressions while parsing, so ``9**9**9**9`` or ``zeta(10**7)`` is not a
+#: large expression but an unbounded computation, and the allowlist above never
+#: sees it because it runs after the parse returns. These are far above anything
+#: a physical law uses (exponents are single digits; special-function arguments
+#: are order one) and far below what costs time or memory.
+MAX_NUMERIC_EXPONENT = 1000
+MAX_NUMERIC_POWER_BITS = 20_000
+MAX_SPECIAL_FUNCTION_ARGUMENT = 1000
+
+#: Functions whose value at a large numeric argument stays symbolic or is cheap.
+#: Every other function head (gamma, zeta, the Bessel family, factorial written
+#: as ``n!``) is held to ``MAX_SPECIAL_FUNCTION_ARGUMENT``.
+_CHEAP_AT_LARGE_ARGUMENT = frozenset({
+    "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "exp", "log",
+    "Abs", "sign", "Heaviside", "re", "im", "conjugate",
+    "sinh", "cosh", "tanh", "erf", "erfc",
+})
+
+
+class FormulaResourceError(ValueError):
+    """A formula whose evaluation would exceed the parser's resource bounds."""
+
+
+def _guarded_rebuild(node: sp.Basic) -> sp.Basic:
+    """Evaluate an unevaluated parse tree bottom-up, refusing unbounded steps.
+
+    Children are evaluated first, so the check sees what SymPy would actually
+    compute: ``9**(9**(9 + x - x))`` reaches the outer power with the exponent
+    already folded to an integer, which a check on the source text would miss.
+    """
+    if not node.args:
+        return node
+    args = [_guarded_rebuild(arg) for arg in node.args]
+    if isinstance(node, sp.Pow) and len(args) == 2:
+        base, exponent = args
+        if exponent.is_Number:
+            if exponent.is_finite is not True or abs(exponent) > MAX_NUMERIC_EXPONENT:
+                raise FormulaResourceError(
+                    f"Numeric exponent exceeds the limit of {MAX_NUMERIC_EXPONENT}"
+                )
+            if base.is_Rational:
+                bits = max(abs(int(base.p)).bit_length(), int(base.q).bit_length())
+                if bits * (int(abs(exponent)) + 1) > MAX_NUMERIC_POWER_BITS:
+                    raise FormulaResourceError(
+                        "Numeric power is too large to evaluate "
+                        f"(over {MAX_NUMERIC_POWER_BITS} bits)"
+                    )
+    elif isinstance(node, sp.Function):
+        name = type(node).__name__
+        if name not in _CHEAP_AT_LARGE_ARGUMENT:
+            for arg in args:
+                if arg.is_Number and (
+                    arg.is_finite is not True or abs(arg) > MAX_SPECIAL_FUNCTION_ARGUMENT
+                ):
+                    raise FormulaResourceError(
+                        f"Numeric argument to {name!r} exceeds the limit of "
+                        f"{MAX_SPECIAL_FUNCTION_ARGUMENT}"
+                    )
+    return node.func(*args)
+
+
+def _assert_bounded_evaluation(s: str, local_dict: dict[str, object]) -> None:
+    """Raise :class:`FormulaResourceError` if parsing ``s`` would run unbounded.
+
+    Parses once with ``evaluate=False`` (no arithmetic happens) and replays the
+    evaluation under :func:`_guarded_rebuild`. The caller then performs its
+    ordinary evaluated parse, so accepted formulas produce exactly the
+    expression they did before this guard existed.
+
+    A string the unevaluated parser cannot handle is left to the ordinary parse,
+    which reports it as unparseable; this guard only ever adds a refusal.
+    """
+    try:
+        unevaluated = sp.parse_expr(
+            s, local_dict=dict(local_dict), transformations=_TRANSFORMATIONS, evaluate=False
+        )
+        _guarded_rebuild(unevaluated)
+    except FormulaResourceError:
+        raise
+    except RecursionError as exc:
+        raise FormulaResourceError("Formula is nested too deeply to evaluate safely") from exc
+    except Exception:
+        # Anything else (a tokenizer error, a SymPy quirk under evaluate=False)
+        # is not this guard's to report: the ordinary parse that follows gives
+        # the caller the same "unparseable" answer it always did.
+        logger.debug("bounded-evaluation pre-check skipped for %r", s, exc_info=True)
+
+
 def safe_parse_expr(
     formula_str: str,
     extra_symbols: dict[str, sp.Symbol] | None = None,
@@ -239,6 +329,7 @@ def safe_parse_expr(
     for ident in set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", s)):
         if ident not in local_dict and ident not in _PARSER_INTERNALS:
             local_dict[ident] = sp.Symbol(ident)
+    _assert_bounded_evaluation(s, local_dict)
     try:
         expr = sp.parse_expr(s, local_dict=local_dict, transformations=_TRANSFORMATIONS)
     except Exception as e:
@@ -289,6 +380,7 @@ def safe_parse_pde(
     for ident in set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", s)):
         if ident not in local_dict and ident not in _PARSER_INTERNALS:
             local_dict[ident] = sp.Symbol(ident)
+    _assert_bounded_evaluation(s, local_dict)
     try:
         expr = sp.parse_expr(s, local_dict=local_dict, transformations=_TRANSFORMATIONS)
     except Exception as e:

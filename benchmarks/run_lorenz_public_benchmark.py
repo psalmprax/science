@@ -91,7 +91,10 @@ def _record_ledger(candidate_id: str, outcome: str) -> None:
         FullLineageExperimentLedger,
     )
 
-    ledger = FullLineageExperimentLedger(persistence_path=LEDGER)
+    # head_marker=False: this ledger is a committed fixture that every run appends
+    # to and `git checkout` rewinds, so a shorter file is expected here and must
+    # not read as truncation. Entries are still hash-chained.
+    ledger = FullLineageExperimentLedger(persistence_path=LEDGER, head_marker=False)
     ledger.register_candidate(candidate_id=candidate_id,
                               proposer_id="lorenz_public_benchmark",
                               formula=f"run::{candidate_id}")

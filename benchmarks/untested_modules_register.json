@@ -2,11 +2,11 @@
   "schema": "apedp.untested-module-register/v1",
   "module_root": "apedp_dyn",
   "basis": "A module counts as referenced when a tests/ source names its dotted path, imports it, or imports its name from its package -- including a from-import that continues across lines inside parentheses. A bare word match does not count: prose and unrelated identifiers are not coverage. Import coverage from test_smoke_imports.py is separate and is not counted here, because importing a module is not testing it.",
-  "pinned_ceiling": 71,
+  "pinned_ceiling": 69,
   "totals": {
     "modules": 391,
-    "referenced": 320,
-    "unreferenced": 71
+    "referenced": 322,
+    "unreferenced": 69
   },
   "unreferenced": [
     "apedp_dyn/discovery_l2/discovery_stability_harness.py",
@@ -32,7 +32,6 @@
     "apedp_dyn/quantum_compilation/multi_structure_search.py",
     "apedp_dyn/quantum_compilation/search.py",
     "apedp_dyn/quantum_compilation/two_region_probe.py",
-    "apedp_dyn/safety.py",
     "apedp_dyn/sandbox/auto_degradation.py",
     "apedp_dyn/sandbox/cpmd_audit_harness.py",
     "apedp_dyn/sandbox/cpmd_calibration.py",
@@ -74,7 +73,6 @@
     "apedp_dyn/sandbox/volume_sandbox.py",
     "apedp_dyn/sandbox/walkforward_tournament.py",
     "apedp_dyn/ui/__main__.py",
-    "apedp_dyn/ui/helpers.py",
     "apedp_dyn/ui/physics_endpoint.py",
     "apedp_dyn/ui/registry_endpoint.py",
     "apedp_dyn/ui/streamlit_app.py",

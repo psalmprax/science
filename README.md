@@ -2,19 +2,19 @@
 
 [![APEDP CI/CD](https://github.com/psalmprax/science/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/psalmprax/science/actions/workflows/test.yml)
 
-A scientific discovery and epistemic referee platform combining formal mathematical verification (Lean 4), multi-proposer candidate generation, dimensional analysis, rigorous multiple-testing control (Deflated Sharpe Ratio), anti-snooping holdout guards, and scoped non-fungible promotion state machines.
+A scientific discovery and epistemic referee platform combining Lean 4 transcription of candidate laws (not yet machine-checked proof; see below), multi-proposer candidate generation, dimensional analysis, rigorous multiple-testing control (Deflated Sharpe Ratio), anti-snooping holdout guards, and scoped non-fungible promotion state machines.
 
 ---
 
 ## What APEDP-X Does
 
 - **Epistemic Referee Discipline:** Enforces a strict separation between hypothesis generation and adjudication. Hypotheses cannot judge their own validity or define their own promotion criteria.
-- **Formal Mathematical Verification:** Native zero-disk Lean 4 compiler verification (`--stdin` streaming) proving algebraic identities, dimensional consistency, and mathematical bounds.
+- **Lean 4 Transcription and Kernel Check:** Candidate laws are transcribed into Lean 4 and streamed to the Lean compiler (`--stdin`, nothing written to disk). This is **not yet a verification layer**: the measured machine-checked fraction of the Lean tree is 0.0, because the generated files declare their own axioms or leave `sorry` (see [`docs/LEAN_FORMAL_STATUS.md`](docs/LEAN_FORMAL_STATUS.md)). A module that declares its own axioms is capped at `P1_CANDIDATE`; no result may be described as formally verified on that basis.
 - **Competing Multi-Proposer Architecture:** Independent proposers (e.g. `SparseMicrostructureProposer`, `OrderBookResiliencyProposer`, genetic AST regression) submit standardized `CandidateProposal` objects conforming to explicit strategy archetypes (`TAIL_RISK` $\ge 30$ events, `CONTINUOUS_FACTOR` $\ge 85\%$, and `TACTICAL` active fraction strictly in $[5\%, 90\%]$).
 - **Deflated Sharpe Ratio (DSR) Trial Accounting:** Implements Bailey & López de Prado (2014) closed-form DSR, tracking cumulative trial counts, variance, skewness, and kurtosis to penalize data dredging and search multiplicity.
-- **Full-Lineage Experiment Ledger & Anti-Snooping Guard:** Every candidate trial logs its feature set, hyperparameters, seeds, and dataset slices. Any confirmation holdout slice failed by a candidate is permanently burned; iterative replacements attempting to reuse it trigger `HoldoutContaminationError`.
+- **Full-Lineage Experiment Ledger & Anti-Snooping Guard:** Every candidate trial logs its feature set, hyperparameters, seeds, and dataset slices. A confirmation holdout slice is single-use: it may be inspected by one candidate (`max_holdout_inspections`, default 1), and a slice failed by a candidate is permanently burned. A second candidate, a respelled slice name, or a replacement after a failure triggers `HoldoutContaminationError`. The on-disk ledger is hash-chained, so an edited, removed or truncated entry raises `LedgerIntegrityError` instead of silently un-burning a slice. The guard covers ledgers given a `persistence_path`; an in-memory ledger forgets its burns with the process.
 - **Six-Stage Scoped Promotion:** Enforces non-fungible sequential verification:
-  1. `MATHEMATICAL_CONSISTENCY` (Lean 4 + dimensional invariants)
+  1. `MATHEMATICAL_CONSISTENCY` (Lean 4 kernel status + dimensional invariants; see the Lean caveat above)
   2. `PREDICTIVE_RECOVERY` (Cross-validated out-of-sample error reduction)
   3. `UNIQUE_IDENTIFICATION` (Diebold-Mariano test $p < 0.01$ against Kyle/Amihud/Biais/Carhart baselines; literature $R^2 < 0.85$)
   4. `OUT_OF_SAMPLE_TRANSFER` (Un-snooped temporal regimes and cross-asset transfer)
@@ -121,15 +121,17 @@ disc_report = run_calibrated_discovery_benchmark(my_proposer_fn, trials_per_cond
 print(f"Power at IC=0.15: {disc_report.strong_signal_power:.2%}")
 ```
 
-### 3. Verifying In-Memory Lean 4 Proofs via Streaming `--stdin`
+### 3. Checking Lean 4 Code In Memory via Streaming `--stdin`
 
-Run formal verification directly through Lean 4's kernel without disk overhead:
+Stream Lean 4 source to the compiler without writing a file. This needs a `lean`
+binary on `PATH` (or in `~/.elan/bin`); without one the call fails closed and
+reports `P0`, it does not report success:
 ```python
-from apedp_dyn.epistemic.lean_universal_bridge import verify_lean4_code_stdin
+from apedp_dyn.epistemic.lean_universal_bridge import LeanUniversalBridge
 
 code = "theorem tautology (p : Prop) (h : p) : p := h"
-result = verify_lean4_code_stdin(code)
-print(f"Verified: {result.verified}, Kernel exit code: {result.exit_code}")
+result = LeanUniversalBridge().verify_raw_lean_code_in_memory(code)
+print(f"Claim status: {result.proof_claim_status.value}, kernel exit code: {result.kernel_exit_code}")
 ```
 
 ### 4. Inspecting Canonical Preregistered Settings

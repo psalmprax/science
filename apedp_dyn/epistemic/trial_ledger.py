@@ -122,6 +122,15 @@ class CandidateTrialLedger:
         return record
 
     @property
+    def is_persistent(self) -> bool:
+        """True when trials are journaled to disk and survive this process.
+
+        An in-memory ledger starts every run at zero trials, so a Deflated
+        Sharpe Ratio computed from it charges only the current run's search.
+        """
+        return self._persistence_path is not None
+
+    @property
     def trial_count(self) -> int:
         """Total number of attempted hypotheses evaluated in this trial family."""
         return len(self._records)
@@ -200,6 +209,9 @@ class CandidateTrialLedger:
         result["n_trials"] = effective
         result["naive_trial_count"] = self.trial_count
         result["hidden_trials"] = max(0, effective - self.trial_count)
+        # Disclosed with the number rather than left to the caller to know: an
+        # in-memory ledger has no memory of earlier runs' searches.
+        result["ledger_persistent"] = self.is_persistent
         return result
 
     def get_records(self) -> list[CandidateTrialRecord]:

@@ -15,6 +15,56 @@ inferred releases.
 
 ### Changed
 
+- **Integrity hardening (2026-11-12): the promotion gates, the holdout guard and
+  the trial ledger no longer take the caller's word.** Each of these was bypassed
+  through its ordinary public API before this round; the bypasses and their pins
+  are in `tests/test_integrity_hardening_2026_11_12.py` and the round is recorded
+  in `docs/SYSTEM_FLAWS_AUDIT.md`. Behaviour changes a caller can observe:
+  - `PromotionTracker.verify_stage_2..6` still accept their threshold arguments,
+    but only to *tighten*: a value looser than the canonical-spec threshold (or a
+    non-finite one) raises `PromotionViolationError` instead of being applied. A
+    junk candidate previously reached `REAL_MARKET_PROMOTION_GRANTED` by passing
+    `min_dsr_hurdle=0.0` and friends.
+  - A stage is evaluated once. Re-running a recorded stage, or stage 1 on a halted
+    candidate, raises `PromotionPrerequisiteError`. The tracker also refuses to act
+    when `is_halted` / `highest_stage_passed` disagree with its stage records, so
+    assigning to those attributes no longer un-halts a candidate.
+  - `PromotionTracker(state_path=...)` journals stage outcomes and resumes from
+    them, so a halt survives a new tracker instance. Optional; without it the
+    tracker is in-memory as before.
+  - New `PromotionTracker.verify_stage_5_from_ledger(...)` computes the Deflated
+    Sharpe Ratio from a `CandidateTrialLedger` instead of accepting `dsr_metric`
+    as a number, and refuses a ledger with no persistence path.
+    `CandidateTrialLedger.is_persistent` and a `ledger_persistent` field on the
+    `dsr_with_selection_adjustment` payload disclose the same fact.
+  - `FullLineageExperimentLedger` gains `max_holdout_inspections` (default **1**):
+    a confirmation-holdout slice may be inspected by one candidate. Previously a
+    slice was only protected after a caller reported a failure, so any number of
+    candidates could be scored on it. Pass a larger value, or `None` for the old
+    unlimited behaviour, explicitly.
+  - Burn and budget lookups use a normalised slice identity (NFKC, whitespace
+    collapsed, case-folded), so `"holdout_2024 "` or `"spy"` no longer yields a
+    fresh slice. `get_burned_holdouts()` still returns the names as first burned;
+    `is_holdout_burned()` and `get_holdout_inspection_counts()` are new.
+  - Every appended ledger line carries `prev_hash` / `entry_hash`, and the newest
+    hash is mirrored in `<ledger>.head`. An edited, removed, inserted or truncated
+    entry, or an unparseable line, raises the new `LedgerIntegrityError`; the
+    exposure-time refresh used to skip unreadable lines. Ledgers written before the
+    chain existed still load and are chained from their last line onward.
+    `head_marker=False` opts a ledger out of the truncation marker only, for a
+    committed fixture that `git checkout` rewinds
+    (`benchmarks/run_lorenz_public_benchmark.py` uses it); `*.jsonl.head` is
+    git-ignored.
+  - With `APEDP_API_KEY` unset, the UI API (`apedp_dyn/ui/helpers.py`) now serves
+    loopback clients only. The non-loopback refusal lived in `run_server()`, which
+    `uvicorn apedp_dyn.ui.server:app --host 0.0.0.0` never calls.
+  - CI: `build` (and therefore `deploy`) now needs `governance-manifest`,
+    `audit-artifact-drift` and `mutation-battery` as well as `test`. **While
+    FLAW-01 is open the governance job is red, so this blocks image builds on
+    `main` until the trustees re-sign the manifest.** That is the intended
+    fail-closed behaviour, and it is a single line to revert if it is not wanted.
+  No canonical threshold, frozen record or freeze-pinned file changed.
+
 - **A promotion now has to beat the constant/null model by more than `tau_epi`.**
   The referee compared the holdout-best candidate only against its nearest distinct
   rival, so a pool whose winner was the null model could still be promoted: at 5%
@@ -33,6 +83,29 @@ inferred releases.
   `referee_change`, and `PINNED_FROZEN_REGISTRY` matches the new bytes.
 
 ### Fixed
+
+- **The formula parser no longer evaluates unbounded numeric towers.**
+  `safe_parse_expr("9**9**9**9")` and `safe_parse_expr("zeta(10**7)")` did not
+  return: SymPy folds numeric sub-expressions during the parse, before the
+  function allowlist runs. Both copies (`apedp_dyn/safety.py`, `apedp/safety.py`)
+  now parse once with `evaluate=False` and replay the evaluation bottom-up,
+  refusing a numeric exponent above 1000, a numeric power above 20,000 bits, or a
+  numeric argument above 1000 to a function outside the cheap set (gamma, zeta,
+  Bessel, `n!`). The refusal is `FormulaResourceError`, a `ValueError`, so existing
+  handlers and the API's 4xx mapping are unchanged. Accepted formulas go through
+  the same evaluated parse as before and produce the same expression.
+- **The governance-manifest CI gate runs with nothing installed, as its job
+  assumes.** `scripts/check_governance_manifest_drift.py` imported
+  `apedp_dyn.conf.canonical_spec` through the package, which runs
+  `apedp_dyn/__init__.py` and imports SymPy; in the install-free job that was a
+  `ModuleNotFoundError` before any hash was compared. It now loads the one file by
+  path. The gate still fails on `stage`, now for the reason it exists: the signed
+  manifest seals `a6d026f3…` and the spec on disk is `a8177b25…` (FLAW-01).
+- **README no longer describes the Lean layer as formal verification, and its Lean
+  example runs.** The headline bullet now states the measured machine-checked
+  fraction (0.0, `docs/LEAN_FORMAL_STATUS.md`); the quick-start imported
+  `verify_lean4_code_stdin`, which does not exist, and now uses
+  `LeanUniversalBridge().verify_raw_lean_code_in_memory`.
 
 - **ESEDS benchmark judges its exact-integration candidates on the window it was
   asked about.** Families C and D built the truth candidate as `N[:len(tt)]`,

@@ -235,7 +235,11 @@ jobs:
           fi
 
   build:
-    needs: test
+    # The image is only built (and then deployed) once every integrity gate is
+    # green, not just the test matrix. `needs: test` alone let a release ship
+    # while the governance manifest, the generated audit artefacts, or the
+    # mutation battery were red.
+    needs: [test, governance-manifest, audit-artifact-drift, mutation-battery]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     permissions:

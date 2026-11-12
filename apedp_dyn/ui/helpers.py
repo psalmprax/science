@@ -34,6 +34,9 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 
 
 
+_LOOPBACK_PEERS = frozenset({"127.0.0.1", "::1", "localhost", "testclient"})
+
+
 def _require_api_key(request: Request) -> None:
     """API-key gate for /api/*.
 
@@ -43,6 +46,17 @@ def _require_api_key(request: Request) -> None:
     """
     expected = os.environ.get("APEDP_API_KEY", "")
     if not expected:
+        # No key means local research use. run_server() refuses a non-loopback
+        # bind, but `uvicorn apedp_dyn.ui.server:app --host 0.0.0.0` never calls
+        # run_server(), so the bind check alone left the API open to the
+        # network. The peer address is checked here, where every launch path
+        # passes. "testclient" is Starlette's in-process test transport.
+        peer = request.client.host if request.client else ""
+        if peer not in _LOOPBACK_PEERS:
+            raise HTTPException(
+                status_code=401,
+                detail="APEDP_API_KEY is not set; only loopback clients are served",
+            )
         return
     auth = request.headers.get("authorization", "")
     bearer = auth[7:].strip() if auth.lower().startswith("bearer ") else ""

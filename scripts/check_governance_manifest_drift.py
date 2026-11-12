@@ -15,14 +15,41 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import sys
+import warnings
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+_CANONICAL_SPEC = ROOT / "apedp_dyn" / "conf" / "canonical_spec.py"
 
-from apedp_dyn.conf.canonical_spec import governance_manifest_status  # noqa: E402
+
+def _load_governance_manifest_status() -> Callable[[], dict[str, Any]]:
+    """Load ``canonical_spec`` by file path, without importing ``apedp_dyn``.
+
+    ``canonical_spec`` itself needs only the standard library, but
+    ``from apedp_dyn.conf.canonical_spec import ...`` first runs
+    ``apedp_dyn/__init__.py``, which imports SymPy and the rest of the package.
+    The CI job that runs this script installs nothing, so that import crashed
+    with ``ModuleNotFoundError`` and the job failed without ever comparing the
+    two hashes. Loading the one file keeps the gate dependency-free and makes
+    its failure mean what it says.
+    """
+    spec = importlib.util.spec_from_file_location("_apedp_canonical_spec", _CANONICAL_SPEC)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {_CANONICAL_SPEC}")
+    module = importlib.util.module_from_spec(spec)
+    with warnings.catch_warnings():
+        # The module warns on drift at import; this script reports it itself.
+        warnings.simplefilter("ignore", RuntimeWarning)
+        spec.loader.exec_module(module)
+    status_fn: Callable[[], dict[str, Any]] = module.governance_manifest_status
+    return status_fn
+
+
+governance_manifest_status = _load_governance_manifest_status()
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -100,3 +100,8 @@ unused/
 
 # Vendored Qualtran source: gitlink removed (its remote 404s), local copy is residue
 apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src/
+
+# Ledger head markers (FullLineageExperimentLedger tamper evidence): local state
+# that describes one working copy's ledger file, never a shared artefact.
+*.jsonl.head
+*.jsonl.head.tmp

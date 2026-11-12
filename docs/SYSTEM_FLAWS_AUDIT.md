@@ -6,6 +6,66 @@ proposers, discovery engines, the Rust kernel (`apedp-kernel`), formal
 verification bridges, ledgers, API/UI trust boundaries, CI/Docker packaging,
 and physics/robotics modules, verified by execution.
 
+## 2026-11-12 round — integrity safeguards trusted the caller they police
+
+Basis: external review of `stage` at `3d556eb`, each item reproduced by driving
+the public API (no monkeypatching). Pins:
+`tests/test_integrity_hardening_2026_11_12.py`.
+
+- **H-01 promotion gates accepted caller-supplied thresholds — FIXED.** A
+  candidate with Sharpe −5 and DSR 0 reached `REAL_MARKET_PROMOTION_GRANTED` by
+  passing `min_ic=0.0`, `dm_alpha=1.0`, `min_dsr_hurdle=0.0`, … Threshold
+  arguments may now only tighten the canonical value.
+- **H-02 tracker state was writable and forgettable — FIXED (in-process), OPEN
+  (wiring).** Assigning `is_halted = False` un-halted a candidate; a stage could be
+  re-run with new inputs; a new tracker forgot the halt. State is now checked
+  against the stage records, stages are single-shot, and `state_path` journals
+  outcomes. *Still open:* the only non-test caller
+  (`sandbox/trading_signals_sandbox.py`, freeze-pinned) hard-codes a stage-1
+  refusal, so stages 2–6 are exercised by tests only; and stages 1–4 and 6 still
+  take their metrics as numbers. Only stage 5 has a derive-it-here variant
+  (`verify_stage_5_from_ledger`).
+- **H-03 a holdout was only protected after a self-reported failure — FIXED.**
+  Fifty candidates inspected one slice with nothing burned. Confirmation slices
+  now carry an inspection budget (default one candidate).
+- **H-04 slice identity was the raw string — FIXED (spelling), OPEN (content).**
+  A trailing space or a case change produced a fresh slice. Identities are now
+  normalised. *Still open:* identity is a name, not the data: the same rows under a
+  genuinely different name, or an overlapping date range, are not detected. That
+  needs slices registered by content hash and row/date range.
+- **H-05 the ledger file could be edited without detection — FIXED (evidence).**
+  Deleting the burn line made a burned slice reusable. Entries are hash-chained
+  with a head marker; damage raises `LedgerIntegrityError`. This is tamper
+  *evidence*: someone who rewrites the ledger and its head marker together is not
+  stopped. Anchor `head_hash` outside the writer's reach for that.
+- **H-06 trial multiplicity restarts with every in-memory ledger — PARTLY FIXED.**
+  The best of 1,000 noise strategies scored DSR 0.537 on the ledger that saw the
+  search and 1.000 on a fresh one. Persistence is now disclosed and required by
+  `verify_stage_5_from_ledger`. *Still open:* every non-test
+  `CandidateTrialLedger()` construction is still in-memory (the sandboxes are
+  freeze-pinned), and `selection_pool_size` is declared by the proposer.
+- **H-07 the trading sandbox never registers its holdout — OPEN.**
+  `trading_signals_sandbox.py` scores on `X_ho` without a
+  `record_data_exposure` call, so the guard above does not see it. The file is
+  freeze-pinned; fixing it is a re-mint.
+- **H-08 formula parser hang — FIXED.** `9**9**9**9`, `zeta(10**7)`.
+- **H-09 governance gate crashed before comparing hashes; deploy did not depend on
+  it — FIXED.** FLAW-01 itself (the missing trustee signatures) is unchanged.
+- **H-10 README claimed Lean formal verification and shipped a broken example —
+  FIXED** (documentation only; the Lean layer is as `LEAN_FORMAL_STATUS.md`
+  measures it).
+- **H-11 keyless UI API reachable off-loopback when launched via uvicorn — FIXED.**
+- **H-12 hindsight-selected market universe — OPEN.** The 90 assets in
+  `scratch/fetch_and_build_90_assets_5yr.py` are names that survived 2021–2025.
+  Not a code defect; backtests on that file carry survivorship bias until the
+  universe is rebuilt point-in-time.
+
+Not run in this round: anything requiring the native kernel or torch (neither
+could be built or installed in the review environment). Kernel-dependent suites
+and the mutation battery must be confirmed by CI.
+
+---
+
 ## 2026-11-08 round — status matrix (Categories 1–5)
 
 - **Category 1 (Governance & Spec Synchronization):**
