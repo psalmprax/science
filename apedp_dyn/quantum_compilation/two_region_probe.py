@@ -25,8 +25,6 @@ from __future__ import annotations
 import dataclasses
 import enum
 import math
-from typing import Any
-import numpy as np
 
 CHAMPION_90Q_COST: float = 157752.008809
 CHAMPION_QUBITS: int = 90

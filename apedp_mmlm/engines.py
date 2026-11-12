@@ -198,6 +198,99 @@ class MMLMTokenizer:
         return " ".join(tokens)
 
 
+class BPEMMLMTokenizer(MMLMTokenizer):
+    """Deterministic byte-level BPE with lossless UTF-8 fallback.
+
+    The vocabulary cap includes four special tokens and all 256 byte tokens.
+    Training learns frequent adjacent byte sequences without normalizing text.
+    """
+
+    def __init__(self, max_vocab_size: int = 2048, min_frequency: int = 2) -> None:
+        if max_vocab_size < 260:
+            raise ValueError("max_vocab_size must be at least 260 for UTF-8 byte fallback")
+        if min_frequency < 1:
+            raise ValueError("min_frequency must be positive")
+        super().__init__(max_vocab_size=max_vocab_size)
+        self.min_frequency = min_frequency
+        self.merges: list[tuple[bytes, bytes]] = []
+        self._reset_vocabulary()
+
+    def _reset_vocabulary(self) -> None:
+        self.token_to_id = {
+            token: index for index, token in enumerate(
+                (self.PAD_TOKEN, self.UNK_TOKEN, self.BOS_TOKEN, self.EOS_TOKEN)
+            )
+        }
+        self._pieces = {index + 4: bytes([index]) for index in range(256)}
+        self.token_to_id.update(
+            (f"<0x{index:02X}>", index + 4) for index in range(256)
+        )
+        self.id_to_token = {index: token for token, index in self.token_to_id.items()}
+        self._piece_ids = {piece: index for index, piece in self._pieces.items()}
+        self.merges = []
+        self._fitted = False
+
+    @staticmethod
+    def _merge(pieces: list[bytes], pair: tuple[bytes, bytes]) -> list[bytes]:
+        merged: list[bytes] = []
+        index = 0
+        while index < len(pieces):
+            if index + 1 < len(pieces) and (pieces[index], pieces[index + 1]) == pair:
+                merged.append(pair[0] + pair[1])
+                index += 2
+            else:
+                merged.append(pieces[index])
+                index += 1
+        return merged
+
+    def fit(self, texts: Sequence[str]) -> BPEMMLMTokenizer:
+        self._reset_vocabulary()
+        sequences = [[bytes([value]) for value in text.encode("utf-8")] for text in texts]
+        while self.vocab_size < self.max_vocab_size:
+            counts: Counter[tuple[bytes, bytes]] = Counter()
+            for pieces in sequences:
+                counts.update(pairwise(pieces))
+            if not counts:
+                break
+            pair = min(counts, key=lambda candidate: (-counts[candidate], candidate))
+            if counts[pair] < self.min_frequency:
+                break
+            self.merges.append(pair)
+            piece = pair[0] + pair[1]
+            if piece not in self._piece_ids:
+                token_id = self.vocab_size
+                label = f"<bpe:{piece.hex()}>"
+                self.token_to_id[label] = token_id
+                self.id_to_token[token_id] = label
+                self._pieces[token_id] = piece
+                self._piece_ids[piece] = token_id
+            sequences = [self._merge(pieces, pair) for pieces in sequences]
+        self._fitted = True
+        return self
+
+    def encode(self, text: str, add_special_tokens: bool = True) -> list[int]:
+        pieces = [bytes([value]) for value in text.encode("utf-8")]
+        for pair in self.merges:
+            pieces = self._merge(pieces, pair)
+        ids = [self._piece_ids[piece] for piece in pieces]
+        if add_special_tokens:
+            return [self.token_to_id[self.BOS_TOKEN], *ids, self.token_to_id[self.EOS_TOKEN]]
+        return ids
+
+    def decode(self, token_ids: Sequence[int], skip_special_tokens: bool = True) -> str:
+        chunks: list[bytes] = []
+        for value in token_ids:
+            token_id = int(value)
+            if token_id not in self.id_to_token:
+                raise ValueError(f"Unknown token ID: {token_id}")
+            if token_id < 4:
+                if not skip_special_tokens:
+                    chunks.append(self.id_to_token[token_id].encode("utf-8"))
+            else:
+                chunks.append(self._pieces[token_id])
+        return b"".join(chunks).decode("utf-8")
+
+
 # ============================================================================
 # ENGINE 1: PROBABILISTIC LANGUAGE ENGINE
 # ============================================================================
@@ -433,6 +526,8 @@ class TensorTrainMemoryEngine:
         self.readout = np.zeros((self.bond_dim, self.vocab_size), dtype=np.float64)
         self.left_boundary = np.zeros(self.bond_dim, dtype=np.float64)
         self.left_boundary[0] = 1.0
+        self.dmrg_tensors: list[np.ndarray] = []
+        self.dmrg_token_ids: tuple[int, ...] = ()
 
     def fit_sequences(
         self,
@@ -485,6 +580,143 @@ class TensorTrainMemoryEngine:
         logits -= float(np.max(logits))
         exp_l = np.exp(logits)
         return exp_l / float(np.sum(exp_l))
+
+    def dmrg_two_site_sweep(
+        self,
+        sequences: Sequence[Sequence[int]],
+        n_sweeps: int = 2,
+        max_bond_dim: int | None = None,
+        cutoff: float = 1e-8,
+    ) -> dict:
+        """Compress an empirical sequence-amplitude tensor by two-site sweeps.
+
+        Equal-length sequences define amplitudes sqrt(frequency / sample count).
+        Canonical environments give exact local least-squares updates, followed
+        by a rank-limited SVD in each direction. This is variational tensor
+        fitting, not a quantum Hamiltonian ground-state calculation. The finite,
+        position-dependent MPS is stored in ``dmrg_tensors`` over the observed
+        ``dmrg_token_ids``; the streaming tied cores/readout are not overwritten.
+        """
+        rank_cap = self.bond_dim if max_bond_dim is None else max_bond_dim
+        if (not isinstance(n_sweeps, (int, np.integer)) or isinstance(n_sweeps, bool)
+                or not isinstance(rank_cap, (int, np.integer)) or isinstance(rank_cap, bool)
+                or n_sweeps < 1 or rank_cap < 1):
+            raise ValueError("n_sweeps and max_bond_dim must be positive integers")
+        if not math.isfinite(cutoff) or not 0 <= cutoff < 1:
+            raise ValueError("cutoff must be finite and in [0, 1)")
+        if not sequences or len(sequences[0]) < 2:
+            raise ValueError("at least one sequence of length >= 2 is required")
+        length = len(sequences[0])
+        if any(len(seq) != length for seq in sequences):
+            raise ValueError("two-site fitting requires equal-length sequences")
+        if any(not isinstance(tok, (int, np.integer)) or not 0 <= tok < self.vocab_size
+               for seq in sequences for tok in seq):
+            raise ValueError("sequence tokens must be integer IDs within the vocabulary")
+        counts = Counter(tuple(int(tok) for tok in seq) for seq in sequences)
+        symbols = tuple(sorted({tok for seq in counts for tok in seq}))
+        symbol_indices = {tok: index for index, tok in enumerate(symbols)}
+        samples = [
+            (tuple(symbol_indices[tok] for tok in seq), math.sqrt(count / len(sequences)))
+            for seq, count in sorted(counts.items())
+        ]
+        physical_dim = len(symbols)
+        bulk = self.cores[list(symbols)].transpose(1, 0, 2)
+        tensors = [bulk.copy() for _ in range(length)]
+        tensors[0] = np.einsum("a,apb->pb", self.left_boundary, bulk)[None, :, :]
+        tensors[-1] = bulk.sum(axis=2, keepdims=True) / math.sqrt(self.bond_dim)
+
+        def right_canonicalize(normalize: bool = False) -> None:
+            for site in range(length - 1, 0, -1):
+                tensor = tensors[site]
+                matrix = tensor.reshape(tensor.shape[0], -1)
+                if normalize:
+                    u, singular, vh = np.linalg.svd(matrix, full_matrices=False)
+                    rank = min(rank_cap, len(singular))
+                    tensors[site] = vh[:rank].reshape(rank, physical_dim, tensor.shape[2])
+                    transfer = u[:, :rank] * singular[:rank]
+                else:
+                    q, r = np.linalg.qr(matrix.T)
+                    tensors[site] = q.T.reshape(q.shape[1], physical_dim, tensor.shape[2])
+                    transfer = r.T
+                tensors[site - 1] = np.tensordot(tensors[site - 1], transfer, axes=([-1], [0]))
+                if normalize:
+                    norm = float(np.linalg.norm(tensors[site - 1]))
+                    if not math.isfinite(norm) or norm == 0:
+                        raise RuntimeError("two-site initialization has invalid amplitude norm")
+                    tensors[site - 1] /= norm
+
+        def amplitude(seq: tuple[int, ...]) -> float:
+            state = np.ones(1)
+            for site, tok in enumerate(seq):
+                state = state @ tensors[site][:, tok, :]
+            return float(state[0])
+
+        def error() -> float:
+            env = np.ones((1, 1))
+            for tensor in tensors:
+                env = np.einsum("ab,apc,bpd->cd", env, tensor, tensor, optimize=True)
+            overlap = sum(weight * amplitude(seq) for seq, weight in samples)
+            return max(0.0, float(env[0, 0]) + 1.0 - 2 * overlap)
+
+        right_canonicalize(normalize=True)
+        errors = [error()]
+        for _ in range(n_sweeps):
+            for forward in (True, False):
+                sites = range(length - 1) if forward else range(length - 2, -1, -1)
+                for site in sites:
+                    dl, dr = tensors[site].shape[0], tensors[site + 1].shape[2]
+                    theta = np.zeros((dl, physical_dim, physical_dim, dr))
+                    for seq, weight in samples:
+                        left, right = np.ones(1), np.ones(1)
+                        for pos in range(site):
+                            left = left @ tensors[pos][:, seq[pos], :]
+                        for pos in range(length - 1, site + 1, -1):
+                            right = tensors[pos][:, seq[pos], :] @ right
+                        theta[:, seq[site], seq[site + 1], :] += weight * np.outer(left, right)
+                    u, singular, vh = np.linalg.svd(
+                        theta.reshape(dl * physical_dim, physical_dim * dr),
+                        full_matrices=False,
+                    )
+                    rank = min(rank_cap, max(1, int(np.count_nonzero(singular > cutoff * singular[0]))))
+                    u, singular, vh = u[:, :rank], singular[:rank], vh[:rank]
+                    tensors[site] = (u if forward else u * singular).reshape(dl, physical_dim, rank)
+                    tensors[site + 1] = ((singular[:, None] * vh) if forward else vh).reshape(
+                        rank, physical_dim, dr
+                    )
+            errors.append(error())
+
+        # A final canonical pass measures Schmidt spectra of the final MPS,
+        # rather than retaining spectra from intermediate optimization steps.
+        right_canonicalize()
+        entropies: list[float] = []
+        spectra: list[list[float]] = []
+        for site in range(length - 1):
+            tensor = tensors[site]
+            u, singular, vh = np.linalg.svd(
+                tensor.reshape(-1, tensor.shape[2]), full_matrices=False
+            )
+            norm = float(np.linalg.norm(singular))
+            if norm == 0:
+                raise RuntimeError("two-site fit produced a zero-amplitude tensor")
+            spectrum = singular / norm
+            probabilities = spectrum[spectrum > 0] ** 2
+            entropies.append(-float(np.sum(probabilities * np.log(probabilities))))
+            spectra.append(spectrum.tolist())
+            tensors[site] = u.reshape(tensor.shape[0], physical_dim, len(singular))
+            tensors[site + 1] = np.tensordot(
+                singular[:, None] * vh, tensors[site + 1], axes=([1], [0])
+            )
+        self.dmrg_tensors = tensors
+        self.dmrg_token_ids = symbols
+        return {
+            "basis": "empirical sequence-amplitude least squares; separate finite MPS",
+            "sweeps_completed": n_sweeps,
+            "squared_error_by_sweep": errors,
+            "mean_entanglement_entropy": float(np.mean(entropies)),
+            "max_entanglement_entropy": max(entropies),
+            "top_schmidt_spectrum": spectra[int(np.argmax(entropies))],
+            "bond_dimensions": [tensor.shape[2] for tensor in tensors[:-1]],
+        }
 
 
 class TreeTensorNetworkMemoryEngine:

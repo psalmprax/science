@@ -103,6 +103,21 @@ if(c==1) x q[1];
     assert ops[5] == Gate("x", (1,), condition=((0, True),))
 
 
+def test_parameter_parser_evaluates_supported_arithmetic_without_code_execution():
+    source = """OPENQASM 2.0;
+qreg q[1];
+rx(-(pi / 4) + 1.5 * 2) q[0];
+"""
+    circuit = from_qasm(source)
+    assert circuit.ops[0] == Gate("rx", (0,), (-math.pi / 4 + 3.0,))
+
+
+def test_parameter_parser_rejects_non_finite_results():
+    source = "OPENQASM 2.0;\nqreg q[1];\nrx(1e999) q[0];\n"
+    with pytest.raises(QasmUnsupportedError, match="non-finite"):
+        from_qasm(source)
+
+
 def test_export_refuses_a_condition_qasm2_cannot_express():
     teleport = Circuit(
         ops=(Gate("ry", (0,), (math.pi / 4.0,)), Gate("h", (1,)), Gate("cx", (2, 1)),

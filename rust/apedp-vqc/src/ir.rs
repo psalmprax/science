@@ -97,9 +97,9 @@ fn condition(entry: &Value) -> Result<Vec<(usize, bool)>, VqcError> {
     };
     let mut pairs = Vec::with_capacity(items.len());
     for item in items {
-        let pair = item.as_object().ok_or_else(|| {
-            value_error(format!("condition entry {item} is not an object"))
-        })?;
+        let pair = item
+            .as_object()
+            .ok_or_else(|| value_error(format!("condition entry {item} is not an object")))?;
         let bit = pair
             .get("bit")
             .and_then(Value::as_u64)
@@ -115,14 +115,16 @@ fn condition(entry: &Value) -> Result<Vec<(usize, bool)>, VqcError> {
 
 /// Parse the canonical circuit JSON.
 pub fn parse(text: &str) -> Result<CircuitIr, VqcError> {
-    let payload: Value = serde_json::from_str(text)
-        .map_err(|error| value_error(format!("not JSON: {error}")))?;
+    let payload: Value =
+        serde_json::from_str(text).map_err(|error| value_error(format!("not JSON: {error}")))?;
     if !payload.is_object() {
         return Err(value_error("expected an object at the top level"));
     }
     let num_qubits = integer(&payload, "num_qubits")?;
     if num_qubits < 1 {
-        return Err(value_error(format!("num_qubits must be positive, got {num_qubits}")));
+        return Err(value_error(format!(
+            "num_qubits must be positive, got {num_qubits}"
+        )));
     }
     let num_bits = match payload.get("num_bits") {
         None | Some(Value::Null) => 0,
@@ -140,7 +142,12 @@ pub fn parse(text: &str) -> Result<CircuitIr, VqcError> {
 
     let mut ops = Vec::new();
     let Some(entries) = payload.get("ops").and_then(Value::as_array) else {
-        return Ok(CircuitIr { num_qubits, num_bits, ancillas, ops });
+        return Ok(CircuitIr {
+            num_qubits,
+            num_bits,
+            ancillas,
+            ops,
+        });
     };
     for entry in entries {
         let tag = entry
@@ -186,7 +193,10 @@ pub fn parse(text: &str) -> Result<CircuitIr, VqcError> {
                 bit: integer(entry, "bit")?,
                 condition,
             }),
-            "reset" => ops.push(Op::Reset { qubit: integer(entry, "qubit")?, condition }),
+            "reset" => ops.push(Op::Reset {
+                qubit: integer(entry, "qubit")?,
+                condition,
+            }),
             "noise" => ops.push(Op::Noise {
                 kind: entry
                     .get("kind")
@@ -194,14 +204,22 @@ pub fn parse(text: &str) -> Result<CircuitIr, VqcError> {
                     .unwrap_or("unknown")
                     .to_string(),
                 qubit: integer(entry, "qubit")?,
-                probability: entry.get("probability").and_then(Value::as_f64).unwrap_or(0.0),
+                probability: entry
+                    .get("probability")
+                    .and_then(Value::as_f64)
+                    .unwrap_or(0.0),
                 condition,
             }),
             other => return Err(value_error(format!("unknown operation tag {other:?}"))),
         }
     }
 
-    Ok(CircuitIr { num_qubits, num_bits, ancillas, ops })
+    Ok(CircuitIr {
+        num_qubits,
+        num_bits,
+        ancillas,
+        ops,
+    })
 }
 
 /// Whether a condition is satisfied by the bits collected so far.
@@ -213,7 +231,11 @@ pub fn condition_holds(condition: &[(usize, bool)], bits: &[bool]) -> bool {
 
 /// Resolve a gate to something executable, refusing by name the way
 /// `stabilizer.py::_clifford_spec` does.
-pub fn executable(gate: &Option<Clifford>, name: &str, params: &[f64]) -> Result<Clifford, VqcError> {
+pub fn executable(
+    gate: &Option<Clifford>,
+    name: &str,
+    params: &[f64],
+) -> Result<Clifford, VqcError> {
     let Some(gate) = gate else {
         return Err(unsupported(format!("unknown gate {name:?}")));
     };
@@ -265,7 +287,14 @@ mod tests {
             Op::Gate { condition, .. } => assert_eq!(condition, &vec![(1, true)]),
             other => panic!("{other:?}"),
         }
-        assert!(matches!(circuit.ops[3], Op::Measure { qubit: 0, bit: 0, .. }));
+        assert!(matches!(
+            circuit.ops[3],
+            Op::Measure {
+                qubit: 0,
+                bit: 0,
+                ..
+            }
+        ));
         assert!(matches!(circuit.ops[4], Op::Reset { qubit: 1, .. }));
     }
 
@@ -275,7 +304,9 @@ mod tests {
             {"condition":null,"name":"rx","op":"gate","params":[0.5],"targets":[0]}]}"#;
         let circuit = parse(text).unwrap();
         match &circuit.ops[0] {
-            Op::Gate { gate, name, params, .. } => {
+            Op::Gate {
+                gate, name, params, ..
+            } => {
                 assert_eq!(*gate, None);
                 let error = executable(gate, name, params).unwrap_err();
                 assert!(error.message().contains("unknown gate"), "{error:?}");

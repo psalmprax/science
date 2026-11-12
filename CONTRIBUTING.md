@@ -75,7 +75,7 @@ python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 # Install CPU Torch first so pip does not pull the CUDA runtime into CI.
-python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
 python -m pip install -e ".[dev,test,orchestration]"
 python -m pip install -e packages/jetflow-video
 rustup show
@@ -98,9 +98,22 @@ make lint-rust
 cargo test --workspace --locked
 python -m pytest tests/test_ci_quality_contract.py -q
 python -m pytest tests/test_smoke_imports.py -q -x
+python -m pytest tests/test_mmlm_bpe_tokenizer.py tests/test_mmlm_two_site_sweep.py \
+  tests/test_apedp_mmlm_architecture.py tests/test_faros_evidence_pipeline.py \
+  tests/test_faros_runtime.py -q -x
+python -m pytest tests/test_expression_evaluator.py --cov --cov-branch --cov-report= -q
+python -m coverage report --include='*/apedp/expression_evaluator.py' --fail-under=95
 python -m pytest tests/ --collect-only -q
 python -m pytest tests/ -v --tb=short -n auto -x -m "not integration"
 ```
+
+The `python-quality` CI job installs its tools from the hash-pinned
+`requirements-quality.lock`. Regenerate that lock with
+`uv pip compile requirements-quality.in --universal --generate-hashes --output-file requirements-quality.lock`.
+The Python test job installs the development tools through the `dev` extra.
+`make lint` includes the full configured Ruff rules for `apedp_mmlm/`, the
+FAROS builder and preflight, and the mutation runner. Strict mypy covers seven
+core configuration/runtime and evidence entry-point files, not the whole tree.
 
 The `Python quality` and `Rust quality` jobs are blocking dependencies of all
 three Python test jobs. Repository administrators should make these checks,
@@ -162,8 +175,13 @@ against the built kernel, not silently skip.
 - Ruff checks `E9,F` (syntax, undefined names, unused imports/assignments)
   across `apedp/`, `apedp_dyn/`, and `tests/`, retaining existing frozen-file
   exemptions. The full configured rule set gates `apedp_dyn/conf/`.
-- Mypy is **strict** for the repository path resolver and canonical spec
-  loader. Imported legacy packages are opaque (`follow_imports = "skip"`).
+- Mypy is **strict** for the repository path resolver, canonical spec loader,
+  D5-CONF noise-sweep benchmark, extracted FAROS runtime boundary, and native
+  build-integrity registry. Imported legacy packages are opaque
+  (`follow_imports = "skip"`).
+- Bandit checks medium and higher findings in `apedp/` and high findings in
+  `apedp_dyn/`; the latter scope is narrower until its intentional lower-severity
+  findings are individually assessed.
   Expanding strictness across the full packages needs a separate cleanup:
   the initial baseline found over 600 errors with current dependency stubs.
 - `cargo fmt --all --check` gates the entire active workspace.
@@ -175,6 +193,160 @@ against the built kernel, not silently skip.
 - Follow up by widening Ruff and mypy coverage package by package, enabling
   further Clippy categories, and validating wheel matrices on hosted runners.
   This pass does not certify an engineering score or erase legacy debt.
+
+### FAROS native tests
+
+`python -m pytest tests/test_faros_isq.py tests/test_faros_runtime.py -q` includes
+numerical tests and native integration tests. Native tests require the approved
+KickMix extension at
+`apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/kickmix.so`.
+An arbitrary rebuilt extension is not sufficient: `load_contract` verifies its
+hash against the approved build registry.
+
+Restore the pinned upstream sources with `git submodule update --init`.
+Create the pinned native environment and check it explicitly:
+
+```bash
+uv venv --python 3.13.14 build/qvcc-pinned313
+uv pip install --python build/qvcc-pinned313/bin/python --require-hashes -r requirements-native.lock
+python scripts/check_verifier_environment.py --python-executable build/qvcc-pinned313/bin/python
+```
+
+Preflight refuses missing or unapproved binaries before loading them. The
+source build is toolchain-sensitive and is not guaranteed to match the approved
+hash on another machine. Installing the lock does not supply the approved
+binary or historical receipt. FAROS honors an explicit `python_executable` first,
+then `APEDP_Q_PYTHON`, then repository-local `build/qvcc-pinned313` and
+`build/qvcc-venv313` environments. Invalid explicit overrides fail rather than
+being silently replaced. Resource measurement failures also fail rather than
+producing hard-coded resource counts.
+
+The historical receipt test additionally requires
+`artifacts/quantum_compilation/invsqrt/receipt_faros_r2_86q.json` with its original
+circuit digest. A new run is separate evidence, not a replacement for that
+missing historical artifact. Do not fabricate the receipt or change the binary
+pin simply to make these tests pass.
+
+The manually dispatched `Approved native research checks` workflow accepts an
+artifact run ID and name from this repository, verifies the downloaded binary's
+approved hash and interpreter, and runs native phase regression checks. It is
+not a full-domain correctness certification. No approved binary artifact is
+currently provided by these changes.
+
+The blocking `Research model regressions` job installs
+`requirements-research.lock` and runs numerical normalization, rounded Horner,
+and parity regressions without native dependencies. Its explicit exclusion of
+the native parity check is paired with the separate approved-native workflow,
+not presented as evidence that native tests passed. Regenerate the numerical
+and native locks with `uv pip compile requirements-research.in --python-version 3.12 --generate-hashes --output-file requirements-research.lock`
+and `uv pip compile requirements-native.in --python-version 3.13 --generate-hashes --output-file requirements-native.lock`.
+
+The FAROS builder now runs a fresh verifier when `--verify` is supplied and
+propagates failure; without it, the pipeline status is `built_not_verified`.
+It does not reuse historical receipts or subtract a fixed Toffoli discount.
+Resource statistics are measured from the final circuit, while synthesis cost
+and the historical margin remain explicitly labeled estimates/assumptions.
+Calibration replays fixed deltas and reports `lp_converged: null` and
+`margin_verified: false`; it does not execute or claim convergence of an LP.
+`tests/test_faros_evidence_pipeline.py` checks these reporting contracts.
+
+The Rust `ssm_scan` and `mamba2_selective_scan` exports are unimplemented and
+now raise `NotImplementedError`, rather than returning the input or a scaled
+copy while ignoring recurrence parameters. Their Python keyword signatures
+are preserved. Callers must use a validated reference implementation; this is
+an intentional correctness change, not a new native SSM implementation.
+`tests/test_native_ssm_contract.py` checks the failure contract when the native
+kernel is built (the test job requires that build before running regressions).
+
+`scripts/prototype_streamed_invsqrt.py` explores a separate 50-qubit-capped,
+bit-sliced phase lookup. Run it with the KickMix-compatible interpreter and its
+extension directory on `PYTHONPATH`, passing `--output` and optionally
+`--chunk-bits`. It preserves the 22-bit input, computes a phase fragment into
+reusable workspace, applies its rotations, and reversibly clears the fragment.
+It is explicitly a prefix prototype: outside the declared prefix, the lookup
+repeats periodically and is **not** a correct full-domain implementation.
+
+An experimental build with 40-bit phase precision, inputs 1–4095, and 17-bit
+fragments generated 50 qubits, 98,256 static Toffolis, and 37 non-Clifford
+rotations. The verifier passed 1,048,320 prefix shots with score 4,923,955.31
+using the unapproved local KickMix rebuild. Four-bit fragments generated 37
+qubits but 327,520 Toffolis. Both are substantially worse in total non-Clifford
+cost than the 90-qubit FAROS circuit: fewer rotations do not compensate for
+the repeated lookup work. These results demonstrate the workspace/cost
+tradeoff, not a successful 50-qubit, lower-T benchmark solution.
+
+`scripts/prototype_direct_phase.py` is an independent, shared-predicate phase
+oracle without FAROS coefficient loading or polynomial arithmetic. Its
+reversible input-predicate tree applies rounded phase rotations directly,
+sharing the tree traversal across contributions. It uses all 22 input bits;
+inputs beyond its declared prefix receive zero phase rather than aliasing.
+Run `scripts/check_direct_phase.py` with the same native interpreter and
+`PYTHONPATH` to check exact fixed-point phases, input restoration, clean
+scratch, high-bit/out-of-prefix behavior, and invalid inputs.
+
+For inputs 1–4096, this direct prototype generated 43 qubits, 16,418 static
+Toffolis, and 4,092 non-Clifford rotations. Experimental prefix verification
+passed 262,144 shots with score 1,933,034.64. This improves on the streamed
+lookup's cost but is still much worse than FAROS's measured prefix score
+157,751.58; it does not meet the lower-total-T goal or implement the complete
+benchmark domain. Both measurements use the unapproved local KickMix rebuild.
+
+`scripts/prototype_parity_phase.py` tests a third approach: retain the
+largest-magnitude Walsh coefficients of a smooth lift of `1/sqrt(x)`, then
+compute each input parity with CNOTs, rotate, and undo the parity. A single
+clean ancilla supplies the state-independent phase offset, which cannot be
+discarded because the verifier checks absolute phase. Run
+`scripts/check_parity_phase.py` to check the transform against explicit
+parities, reconstruction, sparse failure reporting, and exact native phases.
+
+The script audits every one of the 3,133,452 benchmark inputs for each requested
+term budget before generating the selected experimental circuit. Budgets of
+64, 256, 1024, and 4096 terms all failed the numerical tolerance audit. The
+256-term circuit used 23 qubits and zero Toffolis, but failed prefix verification
+at x=1 (phase error 0.01560 turns versus tolerance 5.960e-8).
+These are approximation failures, not simulator failures: native regression
+checks confirm the circuit implements its selected parity model. Largest-term
+truncation optimizes neither relative worst-case error nor rotation-synthesis
+cost; this experiment is not evidence that every possible parity decomposition
+is unsuitable. The audit uses floating-point arithmetic, excludes rotation
+synthesis error, and is not a formal correctness certificate.
+
+`scripts/audit_normalized_invsqrt.py` investigates approximation feasibility
+before attempting another circuit. It audits piecewise Chebyshev approximations
+on normalized mantissas `[1,2)` at every benchmark input, including a separate
+model that rounds coefficients, mantissas, and Clenshaw recurrence operations.
+Run `scripts/check_normalized_invsqrt.py` for boundary and rounding checks.
+
+Four segments with degree five and 28 fractional bits passed the full-domain
+numerical audit with worst error/tolerance 0.392764. One segment with degree
+nine and 28 fractional bits also passed (0.379256). All four tested 24-bit
+rounded candidates failed. These results exclude reversible normalization,
+overflow, reversible rounding/garbage cleanup, and rotation synthesis; exponent
+scaling still uses floating-point arithmetic followed by 48-bit phase rounding.
+They are numerical evidence, not a proof or a measured quantum implementation.
+Straightforward Clenshaw evaluation holds two fractional states: at 28
+fractional bits, those states alone exceed the 28 workspace qubits remaining
+after the 22-bit input in a 50-qubit circuit. A different reversible evaluation
+schedule or representation is still needed, with its gate cost measured.
+
+`scripts/audit_horner_invsqrt.py` tests a single classical accumulator with
+integer, ties-to-even Horner arithmetic. Exponent parity is folded into two
+coefficient rows; mantissa normalization and 48-bit phase scaling use exact
+integer shifts in the model. Coefficient fitting and comparison with the target
+still use float64. Run `scripts/check_horner_invsqrt.py` for independent
+`Fraction`-based rounding and recurrence checks.
+
+All four tested 27-fractional-bit candidates passed the numerical comparison
+over the full domain. Two segments of degree seven had worst error/tolerance
+0.645662; the accumulator's observed signed width was 28 bits. That already
+uses 50 bits together with the input, **before** reversible normalization,
+multiply scratch, coefficient selection, or cleanup. All tested 25- and
+26-fractional-bit candidates failed accuracy. Crucially, rounded Horner updates
+are not injective: at multiplier 1/2, old states 0 and 1 both round to 0.
+A quantum circuit cannot simply overwrite the old accumulator as this classical
+model does. Discarded information must be retained, reversibly recomputed, or
+otherwise handled by a justified circuit construction. No 50-qubit reversible
+implementation or T-cost improvement follows from these arithmetic results.
 
 ## CI troubleshooting
 

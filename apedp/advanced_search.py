@@ -24,6 +24,8 @@ from typing import Any
 
 import numpy as np
 
+from apedp.expression_evaluator import evaluate_expression as _evaluate_expression
+
 # Try to import Rust kernel
 try:
     import apedp_kernel
@@ -549,32 +551,6 @@ class ValidationPipeline:
             "generalization_score": 1.0 / (1.0 + max(0.0, gap)),
             "overall": self._overall(cv_mean, cv_std, ood_score, stability_score),
         }
-
-
-_EXPR_FUNCS = {
-    "sin": np.sin, "cos": np.cos, "tan": np.tan, "exp": np.exp,
-    "log": np.log, "sqrt": np.sqrt, "tanh": np.tanh, "abs": np.abs,
-}
-
-
-def _evaluate_expression(expr: str, var_names: list[str], data: list[Any]):
-    """Evaluate an expression over the data columns, or return None.
-
-    Restricted to the variable names and the math functions in ``_EXPR_FUNCS``;
-    no builtins are reachable from the expression.
-    """
-    scope = dict(_EXPR_FUNCS)
-    for name, column in zip(var_names, data, strict=False):
-        scope[name] = np.asarray(column, float)
-    try:
-        with np.errstate(all="ignore"):
-            value = eval(expr, {"__builtins__": {}}, scope)  # noqa: S307 - closed namespace
-    except (SyntaxError, NameError, TypeError, ValueError, ZeroDivisionError, KeyError):
-        return None
-    try:
-        return np.asarray(value, float)
-    except (TypeError, ValueError):
-        return None
 
 
 def _r2_of(expr: str, var_names: list[str], data: list[Any], target: Any) -> float | None:

@@ -56,7 +56,11 @@ pub fn jacobi_eigen(a: &[f64], k: usize, max_rotations: usize, tol: f64) -> (Vec
     // rescaled back afterwards.
     let mut mat = a.to_vec();
     let norm = mat.iter().map(|v| v.abs()).fold(0.0f64, f64::max);
-    let scale = if norm > 0.0 && norm.is_finite() { norm } else { 1.0 };
+    let scale = if norm > 0.0 && norm.is_finite() {
+        norm
+    } else {
+        1.0
+    };
     for entry in mat.iter_mut() {
         *entry /= scale;
     }
@@ -397,9 +401,7 @@ fn solve_implicit_for_features(
         // candidates on rmse RELATIVE to the column strata (the largest raw
         // column norm anchors the scale), keeping the sparsity bonus
         // meaningful at every magnitude.
-        let score = cand_rmse / scale_ref
-            + 0.005 * (active_count as f64)
-            + 0.02 * (deg as f64);
+        let score = cand_rmse / scale_ref + 0.005 * (active_count as f64) + 0.02 * (deg as f64);
         if score < best_score {
             best_score = score;
             best_rmse = cand_rmse;
@@ -446,26 +448,27 @@ fn solve_implicit_for_features(
 
     // Construct human-readable formula
     let mut terms = Vec::new();
-    let mut active_count = 0usize;        let mut contrib = vec![0.0f64; k];
-        let mut max_contrib = 0.0f64;
-        for j in 0..k {
-            contrib[j] = sparse_c[j].abs() * norms[j];
-            max_contrib = max_contrib.max(contrib[j]);
-        }
-        for j in 0..k {
-            let val = sparse_c[j];
-            // FLAW-STRAITA (2026-10-21): the old raw-coefficient gate
-            // (|c| > 1e-6) belongs to the same strata-mixing defect class
-            // as the removed max_c gauge: raw coefficients span magnitudes
-            // (c_j = v_j/norm_j), so at O(1e5)-scale strata every true term
-            // recounted as inactive. Membership is judged in CONTRIBUTION
-            // space — |c_j|*norm_j relative to the strongest contribution —
-            // a scale-free ratio over the SAME candidate (the same gauge
-            // rule as the backward elimination). Previously two anchored
-            // coefficient-space gauges accidentally compensated for one
-            // another; fixing one alone exposed the other.
-            if contrib[j] > 1e-6 * max_contrib {
-                active_count += 1;
+    let mut active_count = 0usize;
+    let mut contrib = vec![0.0f64; k];
+    let mut max_contrib = 0.0f64;
+    for j in 0..k {
+        contrib[j] = sparse_c[j].abs() * norms[j];
+        max_contrib = max_contrib.max(contrib[j]);
+    }
+    for j in 0..k {
+        let val = sparse_c[j];
+        // FLAW-STRAITA (2026-10-21): the old raw-coefficient gate
+        // (|c| > 1e-6) belongs to the same strata-mixing defect class
+        // as the removed max_c gauge: raw coefficients span magnitudes
+        // (c_j = v_j/norm_j), so at O(1e5)-scale strata every true term
+        // recounted as inactive. Membership is judged in CONTRIBUTION
+        // space — |c_j|*norm_j relative to the strongest contribution —
+        // a scale-free ratio over the SAME candidate (the same gauge
+        // rule as the backward elimination). Previously two anchored
+        // coefficient-space gauges accidentally compensated for one
+        // another; fixing one alone exposed the other.
+        if contrib[j] > 1e-6 * max_contrib {
+            active_count += 1;
             let term_str = if names[j] == "1" {
                 format!("{:.4}", val)
             } else if (val - 1.0).abs() < 1e-4 {
@@ -688,7 +691,9 @@ mod tests {
         // (y = x + 10) must still certify — the scale-aware gate is exactly
         // what makes this possible in both directions.
         let n = 200usize;
-        let x: Vec<f64> = (0..n).map(|i| ((i as f64 * 7919.0) % 1000.0 - 500.0) * 1e5 / 500.0).collect();
+        let x: Vec<f64> = (0..n)
+            .map(|i| ((i as f64 * 7919.0) % 1000.0 - 500.0) * 1e5 / 500.0)
+            .collect();
         let y: Vec<f64> = x.iter().map(|&v| v + 10.0).collect();
 
         let cfg = ImplicitConfig {
@@ -794,4 +799,3 @@ mod tests {
         );
     }
 }
-

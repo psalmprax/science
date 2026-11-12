@@ -1,0 +1,3 @@
+[submodule "kickmix-qualtran"]
+	path = apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src
+	url = https://github.com/quantumlib/Qualtran.git

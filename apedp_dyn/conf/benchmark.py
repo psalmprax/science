@@ -19,6 +19,7 @@ candidate count, runtime.
 from __future__ import annotations
 
 import time
+from typing import TypedDict
 
 import numpy as np
 
@@ -34,6 +35,58 @@ SEEDS = (0, 1, 2, 3, 4)
 NOISE_SIGMAS = (0.01, 0.03, 0.05, 0.10)
 # log-uniform predictor ranges (Pi1, Pi2, Pi3)
 LOG_RANGES = ((-0.7, 0.7), (-1.1, 1.1), (-1.6, 1.6))
+
+
+class SyntheticDataset(TypedDict):
+    Xtr: np.ndarray
+    ytr: np.ndarray
+    Xho: np.ndarray
+    yho: np.ndarray
+
+
+class CandidateFit(TypedDict):
+    coef: list[float]
+    train_rmse: float
+    holdout_rmse: float
+
+
+class BenchmarkCell(TypedDict):
+    seed: int
+    sigma: float
+    status: str
+    promoted: str | None
+    structural_recovery: bool
+    false_promotion: bool
+    calibrated_abstention: bool
+    delta_rmse: float | None
+    tau_epi: float | None
+    param_error_true_structure: float
+    holdout_rmse: dict[str, float]
+    n_candidates: int
+    runtime_s: float
+
+
+class SigmaSummary(TypedDict):
+    n: int
+    structural_recovery_rate: float
+    false_promotion_rate: float
+    abstention_rate: float
+    mean_param_error: float
+    mean_runtime_s: float
+
+
+class BenchmarkReport(TypedDict):
+    d5_conf_version: str
+    true_C: float
+    true_exponents: list[float]
+    n_train: int
+    n_holdout: int
+    seeds: list[int]
+    noise_sigmas: list[float]
+    candidate_structures: dict[str, list[int]]
+    cells: list[BenchmarkCell]
+    by_sigma: dict[str, SigmaSummary]
+
 
 CANDIDATE_STRUCTURES: dict[str, tuple[int, ...]] = {
     # name -> indices into (Pi1, Pi2, Pi3)
@@ -63,7 +116,7 @@ def generate_base_predictors(seed: int) -> tuple[np.ndarray, np.ndarray]:
     return X[:N_TRAIN], X[N_TRAIN:]
 
 
-def synthesize(seed: int, sigma: float) -> dict:
+def synthesize(seed: int, sigma: float) -> SyntheticDataset:
     """Generate one paired (train, holdout) dataset at noise level sigma."""
     Xtr, Xho = generate_base_predictors(seed)
     rng = np.random.default_rng(10_000 * seed + round(sigma * 1000))
@@ -79,7 +132,7 @@ def _fit_ols(X: np.ndarray, y: np.ndarray) -> np.ndarray:
     return np.asarray(coef, dtype=float)
 
 
-def run_cell(seed: int, sigma: float) -> dict:
+def run_cell(seed: int, sigma: float) -> BenchmarkCell:
     """Fit all candidate structures on one dataset; adjudicate; score."""
     t0 = time.perf_counter()
     d = synthesize(seed, sigma)
@@ -87,7 +140,7 @@ def run_cell(seed: int, sigma: float) -> dict:
     obs_rms = float(np.sqrt(np.mean(yho**2)))
 
     scored: list[ScoredCandidate] = []
-    fits: dict[str, dict] = {}
+    fits: dict[str, CandidateFit] = {}
     for name, idx in CANDIDATE_STRUCTURES.items():
         coef = _fit_ols(Xtr[:, list(idx)], ytr)
         pred_tr = np.column_stack([np.ones(len(Xtr)), Xtr[:, list(idx)]]) @ coef
@@ -155,9 +208,9 @@ def run_cell(seed: int, sigma: float) -> dict:
 def run_sweep(
     seeds: tuple[int, ...] = SEEDS,
     sigmas: tuple[float, ...] = NOISE_SIGMAS,
-) -> dict:
+) -> BenchmarkReport:
     cells = [run_cell(s, sig) for s in seeds for sig in sigmas]
-    by_sigma: dict[str, dict] = {}
+    by_sigma: dict[str, SigmaSummary] = {}
     for sig in sigmas:
         sub = [c for c in cells if c["sigma"] == sig]
         by_sigma[str(sig)] = {

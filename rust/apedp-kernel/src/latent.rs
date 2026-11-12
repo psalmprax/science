@@ -27,7 +27,11 @@ impl LatentSpace {
             embedding[i] = (b as f64) / 255.0;
         }
         // Add structural features
-        for (index, pattern) in ["+", "*", "sin", "cos", "exp"].iter().enumerate().take(self.dim) {
+        for (index, pattern) in ["+", "*", "sin", "cos", "exp"]
+            .iter()
+            .enumerate()
+            .take(self.dim)
+        {
             embedding[index] += expr.matches(*pattern).count() as f64 * 0.1;
         }
         embedding
@@ -96,7 +100,10 @@ impl PyLatentSpace {
     }
 
     fn nearest_neighbors(&self, expr: &str, k: usize) -> Vec<(String, f64)> {
-        let mut dists: Vec<(String, f64)> = self.space.embeddings.iter()
+        let mut dists: Vec<(String, f64)> = self
+            .space
+            .embeddings
+            .iter()
             .map(|(e, _)| (e.clone(), self.space.distance(expr, e)))
             .collect();
         dists.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());

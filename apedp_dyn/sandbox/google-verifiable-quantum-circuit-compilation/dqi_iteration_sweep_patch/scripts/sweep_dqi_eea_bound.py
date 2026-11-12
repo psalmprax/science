@@ -7,7 +7,14 @@ Circuit. The official verifier's measured cost (including R(epsilon+)) decides w
 iteration schedule is actually better.
 """
 from __future__ import annotations
-import argparse, hashlib, importlib, json, os, sys, time
+
+import argparse
+import hashlib
+import importlib
+import json
+import os
+import sys
+import time
 from pathlib import Path
 
 
@@ -44,7 +51,6 @@ def main() -> int:
         p.error('iteration caps must be positive')
     root = a.competition_root.resolve()
     sys.path[:0] = [str(root / 'kickmix'), str(root / 'verifiers')]
-    import kickmix as km
     from dqi import verify_submission_dqi as dv
     builder = load_callable(a.builder)
     out = a.output.resolve(); out.mkdir(parents=True, exist_ok=True)

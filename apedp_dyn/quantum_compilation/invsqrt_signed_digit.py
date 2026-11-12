@@ -54,9 +54,13 @@ Design (all arithmetic exactly mirrored by the numpy model below):
      with classically conditioned phase fixups.
 Usage: python signed_digit_lab.py OUT.kmb [--baseline] (requires kickmix and NumPy)
 """
-import sys, math, functools, types
+import functools
+import math
+import types
 from fractions import Fraction
+
 import numpy as np
+
 try:
     import kickmix as km
 except ImportError:

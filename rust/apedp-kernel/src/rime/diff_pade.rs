@@ -87,13 +87,21 @@ fn fornberg_weights(x_nodes: &[f64], x0: f64, m: usize) -> Vec<f64> {
             c2 *= c3;
             for k in 0..=(m.min(i)) {
                 let term1 = (x_nodes[i] - x0) * c[k][i - 1][j];
-                let term2 = if k > 0 { (k as f64) * c[k - 1][i - 1][j] } else { 0.0 };
+                let term2 = if k > 0 {
+                    (k as f64) * c[k - 1][i - 1][j]
+                } else {
+                    0.0
+                };
                 c[k][i][j] = (term1 - term2) / c3;
             }
         }
         for k in 0..=(m.min(i)) {
             let term1 = (x_nodes[i - 1] - x0) * c[k][i - 1][i - 1];
-            let term2 = if k > 0 { (k as f64) * c[k - 1][i - 1][i - 1] } else { 0.0 };
+            let term2 = if k > 0 {
+                (k as f64) * c[k - 1][i - 1][i - 1]
+            } else {
+                0.0
+            };
             c[k][i][i] = (c1 / c2) * (term2 - term1);
         }
         c1 = c2;
@@ -109,7 +117,8 @@ fn is_uniform_grid(x: &[f64]) -> bool {
     if h0.abs() < 1e-300 {
         return false;
     }
-    x.windows(2).all(|w| ((w[1] - w[0]) - h0).abs() <= h0.abs() * 1e-4)
+    x.windows(2)
+        .all(|w| ((w[1] - w[0]) - h0).abs() <= h0.abs() * 1e-4)
 }
 
 /// Evaluate the ``m``-th derivative of ``y`` at every node of an arbitrary
@@ -847,10 +856,8 @@ pub fn discover_differential_relation(
     // cases: Landau-Zener/BCS/Planck-Riccati snap exactly; harmonic hits
     // jet ~1e-14; while fitted non-laws (cubic-linear Planck radiance) keep
     // irrational coefficients and snapped_terms=false at jet ~1e-4.
-    let is_exact = !pole_final
-        && traj_r2 > 0.99
-        && jet_rmse < 0.05
-        && (snapped_terms || jet_rmse < 1e-9);
+    let is_exact =
+        !pole_final && traj_r2 > 0.99 && jet_rmse < 0.05 && (snapped_terms || jet_rmse < 1e-9);
 
     Ok(DiffPadeResult {
         formula,
@@ -1065,7 +1072,10 @@ mod tests {
             assert!(
                 rel < 1e-9,
                 "y'[{}] = {} vs exact {} (rel {}): non-uniform grid must use Fornberg weights",
-                i, d1[i], exact, rel
+                i,
+                d1[i],
+                exact,
+                rel
             );
         }
         let d2 = super::compute_second_derivatives(&x, &y);
@@ -1074,7 +1084,9 @@ mod tests {
             assert!(
                 rel < 1e-9,
                 "y''[{}] = {} vs exact 2.0 (rel {})",
-                i, d2[i], rel
+                i,
+                d2[i],
+                rel
             );
         }
     }
@@ -1161,4 +1173,3 @@ mod tests {
         );
     }
 }
-

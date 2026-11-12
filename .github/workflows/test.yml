@@ -24,10 +24,10 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
-      - name: Install quality and test tools
+      - name: Install quality tools
+        run: python -m pip install --require-hashes -r requirements-quality.lock
+      - name: Verify quality tool setup
         run: |
-          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install -e ".[dev,test,orchestration]"
           python -m pytest --version
           ruff --version
           mypy --version
@@ -55,8 +55,27 @@ jobs:
       - name: Rust kernel unit tests
         run: cargo test --workspace --locked
 
+  research-models:
+    name: Research model regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-research.lock
+      - name: Install hash-pinned numerical test dependencies
+        run: python -m pip install --require-hashes -r requirements-research.lock
+      - name: Check rounding, normalization, and parity models without native dependencies
+        run: |
+          python -m pytest scripts/check_normalized_invsqrt.py \
+            scripts/check_horner_invsqrt.py scripts/check_parity_phase.py \
+            -k "not native" -q
+
   test:
-    needs: [python-quality, rust-quality]
+    needs: [python-quality, rust-quality, research-models]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     services:
@@ -71,9 +90,6 @@ jobs:
           --health-retries 20
     env:
       APEDP_REDIS_URL: redis://localhost:6379/0
-      # Avoid component conflicts in the hosted runner's preinstalled toolchains.
-      # All Rust steps share this job-local home, including the default toolchain.
-      RUSTUP_HOME: ${{ runner.temp }}/rustup
     strategy:
       fail-fast: true
       matrix:
@@ -81,6 +97,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+
+      - name: Isolate Rust toolchain home
+        run: echo "RUSTUP_HOME=$RUNNER_TEMP/rustup" >> "$GITHUB_ENV"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7
@@ -93,7 +112,7 @@ jobs:
           python -m venv .venv
           source .venv/bin/activate
           pip install --upgrade pip
-          python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -e ".[dev,test,orchestration]"
           python -m pip install -e packages/jetflow-video
           python -m pytest --version
@@ -160,6 +179,21 @@ jobs:
           source .venv/bin/activate
           python -m pytest tests/test_smoke_imports.py -q -x
 
+      - name: MMLM and evidence contract regressions
+        run: |
+          source .venv/bin/activate
+          python -m pytest tests/test_mmlm_bpe_tokenizer.py \
+            tests/test_mmlm_two_site_sweep.py tests/test_apedp_mmlm_architecture.py \
+            tests/test_faros_evidence_pipeline.py tests/test_faros_runtime.py -q -x
+
+      - name: Guard expression evaluator branch coverage
+        run: |
+          source .venv/bin/activate
+          python -m pytest tests/test_expression_evaluator.py \
+            --cov --cov-branch --cov-report= -q
+          python -m coverage report \
+            --include='*/apedp/expression_evaluator.py' --fail-under=95
+
       - name: Collection smoke (import every test module)
         run: |
           source .venv/bin/activate
@@ -181,6 +215,7 @@ jobs:
         run: |
           source .venv/bin/activate
           bandit -r apedp/ -ll
+          bandit -r apedp_dyn/ -lll
 
       - name: Classify test-job failure
         if: failure()
@@ -318,6 +353,7 @@ jobs:
   # mutant FAILS CI — this gate is the mechanism by which the register
   # requirement stays closed-by-evidence rather than closed-by-assertion.
   mutation-battery:
+    needs: build-kernel-wheel
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -329,7 +365,17 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
+          python -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
           pip install -e ".[dev,test]"
+      - name: Download the required native kernel
+        uses: actions/download-artifact@v8
+        with:
+          name: apedp_kernel-wheel-${{ github.sha }}
+          path: wheelhouse
+      - name: Install and require the native kernel
+        run: |
+          python -m pip install wheelhouse/*.whl
+          python -c "import apedp_kernel; from apedp.rust_bridge import is_rust_kernel_available; assert is_rust_kernel_available()"
       - name: Run targeted mutation battery (referee + leakage paths)
         run: python scripts/run_mutation_battery.py
       - name: Upload the mutation-battery report (never hidden)

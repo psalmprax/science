@@ -310,8 +310,7 @@ pub fn run_stridge(
         }
         for (idx, &act_i) in active_indices.iter().enumerate() {
             let magnitude = norm_coeffs[act_i].abs();
-            let significant =
-                se_g[idx] > 0.0 && magnitude >= STRIDGE_SIGNIFICANCE_T * se_g[idx];
+            let significant = se_g[idx] > 0.0 && magnitude >= STRIDGE_SIGNIFICANCE_T * se_g[idx];
             if magnitude < config.sparsity_threshold * max_active_g && !significant {
                 active[act_i] = false;
                 norm_coeffs[act_i] = 0.0;

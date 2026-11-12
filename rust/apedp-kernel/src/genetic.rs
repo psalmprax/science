@@ -1282,8 +1282,7 @@ mod pow_exponent_tests {
 
     fn stats(target: &[f64]) -> (f64, f64) {
         let mean = target.iter().sum::<f64>() / target.len() as f64;
-        let var = target.iter().map(|v| (v - mean) * (v - mean)).sum::<f64>()
-            / target.len() as f64;
+        let var = target.iter().map(|v| (v - mean) * (v - mean)).sum::<f64>() / target.len() as f64;
         (mean, var)
     }
 
@@ -1298,10 +1297,7 @@ mod pow_exponent_tests {
             .collect::<Vec<f64>>()];
         let target: Vec<f64> = data[0].iter().map(|v| v.powf(2.5)).collect();
         let (mean, var) = stats(&target);
-        let tree = Node::Pow(
-            Box::new(Node::Var(0)),
-            Box::new(Node::Const(1.5)),
-        );
+        let tree = Node::Pow(Box::new(Node::Var(0)), Box::new(Node::Const(1.5)));
         let (mse_before, _, _) = score_candidate_affine(&tree, &data, &target, mean, var);
         let mut evals = 0usize;
         let (polished, mse_after, _, _) =
@@ -1314,7 +1310,11 @@ mod pow_exponent_tests {
         );
         // Machine precision, not exact zero: f64 powf on 100 points leaves a
         // residual around 1e-13 even at the true exponent.
-        assert!(mse_after < 1e-10, "exponent not recovered: mse={}", mse_after);
+        assert!(
+            mse_after < 1e-10,
+            "exponent not recovered: mse={}",
+            mse_after
+        );
         let exponent = recover_pow_exponent(&polished).expect("Pow exponent vanished");
         assert!(
             (exponent - 2.5).abs() < 1e-2,
@@ -1368,12 +1368,8 @@ mod pow_exponent_tests {
                 seed,
                 ..Default::default()
             };
-            let (pareto, _) =
-                run_native_evolutionary_search(&data, &target, &names, &cfg);
-            let best = pareto
-                .iter()
-                .map(|p| p.mse)
-                .fold(f64::INFINITY, f64::min);
+            let (pareto, _) = run_native_evolutionary_search(&data, &target, &names, &cfg);
+            let best = pareto.iter().map(|p| p.mse).fold(f64::INFINITY, f64::min);
             if best < 1e-8 {
                 found = Some((seed, best));
                 break;

@@ -423,7 +423,13 @@ MUTANTS: list[dict] = [
         "target": "correlation-space eigensolve (FLAW-15 v2)",
         "file": "rust/apedp-kernel/src/rime/lie_symmetry.rs",
         "description": "solve the RAW multi-stratum Gram again (extreme strata corrupt the nullspace)",
-        "find": "            corr[i * k + j] = if div > 0.0 { gram[i * k + j] / div } else { 0.0 };",
+        "find": (
+            "            corr[i * k + j] = if div > 0.0 {\n"
+            "                gram[i * k + j] / div\n"
+            "            } else {\n"
+            "                0.0\n"
+            "            };"
+        ),
         "replace": "            corr[i * k + j] = gram[i * k + j];",
         "pins": [CARGO_LIB_PIN],
         "pin_note": "test_scale_dominant_ode_keeps_genuine_symmetries",
@@ -444,8 +450,8 @@ MUTANTS: list[dict] = [
         "target": "bridge kernel-failure re-raise under enforcement",
         "file": "apedp/rust_bridge.py",
         "description": "swallow the native failure even when enforcement is on (a broken kernel is measured as the Python loop)",
-        "find": "            except Exception as e:  # noqa: BLE001 - best-effort probe must not crash\n                if native_search_enforced():",
-        "replace": "            except Exception as e:  # noqa: BLE001 - best-effort probe must not crash\n                if False:",
+        "find": "            except Exception as e:\n                if native_search_enforced():",
+        "replace": "            except Exception as e:\n                if False:",
         "pins": [PIN_ENFORCEMENT],
         "pin_note": "test_enforcement_refuses_fallback_from_the_bridge",
     },

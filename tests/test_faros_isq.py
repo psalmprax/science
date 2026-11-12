@@ -23,12 +23,6 @@ import pytest
 import numpy as np
 
 from apedp_dyn.quantum_compilation.contracts import load_contract
-from apedp_dyn.quantum_compilation.experiment import (
-    Candidate,
-    CandidateArtifact,
-    CandidateScreen,
-    ExperimentRunner,
-)
 from apedp_dyn.quantum_compilation.faros_isq import (
     ArithmeticForm,
     ErrorBudgetEngine,
@@ -45,7 +39,6 @@ from apedp_dyn.quantum_compilation.faros_isq import (
     REFERENCE_COST_90Q,
     REFERENCE_COST_90Q_AFFINE_OPT,
     RepresentationType,
-    SABLE_90_BASELINE,
     Sable90Profiler,
     SegmentationStrategy,
     calibrate_faros_circuit,
@@ -56,14 +49,11 @@ from apedp_dyn.quantum_compilation.faros_isq import (
     evaluate_r4_alt_arithmetic,
     evaluate_r5_hybrid,
     exhaustive_integer_certificate,
-    generate_chebyshev_minimax_tables,
     generate_evaluation_subset,
     load_chebyshev_minimax_tables,
     materialize_faros_circuit,
     run_faros_isq_search,
-    verify_faros_candidate,
 )
-from apedp_dyn.quantum_compilation.ledger import QuantumCandidateLedger
 
 
 def test_sable_90_profiler_and_official_cost():
@@ -243,10 +233,9 @@ def test_multi_fidelity_pareto_tournament_execution():
     assert best.is_pareto_optimal is True
 
 
-def test_faros_isq_proposer_and_experiment_runner(tmp_path):
-    """Verify FarosIsqProposer integration with ExperimentRunner and ledger."""
+def test_faros_isq_proposer_screen_compile_and_measure():
+    """Verify the FAROS proposer can screen, compile, and price candidates."""
     contract = load_contract("invsqrt")
-    ledger = QuantumCandidateLedger(tmp_path / "faros_test_ledger.jsonl")
 
     proposer = FarosIsqProposer(portfolio=R2_PREFIX_RESIDUAL_CONFIGS[:2])
     candidates = proposer.generate(contract, incumbent=None, budget=2)
@@ -396,14 +385,15 @@ def test_materialize_faros_circuit_execution(tmp_path):
 
 
 def test_calibrate_faros_circuit_execution(tmp_path):
-    """Verify cutting-plane calibration report and rotation angle optimization."""
+    """Verify fixed-delta replay without claiming an LP solver ran."""
     out_kmb = tmp_path / "invsqrt_faros_test_cal.kmb"
     materialize_faros_circuit(output_path=out_kmb)
 
     cal_rep = calibrate_faros_circuit(out_kmb)
     assert cal_rep["calibrated_rotation_count"] == 44
     assert cal_rep["margin_units"] == 73326605
-    assert cal_rep["lp_converged"] is True
+    assert cal_rep["lp_converged"] is None
+    assert cal_rep["margin_verified"] is False
     assert "dropped_original_rotation_indices" in cal_rep
 
 
@@ -418,5 +408,3 @@ def test_verify_faros_candidate_receipt_structure(tmp_path):
     assert data["verified_shots"] >= 200540928
     assert data["worst_error_over_tolerance"] < 1.0
     assert data["circuit_sha256"] == "7bd8955e7bda35382f33ba6df6239c746bcb1adad627f585939db6bc1accc3d0"
-
-

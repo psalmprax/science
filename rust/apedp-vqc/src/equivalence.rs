@@ -20,16 +20,18 @@ use crate::stabilizer::VqcError;
 pub type SignedImage = (Vec<u8>, i32);
 
 /// `op_last ... op_1 P op_1^dagger ... op_last^dagger` for one Pauli string.
-pub fn conjugate(
-    labels: &[u8],
-    phase: i32,
-    ops: &[Op],
-) -> Result<SignedImage, VqcError> {
+pub fn conjugate(labels: &[u8], phase: i32, ops: &[Op]) -> Result<SignedImage, VqcError> {
     let mut current = labels.to_vec();
     let mut current_phase = phase.rem_euclid(4);
     for op in ops {
         let (gate, targets) = match op {
-            Op::Gate { gate, name, targets, params, condition } => {
+            Op::Gate {
+                gate,
+                name,
+                targets,
+                params,
+                condition,
+            } => {
                 if !condition.is_empty() {
                     return Err(VqcError::Unsupported(format!(
                         "a {name:?} gate carries a condition; conjugation is defined for \
@@ -156,7 +158,10 @@ mod tests {
             {"condition":null,"name":"x","op":"gate","params":[],"targets":[0]}]}"#;
         let left = images(&parse(plain).ops, 1).unwrap();
         let right = images(&parse(signed).ops, 1).unwrap();
-        assert!(compare(&left, &right).is_empty(), "s sdg is a global phase only");
+        assert!(
+            compare(&left, &right).is_empty(),
+            "s sdg is a global phase only"
+        );
 
         let relative = r#"{"num_qubits":1,"num_bits":0,"ops":[
             {"condition":null,"name":"x","op":"gate","params":[],"targets":[0]},

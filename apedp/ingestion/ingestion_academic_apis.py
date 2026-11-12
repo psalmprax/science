@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -141,12 +141,14 @@ def search_crossref(
     if mailto:
         params["mailto"] = mailto
     request_url = f"{CROSSREF_API_URL}?{urlencode(params)}"
-    request = Request(
+    # The scheme and authority are fixed by CROSSREF_API_URL; all parameters
+    # are encoded as query data, so caller input cannot select a URL scheme.
+    request = Request(  # noqa: S310  # nosec B310
         request_url,
         headers={"User-Agent": "APEDP literature metadata search/1.0"},
     )
     try:
-        with urlopen(request, timeout=timeout) as response:
+        with urlopen(request, timeout=timeout) as response:  # noqa: S310  # nosec B310
             payload = json.load(response)
     except (HTTPError, URLError, TimeoutError) as exc:
         raise RuntimeError(f"Crossref literature search failed: {exc}") from exc
@@ -160,7 +162,7 @@ def search_crossref(
     except (KeyError, TypeError, ValueError) as exc:
         raise ValueError("Crossref returned an invalid works response") from exc
 
-    retrieved_at = datetime.now(UTC).isoformat()
+    retrieved_at = datetime.now(timezone.utc).isoformat()
     records = tuple(_to_literature_record(item, retrieved_at) for item in items[:limit])
     return LiteratureSearchResult(
         query=normalized_query,
@@ -178,8 +180,8 @@ def list_targets() -> dict[str, str]:
 
 
 __all__ = [
-    "INSTITUTIONAL_TARGETS",
     "CROSSREF_API_URL",
+    "INSTITUTIONAL_TARGETS",
     "LiteratureRecord",
     "LiteratureSearchResult",
     "list_targets",
