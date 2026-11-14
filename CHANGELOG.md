@@ -15,6 +15,27 @@ inferred releases.
 
 ### Changed
 
+- **A missing native build is no longer an abstention (2026-11-15).**
+  `RimeProposer.fit_and_propose` returned `[]` without `apedp_kernel`, the same
+  answer it gives for a null world; it now raises
+  `apedp_dyn.kernel_shim.NativeKernelUnavailableError` (a `RuntimeError`, which
+  the shim's own error now also is). Callers that relied on an empty list from a
+  machine without the kernel will see the error instead. Recorded as E-01 in
+  `docs/SYSTEM_FLAWS_AUDIT.md`.
+- **Test suite (2026-11-15).** `tests/conftest.py` reports a test stopped by a
+  missing `apedp_kernel` or `torch` as skipped with the reason, and CI sets
+  `APEDP_REQUIRE_NATIVE=1` so the same condition fails there. Tests no longer
+  write into the repository: the API persistence store, the known-truth results
+  file and the Lorenz registered results and ledger are written to scratch
+  directories (`benchmarks/run_lorenz_public_benchmark.py --out-dir`).
+- **Stage 4 measures serial dependence (2026-11-15).**
+  `verify_stage_4_from_holdout` uses the smaller of `n / horizon` and
+  `effective_sample_size(predictions, targets)`; unrelated overlapping series
+  passed a third of the time when the horizon was left undeclared.
+- **Added `benchmarks/run_promotion_gate_calibration.py`** and its record
+  `benchmarks/promotion_gate_calibration.json`: false-pass rates and power of
+  the stage 2, 4 and 5 gates and of stages 2-5 end to end, on simulated worlds.
+
 - **Follow-up to the integrity hardening (2026-11-14): the four items that round
   left open.** Recorded in `docs/SYSTEM_FLAWS_AUDIT.md` (2026-11-14 section) and
   pinned by `tests/test_integrity_followup_2026_11_14.py`.

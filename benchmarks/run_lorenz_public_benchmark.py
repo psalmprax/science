@@ -286,7 +286,20 @@ def divergence_horizon(model_w: dict | None, chimera: bool = False) -> float:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--smoke", action="store_true")
+    ap.add_argument(
+        "--out-dir",
+        type=Path,
+        default=None,
+        help="write the results file and the ledger here instead of benchmarks/. A smoke run "
+        "is a wiring check; pointing it elsewhere keeps it out of the registered run's "
+        "results file and out of the registered ledger.",
+    )
     args = ap.parse_args()
+    if args.out_dir is not None:
+        global RESULTS, LEDGER  # the two output paths are module constants
+        args.out_dir.mkdir(parents=True, exist_ok=True)
+        RESULTS = args.out_dir / RESULTS.name
+        LEDGER = args.out_dir / LEDGER.name
     seeds = SEEDS[:1] if args.smoke else SEEDS
     noises = NOISE_SWEEP[2:3] if args.smoke else NOISE_SWEEP
     n_boot = 100 if args.smoke else REF_BOOT

@@ -6,6 +6,102 @@ proposers, discovery engines, the Rust kernel (`apedp-kernel`), formal
 verification bridges, ledgers, API/UI trust boundaries, CI/Docker packaging,
 and physics/robotics modules, verified by execution.
 
+## 2026-11-15 round — measured error rates, and an abstention that was a missing build
+
+Basis: `stage` at `beff10d`. Pins: `tests/test_engineering_hardening_2026_11_15.py`.
+
+- **E-01 without the native kernel, RIME reported "nothing found" — FIXED.**
+  `RimeProposer.fit_and_propose` began with `if not _RIME_AVAILABLE: return []`.
+  An empty list is also what RIME returns when it searches a null world and
+  correctly abstains, so the two were indistinguishable: on a machine without
+  the build, a planted `y = 3x` came back as no mechanism, and every test that
+  pins an abstention (`tests/test_dyn_trading_universe_sweep.py` among them)
+  passed without a search having run. It now raises
+  `NativeKernelUnavailableError`. Consequence for anything written here
+  earlier: a "RIME abstains" result is evidence only where the kernel was
+  loaded. CI builds it; the review environment for these rounds did not have it.
+- **E-02 running the tests rewrote committed results — FIXED.** Three paths:
+  the API's lifecycle store (`apedp_persistence/`), the known-truth benchmark's
+  results file, and the Lorenz benchmark's registered results file and ledger,
+  which every smoke test overwrote or appended to. On a machine without the
+  kernel the known-truth file was replaced by a sweep in which RIME had not
+  run. Tests now write to scratch directories (`APEDP_PERSISTENCE_DIR`,
+  `--out-dir`).
+- **E-03 a missing build was a failure or a pass, never a skip — FIXED.**
+  `tests/conftest.py` reports a test that stops on
+  `NativeKernelUnavailableError` or on a missing `apedp_kernel` / `torch` as
+  skipped with the reason. CI sets `APEDP_REQUIRE_NATIVE=1`, under which nothing
+  is converted and such a test fails.
+- **E-04 the gates' error rates had never been measured — MEASURED.**
+  `benchmarks/run_promotion_gate_calibration.py` simulates worlds with known
+  truth and records how often each evidence-taking gate passes them
+  (`benchmarks/promotion_gate_calibration.json`, seed 20261115,
+  1000 simulations per stage-2 cell, 95% Wilson
+  intervals). The record carries the canonical-spec hash and a test fails when
+  the spec moves without a new run.
+
+  Stage 2, share of candidates passed:
+
+  | n | true IC | gate (threshold and five positive folds) | threshold `IC >= 0.02` alone |
+  |---|---|---|---|
+| 250 | 0.0 | 3.4% [2.4, 4.7] | 40.5% [37.5, 43.6] |
+| 250 | 0.05 | 9.3% [7.7, 11.3] | 67.4% [64.4, 70.2] |
+| 250 | 0.1 | 24.4% [21.8, 27.2] | 89.1% [87.0, 90.9] |
+| 600 | 0.0 | 3.7% [2.7, 5.1] | 33.2% [30.3, 36.2] |
+| 600 | 0.05 | 16.1% [14.0, 18.5] | 74.9% [72.1, 77.5] |
+| 600 | 0.1 | 45.3% [42.2, 48.4] | 95.7% [94.3, 96.8] |
+| 2000 | 0.0 | 2.4% [1.6, 3.5] | 16.9% [14.7, 19.3] |
+| 2000 | 0.05 | 38.5% [35.5, 41.6] | 88.4% [86.3, 90.2] |
+| 2000 | 0.1 | 86.8% [84.6, 88.8] | 100.0% [99.6, 100.0] |
+
+  The preregistered threshold on its own passes 17-41% of pure noise: at these
+  sample sizes an IC of 0.02 is inside the noise. The fold requirement added on
+  2026-11-14 is what makes stage 2 a test (2-4% false passes), and it is paid
+  for in power: a true IC of 0.05 passes 39% of the time at n=2000 and 16% at
+  n=600. Anyone using the numeric `verify_stage_2` with `cv_stable=True` typed
+  in gets the right-hand column.
+
+  Stage 4, a candidate with no signal that passed stage 2 by luck:
+  3.8% [2.4, 5.9] with independent targets;
+  5.2% [3.6, 7.5] with
+  21-bar overlapping targets and the horizon *not* declared;
+  2.4% [1.4, 4.1] with it
+  declared.
+
+  Stage 5, the best of K strategies searched (504 daily observations, 3 bps):
+
+  | true annual Sharpe | K = 1 | K = 20 | K = 200 |
+  |---|---|---|---|
+| 0.0 | 2.5% [1.1, 5.7] | 0.0% [0.0, 1.9] | 0.0% [0.0, 1.9] |
+| 1.0 | 37.0% [30.6, 43.9] | 18.5% [13.7, 24.5] | 18.5% [13.7, 24.5] |
+| 2.0 | 83.0% [77.2, 87.6] | 99.5% [97.2, 99.9] | 100.0% [98.1, 100.0] |
+| 3.0 | 100.0% [98.1, 100.0] | 100.0% [98.1, 100.0] | 100.0% [98.1, 100.0] |
+
+  Stages 2-5 end to end, share of candidates reaching each stage:
+
+  | world | 2 | 3 | 4 | 5 |
+  |---|---|---|---|---|
+| null (IC 0.0) | 1.8% | 0.0% | 0.0% | 0.0% |
+| planted (IC 0.1) | 68.4% | 27.8% | 22.0% | 9.6% |
+| planted_strong (IC 0.25) | 100.0% | 97.6% | 97.4% | 96.0% |
+
+  The referee is safe and not very sensitive: nothing from a null world got
+  past stage 3 in 500 runs, and a real but modest signal (IC 0.10, traded daily
+  at 3 bps) reaches stage 5 about one time in ten.
+- **E-05 stage 4 trusted a declared horizon — FIXED.** The first calibration
+  run showed that unrelated 21-bar overlapping series passed stage 4 in 33% of
+  trials when the caller left `horizon` at 1. `effective_sample_size` now
+  measures the serial dependence in the two series (Bartlett's formula on
+  ranks) and stage 4 uses the smaller of that and `n / horizon`. The table
+  above is after the fix.
+
+Still not done, and why: the repository split (it moves most files and could
+not be verified here without the kernel); the Lean project (no toolchain in the
+review environment); the data rebuild (needs a download that includes delisted
+assets); the trustees' signatures; and the prospective run.
+
+---
+
 ## 2026-11-14 follow-up — the items the 2026-11-12 round left open
 
 Basis: `stage` at `9c9c8bf`. Pins: `tests/test_integrity_followup_2026_11_14.py`.

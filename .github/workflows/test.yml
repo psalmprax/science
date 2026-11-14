@@ -109,6 +109,10 @@ jobs:
           --health-retries 20
     env:
       APEDP_REDIS_URL: redis://localhost:6379/0
+      # The kernel and torch are installed in this job, so a test that cannot
+      # find them is a failure here. Without this, tests/conftest.py reports
+      # such a test as skipped, which is right on a bare clone and wrong in CI.
+      APEDP_REQUIRE_NATIVE: "1"
       # Avoid component conflicts in the hosted runner's preinstalled toolchains.
       # All Rust steps share this job-local home, including the default toolchain.
       RUSTUP_HOME: ${{ runner.temp }}/rustup

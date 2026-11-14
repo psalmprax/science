@@ -36,6 +36,7 @@ from apedp_dyn.grammar.proposer_interface import (
     ProposerBase,
     StrategyArchetype,
 )
+from apedp_dyn.kernel_shim import NativeKernelUnavailableError
 
 try:  # pragma: no cover - exercised by the import guard test
     import apedp_kernel
@@ -48,6 +49,23 @@ except ImportError:  # pragma: no cover - `apedp_kernel` stays unbound; uses are
 def is_rime_available() -> bool:
     """True when the native kernel exposing the RIME entry points is loaded."""
     return _RIME_AVAILABLE
+
+
+def _require_rime(action: str) -> None:
+    """Raise unless the native RIME engine is loaded.
+
+    RIME has no Python implementation. Without the kernel ``fit_and_propose``
+    used to return ``[]``, which is exactly what it returns when it searches a
+    null world and correctly abstains: a machine without the build reported "no
+    mechanism found" for a planted ``y = 3x``, and every test that pins an
+    abstention passed there without a search having run.
+    """
+    if not _RIME_AVAILABLE:
+        raise NativeKernelUnavailableError(
+            f"RIME cannot {action}: the native apedp_kernel RIME engine is not loaded, and there "
+            "is no Python fallback. This is not an abstention. Build the kernel with "
+            "`maturin develop --release --manifest-path rust/apedp-kernel/Cargo.toml`."
+        )
 
 
 # Algebraic input transforms (v0.1.2 grammar extension). The RIME graph grammar
@@ -473,8 +491,9 @@ class RimeProposer(ProposerBase):
             anything.
             """
             n = len(df)
-            if not _RIME_AVAILABLE or n == 0:
+            if n == 0:
                 return np.zeros(n)
+            _require_rime("score a frame")
             base: dict[str, np.ndarray] = {}
             for f in base_feats:
                 base[f] = (
@@ -540,8 +559,7 @@ class RimeProposer(ProposerBase):
             self._feature_cols = list(feature_cols)
         if target_col:
             self._target_col = target_col
-        if not _RIME_AVAILABLE:
-            return []
+        _require_rime("search")
 
         frames = self._frames(train_data)
         if not frames:

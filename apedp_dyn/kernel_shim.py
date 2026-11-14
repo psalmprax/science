@@ -27,6 +27,18 @@ instead of a bare ``AttributeError`` on ``None``.
 """
 from __future__ import annotations
 
+
+class NativeKernelUnavailableError(RuntimeError):
+    """An engine that exists only in the native kernel was asked to run without it.
+
+    This is a different fact from "the engine ran and found nothing", and code
+    that needs the kernel raises it instead of returning an empty result: an
+    empty result is how a search reports a null world, and a missing build must
+    not be able to pass for one. It is a ``RuntimeError`` so existing handlers
+    of the shim's error keep working.
+    """
+
+
 _INSTALL_HINT = (
     "The native apedp-kernel extension is not installed. This engine has no "
     "pure-Python implementation. Install a prebuilt wheel from the CI "
@@ -46,7 +58,7 @@ class _MissingKernel:
     def __getattr__(self, name: str) -> object:
         if name.startswith("__") and name.endswith("__"):
             raise AttributeError(name)
-        raise RuntimeError(f"apedp_kernel.{name} is unavailable: {_INSTALL_HINT}")
+        raise NativeKernelUnavailableError(f"apedp_kernel.{name} is unavailable: {_INSTALL_HINT}")
 
 
 missing_kernel = _MissingKernel()

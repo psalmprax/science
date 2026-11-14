@@ -136,6 +136,41 @@ def one_sided_ic_p_value(ic: float, n_effective: int) -> float:
     return float(student_t.sf(statistic, n_effective - 2))
 
 
+def effective_sample_size(predictions: Any, targets: Any) -> int:
+    """Independent observations in a pair of serially dependent series.
+
+    When both series are autocorrelated -- a slow signal against returns that
+    overlap from one bar to the next -- a correlation between them is far less
+    certain than its ``n`` suggests. Bartlett's formula gives its variance as
+    ``(1 + 2 * sum_k rho_x(k) * rho_y(k)) / n``; this returns ``n`` divided by
+    that inflation factor, computed on ranks to match the Spearman IC, over lags
+    up to ``n // 10``. The factor is never taken below one, so the result is at
+    most ``n``. Measured in ``benchmarks/run_promotion_gate_calibration.py``: a
+    signal with no relation to 21-bar overlapping targets passed stage 4 in
+    about a third of trials when ``n`` was used as it stood.
+    """
+    from scipy.stats import rankdata
+
+    pred = np.asarray(predictions, dtype=float).ravel()
+    target = np.asarray(targets, dtype=float).ravel()
+    mask = np.isfinite(pred) & np.isfinite(target)
+    n = int(mask.sum())
+    if n < MIN_EVIDENCE_OBSERVATIONS:
+        return n
+    x = rankdata(pred[mask])
+    y = rankdata(target[mask])
+    if np.ptp(x) == 0.0 or np.ptp(y) == 0.0:
+        return n
+    x = (x - x.mean()) / x.std()
+    y = (y - y.mean()) / y.std()
+    inflation = 1.0
+    for lag in range(1, n // 10 + 1):
+        rho_x = float(np.dot(x[lag:], x[:-lag])) / n
+        rho_y = float(np.dot(y[lag:], y[:-lag])) / n
+        inflation += 2.0 * (1.0 - lag / n) * rho_x * rho_y
+    return max(3, int(n / max(inflation, 1.0)))
+
+
 def _periods_per_year(index: Any, n_rows: int) -> tuple[float, int, int]:
     """Observation frequency implied by a datetime index: (per year, first ns, last ns).
 
@@ -378,8 +413,11 @@ class PromotionTracker:
         must be persistent and the candidate registered in it.
 
         ``horizon`` is the number of periods each target spans. Overlapping
-        targets are not independent, so the p-value uses ``n / horizon``
-        effective observations.
+        targets are not independent, so the p-value never uses more than
+        ``n / horizon`` observations. It does not rely on the caller declaring
+        that, either: the serial dependence actually present in the two series
+        is measured (:func:`effective_sample_size`) and the smaller of the two
+        counts is the one used.
         """
         self._assert_stage_reachable(PromotionStage.STAGE_4_OUT_OF_SAMPLE_TRANSFER)
         if horizon < 1:
@@ -407,7 +445,8 @@ class PromotionTracker:
                 "its lineage must exist before it can claim a confirmation holdout."
             ) from exc
         ic, n = information_coefficient(predictions, targets)
-        n_effective = n // horizon
+        n_measured = effective_sample_size(predictions, targets)
+        n_effective = min(n // horizon, n_measured)
         rec = self._decide_stage_4(
             None,
             ic,
@@ -417,6 +456,7 @@ class PromotionTracker:
                 "ic_method": "spearman",
                 "n_observations": n,
                 "n_effective": n_effective,
+                "n_effective_measured": n_measured,
                 "horizon": horizon,
                 "holdout_dataset_id": dataset_id,
                 "holdout_slice_identifier": slice_identifier,
