@@ -105,3 +105,8 @@ apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtra
 # that describes one working copy's ledger file, never a shared artefact.
 *.jsonl.head
 *.jsonl.head.tmp
+
+# Developer-local convenience link to the built native kernel in a virtualenv.
+# It pointed at .venv/lib/python3.12/..., which does not exist in a clone; the
+# kernel is importable from site-packages once built (maturin develop).
+/apedp_kernel

@@ -6,11 +6,112 @@ proposers, discovery engines, the Rust kernel (`apedp-kernel`), formal
 verification bridges, ledgers, API/UI trust boundaries, CI/Docker packaging,
 and physics/robotics modules, verified by execution.
 
+## 2026-11-14 follow-up — the items the 2026-11-12 round left open
+
+Basis: `stage` at `9c9c8bf`. Pins: `tests/test_integrity_followup_2026_11_14.py`.
+The H-numbers are the ones assigned in the 2026-11-12 section below, whose
+entries are kept as written; this section is their current status.
+
+- **H-02 stages took their metrics as numbers — FIXED.** Every stage now has a
+  `verify_stage_N_from_*` entry point that computes what it judges: stage 1
+  from a `LeanVerificationResult` (kernel exit code, no self-declared axioms, no
+  `sorry`, a proven dimensional and a proven bound theorem); stage 2 from
+  predictions and targets (Spearman IC, positive in each of five contiguous
+  folds); stage 3 from forecasts and literature features (Diebold-Mariano
+  against every incumbent, the largest p-value judged; every supplied
+  literature feature must be evaluable); stage 4 from holdout predictions and
+  targets, claimed through a persistent experiment ledger before scoring;
+  stage 5 from gross returns, turnover and timestamps (net Sharpe, breakeven
+  fee and annualisation computed here, DSR from a persistent non-empty trial
+  ledger); stage 6 from returns whose timestamps fall after the stage-5 record
+  and not in the future. The numeric `verify_stage_N` entry points raise unless
+  the tracker is built with `allow_reported_metrics=True`; a stage passed that
+  way is `caller_reported` and labelled `..._ON_REPORTED_METRICS`.
+  `VerifiedModuleLibrary` now admits a module only on an evidence-backed
+  promotion and checks the tracker's flags against its records.
+  *Limit:* this moves the trust boundary from numbers to evidence objects. A
+  caller in the same process can still hand in a fabricated series or a
+  hand-built Lean result; what it can no longer do is skip the computation.
+- **H-04 slice identity was a name — FIXED, with stated limits.**
+  `fingerprint_holdout_slice(data, index=...)` gives a slice a content hash,
+  hashes of its non-constant columns, a sketch of its `(index, row)` pairs and
+  its index range. A burned or spent slice is recognised under another name
+  when the content is identical, when at least half the narrower slice's
+  columns are identical, when any indexed row is shared (a sub-window or an
+  overlapping window), or when the index ranges intersect within the same
+  dataset id. *Not caught:* data that was both rescaled and moved to a
+  different dataset id; a row-subset whose index was also relabelled; an
+  overlap of under roughly 1-2% between slices of more than 256 rows; and any
+  exposure recorded without a fingerprint, unless the ledger was built with
+  `require_holdout_fingerprint=True`.
+- **H-06 / H-07 the trading sandbox forgot its trials and never registered its
+  holdout — FIXED for callers that supply or enable persistent ledgers;
+  DISCLOSED otherwise.** `run_epistemic_trading_adjudication` takes
+  `trial_ledger` and `experiment_ledger`, or opens the deployment's when
+  `APEDP_SANDBOX_PERSISTENT_LEDGERS=1`. It claims the holdout by content before
+  scoring, writes the outcome back, and does not charge a replayed search
+  twice. Measured: a second seed on the same rows raises
+  `HoldoutContaminationError`, so does the same panel under a new dataset name,
+  and the refused seed's 80 trials are still charged. The freeze record was
+  re-minted for the file (`APEDPX_FROZEN_v1_18.json::remint_log`).
+  *Still the default:* with no ledger passed and the flag unset, both ledgers
+  are in-memory, because the sandbox's ordinary use -- one dataset, many seeds
+  -- is the pattern a persistent single-use holdout refuses. The output now says
+  so (`ledger_persistent: false`) instead of leaving it to be inferred.
+  `multi_asset_signals_sandbox.py` and the other sandboxes are unchanged.
+- **H-12 hindsight-selected universes — MEASURED AND GATED; THE DATA IS NOT
+  REBUILT.** `apedp_dyn/market/universe.py` audits a panel, and
+  `data/market/PROVENANCE.json` now records `universe_selection` for all six
+  multi-asset files (each list was fixed in October 2026 for data starting in
+  2021). `verify_stage_5_from_returns` requires a `UniverseAudit` and refuses a
+  hindsight-selected one. `tools/build_point_in_time_universe.py` ranks a
+  candidate pool using only earlier bars. None of this adds the assets a 2026
+  list left out: that needs a pool that includes the names which later died,
+  which has to be downloaded and was not available in the review environment.
+- **H-13 (new) the 90-asset panel contains bars that never traded — FOUND,
+  RECORDED, NOT REPAIRED IN PLACE.** In
+  `data/market/multi_asset_90_5yr_orderflow.csv` five crypto pairs end early and
+  their last bar is repeated to the end of the file: XMR from 2024-02-21 (468
+  bars), MATIC from 2024-09-11 (328), FTM from 2025-01-14 (243), EOS from
+  2025-05-27 (152), MKR from 2025-09-16 (75) -- 1,266 asset-days in which close,
+  high, low, volume, taker-buy and OFI are constants. The build script's
+  `ffill().bfill()` is the cause. The 30- and 60-asset panels and the top-15
+  files have no such runs. The file itself is unchanged because
+  `tests/test_dyn_trading_universe_sweep.py` and the frozen
+  `multi_asset_signals_sandbox.py` read it directly and average across assets
+  without NaN handling; `mask_stale_bars` is the loader-side fix, and a test
+  pins the five runs so the defect cannot be forgotten. Any result computed on
+  this panel past February 2024 includes those bars.
+- **H-14 (new) the two quorum signatures share one timestamp — FOR THE OWNER TO
+  CONFIRM.** In `specifications/governance_manifest.json` both signature
+  records and both transparency-log entries are stamped
+  `2026-10-18T16:31:16.664147+00:00`, identical to the microsecond. That is
+  what one process assembling both entries produces. If both private keys were
+  in that process, the 2-of-3 quorum was one party signing twice, and re-signing
+  the current digest the same way would restore a green check without restoring
+  what the check is for. FLAW-01 itself is unchanged and cannot be closed from
+  inside the repository: the re-signing request for digest `a8177b25…` is
+  current (`scripts/run_governance_remint_ceremony.py status`), and no change in
+  this round touched the canonical specification.
+- **Repository residue — PARTLY REMOVED.** Out of the index: `apedp_kernel` (a
+  symlink into one developer's `.venv/lib/python3.12`, dangling in every
+  clone), `Crash` (empty), and `apedp/discovery.py` (a three-line shim that the
+  `apedp/discovery/` package shadows, so it could never be imported). Tracked
+  binaries were inventoried and left: see `docs/REPOSITORY_RESIDUE.md`.
+
+Not run in this follow-up either: suites that need the native kernel or torch,
+and the mutation battery. CI has to confirm those.
+
+---
+
 ## 2026-11-12 round — integrity safeguards trusted the caller they police
 
 Basis: external review of `stage` at `3d556eb`, each item reproduced by driving
 the public API (no monkeypatching). Pins:
 `tests/test_integrity_hardening_2026_11_12.py`.
+
+*Items marked OPEN here were revisited on 2026-11-14; the section above gives
+their current status. The entries below are left as they were written.*
 
 - **H-01 promotion gates accepted caller-supplied thresholds — FIXED.** A
   candidate with Sharpe −5 and DSR 0 reached `REAL_MARKET_PROMOTION_GRANTED` by

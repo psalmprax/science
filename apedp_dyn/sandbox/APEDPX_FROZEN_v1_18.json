@@ -22,13 +22,13 @@
     "apedp_dyn/sandbox/multi_grammar_sandbox.py": "e3303e5a16ed2ac269060041c18f02c309d8de501422ad90045907a78909d48d",
     "apedp_dyn/sandbox/pde_verification_sandbox.py": "1ea3a4c89800af9f6570723fbcf6ea09e731cccf24a292cc15489bc56fa636a3",
     "apedp_dyn/sandbox/sphere_packing_sandbox.py": "6a105810b786cddd1435c13c752cddd4ad73182dd841e6677f8667001ec3fd1c",
-    "apedp_dyn/sandbox/trading_signals_sandbox.py": "1a67a9515bbc3d4d63c9fcc1cb0e8e9f4e1f7d6e15c14bc275960347531c9426",
+    "apedp_dyn/sandbox/trading_signals_sandbox.py": "97cebc09aedc8984d74ae352de21b5d90b595546c1ee2cde47fd16c54774443b",
     "apedp_dyn/ui/dashboard.html": "69f3352a9d47a881cc91bda2ebb74bc35e637b8fb2599ff227ec6f4ece19567a",
     "apedp_dyn/ui/server.py": "40a525b27fc34335b46195ac169f88a59909fa92fb5bf83f776f3d27b891aef7"
   },
   "label": "APEDP-X v1.18-FROZEN",
   "minted_at": "2026-11-10",
-  "referee_change": "adjudicate.py: free-form proposal identity plus holdout rival selection that excludes observationally identical duplicates and requires bootstrap availability; no threshold, referee statement or gate decision changed. dashboard.html/server.py: UI Studio payload and metric-card changes only. multi_asset_signals_sandbox.py: the evaluation index and period label are computed after the volatility warmup truncation instead of before it; no threshold, referee statement or gate decision changed. adjudicate.py, 2026-11-10: the null/constant promotion floor is added -- when the pool contains a constant model identified from the IR, promotion additionally requires rmse_null - rmse_best > tau_epi, which abstains in the cases where the null was the holdout-best candidate (a null cannot beat itself) or within tau of it. No threshold value changed; the rule applies the existing resolution criterion to the floor hypothesis, and the quantum-vacuum subthreshold fixture now abstains instead of promoting thermal_constant.",
+  "referee_change": "adjudicate.py: free-form proposal identity plus holdout rival selection that excludes observationally identical duplicates and requires bootstrap availability; no threshold, referee statement or gate decision changed. dashboard.html/server.py: UI Studio payload and metric-card changes only. multi_asset_signals_sandbox.py: the evaluation index and period label are computed after the volatility warmup truncation instead of before it; no threshold, referee statement or gate decision changed. adjudicate.py, 2026-11-10: the null/constant promotion floor is added -- when the pool contains a constant model identified from the IR, promotion additionally requires rmse_null - rmse_best > tau_epi, which abstains in the cases where the null was the holdout-best candidate (a null cannot beat itself) or within tau of it. No threshold value changed; the rule applies the existing resolution criterion to the floor hypothesis, and the quantum-vacuum subthreshold fixture now abstains instead of promoting thermal_constant. trading_signals_sandbox.py, 2026-11-14: trial and experiment ledgers may be supplied or opened from the deployment; the holdout is claimed by content before scoring and its outcome written back; output gains ledger_persistent, search_replayed_from_ledger and holdout_registration; no threshold, evidence rule or gate decision changed.",
   "referee_guard_files": [
     "apedp_dyn/epistemic/adjudicate.py",
     "apedp_dyn/epistemic/claim_ladder.py",
@@ -94,10 +94,16 @@
       "old_sha256": "85060fee348c585155e3e2c3f54a08af04b54a53e98d54152634e67d2b506b84",
       "path": "apedp_dyn/epistemic/adjudicate.py",
       "rationale": "Null/constant promotion floor: the pair path compared the holdout-best candidate only against its nearest distinct rival, so a pool whose winner was the null model could still be promoted -- at 5% noise in the quantum-vacuum subthreshold window the four saturated residuals separate by delta/tau ~ 1.09 and the holdout-best head is thermal_constant, a single fitted level. adjudicate() now also requires rmse_null - rmse_best > tau_epi whenever the pool holds a constant model (every IR term is the unit term 'one'; identified structurally, not by candidate id), and abstains with NULL_MODEL_NOT_BEATEN when that fails, which includes the degenerate self case where the margin is zero. No threshold value changed: the rule is the existing resolution criterion applied to the floor hypothesis. Verdicts for pools whose winner clears the null by more than tau are unchanged (creep still promotes power_law, 57.8 against tau 3.01)."
+    },
+    {
+      "new_sha256": "97cebc09aedc8984d74ae352de21b5d90b595546c1ee2cde47fd16c54774443b",
+      "old_sha256": "1a67a9515bbc3d4d63c9fcc1cb0e8e9f4e1f7d6e15c14bc275960347531c9426",
+      "path": "apedp_dyn/sandbox/trading_signals_sandbox.py",
+      "rationale": "Ledger wiring (SYSTEM_FLAWS_AUDIT H-06/H-07): run_epistemic_trading_adjudication built a fresh in-memory CandidateTrialLedger on every call and scored its holdout half without recording the exposure anywhere, so the Deflated Sharpe Ratio charged only the current run's search and nothing stopped the same rows being scored again with another seed. The function now accepts trial_ledger and experiment_ledger (or opens the deployment's persistent ledgers when APEDP_SANDBOX_PERSISTENT_LEDGERS is set), claims the holdout in the experiment ledger by content fingerprint before scoring it, writes the outcome back so a failed candidate burns the slice, and reports ledger_persistent in trial_multiplicity and in a new holdout_registration block. A replay of a search the ledger already holds (same data hash, split, population, generations and seed) is not charged twice. Stage 1 of the promotion tracker is now reached through verify_stage_1_from_lean with an explicit no-proof Lean result instead of typed-in status values; it still refuses. With no ledger supplied and the flag unset the ledgers are in-memory as before and the verdict, justified tier, metrics, best model and market ladder are unchanged (pinned by tests/test_integrity_followup_2026_11_14.py::test_persistent_ledgers_do_not_change_the_verdict). No threshold, signal definition, fitness function, evidence rule or adjudication call changed."
     }
   ],
   "supersedes": "APEDP-X v1.17-FROZEN",
-  "test_outcome": "AGENTS.md regression suite on the working tree: 281 passed, 1 skipped (0 failed), 2026-11-10 (216.26s, with the null/constant promotion floor)",
+  "test_outcome": "2026-11-14 re-mint (trading_signals_sandbox.py), verified in a review environment WITHOUT the native apedp_kernel or torch (Python 3.13): the AGENTS.md regression suite was run on the parent commit 9c9c8bf and on this tree (18 files as one batch, 8 individually; test_dyn_native_ga_best.py exceeded a 300 s cap on both) and the outcomes are identical; test_dyn_blind.py (the freeze guard) passes; tests/test_integrity_followup_2026_11_14.py passes. Kernel- and torch-dependent tests in that suite fail or cannot be collected in that environment on both commits, so a full green run of the suite has NOT been observed for this re-mint and must be confirmed by CI. Previous record: AGENTS.md regression suite on the working tree: 281 passed, 1 skipped (0 failed), 2026-11-10 (216.26s, with the null/constant promotion floor).",
   "thresholds": {
     "RESID_RHO_FLAG": 0.5,
     "SOLE_SURVIVOR_GAMMA": 3.0,
@@ -107,5 +113,5 @@
     "tau_rule": "holdout-scale from gate4 provenance (obs_rms, noise_sigma, n_samples); explicit override allowed"
   },
   "tree_state": "mypy apedp_dyn: 244 errors after annotation remediation",
-  "utc_frozen": "2026-11-10T21:16:11Z"
+  "utc_frozen": "2026-11-14T21:20:24Z"
 }

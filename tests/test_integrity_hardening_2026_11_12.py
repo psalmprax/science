@@ -83,7 +83,7 @@ def _passed_through_stage(tracker: PromotionTracker, stage: int) -> PromotionTra
     ],
 )
 def test_a_looser_threshold_is_refused_not_applied(stage, call):
-    tracker = _passed_through_stage(PromotionTracker("cand"), stage)
+    tracker = _passed_through_stage(PromotionTracker("cand", allow_reported_metrics=True), stage)
     with pytest.raises(PromotionViolationError, match="looser than the preregistered"):
         call(tracker)
     # The refused call left no record behind: the stage is still open.
@@ -91,14 +91,14 @@ def test_a_looser_threshold_is_refused_not_applied(stage, call):
 
 
 def test_a_stricter_threshold_is_still_allowed():
-    tracker = _passed_through_stage(PromotionTracker("cand"), 1)
+    tracker = _passed_through_stage(PromotionTracker("cand", allow_reported_metrics=True), 1)
     rec = tracker.verify_stage_2(in_sample_ic=0.03, cv_stable=True, min_ic=0.05)
     assert rec.passed is False  # 0.03 clears the canonical 0.02 but not the stricter 0.05
 
 
 def test_junk_candidate_cannot_reach_real_market_promotion():
     """The exact walk that reached REAL_MARKET_PROMOTION_GRANTED before this round."""
-    tracker = PromotionTracker("junk")
+    tracker = PromotionTracker("junk", allow_reported_metrics=True)
     tracker.verify_stage_1("P2_VERIFIED", True, True)
     with pytest.raises(PromotionViolationError):
         tracker.verify_stage_2(0.0001, True, min_ic=0.0)
@@ -109,7 +109,7 @@ def test_junk_candidate_cannot_reach_real_market_promotion():
 
 
 def test_writing_to_the_flags_does_not_unhalt_a_candidate():
-    tracker = PromotionTracker("fail")
+    tracker = PromotionTracker("fail", allow_reported_metrics=True)
     tracker.verify_stage_1("P1_CANDIDATE", dimensions_consistent=False, bounded=True)
     assert tracker.is_halted
     tracker.is_halted = False
@@ -119,14 +119,14 @@ def test_writing_to_the_flags_does_not_unhalt_a_candidate():
 
 
 def test_claiming_a_stage_without_its_records_is_refused():
-    tracker = PromotionTracker("skip")
+    tracker = PromotionTracker("skip", allow_reported_metrics=True)
     tracker.highest_stage_passed = PromotionStage.STAGE_5_ECONOMIC_VALIDITY
     with pytest.raises(PromotionViolationError, match="without a passing record"):
         tracker.verify_stage_6(prospective_sharpe=5.0, max_drawdown=0.01)
 
 
 def test_a_stage_cannot_be_rerun_with_different_inputs():
-    tracker = _passed_through_stage(PromotionTracker("rerun"), 2)
+    tracker = _passed_through_stage(PromotionTracker("rerun", allow_reported_metrics=True), 2)
     with pytest.raises(PromotionPrerequisiteError, match="already on record"):
         tracker.verify_stage_2(in_sample_ic=0.02, cv_stable=True)
     with pytest.raises(PromotionPrerequisiteError, match="already on record"):
@@ -134,7 +134,7 @@ def test_a_stage_cannot_be_rerun_with_different_inputs():
 
 
 def test_a_halted_candidate_cannot_restart_at_stage_1():
-    tracker = PromotionTracker("restart")
+    tracker = PromotionTracker("restart", allow_reported_metrics=True)
     tracker.verify_stage_1("P1_CANDIDATE", False, True)
     with pytest.raises(PromotionPrerequisiteError, match="HALTED"):
         tracker.verify_stage_1("P2_VERIFIED", True, True)
@@ -142,11 +142,11 @@ def test_a_halted_candidate_cannot_restart_at_stage_1():
 
 def test_a_halt_survives_a_new_tracker_when_journaled(tmp_path):
     journal = tmp_path / "promotion.jsonl"
-    first = _passed_through_stage(PromotionTracker("cand", state_path=journal), 1)
+    first = _passed_through_stage(PromotionTracker("cand", state_path=journal, allow_reported_metrics=True), 1)
     first.verify_stage_2(in_sample_ic=0.001, cv_stable=True)
     assert first.is_halted
 
-    resumed = PromotionTracker("cand", state_path=journal)
+    resumed = PromotionTracker("cand", state_path=journal, allow_reported_metrics=True)
     assert resumed.is_halted
     assert resumed.highest_stage_passed == PromotionStage.STAGE_1_MATHEMATICAL_CONSISTENCY
     with pytest.raises(PromotionPrerequisiteError, match="HALTED"):
@@ -162,7 +162,7 @@ def test_a_damaged_promotion_journal_is_refused(tmp_path):
     journal = tmp_path / "promotion.jsonl"
     journal.write_text("{not json\n", encoding="utf-8")
     with pytest.raises(PromotionViolationError, match="unreadable"):
-        PromotionTracker("cand", state_path=journal)
+        PromotionTracker("cand", state_path=journal, allow_reported_metrics=True)
 
 
 # ---------------------------------------------------------------------------
@@ -183,7 +183,7 @@ def _noise_search(ledger: CandidateTrialLedger, n_trials: int = 400, n_bars: int
 
 
 def test_stage_5_from_ledger_refuses_an_in_memory_ledger():
-    tracker = _passed_through_stage(PromotionTracker("cand"), 4)
+    tracker = _passed_through_stage(PromotionTracker("cand", allow_reported_metrics=True), 4)
     ledger = CandidateTrialLedger()
     ledger.record_trial("w", "p", "f", "TACTICAL", 1.7, n_bars=1000)
     assert ledger.is_persistent is False
@@ -203,7 +203,7 @@ def test_stage_5_from_ledger_charges_the_whole_search(tmp_path):
     assert reopened.is_persistent
     assert reopened.trial_count == 400
 
-    tracker = _passed_through_stage(PromotionTracker("cand"), 4)
+    tracker = _passed_through_stage(PromotionTracker("cand", allow_reported_metrics=True), 4)
     rec = tracker.verify_stage_5_from_ledger(
         net_sharpe=best_sharpe, trial_ledger=reopened, n_bars=1000, breakeven_fee_bps=8.0,
         annualization_factor=252.0,

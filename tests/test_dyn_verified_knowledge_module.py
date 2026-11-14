@@ -19,6 +19,8 @@ Acceptance criteria:
 from __future__ import annotations
 
 import json
+import tempfile
+from pathlib import Path
 
 import pytest
 
@@ -36,6 +38,7 @@ from apedp_dyn.epistemic.verified_knowledge_module import (
     ValidatedModuleSpec,
     VerifiedModuleLibrary,
 )
+from tests.promotion_evidence import evidence_backed_tracker
 
 
 def _confirmed_candidate(ledger: FullLineageExperimentLedger, cid: str, formula: str):
@@ -45,12 +48,22 @@ def _confirmed_candidate(ledger: FullLineageExperimentLedger, cid: str, formula:
 
 
 def _tracker_through_stage_4(cid: str = "c1") -> PromotionTracker:
-    t = PromotionTracker(candidate_id=cid)
+    """A tracker that passed stages 1-4 on evidence the tracker itself scored.
+
+    The library admits a module only on derived stages, so this goes through
+    the ``verify_stage_N_from_*`` entry points with generated series, a Lean
+    result object, and a persistent experiment ledger for the stage-4 holdout.
+    """
+    return evidence_backed_tracker(cid, Path(tempfile.mkdtemp(prefix="vkm_")), through=4)
+
+
+def _reported_tracker_through_stage_4(cid: str = "c1") -> PromotionTracker:
+    """The same four stages passed on numbers typed in by the caller."""
+    t = PromotionTracker(candidate_id=cid, allow_reported_metrics=True)
     t.verify_stage_1(lean_status="P2_VERIFIED", dimensions_consistent=True, bounded=True)
     t.verify_stage_2(in_sample_ic=0.05, cv_stable=True)
     t.verify_stage_3(dm_p_value=0.001, max_literature_r2=0.4)
-    # Stage 4 real signature: (in_sample_ic, oos_ic, oos_p_value, ...); passes
-    # with retention 0.60 >= MIN_OOS_TRANSFER_RETENTION 0.50, oos IC 0.06 >= 0.015.
+    # retention 0.60 >= MIN_OOS_TRANSFER_RETENTION 0.50, oos IC 0.06 >= 0.015.
     t.verify_stage_4(in_sample_ic=0.10, oos_ic=0.06, oos_p_value=0.001)
     return t
 
@@ -87,7 +100,7 @@ def test_refusal_unconfirmed_ledger_state(tmp_path):  # K1a
 
 
 def test_refusal_below_stage_4(artifact):  # K1b
-    t = PromotionTracker(candidate_id="c1")
+    t = PromotionTracker(candidate_id="c1", allow_reported_metrics=True)
     t.verify_stage_1(lean_status="P2_VERIFIED", dimensions_consistent=True, bounded=True)
     t.verify_stage_2(in_sample_ic=0.05, cv_stable=True)
     t.verify_stage_3(dm_p_value=0.001, max_literature_r2=0.4)
@@ -104,6 +117,30 @@ def test_registration_success_gated(artifact):  # K1 positive path
     assert reg.evidence["experiment_node_state"] == "confirmed_valid"
     assert "STAGE_4" in reg.evidence["promotion_stage_passed"]
     assert "NOT required" in reg.evidence["disclosure"]
+    assert reg.evidence["promotion_evidence_backed"] is True
+    assert set(reg.evidence["promotion_evidence_sources"].values()) == {"derived"}
+
+
+def test_refusal_promotion_on_reported_metrics(artifact):  # K1c
+    """Four stages passed on typed-in numbers do not admit a module by default."""
+    lib = VerifiedModuleLibrary()
+    with pytest.raises(ModuleIntegrityError, match="caller-reported"):
+        lib.register_module(_spec(), artifact, _reported_tracker_through_stage_4())
+    # Admitting one is an explicit choice, and the module's evidence records it.
+    permissive = VerifiedModuleLibrary(require_evidence_backed_promotion=False)
+    reg = permissive.register_module(_spec(), artifact, _reported_tracker_through_stage_4())
+    assert reg.evidence["promotion_evidence_backed"] is False
+    assert set(reg.evidence["promotion_evidence_sources"].values()) == {"caller_reported"}
+
+
+def test_refusal_tampered_or_foreign_tracker(artifact):  # K1d
+    lib = VerifiedModuleLibrary()
+    forged = PromotionTracker(candidate_id="c1")
+    forged.highest_stage_passed = PromotionStage.STAGE_4_OUT_OF_SAMPLE_TRANSFER
+    with pytest.raises(ModuleIntegrityError, match="inconsistent"):
+        lib.register_module(_spec(), artifact, forged)
+    with pytest.raises(ModuleIntegrityError, match="belongs to candidate"):
+        lib.register_module(_spec(), artifact, _tracker_through_stage_4("someone_else"))
 
 
 @pytest.mark.parametrize("bad", [

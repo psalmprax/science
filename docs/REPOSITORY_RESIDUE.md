@@ -18,6 +18,43 @@ the next sweep starts from this table instead of from `git status`.
 | `unused/` | 24 KB | 1 | Not imported by any tracked module, which is what `tests/test_tracked_import_closure.py` checks. Keeping it out of the index keeps it out of the import graph. |
 | `data/skills/` | — | 0 | Empty directory. Nothing to track; git does not store empty directories anyway. |
 
+## Removed from the index on 2026-11-14
+
+| path | what it was | why it went |
+|---|---|---|
+| `apedp_kernel` | Symlink to `.venv/lib/python3.12/site-packages/apedp_kernel` | It pointed into one developer's virtualenv and at one Python minor version, so it dangled in every clone. The kernel is importable from site-packages once built; the path is now in `.gitignore` for anyone who wants the link locally. |
+| `Crash` | Empty file at the repository root | Zero bytes, referenced by nothing. |
+| `apedp/discovery.py` | Three-line "compatibility shim" re-exporting `apedp.discovery` | A package directory wins over a same-named module, so `import apedp.discovery` always loaded `apedp/discovery/` and this file was never executed. The four documentation links to it now point at the modules that define the classes. |
+
+`tests/test_integrity_followup_2026_11_14.py` pins all three as absent.
+
+## Tracked binaries, measured 2026-11-14 and left in place
+
+110 MB is tracked; the non-text part is below. Nothing here was removed, and
+the reason is in the last column: every one is either read by tracked code
+under a pinned name or is the only copy of what it contains.
+
+| files | size | read by | why it stays |
+|---|---|---|---|
+| `benchmarks/sharp_wave_pipeline_checkpoint.pt`, `benchmarks/sharp_wave_upsample_checkpoint.pt` | 7.1 MB each (different contents) | `benchmarks/run_sharp_wave_pipeline.py`, `run_sharp_wave_upsample.py`, `run_sharp_vae_panel.py` | Loaded by name; the benchmark results are computed from these weights. |
+| `…/sample_submission/dfthcsos/angle_k_{0..9}.kmb`, `…/sample_submission/invsqrt.kmb` | 18.1 MB | `config/receipt_plan*.json`, `apedp_dyn/quantum_compilation/contracts.py` | Inputs of the quantum-compilation receipts; the plans name them. |
+| `…/sample_submission/dfthcsos/submission.npz` | 4.3 MB | `config/receipt_plan_*.json` | Same. |
+| ten `*.zip` packs under `…/google-verifiable-quantum-circuit-compilation/` | 0.2 MB together | nothing by name | Each holds files that are tracked nowhere else (53 of 105 members), so deleting an archive deletes its only copy. They also contain `__pycache__` and `.pytest_cache` entries, which is what a pack built from a working directory looks like. Unpacking the unique sources into the tree and dropping the archives is the clean fix, and is a content decision. |
+| six PDFs, four `.docx` at the root and under the sandbox | 2.4 MB | `apedp/ingestion/ingestion_docs.py`, `ANTI_PATTERNS.md` | Source documents the ingestion code and the docs cite. |
+
+Moving the two checkpoints, the `.kmb` files and the `.npz` to Git LFS would
+take about 36 MB out of every clone. It was not done here: it rewrites how
+those paths are stored, needs LFS enabled on the remote, and only shrinks
+*history* if history is rewritten and force-pushed, which is the repository
+owner's call.
+
+Also still tracked and not touched: `.refact/` (75 files of an assistant's
+chats, memory and knowledge notes), `.freebuff/project-id` and
+`.kilo/agents/data.md`. They are tool state, not source. Removing them from the
+index would also delete them from the working tree of everyone who pulls, so
+that is better done by whoever runs those tools: `git rm -r --cached .refact`
+on that machine keeps the local files.
+
 ## The compiled extension a clone cannot have
 
 `apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/kickmix.so` is a

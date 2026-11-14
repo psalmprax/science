@@ -20,6 +20,8 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+import numpy as np
+
 if TYPE_CHECKING:
     from apedp_dyn.epistemic.remote_storage import BaseStorageBackend
 
@@ -93,6 +95,203 @@ def _legacy_link(raw_line: str) -> str:
     return _LEGACY_PREFIX + hashlib.sha256(raw_line.encode("utf-8")).hexdigest()
 
 
+#: Sketch sizes for :class:`HoldoutSliceFingerprint`. A slice with no more rows
+#: (columns) than this is represented exactly; a larger one by its smallest
+#: hashes, which still share an element with any slice it substantially overlaps.
+ROW_SKETCH_SIZE = 256
+COLUMN_SKETCH_SIZE = 64
+_FINGERPRINT_VERSION = "apedp-holdout-slice-v1"
+
+
+@dataclass(frozen=True)
+class HoldoutSliceFingerprint:
+    """What a holdout slice *is*, as opposed to what it is called.
+
+    ``normalize_holdout_key`` only folds spellings of a name together. The same
+    rows saved under a genuinely different name, or a window that overlaps a
+    burned one, are a different name and the same data; this is the part of a
+    slice's identity that survives renaming.
+
+    * ``content_hash`` -- the whole array; equal means the identical slice.
+    * ``column_sketch`` -- hashes of the non-constant columns; shared columns
+      mean the same series over the same rows, whatever the column order or
+      whatever other columns were added or dropped.
+    * ``row_sketch`` -- hashes of ``(index value, row values)``; shared rows
+      mean a sub-window or an overlapping window. Only present when an index
+      was supplied, because without one a row is not tied to an observation.
+    * ``index_range`` -- the span of the index; two slices of the *same
+      dataset* whose spans intersect overlap even if every value was rescaled.
+
+    Build one with :func:`fingerprint_holdout_slice` from the raw slice (prices,
+    targets), not from features derived from it.
+    """
+
+    content_hash: str
+    n_rows: int
+    n_cols: int
+    column_sketch: tuple[str, ...] = ()
+    row_sketch: tuple[str, ...] = ()
+    index_kind: str | None = None
+    index_range: tuple[Any, Any] | None = None
+
+    def overlap_reason(self, other: HoldoutSliceFingerprint, *, same_dataset: bool) -> str | None:
+        """Why ``other`` holds the same observations as this slice, or ``None``."""
+        if self.content_hash == other.content_hash:
+            return "identical content"
+        shared_columns = len(set(self.column_sketch) & set(other.column_sketch))
+        # At least half the columns of the narrower slice: one coincidental
+        # calendar or counter column in a wide feature matrix is not an overlap,
+        # while a single price series matching itself is.
+        narrower = min(len(self.column_sketch), len(other.column_sketch))
+        if shared_columns and 2 * shared_columns >= narrower:
+            return f"{shared_columns} identical data column(s)"
+        if set(self.row_sketch) & set(other.row_sketch):
+            return "shared observations (same index value and row values)"
+        if (
+            same_dataset
+            and self.index_range is not None
+            and other.index_range is not None
+            and self.index_kind == other.index_kind
+            and self.index_range[0] <= other.index_range[1]
+            and other.index_range[0] <= self.index_range[1]
+        ):
+            return "overlapping index range within the same dataset"
+        return None
+
+    def to_dict(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "content_hash": self.content_hash,
+            "n_rows": self.n_rows,
+            "n_cols": self.n_cols,
+            "column_sketch": list(self.column_sketch),
+            "row_sketch": list(self.row_sketch),
+        }
+        if self.index_range is not None:
+            payload["index_kind"] = self.index_kind
+            payload["index_range"] = list(self.index_range)
+        return payload
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> HoldoutSliceFingerprint:
+        index_range = data.get("index_range")
+        return cls(
+            content_hash=str(data["content_hash"]),
+            n_rows=int(data["n_rows"]),
+            n_cols=int(data["n_cols"]),
+            column_sketch=tuple(data.get("column_sketch", ())),
+            row_sketch=tuple(data.get("row_sketch", ())),
+            index_kind=data.get("index_kind"),
+            index_range=(index_range[0], index_range[1]) if index_range else None,
+        )
+
+
+def _canonical_cells(values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Float cells as (40-bit mantissa, exponent) integers.
+
+    Forty bits is about twelve significant digits: the same number read through
+    a different parser or recomputed with a last-bit difference still hashes the
+    same, and anything that differs in the twelfth digit is different data.
+    """
+    finite = np.isfinite(values)
+    mantissa, exponent = np.frexp(np.where(finite, values, 0.0))
+    mant = np.rint(mantissa * float(1 << 40)).astype(np.int64)
+    mant[np.isnan(values)] = np.iinfo(np.int64).min
+    mant[np.isposinf(values)] = np.iinfo(np.int64).max
+    mant[np.isneginf(values)] = np.iinfo(np.int64).min + 1
+    return mant, np.where(finite, exponent, 0).astype(np.int32)
+
+
+def _canonical_index(index: Any, n_rows: int) -> tuple[str, list[bytes], tuple[Any, Any]]:
+    """Normalise an index to (kind, per-row bytes, (lo, hi)).
+
+    ISO date strings, ``datetime64`` of any unit and pandas timestamps all land
+    on nanoseconds since the epoch, so the same dates compare equal however the
+    caller happened to hold them.
+    """
+    if getattr(index, "tz", None) is not None:
+        index = index.tz_convert("UTC").tz_localize(None)
+    arr = np.asarray(index)
+    if arr.ndim != 1 or arr.shape[0] != n_rows:
+        raise ValueError(f"index must be one value per row ({n_rows}), got shape {arr.shape}")
+    if arr.dtype.kind in "OUS":
+        try:
+            arr = arr.astype(str).astype("datetime64[ns]")
+        except ValueError:
+            labels = [str(v) for v in arr.tolist()]
+            return "lexical", [v.encode("utf-8") for v in labels], (min(labels), max(labels))
+    if arr.dtype.kind == "M":
+        if np.isnat(arr).any():
+            raise ValueError("index contains NaT; a holdout row needs a defined position")
+        stamps = arr.astype("datetime64[ns]").astype(np.int64)
+        return "datetime_ns", [v.tobytes() for v in stamps], (int(stamps.min()), int(stamps.max()))
+    if arr.dtype.kind in "iufb":
+        numbers = arr.astype(np.float64)
+        if not np.isfinite(numbers).all():
+            raise ValueError("index contains non-finite values")
+        return "numeric", [v.tobytes() for v in numbers], (float(numbers.min()), float(numbers.max()))
+    raise ValueError(f"unsupported index dtype {arr.dtype}")
+
+
+def fingerprint_holdout_slice(data: Any, index: Any = None) -> HoldoutSliceFingerprint:
+    """Fingerprint the observations of a holdout slice.
+
+    ``data`` is the raw slice as a numeric array (rows are observations; a 1-D
+    series is one column). ``index`` is the position of each row -- timestamps,
+    dates or sample numbers -- and should be given whenever the slice is a window
+    of a longer series: it is what lets a sub-window or an overlapping window be
+    recognised. It is never taken from ``data`` implicitly, because a reset
+    ``RangeIndex`` would make every slice appear to start at the same place.
+    """
+    values = np.asarray(data, dtype=np.float64)
+    if values.ndim == 1:
+        values = values.reshape(-1, 1)
+    if values.ndim != 2 or values.shape[0] == 0 or values.shape[1] == 0:
+        raise ValueError(f"holdout slice must be a non-empty 1-D or 2-D array, got shape {values.shape}")
+    n_rows, n_cols = values.shape
+    mant, exp = _canonical_cells(np.ascontiguousarray(values))
+
+    whole = hashlib.sha256(_FINGERPRINT_VERSION.encode())
+    whole.update(f"{n_rows}x{n_cols}".encode())
+    whole.update(mant.tobytes())
+    whole.update(exp.tobytes())
+
+    column_hashes: set[str] = set()
+    for j in range(n_cols):
+        col_m, col_e = np.ascontiguousarray(mant[:, j]), np.ascontiguousarray(exp[:, j])
+        if (col_m == col_m[0]).all() and (col_e == col_e[0]).all():
+            continue  # a constant column is the same in unrelated slices
+        column_hashes.add(
+            hashlib.blake2b(col_m.tobytes() + col_e.tobytes(), digest_size=8).hexdigest()
+        )
+
+    row_hashes: set[str] = set()
+    index_kind: str | None = None
+    index_range: tuple[Any, Any] | None = None
+    if index is not None:
+        index_kind, index_bytes, index_range = _canonical_index(index, n_rows)
+        # Sort within the row so column order does not change a row's identity.
+        order = np.argsort(values, axis=1, kind="stable")
+        row_m = np.take_along_axis(mant, order, axis=1)
+        row_e = np.take_along_axis(exp, order, axis=1)
+        for i in range(n_rows):
+            row_hashes.add(
+                hashlib.blake2b(
+                    index_kind.encode() + index_bytes[i] + row_m[i].tobytes() + row_e[i].tobytes(),
+                    digest_size=8,
+                ).hexdigest()
+            )
+
+    return HoldoutSliceFingerprint(
+        content_hash=whole.hexdigest(),
+        n_rows=n_rows,
+        n_cols=n_cols,
+        column_sketch=tuple(sorted(column_hashes)[:COLUMN_SKETCH_SIZE]),
+        row_sketch=tuple(sorted(row_hashes)[:ROW_SKETCH_SIZE]),
+        index_kind=index_kind,
+        index_range=index_range,
+    )
+
+
 @dataclass(frozen=True)
 class DatasetExposureRecord:
     """Audit record of a candidate inspecting a dataset slice."""
@@ -102,6 +301,8 @@ class DatasetExposureRecord:
     role: DatasetRole
     inspected_at: str
     result_status: str  # "PASSED", "FAILED", "IN_PROGRESS"
+    # Content identity of the slice, when the caller supplied the data.
+    fingerprint: HoldoutSliceFingerprint | None = None
 
 
 @dataclass
@@ -125,10 +326,23 @@ class CandidateExperimentNode:
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         d["state"] = self.state.value
-        d["data_exposures"] = [
-            {**asdict(exp), "role": exp.role.value} for exp in self.data_exposures
-        ]
+        d["data_exposures"] = [_exposure_to_dict(exp) for exp in self.data_exposures]
         return d
+
+
+def _exposure_to_dict(exp: DatasetExposureRecord) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "candidate_id": exp.candidate_id,
+        "dataset_id": exp.dataset_id,
+        "slice_identifier": exp.slice_identifier,
+        "role": exp.role.value,
+        "inspected_at": exp.inspected_at,
+        "result_status": exp.result_status,
+    }
+    # Omitted when absent so lines without a fingerprint keep their old shape.
+    if exp.fingerprint is not None:
+        payload["fingerprint"] = exp.fingerprint.to_dict()
+    return payload
 
 
 class FullLineageExperimentLedger:
@@ -142,6 +356,7 @@ class FullLineageExperimentLedger:
         auto_sync: bool = False,
         max_holdout_inspections: int | None = DEFAULT_MAX_HOLDOUT_INSPECTIONS,
         head_marker: bool = True,
+        require_holdout_fingerprint: bool = False,
     ):
         if max_holdout_inspections is not None and max_holdout_inspections < 1:
             raise ValueError("max_holdout_inspections must be >= 1 or None")
@@ -154,6 +369,15 @@ class FullLineageExperimentLedger:
         # Normalised slice identity -> candidates that inspected it, in order.
         self._holdout_inspectors: dict[tuple[str, str], list[str]] = {}
         self._max_holdout_inspections = max_holdout_inspections
+        # Content identity of each fingerprinted slice, and which other slices
+        # hold the same observations (a direct, symmetric relation: A and C can
+        # both overlap B without overlapping each other, so it is not closed
+        # transitively).
+        self._slice_fingerprints: dict[tuple[str, str], HoldoutSliceFingerprint] = {}
+        self._slice_links: dict[tuple[str, str], set[tuple[str, str]]] = {}
+        # When set, a confirmation-holdout exposure without a fingerprint is
+        # refused: the ledger then never has to trust a slice's name.
+        self._require_holdout_fingerprint = require_holdout_fingerprint
         # ``<ledger>.head`` records the newest entry so a truncated file is
         # detected. Turn it off only for a ledger that is deliberately rewound
         # outside this class (a committed fixture restored with ``git checkout``),
@@ -255,14 +479,28 @@ class FullLineageExperimentLedger:
         slice_identifier: str,
         role: DatasetRole,
         outcome_status: str = "IN_PROGRESS",
+        fingerprint: HoldoutSliceFingerprint | None = None,
     ) -> DatasetExposureRecord:
-        """Record dataset exposure. Raises HoldoutContaminationError if holdout slice was previously burned."""
+        """Record dataset exposure. Raises HoldoutContaminationError if holdout slice was previously burned.
+
+        ``fingerprint`` (see :func:`fingerprint_holdout_slice`) ties the exposure
+        to the slice's content. With it, a burned or spent slice is recognised
+        under any other name, as a sub-window, or as an overlapping window.
+        """
         if candidate_id not in self._nodes:
             raise KeyError(f"Candidate {candidate_id} not registered in ledger.")
 
         holdout_key = (dataset_id, slice_identifier)
         if role == DatasetRole.CONFIRMATION_HOLDOUT:
-            self._assert_holdout_available(holdout_key, candidate_id)
+            if fingerprint is None and self._require_holdout_fingerprint:
+                raise ValueError(
+                    f"Confirmation holdout '{dataset_id}:{slice_identifier}' was recorded without a "
+                    "content fingerprint, and this ledger requires one "
+                    "(require_holdout_fingerprint=True)."
+                )
+            self._assert_holdout_available(holdout_key, candidate_id, fingerprint)
+        else:
+            fingerprint = None  # only confirmation holdouts are tracked by content
 
         exposure = DatasetExposureRecord(
             candidate_id=candidate_id,
@@ -271,6 +509,7 @@ class FullLineageExperimentLedger:
             role=role,
             inspected_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
             result_status=outcome_status,
+            fingerprint=fingerprint,
         )
 
         node = self._nodes[candidate_id]
@@ -282,6 +521,7 @@ class FullLineageExperimentLedger:
             self._persist_append(
                 node,
                 check_holdout_key=burn_key,
+                check_fingerprint=fingerprint,
                 burn_holdout_for=candidate_id if burn_now else None,
                 force_remote_sync=burn_now,
             )
@@ -289,6 +529,8 @@ class FullLineageExperimentLedger:
             node.data_exposures.pop()
             raise
         if role == DatasetRole.CONFIRMATION_HOLDOUT:
+            if fingerprint is not None:
+                self._bind_fingerprint(holdout_key, fingerprint)
             self._note_inspection(holdout_key, candidate_id)
         if burn_now:
             self._burn(holdout_key, candidate_id)
@@ -339,9 +581,49 @@ class FullLineageExperimentLedger:
     def get_burned_holdouts(self) -> dict[tuple[str, str], str]:
         return dict(self._burned_holdouts)
 
-    def is_holdout_burned(self, dataset_id: str, slice_identifier: str) -> bool:
-        """Whether a slice is burned, under any spelling of its identifiers."""
-        return normalize_holdout_key(dataset_id, slice_identifier) in self._burned_index
+    def is_holdout_burned(
+        self,
+        dataset_id: str,
+        slice_identifier: str,
+        fingerprint: HoldoutSliceFingerprint | None = None,
+    ) -> bool:
+        """Whether a slice is burned: under any spelling of its name, or -- when
+        its content is known -- under any other name that holds the same data."""
+        norm = normalize_holdout_key(dataset_id, slice_identifier)
+        touched = {norm, *self._overlapping_slices(norm, fingerprint)}
+        return any(key in self._burned_index for key in touched)
+
+    def get_slice_fingerprint(
+        self, dataset_id: str, slice_identifier: str
+    ) -> HoldoutSliceFingerprint | None:
+        """The content fingerprint bound to a slice name, if one was recorded."""
+        return self._slice_fingerprints.get(normalize_holdout_key(dataset_id, slice_identifier))
+
+    def _overlapping_slices(
+        self, norm: tuple[str, str], fingerprint: HoldoutSliceFingerprint | None
+    ) -> dict[tuple[str, str], str]:
+        """Other slice names holding the same observations, with the reason."""
+        found: dict[tuple[str, str], str] = dict.fromkeys(
+            self._slice_links.get(norm, ()), "previously linked by content"
+        )
+        if fingerprint is not None:
+            for other_key, other_fp in self._slice_fingerprints.items():
+                if other_key == norm:
+                    continue
+                reason = fingerprint.overlap_reason(other_fp, same_dataset=other_key[0] == norm[0])
+                if reason is not None:
+                    found[other_key] = reason
+        return found
+
+    def _bind_fingerprint(
+        self, holdout_key: tuple[str, str], fingerprint: HoldoutSliceFingerprint
+    ) -> None:
+        """Record a slice's content and link it to every slice it overlaps."""
+        norm = normalize_holdout_key(*holdout_key)
+        for other_key in self._overlapping_slices(norm, fingerprint):
+            self._slice_links.setdefault(norm, set()).add(other_key)
+            self._slice_links.setdefault(other_key, set()).add(norm)
+        self._slice_fingerprints.setdefault(norm, fingerprint)
 
     def get_holdout_inspection_counts(self) -> dict[tuple[str, str], int]:
         """Distinct candidates that have inspected each confirmation holdout.
@@ -364,25 +646,59 @@ class FullLineageExperimentLedger:
         if candidate_id not in inspectors:
             inspectors.append(candidate_id)
 
-    def _assert_holdout_available(self, holdout_key: tuple[str, str], candidate_id: str) -> None:
-        """Raise unless ``candidate_id`` may inspect this confirmation holdout."""
+    def _assert_holdout_available(
+        self,
+        holdout_key: tuple[str, str],
+        candidate_id: str,
+        fingerprint: HoldoutSliceFingerprint | None = None,
+    ) -> None:
+        """Raise unless ``candidate_id`` may inspect this confirmation holdout.
+
+        The burn and the inspection budget are checked for the slice's own name
+        and for every other name known to hold the same observations.
+        """
         norm = normalize_holdout_key(*holdout_key)
         label = f"{holdout_key[0]}:{holdout_key[1]}"
-        burned_under = self._burned_index.get(norm)
-        if burned_under is not None:
-            failing_cand = self._burned_holdouts[burned_under]
+        bound = self._slice_fingerprints.get(norm)
+        if fingerprint is not None and bound is not None and bound.content_hash != fingerprint.content_hash:
             raise HoldoutContaminationError(
-                f"DATA SNOOPING VIOLATION: Dataset slice '{label}' "
+                f"DATA SNOOPING VIOLATION: Dataset slice '{label}' is already bound to different "
+                f"content ({bound.content_hash[:12]}…, {bound.n_rows} rows); the name cannot be "
+                f"re-used for other data ({fingerprint.content_hash[:12]}…, {fingerprint.n_rows} rows)."
+            )
+        overlapping = self._overlapping_slices(norm, fingerprint)
+        for key in (norm, *sorted(overlapping)):
+            burned_under = self._burned_index.get(key)
+            if burned_under is None:
+                continue
+            failing_cand = self._burned_holdouts[burned_under]
+            same_data = (
+                ""
+                if key == norm
+                else f" holds the same data as '{burned_under[0]}:{burned_under[1]}' "
+                f"({overlapping[key]}), which"
+            )
+            raise HoldoutContaminationError(
+                f"DATA SNOOPING VIOLATION: Dataset slice '{label}'{same_data} "
                 f"was previously burned by failing candidate '{failing_cand}'. "
                 f"Confirmation holdouts may not be reused for replacement hypotheses."
             )
         if self._max_holdout_inspections is None:
             return
-        inspectors = self._holdout_inspectors.get(norm, [])
+        inspectors: list[str] = []
+        for key in (norm, *sorted(overlapping)):
+            for cand in self._holdout_inspectors.get(key, []):
+                if cand not in inspectors:
+                    inspectors.append(cand)
         if candidate_id not in inspectors and len(inspectors) >= self._max_holdout_inspections:
+            via = (
+                f" (counting {len(overlapping)} other slice name(s) that hold the same data)"
+                if overlapping
+                else ""
+            )
             raise HoldoutContaminationError(
                 f"DATA SNOOPING VIOLATION: Dataset slice '{label}' has already been inspected by "
-                f"{len(inspectors)} candidate(s) ({', '.join(inspectors)}); the confirmation-holdout "
+                f"{len(inspectors)} candidate(s) ({', '.join(inspectors)}){via}; the confirmation-holdout "
                 f"inspection budget is {self._max_holdout_inspections}. Scoring another candidate on "
                 "it would turn the holdout into a selection set."
             )
@@ -445,6 +761,7 @@ class FullLineageExperimentLedger:
         node: CandidateExperimentNode,
         *,
         check_holdout_key: tuple[str, str] | None = None,
+        check_fingerprint: HoldoutSliceFingerprint | None = None,
         burn_holdout_for: str | None = None,
         force_remote_sync: bool = False,
     ) -> None:
@@ -467,7 +784,9 @@ class FullLineageExperimentLedger:
                 try:
                     if check_holdout_key is not None:
                         prev_hash = self._refresh_burned_holdouts_locked(f)
-                        self._assert_holdout_available(check_holdout_key, node.candidate_id)
+                        self._assert_holdout_available(
+                            check_holdout_key, node.candidate_id, check_fingerprint
+                        )
                         if burn_holdout_for is not None:
                             self._burn(check_holdout_key, burn_holdout_for)
                     else:
@@ -632,6 +951,8 @@ class FullLineageExperimentLedger:
             if exp.get("role") != DatasetRole.CONFIRMATION_HOLDOUT.value:
                 continue
             key = (exp["dataset_id"], exp["slice_identifier"])
+            if exp.get("fingerprint"):
+                self._bind_fingerprint(key, HoldoutSliceFingerprint.from_dict(exp["fingerprint"]))
             self._note_inspection(key, cid)
             if exp.get("result_status") == "FAILED" or is_terminal_fail:
                 self._burn(key, cid)
@@ -671,6 +992,11 @@ class FullLineageExperimentLedger:
                     role=DatasetRole(e["role"]),
                     inspected_at=e["inspected_at"],
                     result_status=e["result_status"],
+                    fingerprint=(
+                        HoldoutSliceFingerprint.from_dict(e["fingerprint"])
+                        if e.get("fingerprint")
+                        else None
+                    ),
                 )
                 for e in d.get("data_exposures", [])
             ]

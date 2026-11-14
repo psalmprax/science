@@ -10,7 +10,7 @@ APEDP bridges automated data-driven symbolic discovery, rigorous mathematical va
 
 ### 1.1 Ingest Data & Generate Fitting Equations
 - **Symbolic Regression**:
-  - [`MultiVariableSRE`](../apedp/discovery.py): Multi-variable symbolic regression engine combining tokenized evolutionary expression trees with continuous parameter optimization (linear outer least-squares fitting and nonlinear inner scale optimization).
+  - [`MultiVariableSRE`](../apedp/discovery/_core.py): Multi-variable symbolic regression engine combining tokenized evolutionary expression trees with continuous parameter optimization (linear outer least-squares fitting and nonlinear inner scale optimization).
   - [`SymbolicRegressor`](../apedp/symbolic_regression.py): Genetic programming loop equipped with tournament selection, subtree crossover, point mutation, and attempt-bounded generation loops.
   - [`DiscoveryPipeline`](../apedp/pipeline.py): End-to-end automated workflow: `Ingest (CSV) → Dimensional Gatekeeper → Symbolic Search → Anomaly Check → Persistence`.
 - **Dimensional Filtering**:
@@ -21,7 +21,7 @@ APEDP bridges automated data-driven symbolic discovery, rigorous mathematical va
   - [`ClosedLoopAssuranceSystem`](../apedp/core.py): Enforces model registration gates, strict SI unit compatibility via SymPy and Pint, and safe numerical evaluation.
   - [`ConservationInvariantRegistry`](../apedp/core.py): Tests whether proposed formulas uphold fundamental conservation laws (e.g. conservation of energy, momentum, charge).
 - **Bayesian Model Comparison**:
-  - [`BayesianRefinementEngine`](../apedp/discovery.py): Calculates log-marginal likelihoods and Bayes Factors ($BF_{12}$) with Occam complexity penalties, assigning objective Kass-Raftery verdicts (e.g., *Inconclusive*, *Positive*, *Strong*, or *Decisive* evidence for Model 1 vs. Model 2).
+  - [`BayesianRefinementEngine`](../apedp/discovery/_bayes.py): Calculates log-marginal likelihoods and Bayes Factors ($BF_{12}$) with Occam complexity penalties, assigning objective Kass-Raftery verdicts (e.g., *Inconclusive*, *Positive*, *Strong*, or *Decisive* evidence for Model 1 vs. Model 2).
 - **Adversarial Tournaments**:
   - [`AdversarialDeliberationTournament`](../apedp/epistemic.py): Pits incumbent scientific hypotheses against adversarial boundary probes. If an equation breaks down at a physical limit, the tournament retires the flawed hypothesis and promotes the regularized model into the knowledge base.
 
@@ -118,10 +118,10 @@ Domain constraints are not rigid restrictions that prevent discovering new ideas
 
 | Layer | Responsibility | Agnostic vs. Domain-Specific | Key Components |
 |---|---|---|---|
-| **Layer 0: Exploration** | Propose candidate algebraic structures from data | **General-purpose, grammar-dependent** (search behavior depends on enabled operators and priors) | [`MultiVariableSRE`](../apedp/discovery.py), [`SymbolicRegressor`](../apedp/symbolic_regression.py) |
+| **Layer 0: Exploration** | Propose candidate algebraic structures from data | **General-purpose, grammar-dependent** (search behavior depends on enabled operators and priors) | [`MultiVariableSRE`](../apedp/discovery/_core.py), [`SymbolicRegressor`](../apedp/symbolic_regression.py) |
 | **Layer 1: Structural Symmetries** | Filter dimensionally invalid expressions & enforce scaling invariance | **Agnostic Framework** (Configurable basis spaces: SI, Economics, CS) | [`DimensionalAssuranceEngine`](../apedp/core.py), [`VectorizedDimensionalEngine`](../apedp/core.py) |
 | **Layer 2: Mathematical Safety** | Eliminate singularities, branch cuts, and division-by-zero | **Purely Agnostic** (Symbolic limits & structural calculus) | [`AgnosticClosedLoopAssuranceSystem`](../apedp/repair.py) |
-| **Layer 3: Metrology & Statistical Selection** | Quantify uncertainty budgets and calculate Bayes factors | **Domain-Agnostic Metrology** (GUM ISO 98-3 calculus, Bayesian evidence) | [`AnalyticalUncertaintyPropagator`](../apedp/metrology.py), [`BayesianRefinementEngine`](../apedp/discovery.py) |
+| **Layer 3: Metrology & Statistical Selection** | Quantify uncertainty budgets and calculate Bayes factors | **Domain-Agnostic Metrology** (GUM ISO 98-3 calculus, Bayesian evidence) | [`AnalyticalUncertaintyPropagator`](../apedp/metrology.py), [`BayesianRefinementEngine`](../apedp/discovery/_bayes.py) |
 | **Layer 4: Adversarial Reality Probes** | Stress-test models against known non-ideal real-world boundary regimes | **Domain-Specific Referees** (Aerodynamics, Electrochemistry, Materials, Nanotech, QEC) | [`UniversalAppliedDefectEngine`](../apedp/applied_defects.py), [`AdversarialDeliberationTournament`](../apedp/epistemic.py) |
 
 ### 2.6 Evidence-qualified outcomes

@@ -495,7 +495,7 @@ def test_promotion_stage4_prevents_in_sample_ic_deflation_spoofing():
         PromotionViolationError,
     )
 
-    tracker = PromotionTracker(candidate_id="cand_spoof")
+    tracker = PromotionTracker(candidate_id="cand_spoof", allow_reported_metrics=True)
     tracker.verify_stage_1(lean_status="P2_VERIFIED", dimensions_consistent=True, bounded=True)
     tracker.verify_stage_2(in_sample_ic=0.10, cv_stable=True)
     tracker.verify_stage_3(dm_p_value=0.001, max_literature_r2=0.2)

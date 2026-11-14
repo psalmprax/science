@@ -15,6 +15,63 @@ inferred releases.
 
 ### Changed
 
+- **Follow-up to the integrity hardening (2026-11-14): the four items that round
+  left open.** Recorded in `docs/SYSTEM_FLAWS_AUDIT.md` (2026-11-14 section) and
+  pinned by `tests/test_integrity_followup_2026_11_14.py`.
+  - **Breaking: `PromotionTracker` refuses typed-in metrics by default.**
+    `verify_stage_1..6` raise `PromotionViolationError` unless the tracker is
+    built with `allow_reported_metrics=True`; a stage passed that way is recorded
+    with `evidence_source="caller_reported"` and its label ends in
+    `_ON_REPORTED_METRICS`. The evidence-taking entry points are
+    `verify_stage_1_from_lean`, `verify_stage_2_from_predictions`,
+    `verify_stage_3_from_forecasts`, `verify_stage_4_from_holdout`,
+    `verify_stage_5_from_returns` and `verify_stage_6_from_returns`; each
+    computes the metrics the stage is judged on. `is_evidence_backed()`,
+    `evidence_sources` and `assert_consistent()` report the tracker's standing,
+    and every record carries `recorded_at`. `verify_stage_5_from_ledger` (added
+    2026-11-12) still takes the Sharpe ratio and fee as numbers and therefore
+    also needs `allow_reported_metrics=True`.
+  - `VerifiedModuleLibrary` requires an evidence-backed, self-consistent
+    promotion for the same candidate
+    (`require_evidence_backed_promotion=True` by default) and records the
+    evidence sources on the registered module.
+  - `FullLineageExperimentLedger.record_data_exposure(..., fingerprint=...)`
+    identifies a confirmation holdout by content. `fingerprint_holdout_slice`
+    builds the fingerprint; a burned or spent slice is then refused under
+    another name, as a sub-window, with reordered or dropped columns, or as an
+    overlapping index range of the same dataset. Re-binding a slice name to
+    different content is refused. `require_holdout_fingerprint=True` makes the
+    fingerprint mandatory. Exposures without one behave as before.
+  - `trading_signals_sandbox.run_epistemic_trading_adjudication` accepts
+    `trial_ledger` and `experiment_ledger`, or opens the deployment's persistent
+    ledgers when `APEDP_SANDBOX_PERSISTENT_LEDGERS=1`. The holdout half is
+    claimed by content before it is scored and its outcome is written back; with
+    persistent ledgers a second seed on the same rows, or the same rows under a
+    new dataset name, raises `HoldoutContaminationError`. The result gains
+    `holdout_registration` and `trial_multiplicity.ledger_persistent` /
+    `search_replayed_from_ledger`. With neither ledgers nor the flag the run is
+    in-memory as before and its verdict, tier and metrics are unchanged. **The
+    freeze record `APEDPX_FROZEN_v1_18.json` is re-minted for this file**
+    (`1a67a951…` to `97cebc09…`); the rationale is in its `remint_log`.
+  - New `apedp_dyn/market/universe.py` (`audit_universe`, `find_stale_runs`,
+    `mask_stale_bars`, `point_in_time_membership`, `UniverseAudit`) and
+    `tools/build_point_in_time_universe.py`. `verify_stage_5_from_returns` takes
+    a required `universe` and refuses one that was selected in hindsight or
+    carries forward-filled bars.
+  - `data/market/PROVENANCE.json` records `universe_selection` for the six
+    multi-asset files (all hindsight-selected) and, for
+    `multi_asset_90_5yr_orderflow.csv`, `known_defects.forward_filled_delistings`:
+    XMR, MATIC, FTM, EOS and MKR stop trading inside the window and their last
+    bar is repeated to the end of the file, 1,266 asset-days in all. The CSV is
+    not modified; use `mask_stale_bars`.
+  - Removed from the index: the `apedp_kernel` symlink into a developer
+    virtualenv (now git-ignored), the empty `Crash` file, and
+    `apedp/discovery.py`, a shim shadowed by the `apedp/discovery/` package and
+    therefore never imported. Tracked binaries were inventoried and kept; see
+    `docs/REPOSITORY_RESIDUE.md`.
+  No canonical threshold changed, so the pending governance re-signing request
+  (digest `a8177b25…`) is still the right one. FLAW-01 remains open.
+
 - **Integrity hardening (2026-11-12): the promotion gates, the holdout guard and
   the trial ledger no longer take the caller's word.** Each of these was bypassed
   through its ordinary public API before this round; the bypasses and their pins
