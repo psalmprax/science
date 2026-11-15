@@ -1,6 +1,6 @@
 {
   "schema": "apedp.formal.lean_axiom_audit/v1",
-  "scope": "every .lean file in the repository; apedp_dyn/lean_formal is the layer that verification claims refer to",
+  "scope": "every .lean file in the repository except lean_checked/, which is gated by the stronger kernel-level audit in scripts/check_lean_checked.py (lean_checked/axiom_audit.json); apedp_dyn/lean_formal is the layer that verification claims refer to",
   "totals": {
     "files": 557,
     "axioms": 12470,

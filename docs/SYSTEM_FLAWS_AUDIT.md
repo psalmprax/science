@@ -94,10 +94,40 @@ Basis: `stage` at `beff10d`. Pins: `tests/test_engineering_hardening_2026_11_15.
   measures the serial dependence in the two series (Bartlett's formula on
   ranks) and stage 4 uses the smaller of that and `n / horizon`. The table
   above is after the fix.
+- **E-06 nothing in the Lean tree was machine-checked — PARTLY FIXED.** The
+  557-file `formal/` tree declares its own axioms or is never elaborated at
+  all; its measured machine-checked fraction is 0.0
+  (`docs/LEAN_FORMAL_STATUS.md`), and that has not changed. What is new is a
+  core that *is* checked: `lean_checked/` (Lean 4.24.0, toolchain fetched from
+  the Lean GitHub release, which the review environment's proxy does permit)
+  holds 39 theorems elaborated by the Lean kernel — dimensional-algebra
+  consistency and refutations (momentum is not an energy, force is not an
+  energy), the promotion machine's no-shortcut and failure-halts-permanently
+  properties, and the holdout budget's burn-permanence and single-use
+  properties, proved on small models of the Python referees, not on the
+  Python itself. `scripts/check_lean_checked.py` re-measures every
+  theorem's `#print axioms` against the committed `lean_checked/axiom_audit.json`
+  (only `propext`/`Quot.sound`/`Classical.choice`; 12 theorems axiom-free),
+  forbids `sorry`/`axiom`/`native_decide` statically, and runs in CI with the
+  pinned toolchain (`lean-checked` job, required by `build`). Honest scope: a
+  theorem about a model constrains the design, not the implementation. The
+  bridge is a test, not a proof: `tests/test_lean_model_conformance.py`
+  transcribes each model's transition function and runs it beside
+  `PromotionTracker` and `FullLineageExperimentLedger` on every operation
+  sequence up to a small length (1,884 promotion sequences plus every
+  single deviation from the full ladder; 1,554 holdout sequences under each
+  of three budgets), requiring identical refusals and identical state.
+  Seeded defects in the real code — stage skipping, a forgotten burn, a
+  budget off by one, a burner allowed back, a failed stage re-run — are each
+  caught; "halt not enforced" alone is not, because in the Python the
+  single-shot rule already implies it. Outside that bound, and for slice
+  identity, persistence and concurrency, nothing is claimed.
+  `Dimensions.lean` has no counterpart test.
 
 Still not done, and why: the repository split (it moves most files and could
-not be verified here without the kernel); the Lean project (no toolchain in the
-review environment); the data rebuild (needs a download that includes delisted
+not be verified here without the kernel); elaboration of the `formal/`
+transcription tree itself (E-06 adds a checked core beside it, it does not
+redeem those files); the data rebuild (needs a download that includes delisted
 assets); the trustees' signatures; and the prospective run.
 
 ---

@@ -19,7 +19,16 @@ def test_lean_audit_is_current_and_reports_no_checked_file():
     report = build()
     assert json.loads(OUT.read_text(encoding="utf-8")) == report
     on_disk = [path for path in ROOT.rglob("*.lean") if ".git" not in path.parts]
-    assert report["totals"]["files"] == len(on_disk)
+    # lean_checked/ is the one tree this static census does not count, because
+    # it is held to a stronger gate: scripts/check_lean_checked.py rebuilds it
+    # with the pinned toolchain and audits every theorem's axioms. Every .lean
+    # file must be under exactly one of the two audits -- none under neither.
+    from scripts.check_lean_checked import PROJECT, source_files
+
+    kernel_audited = {*source_files(), PROJECT / "Audit.lean"}
+    in_checked_tree = [path for path in on_disk if "lean_checked" in path.parts]
+    assert {path for path in in_checked_tree if ".lake" not in path.parts} == kernel_audited
+    assert report["totals"]["files"] == len(on_disk) - len(in_checked_tree)
     assert sum(report["classification"].values()) == report["totals"]["files"]
     assert report["classification"]["checked"] == 0
     assert report["checked_fraction"] == 0.0

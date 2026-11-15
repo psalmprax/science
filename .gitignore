@@ -110,3 +110,6 @@ apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtra
 # It pointed at .venv/lib/python3.12/..., which does not exist in a clone; the
 # kernel is importable from site-packages once built (maturin develop).
 /apedp_kernel
+
+# Lake build output of the machine-checked Lean core
+/lean_checked/.lake/

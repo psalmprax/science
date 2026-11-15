@@ -68,7 +68,18 @@ def classify(text: str) -> tuple[str, dict]:
 
 
 def build(root: pathlib.Path = ROOT) -> dict:
-    files = sorted(path for path in root.rglob("*.lean") if ".git" not in path.parts)
+    # lean_checked/ is excluded from this *static* census because it is held to
+    # a strictly stronger gate: scripts/check_lean_checked.py rebuilds it with
+    # the pinned toolchain and compares every theorem's `#print axioms` output
+    # against lean_checked/axiom_audit.json (CI job `lean-checked`). Counting
+    # it here would let a static rubric speak for files whose claim is kernel
+    # elaboration, and would mix a checked core into the transcription tree's
+    # honest 0.0 fraction.
+    files = sorted(
+        path
+        for path in root.rglob("*.lean")
+        if ".git" not in path.parts and "lean_checked" not in path.parts
+    )
     totals = {"files": len(files), "axioms": 0, "theorems": 0, "sorry": 0,
               "theorems_rewriting_a_local_axiom": 0}
     kinds: dict[str, int] = {}
@@ -92,8 +103,10 @@ def build(root: pathlib.Path = ROOT) -> dict:
     checked = kinds.get("checked", 0)
     return {
         "schema": "apedp.formal.lean_axiom_audit/v1",
-        "scope": "every .lean file in the repository; apedp_dyn/lean_formal is the layer "
-                 "that verification claims refer to",
+        "scope": "every .lean file in the repository except lean_checked/, which is "
+                 "gated by the stronger kernel-level audit in "
+                 "scripts/check_lean_checked.py (lean_checked/axiom_audit.json); "
+                 "apedp_dyn/lean_formal is the layer that verification claims refer to",
         "totals": totals,
         "classification": {
             "checked": checked,

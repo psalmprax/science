@@ -15,6 +15,36 @@ inferred releases.
 
 ### Changed
 
+- **A machine-checked Lean core now exists and is CI-gated (2026-11-15).**
+  `lean_checked/` is a Lake project (pinned Lean 4.24.0) whose 39 theorems are
+  elaborated by the Lean kernel: dimensional-algebra group laws plus
+  consistency/refutation of candidate physics laws
+  (`ApedpChecked/Dimensions.lean` — e.g. kinetic energy and Newtonian gravity
+  are dimensionally consistent, momentum is provably *not* an energy), the
+  promotion lifecycle's no-shortcut and failure-halts-permanently properties
+  on a state-machine model (`Promotion.lean`), and the holdout
+  budget's claim/burn properties — burn is permanent, the inspection budget is
+  respected, a granted slice is single-use (`Holdout.lean`).
+  `scripts/check_lean_checked.py` gates it in two layers: a static layer that
+  forbids `sorry`/`axiom`/`native_decide`/`unsafe`/`opaque`/`implemented_by`
+  and requires every theorem in `Audit.lean`, and a kernel layer that rebuilds
+  the project and compares every theorem's `#print axioms` output against the
+  committed `lean_checked/axiom_audit.json` (only `propext`, `Quot.sound`,
+  `Classical.choice` allowed; 12 theorems use no axioms at all). New CI job
+  `lean-checked` installs the pinned toolchain from the Lean release and runs
+  `--check --require-lean`; the `build` job now needs it. Pinned by
+  `tests/test_lean_checked_core.py`, including a planted-defect test that
+  proves the static layer can actually fail. The theorems are about models,
+  so `tests/test_lean_model_conformance.py` runs each model beside the Python
+  it describes (`PromotionTracker`, `FullLineageExperimentLedger`) on every
+  short operation sequence and requires the same refusals and the same state.
+  It carries its own seeded defects: five planted in the real referees are
+  each caught, and a sixth (ignoring the halt flag) is recorded as an
+  equivalent mutant, because the single-shot rule already implies the halt.
+  This is the first part of the Lean story that is *checked* rather than
+  transcribed: the 557-file `formal/` tree remains unelaborated and is still
+  described as such (`docs/LEAN_FORMAL_STATUS.md`).
+
 - **A missing native build is no longer an abstention (2026-11-15).**
   `RimeProposer.fit_and_propose` returned `[]` without `apedp_kernel`, the same
   answer it gives for a null world; it now raises

@@ -93,6 +93,40 @@ jobs:
       - name: Fail if any generated artefact disagrees with the tree
         run: python scripts/check_audit_artifact_drift.py --check
 
+  lean-checked:
+    name: Machine-checked Lean core (kernel axiom audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      # Pinned toolchain, not elan: the claim recorded in
+      # lean_checked/axiom_audit.json names this exact release, and the gate
+      # must re-measure with the same kernel it names.
+      # Downloaded on every run rather than cached: a restored cache would be
+      # one more thing standing between the gate and the release it names.
+      - name: Install Lean 4.24.0
+        run: |
+          mkdir -p "${{ runner.temp }}/lean-toolchain"
+          curl -fsSL -o "${{ runner.temp }}/lean.tar.zst" \
+            https://github.com/leanprover/lean4/releases/download/v4.24.0/lean-4.24.0-linux.tar.zst
+          echo "b14f5e5159219dd1a1956c3b806813319f5e94ccd5bdfd56f54520609a5bb5ec  ${{ runner.temp }}/lean.tar.zst" \
+            | sha256sum --check --strict
+          tar --zstd -xf "${{ runner.temp }}/lean.tar.zst" \
+            -C "${{ runner.temp }}/lean-toolchain" --strip-components=1
+      - name: Put lean and lake on PATH
+        run: echo "${{ runner.temp }}/lean-toolchain/bin" >> "$GITHUB_PATH"
+      # Two layers, both load-bearing: the static layer forbids sorry/axiom/
+      # native_decide and requires every theorem to be audited; the kernel
+      # layer rebuilds the project and fails unless each theorem's #print
+      # axioms output matches lean_checked/axiom_audit.json and uses nothing
+      # beyond propext, Quot.sound, Classical.choice. --require-lean makes a
+      # missing toolchain a failure here, not a silent static-only pass.
+      - name: Re-measure the axiom audit against the committed record
+        run: python scripts/check_lean_checked.py --check --require-lean
+
   test:
     needs: [python-quality, rust-quality]
     runs-on: ubuntu-latest
@@ -243,7 +277,7 @@ jobs:
     # green, not just the test matrix. `needs: test` alone let a release ship
     # while the governance manifest, the generated audit artefacts, or the
     # mutation battery were red.
-    needs: [test, governance-manifest, audit-artifact-drift, mutation-battery]
+    needs: [test, governance-manifest, audit-artifact-drift, mutation-battery, lean-checked]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     permissions:
