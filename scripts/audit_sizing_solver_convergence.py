@@ -23,7 +23,7 @@ import platform
 import shutil
 import subprocess
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -98,7 +98,7 @@ def main() -> int:
     worst = max(cases, key=lambda case: float(case["kkt_residual"] or 0.0))
     unconverged = [case for case in cases if not case["converged"]]
     record = {
-        "generated_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "solver": "apedp_dyn.sandbox.finance_l2_demo.size_positions",
         "method": "proximal gradient, step=1/(gamma*lambda_max), capped simplex",
         "fee_bps": FEE_BPS,

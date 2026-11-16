@@ -1,6 +1,8 @@
 # Quality baseline (ruff + mypy)
 
-**Measured:** 2026-11-07, on the working tree that produced this file.
+**Measured:** 2026-11-07, on the working tree that produced this file;
+re-measured 2026-11-16 on the hosted runner (see History), which is the
+reference environment from that date.
 **Gate:** `python scripts/check_quality_baseline.py` (run by `make lint` and
 `make typecheck`); pinned in `quality_baseline.json`.
 
@@ -21,11 +23,11 @@ pass:
 
 | Path | ruff findings | mypy errors | Status |
 |---|---:|---:|---|
-| `apedp/` | **0** | 938 | ruff clean; types pinned |
+| `apedp/` | **0** | 897 | ruff clean; types pinned |
 | `tests/` | **0** | — | ruff clean |
-| `apedp_dyn/` | **0** | 29 | ruff clean; types burned down 2026-11-08 |
-| `scripts/` | 604 | — | pinned |
-| `benchmarks/` | 217 | — | pinned |
+| `apedp_dyn/` | **0** | 25 | ruff clean; types burned down 2026-11-08, re-pinned from CI 2026-11-16 |
+| `scripts/` | 603 | — | pinned |
+| `benchmarks/` | 202 | — | pinned |
 
 `apedp/` and `tests/` are held at **zero**. The other three trees are pinned at
 their measured counts because clearing the remaining findings is a long, separate
@@ -121,3 +123,4 @@ python scripts/check_quality_baseline.py --update   # re-pin downward counts
 | 2026-11-08 | Vendored Qualtran tree excluded by provenance (`_qualtran_src`). Risk-first burn-down: `apedp_dyn/` ruff 351→199, mypy 14,486→2,302. Remaining findings are `E701`/`E702` only. No limit was raised. |
 | 2026-11-08 | `apedp_dyn/` ruff 199→**0** via `ruff format` (plus one hand split in the patch-provided sweep script). mypy 2,302→2,250 after fixing the typing gaps the formatter exposed and annotating the `gates/` entry points. A transient `--update` that raised the mypy pin to 2,311 was reverted by fixing the cause. |
 | 2026-11-16 | First measurement on a hosted runner; the workflow had started no job before (`docs/SYSTEM_FLAWS_AUDIT.md`, E-07). `apedp_dyn/` mypy read 32 there against the pin of 29. The pin had been taken in an environment CI does not have (the same tool with CI's dependencies gives 31 at the pin commit) and one error entered on 2026-11-10. Seven errors removed by annotation; 25 measured locally with and without torch. The limit stays at 29 until CI reports its own count and should then be lowered to it: the reference environment for this gate is the CI job that runs it. `BLE001` is declared `external` to ruff so the exception-hygiene marker is not reported as an unused suppression. The gate now lists its findings when a path regresses. No limit was raised. |
+| 2026-11-16 | Re-pinned downward to the counts the hosted runner measured once the gate first passed there (run 43813711672): `apedp_dyn/` mypy 29→25, `apedp/` mypy 938→897, `scripts/` ruff 604→603, `benchmarks/` ruff 217→202. The environment is now recorded in `quality_baseline.json` (`measured_in`). No limit was raised. |

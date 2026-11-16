@@ -28,7 +28,7 @@ import csv
 import json
 import math
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -263,7 +263,7 @@ def main() -> None:
 
     provenance = json.loads((MARKET_DIR / "PROVENANCE.json").read_text(encoding="utf-8"))
     output: dict[str, object] = {
-        "generated_at": datetime.now(UTC).isoformat(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "config": {
             "lookback": args.lookback,
             "rebalance": args.rebalance,

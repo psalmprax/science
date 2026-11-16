@@ -24,16 +24,19 @@ dependencies install. Every statement in earlier rounds of the form "could not
 be observed here without the kernel" is superseded by F-05.
 
 - **F-01 the type-check baseline was pinned in an environment CI does not
-  have — FIXED, limit not yet re-pinned.** CI counted 32 mypy errors under
+  have — FIXED, and re-pinned from CI's own count.** CI counted 32 mypy errors under
   `apedp_dyn/` against a pin of 29. Reproduced with the same tool and torch
   2.9.1 present: 31 at the commit that pinned 29 (`49fed02`), so the pin was
   two lower than the gate's own environment could ever measure, and one error
   entered afterwards (`sandbox/eseds_dynamical.py:548`, 2026-11-10). None of
   the 32 is in a file this audit changed. Seven are removed by two
   annotation-only edits (`quantum_compilation/candidates.py`,
-  `local_mr_sim.py`), leaving 25 here with and without torch. The limit stays
-  at 29 until CI reports its own count; it should then be lowered to that
-  number, because the reference environment for a CI gate is CI.
+  `local_mr_sim.py`), leaving 25 here with and without torch. The next run
+  (43813711672) measured the same 25 on the hosted runner, and every other
+  count matched the local one as well, so the limits are lowered to what CI
+  measured (`apedp_dyn/` mypy 29→25, `apedp/` mypy 938→897, `scripts/` ruff
+  604→603, `benchmarks/` ruff 217→202) and `quality_baseline.json` now
+  records the environment they were measured in.
   `scripts/check_quality_baseline.py` now prints the findings when a path
   regresses. It printed "+3" and nothing else, which is why this took a
   reproduction to diagnose.
@@ -137,6 +140,23 @@ be observed here without the kernel" is superseded by F-05.
   `benchmarks/kernel_profile_results.json` and
   `benchmarks/sre_tree_vs_arena_baseline.json`). E-02 fixed three such paths;
   these four remain and were restored by hand.
+
+- **F-06 the package could not be imported on Python 3.10, which it declares
+  and CI tests — FIXED.** Run 43813711672 was the first in which the quality
+  jobs passed and the test matrix started: Python quality and Rust quality
+  green (format, Clippy and the Rust tests on the pinned 1.99.0, so the
+  formatting done here with 1.97.0 matches the pin). The 3.10 leg then failed
+  at its second step: `apedp/ingestion/ingestion_academic_apis.py` imported
+  `datetime.UTC`, which exists from 3.11, and `apedp/__init__.py` imports that
+  module, so `import apedp` raised `ImportError` on the interpreter
+  `requires-python = ">=3.10"` promises. The matrix has `fail-fast`, so the
+  3.11 and 3.12 legs were cancelled and gave no verdict. Two scripts had the
+  same import. All three use `timezone.utc` now.
+  `tests/test_minimum_python_version.py` checks, on any interpreter, that
+  every source file parses under the declared minimum's grammar and uses no
+  standard-library name from a curated list of later additions unless it is
+  guarded; the 3.10 CI leg remains the real check, and what it finds after
+  the import is not yet known.
 
 Limits of this round: the local kernel is built with Rust 1.97.0, not the
 pinned 1.99.0, so "passes here" is not "passes on the pin" for format, Clippy

@@ -15,6 +15,17 @@ inferred releases.
 
 ### Changed
 
+- **`import apedp` works on Python 3.10 again; quality limits re-pinned from
+  CI (2026-11-16).** `apedp/ingestion/ingestion_academic_apis.py` and two
+  scripts imported `datetime.UTC` (3.11+) although the package declares
+  `>=3.10` and CI has a 3.10 leg; that leg failed at the import and
+  `fail-fast` cancelled the other two. They use `timezone.utc`.
+  `tests/test_minimum_python_version.py` guards the declared minimum (grammar
+  for every file, plus a curated list of newer standard-library names).
+  `quality_baseline.json` is lowered to the counts the hosted runner measured
+  once the gate passed there (mypy `apedp_dyn/` 29→25, `apedp/` 938→897; ruff
+  `scripts/` 604→603, `benchmarks/` 217→202) and records that environment.
+
 - **What the first real CI run exposed, fixed (2026-11-16).** The workflow's
   first run to start a job failed in three places that had nothing to do with
   the commit that let it start. (1) `make typecheck`: 32 mypy errors under
