@@ -44,7 +44,10 @@ impl ValidationResult {
         // search rank its worst candidate first. Python recomputes this score
         // from the returned components, so both paths now agree.
         let cv_component = (1.0 - (self.cv_mean + self.cv_std)).max(0.0);
-        0.4 * cv_component + 0.2 * self.ood_score + 0.2 * self.stability_score + 0.2 * self.generalization_score
+        0.4 * cv_component
+            + 0.2 * self.ood_score
+            + 0.2 * self.stability_score
+            + 0.2 * self.generalization_score
     }
 }
 
@@ -61,7 +64,7 @@ impl ValidationPipeline {
     }
 
     pub fn k_fold_split(&self, n_samples: usize) -> Vec<Vec<usize>> {
-        let mut indices: Vec<usize> = (0..n_samples).collect();
+        let indices: Vec<usize> = (0..n_samples).collect();
         // Simple shuffle
         let mut folds = vec![vec![]; self.config.k_folds];
         for (i, &idx) in indices.iter().enumerate() {
@@ -85,10 +88,14 @@ impl ValidationPipeline {
     }
 
     pub fn add_noise(&self, values: &Vec<f64>, noise_level: f64) -> Vec<f64> {
-        values.iter().enumerate().map(|(i, &v)| {
-            let noise = ((i as f64).sin() * 0.5 + 0.5) * 2.0 - 1.0; // pseudo-random
-            v + noise * noise_level * v.abs().max(1.0)
-        }).collect()
+        values
+            .iter()
+            .enumerate()
+            .map(|(i, &v)| {
+                let noise = ((i as f64).sin() * 0.5 + 0.5) * 2.0 - 1.0; // pseudo-random
+                v + noise * noise_level * v.abs().max(1.0)
+            })
+            .collect()
     }
 
     pub fn noise_robustness_test(&self, base_error: f64) -> HashMap<String, f64> {
@@ -120,17 +127,27 @@ impl ValidationPipeline {
     }
 
     pub fn validate(&self, train_errors: Vec<f64>, test_error: f64) -> ValidationResult {
-        let cv_mean = if train_errors.is_empty() { 0.0 } else { train_errors.iter().sum::<f64>() / train_errors.len() as f64 };
-        let cv_var = if train_errors.is_empty() { 0.0 } else { 
-            train_errors.iter().map(|e| (e - cv_mean).powi(2)).sum::<f64>() / train_errors.len() as f64 
+        let cv_mean = if train_errors.is_empty() {
+            0.0
+        } else {
+            train_errors.iter().sum::<f64>() / train_errors.len() as f64
+        };
+        let cv_var = if train_errors.is_empty() {
+            0.0
+        } else {
+            train_errors
+                .iter()
+                .map(|e| (e - cv_mean).powi(2))
+                .sum::<f64>()
+                / train_errors.len() as f64
         };
         let cv_std = cv_var.sqrt();
-        
+
         let noise_robustness = self.noise_robustness_test(cv_mean);
         let ood_score = 1.0 / (1.0 + test_error.abs());
         let stability_score = 1.0 / (1.0 + cv_std);
         let generalization_score = if test_error < cv_mean * 1.1 { 0.9 } else { 0.7 };
-        
+
         ValidationResult {
             cv_scores: train_errors,
             cv_mean,
@@ -188,6 +205,7 @@ impl PyValidationPipeline {
             "generalization_score": result.generalization_score,
             "overall": result.compute_overall(),
             "noise_robustness": result.noise_robustness,
-        })).unwrap_or_default()
+        }))
+        .unwrap_or_default()
     }
 }

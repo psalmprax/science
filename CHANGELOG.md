@@ -15,6 +15,31 @@ inferred releases.
 
 ### Changed
 
+- **What the first real CI run exposed, fixed (2026-11-16).** The workflow's
+  first run to start a job failed in three places that had nothing to do with
+  the commit that let it start. (1) `make typecheck`: 32 mypy errors under
+  `apedp_dyn/` against a pin of 29 that the gate's own environment could never
+  have measured (31 at the pin commit, one added since). Two annotation-only
+  edits remove seven; `scripts/check_quality_baseline.py` now lists the
+  findings when a path regresses. (2) The mutation-battery job called
+  `maturin develop` without a virtualenv, and two of the battery's 37 anchors
+  had not matched the source since 2026-10-25 and 2026-11-08, so the battery
+  could not have completed; the job gets a virtualenv and the anchors are
+  repaired. The committed report (37 of 37, dated 2026-10-23) is left as it
+  is and is stale. (3) `make lint-rust` had never passed: 119 rustfmt
+  differences and six compiler warnings under `-D warnings`. The kernel crate
+  is formatted and the warnings fixed; `rust/apedp-vqc` is left byte-identical
+  because a measurement record pins its sources, and the format check is
+  scoped to the kernel crate with that reason in the Makefile.
+  Two regressions of this audit's own are fixed in the same commit: `87d89b6`
+  had removed eighteen `# noqa: BLE001 - reason` markers that
+  `tests/test_dyn_exception_hygiene.py` counts as the record of a deliberate
+  blanket handler (restored; `BLE001` declared `external` to ruff so both
+  gates agree), and `9c9c8bf` had added an unmarked blanket handler to both
+  `safety.py` files (marked). First full-suite result with the kernel and
+  torch present, and the failures that predate this audit, are in
+  `docs/SYSTEM_FLAWS_AUDIT.md` (2026-11-16 round, F-01 to F-05).
+
 - **The test workflow is a valid workflow file again; it had run no job on
   `stage` or `master` (2026-11-15).** `.github/workflows/test.yml` set
   `RUSTUP_HOME: ${{ runner.temp }}/rustup` in a job-level `env:` block, where

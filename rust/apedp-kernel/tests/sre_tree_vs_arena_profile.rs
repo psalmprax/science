@@ -138,7 +138,8 @@ fn sre_tree_vs_arena_baseline() {
     }
     let mut trees = Vec::with_capacity(N_CANDIDATES);
     for k in 0..N_CANDIDATES {
-        let node = GeneticOps::random_tree(&mut rng, MAX_DEPTH, NUM_VARS, false, false, false, false);
+        let node =
+            GeneticOps::random_tree(&mut rng, MAX_DEPTH, NUM_VARS, false, false, false, false);
         // Avoid pathological single-leaf trees in the timing set: keep only
         // candidates with at least a few nodes (the SRE pool's realistic
         // bottom tail is bigger than depth-1 leaves).
@@ -150,13 +151,16 @@ fn sre_tree_vs_arena_baseline() {
         }
     }
     let n_cand = trees.len();
-    assert!(n_cand >= 100, "workload degenerated: only {n_cand} candidates");
+    assert!(
+        n_cand >= 100,
+        "workload degenerated: only {n_cand} candidates"
+    );
 
     // ── conversion coverage (part of the gate evidence) ──────────────────
     let mut graphs = Vec::with_capacity(n_cand);
     let mut covered = 0usize;
     let mut uncovered_complexity = 0usize;
-    for (k, tree) in trees.iter() {
+    for (_k, tree) in trees.iter() {
         match tree_to_graph(tree) {
             Some(g) => {
                 covered += 1;
@@ -196,8 +200,14 @@ fn sre_tree_vs_arena_baseline() {
         }
         gi += 1;
     }
-    assert_eq!(mismatches, 0, "tree-vs-arena parity gate FAILED on {mismatches} candidates");
-    assert_eq!(gi, covered, "parity pass must cover exactly the converted set");
+    assert_eq!(
+        mismatches, 0,
+        "tree-vs-arena parity gate FAILED on {mismatches} candidates"
+    );
+    assert_eq!(
+        gi, covered,
+        "parity pass must cover exactly the converted set"
+    );
 
     // ── throughput: identical covered set, both engines ──────────────────
     let covered_list: Vec<TreeNode> = trees
@@ -287,7 +297,10 @@ fn sre_tree_vs_arena_baseline() {
     // coverage threshold: the measured truth (2026-10-22) is coverage 10.1%
     // (Div-heavy random trees) and arena/tree 0.63x, and the gate must keep
     // recording exactly that rather than being force-passed.
-    assert!(coverage > 0.02, "semantics-identical conversion coverage collapsed: {coverage}");
+    assert!(
+        coverage > 0.02,
+        "semantics-identical conversion coverage collapsed: {coverage}"
+    );
     assert!(tree_ms < 60_000.0, "tree timing implausible: {tree_ms}");
     assert!(arena_ms < 60_000.0, "arena timing implausible: {arena_ms}");
 }

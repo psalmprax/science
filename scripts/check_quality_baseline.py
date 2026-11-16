@@ -32,6 +32,14 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BASELINE_PATH = REPO_ROOT / "quality_baseline.json"
 _MYPY_TOTAL = re.compile(r"Found (\d+) errors? in")
+_MYPY_ERROR = re.compile(r"^\S.*: error: ", re.M)
+
+# The findings behind each count, kept so a regression can be printed. A gate
+# that reports "+3" without saying which three sends the reader off to
+# reproduce the environment before they can start; the first run of this gate
+# on a hosted runner (2026-11-16) failed exactly that way.
+_DETAILS: dict[tuple[str, str], list[str]] = {}
+_DETAIL_LIMIT = 200
 
 
 def _run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
@@ -49,12 +57,21 @@ def count_ruff(path: str) -> int:
         raise RuntimeError(
             f"ruff produced output this script cannot parse for {path}: {exc}"
         ) from exc
+    _DETAILS[("ruff", path)] = [
+        f"{item.get('filename', '?')}:{(item.get('location') or {}).get('row', '?')}: "
+        f"{item.get('code', '?')} {item.get('message', '')}"
+        for item in findings
+    ]
     return len(findings)
 
 
 def count_mypy(path: str) -> int:
     proc = _run([sys.executable, "-m", "mypy", path, "--ignore-missing-imports"])
-    match = _MYPY_TOTAL.search(proc.stdout + proc.stderr)
+    output = proc.stdout + proc.stderr
+    _DETAILS[("mypy", path)] = [
+        line for line in output.splitlines() if _MYPY_ERROR.match(line)
+    ]
+    match = _MYPY_TOTAL.search(output)
     if match:
         return int(match.group(1))
     if proc.returncode == 0:
@@ -113,6 +130,16 @@ def main(argv: list[str] | None = None) -> int:
         if not ok:
             failed = True
             print(f"{label}: FAIL — debt grew past the pinned baseline.")
+            for path, current, limit, within in rows:
+                if within:
+                    continue
+                details = _DETAILS.get((kind, path), [])
+                print(f"\n{label} findings under {path} ({current}, limit {limit}); "
+                      "the count cannot say which are new, so all are listed:")
+                for line in details[:_DETAIL_LIMIT]:
+                    print(f"  {line}")
+                if len(details) > _DETAIL_LIMIT:
+                    print(f"  ... and {len(details) - _DETAIL_LIMIT} more")
 
     if args.update:
         current = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))

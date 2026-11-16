@@ -298,7 +298,7 @@ def _assert_bounded_evaluation(s: str, local_dict: dict[str, object]) -> None:
         raise
     except RecursionError as exc:
         raise FormulaResourceError("Formula is nested too deeply to evaluate safely") from exc
-    except Exception:
+    except Exception:  # noqa: BLE001 - a pre-check that cannot run defers to the ordinary parse below, which reports "unparseable" itself
         # Anything else (a tokenizer error, a SymPy quirk under evaluate=False)
         # is not this guard's to report: the ordinary parse that follows gives
         # the caller the same "unparseable" answer it always did.

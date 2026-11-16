@@ -196,11 +196,11 @@ try:
                     try:
                         # try to parse simple formula
                         results.append(p.formula)
-                    except Exception:  # the grammar adapter is optional glue over a problem object whose shape is not contractual; a problem without truth_t/truth_y yields no candidate
+                    except Exception:  # noqa: BLE001 - the grammar adapter is optional glue over a problem object whose shape is not contractual; a problem without truth_t/truth_y yields no candidate
                         logger.debug("sindy adapter skipped an unrenderable formula", exc_info=True)
                         continue
                 return results
             except Exception:  # noqa: BLE001 - a proposal with no renderable formula contributes no string; the remaining proposals are still returned
                 return []
-except Exception:  # the outer failure yields no candidate from this adapter and is now logged with exc_info, so an unparseable problem is not mistaken for an empty search
+except Exception:  # noqa: BLE001 - the outer failure yields no candidate from this adapter and is now logged with exc_info, so an unparseable problem is not mistaken for an empty search
     logger.debug("sindy grammar adapter unavailable", exc_info=True)

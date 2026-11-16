@@ -3,7 +3,6 @@
 //! Better than tree representation for expressions with common subexpressions
 //! and for handling commutativity/associativity.
 
-use std::collections::HashMap;
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -50,9 +49,21 @@ impl ExpressionDag {
         }
     }
 
-    pub fn add_node(&mut self, op: DagOp, children: Vec<usize>, value: Option<f64>, var_idx: Option<usize>) -> usize {
+    pub fn add_node(
+        &mut self,
+        op: DagOp,
+        children: Vec<usize>,
+        value: Option<f64>,
+        var_idx: Option<usize>,
+    ) -> usize {
         let id = self.nodes.len();
-        self.nodes.push(DagNode { id, op, children, value, var_idx });
+        self.nodes.push(DagNode {
+            id,
+            op,
+            children,
+            value,
+            var_idx,
+        });
         id
     }
 
@@ -144,11 +155,17 @@ impl ExpressionDag {
             }
             DagOp::Add | DagOp::Mul => {
                 // Commutative - sort children
-                let mut child_strs: Vec<String> = node.children.iter()
+                let mut child_strs: Vec<String> = node
+                    .children
+                    .iter()
                     .map(|&c| self.to_canonical(c))
                     .collect();
                 child_strs.sort();
-                let op_str = if matches!(node.op, DagOp::Add) { "+" } else { "*" };
+                let op_str = if matches!(node.op, DagOp::Add) {
+                    "+"
+                } else {
+                    "*"
+                };
                 format!("({})", child_strs.join(op_str))
             }
             DagOp::Sub => {
@@ -189,7 +206,12 @@ impl ExpressionDag {
         if node.children.is_empty() {
             return 1;
         }
-        1 + node.children.iter().map(|&c| self.depth(Some(c))).max().unwrap_or(0)
+        1 + node
+            .children
+            .iter()
+            .map(|&c| self.depth(Some(c)))
+            .max()
+            .unwrap_or(0)
     }
 }
 

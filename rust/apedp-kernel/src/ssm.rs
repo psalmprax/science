@@ -1,10 +1,6 @@
 //! SSM/Mamba operations for efficient temporal modeling
+use numpy::{PyArray3, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArray3};
 use pyo3::prelude::*;
-use ndarray::Array3;
-use numpy::{
-    IntoPyArray, PyArray3, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArray3,
-    PyUntypedArrayMethods,
-};
 
 #[pyfunction]
 #[pyo3(signature = (x, a_log, dt, b, c, d))]

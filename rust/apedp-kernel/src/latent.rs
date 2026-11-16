@@ -29,7 +29,11 @@ impl LatentSpace {
             embedding[i] = (b as f64) / 255.0;
         }
         // Add structural features
-        for (index, pattern) in ["+", "*", "sin", "cos", "exp"].iter().enumerate().take(self.dim) {
+        for (index, pattern) in ["+", "*", "sin", "cos", "exp"]
+            .iter()
+            .enumerate()
+            .take(self.dim)
+        {
             embedding[index] += expr.matches(*pattern).count() as f64 * 0.1;
         }
         embedding
@@ -38,9 +42,11 @@ impl LatentSpace {
     pub fn decode(&self, _latent: &Vec<f64>) -> Result<String, String> {
         // A feature hash is not invertible; the previous body returned "x0"
         // for every vector, which is a constant dressed as a result.
-        Err("latent decode has no inverse: the encoder is a feature hash over \
+        Err(
+            "latent decode has no inverse: the encoder is a feature hash over \
              characters and token counts, not a learned embedding"
-            .to_string())
+                .to_string(),
+        )
     }
 
     pub fn interpolate(&self, expr1: &str, expr2: &str, alpha: f64) -> Vec<f64> {
@@ -103,7 +109,10 @@ impl PyLatentSpace {
     }
 
     fn nearest_neighbors(&self, expr: &str, k: usize) -> Vec<(String, f64)> {
-        let mut dists: Vec<(String, f64)> = self.space.embeddings.iter()
+        let mut dists: Vec<(String, f64)> = self
+            .space
+            .embeddings
+            .iter()
             .map(|(e, _)| (e.clone(), self.space.distance(expr, e)))
             .collect();
         dists.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());

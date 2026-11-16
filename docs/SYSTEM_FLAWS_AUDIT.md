@@ -6,6 +6,144 @@ proposers, discovery engines, the Rust kernel (`apedp-kernel`), formal
 verification bridges, ledgers, API/UI trust boundaries, CI/Docker packaging,
 and physics/robotics modules, verified by execution.
 
+## 2026-11-16 round — the first time the workflow ran, and what it had been hiding
+
+Basis: `stage` at `87d89b6`, GitHub Actions run 43805790159 — the first run of
+`.github/workflows/test.yml` on this branch to start a job (E-07 below explains
+why none had). Its verdict: audit-artefact drift, the Lean core and the kernel
+wheel build passed; Python quality, Rust quality and the mutation battery
+failed; the governance job failed as designed (FLAW-01); the test matrix was
+skipped because its prerequisites were red. None of the three unexpected
+failures was introduced by the commit that made the workflow valid. Each was a
+standing defect that a running CI would have reported weeks earlier.
+
+A second fact changed what this audit can check. The native kernel builds here
+with the locally available Rust 1.97.0 (the pin is 1.99.0, which this
+environment cannot download), and torch, jax and the rest of the CI
+dependencies install. Every statement in earlier rounds of the form "could not
+be observed here without the kernel" is superseded by F-05.
+
+- **F-01 the type-check baseline was pinned in an environment CI does not
+  have — FIXED, limit not yet re-pinned.** CI counted 32 mypy errors under
+  `apedp_dyn/` against a pin of 29. Reproduced with the same tool and torch
+  2.9.1 present: 31 at the commit that pinned 29 (`49fed02`), so the pin was
+  two lower than the gate's own environment could ever measure, and one error
+  entered afterwards (`sandbox/eseds_dynamical.py:548`, 2026-11-10). None of
+  the 32 is in a file this audit changed. Seven are removed by two
+  annotation-only edits (`quantum_compilation/candidates.py`,
+  `local_mr_sim.py`), leaving 25 here with and without torch. The limit stays
+  at 29 until CI reports its own count; it should then be lowered to that
+  number, because the reference environment for a CI gate is CI.
+  `scripts/check_quality_baseline.py` now prints the findings when a path
+  regresses. It printed "+3" and nothing else, which is why this took a
+  reproduction to diagnose.
+- **F-02 the mutation battery could not run, in two independent ways — FIXED;
+  34 of 37 mutants not re-verified here.** (a) The CI job called
+  `maturin develop` with no virtualenv, which maturin refuses; the job now
+  creates one. (b) Had it got further it would still have stopped: the anchors
+  of MUT-C1 (Hawkes standardisation leak) and MUT-H2 (native-failure re-raise)
+  stopped matching the source on 2026-11-08 and 2026-10-25 respectively, and
+  the battery rightly raises on an anchor that does not apply exactly once. The committed
+  `benchmarks/mutation_battery_report.json` says 37 of 37 killed and is dated
+  2026-10-23; it describes a tree that no longer exists. Both anchors are
+  repaired, and MUT-E6's is updated for the formatting in F-03. Verified here:
+  all nine pristine pin groups pass, and the three repaired mutants are each
+  killed with byte-identical restoration. The other 34 were not re-run here
+  and the committed report is left as it was; the CI job is the full run.
+  `tests/test_mutation_battery_anchors.py` now checks, in the ordinary suite
+  and in under a second, that every registered anchor still applies exactly
+  once, so the next drift is caught at the commit that causes it.
+- **F-03 the Rust gates had never passed — FIXED for the kernel crate, one
+  crate excluded for a stated reason.** `cargo fmt --all --check` reported 119
+  differences in 22 files, and the Clippy gate (`-D warnings`) stopped on six
+  compiler warnings: five unused imports and one needless `mut`. The kernel
+  crate is now formatted (15 files) and the six warnings fixed with the
+  compiler's own suggestions. `rust/apedp-vqc` is **not** formatted: its seven
+  source files are pinned byte-for-byte by the machine-and-timing record that
+  `tests/test_vqc_native_parity_record.py` checks, so reformatting them would
+  make that record claim it measured bytes it did not. `make lint-rust`
+  therefore checks format for the kernel crate only and says why; the crate's
+  43 differences wait for a re-measurement. Clippy and the tests cover the
+  whole workspace: 201 kernel unit tests, 19 kernel integration tests and 31
+  VQC tests pass here, on Rust 1.97.0.
+- **F-04 two defects introduced by this audit, found by its first full run —
+  FIXED.** (a) `87d89b6` removed eighteen `# noqa: BLE001 - reason` comments
+  because the pinned ruff reports them unused. They are not only suppressions:
+  `scripts/audit_exception_hygiene.py` reads that exact marker as the record
+  that a blanket handler is deliberate, and
+  `tests/test_dyn_exception_hygiene.py` ratchets on it, so the removal turned
+  eighteen annotated handlers into "silent" ones under the repository's own
+  gate. The commit message said the files were AST-identical, which was true
+  and beside the point. Restored; `BLE001` is declared in
+  `[tool.ruff.lint] external`, which keeps the marker valid for ruff's
+  unused-suppression check while the rule itself still fires on an unannotated
+  blind `except`. (b) The parser pre-check added in `9c9c8bf` (H-09) caught
+  `Exception` without the marker, in `apedp/safety.py` and
+  `apedp_dyn/safety.py`. Annotated. Both went unseen for the reason E-07
+  gives, and because the hygiene test was not in the subset re-run after
+  those commits.
+- **F-05 first full-suite run with the kernel and torch present — 5,639
+  passed, 53 failed, 6 errors, 154 skipped (5,858 collected, 24 minutes, two
+  workers).** Each failing test was then re-run alone on this tree and on
+  `3d556eb`, the commit before this audit's first change. The verdicts are
+  identical except for the tests F-03 and F-04 explain, so the remaining
+  failures predate this audit. They are not all the same kind:
+  - *A dependency the test needs is absent* (about two thirds), each cause
+    checked where it could be: no `lean` on the test's `PATH` (three
+    universal-bridge tests; all ten pass once Lean 4.24.0 is on it); the
+    native VQC extension not built (`test_vqc_stabilizer`; passes once
+    `rust/apedp-vqc` is built and installed); the pinned Rust toolchain not
+    downloadable here (the Goldbach and Riemann sandbox tests; both pass with a
+    usable toolchain); no `onnx` (JetFlow CPU export, three, and a Hugging
+    Face streaming test that needs the network); no built `kickmix` extension
+    (the DQI, DFTHC-SOS and FAROS-ISQ tests and the kickmix build pin,
+    nineteen — ten of which skip when run alone and fail in the full run with
+    `module 'kickmix' has no attribute 'CircuitBuilder'`, an order dependence
+    between tests); no `stim` (`test_vqc_memory`, with one peak-RSS assertion
+    that also fails on this machine); a generated `outputs/`
+    artefact that is not in the repository (`test_dyn_pointer`); and platform
+    detection that reads this container as a hosted notebook
+    (`test_dyn_notebook_adapter`, six). These tests fail rather than skip when
+    the dependency is missing. The CI test job installs neither Lean, nor the
+    VQC extension, nor `onnx`, `stim` or `kickmix`, so most of this group
+    should be expected to fail there as well.
+  - *Expected*: `test_dyn_governance` (FLAW-01), and
+    `test_dyn_exception_hygiene`, which after F-04 fails only on
+    `epistemic/adjudicate.py` being 1,127 lines against a ceiling of 1,026 —
+    already true at `3d556eb`, and a freeze-pinned file this audit has not
+    edited.
+  - *Unexplained, and the owner's to triage* (thirteen tests in ten files):
+    `test_dyn_grammar_scope` (an enumeration count of 225 where 64 is pinned;
+    a recovered library that is not the Duffing truth), `test_dyn_ha_coupling`,
+    `test_dyn_pde` (two), `test_dyn_term_necessity`, `test_dyn_tournament`
+    (two), `test_dyn_meta_sandbox` (scorecard 50 where 100 is pinned),
+    `test_dqi_submission_score` (a recorded patch hash that does not match),
+    `test_scale_invariance[1e9]` (classified `exponential_envelope` where
+    `rational_transition` is expected), `test_tier_bc_benchmark` (Planck R²
+    0.94) and `test_external_60_adapter_contract`. These may be real
+    regressions, or differences between this environment (Python 3.13, numpy
+    2.5, Rust 1.97.0) and the one their pins were recorded in. Nothing here
+    distinguishes the two.
+  - `tests/test_dyn_ui_studio.py::test_market_discovery_covid_promotes` kills
+    the interpreter on this 7 GB machine, alone or under xdist; no verdict.
+  - Three more failed only in the parallel run and pass alone on both trees
+    (`test_jetflow_trainer_and_dataset`, the notebook tutorial test,
+    `test_fan_out_emits_candidates_on_signal_feature`).
+  CI runs the suite with `-x`, so on a hosted runner the first of these that
+  fails there will be the only one reported per run.
+  Running the suites also rewrote four tracked result files
+  (`benchmarks/five_gate_validation_results.json`,
+  `docs/five_gate_validation_results.md`, and from the Rust tests
+  `benchmarks/kernel_profile_results.json` and
+  `benchmarks/sre_tree_vs_arena_baseline.json`). E-02 fixed three such paths;
+  these four remain and were restored by hand.
+
+Limits of this round: the local kernel is built with Rust 1.97.0, not the
+pinned 1.99.0, so "passes here" is not "passes on the pin" for format, Clippy
+or numerics; and a full local run is one machine, once.
+
+---
+
 ## 2026-11-15 round — measured error rates, and an abstention that was a missing build
 
 Basis: `stage` at `beff10d`. Pins: `tests/test_engineering_hardening_2026_11_15.py`.

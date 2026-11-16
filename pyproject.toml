@@ -130,6 +130,16 @@ line-length = 100
 extend-exclude = ["apedp_dyn/sandbox/google-verifiable-quantum-circuit-compilation/kickmix/_qualtran_src"]
 
 [tool.ruff.lint]
+# `# noqa: BLE001 - <reason>` is read by two tools. Ruff reads it as a
+# suppression. scripts/audit_exception_hygiene.py reads it as the *record* that
+# a blanket handler is deliberate, and tests/test_dyn_exception_hygiene.py
+# ratchets on it. The pinned ruff no longer raises BLE001 where the handler
+# logs or uses the exception, so it reports those 18 annotations as unused
+# (RUF100) -- and removing them to satisfy ruff makes the hygiene gate count 18
+# new silent handlers (done once, in 87d89b6, and caught by the first full
+# suite run). Declaring the code as externally consumed keeps the annotation
+# valid for RUF100; BLE001 itself still fires on an unannotated blind except.
+external = ["BLE001"]
 # Explicit rule set: the default (E4,E7,E9,F) is too thin to act as a CI gate,
 # and an implicit default means a ruff upgrade can silently change what blocks.
 select = ["E", "F", "W", "I", "UP", "B", "C4", "RUF", "BLE", "S"]

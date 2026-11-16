@@ -320,7 +320,7 @@ class RustKernelBridge:
                         c = self._kernel_compile(cast(Any, apedp_kernel), expr_str, list(variable_names))
                         compiled_list.append(c)
                         valid_indices.append(idx)
-                    except Exception:  # the kernel refusing to compile one expression is a fallback to the NumPy path for that candidate, not a verdict; the remaining candidates still score (see the block comment above)
+                    except Exception:  # noqa: BLE001 - the kernel refusing to compile one expression is a fallback to the NumPy path for that candidate, not a verdict; the remaining candidates still score (see the block comment above)
                         # NOT a verdict. The Rust kernel refusing to compile one
                         # expression is a fallback to "this candidate is not
                         # evaluable by the fast path", and the remaining

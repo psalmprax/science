@@ -425,13 +425,20 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: rust/apedp-kernel -> target
+      # `maturin develop` installs into the active virtualenv and refuses to run
+      # without one, and setup-python does not create one. The first time this
+      # job ever started (2026-11-16) it stopped here for that reason.
       - name: Install dependencies
         run: |
+          python -m venv .venv
+          source .venv/bin/activate
           pip install --upgrade pip
           pip install -e ".[dev,test]"
           maturin develop --locked --manifest-path rust/apedp-kernel/Cargo.toml
       - name: Run targeted mutation battery (referee + leakage paths)
-        run: python scripts/run_mutation_battery.py
+        run: |
+          source .venv/bin/activate
+          python scripts/run_mutation_battery.py
       - name: Upload the mutation-battery report (never hidden)
         if: always()
         uses: actions/upload-artifact@v7

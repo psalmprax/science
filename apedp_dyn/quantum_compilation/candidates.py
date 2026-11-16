@@ -273,6 +273,7 @@ def compute_structural_fingerprint(
 
     Encodes normalized gate distributions, qubit layout, rotation count, and uncomputation schedule.
     """
+    payload: dict[str, Any]
     if isinstance(metrics_or_dag, str):
         payload = {"circuit_raw_repr": metrics_or_dag}
     else:

@@ -43,7 +43,7 @@ from __future__ import annotations
 import contextlib
 from collections import Counter
 from collections.abc import Generator, Iterable, Sequence
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import numpy as np
 
@@ -262,7 +262,7 @@ class _Mark:
     def __enter__(self) -> _Mark:
         return self
 
-    def __exit__(self, *_exc: Any) -> bool:
+    def __exit__(self, *_exc: Any) -> Literal[False]:
         return False
 
 
