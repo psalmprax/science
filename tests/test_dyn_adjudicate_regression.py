@@ -29,6 +29,8 @@ Two contracts are pinned:
 """
 from __future__ import annotations
 
+from typing import ClassVar
+
 import numpy as np
 import pytest
 
@@ -287,18 +289,48 @@ class TestProvenanceFallbackFiresEndToEnd:
                                            y.shape)
         return dataclasses.replace(prob, train=train, holdout=holdout)
 
+    #: Generating parameters of apedp_dyn.problems.duffing, by grammar term.
+    GENERATING: ClassVar[dict[str, float]] = {"u": 1.0, "x": -4.0, "x3": -2.0, "v": -0.2}
+
     @classmethod
     def _best_fit(cls):
+        """The true model, fitted by the real fitter from its generating parameters.
+
+        Until 2026-11-16 this took the lowest-train-loss fit over the whole
+        slate from the fitter's default start. On this record that fit stops
+        with the cubic coefficient 31-35 % off (-2.62 with scipy 1.18.1, -2.70
+        with 1.17.1; least_squares status 3, optimality ~1e7): x**3 is barely
+        exercised at the training amplitude, so the cost is flat along it and
+        where the optimizer stops belongs to the scipy release. The holdout
+        verdict followed: gate 4 passed on 1.18 (margin 0.94) and failed on
+        1.17 (margin 1.03), and the test failed on CI for that reason.
+        Started from the generating parameters, the same fitter returns -2.0007
+        under scipy 1.15.3, 1.17.1 and 1.18.1 alike, with gate-4 margin 0.40.
+        The record is still a real fitter-produced one; only its start is fixed.
+        docs/SYSTEM_FLAWS_AUDIT.md, J-16, records what this says about the
+        fitter.
+        """
         from apedp_dyn.fitting.parameter_fit import fit_candidate
         from apedp_dyn.grammar import enumerate_candidates, prune_admissible
 
         prob = cls._noisy_duffing()
         kept = prune_admissible(prob, enumerate_candidates(
             required=("u",), optional=("x", "x3", "v"), max_terms=4))
-        scored = [fit_candidate(prob, k.candidate) for k in kept]
-        scored = [s for s in scored
-                  if s.train_loss is not None and np.isfinite(s.train_loss)]
-        return min(scored, key=lambda s: s.train_loss)
+        truth = next(k.candidate for k in kept
+                     if sorted(k.candidate.term_set()) == sorted(cls.GENERATING))
+        x0 = np.array([cls.GENERATING[t.name] for t in truth.terms])
+        best = fit_candidate(prob, truth, x0=x0)
+        assert best.provenance["gate4_status"]["passed"], (
+            "precondition: the fitted truth must survive gate 4, or adjudicate() "
+            f"never reaches the guards ({best.provenance['gate4_status']['detail']})")
+        return best
+
+    @staticmethod
+    def _lag1(series):
+        """|rho1| of a residual series, computed the way Guard 2 computes it."""
+        arr = np.asarray(series, dtype=float).ravel()
+        centred = arr - arr.mean()
+        return abs(float(np.dot(centred[:-1], centred[1:]) / np.dot(centred, centred)))
 
     def test_gate4_records_the_series_in_provenance(self):
         """Precondition: the series exists, as a JSON-safe list."""
@@ -335,18 +367,43 @@ class TestProvenanceFallbackFiresEndToEnd:
         """The end-to-end claim: no resid_sole, real fit, guard-2 abstention.
 
         adjudicate() is called with a single candidate and no residual series
-        at all. Any rho1 in the rationale can therefore only have come from
-        gate 4's recorded series, read through provenance.
+        at all, so the series it judges can only have come from gate 4's
+        record. The flag is set just below the |rho1| of that recorded series,
+        and the reason must quote exactly that value: a guard reading any
+        other series, or none, cannot produce it. (Until 2026-11-16 the flag
+        was RESID_RHO_FLAG / 2 and the refusal came from the structure an
+        unconverged fit leaves; see _best_fit.)
         """
+        from apedp_dyn.epistemic.adjudicate import _sole_survivor_whiteness
+
         best = self._best_fit()
-        # Exercise the provenance fallback even when this seeded holdout falls
-        # just below the production whiteness barrier.
-        adj = adjudicate([best], sole_rho_flag=RESID_RHO_FLAG / 2)
+        recorded = best.provenance["gate4_status"]["holdout_residuals"]
+        rho = self._lag1(recorded)
+        flag = rho * 0.999
+        assert not _sole_survivor_whiteness(recorded, flag)[0], "precondition: refused at this flag"
+
+        adj = adjudicate([best], sole_rho_flag=flag)
         assert adj.status is EpistemicStatus.INSUFFICIENT_EVIDENCE
         assert adj.promoted is None
         # Guard 1 passed, then Guard 2 refused -- both stated in the reason.
         assert "absolute ceiling" in adj.reason
-        assert "rho1" in adj.reason
+        assert f"|rho1|={rho:.3f}" in adj.reason
+
+    def test_the_same_recorded_series_clears_a_flag_just_above_it(self):
+        """The other side of the boundary: the refusal above was the series, not the flag."""
+        best = self._best_fit()
+        rho = self._lag1(best.provenance["gate4_status"]["holdout_residuals"])
+        adj = adjudicate([best], sole_rho_flag=rho * 1.001)
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
+        assert adj.promoted is best
+
+    def test_the_fitted_truth_is_promoted_at_the_production_flag(self):
+        """At 5 % noise the true model's holdout residuals are white (|rho1| 0.058)."""
+        best = self._best_fit()
+        assert self._lag1(best.provenance["gate4_status"]["holdout_residuals"]) < RESID_RHO_FLAG
+        adj = adjudicate([best])
+        assert adj.status is EpistemicStatus.UNIQUE_SUPPORT
+        assert adj.promoted is best
 
     def test_fallback_reaches_the_same_verdict_as_an_explicit_series(self):
         """Provenance and an explicit series must not disagree.
@@ -354,16 +411,22 @@ class TestProvenanceFallbackFiresEndToEnd:
         Two routes to the same evidence, one verdict. A divergence would mean
         the fallback is judging something other than what callers pass
         explicitly -- the exact inconsistency that made the guard unreachable
-        outside one script in the first place.
+        outside one script in the first place. The explicit series is the
+        signed residual series gate 4 records, which is what the fallback
+        reads; until 2026-11-16 this passed ``holdout_sq_error``, the series
+        ``_residual_series`` stopped using because lag-1 autocorrelation of
+        squared errors measures volatility clustering, not whiteness.
         """
         best = self._best_fit()
-        series = best.provenance["gate4_status"]["holdout_sq_error"]
+        series = best.provenance["gate4_status"]["holdout_residuals"]
+        rho = self._lag1(series)
 
-        via_provenance = adjudicate([best])
-        via_argument = adjudicate([best], resid_sole=series)
-        assert via_provenance.status is via_argument.status
-        assert via_provenance.promoted is None
-        assert via_argument.promoted is None
+        for flag in (rho * 0.999, rho * 1.001, RESID_RHO_FLAG):
+            via_provenance = adjudicate([best], sole_rho_flag=flag)
+            via_argument = adjudicate([best], resid_sole=series, sole_rho_flag=flag)
+            assert via_provenance.status is via_argument.status, flag
+            assert via_provenance.promoted is via_argument.promoted, flag
+            assert via_provenance.reason == via_argument.reason, flag
 
 
 class TestConfPathReachesTheNote:
